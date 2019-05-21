@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
 
 import { newInvoice } from '../hathorRedux';
-import { getFullAmount } from '../utils';
+import { getNoDecimalsAmount } from '../utils';
 
 //const hathorLib = require('@hathor/wallet-lib');
 
@@ -16,7 +16,7 @@ class _ReceiveScreen extends React.Component {
   }
 
   onGenerateInvoicePress = () => {
-    this.props.dispatch(newInvoice(this.state.address, getFullAmount(this.state.amount)));
+    this.props.dispatch(newInvoice(this.state.address, getNoDecimalsAmount(this.state.amount)));
     this.props.navigation.navigate('InvoiceModal');
   }
 

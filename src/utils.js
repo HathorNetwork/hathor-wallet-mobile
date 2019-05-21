@@ -34,6 +34,10 @@ export const getShortHash = hash => {
   return `${hash.substring(0,4)}...${hash.substring(60,64)}`;
 }
 
-export const getFullAmount = value => {
+export const getNoDecimalsAmount = value => {
   return value * (10 ** global.hathorLib.constants.DECIMAL_PLACES)
+}
+
+export const getDecimalsAmount = value => {
+  return value / (10 ** global.hathorLib.constants.DECIMAL_PLACES)
 }

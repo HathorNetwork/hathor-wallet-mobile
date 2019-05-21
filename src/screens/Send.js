@@ -3,18 +3,23 @@ import { Button, SafeAreaView, Text, TextInput, View } from 'react-native';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
 
-import { getFullAmount } from '../utils';
+import { getDecimalsAmount, getNoDecimalsAmount } from '../utils';
 
 //const hathorLib = require('@hathor/wallet-lib');
 
 class InfoSendScreen extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {address: this.props.address, amount: this.props.amount};
+    const address = this.props.navigation.getParam("address", null);
+    let amount = this.props.navigation.getParam("amount", null);
+    if (amount) {
+      amount = getDecimalsAmount(amount).toString();
+    }
+    this.state = {address, amount};
   }
 
   sendTx = () => {
-    const value = getFullAmount(this.state.amount);
+    const value = getNoDecimalsAmount(parseFloat(this.state.amount));
     const data = {};
     data.tokens = [];
     data.inputs = [];
@@ -40,15 +45,19 @@ class InfoSendScreen extends React.Component {
         <Text>Send information!</Text>
         <TextInput
           style={{height: 40, borderColor: 'gray', borderWidth: 1}}
-          onChangeText={(text) => this.setState({address: text})}
           placeholder="Address"
           autoCorrect={false}
+          autoCapitalize="none"
+          onChangeText={(text) => this.setState({address: text})}
+          value={this.state.address}
         />
         <TextInput
           style={{height: 40, borderColor: 'gray', borderWidth: 1}}
-          onChangeText={(text) => this.setState({amount: parseFloat(text)})}
           placeholder="0.00"
           keyboardType="numeric"
+          //TODO onChangeText validate at most 2 decimal places
+          onChangeText={(text) => this.setState({amount: text})}
+          value={this.state.amount}
         />
         <Button
           onPress={() => this.sendTx()}
@@ -60,6 +69,7 @@ class InfoSendScreen extends React.Component {
   }
 }
 
+
 class SendScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -68,6 +78,20 @@ class SendScreen extends React.Component {
 
   onSuccess = (e) => {
     console.log('qr code', e.data);
+    try {
+      const qrcode = JSON.parse(e.data);
+      const hathorAddress = qrcode.address;
+      const addressParts = hathorAddress.split(":");
+      if (addressParts[0] !== "hathor") {
+        throw new Error('not a hathor address');
+      }
+      const address = addressParts[1];
+      const amount = qrcode.amount;
+      this.props.navigation.navigate("SendModal", {address, amount});
+    } catch (e) {
+      //TODO error message to user
+      ;
+    }
   }
 
   render() {
