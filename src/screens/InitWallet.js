@@ -43,10 +43,9 @@ const InitialScreen = props => {
 }
 
 class NewWordsScreen extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { words: global.hathorLib.wallet.generateWalletWords(global.hathorLib.constants.HD_WALLET_ENTROPY) };
-  }
+  state = {
+    words: global.hathorLib.wallet.generateWalletWords(global.hathorLib.constants.HD_WALLET_ENTROPY)
+  };
 
   render() {
     const wordsArr = this.state.words ? this.state.words.split(' ') : [];
@@ -97,9 +96,20 @@ class NewWordsScreen extends React.Component {
 }
 
 class LoadWordsScreen extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { words: "noble solve screen casino vacant number crazy blush embrace pen smart nominee funny zero mouse number sleep large world plate symbol panda zoo supply" };
+  state = {
+    words: "",
+    errorMessage: "",
+  };
+
+  loadClicked = () => {
+    const words = this.state.words.trim();
+    this.setState({ errorMessage: "" })
+    const result = global.hathorLib.wallet.wordsValid(words);
+    if (result.valid) {
+      this.props.navigation.navigate('Home', {words});
+    } else {
+      this.setState({ errorMessage: result.message });
+    }
   }
 
   render() {
@@ -114,8 +124,9 @@ class LoadWordsScreen extends React.Component {
           placeholder='Enter words separated by a single space'
           multiline = {true}
         />
-      <HathorButton
-          onPress={() => this.props.navigation.navigate('Home', {words: this.state.words})}
+        <Text style={{ color: 'red' }}>{this.state.errorMessage}</Text>
+        <HathorButton
+          onPress={this.loadClicked}
           disabled={!this.state.words}
           title="Go"
         />
