@@ -39,15 +39,14 @@ import './shim.js'
 
 import React from 'react';
 import { createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
-import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 //import {StyleSheet, Text, View} from 'react-native';
 
-import { reducer } from './src/hathorRedux';
+import { store, networkError } from './src/hathorRedux';
 import { InitialScreen, NewWordsScreen, LoadWordsScreen } from './src/screens/InitWallet';
 import MainScreen from './src/screens/MainScreen';
-import { SendScreen, InfoSendScreen } from './src/screens/Send';
-import { InvoiceScreen, ReceiveScreen } from './src/screens/Receive';
+import { SendScreen, SendScreenModal } from './src/screens/Send';
+import { ReceiveScreenModal, ReceiveScreen } from './src/screens/Receive';
 
 //import hathorLib from '@hathor/wallet-lib';
 const hathorLib = require('@hathor/wallet-lib');
@@ -59,7 +58,7 @@ const InitStack = createStackNavigator({
     LoadWordsScreen: LoadWordsScreen,
   }, {
     initialRouteName: 'InitScreen'
-  });
+});
 
 const TabNavigator = createBottomTabNavigator({
     Home: MainScreen,
@@ -72,8 +71,8 @@ const TabNavigator = createBottomTabNavigator({
 
 const AppStack = createStackNavigator({
     Main: TabNavigator,
-    SendModal: InfoSendScreen,
-    InvoiceModal: InvoiceScreen,
+    SendModal: SendScreenModal,
+    ReceiveScreenModal: ReceiveScreenModal,
   }, {
     mode: 'modal',
     headerMode: 'none',
@@ -87,32 +86,28 @@ const SwitchNavigator = createSwitchNavigator({
 });
 
 const NavigationContainer = createAppContainer(SwitchNavigator);
-const store = createStore(reducer);
 
 const App = () => (
   <Provider store={store}>
     <NavigationContainer />
   </Provider>
 )
-export default App;
 
-/*
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
-*/
+// custom interceptor for axios
+const createRequestInstance = (resolve, timeout) => {
+  const instance = global.hathorLib.axios.defaultCreateRequestInstance(resolve, timeout);
+
+  instance.interceptors.response.use((response) => {
+    return response;
+  }, (error) => {
+    // Adding conditional because if the server forgets to send back the CORS
+    // headers, error.response will be undefined
+    const statusCode = error.response ? error.response.status : -1;
+    store.dispatch(networkError(Date.now()));
+    return Promise.reject(error);
+  });
+  return instance;
+}
+hathorLib.axios.registerNewCreateRequestInstance(createRequestInstance);
+
+export default App;
