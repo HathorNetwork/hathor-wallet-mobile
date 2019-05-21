@@ -2,6 +2,8 @@ import React from 'react';
 import { Button, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { connect } from 'react-redux';
 
+import QRCode from 'react-native-qrcode-svg';
+
 import { newInvoice } from '../hathorRedux';
 import { getFullAmount } from '../utils';
 
@@ -47,16 +49,19 @@ const ReceiveScreen = connect(null)(_ReceiveScreen);
 
 const mapInvoiceStateToProps = (state) => ({
   address: state.invoice.address,
-  amount: (state.invoice.amount ? global.hathorLib.helpers.prettyValue(state.invoice.amount) : "not set"),
+  amount: state.invoice.amount,
 })
 
 const _InvoiceScreen = props => {
   return (
     <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <Text>Invoice!</Text>
-      <Text>QR code</Text>
+      <QRCode
+        value={JSON.stringify({address: `hathor:${props.address}`, amount: (props.amount || null)})}
+        size={200}
+      />
       <Text>{`Address: ${props.address}`}</Text>
-      <Text>{`Amount: ${props.amount}`}</Text>
+      <Text>{`Amount: ${props.amount ? global.hathorLib.helpers.prettyValue(props.amount) : "not set"}`}</Text>
     </SafeAreaView>
   );
 }
