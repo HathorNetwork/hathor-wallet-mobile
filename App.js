@@ -44,7 +44,7 @@ import { Provider } from 'react-redux';
 //import {StyleSheet, Text, View} from 'react-native';
 
 import { reducer } from './src/hathorRedux';
-import { InitialScreen, NewWordsScreen, LoadWordsScreen } from './src/screens/InitWallet';
+import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from './src/screens/InitWallet';
 import MainScreen from './src/screens/MainScreen';
 import { SendScreen, InfoSendScreen } from './src/screens/Send';
 import { InvoiceScreen, ReceiveScreen } from './src/screens/Receive';
@@ -54,11 +54,12 @@ const hathorLib = require('@hathor/wallet-lib');
 global.hathorLib = hathorLib;
 
 const InitStack = createStackNavigator({
-    InitScreen: InitialScreen,
-    NewWordsScreen: NewWordsScreen,
-    LoadWordsScreen: LoadWordsScreen,
+    WelcomeScreen,
+    InitialScreen,
+    NewWordsScreen,
+    LoadWordsScreen,
   }, {
-    initialRouteName: 'InitScreen'
+    initialRouteName: 'WelcomeScreen'
   });
 
 const TabNavigator = createBottomTabNavigator({
