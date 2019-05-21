@@ -39,6 +39,16 @@ class InfoSendScreen extends React.Component {
     }
   }
 
+  onAmountChange = text => {
+    // we force at most 2 decimal places
+    //TODO can use ',' as decimal separator?
+    parts = text.split(".");
+    if (parts[1]) {
+      if (parts[1].length > 2) return;
+    }
+    this.setState({amount: text});
+  }
+
   render() {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -52,11 +62,10 @@ class InfoSendScreen extends React.Component {
           value={this.state.address}
         />
         <TextInput
-          style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+          style={{height: 40, width: 100, borderColor: 'gray', borderWidth: 1}}
           placeholder="0.00"
           keyboardType="numeric"
-          //TODO onChangeText validate at most 2 decimal places
-          onChangeText={(text) => this.setState({amount: text})}
+          onChangeText={this.onAmountChange}
           value={this.state.amount}
         />
         <Button
