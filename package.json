@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
+    "ios": "node node_modules/.bin/react-native run-ios",
+    "node-hack": "node node_modules/.bin/rn-nodeify --hack",
     "test": "jest"
   },
   "dependencies": {
