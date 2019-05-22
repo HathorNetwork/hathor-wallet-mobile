@@ -37,6 +37,10 @@ localStorage.setItem('wallet:server', 'http://localhost:8080/v1a/');
 
 import './shim.js'
 
+// Workaround to prevent error when using locale in android
+import 'intl';
+import 'intl/locale-data/jsonp/en';
+
 import React from 'react';
 import { createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
 import { Provider } from 'react-redux';
