@@ -71,6 +71,10 @@ const TabNavigator = createBottomTabNavigator({
       style: {
         backgroundColor: '#0273a0',
       },
+      tabStyle: {
+        justifyContent: 'center'
+      },
+      showIcon: false
     },
 });
 

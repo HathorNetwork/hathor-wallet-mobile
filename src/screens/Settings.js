@@ -1,25 +1,9 @@
 import React from "react";
-import { Alert, Button, SafeAreaView, Text, View } from "react-native";
-//import { connect } from "react-redux";
-
-//import { clearNetworkError, historyUpdate, networkError, newTx } from "../hathorRedux";
-
-/*
-const mapStateToProps = (state) => ({
-  txList: state.txList,
-  balance: state.balance,
-  networkError: state.networkError,
-})
-*/
+import { Alert, SafeAreaView, Text } from "react-native";
+import HathorButton from "../components/HathorButton";
 
 export class Settings extends React.Component {
   state = { isLoading: true };
-
-  componentDidMount() {
-    //global.hathorLib.WebSocketHandler.on("wallet", this.handleWebsocketMsg);
-    //global.hathorLib.WebSocketHandler.on("reload_data", this.fetchDataFromServer);
-    //global.hathorLib.WebSocketHandler.on("is_online", this.handleWebsocketStateChange);
-  }
 
   resetWallet = () => {
     //TODO we don't need to save server data
@@ -49,15 +33,14 @@ export class Settings extends React.Component {
   render() {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Settings</Text>
-        <Button
+        <Text style={{ lineHeight: 30, fontSize: 16, fontWeight: "bold" }}>Connected to</Text>
+        <Text>{global.hathorLib.helpers.getServerURL()}</Text>
+        <HathorButton
           onPress={this.buttonClick}
           title="Reset wallet"
+          style={{ marginTop: 24 }}
         />
-        <Text>Conected to {global.hathorLib.helpers.getServerURL()}</Text>
       </SafeAreaView>
     );
   }
 }
-
-//export default connect(mapStateToProps)(MainScreen)

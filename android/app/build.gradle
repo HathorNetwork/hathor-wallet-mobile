@@ -102,7 +102,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.hathormobile"
+        applicationId "network.hathor.wallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

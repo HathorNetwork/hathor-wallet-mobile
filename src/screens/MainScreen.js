@@ -111,10 +111,10 @@ class MainScreen extends React.Component {
 
     const renderItem = ({item, index}) => {
       return (
-        <View style={{ backgroundColor: colors[index % 2], display: 'flex', flex: 1, alignSelf: 'stretch', justifyContent: 'space-around', flexDirection: 'row', paddingBottom: 8, paddingTop: 8}}>
-          <Text style={{ flex: 0 }}>{global.hathorLib.dateFormatter.parseTimestamp(item.timestamp)}</Text>
-          <Text style={{ flex: 0, color: '#0273a0' }}>{getShortHash(item.tx_id)}</Text>
-          <Text style={{ flex: 0, color: getValueColor(item.balance) }}>{global.hathorLib.helpers.prettyValue(item.balance)}</Text>
+        <View style={[mainStyle.listItemWrapper, { backgroundColor: colors[index % 2] }]}>
+          <Text style={[mainStyle.dateColumn, mainStyle.listColumn]}>{global.hathorLib.dateFormatter.parseTimestamp(item.timestamp)}</Text>
+          <Text style={[mainStyle.idColumn, mainStyle.listColumn, {color: '#0273a0'}]}>{getShortHash(item.tx_id)}</Text>
+          <Text style={[mainStyle.valueColumn, {color: getValueColor(item.balance), textAlign: 'left' }]}>{global.hathorLib.helpers.prettyValue(item.balance)}</Text>
         </View>
       )
     }
@@ -123,10 +123,10 @@ class MainScreen extends React.Component {
       if (this.state.isLoading) return null;
 
       return (
-        <View style={{ backgroundColor: 'white', display: 'flex', flex: 1, alignSelf: 'stretch', justifyContent: 'space-around', flexDirection: 'row', paddingBottom: 8, paddingTop: 8}}>
-          <Text style={{ flex: 0 }}>Date</Text>
-          <Text style={{ flex: 0 }}>ID</Text>
-          <Text style={{ flex: 0 }}>Value</Text>
+        <View style={[mainStyle.listItemWrapper, { backgroundColor: 'white' }]}>
+          <Text style={[mainStyle.dateColumn, mainStyle.listColumn]}>Date</Text>
+          <Text style={[mainStyle.idColumn, mainStyle.listColumn]}>ID</Text>
+          <Text style={[mainStyle.valueColumn, mainStyle.listColumn]}>Value</Text>
         </View>
       );
     }
@@ -168,6 +168,27 @@ const mainStyle = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 28,
   },
+  listItemWrapper: {
+    display: 'flex',
+    flex: 1,
+    alignSelf: 'stretch',
+    justifyContent: 'space-around',
+    flexDirection: 'row',
+    paddingBottom: 8,
+    paddingTop: 8
+  },
+  dateColumn: {
+    width: 170,
+  },
+  idColumn: {
+    width: 100,
+  },
+  valueColumn: {
+    flex: 0,
+  },
+  listColumn: {
+    textAlign: 'center',
+  }
 });
 
 export default connect(mapStateToProps)(MainScreen)
