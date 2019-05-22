@@ -19,8 +19,10 @@ class MainScreen extends React.Component {
   }
 
   componentDidMount() {
-    const words = this.props.navigation.getParam('words');
-    global.hathorLib.wallet.executeGenerateWallet(words, '', '123456', '123456', false);
+    const words = this.props.navigation.getParam('words', null);
+    if (words) {
+      global.hathorLib.wallet.executeGenerateWallet(words, '', '123456', '123456', false);
+    }
     global.hathorLib.WebSocketHandler.on('wallet', this.handleWebsocketMsg);
     global.hathorLib.WebSocketHandler.on('reload_data', this.fetchDataFromServer);
     global.hathorLib.WebSocketHandler.on('is_online', this.handleWebsocketStateChange);

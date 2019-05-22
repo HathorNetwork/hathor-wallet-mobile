@@ -19,6 +19,7 @@ import { Provider } from 'react-redux';
 //import {StyleSheet, Text, View} from 'react-native';
 
 import { store, networkError } from './src/hathorRedux';
+import SplashScreen from './src/screens/SplashScreen';
 import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from './src/screens/InitWallet';
 import MainScreen from './src/screens/MainScreen';
 import { SendScreen, SendScreenModal } from './src/screens/Send';
@@ -56,10 +57,12 @@ const AppStack = createStackNavigator({
 });
 
 const SwitchNavigator = createSwitchNavigator({
+    Splash: SplashScreen,
     App: AppStack,
     Init: InitStack,
   }, {
-    initialRouteName: 'Init',
+    initialRouteName: 'Splash',
+    //initialRouteName: 'Init',
 });
 
 const NavigationContainer = createAppContainer(SwitchNavigator);
@@ -79,12 +82,11 @@ const createRequestInstance = (resolve, timeout) => {
   }, (error) => {
     // Adding conditional because if the server forgets to send back the CORS
     // headers, error.response will be undefined
-    const statusCode = error.response ? error.response.status : -1;
     store.dispatch(networkError(Date.now()));
     return Promise.reject(error);
   });
   return instance;
 }
-hathorLib.axios.registerNewCreateRequestInstance(createRequestInstance);
+global.hathorLib.axios.registerNewCreateRequestInstance(createRequestInstance);
 
 export default App;

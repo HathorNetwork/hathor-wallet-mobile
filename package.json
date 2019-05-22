@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hathor/wallet-lib": "^0.1.1",
+    "@react-native-community/async-storage": "^1.4.0",
     "@tradle/react-native-http": "^2.0.1",
     "assert": "^1.5.0",
     "browserify-zlib": "^0.1.4",
