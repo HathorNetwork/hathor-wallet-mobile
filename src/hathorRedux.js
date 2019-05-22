@@ -31,7 +31,8 @@ const initialState = {
   tokenUid: "00",
   txList: null,
   balance: {available: 0, locked: 0},
-  invoice: null,        // {address: "WZehGjcMZvgLe7XYgxAKeSQeCiuvwPmsNy", amount: 10}
+  invoice: null,            // {address: "WZehGjcMZvgLe7XYgxAKeSQeCiuvwPmsNy", amount: 10}
+  invoicePayment: null,     // null if not paid or the tx it was received
   networkError: null,
 }
 
@@ -65,6 +66,21 @@ const reducer = (state = initialState, action) => {
     case types.NEW_TX: {
       const tx = action.payload.tx;
       const keys = action.payload.keys;
+
+      // if we have the invoice modal, check if this tx settles it
+      let invoicePayment = null;
+      if (state.invoice && state.invoice.amount) {
+        for (let txout of tx.outputs) {
+          // TODO authority outputs
+          if (txout.decoded && txout.decoded.address
+              && txout.decoded.address === state.invoice.address
+              && txout.value === state.invoice.amount) {
+            invoicePayment = tx;
+          }
+        }
+      }
+
+      // update balance and tx list
       balances = getMyTxBalance(tx, keys);
       if (state.tokenUid in balances) {
         let index = 0;
@@ -87,6 +103,7 @@ const reducer = (state = initialState, action) => {
           state.txList.splice(index, 0, {tx_id: tx.tx_id, timestamp: tx.timestamp, balance: balances[state.tokenUid]});
           return {
             ...state,
+            invoicePayment: invoicePayment,
             txList: [...state.txList],      // we need a new object so react detects change
             balance: state.balance + balances[state.tokenUid],
           }
@@ -106,6 +123,7 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         invoice: null,
+        invoicePayment: null,
       }
     }
     case types.NETWORK_ERROR: {
