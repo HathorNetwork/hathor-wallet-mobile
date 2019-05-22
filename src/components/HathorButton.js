@@ -1,12 +1,14 @@
 import React from 'react';
-import { Button } from 'react-native';
+import { Button, View } from 'react-native';
 
 const HathorButton = props => {
   return (
-    <Button
-      {...props}
-      color="#0273a0"
-    />
+    <View style={props.style ? props.style : null}>
+      <Button
+        {...props}
+        color="#0273a0"
+      />
+    </View>
   )
 }
 

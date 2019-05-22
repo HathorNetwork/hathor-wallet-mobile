@@ -29,6 +29,7 @@ const InitialScreen = props => {
         <HathorButton
           onPress={() => props.navigation.navigate('NewWordsScreen')}
           title="New Wallet"
+          style={{ marginBottom: 16 }}
         />
         <HathorButton
           onPress={() => props.navigation.navigate('LoadWordsScreen')}
@@ -80,12 +81,11 @@ class NewWordsScreen extends React.Component {
           <Text style={initStyle.text}>You must save the words below in the same order, so you can load this wallet again in the future.</Text>
         </View>
         {renderWords()}
-        <View style={{ marginTop: 24 }}>
-          <HathorButton
-            onPress={() => this.props.navigation.navigate('Home', {words: this.state.words})}
-            title="Got it"
-          />
-        </View>
+        <HathorButton
+          onPress={() => this.props.navigation.navigate('Home', {words: this.state.words})}
+          title="Got it"
+          style={{ marginTop: 24 }}
+        />
       </View>
     );
   }
@@ -124,6 +124,7 @@ class LoadWordsScreen extends React.Component {
           onPress={this.loadClicked}
           disabled={!this.state.words}
           title="Go"
+          style={{ marginTop: 8 }}
         />
       </View>
     );
