@@ -1,14 +1,12 @@
 import React from 'react';
 import { Linking, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
 import HathorButton from '../components/HathorButton';
-import HathorLogo from '../components/HathorLogo';
 
 const WelcomeScreen = props => {
   return (
     <View style={initStyle.container}>
-      <HathorLogo />
       <Text style={{ fontWeight: "bold", fontSize: 20 }}>Welcome to Hathor Testnet!</Text>
-      <View style={initStyle.textWrapper}>
+      <View style={[initStyle.textMarginBottom, initStyle.textMarginTop]}>
         <Text style={ initStyle.text }>Your tokens may be reset at any time.</Text>
         <Text style={ initStyle.text }>If one offers to sell some tokens to you, one is a scammer.</Text>
         <Text style={ initStyle.text }>For further information, check our website 
@@ -26,7 +24,6 @@ const WelcomeScreen = props => {
 const InitialScreen = props => {
   return (
     <View style={initStyle.container}>
-      <HathorLogo />
       <Text>You can start a new wallet or import data from a wallet that already exists.</Text>
       <View style={{ marginTop: 24}}>
         <HathorButton
@@ -78,8 +75,7 @@ class NewWordsScreen extends React.Component {
 
     return (
       <View style={initStyle.container}>
-        <HathorLogo />
-        <View style={initStyle.textWrapper}>
+        <View style={initStyle.textMarginBottom}>
           <Text style={initStyle.text}>Your wallet has been created!</Text>
           <Text style={initStyle.text}>You must save the words below in the same order, so you can load this wallet again in the future.</Text>
         </View>
@@ -115,7 +111,6 @@ class LoadWordsScreen extends React.Component {
   render() {
     return (
       <View style={initStyle.container}>
-        <HathorLogo />
         <Text>Write the 24 words of your wallet (separated by space).</Text>
         <TextInput
           style={{height: 100, borderColor: 'gray', borderWidth: 1, padding: 16, marginTop: 24, marginBottom: 16}}
@@ -139,10 +134,13 @@ const initStyle = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
+    justifyContent: "center",
     padding: 16,
   },
-  textWrapper: {
+  textMarginTop: {
     marginTop: 24,
+  },
+  textMarginBottom: {
     marginBottom: 24,
   },
   text: {

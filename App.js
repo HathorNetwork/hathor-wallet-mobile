@@ -24,19 +24,26 @@ import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from '.
 import MainScreen from './src/screens/MainScreen';
 import { SendScreen, SendScreenModal } from './src/screens/Send';
 import { ReceiveScreenModal, ReceiveScreen } from './src/screens/Receive';
+import HathorLogo from './src/components/HathorLogo';
 
 //import hathorLib from '@hathor/wallet-lib';
 const hathorLib = require('@hathor/wallet-lib');
 global.hathorLib = hathorLib;
 
-const InitStack = createStackNavigator({
+const InitStack = createStackNavigator(
+  {
     WelcomeScreen,
     InitialScreen,
     NewWordsScreen,
     LoadWordsScreen,
-  }, {
-    initialRouteName: 'WelcomeScreen'
-});
+  },
+  {
+    initialRouteName: 'WelcomeScreen',
+    defaultNavigationOptions: {
+      headerTitle: <HathorLogo />,
+    }
+  }
+);
 
 const TabNavigator = createBottomTabNavigator({
     Home: MainScreen,
@@ -44,7 +51,17 @@ const TabNavigator = createBottomTabNavigator({
     Receive: ReceiveScreen,
     //Settings: MainScreen,
   }, {
-    initialRoute: 'MainScreen'
+    initialRoute: 'MainScreen',
+    tabBarOptions: {
+      activeTintColor: 'white',
+      inactiveTintColor: 'rgba(255, 255, 255, 0.6)',
+      labelStyle: {
+        fontSize: 12,
+      },
+      style: {
+        backgroundColor: '#0273a0',
+      },
+    },
 });
 
 const AppStack = createStackNavigator({
