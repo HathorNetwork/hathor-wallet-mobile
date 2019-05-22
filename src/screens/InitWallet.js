@@ -2,23 +2,31 @@ import React from 'react';
 import { Linking, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
 import HathorButton from '../components/HathorButton';
 
-const WelcomeScreen = props => {
-  return (
-    <View style={initStyle.container}>
-      <Text style={{ fontWeight: "bold", fontSize: 20 }}>Welcome to Hathor Testnet!</Text>
-      <View style={[initStyle.textMarginBottom, initStyle.textMarginTop]}>
-        <Text style={ initStyle.text }>Your tokens may be reset at any time.</Text>
-        <Text style={ initStyle.text }>If one offers to sell some tokens to you, one is a scammer.</Text>
-        <Text style={ initStyle.text }>For further information, check our website 
-          <Text style={{ color: "#0273a0" }} onPress={() => Linking.openURL("https://hathor.network/")}> https://hathor.network/</Text>
-        .</Text>
+class WelcomeScreen extends React.Component {
+  static navigationOptions = {
+    headerTitleContainerStyle: {
+      marginLeft: 0,
+    },
+  };
+
+  render() {
+    return (
+      <View style={initStyle.container}>
+        <Text style={{ fontWeight: "bold", fontSize: 20 }}>Welcome to Hathor Testnet!</Text>
+        <View style={[initStyle.textMarginBottom, initStyle.textMarginTop]}>
+          <Text style={ initStyle.text }>Your tokens may be reset at any time.</Text>
+          <Text style={ initStyle.text }>If one offers to sell some tokens to you, one is a scammer.</Text>
+          <Text style={ initStyle.text }>For further information, check our website 
+            <Text style={{ color: "#0273a0" }} onPress={() => Linking.openURL("https://hathor.network/")}> https://hathor.network/</Text>
+          .</Text>
+        </View>
+        <HathorButton
+          onPress={() => this.props.navigation.navigate('InitialScreen')}
+          title="Get started"
+        />
       </View>
-      <HathorButton
-        onPress={() => props.navigation.navigate('InitialScreen')}
-        title="Get started"
-      />
-    </View>
-  )
+    )
+  }
 }
 
 const InitialScreen = props => {
@@ -29,6 +37,7 @@ const InitialScreen = props => {
         <HathorButton
           onPress={() => props.navigation.navigate('NewWordsScreen')}
           title="New Wallet"
+          style={{ marginBottom: 16 }}
         />
         <HathorButton
           onPress={() => props.navigation.navigate('LoadWordsScreen')}
@@ -80,12 +89,11 @@ class NewWordsScreen extends React.Component {
           <Text style={initStyle.text}>You must save the words below in the same order, so you can load this wallet again in the future.</Text>
         </View>
         {renderWords()}
-        <View style={{ marginTop: 24 }}>
-          <HathorButton
-            onPress={() => this.props.navigation.navigate('Home', {words: this.state.words})}
-            title="Got it"
-          />
-        </View>
+        <HathorButton
+          onPress={() => this.props.navigation.navigate('Home', {words: this.state.words})}
+          title="Got it"
+          style={{ marginTop: 24 }}
+        />
       </View>
     );
   }
@@ -124,6 +132,7 @@ class LoadWordsScreen extends React.Component {
           onPress={this.loadClicked}
           disabled={!this.state.words}
           title="Go"
+          style={{ marginTop: 8 }}
         />
       </View>
     );

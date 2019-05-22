@@ -13,7 +13,12 @@ global.localStorage.setItem('wallet:server', 'http://localhost:8080/v1a/');
 
 import '../shim.js'
 
+// Workaround to prevent error when using locale in android
+import 'intl';
+import 'intl/locale-data/jsonp/en';
+
 import React from 'react';
+import { Platform } from 'react-native';
 import { createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
 import { Provider } from 'react-redux';
 //import {StyleSheet, Text, View} from 'react-native';
@@ -23,8 +28,8 @@ import SplashScreen from './screens/SplashScreen';
 import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from './screens/InitWallet';
 import MainScreen from './screens/MainScreen';
 import { SendScreen, SendScreenModal } from './screens/Send';
-import { Settings } from './screens/Settings';
 import { ReceiveScreenModal, ReceiveScreen } from './screens/Receive';
+import { Settings } from './screens/Settings';
 import HathorLogo from './components/HathorLogo';
 
 //import hathorLib from '@hathor/wallet-lib';
@@ -41,7 +46,11 @@ const InitStack = createStackNavigator(
   {
     initialRouteName: 'WelcomeScreen',
     defaultNavigationOptions: {
+      headerTintColor: '#0273a0',
       headerTitle: <HathorLogo />,
+      headerTitleContainerStyle: {
+        marginLeft: Platform.OS === 'ios' ? 0 : -56, // In android when you have the navigation with a back button the title is moved to the right
+      },
     }
   }
 );

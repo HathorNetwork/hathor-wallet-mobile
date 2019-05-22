@@ -1,8 +1,9 @@
 import React from 'react';
-import { SafeAreaView, Text } from 'react-native';
 import { connect } from 'react-redux';
 
 import { resetData } from '../hathorRedux';
+import { SafeAreaView } from 'react-native';
+import HathorLogo from '../components/HathorLogo';
 
 class SplashScreen extends React.Component {
   constructor(props) {
@@ -22,7 +23,7 @@ class SplashScreen extends React.Component {
   render() {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Splash Screen</Text>
+        <HathorLogo />
       </SafeAreaView>
     );
   }

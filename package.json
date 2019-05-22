@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "ios": "node node_modules/.bin/react-native run-ios",
+    "android": "node node_modules/.bin/react-native run-android",
     "node-hack": "node node_modules/.bin/rn-nodeify --hack",
     "test": "jest"
   },
@@ -21,6 +22,7 @@
     "domain-browser": "^1.2.0",
     "events": "^1.1.1",
     "https-browserify": "0.0.1",
+    "intl": "1.2.4",
     "path-browserify": "0.0.0",
     "process": "^0.11.10",
     "punycode": "^1.4.1",
