@@ -1,10 +1,11 @@
 import { createStore } from 'redux';
 
-import { getMyTxBalance } from './utils';
+import {getBalance, getMyTxBalance } from './utils';
 
 const types = {
   HISTORY_UPDATE: "HISTORY_UPDATE",
   NEW_TX: "NEW_TX",
+  BALANCE_UPDATE: "BALANCE_UPDATE",
   NEW_INVOICE: "NEW_INVOICE",
   CLEAR_INVOICE: "CLEAR_INVOICE",
   NETWORK_ERROR: "NETWORK_ERROR",
@@ -15,6 +16,8 @@ const types = {
 export const historyUpdate = (history, keys) => ({type: types.HISTORY_UPDATE, payload: {history, keys}});
 
 export const newTx = (tx, keys) => ({type: types.NEW_TX, payload: {tx, keys}});
+
+export const balanceUpdate = (balance) => ({type: types.BALANCE_UPDATE, payload: balance});
 
 export const newInvoice = (address, amount) => ({type: types.NEW_INVOICE, payload: {address, amount}});
 
@@ -52,11 +55,7 @@ const reducer = (state = initialState, action) => {
         return elem2.timestamp - elem1.timestamp
       });
 
-      // TODO should have a method in the lib to get historyTransactions
-      const data = global.hathorLib.wallet.getWalletData();
-      const historyTransactions = 'historyTransactions' in data ? data['historyTransactions'] : {};
-      const filteredArray = global.hathorLib.wallet.filterHistoryTransactions(historyTransactions, state.tokenUid);
-      const balance = global.hathorLib.wallet.calculateBalance(filteredArray, state.tokenUid);
+      const balance = getBalance(state.tokenUid);
       return {
         ...state,
         txList: txList,
@@ -105,11 +104,16 @@ const reducer = (state = initialState, action) => {
             ...state,
             invoicePayment: invoicePayment,
             txList: [...state.txList],      // we need a new object so react detects change
-            balance: state.balance + balances[state.tokenUid],
           }
         }
       }
       return state;
+    }
+    case types.BALANCE_UPDATE: {
+      return {
+        ...state,
+        balance: action.payload,
+      }
     }
     case types.NEW_INVOICE: {
       const address = action.payload.address;

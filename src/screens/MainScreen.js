@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { connect } from 'react-redux';
 
-import { clearNetworkError, historyUpdate, networkError, newTx, resetData } from '../hathorRedux';
+import { balanceUpdate, clearNetworkError, historyUpdate, networkError, newTx, resetData } from '../hathorRedux';
 import { getShortHash } from '../utils';
 
 
@@ -36,7 +36,9 @@ class MainScreen extends React.Component {
     this.cleanData();
     this.setState({isLoading: true});
     global.hathorLib.version.checkApiVersion().then(data => {
-      global.hathorLib.wallet.reloadData().then(() => {
+      const accessDataStorage = global.localStorage.getItem('wallet:accessData');
+      const walletData = global.hathorLib.wallet.getWalletData();
+      global.hathorLib.wallet.loadAddressHistory(0, global.hathorLib.constants.GAP_LIMIT).then(() => {
         const data = global.hathorLib.wallet.getWalletData();
         // Update historyTransactions with new one
         const historyTransactions = 'historyTransactions' in data ? data['historyTransactions'] : {};
@@ -55,8 +57,9 @@ class MainScreen extends React.Component {
     // Get old access data
     const accessDataStorage = global.localStorage.getItem('wallet:accessData');
     const walletData = global.hathorLib.wallet.getWalletData();
+    const server = global.localStorage.getItem('wallet:server');
 
-    global.hathorLib.wallet.cleanWallet();
+    global.localStorage.clear();
 
     let accessData = global.localStorage.memory ? accessDataStorage : JSON.parse(accessDataStorage);
     let newWalletData = {
@@ -69,6 +72,7 @@ class MainScreen extends React.Component {
 
     global.localStorage.setItem('wallet:accessData', accessData);
     global.localStorage.setItem('wallet:data', newWalletData);
+    global.localStorage.setItem('wallet:server', server);
   }
 
   handleWebsocketStateChange = isOnline => {
@@ -91,6 +95,8 @@ class MainScreen extends React.Component {
 
       const keys = global.hathorLib.wallet.getWalletData().keys;
       this.props.dispatch(newTx(wsData.history, keys));
+    } else if (wsData.type === "wallet:balance_updated") {
+      this.props.dispatch(balanceUpdate(wsData.balance));
     }
   }
 
