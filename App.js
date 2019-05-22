@@ -29,6 +29,7 @@ import MainScreen from './src/screens/MainScreen';
 import { SendScreen, SendScreenModal } from './src/screens/Send';
 import { ReceiveScreenModal, ReceiveScreen } from './src/screens/Receive';
 import HathorLogo from './src/components/HathorLogo';
+import { Platform } from 'react-native';
 
 //import hathorLib from '@hathor/wallet-lib';
 const hathorLib = require('@hathor/wallet-lib');
@@ -45,6 +46,9 @@ const InitStack = createStackNavigator(
     initialRouteName: 'WelcomeScreen',
     defaultNavigationOptions: {
       headerTitle: <HathorLogo />,
+      headerTitleContainerStyle: {
+        marginLeft: Platform.OS === 'ios' ? 0 : -56, // In android when you have the navigation with a back button the title is moved to the right
+      },
     }
   }
 );
