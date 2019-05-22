@@ -45,6 +45,7 @@ const InitStack = createStackNavigator(
   {
     initialRouteName: 'WelcomeScreen',
     defaultNavigationOptions: {
+      headerTintColor: '#0273a0',
       headerTitle: <HathorLogo />,
       headerTitleContainerStyle: {
         marginLeft: Platform.OS === 'ios' ? 0 : -56, // In android when you have the navigation with a back button the title is moved to the right
