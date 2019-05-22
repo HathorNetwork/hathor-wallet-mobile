@@ -24,7 +24,7 @@ import { Provider } from 'react-redux';
 //import {StyleSheet, Text, View} from 'react-native';
 
 import { store, networkError } from './hathorRedux';
-import SplashScreen from './screens/SplashScreen';
+import DecideStackScreen from './screens/DecideStackScreen';
 import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from './screens/InitWallet';
 import MainScreen from './screens/MainScreen';
 import { SendScreen, SendScreenModal } from './screens/Send';
@@ -84,12 +84,11 @@ const AppStack = createStackNavigator({
 });
 
 const SwitchNavigator = createSwitchNavigator({
-    Splash: SplashScreen,
+    Decide: DecideStackScreen,
     App: AppStack,
     Init: InitStack,
   }, {
-    initialRouteName: 'Splash',
-    //initialRouteName: 'Init',
+    initialRouteName: 'Decide',
 });
 
 const NavigationContainer = createAppContainer(SwitchNavigator);
