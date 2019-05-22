@@ -34,12 +34,14 @@ export const storageFactory = {
 
   async rebuild() {
     const keysStr = await AsyncStorage.getItem("hathorMobileKeys");
-    const keys = JSON.parse(keysStr);
-    const allValues = await AsyncStorage.multiGet(keys);
-    for (const arr of allValues) {
-      const key = arr[0];
-      const value = JSON.parse(arr[1]);
-      global.hathorMemoryStorage[key] = value;
+    if (keysStr) {
+      const keys = JSON.parse(keysStr);
+      const allValues = await AsyncStorage.multiGet(keys);
+      for (const arr of allValues) {
+        const key = arr[0];
+        const value = JSON.parse(arr[1]);
+        global.hathorMemoryStorage[key] = value;
+      }
     }
   }
 }
