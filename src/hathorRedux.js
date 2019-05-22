@@ -19,8 +19,7 @@ export const clearInvoice = () => ({type: types.CLEAR_INVOICE});
 const initialState = {
   tokenUid: "00",
   txList: null,
-  //balance: {available: 0, locked: 0},
-  balance: 0,
+  balance: {available: 0, locked: 0},
   invoice: null,        // {address: "WZehGjcMZvgLe7XYgxAKeSQeCiuvwPmsNy", amount: 10}
 }
 
@@ -30,21 +29,25 @@ export const reducer = (state = initialState, action) => {
       const txList = []
       const history = action.payload.history;
       const keys = action.payload.keys;
-      let totalBalance = 0;
       for (const tx of Object.values(history)) {
         balances = getMyTxBalance(tx, keys);
         if (state.tokenUid in balances) {
           txList.push({tx_id: tx.tx_id, timestamp: tx.timestamp, balance: balances[state.tokenUid]});
-          totalBalance += balances[state.tokenUid];
         }
       }
       txList.sort((elem1, elem2) => {
         return elem2.timestamp - elem1.timestamp
       });
+
+      // TODO should have a method in the lib to get historyTransactions
+      const data = global.hathorLib.wallet.getWalletData();
+      const historyTransactions = 'historyTransactions' in data ? data['historyTransactions'] : {};
+      const filteredArray = global.hathorLib.wallet.filterHistoryTransactions(historyTransactions, state.tokenUid);
+      const balance = global.hathorLib.wallet.calculateBalance(filteredArray, state.tokenUid);
       return {
         ...state,
         txList: txList,
-        balance: totalBalance,
+        balance,
       };
     }
     case types.NEW_TX: {

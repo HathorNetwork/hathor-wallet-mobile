@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, FlatList, SafeAreaView, Text, View } from 'react-native';
+import { Button, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { connect } from 'react-redux';
 
 import { historyUpdate, newTx } from '../hathorRedux';
@@ -12,14 +12,13 @@ const mapStateToProps = (state) => ({
 })
 
 class MainScreen extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+  state = { loading: true };
 
   componentDidMount() {
     const words = this.props.navigation.getParam('words');
     const promise = global.hathorLib.wallet.executeGenerateWallet(words, '', '123456', '123456', true);
     promise.then(() => {
+      this.setState({ loading: false });
       global.hathorLib.WebSocketHandler.on('wallet', this.handleWebsocketMsg);
       const data = global.hathorLib.wallet.getWalletData();
       // Update historyTransactions with new one
@@ -41,25 +40,79 @@ class MainScreen extends React.Component {
       const allTokens = 'allTokens' in walletData ? walletData['allTokens'] : [];
       global.hathorLib.wallet.updateHistoryData(historyTransactions, allTokens, [wsData.history], null, walletData)
 
-
       const keys = global.hathorLib.wallet.getWalletData().keys;
       this.props.dispatch(newTx(wsData.history, keys));
     }
   }
 
   render() {
+    const colors = ['#eee', 'white'];
+
+    const getValueColor = (value) => {
+      if (value > 0) return '#28a745';
+      else if (value < 0) return '#dc3545';
+      else return 'black';
+    }
+
+    const renderItem = ({item, index}) => {
+      return (
+        <View style={{ backgroundColor: colors[index % 2], display: 'flex', flex: 1, alignSelf: 'stretch', justifyContent: 'space-around', flexDirection: 'row', paddingBottom: 8, paddingTop: 8}}>
+          <Text style={{ flex: 0 }}>{global.hathorLib.dateFormatter.parseTimestamp(item.timestamp)}</Text>
+          <Text style={{ flex: 0, color: '#0273a0' }}>{getShortHash(item.tx_id)}</Text>
+          <Text style={{ flex: 0, color: getValueColor(item.balance) }}>{global.hathorLib.helpers.prettyValue(item.balance)}</Text>
+        </View>
+      )
+    }
+
+    const renderListHeader = ({item}) => {
+      if (this.state.loading) return null;
+
+      return (
+        <View style={{ backgroundColor: 'white', display: 'flex', flex: 1, alignSelf: 'stretch', justifyContent: 'space-around', flexDirection: 'row', paddingBottom: 8, paddingTop: 8}}>
+          <Text style={{ flex: 0 }}>Date</Text>
+          <Text style={{ flex: 0 }}>ID</Text>
+          <Text style={{ flex: 0 }}>Value</Text>
+        </View>
+      );
+    }
+
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Main Screen</Text>
-        <Text>Balance: {global.hathorLib.helpers.prettyValue(this.props.balance)}</Text>
-        <FlatList
-          data={this.props.txList}
-          renderItem={({item}) => <Text>{`${getShortHash(item.tx_id)} - ${global.hathorLib.dateFormatter.parseTimestamp(item.timestamp)} - ${global.hathorLib.helpers.prettyValue(item.balance)}`}</Text>}
-          keyExtractor={(item, index) => item.tx_id}
-        />
+        <View style={{ display: "flex", flexDirection: "row", width: "100%", alignItems: "center", height: 120, backgroundColor: "#0273a0", padding: 24 }}>
+          <Text style={mainStyle.topTextTitle}>Hathor</Text>
+          <View style={{ display: "flex", alignItems: "flex-start", marginLeft: 24 }}>
+            <Text style={mainStyle.topText}>Total: {global.hathorLib.helpers.prettyValue(this.props.balance.available + this.props.balance.locked)} HTR</Text>
+            <Text style={mainStyle.topText}>Available: {global.hathorLib.helpers.prettyValue(this.props.balance.available)} HTR</Text>
+            <Text style={mainStyle.topText}>Locked: {global.hathorLib.helpers.prettyValue(this.props.balance.locked)} HTR</Text>
+          </View>
+        </View>
+        <View style={{ padding: 24 }}>
+          <Text style={{ fontWeight: "bold", fontSize: 20 }}>{this.state.loading ? "Loading history..." : "Transaction history"}</Text>
+        </View>
+        <View style={{ flex: 1, alignSelf: 'stretch' }}>
+          <FlatList
+            data={this.props.txList}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => item.tx_id}
+            ListHeaderComponent={renderListHeader}
+            stickyHeaderIndices={[0]}
+          />
+        </View>
       </SafeAreaView>
     );
   }
 }
+
+const mainStyle = StyleSheet.create({
+  topText: {
+    color: "white",
+    lineHeight: 20,
+  },
+  topTextTitle: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 28,
+  },
+});
 
 export default connect(mapStateToProps)(MainScreen)
