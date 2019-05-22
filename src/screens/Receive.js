@@ -1,10 +1,11 @@
 import React from 'react';
-import { Button, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { Button, Clipboard, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { connect } from 'react-redux';
 
 import QRCode from 'react-native-qrcode-svg';
+import { NavigationEvents } from 'react-navigation';
 
-import { newInvoice } from '../hathorRedux';
+import { clearInvoice, newInvoice } from '../hathorRedux';
 import { getNoDecimalsAmount } from '../utils';
 
 //const hathorLib = require('@hathor/wallet-lib');
@@ -12,7 +13,7 @@ import { getNoDecimalsAmount } from '../utils';
 class _ReceiveScreen extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {address: "WZehGjcMZvgLe7XYgxAKeSQeCiuvwPmsNy", amount: null};
+    this.state = {address: "", amount: null};
   }
 
   onGenerateInvoicePress = () => {
@@ -23,10 +24,18 @@ class _ReceiveScreen extends React.Component {
   render() {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <NavigationEvents
+          //TODO get new address everytime we go to Send screen?
+          onWillFocus={payload => this.setState({address: global.hathorLib.wallet.getAddressToUse()})}
+        />
         <Text>Receive!</Text>
         <Text>{this.state.address}</Text>
         <Button
-          onPress={() => this.sendTx()}
+          onPress={() => Clipboard.setString(this.state.address)}
+          title="Copy to clipboard"
+        />
+        <Button
+          onPress={() => this.setState({address: global.hathorLib.wallet.getAddressToUse()})}
           title="Generate new address"
         />
         <Text>Amount (optional):</Text>
@@ -50,21 +59,30 @@ const ReceiveScreen = connect(null)(_ReceiveScreen);
 const mapInvoiceStateToProps = (state) => ({
   address: state.invoice.address,
   amount: state.invoice.amount,
+  payment: state.invoicePayment,
 })
 
-const _ReceiveScreenModal = props => {
-  return (
-    //TODO dismiss button and clear invoice data when exiting (redux clearInvoice())
-    <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Invoice!</Text>
-      <QRCode
-        value={JSON.stringify({address: `hathor:${props.address}`, amount: (props.amount || null)})}
-        size={200}
-      />
-      <Text>{`Address: ${props.address}`}</Text>
-      <Text>{`Amount: ${props.amount ? global.hathorLib.helpers.prettyValue(props.amount) : "not set"}`}</Text>
-    </SafeAreaView>
-  );
+class _ReceiveScreenModal extends React.Component {
+  componentWillUnmount() {
+    console.log('invoice willUnmount');
+    this.props.dispatch(clearInvoice());
+  }
+
+  render() {
+    return (
+      //TODO dismiss button and clear invoice data when exiting (redux clearInvoice())
+      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Invoice!</Text>
+        {this.props.payment && <Text>Paid at {this.props.payment.timestamp}</Text>}
+        <QRCode
+          value={JSON.stringify({address: `hathor:${this.props.address}`, amount: (this.props.amount || null)})}
+          size={200}
+        />
+        <Text selectable={true}>{this.props.address}</Text>
+        <Text>{`Amount: ${this.props.amount ? global.hathorLib.helpers.prettyValue(this.props.amount) : "not set"}`}</Text>
+      </SafeAreaView>
+    );
+  }
 }
 
 const ReceiveScreenModal = connect(mapInvoiceStateToProps)(_ReceiveScreenModal)

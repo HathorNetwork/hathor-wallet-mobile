@@ -1,13 +1,16 @@
 import React from 'react';
+import { connect } from 'react-redux';
+
+import { resetData } from '../hathorRedux';
 import { SafeAreaView } from 'react-native';
 import HathorLogo from '../components/HathorLogo';
 
-class SplashScreen extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
+/**
+ * Only used for deciding which stack (App or Init) to display, so nothing is rendered.
+ */
+class DecideStackScreen extends React.Component {
   async componentDidMount() {
+    this.props.dispatch(resetData());
     await global.localStorage.rebuild();
     if (global.hathorLib.wallet.loaded()) {
       this.props.navigation.navigate("App");
@@ -17,12 +20,8 @@ class SplashScreen extends React.Component {
   }
 
   render() {
-    return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <HathorLogo />
-      </SafeAreaView>
-    );
+    return null;
   }
 }
 
-export default SplashScreen;
+export default connect(null)(DecideStackScreen);

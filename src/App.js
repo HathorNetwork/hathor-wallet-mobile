@@ -6,30 +6,31 @@
  * @flow
  */
 
-import { storageFactory } from './src/Storage';
+import { storageFactory } from './Storage';
 global.localStorage = storageFactory;
 global.localStorage.memory = true;
 global.localStorage.setItem('wallet:server', 'http://localhost:8080/v1a/');
 
-import './shim.js'
+import '../shim.js'
 
 // Workaround to prevent error when using locale in android
 import 'intl';
 import 'intl/locale-data/jsonp/en';
 
 import React from 'react';
+import { Platform } from 'react-native';
 import { createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
 import { Provider } from 'react-redux';
 //import {StyleSheet, Text, View} from 'react-native';
 
-import { store, networkError } from './src/hathorRedux';
-import SplashScreen from './src/screens/SplashScreen';
-import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from './src/screens/InitWallet';
-import MainScreen from './src/screens/MainScreen';
-import { SendScreen, SendScreenModal } from './src/screens/Send';
-import { ReceiveScreenModal, ReceiveScreen } from './src/screens/Receive';
-import HathorLogo from './src/components/HathorLogo';
-import { Platform } from 'react-native';
+import { store, networkError } from './hathorRedux';
+import DecideStackScreen from './screens/DecideStackScreen';
+import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from './screens/InitWallet';
+import MainScreen from './screens/MainScreen';
+import { SendScreen, SendScreenModal } from './screens/Send';
+import { ReceiveScreenModal, ReceiveScreen } from './screens/Receive';
+import { Settings } from './screens/Settings';
+import HathorLogo from './components/HathorLogo';
 
 //import hathorLib from '@hathor/wallet-lib';
 const hathorLib = require('@hathor/wallet-lib');
@@ -58,7 +59,7 @@ const TabNavigator = createBottomTabNavigator({
     Home: MainScreen,
     Send: SendScreen,
     Receive: ReceiveScreen,
-    //Settings: MainScreen,
+    Settings: Settings,
   }, {
     initialRoute: 'MainScreen',
     tabBarOptions: {
@@ -87,12 +88,11 @@ const AppStack = createStackNavigator({
 });
 
 const SwitchNavigator = createSwitchNavigator({
-    Splash: SplashScreen,
+    Decide: DecideStackScreen,
     App: AppStack,
     Init: InitStack,
   }, {
-    initialRouteName: 'Splash',
-    //initialRouteName: 'Init',
+    initialRouteName: 'Decide',
 });
 
 const NavigationContainer = createAppContainer(SwitchNavigator);
