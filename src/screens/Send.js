@@ -7,7 +7,7 @@ import { getDecimalsAmount, getNoDecimalsAmount } from '../utils';
 
 //const hathorLib = require('@hathor/wallet-lib');
 
-class InfoSendScreen extends React.Component {
+class SendScreenModal extends React.Component {
   constructor(props) {
     super(props);
     const address = this.props.navigation.getParam("address", null);
@@ -15,10 +15,11 @@ class InfoSendScreen extends React.Component {
     if (amount) {
       amount = getDecimalsAmount(amount).toString();
     }
-    this.state = {address, amount};
+    this.state = {address, amount, error: null};
   }
 
   sendTx = () => {
+    this.setState({error: null});
     const value = getNoDecimalsAmount(parseFloat(this.state.amount));
     const data = {};
     data.tokens = [];
@@ -32,10 +33,11 @@ class InfoSendScreen extends React.Component {
         this.props.navigation.goBack();
       }, (error) => {
         console.log('tx send error', error);
-        this.props.navigation.goBack();
+        this.setState({error: 'Error connecting to the network'});
       });
     } else {
       console.log('prepareSend false', ret.message);
+      this.setState({error: ret.message});
     }
   }
 
@@ -53,11 +55,13 @@ class InfoSendScreen extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Send information!</Text>
+        { this.state.error && <Text>Send error: {this.state.error}</Text> }
         <TextInput
           style={{height: 40, borderColor: 'gray', borderWidth: 1}}
           placeholder="Address"
           autoCorrect={false}
           autoCapitalize="none"
+          returnKeyType="done"
           onChangeText={(text) => this.setState({address: text})}
           value={this.state.address}
         />
@@ -65,6 +69,7 @@ class InfoSendScreen extends React.Component {
           style={{height: 40, width: 100, borderColor: 'gray', borderWidth: 1}}
           placeholder="0.00"
           keyboardType="numeric"
+          returnKeyType="done"
           onChangeText={this.onAmountChange}
           value={this.state.amount}
         />
@@ -122,4 +127,4 @@ class SendScreen extends React.Component {
   }
 }
 
-export { SendScreen, InfoSendScreen };
+export { SendScreen, SendScreenModal };

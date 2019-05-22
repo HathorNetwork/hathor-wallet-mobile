@@ -17,7 +17,7 @@ class _ReceiveScreen extends React.Component {
 
   onGenerateInvoicePress = () => {
     this.props.dispatch(newInvoice(this.state.address, getNoDecimalsAmount(this.state.amount)));
-    this.props.navigation.navigate('InvoiceModal');
+    this.props.navigation.navigate('ReceiveScreenModal');
   }
 
   render() {
@@ -52,8 +52,9 @@ const mapInvoiceStateToProps = (state) => ({
   amount: state.invoice.amount,
 })
 
-const _InvoiceScreen = props => {
+const _ReceiveScreenModal = props => {
   return (
+    //TODO dismiss button and clear invoice data when exiting (redux clearInvoice())
     <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <Text>Invoice!</Text>
       <QRCode
@@ -66,6 +67,6 @@ const _InvoiceScreen = props => {
   );
 }
 
-const InvoiceScreen = connect(mapInvoiceStateToProps)(_InvoiceScreen)
+const ReceiveScreenModal = connect(mapInvoiceStateToProps)(_ReceiveScreenModal)
 
-export { ReceiveScreen, InvoiceScreen };
+export { ReceiveScreen, ReceiveScreenModal };

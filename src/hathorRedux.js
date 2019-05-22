@@ -1,3 +1,5 @@
+import { createStore } from 'redux';
+
 import { getMyTxBalance } from './utils';
 
 const types = {
@@ -5,6 +7,8 @@ const types = {
   NEW_TX: "NEW_TX",
   NEW_INVOICE: "NEW_INVOICE",
   CLEAR_INVOICE: "CLEAR_INVOICE",
+  NETWORK_ERROR: "NETWORK_ERROR",
+  CLEAR_NETWORK_ERROR: "CLEAR_NETWORK_ERROR",
 };
 
 export const historyUpdate = (history, keys) => ({type: types.HISTORY_UPDATE, payload: {history, keys}});
@@ -15,15 +19,20 @@ export const newInvoice = (address, amount) => ({type: types.NEW_INVOICE, payloa
 
 export const clearInvoice = () => ({type: types.CLEAR_INVOICE});
 
+export const networkError = (timestamp) => ({type: types.NETWORK_ERROR, payload: timestamp});
+
+export const clearNetworkError = () => ({type: types.CLEAR_NETWORK_ERROR});
+
 
 const initialState = {
   tokenUid: "00",
   txList: null,
   balance: {available: 0, locked: 0},
   invoice: null,        // {address: "WZehGjcMZvgLe7XYgxAKeSQeCiuvwPmsNy", amount: 10}
+  networkError: null,
 }
 
-export const reducer = (state = initialState, action) => {
+const reducer = (state = initialState, action) => {
   switch (action.type) {
     case types.HISTORY_UPDATE: {
       const txList = []
@@ -96,7 +105,27 @@ export const reducer = (state = initialState, action) => {
         invoice: null,
       }
     }
+    case types.NETWORK_ERROR: {
+      const timestamp = action.payload;
+      if (state.networkError) {
+        // if networkError is already set, do not overwrite as we want to
+        // keep the earliest timestamp
+        return state;
+      }
+      return {
+        ...state,
+        networkError: timestamp,
+      }
+    }
+    case types.CLEAR_NETWORK_ERROR: {
+      return {
+        ...state,
+        networkError: null,
+      }
+    }
     default:
       return state;
   }
 }
+
+export const store = createStore(reducer);

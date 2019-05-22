@@ -2,33 +2,53 @@ import React from 'react';
 import { Button, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { connect } from 'react-redux';
 
-import { historyUpdate, newTx } from '../hathorRedux';
+import { clearNetworkError, historyUpdate, networkError, newTx } from '../hathorRedux';
 import { getShortHash } from '../utils';
 
 
 const mapStateToProps = (state) => ({
   txList: state.txList,
   balance: state.balance,
+  networkError: state.networkError,
 })
 
 class MainScreen extends React.Component {
-  state = { loading: true };
+  state = { isLoading: true };
 
   componentDidMount() {
     const words = this.props.navigation.getParam('words');
-    const promise = global.hathorLib.wallet.executeGenerateWallet(words, '', '123456', '123456', true);
-    promise.then(() => {
-      this.setState({ loading: false });
-      global.hathorLib.WebSocketHandler.on('wallet', this.handleWebsocketMsg);
-      const data = global.hathorLib.wallet.getWalletData();
-      // Update historyTransactions with new one
-      const historyTransactions = 'historyTransactions' in data ? data['historyTransactions'] : {};
-      const keys = global.hathorLib.wallet.getWalletData().keys;
-      this.props.dispatch(historyUpdate(historyTransactions, keys));
-    });
+    global.hathorLib.wallet.executeGenerateWallet(words, '', '123456', '123456', false);
+    global.hathorLib.WebSocketHandler.on('wallet', this.handleWebsocketMsg);
+    global.hathorLib.WebSocketHandler.on('reload_data', this.fetchDataFromServer);
+    global.hathorLib.WebSocketHandler.on('is_online', this.handleWebsocketStateChange);
+    this.fetchDataFromServer();
+  }
 
-    // TODO not handling promise
-    global.hathorLib.version.checkApiVersion();
+  fetchDataFromServer = () => {
+    this.setState({isLoading: true});
+    global.hathorLib.version.checkApiVersion().then(data => {
+      global.hathorLib.wallet.reloadData().then(() => {
+        const data = global.hathorLib.wallet.getWalletData();
+        // Update historyTransactions with new one
+        const historyTransactions = 'historyTransactions' in data ? data['historyTransactions'] : {};
+        const keys = global.hathorLib.wallet.getWalletData().keys;
+        this.props.dispatch(historyUpdate(historyTransactions, keys));
+        this.setState({isLoading: false});
+      }, error => {
+        this.setState({isLoading: false});
+      })
+    }, error => {
+      this.setState({isLoading: false});
+    });
+  }
+
+  handleWebsocketStateChange = isOnline => {
+    if (isOnline) {
+      this.props.dispatch(clearNetworkError());
+    } else {
+      const timestamp = Date.now();
+      this.props.dispatch(networkError(timestamp));
+    }
   }
 
   handleWebsocketMsg = wsData => {
@@ -65,7 +85,7 @@ class MainScreen extends React.Component {
     }
 
     const renderListHeader = ({item}) => {
-      if (this.state.loading) return null;
+      if (this.state.isLoading) return null;
 
       return (
         <View style={{ backgroundColor: 'white', display: 'flex', flex: 1, alignSelf: 'stretch', justifyContent: 'space-around', flexDirection: 'row', paddingBottom: 8, paddingTop: 8}}>
@@ -87,7 +107,7 @@ class MainScreen extends React.Component {
           </View>
         </View>
         <View style={{ padding: 24 }}>
-          <Text style={{ fontWeight: "bold", fontSize: 20 }}>{this.state.loading ? "Loading history..." : "Transaction history"}</Text>
+          <Text style={{ fontWeight: "bold", fontSize: 20 }}>{this.state.isLoading ? "Loading history..." : "Transaction history"}</Text>
         </View>
         <View style={{ flex: 1, alignSelf: 'stretch' }}>
           <FlatList
