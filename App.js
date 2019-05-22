@@ -6,34 +6,10 @@
  * @flow
  */
 
-
-global.hathorMemoryStorage = {};
-// Creating memory storage to be used in the place of localStorage
-const storageFactory = {
-  getItem(key) {
-    return global.hathorMemoryStorage[key] || null;
-  },
-
-  setItem(key, value) {
-    global.hathorMemoryStorage[key] = value;
-  },
-
-  removeItem(key) {
-    delete global.hathorMemoryStorage[key];
-  },
-
-  clear() {
-    global.hathorMemoryStorage = {};
-  },
-
-  key(n) {
-   return Object.keys(global.hathorMemoryStorage)[n] || null;
-  },
-}
+import { storageFactory } from './src/Storage';
 global.localStorage = storageFactory;
-global.localStorage.memory = process.env.HATHOR_MEMORY_STORAGE || true;
-
-localStorage.setItem('wallet:server', 'http://localhost:8080/v1a/');
+global.localStorage.memory = true;
+global.localStorage.setItem('wallet:server', 'http://localhost:8080/v1a/');
 
 import './shim.js'
 
