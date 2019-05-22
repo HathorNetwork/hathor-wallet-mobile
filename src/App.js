@@ -23,6 +23,7 @@ import SplashScreen from './screens/SplashScreen';
 import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from './screens/InitWallet';
 import MainScreen from './screens/MainScreen';
 import { SendScreen, SendScreenModal } from './screens/Send';
+import { Settings } from './screens/Settings';
 import { ReceiveScreenModal, ReceiveScreen } from './screens/Receive';
 import HathorLogo from './components/HathorLogo';
 
@@ -49,7 +50,7 @@ const TabNavigator = createBottomTabNavigator({
     Home: MainScreen,
     Send: SendScreen,
     Receive: ReceiveScreen,
-    //Settings: MainScreen,
+    Settings: Settings,
   }, {
     initialRoute: 'MainScreen',
     tabBarOptions: {

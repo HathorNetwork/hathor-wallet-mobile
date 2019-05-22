@@ -9,6 +9,7 @@ const types = {
   CLEAR_INVOICE: "CLEAR_INVOICE",
   NETWORK_ERROR: "NETWORK_ERROR",
   CLEAR_NETWORK_ERROR: "CLEAR_NETWORK_ERROR",
+  RESET_DATA: "RESET_DATA",
 };
 
 export const historyUpdate = (history, keys) => ({type: types.HISTORY_UPDATE, payload: {history, keys}});
@@ -22,6 +23,8 @@ export const clearInvoice = () => ({type: types.CLEAR_INVOICE});
 export const networkError = (timestamp) => ({type: types.NETWORK_ERROR, payload: timestamp});
 
 export const clearNetworkError = () => ({type: types.CLEAR_NETWORK_ERROR});
+
+export const resetData = () => ({type: types.RESET_DATA});
 
 
 const initialState = {
@@ -122,6 +125,9 @@ const reducer = (state = initialState, action) => {
         ...state,
         networkError: null,
       }
+    }
+    case types.RESET_DATA: {
+      return initialState;
     }
     default:
       return state;

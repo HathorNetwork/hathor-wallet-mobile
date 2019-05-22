@@ -1,5 +1,8 @@
 import React from 'react';
 import { SafeAreaView, Text } from 'react-native';
+import { connect } from 'react-redux';
+
+import { resetData } from '../hathorRedux';
 
 class SplashScreen extends React.Component {
   constructor(props) {
@@ -7,6 +10,7 @@ class SplashScreen extends React.Component {
   }
 
   async componentDidMount() {
+    this.props.dispatch(resetData());
     await global.localStorage.rebuild();
     if (global.hathorLib.wallet.loaded()) {
       this.props.navigation.navigate("App");
@@ -24,4 +28,4 @@ class SplashScreen extends React.Component {
   }
 }
 
-export default SplashScreen;
+export default connect(null)(SplashScreen);

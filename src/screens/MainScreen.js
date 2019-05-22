@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { connect } from 'react-redux';
 
-import { clearNetworkError, historyUpdate, networkError, newTx } from '../hathorRedux';
+import { clearNetworkError, historyUpdate, networkError, newTx, resetData } from '../hathorRedux';
 import { getShortHash } from '../utils';
 
 
@@ -26,7 +26,14 @@ class MainScreen extends React.Component {
     this.fetchDataFromServer();
   }
 
+  componentWillUnmount() {
+    console.log("MainScreen willUnmount");
+    this.props.dispatch(resetData());
+    //TODO unsubscribe from ws events
+  }
+
   fetchDataFromServer = () => {
+    this.cleanData();
     this.setState({isLoading: true});
     global.hathorLib.version.checkApiVersion().then(data => {
       global.hathorLib.wallet.reloadData().then(() => {
@@ -42,6 +49,26 @@ class MainScreen extends React.Component {
     }, error => {
       this.setState({isLoading: false});
     });
+  }
+
+  cleanData = () => {
+    // Get old access data
+    const accessDataStorage = global.localStorage.getItem('wallet:accessData');
+    const walletData = global.hathorLib.wallet.getWalletData();
+
+    global.hathorLib.wallet.cleanWallet();
+
+    let accessData = global.localStorage.memory ? accessDataStorage : JSON.parse(accessDataStorage);
+    let newWalletData = {
+      keys: {},
+      xpubkey: walletData.xpubkey,
+    }
+    // Prepare to save new data
+    accessData = global.localStorage.memory ? accessData : JSON.stringify(accessData);
+    newWalletData = global.localStorage.memory ? newWalletData : JSON.stringify(newWalletData);
+
+    global.localStorage.setItem('wallet:accessData', accessData);
+    global.localStorage.setItem('wallet:data', newWalletData);
   }
 
   handleWebsocketStateChange = isOnline => {
