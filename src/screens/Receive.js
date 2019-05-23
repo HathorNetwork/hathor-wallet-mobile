@@ -10,7 +10,6 @@ import HathorTextInput from '../components/HathorTextInput';
 import { clearInvoice, newInvoice } from '../hathorRedux';
 import { getNoDecimalsAmount } from '../utils';
 
-//const hathorLib = require('@hathor/wallet-lib');
 
 class _ReceiveScreen extends React.Component {
   constructor(props) {
@@ -71,17 +70,50 @@ class _ReceiveScreenModal extends React.Component {
   }
 
   render() {
+    const getPaymentInfo = () => {
+      //TODO if (this.props.payment) {
+      if (true) {
+        return (
+          <View style={{flex: 1, justifyContent: 1, alignItems: "center"}}>
+            <Text style={[styles.font16, {color: "green"}]}>
+              {/*TODO Payment successful at {global.hathorLib.dateFormatter.parseTimestamp(this.props.payment.timestamp)}*/}
+              Payment successful at {global.hathorLib.dateFormatter.parseTimestamp(1558580799)}
+            </Text>
+            <View><Text>TODO OK check icon</Text></View>
+          </View>
+        );
+      } else {
+        return null;
+      }
+    }
+
     return (
-      //TODO dismiss button and clear invoice data when exiting (redux clearInvoice())
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Invoice!</Text>
-        {this.props.payment && <Text>Paid at {this.props.payment.timestamp}</Text>}
-        <QRCode
-          value={JSON.stringify({address: `hathor:${this.props.address}`, amount: (this.props.amount || null)})}
-          size={200}
-        />
-        <Text selectable={true}>{this.props.address}</Text>
-        <Text>{`Amount: ${this.props.amount ? global.hathorLib.helpers.prettyValue(this.props.amount) : "not set"}`}</Text>
+        <View style={{flexDirection: "row", justifyContent: "space-between", marginBottom: 24}}>
+          <View style={{flex: 1}}></View>
+          <Text style={{flex: 3, textAlign: "center", fontSize: 24}}>Payment request</Text>
+          {/* TODO proper button icon */}
+          <HathorButton
+            style={{fontSize: 14}}
+            onPress={() => this.props.navigation.goBack()}
+            title="close"
+          />
+        </View>
+        <View style={{flex: 1, justifyContent: "space-around", alignItems: "center"}}>
+          <View style={{height: 100}}>
+            {getPaymentInfo()}
+          </View>
+          <QRCode
+            value={JSON.stringify({address: `hathor:${this.props.address}`, amount: (this.props.amount || null)})}
+            size={200}
+          />
+          <View style={{alignItems: "center"}}>
+            <Text style={{marginBottom: 8}}>Amount</Text>
+            <Text style={{marginBottom: 16, fontSize: 24}}>{this.props.amount ? global.hathorLib.helpers.prettyValue(this.props.amount) : "not set"}</Text>
+            <Text style={{marginBottom: 8}}>Address</Text>
+            <Text style={{marginBottom: 16}} selectable={true}>{this.props.address}</Text>
+          </View>
+        </View>
       </SafeAreaView>
     );
   }
