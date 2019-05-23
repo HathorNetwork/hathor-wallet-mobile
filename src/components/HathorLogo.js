@@ -5,8 +5,8 @@ const HathorLogo = props => {
   return (
     <Image
       source={require('../assets/images/hathor-logo.png')}
-      style={{height: 60}}
-      resizeMode={"center"}
+      style={{height: 30}}
+      resizeMode={"contain"}
       {...props}
     />
   )
