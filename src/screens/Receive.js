@@ -17,7 +17,7 @@ import { getNoDecimalsAmount, getAmountParsed } from '../utils';
 class _ReceiveScreen extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {address: "", amount: null};
+    this.state = {address: "", amount: ""};
   }
 
   onGenerateInvoicePress = () => {
@@ -37,7 +37,9 @@ class _ReceiveScreen extends React.Component {
           onWillFocus={payload => this.setState({address: global.hathorLib.wallet.getAddressToUse()})}
         />
         <Text style={[styles.text16, {marginTop: 24, fontWeight: "bold"}]}>Your address</Text>
-        <Text style={[styles.text16, {marginTop: 16}]} selectable={true}>{this.state.address}</Text>
+        <View style={{ paddingLeft: 16, paddingRight: 16}}>
+          <Text style={[styles.text16, {marginTop: 16}]} selectable={true}>{this.state.address}</Text>
+        </View>
         <HathorButton
           style={{marginBottom: 48, marginTop: 16}}
           onPress={() => this.setState({address: global.hathorLib.wallet.getAddressToUse()})}
