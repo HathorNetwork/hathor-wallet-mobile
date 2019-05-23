@@ -79,6 +79,7 @@ const reducer = (state = initialState, action) => {
         }
       }
 
+      const balance = getBalance(state.tokenUid);
       // update balance and tx list
       balances = getMyTxBalance(tx, keys);
       if (state.tokenUid in balances) {
@@ -102,18 +103,16 @@ const reducer = (state = initialState, action) => {
           state.txList.splice(index, 0, {tx_id: tx.tx_id, timestamp: tx.timestamp, balance: balances[state.tokenUid]});
           return {
             ...state,
+            balance,
             invoicePayment: invoicePayment,
             txList: [...state.txList],      // we need a new object so react detects change
           }
         }
       }
-      return state;
-    }
-    case types.BALANCE_UPDATE: {
       return {
         ...state,
-        balance: action.payload,
-      }
+        balance,
+      };
     }
     case types.NEW_INVOICE: {
       const address = action.payload.address;
