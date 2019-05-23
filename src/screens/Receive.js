@@ -26,17 +26,17 @@ class _ReceiveScreen extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "", alignItems: "center" }}>
+      <SafeAreaView style={{ flex: 1, alignItems: "center" }}>
         <NavigationEvents
           //TODO get new address everytime we go to Send screen?
           onWillFocus={payload => this.setState({address: global.hathorLib.wallet.getAddressToUse()})}
         />
-        <Text style={[styles.text16, {marginTop: 24}]}>Your address</Text>
+        <Text style={[styles.text16, {marginTop: 24, fontWeight: "bold"}]}>Your address</Text>
         <Text style={[styles.text16, {marginTop: 16}]} selectable={true}>{this.state.address}</Text>
         <HathorButton
-          style={{marginBottom: 48, fontSize: 14}}
+          style={{marginBottom: 48, marginTop: 16}}
           onPress={() => this.setState({address: global.hathorLib.wallet.getAddressToUse()})}
-          title="(Generate new address)"
+          title="Generate new address"
         />
         <Text style={styles.text16}>Amount</Text>
         <Text style={styles.text16}>(optional)</Text>
@@ -48,7 +48,7 @@ class _ReceiveScreen extends React.Component {
           returnKeyType="done"
         />
         <HathorButton
-          style={{marginTop: 48}}
+          style={{marginTop: 48, fontSize: 14}}
           onPress={this.onGenerateInvoicePress}
           title="Create payment request"
         />
@@ -67,7 +67,6 @@ const mapInvoiceStateToProps = (state) => ({
 
 class _ReceiveScreenModal extends React.Component {
   componentWillUnmount() {
-    console.log('invoice willUnmount');
     this.props.dispatch(clearInvoice());
   }
 
@@ -98,7 +97,7 @@ class _ReceiveScreenModal extends React.Component {
           <HathorButton
             style={{fontSize: 14}}
             onPress={() => this.props.navigation.goBack()}
-            title="close"
+            title="Close"
           />
         </View>
         <View style={{flex: 1, justifyContent: "space-around", alignItems: "center"}}>

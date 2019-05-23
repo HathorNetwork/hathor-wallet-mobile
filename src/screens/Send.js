@@ -63,10 +63,10 @@ class SendScreenModal extends React.Component {
           <HathorButton
             style={{fontSize: 14}}
             onPress={() => this.props.navigation.goBack()}
-            title="close"
+            title="Close"
           />
         </View>
-        <View style={{flex: 1, marginTop: 32, justifyContent: "", alignItems: "center"}}>
+        <View style={{flex: 1, marginTop: 32, alignItems: "center"}}>
           <View style={{flexDirection: "row"}}>
             <HathorTextInput
               style={{flex: 1, maxWidth: 330, marginHorizontal: 10}}
