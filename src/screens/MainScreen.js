@@ -100,11 +100,10 @@ class MainScreen extends React.Component {
       const historyTransactions = 'historyTransactions' in walletData ? walletData['historyTransactions'] : {};
       const allTokens = 'allTokens' in walletData ? walletData['allTokens'] : [];
       global.hathorLib.wallet.updateHistoryData(historyTransactions, allTokens, [wsData.history], null, walletData)
-
-      const keys = global.hathorLib.wallet.getWalletData().keys;
+      
+      const newWalletData = hathorLib.wallet.getWalletData();
+      const keys = newWalletData.keys;
       this.props.dispatch(newTx(wsData.history, keys));
-    } else if (wsData.type === "wallet:balance_updated") {
-      this.props.dispatch(balanceUpdate(wsData.balance));
     }
   }
 
