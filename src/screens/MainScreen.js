@@ -33,7 +33,6 @@ class MainScreen extends React.Component {
     global.hathorLib.WebSocketHandler.removeListener('reload_data', this.fetchDataFromServer);
     global.hathorLib.WebSocketHandler.removeListener('is_online', this.handleWebsocketStateChange);
     this.props.dispatch(resetData());
-    //TODO unsubscribe from ws events
   }
 
   fetchDataFromServer = () => {
@@ -43,11 +42,11 @@ class MainScreen extends React.Component {
       const accessDataStorage = global.localStorage.getItem('wallet:accessData');
       const walletData = global.hathorLib.wallet.getWalletData();
       global.hathorLib.wallet.loadAddressHistory(0, global.hathorLib.constants.GAP_LIMIT).then(() => {
+        this.props.dispatch(clearNetworkError());
         const data = global.hathorLib.wallet.getWalletData();
         // Update historyTransactions with new one
         const historyTransactions = 'historyTransactions' in data ? data['historyTransactions'] : {};
         const keys = global.hathorLib.wallet.getWalletData().keys;
-        console.log('---', historyTransactions);
         this.props.dispatch(historyUpdate(historyTransactions, keys));
         this.setState({isLoading: false});
       }, error => {
@@ -81,12 +80,14 @@ class MainScreen extends React.Component {
   }
 
   handleWebsocketStateChange = isOnline => {
+    if (isOnline === undefined) {
+      return;
+    }
+    console.log('ws online', isOnline)
     if (isOnline) {
       this.props.dispatch(clearNetworkError());
-      console.log("WS connect");
     } else {
       const timestamp = Date.now();
-      console.log("WS disconnect");
       this.props.dispatch(networkError(timestamp));
     }
   }
@@ -155,7 +156,7 @@ class MainScreen extends React.Component {
       } else if (!this.state.isLoading && !this.props.networkError) {
         //empty history
         return <Text style={{ fontSize: 16, textAlign: "center" }}>You don't have any transactions</Text>;
-      } else if (this.props.networkError) {
+      } else if (!this.state.isLoading && this.props.networkError) {
         return (
           <View>
             <Text style={{ fontSize: 16, textAlign: "center" }}>There's been an error connecting to the server</Text>

@@ -10,7 +10,7 @@ import { storageFactory } from './Storage';
 global.localStorage = storageFactory;
 global.localStorage.memory = true;
 //global.localStorage.setItem('wallet:server', 'http://localhost:8080/v1a/');
-global.localStorage.setItem('wallet:server', 'https://node1.alpha.testnet.hathor.network/v1a/');
+global.localStorage.setItem('wallet:server', 'https://node4.alpha.testnet.hathor.network/v1a/');
 
 import '../shim.js'
 
