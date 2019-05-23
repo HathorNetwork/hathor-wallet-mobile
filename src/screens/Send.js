@@ -24,7 +24,7 @@ class SendScreenModal extends React.Component {
 
   sendTx = () => {
     this.setState({error: null, spinner: true});
-    const value = getNoDecimalsAmount(parseFloat(this.state.amount));
+    const value = getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.')));
     const data = {};
     data.tokens = [];
     data.inputs = [];
@@ -51,11 +51,15 @@ class SendScreenModal extends React.Component {
   }
 
   onAmountChange = text => {
-    // we force at most 2 decimal places
-    //TODO can use ',' as decimal separator?
-    parts = text.split(".");
+    let parts = [];
+    if (text.indexOf(".") > -1) {
+      parts = text.split(".");
+    } else if (text.indexOf(",") > -1) {
+      parts = text.split(",");
+    }
+
     if (parts[1]) {
-      if (parts[1].length > 2) return;
+      if (parts[1].length > global.hathorLib.constants.DECIMAL_PLACES) return;
     }
     this.setState({amount: text});
   }
