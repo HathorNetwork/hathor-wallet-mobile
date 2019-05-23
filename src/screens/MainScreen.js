@@ -181,7 +181,7 @@ class MainScreen extends React.Component {
           </View>
         </View>
         <View style={{ flex: 1, justifyContent: "center", alignSelf: "stretch" }}>
-          {this.state.isLoading && <ActivityIndicator style={{marginVertical: 24}} size="large" animating={true} />}
+          {!this.props.txList && this.state.isLoading && <ActivityIndicator size="large" animating={true} />}
           {renderTxHistory()}
         </View>
       </SafeAreaView>
