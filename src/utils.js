@@ -51,3 +51,22 @@ export const getBalance = (tokenUid) => {
   const balance = global.hathorLib.wallet.calculateBalance(filteredArray, tokenUid);
   return balance;
 }
+
+export const getAmountParsed = (text) => {
+  let parts = [];
+  let separator = '';
+  if (text.indexOf(".") > -1) {
+    parts = text.split(".");
+    separator = '.';
+  } else if (text.indexOf(",") > -1) {
+    parts = text.split(",");
+    separator = ',';
+  }
+
+  if (parts[1]) {
+    if (parts[1].length > global.hathorLib.constants.DECIMAL_PLACES) {
+      return `${parts[0]}${separator}${parts[1].slice(0,2)}`;
+    }
+  }
+  return text;
+}

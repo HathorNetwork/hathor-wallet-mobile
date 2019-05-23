@@ -8,7 +8,7 @@ import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
-import { getDecimalsAmount, getNoDecimalsAmount } from '../utils';
+import { getDecimalsAmount, getNoDecimalsAmount, getAmountParsed } from '../utils';
 
 
 class SendScreenModal extends React.Component {
@@ -51,17 +51,7 @@ class SendScreenModal extends React.Component {
   }
 
   onAmountChange = text => {
-    let parts = [];
-    if (text.indexOf(".") > -1) {
-      parts = text.split(".");
-    } else if (text.indexOf(",") > -1) {
-      parts = text.split(",");
-    }
-
-    if (parts[1]) {
-      if (parts[1].length > global.hathorLib.constants.DECIMAL_PLACES) return;
-    }
-    this.setState({amount: text});
+    this.setState({ amount: getAmountParsed(text) });
   }
 
   render() {
