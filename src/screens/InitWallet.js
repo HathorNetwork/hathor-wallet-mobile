@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Linking, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 import HathorButton from '../components/HathorButton';
 
 class WelcomeScreen extends React.Component {
@@ -106,6 +106,7 @@ class LoadWordsScreen extends React.Component {
   };
 
   loadClicked = () => {
+    Keyboard.dismiss();
     const words = this.state.words.trim();
     this.setState({ errorMessage: "" })
     const result = global.hathorLib.wallet.wordsValid(words);
@@ -118,23 +119,35 @@ class LoadWordsScreen extends React.Component {
 
   render() {
     return (
-      <View style={initStyle.container}>
-        <Text>Write the 24 words of your wallet (separated by space).</Text>
-        <TextInput
-          style={{height: 100, borderColor: 'gray', borderWidth: 1, padding: 16, marginTop: 24, marginBottom: 16}}
-          textAlignVertical="top"
-          onChangeText={(text) => this.setState({words: text})}
-          placeholder='Enter words separated by a single space'
-          multiline = {true}
-        />
-        <Text style={{ color: 'red' }}>{this.state.errorMessage}</Text>
-        <HathorButton
-          onPress={this.loadClicked}
-          disabled={!this.state.words}
-          title="Go"
-          style={{ marginTop: 8 }}
-        />
-      </View>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : null} style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1 }}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={initStyle.container}>
+              <Text>Write the 24 words of your wallet (separated by space).</Text>
+              <TextInput
+                style={{height: 100, borderColor: 'gray', borderWidth: 1, padding: 16, marginTop: 24, marginBottom: 16}}
+                textAlignVertical="top"
+                onChangeText={(text) => this.setState({words: text})}
+                placeholder='Enter words separated by a single space'
+                multiline = {true}
+                keyboardAppearance='dark'
+                returnKeyType='done'
+                enablesReturnKeyAutomatically={true}
+                autoFocus={true}
+                onSubmitEditing={this.loadClicked}
+                blurOnSubmit={true}
+              />
+              <Text style={{ color: 'red' }}>{this.state.errorMessage}</Text>
+              <HathorButton
+                onPress={this.loadClicked}
+                disabled={!this.state.words}
+                title="Go"
+                style={{ marginTop: 8 }}
+              />
+            </View>
+          </TouchableWithoutFeedback>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     );
   }
 }
