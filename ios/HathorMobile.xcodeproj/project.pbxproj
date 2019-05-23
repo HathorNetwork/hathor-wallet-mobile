@@ -928,7 +928,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						DevelopmentTeam = V68A776BMK;
+						DevelopmentTeam = 55SHY647CG;
 					};
 					2D02E47A1E0B4A5D006451C7 = {
 						CreatedOnToolsVersion = 8.2.1;
@@ -1600,7 +1600,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
-				DEVELOPMENT_TEAM = V68A776BMK;
+				DEVELOPMENT_TEAM = 55SHY647CG;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../node_modules/react-native-randombytes",
@@ -1620,7 +1620,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = yan.wallet;
+				PRODUCT_BUNDLE_IDENTIFIER = network.hathor.wallet;
 				PRODUCT_NAME = HathorMobile;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -1631,7 +1631,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V68A776BMK;
+				DEVELOPMENT_TEAM = 55SHY647CG;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../node_modules/react-native-randombytes",
@@ -1651,7 +1651,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = yan.wallet;
+				PRODUCT_BUNDLE_IDENTIFIER = network.hathor.wallet;
 				PRODUCT_NAME = HathorMobile;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
