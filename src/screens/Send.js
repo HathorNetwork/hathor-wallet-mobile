@@ -92,10 +92,10 @@ class SendScreenModal extends React.Component {
           <HathorButton
             style={{marginTop: 32}}
             onPress={() => this.sendTx()}
-            title={!this.state.error ? "Send" : "Try again"}
-            disabled={!(this.state.address && this.state.amount)}
+            title="Send"
+            disabled={!(this.state.address && this.state.amount) || this.state.spinner}
           />
-          { this.state.error && <Text>Send error: {this.state.error}</Text> }
+          <Text style={{marginTop: 16, color: "red"}}>{this.state.error}</Text>
           <ActivityIndicator size="small" animating={this.state.spinner} />
         </View>
       </SafeAreaView>
