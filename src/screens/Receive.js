@@ -1,10 +1,12 @@
 import React from 'react';
-import { Button, Clipboard, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { connect } from 'react-redux';
 
 import QRCode from 'react-native-qrcode-svg';
 import { NavigationEvents } from 'react-navigation';
 
+import HathorButton from '../components/HathorButton';
+import HathorTextInput from '../components/HathorTextInput';
 import { clearInvoice, newInvoice } from '../hathorRedux';
 import { getNoDecimalsAmount } from '../utils';
 
@@ -23,29 +25,29 @@ class _ReceiveScreen extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <SafeAreaView style={{ flex: 1, justifyContent: "", alignItems: "center" }}>
         <NavigationEvents
           //TODO get new address everytime we go to Send screen?
           onWillFocus={payload => this.setState({address: global.hathorLib.wallet.getAddressToUse()})}
         />
-        <Text>Receive!</Text>
-        <Text>{this.state.address}</Text>
-        <Button
-          onPress={() => Clipboard.setString(this.state.address)}
-          title="Copy to clipboard"
-        />
-        <Button
+        <Text style={[styles.text16, {marginTop: 24}]}>Your address</Text>
+        <Text style={[styles.text16, {marginTop: 16}]} selectable={true}>{this.state.address}</Text>
+        <HathorButton
+          style={{marginBottom: 48, fontSize: 14}}
           onPress={() => this.setState({address: global.hathorLib.wallet.getAddressToUse()})}
-          title="Generate new address"
+          title="(Generate new address)"
         />
-        <Text>Amount (optional):</Text>
-        <TextInput
-          style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+        <Text style={styles.text16}>Amount</Text>
+        <Text style={styles.text16}>(optional)</Text>
+        <HathorTextInput
+          style={{fontSize: 24, width: 120, padding: 12, marginTop: 16}}
           onChangeText={(text) => this.setState({amount: parseFloat(text)})}
           placeholder="0.00"
           keyboardType="numeric"
+          returnKeyType="done"
         />
-        <Button
+        <HathorButton
+          style={{marginTop: 48}}
           onPress={this.onGenerateInvoicePress}
           title="Create payment request"
         />
@@ -84,6 +86,12 @@ class _ReceiveScreenModal extends React.Component {
     );
   }
 }
+
+const styles = StyleSheet.create({
+  text16: {
+    fontSize: 16,
+  },
+});
 
 const ReceiveScreenModal = connect(mapInvoiceStateToProps)(_ReceiveScreenModal)
 
