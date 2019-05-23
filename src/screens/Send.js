@@ -1,8 +1,10 @@
 import React from 'react';
-import { ActivityIndicator, SafeAreaView, Text, View } from 'react-native';
+import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import { NavigationEvents } from 'react-navigation';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
@@ -60,12 +62,11 @@ class SendScreenModal extends React.Component {
         <View style={{flexDirection: "row", justifyContent: "space-between", marginBottom: 24}}>
           <View style={{flex: 1}}></View>
           <Text style={{flex: 3, textAlign: "center", fontSize: 24}}>Send tokens</Text>
-          {/* TODO proper button icon */}
-          <HathorButton
-            style={{fontSize: 14}}
-            onPress={() => this.props.navigation.goBack()}
-            title="Close"
-          />
+          <View style={{justifyContent: "center", alignItems: "flex-end", paddingHorizontal: 16}}>
+            <TouchableOpacity style={{paddingHorizontal: 4}} onPress={() => this.props.navigation.goBack()}>
+              <FontAwesomeIcon icon={ faTimes } size={24} />
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={{flex: 1, marginTop: 32, alignItems: "center"}}>
           <View style={{flexDirection: "row"}}>
@@ -92,10 +93,10 @@ class SendScreenModal extends React.Component {
           <HathorButton
             style={{marginTop: 32}}
             onPress={() => this.sendTx()}
-            title={!this.state.error ? "Send" : "Try again"}
-            disabled={!(this.state.address && this.state.amount)}
+            title="Send"
+            disabled={!(this.state.address && this.state.amount) || this.state.spinner}
           />
-          { this.state.error && <Text>Send error: {this.state.error}</Text> }
+          <Text style={{marginTop: 16, color: "red"}}>{this.state.error}</Text>
           <ActivityIndicator size="small" animating={this.state.spinner} />
         </View>
       </SafeAreaView>
