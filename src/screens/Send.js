@@ -2,12 +2,13 @@ import React from 'react';
 import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
+import { NavigationEvents } from 'react-navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
-import { getDecimalsAmount, getNoDecimalsAmount } from '../utils';
+import { getDecimalsAmount, getNoDecimalsAmount, getAmountParsed } from '../utils';
 
 
 class SendScreenModal extends React.Component {
@@ -23,7 +24,7 @@ class SendScreenModal extends React.Component {
 
   sendTx = () => {
     this.setState({error: null, spinner: true});
-    const value = getNoDecimalsAmount(parseFloat(this.state.amount));
+    const value = getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.')));
     const data = {};
     data.tokens = [];
     data.inputs = [];
@@ -32,27 +33,25 @@ class SendScreenModal extends React.Component {
     const historyTransactions = 'historyTransactions' in walletData ? walletData['historyTransactions'] : {};
     const ret = global.hathorLib.wallet.prepareSendTokensData(data, global.hathorLib.constants.HATHOR_TOKEN_CONFIG, true, historyTransactions, []);
     if (ret.success) {
-      global.hathorLib.transaction.sendTransaction(ret.data, '123456').then(() => {
-        this.props.navigation.goBack();
-        this.setState({spinner: false});
-      }, (error) => {
-        console.log('tx send error', error);
-        this.setState({spinner: false, error: 'Error connecting to the network'});
-      });
+      try {
+        global.hathorLib.transaction.sendTransaction(ret.data, '123456').then(() => {
+          this.props.navigation.goBack();
+          this.setState({spinner: false});
+        }, (error) => {
+          this.setState({spinner: false, error: 'Error connecting to the network'});
+        });
+      } catch (e) {
+        if (e instanceof global.hathorLib.errors.AddressError || e instanceof global.hathorLib.errors.OutputValueError) {
+          this.setState({spinner: false, error: e.message});
+        }
+      }
     } else {
-      console.log('prepareSend false', ret.message);
       this.setState({spinner: false, error: ret.message});
     }
   }
 
   onAmountChange = text => {
-    // we force at most 2 decimal places
-    //TODO can use ',' as decimal separator?
-    parts = text.split(".");
-    if (parts[1]) {
-      if (parts[1].length > 2) return;
-    }
-    this.setState({amount: text});
+    this.setState({ amount: getAmountParsed(text) });
   }
 
   render() {
@@ -107,11 +106,11 @@ class SendScreenModal extends React.Component {
 class SendScreen extends React.Component {
   constructor(props) {
     super(props);
-    //this.state = { words: global.hathorLib.wallet.generateWalletWords(global.hathorLib.constants.HD_WALLET_ENTROPY) };
+
+    this.qrCodeScanner = null;
   }
 
   onSuccess = (e) => {
-    console.log('qr code', e.data);
     try {
       const qrcode = JSON.parse(e.data);
       const hathorAddress = qrcode.address;
@@ -124,25 +123,30 @@ class SendScreen extends React.Component {
       this.props.navigation.navigate("SendModal", {address, amount});
     } catch (e) {
       //TODO error message to user
-      ;
     }
   }
 
   render() {
     return (
-      <QRCodeScanner
-        onRead={this.onSuccess}
-        showMarker={true}
-        topContent={
-          <Text>Scan the QR code with the transaction info.</Text>
-        }
-        bottomContent={
-          <HathorButton
-            onPress={() => this.props.navigation.navigate('SendModal')}
-            title="Enter info manually"
-          />
-        }
-      />
+        <QRCodeScanner
+          ref={(node) => { this.qrCodeScanner = node }}
+          onRead={this.onSuccess}
+          showMarker={true}
+          topContent={
+            <View>
+              <NavigationEvents
+                onWillFocus={payload => this.qrCodeScanner && this.qrCodeScanner.reactivate()}
+              />
+              <Text>Scan the QR code with the transaction info.</Text>
+            </View>
+          }
+          bottomContent={
+            <HathorButton
+              onPress={() => this.props.navigation.navigate('SendModal')}
+              title="Enter info manually"
+            />
+          }
+        />
     );
   }
 }

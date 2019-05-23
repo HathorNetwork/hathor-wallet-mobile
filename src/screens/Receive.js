@@ -11,7 +11,7 @@ import { faTimes } from '@fortawesome/free-solid-svg-icons'
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
 import { clearInvoice, newInvoice } from '../hathorRedux';
-import { getNoDecimalsAmount } from '../utils';
+import { getNoDecimalsAmount, getAmountParsed } from '../utils';
 
 
 class _ReceiveScreen extends React.Component {
@@ -21,8 +21,12 @@ class _ReceiveScreen extends React.Component {
   }
 
   onGenerateInvoicePress = () => {
-    this.props.dispatch(newInvoice(this.state.address, getNoDecimalsAmount(this.state.amount)));
+    this.props.dispatch(newInvoice(this.state.address, getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.')))));
     this.props.navigation.navigate('ReceiveScreenModal');
+  }
+
+  onAmountChange = (text) => {
+    this.setState({ amount: getAmountParsed(text) });
   }
 
   render() {
@@ -43,7 +47,8 @@ class _ReceiveScreen extends React.Component {
         <Text style={styles.text16}>(optional)</Text>
         <HathorTextInput
           style={{fontSize: 24, width: 120, padding: 12, marginTop: 16}}
-          onChangeText={(text) => this.setState({amount: parseFloat(text)})}
+          onChangeText={this.onAmountChange}
+          value={this.state.amount}
           placeholder="0.00"
           keyboardType="numeric"
           returnKeyType="done"

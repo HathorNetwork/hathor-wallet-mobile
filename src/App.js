@@ -74,7 +74,7 @@ const TabNavigator = createBottomTabNavigator({
       },
       style: {
         backgroundColor: '#0273a0',
-        paddingVertical: 8,
+        paddingTop: 8,
       },
       tabStyle: {
         justifyContent: 'center'
