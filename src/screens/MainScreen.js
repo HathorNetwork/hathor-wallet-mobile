@@ -1,7 +1,8 @@
 import React from 'react';
-import { Button, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { connect } from 'react-redux';
 
+import HathorButton from '../components/HathorButton';
 import { balanceUpdate, clearNetworkError, historyUpdate, networkError, newTx, resetData } from '../hathorRedux';
 import { getShortHash } from '../utils';
 
@@ -28,6 +29,9 @@ class MainScreen extends React.Component {
 
   componentWillUnmount() {
     console.log("MainScreen willUnmount");
+    global.hathorLib.WebSocketHandler.removeListener('wallet', this.handleWebsocketMsg);
+    global.hathorLib.WebSocketHandler.removeListener('reload_data', this.fetchDataFromServer);
+    global.hathorLib.WebSocketHandler.removeListener('is_online', this.handleWebsocketStateChange);
     this.props.dispatch(resetData());
     //TODO unsubscribe from ws events
   }
@@ -43,6 +47,7 @@ class MainScreen extends React.Component {
         // Update historyTransactions with new one
         const historyTransactions = 'historyTransactions' in data ? data['historyTransactions'] : {};
         const keys = global.hathorLib.wallet.getWalletData().keys;
+        console.log('---', historyTransactions);
         this.props.dispatch(historyUpdate(historyTransactions, keys));
         this.setState({isLoading: false});
       }, error => {
@@ -78,8 +83,10 @@ class MainScreen extends React.Component {
   handleWebsocketStateChange = isOnline => {
     if (isOnline) {
       this.props.dispatch(clearNetworkError());
+      console.log("WS connect");
     } else {
       const timestamp = Date.now();
+      console.log("WS disconnect");
       this.props.dispatch(networkError(timestamp));
     }
   }
@@ -113,7 +120,7 @@ class MainScreen extends React.Component {
       return (
         <View style={[mainStyle.listItemWrapper, { backgroundColor: colors[index % 2] }]}>
           <Text style={[mainStyle.dateColumn, mainStyle.listColumn]}>{global.hathorLib.dateFormatter.parseTimestamp(item.timestamp)}</Text>
-          <Text style={[mainStyle.idColumn, mainStyle.listColumn, {color: '#0273a0'}]}>{getShortHash(item.tx_id)}</Text>
+          <Text style={[mainStyle.idColumn, mainStyle.listColumn]}>{getShortHash(item.tx_id)}</Text>
           <Text style={[mainStyle.valueColumn, {color: getValueColor(item.balance), textAlign: 'left' }]}>{global.hathorLib.helpers.prettyValue(item.balance)}</Text>
         </View>
       )
@@ -131,6 +138,37 @@ class MainScreen extends React.Component {
       );
     }
 
+    const renderTxHistory = () => {
+      if (this.props.txList && (this.props.txList.length > 0)) {
+        return (
+          <View style={{ flex: 1, alignSelf: "stretch" }}>
+            <Text style={{ fontWeight: "bold", textAlign: "center", fontSize: 20, margin: 16 }}>Transaction history</Text>
+            <FlatList
+              data={this.props.txList}
+              renderItem={renderItem}
+              keyExtractor={(item, index) => item.tx_id}
+              ListHeaderComponent={renderListHeader}
+              stickyHeaderIndices={[0]}
+            />
+          </View>
+        );
+      } else if (!this.state.isLoading && !this.props.networkError) {
+        //empty history
+        return <Text style={{ fontSize: 16, textAlign: "center" }}>You don't have any transactions</Text>;
+      } else if (this.props.networkError) {
+        return (
+          <View>
+            <Text style={{ fontSize: 16, textAlign: "center" }}>There's been an error connecting to the server</Text>
+            <HathorButton
+              style={{marginTop: 24}}
+              onPress={this.fetchDataFromServer}
+              title="Try again"
+            />
+          </View>
+        );
+      }
+    }
+
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <View style={{ display: "flex", flexDirection: "row", width: "100%", alignItems: "center", height: 120, backgroundColor: "#0273a0", padding: 24 }}>
@@ -141,17 +179,9 @@ class MainScreen extends React.Component {
             <Text style={mainStyle.topText}>Locked: {global.hathorLib.helpers.prettyValue(this.props.balance.locked)} HTR</Text>
           </View>
         </View>
-        <View style={{ padding: 24 }}>
-          <Text style={{ fontWeight: "bold", fontSize: 20 }}>{this.state.isLoading ? "Loading history..." : "Transaction history"}</Text>
-        </View>
-        <View style={{ flex: 1, alignSelf: 'stretch' }}>
-          <FlatList
-            data={this.props.txList}
-            renderItem={renderItem}
-            keyExtractor={(item, index) => item.tx_id}
-            ListHeaderComponent={renderListHeader}
-            stickyHeaderIndices={[0]}
-          />
+        <View style={{ flex: 1, justifyContent: "center", alignSelf: "stretch" }}>
+          {this.state.isLoading && <ActivityIndicator style={{marginVertical: 24}} size="large" animating={true} />}
+          {renderTxHistory()}
         </View>
       </SafeAreaView>
     );
