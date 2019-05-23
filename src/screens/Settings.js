@@ -1,7 +1,6 @@
 import React from "react";
-import { Alert, SafeAreaView, Text, View } from "react-native";
+import { Alert, Image, SafeAreaView, Text, View } from "react-native";
 import HathorButton from "../components/HathorButton";
-import HathorLogo from "../components/HathorLogo";
 
 export class Settings extends React.Component {
   state = { isLoading: true };
@@ -34,7 +33,13 @@ export class Settings extends React.Component {
   render() {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "space-between", alignItems: "center" }}>
-        <HathorLogo style={{ marginTop: 24 }} resizeMode="center" />
+        <View style={{ height: 30, width: 170, marginTop: 16 }}>
+          <Image
+            source={require('../assets/images/hathor-logo.png')}
+            style={{height: 30, width: 170 }}
+            resizeMode={"contain"}
+          /> 
+        </View>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <Text style={{ lineHeight: 30, fontSize: 16, fontWeight: "bold" }}>Connected to</Text>
           <Text>{global.hathorLib.helpers.getServerURL()}</Text>

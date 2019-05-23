@@ -157,8 +157,7 @@ class SendScreen extends React.Component {
           }
           bottomContent={
             <HathorButton
-              //onPress={() => this.props.navigation.navigate('SendModal')}
-              onPress={() => {let e = {};e.data = "dsdsdsdsds"; this.onSuccess(e)}}
+              onPress={() => this.props.navigation.navigate('SendModal')}
               title="Enter info manually"
             />
           }
