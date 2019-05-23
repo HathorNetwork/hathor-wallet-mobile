@@ -2,6 +2,7 @@ import React from 'react';
 import { ActivityIndicator, SafeAreaView, Text, View } from 'react-native';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
+import { NavigationEvents } from 'react-navigation';
 
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
@@ -106,11 +107,11 @@ class SendScreenModal extends React.Component {
 class SendScreen extends React.Component {
   constructor(props) {
     super(props);
-    //this.state = { words: global.hathorLib.wallet.generateWalletWords(global.hathorLib.constants.HD_WALLET_ENTROPY) };
+
+    this.qrCodeScanner = null;
   }
 
   onSuccess = (e) => {
-    console.log('qr code', e.data);
     try {
       const qrcode = JSON.parse(e.data);
       const hathorAddress = qrcode.address;
@@ -123,25 +124,30 @@ class SendScreen extends React.Component {
       this.props.navigation.navigate("SendModal", {address, amount});
     } catch (e) {
       //TODO error message to user
-      ;
     }
   }
 
   render() {
     return (
-      <QRCodeScanner
-        onRead={this.onSuccess}
-        showMarker={true}
-        topContent={
-          <Text>Scan the QR code with the transaction info.</Text>
-        }
-        bottomContent={
-          <HathorButton
-            onPress={() => this.props.navigation.navigate('SendModal')}
-            title="Enter info manually"
-          />
-        }
-      />
+        <QRCodeScanner
+          ref={(node) => { this.qrCodeScanner = node }}
+          onRead={this.onSuccess}
+          showMarker={true}
+          topContent={
+            <View>
+              <NavigationEvents
+                onWillFocus={payload => this.qrCodeScanner && this.qrCodeScanner.reactivate()}
+              />
+              <Text>Scan the QR code with the transaction info.</Text>
+            </View>
+          }
+          bottomContent={
+            <HathorButton
+              onPress={() => this.props.navigation.navigate('SendModal')}
+              title="Enter info manually"
+            />
+          }
+        />
     );
   }
 }
