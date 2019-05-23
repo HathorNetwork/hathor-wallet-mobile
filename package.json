@@ -10,6 +10,10 @@
     "test": "jest"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.18",
+    "@fortawesome/free-regular-svg-icons": "^5.8.2",
+    "@fortawesome/free-solid-svg-icons": "^5.8.2",
+    "@fortawesome/react-native-fontawesome": "^0.1.0",
     "@hathor/wallet-lib": "^0.1.1",
     "@react-native-community/async-storage": "^1.4.0",
     "@tradle/react-native-http": "^2.0.1",

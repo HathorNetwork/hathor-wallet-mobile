@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 
 import QRCode from 'react-native-qrcode-svg';
 import { NavigationEvents } from 'react-navigation';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import { faCheckCircle } from '@fortawesome/free-regular-svg-icons'
 
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
@@ -73,12 +75,12 @@ class _ReceiveScreenModal extends React.Component {
       //TODO if (this.props.payment) {
       if (true) {
         return (
-          <View style={{flex: 1, alignItems: "center"}}>
+          <View style={{flex: 1, justifyContent: "space-around", alignItems: "center"}}>
+            <FontAwesomeIcon icon={ faCheckCircle } size={32} color={"green"} />
             <Text style={[styles.font16, {color: "green"}]}>
-              {/*TODO Payment successful at {global.hathorLib.dateFormatter.parseTimestamp(this.props.payment.timestamp)}*/}
-              Payment successful at {global.hathorLib.dateFormatter.parseTimestamp(1558580799)}
+              {/*TODO Payment received at {global.hathorLib.dateFormatter.parseTimestamp(this.props.payment.timestamp)}*/}
+              Payment received at {global.hathorLib.dateFormatter.parseTimestamp(1558580799)}
             </Text>
-            <View><Text>TODO OK check icon</Text></View>
           </View>
         );
       } else {
@@ -99,7 +101,7 @@ class _ReceiveScreenModal extends React.Component {
           />
         </View>
         <View style={{flex: 1, justifyContent: "space-around", alignItems: "center"}}>
-          <View style={{height: 100}}>
+          <View style={{height: 88}}>
             {getPaymentInfo()}
           </View>
           <QRCode

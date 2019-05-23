@@ -21,7 +21,9 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
 import { Provider } from 'react-redux';
-//import {StyleSheet, Text, View} from 'react-native';
+
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import { faArrowDown, faArrowUp, faCog, faHome } from '@fortawesome/free-solid-svg-icons'
 
 import { store, networkError } from './hathorRedux';
 import DecideStackScreen from './screens/DecideStackScreen';
@@ -67,15 +69,34 @@ const TabNavigator = createBottomTabNavigator({
       inactiveTintColor: 'rgba(255, 255, 255, 0.6)',
       labelStyle: {
         fontSize: 12,
+        marginTop: 4,
       },
       style: {
         backgroundColor: '#0273a0',
+        paddingVertical: 8,
       },
       tabStyle: {
         justifyContent: 'center'
       },
-      showIcon: false
+      showIcon: true
     },
+    defaultNavigationOptions: ({ navigation }) => ({
+      tabBarIcon: ({ focused, horizontal, tintColor }) => {
+        const { routeName } = navigation.state;
+        let iconName = null;
+        if (routeName === "Home") {
+          iconName = faHome;
+        } else if (routeName === "Send") {
+          iconName = faArrowUp;
+        } else if (routeName === "Receive") {
+          iconName = faArrowDown;
+        } else {
+          // settings
+          iconName = faCog;
+        }
+        return <FontAwesomeIcon icon={ iconName } color={ tintColor } size={ 24 } />
+      }
+    })
 });
 
 const AppStack = createStackNavigator({
