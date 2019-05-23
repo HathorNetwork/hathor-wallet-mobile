@@ -1,11 +1,12 @@
 import React from 'react';
-import { Button, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { SafeAreaView, Text, View } from 'react-native';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
 
+import HathorButton from '../components/HathorButton';
+import HathorTextInput from '../components/HathorTextInput';
 import { getDecimalsAmount, getNoDecimalsAmount } from '../utils';
 
-//const hathorLib = require('@hathor/wallet-lib');
 
 class SendScreenModal extends React.Component {
   constructor(props) {
@@ -54,30 +55,46 @@ class SendScreenModal extends React.Component {
   render() {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Send information!</Text>
-        { this.state.error && <Text>Send error: {this.state.error}</Text> }
-        <TextInput
-          style={{height: 40, borderColor: 'gray', borderWidth: 1}}
-          placeholder="Address"
-          autoCorrect={false}
-          autoCapitalize="none"
-          returnKeyType="done"
-          onChangeText={(text) => this.setState({address: text})}
-          value={this.state.address}
-        />
-        <TextInput
-          style={{height: 40, width: 100, borderColor: 'gray', borderWidth: 1}}
-          placeholder="0.00"
-          keyboardType="numeric"
-          returnKeyType="done"
-          onChangeText={this.onAmountChange}
-          value={this.state.amount}
-        />
-        <Button
-          onPress={() => this.sendTx()}
-          title="Send"
-          disabled={!(this.state.address && this.state.amount)}
-        />
+        <View style={{flexDirection: "row", justifyContent: "space-between", marginBottom: 24}}>
+          <View style={{flex: 1}}></View>
+          <Text style={{flex: 3, textAlign: "center", fontSize: 24}}>Send tokens</Text>
+          {/* TODO proper button icon */}
+          <HathorButton
+            style={{fontSize: 14}}
+            onPress={() => this.props.navigation.goBack()}
+            title="close"
+          />
+        </View>
+        <View style={{flex: 1, marginTop: 32, justifyContent: "", alignItems: "center"}}>
+          <View style={{flexDirection: "row"}}>
+            <HathorTextInput
+              style={{flex: 1, maxWidth: 330, marginHorizontal: 10}}
+              placeholder="Address"
+              autoCorrect={false}
+              autoCapitalize="none"
+              returnKeyType="done"
+              autoFocus={true}
+              clearButtonMode="while-editing"
+              onChangeText={(text) => this.setState({address: text})}
+              value={this.state.address}
+            />
+          </View>
+          <HathorTextInput
+            style={{fontSize: 24, width: 120, padding: 12, marginTop: 24}}
+            placeholder="0.00"
+            keyboardType="numeric"
+            returnKeyType="done"
+            onChangeText={this.onAmountChange}
+            value={this.state.amount}
+          />
+          <HathorButton
+            style={{marginTop: 32}}
+            onPress={() => this.sendTx()}
+            title={!this.state.error ? "Send" : "Try again"}
+            disabled={!(this.state.address && this.state.amount)}
+          />
+          { this.state.error && <Text>Send error: {this.state.error}</Text> }
+        </View>
       </SafeAreaView>
     )
   }
@@ -117,7 +134,7 @@ class SendScreen extends React.Component {
           <Text>Scan the QR code with the transaction info.</Text>
         }
         bottomContent={
-          <Button
+          <HathorButton
             onPress={() => this.props.navigation.navigate('SendModal')}
             title="Enter info manually"
           />
