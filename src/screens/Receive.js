@@ -73,14 +73,12 @@ class _ReceiveScreenModal extends React.Component {
 
   render() {
     const getPaymentInfo = () => {
-      //TODO if (this.props.payment) {
-      if (true) {
+      if (this.props.payment) {
         return (
           <View style={{flex: 1, justifyContent: "space-around", alignItems: "center"}}>
             <FontAwesomeIcon icon={ faCheckCircle } size={32} color={"green"} />
             <Text style={[styles.font16, {color: "green"}]}>
-              {/*TODO Payment received at {global.hathorLib.dateFormatter.parseTimestamp(this.props.payment.timestamp)}*/}
-              Payment received at {global.hathorLib.dateFormatter.parseTimestamp(1558580799)}
+              Payment received at {global.hathorLib.dateFormatter.parseTimestamp(this.props.payment.timestamp)}
             </Text>
           </View>
         );
