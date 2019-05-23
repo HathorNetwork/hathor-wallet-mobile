@@ -83,7 +83,6 @@ class MainScreen extends React.Component {
     if (isOnline === undefined) {
       return;
     }
-    console.log('ws online', isOnline)
     if (isOnline) {
       this.props.dispatch(clearNetworkError());
     } else {
@@ -93,7 +92,6 @@ class MainScreen extends React.Component {
   }
 
   handleWebsocketMsg = wsData => {
-    console.log('ws', wsData);
     if (wsData.type === "wallet:address_history") {
       //TODO we also have to update some wallet lib data? Lib should do it by itself
       const walletData = hathorLib.wallet.getWalletData();
@@ -171,12 +169,17 @@ class MainScreen extends React.Component {
 
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <View style={{ display: "flex", flexDirection: "row", width: "100%", alignItems: "center", height: 120, backgroundColor: "#0273a0", padding: 24 }}>
+        <View style={{ display: "flex", flexDirection: "row", width: "100%", alignItems: "center", justifyContent: "space-between", height: 120, backgroundColor: "#0273a0", padding: 24 }}>
           <Text style={mainStyle.topTextTitle}>Hathor</Text>
-          <View style={{ display: "flex", alignItems: "flex-start", marginLeft: 24 }}>
+          <View style={{ display: "flex", alignItems: "center" }}>
             <Text style={mainStyle.topText}>Total: {global.hathorLib.helpers.prettyValue(this.props.balance.available + this.props.balance.locked)} HTR</Text>
             <Text style={mainStyle.topText}>Available: {global.hathorLib.helpers.prettyValue(this.props.balance.available)} HTR</Text>
             <Text style={mainStyle.topText}>Locked: {global.hathorLib.helpers.prettyValue(this.props.balance.locked)} HTR</Text>
+          </View>
+          <View style={{ display: "flex", alignItems: "center" }}>
+            <View style={{ padding: 4, borderColor: "white", borderWidth: 1, marginBottom: 8 }}>
+              <Text style={{ lineHeight: 30, fontWeight: "bold", fontSize: 16, color: 'white' }}>Testnet</Text>
+            </View>
           </View>
         </View>
         <View style={{ flex: 1, justifyContent: "center", alignSelf: "stretch" }}>
