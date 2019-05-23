@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import { NavigationEvents } from 'react-navigation';
@@ -111,19 +111,34 @@ class SendScreen extends React.Component {
   }
 
   onSuccess = (e) => {
+    let hathorAddress;
+    let qrcode;
     try {
-      const qrcode = JSON.parse(e.data);
-      const hathorAddress = qrcode.address;
-      const addressParts = hathorAddress.split(":");
-      if (addressParts[0] !== "hathor") {
-        throw new Error('not a hathor address');
-      }
-      const address = addressParts[1];
-      const amount = qrcode.amount;
-      this.props.navigation.navigate("SendModal", {address, amount});
-    } catch (e) {
-      //TODO error message to user
+      qrcode = JSON.parse(e.data);
+      hathorAddress = qrcode.address;
+    } catch (error) {
+      // if it's not json, maybe it's just the address from wallet ("hathor:{address}")
+      hathorAddress = e.data;
     }
+    const addressParts = hathorAddress.split(":");
+    if (addressParts[0] !== "hathor" || addressParts.length !== 2) {
+      Alert.alert(
+        "Invalid QR code",
+        "This QR code does not contain a Hathor address or payment request.",
+        [
+          {text: "OK", onPress: this.reactivateQrCodeScanner},
+        ],
+        {cancelable: false},
+      );
+    } else {
+      const address = addressParts[1];
+      const amount = qrcode ? qrcode.amount : null;
+      this.props.navigation.navigate("SendModal", {address, amount});
+    }
+  }
+
+  reactivateQrCodeScanner = () => {
+    this.qrCodeScanner && this.qrCodeScanner.reactivate();
   }
 
   render() {
@@ -142,7 +157,8 @@ class SendScreen extends React.Component {
           }
           bottomContent={
             <HathorButton
-              onPress={() => this.props.navigation.navigate('SendModal')}
+              //onPress={() => this.props.navigation.navigate('SendModal')}
+              onPress={() => {let e = {};e.data = "dsdsdsdsds"; this.onSuccess(e)}}
               title="Enter info manually"
             />
           }
