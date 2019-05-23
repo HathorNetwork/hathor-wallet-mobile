@@ -1,5 +1,5 @@
 import React from 'react';
-import { SafeAreaView, Text, View } from 'react-native';
+import { ActivityIndicator, SafeAreaView, Text, View } from 'react-native';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
 
@@ -16,11 +16,11 @@ class SendScreenModal extends React.Component {
     if (amount) {
       amount = getDecimalsAmount(amount).toString();
     }
-    this.state = {address, amount, error: null};
+    this.state = {address, amount, error: null, spinner: false};
   }
 
   sendTx = () => {
-    this.setState({error: null});
+    this.setState({error: null, spinner: true});
     const value = getNoDecimalsAmount(parseFloat(this.state.amount));
     const data = {};
     data.tokens = [];
@@ -32,13 +32,14 @@ class SendScreenModal extends React.Component {
     if (ret.success) {
       global.hathorLib.transaction.sendTransaction(ret.data, '123456').then(() => {
         this.props.navigation.goBack();
+        this.setState({spinner: false});
       }, (error) => {
         console.log('tx send error', error);
-        this.setState({error: 'Error connecting to the network'});
+        this.setState({spinner: false, error: 'Error connecting to the network'});
       });
     } else {
       console.log('prepareSend false', ret.message);
-      this.setState({error: ret.message});
+      this.setState({spinner: false, error: ret.message});
     }
   }
 
@@ -94,6 +95,7 @@ class SendScreenModal extends React.Component {
             disabled={!(this.state.address && this.state.amount)}
           />
           { this.state.error && <Text>Send error: {this.state.error}</Text> }
+          <ActivityIndicator size="small" animating={this.state.spinner} />
         </View>
       </SafeAreaView>
     )
