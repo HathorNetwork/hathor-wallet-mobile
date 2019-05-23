@@ -57,7 +57,7 @@ class SendScreenModal extends React.Component {
   render() {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <View style={{flexDirection: "row", justifyContent: "space-between", marginBottom: 24}}>
+        <View style={{flexDirection: "row", justifyContent: "space-between", marginBottom: 24, marginTop: 16}}>
           <View style={{flex: 1}}></View>
           <Text style={{flex: 3, textAlign: "center", fontSize: 24}}>Send tokens</Text>
           <View style={{justifyContent: "center", alignItems: "flex-end", paddingHorizontal: 16}}>
