@@ -33,15 +33,19 @@ class SendScreenModal extends React.Component {
     const historyTransactions = 'historyTransactions' in walletData ? walletData['historyTransactions'] : {};
     const ret = global.hathorLib.wallet.prepareSendTokensData(data, global.hathorLib.constants.HATHOR_TOKEN_CONFIG, true, historyTransactions, []);
     if (ret.success) {
-      global.hathorLib.transaction.sendTransaction(ret.data, '123456').then(() => {
-        this.props.navigation.goBack();
-        this.setState({spinner: false});
-      }, (error) => {
-        console.log('tx send error', error);
-        this.setState({spinner: false, error: 'Error connecting to the network'});
-      });
+      try {
+        global.hathorLib.transaction.sendTransaction(ret.data, '123456').then(() => {
+          this.props.navigation.goBack();
+          this.setState({spinner: false});
+        }, (error) => {
+          this.setState({spinner: false, error: 'Error connecting to the network'});
+        });
+      } catch (e) {
+        if (e instanceof global.hathorLib.errors.AddressError || e instanceof global.hathorLib.errors.OutputValueError) {
+          this.setState({spinner: false, error: e.message});
+        }
+      }
     } else {
-      console.log('prepareSend false', ret.message);
       this.setState({spinner: false, error: ret.message});
     }
   }
