@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Alert, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import { NavigationEvents } from 'react-navigation';
@@ -108,6 +108,40 @@ class SendScreen extends React.Component {
     super(props);
 
     this.qrCodeScanner = null;
+
+    this.state = {
+      focusedScreen: false,
+      appState: AppState.currentState,
+    };
+  }
+
+  componentDidMount() {
+    // We need to focus/unfocus the qrcode scanner, so it does not freezes
+    // When the navigation focus on this screen, we set to true
+    // When the navigation stops focusing on this screen, we set to false
+    // When the app stops being in the active state, we set to false
+    // When the app starts being in the active state, we set to true
+    const { navigation } = this.props;
+    navigation.addListener('willFocus', () => {
+      console.log('focused treue');
+      this.setState({ focusedScreen: true });
+    });
+    navigation.addListener('willBlur', () => {
+      console.log('focused false');
+      this.setState({ focusedScreen: false });
+    });
+    AppState.addEventListener('change', this._handleAppStateChange);
+  }
+
+  _handleAppStateChange = (nextAppState) => {
+    if (this.state.appState === 'active' && nextAppState !== 'active') {
+      // It's changing and wont be active anymore
+      this.setState({ focusedScreen: false });
+    } else if (nextAppState === 'active' && this.state.appState !== 'active') {
+      this.setState({ focusedScreen: true });
+    }
+
+    this.setState({ appState: nextAppState });
   }
 
   onSuccess = (e) => {
@@ -142,6 +176,8 @@ class SendScreen extends React.Component {
   }
 
   render() {
+    if (!this.state.focusedScreen) return null;
+
     return (
         <QRCodeScanner
           ref={(node) => { this.qrCodeScanner = node }}
