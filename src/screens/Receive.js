@@ -37,8 +37,8 @@ class _ReceiveScreen extends React.Component {
           onWillFocus={payload => this.setState({address: global.hathorLib.wallet.getAddressToUse()})}
         />
         <Text style={[styles.text16, {marginTop: 24, fontWeight: "bold"}]}>Your address</Text>
-        <View style={{ paddingLeft: 16, paddingRight: 16}}>
-          <Text style={[styles.text16, {marginTop: 16}]} selectable={true}>{this.state.address}</Text>
+        <View style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, marginLeft: 8, marginRight: 8, marginTop: 16, borderRadius: 8, backgroundColor: "#eee", display: "flex", justifyContet: "center", alignItems: "center" }}>
+          <Text style={{ fontSize: 14 }} selectable={true}>{this.state.address}</Text>
         </View>
         <HathorButton
           style={{marginBottom: 48, marginTop: 16}}
