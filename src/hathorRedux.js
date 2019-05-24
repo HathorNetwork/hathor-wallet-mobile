@@ -48,7 +48,7 @@ const reducer = (state = initialState, action) => {
       for (const tx of Object.values(history)) {
         balances = getMyTxBalance(tx, keys);
         if (state.tokenUid in balances) {
-          txList.push({tx_id: tx.tx_id, timestamp: tx.timestamp, balance: balances[state.tokenUid]});
+          txList.push({tx_id: tx.tx_id, timestamp: tx.timestamp, balance: balances[state.tokenUid], is_voided: tx.is_voided});
         }
       }
       txList.sort((elem1, elem2) => {

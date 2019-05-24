@@ -108,9 +108,10 @@ class MainScreen extends React.Component {
   render() {
     const colors = ['#eee', 'white'];
 
-    const getValueColor = (value) => {
-      if (value > 0) return '#28a745';
-      else if (value < 0) return '#dc3545';
+    const getValueColor = (item) => {
+      if (item.is_voided) return 'black';
+      if (item.balance > 0) return '#28a745';
+      else if (item.balance < 0) return '#dc3545';
       else return 'black';
     }
 
@@ -119,7 +120,7 @@ class MainScreen extends React.Component {
         <View style={[mainStyle.listItemWrapper, { backgroundColor: colors[index % 2] }]}>
           <Text style={[mainStyle.dateColumn, mainStyle.listColumn]}>{global.hathorLib.dateFormatter.parseTimestamp(item.timestamp)}</Text>
           <Text style={[mainStyle.idColumn, mainStyle.listColumn]}>{getShortHash(item.tx_id)}</Text>
-          <Text style={[mainStyle.valueColumn, {color: getValueColor(item.balance), textAlign: 'left' }]}>{global.hathorLib.helpers.prettyValue(item.balance)}</Text>
+          <Text style={[mainStyle.valueColumn, {color: getValueColor(item), textAlign: 'left' }]}>{item.is_voided ? '(Voided)' : global.hathorLib.helpers.prettyValue(item.balance)}</Text>
         </View>
       )
     }
