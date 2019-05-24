@@ -1,5 +1,18 @@
 import React from 'react';
-import { Keyboard, KeyboardAvoidingView, Linking, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View
+} from 'react-native';
 import HathorButton from '../components/HathorButton';
 
 class WelcomeScreen extends React.Component {
@@ -9,18 +22,33 @@ class WelcomeScreen extends React.Component {
     },
   };
 
+  state = { switchValue: false };
+
+  toggleSwitch = (value) => {
+    this.setState({ switchValue: value });
+  }
+
   render() {
     return (
       <View style={initStyle.container}>
         <Text style={{ fontWeight: "bold", fontSize: 20 }}>Welcome to Hathor Testnet!</Text>
         <View style={[initStyle.textMarginBottom, initStyle.textMarginTop]}>
-          <Text style={ initStyle.text }>Your tokens may be reset at any time.</Text>
-          <Text style={ initStyle.text }>If one offers to sell some tokens to you, one is a scammer.</Text>
+          <Text style={ initStyle.text }>This wallet is connected to a testnet.</Text>
+          <Text style={ initStyle.text }>Your HTR and other tokens may be reset at any time.</Text>
+          <Text style={ initStyle.text }>If someone offers to sell some tokens to you, that person is a scammer.</Text>
           <Text style={ initStyle.text }>For further information, check our website 
             <Text style={{ color: "#0273a0" }} onPress={() => Linking.openURL("https://hathor.network/")}> https://hathor.network/</Text>
           .</Text>
         </View>
+        <View style={{flexDirection:"row", padding: 16}}>
+          <Switch
+            onValueChange={this.toggleSwitch}
+            value={this.state.switchValue}
+          />
+          <Text style={{padding: 5}}>I agree to participate in the testnet of Hathor, and I acknowledge that the tokens are not for real.</Text>
+        </View>
         <HathorButton
+          disabled={!this.state.switchValue}
           onPress={() => this.props.navigation.navigate('InitialScreen')}
           title="Get started"
         />
@@ -32,7 +60,8 @@ class WelcomeScreen extends React.Component {
 const InitialScreen = props => {
   return (
     <View style={initStyle.container}>
-      <Text>You can start a new wallet or import data from a wallet that already exists.</Text>
+      <Text>First, you need to initialize your wallet.</Text>
+      <Text>You can either start a new wallet or import data from a wallet that already exists.</Text>
       <View style={{ marginTop: 24}}>
         <HathorButton
           onPress={() => props.navigation.navigate('NewWordsScreen')}
