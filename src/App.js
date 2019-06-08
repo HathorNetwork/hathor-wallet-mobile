@@ -6,18 +6,6 @@
  * @flow
  */
 
-import { storageFactory } from './Storage';
-global.localStorage = storageFactory;
-global.localStorage.memory = true;
-//global.localStorage.setItem('wallet:server', 'http://localhost:8080/v1a/');
-global.localStorage.setItem('wallet:server', 'https://node4.alpha.testnet.hathor.network/v1a/');
-
-import '../shim.js'
-
-// Workaround to prevent error when using locale in android
-import 'intl';
-import 'intl/locale-data/jsonp/en';
-
 import React from 'react';
 import { Platform } from 'react-native';
 import { createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
@@ -32,12 +20,9 @@ import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from '.
 import MainScreen from './screens/MainScreen';
 import { SendScreen, SendScreenModal } from './screens/Send';
 import { ReceiveScreenModal, ReceiveScreen } from './screens/Receive';
+import NewToken from './screens/NewToken';
 import { Settings } from './screens/Settings';
 import HathorLogo from './components/HathorLogo';
-
-//import hathorLib from '@hathor/wallet-lib';
-const hathorLib = require('@hathor/wallet-lib');
-global.hathorLib = hathorLib;
 
 const InitStack = createStackNavigator(
   {
@@ -104,6 +89,7 @@ const AppStack = createStackNavigator({
     Main: TabNavigator,
     SendModal: SendScreenModal,
     ReceiveScreenModal: ReceiveScreenModal,
+    NewToken,
   }, {
     mode: 'modal',
     headerMode: 'none',

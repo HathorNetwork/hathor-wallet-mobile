@@ -1,17 +1,26 @@
 import React from 'react';
-import { ActivityIndicator, Alert, AppState, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, SafeAreaView, Text, View } from 'react-native';
 
-import QRCodeScanner from 'react-native-qrcode-scanner';
-import { NavigationEvents } from 'react-navigation';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
-
+import ModalTop from '../components/ModalTop';
+import QRCodeReader from '../components/QRCodeReader';
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
-import { getDecimalsAmount, getNoDecimalsAmount, getAmountParsed } from '../utils';
+import { getDecimalsAmount, getNoDecimalsAmount, getAmountParsed, getTokenLabel } from '../utils';
+import { connect } from 'react-redux';
 
 
-class SendScreenModal extends React.Component {
+/**
+ * selected {string} uid of the token selected on the main screen
+ */
+const mapStateToProps = (state) => {
+  return {
+    selected: state.selectedToken,
+  };
+}
+
+
+
+class _SendScreenModal extends React.Component {
   constructor(props) {
     super(props);
     const address = this.props.navigation.getParam("address", null);
@@ -19,19 +28,23 @@ class SendScreenModal extends React.Component {
     if (amount) {
       amount = getDecimalsAmount(amount).toString();
     }
-    this.state = {address, amount, error: null, spinner: false};
+
+    // If qrcode was read, token is the one from it, else it's the one from redux
+    const token = this.props.navigation.getParam("token", null) || this.props.selected;
+    this.state = {address, amount, token, error: null, spinner: false};
   }
 
   sendTx = () => {
     this.setState({error: null, spinner: true});
     const value = getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.')));
     const data = {};
-    data.tokens = [];
+    const isHathorToken = this.state.token.uid === global.hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
+    data.tokens = isHathorToken ? [] : [this.state.token.uid];
     data.inputs = [];
-    data.outputs = [{address: this.state.address, value: value, timelock: null, tokenData: 0}];
+    data.outputs = [{address: this.state.address, value: value, timelock: null, tokenData: isHathorToken ? 0 : 1}];
     const walletData = global.hathorLib.wallet.getWalletData();
     const historyTransactions = 'historyTransactions' in walletData ? walletData['historyTransactions'] : {};
-    const ret = global.hathorLib.wallet.prepareSendTokensData(data, global.hathorLib.constants.HATHOR_TOKEN_CONFIG, true, historyTransactions, []);
+    const ret = global.hathorLib.wallet.prepareSendTokensData(data, this.state.token, true, historyTransactions, [this.state.token]);
     if (ret.success) {
       try {
         global.hathorLib.transaction.sendTransaction(ret.data, '123456').then(() => {
@@ -57,24 +70,19 @@ class SendScreenModal extends React.Component {
   render() {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <View style={{flexDirection: "row", justifyContent: "space-between", marginBottom: 24, marginTop: 16}}>
-          <View style={{flex: 1}}></View>
-          <Text style={{flex: 3, textAlign: "center", fontSize: 24}}>Send tokens</Text>
-          <View style={{justifyContent: "center", alignItems: "flex-end", paddingHorizontal: 16}}>
-            <TouchableOpacity style={{paddingHorizontal: 4}} onPress={() => this.props.navigation.goBack()}>
-              <FontAwesomeIcon icon={ faTimes } size={24} />
-            </TouchableOpacity>
+        <ModalTop title='Send tokens' navigation={this.props.navigation} />
+        <View style={{flex: 1, marginTop: 32, alignItems: "center", justifyContent: "flex-start"}}>
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ fontWeight: "bold", fontSize: 16 }}>Token to send: </Text>
+            <Text style={{ fontSize: 16 }}>{getTokenLabel(this.state.token)}</Text>
           </View>
-        </View>
-        <View style={{flex: 1, marginTop: 32, alignItems: "center"}}>
-          <View style={{flexDirection: "row"}}>
+          <View style={{flexDirection: "row", marginTop: 32 }}>
             <HathorTextInput
               style={{flex: 1, maxWidth: 330, marginHorizontal: 10}}
               placeholder="Address"
               autoCorrect={false}
               autoCapitalize="none"
               returnKeyType="done"
-              autoFocus={true}
               clearButtonMode="while-editing"
               onChangeText={(text) => this.setState({address: text})}
               value={this.state.address}
@@ -102,46 +110,25 @@ class SendScreenModal extends React.Component {
   }
 }
 
+const SendScreenModal = connect(mapStateToProps)(_SendScreenModal);
+
 
 class SendScreen extends React.Component {
   constructor(props) {
     super(props);
 
-    this.qrCodeScanner = null;
-
-    this.state = {
-      focusedScreen: false,
-      appState: AppState.currentState,
-    };
+    this.QRCodeReader = null;
   }
 
-  componentDidMount() {
-    // We need to focus/unfocus the qrcode scanner, so it does not freezes
-    // When the navigation focus on this screen, we set to true
-    // When the navigation stops focusing on this screen, we set to false
-    // When the app stops being in the active state, we set to false
-    // When the app starts being in the active state, we set to true
-    const { navigation } = this.props;
-    navigation.addListener('willFocus', () => {
-      console.log('focused treue');
-      this.setState({ focusedScreen: true });
-    });
-    navigation.addListener('willBlur', () => {
-      console.log('focused false');
-      this.setState({ focusedScreen: false });
-    });
-    AppState.addEventListener('change', this._handleAppStateChange);
-  }
-
-  _handleAppStateChange = (nextAppState) => {
-    if (this.state.appState === 'active' && nextAppState !== 'active') {
-      // It's changing and wont be active anymore
-      this.setState({ focusedScreen: false });
-    } else if (nextAppState === 'active' && this.state.appState !== 'active') {
-      this.setState({ focusedScreen: true });
-    }
-
-    this.setState({ appState: nextAppState });
+  showAlertError = (message) => {
+    Alert.alert(
+      "Invalid QR code",
+      message,
+      [
+        {text: "OK", onPress: this.QRCodeReader.reactivateQrCodeScanner},
+      ],
+      {cancelable: false},
+    );
   }
 
   onSuccess = (e) => {
@@ -149,6 +136,10 @@ class SendScreen extends React.Component {
     let qrcode;
     try {
       qrcode = JSON.parse(e.data);
+      if (!('address' in qrcode) || !('token' in qrcode)) {
+        this.showAlertError("Qrcode must contain token and address data");
+        return;
+      }
       hathorAddress = qrcode.address;
     } catch (error) {
       // if it's not json, maybe it's just the address from wallet ("hathor:{address}")
@@ -156,48 +147,45 @@ class SendScreen extends React.Component {
     }
     const addressParts = hathorAddress.split(":");
     if (addressParts[0] !== "hathor" || addressParts.length !== 2) {
-      Alert.alert(
-        "Invalid QR code",
-        "This QR code does not contain a Hathor address or payment request.",
-        [
-          {text: "OK", onPress: this.reactivateQrCodeScanner},
-        ],
-        {cancelable: false},
-      );
+      this.showAlertError("This QR code does not contain a Hathor address or payment request.");
     } else {
+      const token = qrcode.token;
+      if (global.hathorLib.tokens.tokenExists(token.uid) === null) {
+        // Wallet does not have the selected token
+        this.showAlertError(`You don't have the requested token [${getTokenLabel(token)}]`);
+        return;
+      }
       const address = addressParts[1];
       const amount = qrcode ? qrcode.amount : null;
-      this.props.navigation.navigate("SendModal", {address, amount});
+      this.props.navigation.navigate("SendModal", {address, amount, token});
     }
   }
 
-  reactivateQrCodeScanner = () => {
-    this.qrCodeScanner && this.qrCodeScanner.reactivate();
-  }
-
   render() {
-    if (!this.state.focusedScreen) return null;
+    const getTopContent = () => {
+      return (
+        <View>
+          <Text>Scan the QR code with the transaction info.</Text>
+        </View>
+      );
+    }
+
+    const getBottomContent = () => {
+      return (
+        <HathorButton
+          onPress={() => this.props.navigation.navigate('SendModal')}
+          title="Enter info manually"
+        />
+      )
+    }
 
     return (
-        <QRCodeScanner
-          ref={(node) => { this.qrCodeScanner = node }}
-          onRead={this.onSuccess}
-          showMarker={true}
-          topContent={
-            <View>
-              <NavigationEvents
-                onWillFocus={payload => this.qrCodeScanner && this.qrCodeScanner.reactivate()}
-              />
-              <Text>Scan the QR code with the transaction info.</Text>
-            </View>
-          }
-          bottomContent={
-            <HathorButton
-              onPress={() => this.props.navigation.navigate('SendModal')}
-              title="Enter info manually"
-            />
-          }
-        />
+        <QRCodeReader
+          ref={(el) => this.QRCodeReader = el}
+          onSuccess={this.onSuccess}
+          topContent={getTopContent()}
+          bottomContent={getBottomContent()}
+          {...this.props} />
     );
   }
 }

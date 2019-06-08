@@ -1,27 +1,40 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Platform, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { connect } from 'react-redux';
 
 import QRCode from 'react-native-qrcode-svg';
 import { NavigationEvents } from 'react-navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faCheckCircle } from '@fortawesome/free-regular-svg-icons'
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons'
 
+import TokenBar from '../components/TokenBar';
+import ModalTop from '../components/ModalTop';
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
 import { clearInvoice, newInvoice } from '../hathorRedux';
-import { getNoDecimalsAmount, getAmountParsed } from '../utils';
+import { getNoDecimalsAmount, getAmountParsed, getTokenLabel } from '../utils';
 
+
+const mapStateToProps = (state) => ({
+  selectedToken: state.selectedToken,
+  tokens: state.tokens,
+})
 
 class _ReceiveScreen extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {address: "", amount: ""};
+    this.state = {address: "", amount: "", token: null};
+
+    this.tokenBarElement = React.createRef();
+  }
+
+  componentDidMount() {
+    this.setState({ token: this.props.selectedToken });
   }
 
   onGenerateInvoicePress = () => {
-    this.props.dispatch(newInvoice(this.state.address, getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.')))));
+    this.props.dispatch(newInvoice(this.state.address, getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.'))), this.state.token));
     this.props.navigation.navigate('ReceiveScreenModal');
   }
 
@@ -29,7 +42,15 @@ class _ReceiveScreen extends React.Component {
     this.setState({ amount: getAmountParsed(text) });
   }
 
+  onTokenChange = (token) => {
+    this.setState({ token });
+  }
+
   render() {
+    const renderTokenBarIcon = () => {
+      return <FontAwesomeIcon icon={ faChevronDown } color='#ccc' style={{ marginTop: Platform.OS === 'ios' ? -24 : 0 }} />
+    }
+
     return (
       <SafeAreaView style={{ flex: 1, alignItems: "center" }}>
         <NavigationEvents
@@ -41,10 +62,23 @@ class _ReceiveScreen extends React.Component {
           <Text style={{ fontSize: 14 }} selectable={true}>{this.state.address}</Text>
         </View>
         <HathorButton
-          style={{marginBottom: 48, marginTop: 16}}
+          style={{ marginVertical: 16 }}
           onPress={() => this.setState({address: global.hathorLib.wallet.getAddressToUse()})}
           title="Generate new address"
         />
+        <View style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 32 }}>
+          <Text style={[styles.text16, {marginTop: 24, fontWeight: "bold"}]}>Token to receive</Text>
+          <TokenBar
+            ref={this.tokenBarElement}
+            navigation={this.props.navigation}
+            onChange={this.onTokenChange}
+            tokens={this.props.tokens}
+            defaultSelected={this.props.selectedToken.uid}
+            icon={renderTokenBarIcon()}
+            containerStyle={styles.pickerContainerStyle}
+            wrapperStyle={styles.pickerInputContainer}
+          />
+        </View>
         <Text style={styles.text16}>Amount</Text>
         <Text style={styles.text16}>(optional)</Text>
         <HathorTextInput
@@ -65,11 +99,13 @@ class _ReceiveScreen extends React.Component {
   }
 }
 
-const ReceiveScreen = connect(null)(_ReceiveScreen);
+const ReceiveScreen = connect(mapStateToProps)(_ReceiveScreen);
+
 
 const mapInvoiceStateToProps = (state) => ({
   address: state.invoice.address,
   amount: state.invoice.amount,
+  token: state.invoice.token,
   payment: state.invoicePayment,
 })
 
@@ -96,24 +132,18 @@ class _ReceiveScreenModal extends React.Component {
 
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <View style={{flexDirection: "row", justifyContent: "space-between", marginBottom: 24, marginTop: 16}}>
-          <View style={{flex: 1}}></View>
-          <Text style={{flex: 3, textAlign: "center", fontSize: 24}}>Payment request</Text>
-          <View style={{justifyContent: "center", alignItems: "flex-end", paddingHorizontal: 16}}>
-            <TouchableOpacity style={{paddingHorizontal: 4}} onPress={() => this.props.navigation.goBack()}>
-              <FontAwesomeIcon icon={ faTimes } size={24} />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <ModalTop title='Payment request' navigation={this.props.navigation} />
         <View style={{flex: 1, justifyContent: "space-around", alignItems: "center"}}>
           <View style={{height: 88}}>
             {getPaymentInfo()}
           </View>
           <QRCode
-            value={JSON.stringify({address: `hathor:${this.props.address}`, amount: (this.props.amount || null)})}
+            value={JSON.stringify({address: `hathor:${this.props.address}`, amount: (this.props.amount || null), token: this.props.token})}
             size={200}
           />
           <View style={{alignItems: "center"}}>
+            <Text style={{marginBottom: 8}}>Token</Text>
+            <Text style={{marginBottom: 16, fontSize: 24}}>{getTokenLabel(this.props.token)}</Text>
             <Text style={{marginBottom: 8}}>Amount</Text>
             <Text style={{marginBottom: 16, fontSize: 24}}>{this.props.amount ? global.hathorLib.helpers.prettyValue(this.props.amount) : "not set"}</Text>
             <Text style={{marginBottom: 8}}>Address</Text>
@@ -129,6 +159,24 @@ const styles = StyleSheet.create({
   text16: {
     fontSize: 16,
   },
+  pickerContainerStyle: {
+    display: 'flex',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    height: '100%',
+    flex: 1,
+  },
+  pickerInputContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    width: '100%',
+    paddingLeft: 16,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+  }
 });
 
 const ReceiveScreenModal = connect(mapInvoiceStateToProps)(_ReceiveScreenModal)

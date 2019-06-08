@@ -33,23 +33,30 @@ export class Settings extends React.Component {
   render() {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "space-between", alignItems: "center" }}>
-        <View style={{ height: 30, width: 170, marginTop: 16 }}>
+        <View style={{ flex: 1, height: 30, width: 170, marginTop: 16 }}>
           <Image
             source={require('../assets/images/hathor-logo.png')}
             style={{height: 30, width: 170 }}
             resizeMode={"contain"}
           /> 
         </View>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <Text style={{ lineHeight: 30, fontSize: 16, fontWeight: "bold" }}>Connected to</Text>
-          <Text>{global.hathorLib.helpers.getServerURL()}</Text>
+        <View style={{ flex: 1, justifyContent: "space-around", alignItems: "center", marginTop: 32 }}>
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ lineHeight: 30, fontSize: 16, fontWeight: "bold" }}>Connected to</Text>
+            <Text>{global.hathorLib.helpers.getServerURL()}</Text>
+            <HathorButton
+              onPress={this.buttonClick}
+              title="Reset wallet"
+              style={{ marginTop: 24 }}
+            />
+          </View>
           <HathorButton
-            onPress={this.buttonClick}
-            title="Reset wallet"
-            style={{ marginTop: 24 }}
+            onPress={() => this.props.navigation.navigate('NewToken')}
+            title="Register a token"
+            style={{ marginTop: 32, flex: 1 }}
           />
         </View>
-        <View>
+        <View style={{ flex: 1 }}>
         </View>
       </SafeAreaView>
     );
