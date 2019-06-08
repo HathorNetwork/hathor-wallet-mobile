@@ -70,3 +70,7 @@ export const getAmountParsed = (text) => {
   }
   return text;
 }
+
+export const getTokenLabel = (token) => {
+  return `${token.name} (${token.symbol})`;
+}
