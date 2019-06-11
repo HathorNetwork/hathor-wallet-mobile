@@ -10,7 +10,7 @@ import HathorTextInput from '../components/HathorTextInput';
 import { newToken } from '../hathorRedux';
 
 
-class NewToken extends React.Component {
+class RegisterToken extends React.Component {
   constructor(props) {
     super(props);
 
@@ -108,4 +108,4 @@ class NewToken extends React.Component {
   }
 }
 
-export default connect(null)(NewToken);
+export default connect(null)(RegisterToken);

@@ -20,8 +20,10 @@ import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from '.
 import MainScreen from './screens/MainScreen';
 import { SendScreen, SendScreenModal } from './screens/Send';
 import { ReceiveScreenModal, ReceiveScreen } from './screens/Receive';
-import NewToken from './screens/NewToken';
-import { Settings } from './screens/Settings';
+import RegisterToken from './screens/RegisterToken';
+import CreateToken from './screens/CreateToken';
+import Settings from './screens/Settings';
+import TokenDetail from './screens/TokenDetail';
 import HathorLogo from './components/HathorLogo';
 
 const InitStack = createStackNavigator(
@@ -89,7 +91,9 @@ const AppStack = createStackNavigator({
     Main: TabNavigator,
     SendModal: SendScreenModal,
     ReceiveScreenModal: ReceiveScreenModal,
-    NewToken,
+    RegisterToken,
+    CreateToken,
+    TokenDetail,
   }, {
     mode: 'modal',
     headerMode: 'none',

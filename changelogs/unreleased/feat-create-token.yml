@@ -1,0 +1,5 @@
+---
+title: Adding support for creating a new token and get its configuration string
+merge_request: 5
+author:
+type: added

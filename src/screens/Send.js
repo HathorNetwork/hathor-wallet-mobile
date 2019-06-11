@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 
 
 /**
- * selected {string} uid of the token selected on the main screen
+ * selected {Object} Select token config {name, symbol, uid}
  */
 const mapStateToProps = (state) => {
   return {

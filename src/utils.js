@@ -4,8 +4,9 @@
 export const getMyTxBalance = (tx, myKeys) => {
   const balance = {}
   for (let txout of tx.outputs) {
-    // TODO authority outputs
-    // does it belong to our wallet?
+    if (global.hathorLib.wallet.isAuthorityOutput(txout)) {
+      continue;
+    }
     if (txout.decoded && txout.decoded.address
         && txout.decoded.address in myKeys) {
       if (!balance[txout.token]) {
@@ -16,8 +17,9 @@ export const getMyTxBalance = (tx, myKeys) => {
   }
 
   for (let txin of tx.inputs) {
-    // TODO authority inputs
-    // does it belong to our wallet?
+    if (global.hathorLib.wallet.isAuthorityOutput(txin)) {
+      continue;
+    }
     if (txin.decoded && txin.decoded.address
         && txin.decoded.address in myKeys) {
       if (!balance[txin.token]) {

@@ -81,7 +81,11 @@ const reducer = (state = initialState, action) => {
       let invoicePayment = null;
       if (state.invoice && state.invoice.amount) {
         for (let txout of tx.outputs) {
-          // TODO authority outputs
+          // Don't consider authority outputs
+          if (global.hathorLib.wallet.isAuthorityOutput(txout)) {
+            continue;
+          }
+
           if (txout.decoded && txout.decoded.address
               && txout.decoded.address === state.invoice.address
               && txout.value === state.invoice.amount
