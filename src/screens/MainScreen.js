@@ -51,6 +51,12 @@ class MainScreen extends React.Component {
     this.props.dispatch(resetData());
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.selectedToken !== prevProps.selectedToken) {
+      this.fetchDataFromServer();
+    }
+  }
+
   updateReduxTokens = () => {
     this.props.dispatch(setTokens(global.hathorLib.tokens.getTokens()));
   }
@@ -127,7 +133,6 @@ class MainScreen extends React.Component {
 
   tokenChanged = (token) => {
     this.props.dispatch(updateSelectedToken(token));
-    this.fetchDataFromServer();
   }
 
   render() {
@@ -210,6 +215,7 @@ class MainScreen extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <TokenBar
+          key={this.props.selectedToken.uid}
           navigation={this.props.navigation}
           onChange={this.tokenChanged}
           tokens={this.props.tokens}

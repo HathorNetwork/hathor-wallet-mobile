@@ -2,7 +2,6 @@ import React, { forwardRef } from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { connect } from 'react-redux';
 import RNPickerSelect from 'react-native-picker-select';
-import NewToken from '../screens/NewToken';
 import { getTokenLabel } from '../utils';
 
 
