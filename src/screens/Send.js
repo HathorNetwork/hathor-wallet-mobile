@@ -18,6 +18,8 @@ const mapStateToProps = (state) => {
   };
 }
 
+import hathorLib from '@hathor/wallet-lib';
+
 
 
 class _SendScreenModal extends React.Component {
@@ -38,23 +40,23 @@ class _SendScreenModal extends React.Component {
     this.setState({error: null, spinner: true});
     const value = getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.')));
     const data = {};
-    const isHathorToken = this.state.token.uid === global.hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
+    const isHathorToken = this.state.token.uid === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
     data.tokens = isHathorToken ? [] : [this.state.token.uid];
     data.inputs = [];
     data.outputs = [{address: this.state.address, value: value, timelock: null, tokenData: isHathorToken ? 0 : 1}];
-    const walletData = global.hathorLib.wallet.getWalletData();
+    const walletData = hathorLib.wallet.getWalletData();
     const historyTransactions = 'historyTransactions' in walletData ? walletData['historyTransactions'] : {};
-    const ret = global.hathorLib.wallet.prepareSendTokensData(data, this.state.token, true, historyTransactions, [this.state.token]);
+    const ret = hathorLib.wallet.prepareSendTokensData(data, this.state.token, true, historyTransactions, [this.state.token]);
     if (ret.success) {
       try {
-        global.hathorLib.transaction.sendTransaction(ret.data, '123456').then(() => {
+        hathorLib.transaction.sendTransaction(ret.data, '123456').then(() => {
           this.props.navigation.goBack();
           this.setState({spinner: false});
         }, (error) => {
           this.setState({spinner: false, error: 'Error connecting to the network'});
         });
       } catch (e) {
-        if (e instanceof global.hathorLib.errors.AddressError || e instanceof global.hathorLib.errors.OutputValueError) {
+        if (e instanceof hathorLib.errors.AddressError || e instanceof hathorLib.errors.OutputValueError) {
           this.setState({spinner: false, error: e.message});
         }
       }
@@ -150,7 +152,7 @@ class SendScreen extends React.Component {
       this.showAlertError("This QR code does not contain a Hathor address or payment request.");
     } else {
       const token = qrcode.token;
-      if (global.hathorLib.tokens.tokenExists(token.uid) === null) {
+      if (hathorLib.tokens.tokenExists(token.uid) === null) {
         // Wallet does not have the selected token
         this.showAlertError(`You don't have the requested token [${getTokenLabel(token)}]`);
         return;

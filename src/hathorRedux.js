@@ -3,6 +3,9 @@ import { createStore } from 'redux';
 import {getBalance, getMyTxBalance } from './utils';
 import { INITIAL_TOKENS, SELECTED_TOKEN } from './constants';
 
+import hathorLib from '@hathor/wallet-lib';
+
+
 const types = {
   HISTORY_UPDATE: "HISTORY_UPDATE",
   NEW_TX: "NEW_TX",
@@ -82,7 +85,7 @@ const reducer = (state = initialState, action) => {
       if (state.invoice && state.invoice.amount) {
         for (let txout of tx.outputs) {
           // Don't consider authority outputs
-          if (global.hathorLib.wallet.isAuthorityOutput(txout)) {
+          if (hathorLib.wallet.isAuthorityOutput(txout)) {
             continue;
           }
 

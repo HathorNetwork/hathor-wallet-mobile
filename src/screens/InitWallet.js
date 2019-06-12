@@ -1,3 +1,5 @@
+import hathorLib from '@hathor/wallet-lib';
+
 import React from 'react';
 import {
   Keyboard,
@@ -79,7 +81,7 @@ const InitialScreen = props => {
 
 class NewWordsScreen extends React.Component {
   state = {
-    words: global.hathorLib.wallet.generateWalletWords(global.hathorLib.constants.HD_WALLET_ENTROPY)
+    words: hathorLib.wallet.generateWalletWords(hathorLib.constants.HD_WALLET_ENTROPY)
   };
 
   render() {
@@ -138,7 +140,7 @@ class LoadWordsScreen extends React.Component {
     Keyboard.dismiss();
     const words = this.state.words.trim();
     this.setState({ errorMessage: "" })
-    const result = global.hathorLib.wallet.wordsValid(words);
+    const result = hathorLib.wallet.wordsValid(words);
     if (result.valid) {
       this.props.navigation.navigate('Home', {words});
     } else {

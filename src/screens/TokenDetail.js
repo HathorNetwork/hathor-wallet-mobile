@@ -5,6 +5,8 @@ import ModalTop from '../components/ModalTop';
 import { getTokenLabel } from '../utils';
 import QRCode from 'react-native-qrcode-svg';
 
+import hathorLib from '@hathor/wallet-lib';
+
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -17,7 +19,7 @@ const mapStateToProps = (state) => {
 
 
 const TokenDetail = (props) => {
-  const configString = global.hathorLib.tokens.getConfigurationString(props.selectedToken.uid, props.selectedToken.name, props.selectedToken.symbol);
+  const configString = hathorLib.tokens.getConfigurationString(props.selectedToken.uid, props.selectedToken.name, props.selectedToken.symbol);
 
   return (
     <SafeAreaView style={{ display: 'flex', flex: 1, justifyContent: "flex-start", alignItems: "flex-start" }}>

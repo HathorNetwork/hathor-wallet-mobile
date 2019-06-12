@@ -9,6 +9,8 @@ import { faExchangeAlt } from '@fortawesome/free-solid-svg-icons';
 import { balanceUpdate, clearNetworkError, historyUpdate, networkError, newTx, resetData, setTokens, updateSelectedToken } from '../hathorRedux';
 import { getShortHash } from '../utils';
 
+import hathorLib from '@hathor/wallet-lib';
+
 
 /**
  * txList {Object} array with transactions of the selected token
@@ -34,20 +36,23 @@ class MainScreen extends React.Component {
   componentDidMount() {
     const words = this.props.navigation.getParam('words', null);
     if (words) {
-      global.hathorLib.wallet.executeGenerateWallet(words, '', '123456', '123456', false);
+      hathorLib.wallet.executeGenerateWallet(words, '', '123456', '123456', false);
+    } else {
+      hathorLib.WebSocketHandler.setup();
+      // We need to update the redux tokens with data from storage, so the user dont have to add the tokens again
+      this.updateReduxTokens();
     }
-    global.hathorLib.WebSocketHandler.on('wallet', this.handleWebsocketMsg);
-    global.hathorLib.WebSocketHandler.on('reload_data', this.fetchDataFromServer);
-    global.hathorLib.WebSocketHandler.on('is_online', this.handleWebsocketStateChange);
-    // We need to update the redux tokens with data from localStorage, so the user dont have to add the tokens again
-    this.updateReduxTokens();
+    hathorLib.WebSocketHandler.on('wallet', this.handleWebsocketMsg);
+    hathorLib.WebSocketHandler.on('reload_data', this.fetchDataFromServer);
+    hathorLib.WebSocketHandler.on('is_online', this.handleWebsocketStateChange);
     this.fetchDataFromServer();
   }
 
   componentWillUnmount() {
-    global.hathorLib.WebSocketHandler.removeListener('wallet', this.handleWebsocketMsg);
-    global.hathorLib.WebSocketHandler.removeListener('reload_data', this.fetchDataFromServer);
-    global.hathorLib.WebSocketHandler.removeListener('is_online', this.handleWebsocketStateChange);
+    console.log("MainScreen willUnmount");
+    hathorLib.WebSocketHandler.removeListener('wallet', this.handleWebsocketMsg);
+    hathorLib.WebSocketHandler.removeListener('reload_data', this.fetchDataFromServer);
+    hathorLib.WebSocketHandler.removeListener('is_online', this.handleWebsocketStateChange);
     this.props.dispatch(resetData());
   }
 
@@ -58,19 +63,19 @@ class MainScreen extends React.Component {
   }
 
   updateReduxTokens = () => {
-    this.props.dispatch(setTokens(global.hathorLib.tokens.getTokens()));
+    this.props.dispatch(setTokens(hathorLib.tokens.getTokens()));
   }
 
   fetchDataFromServer = () => {
     this.cleanData();
     this.setState({isLoading: true});
-    global.hathorLib.version.checkApiVersion().then(data => {
-      global.hathorLib.wallet.loadAddressHistory(0, global.hathorLib.constants.GAP_LIMIT).then(() => {
+    hathorLib.version.checkApiVersion().then(data => {
+      hathorLib.wallet.loadAddressHistory(0, hathorLib.constants.GAP_LIMIT).then(() => {
         this.props.dispatch(clearNetworkError());
-        const data = global.hathorLib.wallet.getWalletData();
+        const data = hathorLib.wallet.getWalletData();
         // Update historyTransactions with new one
         const historyTransactions = 'historyTransactions' in data ? data['historyTransactions'] : {};
-        const keys = global.hathorLib.wallet.getWalletData().keys;
+        const keys = hathorLib.wallet.getWalletData().keys;
         this.props.dispatch(historyUpdate(historyTransactions, keys));
         this.setState({isLoading: false});
       }, error => {
@@ -83,26 +88,22 @@ class MainScreen extends React.Component {
 
   cleanData = () => {
     // Get old access data
-    const accessDataStorage = global.localStorage.getItem('wallet:accessData');
-    const walletData = global.hathorLib.wallet.getWalletData();
-    const server = global.localStorage.getItem('wallet:server');
-    const tokens = global.localStorage.getItem('wallet:tokens');
+    const accessData = hathorLib.storage.getItem('wallet:accessData');
+    const walletData = hathorLib.wallet.getWalletData();
+    const server = hathorLib.storage.getItem('wallet:server');
+    const tokens = hathorLib.storage.getItem('wallet:tokens');
 
-    global.localStorage.clear();
+    hathorLib.storage.clear();
 
-    let accessData = global.localStorage.memory ? accessDataStorage : JSON.parse(accessDataStorage);
     let newWalletData = {
       keys: {},
       xpubkey: walletData.xpubkey,
     }
-    // Prepare to save new data
-    accessData = global.localStorage.memory ? accessData : JSON.stringify(accessData);
-    newWalletData = global.localStorage.memory ? newWalletData : JSON.stringify(newWalletData);
 
-    global.localStorage.setItem('wallet:accessData', accessData);
-    global.localStorage.setItem('wallet:data', newWalletData);
-    global.localStorage.setItem('wallet:server', server);
-    global.localStorage.setItem('wallet:tokens', tokens);
+    hathorLib.storage.setItem('wallet:accessData', accessData);
+    hathorLib.storage.setItem('wallet:data', newWalletData);
+    hathorLib.storage.setItem('wallet:server', server);
+    hathorLib.storage.setItem('wallet:tokens', tokens);
   }
 
   handleWebsocketStateChange = isOnline => {
@@ -123,7 +124,7 @@ class MainScreen extends React.Component {
       const walletData = hathorLib.wallet.getWalletData();
       const historyTransactions = 'historyTransactions' in walletData ? walletData['historyTransactions'] : {};
       const allTokens = 'allTokens' in walletData ? walletData['allTokens'] : [];
-      global.hathorLib.wallet.updateHistoryData(historyTransactions, allTokens, [wsData.history], null, walletData)
+      hathorLib.wallet.updateHistoryData(historyTransactions, allTokens, [wsData.history], null, walletData)
       
       const newWalletData = hathorLib.wallet.getWalletData();
       const keys = newWalletData.keys;
@@ -148,9 +149,9 @@ class MainScreen extends React.Component {
     const renderItem = ({item, index}) => {
       return (
         <View style={[mainStyle.listItemWrapper, { backgroundColor: colors[index % 2] }]}>
-          <Text style={[mainStyle.dateColumn, mainStyle.listColumn]}>{global.hathorLib.dateFormatter.parseTimestamp(item.timestamp)}</Text>
+          <Text style={[mainStyle.dateColumn, mainStyle.listColumn]}>{hathorLib.dateFormatter.parseTimestamp(item.timestamp)}</Text>
           <Text style={[mainStyle.idColumn, mainStyle.listColumn]}>{getShortHash(item.tx_id)}</Text>
-          <Text style={[mainStyle.valueColumn, {color: getValueColor(item), textAlign: 'left' }]}>{item.is_voided ? '(Voided)' : global.hathorLib.helpers.prettyValue(item.balance)}</Text>
+          <Text style={[mainStyle.valueColumn, {color: getValueColor(item), textAlign: 'left' }]}>{item.is_voided ? '(Voided)' : hathorLib.helpers.prettyValue(item.balance)}</Text>
         </View>
       )
     }
@@ -201,9 +202,9 @@ class MainScreen extends React.Component {
     const renderBalance = () => {
       return (
         <View style={{ display: "flex", alignItems: "center" }}>
-          <Text style={mainStyle.topText}>Total: {global.hathorLib.helpers.prettyValue(this.props.balance.available + this.props.balance.locked)} {this.props.selectedToken.symbol}</Text>
-          <Text style={mainStyle.topText}>Available: {global.hathorLib.helpers.prettyValue(this.props.balance.available)} {this.props.selectedToken.symbol}</Text>
-          <Text style={mainStyle.topText}>Locked: {global.hathorLib.helpers.prettyValue(this.props.balance.locked)} {this.props.selectedToken.symbol}</Text>
+          <Text style={mainStyle.topText}>Total: {hathorLib.helpers.prettyValue(this.props.balance.available + this.props.balance.locked)} {this.props.selectedToken.symbol}</Text>
+          <Text style={mainStyle.topText}>Available: {hathorLib.helpers.prettyValue(this.props.balance.available)} {this.props.selectedToken.symbol}</Text>
+          <Text style={mainStyle.topText}>Locked: {hathorLib.helpers.prettyValue(this.props.balance.locked)} {this.props.selectedToken.symbol}</Text>
         </View>
       );
     }
