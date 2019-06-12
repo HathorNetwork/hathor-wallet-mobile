@@ -15,6 +15,8 @@ import HathorTextInput from '../components/HathorTextInput';
 import { clearInvoice, newInvoice } from '../hathorRedux';
 import { getNoDecimalsAmount, getAmountParsed, getTokenLabel } from '../utils';
 
+import hathorLib from '@hathor/wallet-lib';
+
 
 const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
@@ -55,7 +57,7 @@ class _ReceiveScreen extends React.Component {
       <SafeAreaView style={{ flex: 1, alignItems: "center" }}>
         <NavigationEvents
           //TODO get new address everytime we go to Send screen?
-          onWillFocus={payload => this.setState({address: global.hathorLib.wallet.getAddressToUse()})}
+          onWillFocus={payload => this.setState({address: hathorLib.wallet.getAddressToUse()})}
         />
         <Text style={[styles.text16, {marginTop: 24, fontWeight: "bold"}]}>Your address</Text>
         <View style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, marginLeft: 8, marginRight: 8, marginTop: 16, borderRadius: 8, backgroundColor: "#eee", display: "flex", justifyContet: "center", alignItems: "center" }}>
@@ -63,7 +65,7 @@ class _ReceiveScreen extends React.Component {
         </View>
         <HathorButton
           style={{ marginVertical: 16 }}
-          onPress={() => this.setState({address: global.hathorLib.wallet.getAddressToUse()})}
+          onPress={() => this.setState({address: hathorLib.wallet.getAddressToUse()})}
           title="Generate new address"
         />
         <View style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 32 }}>
@@ -121,7 +123,7 @@ class _ReceiveScreenModal extends React.Component {
           <View style={{flex: 1, justifyContent: "space-around", alignItems: "center"}}>
             <FontAwesomeIcon icon={ faCheckCircle } size={32} color={"green"} />
             <Text style={[styles.font16, {color: "green"}]}>
-              Payment received at {global.hathorLib.dateFormatter.parseTimestamp(this.props.payment.timestamp)}
+              Payment received at {hathorLib.dateFormatter.parseTimestamp(this.props.payment.timestamp)}
             </Text>
           </View>
         );
@@ -145,7 +147,7 @@ class _ReceiveScreenModal extends React.Component {
             <Text style={{marginBottom: 8}}>Token</Text>
             <Text style={{marginBottom: 16, fontSize: 24}}>{getTokenLabel(this.props.token)}</Text>
             <Text style={{marginBottom: 8}}>Amount</Text>
-            <Text style={{marginBottom: 16, fontSize: 24}}>{this.props.amount ? global.hathorLib.helpers.prettyValue(this.props.amount) : "not set"}</Text>
+            <Text style={{marginBottom: 16, fontSize: 24}}>{this.props.amount ? hathorLib.helpers.prettyValue(this.props.amount) : "not set"}</Text>
             <Text style={{marginBottom: 8}}>Address</Text>
             <Text style={{marginBottom: 16}} selectable={true}>{this.props.address}</Text>
           </View>

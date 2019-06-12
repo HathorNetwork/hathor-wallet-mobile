@@ -6,8 +6,9 @@ import ModalTop from '../components/ModalTop';
 import QRCodeReader from '../components/QRCodeReader';
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
-
 import { newToken } from '../hathorRedux';
+
+import hathorLib from '@hathor/wallet-lib';
 
 
 class RegisterToken extends React.Component {
@@ -45,13 +46,13 @@ class RegisterToken extends React.Component {
   }
 
   addToken = (token) => {
-    global.hathorLib.tokens.addToken(token.uid, token.name, token.symbol);
+    hathorLib.tokens.addToken(token.uid, token.name, token.symbol);
     this.props.dispatch(newToken(token));
     this.props.navigation.goBack();
   }
 
   validateAndAdd = (configurationString) => {
-    const result = global.hathorLib.tokens.validateTokenToAddByConfigurationString(configurationString); 
+    const result = hathorLib.tokens.validateTokenToAddByConfigurationString(configurationString); 
     if (result.success) {
       this.showSuccessAlert(result.tokenData);
     } else {

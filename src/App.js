@@ -6,6 +6,8 @@
  * @flow
  */
 
+import '../shim.js'
+
 import React from 'react';
 import { Platform } from 'react-native';
 import { createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
@@ -25,6 +27,9 @@ import CreateToken from './screens/CreateToken';
 import Settings from './screens/Settings';
 import TokenDetail from './screens/TokenDetail';
 import HathorLogo from './components/HathorLogo';
+
+import hathorLib from '@hathor/wallet-lib';
+
 
 const InitStack = createStackNavigator(
   {
@@ -117,7 +122,7 @@ const App = () => (
 
 // custom interceptor for axios
 const createRequestInstance = (resolve, timeout) => {
-  const instance = global.hathorLib.axios.defaultCreateRequestInstance(resolve, timeout);
+  const instance = hathorLib.axios.defaultCreateRequestInstance(resolve, timeout);
 
   instance.interceptors.response.use((response) => {
     return response;
@@ -129,6 +134,6 @@ const createRequestInstance = (resolve, timeout) => {
   });
   return instance;
 }
-global.hathorLib.axios.registerNewCreateRequestInstance(createRequestInstance);
+hathorLib.axios.registerNewCreateRequestInstance(createRequestInstance);
 
 export default App;

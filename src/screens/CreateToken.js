@@ -10,6 +10,8 @@ import HathorTextInput from '../components/HathorTextInput';
 import { getAmountParsed, getNoDecimalsAmount } from '../utils';
 import { newToken, updateSelectedToken } from '../hathorRedux';
 
+import hathorLib from '@hathor/wallet-lib';
+
 
 class CreateToken extends React.Component {
   /**
@@ -28,12 +30,12 @@ class CreateToken extends React.Component {
   }
 
   getData = () => {
-    const walletData = global.hathorLib.wallet.getWalletData();
+    const walletData = hathorLib.wallet.getWalletData();
     if (walletData === null) {
       return null;
     }
     const historyTransactions = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
-    const inputsData = global.hathorLib.wallet.getInputsFromAmount(historyTransactions, global.hathorLib.helpers.minimumAmount(), global.hathorLib.constants.HATHOR_TOKEN_CONFIG.uid);
+    const inputsData = hathorLib.wallet.getInputsFromAmount(historyTransactions, hathorLib.helpers.minimumAmount(), hathorLib.constants.HATHOR_TOKEN_CONFIG.uid);
     if (inputsData.inputs.length === 0) {
       this.setState({ errorMessage: 'You don\'t have any hathor tokens available to create your token.' });
       return null;
@@ -41,7 +43,7 @@ class CreateToken extends React.Component {
 
     const input = inputsData.inputs[0];
     const amount = inputsData.inputsAmount;
-    const outputChange = hathorLib.wallet.getOutputChange(amount, global.hathorLib.constants.HATHOR_TOKEN_INDEX);
+    const outputChange = hathorLib.wallet.getOutputChange(amount, hathorLib.constants.HATHOR_TOKEN_INDEX);
     return {'input': input, 'output': outputChange};
   }
 
@@ -59,7 +61,7 @@ class CreateToken extends React.Component {
       return;
     }
     this.setState({ errorMessage: '', loading: true });
-    const address = global.hathorLib.wallet.getAddressToUse();
+    const address = hathorLib.wallet.getAddressToUse();
     // TODO ask for PIN
     const value = getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.')));
     const retPromise = hathorLib.tokens.createToken(data.input, data.output, address, this.state.name, this.state.symbol, value, '123456');

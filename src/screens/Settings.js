@@ -4,6 +4,8 @@ import HathorButton from "../components/HathorButton";
 import { connect } from 'react-redux';
 import { getTokenLabel } from '../utils';
 
+import hathorLib from '@hathor/wallet-lib';
+
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -20,14 +22,14 @@ class Settings extends React.Component {
 
   resetWallet = () => {
     //TODO we don't need to save server data
-    const server = global.localStorage.getItem("wallet:server");
+    const server = hathorLib.storage.getItem("wallet:server");
 
-    global.hathorLib.wallet.unsubscribeAllAddresses();
-    global.hathorLib.WebSocketHandler.endConnection();
-    global.localStorage.clear();
+    hathorLib.wallet.unsubscribeAllAddresses();
+    hathorLib.WebSocketHandler.endConnection();
+    hathorLib.storage.clear();
 
     //TODO make sure asyncStorage is clear when doing this. Maybe temporarily use setTimeout?
-    global.localStorage.setItem("wallet:server", server);
+    hathorLib.storage.setItem("wallet:server", server);
     this.props.navigation.navigate("Init");
   }
 
@@ -45,7 +47,7 @@ class Settings extends React.Component {
 
   render() {
     const renderExploreButton = () => {
-      if (this.props.selectedToken.uid === global.hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
+      if (this.props.selectedToken.uid === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
         return null;
       }
 
@@ -70,7 +72,7 @@ class Settings extends React.Component {
         <View style={{ flex: 1, justifyContent: "flex-start", alignItems: "center", marginTop: 32 }}>
           <View style={{ justifyContent: "center", alignItems: "center" }}>
             <Text style={{ lineHeight: 30, fontSize: 16, fontWeight: "bold" }}>Connected to</Text>
-            <Text>{global.hathorLib.helpers.getServerURL()}</Text>
+            <Text>{hathorLib.helpers.getServerURL()}</Text>
             <HathorButton
               onPress={this.buttonClick}
               title="Reset wallet"

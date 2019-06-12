@@ -1,10 +1,12 @@
+import hathorLib from '@hathor/wallet-lib';
+
 /**
  * Returns the balance for each token in tx, if the input/output belongs to this wallet
  */
 export const getMyTxBalance = (tx, myKeys) => {
   const balance = {}
   for (let txout of tx.outputs) {
-    if (global.hathorLib.wallet.isAuthorityOutput(txout)) {
+    if (hathorLib.wallet.isAuthorityOutput(txout)) {
       continue;
     }
     if (txout.decoded && txout.decoded.address
@@ -17,7 +19,7 @@ export const getMyTxBalance = (tx, myKeys) => {
   }
 
   for (let txin of tx.inputs) {
-    if (global.hathorLib.wallet.isAuthorityOutput(txin)) {
+    if (hathorLib.wallet.isAuthorityOutput(txin)) {
       continue;
     }
     if (txin.decoded && txin.decoded.address
@@ -37,20 +39,20 @@ export const getShortHash = hash => {
 }
 
 export const getNoDecimalsAmount = value => {
-  return value * (10 ** global.hathorLib.constants.DECIMAL_PLACES)
+  return value * (10 ** hathorLib.constants.DECIMAL_PLACES)
 }
 
 export const getDecimalsAmount = value => {
-  return value / (10 ** global.hathorLib.constants.DECIMAL_PLACES)
+  return value / (10 ** hathorLib.constants.DECIMAL_PLACES)
 }
 
 export const getBalance = (tokenUid) => {
   // TODO should have a method in the lib to get balance by token
   // TODO utils should not have method accessing hathorLib 
-  const data = global.hathorLib.wallet.getWalletData();
+  const data = hathorLib.wallet.getWalletData();
   const historyTransactions = 'historyTransactions' in data ? data['historyTransactions'] : {};
-  const filteredArray = global.hathorLib.wallet.filterHistoryTransactions(historyTransactions, tokenUid);
-  const balance = global.hathorLib.wallet.calculateBalance(filteredArray, tokenUid);
+  const filteredArray = hathorLib.wallet.filterHistoryTransactions(historyTransactions, tokenUid);
+  const balance = hathorLib.wallet.calculateBalance(filteredArray, tokenUid);
   return balance;
 }
 
@@ -66,7 +68,7 @@ export const getAmountParsed = (text) => {
   }
 
   if (parts[1]) {
-    if (parts[1].length > global.hathorLib.constants.DECIMAL_PLACES) {
+    if (parts[1].length > hathorLib.constants.DECIMAL_PLACES) {
       return `${parts[0]}${separator}${parts[1].slice(0,2)}`;
     }
   }
