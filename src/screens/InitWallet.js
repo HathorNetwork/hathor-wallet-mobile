@@ -16,6 +16,7 @@ import {
   View
 } from 'react-native';
 import HathorButton from '../components/HathorButton';
+import HathorTextInput from '../components/HathorTextInput';
 
 class WelcomeScreen extends React.Component {
   static navigationOptions = {
@@ -121,7 +122,7 @@ class NewWordsScreen extends React.Component {
         </View>
         {renderWords()}
         <HathorButton
-          onPress={() => this.props.navigation.navigate('Home', {words: this.state.words})}
+          onPress={() => this.props.navigation.navigate('ChoosePinScreen', {words: this.state.words})}
           title="Got it"
           style={{ marginTop: 24 }}
         />
@@ -142,7 +143,7 @@ class LoadWordsScreen extends React.Component {
     this.setState({ errorMessage: "" })
     const result = hathorLib.wallet.wordsValid(words);
     if (result.valid) {
-      this.props.navigation.navigate('Home', {words});
+      this.props.navigation.navigate('ChoosePinScreen', {words});
     } else {
       this.setState({ errorMessage: result.message });
     }
@@ -172,7 +173,7 @@ class LoadWordsScreen extends React.Component {
               <HathorButton
                 onPress={this.loadClicked}
                 disabled={!this.state.words}
-                title="Go"
+                title="Next"
                 style={{ marginTop: 8 }}
               />
             </View>

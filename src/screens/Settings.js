@@ -1,8 +1,10 @@
 import React from "react";
-import { Alert, Image, SafeAreaView, Text, View } from "react-native";
-import HathorButton from "../components/HathorButton";
 import { connect } from 'react-redux';
-import { getTokenLabel } from '../utils';
+import * as Keychain from 'react-native-keychain';
+
+import { Alert, Image, SafeAreaView, Switch, Text, View } from "react-native";
+import HathorButton from "../components/HathorButton";
+import { isBiometryEnabled, setBiometryEnabled, getSupportedBiometry, getTokenLabel } from '../utils';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -16,11 +18,18 @@ const mapStateToProps = (state) => {
   };
 }
 
+export class Settings extends React.Component {
+  constructor(props) {
+    super(props);
+    const biometryEnabled = isBiometryEnabled();
+    this.supportedBiometry = getSupportedBiometry();
+    /**
+     * biometryEnabled {boolean} If user enabled biometry
+     */
+    this.state = { biometryEnabled };
+  }
 
-class Settings extends React.Component {
-  state = { isLoading: true };
-
-  resetWallet = () => {
+  resetWallet = async () => {
     //TODO we don't need to save server data
     const server = hathorLib.storage.getItem("wallet:server");
 
@@ -30,6 +39,7 @@ class Settings extends React.Component {
 
     //TODO make sure asyncStorage is clear when doing this. Maybe temporarily use setTimeout?
     hathorLib.storage.setItem("wallet:server", server);
+    await Keychain.resetGenericPassword();
     this.props.navigation.navigate("Init");
   }
 
@@ -43,6 +53,11 @@ class Settings extends React.Component {
       ],
       {cancelable: false},
     );
+  }
+
+  onSwitchChange = (value) => {
+    this.setState({ biometryEnabled: value });
+    setBiometryEnabled(value);
   }
 
   render() {
@@ -94,6 +109,16 @@ class Settings extends React.Component {
                 title="Create a token"
                 style={{ marginTop: 16 }}
               />
+              {this.supportedBiometry && 
+                <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 24}}>
+                  <Text>Use {this.supportedBiometry}</Text>
+                  <Switch
+                    style={{marginLeft: 16}}
+                    onValueChange={this.onSwitchChange}
+                    value={this.state.biometryEnabled}
+                  />
+                </View>
+              }
             </View>
           </View>
         </View>

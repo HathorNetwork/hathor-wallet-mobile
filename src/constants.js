@@ -19,3 +19,8 @@ export const INITIAL_TOKENS = [hathorLib.constants.HATHOR_TOKEN_CONFIG];
  * Default selected token
  */
 export const SELECTED_TOKEN = hathorLib.constants.HATHOR_TOKEN_CONFIG;
+
+/**
+ * Wallet will lock if app goes to background for more than LOCK_TIMEOUT seconds
+ */
+export const LOCK_TIMEOUT = 30000;    // 30s

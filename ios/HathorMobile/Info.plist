@@ -65,5 +65,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+    <key>NSFaceIDUsageDescription</key>
+    <string>Protect your wallet with Face ID.</string>
 </dict>
 </plist>
