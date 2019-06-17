@@ -1,13 +1,15 @@
 import React from 'react';
-import { ActivityIndicator, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { connect } from 'react-redux';
 
-import HathorButton from '../components/HathorButton';
-import TokenBar from '../components/TokenBar';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faExchangeAlt } from '@fortawesome/free-solid-svg-icons';
+import * as Keychain from 'react-native-keychain';
+import HathorButton from '../components/HathorButton';
+import TokenBar from '../components/TokenBar';
 import { balanceUpdate, clearNetworkError, historyUpdate, networkError, newTx, resetData, setTokens, updateSelectedToken } from '../hathorRedux';
-import { getShortHash } from '../utils';
+import { getShortHash, setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled } from '../utils';
+import { LOCK_TIMEOUT } from '../constants';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -28,32 +30,86 @@ const mapStateToProps = (state) => ({
 })
 
 class MainScreen extends React.Component {
-  /**
-   * isLoading {boolean} if should show list of spinner
-   */
-  state = { isLoading: true };
+  constructor(props) {
+    super(props);
+    this.state = {
+      isLoading: true,    //{boolean} if should show list or spinner
+    };
+    this.backgroundTime = null;
+    this.appState = 'active';
+  }
 
   componentDidMount() {
+    this.getBiometry();
     const words = this.props.navigation.getParam('words', null);
+    const pin = this.props.navigation.getParam('pin', null);
     if (words) {
-      hathorLib.wallet.executeGenerateWallet(words, '', '123456', '123456', false);
+      hathorLib.wallet.executeGenerateWallet(words, '', pin, pin, false);
+      Keychain.setGenericPassword('', pin, {accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY, acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY});
     } else {
       hathorLib.WebSocketHandler.setup();
       // We need to update the redux tokens with data from storage, so the user dont have to add the tokens again
       this.updateReduxTokens();
+      // user just started the app and wallet was already initialized, so lock screen
+      this.props.navigation.navigate('PinScreen', {cb: this._onUnlockSuccess});
     }
     hathorLib.WebSocketHandler.on('wallet', this.handleWebsocketMsg);
     hathorLib.WebSocketHandler.on('reload_data', this.fetchDataFromServer);
     hathorLib.WebSocketHandler.on('is_online', this.handleWebsocketStateChange);
+    AppState.addEventListener('change', this._handleAppStateChange);
+    // We need to update the redux tokens with data from localStorage, so the user doesn't have to add the tokens again
+    this.updateReduxTokens();
     this.fetchDataFromServer();
   }
 
   componentWillUnmount() {
-    console.log("MainScreen willUnmount");
     hathorLib.WebSocketHandler.removeListener('wallet', this.handleWebsocketMsg);
     hathorLib.WebSocketHandler.removeListener('reload_data', this.fetchDataFromServer);
     hathorLib.WebSocketHandler.removeListener('is_online', this.handleWebsocketStateChange);
+    AppState.removeEventListener('change', this._handleAppStateChange);
     this.props.dispatch(resetData());
+  }
+  
+  getBiometry = () => {
+    Keychain.getSupportedBiometryType().then(biometryType => {
+      switch (biometryType) {
+        case Keychain.BIOMETRY_TYPE.TOUCH_ID:
+        case Keychain.BIOMETRY_TYPE.FACE_ID:
+          setSupportedBiometry(biometryType);
+          break;
+        default:
+          setSupportedBiometry(null);
+        // XXX Android Fingerprint is still not supported in the react native lib we're using.
+        // https://github.com/oblador/react-native-keychain/pull/195
+        //case Keychain.BIOMETRY_TYPE.FINGERPRINT:
+      }
+    });
+  }
+
+  _onUnlockSuccess = () => {
+    this.backgroundTime = null;
+  }
+
+  _handleAppStateChange = (nextAppState) => {
+    if (nextAppState === 'active') {
+      if (this.appState === 'inactive') {
+        // inactive state means the app wasn't in background, so no need to lock
+        // the screen. This happens when user goes to app switch view or maybe is
+        // asked for fingerprint or face if
+        this.backgroundTime = null;
+      } else if (Date.now() - this.backgroundTime > LOCK_TIMEOUT) {
+        // this means app was in background for more than LOCK_TIMEOUT seconds,
+        // so display lock screen
+        this.props.navigation.navigate('PinScreen', {cb: this._onUnlockSuccess});
+      } else {
+        this.backgroundTime = null;
+      }
+    } else if (this.backgroundTime === null) {
+      // app is leaving active state. Save timestamp to check if we need to lock
+      // screen when it becomes active again
+      this.backgroundTime = Date.now();
+    }
+    this.appState = nextAppState;
   }
 
   componentDidUpdate(prevProps) {
@@ -93,6 +149,8 @@ class MainScreen extends React.Component {
     const server = hathorLib.storage.getItem('wallet:server');
     const tokens = hathorLib.storage.getItem('wallet:tokens');
 
+    const biometryEnabled = isBiometryEnabled();
+    const supportedBiometry = getSupportedBiometry();
     hathorLib.storage.clear();
 
     let newWalletData = {
@@ -104,6 +162,8 @@ class MainScreen extends React.Component {
     hathorLib.storage.setItem('wallet:data', newWalletData);
     hathorLib.storage.setItem('wallet:server', server);
     hathorLib.storage.setItem('wallet:tokens', tokens);
+    setBiometryEnabled(biometryEnabled);
+    setSupportedBiometry(supportedBiometry);
   }
 
   handleWebsocketStateChange = isOnline => {

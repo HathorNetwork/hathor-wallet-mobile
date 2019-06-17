@@ -8,6 +8,8 @@ import HathorTextInput from '../components/HathorTextInput';
 import { getDecimalsAmount, getNoDecimalsAmount, getAmountParsed, getTokenLabel } from '../utils';
 import { connect } from 'react-redux';
 
+import hathorLib from '@hathor/wallet-lib';
+
 
 /**
  * selected {Object} Select token config {name, symbol, uid}
@@ -17,10 +19,6 @@ const mapStateToProps = (state) => {
     selected: state.selectedToken,
   };
 }
-
-import hathorLib from '@hathor/wallet-lib';
-
-
 
 class _SendScreenModal extends React.Component {
   constructor(props) {
@@ -36,7 +34,7 @@ class _SendScreenModal extends React.Component {
     this.state = {address, amount, token, error: null, spinner: false};
   }
 
-  sendTx = () => {
+  sendTx = (pinCode) => {
     this.setState({error: null, spinner: true});
     const value = getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.')));
     const data = {};
@@ -49,7 +47,7 @@ class _SendScreenModal extends React.Component {
     const ret = hathorLib.wallet.prepareSendTokensData(data, this.state.token, true, historyTransactions, [this.state.token]);
     if (ret.success) {
       try {
-        hathorLib.transaction.sendTransaction(ret.data, '123456').then(() => {
+        hathorLib.transaction.sendTransaction(ret.data, pinCode).then(() => {
           this.props.navigation.goBack();
           this.setState({spinner: false});
         }, (error) => {
@@ -100,7 +98,7 @@ class _SendScreenModal extends React.Component {
           />
           <HathorButton
             style={{marginTop: 32}}
-            onPress={() => this.sendTx()}
+            onPress={() => this.props.navigation.navigate('PinScreen', {cb: this.sendTx, screenText: 'Enter your 6-digit pin to authorize operation', biometryText: 'Authorize operation'})}
             title="Send"
             disabled={!(this.state.address && this.state.amount) || this.state.spinner}
           />

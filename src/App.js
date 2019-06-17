@@ -19,6 +19,7 @@ import { faArrowDown, faArrowUp, faCog, faHome } from '@fortawesome/free-solid-s
 import { store, networkError } from './hathorRedux';
 import DecideStackScreen from './screens/DecideStackScreen';
 import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from './screens/InitWallet';
+import ChoosePinScreen from './screens/ChoosePinScreen';
 import MainScreen from './screens/MainScreen';
 import { SendScreen, SendScreenModal } from './screens/Send';
 import { ReceiveScreenModal, ReceiveScreen } from './screens/Receive';
@@ -27,6 +28,7 @@ import CreateToken from './screens/CreateToken';
 import Settings from './screens/Settings';
 import TokenDetail from './screens/TokenDetail';
 import HathorLogo from './components/HathorLogo';
+import { PinScreen } from './screens/PinScreen';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -37,6 +39,7 @@ const InitStack = createStackNavigator(
     InitialScreen,
     NewWordsScreen,
     LoadWordsScreen,
+    ChoosePinScreen,
   },
   {
     initialRouteName: 'WelcomeScreen',
@@ -96,6 +99,13 @@ const AppStack = createStackNavigator({
     Main: TabNavigator,
     SendModal: SendScreenModal,
     ReceiveScreenModal: ReceiveScreenModal,
+    PinScreen: {
+      screen: PinScreen,
+      // disable swipe down dismissal on lock screen
+      navigationOptions: () => ({
+        gesturesEnabled: false, 
+      }),
+    },
     RegisterToken,
     CreateToken,
     TokenDetail,

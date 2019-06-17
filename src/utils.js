@@ -51,7 +51,7 @@ export const getBalance = (tokenUid) => {
   // TODO utils should not have method accessing hathorLib 
   const data = hathorLib.wallet.getWalletData();
   const historyTransactions = 'historyTransactions' in data ? data['historyTransactions'] : {};
-  const filteredArray = hathorLib.wallet.filterHistoryTransactions(historyTransactions, tokenUid);
+  const filteredArray = hathorLib.wallet.filterHistoryTransactions(historyTransactions, tokenUid, false);
   const balance = hathorLib.wallet.calculateBalance(filteredArray, tokenUid);
   return balance;
 }
@@ -77,4 +77,20 @@ export const getAmountParsed = (text) => {
 
 export const getTokenLabel = (token) => {
   return `${token.name} (${token.symbol})`;
+}
+
+export const setSupportedBiometry = (type) => {
+  hathorLib.storage.setItem('mobile:supportedBiometry', type);
+}
+
+export const getSupportedBiometry = () => {
+  return hathorLib.storage.getItem('mobile:supportedBiometry');
+}
+
+export const setBiometryEnabled = (value) => {
+  hathorLib.storage.setItem('mobile:isBiometryEnabled', value);
+}
+
+export const isBiometryEnabled = () => {
+  return hathorLib.storage.getItem('mobile:isBiometryEnabled') || false;
 }
