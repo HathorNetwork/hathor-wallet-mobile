@@ -21,6 +21,7 @@ import DecideStackScreen from './screens/DecideStackScreen';
 import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from './screens/InitWallet';
 import ChoosePinScreen from './screens/ChoosePinScreen';
 import MainScreen from './screens/MainScreen';
+import ChangeToken from './screens/ChangeToken';
 import { SendScreen, SendScreenModal } from './screens/Send';
 import ReceiveScreen from './screens/Receive';
 import PaymentRequestDetail from './screens/PaymentRequestDetail';
@@ -94,6 +95,7 @@ const AppStack = createStackNavigator({
     Main: TabNavigator,
     SendModal: SendScreenModal,
     PaymentRequestDetail,
+    ChangeToken,
     PinScreen: {
       screen: PinScreen,
       // disable swipe down dismissal on lock screen
