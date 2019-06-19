@@ -22,7 +22,8 @@ import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from '.
 import ChoosePinScreen from './screens/ChoosePinScreen';
 import MainScreen from './screens/MainScreen';
 import { SendScreen, SendScreenModal } from './screens/Send';
-import { ReceiveScreenModal, ReceiveScreen } from './screens/Receive';
+import ReceiveScreen from './screens/Receive';
+import PaymentRequestDetail from './screens/PaymentRequestDetail';
 import RegisterToken from './screens/RegisterToken';
 import CreateToken from './screens/CreateToken';
 import Settings from './screens/Settings';
@@ -98,7 +99,7 @@ const TabNavigator = createBottomTabNavigator({
 const AppStack = createStackNavigator({
     Main: TabNavigator,
     SendModal: SendScreenModal,
-    ReceiveScreenModal: ReceiveScreenModal,
+    PaymentRequestDetail,
     PinScreen: {
       screen: PinScreen,
       // disable swipe down dismissal on lock screen

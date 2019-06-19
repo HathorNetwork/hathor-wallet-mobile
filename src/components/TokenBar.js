@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { connect } from 'react-redux';
 import RNPickerSelect from 'react-native-picker-select';
@@ -28,7 +28,7 @@ class TokenBar extends React.Component {
   updateLabel = () => {
     const chosenToken = this.getChosenToken();
     if (chosenToken) {
-      this.setState({ label: getTokenLabel(chosenToken) })
+      this.setState({ label: this.props.shortLabel ? chosenToken.symbol : getTokenLabel(chosenToken) })
     }
   }
 
@@ -70,6 +70,12 @@ class TokenBar extends React.Component {
   }
 
   render() {
+    let inputPadding = 0;
+
+    if (this.props.icon) {
+      inputPadding = 30;
+    }
+
     const pickerSelectStyles = StyleSheet.create({
       inputPicker: {
         display: 'none'
@@ -77,7 +83,7 @@ class TokenBar extends React.Component {
       input: {
         fontSize: 16,
         fontWeight: 'bold',
-        paddingRight: this.props.icon ? 30 : 0, // to ensure the text is never behind the icon
+        paddingRight: inputPadding, // to ensure the text is never behind the icon
         color: 'black',
       },
       doneButton: {
@@ -91,9 +97,21 @@ class TokenBar extends React.Component {
       }
     });
 
+    const style = StyleSheet.create({
+      wrapper: {
+        paddingHorizontal: this.props.shortLabel ? 0 : 16,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 44,
+        flexDirection: 'row',
+        width: '100%'
+      },
+    });
+
     const tokens = this.props.tokens.map((token) => {
       return {
-        label: getTokenLabel(token),
+        label: this.props.shortLabel ? token.symbol : getTokenLabel(token),
         value: token.uid,
         ...token
       }
@@ -135,7 +153,7 @@ class TokenBar extends React.Component {
     }
 
     return (
-      <View style={styles.wrapper}>
+      <View style={style.wrapper}>
         <View style={[{display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }, this.props.wrapperStyle]}>
           <Text onPress={() => this.pickerElement.togglePicker()} style={[pickerSelectStyles.input, {display: Platform.OS === 'ios' ? 'flex' : 'none'}]}>{this.state.label}</Text>
           {renderPicker()}
@@ -144,19 +162,6 @@ class TokenBar extends React.Component {
     )
   }
 }
-
-const styles = StyleSheet.create({
-  wrapper: {
-    paddingHorizontal: 16,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 44,
-    flexDirection: 'row',
-    width: '100%'
-  },
-});
-
 
 
 export default TokenBar;

@@ -38,6 +38,10 @@ export const getShortHash = hash => {
   return `${hash.substring(0,4)}...${hash.substring(60,64)}`;
 }
 
+export const getShortAddress = address => {
+  return `${address.substring(0,8)}...${address.substring(26,34)}`;
+}
+
 export const getNoDecimalsAmount = value => {
   return value * (10 ** hathorLib.constants.DECIMAL_PLACES)
 }
@@ -64,14 +68,20 @@ export const getAmountParsed = (text) => {
   } else if (text.indexOf(",") > -1) {
     parts = text.split(",");
     separator = ',';
+  } else {
+    parts = [text];
   }
+
+  // In case the user typed more than one separator
+  parts = parts.slice(0, 2);
 
   if (parts[1]) {
     if (parts[1].length > hathorLib.constants.DECIMAL_PLACES) {
       return `${parts[0]}${separator}${parts[1].slice(0,2)}`;
     }
   }
-  return text;
+
+  return parts.join(separator);
 }
 
 export const getTokenLabel = (token) => {
