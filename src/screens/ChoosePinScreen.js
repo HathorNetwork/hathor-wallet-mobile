@@ -6,10 +6,15 @@ import {
   Text,
   View
 } from 'react-native';
-import HathorButton from '../components/HathorButton';
+import NewHathorButton from '../components/NewHathorButton';
 import HathorTextInput from '../components/HathorTextInput';
 
+import baseStyle from '../styles/init';
+import { Strong } from '../utils';
+
 class ChoosePinScreen extends React.Component {
+  style = baseStyle;
+
   constructor(props) {
     super(props);
     this.words = this.props.navigation.getParam("words");
@@ -46,8 +51,13 @@ class ChoosePinScreen extends React.Component {
     return (
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : null} style={{ flex: 1 }}>
         <SafeAreaView style={{ flex: 1 }}>
-          <View style={{flex: 1, padding: 16, marginTop: 8, justifyContent: 'flex-start', alignItems: 'center'}}>
-            <Text>Choose a <Text style={{fontWeight: 'bold'}}>6 digit pin code</Text> to authorize transactions and unlock your wallet.</Text>
+          <View style={this.style.container}>
+            <Text style={this.style.title}>Finally, a security step.</Text>
+            <View>
+              <Text style={this.style.text}>You must set a <Strong>6-digit pin code</Strong> that will be requested before some operations.</Text>
+              <Text style={this.style.text}>You will need it both to unlock your wallet and to send transactions.</Text>
+              <Text style={this.style.text}>If you <Strong>forget your pin</Strong>, you will <Strong>lose access</Strong> to your wallet. The only way to recover access is to reset your wallet and import your seed words.</Text>
+            </View>
             <HathorTextInput
               style={{marginTop: 16}}
               onChangeText={this.onChangePin1}
@@ -67,14 +77,16 @@ class ChoosePinScreen extends React.Component {
               secureTextEntry={true}
               value={this.state.pin2}
             />
-            <HathorButton
-              style={{marginTop: 16}}
-              onPress={this.loadClicked}
-              disabled={this.state.error !== null}
-              title="Go"
-              style={{ marginTop: 8 }}
-            />
             <Text style={{ color: 'red' }}>{this.state.error}</Text>
+            <View style={this.style.buttonView}>
+              <NewHathorButton
+                style={{marginTop: 16}}
+                onPress={this.loadClicked}
+                disabled={this.state.error !== null}
+                title="Go"
+                style={{ marginTop: 8 }}
+              />
+            </View>
           </View>
         </SafeAreaView>
       </KeyboardAvoidingView>
