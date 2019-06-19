@@ -22,7 +22,7 @@ const HathorHeader = props => {
   }
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, props.wrapperStyle]}>
       {renderBackButton()}
       <Text>{props.title}</Text>
       <View style={styles.iconWrapper}></View>

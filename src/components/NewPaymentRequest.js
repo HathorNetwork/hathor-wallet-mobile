@@ -1,9 +1,9 @@
 import React from 'react';
-import { Dimensions, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
+import { Dimensions, KeyboardAvoidingView, Platform, StyleSheet, TouchableWithoutFeedback, View, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
-import TokenBar from './TokenBar';
+import TokenBox from './TokenBox';
 import { newInvoice } from '../actions';
 import { getNoDecimalsAmount } from '../utils';
 
@@ -15,11 +15,9 @@ import { faSortDown } from '@fortawesome/free-solid-svg-icons'
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
- * tokens {Object} Array of token configs registered on this wallet
  */
 const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
-  tokens: state.tokens,
 })
 
 
@@ -33,7 +31,7 @@ class NewPaymentRequest extends React.Component {
      */
     this.state = {
       amount: "",
-      token: null,
+      token: this.props.selectedToken,
     };
 
     // If the payment request detail modal was opened
@@ -90,11 +88,20 @@ class NewPaymentRequest extends React.Component {
     return false;
   }
 
-  render() {
-    const renderTokenBarIcon = () => {
-      return <FontAwesomeIcon icon={ faSortDown } style={{ textAlign: 'center', marginTop: Platform.OS === 'ios' ? -48 : 0 }} />
-    }
+  onTokenBoxPress = () => {
+    this.modalOpened = true;
+    this.props.navigation.navigate(
+      'ChangeToken',
+      {
+        token: this.state.token,
+        onItemPress: (item) => {
+          this.onTokenChange(item);
+        }
+      }
+    );
+  }
 
+  render() {
     // Status bar + header + tab height
     const topDistance = getStatusBarHeight() + 56 + 48;
 
@@ -124,19 +131,10 @@ class NewPaymentRequest extends React.Component {
               value={this.state.amount}
               style={{flex: 1}}
             />
-            <View style={{ alignItems: "center", justifyContent: "center", height: 40, width: 80, borderWidth: 1, borderColor: '#000', borderRadius: 8 }}>
-              <TokenBar
-                ref={this.tokenBarElement}
-                navigation={this.props.navigation}
-                onChange={this.onTokenChange}
-                tokens={this.props.tokens}
-                defaultSelected={this.props.selectedToken.uid}
-                icon={renderTokenBarIcon()}
-                containerStyle={styles.pickerContainerStyle}
-                wrapperStyle={styles.pickerInputContainer}
-                shortLabel={true}
-              />
-            </View>
+            <TokenBox
+              onPress={this.onTokenBoxPress}
+              label={this.state.token.symbol}
+            />
           </View>
           <View style={buttonWrapperStyle.style}>
             <NewHathorButton
