@@ -12,12 +12,16 @@ import TokenBar from '../components/TokenBar';
 import ModalTop from '../components/ModalTop';
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
-import { clearInvoice, newInvoice } from '../hathorRedux';
+import { clearInvoice, newInvoice } from '../actions';
 import { getNoDecimalsAmount, getAmountParsed, getTokenLabel } from '../utils';
 
 import hathorLib from '@hathor/wallet-lib';
 
 
+/**
+ * selectedToken {Object} Selected token config {name, symbol, uid}
+ * tokens {Array} Available tokens in this wallet
+ */
 const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
   tokens: state.tokens,
@@ -105,9 +109,9 @@ const ReceiveScreen = connect(mapStateToProps)(_ReceiveScreen);
 
 
 const mapInvoiceStateToProps = (state) => ({
-  address: state.invoice.address,
-  amount: state.invoice.amount,
-  token: state.invoice.token,
+  address: state.latestInvoice.address,
+  amount: state.latestInvoice.amount,
+  token: state.latestInvoice.token,
   payment: state.invoicePayment,
 })
 

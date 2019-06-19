@@ -1,13 +1,13 @@
 import React from 'react';
 import { ActivityIndicator, AppState, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { connect } from 'react-redux';
+import * as Keychain from 'react-native-keychain';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faExchangeAlt } from '@fortawesome/free-solid-svg-icons';
-import * as Keychain from 'react-native-keychain';
+import { loadHistory, newTx, resetData, setTokens, updateSelectedToken } from '../actions';
 import HathorButton from '../components/HathorButton';
 import TokenBar from '../components/TokenBar';
-import { balanceUpdate, clearNetworkError, historyUpdate, networkError, newTx, resetData, setTokens, updateSelectedToken } from '../hathorRedux';
 import { getShortHash, setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled } from '../utils';
 import { LOCK_TIMEOUT } from '../constants';
 
@@ -15,29 +15,35 @@ import hathorLib from '@hathor/wallet-lib';
 
 
 /**
- * txList {Object} array with transactions of the selected token
+ * txList {Array} array with transactions of the selected token
  * balance {Object} object with token balance {'available', 'locked'}
- * networkError {number} timestamp when the network error happened (null if no error)
+ * loadHistoryError {boolean} indicates if there's been an error loading tx history
+ * historyLoading {boolean} indicates we're fetching history from server (display spinner)
  * selectedToken {string} uid of the selected token
- * tokens {Object} array with all added tokens on this wallet
+ * tokens {Array} array with all added tokens on this wallet
  */
 const mapStateToProps = (state) => ({
-  txList: state.txList,
-  balance: state.balance,
-  networkError: state.networkError,
+  txList: state.tokensHistory[state.selectedToken.uid] || [],
+  balance: state.tokensBalance[state.selectedToken.uid] || {available: 0, locked: 0},
+  loadHistoryError: state.loadHistoryError,
+  historyLoading: state.historyLoading,
   selectedToken: state.selectedToken,
   tokens: state.tokens
 })
 
-class MainScreen extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isLoading: true,    //{boolean} if should show list or spinner
-    };
-    this.backgroundTime = null;
-    this.appState = 'active';
+const mapDispatchToProps = dispatch => {
+  return {
+    resetData: () => dispatch(resetData()),
+    setTokens: tokens => dispatch(setTokens(tokens)),
+    loadHistory: () => dispatch(loadHistory()),
+    newTx: (newElement, keys) => dispatch(newTx(newElement, keys)),
+    updateSelectedToken: token => dispatch(updateSelectedToken(token)),
   }
+}
+
+class MainScreen extends React.Component {
+  backgroundTime = null;
+  appState = 'active';
 
   componentDidMount() {
     this.getBiometry();
@@ -48,14 +54,11 @@ class MainScreen extends React.Component {
       Keychain.setGenericPassword('', pin, {accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY, acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY});
     } else {
       hathorLib.WebSocketHandler.setup();
-      // We need to update the redux tokens with data from storage, so the user dont have to add the tokens again
-      this.updateReduxTokens();
       // user just started the app and wallet was already initialized, so lock screen
       this.props.navigation.navigate('PinScreen', {cb: this._onUnlockSuccess});
     }
     hathorLib.WebSocketHandler.on('wallet', this.handleWebsocketMsg);
     hathorLib.WebSocketHandler.on('reload_data', this.fetchDataFromServer);
-    hathorLib.WebSocketHandler.on('is_online', this.handleWebsocketStateChange);
     AppState.addEventListener('change', this._handleAppStateChange);
     // We need to update the redux tokens with data from localStorage, so the user doesn't have to add the tokens again
     this.updateReduxTokens();
@@ -65,9 +68,8 @@ class MainScreen extends React.Component {
   componentWillUnmount() {
     hathorLib.WebSocketHandler.removeListener('wallet', this.handleWebsocketMsg);
     hathorLib.WebSocketHandler.removeListener('reload_data', this.fetchDataFromServer);
-    hathorLib.WebSocketHandler.removeListener('is_online', this.handleWebsocketStateChange);
     AppState.removeEventListener('change', this._handleAppStateChange);
-    this.props.dispatch(resetData());
+    this.props.resetData();
   }
   
   getBiometry = () => {
@@ -112,34 +114,13 @@ class MainScreen extends React.Component {
     this.appState = nextAppState;
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.selectedToken !== prevProps.selectedToken) {
-      this.fetchDataFromServer();
-    }
-  }
-
   updateReduxTokens = () => {
-    this.props.dispatch(setTokens(hathorLib.tokens.getTokens()));
+    this.props.setTokens(hathorLib.tokens.getTokens());
   }
 
   fetchDataFromServer = () => {
     this.cleanData();
-    this.setState({isLoading: true});
-    hathorLib.version.checkApiVersion().then(data => {
-      hathorLib.wallet.loadAddressHistory(0, hathorLib.constants.GAP_LIMIT).then(() => {
-        this.props.dispatch(clearNetworkError());
-        const data = hathorLib.wallet.getWalletData();
-        // Update historyTransactions with new one
-        const historyTransactions = 'historyTransactions' in data ? data['historyTransactions'] : {};
-        const keys = hathorLib.wallet.getWalletData().keys;
-        this.props.dispatch(historyUpdate(historyTransactions, keys));
-        this.setState({isLoading: false});
-      }, error => {
-        this.setState({isLoading: false});
-      })
-    }, error => {
-      this.setState({isLoading: false});
-    });
+    this.props.loadHistory();
   }
 
   cleanData = () => {
@@ -166,18 +147,6 @@ class MainScreen extends React.Component {
     setSupportedBiometry(supportedBiometry);
   }
 
-  handleWebsocketStateChange = isOnline => {
-    if (isOnline === undefined) {
-      return;
-    }
-    if (isOnline) {
-      this.props.dispatch(clearNetworkError());
-    } else {
-      const timestamp = Date.now();
-      this.props.dispatch(networkError(timestamp));
-    }
-  }
-
   handleWebsocketMsg = wsData => {
     if (wsData.type === "wallet:address_history") {
       //TODO we also have to update some wallet lib data? Lib should do it by itself
@@ -188,12 +157,12 @@ class MainScreen extends React.Component {
       
       const newWalletData = hathorLib.wallet.getWalletData();
       const keys = newWalletData.keys;
-      this.props.dispatch(newTx(wsData.history, keys));
+      this.props.newTx(wsData.history, keys);
     }
   }
 
   tokenChanged = (token) => {
-    this.props.dispatch(updateSelectedToken(token));
+    this.props.updateSelectedToken(token);
   }
 
   render() {
@@ -217,7 +186,7 @@ class MainScreen extends React.Component {
     }
 
     const renderListHeader = ({item}) => {
-      if (this.state.isLoading) return null;
+      if (this.props.historyLoading) return null;
 
       return (
         <View style={[mainStyle.listItemWrapper, { backgroundColor: 'white' }]}>
@@ -242,10 +211,10 @@ class MainScreen extends React.Component {
             />
           </View>
         );
-      } else if (!this.state.isLoading && !this.props.networkError) {
+      } else if (!this.props.historyLoading && !this.props.loadHistoryError) {
         //empty history
         return <Text style={{ fontSize: 16, textAlign: "center" }}>You don't have any transactions</Text>;
-      } else if (!this.state.isLoading && this.props.networkError) {
+      } else if (!this.props.historyLoading && this.props.loadHistoryError) {
         return (
           <View>
             <Text style={{ fontSize: 16, textAlign: "center" }}>There's been an error connecting to the server</Text>
@@ -285,7 +254,7 @@ class MainScreen extends React.Component {
           containerStyle={mainStyle.pickerContainerStyle}
         />
         <View style={{ display: "flex", flexDirection: "row", width: "100%", alignItems: "center", justifyContent: "space-around", height: 120, backgroundColor: "#0273a0", padding: 24 }}>
-          {!this.state.isLoading && renderBalance()}
+          {!this.props.historyLoading && renderBalance()}
           <View style={{ display: "flex", alignItems: "center" }}>
             <View style={{ padding: 4, borderColor: "white", borderWidth: 1, marginBottom: 8 }}>
               <Text style={{ lineHeight: 30, fontWeight: "bold", fontSize: 16, color: 'white' }}>Testnet</Text>
@@ -293,8 +262,8 @@ class MainScreen extends React.Component {
           </View>
         </View>
         <View style={{ flex: 1, justifyContent: "center", alignSelf: "stretch" }}>
-          {this.state.isLoading && <ActivityIndicator size="large" animating={true} />}
-          {!this.state.isLoading && renderTxHistory()}
+          {this.props.historyLoading && <ActivityIndicator size="large" animating={true} />}
+          {!this.props.historyLoading && renderTxHistory()}
         </View>
       </SafeAreaView>
     );
@@ -340,4 +309,4 @@ const mainStyle = StyleSheet.create({
   }
 });
 
-export default connect(mapStateToProps)(MainScreen)
+export default connect(mapStateToProps, mapDispatchToProps)(MainScreen)
