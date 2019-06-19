@@ -54,43 +54,37 @@ const InitStack = createStackNavigator(
   }
 );
 
+const TabBarIconsMap = {
+  'Home': faHome,
+  'Send': faArrowUp,
+  'Receive': faArrowDown,
+  'Settings': faCog,
+};
+
 const TabNavigator = createBottomTabNavigator({
-    Home: MainScreen,
+  Home: MainScreen,
     Send: SendScreen,
     Receive: ReceiveScreen,
     Settings: Settings,
   }, {
     initialRoute: 'MainScreen',
     tabBarOptions: {
-      activeTintColor: 'white',
-      inactiveTintColor: 'rgba(255, 255, 255, 0.6)',
-      labelStyle: {
-        fontSize: 12,
-        marginTop: 4,
-      },
+      activeTintColor: '#E30052',
+      inactiveTintColor: '#333333',
       style: {
-        backgroundColor: '#0273a0',
-        paddingTop: 8,
+        paddingTop: 12,
+        paddingBottom: 12,
       },
       tabStyle: {
         justifyContent: 'center'
       },
-      showIcon: true
+      showIcon: true,
+      showLabel: false,
     },
     defaultNavigationOptions: ({ navigation }) => ({
       tabBarIcon: ({ focused, horizontal, tintColor }) => {
         const { routeName } = navigation.state;
-        let iconName = null;
-        if (routeName === "Home") {
-          iconName = faHome;
-        } else if (routeName === "Send") {
-          iconName = faArrowUp;
-        } else if (routeName === "Receive") {
-          iconName = faArrowDown;
-        } else {
-          // settings
-          iconName = faCog;
-        }
+        const iconName = TabBarIconsMap[routeName];
         return <FontAwesomeIcon icon={ iconName } color={ tintColor } size={ 24 } />
       }
     })
