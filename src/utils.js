@@ -38,8 +38,11 @@ export const getMyTxBalance = (tx, myKeys) => {
   return balance;
 }
 
-export const getShortHash = hash => {
-  return `${hash.substring(0,4)}...${hash.substring(60,64)}`;
+export const getShortHash = (hash, length) => {
+  if (!length) {
+    length = 4;
+  }
+  return `${hash.substring(0, length)}...${hash.substring(64 - length, 64)}`;
 }
 
 export const getShortAddress = address => {

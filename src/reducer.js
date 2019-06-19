@@ -5,11 +5,12 @@ import { getBalance, getMyTxBalance } from './utils';
 import { INITIAL_TOKENS, SELECTED_TOKEN } from './constants';
 import { types } from './actions.js';
 
+import { TxHistory } from './models';
+
 import hathorLib from '@hathor/wallet-lib';
 
 
 /**
- * tokensHistory {Object} stores the txList for each token (Dict[tokenUid: str, List[Transaction]])
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {available: int, locked: int}])
  * historyLoading {boolean} indicates we're loading the tx history
  * loadHistoryError {boolean} error loading history
@@ -149,8 +150,53 @@ const addTxToSortedList = (tokenUid, tx, txTokenBalance, currentHistory) => {
       index = i + 1;
     }
   }
-  currentHistory.splice(index, 0, {tx_id: tx.tx_id, timestamp: tx.timestamp, balance: txTokenBalance});
+  const txHistory = getTxHistoryFromTx(tx, tokenUid, txTokenBalance);
+  currentHistory.splice(index, 0, txHistory);
   return currentHistory;
+}
+
+/**
+ * Return an object to be saved in the history.
+ *
+ * tx: {
+ *   tx_id: str,
+ *   timestamp: int,
+ *   is_voided: bool,
+ *   inputs: [
+ *     index: int,
+ *     script: str,
+ *     token: str,
+ *     token_data: int,
+ *     tx_id: str,
+ *     value: int,
+ *     decoded: {
+ *       address: str,
+ *       timelock: Optional[int],
+ *       type: str,
+ *     }
+ *   ],
+ *   outputs: [
+ *     value: int,
+ *     token_data: int,
+ *     token: str,
+ *     spent_by: Optional[str],
+ *     script: str,
+ *     decoded: {
+ *       address: str,
+ *       timelock: Optional[int],
+ *       type: str,
+ *     }
+ *   ]
+ * }
+ **/
+const getTxHistoryFromTx = (tx, tokenUid, tokenTxBalance) => {
+  return new TxHistory({
+    tx_id: tx.tx_id,
+    timestamp: tx.timestamp,
+    token_uid: tokenUid,
+    balance: tokenTxBalance,
+    is_voided: tx.is_voided,
+  });
 }
 
 /**
@@ -278,7 +324,7 @@ const onFetchHistorySuccess = (state, action) => {
         tokensHistory[tokenUid] = tokenHistory;
       }
       // add this tx to the history of the corresponding token
-      tokenHistory.push({tx_id: tx.tx_id, timestamp: tx.timestamp, balance: tokenTxBalance, is_voided: tx.is_voided});
+      tokenHistory.push(getTxHistoryFromTx(tx, tokenUid, tokenTxBalance));
       const totalBalance = getBalance(tokenUid);
       // update token total balance
       tokensBalance[tokenUid] = totalBalance;
