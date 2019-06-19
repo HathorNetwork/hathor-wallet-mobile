@@ -1,4 +1,5 @@
 import hathorLib from '@hathor/wallet-lib';
+import Mnemonic from 'bitcore-mnemonic';
 
 import React from 'react';
 import {
@@ -15,8 +16,11 @@ import {
   TouchableWithoutFeedback,
   View
 } from 'react-native';
-import HathorButton from '../components/HathorButton';
+import NewHathorButton from '../components/NewHathorButton';
 import HathorTextInput from '../components/HathorTextInput';
+
+import baseStyle from '../styles/init';
+import { Strong } from '../utils';
 
 class WelcomeScreen extends React.Component {
   static navigationOptions = {
@@ -27,63 +31,105 @@ class WelcomeScreen extends React.Component {
 
   state = { switchValue: false };
 
+  style = Object.assign({}, baseStyle, StyleSheet.create({
+    switchView: {
+      flexDirection: 'row',
+    },
+    switchText: {
+      paddingLeft: 16,
+      fontSize: 14,
+      lineHeight: 18,
+      flex: 1,
+    },
+  }));
+
   toggleSwitch = (value) => {
     this.setState({ switchValue: value });
   }
 
   render() {
+    const Link = (props) => <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>{props.children}</Text>;
     return (
-      <View style={initStyle.container}>
-        <Text style={{ fontWeight: "bold", fontSize: 20 }}>Welcome to Hathor Testnet!</Text>
-        <View style={[initStyle.textMarginBottom, initStyle.textMarginTop]}>
-          <Text style={ initStyle.text }>This wallet is connected to a testnet.</Text>
-          <Text style={ initStyle.text }>Your HTR and other tokens may be reset at any time.</Text>
-          <Text style={ initStyle.text }>If someone offers to sell some tokens to you, that person is a scammer.</Text>
-          <Text style={ initStyle.text }>For further information, check our website 
-            <Text style={{ color: "#0273a0" }} onPress={() => Linking.openURL("https://hathor.network/")}> https://hathor.network/</Text>
-          .</Text>
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={this.style.container}>
+          <Text style={this.style.title}>Welcome to Hathor Testnet!</Text>
+          <View>
+            <Text style={this.style.text}>This wallet is connected to a <Strong>testnet</Strong>.</Text>
+            <Text style={this.style.text}>This means that <Strong>your Hathor token (HTR) and any other token may be reset at any time.</Strong></Text>
+            <Text style={this.style.text}>If someone offers to sell some tokens to you, that person is a scammer.</Text>
+            <Text style={this.style.text}>For further information, check our website <Link href="https://hathor.network">https://hathor.network/</Link>.</Text>
+          </View>
+          <View style={this.style.switchView}>
+            <Switch
+              onValueChange={this.toggleSwitch}
+              trackColor={{true: '#E30052'}}
+              value={this.state.switchValue}
+            />
+            <Text style={this.style.switchText}>I agree to participate in the testnet of Hathor, and I acknowledge that the tokens are not for real.</Text>
+          </View>
+          <View style={this.style.buttonView}>
+            <NewHathorButton
+              disabled={!this.state.switchValue}
+              onPress={() => this.props.navigation.navigate('InitialScreen')}
+              title="Start"
+            />
+          </View>
         </View>
-        <View style={{flexDirection:"row", padding: 16}}>
-          <Switch
-            onValueChange={this.toggleSwitch}
-            value={this.state.switchValue}
-          />
-          <Text style={{padding: 5}}>I agree to participate in the testnet of Hathor, and I acknowledge that the tokens are not for real.</Text>
-        </View>
-        <HathorButton
-          disabled={!this.state.switchValue}
-          onPress={() => this.props.navigation.navigate('InitialScreen')}
-          title="Get started"
-        />
-      </View>
+      </SafeAreaView>
     )
   }
 }
 
-const InitialScreen = props => {
-  return (
-    <View style={initStyle.container}>
-      <Text>First, you need to initialize your wallet.</Text>
-      <Text>You can either start a new wallet or import data from a wallet that already exists.</Text>
-      <View style={{ marginTop: 24}}>
-        <HathorButton
-          onPress={() => props.navigation.navigate('NewWordsScreen')}
-          title="New Wallet"
-          style={{ marginBottom: 16 }}
-        />
-        <HathorButton
-          onPress={() => props.navigation.navigate('LoadWordsScreen')}
-          title="Import Wallet"
-        />
-      </View>
-    </View>
-  )
+class InitialScreen extends React.Component {
+  style = Object.assign({}, baseStyle);
+
+  render() {
+    return (
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={this.style.container}>
+          <Text style={this.style.title}>To start,</Text>
+          <Text style={this.style.text}>You need to <Strong>initialize your wallet</Strong>.</Text>
+          <Text style={this.style.text}>You can either <Strong>start a new wallet</Strong> or <Strong>import a wallet</Strong> that already exists.</Text>
+          <Text style={this.style.text}>To import a wallet, you will need to provide your seed words.</Text>
+          <View style={this.style.buttonView}>
+            <NewHathorButton
+              onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
+              title="Import Wallet"
+              style={{ marginBottom: 16 }}
+              secondary={true}
+            />
+            <NewHathorButton
+              onPress={() => this.props.navigation.navigate('NewWordsScreen')}
+              title="New Wallet"
+            />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 }
 
 class NewWordsScreen extends React.Component {
   state = {
     words: hathorLib.wallet.generateWalletWords(hathorLib.constants.HD_WALLET_ENTROPY)
   };
+
+  style = Object.assign({}, baseStyle, StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      flex: 0.5,
+    },
+    item: {
+      flex: 1,
+    },
+    itemNumber: {
+      fontSize: 14,
+    },
+    itemText: {
+      color: '#000',
+      fontSize: 18,
+    },
+  }));
 
   render() {
     const wordsArr = this.state.words ? this.state.words.split(' ') : [];
@@ -105,28 +151,35 @@ class NewWordsScreen extends React.Component {
       const rows = wordsToRender.map((word, idx) => {
         const realIndex = startIndex + idx + 1;
         return (
-          <View key={realIndex} style={{ flex: 1, alignItems: 'center' }}>
-            <Text><Text style={{ fontWeight: "bold" }}>{realIndex}.</Text> {word} </Text>
+          <View key={`word-${realIndex}`} style={this.style.item}>
+            <Text><Text style={this.style.itemNumber}>{realIndex}.</Text> <Text style={this.style.itemText}>{word}</Text></Text>
           </View>
         )
       }); 
 
-      return <View key={index} style={{ flex: 1, flexDirection: 'row', alignItems: 'center'}}>{ rows }</View>
+      return (
+        <View key={`row-${index}`} style={this.style.row}>
+          {rows}
+        </View>
+      );
     }
 
     return (
-      <View style={initStyle.container}>
-        <View style={initStyle.textMarginBottom}>
-          <Text style={initStyle.text}>Your wallet has been created!</Text>
-          <Text style={initStyle.text}>You must save the words below in the same order, so you can load this wallet again in the future.</Text>
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={this.style.container}>
+          <View>
+            <Text style={this.style.title}>Your wallet has been created!</Text>
+            <Text style={this.style.text}>You must <Strong>do a backup</Strong> and save the words below <Strong>in the same order they appear</Strong>.</Text>
+          </View>
+          {renderWords()}
+          <View style={this.style.buttonView}>
+            <NewHathorButton
+              onPress={() => this.props.navigation.navigate('ChoosePinScreen', {words: this.state.words})}
+              title="Next"
+            />
+          </View>
         </View>
-        {renderWords()}
-        <HathorButton
-          onPress={() => this.props.navigation.navigate('ChoosePinScreen', {words: this.state.words})}
-          title="Got it"
-          style={{ marginTop: 24 }}
-        />
-      </View>
+      </SafeAreaView>
     );
   }
 }
@@ -135,12 +188,66 @@ class LoadWordsScreen extends React.Component {
   state = {
     words: "",
     errorMessage: "",
+    isValid: false,
   };
+
+  wordlist = Mnemonic.Words.ENGLISH;
+  numberOfWords = 24;
+
+  style = Object.assign({}, baseStyle, StyleSheet.create({
+    inputView: {
+      marginTop: 16,
+      marginBottom: 16,
+    },
+    label: {
+      fontSize: 12,
+      color: 'rgba(0, 0, 0, 0.5)',
+      marginTop: 8,
+      marginBottom: 8,
+    },
+    input: {
+      fontSize: 16,
+      lineHeight: 24,
+      borderColor: '#EEEEEE',
+      borderBottomWidth: 1,
+    }
+  }));
+
+  onChangeText = (text) => {
+    const words = text.trim().split(' ');
+    const nonEmptyWords = words.filter(value => value.length !== 0);
+    const errorList = [];
+
+    for (let i=0; i < nonEmptyWords.length; i++) {
+      const w = nonEmptyWords[i];
+      if (this.wordlist.indexOf(w.toLowerCase()) < 0) {
+        errorList.push(w);
+      }
+    }
+
+    let errorMessage = '';
+    let isValid = false;
+    if (errorList.length > 0) {
+      errorMessage = `Invalid words: ${errorList.join(' ')}`;
+    } else {
+      if (nonEmptyWords.length == this.numberOfWords) {
+        isValid = true;
+      } else if (nonEmptyWords.length > this.numberOfWords) {
+        errorMessage = `Too many words.`
+      }
+    }
+
+    this.setState({
+      words: nonEmptyWords,
+      errorMessage: errorMessage,
+      isValid: isValid,
+    });
+  }
 
   loadClicked = () => {
     Keyboard.dismiss();
-    const words = this.state.words.trim();
-    this.setState({ errorMessage: "" })
+    const words = this.state.words.join(' ');
+    this.setState({ errorMessage: '' })
     const result = hathorLib.wallet.wordsValid(words);
     if (result.valid) {
       this.props.navigation.navigate('ChoosePinScreen', {words});
@@ -154,28 +261,35 @@ class LoadWordsScreen extends React.Component {
       <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
         <SafeAreaView style={{ flex: 1 }}>
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={initStyle.container}>
-              <Text>Write the 24 words of your wallet (separated by space).</Text>
-              <TextInput
-                style={{height: 100, borderColor: 'gray', borderWidth: 1, padding: 16, marginTop: 24, marginBottom: 16}}
-                textAlignVertical="top"
-                onChangeText={(text) => this.setState({words: text})}
-                placeholder='Enter words separated by a single space'
-                multiline = {true}
-                keyboardAppearance='dark'
-                returnKeyType='done'
-                enablesReturnKeyAutomatically={true}
-                autoFocus={true}
-                onSubmitEditing={this.loadClicked}
-                blurOnSubmit={true}
-              />
+            <View style={this.style.container}>
+              <Text style={this.style.title}>To import a wallet,</Text>
+              <Text style={this.style.text}>You need to <Strong>write down the {this.numberOfWords} seed words</Strong> of your wallet, separated by space.</Text>
+              <View style={this.style.inputView}>
+                <Text style={this.style.label}>Words</Text>
+                <TextInput
+                  style={this.style.input}
+                  textAlignVertical="top"
+                  onChangeText={this.onChangeText}
+                  placeholder='Enter your seed words separated by space'
+                  multiline={true}
+                  keyboardAppearance='dark'
+                  returnKeyType='done'
+                  enablesReturnKeyAutomatically={true}
+                  autoFocus={true}
+                  onSubmitEditing={this.loadClicked}
+                  blurOnSubmit={true}
+                />
+                <Text style={this.style.label}>{this.state.words.length}/{this.numberOfWords}</Text>
+              </View>
               <Text style={{ color: 'red' }}>{this.state.errorMessage}</Text>
-              <HathorButton
-                onPress={this.loadClicked}
-                disabled={!this.state.words}
-                title="Next"
-                style={{ marginTop: 8 }}
-              />
+              <View style={this.style.buttonView}>
+                <NewHathorButton
+                  onPress={this.loadClicked}
+                  disabled={!this.state.isValid}
+                  title="Next"
+                  style={{ marginTop: 8 }}
+                />
+              </View>
             </View>
           </TouchableWithoutFeedback>
         </SafeAreaView>
@@ -183,24 +297,5 @@ class LoadWordsScreen extends React.Component {
     );
   }
 }
-
-const initStyle = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-  },
-  textMarginTop: {
-    marginTop: 24,
-  },
-  textMarginBottom: {
-    marginBottom: 24,
-  },
-  text: {
-    lineHeight: 24,
-    fontSize: 14,
-  },
-});
 
 export { WelcomeScreen, InitialScreen, LoadWordsScreen, NewWordsScreen };

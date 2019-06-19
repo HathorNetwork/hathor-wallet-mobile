@@ -1,4 +1,8 @@
 import hathorLib from '@hathor/wallet-lib';
+import React from 'react';
+import { Text } from 'react-native';
+
+export const Strong = (props) => <Text style={{fontWeight: 'bold'}}>{props.children}</Text>;
 
 /**
  * Returns the balance for each token in tx, if the input/output belongs to this wallet

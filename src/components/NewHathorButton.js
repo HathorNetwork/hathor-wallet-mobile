@@ -9,8 +9,13 @@ const NewHathorButton = props => {
     textStyle.push(style.textDisabled);
   }
 
+  if (props.secondary && !props.disabled) {
+    wrapperViewStyle.push(style.wrapperSecondary);
+    textStyle.push(style.textSecondary);
+  }
+
   return (
-    <View style={[...wrapperViewStyle, props.wrapperStyle]}>
+    <View style={[...wrapperViewStyle, props.wrapperStyle, props.style]}>
       <TouchableOpacity onPress={props.onPress} style={style.touchable} disabled={props.disabled}>
         <Text style={[...textStyle, props.textStyle]}>{props.title}</Text>
       </TouchableOpacity>
@@ -24,11 +29,14 @@ const style = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#000',
     alignSelf: 'stretch',
-    flexDirection: 'row',
-    flex: 1,
   },
   wrapperDisabled: {
-    backgroundColor: 'rgba(0,0,0,0.1)'
+    backgroundColor: 'rgba(0, 0, 0, 0.1)'
+  },
+  wrapperSecondary: {
+    backgroundColor: '#fff',
+    borderColor: '#000',
+    borderWidth: 1.5,
   },
   touchable: {
     padding: 16,
@@ -43,6 +51,9 @@ const style = StyleSheet.create({
     textTransform: 'uppercase',
     color: '#fff',
     textAlign: 'center',
+  },
+  textSecondary: {
+    color: '#000',
   },
   textDisabled: {
     color: 'rgba(0,0,0,0.5)',
