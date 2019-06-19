@@ -82,7 +82,7 @@ class PaymentRequestDetail extends React.Component {
             </View>
             <View style={styles.dataWrapper}>
               <Text style={styles.title}>Amount</Text>
-              <Text style={styles.data}>{this.props.amount ? `${hathorLib.helpers.prettyValue(this.props.amount)} ${this.props.token.symbol}` : "not set"}</Text>
+              <Text style={styles.data}>{hathorLib.helpers.prettyValue(this.props.amount)} {this.props.token.symbol}</Text>
             </View>
             <View style={styles.dataWrapper}>
               <Text style={styles.title}>My Address</Text>

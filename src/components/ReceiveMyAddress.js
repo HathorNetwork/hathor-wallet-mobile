@@ -74,7 +74,7 @@ class ReceiveMyAddress extends React.Component {
           <NewHathorButton
             title="New address"
             onPress={this.updateAddress}
-            wrapperStyle={{ flex: 1, borderRightWidth: 1.5, borderColor: '#e5e5ea', backgroundColor: 'transparent' }}
+            wrapperStyle={{ flex: 1, borderRadius: 0, borderRightWidth: 1.5, borderColor: '#e5e5ea', backgroundColor: 'transparent' }}
             textStyle={{ color: '#0273a0' }}
           />
           <NewHathorButton

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions, Image, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import { Dimensions, Image, Platform, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 
 class ModalConfirmation extends React.Component {
   /**
@@ -32,6 +32,9 @@ class ModalConfirmation extends React.Component {
 
     const { height, width } = Dimensions.get('window');
 
+    // Prevent the bottom message to be covered by some android phones
+    const marginBottom = Platform.OS === 'android' ? 40 : 16;
+
     const styles = StyleSheet.create({
       modal: {
         position: 'absolute',
@@ -45,7 +48,7 @@ class ModalConfirmation extends React.Component {
         width: width,
       },
       innerModal: {
-        marginBottom: 16,
+        marginBottom: marginBottom,
         height: 270,
         backgroundColor: 'white',
         alignItems: 'center',
