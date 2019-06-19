@@ -16,7 +16,7 @@ import { Provider } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faArrowDown, faArrowUp, faCog, faHome } from '@fortawesome/free-solid-svg-icons'
 
-import { store, networkError } from './hathorRedux';
+import { store } from './reducer';
 import DecideStackScreen from './screens/DecideStackScreen';
 import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from './screens/InitWallet';
 import ChoosePinScreen from './screens/ChoosePinScreen';
@@ -139,7 +139,6 @@ const createRequestInstance = (resolve, timeout) => {
   }, (error) => {
     // Adding conditional because if the server forgets to send back the CORS
     // headers, error.response will be undefined
-    store.dispatch(networkError(Date.now()));
     return Promise.reject(error);
   });
   return instance;

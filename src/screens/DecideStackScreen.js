@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { resetData } from '../hathorRedux';
+import { resetData } from '../actions';
 import { SafeAreaView } from 'react-native';
 import HathorLogo from '../components/HathorLogo';
 

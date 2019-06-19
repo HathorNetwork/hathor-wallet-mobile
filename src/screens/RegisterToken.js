@@ -6,7 +6,7 @@ import ModalTop from '../components/ModalTop';
 import QRCodeReader from '../components/QRCodeReader';
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
-import { newToken } from '../hathorRedux';
+import { newToken } from '../actions';
 
 import hathorLib from '@hathor/wallet-lib';
 

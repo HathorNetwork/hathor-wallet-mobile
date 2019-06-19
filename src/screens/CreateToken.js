@@ -8,7 +8,7 @@ import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
 
 import { getAmountParsed, getNoDecimalsAmount } from '../utils';
-import { newToken, updateSelectedToken } from '../hathorRedux';
+import { newToken, updateSelectedToken } from '../actions';
 
 import hathorLib from '@hathor/wallet-lib';
 

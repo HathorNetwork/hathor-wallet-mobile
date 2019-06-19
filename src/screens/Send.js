@@ -6,18 +6,30 @@ import QRCodeReader from '../components/QRCodeReader';
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
 import { getDecimalsAmount, getNoDecimalsAmount, getAmountParsed, getTokenLabel } from '../utils';
+import { sendTx, sendTxDismiss } from '../actions';
 import { connect } from 'react-redux';
 
 import hathorLib from '@hathor/wallet-lib';
 
 
 /**
- * selected {Object} Select token config {name, symbol, uid}
+ * selected {Object} Selected token config {name, symbol, uid}
+ * loading {boolean} Indicates tx send is being processed (display spinner)
+ * error {String} Error message for send operation
  */
 const mapStateToProps = (state) => {
   return {
     selected: state.selectedToken,
+    loading: state.sendTx.loading,
+    error: state.sendTx.error,
   };
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    sendTxDismiss: () => dispatch(sendTxDismiss()),
+    sendTx: (amount, address, token, pin, onSuccess) => dispatch(sendTx(amount, address, token, pin, onSuccess)),
+  }
 }
 
 class _SendScreenModal extends React.Component {
@@ -28,43 +40,33 @@ class _SendScreenModal extends React.Component {
     if (amount) {
       amount = getDecimalsAmount(amount).toString();
     }
-
     // If qrcode was read, token is the one from it, else it's the one from redux
     const token = this.props.navigation.getParam("token", null) || this.props.selected;
-    this.state = {address, amount, token, error: null, spinner: false};
+    this.state = {address, amount, token};
   }
 
-  sendTx = (pinCode) => {
-    this.setState({error: null, spinner: true});
-    const value = getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.')));
-    const data = {};
-    const isHathorToken = this.state.token.uid === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
-    data.tokens = isHathorToken ? [] : [this.state.token.uid];
-    data.inputs = [];
-    data.outputs = [{address: this.state.address, value: value, timelock: null, tokenData: isHathorToken ? 0 : 1}];
-    const walletData = hathorLib.wallet.getWalletData();
-    const historyTransactions = 'historyTransactions' in walletData ? walletData['historyTransactions'] : {};
-    const ret = hathorLib.wallet.prepareSendTokensData(data, this.state.token, true, historyTransactions, [this.state.token]);
-    if (ret.success) {
-      try {
-        hathorLib.transaction.sendTransaction(ret.data, pinCode).then(() => {
-          this.props.navigation.goBack();
-          this.setState({spinner: false});
-        }, (error) => {
-          this.setState({spinner: false, error: 'Error connecting to the network'});
-        });
-      } catch (e) {
-        if (e instanceof hathorLib.errors.AddressError || e instanceof hathorLib.errors.OutputValueError) {
-          this.setState({spinner: false, error: e.message});
-        }
-      }
-    } else {
-      this.setState({spinner: false, error: ret.message});
-    }
+  componentWillUnmount() {
+    this.props.sendTxDismiss();
   }
 
   onAmountChange = text => {
     this.setState({ amount: getAmountParsed(text) });
+  }
+
+  onSendPress = () => {
+    const params = {
+      cb: this.executeSend,
+      canCancel: true,
+      screenText: 'Enter your 6-digit pin to authorize operation',
+      biometryText: 'Authorize operation',
+    };
+    this.props.navigation.navigate('PinScreen', params);
+  }
+
+  executeSend = (pinCode) => {
+    const amount = getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.')));
+    console.log('token', this.state.token, this.state);
+    this.props.sendTx(amount, this.state.address, this.state.token, pinCode, this.props.navigation.goBack);
   }
 
   render() {
@@ -98,19 +100,19 @@ class _SendScreenModal extends React.Component {
           />
           <HathorButton
             style={{marginTop: 32}}
-            onPress={() => this.props.navigation.navigate('PinScreen', {cb: this.sendTx, screenText: 'Enter your 6-digit pin to authorize operation', biometryText: 'Authorize operation'})}
+            onPress={this.onSendPress}
             title="Send"
-            disabled={!(this.state.address && this.state.amount) || this.state.spinner}
+            disabled={!(this.state.address && this.state.amount) || this.props.loading}
           />
-          <Text style={{marginTop: 16, color: "red"}}>{this.state.error}</Text>
-          <ActivityIndicator size="small" animating={this.state.spinner} />
+          <Text style={{marginTop: 16, color: "red"}}>{this.props.error}</Text>
+          <ActivityIndicator size="small" animating={this.props.loading} />
         </View>
       </SafeAreaView>
     )
   }
 }
 
-const SendScreenModal = connect(mapStateToProps)(_SendScreenModal);
+const SendScreenModal = connect(mapStateToProps, mapDispatchToProps)(_SendScreenModal);
 
 
 class SendScreen extends React.Component {

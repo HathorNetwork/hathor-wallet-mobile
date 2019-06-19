@@ -48,7 +48,6 @@ export const getDecimalsAmount = value => {
 
 export const getBalance = (tokenUid) => {
   // TODO should have a method in the lib to get balance by token
-  // TODO utils should not have method accessing hathorLib 
   const data = hathorLib.wallet.getWalletData();
   const historyTransactions = 'historyTransactions' in data ? data['historyTransactions'] : {};
   const filteredArray = hathorLib.wallet.filterHistoryTransactions(historyTransactions, tokenUid, false);
