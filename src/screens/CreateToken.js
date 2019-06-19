@@ -52,19 +52,18 @@ class CreateToken extends React.Component {
       this.setState({ errorMessage: 'All fields are required.' });
       return;
     }
-    this.createToken();
+    this.askPIN();
   }
 
-  createToken = () => {
+  createToken = (pin) => {
     const data = this.getData();
     if (data === null) {
       return;
     }
     this.setState({ errorMessage: '', loading: true });
     const address = hathorLib.wallet.getAddressToUse();
-    // TODO ask for PIN
     const value = getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.')));
-    const retPromise = hathorLib.tokens.createToken(data.input, data.output, address, this.state.name, this.state.symbol, value, '123456');
+    const retPromise = hathorLib.tokens.createToken(data.input, data.output, address, this.state.name, this.state.symbol, value, pin);
     retPromise.then((token) => {
       this.props.dispatch(newToken(token));
       this.props.dispatch(updateSelectedToken(token));
@@ -73,6 +72,18 @@ class CreateToken extends React.Component {
     }, (message) => {
       this.setState({ errorMessage: message, loading: false });
     });
+  }
+
+  askPIN = () => {
+    this.props.navigation.navigate(
+      'PinScreen',
+      {
+        cb: this.createToken,
+        screenText: 'Enter your 6-digit pin to create your token',
+        biometryText: 'Authorize token creation',
+        canCancel: true
+      }
+    );
   }
 
   render() {
@@ -107,7 +118,7 @@ class CreateToken extends React.Component {
             value={this.state.amount} />
           <HathorButton 
             style={{ marginVertical: 16 }}
-            onPress={() => this.validateAndAdd()}
+            onPress={this.validateAndAdd}
             title="Create token"
             disabled={this.state.loading} />
           <Text style={{ color: '#dc3545' }}>{this.state.errorMessage}</Text>
