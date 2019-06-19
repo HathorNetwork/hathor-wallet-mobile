@@ -77,11 +77,11 @@ class PinScreen extends React.Component {
           secureTextEntry={true}
           autoFocus={true}
         />
-        <HathorButton
+        {this.canCancel && <HathorButton
           onPress={() => this.props.navigation.goBack()}
           title="Cancel"
           style={{ marginTop: 32 }}
-        />
+        />}
         {this.state.error && <Text style={{ color: 'red', marginTop: 16 }}>Incorrect pin</Text>}
       </SafeAreaView>
     )
