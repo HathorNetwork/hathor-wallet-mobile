@@ -115,7 +115,8 @@ class NewPaymentRequest extends React.Component {
         marginHorizontal: 16,
         marginBottom: 16,
         marginTop: inputMargin,
-        flexDirection: 'row',
+        flex: 1,
+        justifyContent: 'flex-end',
         alignSelf: 'stretch',
       }
     });
