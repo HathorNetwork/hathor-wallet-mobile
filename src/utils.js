@@ -110,3 +110,77 @@ export const setBiometryEnabled = (value) => {
 export const isBiometryEnabled = () => {
   return hathorLib.storage.getItem('mobile:isBiometryEnabled') || false;
 }
+
+/**
+   * Validates an address
+   *
+   * @param {string} address Address in base58
+   *
+   * @return {Object} boolean indicating if address is valid and possibly an error message
+   */
+export const validateAddress = address => {
+  try {
+    const addressBytes = hathorLib.transaction.decodeAddress(address);
+    hathorLib.transaction.validateAddress(address, addressBytes);
+    return {isValid: true}
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return {isValid: false, message: e.message}
+    }
+    return {isValid: false, message: 'Invalid address'}
+  }
+}
+
+/**
+   * Parse the QR code for a payment request (or just an address)
+   *
+   * @param {string} data The QR code data
+   *
+   * @return {Object} {isValid, error} or {isValid, address, amount, token}
+   */
+export const parseQRCode = data => {
+  let qrcode;
+  try {
+    qrcode = JSON.parse(data);
+    hathorAddress = qrcode.address;
+  } catch (error) {
+    // if it's not json, maybe it's just the address from wallet ("hathor:{address}")
+    hathorAddress = data;
+  }
+  const addressParts = hathorAddress.split(":");
+  if (addressParts[0] !== "hathor" || addressParts.length !== 2) {
+    return {
+      isValid: false,
+      error: 'This QR code does not contain a Hathor address or payment request.',
+    };
+  } else if (!qrcode) {
+    // just the address (no token or amount)
+    const address = addressParts[1];
+    return {
+      isValid: true,
+      address,
+    };
+  } else {
+    // complete qr code
+    const address = addressParts[1];
+    const token = qrcode.token;
+    const amount = qrcode.amount;
+    if (token && !amount) {
+      return {
+        isValid: false,
+        error: 'Payment request must have an amount'
+      }
+    } else if (amount && !token) {
+      return {
+        isValid: false,
+        error: 'Payment request must contain token data'
+      }
+    }
+    return {
+      isValid: true,
+      address,
+      token,
+      amount,
+    };
+  }
+}

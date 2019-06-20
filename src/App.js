@@ -21,8 +21,11 @@ import DecideStackScreen from './screens/DecideStackScreen';
 import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from './screens/InitWallet';
 import ChoosePinScreen from './screens/ChoosePinScreen';
 import MainScreen from './screens/MainScreen';
+import SendScanQRCode from './screens/SendScanQRCode';
+import SendAddressInput from './screens/SendAddressInput';
+import SendAmountInput from './screens/SendAmountInput';
+import SendConfirmScreen from './screens/SendConfirmScreen';
 import ChangeToken from './screens/ChangeToken';
-import { SendScreen, SendScreenModal } from './screens/Send';
 import ReceiveScreen from './screens/Receive';
 import PaymentRequestDetail from './screens/PaymentRequestDetail';
 import RegisterToken from './screens/RegisterToken';
@@ -58,6 +61,19 @@ const InitStack = createStackNavigator(
   }
 );
 
+const SendStack = createStackNavigator(
+  {
+    SendScanQRCode,
+    SendAddressInput,
+    SendAmountInput,
+    SendConfirmScreen,
+  },
+  {
+    initialRouteName: 'SendScanQRCode',
+    defaultNavigationOptions: {title: 'Send'}
+  }
+);
+
 const TabBarIconsMap = {
   'Home': faHome,
   'Send': faArrowUp,
@@ -67,7 +83,7 @@ const TabBarIconsMap = {
 
 const TabNavigator = createBottomTabNavigator({
     Home: MainScreen,
-    Send: SendScreen,
+    Send: SendStack,
     Receive: ReceiveScreen,
     Settings: Settings,
   }, {
@@ -99,7 +115,6 @@ const AppStack = createStackNavigator({
     About,
     Security,
     ResetWallet,
-    SendModal: SendScreenModal,
     PaymentRequestDetail,
     ChangeToken,
     PinScreen: {

@@ -53,7 +53,8 @@ const style = StyleSheet.create({
     lineHeight: 38,
     fontSize: 32,
     fontWeight: 'bold',
-    paddingVertical: 0
+    paddingVertical: 0,
+    color: 'black',
   }
 });
 
