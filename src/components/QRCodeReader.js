@@ -1,8 +1,14 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import QRCodeScanner from 'react-native-qrcode-scanner';
-import { AppState } from 'react-native';
+import { AppState, Dimensions, StyleSheet, Text, View } from 'react-native';
 
 class QRCodeReader extends React.Component {
+  static defaultProps = {
+    height: 250,
+    width: 250,
+  };
+
   constructor(props) {
     super(props);
 
@@ -16,10 +22,14 @@ class QRCodeReader extends React.Component {
     /**
      * focusedScree {boolean} if this screen is being shown
      * appState {string} state of the app
+     * height {number} Height of the view that wraps the qrcode reader
+     * width {number} Width of the view that wraps the qrcode reader
      */
     this.state = {
       focusedScreen: false,
       appState: AppState.currentState,
+      height: 0,
+      width: 0,
     };
   }
 
@@ -64,26 +74,81 @@ class QRCodeReader extends React.Component {
     }
   }
 
+  onViewLayout = (e) => {
+    const {x, y, width, height} = e.nativeEvent.layout;
+    this.setState({ height, width });
+  }
+
   render() {
     if (!this.state.focusedScreen) {
       return null;
+    }
+
+    const renderMarker = () => {
+      // Workaround to make the center square transparent with the backdrop around
+      // We create a view with background transparent with a big border with the backdrop color
+      const height = (this.state.height - this.props.height)/2;
+      const width = (this.state.width - this.props.width)/2;
+
+      styles = StyleSheet.create({
+        wrapper: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          alignSelf: 'stretch',
+        },
+        rectangle: {
+          height: this.state.height,
+          width: this.state.width,
+          borderTopWidth: height,
+          borderBottomWidth: height,
+          borderLeftWidth: width,
+          borderRightWidth: width,
+          backgroundColor: 'transparent',
+          borderColor: 'rgba(0, 0, 0, 0.7)'
+        }
+      });
+      return (
+        <View style={styles.wrapper}>
+          <View style={styles.rectangle} />
+        </View>
+      )
+    }
+
+    const renderBottomText = () => {
+      return (
+        <View style={{ position: 'absolute', bottom: 32 }}>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', lineHeight: 19, color: 'white' }}>{this.props.bottomText}</Text>
+        </View>
+      );
     }
 
     // I have to set the cameraStyle to overflow: hidden to fix a bug on android
     // where the camera was streching along the whole height of the component
     // https://github.com/moaazsidat/react-native-qrcode-scanner/issues/182#issuecomment-494338330
     return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', alignSelf: 'stretch' }} onLayout={this.onViewLayout}>
         <QRCodeScanner
           ref={(node) => { this.QRCodeElement = node }}
           onRead={this.props.onSuccess}
+          customMarker={renderMarker()}
           showMarker={true}
-          topContent={this.props.topContent}
-          bottomContent={this.props.bottomContent}
-          topViewStyle={this.props.topViewStyle}
-          cameraStyle={{overflow: 'hidden'}}
+          topViewStyle={{ display: 'none' }}
+          bottomViewStyle={{ display: 'none' }}
+          cameraStyle={{ overflow: 'hidden', borderRadius: 16, width: this.state.width, height: this.state.height }}
         />
+        {this.props.bottomText && renderBottomText()}
+      </View>
     );
   }
+}
+
+QRCodeReader.propTypes = {
+  // Optional (default 250). The height of the transparent rectangle
+  height: PropTypes.number,
+
+  // Optional (default 250). The width of the transparent rectangle
+  width: PropTypes.number,
 }
 
 export default QRCodeReader;

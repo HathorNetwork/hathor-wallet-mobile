@@ -2,10 +2,8 @@ import React from 'react';
 import { Alert, Keyboard, Platform, SafeAreaView, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { connect } from 'react-redux';
 
-import ModalTop from '../components/ModalTop';
+import HathorHeader from '../components/HathorHeader';
 import QRCodeReader from '../components/QRCodeReader';
-import HathorButton from '../components/HathorButton';
-import HathorTextInput from '../components/HathorTextInput';
 import { newToken } from '../actions';
 
 import hathorLib from '@hathor/wallet-lib';
@@ -65,46 +63,23 @@ class RegisterToken extends React.Component {
   }
 
   render() {
-    const getTopContent = () => {
-      return (
-        <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 8 }}>
-          <HathorTextInput
-            style={{ width: 320 }}
-            placeholder="Enter the configuration string here"
-            multiline = {true}
-            blurOnSubmit={true}
-            returnKeyType="done"
-            clearButtonMode="while-editing"
-            onChangeText={(text) => this.setState({configurationString: text})}
-            value={this.state.configurationString} />
-          <HathorButton 
-            style={{ marginTop: 8 }}
-            onPress={() => this.validateAndAdd(this.state.configurationString)}
-            title="Add token" />
-
-          <View style={{ marginTop: Platform.OS === 'ios' ? 24 : 12 }}>
-            <Text style={{ textAlign: "center" }}>Or scan the QR code.</Text>
-          </View>
-          
-        </View>
-      )
-    }
-
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <ModalTop title='New token' navigation={this.props.navigation} />
-            {getTopContent()}
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: '#f7f7f7', alignSelf: 'stretch' }}>
+        <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center", alignSelf: 'stretch' }}>
+          <HathorHeader
+            title='REGISTER TOKEN'
+            onBackPress={() => this.props.navigation.goBack()}
+            wrapperStyle={{ borderBottomWidth: 0 }}
+          />
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center", margin: 16, alignSelf: 'stretch' }}>
             <QRCodeReader
               ref={(el) => this.QRCodeReader = el}
               onSuccess={this.onSuccess}
-              topContent={null}
-              bottomContent={null}
+              bottomText='Scan the QR code'
               {...this.props} />
           </View>
-        </TouchableWithoutFeedback>
-      </SafeAreaView>
+        </SafeAreaView>
+      </View>
     );
   }
 }
