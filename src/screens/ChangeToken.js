@@ -49,7 +49,7 @@ class ChangeToken extends React.Component {
 
       const balance = item.uid in this.props.tokensBalance ? this.props.tokensBalance[item.uid].available : 0;
       return (
-        <TouchableHighlight onPress={() => this.onItemPress(item)} underlayColor='rgba(227, 0, 82, 0.5)'>
+        <TouchableHighlight style={index === 0 ? styles.firstItemWrapper : null} onPress={() => this.onItemPress(item)} underlayColor='rgba(227, 0, 82, 0.5)'>
           <View style={styles.itemWrapper}>
             <View style={styles.itemLeftWrapper}>
               <View style={symbolWrapperStyle}>
@@ -109,6 +109,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderColor: '#eee',
+  },
+  firstItemWrapper: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   itemLeftWrapper: {
     flexDirection: 'row',
