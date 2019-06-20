@@ -143,7 +143,10 @@ export class ListButton extends BaseItem {
     return (
       <TouchableHighlight style={borderStyles} onPress={this.onPress}>
         <View style={[this.style.view, ...borderStyles]}>
-          <Text style={[this.style.title, this.props.titleStyle]}>{this.props.title}</Text>
+          {(typeof(this.props.title) === 'string'
+           ? <Text style={[this.style.title, this.props.titleStyle]}>{this.props.title}</Text>
+           : this.props.title
+          )}
           {this.props.button}
         </View>
       </TouchableHighlight>

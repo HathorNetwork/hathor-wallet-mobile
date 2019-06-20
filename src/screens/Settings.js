@@ -1,8 +1,16 @@
 import React from "react";
 import { connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
-
-import { Alert, StyleSheet, Image, SafeAreaView, Switch, Text, View } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Image,
+  SafeAreaView,
+  Switch,
+  Text,
+  View,
+} from "react-native";
 import HathorButton from "../components/HathorButton";
 import { isBiometryEnabled, setBiometryEnabled, getSupportedBiometry, getTokenLabel } from '../utils';
 
@@ -13,15 +21,22 @@ import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
+ * server {str} URL of the full node this wallet is connected to
  */
 const mapStateToProps = (state) => {
+  const server = hathorLib.storage.getItem("wallet:server");
   return {
     selectedToken: state.selectedToken,
+    server: server,
   };
 }
 
 export class Settings extends React.Component {
   style = StyleSheet.create({
+    scrollView: {
+      flexGrow: 1,
+      alignItems: 'center',
+    },
     networkContainerView: {
       marginTop: 24,
       marginBottom: 24,
@@ -66,46 +81,59 @@ export class Settings extends React.Component {
     }
 
     return (
-      <SafeAreaView style={{ flex: 1, alignItems: "center", backgroundColor: '#F7F7F7' }}>
-        <View style={this.style.logoView}>
-          <Image
-            source={require('../assets/images/hathor-logo.png')}
-            style={this.style.logo}
-            resizeMode={"contain"}
-          /> 
-        </View>
-        <View style={this.style.networkContainerView}>
-          <Text>You are connected to</Text>
-          <View style={this.style.networkView}>
-            <Text style={this.style.networkText}>testnet: alpha</Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
+        <ScrollView contentContainerStyle={this.style.scrollView}>
+          <View style={this.style.logoView}>
+            <Image
+              source={require('../assets/images/hathor-logo.png')}
+              style={this.style.logo}
+              resizeMode={"contain"}
+            /> 
           </View>
-        </View>
+          {renderExploreButton()}
+          <View style={this.style.networkContainerView}>
+            <Text>You are connected to</Text>
+            <View style={this.style.networkView}>
+              <Text style={this.style.networkText}>testnet: alpha</Text>
+            </View>
+          </View>
 
-        <HathorList infinity={true}>
-          <ListMenu
-            title='Security'
-            onPress={() => this.props.navigation.navigate('Security')}
-            isFirst={true}
-          />
-          <ListMenu
-            title='Create a new token'
-            onPress={() => this.props.navigation.navigate('CreateToken')}
-          />
-          <ListMenu
-            title='Register a token'
-            onPress={() => this.props.navigation.navigate('RegisterToken')}
-          />
-          <ListMenu
-            title='Reset wallet'
-            onPress={() => this.props.navigation.navigate('ResetWallet')}
-          />
-          <ListMenu
-            title='About'
-            onPress={() => this.props.navigation.navigate('About')}
-          />
-        </HathorList>
-
-        {renderExploreButton()}
+          <HathorList infinity={true}>
+            <ListMenu
+              title={
+                <View style={{ flex: 1 }}>
+                  <Text style={{ marginBottom: 8, color: 'rgba(0, 0, 0, 0.5)', fontSize: 12 }}>Connected to</Text>
+                  <Text
+                    style={{ fontSize: 12 }}
+                    adjustsFontSizeToFit={true}
+                    minimumFontScale={0.5}
+                  >{this.props.server}</Text>
+                </View>
+              }
+              isFirst={true}
+            />
+            <ListMenu
+              title='Security'
+              onPress={() => this.props.navigation.navigate('Security')}
+            />
+            <ListMenu
+              title='Create a new token'
+              onPress={() => this.props.navigation.navigate('CreateToken')}
+            />
+            <ListMenu
+              title='Register a token'
+              onPress={() => this.props.navigation.navigate('RegisterToken')}
+            />
+            <ListMenu
+              title='Reset wallet'
+              onPress={() => this.props.navigation.navigate('ResetWallet')}
+            />
+            <ListMenu
+              title='About'
+              onPress={() => this.props.navigation.navigate('About')}
+            />
+          </HathorList>
+        </ScrollView>
       </SafeAreaView>
     );
   }
