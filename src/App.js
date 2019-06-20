@@ -31,6 +31,9 @@ import Settings from './screens/Settings';
 import TokenDetail from './screens/TokenDetail';
 import HathorLogo from './components/HathorLogo';
 import { PinScreen } from './screens/PinScreen';
+import About from './screens/About';
+import Security from './screens/Security';
+import ResetWallet from './screens/ResetWallet';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -63,7 +66,7 @@ const TabBarIconsMap = {
 };
 
 const TabNavigator = createBottomTabNavigator({
-  Home: MainScreen,
+    Home: MainScreen,
     Send: SendScreen,
     Receive: ReceiveScreen,
     Settings: Settings,
@@ -93,6 +96,9 @@ const TabNavigator = createBottomTabNavigator({
 
 const AppStack = createStackNavigator({
     Main: TabNavigator,
+    About,
+    Security,
+    ResetWallet,
     SendModal: SendScreenModal,
     PaymentRequestDetail,
     ChangeToken,

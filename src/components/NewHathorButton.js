@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const NewHathorButton = props => {
@@ -12,6 +13,11 @@ const NewHathorButton = props => {
   if (props.secondary && !props.disabled) {
     wrapperViewStyle.push(style.wrapperSecondary);
     textStyle.push(style.textSecondary);
+
+    if (props.color) {
+      wrapperViewStyle.push({borderColor: props.color});
+      textStyle.push({color: props.color});
+    }
   }
 
   return (
@@ -21,6 +27,24 @@ const NewHathorButton = props => {
       </TouchableOpacity>
     </View>
   )
+}
+
+NewHathorButton.propTypes = {
+  // The title of the button.
+  title: PropTypes.string,
+
+  // Optional. Used to disable the button.
+  disabled: PropTypes.bool,
+
+  // Optional. Style used in the button container.
+  wrapperStyle: PropTypes.object,
+
+  // Optional. Indicates it is a secondary action in the screen.
+  secondary: PropTypes.bool,
+
+  // Optional. The color of the button.
+  // It is only supported for secondary buttons and changes both the border and the text color.
+  color: PropTypes.string,
 }
 
 const style = StyleSheet.create({
