@@ -11,6 +11,7 @@ import moment from 'moment';
 import hathorLib from '@hathor/wallet-lib';
 import { getShortHash, getTokenLabel } from '../utils';
 import Modal from "react-native-modal";
+import { ListItem, ListButton } from './HathorList';
 
 class TxDetailsModal extends Component {
   style = StyleSheet.create({
@@ -46,7 +47,7 @@ class TxDetailsModal extends Component {
               <ListItem title='Token' text={fullTokenStr} />
               <ListItem title='Description' text={description} />
               <ListItem title='Date & Time' text={timestampStr} />
-              <ListItem title='ID' text={idStr} lastItem={true} />
+              <ListItem title='ID' text={idStr} isLast={true} />
             </View>
           </View>
         </View>
@@ -86,97 +87,6 @@ class BalanceView extends Component {
         </Text>
         <Text style={this.style.text1}>Amount</Text>
       </View>
-    );
-  }
-}
-
-class BaseItem extends Component {
-  static defaultProps = {
-    lastItem: false,
-  };
-
-  style = StyleSheet.create({
-    container: {
-      borderColor: '#eee',
-      borderBottomWidth: 1,
-    },
-    lastItemContainer: {
-      borderBottomWidth: 0,
-    },
-    lastItemView: {
-      borderBottomLeftRadius: 8,
-      borderBottomRightRadius: 8,
-    },
-    view: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: 'white',
-      height: 64,
-      paddingLeft: 16,
-      paddingRight: 16,
-    },
-    title: {
-      flex: 1,
-      fontSize: 14,
-    },
-    text: {
-      fontSize: 16,
-    }
-  });
-
-  getViewStyle() {
-    const style = [this.style.view];
-    if (this.props.lastItem) {
-      style.push(this.style.lastItemView);
-    }
-    return style;
-  }
-
-  render() {
-    const style = [this.style.container];
-    if (this.props.lastItem) {
-      style.push(this.style.lastItemContainer);
-    }
-    return (
-      <View style={style}>
-        {this.renderInside()}
-      </View>
-    );
-  }
-}
-
-class ListItem extends BaseItem {
-  style = Object.assign(this.style, StyleSheet.create({
-    title: {
-      ...this.style.title,
-      color: 'rgba(0, 0, 0, 0.5)',
-    },
-  }));
-
-  renderInside() {
-    const style = this.style;
-    return (
-      <View style={this.getViewStyle()}>
-        <Text style={style.title}>{this.props.title}</Text>
-        <Text style={style.text}>{this.props.text}</Text>
-      </View>
-    );
-  }
-}
-
-class ListButton extends BaseItem {
-  onPress = () => {
-    this.props.onPress && this.props.onPress();
-  }
-
-  renderInside() {
-    return (
-      <TouchableHighlight onPress={this.onPress}>
-        <View style={this.getViewStyle()}>
-          <Text style={this.style.title}>{this.props.title}</Text>
-          {this.props.button}
-        </View>
-      </TouchableHighlight>
     );
   }
 }

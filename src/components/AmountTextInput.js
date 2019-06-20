@@ -30,17 +30,18 @@ class AmountTextInput extends React.Component {
   }
 
   render() {
+    const {style: customStyle, ...props} = this.props;
     return (
       <TextInput
         ref={this.inputRef}
-        {...this.props}
-        style={[style.input, this.props.style]}
+        style={[style.input, customStyle]}
         onChangeText={this.onChangeText}
         textAlign='center'
         textAlignVertical='bottom'
         keyboardAppearance='dark'
         keyboardType="numeric"
         placeholder="0.00"
+        {...props}
       />
     )
   }

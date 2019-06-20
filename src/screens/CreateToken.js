@@ -1,11 +1,25 @@
 import React from 'react';
 import { NavigationActions } from 'react-navigation';
-import { ActivityIndicator, Keyboard, SafeAreaView, Text, TouchableWithoutFeedback, View } from 'react-native';
+import {
+  Alert,
+  ActivityIndicator,
+  StyleSheet,
+  Keyboard,
+  SafeAreaView,
+  Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View
+} from 'react-native';
 import { connect } from 'react-redux';
 
+import HathorHeader from '../components/HathorHeader';
 import ModalTop from '../components/ModalTop';
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
+import NewHathorButton from '../components/NewHathorButton';
+import TextField from '../components/TextField';
+import AmountTextInput from '../components/AmountTextInput';
 
 import { getAmountParsed, getNoDecimalsAmount } from '../utils';
 import { newToken, updateSelectedToken } from '../actions';
@@ -25,9 +39,25 @@ class CreateToken extends React.Component {
     name: '',
     symbol: '',
     amount: '',
+    deposit: '0.00',
     errorMessage: '',
     loading: false,
-  }
+  };
+
+  style = StyleSheet.create({
+    view: {
+      padding: 16,
+    },
+    textError: {
+      marginTop: 32,
+      marginBottom: 32,
+      color: '#dc3545',
+    },
+    amountInput: {
+      borderColor: '#EEEEEE',
+      borderBottomWidth: 1,
+    },
+  });
 
   getData = () => {
     const walletData = hathorLib.wallet.getWalletData();
@@ -35,7 +65,11 @@ class CreateToken extends React.Component {
       return null;
     }
     const historyTransactions = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
-    const inputsData = hathorLib.wallet.getInputsFromAmount(historyTransactions, hathorLib.helpers.minimumAmount(), hathorLib.constants.HATHOR_TOKEN_CONFIG.uid);
+    const inputsData = hathorLib.wallet.getInputsFromAmount(
+      historyTransactions,
+      hathorLib.helpers.minimumAmount(),
+      hathorLib.constants.HATHOR_TOKEN_CONFIG.uid
+    );
     if (inputsData.inputs.length === 0) {
       this.setState({ errorMessage: 'You don\'t have any hathor tokens available to create your token.' });
       return null;
@@ -49,7 +83,7 @@ class CreateToken extends React.Component {
 
   validateAndAdd = () => {
     if (!this.state.name || !this.state.symbol || !this.state.amount) {
-      this.setState({ errorMessage: 'All fields are required.' });
+      this.setState({ errorMessage: 'All fields must be filled.' });
       return;
     }
     this.askPIN();
@@ -86,53 +120,52 @@ class CreateToken extends React.Component {
     );
   }
 
-  render() {
-    const getContent = () => {
-      return (
-        <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginTop: 24 }}>
-          <HathorTextInput
-            style={{ width: 320, height: 32 }}
-            placeholder="Token name"
-            blurOnSubmit={true}
-            returnKeyType="done"
-            clearButtonMode="while-editing"
-            onChangeText={(text) => this.setState({name: text})}
-            value={this.state.name} />
-          <HathorTextInput
-            style={{ width: 320, marginTop: 24, height: 32 }}
-            placeholder="Symbol (max 5 characters)"
-            blurOnSubmit={true}
-            returnKeyType="done"
-            maxLength={5}
-            clearButtonMode="while-editing"
-            onChangeText={(text) => this.setState({symbol: text})}
-            value={this.state.symbol} />
-          <HathorTextInput
-            style={{ width: 320, marginTop: 24, height: 32 }}
-            blurOnSubmit={true}
-            returnKeyType="done"
-            placeholder="0.00"
-            keyboardType="numeric"
-            clearButtonMode="while-editing"
-            onChangeText={(text) => this.setState({amount: getAmountParsed(text)})}
-            value={this.state.amount} />
-          <HathorButton 
-            style={{ marginVertical: 16 }}
-            onPress={this.validateAndAdd}
-            title="Create token"
-            disabled={this.state.loading} />
-          <Text style={{ color: '#dc3545' }}>{this.state.errorMessage}</Text>
-          <ActivityIndicator size="large" animating={this.state.loading} />
-        </View>
-      )
-    }
+  onChangeText = (field, value) => {
+    this.setState({ [field]: value });
+  }
 
+  render() {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <SafeAreaView>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={{ flex: 1, justifyContent: "flex-start", alignItems: "center" }}>
-            <ModalTop title='Create token' navigation={this.props.navigation} />
-            {getContent()}
+          <View>
+            <HathorHeader
+              title='CREATE NEW TOKEN'
+              onBackPress={() => this.props.navigation.goBack()}
+              wrapperStyle={{ borderBottomWidth: 0 }}
+            />
+            <View style={this.style.view}>
+              <TextField
+                label='Token Name'
+                maxLength={50}
+                onChangeText={(text) => this.onChangeText('name', text)}
+                value={this.state.name}
+              />
+              <TextField
+                label='Token Symbol'
+                maxLength={5}
+                onChangeText={(text) => this.onChangeText('symbol', text)}
+                value={this.state.symbol}
+              />
+              <TextField
+                label='Amount'
+                input={
+                  <AmountTextInput
+                    onAmountUpdate={(amount) => this.setState({ amount })}
+                    textAlign='left'
+                    value={this.state.amount}
+                    style={this.style.amountInput}
+                  />
+                }
+              />
+              <Text style={this.style.textError}>{this.state.errorMessage}</Text>
+              <NewHathorButton
+                title='Create New Token'
+                onPress={this.validateAndAdd}
+                disabled={this.state.loading}
+              />
+              <ActivityIndicator size="large" animating={this.state.loading} />
+            </View>
           </View>
         </TouchableWithoutFeedback>
       </SafeAreaView>
