@@ -70,7 +70,7 @@ const SendStack = createStackNavigator(
   },
   {
     initialRouteName: 'SendScanQRCode',
-    defaultNavigationOptions: {title: 'Send'}
+    headerMode: 'none',
   }
 );
 

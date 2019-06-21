@@ -15,6 +15,7 @@ import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import { Strong } from '../utils';
+import HathorHeader from '../components/HathorHeader';
 import { sendTx, sendTxDismiss } from '../actions';
 
 import hathorLib from '@hathor/wallet-lib';
@@ -126,6 +127,10 @@ class SendConfirmScreen extends React.Component {
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
+        <HathorHeader 
+          title={`SEND ${this.token.name.toUpperCase()}`}
+          onBackPress={() => this.props.navigation.goBack()}
+        />
         {renderConfirmationModal()}
         <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
           <View>
