@@ -141,9 +141,11 @@ export const validateAddress = address => {
    */
 export const parseQRCode = data => {
   let qrcode;
+  let hathorAddress;
   try {
     qrcode = JSON.parse(data);
-    hathorAddress = qrcode.address;
+    // make sure hathorAddress is not null or undefined
+    hathorAddress = qrcode.address || '';
   } catch (error) {
     // if it's not json, maybe it's just the address from wallet ("hathor:{address}")
     hathorAddress = data;
