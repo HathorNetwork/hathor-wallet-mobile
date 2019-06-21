@@ -25,6 +25,14 @@ const SimpleInput = props => {
     return <Text selectable={true} style={styles.text}>{props.value}</Text>;
   }
 
+  const renderError = () => {
+    if (props.error) {
+      return <Text style={styles.error}>{props.error}</Text>
+    }
+
+    return null;
+  }
+
   return (
     <View style={props.containerStyle}>
       {props.label && 
@@ -37,7 +45,7 @@ const SimpleInput = props => {
         * be able to select the text
         */}
       {props.editable === false ? renderText() : renderInput()}
-      <Text style={styles.error}>{props.error}</Text>
+      {renderError()}
     </View>
   )
 }

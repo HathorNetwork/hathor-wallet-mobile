@@ -1,11 +1,10 @@
 import React from 'react';
 import { KeyboardAvoidingView, SafeAreaView, View } from 'react-native';
-import { getStatusBarHeight } from 'react-native-status-bar-height';
 
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
-import { validateAddress } from '../utils';
+import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -45,7 +44,7 @@ class SendAddressInput extends React.Component {
           title="SEND" 
           onBackPress={() => this.props.navigation.goBack()}
         />
-        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
+        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <SimpleInput
               label='Address to send'
