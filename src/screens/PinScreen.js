@@ -2,7 +2,7 @@ import React from "react";
 import { Image, SafeAreaView, Text, View } from "react-native";
 import * as Keychain from 'react-native-keychain';
 import HathorButton from "../components/HathorButton";
-import HathorTextInput from '../components/HathorTextInput';
+import PinInput from '../components/PinInput';
 import { isBiometryEnabled, getSupportedBiometry } from '../utils';
 
 import hathorLib from '@hathor/wallet-lib';
@@ -14,9 +14,13 @@ class PinScreen extends React.Component {
      * pin {string} Pin entered by the user
      * error {boolean} If pin was incorrect
      */
-    this.state = {pin: "", error: false};
+    this.state = {
+      pin: '',
+      pinColor: 'black',
+      error: false,
+    };
     this.canCancel = props.navigation.getParam('canCancel', false);
-    this.screenText = props.navigation.getParam('screenText', 'Use your 6-digit pin to unlock Hathor Wallet');
+    this.screenText = props.navigation.getParam('screenText', 'Enter your PIN Code ');
     this.biometryText = props.navigation.getParam('biometryText', 'Unlock Hathor Wallet');
   }
 
@@ -48,13 +52,26 @@ class PinScreen extends React.Component {
 
   onChangeText = (text) => {
     if (text.length === 6) {
-      if (hathorLib.wallet.isPinCorrect(text)) {
-        this.dismiss(text);
-      } else {
-        this.setState({ pin: "", error: true });
-      }
+      setTimeout(() => this.validatePin(text), 300);
+    }
+    this.setState({ pin: text, pinColor: 'black', error: false });
+  }
+
+  validatePin = (text) => {
+    if (hathorLib.wallet.isPinCorrect(text)) {
+      this.dismiss(text);
     } else {
-      this.setState({ pin: text, error: false });
+      this.removeOneChar();
+    }
+  }
+
+  removeOneChar() {
+    const pin = this.state.pin.slice(0, -1);
+    if (pin.length == 0) {
+      this.setState({ pin: "", error: true });
+    } else {
+      this.setState({ pin: pin, pinColor: '#DE3535' });
+      setTimeout(() => this.removeOneChar(), 25);
     }
   }
 
@@ -68,13 +85,12 @@ class PinScreen extends React.Component {
             resizeMode={"contain"}
           /> 
         </View>
-        <Text>{this.screenText}</Text>
-        <HathorTextInput
-          style={{fontSize: 24, width: 120, padding: 12, marginTop: 16}}
+        <Text style={{marginTop: 32, marginBottom: 16}}>{this.screenText}</Text>
+        <PinInput
+          maxLength={6}
+          color={this.state.pinColor}
           onChangeText={this.onChangeText}
           value={this.state.pin}
-          keyboardType="number-pad"
-          secureTextEntry={true}
           autoFocus={true}
         />
         {this.canCancel && <HathorButton
@@ -82,7 +98,7 @@ class PinScreen extends React.Component {
           title="Cancel"
           style={{ marginTop: 32 }}
         />}
-        {this.state.error && <Text style={{ color: 'red', marginTop: 16 }}>Incorrect pin</Text>}
+        {this.state.error && <Text style={{ color: '#DE3535', marginTop: 16 }}>Incorrect PIN Code. Try again.</Text>}
       </SafeAreaView>
     )
   }

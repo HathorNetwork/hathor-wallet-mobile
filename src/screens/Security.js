@@ -13,7 +13,7 @@ import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import { Strong } from '../utils';
 import { isBiometryEnabled, setBiometryEnabled, getSupportedBiometry, getTokenLabel } from '../utils';
-import { ListItem, ListMenu } from '../components/HathorList';
+import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 
 export class About extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
@@ -57,13 +57,13 @@ export class About extends React.Component {
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? 'No biometry supported' : `Use ${this.supportedBiometry}`);
     return (
-      <SafeAreaView>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
           title='SECURITY'
           onBackPress={() => this.props.navigation.goBack()}
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
-        <View style={{ alignSelf: "stretch", borderRadius: 8, padding: 16 }}>
+        <HathorList>
           <ListItem
             title={biometryText}
             text={
@@ -76,7 +76,7 @@ export class About extends React.Component {
             isFirst={true} />
           <ListMenu title='Change PIN' />
           <ListMenu title='Backup your seed words' isLast={true} />
-        </View>
+        </HathorList>
       </SafeAreaView>
     );
   }
