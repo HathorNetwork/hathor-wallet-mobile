@@ -5,6 +5,7 @@ import { TabBar, TabView } from 'react-native-tab-view';
 import HathorHeader from '../components/HathorHeader';
 import ReceiveMyAddress from '../components/ReceiveMyAddress';
 import NewPaymentRequest from '../components/NewPaymentRequest';
+import OfflineBar from '../components/OfflineBar';
 
 class ReceiveScreen extends React.Component {
   constructor(props) {
@@ -104,6 +105,7 @@ class ReceiveScreen extends React.Component {
           onIndexChange={this.handleIndexChange}
           initialLayout={{ width: Dimensions.get('window').width }}
         />
+        <OfflineBar />
       </SafeAreaView>
     )
   }

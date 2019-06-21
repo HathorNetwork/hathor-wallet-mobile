@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import HathorButton from "../components/HathorButton";
+import OfflineBar from '../components/OfflineBar';
 import { isBiometryEnabled, setBiometryEnabled, getSupportedBiometry, getTokenLabel } from '../utils';
 
 import hathorLib from '@hathor/wallet-lib';
@@ -27,6 +28,8 @@ const mapStateToProps = (state) => {
   const server = hathorLib.storage.getItem("wallet:server");
   return {
     selectedToken: state.selectedToken,
+    isOnline: state.isOnline,
+    network: state.serverInfo.network,
     server: server,
   };
 }
@@ -76,12 +79,14 @@ export class Settings extends React.Component {
               resizeMode={"contain"}
             /> 
           </View>
-          <View style={this.style.networkContainerView}>
-            <Text>You are connected to</Text>
-            <View style={this.style.networkView}>
-              <Text style={this.style.networkText}>testnet: alpha</Text>
+          {(this.props.isOnline &&
+            <View style={this.style.networkContainerView}>
+              <Text>You are connected to</Text>
+              <View style={this.style.networkView}>
+                <Text style={this.style.networkText}>{this.props.network}</Text>
+              </View>
             </View>
-          </View>
+          )}
 
           <HathorList infinity={true}>
             <ListMenu
@@ -119,6 +124,7 @@ export class Settings extends React.Component {
             />
           </HathorList>
         </ScrollView>
+        <OfflineBar />
       </SafeAreaView>
     );
   }

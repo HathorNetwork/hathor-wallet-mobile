@@ -5,6 +5,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
 import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
+import OfflineBar from '../components/OfflineBar';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -59,6 +60,7 @@ class SendAddressInput extends React.Component {
               onPress={this.onButtonPress}
             />
           </View>
+          <OfflineBar style={{position: 'relative'}} />
         </KeyboardAvoidingView>
       </SafeAreaView>
     );

@@ -17,6 +17,7 @@ import InputLabel from '../components/InputLabel';
 import { Strong } from '../utils';
 import HathorHeader from '../components/HathorHeader';
 import { sendTx, sendTxDismiss } from '../actions';
+import OfflineBar from '../components/OfflineBar';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -159,6 +160,7 @@ class SendConfirmScreen extends React.Component {
             disabled={this.props.sendLoading}
           />
         </View>
+        <OfflineBar />
       </SafeAreaView>
     );
   }

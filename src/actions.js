@@ -20,7 +20,20 @@ export const types = {
   FETCH_HISTORY_BEGIN: "FETCH_HISTORY_BEGIN",
   FETCH_HISTORY_SUCCESS: "FETCH_HISTORY_SUCCESS",
   FETCH_HISTORY_ERROR: "FETCH_HISTORY_ERROR",
+  SET_IS_ONLINE: "SET_IS_ONLINE",
+  SET_SERVER_INFO: "SET_SERVER_INFO",
 };
+
+/**
+ * status {bool} True for connected, and False for disconnected.
+ **/
+export const setIsOnline = (status) => ({type: types.SET_IS_ONLINE, payload: status});
+
+/**
+ * version {str} version of the connected server (e.g., 0.26.0-beta)
+ * network {str} network of the connected server (e.g., mainnet, testnet)
+ **/
+export const setServerInfo = ({ version, network }) => ({type: types.SET_SERVER_INFO, payload: { version, network }});
 
 /**
  * tx {Object} the new transaction
@@ -116,6 +129,13 @@ export const loadHistory = () => {
   return dispatch => {
     dispatch(fetchHistoryBegin());
     hathorLib.version.checkApiVersion().then(data => {
+      // Save server info.
+      dispatch(setServerInfo({
+        version: data.version,
+        network: data.network,
+      }));
+
+      // Load address history.
       hathorLib.wallet.loadAddressHistory(0, hathorLib.constants.GAP_LIMIT).then(() => {
         const data = hathorLib.wallet.getWalletData();
         // Update historyTransactions with new one

@@ -19,6 +19,11 @@ import hathorLib from '@hathor/wallet-lib';
  * tokens {Array} array of tokens added [{name, symbol, uid}]
  * selectedToken {Object} token currently selected by the user
  * sendTx {Object} used for sendTx modal
+ * isOnline {bool} Indicates whether the wallet is connected to the fullnode's websocket
+ * serverInfo {Object} {
+ *   version {str} version of the connected server (e.g., 0.26.0-beta)
+ *   network {str} network of the connected server (e.g., mainnet, testnet)
+ * }
  */
 const initialState = {
   tokensHistory: {},
@@ -30,6 +35,8 @@ const initialState = {
   tokens: INITIAL_TOKENS,
   selectedToken: SELECTED_TOKEN,
   sendTx: {loading: false, error: null},
+  isOnline: false,
+  serverInfo: { version: '', network: '' },
 }
 
 const reducer = (state = initialState, action) => {
@@ -62,10 +69,31 @@ const reducer = (state = initialState, action) => {
       return onFetchHistorySuccess(state, action);
     case types.FETCH_HISTORY_ERROR:
       return onFetchHistoryError(state, action);
+    case types.SET_IS_ONLINE:
+      return onSetIsOnline(state, action);
+    case types.SET_SERVER_INFO:
+      return onSetServerInfo(state, action);
     default:
       return state;
   }
 }
+
+const onSetServerInfo = (state, action) => {
+  return {
+    ...state,
+    serverInfo: {
+      network: action.payload.network,
+      version: action.payload.version,
+    }
+  }
+};
+
+const onSetIsOnline = (state, action) => {
+  return {
+    ...state,
+    isOnline: action.payload,
+  };
+};
 
 /**
  * Updates the history and balance when a new tx arrives. Also checks
