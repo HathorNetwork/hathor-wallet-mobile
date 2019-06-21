@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, SafeAreaView, Text, View } from "react-native";
+import { BackHandler, Image, SafeAreaView, Text, View } from "react-native";
 import * as Keychain from 'react-native-keychain';
 import HathorButton from "../components/HathorButton";
 import PinInput from '../components/PinInput';
@@ -30,6 +30,22 @@ class PinScreen extends React.Component {
     if (supportedBiometry && biometryEnabled) {
       this.askBiometricId();
     }
+
+    if (!this.canCancel) {
+      // If can't cancel this screen, we must remove the hardware back from android
+      BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+    }
+  }
+
+  componentWillUnmount() {
+    if (!this.canCancel) {
+      // Removing event listener
+      BackHandler.removeEventListener('hardwareBackPress', this.handleBackButton);
+    }
+  }
+
+  handleBackButton = () => {
+    return true;
   }
 
   askBiometricId = () => {
