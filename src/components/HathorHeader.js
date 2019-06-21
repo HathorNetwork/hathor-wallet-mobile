@@ -8,7 +8,7 @@ const HathorHeader = props => {
   const renderBackButton = () => {
     if (props.onBackPress) {
       return (
-        <View style={styles.iconWrapper}>
+        <View style={[styles.iconWrapper, {justifyContent: 'flex-start'}]}>
           <TouchableOpacity onPress={props.onBackPress}>
             <FontAwesomeIcon icon={ faChevronLeft } />
           </TouchableOpacity>
@@ -21,11 +21,23 @@ const HathorHeader = props => {
     }
   }
 
+  const renderHeaderRight = () => {
+    if (props.rightElement) {
+      return (
+        <View style={[styles.iconWrapper, {justifyContent: 'flex-end'}]}>
+          {props.rightElement}
+        </View>
+      );
+    } else {
+      return <View style={styles.iconWrapper}></View>;
+    }
+  }
+
   return (
     <View style={[styles.wrapper, props.wrapperStyle]}>
       {renderBackButton()}
       <Text>{props.title}</Text>
-      <View style={styles.iconWrapper}></View>
+      {renderHeaderRight()}
     </View>
   )
 }
@@ -36,17 +48,17 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingBottom: 8,
+    alignItems: 'center',
+    paddingTop: 16,
     borderBottomWidth: 1,
     borderColor: '#eee',
     paddingHorizontal: 16,
   },
   iconWrapper: {
+    flexDirection: 'row',
+    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
     height: 24,
-    width: 24,
   }
 });
 

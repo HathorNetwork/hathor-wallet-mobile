@@ -1,13 +1,13 @@
 import React from 'react';
 import { KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { connect } from 'react-redux';
-import { Header } from 'react-navigation';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import TokenBox from '../components/TokenBox';
+import HathorHeader from '../components/HathorHeader';
 import { getNoDecimalsAmount } from '../utils';
 
 import hathorLib from '@hathor/wallet-lib';
@@ -99,8 +99,6 @@ class SendAmountInput extends React.Component {
   }
 
   render() {
-    const topDistance = getStatusBarHeight() + Header.HEIGHT;
-
     const getAvailableString = () => {
       // eg: '23.56 HTR available'
       const balance = this.props.tokensBalance[this.state.token.uid];
@@ -110,7 +108,11 @@ class SendAmountInput extends React.Component {
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={topDistance}>
+        <HathorHeader
+          title={`SEND ${this.state.token.name.toUpperCase()}`}
+          onBackPress={() => this.props.navigation.goBack()}
+        />
+        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 40 }}>

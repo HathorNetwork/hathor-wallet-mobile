@@ -1,8 +1,10 @@
 import React from 'react';
-import { ActivityIndicator, Alert, SafeAreaView, Text, View } from 'react-native';
+import { Alert, SafeAreaView, View } from 'react-native';
 
 import QRCodeReader from '../components/QRCodeReader';
-import HathorButton from '../components/HathorButton';
+import HathorHeader from '../components/HathorHeader';
+import NewHathorButton from '../components/NewHathorButton';
+import SimpleButton from '../components/SimpleButton';
 import { getTokenLabel, parseQRCode } from '../utils';
 import { connect } from 'react-redux';
 
@@ -54,30 +56,28 @@ class SendScanQRCode extends React.Component {
   }
 
   render() {
-    const getTopContent = () => {
-      return (
-        <View>
-          <Text>Scan the QR code with the transaction info.</Text>
-        </View>
-      );
-    }
-
-    const getBottomContent = () => {
-      return (
-        <HathorButton
-          onPress={() => this.props.navigation.navigate('SendAddressInput')}
-          title="Enter info manually"
-        />
-      )
-    }
+    const ManualInfoButton = () => (
+      <SimpleButton 
+        title='Manual info'
+        onPress={() => this.props.navigation.navigate('SendAddressInput')}
+      />
+    )
 
     return (
-      <QRCodeReader
-        ref={(el) => this.QRCodeReader = el}
-        onSuccess={this.onSuccess}
-        topContent={getTopContent()}
-        bottomContent={getBottomContent()}
-        {...this.props} />
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+        <HathorHeader
+          title="SEND"
+          rightElement={<ManualInfoButton/>}
+          wrapperStyle={{borderBottomWidth: 0}}
+        />
+        <View style={{ flex: 1, margin: 16, alignSelf: 'stretch' }}>
+          <QRCodeReader
+            ref={(el) => this.QRCodeReader = el}
+            onSuccess={this.onSuccess}
+            bottomText='Scan the QR code'
+            {...this.props} />
+        </View>
+      </SafeAreaView>
     );
   }
 }
