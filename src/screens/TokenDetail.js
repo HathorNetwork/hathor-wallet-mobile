@@ -1,10 +1,12 @@
 import React from "react";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { Alert, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { connect } from 'react-redux';
+import { setTokens } from '../actions';
 import { getTokenLabel } from '../utils';
 import QRCode from 'react-native-qrcode-svg';
 
 import HathorHeader from '../components/HathorHeader';
+import SimpleButton from '../components/SimpleButton';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -19,32 +21,64 @@ const mapStateToProps = (state) => {
 }
 
 
-const TokenDetail = (props) => {
-  const configString = hathorLib.tokens.getConfigurationString(props.selectedToken.uid, props.selectedToken.name, props.selectedToken.symbol);
+class TokenDetail extends React.Component {
+  unregisterClicked = () => {
+    Alert.alert(
+      'Unregister token',
+      `Are you sure you want to unregister ${getTokenLabel(this.props.selectedToken)}?`,
+      [
+        {text: "Yes", onPress: this.unregisterConfirmed},
+        {text: "No", style: "cancel"},
+      ],
+    );
+  }
 
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
-      <HathorHeader
-        title='TOKEN DETAIL'
-        onBackPress={() => props.navigation.goBack()}
-        wrapperStyle={{ borderBottomWidth: 0 }}
+  unregisterConfirmed = () => {
+    // Preventing unregistering HTR token, even if the user gets on this screen because of an error
+    if (this.props.selectedToken.uid === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
+      return;
+    }
+
+    const tokens = hathorLib.tokens.unregisterToken(this.props.selectedToken.uid);
+    this.props.dispatch(setTokens(tokens));
+    this.props.navigation.goBack();
+  }
+
+  render() {
+    const configString = hathorLib.tokens.getConfigurationString(this.props.selectedToken.uid, this.props.selectedToken.name, this.props.selectedToken.symbol);
+
+    const renderHeaderRightElement = () => (
+      <SimpleButton
+        title='Unregister'
+        onPress={this.unregisterClicked}
       />
-      <View style={styles.contentWrapper}>
-        <View style={styles.tokenWrapper}>
-          <Text style={{ fontSize: 18, lineHeight: 22, fontWeight: 'bold' }}>{getTokenLabel(props.selectedToken)}</Text>
+    )
+
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
+        <HathorHeader
+          title='TOKEN DETAIL'
+          onBackPress={() => this.props.navigation.goBack()}
+          wrapperStyle={{ borderBottomWidth: 0 }}
+          rightElement={renderHeaderRightElement()}
+        />
+        <View style={styles.contentWrapper}>
+          <View style={styles.tokenWrapper}>
+            <Text style={{ fontSize: 18, lineHeight: 22, fontWeight: 'bold' }}>{getTokenLabel(this.props.selectedToken)}</Text>
+          </View>
+          <View style={styles.qrcodeWrapper}>
+            <QRCode
+              value={configString}
+              size={200}
+            />
+          </View>
+          <View style={styles.configStringWrapper}>
+            <Text style={{ fontSize: 14 }} selectable={true}>{configString}</Text>
+          </View>
         </View>
-        <View style={styles.qrcodeWrapper}>
-          <QRCode
-            value={configString}
-            size={200}
-          />
-        </View>
-        <View style={styles.configStringWrapper}>
-          <Text style={{ fontSize: 14 }} selectable={true}>{configString}</Text>
-        </View>
-      </View>
-    </SafeAreaView>
-  );
+      </SafeAreaView>
+    );
+  }
 }
 
 const styles = StyleSheet.create({

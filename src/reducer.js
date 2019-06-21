@@ -275,9 +275,15 @@ const onNewToken = (state, action) => {
  * Set the list of tokens added in this wallet
  */
 const onSetTokens = (state, action) => {
+  let selectedToken = state.selectedToken;
+  if (action.payload.indexOf(selectedToken) === -1) {
+    // We have unregistered this token
+    selectedToken = SELECTED_TOKEN;
+  }
   return {
     ...state,
     tokens: [...action.payload],
+    selectedToken
   }
 }
 
