@@ -115,16 +115,12 @@ export class ListItem extends BaseItem {
     },
   }));
 
-  static defaultProps = {
-    isText: true,
-  };
-
   renderInside() {
     const style = this.style;
     return (
       <View style={[this.style.view, ...this.getBorderStyles()]}>
         <Text style={[style.title, this.props.titleStyle]}>{this.props.title}</Text>
-        {(this.props.isText
+        {(typeof(this.props.text) === 'string'
           ? <Text style={style.text}>{this.props.text}</Text>
           : this.props.text
         )}
