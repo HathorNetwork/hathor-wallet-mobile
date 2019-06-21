@@ -9,6 +9,7 @@ import InputLabel from '../components/InputLabel';
 import TokenBox from '../components/TokenBox';
 import HathorHeader from '../components/HathorHeader';
 import { getNoDecimalsAmount } from '../utils';
+import OfflineBar from '../components/OfflineBar';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -141,6 +142,7 @@ class SendAmountInput extends React.Component {
               onPress={this.onButtonPress}
             />
           </View>
+          <OfflineBar style={{position: 'relative'}} />
         </KeyboardAvoidingView>
       </SafeAreaView>
     );

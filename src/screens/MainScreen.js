@@ -16,7 +16,7 @@ import * as Keychain from 'react-native-keychain';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faExchangeAlt } from '@fortawesome/free-solid-svg-icons';
-import { loadHistory, newTx, resetData, setTokens, updateSelectedToken } from '../actions';
+import { loadHistory, newTx, resetData, setTokens, updateSelectedToken, setIsOnline } from '../actions';
 import HathorButton from '../components/HathorButton';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
@@ -25,6 +25,7 @@ import TxDetailsModal from '../components/TxDetailsModal';
 import { getShortHash, setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled } from '../utils';
 import { LOCK_TIMEOUT } from '../constants';
 import moment from 'moment';
+import OfflineBar from '../components/OfflineBar';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -43,7 +44,9 @@ const mapStateToProps = (state) => ({
   loadHistoryError: state.loadHistoryError,
   historyLoading: state.historyLoading,
   selectedToken: state.selectedToken,
-  tokens: state.tokens
+  tokens: state.tokens,
+  isOnline: state.isOnline,
+  network: state.serverInfo.network,
 })
 
 const mapDispatchToProps = dispatch => {
@@ -53,6 +56,7 @@ const mapDispatchToProps = dispatch => {
     loadHistory: () => dispatch(loadHistory()),
     newTx: (newElement, keys) => dispatch(newTx(newElement, keys)),
     updateSelectedToken: token => dispatch(updateSelectedToken(token)),
+    setIsOnline: (status) => dispatch(setIsOnline(status)),
   }
 }
 
@@ -100,6 +104,8 @@ class MainScreen extends React.Component {
     }
     hathorLib.WebSocketHandler.on('wallet', this.handleWebsocketMsg);
     hathorLib.WebSocketHandler.on('reload_data', this.fetchDataFromServer);
+    hathorLib.WebSocketHandler.on('is_online', this.isOnlineUpdated);
+
     AppState.addEventListener('change', this._handleAppStateChange);
     // We need to update the redux tokens with data from localStorage, so the user doesn't have to add the tokens again
     this.updateReduxTokens();
@@ -111,6 +117,10 @@ class MainScreen extends React.Component {
     hathorLib.WebSocketHandler.removeListener('reload_data', this.fetchDataFromServer);
     AppState.removeEventListener('change', this._handleAppStateChange);
     this.props.resetData();
+  }
+
+  isOnlineUpdated = (value) => {
+    this.props.setIsOnline(value);
   }
  
   getBiometry = () => {
@@ -285,11 +295,12 @@ class MainScreen extends React.Component {
           icon={renderTokenBarIcon()}
           containerStyle={this.style.pickerContainerStyle}
         />
-        <BalanceView network={"testnet: alpha"} balance={this.props.balance} token={this.props.selectedToken} />
+        <BalanceView network={this.props.network} balance={this.props.balance} token={this.props.selectedToken} />
         <View style={{ flex: 1, justifyContent: "center", alignSelf: "stretch" }}>
           {this.props.historyLoading && <ActivityIndicator size="large" animating={true} />}
           {!this.props.historyLoading && renderTxHistory()}
         </View>
+        <OfflineBar />
       </SafeAreaView>
     );
   }

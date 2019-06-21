@@ -8,6 +8,7 @@ import { newInvoice } from '../actions';
 import { getNoDecimalsAmount } from '../utils';
 
 import { connect } from 'react-redux';
+import OfflineBar from '../components/OfflineBar';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faSortDown } from '@fortawesome/free-solid-svg-icons'
@@ -145,6 +146,7 @@ class NewPaymentRequest extends React.Component {
              />
           </View>
         </View>
+        <OfflineBar style={{position: 'relative'}}/>
       </KeyboardAvoidingView>
     )
   }

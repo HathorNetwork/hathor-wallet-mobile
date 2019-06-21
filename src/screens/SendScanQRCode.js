@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, SafeAreaView, View } from 'react-native';
 
 import QRCodeReader from '../components/QRCodeReader';
+import OfflineBar from '../components/OfflineBar';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleButton from '../components/SimpleButton';
@@ -77,6 +78,7 @@ class SendScanQRCode extends React.Component {
             bottomText='Scan the QR code'
             {...this.props} />
         </View>
+        <OfflineBar />
       </SafeAreaView>
     );
   }

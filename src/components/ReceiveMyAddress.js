@@ -6,7 +6,6 @@ import QRCode from 'react-native-qrcode-svg';
 import NewHathorButton from '../components/NewHathorButton';
 import hathorLib from '@hathor/wallet-lib';
 
-
 class ReceiveMyAddress extends React.Component {
   constructor(props) {
     super(props);

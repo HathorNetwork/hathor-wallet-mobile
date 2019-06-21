@@ -6,6 +6,7 @@ import QRCode from 'react-native-qrcode-svg';
 
 import HathorHeader from '../components/HathorHeader';
 import ModalConfirmation from '../components/ModalConfirmation';
+import OfflineBar from '../components/OfflineBar';
 import { clearInvoice } from '../actions';
 import { getShortAddress, getTokenLabel } from '../utils';
 
@@ -93,6 +94,7 @@ class PaymentRequestDetail extends React.Component {
               <Text style={styles.data}>{this.props.payment ? 'Received' : 'Waiting confirmation'}</Text>
             </View>
           </View>
+          <OfflineBar />
         </View>
       </SafeAreaView>
     );
