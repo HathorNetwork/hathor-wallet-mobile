@@ -18,6 +18,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faExchangeAlt } from '@fortawesome/free-solid-svg-icons';
 import { loadHistory, newTx, resetData, setTokens, updateSelectedToken } from '../actions';
 import HathorButton from '../components/HathorButton';
+import HathorHeader from '../components/HathorHeader';
+import SimpleButton from '../components/SimpleButton';
 import TokenBar from '../components/TokenBar';
 import TxDetailsModal from '../components/TxDetailsModal';
 import { getShortHash, setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled } from '../utils';
@@ -219,6 +221,12 @@ class MainScreen extends React.Component {
     this.setState({modal: txDetailsModal});
   }
 
+  tokenInfo = () => {
+    if (this.props.selectedToken.uid !== hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
+      this.props.navigation.navigate('TokenDetail');
+    }
+  }
+
   render() {
     const renderTxHistory = () => {
       if (this.props.txList && (this.props.txList.length > 0)) {
@@ -246,9 +254,28 @@ class MainScreen extends React.Component {
       return <FontAwesomeIcon icon={ faExchangeAlt } color='#ccc' />
     }
 
+    const renderRightElement = () => {
+      if (this.props.selectedToken.uid !== hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
+        return (
+          <SimpleButton
+            icon={require('../assets/icons/icMoreActive.png')}
+            onPress={this.tokenInfo}
+          />
+        );
+      }
+
+      return null;
+    }
+
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7', justifyContent: "center", alignItems: "center" }}>
         {this.state.modal}
+        <HathorHeader
+          title={this.props.selectedToken.name.toUpperCase()}
+          onBackPress={() => this.props.navigation.goBack()}
+          rightElement={renderRightElement()}
+          wrapperStyle={{ borderBottomWidth: 0 }}
+        />
         <TokenBar
           key={this.props.selectedToken.uid}
           navigation={this.props.navigation}

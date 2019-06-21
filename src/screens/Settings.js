@@ -66,20 +66,6 @@ export class Settings extends React.Component {
   });
 
   render() {
-    const renderExploreButton = () => {
-      if (this.props.selectedToken.uid === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
-        return null;
-      }
-
-      return (
-        <HathorButton
-          onPress={() => this.props.navigation.navigate('TokenDetail')}
-          title="Token detail"
-          style={{ marginTop: 16 }}
-        />
-      );
-    }
-
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <ScrollView contentContainerStyle={this.style.scrollView}>
@@ -90,7 +76,6 @@ export class Settings extends React.Component {
               resizeMode={"contain"}
             /> 
           </View>
-          {renderExploreButton()}
           <View style={this.style.networkContainerView}>
             <Text>You are connected to</Text>
             <View style={this.style.networkView}>
