@@ -1,6 +1,7 @@
 import hathorLib from '@hathor/wallet-lib';
 import React from 'react';
-import { Text } from 'react-native';
+import { Platform, Text } from 'react-native';
+import { getStatusBarHeight } from 'react-native-status-bar-height';
 
 export const Strong = (props) => <Text style={{fontWeight: 'bold'}}>{props.children}</Text>;
 
@@ -182,5 +183,19 @@ export const parseQRCode = data => {
       token,
       amount,
     };
+  }
+}
+
+/**
+ * Get the distance to be set on the topDistance when using a KeyboardAvoidingView
+ * This does not work for all screens, it depends on how your component is created
+ *
+ * @return {number} The top distance
+ */
+export const getKeyboardAvoidingViewTopDistance = () => {
+  if (Platform.OS === 'android') {
+    return getStatusBarHeight();
+  } else {
+    return 0;
   }
 }

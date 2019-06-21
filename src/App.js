@@ -29,6 +29,7 @@ import ChangeToken from './screens/ChangeToken';
 import ReceiveScreen from './screens/Receive';
 import PaymentRequestDetail from './screens/PaymentRequestDetail';
 import RegisterToken from './screens/RegisterToken';
+import RegisterTokenManual from './screens/RegisterTokenManual';
 import CreateToken from './screens/CreateToken';
 import Settings from './screens/Settings';
 import TokenDetail from './screens/TokenDetail';
@@ -70,6 +71,17 @@ const SendStack = createStackNavigator(
   },
   {
     initialRouteName: 'SendScanQRCode',
+    headerMode: 'none',
+  }
+);
+
+const RegisterTokenStack = createStackNavigator(
+  {
+    RegisterToken,
+    RegisterTokenManual,
+  },
+  {
+    initialRouteName: 'RegisterToken',
     headerMode: 'none',
   }
 );
@@ -116,6 +128,7 @@ const AppStack = createStackNavigator({
     Security,
     ResetWallet,
     PaymentRequestDetail,
+    RegisterToken: RegisterTokenStack,
     ChangeToken,
     PinScreen: {
       screen: PinScreen,
@@ -124,7 +137,6 @@ const AppStack = createStackNavigator({
         gesturesEnabled: false, 
       }),
     },
-    RegisterToken,
     CreateToken,
     TokenDetail,
   }, {
