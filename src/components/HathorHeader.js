@@ -6,25 +6,22 @@ import { faChevronLeft } from '@fortawesome/free-solid-svg-icons'
 
 const HathorHeader = props => {
   const renderBackButton = () => {
-    if (props.onBackPress) {
-      return (
-        <View style={[styles.iconWrapper, {justifyContent: 'flex-start'}]}>
-          <TouchableOpacity onPress={props.onBackPress}>
-            <FontAwesomeIcon icon={ faChevronLeft } />
-          </TouchableOpacity>
-        </View>
-      )
-    } else {
-      return (
-        <View style={styles.iconWrapper}></View>
-      )
+    if (!props.onBackPress) {
+      return null;
     }
+    return (
+      <View style={[styles.iconWrapper, {left: 0, width: 56, height: 40}]}>
+        <TouchableOpacity style={{alignSelf: 'stretch', flex: 1, paddingLeft: 16, justifyContent: 'center'}} onPress={props.onBackPress}>
+          <FontAwesomeIcon icon={ faChevronLeft } />
+        </TouchableOpacity>
+      </View>
+    )
   }
 
   const renderHeaderRight = () => {
     if (props.rightElement) {
       return (
-        <View style={[styles.iconWrapper, {justifyContent: 'flex-end'}]}>
+        <View style={[styles.iconWrapper, {right: 0, paddingRight: 16}]}>
           {props.rightElement}
         </View>
       );
@@ -45,20 +42,18 @@ const HathorHeader = props => {
 const styles = StyleSheet.create({
   wrapper: {
     height: 56,
-    width: '100%',
+    alignSelf: 'stretch',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 16,
     borderBottomWidth: 1,
     borderColor: '#eee',
     paddingHorizontal: 16,
   },
   iconWrapper: {
+    position: 'absolute',
     flexDirection: 'row',
-    flex: 1,
     alignItems: 'center',
-    height: 24,
   }
 });
 
