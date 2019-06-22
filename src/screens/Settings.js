@@ -89,8 +89,8 @@ export class Settings extends React.Component {
           )}
 
           <HathorList infinity={true}>
-            <ListMenu
-              title={
+            <ListItem
+              text={
                 <View style={{ flex: 1 }}>
                   <Text style={{ marginBottom: 8, color: 'rgba(0, 0, 0, 0.5)', fontSize: 12 }}>Connected to</Text>
                   <Text
