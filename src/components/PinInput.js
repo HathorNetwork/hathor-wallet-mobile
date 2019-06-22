@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, StyleSheet, TextInput, View } from 'react-native';
+import { Platform, Text, StyleSheet, TextInput, View } from 'react-native';
 
 class PinInput extends React.Component {
   static defaultProps = {
@@ -46,9 +46,16 @@ class PinInput extends React.Component {
     return v;
   }
 
+  onBlur = () => {
+    if (this.refs.textInput && this.props.editable) {
+      this.refs.textInput.focus();
+    }
+  }
+
   render() {
     const value = this.props.value;
     const maxLength = this.props.maxLength;
+    const returnKeyType = (Platform.OS === 'ios' ? 'default' : 'none');
     return (
       <View style={this.props.style}>
         <View style={this.style.view}>
@@ -56,10 +63,13 @@ class PinInput extends React.Component {
         </View>
         <TextInput
           {...this.props}
+          ref='textInput'
           style={this.style.textInput}
           keyboardType='number-pad'
           secureTextEntry={true}
           keyboardAppearance='dark'
+          returnKeyType={returnKeyType}
+          onBlur={this.onBlur}
         />
       </View>
     );

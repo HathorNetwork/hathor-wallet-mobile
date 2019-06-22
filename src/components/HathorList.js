@@ -26,6 +26,7 @@ export class HathorList extends Component {
       marginBottom: 0,
       borderBottomLeftRadius: 0,
       borderBottomRightRadius: 0,
+      paddingBottom: 16,
     },
   });
 
