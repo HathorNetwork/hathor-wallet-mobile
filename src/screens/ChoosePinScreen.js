@@ -10,7 +10,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import NewHathorButton from '../components/NewHathorButton';
-import HathorButton from '../components/HathorButton';
+import SimpleButton from '../components/SimpleButton';
 import HathorTextInput from '../components/HathorTextInput';
 
 import PinInput from '../components/PinInput';
@@ -160,10 +160,12 @@ class ChoosePinScreen extends React.Component {
         />
         <Text style={{ color: '#DE3535', marginTop: 16, height: 24 }}>{errorMessage}</Text>
         {(!this.state.done &&
-          <HathorButton
+          <SimpleButton
             onPress={this.startPinAgain}
             title='Choose another PIN'
-            style={{ marginTop: 32 }}
+            color='#0273a0'
+            textStyle={{ fontSize: 18 }}
+            containerStyle={{ marginTop: 32 }}
           />
         )}
       </View>
