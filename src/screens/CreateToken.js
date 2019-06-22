@@ -18,7 +18,7 @@ import ModalTop from '../components/ModalTop';
 import HathorButton from '../components/HathorButton';
 import HathorTextInput from '../components/HathorTextInput';
 import NewHathorButton from '../components/NewHathorButton';
-import TextField from '../components/TextField';
+import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
 
 import { getAmountParsed, getNoDecimalsAmount } from '../utils';
@@ -52,10 +52,6 @@ class CreateToken extends React.Component {
       marginTop: 32,
       marginBottom: 32,
       color: '#dc3545',
-    },
-    amountInput: {
-      borderColor: '#EEEEEE',
-      borderBottomWidth: 1,
     },
   });
 
@@ -135,26 +131,27 @@ class CreateToken extends React.Component {
               wrapperStyle={{ borderBottomWidth: 0 }}
             />
             <View style={this.style.view}>
-              <TextField
+              <SimpleInput
                 label='Token Name'
                 maxLength={50}
                 onChangeText={(text) => this.onChangeText('name', text)}
                 value={this.state.name}
+                containerStyle={{ marginBottom: 16 }}
               />
-              <TextField
+              <SimpleInput
                 label='Token Symbol'
                 maxLength={5}
                 onChangeText={(text) => this.onChangeText('symbol', text)}
                 value={this.state.symbol}
+                containerStyle={{ marginBottom: 16 }}
               />
-              <TextField
+              <SimpleInput
                 label='Amount'
                 input={
                   <AmountTextInput
                     onAmountUpdate={(amount) => this.setState({ amount })}
                     textAlign='left'
                     value={this.state.amount}
-                    style={this.style.amountInput}
                   />
                 }
               />
