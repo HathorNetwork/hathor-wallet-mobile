@@ -4,19 +4,25 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import InputLabel from './InputLabel';
 
 const SimpleInput = props => {
+  const getInputField = () => {
+    return (
+      <TextInput
+        {...props}
+        style={styles.input}
+        keyboardAppearance='dark'
+        autoCapitalize='none'
+        autoCorrect={false}
+        spellCheck={false}
+        autoCompleteType='off'
+        underlineColorAndroid='transparent'
+      />
+    );
+  }
+
   const renderInput = () => {
     return (
       <View style={[styles.inputContainer, props.textInputStyle]}>
-        <TextInput
-          {...props}
-          style={styles.input}
-          keyboardAppearance='dark'
-          autoCapitalize='none'
-          autoCorrect={false}
-          spellCheck={false}
-          autoCompleteType='off'
-          underlineColorAndroid='transparent'
-        />
+        { props.input || getInputField() }
       </View>
     )
   }
