@@ -164,9 +164,13 @@ const addTxToSortedList = (tokenUid, tx, txTokenBalance, currentHistory) => {
   let index = 0;
   for (let i = 0; i < currentHistory.length; i++) {
     if (tx.tx_id === currentHistory[i].tx_id) {
-      // we may receive the same tx several times on websocket
-      //TODO it may not be duplicated, but the tx may have been voided or vice-versa
-      return null;
+      // If is_voided changed, we update the tx in the history
+      // otherwise we just return the currentHistory without change
+      if (tx.is_voided !== currentHistory[i].is_voided) {
+        const txHistory = getTxHistoryFromTx(tx, tokenUid, txTokenBalance);
+        currentHistory[i] = txHistory;
+      }
+      return currentHistory;
     }
     if (tx.timestamp > currentHistory[i].timestamp) {
       // we're past the timestamp from this new tx, so stop the search
