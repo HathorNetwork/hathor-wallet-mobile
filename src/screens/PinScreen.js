@@ -2,6 +2,7 @@ import React from "react";
 import { BackHandler, Image, SafeAreaView, Text, View } from "react-native";
 import * as Keychain from 'react-native-keychain';
 import HathorButton from "../components/HathorButton";
+import SimpleButton from '../components/SimpleButton';
 import PinInput from '../components/PinInput';
 import { isBiometryEnabled, getSupportedBiometry } from '../utils';
 
@@ -92,6 +93,18 @@ class PinScreen extends React.Component {
   }
 
   render() {
+    const renderResetButton = () => {
+      return (
+        <SimpleButton
+          onPress={() => this.props.navigation.navigate('ResetWallet')}
+          title="Reset Wallet"
+          color='#0273a0'
+          textStyle={{ textTransform: 'uppercase' }}
+          containerStyle={{ marginTop: 48, marginHorizontal: 32 }}
+        />
+      )
+    }
+
     return (
       <SafeAreaView style={{ flex: 1, alignItems: "center" }}>
         <View style={{ height: 30, width: 170, marginTop: 16, marginBottom: 16 }}>
@@ -114,6 +127,7 @@ class PinScreen extends React.Component {
           title="Cancel"
           style={{ marginTop: 32 }}
         />}
+        {!this.canCancel && renderResetButton()}
         {this.state.error && <Text style={{ color: '#DE3535', marginTop: 16 }}>Incorrect PIN Code. Try again.</Text>}
       </SafeAreaView>
     )

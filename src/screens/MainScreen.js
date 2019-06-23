@@ -268,7 +268,7 @@ class MainScreen extends React.Component {
       if (this.props.selectedToken.uid !== hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
         return (
           <SimpleButton
-            icon={require('../assets/icons/icMoreActive.png')}
+            icon={require('../assets/icons/info-circle.png')}
             onPress={this.tokenInfo}
           />
         );
@@ -359,6 +359,9 @@ class TxListItem extends React.Component {
       width: 24,
       height: 24,
     },
+    iconDisabled: {
+      opacity: 0.3,
+    },
     balance: {
       fontSize: 16,
       marginRight: 16,
@@ -431,25 +434,18 @@ class TxListItem extends React.Component {
       return <View style={this.style.icon} />;
     }
     let icon;
+    let style = [this.style.icon];
     if (item.is_voided) {
-      if (item.balance > 0) {
-        // TODO Replace by receive-inactive.png when image is available.
-        icon = require('../assets/icons/send-inactive.png');
-      } else if (item.balance < 0) {
-        icon = require('../assets/icons/send-inactive.png');
-      } else {
-        throw "should not happen";
-      }
-    } else {
-      if (item.balance > 0) {
-        icon = require('../assets/icons/receive-active.png');
-      } else if (item.balance < 0) {
-        icon = require('../assets/icons/send-active.png');
-      } else {
-        throw "should not happen";
-      }
+      style.push(this.style.iconDisabled);
     }
-    return <Image style={this.style.icon} source={icon} width={24} height={24} />;
+    if (item.balance > 0) {
+      icon = require('../assets/icons/receive-active.png');
+    } else if (item.balance < 0) {
+      icon = require('../assets/icons/send-active.png');
+    } else {
+      throw "should not happen";
+    }
+    return <Image style={style} source={icon} width={24} height={24} />;
   }
 
   getStyle(item) {

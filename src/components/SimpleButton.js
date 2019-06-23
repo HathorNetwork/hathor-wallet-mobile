@@ -4,7 +4,11 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const SimpleButton = props => {
   const renderTitle = () => {
     if (props.title) {
-      return <Text style={[styles.text, props.textStyle]}>{props.title}</Text>
+      const textStyles = [styles.text, props.textStyle];
+      if (props.color) {
+        textStyles.push({color: props.color});
+      }
+      return <Text style={textStyles}>{props.title}</Text>
     }
 
     return null;
@@ -23,7 +27,7 @@ const SimpleButton = props => {
   }
 
   return (
-    <TouchableOpacity onPress={props.onPress} style={[styles.container, props.ContainerStyle]}>
+    <TouchableOpacity onPress={props.onPress} style={[styles.container, props.containerStyle]}>
       {renderTitle()}
       {renderIcon()}
     </TouchableOpacity>

@@ -77,9 +77,8 @@ export class About extends React.Component {
           <ListMenu
             title='Lock wallet'
             onPress={() => this.props.navigation.navigate('PinScreen')}
+            isLast={true}
           />
-          <ListMenu title='Change PIN' />
-          <ListMenu title='Backup your seed words' isLast={true} />
         </HathorList>
       </SafeAreaView>
     );
