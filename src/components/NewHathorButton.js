@@ -55,7 +55,7 @@ const style = StyleSheet.create({
     alignSelf: 'stretch',
   },
   wrapperDisabled: {
-    backgroundColor: 'rgba(0, 0, 0, 0.1)'
+    backgroundColor: 'rgba(0, 0, 0, 0.05)'
   },
   wrapperSecondary: {
     backgroundColor: '#fff',
