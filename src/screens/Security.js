@@ -1,21 +1,18 @@
 import React from "react";
 import {
   Linking,
-  ScrollView,
   StyleSheet,
-  Image,
   SafeAreaView,
   Text,
-  View,
   Switch,
 } from "react-native";
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import { Strong } from '../utils';
-import { isBiometryEnabled, setBiometryEnabled, getSupportedBiometry, getTokenLabel } from '../utils';
+import { isBiometryEnabled, setBiometryEnabled, getSupportedBiometry } from '../utils';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 
-export class About extends React.Component {
+export class Security extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
     view: {
       padding: 16,
@@ -31,18 +28,18 @@ export class About extends React.Component {
     },
   }));
 
-
   constructor(props) {
     super(props);
-    const biometryEnabled = isBiometryEnabled();
-
     /**
-     * biometryEnabled {boolean} If user enabled biometry
      * supportedBiometry {str} Type of biometry supported
      */
+    this.supportedBiometry = getSupportedBiometry();
+
+    /**
+     * biometryEnabled {boolean} If user enabled biometry. If no biometry support, always false
+     */
     this.state = {
-      biometryEnabled,
-      supportedBiometry: getSupportedBiometry(),
+      biometryEnabled: this.supportedBiometry && isBiometryEnabled(),
     };
   }
 
@@ -66,6 +63,9 @@ export class About extends React.Component {
         <HathorList>
           <ListItem
             title={biometryText}
+            // if no biometry is supported, use default ListItem color (grey),
+            // so it looks disabled. Else, color is black, as other items
+            titleStyle={!switchDisabled ? {color: 'black'} : null}
             text={
               <Switch
                 onValueChange={this.onBiometrySwitchChange}
@@ -85,4 +85,4 @@ export class About extends React.Component {
   }
 }
 
-export default About;
+export default Security;
