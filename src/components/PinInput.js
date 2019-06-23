@@ -6,6 +6,8 @@ class PinInput extends React.Component {
     color: 'black',
   };
 
+  inputRef = React.createRef();
+
   style = StyleSheet.create({
     view: {
       flexDirection: 'row',
@@ -48,8 +50,12 @@ class PinInput extends React.Component {
 
   onBlur = () => {
     if (this.refs.textInput && this.props.editable) {
-      this.refs.textInput.focus();
+      this.focus();
     }
+  }
+
+  focus = () => {
+    this.inputRef.current.focus();
   }
 
   render() {
@@ -62,14 +68,14 @@ class PinInput extends React.Component {
           {this.getMarkers(value.length, maxLength)}
         </View>
         <TextInput
-          {...this.props}
-          ref='textInput'
           style={this.style.textInput}
           keyboardType='number-pad'
           secureTextEntry={true}
           keyboardAppearance='dark'
           returnKeyType={returnKeyType}
           onBlur={this.onBlur}
+          ref={this.inputRef}
+          {...this.props}
         />
       </View>
     );
