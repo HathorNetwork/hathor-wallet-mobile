@@ -2,18 +2,14 @@ import React from "react";
 import { connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Image,
   SafeAreaView,
-  Switch,
   Text,
   View,
 } from "react-native";
-import HathorButton from "../components/HathorButton";
 import OfflineBar from '../components/OfflineBar';
-import { isBiometryEnabled, setBiometryEnabled, getSupportedBiometry, getTokenLabel } from '../utils';
 
 import hathorLib from '@hathor/wallet-lib';
 
