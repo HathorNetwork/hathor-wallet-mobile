@@ -12,6 +12,7 @@ import hathorLib from '@hathor/wallet-lib';
 import { getShortHash, getTokenLabel } from '../utils';
 import Modal from "react-native-modal";
 import { ListItem, ListButton } from './HathorList';
+import SlideIndicatorBar from './SlideIndicatorBar';
 
 class TxDetailsModal extends Component {
   style = StyleSheet.create({
@@ -42,6 +43,7 @@ class TxDetailsModal extends Component {
       >
         <View>
           <View style={this.style.inner}>
+            <SlideIndicatorBar />
             <BalanceView tx={tx} token={this.props.token} />
             <View>
               <ListItem title='Token' text={fullTokenStr} />
