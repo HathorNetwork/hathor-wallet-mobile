@@ -23,6 +23,9 @@ class PinScreen extends React.Component {
     this.canCancel = props.navigation.getParam('canCancel', false);
     this.screenText = props.navigation.getParam('screenText', 'Enter your PIN Code ');
     this.biometryText = props.navigation.getParam('biometryText', 'Unlock Hathor Wallet');
+
+    this.willFocusEvent = null;
+    this.pinInputRef = React.createRef();
   }
 
   componentDidMount() {
@@ -36,6 +39,16 @@ class PinScreen extends React.Component {
       // If can't cancel this screen, we must remove the hardware back from android
       BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
     }
+
+    const { navigation } = this.props;
+    this.willFocusEvent = navigation.addListener('willFocus', () => {
+      if (this.pinInputRef.current) {
+        // Reset PIN value and focus on input
+        this.setState({ pin: '', pinColor: 'black', error: false }, () => {
+          this.pinInputRef.current.focus();
+        })
+      }
+    });
   }
 
   componentWillUnmount() {
@@ -43,6 +56,9 @@ class PinScreen extends React.Component {
       // Removing event listener
       BackHandler.removeEventListener('hardwareBackPress', this.handleBackButton);
     }
+
+    // Removing focus event
+    this.willFocusEvent.remove();
   }
 
   handleBackButton = () => {
@@ -121,6 +137,7 @@ class PinScreen extends React.Component {
           onChangeText={this.onChangeText}
           value={this.state.pin}
           autoFocus={true}
+          ref={this.pinInputRef}
         />
         {this.canCancel && <HathorButton
           onPress={() => this.props.navigation.goBack()}
