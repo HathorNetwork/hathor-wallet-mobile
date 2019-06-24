@@ -7,7 +7,7 @@ import 'intl/locale-data/jsonp/en';
 import AsyncStorageStore from './store';
 import hathorLib from '@hathor/wallet-lib';
 hathorLib.storage.setStore(new AsyncStorageStore());
-hathorLib.storage.setItem('wallet:server', 'https://node4.alpha.testnet.hathor.network/v1a/');
+hathorLib.storage.setItem('wallet:server', 'https://node2.bravo.testnet.hathor.network/v1a/');
 
 
 /**
