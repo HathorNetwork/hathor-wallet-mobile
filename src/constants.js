@@ -24,3 +24,9 @@ export const SELECTED_TOKEN = hathorLib.constants.HATHOR_TOKEN_CONFIG;
  * Wallet will lock if app goes to background for more than LOCK_TIMEOUT seconds
  */
 export const LOCK_TIMEOUT = 30000;    // 30s
+
+
+/**
+ * Username set in keychain. We don't use it currently, but a value needs to be set
+ */
+export const KEYCHAIN_USER = 'hathor-keychain';
