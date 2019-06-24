@@ -62,6 +62,8 @@ class PinInput extends React.Component {
     const value = this.props.value;
     const maxLength = this.props.maxLength;
     const returnKeyType = (Platform.OS === 'ios' ? 'default' : 'none');
+    // TextInput cannot receive color props
+    const { color, ...textInputProps } = this.props;
     return (
       <View style={this.props.style}>
         <View style={this.style.view}>
@@ -75,7 +77,7 @@ class PinInput extends React.Component {
           returnKeyType={returnKeyType}
           onBlur={this.onBlur}
           ref={this.inputRef}
-          {...this.props}
+          {...textInputProps}
         />
       </View>
     );

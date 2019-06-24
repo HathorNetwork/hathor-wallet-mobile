@@ -1,11 +1,8 @@
 import React from 'react';
 import {
   Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   SafeAreaView,
   Text,
-  TouchableWithoutFeedback,
   View,
   StyleSheet,
 } from 'react-native';
