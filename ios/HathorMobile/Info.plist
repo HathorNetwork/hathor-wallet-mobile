@@ -17,11 +17,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.2.3</string>
+	<string>0.3.1</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>5</string>
+	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -45,6 +45,8 @@
 	<string>Hathor Wallet does not use it.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Scan QR code</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Protect your wallet with Face ID.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Hathor Wallet does not use it.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -65,7 +67,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-    <key>NSFaceIDUsageDescription</key>
-    <string>Protect your wallet with Face ID.</string>
 </dict>
 </plist>
