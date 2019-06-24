@@ -17,7 +17,7 @@ import { Strong } from '../utils';
 import * as Keychain from 'react-native-keychain';
 import hathorLib from '@hathor/wallet-lib';
 
-export class About extends React.Component {
+export class ResetWallet extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
     switchView: {
       flexDirection: 'row',
@@ -90,4 +90,4 @@ export class About extends React.Component {
   }
 }
 
-export default About;
+export default ResetWallet;

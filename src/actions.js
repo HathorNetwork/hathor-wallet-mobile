@@ -20,6 +20,7 @@ export const types = {
   FETCH_HISTORY_BEGIN: "FETCH_HISTORY_BEGIN",
   FETCH_HISTORY_SUCCESS: "FETCH_HISTORY_SUCCESS",
   FETCH_HISTORY_ERROR: "FETCH_HISTORY_ERROR",
+  UPDATE_HISTORY_LOADING_STATUS: "UPDATE_HISTORY_LOADING_STATUS",
   SET_IS_ONLINE: "SET_IS_ONLINE",
   SET_SERVER_INFO: "SET_SERVER_INFO",
 };
@@ -87,6 +88,15 @@ export const fetchHistoryBegin = () => ({type: types.FETCH_HISTORY_BEGIN});
 export const fetchHistorySuccess = (history, addresses) => ({type: types.FETCH_HISTORY_SUCCESS, payload: {history, addresses}});
 
 export const fetchHistoryError = () => ({type: types.FETCH_HISTORY_ERROR});
+
+/**
+ * transactions {int} amount of transactions loaded
+ * addresses {int} amount of addresses loaded
+ */
+export const updateLoadHistoryStatus = (transactions, addresses) => ({
+  type: types.UPDATE_HISTORY_LOADING_STATUS,
+  payload: {transactions, addresses}
+});
 
 /**
  * amount {int} amount to be sent

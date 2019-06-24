@@ -1,7 +1,5 @@
 import React from 'react';
 import {
-  ActivityIndicator,
-  AppState,
   FlatList,
   SafeAreaView,
   StyleSheet,
@@ -14,16 +12,9 @@ import {
 import { connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faExchangeAlt } from '@fortawesome/free-solid-svg-icons';
-import { loadHistory, newTx, resetData, setTokens, updateSelectedToken, setIsOnline } from '../actions';
-import HathorButton from '../components/HathorButton';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
-import TokenBar from '../components/TokenBar';
 import TxDetailsModal from '../components/TxDetailsModal';
-import { getShortHash, setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled } from '../utils';
-import { LOCK_TIMEOUT } from '../constants';
 import moment from 'moment';
 import OfflineBar from '../components/OfflineBar';
 
@@ -33,45 +24,24 @@ import hathorLib from '@hathor/wallet-lib';
 /**
  * txList {Array} array with transactions of the selected token
  * balance {Object} object with token balance {'available', 'locked'}
- * loadHistoryError {boolean} indicates if there's been an error loading tx history
- * historyLoading {boolean} indicates we're fetching history from server (display spinner)
  * selectedToken {string} uid of the selected token
- * tokens {Array} array with all added tokens on this wallet
  */
 const mapStateToProps = (state) => ({
   txList: state.tokensHistory[state.selectedToken.uid] || [],
   balance: state.tokensBalance[state.selectedToken.uid] || {available: 0, locked: 0},
-  loadHistoryError: state.loadHistoryError,
-  historyLoading: state.historyLoading,
   selectedToken: state.selectedToken,
-  tokens: state.tokens,
   isOnline: state.isOnline,
   network: state.serverInfo.network,
 })
 
-const mapDispatchToProps = dispatch => {
-  return {
-    resetData: () => dispatch(resetData()),
-    setTokens: (tokens) => dispatch(setTokens(tokens)),
-    loadHistory: () => dispatch(loadHistory()),
-    newTx: (newElement, keys) => dispatch(newTx(newElement, keys)),
-    updateSelectedToken: token => dispatch(updateSelectedToken(token)),
-    setIsOnline: (status) => dispatch(setIsOnline(status)),
-  }
-}
-
 class MainScreen extends React.Component {
   /**
-   * isLoading {boolean} It is true if the app is still loading
-   *
    * modal {Optional[Modal]}
    *   It is null if there is no modal to be shown.
    *   It must be set to the Modal object to be shown. It can by any modal.
    *   Currently, it is used to show the TxDetailsModal.
    */
   state = {
-    // {boolean} if should show list or spinner
-    isLoading: true,
     modal: null,
   };
 
@@ -83,138 +53,6 @@ class MainScreen extends React.Component {
       height: '100%',
     }
   });
-
-  constructor(props) {
-    super(props);
-    this.backgroundTime = null;
-    this.appState = 'active';
-  }
-
-  componentDidMount() {
-    this.getBiometry();
-    const words = this.props.navigation.getParam('words', null);
-    const pin = this.props.navigation.getParam('pin', null);
-    if (words) {
-      hathorLib.wallet.executeGenerateWallet(words, '', pin, pin, false);
-      Keychain.setGenericPassword('', pin, {accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY, acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY});
-    } else {
-      hathorLib.WebSocketHandler.setup();
-      // user just started the app and wallet was already initialized, so lock screen
-      this.props.navigation.navigate('PinScreen', {cb: this._onUnlockSuccess});
-    }
-    hathorLib.WebSocketHandler.on('wallet', this.handleWebsocketMsg);
-    hathorLib.WebSocketHandler.on('reload_data', this.fetchDataFromServer);
-    hathorLib.WebSocketHandler.on('is_online', this.isOnlineUpdated);
-
-    AppState.addEventListener('change', this._handleAppStateChange);
-    // We need to update the redux tokens with data from localStorage, so the user doesn't have to add the tokens again
-    this.updateReduxTokens();
-    this.fetchDataFromServer();
-  }
-
-  componentWillUnmount() {
-    hathorLib.WebSocketHandler.removeListener('wallet', this.handleWebsocketMsg);
-    hathorLib.WebSocketHandler.removeListener('reload_data', this.fetchDataFromServer);
-    AppState.removeEventListener('change', this._handleAppStateChange);
-    this.props.resetData();
-  }
-
-  isOnlineUpdated = (value) => {
-    this.props.setIsOnline(value);
-  }
- 
-  getBiometry = () => {
-    Keychain.getSupportedBiometryType().then(biometryType => {
-      switch (biometryType) {
-        case Keychain.BIOMETRY_TYPE.TOUCH_ID:
-        case Keychain.BIOMETRY_TYPE.FACE_ID:
-          setSupportedBiometry(biometryType);
-          break;
-        default:
-          setSupportedBiometry(null);
-        // XXX Android Fingerprint is still not supported in the react native lib we're using.
-        // https://github.com/oblador/react-native-keychain/pull/195
-        //case Keychain.BIOMETRY_TYPE.FINGERPRINT:
-      }
-    });
-  }
-
-  _onUnlockSuccess = () => {
-    this.backgroundTime = null;
-  }
-
-  _handleAppStateChange = (nextAppState) => {
-    if (nextAppState === 'active') {
-      if (this.appState === 'inactive') {
-        // inactive state means the app wasn't in background, so no need to lock
-        // the screen. This happens when user goes to app switch view or maybe is
-        // asked for fingerprint or face if
-        this.backgroundTime = null;
-      } else if (Date.now() - this.backgroundTime > LOCK_TIMEOUT) {
-        // this means app was in background for more than LOCK_TIMEOUT seconds,
-        // so display lock screen
-        this.props.navigation.navigate('PinScreen', {cb: this._onUnlockSuccess});
-      } else {
-        this.backgroundTime = null;
-      }
-    } else if (this.backgroundTime === null) {
-      // app is leaving active state. Save timestamp to check if we need to lock
-      // screen when it becomes active again
-      this.backgroundTime = Date.now();
-    }
-    this.appState = nextAppState;
-  }
-
-  updateReduxTokens = () => {
-    this.props.setTokens(hathorLib.tokens.getTokens());
-  }
-
-  fetchDataFromServer = () => {
-    this.cleanData();
-    this.props.loadHistory();
-  }
-
-  cleanData = () => {
-    // Get old access data
-    const accessData = hathorLib.storage.getItem('wallet:accessData');
-    const walletData = hathorLib.wallet.getWalletData();
-    const server = hathorLib.storage.getItem('wallet:server');
-    const tokens = hathorLib.storage.getItem('wallet:tokens');
-
-    const biometryEnabled = isBiometryEnabled();
-    const supportedBiometry = getSupportedBiometry();
-    hathorLib.storage.clear();
-
-    let newWalletData = {
-      keys: {},
-      xpubkey: walletData.xpubkey,
-    }
-
-    hathorLib.storage.setItem('wallet:accessData', accessData);
-    hathorLib.storage.setItem('wallet:data', newWalletData);
-    hathorLib.storage.setItem('wallet:server', server);
-    hathorLib.storage.setItem('wallet:tokens', tokens);
-    setBiometryEnabled(biometryEnabled);
-    setSupportedBiometry(supportedBiometry);
-  }
-
-  handleWebsocketMsg = wsData => {
-    if (wsData.type === "wallet:address_history") {
-      //TODO we also have to update some wallet lib data? Lib should do it by itself
-      const walletData = hathorLib.wallet.getWalletData();
-      const historyTransactions = 'historyTransactions' in walletData ? walletData['historyTransactions'] : {};
-      const allTokens = 'allTokens' in walletData ? walletData['allTokens'] : [];
-      hathorLib.wallet.updateHistoryData(historyTransactions, allTokens, [wsData.history], null, walletData)
-      
-      const newWalletData = hathorLib.wallet.getWalletData();
-      const keys = newWalletData.keys;
-      this.props.newTx(wsData.history, keys);
-    }
-  }
-
-  tokenChanged = (token) => {
-    this.props.updateSelectedToken(token);
-  }
 
   closeTxDetails = () => {
     this.setState({modal: null});
@@ -243,25 +81,10 @@ class MainScreen extends React.Component {
         return (
           <TxHistoryView txList={this.props.txList} token={this.props.selectedToken} onTxPress={this.onTxPress} />
         );
-      } else if (!this.props.historyLoading && !this.props.loadHistoryError) {
+      } else {
         //empty history
         return <Text style={{ fontSize: 16, textAlign: "center" }}>You don't have any transactions</Text>;
-      } else if (!this.props.historyLoading && this.props.loadHistoryError) {
-        return (
-          <View>
-            <Text style={{ fontSize: 16, textAlign: "center" }}>There's been an error connecting to the server</Text>
-            <HathorButton
-              style={{marginTop: 24}}
-              onPress={this.fetchDataFromServer}
-              title="Try again"
-            />
-          </View>
-        );
       }
-    }
-
-    const renderTokenBarIcon = () => {
-      return <FontAwesomeIcon icon={ faExchangeAlt } color='#ccc' />
     }
 
     const renderRightElement = () => {
@@ -286,19 +109,9 @@ class MainScreen extends React.Component {
           rightElement={renderRightElement()}
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
-        <TokenBar
-          key={this.props.selectedToken.uid}
-          navigation={this.props.navigation}
-          onChange={this.tokenChanged}
-          tokens={this.props.tokens}
-          defaultSelected={this.props.selectedToken.uid}
-          icon={renderTokenBarIcon()}
-          containerStyle={this.style.pickerContainerStyle}
-        />
         <BalanceView network={this.props.network} balance={this.props.balance} token={this.props.selectedToken} />
         <View style={{ flex: 1, justifyContent: "center", alignSelf: "stretch" }}>
-          {this.props.historyLoading && <ActivityIndicator size="large" animating={true} />}
-          {!this.props.historyLoading && renderTxHistory()}
+          {renderTxHistory()}
         </View>
         <OfflineBar />
       </SafeAreaView>
@@ -612,4 +425,4 @@ class BalanceView extends React.Component {
 }
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(MainScreen)
+export default connect(mapStateToProps)(MainScreen)
