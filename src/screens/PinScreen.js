@@ -75,12 +75,14 @@ class PinScreen extends React.Component {
   }
 
   dismiss = (pin) => {
+    // dismiss the pin screen first because doing it after the callback can
+    // end up dismiss the wrong screen
+    this.props.navigation.goBack();
     // execute the callback passing the pin, if any cb was given
     const cb = this.props.navigation.getParam('cb', null);
     if (cb) {
       cb(pin);
     }
-    this.props.navigation.goBack();
   }
 
   onChangeText = (text) => {

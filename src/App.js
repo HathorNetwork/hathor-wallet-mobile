@@ -38,6 +38,8 @@ import { PinScreen } from './screens/PinScreen';
 import About from './screens/About';
 import Security from './screens/Security';
 import ResetWallet from './screens/ResetWallet';
+import Dashboard from './screens/Dashboard';
+import LoadHistoryScreen from './screens/LoadHistoryScreen';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -59,6 +61,17 @@ const InitStack = createStackNavigator(
         marginLeft: Platform.OS === 'ios' ? 0 : -56, // In android when you have the navigation with a back button the title is moved to the right
       },
     }
+  }
+);
+
+const DashboardStack = createStackNavigator(
+  {
+    Dashboard,
+    MainScreen,
+  },
+  {
+    initialRouteName: 'Dashboard',
+    headerMode: 'none',
   }
 );
 
@@ -94,12 +107,12 @@ const TabBarIconsMap = {
 };
 
 const TabNavigator = createBottomTabNavigator({
-    Home: MainScreen,
+    Home: DashboardStack,
     Send: SendStack,
     Receive: ReceiveScreen,
     Settings: Settings,
   }, {
-    initialRoute: 'MainScreen',
+    initialRoute: 'Home',
     tabBarOptions: {
       activeTintColor: '#E30052',
       inactiveTintColor: '#333333',
@@ -122,6 +135,10 @@ const TabNavigator = createBottomTabNavigator({
     })
 });
 
+const disableSwipeDown = () => ({
+  gesturesEnabled: false,
+});
+
 const AppStack = createStackNavigator({
     Main: TabNavigator,
     About,
@@ -132,13 +149,14 @@ const AppStack = createStackNavigator({
     ChangeToken,
     PinScreen: {
       screen: PinScreen,
-      // disable swipe down dismissal on lock screen
-      navigationOptions: () => ({
-        gesturesEnabled: false, 
-      }),
+      navigationOptions: disableSwipeDown,
     },
     CreateToken,
     TokenDetail,
+    LoadHistoryScreen: {
+      screen: LoadHistoryScreen,
+      navigationOptions: disableSwipeDown,
+    },
   }, {
     mode: 'modal',
     headerMode: 'none',

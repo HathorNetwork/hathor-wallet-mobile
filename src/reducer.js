@@ -12,8 +12,12 @@ import hathorLib from '@hathor/wallet-lib';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {available: int, locked: int}])
- * historyLoading {boolean} indicates we're loading the tx history
- * loadHistoryError {boolean} error loading history
+ * loadHistoryStatus {Object} progress on loading tx history {
+ *   loading {boolean} indicates we're loading the tx history
+ *   transactions {int} transactions loaded
+ *   addresses {int} addresses loaded
+ *   error {boolean} error loading history
+ * }
  * latestInvoice {Object} tracks the latest payment request created ({address: {string}, amount: {int}, token: {Object}})
  * invoicePayment {Object} null if not paid or the tx that settles latestInvoice
  * tokens {Array} array of tokens added [{name, symbol, uid}]
@@ -28,8 +32,7 @@ import hathorLib from '@hathor/wallet-lib';
 const initialState = {
   tokensHistory: {},
   tokensBalance: {},
-  historyLoading: true,
-  loadHistoryError: false,
+  loadHistoryStatus: {loading: false, transactions: 0, addresses: 0, error: false},
   latestInvoice: null,
   invoicePayment: null,
   tokens: INITIAL_TOKENS,
@@ -69,6 +72,8 @@ const reducer = (state = initialState, action) => {
       return onFetchHistorySuccess(state, action);
     case types.FETCH_HISTORY_ERROR:
       return onFetchHistoryError(state, action);
+    case types.UPDATE_HISTORY_LOADING_STATUS:
+      return onUpdateHistoryLoadingStatus(state, action);
     case types.SET_IS_ONLINE:
       return onSetIsOnline(state, action);
     case types.SET_SERVER_INFO:
@@ -337,8 +342,7 @@ const onSendTxDismiss = (state, action) => {
 const onFetchHistoryBegin = (state, action) => {
   return {
     ...state,
-    historyLoading: true,
-    loadHistoryError: false,
+    loadHistoryStatus: {loading: true, transactions: 0, addresses: 0, error: false},
   }
 }
 
@@ -380,7 +384,7 @@ const onFetchHistorySuccess = (state, action) => {
     ...state,
     tokensHistory,
     tokensBalance,
-    historyLoading: false,
+    loadHistoryStatus: {loading: false, transactions: 0, addresses: 0, error: false},
   };
 }
 
@@ -390,8 +394,27 @@ const onFetchHistorySuccess = (state, action) => {
 const onFetchHistoryError = (state, action) => {
   return {
     ...state,
-    historyLoading: false,
-    loadHistoryError: true,
+    loadHistoryStatus: {
+      loading: false,
+      transactions: action.payload.transactions,
+      addresses: action.payload.addresses,
+      error: true,
+    }
+  }
+}
+
+/**
+ * Update history loading status
+ */
+const onUpdateHistoryLoadingStatus = (state, action) => {
+  return {
+    ...state,
+    loadHistoryStatus: {
+      loading: true,
+      transactions: action.payload.transactions,
+      addresses: action.payload.addresses,
+      error: false,
+    }
   }
 }
 

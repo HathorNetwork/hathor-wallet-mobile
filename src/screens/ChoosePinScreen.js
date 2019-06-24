@@ -115,12 +115,12 @@ class ChoosePinScreen extends React.Component {
 
 
   goClicked = () => {
-    this.props.navigation.navigate('Home');
     return;
     if (this.state.pin1.length < 6) {
       this.setState({ error: 'Pin must have 6 digits' });
     } else if (this.state.pin1 === this.state.pin2) {
       this.setState({ error: '' });
+      this.props.navigation.navigate('Dashboard', {words: this.words, pin: this.state.pin1});
     } else {
       this.setState({ error: 'Fields must be equal' });
     }
@@ -173,7 +173,7 @@ class ChoosePinScreen extends React.Component {
   }
 
   goToNextScreen = () => {
-    this.props.navigation.navigate('Home', {words: this.words, pin: this.state.pin1});
+    this.props.navigation.navigate('Dashboard', {words: this.words, pin: this.state.pin1});
   }
 
   render() {

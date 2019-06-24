@@ -60,7 +60,8 @@ class RegisterTokenManual extends React.Component {
     const token = this.state.token;
     hathorLib.tokens.addToken(token.uid, token.name, token.symbol);
     this.props.dispatch(newToken(token));
-    this.props.navigation.navigate('Settings');
+    this.props.navigation.popToTop();
+    this.props.navigation.dismiss();
   }
 
   render() {

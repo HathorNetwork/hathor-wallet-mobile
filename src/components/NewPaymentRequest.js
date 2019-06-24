@@ -48,6 +48,8 @@ class NewPaymentRequest extends React.Component {
         // It's coming back
         this.modalOpened = false;
         this.focusInput();
+      } else {
+        this.focus();
       }
     });
   }
