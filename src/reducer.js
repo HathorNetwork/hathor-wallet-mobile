@@ -410,7 +410,7 @@ const onUpdateHistoryLoadingStatus = (state, action) => {
   return {
     ...state,
     loadHistoryStatus: {
-      loading: true,
+      loading: state.loadHistoryStatus.loading,
       transactions: action.payload.transactions,
       addresses: action.payload.addresses,
       error: false,
