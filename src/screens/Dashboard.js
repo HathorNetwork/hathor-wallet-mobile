@@ -15,7 +15,7 @@ import SimpleButton from '../components/SimpleButton';
 import { loadHistory, newTx, resetData, setTokens, updateSelectedToken, updateLoadHistoryStatus, setIsOnline } from '../actions';
 import { setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled } from '../utils';
 import OfflineBar from '../components/OfflineBar';
-import { LOCK_TIMEOUT } from '../constants';
+import { LOCK_TIMEOUT, KEYCHAIN_USER } from '../constants';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -60,7 +60,7 @@ export class Dashboard extends React.Component {
     const pin = this.props.navigation.getParam('pin', null);
     if (words) {
       hathorLib.wallet.executeGenerateWallet(words, '', pin, pin, false);
-      Keychain.setGenericPassword('', pin, {accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY, acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY});
+      Keychain.setGenericPassword(KEYCHAIN_USER, pin, {accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY, acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY});
     } else {
       hathorLib.WebSocketHandler.setup();
       // user just started the app and wallet was already initialized, so lock screen
