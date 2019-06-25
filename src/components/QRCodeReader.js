@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import QRCodeScanner from 'react-native-qrcode-scanner';
-import { AppState, Dimensions, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Dimensions, StyleSheet, Text, View } from 'react-native';
 
 class QRCodeReader extends React.Component {
   static defaultProps = {
@@ -123,11 +123,21 @@ class QRCodeReader extends React.Component {
       );
     }
 
+    const renderCameraPlaceholder = () => {
+      return (
+        <View style={{ position: 'absolute', flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text>Opening camera</Text>
+          <ActivityIndicator style={{ marginTop: 16 }} size='small' animating={true} />
+        </View>
+      );
+    }
+
     // I have to set the cameraStyle to overflow: hidden to fix a bug on android
     // where the camera was streching along the whole height of the component
     // https://github.com/moaazsidat/react-native-qrcode-scanner/issues/182#issuecomment-494338330
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', alignSelf: 'stretch' }} onLayout={this.onViewLayout}>
+        {renderCameraPlaceholder()}
         <QRCodeScanner
           ref={(node) => { this.QRCodeElement = node }}
           onRead={this.props.onSuccess}
