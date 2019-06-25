@@ -174,6 +174,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     alignItems: 'center',
+    paddingHorizontal: 16,
     paddingBottom: 56,
     paddingTop: 48,
   },
