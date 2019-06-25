@@ -48,7 +48,8 @@ class NewPaymentRequest extends React.Component {
         // It's coming back
         this.modalOpened = false;
         this.focusInput();
-      } else {
+      } else if (this.props.index === 1) {
+        // We have to focus the input only if we are on this tab
         this.focus();
       }
     });
