@@ -53,6 +53,7 @@ class ReceiveScreen extends React.Component {
         return <NewPaymentRequest
           navigation={this.props.navigation}
           address={this.state.address}
+          index={this.state.index}
           ref={this.paymentRequest}
         />
       default:
