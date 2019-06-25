@@ -13,8 +13,7 @@ import { Platform } from 'react-native';
 import { createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
 import { Provider } from 'react-redux';
 
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { faArrowDown, faArrowUp, faCog, faHome } from '@fortawesome/free-solid-svg-icons'
+import IconTabBar from './icon-font.js';
 
 import { store } from './reducer';
 import DecideStackScreen from './screens/DecideStackScreen';
@@ -99,12 +98,12 @@ const RegisterTokenStack = createStackNavigator(
   }
 );
 
-const TabBarIconsMap = {
-  'Home': faHome,
-  'Send': faArrowUp,
-  'Receive': faArrowDown,
-  'Settings': faCog,
-};
+const tabBarIconMap = {
+  'Home': 'icDashboard',
+  'Send': 'icSend',
+  'Receive': 'icReceive',
+  'Settings': 'icSettings',
+}
 
 const TabNavigator = createBottomTabNavigator({
     Home: DashboardStack,
@@ -115,7 +114,7 @@ const TabNavigator = createBottomTabNavigator({
     initialRoute: 'Home',
     tabBarOptions: {
       activeTintColor: '#E30052',
-      inactiveTintColor: '#333333',
+      inactiveTintColor: 'rgba(0, 0, 0, 0.5)',
       style: {
         paddingTop: 12,
         paddingBottom: 12,
@@ -129,8 +128,8 @@ const TabNavigator = createBottomTabNavigator({
     defaultNavigationOptions: ({ navigation }) => ({
       tabBarIcon: ({ focused, horizontal, tintColor }) => {
         const { routeName } = navigation.state;
-        const iconName = TabBarIconsMap[routeName];
-        return <FontAwesomeIcon icon={ iconName } color={ tintColor } size={ 24 } />
+        const iconName = tabBarIconMap[routeName];
+        return <IconTabBar name={iconName} size={24} color={tintColor} />
       }
     })
 });
