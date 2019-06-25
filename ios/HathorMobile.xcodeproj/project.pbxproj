@@ -37,6 +37,7 @@
 		2D16E6881FA4F8E400B85C8A /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D16E6891FA4F8E400B85C8A /* libReact.a */; };
 		2DCD954D1E0B4F2C00145EB5 /* HathorMobileTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* HathorMobileTests.m */; };
 		2DF0FFEE2056DD460020B375 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DAD3EA31DF850E9000B6D8A /* libReact.a */; };
+		5102253B22C0FDC6002695E1 /* tabbar.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5102253A22C0FDC0002695E1 /* tabbar.ttf */; };
 		51AC837766814F53B7012BC4 /* libRNOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 086BCAAAF03E43A5A3DD1E3C /* libRNOS.a */; };
 		58B1A9EBA821411DA84D2364 /* libRNRandomBytes-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 90D5D15DAB3340649EEF7C31 /* libRNRandomBytes-tvOS.a */; };
 		5C547B42CA7F49818D5DE003 /* libRNCamera.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 818859A8AB29484093AF1BEC /* libRNCamera.a */; };
@@ -468,6 +469,7 @@
 		4E328237ADB34808B0E2AA0A /* libRNKeychain.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNKeychain.a; sourceTree = "<group>"; };
 		4F44E4D4E26C49BA927D5EBA /* libRNRandomBytes.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNRandomBytes.a; sourceTree = "<group>"; };
 		4FD71D282C794FC8A624859F /* libReactNativePermissions.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libReactNativePermissions.a; sourceTree = "<group>"; };
+		5102253A22C0FDC0002695E1 /* tabbar.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = tabbar.ttf; path = ../src/assets/fonts/tabbar.ttf; sourceTree = "<group>"; };
 		529C8D555A904DDB9ACE878C /* TcpSockets.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = TcpSockets.xcodeproj; path = "../node_modules/react-native-tcp/ios/TcpSockets.xcodeproj"; sourceTree = "<group>"; };
 		5DD632F7AA634C0FA2B832A1 /* libUdpSockets.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libUdpSockets.a; sourceTree = "<group>"; };
 		5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTAnimation.xcodeproj; path = "../node_modules/react-native/Libraries/NativeAnimation/RCTAnimation.xcodeproj"; sourceTree = "<group>"; };
@@ -641,6 +643,7 @@
 		13B07FAE1A68108700A75B9A /* HathorMobile */ = {
 			isa = PBXGroup;
 			children = (
+				5102250522C0FDA0002695E1 /* Resources */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
@@ -786,6 +789,14 @@
 				2D16E6891FA4F8E400B85C8A /* libReact.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5102250522C0FDA0002695E1 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				5102253A22C0FDC0002695E1 /* tabbar.ttf */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 		51286FBC22B976F700819915 /* Products */ = {
@@ -1486,6 +1497,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5102253B22C0FDC6002695E1 /* tabbar.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 			);

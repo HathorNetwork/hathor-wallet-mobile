@@ -12,6 +12,7 @@ import {
 import { connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 
+import IconTabBar from '../icon-font.js';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
 import TxDetailsModal from '../components/TxDetailsModal';
@@ -246,19 +247,24 @@ class TxListItem extends React.Component {
     if (item.balance === 0) {
       return <View style={this.style.icon} />;
     }
-    let icon;
+    let name, color;
     let style = [this.style.icon];
-    if (item.is_voided) {
-      style.push(this.style.iconDisabled);
-    }
     if (item.balance > 0) {
-      icon = require('../assets/icons/receive-active.png');
+      name = 'icReceive';
+      color = '#0DA0A0';
     } else if (item.balance < 0) {
-      icon = require('../assets/icons/send-active.png');
+      name = 'icSend';
+      color = 'black';
     } else {
       throw "should not happen";
     }
-    return <Image style={style} source={icon} width={24} height={24} />;
+
+    if (item.is_voided) {
+      style.push(this.style.iconDisabled);
+      color = 'rgba(0, 0, 0, 0.3)';
+    }
+
+    return <IconTabBar style={style} color={color} size={24} name={name} />;
   }
 
   getStyle(item) {
