@@ -140,6 +140,7 @@ class PinScreen extends React.Component {
           value={this.state.pin}
           autoFocus={true}
           ref={this.pinInputRef}
+          editable={true}
         />
         {this.canCancel && <SimpleButton
           onPress={() => this.props.navigation.goBack()}
