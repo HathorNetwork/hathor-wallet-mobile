@@ -5,7 +5,7 @@ import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
 import TokenBox from './TokenBox';
 import { newInvoice } from '../actions';
-import { getNoDecimalsAmount } from '../utils';
+import { getIntegerAmount } from '../utils';
 
 import { connect } from 'react-redux';
 import OfflineBar from '../components/OfflineBar';
@@ -75,7 +75,7 @@ class NewPaymentRequest extends React.Component {
   }
 
   createPaymentRequest = () => {
-    this.props.dispatch(newInvoice(this.props.address, getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.'))), this.state.token));
+    this.props.dispatch(newInvoice(this.props.address, getIntegerAmount(this.state.amount), this.state.token));
     this.modalOpened = true;
     this.props.navigation.navigate('PaymentRequestDetail');
   }
@@ -85,7 +85,7 @@ class NewPaymentRequest extends React.Component {
       return true;
     }
 
-    if (getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.'))) === 0) {
+    if (getIntegerAmount(this.state.amount) === 0) {
       return true;
     }
 

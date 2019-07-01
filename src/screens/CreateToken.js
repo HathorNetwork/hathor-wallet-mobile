@@ -21,7 +21,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
 
-import { getAmountParsed, getNoDecimalsAmount } from '../utils';
+import { getAmountParsed, getIntegerAmount } from '../utils';
 import { newToken, updateSelectedToken } from '../actions';
 
 import hathorLib from '@hathor/wallet-lib';
@@ -92,7 +92,7 @@ class CreateToken extends React.Component {
     }
     this.setState({ errorMessage: '', loading: true });
     const address = hathorLib.wallet.getAddressToUse();
-    const value = getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.')));
+    const value = getIntegerAmount(this.state.amount);
     const retPromise = hathorLib.tokens.createToken(data.input, data.output, address, this.state.name, this.state.symbol, value, pin);
     retPromise.then((token) => {
       this.props.dispatch(newToken(token));

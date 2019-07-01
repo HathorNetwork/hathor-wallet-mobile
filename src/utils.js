@@ -50,8 +50,18 @@ export const getShortAddress = address => {
   return `${address.substring(0,8)}...${address.substring(26,34)}`;
 }
 
-export const getNoDecimalsAmount = value => {
-  return value * (10 ** hathorLib.constants.DECIMAL_PLACES)
+/**
+ * Get amount text value and transform in its integer value
+ *
+ * "10" => 1000
+ * "10.00" => 1000
+ * "10,01" => 1001
+ * "1000" => 100000
+ * "1000.00" => 100000
+ */
+export const getIntegerAmount = value => {
+  const parsedValue = parseFloat(value.replace(',', '.'))
+  return parsedValue * (10 ** hathorLib.constants.DECIMAL_PLACES)
 }
 
 export const getDecimalsAmount = value => {
