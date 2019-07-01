@@ -136,10 +136,6 @@ const onNewTx = (state, action) => {
     // we may not have this token yet, so state.tokensHistory[tokenUid] would return undefined
     const currentHistory = state.tokensHistory[tokenUid] || [];
     const newTokenHistory = addTxToSortedList(tokenUid, tx, tokenTxBalance, currentHistory);
-    if (newTokenHistory === null) {
-      // duplicate tx
-      return state;
-    }
     updatedHistoryMap[tokenUid] = newTokenHistory;
     // totalBalance should not be confused with tokenTxBalance. The latter is the balance of the new
     // tx, while the former is the total balance of the token, considering all tx history
@@ -173,7 +169,10 @@ const addTxToSortedList = (tokenUid, tx, txTokenBalance, currentHistory) => {
       // otherwise we just return the currentHistory without change
       if (tx.is_voided !== currentHistory[i].is_voided) {
         const txHistory = getTxHistoryFromTx(tx, tokenUid, txTokenBalance);
-        currentHistory[i] = txHistory;
+        // return new object so redux triggers update
+        const newHistory = [...currentHistory];
+        newHistory[i] = txHistory;
+        return newHistory;
       }
       return currentHistory;
     }
@@ -188,8 +187,10 @@ const addTxToSortedList = (tokenUid, tx, txTokenBalance, currentHistory) => {
     }
   }
   const txHistory = getTxHistoryFromTx(tx, tokenUid, txTokenBalance);
-  currentHistory.splice(index, 0, txHistory);
-  return currentHistory;
+  // return new object so redux triggers update
+  const newHistory = [...currentHistory];
+  newHistory.splice(index, 0, txHistory);
+  return newHistory;
 }
 
 /**
