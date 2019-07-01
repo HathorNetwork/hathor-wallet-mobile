@@ -6,14 +6,24 @@ import {
   View,
   StyleSheet,
 } from 'react-native';
+import { connect } from 'react-redux';
+
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleButton from '../components/SimpleButton';
 import HathorTextInput from '../components/HathorTextInput';
-
 import PinInput from '../components/PinInput';
+import { setInitWallet, unlockScreen } from '../actions';
 
 import baseStyle from '../styles/init';
 import { Strong } from '../utils';
+
+
+const mapDispatchToProps = dispatch => {
+  return {
+    unlockScreen: () => dispatch(unlockScreen()),
+    setInitWallet: (words, pin) => dispatch(setInitWallet(words, pin)),
+  }
+}
 
 class ChoosePinScreen extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
@@ -110,19 +120,6 @@ class ChoosePinScreen extends React.Component {
     }
   }
 
-
-  goClicked = () => {
-    return;
-    if (this.state.pin1.length < 6) {
-      this.setState({ error: 'Pin must have 6 digits' });
-    } else if (this.state.pin1 === this.state.pin2) {
-      this.setState({ error: '' });
-      this.props.navigation.navigate('Dashboard', {words: this.words, pin: this.state.pin1});
-    } else {
-      this.setState({ error: 'Fields must be equal' });
-    }
-  }
-
   getPin1View = () => {
     return (
       <View style={this.style.pinView}>
@@ -170,7 +167,10 @@ class ChoosePinScreen extends React.Component {
   }
 
   goToNextScreen = () => {
-    this.props.navigation.navigate('Dashboard', {words: this.words, pin: this.state.pin1});
+    this.props.setInitWallet(this.words, this.state.pin1);
+    // we are just initializing the wallet, so make sure it's not locked when going to AppStack
+    this.props.unlockScreen();
+    this.props.navigation.navigate('Home');
   }
 
   render() {
@@ -196,4 +196,4 @@ class ChoosePinScreen extends React.Component {
   }
 }
 
-export default ChoosePinScreen;
+export default connect(null, mapDispatchToProps)(ChoosePinScreen);

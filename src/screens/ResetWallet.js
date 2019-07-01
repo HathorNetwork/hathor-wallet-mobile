@@ -9,6 +9,7 @@ import {
   View,
   Switch,
 } from "react-native";
+
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import baseStyle from '../styles/init';
@@ -38,6 +39,11 @@ export class ResetWallet extends React.Component {
     switchValue: false,
   };
 
+  constructor(props) {
+    super(props);
+    this.onBackPress = this.props.navigation.getParam('onBackPress', this.props.navigation.goBack);
+  }
+
   toggleSwitch = (value) => {
     this.setState({ switchValue: value });
   }
@@ -61,7 +67,7 @@ export class ResetWallet extends React.Component {
       <SafeAreaView style={{ flex : 1 }}>
         <HathorHeader
           title='RESET WALLET'
-          onBackPress={() => this.props.navigation.goBack()}
+          onBackPress={() => this.onBackPress()}
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
         <View style={this.style.container}>
