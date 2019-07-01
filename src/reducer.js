@@ -13,9 +13,7 @@ import hathorLib from '@hathor/wallet-lib';
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {available: int, locked: int}])
  * loadHistoryStatus {Object} progress on loading tx history {
- *   loading {boolean} indicates we're loading the tx history
- *   transactions {int} transactions loaded
- *   addresses {int} addresses loaded
+ *   active {boolean} indicates we're loading the tx history
  *   error {boolean} error loading history
  * }
  * latestInvoice {Object} tracks the latest payment request created ({address: {string}, amount: {int}, token: {Object}})
@@ -28,11 +26,16 @@ import hathorLib from '@hathor/wallet-lib';
  *   version {str} version of the connected server (e.g., 0.26.0-beta)
  *   network {str} network of the connected server (e.g., mainnet, testnet)
  * }
+ * lockScreen {bool} Indicates screen is locked
+ * initWallet {Object} Information on wallet initialization (if not needed, set to null) {
+ *   words {str} wallet words
+ *   pin {str} pin selected by user
+ * }
  */
 const initialState = {
   tokensHistory: {},
   tokensBalance: {},
-  loadHistoryStatus: {loading: false, transactions: 0, addresses: 0, error: false},
+  loadHistoryStatus: {active: true, error: false},
   latestInvoice: null,
   invoicePayment: null,
   tokens: INITIAL_TOKENS,
@@ -40,6 +43,8 @@ const initialState = {
   sendTx: {loading: false, error: null},
   isOnline: false,
   serverInfo: { version: '', network: '' },
+  lockScreen: true,
+  initWallet: null,
 }
 
 const reducer = (state = initialState, action) => {
@@ -72,12 +77,20 @@ const reducer = (state = initialState, action) => {
       return onFetchHistorySuccess(state, action);
     case types.FETCH_HISTORY_ERROR:
       return onFetchHistoryError(state, action);
-    case types.UPDATE_HISTORY_LOADING_STATUS:
-      return onUpdateHistoryLoadingStatus(state, action);
+    case types.ACTIVATE_FETCH_HISTORY:
+      return onActivateFetchHistory(state, action);
+    case types.SET_LOAD_HISTORY_STATUS:
+      return onSetLoadHistoryStatus(state, action);
     case types.SET_IS_ONLINE:
       return onSetIsOnline(state, action);
     case types.SET_SERVER_INFO:
       return onSetServerInfo(state, action);
+    case types.SET_LOCK_SCREEN:
+      return onSetLockScreen(state, action);
+    case types.SET_INIT_WALLET:
+      return onSetInitWallet(state, action);
+    case types.CLEAR_INIT_WALLET:
+      return onSetInitWallet(state, action);
     default:
       return state;
   }
@@ -343,7 +356,10 @@ const onSendTxDismiss = (state, action) => {
 const onFetchHistoryBegin = (state, action) => {
   return {
     ...state,
-    loadHistoryStatus: {loading: true, transactions: 0, addresses: 0, error: false},
+    loadHistoryStatus: {
+      active: true,
+      error: false,
+    },
   }
 }
 
@@ -385,7 +401,10 @@ const onFetchHistorySuccess = (state, action) => {
     ...state,
     tokensHistory,
     tokensBalance,
-    loadHistoryStatus: {loading: false, transactions: 0, addresses: 0, error: false},
+    loadHistoryStatus: {
+      active: false,
+      error: false
+    },
   };
 }
 
@@ -396,27 +415,52 @@ const onFetchHistoryError = (state, action) => {
   return {
     ...state,
     loadHistoryStatus: {
-      loading: false,
-      transactions: action.payload.transactions,
-      addresses: action.payload.addresses,
+      active: true,
       error: true,
-    }
+    },
   }
 }
 
 /**
- * Update history loading status
+ * Activate fetch history screen
  */
-const onUpdateHistoryLoadingStatus = (state, action) => {
+const onActivateFetchHistory = (state, action) => {
   return {
     ...state,
     loadHistoryStatus: {
-      loading: state.loadHistoryStatus.loading,
-      transactions: action.payload.transactions,
-      addresses: action.payload.addresses,
+      active: true,
       error: false,
-    }
+    },
   }
 }
 
+/**
+ * Set loadHistoryStatus
+ */
+const onSetLoadHistoryStatus = (state, action) => {
+  return {
+    ...state,
+    loadHistoryStatus: action.payload,
+  }
+}
+
+/**
+ * Unlock the wallet
+ */
+const onSetLockScreen = (state, action) => {
+  return {
+    ...state,
+    lockScreen: action.payload,
+  }
+}
+
+/**
+ * Update information about wallet initialization
+ */
+const onSetInitWallet = (state, action) => {
+  return {
+    ...state,
+    initWallet: action.payload,
+  }
+}
 export const store = createStore(reducer, applyMiddleware(thunk));

@@ -20,9 +20,12 @@ export const types = {
   FETCH_HISTORY_BEGIN: "FETCH_HISTORY_BEGIN",
   FETCH_HISTORY_SUCCESS: "FETCH_HISTORY_SUCCESS",
   FETCH_HISTORY_ERROR: "FETCH_HISTORY_ERROR",
-  UPDATE_HISTORY_LOADING_STATUS: "UPDATE_HISTORY_LOADING_STATUS",
+  SET_LOAD_HISTORY_STATUS: "SET_LOAD_HISTORY_STATUS",
   SET_IS_ONLINE: "SET_IS_ONLINE",
   SET_SERVER_INFO: "SET_SERVER_INFO",
+  ACTIVATE_FETCH_HISTORY: "ACTIVATE_FETCH_HISTORY",
+  SET_LOCK_SCREEN: "SET_LOCK_SCREEN",
+  SET_INIT_WALLET: "SET_INIT_WALLET",
 };
 
 /**
@@ -89,14 +92,22 @@ export const fetchHistorySuccess = (history, addresses) => ({type: types.FETCH_H
 
 export const fetchHistoryError = () => ({type: types.FETCH_HISTORY_ERROR});
 
+export const setLoadHistoryStatus = (active, error) => ({type: types.SET_LOAD_HISTORY_STATUS, payload: {active, error}});
+
+export const activateFetchHistory = () => ({type: types.ACTIVATE_FETCH_HISTORY});
+
+export const unlockScreen = () => ({type: types.SET_LOCK_SCREEN, payload: false});
+
+export const lockScreen = () => ({type: types.SET_LOCK_SCREEN, payload: true});
+
 /**
- * transactions {int} amount of transactions loaded
- * addresses {int} amount of addresses loaded
+ * addresses {Array} wallet words
+ * history {String} Pin chosen by user
  */
-export const updateLoadHistoryStatus = (transactions, addresses) => ({
-  type: types.UPDATE_HISTORY_LOADING_STATUS,
-  payload: {transactions, addresses}
-});
+export const setInitWallet = (words, pin) => ({type: types.SET_INIT_WALLET, payload: {words, pin}});
+
+export const clearInitWallet = () => ({type: types.SET_INIT_WALLET, payload: null});
+
 
 /**
  * amount {int} amount to be sent

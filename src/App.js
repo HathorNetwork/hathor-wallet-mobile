@@ -9,9 +9,9 @@
 import '../shim.js'
 
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
-import { Provider } from 'react-redux';
+import { Provider, connect } from 'react-redux';
 
 import IconTabBar from './icon-font.js';
 
@@ -33,7 +33,7 @@ import CreateToken from './screens/CreateToken';
 import Settings from './screens/Settings';
 import TokenDetail from './screens/TokenDetail';
 import HathorLogo from './components/HathorLogo';
-import { PinScreen } from './screens/PinScreen';
+import PinScreen from './screens/PinScreen';
 import About from './screens/About';
 import Security from './screens/Security';
 import ResetWallet from './screens/ResetWallet';
@@ -152,18 +152,62 @@ const AppStack = createStackNavigator({
     },
     CreateToken,
     TokenDetail,
-    LoadHistoryScreen: {
-      screen: LoadHistoryScreen,
-      navigationOptions: disableSwipeDown,
-    },
   }, {
     mode: 'modal',
     headerMode: 'none',
 });
 
+
+/**
+ * loadHistory {bool} Indicates we're loading the tx history
+ * lockScreen {bool} Indicates screen is locked
+ */
+const mapStateToProps = (state) => ({
+  loadHistory: state.loadHistoryStatus.active,
+  lockScreen: state.lockScreen,
+})
+
+export class _AppStackWrapper extends React.Component {
+  static router = AppStack.router;
+
+  style = StyleSheet.create({
+    auxView: {
+      backgroundColor: 'white',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0,
+      zIndex: 100,
+      elevation: 5,
+    },
+  });
+
+  render() {
+    const renderAuxiliarViews = () => {
+      if (this.props.loadHistory || this.props.lockScreen) {
+        return (
+          <View style={this.style.auxView}>
+            {this.props.lockScreen ? <PinScreen isLockScreen={true} navigation={this.props.navigation} /> : <LoadHistoryScreen />}
+          </View>
+        )
+      }
+    }
+
+    return (
+      <View style={{flex: 1}}>
+        {renderAuxiliarViews()}
+        <AppStack navigation={this.props.navigation} />
+      </View>
+    );
+  }
+}
+
+const AppStackWrapper = connect(mapStateToProps)(_AppStackWrapper);
+
 const SwitchNavigator = createSwitchNavigator({
     Decide: DecideStackScreen,
-    App: AppStack,
+    App: AppStackWrapper,
     Init: InitStack,
   }, {
     initialRouteName: 'Decide',
