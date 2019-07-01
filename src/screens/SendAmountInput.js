@@ -8,7 +8,7 @@ import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import TokenBox from '../components/TokenBox';
 import HathorHeader from '../components/HathorHeader';
-import { getNoDecimalsAmount } from '../utils';
+import { getIntegerAmount } from '../utils';
 import OfflineBar from '../components/OfflineBar';
 
 import hathorLib from '@hathor/wallet-lib';
@@ -79,7 +79,7 @@ class SendAmountInput extends React.Component {
   onButtonPress = () => {
     const balance = this.props.tokensBalance[this.state.token.uid];
     const available = balance ? balance.available : 0;
-    const amount = getNoDecimalsAmount(parseFloat(this.state.amount));
+    const amount = getIntegerAmount(this.state.amount);
     if (available < amount) {
       this.setState({error: 'Insufficient funds'});
     } else {
@@ -93,7 +93,7 @@ class SendAmountInput extends React.Component {
     if (this.state.amount === "") {
       return true;
     }
-    if (getNoDecimalsAmount(parseFloat(this.state.amount.replace(',', '.'))) === 0) {
+    if (getIntegerAmount(this.state.amount) === 0) {
       return true;
     }
     return false;

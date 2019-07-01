@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, TextInput } from 'react-native';
-import { getAmountParsed, getNoDecimalsAmount } from '../utils';
+import { getAmountParsed, getIntegerAmount } from '../utils';
 
 class AmountTextInput extends React.Component {
   constructor(props) {
@@ -21,7 +21,7 @@ class AmountTextInput extends React.Component {
     }
 
     const parsedText = getAmountParsed(text);
-    const amount = getNoDecimalsAmount(parseFloat(parsedText.replace(',', '.')));
+    const amount = getIntegerAmount(parsedText);
     if (isNaN(amount) || amount < 0) {
       return;
     }
