@@ -141,10 +141,12 @@ class PinScreen extends React.Component {
           autoFocus={true}
           ref={this.pinInputRef}
         />
-        {this.canCancel && <HathorButton
+        {this.canCancel && <SimpleButton
           onPress={() => this.props.navigation.goBack()}
           title="Cancel"
-          style={{ marginTop: 32 }}
+          color='#0273a0'
+          textStyle={{ textTransform: 'uppercase' }}
+          containerStyle={{ marginTop: 32 }}
         />}
         {!this.canCancel && renderResetButton()}
         {this.state.error && <Text style={{ color: '#DE3535', marginTop: 16 }}>Incorrect PIN Code. Try again.</Text>}
