@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, Text, StyleSheet, TextInput, View } from 'react-native';
+import { Platform, Text, StyleSheet, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 
 class PinInput extends React.Component {
   static defaultProps = {
@@ -58,6 +58,21 @@ class PinInput extends React.Component {
     this.inputRef.current.focus();
   }
 
+  focusFromPress = () => {
+    if (!this.props.editable) {
+      return;
+    }
+
+    // In android we are able to close the keyboard with the hardware back button
+    // and when this button is used, there is a bug that the input can't be focused anymore
+    // so we need to do this workaround
+    // https://github.com/facebook/react-native/issues/19366
+    this.inputRef.current.blur();
+    setTimeout(() => {
+      this.focus();
+    }, 100);
+  }
+
   render() {
     const value = this.props.value;
     const maxLength = this.props.maxLength;
@@ -65,21 +80,23 @@ class PinInput extends React.Component {
     // TextInput cannot receive color props
     const { color, ...textInputProps } = this.props;
     return (
-      <View style={this.props.style}>
-        <View style={this.style.view}>
-          {this.getMarkers(value.length, maxLength)}
+      <TouchableWithoutFeedback onPress={this.focusFromPress}>
+        <View style={this.props.style}>
+          <View style={this.style.view}>
+            {this.getMarkers(value.length, maxLength)}
+          </View>
+          <TextInput
+            style={this.style.textInput}
+            keyboardType='number-pad'
+            secureTextEntry={true}
+            keyboardAppearance='dark'
+            returnKeyType={returnKeyType}
+            onBlur={this.onBlur}
+            ref={this.inputRef}
+            {...textInputProps}
+          />
         </View>
-        <TextInput
-          style={this.style.textInput}
-          keyboardType='number-pad'
-          secureTextEntry={true}
-          keyboardAppearance='dark'
-          returnKeyType={returnKeyType}
-          onBlur={this.onBlur}
-          ref={this.inputRef}
-          {...textInputProps}
-        />
-      </View>
+      </TouchableWithoutFeedback>
     );
   }
 }
