@@ -9,7 +9,7 @@
 import '../shim.js'
 
 import React from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Modal, Platform, View } from 'react-native';
 import { createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
 import { Provider, connect } from 'react-redux';
 
@@ -170,28 +170,30 @@ const mapStateToProps = (state) => ({
 export class _AppStackWrapper extends React.Component {
   static router = AppStack.router;
 
-  style = StyleSheet.create({
-    auxView: {
-      backgroundColor: 'white',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      bottom: 0,
-      right: 0,
-      zIndex: 100,
-      elevation: 5,
-    },
-  });
+  pinScreenRef = React.createRef();
+
+  onShowModal = () => {
+    if (!this.props.lockScreen) {
+      return;
+    }
+
+    const screenRef = this.pinScreenRef.current;
+    if (screenRef && screenRef.pinInputRef.current) {
+      screenRef.pinInputRef.current.focus();
+    }
+  }
 
   render() {
     const renderAuxiliarViews = () => {
-      if (this.props.loadHistory || this.props.lockScreen) {
-        return (
-          <View style={this.style.auxView}>
-            {this.props.lockScreen ? <PinScreen isLockScreen={true} navigation={this.props.navigation} /> : <LoadHistoryScreen />}
-          </View>
-        )
-      }
+      return (
+        <Modal
+          animationType='none'
+          visible={this.props.loadHistory || this.props.lockScreen}
+          onShow={this.onShowModal}
+        >
+          {this.props.lockScreen ? <PinScreen isLockScreen={true} navigation={this.props.navigation} /> : <LoadHistoryScreen />}
+        </Modal>
+      )
     }
 
     return (

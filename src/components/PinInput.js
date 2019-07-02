@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, Text, StyleSheet, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import { Keyboard, Platform, Text, StyleSheet, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 
 class PinInput extends React.Component {
   static defaultProps = {
@@ -30,6 +30,32 @@ class PinInput extends React.Component {
     },
   });
 
+  keyboardDidShowListener = null;
+  keyboardDidHideListener = null;
+
+  /**
+   * keyboardOpened {boolean} if keyboard is being shown
+   */
+  state = { keyboardOpened: false };
+
+  componentDidMount() {
+    this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
+    this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
+  }
+
+  componentWillUnmount() {
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
+  }
+
+  _keyboardDidShow = () => {
+    this.setState({ keyboardOpened: true });
+  }
+
+  _keyboardDidHide = () => {
+    this.setState({ keyboardOpened: false });
+  }
+
   getMarker(index, isFilled) {
     const style = [this.style.marker, {borderColor: this.props.color}];
     if (isFilled) {
@@ -59,7 +85,7 @@ class PinInput extends React.Component {
   }
 
   focusFromPress = () => {
-    if (!this.props.editable) {
+    if (!this.props.editable || this.state.keyboardOpened) {
       return;
     }
 
