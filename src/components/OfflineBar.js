@@ -1,14 +1,16 @@
 import React from 'react';
-import { StyleSheet, Keyboard, View, Text } from 'react-native';
+import {
+  StyleSheet, Keyboard, View, Text,
+} from 'react-native';
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 
 /**
  * isOnline {bool} Indicates whether the wallet is connected.
- **/
-const mapStateToProps = (state) => ({
+ * */
+const mapStateToProps = state => ({
   isOnline: state.isOnline,
-})
+});
 
 class OfflineBar extends React.Component {
   style = StyleSheet.create({
@@ -35,9 +37,9 @@ class OfflineBar extends React.Component {
     }
     const style = [this.style.view];
     if (this.props.position === 'top') {
-      style.push({top: getStatusBarHeight()});
+      style.push({ top: getStatusBarHeight() });
     } else {
-      style.push({bottom: 0});
+      style.push({ bottom: 0 });
     }
     return (
       <View style={[...style, this.props.style]}>
@@ -45,6 +47,6 @@ class OfflineBar extends React.Component {
       </View>
     );
   }
-};
+}
 
-export default connect(mapStateToProps)(OfflineBar)
+export default connect(mapStateToProps)(OfflineBar);

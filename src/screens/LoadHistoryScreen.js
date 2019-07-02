@@ -1,15 +1,18 @@
-import React from "react";
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import React from 'react';
+import {
+  ActivityIndicator, SafeAreaView, StyleSheet, Text, View,
+} from 'react-native';
 import { connect } from 'react-redux';
 
 import * as Keychain from 'react-native-keychain';
 
+import hathorLib from '@hathor/wallet-lib';
 import { loadHistory, clearInitWallet } from '../actions';
-import { setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled } from '../utils';
+import {
+  setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled,
+} from '../utils';
 import { KEYCHAIN_USER } from '../constants';
 import SimpleButton from '../components/SimpleButton';
-
-import hathorLib from '@hathor/wallet-lib';
 
 
 /**
@@ -22,17 +25,15 @@ import hathorLib from '@hathor/wallet-lib';
  *   pin {str} pin selected by user
  * }
  */
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   loadHistoryStatus: state.loadHistoryStatus,
   initWallet: state.initWallet,
-})
+});
 
-const mapDispatchToProps = dispatch => {
-  return {
-    loadHistory: () => dispatch(loadHistory()),
-    clearInitWallet: () => dispatch(clearInitWallet()),
-  }
-}
+const mapDispatchToProps = dispatch => ({
+  loadHistory: () => dispatch(loadHistory()),
+  clearInitWallet: () => dispatch(clearInitWallet()),
+});
 
 class LoadHistoryScreen extends React.Component {
   state = {
@@ -44,7 +45,7 @@ class LoadHistoryScreen extends React.Component {
     if (this.props.initWallet) {
       const { words, pin } = this.props.initWallet;
       hathorLib.wallet.executeGenerateWallet(words, '', pin, pin, false);
-      Keychain.setGenericPassword(KEYCHAIN_USER, pin, {accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY, acessible: Keychain.  ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY});
+      Keychain.setGenericPassword(KEYCHAIN_USER, pin, { accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY, acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY });
     } else {
       // lib already handles the case where websocket is already setup
       hathorLib.WebSocketHandler.setup();
@@ -70,10 +71,10 @@ class LoadHistoryScreen extends React.Component {
     const supportedBiometry = getSupportedBiometry();
     hathorLib.storage.clear();
 
-    let newWalletData = {
+    const newWalletData = {
       keys: {},
       xpubkey: walletData.xpubkey,
-    }
+    };
 
     hathorLib.storage.setItem('wallet:accessData', accessData);
     hathorLib.storage.setItem('wallet:data', newWalletData);
@@ -92,35 +93,43 @@ class LoadHistoryScreen extends React.Component {
   addressesLoadedUpdate = (data) => {
     const txs = Object.keys(data.historyTransactions).length;
     const addresses = data.addressesFound;
-    this.setState({transactions: txs, addresses: addresses});
+    this.setState({ transactions: txs, addresses });
   }
 
   render() {
     const renderError = () => (
-      <View style={{alignItems: 'center'}}>
+      <View style={{ alignItems: 'center' }}>
         <Text style={styles.text}>There's been an error connecting to the server</Text>
         <SimpleButton
-          containerStyle={{marginTop: 24}}
+          containerStyle={{ marginTop: 24 }}
           onPress={this.props.loadHistory}
           title="Try again"
         />
       </View>
-    )
+    );
 
     const renderLoading = () => (
-      <View style={{alignItems: 'center'}}>
-        <ActivityIndicator size='large' animating={true} />
+      <View style={{ alignItems: 'center' }}>
+        <ActivityIndicator size="large" animating />
         <Text style={styles.text}>Loading your transactions</Text>
-        <Text style={styles.text}>{this.state.transactions} transactions found</Text>
-        <Text style={styles.text}>{this.state.addresses} addresses found</Text>
+        <Text style={styles.text}>
+          {this.state.transactions}
+          {' '}
+transactions found
+        </Text>
+        <Text style={styles.text}>
+          {this.state.addresses}
+          {' '}
+addresses found
+        </Text>
       </View>
-    )
+    );
 
     return (
       <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         {this.props.loadHistoryStatus.error ? renderError() : renderLoading()}
       </SafeAreaView>
-    )
+    );
   }
 }
 
@@ -129,7 +138,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 16,
-  }
+  },
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoadHistoryScreen);

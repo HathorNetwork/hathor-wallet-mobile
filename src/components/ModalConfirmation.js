@@ -1,5 +1,7 @@
 import React from 'react';
-import { Dimensions, Image, Platform, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import {
+  Dimensions, Image, Platform, StyleSheet, TouchableWithoutFeedback, View,
+} from 'react-native';
 
 class ModalConfirmation extends React.Component {
   /**
@@ -44,11 +46,11 @@ class ModalConfirmation extends React.Component {
         justifyContent: 'flex-end',
         alignItems: 'center',
         zIndex: 3,
-        height: height,
-        width: width,
+        height,
+        width,
       },
       innerModal: {
-        marginBottom: marginBottom,
+        marginBottom,
         height: 270,
         backgroundColor: 'white',
         alignItems: 'center',
@@ -62,12 +64,12 @@ class ModalConfirmation extends React.Component {
       <TouchableWithoutFeedback onPress={this.hide}>
         <View style={styles.modal}>
           <View style={styles.innerModal}>
-            <Image source={require('../assets/images/icCheckBig.png')} style={{height: 105, width: 105}} resizeMode={"contain"} />
+            <Image source={require('../assets/images/icCheckBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />
             {this.props.body}
           </View>
         </View>
       </TouchableWithoutFeedback>
-    )
+    );
   }
 }
 

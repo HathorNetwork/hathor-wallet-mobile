@@ -18,12 +18,10 @@ import baseStyle from '../styles/init';
 import { Strong } from '../utils';
 
 
-const mapDispatchToProps = dispatch => {
-  return {
-    unlockScreen: () => dispatch(unlockScreen()),
-    setInitWallet: (words, pin) => dispatch(setInitWallet(words, pin)),
-  }
-}
+const mapDispatchToProps = dispatch => ({
+  unlockScreen: () => dispatch(unlockScreen()),
+  setInitWallet: (words, pin) => dispatch(setInitWallet(words, pin)),
+});
 
 class ChoosePinScreen extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
@@ -39,7 +37,7 @@ class ChoosePinScreen extends React.Component {
 
   constructor(props) {
     super(props);
-    this.words = this.props.navigation.getParam("words");
+    this.words = this.props.navigation.getParam('words');
 
     /**
      * pin1 {string} Input value for pin
@@ -63,10 +61,10 @@ class ChoosePinScreen extends React.Component {
     this.steps = [
       {
         title: 'For your security,',
-        render: this.getPin1View
+        render: this.getPin1View,
       }, {
         title: 'To confirm the PIN,',
-        render: this.getPin2View
+        render: this.getPin2View,
       },
     ];
   }
@@ -90,12 +88,12 @@ class ChoosePinScreen extends React.Component {
 
   moveToPin2 = () => {
     this.setState({
-      stepIndex: 1
+      stepIndex: 1,
     });
   }
 
   onChangePin2 = (text) => {
-    this.setState({pin2: text, pin2Color: 'black', error: null});
+    this.setState({ pin2: text, pin2Color: 'black', error: null });
     if (text.length == 6) {
       setTimeout(() => this.validatePin(text), 300);
     }
@@ -113,28 +111,26 @@ class ChoosePinScreen extends React.Component {
   removeOneChar() {
     const pin2 = this.state.pin2.slice(0, -1);
     if (pin2.length == 0) {
-      this.setState({ pin2: "", error: true });
+      this.setState({ pin2: '', error: true });
     } else {
-      this.setState({ pin2: pin2, pin2Color: '#DE3535' });
+      this.setState({ pin2, pin2Color: '#DE3535' });
       setTimeout(() => this.removeOneChar(), 25);
     }
   }
 
-  getPin1View = () => {
-    return (
-      <View style={this.style.pinView}>
-        <Text style={this.style.pinText}>Enter your new PIN code</Text>
-        <PinInput
-          editable={!this.state.done && this.state.stepIndex == 0}
-          maxLength={6}
-          onChangeText={this.onChangePin1}
-          color={(this.state.pin1.length < 6 ? 'black' : '#0DA0A0')}
-          value={this.state.pin1}
-          autoFocus={true}
-        />
-      </View>
-    );
-  }
+  getPin1View = () => (
+    <View style={this.style.pinView}>
+      <Text style={this.style.pinText}>Enter your new PIN code</Text>
+      <PinInput
+        editable={!this.state.done && this.state.stepIndex == 0}
+        maxLength={6}
+        onChangeText={this.onChangePin1}
+        color={(this.state.pin1.length < 6 ? 'black' : '#0DA0A0')}
+        value={this.state.pin1}
+        autoFocus
+      />
+    </View>
+  )
 
   getPin2View = () => {
     let errorMessage = '';
@@ -150,17 +146,19 @@ class ChoosePinScreen extends React.Component {
           onChangeText={this.onChangePin2}
           color={this.state.pin2Color}
           value={this.state.pin2}
-          autoFocus={true}
+          autoFocus
         />
         <Text style={{ color: '#DE3535', marginTop: 16, height: 24 }}>{errorMessage}</Text>
-        {(!this.state.done &&
+        {(!this.state.done
+          && (
           <SimpleButton
             onPress={this.startPinAgain}
-            title='Choose another PIN'
-            color='#0273a0'
+            title="Choose another PIN"
+            color="#0273a0"
             textStyle={{ fontSize: 18 }}
             containerStyle={{ marginTop: 32 }}
           />
+          )
         )}
       </View>
     );
@@ -186,7 +184,7 @@ class ChoosePinScreen extends React.Component {
             <NewHathorButton
               onPress={this.goToNextScreen}
               disabled={!this.state.done}
-              title='Start the Wallet'
+              title="Start the Wallet"
               style={{ marginTop: 16 }}
             />
           </View>

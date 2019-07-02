@@ -1,5 +1,7 @@
 import React from 'react';
-import { Dimensions, Keyboard, SafeAreaView, View } from 'react-native';
+import {
+  Dimensions, Keyboard, SafeAreaView, View,
+} from 'react-native';
 
 import { TabBar, TabView } from 'react-native-tab-view';
 import HathorHeader from '../components/HathorHeader';
@@ -16,7 +18,7 @@ class ReceiveScreen extends React.Component {
      * routes {Array} Array of objects that stores each tab bar option {key, title}
      */
     this.state = {
-      address: "",
+      address: '',
       index: 0,
       routes: [
         { key: 'address', title: 'My Address' },
@@ -45,17 +47,21 @@ class ReceiveScreen extends React.Component {
   renderScene = ({ route }) => {
     switch (route.key) {
       case 'address':
-        return <ReceiveMyAddress
-          navigation={this.props.navigation}
-          onAddressUpdate={this.onAddressUpdate} 
-        />
+        return (
+          <ReceiveMyAddress
+            navigation={this.props.navigation}
+            onAddressUpdate={this.onAddressUpdate}
+          />
+        );
       case 'paymentRequest':
-        return <NewPaymentRequest
-          navigation={this.props.navigation}
-          address={this.state.address}
-          index={this.state.index}
-          ref={this.paymentRequest}
-        />
+        return (
+          <NewPaymentRequest
+            navigation={this.props.navigation}
+            address={this.state.address}
+            index={this.state.index}
+            ref={this.paymentRequest}
+          />
+        );
       default:
         return null;
     }
@@ -80,27 +86,25 @@ class ReceiveScreen extends React.Component {
       } else {
         this.onActivateRight();
       }
-    })
+    });
   }
 
   render() {
-    const renderTabBar = (props) => {
-      return (
-        <TabBar
-          {...props}
-          indicatorStyle={{ backgroundColor: '#333'}}
-          style={{ backgroundColor: '#fff' }}
-          labelStyle={{color: '#333' }}
-          getLabelText={this.getLabelText}
-        />
-      );
-    }
+    const renderTabBar = props => (
+      <TabBar
+        {...props}
+        indicatorStyle={{ backgroundColor: '#333' }}
+        style={{ backgroundColor: '#fff' }}
+        labelStyle={{ color: '#333' }}
+        getLabelText={this.getLabelText}
+      />
+    );
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader title="RECEIVE" />
         <TabView
-          renderTabBar={(props) => renderTabBar(props)}
+          renderTabBar={props => renderTabBar(props)}
           navigationState={this.state}
           renderScene={this.renderScene}
           onIndexChange={this.handleIndexChange}
@@ -108,7 +112,7 @@ class ReceiveScreen extends React.Component {
         />
         <OfflineBar />
       </SafeAreaView>
-    )
+    );
   }
 }
 

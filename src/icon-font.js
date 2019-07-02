@@ -4,5 +4,5 @@ import icoMoonConfig from './icon-font.json';
 export default createIconSetFromIcoMoon(
   icoMoonConfig,
   'icomoon',
-  'tabbar.ttf'
+  'tabbar.ttf',
 );

@@ -1,16 +1,18 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import {
+  SafeAreaView, StyleSheet, Text, View,
+} from 'react-native';
 import { connect } from 'react-redux';
 
 import QRCode from 'react-native-qrcode-svg';
 
+import hathorLib from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
 import ModalConfirmation from '../components/ModalConfirmation';
 import OfflineBar from '../components/OfflineBar';
 import { clearInvoice } from '../actions';
 import { getShortAddress, getTokenLabel } from '../utils';
 
-import hathorLib from '@hathor/wallet-lib';
 
 /**
  * address {string} Invoice destination address
@@ -18,12 +20,12 @@ import hathorLib from '@hathor/wallet-lib';
  * token {Object} Invoice token config
  * payment {Object} Transaction with the invoice payment
  */
-const mapInvoiceStateToProps = (state) => ({
+const mapInvoiceStateToProps = state => ({
   address: state.latestInvoice.address,
   amount: state.latestInvoice.amount,
   token: state.latestInvoice.token,
   payment: state.invoicePayment,
-})
+});
 
 class PaymentRequestDetail extends React.Component {
   constructor(props) {
@@ -45,45 +47,51 @@ class PaymentRequestDetail extends React.Component {
   }
 
   render() {
-    const renderModalBody = () => {
-      return (
-        <Text style={{ fontSize: 18 }}>
+    const renderModalBody = () => (
+      <Text style={{ fontSize: 18 }}>
           You've just received
-          <Text style={{ fontWeight: 'bold' }}>
-            {` ${hathorLib.helpers.prettyValue(this.props.amount)} ${this.props.token.symbol}`}
-          </Text>
+        <Text style={{ fontWeight: 'bold' }}>
+          {` ${hathorLib.helpers.prettyValue(this.props.amount)} ${this.props.token.symbol}`}
         </Text>
-      );
-    }
+      </Text>
+    );
 
-    const renderPaymentConfirm = () => {
-      return (
-        <ModalConfirmation
-          body={renderModalBody()}
-          ref={this.modalConfirmation}
-        />
-      )
-    }
+    const renderPaymentConfirm = () => (
+      <ModalConfirmation
+        body={renderModalBody()}
+        ref={this.modalConfirmation}
+      />
+    );
 
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         {renderPaymentConfirm()}
-        <HathorHeader title='PAYMENT REQUEST' onBackPress={() => this.props.navigation.goBack()} />
-        <View style={{flex: 1, justifyContent: "space-between", alignItems: "center", width: "100%"}}>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '100%'}}>
+        <HathorHeader title="PAYMENT REQUEST" onBackPress={() => this.props.navigation.goBack()} />
+        <View style={{
+          flex: 1, justifyContent: 'space-between', alignItems: 'center', width: '100%',
+        }}
+        >
+          <View style={{
+            flex: 1, justifyContent: 'center', alignItems: 'center', width: '100%',
+          }}
+          >
             <QRCode
-              value={JSON.stringify({address: `hathor:${this.props.address}`, amount: this.props.amount, token: this.props.token})}
+              value={JSON.stringify({ address: `hathor:${this.props.address}`, amount: this.props.amount, token: this.props.token })}
               size={200}
             />
           </View>
-          <View style={{ alignItems: "center", width: "100%" }}>
+          <View style={{ alignItems: 'center', width: '100%' }}>
             <View style={styles.dataWrapper}>
               <Text style={styles.title}>Token</Text>
               <Text style={styles.data}>{getTokenLabel(this.props.token)}</Text>
             </View>
             <View style={styles.dataWrapper}>
               <Text style={styles.title}>Amount</Text>
-              <Text style={styles.data}>{hathorLib.helpers.prettyValue(this.props.amount)} {this.props.token.symbol}</Text>
+              <Text style={styles.data}>
+                {hathorLib.helpers.prettyValue(this.props.amount)}
+                {' '}
+                {this.props.token.symbol}
+              </Text>
             </View>
             <View style={styles.dataWrapper}>
               <Text style={styles.title}>My Address</Text>
@@ -103,9 +111,9 @@ class PaymentRequestDetail extends React.Component {
 
 const styles = StyleSheet.create({
   dataWrapper: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderColor: '#eee',
@@ -114,7 +122,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    opacity: 0.5
+    opacity: 0.5,
   },
   data: {
     fontSize: 16,

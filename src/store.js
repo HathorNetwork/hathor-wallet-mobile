@@ -40,11 +40,11 @@ class AsyncStorageStore {
   }
 
   async preStart() {
-    const keysStr = await AsyncStorage.getItem("hathorMobileKeys");
+    const keysStr = await AsyncStorage.getItem('hathorMobileKeys');
     let keys = [];
     try {
       keys = await AsyncStorage.getAllKeys();
-    } catch(e) {
+    } catch (e) {
       // TODO read key error
     }
     const allValues = await AsyncStorage.multiGet(keys);

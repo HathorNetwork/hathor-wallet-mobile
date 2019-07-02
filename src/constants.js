@@ -4,8 +4,9 @@ import 'intl/locale-data/jsonp/en';
 
 // This workaround was in App.js before
 // however this redux file is loaded before and we need the hathorLib here
-import AsyncStorageStore from './store';
 import hathorLib from '@hathor/wallet-lib';
+import AsyncStorageStore from './store';
+
 hathorLib.storage.setStore(new AsyncStorageStore());
 hathorLib.storage.setItem('wallet:server', 'https://node2.bravo.testnet.hathor.network/v1a/');
 
@@ -23,7 +24,7 @@ export const SELECTED_TOKEN = hathorLib.constants.HATHOR_TOKEN_CONFIG;
 /**
  * Wallet will lock if app goes to background for more than LOCK_TIMEOUT seconds
  */
-export const LOCK_TIMEOUT = 30000;    // 30s
+export const LOCK_TIMEOUT = 30000; // 30s
 
 
 /**

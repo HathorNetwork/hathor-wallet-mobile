@@ -1,13 +1,12 @@
 import React from 'react';
 import { KeyboardAvoidingView, SafeAreaView, View } from 'react-native';
 
+import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
 import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
-
-import hathorLib from '@hathor/wallet-lib';
 
 
 class SendAddressInput extends React.Component {
@@ -20,7 +19,7 @@ class SendAddressInput extends React.Component {
     this.state = {
       // we can optionally receive a string to fill out the address input (for eg, user scanned QR code)
       address: this.props.navigation.getParam('address', null),
-      //TODO this is probably temporary. We don't have the UI for error message yet.
+      // TODO this is probably temporary. We don't have the UI for error message yet.
       error: null,
     };
   }
@@ -32,7 +31,7 @@ class SendAddressInput extends React.Component {
   onButtonPress = () => {
     const validation = validateAddress(this.state.address);
     if (validation.isValid) {
-      this.props.navigation.navigate('SendAmountInput', {address: this.state.address});
+      this.props.navigation.navigate('SendAmountInput', { address: this.state.address });
     } else {
       this.setState({ error: validation.message });
     }
@@ -42,25 +41,25 @@ class SendAddressInput extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
-          title="SEND" 
+          title="SEND"
           onBackPress={() => this.props.navigation.goBack()}
         />
-        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <SimpleInput
-              label='Address to send'
-              autoFocus={true}
+              label="Address to send"
+              autoFocus
               onChangeText={this.onAddressChange}
               error={this.state.error}
               value={this.state.address}
             />
             <NewHathorButton
               title="Next"
-              disabled={this.state.address ? false : true}
+              disabled={!this.state.address}
               onPress={this.onButtonPress}
             />
           </View>
-          <OfflineBar style={{position: 'relative'}} />
+          <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
       </SafeAreaView>
     );

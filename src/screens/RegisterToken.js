@@ -14,32 +14,42 @@ class RegisterToken extends React.Component {
   }
 
   onSuccess = (e) => {
-    this.props.navigation.navigate('RegisterTokenManual', {configurationString: e.data})
+    this.props.navigation.navigate('RegisterTokenManual', { configurationString: e.data });
   }
 
   render() {
     const renderHeaderRightElement = () => (
-      <SimpleButton 
-        title='Manual info'
+      <SimpleButton
+        title="Manual info"
         onPress={() => this.props.navigation.navigate('RegisterTokenManual')}
       />
-    )
+    );
 
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: '#f7f7f7', alignSelf: 'stretch' }}>
-        <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center", alignSelf: 'stretch' }}>
+      <View style={{
+        flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f7f7f7', alignSelf: 'stretch',
+      }}
+      >
+        <SafeAreaView style={{
+          flex: 1, justifyContent: 'center', alignItems: 'center', alignSelf: 'stretch',
+        }}
+        >
           <HathorHeader
-            title='REGISTER TOKEN'
+            title="REGISTER TOKEN"
             onBackPress={() => this.props.navigation.pop()}
             rightElement={renderHeaderRightElement()}
             wrapperStyle={{ borderBottomWidth: 0 }}
           />
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center", margin: 16, alignSelf: 'stretch' }}>
+          <View style={{
+            flex: 1, justifyContent: 'center', alignItems: 'center', margin: 16, alignSelf: 'stretch',
+          }}
+          >
             <QRCodeReader
-              ref={(el) => this.QRCodeReader = el}
+              ref={el => this.QRCodeReader = el}
               onSuccess={this.onSuccess}
-              bottomText='Scan the token QR code'
-              {...this.props} />
+              bottomText="Scan the token QR code"
+              {...this.props}
+            />
           </View>
         </SafeAreaView>
       </View>

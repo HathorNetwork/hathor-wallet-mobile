@@ -1,9 +1,11 @@
 import React from 'react';
-import { FlatList, Image, StyleSheet, View, Text, TouchableHighlight } from 'react-native';
-import HathorHeader from '../components/HathorHeader';
+import {
+  FlatList, Image, StyleSheet, View, Text, TouchableHighlight,
+} from 'react-native';
 
 import { getInset } from 'react-native-safe-area-view';
 import hathorLib from '@hathor/wallet-lib';
+import HathorHeader from './HathorHeader';
 
 
 const safeViewTop = getInset('top');
@@ -23,7 +25,8 @@ class TokenSelect extends React.Component {
       return (
         <TouchableHighlight
           style={index === 0 ? styles.firstItemWrapper : null}
-          onPress={() => {this.props.onItemPress(item)}} underlayColor='rgba(227, 0, 82, 0.5)'
+          onPress={() => { this.props.onItemPress(item); }}
+          underlayColor="rgba(227, 0, 82, 0.5)"
         >
           <View style={styles.itemWrapper}>
             <View style={styles.itemLeftWrapper}>
@@ -33,20 +36,24 @@ class TokenSelect extends React.Component {
               <Text style={[styles.text, styles.leftText]}>{item.name}</Text>
             </View>
             <View style={styles.itemLeftWrapper}>
-              <Text style={[styles.text, styles.rightText]}>{hathorLib.helpers.prettyValue(balance)} {item.symbol}</Text>
-              {this.props.renderArrow &&
-                <Image style={{marginLeft: 8}} source={require('../assets/icons/chevron-right.png')} width={24} height={24} />}
+              <Text style={[styles.text, styles.rightText]}>
+                {hathorLib.helpers.prettyValue(balance)}
+                {' '}
+                {item.symbol}
+              </Text>
+              {this.props.renderArrow
+                && <Image style={{ marginLeft: 8 }} source={require('../assets/icons/chevron-right.png')} width={24} height={24} />}
             </View>
           </View>
         </TouchableHighlight>
-      )
-    }
+      );
+    };
 
     // Can't use SafeAreaView because the list view must go until the end of the screen
     return (
       <View style={styles.wrapper}>
         {this.props.header}
-        <View style={styles.listWrapper}> 
+        <View style={styles.listWrapper}>
           <FlatList
             data={this.props.tokens}
             // use extraData to make sure list updates (props.tokens might remain the same object)
@@ -63,8 +70,8 @@ class TokenSelect extends React.Component {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#f7f7f7',
     paddingTop: safeViewTop,
   },
@@ -109,7 +116,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   text: {
-    lineHeight: 20
+    lineHeight: 20,
   },
   rightText: {
     fontSize: 16,
@@ -125,7 +132,7 @@ const styles = StyleSheet.create({
   },
   symbolWrapperSelected: {
     backgroundColor: '#E30052',
-  }
+  },
 });
 
 

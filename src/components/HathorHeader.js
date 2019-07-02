@@ -1,34 +1,40 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  StyleSheet, Text, TouchableOpacity, View,
+} from 'react-native';
 
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { faChevronLeft } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 
-const HathorHeader = props => {
+const HathorHeader = (props) => {
   const renderBackButton = () => {
     if (!props.onBackPress) {
       return null;
     }
     return (
-      <View style={[styles.iconWrapper, {left: 0, width: 56, height: 40}]}>
-        <TouchableOpacity style={{alignSelf: 'stretch', flex: 1, paddingLeft: 16, justifyContent: 'center'}} onPress={props.onBackPress}>
-          <FontAwesomeIcon icon={ faChevronLeft } />
+      <View style={[styles.iconWrapper, { left: 0, width: 56, height: 40 }]}>
+        <TouchableOpacity
+          style={{
+            alignSelf: 'stretch', flex: 1, paddingLeft: 16, justifyContent: 'center',
+          }}
+          onPress={props.onBackPress}
+        >
+          <FontAwesomeIcon icon={faChevronLeft} />
         </TouchableOpacity>
       </View>
-    )
-  }
+    );
+  };
 
   const renderHeaderRight = () => {
     if (props.rightElement) {
       return (
-        <View style={[styles.iconWrapper, {right: 0, paddingRight: 16}]}>
+        <View style={[styles.iconWrapper, { right: 0, paddingRight: 16 }]}>
           {props.rightElement}
         </View>
       );
-    } else {
-      return <View style={styles.iconWrapper}></View>;
     }
-  }
+    return <View style={styles.iconWrapper} />;
+  };
 
   return (
     <View style={[styles.wrapper, props.wrapperStyle]}>
@@ -36,8 +42,8 @@ const HathorHeader = props => {
       <Text>{props.title}</Text>
       {renderHeaderRight()}
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -54,7 +60,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     flexDirection: 'row',
     alignItems: 'center',
-  }
+  },
 });
 
 export default HathorHeader;

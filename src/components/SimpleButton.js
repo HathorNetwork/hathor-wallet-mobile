@@ -1,18 +1,20 @@
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Image, StyleSheet, Text, TouchableOpacity, View,
+} from 'react-native';
 
-const SimpleButton = props => {
+const SimpleButton = (props) => {
   const renderTitle = () => {
     if (props.title) {
       const textStyles = [styles.text, props.textStyle];
       if (props.color) {
-        textStyles.push({color: props.color});
+        textStyles.push({ color: props.color });
       }
-      return <Text style={textStyles}>{props.title}</Text>
+      return <Text style={textStyles}>{props.title}</Text>;
     }
 
     return null;
-  }
+  };
 
   const renderIcon = () => {
     if (props.icon) {
@@ -20,19 +22,19 @@ const SimpleButton = props => {
         <View style={[styles.icon, props.iconStyle]}>
           <Image source={props.icon} />
         </View>
-      )
+      );
     }
 
     return null;
-  }
+  };
 
   return (
     <TouchableOpacity onPress={props.onPress} style={[styles.container, props.containerStyle]}>
       {renderTitle()}
       {renderIcon()}
     </TouchableOpacity>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

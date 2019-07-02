@@ -1,10 +1,12 @@
 import React from 'react';
-import { Dimensions, Share, StyleSheet, Text, View } from 'react-native';
+import {
+  Dimensions, Share, StyleSheet, Text, View,
+} from 'react-native';
 
 import QRCode from 'react-native-qrcode-svg';
 
-import NewHathorButton from '../components/NewHathorButton';
 import hathorLib from '@hathor/wallet-lib';
+import NewHathorButton from './NewHathorButton';
 
 class ReceiveMyAddress extends React.Component {
   constructor(props) {
@@ -13,7 +15,7 @@ class ReceiveMyAddress extends React.Component {
     /**
      * address {string} Wallet address
      */
-    this.state = {address: ""};
+    this.state = { address: '' };
 
     this.willFocusEvent = null;
   }
@@ -38,7 +40,7 @@ class ReceiveMyAddress extends React.Component {
   shareAddress = () => {
     Share.share({
       message: `Here is my address: ${this.state.address}`,
-    })
+    });
   }
 
   render() {
@@ -58,7 +60,7 @@ class ReceiveMyAddress extends React.Component {
         alignItems: 'center',
         justifyContent: 'center',
         width: width - 32,
-      }
+      },
     });
 
     return (
@@ -67,13 +69,15 @@ class ReceiveMyAddress extends React.Component {
           <QRCode value={`hathor:${this.state.address}`} size={height < 650 ? 160 : 250} />
         </View>
         <View style={addressWrapperStyle.style}>
-          <Text style={{ fontSize: height < 650 ? 11 : 13 }} selectable={true}>{this.state.address}</Text>
+          <Text style={{ fontSize: height < 650 ? 11 : 13 }} selectable>{this.state.address}</Text>
         </View>
         <View style={{ flexDirection: 'row' }}>
           <NewHathorButton
             title="New address"
             onPress={this.updateAddress}
-            wrapperStyle={{ flex: 1, borderRadius: 0, borderRightWidth: 1.5, borderColor: '#e5e5ea', backgroundColor: 'transparent' }}
+            wrapperStyle={{
+              flex: 1, borderRadius: 0, borderRightWidth: 1.5, borderColor: '#e5e5ea', backgroundColor: 'transparent',
+            }}
             textStyle={{ color: '#0273a0' }}
           />
           <NewHathorButton
@@ -84,14 +88,14 @@ class ReceiveMyAddress extends React.Component {
           />
         </View>
       </View>
-    )
+    );
   }
 }
 
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    alignItems: "center",
+    alignItems: 'center',
     marginHorizontal: 16,
     marginTop: 32,
     borderWidth: 1.5,
@@ -102,7 +106,7 @@ const styles = StyleSheet.create({
   qrcodeWrapper: {
     padding: 24,
     flex: 1,
-  }
+  },
 });
 
 export default ReceiveMyAddress;

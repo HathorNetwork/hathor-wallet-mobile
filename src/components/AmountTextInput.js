@@ -30,20 +30,20 @@ class AmountTextInput extends React.Component {
   }
 
   render() {
-    const {style: customStyle, ...props} = this.props;
+    const { style: customStyle, ...props } = this.props;
     return (
       <TextInput
         ref={this.inputRef}
         style={[style.input, customStyle]}
         onChangeText={this.onChangeText}
-        textAlign='center'
-        textAlignVertical='bottom'
-        keyboardAppearance='dark'
+        textAlign="center"
+        textAlignVertical="bottom"
+        keyboardAppearance="dark"
         keyboardType="numeric"
         placeholder="0.00"
         {...props}
       />
-    )
+    );
   }
 }
 
@@ -55,7 +55,7 @@ const style = StyleSheet.create({
     fontWeight: 'bold',
     paddingVertical: 0,
     color: 'black',
-  }
+  },
 });
 
 export default AmountTextInput;

@@ -1,24 +1,23 @@
-import React from "react";
-import { Alert, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import React from 'react';
+import {
+  Alert, SafeAreaView, StyleSheet, Text, View,
+} from 'react-native';
 import { connect } from 'react-redux';
+import QRCode from 'react-native-qrcode-svg';
+import hathorLib from '@hathor/wallet-lib';
 import { setTokens } from '../actions';
 import { getTokenLabel } from '../utils';
-import QRCode from 'react-native-qrcode-svg';
 
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
-
-import hathorLib from '@hathor/wallet-lib';
 
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  */
-const mapStateToProps = (state) => {
-  return {
-    selectedToken: state.selectedToken,
-  };
-}
+const mapStateToProps = state => ({
+  selectedToken: state.selectedToken,
+});
 
 
 class TokenDetail extends React.Component {
@@ -27,8 +26,8 @@ class TokenDetail extends React.Component {
       'Unregister token',
       `Are you sure you want to unregister ${getTokenLabel(this.props.selectedToken)}?`,
       [
-        {text: "Yes", onPress: this.unregisterConfirmed},
-        {text: "No", style: "cancel"},
+        { text: 'Yes', onPress: this.unregisterConfirmed },
+        { text: 'No', style: 'cancel' },
       ],
     );
   }
@@ -49,15 +48,15 @@ class TokenDetail extends React.Component {
 
     const renderHeaderRightElement = () => (
       <SimpleButton
-        title='Unregister'
+        title="Unregister"
         onPress={this.unregisterClicked}
       />
-    )
+    );
 
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
-          title='TOKEN DETAIL'
+          title="TOKEN DETAIL"
           onBackPress={() => this.props.navigation.goBack()}
           wrapperStyle={{ borderBottomWidth: 0 }}
           rightElement={renderHeaderRightElement()}
@@ -73,7 +72,7 @@ class TokenDetail extends React.Component {
             />
           </View>
           <View style={styles.configStringWrapper}>
-            <Text style={{ fontSize: 14 }} selectable={true}>{configString}</Text>
+            <Text style={{ fontSize: 14 }} selectable>{configString}</Text>
           </View>
         </View>
       </SafeAreaView>
@@ -87,7 +86,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f7f7',
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf: 'stretch'
+    alignSelf: 'stretch',
   },
   contentWrapper: {
     backgroundColor: 'white',
