@@ -56,9 +56,7 @@ This means that <Strong>your Hathor token (HTR) and any other token may be reset
           </Text>
           <Text style={this.style.text}>If someone offers to sell some tokens to you, that person is a scammer.</Text>
           <Text style={this.style.text}>
-For further information, check our website
-            <Link href="https://hathor.network">https://hathor.network/</Link>
-.
+For further information, check our website <Link href="https://hathor.network">https://hathor.network/</Link>.
           </Text>
 
           <Text style={this.style.title}>MIT License</Text>
