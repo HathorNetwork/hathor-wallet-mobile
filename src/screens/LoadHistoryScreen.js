@@ -41,10 +41,14 @@ class LoadHistoryScreen extends React.Component {
     addresses: 0,
   };
 
-  componentDidMount() {
+  initializeWallet() {
     if (this.props.initWallet) {
       const { words, pin } = this.props.initWallet;
+
+      // This is the slow step. It takes around 3s in Pedro's iPhone.
       hathorLib.wallet.executeGenerateWallet(words, '', pin, pin, false);
+      // ------
+
       Keychain.setGenericPassword(KEYCHAIN_USER, pin, { accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY, acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY });
     } else {
       // lib already handles the case where websocket is already setup
@@ -53,6 +57,11 @@ class LoadHistoryScreen extends React.Component {
     hathorLib.WebSocketHandler.on('addresses_loaded', this.addressesLoadedUpdate);
     this.cleanData();
     this.props.loadHistory();
+  }
+
+  componentDidMount() {
+    // This setTimeout exists to prevent blocking the main thread
+    setTimeout(() => this.initializeWallet(), 0);
   }
 
   componentWillUnmount() {
