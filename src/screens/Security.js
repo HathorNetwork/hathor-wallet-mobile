@@ -9,7 +9,7 @@ import {
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import {
-  Strong, isBiometryEnabled, setBiometryEnabled, getSupportedBiometry,
+  isBiometryEnabled, setBiometryEnabled, getSupportedBiometry,
 } from '../utils';
 
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';

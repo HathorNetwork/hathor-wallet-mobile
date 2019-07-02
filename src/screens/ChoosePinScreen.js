@@ -15,7 +15,6 @@ import PinInput from '../components/PinInput';
 import { setInitWallet, unlockScreen } from '../actions';
 
 import baseStyle from '../styles/init';
-import { Strong } from '../utils';
 
 
 const mapDispatchToProps = dispatch => ({

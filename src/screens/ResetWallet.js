@@ -73,11 +73,7 @@ export class ResetWallet extends React.Component {
         <View style={this.style.container}>
           <Text style={this.style.title}>Are you sure?</Text>
           <Text style={this.style.text}>
-If you reset your wallet,
-            <Strong>all data will be deleted</Strong>
-, and you will
-            <Strong>lose access to your tokens</Strong>
-. To recover access to your tokens, you will need to import your seed words again.
+If you reset your wallet, <Strong>all data will be deleted</Strong>, and you will <Strong>lose access to your tokens</Strong>. To recover access to your tokens, you will need to import your seed words again.
           </Text>
           <View style={this.style.switchView}>
             <Switch
@@ -86,9 +82,7 @@ If you reset your wallet,
               value={this.state.switchValue}
             />
             <Text style={this.style.switchText}>
-I want to reset my wallet, and I acknowledge that
-              <Strong>all data will be wiped out</Strong>
-.
+I want to reset my wallet, and I acknowledge that <Strong>all data will be wiped out</Strong>.
             </Text>
           </View>
           <View style={this.style.buttonView}>

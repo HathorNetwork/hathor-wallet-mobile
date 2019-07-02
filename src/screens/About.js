@@ -49,13 +49,10 @@ export class About extends React.Component {
           <Text style={this.style.text}>This app is developed by Hathor Labs and is distributed for free.</Text>
 
           <Text style={this.style.text}>
-This wallet is connected to a
-            <Strong>testnet</Strong>
-.
+This wallet is connected to a <Strong>testnet</Strong>.
           </Text>
           <Text style={this.style.text}>
-This means that
-            <Strong>your Hathor token (HTR) and any other token may be reset at any time.</Strong>
+This means that <Strong>your Hathor token (HTR) and any other token may be reset at any time.</Strong>
           </Text>
           <Text style={this.style.text}>If someone offers to sell some tokens to you, that person is a scammer.</Text>
           <Text style={this.style.text}>

@@ -113,9 +113,7 @@ class SendConfirmScreen extends React.Component {
         <View style={styles.innerModal}>
           <Image source={require('../assets/images/icCheckBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />
           <Text style={{ fontSize: 18, marginTop: 40, textAlign: 'center' }}>
-              Your transfer of
-            <Strong>{` ${hathorLib.helpers.prettyValue(this.amount)} ${this.token.symbol} `}</Strong>
-              has been confirmed
+              Your transfer of <Strong>{` ${hathorLib.helpers.prettyValue(this.amount)} ${this.token.symbol} `}</Strong> has been confirmed
           </Text>
         </View>
       </Modal>
