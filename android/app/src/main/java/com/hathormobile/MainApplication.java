@@ -3,6 +3,7 @@ package com.hathormobile;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.apsl.versionnumber.RNVersionNumberPackage;
 import com.swmansion.reanimated.ReanimatedPackage;
 import com.oblador.keychain.KeychainPackage;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
@@ -33,6 +34,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNVersionNumberPackage(),
             new ReanimatedPackage(),
             new KeychainPackage(),
             new AsyncStoragePackage(),

@@ -11,12 +11,14 @@ import {
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import { Strong } from '../utils';
+import VersionNumber from 'react-native-version-number';
 
 export class About extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
     view: {
       padding: 16,
       justifyContent: 'space-between',
+      flexGrow: 1,
     },
     logo: {
       height: 30,
@@ -31,7 +33,7 @@ export class About extends React.Component {
   render() {
     const Link = props => <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>{props.children}</Text>;
     return (
-      <SafeAreaView>
+      <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
           title="ABOUT"
           onBackPress={() => this.props.navigation.goBack()}
@@ -45,6 +47,8 @@ export class About extends React.Component {
               resizeMode="contain"
             />
           </View>
+          <Text style={this.style.text}>{`v${VersionNumber.appVersion} (build ${VersionNumber.buildVersion})`}</Text>
+
           <Text style={this.style.title}>Hathor Labs</Text>
           <Text style={this.style.text}>This app is developed by Hathor Labs and is distributed for free.</Text>
 
