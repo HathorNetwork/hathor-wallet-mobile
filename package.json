@@ -3,6 +3,7 @@
   "version": "0.3.4",
   "private": true,
   "scripts": {
+    "lint": "eslint --ext .js --ext .jsx .",
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "ios": "node node_modules/.bin/react-native run-ios",
     "android": "node node_modules/.bin/react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/ && node node_modules/.bin/react-native run-android",
@@ -69,7 +70,13 @@
   "devDependencies": {
     "@babel/core": "^7.4.4",
     "@babel/runtime": "^7.4.4",
+    "babel-eslint": "^10.0.2",
     "babel-jest": "^24.8.0",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb": "^17.1.1",
+    "eslint-plugin-import": "^2.18.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.14.2",
     "jest": "^24.8.0",
     "metro-react-native-babel-preset": "^0.54.1",
     "react-test-renderer": "16.8.3",

@@ -1,8 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  StyleSheet, Text, TouchableOpacity, View,
+} from 'react-native';
 
-const NewHathorButton = props => {
+const NewHathorButton = (props) => {
   const wrapperViewStyle = [style.wrapper];
   const textStyle = [style.text];
   if (props.disabled) {
@@ -15,8 +17,8 @@ const NewHathorButton = props => {
     textStyle.push(style.textSecondary);
 
     if (props.color) {
-      wrapperViewStyle.push({borderColor: props.color});
-      textStyle.push({color: props.color});
+      wrapperViewStyle.push({ borderColor: props.color });
+      textStyle.push({ color: props.color });
     }
   }
 
@@ -26,8 +28,8 @@ const NewHathorButton = props => {
         <Text style={[...textStyle, props.textStyle]}>{props.title}</Text>
       </TouchableOpacity>
     </View>
-  )
-}
+  );
+};
 
 NewHathorButton.propTypes = {
   // The title of the button.
@@ -45,7 +47,7 @@ NewHathorButton.propTypes = {
   // Optional. The color of the button.
   // It is only supported for secondary buttons and changes both the border and the text color.
   color: PropTypes.string,
-}
+};
 
 const style = StyleSheet.create({
   wrapper: {
@@ -55,7 +57,7 @@ const style = StyleSheet.create({
     alignSelf: 'stretch',
   },
   wrapperDisabled: {
-    backgroundColor: 'rgba(0, 0, 0, 0.05)'
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
   wrapperSecondary: {
     backgroundColor: '#fff',
@@ -81,7 +83,7 @@ const style = StyleSheet.create({
   },
   textDisabled: {
     color: 'rgba(0,0,0,0.5)',
-  }
+  },
 });
 
 export default NewHathorButton;

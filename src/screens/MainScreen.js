@@ -7,19 +7,18 @@ import {
   View,
   Image,
   TouchableWithoutFeedback,
-  TouchableHighlight
+  TouchableHighlight,
 } from 'react-native';
 import { connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 
+import moment from 'moment';
+import hathorLib from '@hathor/wallet-lib';
 import IconTabBar from '../icon-font.js';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
 import TxDetailsModal from '../components/TxDetailsModal';
-import moment from 'moment';
 import OfflineBar from '../components/OfflineBar';
-
-import hathorLib from '@hathor/wallet-lib';
 
 
 /**
@@ -27,13 +26,13 @@ import hathorLib from '@hathor/wallet-lib';
  * balance {Object} object with token balance {'available', 'locked'}
  * selectedToken {string} uid of the selected token
  */
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   txList: state.tokensHistory[state.selectedToken.uid] || [],
-  balance: state.tokensBalance[state.selectedToken.uid] || {available: 0, locked: 0},
+  balance: state.tokensBalance[state.selectedToken.uid] || { available: 0, locked: 0 },
   selectedToken: state.selectedToken,
   isOnline: state.isOnline,
   network: state.serverInfo.network,
-})
+});
 
 class MainScreen extends React.Component {
   /**
@@ -52,11 +51,11 @@ class MainScreen extends React.Component {
       justifyContent: 'center',
       alignItems: 'center',
       height: '100%',
-    }
+    },
   });
 
   closeTxDetails = () => {
-    this.setState({modal: null});
+    this.setState({ modal: null });
   }
 
   onTxPress = (tx) => {
@@ -67,7 +66,7 @@ class MainScreen extends React.Component {
         onRequestClose={this.closeTxDetails}
       />
     );
-    this.setState({modal: txDetailsModal});
+    this.setState({ modal: txDetailsModal });
   }
 
   tokenInfo = () => {
@@ -82,11 +81,10 @@ class MainScreen extends React.Component {
         return (
           <TxHistoryView txList={this.props.txList} token={this.props.selectedToken} onTxPress={this.onTxPress} />
         );
-      } else {
-        //empty history
-        return <Text style={{ fontSize: 16, textAlign: "center" }}>You don't have any transactions</Text>;
       }
-    }
+      // empty history
+      return <Text style={{ fontSize: 16, textAlign: 'center' }}>You don't have any transactions</Text>;
+    };
 
     const renderRightElement = () => {
       if (this.props.selectedToken.uid !== hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
@@ -99,10 +97,13 @@ class MainScreen extends React.Component {
       }
 
       return null;
-    }
+    };
 
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7', justifyContent: "center", alignItems: "center" }}>
+      <SafeAreaView style={{
+        flex: 1, backgroundColor: '#F7F7F7', justifyContent: 'center', alignItems: 'center',
+      }}
+      >
         {this.state.modal}
         <HathorHeader
           title={this.props.selectedToken.name.toUpperCase()}
@@ -111,7 +112,7 @@ class MainScreen extends React.Component {
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
         <BalanceView network={this.props.network} balance={this.props.balance} token={this.props.selectedToken} />
-        <View style={{ flex: 1, justifyContent: "center", alignSelf: "stretch" }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignSelf: 'stretch' }}>
           {renderTxHistory()}
         </View>
         <OfflineBar />
@@ -121,15 +122,15 @@ class MainScreen extends React.Component {
 }
 
 class TxHistoryView extends React.Component {
-  renderItem = ({item, index}) => {
+  renderItem = ({ item, index }) => {
     const isFirst = (index == 0);
     const isLast = (index == (this.props.txList.length - 1));
-    return <TxListItem item={item} isFirst={isFirst} isLast={isLast} token={this.props.token} onTxPress={this.props.onTxPress} />
+    return <TxListItem item={item} isFirst={isFirst} isLast={isLast} token={this.props.token} onTxPress={this.props.onTxPress} />;
   }
 
   render() {
     return (
-      <View style={{ flex: 1, alignSelf: "stretch" }}>
+      <View style={{ flex: 1, alignSelf: 'stretch' }}>
         <FlatList
           data={this.props.txList}
           renderItem={this.renderItem}
@@ -141,7 +142,7 @@ class TxHistoryView extends React.Component {
 }
 
 class TxListItem extends React.Component {
-  state = {timestamp: null};
+  state = { timestamp: null };
 
   style = StyleSheet.create({
     container: {
@@ -229,7 +230,7 @@ class TxListItem extends React.Component {
   updateTimestamp = () => {
     const timestamp = this.props.item.getTimestampCalendar();
     if (timestamp !== this.state.timestamp) {
-      this.setState({timestamp});
+      this.setState({ timestamp });
     }
 
     const diff = moment.unix(this.props.item.timestamp).diff(moment(), 'days', true);
@@ -247,8 +248,9 @@ class TxListItem extends React.Component {
     if (item.balance === 0) {
       return <View style={this.style.icon} />;
     }
-    let name, color;
-    let style = [this.style.icon];
+    let name; let
+      color;
+    const style = [this.style.icon];
     if (item.balance > 0) {
       name = 'icReceive';
       color = '#0DA0A0';
@@ -256,7 +258,7 @@ class TxListItem extends React.Component {
       name = 'icSend';
       color = 'black';
     } else {
-      throw "should not happen";
+      throw 'should not happen';
     }
 
     if (item.is_voided) {
@@ -270,13 +272,10 @@ class TxListItem extends React.Component {
   getStyle(item) {
     if (item.is_voided) {
       return this.styleVoided;
-
-    } else if (item.balance > 0) {
+    } if (item.balance > 0) {
       return this.stylePositive;
-
-    } else {
-      return this.style;
     }
+    return this.style;
   }
 
   getDescription(item) {
@@ -288,7 +287,7 @@ class TxListItem extends React.Component {
   }
 
   render() {
-    const item = this.props.item;
+    const { item } = this.props;
     const style = this.getStyle(item);
     const image = this.getImage(item);
 
@@ -305,7 +304,7 @@ class TxListItem extends React.Component {
 
     const balanceStr = hathorLib.helpers.prettyValue(item.balance);
     const description = item.getDescription(this.props.token);
-    const timestamp = this.state.timestamp;
+    const { timestamp } = this.state;
     return (
       <View style={style.container}>
         <TouchableHighlight style={touchStyle} onPress={() => this.onItemPress(item)}>
@@ -319,7 +318,7 @@ class TxListItem extends React.Component {
           </View>
         </TouchableHighlight>
       </View>
-    )
+    );
   }
 }
 
@@ -373,23 +372,27 @@ class BalanceView extends React.Component {
   });
 
   toggleExpanded = () => {
-    this.setState({isExpanded: !this.state.isExpanded});
+    this.setState({ isExpanded: !this.state.isExpanded });
   }
 
   renderExpanded() {
     const availableStr = hathorLib.helpers.prettyValue(this.props.balance.available);
     const lockedStr = hathorLib.helpers.prettyValue(this.props.balance.locked);
-    const network = this.props.network;
-    const token = this.props.token;
-    const style = this.style;
+    const { network } = this.props;
+    const { token } = this.props;
+    const { style } = this;
     return (
       <View style={style.center}>
-        <Text style={style.balanceAvailable} adjustsFontSizeToFit={true} minimumFontScale={0.5} numberOfLines={1}>
-          {availableStr} {token.symbol}
+        <Text style={style.balanceAvailable} adjustsFontSizeToFit minimumFontScale={0.5} numberOfLines={1}>
+          {availableStr}
+          {' '}
+          {token.symbol}
         </Text>
         <Text style={style.text1}>Available Balance</Text>
-        <Text style={style.balanceLocked} adjustsFontSizeToFit={true} minimumFontScale={0.5} numberOfLines={1}>
-          {lockedStr} {token.symbol}
+        <Text style={style.balanceLocked} adjustsFontSizeToFit minimumFontScale={0.5} numberOfLines={1}>
+          {lockedStr}
+          {' '}
+          {token.symbol}
         </Text>
         <Text style={style.text1}>Locked</Text>
         <View style={style.networkView}>
@@ -402,12 +405,14 @@ class BalanceView extends React.Component {
 
   renderSimple() {
     const availableStr = hathorLib.helpers.prettyValue(this.props.balance.available);
-    const token = this.props.token;
-    const style = this.style;
+    const { token } = this.props;
+    const { style } = this;
     return (
       <View style={style.center}>
-        <Text style={style.balanceAvailable} adjustsFontSizeToFit={true} minimumFontScale={0.5} numberOfLines={1}>
-          {availableStr} {token.symbol}
+        <Text style={style.balanceAvailable} adjustsFontSizeToFit minimumFontScale={0.5} numberOfLines={1}>
+          {availableStr}
+          {' '}
+          {token.symbol}
         </Text>
         <Text style={style.text1}>Available Balance</Text>
         <Image style={style.expandButton} source={require('../assets/icons/chevron-down.png')} width={12} height={7} />
@@ -416,7 +421,7 @@ class BalanceView extends React.Component {
   }
 
   render() {
-    const style = this.style;
+    const { style } = this;
     return (
       <TouchableWithoutFeedback style={style.toucharea} onPress={this.toggleExpanded}>
         <View style={style.view}>
@@ -431,4 +436,4 @@ class BalanceView extends React.Component {
 }
 
 
-export default connect(mapStateToProps)(MainScreen)
+export default connect(mapStateToProps)(MainScreen);

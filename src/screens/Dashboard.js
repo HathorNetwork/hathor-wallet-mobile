@@ -1,23 +1,25 @@
-import React from "react";
+import React from 'react';
 import {
   AppState,
   StyleSheet,
   View,
-} from "react-native";
+} from 'react-native';
 import { connect } from 'react-redux';
 
 import * as Keychain from 'react-native-keychain';
 
+import hathorLib from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
 import SimpleButton from '../components/SimpleButton';
 
-import { activateFetchHistory, newTx, resetData, setTokens, updateSelectedToken, setIsOnline, lockScreen } from '../actions';
+import {
+  activateFetchHistory, newTx, resetData, setTokens, updateSelectedToken, setIsOnline, lockScreen,
+} from '../actions';
 import { setSupportedBiometry } from '../utils';
 import OfflineBar from '../components/OfflineBar';
 import { LOCK_TIMEOUT } from '../constants';
 
-import hathorLib from '@hathor/wallet-lib';
 
 /**
  * tokens {Array} array with all added tokens on this wallet
@@ -25,29 +27,28 @@ import hathorLib from '@hathor/wallet-lib';
  * selectedToken {Object} token currently selected by the user
  * screenLocked {bool} whether the screen is locked
  */
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   tokens: state.tokens,
   tokensBalance: state.tokensBalance,
   selectedToken: state.selectedToken,
   screenLocked: state.lockScreen,
-})
+});
 
-const mapDispatchToProps = dispatch => {
-  return {
-    resetData: () => dispatch(resetData()),
-    setTokens: (tokens) => dispatch(setTokens(tokens)),
-    newTx: (newElement, keys) => dispatch(newTx(newElement, keys)),
-    updateSelectedToken: token => dispatch(updateSelectedToken(token)),
-    setIsOnline: (status) => dispatch(setIsOnline(status)),
-    lockScreen: () => dispatch(lockScreen()),
-    activateFetchHistory: () => dispatch(activateFetchHistory()),
-  }
-}
+const mapDispatchToProps = dispatch => ({
+  resetData: () => dispatch(resetData()),
+  setTokens: tokens => dispatch(setTokens(tokens)),
+  newTx: (newElement, keys) => dispatch(newTx(newElement, keys)),
+  updateSelectedToken: token => dispatch(updateSelectedToken(token)),
+  setIsOnline: status => dispatch(setIsOnline(status)),
+  lockScreen: () => dispatch(lockScreen()),
+  activateFetchHistory: () => dispatch(activateFetchHistory()),
+});
 
 class Dashboard extends React.Component {
   static navigatorStyle = { tabBarVisible: false }
 
   backgroundTime = null;
+
   appState = 'active';
 
   componentDidMount() {
@@ -79,7 +80,7 @@ class Dashboard extends React.Component {
   }
 
   getBiometry = () => {
-    Keychain.getSupportedBiometryType().then(biometryType => {
+    Keychain.getSupportedBiometryType().then((biometryType) => {
       switch (biometryType) {
         case Keychain.BIOMETRY_TYPE.TOUCH_ID:
           setSupportedBiometry(biometryType);
@@ -88,9 +89,9 @@ class Dashboard extends React.Component {
           setSupportedBiometry(null);
         // XXX Android Fingerprint is still not supported in the react native lib we're using.
         // https://github.com/oblador/react-native-keychain/pull/195
-        //case Keychain.BIOMETRY_TYPE.FINGERPRINT:
+        // case Keychain.BIOMETRY_TYPE.FINGERPRINT:
         // XXX iOS FaceID also not working
-        //case Keychain.BIOMETRY_TYPE.FACE_ID:
+        // case Keychain.BIOMETRY_TYPE.FACE_ID:
       }
     });
   }
@@ -121,16 +122,16 @@ class Dashboard extends React.Component {
     this.props.setTokens(hathorLib.tokens.getTokens());
   }
 
-  handleWebsocketMsg = wsData => {
-    if (wsData.type === "wallet:address_history") {
-      //TODO we also have to update some wallet lib data? Lib should do it by itself
+  handleWebsocketMsg = (wsData) => {
+    if (wsData.type === 'wallet:address_history') {
+      // TODO we also have to update some wallet lib data? Lib should do it by itself
       const walletData = hathorLib.wallet.getWalletData();
-      const historyTransactions = 'historyTransactions' in walletData ? walletData['historyTransactions'] : {};
-      const allTokens = 'allTokens' in walletData ? walletData['allTokens'] : [];
-      hathorLib.wallet.updateHistoryData(historyTransactions, allTokens, [wsData.history], null, walletData)
-      
+      const historyTransactions = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
+      const allTokens = 'allTokens' in walletData ? walletData.allTokens : [];
+      hathorLib.wallet.updateHistoryData(historyTransactions, allTokens, [wsData.history], null, walletData);
+
       const newWalletData = hathorLib.wallet.getWalletData();
-      const keys = newWalletData.keys;
+      const { keys } = newWalletData;
       this.props.newTx(wsData.history, keys);
     }
   }
@@ -142,25 +143,25 @@ class Dashboard extends React.Component {
 
   render() {
     const ManualInfoButton = () => (
-      <SimpleButton 
-        title='Register token'
+      <SimpleButton
+        title="Register token"
         onPress={() => this.props.navigation.navigate('RegisterToken')}
       />
-    )
+    );
 
     const Header = () => (
       <HathorHeader
-        title='TOKENS'
+        title="TOKENS"
         wrapperStyle={{ borderBottomWidth: 0 }}
-        rightElement={<ManualInfoButton/>}
+        rightElement={<ManualInfoButton />}
       />
-    )
+    );
 
     return (
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <TokenSelect
-          header=<Header/>
-          renderArrow={true}
+          header=<Header />
+          renderArrow
           onItemPress={this.onItemPress}
           selectedToken={this.props.selectedToken}
           tokens={this.props.tokens}

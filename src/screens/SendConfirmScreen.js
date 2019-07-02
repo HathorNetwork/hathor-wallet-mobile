@@ -1,5 +1,5 @@
 import React from 'react';
-import { 
+import {
   ActivityIndicator,
   Image,
   SafeAreaView,
@@ -8,8 +8,9 @@ import {
   View,
 } from 'react-native';
 import { connect } from 'react-redux';
-import Modal from "react-native-modal";
+import Modal from 'react-native-modal';
 
+import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
@@ -19,26 +20,22 @@ import HathorHeader from '../components/HathorHeader';
 import { sendTx, sendTxDismiss } from '../actions';
 import OfflineBar from '../components/OfflineBar';
 
-import hathorLib from '@hathor/wallet-lib';
-
 
 /**
  * tokensBalance {Object} dict with balance for each token
  * sendLoading {boolean} indicates send operation is in progress
  * sendError {string} message when there's an error sending tx
  */
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   tokensBalance: state.tokensBalance,
   sendLoading: state.sendTx.loading,
   sendError: state.sendTx.error,
-})
+});
 
-const mapDispatchToProps = dispatch => {
-  return {
-    sendTxDismiss: () => dispatch(sendTxDismiss()),
-    sendTx: (amount, address, token, pin, onSuccess) => dispatch(sendTx(amount, address, token, pin, onSuccess)),
-  }
-}
+const mapDispatchToProps = dispatch => ({
+  sendTxDismiss: () => dispatch(sendTxDismiss()),
+  sendTx: (amount, address, token, pin, onSuccess) => dispatch(sendTx(amount, address, token, pin, onSuccess)),
+});
 
 class SendConfirmScreen extends React.Component {
   /**
@@ -55,7 +52,7 @@ class SendConfirmScreen extends React.Component {
    * address {string} address to send to
    * token {object} info about the selected token to send
    */
-  constructor (props) {
+  constructor(props) {
     super(props);
     // we receive these 3 values from previous screens
     this.amount = this.props.navigation.getParam('amount');
@@ -86,11 +83,11 @@ class SendConfirmScreen extends React.Component {
   }
 
   showConfirmationModal = () => {
-    this.setState({showModal: true});
+    this.setState({ showModal: true });
   }
 
   exitScreen = () => {
-    this.setState({showModal: false});
+    this.setState({ showModal: false });
     this.props.navigation.popToTop();
     this.props.navigation.dismiss();
   }
@@ -101,34 +98,32 @@ class SendConfirmScreen extends React.Component {
       const balance = this.props.tokensBalance[this.token.uid];
       const available = balance ? balance.available : 0;
       return `${hathorLib.helpers.prettyValue(available)} ${this.token.symbol} available`;
-    }
+    };
 
-    const renderConfirmationModal = () => {
-      return (
-        <Modal
-          isVisible={this.state.showModal}
-          animationIn='slideInUp'
-          swipeDirection={['down']}
-          onSwipeComplete={this.exitScreen}
-          onBackButtonPress={this.exitScreen}
-          onBackdropPress={this.exitScreen}
-          style={styles.modal}
-        >
-          <View style={styles.innerModal}>
-            <Image source={require('../assets/images/icCheckBig.png')} style={{height: 105, width: 105}} resizeMode={"contain"} />
-            <Text style={{ fontSize: 18, marginTop: 40, textAlign: 'center' }}>
-              Your transfer of 
-              <Strong>{` ${hathorLib.helpers.prettyValue(this.amount)} ${this.token.symbol} `}</Strong>
+    const renderConfirmationModal = () => (
+      <Modal
+        isVisible={this.state.showModal}
+        animationIn="slideInUp"
+        swipeDirection={['down']}
+        onSwipeComplete={this.exitScreen}
+        onBackButtonPress={this.exitScreen}
+        onBackdropPress={this.exitScreen}
+        style={styles.modal}
+      >
+        <View style={styles.innerModal}>
+          <Image source={require('../assets/images/icCheckBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />
+          <Text style={{ fontSize: 18, marginTop: 40, textAlign: 'center' }}>
+              Your transfer of
+            <Strong>{` ${hathorLib.helpers.prettyValue(this.amount)} ${this.token.symbol} `}</Strong>
               has been confirmed
-            </Text>
-          </View>
-        </Modal>
-      )
-    }
+          </Text>
+        </View>
+      </Modal>
+    );
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
-        <HathorHeader 
+        <HathorHeader
           title={`SEND ${this.token.name.toUpperCase()}`}
           onBackPress={() => this.props.navigation.goBack()}
         />
@@ -140,19 +135,19 @@ class SendConfirmScreen extends React.Component {
                 editable={false}
                 value={hathorLib.helpers.prettyValue(this.amount)}
               />
-              <InputLabel style={{marginTop: 8}}>
+              <InputLabel style={{ marginTop: 8 }}>
                 {getAvailableString()}
               </InputLabel>
             </View>
             <SimpleInput
-              label='Address'
+              label="Address"
               editable={false}
               value={this.address}
-              containerStyle={{marginTop: 48}}
+              containerStyle={{ marginTop: 48 }}
             />
             {/* TODO we don't have UI for error and loading yet */}
-            <ActivityIndicator size='small' animating={this.props.sendLoading} />
-            <Text style={{marginTop: 16, color: "red"}}>{this.props.sendError}</Text>
+            <ActivityIndicator size="small" animating={this.props.sendLoading} />
+            <Text style={{ marginTop: 16, color: 'red' }}>{this.props.sendError}</Text>
           </View>
           <NewHathorButton
             title="Send"

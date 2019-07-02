@@ -1,50 +1,48 @@
 import React from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  StyleSheet, Text, TextInput, View,
+} from 'react-native';
 
 import InputLabel from './InputLabel';
 
-const SimpleInput = props => {
-  const getInputField = () => {
-    return (
-      <TextInput
-        {...props}
-        style={styles.input}
-        keyboardAppearance='dark'
-        autoCapitalize='none'
-        autoCorrect={false}
-        spellCheck={false}
-        autoCompleteType='off'
-        underlineColorAndroid='transparent'
-      />
-    );
-  }
+const SimpleInput = (props) => {
+  const getInputField = () => (
+    <TextInput
+      {...props}
+      style={styles.input}
+      keyboardAppearance="dark"
+      autoCapitalize="none"
+      autoCorrect={false}
+      spellCheck={false}
+      autoCompleteType="off"
+      underlineColorAndroid="transparent"
+    />
+  );
 
-  const renderInput = () => {
-    return (
-      <View style={[styles.inputContainer, props.textInputStyle]}>
-        { props.input || getInputField() }
-      </View>
-    )
-  }
+  const renderInput = () => (
+    <View style={[styles.inputContainer, props.textInputStyle]}>
+      { props.input || getInputField() }
+    </View>
+  );
 
-  const renderText = () => {
-    return <Text selectable={true} style={styles.text}>{props.value}</Text>;
-  }
+  const renderText = () => <Text selectable style={styles.text}>{props.value}</Text>;
 
   const renderError = () => {
     if (props.error) {
-      return <Text style={styles.error}>{props.error}</Text>
+      return <Text style={styles.error}>{props.error}</Text>;
     }
 
     return null;
-  }
+  };
 
   return (
     <View style={props.containerStyle}>
-      {props.label && 
+      {props.label
+        && (
         <InputLabel style={[styles.label, props.inputStyle]}>
           {props.label}
         </InputLabel>
+        )
       }
       {/* If input is not editable, render only Text so we can select
         * it. If we used TextInput with editable=false, we would not
@@ -53,8 +51,8 @@ const SimpleInput = props => {
       {props.editable === false ? renderText() : renderInput()}
       {renderError()}
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   inputContainer: {
@@ -69,7 +67,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: 'black',
-    fontSize: 14
+    fontSize: 14,
   },
   label: {
     marginBottom: 12,
@@ -77,7 +75,7 @@ const styles = StyleSheet.create({
   error: {
     marginTop: 8,
     fontSize: 12,
-    //TODO define better color. Maybe also change underline color to red?
+    // TODO define better color. Maybe also change underline color to red?
     color: 'red',
   },
 });

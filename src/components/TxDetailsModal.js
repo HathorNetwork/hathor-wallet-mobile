@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   Text,
   TouchableHighlight,
@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import moment from 'moment';
 import hathorLib from '@hathor/wallet-lib';
+import Modal from 'react-native-modal';
 import { getShortHash, getTokenLabel } from '../utils';
-import Modal from "react-native-modal";
 import { ListItem, ListButton } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 
@@ -26,15 +26,15 @@ class TxDetailsModal extends Component {
   });
 
   render() {
-    const {tx, ...props} = this.props;
+    const { tx, ...props } = this.props;
     const fullTokenStr = getTokenLabel(this.props.token);
     const description = tx.getDescription(this.props.token);
     const timestampStr = tx.getTimestampFormat();
     const idStr = getShortHash(tx.tx_id, 12);
     return (
       <Modal
-        isVisible={true}
-        animationIn='slideInUp'
+        isVisible
+        animationIn="slideInUp"
         swipeDirection={['down']}
         onSwipeComplete={this.props.onRequestClose}
         onBackButtonPress={this.props.onRequestClose}
@@ -46,10 +46,10 @@ class TxDetailsModal extends Component {
             <SlideIndicatorBar />
             <BalanceView tx={tx} token={this.props.token} />
             <View>
-              <ListItem title='Token' text={fullTokenStr} />
-              <ListItem title='Description' text={description} />
-              <ListItem title='Date & Time' text={timestampStr} />
-              <ListItem title='ID' text={idStr} isLast={true} />
+              <ListItem title="Token" text={fullTokenStr} />
+              <ListItem title="Description" text={description} />
+              <ListItem title="Date & Time" text={timestampStr} />
+              <ListItem title="ID" text={idStr} isLast />
             </View>
           </View>
         </View>
@@ -80,12 +80,14 @@ class BalanceView extends Component {
   });
 
   render() {
-    const tx = this.props.tx;
+    const { tx } = this.props;
     const balanceStr = hathorLib.helpers.prettyValue(tx.balance);
     return (
       <View style={this.style.view}>
-        <Text style={this.style.balance} adjustsFontSizeToFit={true} minimumFontScale={0.5} numberOfLines={1}>
-          {balanceStr} {this.props.token.symbol}
+        <Text style={this.style.balance} adjustsFontSizeToFit minimumFontScale={0.5} numberOfLines={1}>
+          {balanceStr}
+          {' '}
+          {this.props.token.symbol}
         </Text>
         <Text style={this.style.text1}>Amount</Text>
       </View>

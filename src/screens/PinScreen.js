@@ -1,33 +1,32 @@
-import React from "react";
+import React from 'react';
 import { connect } from 'react-redux';
 
-import { BackHandler, Image, SafeAreaView, Text, View } from "react-native";
+import {
+  BackHandler, Image, SafeAreaView, Text, View,
+} from 'react-native';
 import * as Keychain from 'react-native-keychain';
+import hathorLib from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
 import PinInput from '../components/PinInput';
 import { isBiometryEnabled, getSupportedBiometry } from '../utils';
 import { lockScreen, unlockScreen, setLoadHistoryStatus } from '../actions';
 
-import hathorLib from '@hathor/wallet-lib';
-
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
  */
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   loadHistoryActive: state.loadHistoryStatus.active,
-})
+});
 
-const mapDispatchToProps = dispatch => {
-  return {
-    unlockScreen: () => dispatch(unlockScreen()),
-    lockScreen: () => dispatch(lockScreen()),
-    setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),
-  }
-}
+const mapDispatchToProps = dispatch => ({
+  unlockScreen: () => dispatch(unlockScreen()),
+  lockScreen: () => dispatch(lockScreen()),
+  setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),
+});
 
 class PinScreen extends React.Component {
-  static defaultProps = {isLockScreen: false};
+  static defaultProps = { isLockScreen: false };
 
   constructor(props) {
     super(props);
@@ -71,7 +70,7 @@ class PinScreen extends React.Component {
         // Reset PIN value and focus on input
         this.setState({ pin: '', pinColor: 'black', error: false }, () => {
           this.pinInputRef.current.focus();
-        })
+        });
       }
     });
   }
@@ -86,14 +85,12 @@ class PinScreen extends React.Component {
     this.willFocusEvent.remove();
   }
 
-  handleBackButton = () => {
-    return true;
-  }
+  handleBackButton = () => true
 
   askBiometricId = () => {
-    Keychain.getGenericPassword({authenticationPrompt: this.biometryText}).then(credentials => {
+    Keychain.getGenericPassword({ authenticationPrompt: this.biometryText }).then((credentials) => {
       this.dismiss(credentials.password);
-    }, error => {
+    }, (error) => {
       // no need to do anything as user can enter pin
       console.log('error keychain', error);
     });
@@ -134,16 +131,16 @@ class PinScreen extends React.Component {
   removeOneChar() {
     const pin = this.state.pin.slice(0, -1);
     if (pin.length == 0) {
-      this.setState({ pin: "", error: true });
+      this.setState({ pin: '', error: true });
     } else {
-      this.setState({ pin: pin, pinColor: '#DE3535' });
+      this.setState({ pin, pinColor: '#DE3535' });
       setTimeout(() => this.removeOneChar(), 25);
     }
   }
 
   goToReset = () => {
     // navigate to reset screen
-    this.props.navigation.navigate('ResetWallet', {onBackPress: () => this.backFromReset()});
+    this.props.navigation.navigate('ResetWallet', { onBackPress: () => this.backFromReset() });
     // make sure we won't show loadHistory screen
     this.props.setLoadHistoryStatus(false, false);
     // unlock so we remove this lock screen
@@ -163,48 +160,51 @@ class PinScreen extends React.Component {
   }
 
   render() {
-    const renderResetButton = () => {
-      return (
-        <SimpleButton
-          onPress={() => this.goToReset()}
-          title="Reset Wallet"
-          color='#0273a0'
-          textStyle={{ textTransform: 'uppercase' }}
-          containerStyle={{ marginTop: 48, marginHorizontal: 32 }}
-        />
-      )
-    }
+    const renderResetButton = () => (
+      <SimpleButton
+        onPress={() => this.goToReset()}
+        title="Reset Wallet"
+        color="#0273a0"
+        textStyle={{ textTransform: 'uppercase' }}
+        containerStyle={{ marginTop: 48, marginHorizontal: 32 }}
+      />
+    );
 
     return (
-      <SafeAreaView style={{ flex: 1, alignItems: "center" }}>
-        <View style={{ height: 30, width: 170, marginTop: 16, marginBottom: 16 }}>
+      <SafeAreaView style={{ flex: 1, alignItems: 'center' }}>
+        <View style={{
+          height: 30, width: 170, marginTop: 16, marginBottom: 16,
+        }}
+        >
           <Image
             source={require('../assets/images/hathor-logo.png')}
-            style={{height: 30, width: 170 }}
-            resizeMode={"contain"}
-          /> 
+            style={{ height: 30, width: 170 }}
+            resizeMode="contain"
+          />
         </View>
-        <Text style={{marginTop: 32, marginBottom: 16}}>{this.screenText}</Text>
+        <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
         <PinInput
           maxLength={6}
           color={this.state.pinColor}
           onChangeText={this.onChangeText}
           value={this.state.pin}
-          autoFocus={true}
+          autoFocus
           ref={this.pinInputRef}
-          editable={true}
+          editable
         />
-        {this.canCancel && <SimpleButton
+        {this.canCancel && (
+        <SimpleButton
           onPress={() => this.props.navigation.goBack()}
           title="Cancel"
-          color='#0273a0'
+          color="#0273a0"
           textStyle={{ textTransform: 'uppercase' }}
           containerStyle={{ marginTop: 32 }}
-        />}
+        />
+        )}
         {!this.canCancel && renderResetButton()}
         {this.state.error && <Text style={{ color: '#DE3535', marginTop: 16 }}>Incorrect PIN Code. Try again.</Text>}
       </SafeAreaView>
-    )
+    );
   }
 }
 

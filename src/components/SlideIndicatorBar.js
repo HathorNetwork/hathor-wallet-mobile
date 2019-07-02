@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   StyleSheet,
   View,
@@ -19,8 +19,7 @@ export default class SlideIndicatorBar extends Component {
 
   render() {
     return (
-      <View style={this.style.view}>
-      </View>
+      <View style={this.style.view} />
     );
   }
 }

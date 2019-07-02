@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Linking,
   ScrollView,
@@ -6,8 +6,8 @@ import {
   Image,
   SafeAreaView,
   Text,
-  View
-} from "react-native";
+  View,
+} from 'react-native';
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import { Strong } from '../utils';
@@ -29,11 +29,11 @@ export class About extends React.Component {
   }));
 
   render() {
-    const Link = (props) => <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>{props.children}</Text>;
+    const Link = props => <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>{props.children}</Text>;
     return (
       <SafeAreaView>
         <HathorHeader
-          title='ABOUT'
+          title="ABOUT"
           onBackPress={() => this.props.navigation.goBack()}
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
@@ -42,16 +42,27 @@ export class About extends React.Component {
             <Image
               source={require('../assets/images/hathor-logo.png')}
               style={this.style.logo}
-              resizeMode={'contain'}
-            /> 
+              resizeMode="contain"
+            />
           </View>
           <Text style={this.style.title}>Hathor Labs</Text>
           <Text style={this.style.text}>This app is developed by Hathor Labs and is distributed for free.</Text>
 
-          <Text style={this.style.text}>This wallet is connected to a <Strong>testnet</Strong>.</Text>
-          <Text style={this.style.text}>This means that <Strong>your Hathor token (HTR) and any other token may be reset at any time.</Strong></Text>
+          <Text style={this.style.text}>
+This wallet is connected to a
+            <Strong>testnet</Strong>
+.
+          </Text>
+          <Text style={this.style.text}>
+This means that
+            <Strong>your Hathor token (HTR) and any other token may be reset at any time.</Strong>
+          </Text>
           <Text style={this.style.text}>If someone offers to sell some tokens to you, that person is a scammer.</Text>
-          <Text style={this.style.text}>For further information, check our website <Link href="https://hathor.network">https://hathor.network/</Link>.</Text>
+          <Text style={this.style.text}>
+For further information, check our website
+            <Link href="https://hathor.network">https://hathor.network/</Link>
+.
+          </Text>
 
           <Text style={this.style.title}>MIT License</Text>
           <Text style={this.style.text}>Copyright 2019 Hathor Labs</Text>

@@ -1,6 +1,10 @@
 import React from 'react';
-import { Keyboard, KeyboardAvoidingView, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import {
+  Keyboard, KeyboardAvoidingView, SafeAreaView, StyleSheet, Text, View,
+} from 'react-native';
 
+import { connect } from 'react-redux';
+import hathorLib from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
@@ -8,9 +12,6 @@ import SimpleInput from '../components/SimpleInput';
 import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 
 import { newToken } from '../actions';
-import { connect } from 'react-redux';
-
-import hathorLib from '@hathor/wallet-lib';
 
 
 class RegisterTokenManual extends React.Component {
@@ -48,7 +49,7 @@ class RegisterTokenManual extends React.Component {
       return;
     }
 
-    const result = hathorLib.tokens.validateTokenToAddByConfigurationString(this.state.configurationString); 
+    const result = hathorLib.tokens.validateTokenToAddByConfigurationString(this.state.configurationString);
     if (result.success) {
       this.setState({ token: result.tokenData, errorMessage: '' });
     } else {
@@ -57,7 +58,7 @@ class RegisterTokenManual extends React.Component {
   }
 
   onButtonPress = () => {
-    const token = this.state.token;
+    const { token } = this.state;
     hathorLib.tokens.addToken(token.uid, token.name, token.symbol);
     this.props.dispatch(newToken(token));
     this.props.navigation.popToTop();
@@ -70,44 +71,50 @@ class RegisterTokenManual extends React.Component {
         text: {
           fontSize: 14,
           lineHeight: 24,
-          color: 'rgba(0, 0, 0, 0.5)'
+          color: 'rgba(0, 0, 0, 0.5)',
         },
         wrapper: {
           marginVertical: 16,
           padding: 16,
           backgroundColor: '#f7f7f7',
           borderRadius: 8,
-        }
+        },
       });
 
       return (
         <View style={styles.wrapper}>
           <Text style={styles.text}>You're going to register the following token:</Text>
-          <Text style={styles.text}><Strong>Name: </Strong>{this.state.token.name}</Text>
-          <Text style={styles.text}><Strong>Symbol: </Strong>{this.state.token.symbol}</Text>
+          <Text style={styles.text}>
+            <Strong>Name: </Strong>
+            {this.state.token.name}
+          </Text>
+          <Text style={styles.text}>
+            <Strong>Symbol: </Strong>
+            {this.state.token.symbol}
+          </Text>
         </View>
       );
-    }
+    };
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <HathorHeader
-            title='REGISTER TOKEN'
+            title="REGISTER TOKEN"
             onBackPress={() => this.props.navigation.goBack()}
           />
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
               <SimpleInput
-                label='Configuration string'
-                autoFocus={true}
-                multiline={true}
+                label="Configuration string"
+                autoFocus
+                multiline
                 onChangeText={this.onConfigStringChange}
                 error={this.state.errorMessage}
                 value={this.state.configurationString}
-                returnKeyType='done'
-                enablesReturnKeyAutomatically={true}
-                blurOnSubmit={true}
+                returnKeyType="done"
+                enablesReturnKeyAutomatically
+                blurOnSubmit
                 onSubmitEditing={() => Keyboard.dismiss()}
               />
               {this.state.token && renderTokenView()}

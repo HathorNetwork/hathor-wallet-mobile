@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 
 import {
   Text,
@@ -12,7 +12,7 @@ import {
 export class HathorList extends Component {
   style = StyleSheet.create({
     view: {
-      alignSelf: "stretch",
+      alignSelf: 'stretch',
       backgroundColor: 'white',
       borderRadius: 8,
       margin: 16,
@@ -81,7 +81,7 @@ class BaseItem extends Component {
     },
     text: {
       fontSize: 16,
-    }
+    },
   });
 
   getBorderStyles() {
@@ -117,11 +117,11 @@ export class ListItem extends BaseItem {
   }));
 
   renderInside() {
-    const style = this.style;
+    const { style } = this;
     return (
       <View style={[this.style.view, ...this.getBorderStyles()]}>
         {this.props.title && <Text style={[style.title, this.props.titleStyle]}>{this.props.title}</Text>}
-        {(typeof(this.props.text) === 'string'
+        {(typeof (this.props.text) === 'string'
           ? <Text style={style.text}>{this.props.text}</Text>
           : this.props.text
         )}
@@ -140,9 +140,9 @@ export class ListButton extends BaseItem {
     return (
       <TouchableHighlight style={borderStyles} onPress={this.onPress}>
         <View style={[this.style.view, ...borderStyles]}>
-          {(typeof(this.props.title) === 'string'
-           ? <Text style={[this.style.title, this.props.titleStyle]}>{this.props.title}</Text>
-           : this.props.title
+          {(typeof (this.props.title) === 'string'
+            ? <Text style={[this.style.title, this.props.titleStyle]}>{this.props.title}</Text>
+            : this.props.title
           )}
           {this.props.button}
         </View>

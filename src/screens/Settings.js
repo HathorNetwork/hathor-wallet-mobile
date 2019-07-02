@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import { connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import {
@@ -8,10 +8,10 @@ import {
   SafeAreaView,
   Text,
   View,
-} from "react-native";
+} from 'react-native';
+import hathorLib from '@hathor/wallet-lib';
 import OfflineBar from '../components/OfflineBar';
 
-import hathorLib from '@hathor/wallet-lib';
 
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 
@@ -21,14 +21,14 @@ import { HathorList, ListItem, ListMenu } from '../components/HathorList';
  * server {str} URL of the full node this wallet is connected to
  */
 const mapStateToProps = (state) => {
-  const server = hathorLib.storage.getItem("wallet:server");
+  const server = hathorLib.storage.getItem('wallet:server');
   return {
     selectedToken: state.selectedToken,
     isOnline: state.isOnline,
     network: state.serverInfo.network,
-    server: server,
+    server,
   };
-}
+};
 
 export class Settings extends React.Component {
   style = StyleSheet.create({
@@ -72,50 +72,54 @@ export class Settings extends React.Component {
             <Image
               source={require('../assets/images/hathor-logo.png')}
               style={this.style.logo}
-              resizeMode={"contain"}
-            /> 
+              resizeMode="contain"
+            />
           </View>
-          {(this.props.isOnline &&
+          {(this.props.isOnline
+            && (
             <View style={this.style.networkContainerView}>
               <Text>You are connected to</Text>
               <View style={this.style.networkView}>
                 <Text style={this.style.networkText}>{this.props.network}</Text>
               </View>
             </View>
+            )
           )}
 
-          <HathorList infinity={true}>
+          <HathorList infinity>
             <ListItem
-              text={
+              text={(
                 <View style={{ flex: 1 }}>
                   <Text style={{ marginBottom: 8, color: 'rgba(0, 0, 0, 0.5)', fontSize: 12 }}>Connected to</Text>
                   <Text
                     style={{ fontSize: 12 }}
-                    adjustsFontSizeToFit={true}
+                    adjustsFontSizeToFit
                     minimumFontScale={0.5}
-                  >{this.props.server}</Text>
+                  >
+                    {this.props.server}
+                  </Text>
                 </View>
-              }
-              isFirst={true}
+)}
+              isFirst
             />
             <ListMenu
-              title='Security'
+              title="Security"
               onPress={() => this.props.navigation.navigate('Security')}
             />
             <ListMenu
-              title='Create a new token'
+              title="Create a new token"
               onPress={() => this.props.navigation.navigate('CreateToken')}
             />
             <ListMenu
-              title='Register a token'
+              title="Register a token"
               onPress={() => this.props.navigation.navigate('RegisterToken')}
             />
             <ListMenu
-              title='Reset wallet'
+              title="Reset wallet"
               onPress={() => this.props.navigation.navigate('ResetWallet')}
             />
             <ListMenu
-              title='About'
+              title="About"
               onPress={() => this.props.navigation.navigate('About')}
             />
           </HathorList>

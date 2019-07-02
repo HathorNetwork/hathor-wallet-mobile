@@ -1,15 +1,17 @@
-import React from "react";
+import React from 'react';
 import {
   Linking,
   StyleSheet,
   SafeAreaView,
   Text,
   Switch,
-} from "react-native";
+} from 'react-native';
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
-import { Strong } from '../utils';
-import { isBiometryEnabled, setBiometryEnabled, getSupportedBiometry } from '../utils';
+import {
+  Strong, isBiometryEnabled, setBiometryEnabled, getSupportedBiometry,
+} from '../utils';
+
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 
 export class Security extends React.Component {
@@ -50,13 +52,13 @@ export class Security extends React.Component {
 
 
   render() {
-    const Link = (props) => <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>{props.children}</Text>;
+    const Link = props => <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>{props.children}</Text>;
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? 'No biometry supported' : `Use ${this.supportedBiometry}`);
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
-          title='SECURITY'
+          title="SECURITY"
           onBackPress={() => this.props.navigation.goBack()}
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
@@ -65,19 +67,20 @@ export class Security extends React.Component {
             title={biometryText}
             // if no biometry is supported, use default ListItem color (grey),
             // so it looks disabled. Else, color is black, as other items
-            titleStyle={!switchDisabled ? {color: 'black'} : null}
-            text={
+            titleStyle={!switchDisabled ? { color: 'black' } : null}
+            text={(
               <Switch
                 onValueChange={this.onBiometrySwitchChange}
                 value={this.state.biometryEnabled}
                 disabled={switchDisabled}
               />
-            }
-            isFirst={true} />
+)}
+            isFirst
+          />
           <ListMenu
-            title='Lock wallet'
+            title="Lock wallet"
             onPress={() => this.props.navigation.navigate('PinScreen')}
-            isLast={true}
+            isLast
           />
         </HathorList>
       </SafeAreaView>

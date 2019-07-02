@@ -1,25 +1,26 @@
 import React from 'react';
-import { Dimensions, KeyboardAvoidingView, Platform, StyleSheet, TouchableWithoutFeedback, View, Text } from 'react-native';
+import {
+  Dimensions, KeyboardAvoidingView, Platform, StyleSheet, TouchableWithoutFeedback, View, Text,
+} from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
+import { connect } from 'react-redux';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faSortDown } from '@fortawesome/free-solid-svg-icons';
 import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
 import TokenBox from './TokenBox';
 import { newInvoice } from '../actions';
 import { getIntegerAmount } from '../utils';
 
-import { connect } from 'react-redux';
-import OfflineBar from '../components/OfflineBar';
-
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { faSortDown } from '@fortawesome/free-solid-svg-icons'
+import OfflineBar from './OfflineBar';
 
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  */
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   selectedToken: state.selectedToken,
-})
+});
 
 
 class NewPaymentRequest extends React.Component {
@@ -31,12 +32,12 @@ class NewPaymentRequest extends React.Component {
      * token {Object} Selected token config
      */
     this.state = {
-      amount: "",
+      amount: '',
       token: this.props.selectedToken,
     };
 
     // If the payment request detail modal was opened
-    this.modalOpened = false
+    this.modalOpened = false;
     this.willFocusEvent = null;
     this.inputRef = React.createRef();
   }
@@ -56,7 +57,7 @@ class NewPaymentRequest extends React.Component {
   }
 
   focus = () => {
-    this.setState({ amount: "", token: this.props.selectedToken });
+    this.setState({ amount: '', token: this.props.selectedToken });
     this.focusInput();
   }
 
@@ -81,7 +82,7 @@ class NewPaymentRequest extends React.Component {
   }
 
   isButtonDisabled = () => {
-    if (this.state.amount === "") {
+    if (this.state.amount === '') {
       return true;
     }
 
@@ -100,8 +101,8 @@ class NewPaymentRequest extends React.Component {
         token: this.state.token,
         onItemPress: (item) => {
           this.onTokenChange(item);
-        }
-      }
+        },
+      },
     );
   }
 
@@ -122,19 +123,25 @@ class NewPaymentRequest extends React.Component {
         flex: 1,
         justifyContent: 'flex-end',
         alignSelf: 'stretch',
-      }
+      },
     });
 
     return (
-      <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={topDistance}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "space-between", width: "100%", marginBottom: 16 }}>
-          <View style={{ alignSelf: 'stretch', flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, marginTop: inputMargin }}>
-            <View style={{ width: 80, height: 40 }}></View>
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }} keyboardVerticalOffset={topDistance}>
+        <View style={{
+          flex: 1, alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 16,
+        }}
+        >
+          <View style={{
+            alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, marginTop: inputMargin,
+          }}
+          >
+            <View style={{ width: 80, height: 40 }} />
             <AmountTextInput
               ref={this.inputRef}
-              onAmountUpdate={(amount) => this.setState({ amount })}
+              onAmountUpdate={amount => this.setState({ amount })}
               value={this.state.amount}
-              style={{flex: 1}}
+              style={{ flex: 1 }}
             />
             <TokenBox
               onPress={this.onTokenBoxPress}
@@ -146,12 +153,12 @@ class NewPaymentRequest extends React.Component {
               disabled={this.isButtonDisabled()}
               title="Create payment request"
               onPress={this.createPaymentRequest}
-             />
+            />
           </View>
         </View>
-        <OfflineBar style={{position: 'relative'}}/>
+        <OfflineBar style={{ position: 'relative' }} />
       </KeyboardAvoidingView>
-    )
+    );
   }
 }
 

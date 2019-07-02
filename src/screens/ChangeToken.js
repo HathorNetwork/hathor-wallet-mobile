@@ -9,10 +9,10 @@ import TokenSelect from '../components/TokenSelect';
  * tokens {Array} Array of token configs registered on this wallet
  * tokensBalance {Object} Object with the balance of each token {uid: {available, locked}}
  */
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   tokens: state.tokens,
   tokensBalance: state.tokensBalance,
-})
+});
 
 class ChangeToken extends React.Component {
   constructor(props) {
@@ -34,17 +34,17 @@ class ChangeToken extends React.Component {
   }
 
   render() {
-    const Header = (props) => (
+    const Header = props => (
       <HathorHeader
-        title='TOKENS'
+        title="TOKENS"
         wrapperStyle={{ borderBottomWidth: 0 }}
         onBackPress={() => this.props.navigation.goBack()}
       />
-    )
+    );
 
     return (
       <TokenSelect
-        header=<Header/>
+        header=<Header />
         onItemPress={this.onItemPress}
         selectedToken={this.token}
         tokens={this.props.tokens}

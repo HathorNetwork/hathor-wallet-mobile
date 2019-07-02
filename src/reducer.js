@@ -1,13 +1,12 @@
 import { createStore, applyMiddleware } from 'redux';
-import thunk from "redux-thunk";
+import thunk from 'redux-thunk';
 
+import hathorLib from '@hathor/wallet-lib';
 import { getBalance, getMyTxBalance } from './utils';
 import { INITIAL_TOKENS, SELECTED_TOKEN } from './constants';
 import { types } from './actions.js';
 
 import { TxHistory } from './models';
-
-import hathorLib from '@hathor/wallet-lib';
 
 
 /**
@@ -35,17 +34,17 @@ import hathorLib from '@hathor/wallet-lib';
 const initialState = {
   tokensHistory: {},
   tokensBalance: {},
-  loadHistoryStatus: {active: true, error: false},
+  loadHistoryStatus: { active: true, error: false },
   latestInvoice: null,
   invoicePayment: null,
   tokens: INITIAL_TOKENS,
   selectedToken: SELECTED_TOKEN,
-  sendTx: {loading: false, error: null},
+  sendTx: { loading: false, error: null },
   isOnline: false,
   serverInfo: { version: '', network: '' },
   lockScreen: true,
   initWallet: null,
-}
+};
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
@@ -94,37 +93,33 @@ const reducer = (state = initialState, action) => {
     default:
       return state;
   }
-}
-
-const onSetServerInfo = (state, action) => {
-  return {
-    ...state,
-    serverInfo: {
-      network: action.payload.network,
-      version: action.payload.version,
-    }
-  }
 };
 
-const onSetIsOnline = (state, action) => {
-  return {
-    ...state,
-    isOnline: action.payload,
-  };
-};
+const onSetServerInfo = (state, action) => ({
+  ...state,
+  serverInfo: {
+    network: action.payload.network,
+    version: action.payload.version,
+  },
+});
+
+const onSetIsOnline = (state, action) => ({
+  ...state,
+  isOnline: action.payload,
+});
 
 /**
  * Updates the history and balance when a new tx arrives. Also checks
  * if this tx settles an open invoice.
  */
 const onNewTx = (state, action) => {
-  const tx = action.payload.tx;
-  const addresses = action.payload.addresses;
+  const { tx } = action.payload;
+  const { addresses } = action.payload;
 
   // if we have the invoice modal, check if this tx settles it
   let invoicePayment = null;
   if (state.latestInvoice && state.latestInvoice.amount) {
-    for (let txout of tx.outputs) {
+    for (const txout of tx.outputs) {
       // Don't consider authority outputs
       if (hathorLib.wallet.isAuthorityOutput(txout)) {
         continue;
@@ -164,7 +159,7 @@ const onNewTx = (state, action) => {
     tokensHistory: newTokensHistory,
     tokensBalance: newTokensBalance,
   };
-}
+};
 
 /**
  * This method adds a new tx to the history of a token (we have one history per token)
@@ -204,7 +199,7 @@ const addTxToSortedList = (tokenUid, tx, txTokenBalance, currentHistory) => {
   const newHistory = [...currentHistory];
   newHistory.splice(index, 0, txHistory);
   return newHistory;
-}
+};
 
 /**
  * Return an object to be saved in the history.
@@ -239,66 +234,58 @@ const addTxToSortedList = (tokenUid, tx, txTokenBalance, currentHistory) => {
  *     }
  *   ]
  * }
- **/
-const getTxHistoryFromTx = (tx, tokenUid, tokenTxBalance) => {
-  return new TxHistory({
-    tx_id: tx.tx_id,
-    timestamp: tx.timestamp,
-    token_uid: tokenUid,
-    balance: tokenTxBalance,
-    is_voided: tx.is_voided,
-  });
-}
+ * */
+const getTxHistoryFromTx = (tx, tokenUid, tokenTxBalance) => new TxHistory({
+  tx_id: tx.tx_id,
+  timestamp: tx.timestamp,
+  token_uid: tokenUid,
+  balance: tokenTxBalance,
+  is_voided: tx.is_voided,
+});
 
 /**
  * Create a new payment request
  */
 const onNewInvoice = (state, action) => {
-  const address = action.payload.address;
-  const amount = action.payload.amount;
-  const token = action.payload.token;
+  const { address } = action.payload;
+  const { amount } = action.payload;
+  const { token } = action.payload;
   return {
     ...state,
-    latestInvoice: {address, amount, token},
-  }
-}
+    latestInvoice: { address, amount, token },
+  };
+};
 
 /**
  * When the user leaves the invoice screen, clear the invoice information
  */
-const onClearInvoice = (state, action) => {
-  return {
-    ...state,
-    latestInvoice: null,
-    invoicePayment: null,
-  }
-}
+const onClearInvoice = (state, action) => ({
+  ...state,
+  latestInvoice: null,
+  invoicePayment: null,
+});
 
 /**
  * Switch the selected token
  */
-const onUpdateSelectedToken = (state, action) => {
-  return {
-    ...state,
-    selectedToken: action.payload,
-  }
-}
+const onUpdateSelectedToken = (state, action) => ({
+  ...state,
+  selectedToken: action.payload,
+});
 
 /**
  * Add a new token to the list of available tokens in this wallet
  */
-const onNewToken = (state, action) => {
-  return {
-    ...state,
-    tokens: [...state.tokens, action.payload]
-  }
-}
+const onNewToken = (state, action) => ({
+  ...state,
+  tokens: [...state.tokens, action.payload],
+});
 
 /**
  * Set the list of tokens added in this wallet
  */
 const onSetTokens = (state, action) => {
-  let selectedToken = state.selectedToken;
+  let { selectedToken } = state;
   if (action.payload.indexOf(selectedToken) === -1) {
     // We have unregistered this token
     selectedToken = SELECTED_TOKEN;
@@ -306,69 +293,59 @@ const onSetTokens = (state, action) => {
   return {
     ...state,
     tokens: [...action.payload],
-    selectedToken
-  }
-}
+    selectedToken,
+  };
+};
 
 /**
  * Start sending the tx. This means clear any send errors and show loading
  */
-const onSendTxBegin = (state, action) => {
-  return {
-    ...state,
-    sendTx: {loading: true, error: null},
-  }
-}
+const onSendTxBegin = (state, action) => ({
+  ...state,
+  sendTx: { loading: true, error: null },
+});
 
 /**
  * Send succeeded
  */
-const onSendTxSuccess = (state, action) => {
-  return {
-    ...state,
-    sendTx: {loading: false, error: null},
-  }
-}
+const onSendTxSuccess = (state, action) => ({
+  ...state,
+  sendTx: { loading: false, error: null },
+});
 
 /**
  * Error sending transaction
  */
-const onSendTxError = (state, action) => {
-  return {
-    ...state,
-    sendTx: {loading: false, error: action.payload},
-  }
-}
+const onSendTxError = (state, action) => ({
+  ...state,
+  sendTx: { loading: false, error: action.payload },
+});
 
 /**
  * When leaving the send tx screen, clear the state so it's not there when we go back to this screen
  */
-const onSendTxDismiss = (state, action) => {
-  return {
-    ...state,
-    sendTx: {loading: false, error: null},
-  }
-}
+const onSendTxDismiss = (state, action) => ({
+  ...state,
+  sendTx: { loading: false, error: null },
+});
 
 /**
  * Start fetching history. This means clear any past errors and show loading
  */
-const onFetchHistoryBegin = (state, action) => {
-  return {
-    ...state,
-    loadHistoryStatus: {
-      active: true,
-      error: false,
-    },
-  }
-}
+const onFetchHistoryBegin = (state, action) => ({
+  ...state,
+  loadHistoryStatus: {
+    active: true,
+    error: false,
+  },
+});
 
 /**
  * Got history. Update history and balance for each token.
  */
 const onFetchHistorySuccess = (state, action) => {
-  const history = action.payload.history;
-  const addresses = action.payload.addresses;
+  const { history } = action.payload;
+  const { addresses } = action.payload;
   const tokensHistory = {};
   const tokensBalance = {};
   // iterate through all txs received and map all tokens this wallet has, with
@@ -392,9 +369,7 @@ const onFetchHistorySuccess = (state, action) => {
 
   // in the end, sort (in place) all tx lists in descending order by timestamp
   for (const txList of Object.values(tokensHistory)) {
-    txList.sort((elem1, elem2) => {
-      return elem2.timestamp - elem1.timestamp
-    });
+    txList.sort((elem1, elem2) => elem2.timestamp - elem1.timestamp);
   }
 
   return {
@@ -403,64 +378,54 @@ const onFetchHistorySuccess = (state, action) => {
     tokensBalance,
     loadHistoryStatus: {
       active: false,
-      error: false
+      error: false,
     },
   };
-}
+};
 
 /**
  * Error fetching history
  */
-const onFetchHistoryError = (state, action) => {
-  return {
-    ...state,
-    loadHistoryStatus: {
-      active: true,
-      error: true,
-    },
-  }
-}
+const onFetchHistoryError = (state, action) => ({
+  ...state,
+  loadHistoryStatus: {
+    active: true,
+    error: true,
+  },
+});
 
 /**
  * Activate fetch history screen
  */
-const onActivateFetchHistory = (state, action) => {
-  return {
-    ...state,
-    loadHistoryStatus: {
-      active: true,
-      error: false,
-    },
-  }
-}
+const onActivateFetchHistory = (state, action) => ({
+  ...state,
+  loadHistoryStatus: {
+    active: true,
+    error: false,
+  },
+});
 
 /**
  * Set loadHistoryStatus
  */
-const onSetLoadHistoryStatus = (state, action) => {
-  return {
-    ...state,
-    loadHistoryStatus: action.payload,
-  }
-}
+const onSetLoadHistoryStatus = (state, action) => ({
+  ...state,
+  loadHistoryStatus: action.payload,
+});
 
 /**
  * Unlock the wallet
  */
-const onSetLockScreen = (state, action) => {
-  return {
-    ...state,
-    lockScreen: action.payload,
-  }
-}
+const onSetLockScreen = (state, action) => ({
+  ...state,
+  lockScreen: action.payload,
+});
 
 /**
  * Update information about wallet initialization
  */
-const onSetInitWallet = (state, action) => {
-  return {
-    ...state,
-    initWallet: action.payload,
-  }
-}
+const onSetInitWallet = (state, action) => ({
+  ...state,
+  initWallet: action.payload,
+});
 export const store = createStore(reducer, applyMiddleware(thunk));
