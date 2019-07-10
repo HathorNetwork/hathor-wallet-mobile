@@ -11,7 +11,6 @@ const SimpleInput = (props) => {
       {...props}
       style={styles.input}
       keyboardAppearance="dark"
-      autoCapitalize="none"
       autoCorrect={false}
       spellCheck={false}
       autoCompleteType="off"
