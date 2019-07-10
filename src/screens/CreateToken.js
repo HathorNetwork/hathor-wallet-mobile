@@ -143,6 +143,7 @@ class CreateToken extends React.Component {
                 onChangeText={text => this.onChangeText('symbol', text)}
                 value={this.state.symbol}
                 containerStyle={{ marginBottom: 16 }}
+                autoCapitalize="characters"
               />
               <SimpleInput
                 label="Amount"
