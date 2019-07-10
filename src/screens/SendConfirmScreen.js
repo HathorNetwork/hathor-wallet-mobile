@@ -144,7 +144,7 @@ class SendConfirmScreen extends React.Component {
               containerStyle={{ marginTop: 48 }}
             />
             {/* TODO we don't have UI for error and loading yet */}
-            <ActivityIndicator size="small" animating={this.props.sendLoading} />
+            {this.props.sendLoading && <ActivityIndicator style={{ marginTop: 16 }} size="small" animating={true} />}
             <Text style={{ marginTop: 16, color: 'red' }}>{this.props.sendError}</Text>
           </View>
           <NewHathorButton

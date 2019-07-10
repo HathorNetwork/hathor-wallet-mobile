@@ -160,7 +160,7 @@ class CreateToken extends React.Component {
                 onPress={this.validateAndAdd}
                 disabled={this.state.loading}
               />
-              <ActivityIndicator size="large" animating={this.state.loading} />
+              {this.state.loading && <ActivityIndicator style={{ marginTop: 16 }} size="large" animating={true} />}
             </View>
           </View>
         </TouchableWithoutFeedback>
