@@ -6,7 +6,7 @@ import {
 import QRCode from 'react-native-qrcode-svg';
 
 import hathorLib from '@hathor/wallet-lib';
-import NewHathorButton from './NewHathorButton';
+import SimpleButton from './SimpleButton';
 
 class ReceiveMyAddress extends React.Component {
   constructor(props) {
@@ -91,19 +91,16 @@ class ReceiveMyAddress extends React.Component {
           {renderAddressText()}
         </View>
         <View style={{ flexDirection: 'row' }}>
-          <NewHathorButton
+          <SimpleButton
             title="New address"
             onPress={this.updateAddress}
-            wrapperStyle={{
-              flex: 1, borderRadius: 0, borderRightWidth: 1.5, borderColor: '#e5e5ea', backgroundColor: 'transparent',
-            }}
-            textStyle={{ color: '#0273a0' }}
+            containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
           />
-          <NewHathorButton
-            wrapperStyle={{ flex: 1, backgroundColor: 'transparent' }}
+          <SimpleButton
             onPress={this.shareAddress}
             title="Share"
-            textStyle={{ color: '#0273a0' }}
+            color='#000'
+            containerStyle={styles.buttonContainer}
           />
         </View>
       </View>
@@ -125,6 +122,16 @@ const styles = StyleSheet.create({
   qrcodeWrapper: {
     padding: 24,
     flex: 1,
+  },
+  buttonContainer: {
+    flex: 1,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    paddingVertical: 16
+  },
+  leftButtonBorder: {
+    borderRightWidth: 1.5,
+    borderColor: '#eee',
   },
 });
 
