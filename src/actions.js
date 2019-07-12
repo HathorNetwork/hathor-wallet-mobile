@@ -13,10 +13,6 @@ export const types = {
   UPDATE_SELECTED_TOKEN: 'UPDATE_SELECTED_TOKEN',
   NEW_TOKEN: 'NEW_TOKEN',
   SET_TOKENS: 'SET_TOKENS',
-  SEND_TX_BEGIN: 'SEND_TX_BEGIN',
-  SEND_TX_SUCCESS: 'SEND_TX_SUCCESS',
-  SEND_TX_ERROR: 'SEND_TX_ERROR',
-  SEND_TX_DISMISS: 'SEND_TX_DISMISS',
   FETCH_HISTORY_BEGIN: 'FETCH_HISTORY_BEGIN',
   FETCH_HISTORY_SUCCESS: 'FETCH_HISTORY_SUCCESS',
   FETCH_HISTORY_ERROR: 'FETCH_HISTORY_ERROR',
@@ -71,17 +67,6 @@ export const newToken = newToken => ({ type: types.NEW_TOKEN, payload: newToken 
  */
 export const setTokens = tokens => ({ type: types.SET_TOKENS, payload: tokens });
 
-export const sendTxBegin = () => ({ type: types.SEND_TX_BEGIN });
-
-export const sendTxSuccess = () => ({ type: types.SEND_TX_SUCCESS });
-
-/**
- * error {String} error message when trying to send tx
- */
-export const sendTxError = error => ({ type: types.SEND_TX_ERROR, payload: error });
-
-export const sendTxDismiss = () => ({ type: types.SEND_TX_DISMISS });
-
 export const fetchHistoryBegin = () => ({ type: types.FETCH_HISTORY_BEGIN });
 
 /**
@@ -114,10 +99,8 @@ export const clearInitWallet = () => ({ type: types.SET_INIT_WALLET, payload: nu
  * address {String} destination address
  * token {Object} token being sent
  * pinCode {String} user's pin
- * onSuccess {function} callback after tx is sent
  */
-export const sendTx = (amount, address, token, pinCode, onSuccess) => (dispatch) => {
-  dispatch(sendTxBegin());
+export const sendTx = (amount, address, token, pinCode) => (dispatch) => {
   const data = {};
   const isHathorToken = token.uid === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
   data.tokens = isHathorToken ? [] : [token.uid];
@@ -128,22 +111,23 @@ export const sendTx = (amount, address, token, pinCode, onSuccess) => (dispatch)
   const walletData = hathorLib.wallet.getWalletData();
   const historyTransactions = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
   const ret = hathorLib.wallet.prepareSendTokensData(data, token, true, historyTransactions, [token]);
-  if (ret.success) {
-    try {
-      hathorLib.transaction.sendTransaction(ret.data, pinCode).then(() => {
-        dispatch(sendTxSuccess());
-        onSuccess();
-      }, (error) => {
-        dispatch(sendTxError(error));
-      });
-    } catch (e) {
-      if (e instanceof hathorLib.errors.AddressError || e instanceof hathorLib.errors.OutputValueError) {
-        dispatch(sendTxError(e.message));
+  return new Promise((resolve, reject) => {
+    if (ret.success) {
+      try {
+        hathorLib.transaction.sendTransaction(ret.data, pinCode).then(() => {
+          resolve();
+        }, (error) => {
+          reject(error);
+        });
+      } catch (e) {
+        if (e instanceof hathorLib.errors.AddressError || e instanceof hathorLib.errors.OutputValueError) {
+          reject(e.message);
+        }
       }
+    } else {
+      reject(ret.message);
     }
-  } else {
-    dispatch(sendTxError(ret.message));
-  }
+  });
 };
 
 export const loadHistory = () => (dispatch) => {

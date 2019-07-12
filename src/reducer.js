@@ -19,7 +19,6 @@ import { TxHistory } from './models';
  * invoicePayment {Object} null if not paid or the tx that settles latestInvoice
  * tokens {Array} array of tokens added [{name, symbol, uid}]
  * selectedToken {Object} token currently selected by the user
- * sendTx {Object} used for sendTx modal
  * isOnline {bool} Indicates whether the wallet is connected to the fullnode's websocket
  * serverInfo {Object} {
  *   version {str} version of the connected server (e.g., 0.26.0-beta)
@@ -39,7 +38,6 @@ const initialState = {
   invoicePayment: null,
   tokens: INITIAL_TOKENS,
   selectedToken: SELECTED_TOKEN,
-  sendTx: { loading: false, error: null },
   isOnline: false,
   serverInfo: { version: '', network: '' },
   lockScreen: true,
@@ -62,14 +60,6 @@ const reducer = (state = initialState, action) => {
       return onNewToken(state, action);
     case types.SET_TOKENS:
       return onSetTokens(state, action);
-    case types.SEND_TX_BEGIN:
-      return onSendTxBegin(state, action);
-    case types.SEND_TX_SUCCESS:
-      return onSendTxSuccess(state, action);
-    case types.SEND_TX_ERROR:
-      return onSendTxError(state, action);
-    case types.SEND_TX_DISMISS:
-      return onSendTxDismiss(state, action);
     case types.FETCH_HISTORY_BEGIN:
       return onFetchHistoryBegin(state, action);
     case types.FETCH_HISTORY_SUCCESS:
@@ -296,38 +286,6 @@ const onSetTokens = (state, action) => {
     selectedToken,
   };
 };
-
-/**
- * Start sending the tx. This means clear any send errors and show loading
- */
-const onSendTxBegin = (state, action) => ({
-  ...state,
-  sendTx: { loading: true, error: null },
-});
-
-/**
- * Send succeeded
- */
-const onSendTxSuccess = (state, action) => ({
-  ...state,
-  sendTx: { loading: false, error: null },
-});
-
-/**
- * Error sending transaction
- */
-const onSendTxError = (state, action) => ({
-  ...state,
-  sendTx: { loading: false, error: action.payload },
-});
-
-/**
- * When leaving the send tx screen, clear the state so it's not there when we go back to this screen
- */
-const onSendTxDismiss = (state, action) => ({
-  ...state,
-  sendTx: { loading: false, error: null },
-});
 
 /**
  * Start fetching history. This means clear any past errors and show loading
