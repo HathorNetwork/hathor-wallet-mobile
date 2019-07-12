@@ -58,7 +58,7 @@ class UnregisterToken extends React.Component {
 
     const tokens = hathorLib.tokens.unregisterToken(this.props.selectedToken.uid);
     this.props.dispatch(setTokens(tokens));
-    this.props.navigation.pop(2);
+    this.props.navigation.navigate('Dashboard');
   }
 
   render() {

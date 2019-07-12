@@ -11,7 +11,7 @@ import SimpleInput from '../components/SimpleInput';
 
 import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 
-import { newToken } from '../actions';
+import { newToken, updateSelectedToken } from '../actions';
 
 
 class RegisterTokenManual extends React.Component {
@@ -61,7 +61,7 @@ class RegisterTokenManual extends React.Component {
     const { token } = this.state;
     hathorLib.tokens.addToken(token.uid, token.name, token.symbol);
     this.props.dispatch(newToken(token));
-    this.props.navigation.popToTop();
+    this.props.dispatch(updateSelectedToken(token));
     this.props.navigation.dismiss();
   }
 
