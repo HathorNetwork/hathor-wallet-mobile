@@ -3,12 +3,10 @@ import {
   ActivityIndicator,
   Image,
   SafeAreaView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { connect } from 'react-redux';
-import Modal from 'react-native-modal';
 
 import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
@@ -17,34 +15,32 @@ import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import { Strong } from '../utils';
 import HathorHeader from '../components/HathorHeader';
-import { sendTx, sendTxDismiss } from '../actions';
+import { sendTx } from '../actions';
 import OfflineBar from '../components/OfflineBar';
+import Spinner from '../components/Spinner';
+import FeedbackModal from '../components/FeedbackModal';
 
 
 /**
  * tokensBalance {Object} dict with balance for each token
- * sendLoading {boolean} indicates send operation is in progress
- * sendError {string} message when there's an error sending tx
  */
 const mapStateToProps = state => ({
   tokensBalance: state.tokensBalance,
-  sendLoading: state.sendTx.loading,
-  sendError: state.sendTx.error,
 });
 
 const mapDispatchToProps = dispatch => ({
-  sendTxDismiss: () => dispatch(sendTxDismiss()),
-  sendTx: (amount, address, token, pin, onSuccess) => dispatch(sendTx(amount, address, token, pin, onSuccess)),
+  sendTx: (amount, address, token, pin, onSuccess, onError) => dispatch(sendTx(amount, address, token, pin, onSuccess, onError)),
 });
 
 class SendConfirmScreen extends React.Component {
   /**
    * label {string} label to identify who you're sending this tx (optional)
-   * showModal {boolean} whether to display the modal
+   * modal {FeedbackModal} modal to display. If null, do not display
+   * }
    */
   state = {
     label: null,
-    showModal: false,
+    modal: null,
   };
 
   /**
@@ -58,10 +54,7 @@ class SendConfirmScreen extends React.Component {
     this.amount = this.props.navigation.getParam('amount');
     this.address = this.props.navigation.getParam('address');
     this.token = this.props.navigation.getParam('token');
-  }
-
-  componentWillUnmount() {
-    this.props.sendTxDismiss();
+    this.amountAndToken = `${hathorLib.helpers.prettyValue(this.amount)} ${this.token.symbol}`;
   }
 
   onLabelChange = (text) => {
@@ -69,7 +62,14 @@ class SendConfirmScreen extends React.Component {
   }
 
   executeSend = (pinCode) => {
-    this.props.sendTx(this.amount, this.address, this.token, pinCode, this.showConfirmationModal);
+    // show loading modal
+    this.setState({ modal: 
+      <FeedbackModal 
+        icon={<Spinner />}
+        text='Your transfer is being processed'
+      />
+    });
+    this.props.sendTx(this.amount, this.address, this.token, pinCode).then(this.onSuccess, this.onError);
   }
 
   onSendPress = () => {
@@ -82,12 +82,28 @@ class SendConfirmScreen extends React.Component {
     this.props.navigation.navigate('PinScreen', params);
   }
 
-  showConfirmationModal = () => {
-    this.setState({ showModal: true });
+  onSuccess = () => {
+    this.setState({ modal: 
+      <FeedbackModal 
+        icon={<Image source={require('../assets/images/icCheckBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />}
+        text={`Your transfer of ${this.amountAndToken} has been confirmed`}
+        onDismiss={this.exitScreen}
+      />
+    });
+  }
+
+  onError = (message) => {
+    this.setState({ modal: 
+      <FeedbackModal 
+        icon={<Image source={require('../assets/images/icErrorBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />}
+        text={message}
+        onDismiss={() => this.setState({ modal: null })}
+      />
+    });
   }
 
   exitScreen = () => {
-    this.setState({ showModal: false });
+    this.setState({ modal: null });
     this.props.navigation.popToTop();
     this.props.navigation.dismiss();
   }
@@ -100,38 +116,19 @@ class SendConfirmScreen extends React.Component {
       return `${hathorLib.helpers.prettyValue(available)} ${this.token.symbol} available`;
     };
 
-    const renderConfirmationModal = () => (
-      <Modal
-        isVisible={this.state.showModal}
-        animationIn="slideInUp"
-        swipeDirection={['down']}
-        onSwipeComplete={this.exitScreen}
-        onBackButtonPress={this.exitScreen}
-        onBackdropPress={this.exitScreen}
-        style={styles.modal}
-      >
-        <View style={styles.innerModal}>
-          <Image source={require('../assets/images/icCheckBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />
-          <Text style={{ fontSize: 18, marginTop: 40, textAlign: 'center' }}>
-              Your transfer of <Strong>{` ${hathorLib.helpers.prettyValue(this.amount)} ${this.token.symbol} `}</Strong> has been confirmed
-          </Text>
-        </View>
-      </Modal>
-    );
-
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
           title={`SEND ${this.token.name.toUpperCase()}`}
           onBackPress={() => this.props.navigation.goBack()}
         />
-        {renderConfirmationModal()}
+        {this.state.modal}
         <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
           <View>
             <View style={{ alignItems: 'center', marginTop: 32 }}>
               <AmountTextInput
                 editable={false}
-                value={hathorLib.helpers.prettyValue(this.amount)}
+                value={this.amountAndToken}
               />
               <InputLabel style={{ marginTop: 8 }}>
                 {getAvailableString()}
@@ -143,14 +140,12 @@ class SendConfirmScreen extends React.Component {
               value={this.address}
               containerStyle={{ marginTop: 48 }}
             />
-            {/* TODO we don't have UI for error and loading yet */}
-            {this.props.sendLoading && <ActivityIndicator style={{ marginTop: 16 }} size="small" animating={true} />}
-            <Text style={{ marginTop: 16, color: 'red' }}>{this.props.sendError}</Text>
           </View>
           <NewHathorButton
             title="Send"
             onPress={this.onSendPress}
-            disabled={this.props.sendLoading}
+            // disable while modal is visible
+            disabled={this.state.modal !== null}
           />
         </View>
         <OfflineBar />
@@ -158,19 +153,5 @@ class SendConfirmScreen extends React.Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  modal: {
-    justifyContent: 'flex-end',
-  },
-  innerModal: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 56,
-    paddingTop: 48,
-  },
-});
 
 export default connect(mapStateToProps, mapDispatchToProps)(SendConfirmScreen);
