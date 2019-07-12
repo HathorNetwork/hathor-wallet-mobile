@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-
 import {
   Text,
   TouchableHighlight,
@@ -9,12 +8,15 @@ import {
   Share,
 } from 'react-native';
 
+
+const defaultRadius = 16;
+
 export class HathorList extends Component {
   style = StyleSheet.create({
     view: {
       alignSelf: 'stretch',
       backgroundColor: 'white',
-      borderRadius: 8,
+      borderRadius: defaultRadius,
       margin: 16,
       shadowOffset: { height: 2, width: 0 },
       shadowRadius: 4,
@@ -60,12 +62,12 @@ class BaseItem extends Component {
       borderBottomWidth: 0,
     },
     firstItemView: {
-      borderTopLeftRadius: 8,
-      borderTopRightRadius: 8,
+      borderTopLeftRadius: defaultRadius,
+      borderTopRightRadius: defaultRadius,
     },
     lastItemView: {
-      borderBottomLeftRadius: 8,
-      borderBottomRightRadius: 8,
+      borderBottomLeftRadius: defaultRadius,
+      borderBottomRightRadius: defaultRadius,
     },
     view: {
       flexDirection: 'row',

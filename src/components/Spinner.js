@@ -2,10 +2,10 @@ import React from 'react';
 import { Animated, Easing } from 'react-native';
 import PropTypes from 'prop-types';
 
+
 class Spinner extends React.Component {
   static defaultProps = {
-    height: 105,
-    width: 105,
+    size: 105,
   };
 
   /**
@@ -30,18 +30,15 @@ class Spinner extends React.Component {
 
     return (
       <Animated.Image
-        style={{ height: this.props.height, width: this.props.width, transform: [{rotate: spin}] }}
+        style={{ height: this.props.size, width: this.props.size, transform: [{rotate: spin}] }}
         source={require('../assets/images/icLoadingBig.png')} />
     );
   }
 }
 
 Spinner.propTypes = {
-  // Optional (default 105). The height of the spinner
-  height: PropTypes.number,
-
-  // Optional (default 105). The width of the spinner
-  width: PropTypes.number,
+  // Optional (default 105). Size of the spinner. Used for width and height
+  size: PropTypes.number,
 };
 
 export default Spinner;
