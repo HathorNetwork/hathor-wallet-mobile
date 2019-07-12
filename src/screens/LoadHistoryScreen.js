@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  ActivityIndicator, SafeAreaView, StyleSheet, Text, View,
+  SafeAreaView, StyleSheet, Text, View,
 } from 'react-native';
 import { connect } from 'react-redux';
 
@@ -9,10 +9,11 @@ import * as Keychain from 'react-native-keychain';
 import hathorLib from '@hathor/wallet-lib';
 import { loadHistory, clearInitWallet } from '../actions';
 import {
-  setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled,
+  Strong, setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled,
 } from '../utils';
 import { KEYCHAIN_USER } from '../constants';
 import SimpleButton from '../components/SimpleButton';
+import Spinner from '../components/Spinner';
 
 
 /**
@@ -108,9 +109,12 @@ class LoadHistoryScreen extends React.Component {
   render() {
     const renderError = () => (
       <View style={{ alignItems: 'center' }}>
-        <Text style={styles.text}>There's been an error connecting to the server</Text>
+        <Text style={{ fontSize: 18, lineHeight: 22, width: 200, textAlign: 'center' }}>
+          There's been an error connecting to the server
+        </Text>
         <SimpleButton
-          containerStyle={{ marginTop: 24 }}
+          containerStyle={{ marginTop: 12 }}
+          textStyle={{ fontSize: 18 }}
           onPress={this.props.loadHistory}
           title="Try again"
         />
@@ -119,17 +123,15 @@ class LoadHistoryScreen extends React.Component {
 
     const renderLoading = () => (
       <View style={{ alignItems: 'center' }}>
-        <ActivityIndicator size="large" animating />
-        <Text style={styles.text}>Loading your transactions</Text>
-        <Text style={styles.text}>
-          {this.state.transactions}
-          {' '}
-transactions found
+        <Spinner size={48} animating />
+        <Text style={[styles.text, {marginTop: 32, color: 'rgba(0, 0, 0, 0.5)'}]}>
+          Loading your transactions
+        </Text>
+        <Text style={[styles.text, {marginTop: 24}]}>
+          <Strong>{`${this.state.transactions} transactions`}</Strong> found
         </Text>
         <Text style={styles.text}>
-          {this.state.addresses}
-          {' '}
-addresses found
+          <Strong>{`${this.state.addresses} addresses`}</Strong> found
         </Text>
       </View>
     );
@@ -145,6 +147,7 @@ addresses found
 const styles = StyleSheet.create({
   text: {
     fontSize: 16,
+    lineHeight: 20,
     textAlign: 'center',
     marginTop: 16,
   },

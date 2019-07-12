@@ -19,6 +19,8 @@ import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
 import TxDetailsModal from '../components/TxDetailsModal';
 import OfflineBar from '../components/OfflineBar';
+import { HathorList } from '../components/HathorList';
+import { Strong } from '../utils';
 
 
 /**
@@ -76,6 +78,21 @@ class MainScreen extends React.Component {
   }
 
   render() {
+    const renderEmptyHistory = () => (
+      <HathorList infinity>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Strong>No transactions</Strong>
+          <Text style={{ marginTop: 8, lineHeight: 20, textAlign: 'center', width: 220 }}>
+            <Text
+              onPress={() => this.props.navigation.navigate('Receive')}
+              style={{ color: '#E30052', fontWeight: 'bold' }}
+            >Share your address </Text>
+            with friends and start exchanging tokens
+          </Text>
+        </View>
+      </HathorList>
+    );
+
     const renderTxHistory = () => {
       if (this.props.txList && (this.props.txList.length > 0)) {
         return (
@@ -83,7 +100,7 @@ class MainScreen extends React.Component {
         );
       }
       // empty history
-      return <Text style={{ fontSize: 16, textAlign: 'center' }}>You don't have any transactions</Text>;
+      return renderEmptyHistory();
     };
 
     const renderRightElement = () => {
@@ -149,7 +166,12 @@ class TxListItem extends React.Component {
       marginLeft: 16,
       marginRight: 16,
       marginTop: 0,
-      marginBottom: 2,
+      borderColor: '#eee',
+      borderBottomWidth: 1,
+      shadowOffset: { height: 2, width: 0 },
+      shadowRadius: 4,
+      shadowColor: 'black',
+      shadowOpacity: 0.08,
     },
     view: {
       flexDirection: 'row',
