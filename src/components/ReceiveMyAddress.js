@@ -1,12 +1,13 @@
 import React from 'react';
 import {
-  Clipboard, Dimensions, Share, StyleSheet, Text, View,
+  Dimensions, Share, StyleSheet, Text, View,
 } from 'react-native';
 
 import QRCode from 'react-native-qrcode-svg';
 
 import hathorLib from '@hathor/wallet-lib';
 import SimpleButton from './SimpleButton';
+import CopyClipboard from './CopyClipboard';
 
 class ReceiveMyAddress extends React.Component {
   constructor(props) {
@@ -14,11 +15,9 @@ class ReceiveMyAddress extends React.Component {
 
     /**
      * address {string} Wallet address
-     * copying {boolean} If is copying address (if should show copied feedback)
      */
     this.state = {
       address: '',
-      copying: false,
     };
 
     this.willFocusEvent = null;
@@ -47,13 +46,6 @@ class ReceiveMyAddress extends React.Component {
     });
   }
 
-  textCopy = () => {
-    Clipboard.setString(this.state.address);
-    this.setState({ copying: true }, () => {
-      setTimeout(() => this.setState({ copying: false }), 1500);
-    });
-  }
-
   render() {
     if (!this.state.address) return null;
 
@@ -74,21 +66,16 @@ class ReceiveMyAddress extends React.Component {
       },
     });
 
-    const renderAddressText = () => {
-      if (this.state.copying) {
-        return <Text style={{ fontSize: 13, color: '#E30052' }}>Copied to clipboard!</Text>
-      } else {
-        return <Text onPress={this.textCopy} onLongPress={this.textCopy} style={{ fontSize: height < 650 ? 11 : 13 }}>{this.state.address}</Text>
-      }
-    }
-
     return (
       <View style={styles.wrapper}>
         <View style={styles.qrcodeWrapper}>
           <QRCode value={`hathor:${this.state.address}`} size={height < 650 ? 160 : 250} />
         </View>
         <View style={addressWrapperStyle.style}>
-          {renderAddressText()}
+          <CopyClipboard
+            text={this.state.address}
+            textStyle={{ fontSize: height < 650 ? 11 : 13 }}
+          />
         </View>
         <View style={{ flexDirection: 'row' }}>
           <SimpleButton
