@@ -1,11 +1,10 @@
 import React from 'react';
 import {
-  Alert, SafeAreaView, Share, StyleSheet, Text, View,
+  SafeAreaView, Share, StyleSheet, Text, View
 } from 'react-native';
 import { connect } from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
 import hathorLib from '@hathor/wallet-lib';
-import { setTokens } from '../actions';
 import { getTokenLabel } from '../utils';
 
 import HathorHeader from '../components/HathorHeader';
@@ -23,25 +22,7 @@ const mapStateToProps = state => ({
 
 class TokenDetail extends React.Component {
   unregisterClicked = () => {
-    Alert.alert(
-      'Unregister token',
-      `Are you sure you want to unregister ${getTokenLabel(this.props.selectedToken)}?`,
-      [
-        { text: 'Yes', onPress: this.unregisterConfirmed },
-        { text: 'No', style: 'cancel' },
-      ],
-    );
-  }
-
-  unregisterConfirmed = () => {
-    // Preventing unregistering HTR token, even if the user gets on this screen because of an error
-    if (this.props.selectedToken.uid === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
-      return;
-    }
-
-    const tokens = hathorLib.tokens.unregisterToken(this.props.selectedToken.uid);
-    this.props.dispatch(setTokens(tokens));
-    this.props.navigation.goBack();
+    this.props.navigation.navigate('UnregisterToken');
   }
 
   getConfigString = () => {

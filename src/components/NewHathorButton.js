@@ -12,13 +12,16 @@ const NewHathorButton = (props) => {
     textStyle.push(style.textDisabled);
   }
 
-  if (props.secondary && !props.disabled) {
+  if (props.secondary) {
     wrapperViewStyle.push(style.wrapperSecondary);
     textStyle.push(style.textSecondary);
 
-    if (props.color) {
-      wrapperViewStyle.push({ borderColor: props.color });
-      textStyle.push({ color: props.color });
+    if (props.disabled) {
+      wrapperViewStyle.push(style.wrapperSecondaryDisabled);
+      textStyle.push(style.textSecondaryDisabled);
+    } else if (props.color) {
+        wrapperViewStyle.push({ borderColor: props.color });
+        textStyle.push({ color: props.color });
     }
   }
 
@@ -64,6 +67,9 @@ const style = StyleSheet.create({
     borderColor: '#000',
     borderWidth: 1.5,
   },
+  wrapperSecondaryDisabled: {
+    borderColor: 'rgba(0, 0, 0, 0.5)',
+  },
   touchable: {
     padding: 16,
     flex: 1,
@@ -80,6 +86,9 @@ const style = StyleSheet.create({
   },
   textSecondary: {
     color: '#000',
+  },
+  textSecondaryDisabled: {
+    color: 'rgba(0, 0, 0, 0.5)',
   },
   textDisabled: {
     color: 'rgba(0,0,0,0.5)',
