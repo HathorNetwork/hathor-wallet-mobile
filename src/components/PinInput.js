@@ -1,72 +1,24 @@
 import React from 'react';
-import { Keyboard, Platform, Text, StyleSheet, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import { Text, StyleSheet, View } from 'react-native';
+
+import NumPad from './NumPad';
 
 class PinInput extends React.Component {
   static defaultProps = {
     color: 'black',
   };
 
-  inputRef = React.createRef();
-
-  style = StyleSheet.create({
-    view: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignSelf: 'stretch',
-    },
-    textInput: {
-      position: 'absolute',
-      top: -999,
-      left: -999,
-      color: 'red',
-      backgroundColor: 'red',
-    },
-    marker: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      borderWidth: 1,
-      margin: 8,
-    },
-  });
-
-  keyboardDidShowListener = null;
-  keyboardDidHideListener = null;
-
-  /**
-   * keyboardOpened {boolean} if keyboard is being shown
-   */
-  state = { keyboardOpened: false };
-
-  componentDidMount() {
-    this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
-    this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
-  }
-
-  componentWillUnmount() {
-    this.keyboardDidShowListener.remove();
-    this.keyboardDidHideListener.remove();
-  }
-
-  _keyboardDidShow = () => {
-    this.setState({ keyboardOpened: true });
-  }
-
-  _keyboardDidHide = () => {
-    this.setState({ keyboardOpened: false });
-  }
-
-  getMarker(index, isFilled) {
-    const style = [this.style.marker, {borderColor: this.props.color}];
+  getMarker = (index, isFilled) => {
+    const markerStyle = [styles.marker, {borderColor: this.props.color}];
     if (isFilled) {
-      style.push({backgroundColor: this.props.color});
+      markerStyle.push({backgroundColor: this.props.color});
     }
     return (
-      <View key={index} style={style}></View>
+      <View key={index} style={markerStyle}></View>
     );
   }
 
-  getMarkers(qty, total) {
+  getMarkers = (qty, total) => {
     v = [];
     for (let i=0; i<total; i++) {
       v.push(this.getMarker(i, i < qty));
@@ -74,57 +26,48 @@ class PinInput extends React.Component {
     return v;
   }
 
-  onBlur = () => {
-    if (this.refs.textInput && this.props.editable) {
-      this.focus();
-    }
-  }
-
-  focus = () => {
-    this.inputRef.current.focus();
-  }
-
-  focusFromPress = () => {
-    if (!this.props.editable || this.state.keyboardOpened) {
-      return;
-    }
-
-    // In android we are able to close the keyboard with the hardware back button
-    // and when this button is used, there is a bug that the input can't be focused anymore
-    // so we need to do this workaround
-    // https://github.com/facebook/react-native/issues/19366
-    this.inputRef.current.blur();
-    setTimeout(() => {
-      this.focus();
-    }, 100);
-  }
-
   render() {
     const value = this.props.value;
     const maxLength = this.props.maxLength;
-    const returnKeyType = (Platform.OS === 'ios' ? 'default' : 'none');
-    // TextInput cannot receive color props
-    const { color, ...textInputProps } = this.props;
+
     return (
-      <TouchableWithoutFeedback onPress={this.focusFromPress}>
-        <View style={this.props.style}>
-          <View style={this.style.view}>
+      <View style={styles.container}>
+        <View style={{alignItems: 'center'}}>
+          <View style={styles.markers}>
             {this.getMarkers(value.length, maxLength)}
           </View>
-          <TextInput
-            style={this.style.textInput}
-            keyboardType='number-pad'
-            secureTextEntry={true}
-            keyboardAppearance='dark'
-            returnKeyType={returnKeyType}
-            onBlur={this.onBlur}
-            ref={this.inputRef}
-            {...textInputProps}
-          />
+          <Text style={styles.error}>
+            {this.props.error}
+          </Text>
         </View>
-      </TouchableWithoutFeedback>
+        <NumPad onChangeText={this.props.onChangeText} value={value} />
+      </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  markers: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  marker: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    margin: 8,
+  },
+  error: {
+    color: '#DE3535',
+    marginTop: 8,
+    height: 18,
+  },
+  container: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+});
 
 export default PinInput;

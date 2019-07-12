@@ -32,12 +32,12 @@ class PinScreen extends React.Component {
     super(props);
     /**
      * pin {string} Pin entered by the user
-     * error {boolean} If pin was incorrect
+     * error {string} Error message (null if there's no error)
      */
     this.state = {
       pin: '',
       pinColor: 'black',
-      error: false,
+      error: null,
     };
 
     this.canCancel = false;
@@ -50,7 +50,6 @@ class PinScreen extends React.Component {
     }
 
     this.willFocusEvent = null;
-    this.pinInputRef = React.createRef();
   }
 
   componentDidMount() {
@@ -66,12 +65,7 @@ class PinScreen extends React.Component {
     }
 
     this.willFocusEvent = this.props.navigation.addListener('willFocus', () => {
-      if (this.pinInputRef.current) {
-        // Reset PIN value and focus on input
-        this.setState({ pin: '', pinColor: 'black', error: false }, () => {
-          this.pinInputRef.current.focus();
-        });
-      }
+      this.setState({ pin: '', pinColor: 'black', error: null });
     });
   }
 
@@ -103,7 +97,7 @@ class PinScreen extends React.Component {
       this.props.unlockScreen();
     } else {
       // dismiss the pin screen first because doing it after the callback can
-      // end up dismiss the wrong screen
+      // end up dismissing the wrong screen
       this.props.navigation.goBack();
       // execute the callback passing the pin, if any cb was given
       const cb = this.props.navigation.getParam('cb', null);
@@ -117,7 +111,7 @@ class PinScreen extends React.Component {
     if (text.length === 6) {
       setTimeout(() => this.validatePin(text), 300);
     }
-    this.setState({ pin: text, pinColor: 'black', error: false });
+    this.setState({ pin: text, pinColor: 'black', error: null });
   }
 
   validatePin = (text) => {
@@ -131,7 +125,7 @@ class PinScreen extends React.Component {
   removeOneChar() {
     const pin = this.state.pin.slice(0, -1);
     if (pin.length == 0) {
-      this.setState({ pin: '', error: true });
+      this.setState({ pin: '', error: 'Incorrect PIN Code. Try again.' });
     } else {
       this.setState({ pin, pinColor: '#DE3535' });
       setTimeout(() => this.removeOneChar(), 25);
@@ -160,25 +154,32 @@ class PinScreen extends React.Component {
   }
 
   render() {
-    const renderResetButton = () => (
-      <SimpleButton
-        onPress={() => this.goToReset()}
-        title="Reset Wallet"
-        color="#0273a0"
-        textStyle={{ textTransform: 'uppercase' }}
-        containerStyle={{ marginTop: 48, marginHorizontal: 32 }}
-      />
-    );
+    const renderButton = () => {
+      let title;
+      let onPress;
+      if (this.canCancel) {
+        title = 'Cancel';
+        onPress = () => this.props.navigation.goBack();
+      } else {
+        title = 'Reset wallet';
+        onPress = () => this.goToReset();
+      }
+      return (
+        <SimpleButton
+          onPress={onPress}
+          title={title}
+          textStyle={{ textTransform: 'uppercase', color: 'rgba(0, 0, 0, 0.5)', letterSpacing: 1, padding: 4 }}
+          containerStyle={{ marginTop: 16, marginBottom: 8 }}
+        />
+      );
+    }
 
     return (
-      <SafeAreaView style={{ flex: 1, alignItems: 'center' }}>
-        <View style={{
-          height: 30, width: 170, marginTop: 16, marginBottom: 16,
-        }}
-        >
+      <SafeAreaView style={{ flex: 1, alignItems: 'center', marginHorizontal: 16 }}>
+        <View style={{ marginVertical: 16, alignItems: 'center', height: 21, width: 120 }}>
           <Image
             source={require('../assets/images/hathor-logo.png')}
-            style={{ height: 30, width: 170 }}
+            style={{ height: 21, width: 120 }}
             resizeMode="contain"
           />
         </View>
@@ -186,23 +187,11 @@ class PinScreen extends React.Component {
         <PinInput
           maxLength={6}
           color={this.state.pinColor}
-          onChangeText={this.onChangeText}
           value={this.state.pin}
-          autoFocus
-          ref={this.pinInputRef}
-          editable
+          onChangeText={this.onChangeText}
+          error={this.state.error}
         />
-        {this.canCancel && (
-        <SimpleButton
-          onPress={() => this.props.navigation.goBack()}
-          title="Cancel"
-          color="#0273a0"
-          textStyle={{ textTransform: 'uppercase' }}
-          containerStyle={{ marginTop: 32 }}
-        />
-        )}
-        {!this.canCancel && renderResetButton()}
-        {this.state.error && <Text style={{ color: '#DE3535', marginTop: 16 }}>Incorrect PIN Code. Try again.</Text>}
+        {renderButton()}
       </SafeAreaView>
     );
   }

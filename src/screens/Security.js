@@ -6,13 +6,20 @@ import {
   Text,
   Switch,
 } from 'react-native';
+import { connect } from 'react-redux';
+
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import {
   isBiometryEnabled, setBiometryEnabled, getSupportedBiometry,
 } from '../utils';
-
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
+import { lockScreen } from '../actions';
+
+
+const mapDispatchToProps = dispatch => ({
+  lockScreen: () => dispatch(lockScreen()),
+});
 
 export class Security extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
@@ -50,6 +57,10 @@ export class Security extends React.Component {
     setBiometryEnabled(value);
   }
 
+  onLockWallet = () => {
+    this.props.lockScreen();
+  }
+
 
   render() {
     const Link = props => <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>{props.children}</Text>;
@@ -58,7 +69,7 @@ export class Security extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
-          title="SECURITY"
+          title='SECURITY'
           onBackPress={() => this.props.navigation.goBack()}
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
@@ -74,12 +85,12 @@ export class Security extends React.Component {
                 value={this.state.biometryEnabled}
                 disabled={switchDisabled}
               />
-)}
+            )}
             isFirst
           />
           <ListMenu
-            title="Lock wallet"
-            onPress={() => this.props.navigation.navigate('PinScreen')}
+            title='Lock wallet'
+            onPress={this.onLockWallet}
             isLast
           />
         </HathorList>
@@ -88,4 +99,4 @@ export class Security extends React.Component {
   }
 }
 
-export default Security;
+export default connect(null, mapDispatchToProps)(Security);
