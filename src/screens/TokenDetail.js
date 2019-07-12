@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Alert, SafeAreaView, StyleSheet, Text, View,
+  Alert, SafeAreaView, Share, StyleSheet, Text, View,
 } from 'react-native';
 import { connect } from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
@@ -10,6 +10,7 @@ import { getTokenLabel } from '../utils';
 
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
+import CopyClipboard from '../components/CopyClipboard';
 
 
 /**
@@ -43,8 +44,19 @@ class TokenDetail extends React.Component {
     this.props.navigation.goBack();
   }
 
+  getConfigString = () => {
+    return hathorLib.tokens.getConfigurationString(this.props.selectedToken.uid, this.props.selectedToken.name, this.props.selectedToken.symbol);
+  }
+
+  shareClicked = () => {
+    const configString = this.getConfigString();
+    Share.share({
+      message: `Here is the configuration string of token ${getTokenLabel(this.props.selectedToken)}: ${configString}`,
+    });
+  }
+
   render() {
-    const configString = hathorLib.tokens.getConfigurationString(this.props.selectedToken.uid, this.props.selectedToken.name, this.props.selectedToken.symbol);
+    const configString = this.getConfigString();
 
     const renderHeaderRightElement = () => (
       <SimpleButton
@@ -56,14 +68,14 @@ class TokenDetail extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
-          title="TOKEN DETAIL"
+          title="TOKEN DETAILS"
           onBackPress={() => this.props.navigation.goBack()}
           wrapperStyle={{ borderBottomWidth: 0 }}
           rightElement={renderHeaderRightElement()}
         />
         <View style={styles.contentWrapper}>
           <View style={styles.tokenWrapper}>
-            <Text style={{ fontSize: 18, lineHeight: 22, fontWeight: 'bold' }}>{getTokenLabel(this.props.selectedToken)}</Text>
+            <Text style={{ fontSize: 14, lineHeight: 17, fontWeight: 'bold' }}>{getTokenLabel(this.props.selectedToken)}</Text>
           </View>
           <View style={styles.qrcodeWrapper}>
             <QRCode
@@ -72,7 +84,18 @@ class TokenDetail extends React.Component {
             />
           </View>
           <View style={styles.configStringWrapper}>
-            <Text style={{ fontSize: 14 }} selectable>{configString}</Text>
+            <CopyClipboard
+              text={configString}
+              textStyle={{ fontSize: 14, color: 'rgba(0, 0, 0, 0.5)' }}
+            />
+          </View>
+          <View style={styles.buttonWrapper}>
+            <SimpleButton
+              title='Share'
+              onPress={this.shareClicked}
+              color='#000'
+              containerStyle={styles.simpleButtonContainer}
+            />
           </View>
         </View>
       </SafeAreaView>
@@ -101,20 +124,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
   },
   tokenWrapper: {
-    marginTop: 24,
+    marginVertical: 24,
     alignItems: 'center',
   },
   qrcodeWrapper: {
-    paddingVertical: 16,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+  },
+  configStringWrapper: {
+    padding: 24,
     alignSelf: 'stretch',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderColor: '#e5e5ea',
+    borderColor: '#eee',
   },
-  configStringWrapper: {
-    margin: 16,
+  buttonWrapper: {
     borderRadius: 8,
     alignSelf: 'stretch',
+    alignItems: 'center',
+  },
+  simpleButtonContainer: {
+    paddingVertical: 24,
+    alignSelf: 'stretch',
+    alignItems: 'center'
   },
 });
 
