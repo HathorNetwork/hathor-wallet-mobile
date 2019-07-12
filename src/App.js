@@ -32,6 +32,7 @@ import RegisterTokenManual from './screens/RegisterTokenManual';
 import CreateToken from './screens/CreateToken';
 import Settings from './screens/Settings';
 import TokenDetail from './screens/TokenDetail';
+import UnregisterToken from './screens/UnregisterToken';
 import HathorLogo from './components/HathorLogo';
 import PinScreen from './screens/PinScreen';
 import About from './screens/About';
@@ -152,6 +153,7 @@ const AppStack = createStackNavigator({
     },
     CreateToken,
     TokenDetail,
+    UnregisterToken,
   }, {
     mode: 'modal',
     headerMode: 'none',
