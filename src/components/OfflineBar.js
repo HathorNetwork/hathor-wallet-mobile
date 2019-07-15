@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet, Keyboard, View, Text,
-} from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 
