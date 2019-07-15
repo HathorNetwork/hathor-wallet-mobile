@@ -6,9 +6,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Linking,
-  Platform,
   SafeAreaView,
-  StatusBar,
   StyleSheet,
   Switch,
   Text,
@@ -17,7 +15,6 @@ import {
   View,
 } from 'react-native';
 import NewHathorButton from '../components/NewHathorButton';
-import HathorTextInput from '../components/HathorTextInput';
 
 import baseStyle from '../styles/init';
 import { Strong } from '../utils';
@@ -48,7 +45,12 @@ class WelcomeScreen extends React.Component {
   }
 
   render() {
-    const Link = props => <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>{props.children}</Text>;
+    const Link = props => (
+      <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>
+        {props.children}
+      </Text>
+    );
+
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <View style={this.style.container}>
@@ -58,11 +60,16 @@ class WelcomeScreen extends React.Component {
               This wallet is connected to a <Strong>testnet</Strong>.
             </Text>
             <Text style={this.style.text}>
-              This means that <Strong>your Hathor token (HTR) and any other token may be reset at any time.</Strong>
+              This means that{' '}
+              <Strong>your Hathor token (HTR) and any other token may be reset at any time.</Strong>
             </Text>
-            <Text style={this.style.text}>If someone offers to sell some tokens to you, that person is a scammer.</Text>
             <Text style={this.style.text}>
-              For further information, check our website <Link href="https://hathor.network">https://hathor.network/</Link>.
+              If someone offers to sell some tokens to you, that person is a scammer.
+            </Text>
+            <Text style={this.style.text}>
+              For further information, check our website{' '}
+              <Link href="https://hathor.network">https://hathor.network/</Link>
+              .
             </Text>
           </View>
           <View style={this.style.switchView}>
@@ -71,7 +78,10 @@ class WelcomeScreen extends React.Component {
               trackColor={{ true: '#E30052' }}
               value={this.state.switchValue}
             />
-            <Text style={this.style.switchText}>I agree to participate in the testnet of Hathor, and I acknowledge that the tokens are not for real.</Text>
+            <Text style={this.style.switchText}>
+              I agree to participate in the testnet of Hathor, and I acknowledge that
+              {' '}the tokens are not for real.
+            </Text>
           </View>
           <View style={this.style.buttonView}>
             <NewHathorButton
@@ -98,9 +108,12 @@ class InitialScreen extends React.Component {
             You need to <Strong>initialize your wallet</Strong>.
           </Text>
           <Text style={this.style.text}>
-            You can either <Strong>start a new wallet</Strong> or <Strong>import a wallet</Strong> that already exists.
+            You can either <Strong>start a new wallet</Strong> or
+            {' '}<Strong>import a wallet</Strong> that already exists.
           </Text>
-          <Text style={this.style.text}>To import a wallet, you will need to provide your seed words.</Text>
+          <Text style={this.style.text}>
+            To import a wallet, you will need to provide your seed words.
+          </Text>
           <View style={this.style.buttonView}>
             <NewHathorButton
               onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
@@ -148,7 +161,7 @@ class NewWordsScreen extends React.Component {
     const renderWords = () => {
       const data = [];
 
-      for (let i = 0; i < wordsArr.length / wordsPerRow; i++) {
+      for (let i = 0; i < wordsArr.length / wordsPerRow; i += 1) {
         data.push(renderWordsRow(i));
       }
       return data;
@@ -185,7 +198,8 @@ class NewWordsScreen extends React.Component {
           <View>
             <Text style={this.style.title}>Your wallet has been created!</Text>
             <Text style={this.style.text}>
-              You must <Strong>do a backup</Strong> and save the words below <Strong>in the same order they appear</Strong>.
+              You must <Strong>do a backup</Strong> and save the words below
+              {' '}<Strong>in the same order they appear</Strong>.
             </Text>
           </View>
           {renderWords()}
@@ -236,7 +250,7 @@ class LoadWordsScreen extends React.Component {
     const nonEmptyWords = words.filter(value => value.length !== 0);
     const errorList = [];
 
-    for (let i = 0; i < nonEmptyWords.length; i++) {
+    for (let i = 0; i < nonEmptyWords.length; i += 1) {
       const w = nonEmptyWords[i];
       if (this.wordlist.indexOf(w.toLowerCase()) < 0) {
         errorList.push(w);
@@ -247,7 +261,7 @@ class LoadWordsScreen extends React.Component {
     let isValid = false;
     if (errorList.length > 0) {
       errorMessage = `Invalid words: ${errorList.join(' ')}`;
-    } else if (nonEmptyWords.length == this.numberOfWords) {
+    } else if (nonEmptyWords.length === this.numberOfWords) {
       isValid = true;
     } else if (nonEmptyWords.length > this.numberOfWords) {
       errorMessage = 'Too many words.';
@@ -280,7 +294,8 @@ class LoadWordsScreen extends React.Component {
             <View style={this.style.container}>
               <Text style={this.style.title}>To import a wallet,</Text>
               <Text style={this.style.text}>
-                You need to <Strong>write down the {this.numberOfWords} seed words</Strong> of your wallet, separated by space.
+                You need to <Strong>write down the {this.numberOfWords} seed words</Strong> of
+                {' '}your wallet, separated by space.
               </Text>
               <View style={this.style.inputView}>
                 <Text style={this.style.label}>Words</Text>
