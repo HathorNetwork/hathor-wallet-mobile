@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-  Dimensions, Keyboard, SafeAreaView, View,
-} from 'react-native';
+import { Dimensions, Keyboard, SafeAreaView } from 'react-native';
 
 import { TabBar, TabView } from 'react-native-tab-view';
 import HathorHeader from '../components/HathorHeader';
@@ -15,11 +13,12 @@ class ReceiveScreen extends React.Component {
     /**
      * address {string} Address selected to receive the payment
      * index {number} Selected index of the tab bar
-     * routes {Array} Array of objects that stores each tab bar option {key, title}
      */
     this.state = {
       address: '',
       index: 0,
+      // eslint thinks routes is not used, but TabView uses it
+      // eslint-disable-next-line react/no-unused-state
       routes: [
         { key: 'address', title: 'My Address' },
         { key: 'paymentRequest', title: 'Payment Request' },
