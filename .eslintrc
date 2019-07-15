@@ -32,5 +32,6 @@
     "no-undef-init": 1,                         // disallow use of undefined when initializing variables
     "no-use-before-define": 0,                  // disallow use of variables before they are defined
     "no-unused-vars": [1, {"vars": "all", "args": "none"}], // disallow declaration of variables that are not used in the code
+    no-underscore-dangle: 0,
   }
 }
