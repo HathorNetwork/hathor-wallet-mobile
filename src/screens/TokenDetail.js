@@ -25,7 +25,9 @@ class TokenDetail extends React.Component {
     this.props.navigation.navigate('UnregisterToken');
   }
 
-  getConfigString = () => hathorLib.tokens.getConfigurationString(this.props.selectedToken.uid, this.props.selectedToken.name, this.props.selectedToken.symbol)
+  getConfigString = () => hathorLib.tokens.getConfigurationString(
+    this.props.selectedToken.uid, this.props.selectedToken.name, this.props.selectedToken.symbol
+  );
 
   shareClicked = () => {
     const configString = this.getConfigString();
