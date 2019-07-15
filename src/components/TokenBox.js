@@ -19,14 +19,12 @@ const TokenBox = props => (
 const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
-    justifyContent: 'center',
     height: 40,
     width: 80,
     borderWidth: 1,
     borderColor: '#000',
     borderRadius: 8,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
     padding: 8,
   },
