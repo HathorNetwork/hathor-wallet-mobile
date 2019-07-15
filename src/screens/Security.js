@@ -1,9 +1,7 @@
 import React from 'react';
 import {
-  Linking,
   StyleSheet,
   SafeAreaView,
-  Text,
   Switch,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -63,7 +61,6 @@ export class Security extends React.Component {
 
 
   render() {
-    const Link = props => <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>{props.children}</Text>;
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? 'No biometry supported' : `Use ${this.supportedBiometry}`);
     return (
