@@ -11,6 +11,7 @@
     "react/prop-types": 0,
     "react/destructuring-assignment": 0,
     "react/require-default-props": 0,
+    "no-continue": 0,
     "comma-dangle": 0,                          // disallow trailing commas in object literals
     "no-cond-assign": 1,                        // disallow assignment in conditional expressions
     "no-constant-condition": 0,                 // disallow use of constant expressions in conditions
@@ -34,5 +35,6 @@
     "no-unused-vars": [1, {"vars": "all", "args": "none"}], // disallow declaration of variables that are not used in the code
     "no-underscore-dangle": 0,
     "import/prefer-default-export": 0,
+    "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
   }
 }

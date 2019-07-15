@@ -4,18 +4,22 @@ import thunk from 'redux-thunk';
 import hathorLib from '@hathor/wallet-lib';
 import { getBalance, getMyTxBalance } from './utils';
 import { INITIAL_TOKENS, SELECTED_TOKEN } from './constants';
-import { types } from './actions.js';
-
+import { types } from './actions';
 import { TxHistory } from './models';
 
 
 /**
- * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {available: int, locked: int}])
+ * tokensBalance {Object} stores the balance for each
+ *   token (Dict[tokenUid: str, {available: int, locked: int}])
  * loadHistoryStatus {Object} progress on loading tx history {
  *   active {boolean} indicates we're loading the tx history
  *   error {boolean} error loading history
  * }
- * latestInvoice {Object} tracks the latest payment request created ({address: {string}, amount: {int}, token: {Object}})
+ * latestInvoice {Object} tracks the latest payment request created {
+ *   address {string} address where we're expecting the payment
+ *   amount {int} admount to be paid
+ *   token {Object} payment should be made in this token
+ * }
  * invoicePayment {Object} null if not paid or the tx that settles latestInvoice
  * tokens {Array} array of tokens added [{name, symbol, uid}]
  * selectedToken {Object} token currently selected by the user
@@ -161,7 +165,7 @@ const onNewTx = (state, action) => {
  */
 const addTxToSortedList = (tokenUid, tx, txTokenBalance, currentHistory) => {
   let index = 0;
-  for (let i = 0; i < currentHistory.length; i++) {
+  for (let i = 0; i < currentHistory.length; i += 1) {
     if (tx.tx_id === currentHistory[i].txId) {
       // If is_voided changed, we update the tx in the history
       // otherwise we just return the currentHistory without change
@@ -228,7 +232,7 @@ const addTxToSortedList = (tokenUid, tx, txTokenBalance, currentHistory) => {
 const getTxHistoryFromTx = (tx, tokenUid, tokenTxBalance) => new TxHistory({
   txId: tx.tx_id,
   timestamp: tx.timestamp,
-  tokenUid: tokenUid,
+  tokenUid,
   balance: tokenTxBalance,
   isVoided: tx.is_voided,
 });
@@ -309,7 +313,8 @@ const onFetchHistorySuccess = (state, action) => {
   // iterate through all txs received and map all tokens this wallet has, with
   // its history and balance
   for (const tx of Object.values(history)) {
-    // we first get all tokens present in this tx (that belong to the user) and the corresponding balances
+    // we first get all tokens present in this tx (that belong to the user) and
+    // the corresponding balances
     const balances = getMyTxBalance(tx, addresses);
     for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
       let tokenHistory = tokensHistory[tokenUid];
