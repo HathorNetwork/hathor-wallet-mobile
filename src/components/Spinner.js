@@ -2,6 +2,7 @@ import React from 'react';
 import { Animated, Easing } from 'react-native';
 import PropTypes from 'prop-types';
 
+import loadingIcon from '../assets/images/icLoadingBig.png';
 
 class Spinner extends React.Component {
   static defaultProps = {
@@ -31,7 +32,7 @@ class Spinner extends React.Component {
     return (
       <Animated.Image
         style={{ height: this.props.size, width: this.props.size, transform: [{ rotate: spin }] }}
-        source={require('../assets/images/icLoadingBig.png')}
+        source={loadingIcon}
       />
     );
   }
