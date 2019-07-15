@@ -1,13 +1,10 @@
 import React from 'react';
-import { NavigationActions } from 'react-navigation';
 import {
-  Alert,
   ActivityIndicator,
   StyleSheet,
   Keyboard,
   SafeAreaView,
   Text,
-  TextInput,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
@@ -15,14 +12,11 @@ import { connect } from 'react-redux';
 
 import hathorLib from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
-import ModalTop from '../components/ModalTop';
-import HathorButton from '../components/HathorButton';
-import HathorTextInput from '../components/HathorTextInput';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
 
-import { getAmountParsed, getIntegerAmount } from '../utils';
+import { getIntegerAmount } from '../utils';
 import { newToken, updateSelectedToken } from '../actions';
 
 
@@ -38,7 +32,6 @@ class CreateToken extends React.Component {
     name: '',
     symbol: '',
     amount: '',
-    deposit: '0.00',
     errorMessage: '',
     loading: false,
   };
@@ -72,7 +65,10 @@ class CreateToken extends React.Component {
 
     const input = inputsData.inputs[0];
     const amount = inputsData.inputsAmount;
-    const outputChange = hathorLib.wallet.getOutputChange(amount, hathorLib.constants.HATHOR_TOKEN_INDEX);
+    const outputChange = hathorLib.wallet.getOutputChange(
+      amount,
+      hathorLib.constants.HATHOR_TOKEN_INDEX
+    );
     return { input, output: outputChange };
   }
 
@@ -92,7 +88,15 @@ class CreateToken extends React.Component {
     this.setState({ errorMessage: '', loading: true });
     const address = hathorLib.wallet.getAddressToUse();
     const value = getIntegerAmount(this.state.amount);
-    const retPromise = hathorLib.tokens.createToken(data.input, data.output, address, this.state.name, this.state.symbol, value, pin);
+    const retPromise = hathorLib.tokens.createToken(
+      data.input,
+      data.output,
+      address,
+      this.state.name,
+      this.state.symbol,
+      value,
+      pin
+    );
     retPromise.then((token) => {
       this.props.dispatch(newToken(token));
       this.props.dispatch(updateSelectedToken(token));
