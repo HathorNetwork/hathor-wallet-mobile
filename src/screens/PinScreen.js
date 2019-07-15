@@ -168,15 +168,19 @@ class PinScreen extends React.Component {
         <SimpleButton
           onPress={onPress}
           title={title}
-          textStyle={{ textTransform: 'uppercase', color: 'rgba(0, 0, 0, 0.5)', letterSpacing: 1, padding: 4 }}
+          textStyle={{
+            textTransform: 'uppercase', color: 'rgba(0, 0, 0, 0.5)', letterSpacing: 1, padding: 4,
+          }}
           containerStyle={{ marginTop: 16, marginBottom: 8 }}
         />
       );
-    }
+    };
 
     return (
       <SafeAreaView style={{ flex: 1, alignItems: 'center', marginHorizontal: 16 }}>
-        <View style={{ marginVertical: 16, alignItems: 'center', height: 21, width: 120 }}>
+        <View style={{
+          marginVertical: 16, alignItems: 'center', height: 21, width: 120,
+        }}>
           <Image
             source={require('../assets/images/hathor-logo.png')}
             style={{ height: 21, width: 120 }}

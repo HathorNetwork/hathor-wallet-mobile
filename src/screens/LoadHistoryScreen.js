@@ -109,7 +109,9 @@ class LoadHistoryScreen extends React.Component {
   render() {
     const renderError = () => (
       <View style={{ alignItems: 'center' }}>
-        <Text style={{ fontSize: 18, lineHeight: 22, width: 200, textAlign: 'center' }}>
+        <Text style={{
+          fontSize: 18, lineHeight: 22, width: 200, textAlign: 'center',
+        }}>
           There's been an error connecting to the server
         </Text>
         <SimpleButton
@@ -124,10 +126,10 @@ class LoadHistoryScreen extends React.Component {
     const renderLoading = () => (
       <View style={{ alignItems: 'center' }}>
         <Spinner size={48} animating />
-        <Text style={[styles.text, {marginTop: 32, color: 'rgba(0, 0, 0, 0.5)'}]}>
+        <Text style={[styles.text, { marginTop: 32, color: 'rgba(0, 0, 0, 0.5)' }]}>
           Loading your transactions
         </Text>
-        <Text style={[styles.text, {marginTop: 24}]}>
+        <Text style={[styles.text, { marginTop: 24 }]}>
           <Strong>{`${this.state.transactions} transactions`}</Strong> found
         </Text>
         <Text style={styles.text}>

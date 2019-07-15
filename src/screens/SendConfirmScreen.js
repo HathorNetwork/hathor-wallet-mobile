@@ -63,11 +63,12 @@ class SendConfirmScreen extends React.Component {
 
   executeSend = (pinCode) => {
     // show loading modal
-    this.setState({ modal: 
-      <FeedbackModal 
+    this.setState({
+      modal:
+      <FeedbackModal
         icon={<Spinner />}
-        text='Your transfer is being processed'
-      />
+        text="Your transfer is being processed"
+      />,
     });
     this.props.sendTx(this.amount, this.address, this.token, pinCode).then(this.onSuccess, this.onError);
   }
@@ -83,22 +84,24 @@ class SendConfirmScreen extends React.Component {
   }
 
   onSuccess = () => {
-    this.setState({ modal: 
-      <FeedbackModal 
+    this.setState({
+      modal:
+      <FeedbackModal
         icon={<Image source={require('../assets/images/icCheckBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />}
         text={`Your transfer of ${this.amountAndToken} has been confirmed`}
         onDismiss={this.exitScreen}
-      />
+      />,
     });
   }
 
   onError = (message) => {
-    this.setState({ modal: 
-      <FeedbackModal 
+    this.setState({
+      modal:
+      <FeedbackModal
         icon={<Image source={require('../assets/images/icErrorBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />}
         text={message}
         onDismiss={() => this.setState({ modal: null })}
-      />
+      />,
     });
   }
 

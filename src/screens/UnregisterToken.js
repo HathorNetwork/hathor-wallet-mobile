@@ -8,13 +8,12 @@ import {
 } from 'react-native';
 
 import { connect } from 'react-redux';
-import { setTokens } from '../actions';
 import hathorLib from '@hathor/wallet-lib';
+import { setTokens } from '../actions';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import baseStyle from '../styles/init';
-import { Strong } from '../utils';
-import { getTokenLabel } from '../utils';
+import { Strong, getTokenLabel } from '../utils';
 
 
 /**
@@ -70,14 +69,19 @@ class UnregisterToken extends React.Component {
         />
         <View style={this.style.container}>
           <Text style={this.style.text}>
-            If you unregister this token <Strong>you won't be able to execute operations with it</Strong>, unless you register it again.
+            If you unregister this token
+            {' '}
+            <Strong>you won't be able to execute operations with it</Strong>
+            , unless you register it again.
           </Text>
           <Text style={this.style.text}>
             You won't lose your tokens, they will just not appear on this wallet anymore.
           </Text>
           <View style={this.style.switchView}>
             <Text style={this.style.switchText}>
-              I want to unregister the token <Strong>{getTokenLabel(this.props.selectedToken)}</Strong>
+              I want to unregister the token
+              {' '}
+              <Strong>{getTokenLabel(this.props.selectedToken)}</Strong>
             </Text>
             <Switch
               onValueChange={this.toggleSwitch}

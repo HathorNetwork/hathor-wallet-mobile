@@ -86,7 +86,7 @@ class ReceiveMyAddress extends React.Component {
           <SimpleButton
             onPress={this.shareAddress}
             title="Share"
-            color='#000'
+            color="#000"
             containerStyle={styles.buttonContainer}
           />
         </View>
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'stretch',
     alignItems: 'center',
-    paddingVertical: 16
+    paddingVertical: 16,
   },
   leftButtonBorder: {
     borderRightWidth: 1.5,

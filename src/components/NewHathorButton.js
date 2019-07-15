@@ -20,8 +20,8 @@ const NewHathorButton = (props) => {
       wrapperViewStyle.push(style.wrapperSecondaryDisabled);
       textStyle.push(style.textSecondaryDisabled);
     } else if (props.color) {
-        wrapperViewStyle.push({ borderColor: props.color });
-        textStyle.push({ color: props.color });
+      wrapperViewStyle.push({ borderColor: props.color });
+      textStyle.push({ color: props.color });
     }
   }
 

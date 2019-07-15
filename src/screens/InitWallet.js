@@ -55,14 +55,14 @@ class WelcomeScreen extends React.Component {
           <Text style={this.style.title}>Welcome to Hathor Testnet!</Text>
           <View>
             <Text style={this.style.text}>
-This wallet is connected to a <Strong>testnet</Strong>.
+              This wallet is connected to a <Strong>testnet</Strong>.
             </Text>
             <Text style={this.style.text}>
-This means that <Strong>your Hathor token (HTR) and any other token may be reset at any time.</Strong>
+              This means that <Strong>your Hathor token (HTR) and any other token may be reset at any time.</Strong>
             </Text>
             <Text style={this.style.text}>If someone offers to sell some tokens to you, that person is a scammer.</Text>
             <Text style={this.style.text}>
-For further information, check our website <Link href="https://hathor.network">https://hathor.network/</Link>.
+              For further information, check our website <Link href="https://hathor.network">https://hathor.network/</Link>.
             </Text>
           </View>
           <View style={this.style.switchView}>
@@ -95,10 +95,10 @@ class InitialScreen extends React.Component {
         <View style={this.style.container}>
           <Text style={this.style.title}>To start,</Text>
           <Text style={this.style.text}>
-You need to <Strong>initialize your wallet</Strong>.
+            You need to <Strong>initialize your wallet</Strong>.
           </Text>
           <Text style={this.style.text}>
-You can either <Strong>start a new wallet</Strong> or <Strong>import a wallet</Strong> that already exists.
+            You can either <Strong>start a new wallet</Strong> or <Strong>import a wallet</Strong> that already exists.
           </Text>
           <Text style={this.style.text}>To import a wallet, you will need to provide your seed words.</Text>
           <View style={this.style.buttonView}>
@@ -164,11 +164,9 @@ class NewWordsScreen extends React.Component {
           <View key={`word-${realIndex}`} style={this.style.item}>
             <Text>
               <Text style={this.style.itemNumber}>
-                {realIndex}
-.
+                {realIndex}.
               </Text>
-              {' '}
-              <Text style={this.style.itemText}>{word}</Text>
+              <Text style={this.style.itemText}> {word}</Text>
             </Text>
           </View>
         );
@@ -187,7 +185,7 @@ class NewWordsScreen extends React.Component {
           <View>
             <Text style={this.style.title}>Your wallet has been created!</Text>
             <Text style={this.style.text}>
-You must <Strong>do a backup</Strong> and save the words below <Strong>in the same order they appear</Strong>.
+              You must <Strong>do a backup</Strong> and save the words below <Strong>in the same order they appear</Strong>.
             </Text>
           </View>
           {renderWords()}
@@ -282,7 +280,7 @@ class LoadWordsScreen extends React.Component {
             <View style={this.style.container}>
               <Text style={this.style.title}>To import a wallet,</Text>
               <Text style={this.style.text}>
-You need to <Strong>write down the {this.numberOfWords} seed words</Strong> of your wallet, separated by space.
+                You need to <Strong>write down the {this.numberOfWords} seed words</Strong> of your wallet, separated by space.
               </Text>
               <View style={this.style.inputView}>
                 <Text style={this.style.label}>Words</Text>

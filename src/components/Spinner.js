@@ -13,25 +13,26 @@ class Spinner extends React.Component {
    */
   state = { spinAnimation: new Animated.Value(0) };
 
-  componentDidMount(){
+  componentDidMount() {
     Animated.loop(Animated.timing(this.state.spinAnimation, {
       toValue: 1,
       duration: 2000,
       easing: Easing.linear,
-      useNativeDriver: true
+      useNativeDriver: true,
     })).start();
   }
 
   render() {
     const spin = this.state.spinAnimation.interpolate({
       inputRange: [0, 1],
-      outputRange: ['0deg', '360deg']
+      outputRange: ['0deg', '360deg'],
     });
 
     return (
       <Animated.Image
-        style={{ height: this.props.size, width: this.props.size, transform: [{rotate: spin}] }}
-        source={require('../assets/images/icLoadingBig.png')} />
+        style={{ height: this.props.size, width: this.props.size, transform: [{ rotate: spin }] }}
+        source={require('../assets/images/icLoadingBig.png')}
+      />
     );
   }
 }

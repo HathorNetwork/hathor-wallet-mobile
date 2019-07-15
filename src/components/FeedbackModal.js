@@ -1,12 +1,14 @@
 import React from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import {
+  Button, StyleSheet, Text, View,
+} from 'react-native';
 import PropTypes from 'prop-types';
 import Modal from 'react-native-modal';
 
 const FeedbackModal = props => (
   <Modal
-    isVisible={true}
-    animationIn='slideInUp'
+    isVisible
+    animationIn="slideInUp"
     swipeDirection={['down']}
     onSwipeComplete={props.onDismiss}
     onBackButtonPress={props.onDismiss}

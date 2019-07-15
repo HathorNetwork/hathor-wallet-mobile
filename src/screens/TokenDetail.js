@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  SafeAreaView, Share, StyleSheet, Text, View
+  SafeAreaView, Share, StyleSheet, Text, View,
 } from 'react-native';
 import { connect } from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
@@ -25,9 +25,7 @@ class TokenDetail extends React.Component {
     this.props.navigation.navigate('UnregisterToken');
   }
 
-  getConfigString = () => {
-    return hathorLib.tokens.getConfigurationString(this.props.selectedToken.uid, this.props.selectedToken.name, this.props.selectedToken.symbol);
-  }
+  getConfigString = () => hathorLib.tokens.getConfigurationString(this.props.selectedToken.uid, this.props.selectedToken.name, this.props.selectedToken.symbol)
 
   shareClicked = () => {
     const configString = this.getConfigString();
@@ -72,9 +70,9 @@ class TokenDetail extends React.Component {
           </View>
           <View style={styles.buttonWrapper}>
             <SimpleButton
-              title='Share'
+              title="Share"
               onPress={this.shareClicked}
-              color='#000'
+              color="#000"
               containerStyle={styles.simpleButtonContainer}
             />
           </View>
@@ -127,7 +125,7 @@ const styles = StyleSheet.create({
   simpleButtonContainer: {
     paddingVertical: 24,
     alignSelf: 'stretch',
-    alignItems: 'center'
+    alignItems: 'center',
   },
 });
 

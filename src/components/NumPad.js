@@ -1,16 +1,16 @@
 import React from 'react';
-import { Image, Text, StyleSheet, TouchableHighlight, View } from 'react-native';
+import {
+  Image, Text, StyleSheet, TouchableHighlight, View,
+} from 'react-native';
 import PropTypes from 'prop-types';
 
-const getButtonDict = (number, chars) => {
-  return {number , chars: chars.split("").join(" ")};
-}
+const getButtonDict = (number, chars) => ({ number, chars: chars.split('').join(' ') });
 
 const keysLayout = [
-  [[1, ""], [2, "ABC"], [3, "DEF"]],
-  [[4, "GHI"], [5, "JKL"], [6, "MNO"]],
-  [[7, "PQRS"], [8, "TUV"], [9, "WXYZ"]],
-  [[null, null], [0, null], [-1, null]]
+  [[1, ''], [2, 'ABC'], [3, 'DEF']],
+  [[4, 'GHI'], [5, 'JKL'], [6, 'MNO']],
+  [[7, 'PQRS'], [8, 'TUV'], [9, 'WXYZ']],
+  [[null, null], [0, null], [-1, null]],
 ];
 
 class NumPad extends React.Component {
@@ -27,26 +27,24 @@ class NumPad extends React.Component {
   }
 
   render() {
-    const renderRow = (rowIndex) => {
-      return (
-        <View key={rowIndex} style={style.row}>
-          {keysLayout[rowIndex].map((value, index) => {
-            const number = value[0];
-            let chars = value[1];
-            if (chars !== null) {
-              chars = chars.split("").join(" ");
-            }
-            return <NumPadButton onPress={() => this.onPress(number)} key={number} number={number} chars={chars} />
-          })}
-        </View>
-      );
-    }
+    const renderRow = rowIndex => (
+      <View key={rowIndex} style={style.row}>
+        {keysLayout[rowIndex].map((value, index) => {
+          const number = value[0];
+          let chars = value[1];
+          if (chars !== null) {
+            chars = chars.split('').join(' ');
+          }
+          return <NumPadButton onPress={() => this.onPress(number)} key={number} number={number} chars={chars} />;
+        })}
+      </View>
+    );
 
     const rows = [];
     for (let i = 0; i < keysLayout.length; i++) {
       rows.push(renderRow(i));
     }
-    
+
     return (
       <View>
         {rows}
@@ -73,7 +71,7 @@ const NumPadButton = (props) => {
       underlayColor={underlayColor}
       activeOpacity={1}
     >
-      <View style={{alignItems: 'center'}}>
+      <View style={{ alignItems: 'center' }}>
         {props.number === -1
           ? <Image source={require('../assets/icons/backspace.png')} />
           : <Text style={style.numberStyle}>{props.number}</Text>}
@@ -81,7 +79,7 @@ const NumPadButton = (props) => {
       </View>
     </TouchableHighlight>
   );
-}
+};
 
 NumPadButton.propTypes = {
   // The number to display on the button. It might be null for the left bottom button (which is empty)
@@ -97,7 +95,7 @@ NumPadButton.propTypes = {
 const style = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    justifyContent:'space-around',
+    justifyContent: 'space-around',
   },
   buttonStyle: {
     justifyContent: 'center',

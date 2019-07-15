@@ -127,20 +127,18 @@ class ChoosePinScreen extends React.Component {
     </View>
   )
 
-  getPin2View = () => {
-    return (
-      <View style={this.style.pinView}>
-        <Text style={this.style.pinText}>Enter your new PIN code again</Text>
-        <PinInput
-          maxLength={6}
-          onChangeText={this.onChangePin2}
-          color={this.state.pin2Color}
-          value={this.state.pin2}
-          error={this.state.error}
-        />
-      </View>
-    );
-  }
+  getPin2View = () => (
+    <View style={this.style.pinView}>
+      <Text style={this.style.pinText}>Enter your new PIN code again</Text>
+      <PinInput
+        maxLength={6}
+        onChangeText={this.onChangePin2}
+        color={this.state.pin2Color}
+        value={this.state.pin2}
+        error={this.state.error}
+      />
+    </View>
+  )
 
   goToNextScreen = () => {
     // we are just initializing the wallet, so make sure it's not locked when going to AppStack

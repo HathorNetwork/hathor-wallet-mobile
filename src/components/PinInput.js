@@ -9,30 +9,30 @@ class PinInput extends React.Component {
   };
 
   getMarker = (index, isFilled) => {
-    const markerStyle = [styles.marker, {borderColor: this.props.color}];
+    const markerStyle = [styles.marker, { borderColor: this.props.color }];
     if (isFilled) {
-      markerStyle.push({backgroundColor: this.props.color});
+      markerStyle.push({ backgroundColor: this.props.color });
     }
     return (
-      <View key={index} style={markerStyle}></View>
+      <View key={index} style={markerStyle} />
     );
   }
 
   getMarkers = (qty, total) => {
     v = [];
-    for (let i=0; i<total; i++) {
+    for (let i = 0; i < total; i++) {
       v.push(this.getMarker(i, i < qty));
     }
     return v;
   }
 
   render() {
-    const value = this.props.value;
-    const maxLength = this.props.maxLength;
+    const { value } = this.props;
+    const { maxLength } = this.props;
 
     return (
       <View style={styles.container}>
-        <View style={{alignItems: 'center'}}>
+        <View style={{ alignItems: 'center' }}>
           <View style={styles.markers}>
             {this.getMarkers(value.length, maxLength)}
           </View>

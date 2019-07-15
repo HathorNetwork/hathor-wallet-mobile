@@ -4,11 +4,8 @@
   "plugins": [
   	"react"
   ],
-  "ecmaFeatures": {
-    "classes": true
-  },
   "rules": {
     "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }],
-    "quotes": [2, "single", "avoid-escape"]
+    "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }]
   }
 }

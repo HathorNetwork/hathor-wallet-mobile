@@ -8,10 +8,10 @@ import {
   Text,
   View,
 } from 'react-native';
+import VersionNumber from 'react-native-version-number';
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import { Strong } from '../utils';
-import VersionNumber from 'react-native-version-number';
 
 export class About extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
@@ -53,14 +53,14 @@ export class About extends React.Component {
           <Text style={this.style.text}>This app is developed by Hathor Labs and is distributed for free.</Text>
 
           <Text style={this.style.text}>
-This wallet is connected to a <Strong>testnet</Strong>.
+            This wallet is connected to a <Strong>testnet</Strong>.
           </Text>
           <Text style={this.style.text}>
-This means that <Strong>your Hathor token (HTR) and any other token may be reset at any time.</Strong>
+            This means that <Strong>your Hathor token (HTR) and any other token may be reset at any time.</Strong>
           </Text>
           <Text style={this.style.text}>If someone offers to sell some tokens to you, that person is a scammer.</Text>
           <Text style={this.style.text}>
-For further information, check our website <Link href="https://hathor.network">https://hathor.network/</Link>.
+            For further information, check our website <Link href="https://hathor.network">https://hathor.network/</Link>.
           </Text>
 
           <Text style={this.style.title}>MIT License</Text>

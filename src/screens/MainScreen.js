@@ -82,11 +82,16 @@ class MainScreen extends React.Component {
       <HathorList infinity>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Strong>No transactions</Strong>
-          <Text style={{ marginTop: 8, lineHeight: 20, textAlign: 'center', width: 220 }}>
+          <Text style={{
+            marginTop: 8, lineHeight: 20, textAlign: 'center', width: 220,
+          }}>
             <Text
               onPress={() => this.props.navigation.navigate('Receive')}
               style={{ color: '#E30052', fontWeight: 'bold' }}
-            >Share your address </Text>
+            >
+              Share your address
+              {' '}
+            </Text>
             with friends and start exchanging tokens
           </Text>
         </View>
