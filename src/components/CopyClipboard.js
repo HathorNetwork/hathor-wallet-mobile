@@ -27,7 +27,15 @@ class CopyClipboard extends React.Component {
     if (this.state.copying) {
       return <Text style={[style.text, style.copied]}>Copied to clipboard!</Text>;
     }
-    return <Text onPress={this.textCopy} onLongPress={this.textCopy} style={[style.text, this.props.textStyle]}>{this.props.text}</Text>;
+    return (
+      <Text
+        onPress={this.textCopy}
+        onLongPress={this.textCopy}
+        style={[style.text, this.props.textStyle]}
+      >
+        {this.props.text}
+      </Text>
+    );
   }
 }
 
@@ -36,7 +44,7 @@ CopyClipboard.propTypes = {
   text: PropTypes.string.isRequired,
 
   // Style of the text component
-  textStyle: PropTypes.object,
+  textStyle: Text.propTypes.style,
 
   // Timeout in milliseconds that copied message is shown (default is 1500)
   copiedTimeout: PropTypes.number,
