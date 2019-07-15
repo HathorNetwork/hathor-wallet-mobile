@@ -2,18 +2,18 @@ import moment from 'moment';
 
 export class TxHistory {
   constructor({
-    tx_id, timestamp, token_uid, balance, is_voided,
+    txId, timestamp, tokenUid, balance, isVoided,
   }) {
-    this.tx_id = tx_id;
+    this.txId = txId;
     this.timestamp = timestamp;
-    this.token_uid = token_uid;
+    this.tokenUid = tokenUid;
     this.balance = balance;
-    this.is_voided = is_voided;
+    this.isVoided = isVoided;
   }
 
   getDescription(token) {
     let { symbol } = token;
-    if (this.token_uid !== token.uid) {
+    if (this.tokenUid !== token.uid) {
       // This should never happen!
       symbol = 'Unknown';
     }

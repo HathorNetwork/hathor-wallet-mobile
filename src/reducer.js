@@ -162,10 +162,10 @@ const onNewTx = (state, action) => {
 const addTxToSortedList = (tokenUid, tx, txTokenBalance, currentHistory) => {
   let index = 0;
   for (let i = 0; i < currentHistory.length; i++) {
-    if (tx.tx_id === currentHistory[i].tx_id) {
+    if (tx.tx_id === currentHistory[i].txId) {
       // If is_voided changed, we update the tx in the history
       // otherwise we just return the currentHistory without change
-      if (tx.is_voided !== currentHistory[i].is_voided) {
+      if (tx.is_voided !== currentHistory[i].isVoided) {
         const txHistory = getTxHistoryFromTx(tx, tokenUid, txTokenBalance);
         // return new object so redux triggers update
         const newHistory = [...currentHistory];
@@ -226,11 +226,11 @@ const addTxToSortedList = (tokenUid, tx, txTokenBalance, currentHistory) => {
  * }
  * */
 const getTxHistoryFromTx = (tx, tokenUid, tokenTxBalance) => new TxHistory({
-  tx_id: tx.tx_id,
+  txId: tx.tx_id,
   timestamp: tx.timestamp,
-  token_uid: tokenUid,
+  tokenUid: tokenUid,
   balance: tokenTxBalance,
-  is_voided: tx.is_voided,
+  isVoided: tx.is_voided,
 });
 
 /**

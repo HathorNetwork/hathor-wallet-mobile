@@ -156,7 +156,7 @@ class TxHistoryView extends React.Component {
         <FlatList
           data={this.props.txList}
           renderItem={this.renderItem}
-          keyExtractor={(item, index) => item.tx_id}
+          keyExtractor={(item, index) => item.txId}
         />
       </View>
     );
@@ -288,7 +288,7 @@ class TxListItem extends React.Component {
       throw 'should not happen';
     }
 
-    if (item.is_voided) {
+    if (item.isVoided) {
       style.push(this.style.iconDisabled);
       color = 'rgba(0, 0, 0, 0.3)';
     }
@@ -297,7 +297,7 @@ class TxListItem extends React.Component {
   }
 
   getStyle(item) {
-    if (item.is_voided) {
+    if (item.isVoided) {
       return this.styleVoided;
     } if (item.balance > 0) {
       return this.stylePositive;

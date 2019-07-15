@@ -22,7 +22,7 @@ class TxDetailsModal extends Component {
     const fullTokenStr = getTokenLabel(token);
     const description = tx.getDescription(token);
     const timestampStr = tx.getTimestampFormat();
-    const idStr = getShortHash(tx.tx_id, 12);
+    const idStr = getShortHash(tx.txId, 12);
     return (
       <Modal
         isVisible
