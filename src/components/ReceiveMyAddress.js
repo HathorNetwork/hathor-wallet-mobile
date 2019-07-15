@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Dimensions, Share, StyleSheet, Text, View,
+  Dimensions, Share, StyleSheet, View,
 } from 'react-native';
 
 import QRCode from 'react-native-qrcode-svg';
@@ -30,14 +30,14 @@ class ReceiveMyAddress extends React.Component {
     });
   }
 
+  componentWillUnmount() {
+    this.willFocusEvent.remove();
+  }
+
   updateAddress = () => {
     this.setState({ address: hathorLib.wallet.getAddressToUse() }, () => {
       this.props.onAddressUpdate(this.state.address);
     });
-  }
-
-  componentWillUnmount() {
-    this.willFocusEvent.remove();
   }
 
   shareAddress = () => {
