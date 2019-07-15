@@ -71,11 +71,11 @@ class UnregisterToken extends React.Component {
           <Text style={this.style.text}>
             If you unregister this token
             {' '}
-            <Strong>you won't be able to execute operations with it</Strong>
+            <Strong>you won&apos;t be able to execute operations with it</Strong>
             , unless you register it again.
           </Text>
           <Text style={this.style.text}>
-            You won't lose your tokens, they will just not appear on this wallet anymore.
+            You won&apos;t lose your tokens, they will just not appear on this wallet anymore.
           </Text>
           <View style={this.style.switchView}>
             <Text style={this.style.switchText}>
