@@ -1,17 +1,9 @@
 import React, { Component } from 'react';
-import {
-  Text,
-  TouchableHighlight,
-  StyleSheet,
-  View,
-  Image,
-  Share,
-} from 'react-native';
-import moment from 'moment';
+import { Text, StyleSheet, View } from 'react-native';
 import hathorLib from '@hathor/wallet-lib';
 import Modal from 'react-native-modal';
 import { getShortHash, getTokenLabel } from '../utils';
-import { ListItem, ListButton } from './HathorList';
+import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 
 class TxDetailsModal extends Component {
@@ -26,9 +18,9 @@ class TxDetailsModal extends Component {
   });
 
   render() {
-    const { tx, ...props } = this.props;
-    const fullTokenStr = getTokenLabel(this.props.token);
-    const description = tx.getDescription(this.props.token);
+    const { token, tx } = this.props;
+    const fullTokenStr = getTokenLabel(token);
+    const description = tx.getDescription(token);
     const timestampStr = tx.getTimestampFormat();
     const idStr = getShortHash(tx.tx_id, 12);
     return (
@@ -44,7 +36,7 @@ class TxDetailsModal extends Component {
         <View>
           <View style={this.style.inner}>
             <SlideIndicatorBar />
-            <BalanceView tx={tx} token={this.props.token} />
+            <BalanceView tx={tx} token={token} />
             <View>
               <ListItem title="Token" text={fullTokenStr} />
               <ListItem title="Description" text={description} />
@@ -84,10 +76,13 @@ class BalanceView extends Component {
     const balanceStr = hathorLib.helpers.prettyValue(tx.balance);
     return (
       <View style={this.style.view}>
-        <Text style={this.style.balance} adjustsFontSizeToFit minimumFontScale={0.5} numberOfLines={1}>
-          {balanceStr}
-          {' '}
-          {this.props.token.symbol}
+        <Text
+          style={this.style.balance}
+          adjustsFontSizeToFit
+          minimumFontScale={0.5}
+          numberOfLines={1}
+        >
+          {`${balanceStr} ${this.props.token.symbol}`}
         </Text>
         <Text style={this.style.text1}>Amount</Text>
       </View>
