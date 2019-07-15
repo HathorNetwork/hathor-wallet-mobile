@@ -6,6 +6,9 @@
   ],
   "rules": {
     "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }],
-    "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }]
+    "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
+    "import/no-named-as-default": 0,
+    "react/prop-types": 0,
+    "react/destructuring-assignment": 0
   }
 }

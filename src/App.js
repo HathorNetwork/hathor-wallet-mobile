@@ -6,7 +6,7 @@
  * @flow
  */
 
-import '../shim.js';
+import '../shim';
 
 import React from 'react';
 import { Modal, Platform, View } from 'react-native';
@@ -16,7 +16,7 @@ import {
 import { Provider, connect } from 'react-redux';
 
 import hathorLib from '@hathor/wallet-lib';
-import IconTabBar from './icon-font.js';
+import IconTabBar from './icon-font';
 
 import { store } from './reducer';
 import DecideStackScreen from './screens/DecideStackScreen';
@@ -130,7 +130,7 @@ const TabNavigator = createBottomTabNavigator({
     showLabel: false,
   },
   defaultNavigationOptions: ({ navigation }) => ({
-    tabBarIcon: ({ focused, horizontal, tintColor }) => {
+    tabBarIcon: ({ tintColor }) => {
       const { routeName } = navigation.state;
       const iconName = tabBarIconMap[routeName];
       return <IconTabBar name={iconName} size={24} color={tintColor} />;
@@ -195,7 +195,9 @@ export class _AppStackWrapper extends React.Component {
         visible={this.props.loadHistory || this.props.lockScreen}
         onShow={this.onShowModal}
       >
-        {this.props.lockScreen ? <PinScreen isLockScreen navigation={this.props.navigation} /> : <LoadHistoryScreen />}
+        {this.props.lockScreen
+          ? <PinScreen isLockScreen navigation={this.props.navigation} />
+          : <LoadHistoryScreen />}
       </Modal>
     );
 
@@ -230,10 +232,7 @@ const App = () => (
 const createRequestInstance = (resolve, timeout) => {
   const instance = hathorLib.axios.defaultCreateRequestInstance(resolve, timeout);
 
-  instance.interceptors.response.use(response => response, error =>
-    // Adding conditional because if the server forgets to send back the CORS
-    // headers, error.response will be undefined
-    Promise.reject(error));
+  instance.interceptors.response.use(response => response, error => Promise.reject(error));
   return instance;
 };
 hathorLib.axios.registerNewCreateRequestInstance(createRequestInstance);
