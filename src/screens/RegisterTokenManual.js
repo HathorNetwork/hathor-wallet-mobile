@@ -22,12 +22,12 @@ class RegisterTokenManual extends React.Component {
   constructor(props) {
     super(props);
     /**
-     * configurationString {string} The value of the configuration string input
+     * configString {string} The value of the configuration string input
      * errorMessage {string} Error with the configuration string
      * token {Object} Config of the token from the configuration string (if valid)
      */
     this.state = {
-      configurationString: this.props.navigation.getParam('configurationString', ''),
+      configString: this.props.navigation.getParam('configurationString', ''),
       errorMessage: '',
       token: null,
     };
@@ -39,21 +39,21 @@ class RegisterTokenManual extends React.Component {
   }
 
   onConfigStringChange = (text) => {
-    this.setState({ configurationString: text, errorMessage: '', token: null }, () => {
+    this.setState({ configString: text, errorMessage: '', token: null }, () => {
       this.validateConfigurationString();
     });
   }
 
   validateConfigurationString = () => {
-    if (this.state.configurationString === '') {
+    if (this.state.configString === '') {
       return;
     }
 
-    const result = hathorLib.tokens.validateTokenToAddByConfigurationString(this.state.configurationString);
-    if (result.success) {
-      this.setState({ token: result.tokenData, errorMessage: '' });
+    const ret = hathorLib.tokens.validateTokenToAddByConfigurationString(this.state.configString);
+    if (ret.success) {
+      this.setState({ token: ret.tokenData, errorMessage: '' });
     } else {
-      this.setState({ errorMessage: result.message });
+      this.setState({ errorMessage: ret.message });
     }
   }
 
@@ -83,7 +83,7 @@ class RegisterTokenManual extends React.Component {
 
       return (
         <View style={styles.wrapper}>
-          <Text style={styles.text}>You're going to register the following token:</Text>
+          <Text style={styles.text}>You&apos;re going to register the following token:</Text>
           <Text style={styles.text}>
             <Strong>Name: </Strong>
             {this.state.token.name}
@@ -111,7 +111,7 @@ class RegisterTokenManual extends React.Component {
                 multiline
                 onChangeText={this.onConfigStringChange}
                 error={this.state.errorMessage}
-                value={this.state.configurationString}
+                value={this.state.configString}
                 returnKeyType="done"
                 enablesReturnKeyAutomatically
                 blurOnSubmit
@@ -121,7 +121,7 @@ class RegisterTokenManual extends React.Component {
             </View>
             <NewHathorButton
               title="Register token"
-              disabled={this.state.configurationString === '' || this.state.errorMessage !== ''}
+              disabled={this.state.configString === '' || this.state.errorMessage !== ''}
               onPress={this.onButtonPress}
             />
           </View>
