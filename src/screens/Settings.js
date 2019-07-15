@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import * as Keychain from 'react-native-keychain';
 import {
   ScrollView,
   StyleSheet,
@@ -11,6 +10,7 @@ import {
 } from 'react-native';
 import hathorLib from '@hathor/wallet-lib';
 import OfflineBar from '../components/OfflineBar';
+import hathorLogo from '../assets/images/hathor-logo.png';
 
 
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
@@ -70,7 +70,7 @@ export class Settings extends React.Component {
         <ScrollView contentContainerStyle={this.style.scrollView}>
           <View style={this.style.logoView}>
             <Image
-              source={require('../assets/images/hathor-logo.png')}
+              source={hathorLogo}
               style={this.style.logo}
               resizeMode="contain"
             />
