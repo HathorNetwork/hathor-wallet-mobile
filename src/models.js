@@ -1,9 +1,7 @@
 import moment from 'moment';
 
 export class TxHistory {
-  constructor({
-    txId, timestamp, tokenUid, balance, isVoided,
-  }) {
+  constructor({ txId, timestamp, tokenUid, balance, isVoided }) {
     this.txId = txId;
     this.timestamp = timestamp;
     this.tokenUid = tokenUid;

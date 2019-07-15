@@ -10,6 +10,7 @@ import SimpleButton from '../components/SimpleButton';
 import PinInput from '../components/PinInput';
 import { isBiometryEnabled, getSupportedBiometry } from '../utils';
 import { lockScreen, unlockScreen, setLoadHistoryStatus } from '../actions';
+import hathorLogo from '../assets/images/hathor-logo.png';
 
 
 /**
@@ -86,7 +87,6 @@ class PinScreen extends React.Component {
       this.dismiss(credentials.password);
     }, (error) => {
       // no need to do anything as user can enter pin
-      console.log('error keychain', error);
     });
   }
 
@@ -122,16 +122,6 @@ class PinScreen extends React.Component {
     }
   }
 
-  removeOneChar() {
-    const pin = this.state.pin.slice(0, -1);
-    if (pin.length == 0) {
-      this.setState({ pin: '', error: 'Incorrect PIN Code. Try again.' });
-    } else {
-      this.setState({ pin, pinColor: '#DE3535' });
-      setTimeout(() => this.removeOneChar(), 25);
-    }
-  }
-
   goToReset = () => {
     // navigate to reset screen
     this.props.navigation.navigate('ResetWallet', { onBackPress: () => this.backFromReset() });
@@ -151,6 +141,16 @@ class PinScreen extends React.Component {
     this.props.lockScreen();
     // navigate to dashboard (will be hidden under lock screen)
     this.props.navigation.navigate('Dashboard');
+  }
+
+  removeOneChar = () => {
+    const pin = this.state.pin.slice(0, -1);
+    if (pin.length === 0) {
+      this.setState({ pin: '', error: 'Incorrect PIN Code. Try again.' });
+    } else {
+      this.setState({ pin, pinColor: '#DE3535' });
+      setTimeout(() => this.removeOneChar(), 25);
+    }
   }
 
   render() {
@@ -178,11 +178,9 @@ class PinScreen extends React.Component {
 
     return (
       <SafeAreaView style={{ flex: 1, alignItems: 'center', marginHorizontal: 16 }}>
-        <View style={{
-          marginVertical: 16, alignItems: 'center', height: 21, width: 120,
-        }}>
+        <View style={{ marginVertical: 16, alignItems: 'center', height: 21, width: 120 }}>
           <Image
-            source={require('../assets/images/hathor-logo.png')}
+            source={hathorLogo}
             style={{ height: 21, width: 120 }}
             resizeMode="contain"
           />
