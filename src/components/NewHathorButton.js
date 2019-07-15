@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-  StyleSheet, Text, TouchableOpacity, View,
+  StyleSheet, Text, TouchableOpacity, View, ViewPropTypes,
 } from 'react-native';
 
 const NewHathorButton = (props) => {
@@ -42,7 +42,7 @@ NewHathorButton.propTypes = {
   disabled: PropTypes.bool,
 
   // Optional. Style used in the button container.
-  wrapperStyle: PropTypes.object,
+  wrapperStyle: ViewPropTypes.style,
 
   // Optional. Indicates it is a secondary action in the screen.
   secondary: PropTypes.bool,

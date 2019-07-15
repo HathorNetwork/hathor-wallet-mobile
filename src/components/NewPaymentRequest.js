@@ -1,11 +1,9 @@
 import React from 'react';
 import {
-  Dimensions, KeyboardAvoidingView, Platform, StyleSheet, TouchableWithoutFeedback, View, Text,
+  Dimensions, KeyboardAvoidingView, StyleSheet, View,
 } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { connect } from 'react-redux';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faSortDown } from '@fortawesome/free-solid-svg-icons';
 import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
 import TokenBox from './TokenBox';
@@ -56,6 +54,10 @@ class NewPaymentRequest extends React.Component {
     });
   }
 
+  componentWillUnmount() {
+    this.willFocusEvent.remove();
+  }
+
   focus = () => {
     this.setState({ amount: '', token: this.props.selectedToken });
     this.focusInput();
@@ -71,12 +73,10 @@ class NewPaymentRequest extends React.Component {
     this.setState({ token });
   }
 
-  componentWillUnmount() {
-    this.willFocusEvent.remove();
-  }
-
   createPaymentRequest = () => {
-    this.props.dispatch(newInvoice(this.props.address, getIntegerAmount(this.state.amount), this.state.token));
+    this.props.dispatch(
+      newInvoice(this.props.address, getIntegerAmount(this.state.amount), this.state.token)
+    );
     this.modalOpened = true;
     this.props.navigation.navigate('PaymentRequestDetail');
   }
@@ -110,7 +110,7 @@ class NewPaymentRequest extends React.Component {
     // Status bar + header + tab height
     const topDistance = getStatusBarHeight() + 56 + 48;
 
-    const { height, _ } = Dimensions.get('window');
+    const { height } = Dimensions.get('window');
 
     // For small devices the button was hidden
     const inputMargin = height > 650 ? 64 : 32;
@@ -161,24 +161,5 @@ class NewPaymentRequest extends React.Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  pickerContainerStyle: {
-    justifyContent: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    alignSelf: 'stretch',
-  },
-  pickerInputContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    flex: 1,
-    paddingLeft: 8,
-  },
-});
-
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(NewPaymentRequest);
