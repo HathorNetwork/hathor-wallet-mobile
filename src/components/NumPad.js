@@ -4,7 +4,8 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 
-const getButtonDict = (number, chars) => ({ number, chars: chars.split('').join(' ') });
+import backspace from '../assets/icons/backspace.png';
+
 
 const keysLayout = [
   [[1, ''], [2, 'ABC'], [3, 'DEF']],
@@ -35,13 +36,20 @@ class NumPad extends React.Component {
           if (chars !== null) {
             chars = chars.split('').join(' ');
           }
-          return <NumPadButton onPress={() => this.onPress(number)} key={number} number={number} chars={chars} />;
+          return (
+            <NumPadButton
+              onPress={() => this.onPress(number)}
+              key={number}
+              number={number}
+              chars={chars}
+            />
+          );
         })}
       </View>
     );
 
     const rows = [];
-    for (let i = 0; i < keysLayout.length; i++) {
+    for (let i = 0; i < keysLayout.length; i += 1) {
       rows.push(renderRow(i));
     }
 
@@ -73,7 +81,7 @@ const NumPadButton = (props) => {
     >
       <View style={{ alignItems: 'center' }}>
         {props.number === -1
-          ? <Image source={require('../assets/icons/backspace.png')} />
+          ? <Image source={backspace} />
           : <Text style={style.numberStyle}>{props.number}</Text>}
         {(props.chars !== null) && <Text style={style.charStyle}>{props.chars}</Text>}
       </View>
@@ -82,7 +90,8 @@ const NumPadButton = (props) => {
 };
 
 NumPadButton.propTypes = {
-  // The number to display on the button. It might be null for the left bottom button (which is empty)
+  // The number to display on the button. It might be null for the
+  // left bottom button (which is empty)
   number: PropTypes.number,
 
   // String to display under the number. It might be null for the buttons on the last row
