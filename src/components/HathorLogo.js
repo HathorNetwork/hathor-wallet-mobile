@@ -1,9 +1,11 @@
 import React from 'react';
 import { Image } from 'react-native';
 
+import hathorLogo from '../assets/images/hathor-logo.png';
+
 const HathorLogo = props => (
   <Image
-    source={require('../assets/images/hathor-logo.png')}
+    source={hathorLogo}
     style={{ height: 30 }}
     resizeMode="contain"
     {...props}
