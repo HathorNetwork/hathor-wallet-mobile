@@ -1,12 +1,10 @@
 import React from 'react';
 import { Alert, SafeAreaView, View } from 'react-native';
 
-import { connect } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
 import QRCodeReader from '../components/QRCodeReader';
 import OfflineBar from '../components/OfflineBar';
 import HathorHeader from '../components/HathorHeader';
-import NewHathorButton from '../components/NewHathorButton';
 import SimpleButton from '../components/SimpleButton';
 import { getTokenLabel, parseQRCode } from '../utils';
 
@@ -70,7 +68,7 @@ class SendScanQRCode extends React.Component {
         />
         <View style={{ flex: 1, margin: 16, alignSelf: 'stretch' }}>
           <QRCodeReader
-            ref={el => this.QRCodeReader = el}
+            ref={(el) => { this.QRCodeReader = el; }}
             onSuccess={this.onSuccess}
             bottomText="Scan the QR code"
             {...this.props}

@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, Text, View,
+  KeyboardAvoidingView, SafeAreaView, StyleSheet, Text, View,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';

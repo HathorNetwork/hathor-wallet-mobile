@@ -1,7 +1,6 @@
 import React from 'react';
 import { KeyboardAvoidingView, SafeAreaView, View } from 'react-native';
 
-import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
@@ -17,7 +16,8 @@ class SendAddressInput extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      // we can optionally receive a string to fill out the address input (for eg, user scanned QR code)
+      // we can optionally receive a string to fill out the address
+      // input (for eg, user scanned QR code)
       address: this.props.navigation.getParam('address', null),
       // TODO this is probably temporary. We don't have the UI for error message yet.
       error: null,
