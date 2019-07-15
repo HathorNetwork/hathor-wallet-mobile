@@ -42,24 +42,6 @@ class LoadHistoryScreen extends React.Component {
     addresses: 0,
   };
 
-  initializeWallet() {
-    if (this.props.initWallet) {
-      const { words, pin } = this.props.initWallet;
-
-      // This is the slow step. It takes around 3s in Pedro's iPhone.
-      hathorLib.wallet.executeGenerateWallet(words, '', pin, pin, false);
-      // ------
-
-      Keychain.setGenericPassword(KEYCHAIN_USER, pin, { accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY, acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY });
-    } else {
-      // lib already handles the case where websocket is already setup
-      hathorLib.WebSocketHandler.setup();
-    }
-    hathorLib.WebSocketHandler.on('addresses_loaded', this.addressesLoadedUpdate);
-    this.cleanData();
-    this.props.loadHistory();
-  }
-
   componentDidMount() {
     // This setTimeout exists to prevent blocking the main thread
     setTimeout(() => this.initializeWallet(), 0);
@@ -68,6 +50,18 @@ class LoadHistoryScreen extends React.Component {
   componentWillUnmount() {
     hathorLib.WebSocketHandler.removeListener('addresses_loaded', this.addressesLoadedUpdate);
     this.props.clearInitWallet();
+  }
+
+  /**
+   * Method called when WebSocket receives a message after loading address history
+   * We just update redux data with new loading info
+   *
+   * @param {Object} data Object with {'historyTransactions', 'addressesFound'}
+   */
+  addressesLoadedUpdate = (data) => {
+    const txs = Object.keys(data.historyTransactions).length;
+    const addresses = data.addressesFound;
+    this.setState({ transactions: txs, addresses });
   }
 
   cleanData = () => {
@@ -94,25 +88,35 @@ class LoadHistoryScreen extends React.Component {
     setSupportedBiometry(supportedBiometry);
   }
 
-  /**
-   * Method called when WebSocket receives a message after loading address history
-   * We just update redux data with new loading info
-   *
-   * @param {Object} data Object with {'historyTransactions', 'addressesFound'}
-   */
-  addressesLoadedUpdate = (data) => {
-    const txs = Object.keys(data.historyTransactions).length;
-    const addresses = data.addressesFound;
-    this.setState({ transactions: txs, addresses });
+  initializeWallet() {
+    if (this.props.initWallet) {
+      const { words, pin } = this.props.initWallet;
+
+      // This is the slow step. It takes around 3s in Pedro's iPhone.
+      hathorLib.wallet.executeGenerateWallet(words, '', pin, pin, false);
+      // ------
+
+      Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
+        accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
+        acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
+      });
+    } else {
+      // lib already handles the case where websocket is already setup
+      hathorLib.WebSocketHandler.setup();
+    }
+    hathorLib.WebSocketHandler.on('addresses_loaded', this.addressesLoadedUpdate);
+    this.cleanData();
+    this.props.loadHistory();
   }
 
   render() {
     const renderError = () => (
       <View style={{ alignItems: 'center' }}>
         <Text style={{
-          fontSize: 18, lineHeight: 22, width: 200, textAlign: 'center',
-        }}>
-          There's been an error connecting to the server
+          fontSize: 18, lineHeight: 22, width: 200, textAlign: 'center'
+        }}
+        >
+          There&apos;s been an error connecting to the server
         </Text>
         <SimpleButton
           containerStyle={{ marginTop: 12 }}
