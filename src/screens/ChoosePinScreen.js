@@ -8,8 +8,6 @@ import {
 import { connect } from 'react-redux';
 
 import NewHathorButton from '../components/NewHathorButton';
-import SimpleButton from '../components/SimpleButton';
-import HathorTextInput from '../components/HathorTextInput';
 import PinInput from '../components/PinInput';
 import { setInitWallet, unlockScreen } from '../actions';
 
@@ -67,6 +65,13 @@ class ChoosePinScreen extends React.Component {
     ];
   }
 
+  goToNextScreen = () => {
+    // we are just initializing the wallet, so make sure it's not locked when going to AppStack
+    this.props.unlockScreen();
+    this.props.setInitWallet(this.words, this.state.pin1);
+    this.props.navigation.navigate('Home');
+  }
+
   startPinAgain = () => {
     this.setState({
       pin1: '',
@@ -79,7 +84,7 @@ class ChoosePinScreen extends React.Component {
 
   onChangePin1 = (text) => {
     this.setState({ pin1: text });
-    if (text.length == 6) {
+    if (text.length === 6) {
       setTimeout(this.moveToPin2, 500);
     }
   }
@@ -92,7 +97,7 @@ class ChoosePinScreen extends React.Component {
 
   onChangePin2 = (text) => {
     this.setState({ pin2: text, pin2Color: 'black', error: null });
-    if (text.length == 6) {
+    if (text.length === 6) {
       setTimeout(() => this.validatePin(text), 300);
     }
   }
@@ -102,16 +107,6 @@ class ChoosePinScreen extends React.Component {
       this.setState({ pin2Color: '#0DA0A0', done: true });
     } else {
       this.removeOneChar();
-    }
-  }
-
-  removeOneChar() {
-    const pin2 = this.state.pin2.slice(0, -1);
-    if (pin2.length == 0) {
-      this.setState({ pin2: '', error: 'PIN codes don\'t match. Try again.' });
-    } else {
-      this.setState({ pin2, pin2Color: '#DE3535' });
-      setTimeout(() => this.removeOneChar(), 25);
     }
   }
 
@@ -140,11 +135,14 @@ class ChoosePinScreen extends React.Component {
     </View>
   )
 
-  goToNextScreen = () => {
-    // we are just initializing the wallet, so make sure it's not locked when going to AppStack
-    this.props.unlockScreen();
-    this.props.setInitWallet(this.words, this.state.pin1);
-    this.props.navigation.navigate('Home');
+  removeOneChar() {
+    const pin2 = this.state.pin2.slice(0, -1);
+    if (pin2.length === 0) {
+      this.setState({ pin2: '', error: 'PIN codes don\'t match. Try again.' });
+    } else {
+      this.setState({ pin2, pin2Color: '#DE3535' });
+      setTimeout(() => this.removeOneChar(), 25);
+    }
   }
 
   render() {
