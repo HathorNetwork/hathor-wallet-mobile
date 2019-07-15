@@ -11,7 +11,7 @@ import HathorHeader from '../components/HathorHeader';
 import ModalConfirmation from '../components/ModalConfirmation';
 import OfflineBar from '../components/OfflineBar';
 import { clearInvoice } from '../actions';
-import { getShortAddress, getTokenLabel } from '../utils';
+import { getTokenLabel } from '../utils';
 
 
 /**
@@ -49,7 +49,7 @@ class PaymentRequestDetail extends React.Component {
   render() {
     const renderModalBody = () => (
       <Text style={{ fontSize: 18 }}>
-          You've just received
+          You&apos;ve just received
         <Text style={{ fontWeight: 'bold' }}>
           {` ${hathorLib.helpers.prettyValue(this.props.amount)} ${this.props.token.symbol}`}
         </Text>
