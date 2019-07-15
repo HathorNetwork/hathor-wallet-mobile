@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 14,
+    lineHeight: 24,
     color: '#E30052',
   },
   icon: {
