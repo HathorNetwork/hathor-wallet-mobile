@@ -19,16 +19,15 @@ class PinInput extends React.Component {
   }
 
   getMarkers = (qty, total) => {
-    v = [];
-    for (let i = 0; i < total; i++) {
+    const v = [];
+    for (let i = 0; i < total; i += 1) {
       v.push(this.getMarker(i, i < qty));
     }
     return v;
   }
 
   render() {
-    const { value } = this.props;
-    const { maxLength } = this.props;
+    const { value, maxLength } = this.props;
 
     return (
       <View style={styles.container}>
