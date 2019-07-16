@@ -13,6 +13,7 @@ import { newInvoice } from '../actions';
 import { getIntegerAmount } from '../utils';
 
 import OfflineBar from './OfflineBar';
+import hathorLib from '@hathor/wallet-lib';
 
 
 /**
@@ -76,7 +77,8 @@ class NewPaymentRequest extends React.Component {
   }
 
   createPaymentRequest = () => {
-    this.props.dispatch(newInvoice(this.props.address, getIntegerAmount(this.state.amount), this.state.token));
+    const address = hathorLib.wallet.getCurrentAddress();
+    this.props.dispatch(newInvoice(address, getIntegerAmount(this.state.amount), this.state.token));
     this.modalOpened = true;
     this.props.navigation.navigate('PaymentRequestDetail');
   }

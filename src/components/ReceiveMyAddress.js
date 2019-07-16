@@ -26,14 +26,13 @@ class ReceiveMyAddress extends React.Component {
   componentDidMount() {
     const { navigation } = this.props;
     this.willFocusEvent = navigation.addListener('willFocus', () => {
-      this.updateAddress();
+      this.setState({ address: hathorLib.wallet.getCurrentAddress() });
     });
   }
 
-  updateAddress = () => {
-    this.setState({ address: hathorLib.wallet.getAddressToUse() }, () => {
-      this.props.onAddressUpdate(this.state.address);
-    });
+  getNextAddress = () => {
+    const nextAddress = hathorLib.wallet.nextAddress();
+    this.setState({ address: nextAddress });
   }
 
   componentWillUnmount() {
@@ -80,7 +79,7 @@ class ReceiveMyAddress extends React.Component {
         <View style={{ flexDirection: 'row' }}>
           <SimpleButton
             title="New address"
-            onPress={this.updateAddress}
+            onPress={this.getNextAddress}
             containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
           />
           <SimpleButton

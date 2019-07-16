@@ -13,12 +13,10 @@ class ReceiveScreen extends React.Component {
   constructor(props) {
     super(props);
     /**
-     * address {string} Address selected to receive the payment
      * index {number} Selected index of the tab bar
      * routes {Array} Array of objects that stores each tab bar option {key, title}
      */
     this.state = {
-      address: '',
       index: 0,
       routes: [
         { key: 'address', title: 'My Address' },
@@ -28,10 +26,6 @@ class ReceiveScreen extends React.Component {
 
     // Reference to payment request component
     this.paymentRequest = React.createRef();
-  }
-
-  onAddressUpdate = (address) => {
-    this.setState({ address });
   }
 
   onActivateRight = () => {
@@ -50,14 +44,12 @@ class ReceiveScreen extends React.Component {
         return (
           <ReceiveMyAddress
             navigation={this.props.navigation}
-            onAddressUpdate={this.onAddressUpdate}
           />
         );
       case 'paymentRequest':
         return (
           <NewPaymentRequest
             navigation={this.props.navigation}
-            address={this.state.address}
             index={this.state.index}
             ref={this.paymentRequest}
           />
