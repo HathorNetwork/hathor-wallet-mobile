@@ -89,6 +89,10 @@ export class Security extends React.Component {
             isFirst
           />
           <ListMenu
+            title="Change PIN"
+            onPress={() => this.props.navigation.navigate('ChangePin')}
+          />
+          <ListMenu
             title='Lock wallet'
             onPress={this.onLockWallet}
             isLast
