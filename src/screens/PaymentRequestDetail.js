@@ -34,6 +34,11 @@ class PaymentRequestDetail extends React.Component {
     this.modalConfirmation = React.createRef();
   }
 
+  componentDidMount() {
+    // When we create a new payment request we update the address for a new one
+    hathorLib.wallet.nextAddress();
+  }
+
   componentDidUpdate(prevProps) {
     if (prevProps.payment === null && this.props.payment !== null) {
       if (this.modalConfirmation.current) {
