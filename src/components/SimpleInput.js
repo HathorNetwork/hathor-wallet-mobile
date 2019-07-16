@@ -10,11 +10,11 @@ const SimpleInput = (props) => {
     <TextInput
       {...props}
       style={styles.input}
-      keyboardAppearance="dark"
+      keyboardAppearance='dark'
       autoCorrect={false}
       spellCheck={false}
-      autoCompleteType="off"
-      underlineColorAndroid="transparent"
+      autoCompleteType='off'
+      underlineColorAndroid='transparent'
     />
   );
 

@@ -63,7 +63,7 @@ export class ResetWallet extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
-          title="RESET WALLET"
+          title='RESET WALLET'
           onBackPress={() => this.onBackPress()}
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
@@ -88,10 +88,10 @@ export class ResetWallet extends React.Component {
           <View style={this.style.buttonView}>
             <NewHathorButton
               secondary
-              color="#E30052"
+              color='#E30052'
               disabled={!this.state.switchValue}
               onPress={this.onPressResetWallet}
-              title="Reset Wallet"
+              title='Reset Wallet'
             />
           </View>
         </View>

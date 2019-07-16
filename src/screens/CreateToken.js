@@ -129,43 +129,43 @@ class CreateToken extends React.Component {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View>
             <HathorHeader
-              title="CREATE NEW TOKEN"
+              title='CREATE NEW TOKEN'
               onBackPress={() => this.props.navigation.goBack()}
               wrapperStyle={{ borderBottomWidth: 0 }}
             />
             <View style={this.style.view}>
               <SimpleInput
-                label="Token Name"
+                label='Token Name'
                 maxLength={50}
                 onChangeText={text => this.onChangeText('name', text)}
                 value={this.state.name}
                 containerStyle={{ marginBottom: 16 }}
               />
               <SimpleInput
-                label="Token Symbol"
+                label='Token Symbol'
                 maxLength={5}
                 onChangeText={text => this.onChangeText('symbol', text)}
                 value={this.state.symbol}
                 containerStyle={{ marginBottom: 16 }}
-                autoCapitalize="characters"
+                autoCapitalize='characters'
               />
               <SimpleInput
-                label="Amount"
+                label='Amount'
                 input={(
                   <AmountTextInput
                     onAmountUpdate={amount => this.setState({ amount })}
-                    textAlign="left"
+                    textAlign='left'
                     value={this.state.amount}
                   />
 )}
               />
               <Text style={this.style.textError}>{this.state.errorMessage}</Text>
               <NewHathorButton
-                title="Create New Token"
+                title='Create New Token'
                 onPress={this.validateAndAdd}
                 disabled={this.state.loading}
               />
-              {this.state.loading && <ActivityIndicator style={{ marginTop: 16 }} size="large" animating />}
+              {this.state.loading && <ActivityIndicator style={{ marginTop: 16 }} size='large' animating />}
             </View>
           </View>
         </TouchableWithoutFeedback>

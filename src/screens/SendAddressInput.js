@@ -41,20 +41,20 @@ class SendAddressInput extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
-          title="SEND"
+          title='SEND'
           onBackPress={() => this.props.navigation.goBack()}
         />
-        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
+        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <SimpleInput
-              label="Address to send"
+              label='Address to send'
               autoFocus
               onChangeText={this.onAddressChange}
               error={this.state.error}
               value={this.state.address}
             />
             <NewHathorButton
-              title="Next"
+              title='Next'
               disabled={!this.state.address}
               onPress={this.onButtonPress}
             />

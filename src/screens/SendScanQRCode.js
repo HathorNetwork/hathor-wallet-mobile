@@ -54,7 +54,7 @@ class SendScanQRCode extends React.Component {
   render() {
     const ManualInfoButton = () => (
       <SimpleButton
-        title="Manual info"
+        title='Manual info'
         onPress={() => this.props.navigation.navigate('SendAddressInput')}
       />
     );
@@ -62,7 +62,7 @@ class SendScanQRCode extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
         <HathorHeader
-          title="SEND"
+          title='SEND'
           rightElement={<ManualInfoButton />}
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
@@ -70,7 +70,7 @@ class SendScanQRCode extends React.Component {
           <QRCodeReader
             ref={(el) => { this.QRCodeReader = el; }}
             onSuccess={this.onSuccess}
-            bottomText="Scan the QR code"
+            bottomText='Scan the QR code'
             {...this.props}
           />
         </View>

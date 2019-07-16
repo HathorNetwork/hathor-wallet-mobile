@@ -68,7 +68,7 @@ class WelcomeScreen extends React.Component {
             </Text>
             <Text style={this.style.text}>
               For further information, check our website{' '}
-              <Link href="https://hathor.network">https://hathor.network/</Link>
+              <Link href='https://hathor.network'>https://hathor.network/</Link>
               .
             </Text>
           </View>
@@ -87,7 +87,7 @@ class WelcomeScreen extends React.Component {
             <NewHathorButton
               disabled={!this.state.switchValue}
               onPress={() => this.props.navigation.navigate('InitialScreen')}
-              title="Start"
+              title='Start'
             />
           </View>
         </View>
@@ -117,13 +117,13 @@ class InitialScreen extends React.Component {
           <View style={this.style.buttonView}>
             <NewHathorButton
               onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
-              title="Import Wallet"
+              title='Import Wallet'
               style={{ marginBottom: 16 }}
               secondary
             />
             <NewHathorButton
               onPress={() => this.props.navigation.navigate('NewWordsScreen')}
-              title="New Wallet"
+              title='New Wallet'
             />
           </View>
         </View>
@@ -206,7 +206,7 @@ class NewWordsScreen extends React.Component {
           <View style={this.style.buttonView}>
             <NewHathorButton
               onPress={() => this.props.navigation.navigate('ChoosePinScreen', { words: this.state.words })}
-              title="Next"
+              title='Next'
             />
           </View>
         </View>
@@ -288,7 +288,7 @@ class LoadWordsScreen extends React.Component {
 
   render() {
     return (
-      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
         <SafeAreaView style={{ flex: 1 }}>
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={this.style.container}>
@@ -301,12 +301,12 @@ class LoadWordsScreen extends React.Component {
                 <Text style={this.style.label}>Words</Text>
                 <TextInput
                   style={this.style.input}
-                  textAlignVertical="top"
+                  textAlignVertical='top'
                   onChangeText={this.onChangeText}
-                  placeholder="Enter your seed words separated by space"
+                  placeholder='Enter your seed words separated by space'
                   multiline
-                  keyboardAppearance="dark"
-                  returnKeyType="done"
+                  keyboardAppearance='dark'
+                  returnKeyType='done'
                   enablesReturnKeyAutomatically
                   autoFocus
                   onSubmitEditing={this.loadClicked}
@@ -323,7 +323,7 @@ class LoadWordsScreen extends React.Component {
                 <NewHathorButton
                   onPress={this.loadClicked}
                   disabled={!this.state.isValid}
-                  title="Next"
+                  title='Next'
                   style={{ marginTop: 8 }}
                 />
               </View>

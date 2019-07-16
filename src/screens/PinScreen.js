@@ -182,7 +182,7 @@ class PinScreen extends React.Component {
           <Image
             source={hathorLogo}
             style={{ height: 21, width: 120 }}
-            resizeMode="contain"
+            resizeMode='contain'
           />
         </View>
         <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>

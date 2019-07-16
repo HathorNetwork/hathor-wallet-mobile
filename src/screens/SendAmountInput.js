@@ -115,7 +115,7 @@ class SendAmountInput extends React.Component {
           title={`SEND ${this.state.token.name.toUpperCase()}`}
           onBackPress={() => this.props.navigation.goBack()}
         />
-        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
+        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
               <View style={{
@@ -145,7 +145,7 @@ class SendAmountInput extends React.Component {
               <Text style={styles.error}>{this.state.error}</Text>
             </View>
             <NewHathorButton
-              title="Next"
+              title='Next'
               disabled={this.isButtonDisabled()}
               onPress={this.onButtonPress}
             />

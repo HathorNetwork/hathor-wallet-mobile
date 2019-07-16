@@ -36,11 +36,11 @@ class AmountTextInput extends React.Component {
         ref={this.inputRef}
         style={[style.input, customStyle]}
         onChangeText={this.onChangeText}
-        textAlign="center"
-        textAlignVertical="bottom"
-        keyboardAppearance="dark"
-        keyboardType="numeric"
-        placeholder="0.00"
+        textAlign='center'
+        textAlignVertical='bottom'
+        keyboardAppearance='dark'
+        keyboardType='numeric'
+        placeholder='0.00'
         {...props}
       />
     );

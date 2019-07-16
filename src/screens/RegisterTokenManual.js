@@ -98,21 +98,21 @@ class RegisterTokenManual extends React.Component {
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
+        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <HathorHeader
-            title="REGISTER TOKEN"
+            title='REGISTER TOKEN'
             onBackPress={() => this.props.navigation.goBack()}
           />
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
               <SimpleInput
-                label="Configuration string"
+                label='Configuration string'
                 autoFocus
                 multiline
                 onChangeText={this.onConfigStringChange}
                 error={this.state.errorMessage}
                 value={this.state.configString}
-                returnKeyType="done"
+                returnKeyType='done'
                 enablesReturnKeyAutomatically
                 blurOnSubmit
                 onSubmitEditing={() => Keyboard.dismiss()}
@@ -120,7 +120,7 @@ class RegisterTokenManual extends React.Component {
               {this.state.token && renderTokenView()}
             </View>
             <NewHathorButton
-              title="Register token"
+              title='Register token'
               disabled={this.state.configString === '' || this.state.errorMessage !== ''}
               onPress={this.onButtonPress}
             />

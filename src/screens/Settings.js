@@ -72,7 +72,7 @@ export class Settings extends React.Component {
             <Image
               source={hathorLogo}
               style={this.style.logo}
-              resizeMode="contain"
+              resizeMode='contain'
             />
           </View>
           {(this.props.isOnline
@@ -103,23 +103,23 @@ export class Settings extends React.Component {
               isFirst
             />
             <ListMenu
-              title="Security"
+              title='Security'
               onPress={() => this.props.navigation.navigate('Security')}
             />
             <ListMenu
-              title="Create a new token"
+              title='Create a new token'
               onPress={() => this.props.navigation.navigate('CreateToken')}
             />
             <ListMenu
-              title="Register a token"
+              title='Register a token'
               onPress={() => this.props.navigation.navigate('RegisterToken')}
             />
             <ListMenu
-              title="Reset wallet"
+              title='Reset wallet'
               onPress={() => this.props.navigation.navigate('ResetWallet')}
             />
             <ListMenu
-              title="About"
+              title='About'
               onPress={() => this.props.navigation.navigate('About')}
             />
           </HathorList>

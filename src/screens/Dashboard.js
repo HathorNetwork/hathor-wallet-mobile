@@ -141,14 +141,14 @@ class Dashboard extends React.Component {
   render() {
     const ManualInfoButton = () => (
       <SimpleButton
-        title="Register token"
+        title='Register token'
         onPress={() => this.props.navigation.navigate('RegisterToken')}
       />
     );
 
     const Header = () => (
       <HathorHeader
-        title="TOKENS"
+        title='TOKENS'
         wrapperStyle={{ borderBottomWidth: 0 }}
         rightElement={<ManualInfoButton />}
       />

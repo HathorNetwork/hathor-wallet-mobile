@@ -101,7 +101,7 @@ class ReceiveScreen extends React.Component {
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
-        <HathorHeader title="RECEIVE" />
+        <HathorHeader title='RECEIVE' />
         <TabView
           renderTabBar={props => renderTabBar(props)}
           navigationState={this.state}

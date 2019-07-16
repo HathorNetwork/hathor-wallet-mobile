@@ -5,7 +5,7 @@ const HathorButton = props => (
   <View style={props.style ? props.style : null}>
     <Button
       {...props}
-      color="#0273a0"
+      color='#0273a0'
     />
   </View>
 );

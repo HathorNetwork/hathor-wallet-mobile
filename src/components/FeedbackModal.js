@@ -8,7 +8,7 @@ import Modal from 'react-native-modal';
 const FeedbackModal = props => (
   <Modal
     isVisible
-    animationIn="slideInUp"
+    animationIn='slideInUp'
     swipeDirection={['down']}
     onSwipeComplete={props.onDismiss}
     onBackButtonPress={props.onDismiss}

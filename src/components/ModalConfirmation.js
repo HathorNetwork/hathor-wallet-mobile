@@ -66,7 +66,7 @@ class ModalConfirmation extends React.Component {
       <TouchableWithoutFeedback onPress={this.hide}>
         <View style={styles.modal}>
           <View style={styles.innerModal}>
-            <Image source={checkLogo} style={{ height: 105, width: 105 }} resizeMode="contain" />
+            <Image source={checkLogo} style={{ height: 105, width: 105 }} resizeMode='contain' />
             {this.props.body}
           </View>
         </View>

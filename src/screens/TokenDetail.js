@@ -41,7 +41,7 @@ class TokenDetail extends React.Component {
 
     const renderHeaderRightElement = () => (
       <SimpleButton
-        title="Unregister"
+        title='Unregister'
         onPress={this.unregisterClicked}
       />
     );
@@ -49,7 +49,7 @@ class TokenDetail extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
-          title="TOKEN DETAILS"
+          title='TOKEN DETAILS'
           onBackPress={() => this.props.navigation.goBack()}
           wrapperStyle={{ borderBottomWidth: 0 }}
           rightElement={renderHeaderRightElement()}
@@ -72,9 +72,9 @@ class TokenDetail extends React.Component {
           </View>
           <View style={styles.buttonWrapper}>
             <SimpleButton
-              title="Share"
+              title='Share'
               onPress={this.shareClicked}
-              color="#000"
+              color='#000'
               containerStyle={styles.simpleButtonContainer}
             />
           </View>

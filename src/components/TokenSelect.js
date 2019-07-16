@@ -27,7 +27,7 @@ const TokenSelect = (props) => {
       <TouchableHighlight
         style={index === 0 ? styles.firstItemWrapper : null}
         onPress={() => { props.onItemPress(item); }}
-        underlayColor="rgba(227, 0, 82, 0.5)"
+        underlayColor='rgba(227, 0, 82, 0.5)'
       >
         <View style={styles.itemWrapper}>
           <View style={styles.itemLeftWrapper}>

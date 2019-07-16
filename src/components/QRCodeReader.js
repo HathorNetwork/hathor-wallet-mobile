@@ -134,7 +134,7 @@ class QRCodeReader extends React.Component {
       }}
       >
         <Text>Opening camera</Text>
-        <ActivityIndicator style={{ marginTop: 16 }} size="small" animating />
+        <ActivityIndicator style={{ marginTop: 16 }} size='small' animating />
       </View>
     );
 

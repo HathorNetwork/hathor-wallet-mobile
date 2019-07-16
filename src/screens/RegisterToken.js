@@ -20,7 +20,7 @@ class RegisterToken extends React.Component {
   render() {
     const renderHeaderRightElement = () => (
       <SimpleButton
-        title="Manual info"
+        title='Manual info'
         onPress={() => this.props.navigation.navigate('RegisterTokenManual')}
       />
     );
@@ -35,7 +35,7 @@ class RegisterToken extends React.Component {
         }}
         >
           <HathorHeader
-            title="REGISTER TOKEN"
+            title='REGISTER TOKEN'
             onBackPress={() => this.props.navigation.pop()}
             rightElement={renderHeaderRightElement()}
             wrapperStyle={{ borderBottomWidth: 0 }}
@@ -47,7 +47,7 @@ class RegisterToken extends React.Component {
             <QRCodeReader
               ref={(el) => { this.QRCodeReader = el; }}
               onSuccess={this.onSuccess}
-              bottomText="Scan the token QR code"
+              bottomText='Scan the token QR code'
               {...this.props}
             />
           </View>

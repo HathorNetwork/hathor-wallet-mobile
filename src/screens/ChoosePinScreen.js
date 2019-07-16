@@ -157,7 +157,7 @@ class ChoosePinScreen extends React.Component {
           <NewHathorButton
             onPress={this.goToNextScreen}
             disabled={!this.state.done}
-            title="Start the Wallet"
+            title='Start the Wallet'
             style={{ marginTop: 16 }}
           />
         </View>

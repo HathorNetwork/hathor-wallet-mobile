@@ -7,7 +7,7 @@ const HathorLogo = props => (
   <Image
     source={hathorLogo}
     style={{ height: 30, width: 170 }}
-    resizeMode="contain"
+    resizeMode='contain'
     {...props}
   />
 );

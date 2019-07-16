@@ -127,7 +127,7 @@ class NewPaymentRequest extends React.Component {
     });
 
     return (
-      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }} keyboardVerticalOffset={topDistance}>
+      <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={topDistance}>
         <View style={{
           flex: 1, alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 16,
         }}
@@ -151,7 +151,7 @@ class NewPaymentRequest extends React.Component {
           <View style={buttonWrapperStyle.style}>
             <NewHathorButton
               disabled={this.isButtonDisabled()}
-              title="Create payment request"
+              title='Create payment request'
               onPress={this.createPaymentRequest}
             />
           </View>

@@ -122,7 +122,7 @@ class LoadHistoryScreen extends React.Component {
           containerStyle={{ marginTop: 12 }}
           textStyle={{ fontSize: 18 }}
           onPress={this.props.loadHistory}
-          title="Try again"
+          title='Try again'
         />
       </View>
     );

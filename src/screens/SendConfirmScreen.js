@@ -57,7 +57,7 @@ class SendConfirmScreen extends React.Component {
         // eslint-disable-next-line react/jsx-indent
         <FeedbackModal
           icon={<Spinner />}
-          text="Your transfer is being processed"
+          text='Your transfer is being processed'
         />,
     });
     this.props.sendTx(this.amount, this.address, this.token, pinCode).then(
@@ -80,7 +80,7 @@ class SendConfirmScreen extends React.Component {
       modal:
         // eslint-disable-next-line react/jsx-indent
         <FeedbackModal
-          icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode="contain" />}
+          icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
           text={`Your transfer of ${this.amountAndToken} has been confirmed`}
           onDismiss={this.exitScreen}
         />,
@@ -92,7 +92,7 @@ class SendConfirmScreen extends React.Component {
       modal:
         // eslint-disable-next-line react/jsx-indent
         <FeedbackModal
-          icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode="contain" />}
+          icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
           text={message}
           onDismiss={() => this.setState({ modal: null })}
         />,
@@ -132,14 +132,14 @@ class SendConfirmScreen extends React.Component {
               </InputLabel>
             </View>
             <SimpleInput
-              label="Address"
+              label='Address'
               editable={false}
               value={this.address}
               containerStyle={{ marginTop: 48 }}
             />
           </View>
           <NewHathorButton
-            title="Send"
+            title='Send'
             onPress={this.onSendPress}
             // disable while modal is visible
             disabled={this.state.modal !== null}

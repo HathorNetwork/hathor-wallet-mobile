@@ -26,7 +26,7 @@ class TxDetailsModal extends Component {
     return (
       <Modal
         isVisible
-        animationIn="slideInUp"
+        animationIn='slideInUp'
         swipeDirection={['down']}
         onSwipeComplete={this.props.onRequestClose}
         onBackButtonPress={this.props.onRequestClose}
@@ -38,10 +38,10 @@ class TxDetailsModal extends Component {
             <SlideIndicatorBar />
             <BalanceView tx={tx} token={token} />
             <View>
-              <ListItem title="Token" text={fullTokenStr} />
-              <ListItem title="Description" text={description} />
-              <ListItem title="Date & Time" text={timestampStr} />
-              <ListItem title="ID" text={idStr} isLast />
+              <ListItem title='Token' text={fullTokenStr} />
+              <ListItem title='Description' text={description} />
+              <ListItem title='Date & Time' text={timestampStr} />
+              <ListItem title='ID' text={idStr} isLast />
             </View>
           </View>
         </View>

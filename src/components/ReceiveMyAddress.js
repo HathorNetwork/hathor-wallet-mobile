@@ -79,14 +79,14 @@ class ReceiveMyAddress extends React.Component {
         </View>
         <View style={{ flexDirection: 'row' }}>
           <SimpleButton
-            title="New address"
+            title='New address'
             onPress={this.updateAddress}
             containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
           />
           <SimpleButton
             onPress={this.shareAddress}
-            title="Share"
-            color="#000"
+            title='Share'
+            color='#000'
             containerStyle={styles.buttonContainer}
           />
         </View>

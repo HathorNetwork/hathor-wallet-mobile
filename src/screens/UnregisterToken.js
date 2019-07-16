@@ -64,7 +64,7 @@ class UnregisterToken extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
-          title="UNREGISTER TOKEN"
+          title='UNREGISTER TOKEN'
           onBackPress={() => this.props.navigation.goBack()}
         />
         <View style={this.style.container}>
@@ -92,10 +92,10 @@ class UnregisterToken extends React.Component {
           <View style={this.style.buttonView}>
             <NewHathorButton
               secondary
-              color="#E30052"
+              color='#E30052'
               disabled={!this.state.switchValue}
               onPress={this.unregisterConfirmed}
-              title="Unregister token"
+              title='Unregister token'
             />
           </View>
         </View>

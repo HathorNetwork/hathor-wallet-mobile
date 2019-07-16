@@ -66,7 +66,7 @@ export class Security extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
-          title="SECURITY"
+          title='SECURITY'
           onBackPress={() => this.props.navigation.goBack()}
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
@@ -86,7 +86,7 @@ export class Security extends React.Component {
             isFirst
           />
           <ListMenu
-            title="Lock wallet"
+            title='Lock wallet'
             onPress={this.onLockWallet}
             isLast
           />
