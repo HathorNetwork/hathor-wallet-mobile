@@ -3,8 +3,8 @@ import {
   Image, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
+import chevronLeft from '../assets/icons/chevron-left.png';
+
 
 const HathorHeader = (props) => {
   const renderBackButton = () => {
@@ -12,7 +12,7 @@ const HathorHeader = (props) => {
       return (
         <View style={[styles.iconWrapper, { justifyContent: 'flex-start' }]}>
           <TouchableOpacity onPress={props.onBackPress}>
-            <Image source={require('../assets/icons/chevron-left.png')} width={24} height={24} />
+            <Image source={chevronLeft} width={24} height={24} />
           </TouchableOpacity>
         </View>
       );

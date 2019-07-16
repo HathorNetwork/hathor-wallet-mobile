@@ -9,7 +9,7 @@
 import '../shim';
 
 import React from 'react';
-import { Modal, Platform, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import {
   createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer,
 } from 'react-navigation';
@@ -175,21 +175,36 @@ const mapStateToProps = state => ({
 export class _AppStackWrapper extends React.Component {
   static router = AppStack.router;
 
+  style = StyleSheet.create({
+    auxView: {
+      backgroundColor: 'white',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 100,
+    },
+  });
+
   render() {
     const renderAuxiliarViews = () => {
       // the auxiliar view needs to be rendered after the other views, or it won't be visible
       // on Android: https://github.com/facebook/react-native/issues/14555
       if (this.props.loadHistory || this.props.lockScreen) {
         return (
-          <View style={{backgroundColor: 'white', position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, zIndex: 100}}>
-            {this.props.lockScreen ? <PinScreen isLockScreen={true} navigation={this.props.navigation} /> : <LoadHistoryScreen />}
+          <View style={this.style.auxView}>
+            {this.props.lockScreen
+              ? <PinScreen isLockScreen navigation={this.props.navigation} />
+              : <LoadHistoryScreen />}
           </View>
-        )
+        );
       }
-    }
+      return null;
+    };
 
     return (
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <AppStack navigation={this.props.navigation} />
         {renderAuxiliarViews()}
       </View>
