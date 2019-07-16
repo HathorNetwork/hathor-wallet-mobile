@@ -37,6 +37,7 @@ import HathorLogo from './components/HathorLogo';
 import PinScreen from './screens/PinScreen';
 import About from './screens/About';
 import Security from './screens/Security';
+import ChangePin from './screens/ChangePin';
 import ResetWallet from './screens/ResetWallet';
 import Dashboard from './screens/Dashboard';
 import LoadHistoryScreen from './screens/LoadHistoryScreen';
@@ -143,6 +144,7 @@ const AppStack = createStackNavigator({
     Main: TabNavigator,
     About,
     Security,
+    ChangePin,
     ResetWallet,
     PaymentRequestDetail,
     RegisterToken: RegisterTokenStack,
