@@ -187,21 +187,21 @@ export class _AppStackWrapper extends React.Component {
 
   render() {
     const renderAuxiliarViews = () => {
-      return (
-        <Modal
-          animationType='none'
-          visible={this.props.loadHistory || this.props.lockScreen}
-          onShow={this.onShowModal}
-        >
-          {this.props.lockScreen ? <PinScreen isLockScreen={true} navigation={this.props.navigation} /> : <LoadHistoryScreen />}
-        </Modal>
-      )
+      // the auxiliar view needs to be rendered after the other views, or it won't be visible
+      // on Android: https://github.com/facebook/react-native/issues/14555
+      if (this.props.loadHistory || this.props.lockScreen) {
+        return (
+          <View style={{backgroundColor: 'white', position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, zIndex: 100}}>
+            {this.props.lockScreen ? <PinScreen isLockScreen={true} navigation={this.props.navigation} /> : <LoadHistoryScreen />}
+          </View>
+        )
+      }
     }
 
     return (
       <View style={{flex: 1}}>
-        {renderAuxiliarViews()}
         <AppStack navigation={this.props.navigation} />
+        {renderAuxiliarViews()}
       </View>
     );
   }
