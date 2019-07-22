@@ -29,7 +29,6 @@ import ReceiveScreen from './screens/Receive';
 import PaymentRequestDetail from './screens/PaymentRequestDetail';
 import RegisterToken from './screens/RegisterToken';
 import RegisterTokenManual from './screens/RegisterTokenManual';
-import CreateToken from './screens/CreateToken';
 import Settings from './screens/Settings';
 import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
@@ -40,6 +39,11 @@ import ChangePin from './screens/ChangePin';
 import ResetWallet from './screens/ResetWallet';
 import Dashboard from './screens/Dashboard';
 import LoadHistoryScreen from './screens/LoadHistoryScreen';
+import CreateTokenName from './screens/CreateTokenName';
+import CreateTokenSymbol from './screens/CreateTokenSymbol';
+import CreateTokenAmount from './screens/CreateTokenAmount';
+import CreateTokenConfirm from './screens/CreateTokenConfirm';
+import CreateTokenDetail from './screens/CreateTokenDetail';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -78,6 +82,20 @@ const SendStack = createStackNavigator(
   },
   {
     initialRouteName: 'SendScanQRCode',
+    headerMode: 'none',
+  }
+);
+
+const CreateTokenStack = createStackNavigator(
+  {
+    CreateTokenName,
+    CreateTokenSymbol,
+    CreateTokenAmount,
+    CreateTokenConfirm,
+    CreateTokenDetail,
+  },
+  {
+    initialRouteName: 'CreateTokenName',
     headerMode: 'none',
   }
 );
@@ -146,7 +164,7 @@ const AppStack = createStackNavigator({
       screen: PinScreen,
       navigationOptions: disableSwipeDown,
     },
-    CreateToken,
+    CreateTokenStack,
     TokenDetail,
     UnregisterToken,
   }, {
