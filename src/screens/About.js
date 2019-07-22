@@ -37,7 +37,6 @@ export class About extends React.Component {
         <HathorHeader
           title="ABOUT"
           onBackPress={() => this.props.navigation.goBack()}
-          wrapperStyle={{ borderBottomWidth: 0 }}
         />
         <ScrollView pinchGestureEnabled={false} contentContainerStyle={this.style.view}>
           <View style={this.props.logoView}>

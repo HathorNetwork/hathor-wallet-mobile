@@ -209,6 +209,7 @@ class ChangePin extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
+          withBorder
           title='CHANGE PIN'
           onBackPress={() => this.props.navigation.goBack()}
         />
