@@ -5,7 +5,6 @@ import {
 
 import { getInset } from 'react-native-safe-area-view';
 import hathorLib from '@hathor/wallet-lib';
-import HathorHeader from './HathorHeader';
 
 
 const safeViewTop = getInset('top');

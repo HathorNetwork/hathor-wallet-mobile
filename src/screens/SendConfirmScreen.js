@@ -119,6 +119,7 @@ class SendConfirmScreen extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
+          withBorder
           title={`SEND ${this.token.name.toUpperCase()}`}
           onBackPress={() => this.props.navigation.goBack()}
         />

@@ -5,6 +5,7 @@ import {
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
+import hathorLogo from '../assets/images/hathor-logo.png';
 
 const HathorHeader = (props) => {
   const renderBackButton = () => {
@@ -31,11 +32,28 @@ const HathorHeader = (props) => {
     return <View style={styles.iconWrapper} />;
   };
 
+  const renderHeaderCentral = () => {
+    if (props.withLogo) {
+      return <Image
+        source={hathorLogo}
+        style={{ height: 22, width: 100 }}
+        resizeMode="contain"
+      />;
+    } else {
+      return <Text>{props.title}</Text>;
+    }
+  }
+
+  let extraStyle = {};
+  if (props.withBorder) {
+    extraStyle = {borderBottomWidth: 1};
+  }
+
   return (
-    <View style={[styles.wrapper, props.wrapperStyle]}>
+    <View style={[styles.wrapper, props.wrapperStyle, extraStyle]}>
       <View style={styles.innerWrapper}>
         {renderBackButton()}
-        <Text>{props.title}</Text>
+        {renderHeaderCentral()}
         {renderHeaderRight()}
       </View>
     </View>
@@ -47,7 +65,6 @@ const styles = StyleSheet.create({
     height: 56,
     flexDirection: 'row',
     alignItems: 'flex-end',
-    borderBottomWidth: 1,
     borderColor: '#eee',
     paddingHorizontal: 16,
   },

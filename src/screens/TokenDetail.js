@@ -51,7 +51,6 @@ class TokenDetail extends React.Component {
         <HathorHeader
           title="TOKEN DETAILS"
           onBackPress={() => this.props.navigation.goBack()}
-          wrapperStyle={{ borderBottomWidth: 0 }}
           rightElement={renderHeaderRightElement()}
         />
         <View style={styles.contentWrapper}>

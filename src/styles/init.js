@@ -14,7 +14,6 @@ const baseStyle = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 20,
     marginBottom: 16,
-    marginTop: 16,
   },
   text: {
     fontSize: 16,

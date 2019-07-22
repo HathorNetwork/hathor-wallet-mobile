@@ -71,7 +71,11 @@ class PaymentRequestDetail extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         {renderPaymentConfirm()}
-        <HathorHeader title="PAYMENT REQUEST" onBackPress={() => this.props.navigation.goBack()} />
+        <HathorHeader
+          withBorder
+          title="PAYMENT REQUEST"
+          onBackPress={() => this.props.navigation.goBack()}
+        />
         <View style={{
           flex: 1, justifyContent: 'space-between', alignItems: 'center', width: '100%',
         }}

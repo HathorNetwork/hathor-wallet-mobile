@@ -68,7 +68,6 @@ export class ResetWallet extends React.Component {
         <HathorHeader
           title="RESET WALLET"
           onBackPress={() => this.onBackPress()}
-          wrapperStyle={{ borderBottomWidth: 0 }}
         />
         <View style={this.style.container}>
           <Text style={this.style.title}>Are you sure?</Text>

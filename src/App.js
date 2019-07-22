@@ -33,7 +33,6 @@ import CreateToken from './screens/CreateToken';
 import Settings from './screens/Settings';
 import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
-import HathorLogo from './components/HathorLogo';
 import PinScreen from './screens/PinScreen';
 import About from './screens/About';
 import Security from './screens/Security';
@@ -55,13 +54,7 @@ const InitStack = createStackNavigator(
   },
   {
     initialRouteName: 'WelcomeScreen',
-    defaultNavigationOptions: {
-      headerTintColor: '#0273a0',
-      headerTitle: <HathorLogo />,
-      headerTitleContainerStyle: {
-        marginLeft: Platform.OS === 'ios' ? 0 : -56, // In android when you have the navigation with a back button the title is moved to the right
-      },
-    }
+    headerMode: 'none',
   }
 );
 

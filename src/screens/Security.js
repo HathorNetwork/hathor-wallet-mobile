@@ -71,7 +71,6 @@ export class Security extends React.Component {
         <HathorHeader
           title='SECURITY'
           onBackPress={() => this.props.navigation.goBack()}
-          wrapperStyle={{ borderBottomWidth: 0 }}
         />
         <HathorList>
           <ListItem

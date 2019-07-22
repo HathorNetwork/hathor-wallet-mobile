@@ -41,6 +41,7 @@ class SendAddressInput extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
+          withBorder
           title="SEND"
           onBackPress={() => this.props.navigation.goBack()}
         />

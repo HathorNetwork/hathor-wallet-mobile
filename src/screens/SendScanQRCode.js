@@ -56,6 +56,7 @@ class SendScanQRCode extends React.Component {
   render() {
     const ManualInfoButton = () => (
       <SimpleButton
+        withBorder
         title="Manual info"
         onPress={() => this.props.navigation.navigate('SendAddressInput')}
       />
