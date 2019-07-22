@@ -100,7 +100,8 @@ class RegisterTokenManual extends React.Component {
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <HathorHeader
-            title='REGISTER TOKEN'
+            withBorder
+            title="REGISTER TOKEN"
             onBackPress={() => this.props.navigation.goBack()}
           />
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>

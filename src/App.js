@@ -34,17 +34,21 @@ import ReceiveScreen from './screens/Receive';
 import PaymentRequestDetail from './screens/PaymentRequestDetail';
 import RegisterToken from './screens/RegisterToken';
 import RegisterTokenManual from './screens/RegisterTokenManual';
-import CreateToken from './screens/CreateToken';
 import Settings from './screens/Settings';
 import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
-import HathorLogo from './components/HathorLogo';
 import PinScreen from './screens/PinScreen';
 import About from './screens/About';
 import Security from './screens/Security';
+import ChangePin from './screens/ChangePin';
 import ResetWallet from './screens/ResetWallet';
 import Dashboard from './screens/Dashboard';
 import LoadHistoryScreen from './screens/LoadHistoryScreen';
+import CreateTokenName from './screens/CreateTokenName';
+import CreateTokenSymbol from './screens/CreateTokenSymbol';
+import CreateTokenAmount from './screens/CreateTokenAmount';
+import CreateTokenConfirm from './screens/CreateTokenConfirm';
+import CreateTokenDetail from './screens/CreateTokenDetail';
 
 
 const InitStack = createStackNavigator(
@@ -57,14 +61,8 @@ const InitStack = createStackNavigator(
   },
   {
     initialRouteName: 'WelcomeScreen',
-    defaultNavigationOptions: {
-      headerTintColor: '#0273a0',
-      headerTitle: <HathorLogo />,
-      headerTitleContainerStyle: {
-        marginLeft: Platform.OS === 'ios' ? 0 : -56, // In android when you have the navigation with a back button the title is moved to the right
-      },
-    },
-  },
+    headerMode: 'none',
+  }
 );
 
 const DashboardStack = createStackNavigator(
@@ -89,6 +87,20 @@ const SendStack = createStackNavigator(
     initialRouteName: 'SendScanQRCode',
     headerMode: 'none',
   },
+);
+
+const CreateTokenStack = createStackNavigator(
+  {
+    CreateTokenName,
+    CreateTokenSymbol,
+    CreateTokenAmount,
+    CreateTokenConfirm,
+    CreateTokenDetail,
+  },
+  {
+    initialRouteName: 'CreateTokenName',
+    headerMode: 'none',
+  }
 );
 
 const RegisterTokenStack = createStackNavigator(
@@ -154,7 +166,7 @@ const AppStack = createStackNavigator({
     screen: PinScreen,
     navigationOptions: disableSwipeDown,
   },
-  CreateToken,
+  CreateTokenStack,
   TokenDetail,
   UnregisterToken,
 }, {

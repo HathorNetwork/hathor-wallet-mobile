@@ -38,7 +38,6 @@ class RegisterToken extends React.Component {
             title='REGISTER TOKEN'
             onBackPress={() => this.props.navigation.pop()}
             rightElement={renderHeaderRightElement()}
-            wrapperStyle={{ borderBottomWidth: 0 }}
           />
           <View style={{
             flex: 1, justifyContent: 'center', alignItems: 'center', margin: 16, alignSelf: 'stretch',

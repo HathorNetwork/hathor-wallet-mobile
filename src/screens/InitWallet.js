@@ -15,17 +15,12 @@ import {
   View,
 } from 'react-native';
 import NewHathorButton from '../components/NewHathorButton';
+import HathorHeader from '../components/HathorHeader';
 
 import baseStyle from '../styles/init';
 import { Strong } from '../utils';
 
 class WelcomeScreen extends React.Component {
-  static navigationOptions = {
-    headerTitleContainerStyle: {
-      marginLeft: 0,
-    },
-  };
-
   state = { switchValue: false };
 
   style = Object.assign({}, baseStyle, StyleSheet.create({
@@ -53,6 +48,7 @@ class WelcomeScreen extends React.Component {
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
+        <HathorHeader withLogo />
         <View style={this.style.container}>
           <Text style={this.style.title}>Welcome to Hathor Testnet!</Text>
           <View>
@@ -102,6 +98,7 @@ class InitialScreen extends React.Component {
   render() {
     return (
       <SafeAreaView style={{ flex: 1 }}>
+        <HathorHeader withLogo />
         <View style={this.style.container}>
           <Text style={this.style.title}>To start,</Text>
           <Text style={this.style.text}>
@@ -194,6 +191,10 @@ class NewWordsScreen extends React.Component {
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
+        <HathorHeader
+          withLogo
+          onBackPress={() => this.props.navigation.goBack()}
+        />
         <View style={this.style.container}>
           <View>
             <Text style={this.style.title}>Your wallet has been created!</Text>
@@ -290,6 +291,10 @@ class LoadWordsScreen extends React.Component {
     return (
       <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
         <SafeAreaView style={{ flex: 1 }}>
+          <HathorHeader
+            withLogo
+            onBackPress={() => this.props.navigation.goBack()}
+          />
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={this.style.container}>
               <Text style={this.style.title}>To import a wallet,</Text>

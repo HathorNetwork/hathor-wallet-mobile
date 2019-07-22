@@ -11,11 +11,9 @@ class ReceiveScreen extends React.Component {
   constructor(props) {
     super(props);
     /**
-     * address {string} Address selected to receive the payment
      * index {number} Selected index of the tab bar
      */
     this.state = {
-      address: '',
       index: 0,
       // eslint thinks routes is not used, but TabView uses it
       // eslint-disable-next-line react/no-unused-state
@@ -27,10 +25,6 @@ class ReceiveScreen extends React.Component {
 
     // Reference to payment request component
     this.paymentRequest = React.createRef();
-  }
-
-  onAddressUpdate = (address) => {
-    this.setState({ address });
   }
 
   onActivateRight = () => {
@@ -49,14 +43,12 @@ class ReceiveScreen extends React.Component {
         return (
           <ReceiveMyAddress
             navigation={this.props.navigation}
-            onAddressUpdate={this.onAddressUpdate}
           />
         );
       case 'paymentRequest':
         return (
           <NewPaymentRequest
             navigation={this.props.navigation}
-            address={this.state.address}
             index={this.state.index}
             ref={this.paymentRequest}
           />
@@ -101,7 +93,10 @@ class ReceiveScreen extends React.Component {
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
-        <HathorHeader title='RECEIVE' />
+        <HathorHeader
+          title="RECEIVE"
+          withBorder
+        />
         <TabView
           renderTabBar={props => renderTabBar(props)}
           navigationState={this.state}

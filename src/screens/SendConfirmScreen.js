@@ -81,7 +81,7 @@ class SendConfirmScreen extends React.Component {
         // eslint-disable-next-line react/jsx-indent
         <FeedbackModal
           icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-          text={`Your transfer of ${this.amountAndToken} has been confirmed`}
+          text={<Text>Your transfer of <Strong>{this.amountAndToken}</Strong> has been confirmed</Text>}
           onDismiss={this.exitScreen}
         />,
     });
@@ -116,6 +116,7 @@ class SendConfirmScreen extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
+          withBorder
           title={`SEND ${this.token.name.toUpperCase()}`}
           onBackPress={() => this.props.navigation.goBack()}
         />

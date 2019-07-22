@@ -135,7 +135,6 @@ class MainScreen extends React.Component {
           title={this.props.selectedToken.name.toUpperCase()}
           onBackPress={() => this.props.navigation.goBack()}
           rightElement={renderRightElement()}
-          wrapperStyle={{ borderBottomWidth: 0 }}
         />
         <BalanceView
           network={this.props.network}

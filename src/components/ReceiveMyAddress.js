@@ -26,7 +26,7 @@ class ReceiveMyAddress extends React.Component {
   componentDidMount() {
     const { navigation } = this.props;
     this.willFocusEvent = navigation.addListener('willFocus', () => {
-      this.updateAddress();
+      this.setState({ address: hathorLib.wallet.getCurrentAddress() });
     });
   }
 
@@ -34,10 +34,9 @@ class ReceiveMyAddress extends React.Component {
     this.willFocusEvent.remove();
   }
 
-  updateAddress = () => {
-    this.setState({ address: hathorLib.wallet.getAddressToUse() }, () => {
-      this.props.onAddressUpdate(this.state.address);
-    });
+  getNextAddress = () => {
+    const nextAddress = hathorLib.wallet.nextAddress();
+    this.setState({ address: nextAddress });
   }
 
   shareAddress = () => {
@@ -79,8 +78,8 @@ class ReceiveMyAddress extends React.Component {
         </View>
         <View style={{ flexDirection: 'row' }}>
           <SimpleButton
-            title='New address'
-            onPress={this.updateAddress}
+            title="New address"
+            onPress={this.getNextAddress}
             containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
           />
           <SimpleButton

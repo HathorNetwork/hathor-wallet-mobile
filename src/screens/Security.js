@@ -68,7 +68,6 @@ export class Security extends React.Component {
         <HathorHeader
           title='SECURITY'
           onBackPress={() => this.props.navigation.goBack()}
-          wrapperStyle={{ borderBottomWidth: 0 }}
         />
         <HathorList>
           <ListItem
@@ -84,6 +83,10 @@ export class Security extends React.Component {
               />
             )}
             isFirst
+          />
+          <ListMenu
+            title="Change PIN"
+            onPress={() => this.props.navigation.navigate('ChangePin')}
           />
           <ListMenu
             title='Lock wallet'

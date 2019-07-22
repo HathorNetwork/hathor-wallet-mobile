@@ -36,8 +36,7 @@ class ChangeToken extends React.Component {
   render() {
     const Header = props => (
       <HathorHeader
-        title='TOKENS'
-        wrapperStyle={{ borderBottomWidth: 0 }}
+        title="TOKENS"
         onBackPress={() => this.props.navigation.goBack()}
       />
     );

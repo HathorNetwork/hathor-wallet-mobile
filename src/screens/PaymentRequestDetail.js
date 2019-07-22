@@ -34,6 +34,11 @@ class PaymentRequestDetail extends React.Component {
     this.modalConfirmation = React.createRef();
   }
 
+  componentDidMount() {
+    // When we create a new payment request we update the address for a new one
+    hathorLib.wallet.nextAddress();
+  }
+
   componentDidUpdate(prevProps) {
     if (prevProps.payment === null && this.props.payment !== null) {
       if (this.modalConfirmation.current) {
@@ -66,7 +71,11 @@ class PaymentRequestDetail extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         {renderPaymentConfirm()}
-        <HathorHeader title='PAYMENT REQUEST' onBackPress={() => this.props.navigation.goBack()} />
+        <HathorHeader
+          withBorder
+          title="PAYMENT REQUEST"
+          onBackPress={() => this.props.navigation.goBack()}
+        />
         <View style={{
           flex: 1, justifyContent: 'space-between', alignItems: 'center', width: '100%',
         }}

@@ -8,6 +8,7 @@ import {
 import { connect } from 'react-redux';
 
 import NewHathorButton from '../components/NewHathorButton';
+import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
 import { setInitWallet, unlockScreen } from '../actions';
 
@@ -149,6 +150,10 @@ class ChoosePinScreen extends React.Component {
     const step = this.steps[this.state.stepIndex];
     return (
       <SafeAreaView style={{ flex: 1 }}>
+        <HathorHeader
+          withLogo
+          onBackPress={() => this.props.navigation.goBack()}
+        />
         <View style={this.style.container}>
           <Text style={this.style.title}>{step.title}</Text>
 
