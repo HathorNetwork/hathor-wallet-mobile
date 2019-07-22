@@ -33,19 +33,20 @@ const HathorHeader = (props) => {
 
   const renderHeaderCentral = () => {
     if (props.withLogo) {
-      return <Image
-        source={hathorLogo}
-        style={{ height: 22, width: 100 }}
-        resizeMode="contain"
-      />;
-    } else {
-      return <Text>{props.title}</Text>;
+      return (
+        <Image
+          source={hathorLogo}
+          style={{ height: 22, width: 100 }}
+          resizeMode='contain'
+        />
+      );
     }
-  }
+    return <Text>{props.title}</Text>;
+  };
 
   let extraStyle = {};
   if (props.withBorder) {
-    extraStyle = {borderBottomWidth: 1};
+    extraStyle = { borderBottomWidth: 1 };
   }
 
   return (

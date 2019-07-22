@@ -28,7 +28,7 @@ const SimpleInput = (props) => {
 
   const renderAuxiliarText = () => {
     let text = null;
-    let style = [styles.auxiliarText]
+    const style = [styles.auxiliarText];
     if (props.error) {
       text = props.error;
       style.push(styles.error);

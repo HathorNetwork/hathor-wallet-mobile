@@ -78,7 +78,7 @@ class ReceiveMyAddress extends React.Component {
         </View>
         <View style={{ flexDirection: 'row' }}>
           <SimpleButton
-            title="New address"
+            title='New address'
             onPress={this.getNextAddress}
             containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
           />

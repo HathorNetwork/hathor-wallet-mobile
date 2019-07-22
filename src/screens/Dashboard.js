@@ -148,7 +148,7 @@ class Dashboard extends React.Component {
 
     const Header = () => (
       <HathorHeader
-        title="TOKENS"
+        title='TOKENS'
         rightElement={<ManualInfoButton />}
       />
     );

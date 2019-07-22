@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, SafeAreaView, View } from 'react-native';
+import { Image, SafeAreaView, Text, View } from 'react-native';
 import { connect } from 'react-redux';
 
 import hathorLib from '@hathor/wallet-lib';
@@ -14,6 +14,7 @@ import FeedbackModal from '../components/FeedbackModal';
 import checkIcon from '../assets/images/icCheckBig.png';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { sendTx } from '../actions';
+import { Strong } from '../utils';
 
 
 /**
@@ -81,7 +82,9 @@ class SendConfirmScreen extends React.Component {
         // eslint-disable-next-line react/jsx-indent
         <FeedbackModal
           icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-          text={<Text>Your transfer of <Strong>{this.amountAndToken}</Strong> has been confirmed</Text>}
+          text={
+            <Text>Your transfer of <Strong>{this.amountAndToken}</Strong> has been confirmed</Text>
+          }
           onDismiss={this.exitScreen}
         />,
     });

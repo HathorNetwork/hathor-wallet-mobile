@@ -42,7 +42,7 @@ class SendAddressInput extends React.Component {
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
           withBorder
-          title="SEND"
+          title='SEND'
           onBackPress={() => this.props.navigation.goBack()}
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>

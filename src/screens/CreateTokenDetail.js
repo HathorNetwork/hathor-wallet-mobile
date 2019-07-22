@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import HathorHeader from '../components/HathorHeader';
 import TokenDetails from '../components/TokenDetails';
 import SimpleButton from '../components/SimpleButton';
+import closeIcon from '../assets/icons/icCloseActive.png';
 
 
 /**
@@ -22,7 +23,7 @@ class CreateTokenDetail extends React.Component {
   render() {
     const CancelButton = () => (
       <SimpleButton
-        icon={require('../assets/icons/icCloseActive.png')}
+        icon={closeIcon}
         onPress={() => this.props.navigation.navigate('Dashboard')}
       />
     );

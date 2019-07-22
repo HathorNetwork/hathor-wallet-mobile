@@ -2,7 +2,6 @@ import React from 'react';
 import {
   Image,
   SafeAreaView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -19,11 +18,13 @@ import FeedbackModal from '../components/FeedbackModal';
 import Spinner from '../components/Spinner';
 import { newToken, updateSelectedToken } from '../actions';
 import { Strong } from '../utils';
+import checkIcon from '../assets/images/icCheckBig.png';
+import errorIcon from '../assets/images/icErrorBig.png';
 
 
 const mapDispatchToProps = dispatch => ({
-  newToken: (token) => dispatch(newToken(token)),
-  updateSelectedToken: (token) => dispatch(updateSelectedToken(token)),
+  newToken: token => dispatch(newToken(token)),
+  updateSelectedToken: token => dispatch(updateSelectedToken(token)),
 });
 
 /**
@@ -64,24 +65,31 @@ class CreateTokenConfirm extends React.Component {
 
     const input = inputsData.inputs[0];
     const amount = inputsData.inputsAmount;
-    const outputChange = hathorLib.wallet.getOutputChange(amount, hathorLib.constants.HATHOR_TOKEN_INDEX);
+    const outputChange = hathorLib.wallet.getOutputChange(
+      amount, hathorLib.constants.HATHOR_TOKEN_INDEX
+    );
+
     return { input, output: outputChange };
   }
 
   executeCreate = (pin) => {
     // show loading modal
-    this.setState({ modal: 
-      <FeedbackModal 
-        icon={<Spinner />}
-        text='Creating token'
-      />
+    this.setState({
+      modal:
+        // eslint-disable-next-line react/jsx-indent
+        <FeedbackModal
+          icon={<Spinner />}
+          text='Creating token'
+        />,
     });
     const data = this.getData();
     if (data.error) {
       this.onError(data.error);
     }
     const address = hathorLib.wallet.getAddressToUse();
-    const retPromise = hathorLib.tokens.createToken(data.input, data.output, address, this.name, this.symbol, this.amount, pin);
+    const retPromise = hathorLib.tokens.createToken(
+      data.input, data.output, address, this.name, this.symbol, this.amount, pin
+    );
     retPromise.then((token) => {
       this.onSuccess(token);
     }, (message) => {
@@ -102,22 +110,26 @@ class CreateTokenConfirm extends React.Component {
   onSuccess = (token) => {
     this.props.newToken(token);
     this.props.updateSelectedToken(token);
-    this.setState({ modal: 
-      <FeedbackModal 
-        icon={<Image source={require('../assets/images/icCheckBig.png')} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-        text={<Text><Strong>{this.name}</Strong> created successfully</Text>}
-        onDismiss={this.exitScreen}
-      />
+    this.setState({
+      modal:
+        // eslint-disable-next-line react/jsx-indent
+        <FeedbackModal
+          icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
+          text={<Text><Strong>{this.name}</Strong> created successfully</Text>}
+          onDismiss={this.exitScreen}
+        />,
     });
   }
 
   onError = (message) => {
-    this.setState({ modal: 
-      <FeedbackModal 
-        icon={<Image source={require('../assets/images/icErrorBig.png')} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-        text={message}
-        onDismiss={() => this.setState({ modal: null })}
-      />
+    this.setState({
+      modal:
+        // eslint-disable-next-line react/jsx-indent
+        <FeedbackModal
+          icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
+          text={message}
+          onDismiss={() => this.setState({ modal: null })}
+        />,
     });
   }
 

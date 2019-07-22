@@ -4,14 +4,14 @@ import {
 } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { connect } from 'react-redux';
+
+import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
 import TokenBox from './TokenBox';
 import { newInvoice } from '../actions';
 import { getIntegerAmount } from '../utils';
-
 import OfflineBar from './OfflineBar';
-import hathorLib from '@hathor/wallet-lib';
 
 
 /**

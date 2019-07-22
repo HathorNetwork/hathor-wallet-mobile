@@ -9,7 +9,7 @@
 import '../shim';
 
 import React from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import {
   createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer,
 } from 'react-navigation';
@@ -158,6 +158,7 @@ const AppStack = createStackNavigator({
   Main: TabNavigator,
   About,
   Security,
+  ChangePin,
   ResetWallet,
   PaymentRequestDetail,
   RegisterToken: RegisterTokenStack,

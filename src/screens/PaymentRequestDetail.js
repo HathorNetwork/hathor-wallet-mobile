@@ -73,7 +73,7 @@ class PaymentRequestDetail extends React.Component {
         {renderPaymentConfirm()}
         <HathorHeader
           withBorder
-          title="PAYMENT REQUEST"
+          title='PAYMENT REQUEST'
           onBackPress={() => this.props.navigation.goBack()}
         />
         <View style={{

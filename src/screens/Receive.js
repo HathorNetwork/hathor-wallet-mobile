@@ -94,7 +94,7 @@ class ReceiveScreen extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
-          title="RECEIVE"
+          title='RECEIVE'
           withBorder
         />
         <TabView

@@ -6,15 +6,14 @@ import {
   View,
   StyleSheet,
 } from 'react-native';
+import hathorLib from '@hathor/wallet-lib';
 
 import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
 import FeedbackModal from '../components/FeedbackModal';
-
-import hathorLib from '@hathor/wallet-lib';
-
 import baseStyle from '../styles/init';
 import { Strong } from '../utils';
+import checkIcon from '../assets/images/icCheckBig.png';
 
 
 class ChangePin extends React.Component {
@@ -66,6 +65,10 @@ class ChangePin extends React.Component {
     ];
   }
 
+  exitScreen = () => {
+    this.props.navigation.goBack();
+  }
+
   startPinAgain = () => {
     this.setState({
       pin1: '',
@@ -94,9 +97,7 @@ class ChangePin extends React.Component {
   }
 
   nextStep = () => {
-    this.setState({
-      stepIndex: this.state.stepIndex + 1,
-    });
+    this.setState(prevState => ({ stepIndex: prevState.stepIndex + 1 }));
   }
 
   onChangePin2 = (text) => {
@@ -122,7 +123,7 @@ class ChangePin extends React.Component {
     }
   }
 
-  removeOneChar(stateKey, stateColorKey, error) {
+  removeOneChar = (stateKey, stateColorKey, error) => {
     const pin = this.state[stateKey].slice(0, -1);
     if (pin.length === 0) {
       const newState = { error };
@@ -160,50 +161,40 @@ class ChangePin extends React.Component {
     </View>
   )
 
-  getPin2View = () => {
-    return (
-      <View style={this.style.pinView}>
-        <Text style={this.style.pinText}>Please enter your <Strong>new PIN</Strong></Text>
-        <PinInput
-          maxLength={6}
-          onChangeText={this.onChangePin2}
-          color={(this.state.pin2.length < 6 ? 'black' : '#0DA0A0')}
-          value={this.state.pin2}
-          error={this.state.error}
-        />
-      </View>
-    );
-  }
+  getPin2View = () => (
+    <View style={this.style.pinView}>
+      <Text style={this.style.pinText}>Please enter your <Strong>new PIN</Strong></Text>
+      <PinInput
+        maxLength={6}
+        onChangeText={this.onChangePin2}
+        color={(this.state.pin2.length < 6 ? 'black' : '#0DA0A0')}
+        value={this.state.pin2}
+        error={this.state.error}
+      />
+    </View>
+  );
 
-  getPin3View = () => {
-    return (
-      <View style={this.style.pinView}>
-        <Text style={this.style.pinText}>Please enter your <Strong>new PIN</Strong> again</Text>
-        <PinInput
-          maxLength={6}
-          onChangeText={this.onChangePin3}
-          color={this.state.pin3Color}
-          value={this.state.pin3}
-          error={this.state.error}
-        />
-      </View>
-    );
-  }
+  getPin3View = () => (
+    <View style={this.style.pinView}>
+      <Text style={this.style.pinText}>Please enter your <Strong>new PIN</Strong> again</Text>
+      <PinInput
+        maxLength={6}
+        onChangeText={this.onChangePin3}
+        color={this.state.pin3Color}
+        value={this.state.pin3}
+        error={this.state.error}
+      />
+    </View>
+  );
 
-  exitScreen = () => {
-    this.props.navigation.goBack();
-  }
-  
   render() {
-    const renderSuccessModal = () => {
-      return (
-        <FeedbackModal
-          icon={<Image source={require('../assets/images/icCheckBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />}
-          text='New PIN recorded'
-          onDismiss={this.exitScreen}
-        />
-      );
-    }
+    const renderSuccessModal = () => (
+      <FeedbackModal
+        icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
+        text='New PIN recorded'
+        onDismiss={this.exitScreen}
+      />
+    );
 
     const step = this.steps[this.state.stepIndex];
     return (
