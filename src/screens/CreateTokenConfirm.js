@@ -22,9 +22,9 @@ import checkIcon from '../assets/images/icCheckBig.png';
 import errorIcon from '../assets/images/icErrorBig.png';
 
 
-const mapDispatchToProps = dispatch => ({
-  newToken: token => dispatch(newToken(token)),
-  updateSelectedToken: token => dispatch(updateSelectedToken(token)),
+const mapDispatchToProps = (dispatch) => ({
+  newToken: (token) => dispatch(newToken(token)),
+  updateSelectedToken: (token) => dispatch(updateSelectedToken(token)),
 });
 
 /**

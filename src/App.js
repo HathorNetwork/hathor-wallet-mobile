@@ -180,7 +180,7 @@ const AppStack = createStackNavigator({
  * loadHistory {bool} Indicates we're loading the tx history
  * lockScreen {bool} Indicates screen is locked
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   loadHistory: state.loadHistoryStatus.active,
   lockScreen: state.lockScreen,
 });
@@ -247,7 +247,7 @@ const App = () => (
 const createRequestInstance = (resolve, timeout) => {
   const instance = hathorLib.axios.defaultCreateRequestInstance(resolve, timeout);
 
-  instance.interceptors.response.use(response => response, error => Promise.reject(error));
+  instance.interceptors.response.use((response) => response, (error) => Promise.reject(error));
   return instance;
 };
 hathorLib.axios.registerNewCreateRequestInstance(createRequestInstance);

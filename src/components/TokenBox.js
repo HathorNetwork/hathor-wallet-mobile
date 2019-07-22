@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faSortDown } from '@fortawesome/free-solid-svg-icons';
 
 
-const TokenBox = props => (
+const TokenBox = (props) => (
   <TouchableWithoutFeedback onPress={props.onPress}>
     <View style={styles.wrapper}>
       <Text style={styles.label}>{props.label}</Text>

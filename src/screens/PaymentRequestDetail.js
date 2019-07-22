@@ -20,7 +20,7 @@ import { getTokenLabel } from '../utils';
  * token {Object} Invoice token config
  * payment {Object} Transaction with the invoice payment
  */
-const mapInvoiceStateToProps = state => ({
+const mapInvoiceStateToProps = (state) => ({
   address: state.latestInvoice.address,
   amount: state.latestInvoice.amount,
   token: state.latestInvoice.token,

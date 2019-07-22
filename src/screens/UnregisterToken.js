@@ -19,7 +19,7 @@ import { Strong, getTokenLabel } from '../utils';
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
 });
 

@@ -27,7 +27,7 @@ export class About extends React.Component {
   }));
 
   render() {
-    const Link = props => (
+    const Link = (props) => (
       <Text
         style={this.style.link}
         onPress={() => Linking.openURL(props.href)}

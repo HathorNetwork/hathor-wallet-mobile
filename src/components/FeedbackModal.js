@@ -5,7 +5,7 @@ import {
 import PropTypes from 'prop-types';
 import Modal from 'react-native-modal';
 
-const FeedbackModal = props => (
+const FeedbackModal = (props) => (
   <Modal
     isVisible
     animationIn='slideInUp'

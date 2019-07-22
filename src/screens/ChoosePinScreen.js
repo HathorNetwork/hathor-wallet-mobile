@@ -15,7 +15,7 @@ import { setInitWallet, unlockScreen } from '../actions';
 import baseStyle from '../styles/init';
 
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
   setInitWallet: (words, pin) => dispatch(setInitWallet(words, pin)),
 });

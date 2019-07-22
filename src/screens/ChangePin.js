@@ -97,7 +97,7 @@ class ChangePin extends React.Component {
   }
 
   nextStep = () => {
-    this.setState(prevState => ({ stepIndex: prevState.stepIndex + 1 }));
+    this.setState((prevState) => ({ stepIndex: prevState.stepIndex + 1 }));
   }
 
   onChangePin2 = (text) => {

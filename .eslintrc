@@ -5,6 +5,7 @@
   	"react"
   ],
   "rules": {
+    "arrow-parens": ["error", "always"],
     "import/no-named-as-default": 0,
     "import/prefer-default-export": 0,
     "jsx-quotes": ["error", "prefer-single"],

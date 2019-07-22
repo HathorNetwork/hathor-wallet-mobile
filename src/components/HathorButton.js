@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, View } from 'react-native';
 
-const HathorButton = props => (
+const HathorButton = (props) => (
   <View style={props.style ? props.style : null}>
     <Button
       {...props}

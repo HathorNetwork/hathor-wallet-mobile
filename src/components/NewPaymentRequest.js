@@ -17,7 +17,7 @@ import OfflineBar from './OfflineBar';
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
 });
 
@@ -139,7 +139,7 @@ class NewPaymentRequest extends React.Component {
             <View style={{ width: 80, height: 40 }} />
             <AmountTextInput
               ref={this.inputRef}
-              onAmountUpdate={amount => this.setState({ amount })}
+              onAmountUpdate={(amount) => this.setState({ amount })}
               value={this.state.amount}
               style={{ flex: 1 }}
             />

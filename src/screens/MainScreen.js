@@ -30,7 +30,7 @@ import infoIcon from '../assets/icons/info-circle.png';
  * balance {Object} object with token balance {'available', 'locked'}
  * selectedToken {string} uid of the selected token
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   txList: state.tokensHistory[state.selectedToken.uid] || [],
   balance: state.tokensBalance[state.selectedToken.uid] || { available: 0, locked: 0 },
   selectedToken: state.selectedToken,
@@ -414,7 +414,7 @@ class BalanceView extends React.Component {
   });
 
   toggleExpanded = () => {
-    this.setState(prevState => ({ isExpanded: !prevState.isExpanded }));
+    this.setState((prevState) => ({ isExpanded: !prevState.isExpanded }));
   }
 
   renderExpanded() {

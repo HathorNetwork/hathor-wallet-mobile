@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 
-const InputLabel = props => (
+const InputLabel = (props) => (
   <Text
     style={[styles.text, props.style]}
   >

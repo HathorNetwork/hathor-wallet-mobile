@@ -40,7 +40,7 @@ class WelcomeScreen extends React.Component {
   }
 
   render() {
-    const Link = props => (
+    const Link = (props) => (
       <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>
         {props.children}
       </Text>
@@ -248,7 +248,7 @@ class LoadWordsScreen extends React.Component {
 
   onChangeText = (text) => {
     const words = text.trim().split(' ');
-    const nonEmptyWords = words.filter(value => value.length !== 0);
+    const nonEmptyWords = words.filter((value) => value.length !== 0);
     const errorList = [];
 
     for (let i = 0; i < nonEmptyWords.length; i += 1) {

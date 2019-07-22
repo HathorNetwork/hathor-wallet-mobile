@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextInput } from 'react-native';
 
-const HathorTextInput = props => (
+const HathorTextInput = (props) => (
   <TextInput
     {...props}
     style={[{

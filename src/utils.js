@@ -3,7 +3,7 @@ import React from 'react';
 import { Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 
-export const Strong = props => <Text style={{ fontWeight: 'bold' }}>{props.children}</Text>;
+export const Strong = (props) => <Text style={{ fontWeight: 'bold' }}>{props.children}</Text>;
 
 /**
  * Returns the balance for each token in tx, if the input/output belongs to this wallet
@@ -57,7 +57,7 @@ export const getIntegerAmount = (value) => {
   return parsedValue * (10 ** hathorLib.constants.DECIMAL_PLACES);
 };
 
-export const getDecimalsAmount = value => value / (10 ** hathorLib.constants.DECIMAL_PLACES);
+export const getDecimalsAmount = (value) => value / (10 ** hathorLib.constants.DECIMAL_PLACES);
 
 export const getBalance = (tokenUid) => {
   // TODO should have a method in the lib to get balance by token
@@ -93,7 +93,7 @@ export const getAmountParsed = (text) => {
   return parts.join(separator);
 };
 
-export const getTokenLabel = token => `${token.name} (${token.symbol})`;
+export const getTokenLabel = (token) => `${token.name} (${token.symbol})`;
 
 export const setSupportedBiometry = (type) => {
   hathorLib.storage.setItem('mobile:supportedBiometry', type);

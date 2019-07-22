@@ -28,7 +28,7 @@ class NumPad extends React.Component {
   }
 
   render() {
-    const renderRow = rowIndex => (
+    const renderRow = (rowIndex) => (
       <View key={rowIndex} style={style.row}>
         {keysLayout[rowIndex].map((value, index) => {
           const number = value[0];

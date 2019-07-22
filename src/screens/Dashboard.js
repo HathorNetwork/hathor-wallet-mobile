@@ -23,19 +23,19 @@ import { LOCK_TIMEOUT } from '../constants';
  * selectedToken {Object} token currently selected by the user
  * screenLocked {bool} whether the screen is locked
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   tokens: state.tokens,
   tokensBalance: state.tokensBalance,
   selectedToken: state.selectedToken,
   screenLocked: state.lockScreen,
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   resetData: () => dispatch(resetData()),
-  setTokens: tokens => dispatch(setTokens(tokens)),
+  setTokens: (tokens) => dispatch(setTokens(tokens)),
   newTx: (newElement, keys) => dispatch(newTx(newElement, keys)),
-  updateSelectedToken: token => dispatch(updateSelectedToken(token)),
-  setIsOnline: status => dispatch(setIsOnline(status)),
+  updateSelectedToken: (token) => dispatch(updateSelectedToken(token)),
+  setIsOnline: (status) => dispatch(setIsOnline(status)),
   lockScreen: () => dispatch(lockScreen()),
   activateFetchHistory: () => dispatch(activateFetchHistory()),
 });

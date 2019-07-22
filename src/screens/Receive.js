@@ -81,7 +81,7 @@ class ReceiveScreen extends React.Component {
   }
 
   render() {
-    const renderTabBar = props => (
+    const renderTabBar = (props) => (
       <TabBar
         {...props}
         indicatorStyle={{ backgroundColor: '#333' }}
@@ -98,7 +98,7 @@ class ReceiveScreen extends React.Component {
           withBorder
         />
         <TabView
-          renderTabBar={props => renderTabBar(props)}
+          renderTabBar={(props) => renderTabBar(props)}
           navigationState={this.state}
           renderScene={this.renderScene}
           onIndexChange={this.handleIndexChange}

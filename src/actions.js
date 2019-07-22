@@ -27,7 +27,7 @@ export const types = {
 /**
  * status {bool} True for connected, and False for disconnected.
  * */
-export const setIsOnline = status => ({ type: types.SET_IS_ONLINE, payload: status });
+export const setIsOnline = (status) => ({ type: types.SET_IS_ONLINE, payload: status });
 
 /**
  * version {str} version of the connected server (e.g., 0.26.0-beta)
@@ -59,19 +59,19 @@ export const resetData = () => ({ type: types.RESET_DATA });
 /**
  * selectedToken {Object} new token selected
  */
-export const updateSelectedToken = selectedToken => (
+export const updateSelectedToken = (selectedToken) => (
   { type: types.UPDATE_SELECTED_TOKEN, payload: selectedToken }
 );
 
 /**
  * newToken {Object} new token added
  */
-export const newToken = token => ({ type: types.NEW_TOKEN, payload: token });
+export const newToken = (token) => ({ type: types.NEW_TOKEN, payload: token });
 
 /**
  * tokens {Array} list of tokens to update state
  */
-export const setTokens = tokens => ({ type: types.SET_TOKENS, payload: tokens });
+export const setTokens = (tokens) => ({ type: types.SET_TOKENS, payload: tokens });
 
 export const fetchHistoryBegin = () => ({ type: types.FETCH_HISTORY_BEGIN });
 

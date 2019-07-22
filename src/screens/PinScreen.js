@@ -16,11 +16,11 @@ import hathorLogo from '../assets/images/hathor-logo.png';
 /**
  * loadHistoryActive {bool} whether we still need to load history
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   loadHistoryActive: state.loadHistoryStatus.active,
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
   lockScreen: () => dispatch(lockScreen()),
   setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),

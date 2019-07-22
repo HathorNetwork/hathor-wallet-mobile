@@ -26,12 +26,12 @@ import Spinner from '../components/Spinner';
  *   pin {str} pin selected by user
  * }
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   loadHistoryStatus: state.loadHistoryStatus,
   initWallet: state.initWallet,
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   loadHistory: () => dispatch(loadHistory()),
   clearInitWallet: () => dispatch(clearInitWallet()),
 });

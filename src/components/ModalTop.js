@@ -4,7 +4,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
-const ModalTop = props => (
+const ModalTop = (props) => (
   <View style={{
     flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24, marginTop: 16,
   }}

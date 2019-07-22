@@ -20,7 +20,7 @@ import OfflineBar from '../components/OfflineBar';
  * selectedToken {Object} token currently selected by the user
  * tokensBalance {Object} dict with balance for each token
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   tokens: state.tokens,
   selectedToken: state.selectedToken,
   tokensBalance: state.tokensBalance,

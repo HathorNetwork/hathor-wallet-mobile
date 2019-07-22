@@ -6,7 +6,7 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 /**
  * isOnline {bool} Indicates whether the wallet is connected.
  * */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   isOnline: state.isOnline,
 });
 

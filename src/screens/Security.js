@@ -15,7 +15,7 @@ import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen } from '../actions';
 
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   lockScreen: () => dispatch(lockScreen()),
 });
 

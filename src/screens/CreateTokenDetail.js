@@ -11,7 +11,7 @@ import closeIcon from '../assets/icons/icCloseActive.png';
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
 });
 

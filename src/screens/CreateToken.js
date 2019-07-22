@@ -137,14 +137,14 @@ class CreateToken extends React.Component {
               <SimpleInput
                 label='Token Name'
                 maxLength={50}
-                onChangeText={text => this.onChangeText('name', text)}
+                onChangeText={(text) => this.onChangeText('name', text)}
                 value={this.state.name}
                 containerStyle={{ marginBottom: 16 }}
               />
               <SimpleInput
                 label='Token Symbol'
                 maxLength={5}
-                onChangeText={text => this.onChangeText('symbol', text)}
+                onChangeText={(text) => this.onChangeText('symbol', text)}
                 value={this.state.symbol}
                 containerStyle={{ marginBottom: 16 }}
                 autoCapitalize='characters'
@@ -153,7 +153,7 @@ class CreateToken extends React.Component {
                 label='Amount'
                 input={(
                   <AmountTextInput
-                    onAmountUpdate={amount => this.setState({ amount })}
+                    onAmountUpdate={(amount) => this.setState({ amount })}
                     textAlign='left'
                     value={this.state.amount}
                   />

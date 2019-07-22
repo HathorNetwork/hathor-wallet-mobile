@@ -20,11 +20,11 @@ import { Strong } from '../utils';
 /**
  * tokensBalance {Object} dict with balance for each token
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   tokensBalance: state.tokensBalance,
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   sendTx: (amount, address, token, pin) => dispatch(sendTx(amount, address, token, pin)),
 });
 
