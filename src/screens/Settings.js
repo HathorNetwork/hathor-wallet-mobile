@@ -108,7 +108,7 @@ export class Settings extends React.Component {
             />
             <ListMenu
               title="Create a new token"
-              onPress={() => this.props.navigation.navigate('CreateToken')}
+              onPress={() => this.props.navigation.navigate('CreateTokenStack')}
             />
             <ListMenu
               title="Register a token"

@@ -42,7 +42,7 @@ FeedbackModal.propTypes = {
   icon: PropTypes.element.isRequired,
 
   // Text displayed on the modal
-  text: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Text)]).isRequired,
+  text: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
 
   // Function to execute on dismissing the modal
   onDismiss: PropTypes.func,

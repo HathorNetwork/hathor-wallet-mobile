@@ -26,11 +26,19 @@ const SimpleInput = (props) => {
 
   const renderText = () => <Text selectable style={styles.text}>{props.value}</Text>;
 
-  const renderError = () => {
+  const renderAuxiliarText = () => {
+    let text = null;
+    let style = [styles.auxiliarText]
     if (props.error) {
-      return <Text style={styles.error}>{props.error}</Text>;
+      text = props.error;
+      style.push(styles.error);
+    } else if (props.subtitle) {
+      text = props.subtitle;
     }
 
+    if (text) {
+      return <Text style={style}>{text}</Text>;
+    }
     return null;
   };
 
@@ -48,7 +56,7 @@ const SimpleInput = (props) => {
         * be able to select the text
         */}
       {props.editable === false ? renderText() : renderInput()}
-      {renderError()}
+      {renderAuxiliarText()}
     </View>
   );
 };
@@ -71,9 +79,12 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: 12,
   },
-  error: {
+  auxiliarText: {
     marginTop: 8,
     fontSize: 12,
+    color: 'rgba(0, 0, 0, 0.5)',
+  },
+  error: {
     // TODO define better color. Maybe also change underline color to red?
     color: 'red',
   },

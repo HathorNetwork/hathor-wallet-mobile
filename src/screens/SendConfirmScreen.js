@@ -86,7 +86,7 @@ class SendConfirmScreen extends React.Component {
     this.setState({ modal: 
       <FeedbackModal 
         icon={<Image source={require('../assets/images/icCheckBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />}
-        text={`Your transfer of ${this.amountAndToken} has been confirmed`}
+        text={<Text>Your transfer of <Strong>{this.amountAndToken}</Strong> has been confirmed</Text>}
         onDismiss={this.exitScreen}
       />
     });

@@ -3,8 +3,8 @@ import { SafeAreaView } from 'react-native';
 import { connect } from 'react-redux';
 
 import HathorHeader from '../components/HathorHeader';
-import SimpleButton from '../components/SimpleButton';
 import TokenDetails from '../components/TokenDetails';
+import SimpleButton from '../components/SimpleButton';
 
 
 /**
@@ -14,25 +14,25 @@ const mapStateToProps = state => ({
   selectedToken: state.selectedToken,
 });
 
-class TokenDetail extends React.Component {
+class CreateTokenDetail extends React.Component {
   unregisterClicked = () => {
     this.props.navigation.navigate('UnregisterToken');
   }
 
   render() {
-    const renderHeaderRightElement = () => (
+    const CancelButton = () => (
       <SimpleButton
-        title="Unregister"
-        onPress={this.unregisterClicked}
+        icon={require('../assets/icons/icCloseActive.png')}
+        onPress={() => this.props.navigation.navigate('Dashboard')}
       />
     );
 
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
-          title="TOKEN DETAILS"
-          onBackPress={() => this.props.navigation.goBack()}
-          rightElement={renderHeaderRightElement()}
+          title='TOKEN DETAILS'
+          wrapperStyle={{ borderBottomWidth: 0 }}
+          rightElement={<CancelButton />}
         />
         <TokenDetails
           token={this.props.selectedToken}
@@ -43,4 +43,4 @@ class TokenDetail extends React.Component {
   }
 }
 
-export default connect(mapStateToProps)(TokenDetail);
+export default connect(mapStateToProps)(CreateTokenDetail);
