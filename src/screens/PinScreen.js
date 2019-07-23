@@ -10,16 +10,17 @@ import SimpleButton from '../components/SimpleButton';
 import PinInput from '../components/PinInput';
 import { isBiometryEnabled, getSupportedBiometry } from '../utils';
 import { lockScreen, unlockScreen, setLoadHistoryStatus } from '../actions';
+import hathorLogo from '../assets/images/hathor-logo.png';
 
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   loadHistoryActive: state.loadHistoryStatus.active,
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
   lockScreen: () => dispatch(lockScreen()),
   setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),
@@ -86,7 +87,6 @@ class PinScreen extends React.Component {
       this.dismiss(credentials.password);
     }, (error) => {
       // no need to do anything as user can enter pin
-      console.log('error keychain', error);
     });
   }
 
@@ -122,16 +122,6 @@ class PinScreen extends React.Component {
     }
   }
 
-  removeOneChar() {
-    const pin = this.state.pin.slice(0, -1);
-    if (pin.length == 0) {
-      this.setState({ pin: '', error: 'Incorrect PIN Code. Try again.' });
-    } else {
-      this.setState({ pin, pinColor: '#DE3535' });
-      setTimeout(() => this.removeOneChar(), 25);
-    }
-  }
-
   goToReset = () => {
     // navigate to reset screen
     this.props.navigation.navigate('ResetWallet', { onBackPress: () => this.backFromReset() });
@@ -153,6 +143,16 @@ class PinScreen extends React.Component {
     this.props.navigation.navigate('Dashboard');
   }
 
+  removeOneChar = () => {
+    const pin = this.state.pin.slice(0, -1);
+    if (pin.length === 0) {
+      this.setState({ pin: '', error: 'Incorrect PIN Code. Try again.' });
+    } else {
+      this.setState({ pin, pinColor: '#DE3535' });
+      setTimeout(() => this.removeOneChar(), 25);
+    }
+  }
+
   render() {
     const renderButton = () => {
       let title;
@@ -168,19 +168,21 @@ class PinScreen extends React.Component {
         <SimpleButton
           onPress={onPress}
           title={title}
-          textStyle={{ textTransform: 'uppercase', color: 'rgba(0, 0, 0, 0.5)', letterSpacing: 1, padding: 4 }}
+          textStyle={{
+            textTransform: 'uppercase', color: 'rgba(0, 0, 0, 0.5)', letterSpacing: 1, padding: 4,
+          }}
           containerStyle={{ marginTop: 16, marginBottom: 8 }}
         />
       );
-    }
+    };
 
     return (
       <SafeAreaView style={{ flex: 1, alignItems: 'center', marginHorizontal: 16 }}>
         <View style={{ marginVertical: 16, alignItems: 'center', height: 21, width: 120 }}>
           <Image
-            source={require('../assets/images/hathor-logo.png')}
+            source={hathorLogo}
             style={{ height: 21, width: 120 }}
-            resizeMode="contain"
+            resizeMode='contain'
           />
         </View>
         <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>

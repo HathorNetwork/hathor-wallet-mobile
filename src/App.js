@@ -6,18 +6,23 @@
  * @flow
  */
 
-import '../shim.js'
+import '../shim';
 
 import React from 'react';
-import { Modal, Platform, View } from 'react-native';
-import { createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
+import { StyleSheet, View } from 'react-native';
+import {
+  createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer,
+} from 'react-navigation';
 import { Provider, connect } from 'react-redux';
 
-import IconTabBar from './icon-font.js';
+import hathorLib from '@hathor/wallet-lib';
+import IconTabBar from './icon-font';
 
 import { store } from './reducer';
 import DecideStackScreen from './screens/DecideStackScreen';
-import { WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen } from './screens/InitWallet';
+import {
+  WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen,
+} from './screens/InitWallet';
 import ChoosePinScreen from './screens/ChoosePinScreen';
 import MainScreen from './screens/MainScreen';
 import SendScanQRCode from './screens/SendScanQRCode';
@@ -45,8 +50,6 @@ import CreateTokenAmount from './screens/CreateTokenAmount';
 import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
 
-import hathorLib from '@hathor/wallet-lib';
-
 
 const InitStack = createStackNavigator(
   {
@@ -70,7 +73,7 @@ const DashboardStack = createStackNavigator(
   {
     initialRouteName: 'Dashboard',
     headerMode: 'none',
-  }
+  },
 );
 
 const SendStack = createStackNavigator(
@@ -83,7 +86,7 @@ const SendStack = createStackNavigator(
   {
     initialRouteName: 'SendScanQRCode',
     headerMode: 'none',
-  }
+  },
 );
 
 const CreateTokenStack = createStackNavigator(
@@ -108,43 +111,43 @@ const RegisterTokenStack = createStackNavigator(
   {
     initialRouteName: 'RegisterToken',
     headerMode: 'none',
-  }
+  },
 );
 
 const tabBarIconMap = {
-  'Home': 'icDashboard',
-  'Send': 'icSend',
-  'Receive': 'icReceive',
-  'Settings': 'icSettings',
-}
+  Home: 'icDashboard',
+  Send: 'icSend',
+  Receive: 'icReceive',
+  Settings: 'icSettings',
+};
 
 const TabNavigator = createBottomTabNavigator({
-    Home: DashboardStack,
-    Send: SendStack,
-    Receive: ReceiveScreen,
-    Settings: Settings,
-  }, {
-    initialRoute: 'Home',
-    tabBarOptions: {
-      activeTintColor: '#E30052',
-      inactiveTintColor: 'rgba(0, 0, 0, 0.5)',
-      style: {
-        paddingTop: 12,
-        paddingBottom: 12,
-      },
-      tabStyle: {
-        justifyContent: 'center'
-      },
-      showIcon: true,
-      showLabel: false,
+  Home: DashboardStack,
+  Send: SendStack,
+  Receive: ReceiveScreen,
+  Settings,
+}, {
+  initialRoute: 'Home',
+  tabBarOptions: {
+    activeTintColor: '#E30052',
+    inactiveTintColor: 'rgba(0, 0, 0, 0.5)',
+    style: {
+      paddingTop: 12,
+      paddingBottom: 12,
     },
-    defaultNavigationOptions: ({ navigation }) => ({
-      tabBarIcon: ({ focused, horizontal, tintColor }) => {
-        const { routeName } = navigation.state;
-        const iconName = tabBarIconMap[routeName];
-        return <IconTabBar name={iconName} size={24} color={tintColor} />
-      }
-    })
+    tabStyle: {
+      justifyContent: 'center',
+    },
+    showIcon: true,
+    showLabel: false,
+  },
+  defaultNavigationOptions: ({ navigation }) => ({
+    tabBarIcon: ({ tintColor }) => {
+      const { routeName } = navigation.state;
+      const iconName = tabBarIconMap[routeName];
+      return <IconTabBar name={iconName} size={24} color={tintColor} />;
+    },
+  }),
 });
 
 const disableSwipeDown = () => ({
@@ -152,24 +155,24 @@ const disableSwipeDown = () => ({
 });
 
 const AppStack = createStackNavigator({
-    Main: TabNavigator,
-    About,
-    Security,
-    ChangePin,
-    ResetWallet,
-    PaymentRequestDetail,
-    RegisterToken: RegisterTokenStack,
-    ChangeToken,
-    PinScreen: {
-      screen: PinScreen,
-      navigationOptions: disableSwipeDown,
-    },
-    CreateTokenStack,
-    TokenDetail,
-    UnregisterToken,
-  }, {
-    mode: 'modal',
-    headerMode: 'none',
+  Main: TabNavigator,
+  About,
+  Security,
+  ChangePin,
+  ResetWallet,
+  PaymentRequestDetail,
+  RegisterToken: RegisterTokenStack,
+  ChangeToken,
+  PinScreen: {
+    screen: PinScreen,
+    navigationOptions: disableSwipeDown,
+  },
+  CreateTokenStack,
+  TokenDetail,
+  UnregisterToken,
+}, {
+  mode: 'modal',
+  headerMode: 'none',
 });
 
 
@@ -180,23 +183,22 @@ const AppStack = createStackNavigator({
 const mapStateToProps = (state) => ({
   loadHistory: state.loadHistoryStatus.active,
   lockScreen: state.lockScreen,
-})
+});
 
 export class _AppStackWrapper extends React.Component {
   static router = AppStack.router;
 
-  pinScreenRef = React.createRef();
-
-  onShowModal = () => {
-    if (!this.props.lockScreen) {
-      return;
-    }
-
-    const screenRef = this.pinScreenRef.current;
-    if (screenRef && screenRef.pinInputRef.current) {
-      screenRef.pinInputRef.current.focus();
-    }
-  }
+  style = StyleSheet.create({
+    auxView: {
+      backgroundColor: 'white',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 100,
+    },
+  });
 
   render() {
     const renderAuxiliarViews = () => {
@@ -204,15 +206,18 @@ export class _AppStackWrapper extends React.Component {
       // on Android: https://github.com/facebook/react-native/issues/14555
       if (this.props.loadHistory || this.props.lockScreen) {
         return (
-          <View style={{backgroundColor: 'white', position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, zIndex: 100}}>
-            {this.props.lockScreen ? <PinScreen isLockScreen={true} navigation={this.props.navigation} /> : <LoadHistoryScreen />}
+          <View style={this.style.auxView}>
+            {this.props.lockScreen
+              ? <PinScreen isLockScreen navigation={this.props.navigation} />
+              : <LoadHistoryScreen />}
           </View>
-        )
+        );
       }
-    }
+      return null;
+    };
 
     return (
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <AppStack navigation={this.props.navigation} />
         {renderAuxiliarViews()}
       </View>
@@ -223,11 +228,11 @@ export class _AppStackWrapper extends React.Component {
 const AppStackWrapper = connect(mapStateToProps)(_AppStackWrapper);
 
 const SwitchNavigator = createSwitchNavigator({
-    Decide: DecideStackScreen,
-    App: AppStackWrapper,
-    Init: InitStack,
-  }, {
-    initialRouteName: 'Decide',
+  Decide: DecideStackScreen,
+  App: AppStackWrapper,
+  Init: InitStack,
+}, {
+  initialRouteName: 'Decide',
 });
 
 const NavigationContainer = createAppContainer(SwitchNavigator);
@@ -236,21 +241,15 @@ const App = () => (
   <Provider store={store}>
     <NavigationContainer />
   </Provider>
-)
+);
 
 // custom interceptor for axios
 const createRequestInstance = (resolve, timeout) => {
   const instance = hathorLib.axios.defaultCreateRequestInstance(resolve, timeout);
 
-  instance.interceptors.response.use((response) => {
-    return response;
-  }, (error) => {
-    // Adding conditional because if the server forgets to send back the CORS
-    // headers, error.response will be undefined
-    return Promise.reject(error);
-  });
+  instance.interceptors.response.use((response) => response, (error) => Promise.reject(error));
   return instance;
-}
+};
 hathorLib.axios.registerNewCreateRequestInstance(createRequestInstance);
 
 export default App;

@@ -7,20 +7,22 @@ import PropTypes from 'prop-types';
 
 import hathorLib from '@hathor/wallet-lib';
 import { getTokenLabel } from '../utils';
-import SimpleButton from '../components/SimpleButton';
-import CopyClipboard from '../components/CopyClipboard';
+import SimpleButton from './SimpleButton';
+import CopyClipboard from './CopyClipboard';
 
 
 const TokenDetails = (props) => {
   const tokenLabel = getTokenLabel(props.token);
 
-  const configString = hathorLib.tokens.getConfigurationString(props.token.uid, props.token.name, props.token.symbol);
+  const configString = hathorLib.tokens.getConfigurationString(
+    props.token.uid, props.token.name, props.token.symbol
+  );
 
   const shareClicked = () => {
     Share.share({
       message: `Here is the configuration string of token ${tokenLabel}: ${configString}`,
     });
-  }
+  };
 
   return (
     <View style={[styles.contentWrapper, props.contentStyle]}>
@@ -49,7 +51,7 @@ const TokenDetails = (props) => {
       </View>
     </View>
   );
-}
+};
 
 TokenDetails.propTypes = {
   // extra styles for wrapper

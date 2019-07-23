@@ -27,13 +27,15 @@ export const types = {
 /**
  * status {bool} True for connected, and False for disconnected.
  * */
-export const setIsOnline = status => ({ type: types.SET_IS_ONLINE, payload: status });
+export const setIsOnline = (status) => ({ type: types.SET_IS_ONLINE, payload: status });
 
 /**
  * version {str} version of the connected server (e.g., 0.26.0-beta)
  * network {str} network of the connected server (e.g., mainnet, testnet)
  * */
-export const setServerInfo = ({ version, network }) => ({ type: types.SET_SERVER_INFO, payload: { version, network } });
+export const setServerInfo = ({ version, network }) => (
+  { type: types.SET_SERVER_INFO, payload: { version, network } }
+);
 
 /**
  * tx {Object} the new transaction
@@ -46,7 +48,9 @@ export const newTx = (tx, addresses) => ({ type: types.NEW_TX, payload: { tx, ad
  * amount {int} amount to be paid
  * token {Object} token we're expecting to receive
  */
-export const newInvoice = (address, amount, token) => ({ type: types.NEW_INVOICE, payload: { address, amount, token } });
+export const newInvoice = (address, amount, token) => (
+  { type: types.NEW_INVOICE, payload: { address, amount, token } }
+);
 
 export const clearInvoice = () => ({ type: types.CLEAR_INVOICE });
 
@@ -55,17 +59,19 @@ export const resetData = () => ({ type: types.RESET_DATA });
 /**
  * selectedToken {Object} new token selected
  */
-export const updateSelectedToken = selectedToken => ({ type: types.UPDATE_SELECTED_TOKEN, payload: selectedToken });
+export const updateSelectedToken = (selectedToken) => (
+  { type: types.UPDATE_SELECTED_TOKEN, payload: selectedToken }
+);
 
 /**
  * newToken {Object} new token added
  */
-export const newToken = newToken => ({ type: types.NEW_TOKEN, payload: newToken });
+export const newToken = (token) => ({ type: types.NEW_TOKEN, payload: token });
 
 /**
  * tokens {Array} list of tokens to update state
  */
-export const setTokens = tokens => ({ type: types.SET_TOKENS, payload: tokens });
+export const setTokens = (tokens) => ({ type: types.SET_TOKENS, payload: tokens });
 
 export const fetchHistoryBegin = () => ({ type: types.FETCH_HISTORY_BEGIN });
 
@@ -73,11 +79,15 @@ export const fetchHistoryBegin = () => ({ type: types.FETCH_HISTORY_BEGIN });
  * history {Object} history of this wallet (including txs from all tokens)
  * addresses {Array} this wallet addresses
  */
-export const fetchHistorySuccess = (history, addresses) => ({ type: types.FETCH_HISTORY_SUCCESS, payload: { history, addresses } });
+export const fetchHistorySuccess = (history, addresses) => (
+  { type: types.FETCH_HISTORY_SUCCESS, payload: { history, addresses } }
+);
 
 export const fetchHistoryError = () => ({ type: types.FETCH_HISTORY_ERROR });
 
-export const setLoadHistoryStatus = (active, error) => ({ type: types.SET_LOAD_HISTORY_STATUS, payload: { active, error } });
+export const setLoadHistoryStatus = (active, error) => (
+  { type: types.SET_LOAD_HISTORY_STATUS, payload: { active, error } }
+);
 
 export const activateFetchHistory = () => ({ type: types.ACTIVATE_FETCH_HISTORY });
 
@@ -89,7 +99,9 @@ export const lockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: true })
  * addresses {Array} wallet words
  * history {String} Pin chosen by user
  */
-export const setInitWallet = (words, pin) => ({ type: types.SET_INIT_WALLET, payload: { words, pin } });
+export const setInitWallet = (words, pin) => (
+  { type: types.SET_INIT_WALLET, payload: { words, pin } }
+);
 
 export const clearInitWallet = () => ({ type: types.SET_INIT_WALLET, payload: null });
 
@@ -100,7 +112,7 @@ export const clearInitWallet = () => ({ type: types.SET_INIT_WALLET, payload: nu
  * token {Object} token being sent
  * pinCode {String} user's pin
  */
-export const sendTx = (amount, address, token, pinCode) => (dispatch) => {
+export const sendTx = (amount, address, token, pinCode) => () => {
   const data = {};
   const isHathorToken = token.uid === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
   data.tokens = isHathorToken ? [] : [token.uid];
@@ -109,8 +121,8 @@ export const sendTx = (amount, address, token, pinCode) => (dispatch) => {
     address, value: amount, timelock: null, tokenData: isHathorToken ? 0 : 1,
   }];
   const walletData = hathorLib.wallet.getWalletData();
-  const historyTransactions = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
-  const ret = hathorLib.wallet.prepareSendTokensData(data, token, true, historyTransactions, [token]);
+  const historyTxs = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
+  const ret = hathorLib.wallet.prepareSendTokensData(data, token, true, historyTxs, [token]);
   return new Promise((resolve, reject) => {
     if (ret.success) {
       try {
@@ -120,7 +132,8 @@ export const sendTx = (amount, address, token, pinCode) => (dispatch) => {
           reject(error);
         });
       } catch (e) {
-        if (e instanceof hathorLib.errors.AddressError || e instanceof hathorLib.errors.OutputValueError) {
+        if (e instanceof hathorLib.errors.AddressError
+            || e instanceof hathorLib.errors.OutputValueError) {
           reject(e.message);
         }
       }
@@ -141,15 +154,15 @@ export const loadHistory = () => (dispatch) => {
 
     // Load address history.
     hathorLib.wallet.loadAddressHistory(0, hathorLib.constants.GAP_LIMIT).then(() => {
-      const data = hathorLib.wallet.getWalletData();
+      const walletData = hathorLib.wallet.getWalletData();
       // Update historyTransactions with new one
-      const historyTransactions = data.historyTransactions || {};
+      const historyTransactions = walletData.historyTransactions || {};
       const { keys } = hathorLib.wallet.getWalletData();
       dispatch(fetchHistorySuccess(historyTransactions, keys));
-    }, (error) => {
+    }, () => {
       dispatch(fetchHistoryError());
     });
-  }, (error) => {
+  }, () => {
     dispatch(fetchHistoryError());
   });
 };

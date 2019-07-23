@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-  Dimensions, Keyboard, SafeAreaView, View,
-} from 'react-native';
+import { Dimensions, Keyboard, SafeAreaView } from 'react-native';
 
 import { TabBar, TabView } from 'react-native-tab-view';
 import HathorHeader from '../components/HathorHeader';
@@ -14,10 +12,11 @@ class ReceiveScreen extends React.Component {
     super(props);
     /**
      * index {number} Selected index of the tab bar
-     * routes {Array} Array of objects that stores each tab bar option {key, title}
      */
     this.state = {
       index: 0,
+      // eslint thinks routes is not used, but TabView uses it
+      // eslint-disable-next-line react/no-unused-state
       routes: [
         { key: 'address', title: 'My Address' },
         { key: 'paymentRequest', title: 'Payment Request' },
@@ -82,7 +81,7 @@ class ReceiveScreen extends React.Component {
   }
 
   render() {
-    const renderTabBar = props => (
+    const renderTabBar = (props) => (
       <TabBar
         {...props}
         indicatorStyle={{ backgroundColor: '#333' }}
@@ -95,11 +94,11 @@ class ReceiveScreen extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
-          title="RECEIVE"
+          title='RECEIVE'
           withBorder
         />
         <TabView
-          renderTabBar={props => renderTabBar(props)}
+          renderTabBar={(props) => renderTabBar(props)}
           navigationState={this.state}
           renderScene={this.renderScene}
           onIndexChange={this.handleIndexChange}

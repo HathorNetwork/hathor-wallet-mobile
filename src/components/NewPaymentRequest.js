@@ -1,25 +1,23 @@
 import React from 'react';
 import {
-  Dimensions, KeyboardAvoidingView, Platform, StyleSheet, TouchableWithoutFeedback, View, Text,
+  Dimensions, KeyboardAvoidingView, StyleSheet, View,
 } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { connect } from 'react-redux';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faSortDown } from '@fortawesome/free-solid-svg-icons';
+
+import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
 import TokenBox from './TokenBox';
 import { newInvoice } from '../actions';
 import { getIntegerAmount } from '../utils';
-
 import OfflineBar from './OfflineBar';
-import hathorLib from '@hathor/wallet-lib';
 
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
 });
 
@@ -57,6 +55,10 @@ class NewPaymentRequest extends React.Component {
     });
   }
 
+  componentWillUnmount() {
+    this.willFocusEvent.remove();
+  }
+
   focus = () => {
     this.setState({ amount: '', token: this.props.selectedToken });
     this.focusInput();
@@ -70,10 +72,6 @@ class NewPaymentRequest extends React.Component {
 
   onTokenChange = (token) => {
     this.setState({ token });
-  }
-
-  componentWillUnmount() {
-    this.willFocusEvent.remove();
   }
 
   createPaymentRequest = () => {
@@ -112,7 +110,7 @@ class NewPaymentRequest extends React.Component {
     // Status bar + header + tab height
     const topDistance = getStatusBarHeight() + 56 + 48;
 
-    const { height, _ } = Dimensions.get('window');
+    const { height } = Dimensions.get('window');
 
     // For small devices the button was hidden
     const inputMargin = height > 650 ? 64 : 32;
@@ -129,7 +127,7 @@ class NewPaymentRequest extends React.Component {
     });
 
     return (
-      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }} keyboardVerticalOffset={topDistance}>
+      <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={topDistance}>
         <View style={{
           flex: 1, alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 16,
         }}
@@ -141,7 +139,7 @@ class NewPaymentRequest extends React.Component {
             <View style={{ width: 80, height: 40 }} />
             <AmountTextInput
               ref={this.inputRef}
-              onAmountUpdate={amount => this.setState({ amount })}
+              onAmountUpdate={(amount) => this.setState({ amount })}
               value={this.state.amount}
               style={{ flex: 1 }}
             />
@@ -153,7 +151,7 @@ class NewPaymentRequest extends React.Component {
           <View style={buttonWrapperStyle.style}>
             <NewHathorButton
               disabled={this.isButtonDisabled()}
-              title="Create payment request"
+              title='Create payment request'
               onPress={this.createPaymentRequest}
             />
           </View>
@@ -163,24 +161,5 @@ class NewPaymentRequest extends React.Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  pickerContainerStyle: {
-    justifyContent: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    alignSelf: 'stretch',
-  },
-  pickerInputContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    flex: 1,
-    paddingLeft: 8,
-  },
-});
-
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(NewPaymentRequest);

@@ -1,12 +1,10 @@
 import React from 'react';
 import { Alert, SafeAreaView, View } from 'react-native';
 
-import { connect } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
 import QRCodeReader from '../components/QRCodeReader';
 import OfflineBar from '../components/OfflineBar';
 import HathorHeader from '../components/HathorHeader';
-import NewHathorButton from '../components/NewHathorButton';
 import SimpleButton from '../components/SimpleButton';
 import { getTokenLabel, parseQRCode } from '../utils';
 
@@ -57,7 +55,7 @@ class SendScanQRCode extends React.Component {
     const ManualInfoButton = () => (
       <SimpleButton
         withBorder
-        title="Manual info"
+        title='Manual info'
         onPress={() => this.props.navigation.navigate('SendAddressInput')}
       />
     );
@@ -65,15 +63,15 @@ class SendScanQRCode extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
         <HathorHeader
-          title="SEND"
+          title='SEND'
           rightElement={<ManualInfoButton />}
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
         <View style={{ flex: 1, margin: 16, alignSelf: 'stretch' }}>
           <QRCodeReader
-            ref={el => this.QRCodeReader = el}
+            ref={(el) => { this.QRCodeReader = el; }}
             onSuccess={this.onSuccess}
-            bottomText="Scan the QR code"
+            bottomText='Scan the QR code'
             {...this.props}
           />
         </View>

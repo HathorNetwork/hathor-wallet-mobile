@@ -3,6 +3,8 @@ import {
   Dimensions, Image, Platform, StyleSheet, TouchableWithoutFeedback, View,
 } from 'react-native';
 
+import checkLogo from '../assets/images/icCheckBig.png';
+
 class ModalConfirmation extends React.Component {
   /**
    * show {boolean} If should show the modal component
@@ -64,7 +66,7 @@ class ModalConfirmation extends React.Component {
       <TouchableWithoutFeedback onPress={this.hide}>
         <View style={styles.modal}>
           <View style={styles.innerModal}>
-            <Image source={require('../assets/images/icCheckBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />
+            <Image source={checkLogo} style={{ height: 105, width: 105 }} resizeMode='contain' />
             {this.props.body}
           </View>
         </View>

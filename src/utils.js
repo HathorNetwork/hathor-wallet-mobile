@@ -3,7 +3,7 @@ import React from 'react';
 import { Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 
-export const Strong = props => <Text style={{ fontWeight: 'bold' }}>{props.children}</Text>;
+export const Strong = (props) => <Text style={{ fontWeight: 'bold' }}>{props.children}</Text>;
 
 /**
  * Returns the balance for each token in tx, if the input/output belongs to this wallet
@@ -39,14 +39,9 @@ export const getMyTxBalance = (tx, myKeys) => {
   return balance;
 };
 
-export const getShortHash = (hash, length) => {
-  if (!length) {
-    length = 4;
-  }
-  return `${hash.substring(0, length)}...${hash.substring(64 - length, 64)}`;
-};
-
-export const getShortAddress = address => `${address.substring(0, 8)}...${address.substring(26, 34)}`;
+export const getShortHash = (hash, length = 4) => (
+  `${hash.substring(0, length)}...${hash.substring(64 - length, 64)}`
+);
 
 /**
  * Get amount text value and transform in its integer value
@@ -62,13 +57,13 @@ export const getIntegerAmount = (value) => {
   return parsedValue * (10 ** hathorLib.constants.DECIMAL_PLACES);
 };
 
-export const getDecimalsAmount = value => value / (10 ** hathorLib.constants.DECIMAL_PLACES);
+export const getDecimalsAmount = (value) => value / (10 ** hathorLib.constants.DECIMAL_PLACES);
 
 export const getBalance = (tokenUid) => {
   // TODO should have a method in the lib to get balance by token
   const data = hathorLib.wallet.getWalletData();
-  const historyTransactions = 'historyTransactions' in data ? data.historyTransactions : {};
-  const filteredArray = hathorLib.wallet.filterHistoryTransactions(historyTransactions, tokenUid, false);
+  const historyTxs = data.historyTransactions || {};
+  const filteredArray = hathorLib.wallet.filterHistoryTransactions(historyTxs, tokenUid, false);
   const balance = hathorLib.wallet.calculateBalance(filteredArray, tokenUid);
   return balance;
 };
@@ -98,7 +93,7 @@ export const getAmountParsed = (text) => {
   return parts.join(separator);
 };
 
-export const getTokenLabel = token => `${token.name} (${token.symbol})`;
+export const getTokenLabel = (token) => `${token.name} (${token.symbol})`;
 
 export const setSupportedBiometry = (type) => {
   hathorLib.storage.setItem('mobile:supportedBiometry', type);

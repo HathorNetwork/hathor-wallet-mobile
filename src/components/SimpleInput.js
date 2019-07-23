@@ -10,11 +10,11 @@ const SimpleInput = (props) => {
     <TextInput
       {...props}
       style={styles.input}
-      keyboardAppearance="dark"
+      keyboardAppearance='dark'
       autoCorrect={false}
       spellCheck={false}
-      autoCompleteType="off"
-      underlineColorAndroid="transparent"
+      autoCompleteType='off'
+      underlineColorAndroid='transparent'
     />
   );
 
@@ -28,7 +28,7 @@ const SimpleInput = (props) => {
 
   const renderAuxiliarText = () => {
     let text = null;
-    let style = [styles.auxiliarText]
+    const style = [styles.auxiliarText];
     if (props.error) {
       text = props.error;
       style.push(styles.error);

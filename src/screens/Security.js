@@ -1,9 +1,7 @@
 import React from 'react';
 import {
-  Linking,
   StyleSheet,
   SafeAreaView,
-  Text,
   Switch,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -17,7 +15,7 @@ import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen } from '../actions';
 
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   lockScreen: () => dispatch(lockScreen()),
 });
 
@@ -63,7 +61,6 @@ export class Security extends React.Component {
 
 
   render() {
-    const Link = props => <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>{props.children}</Text>;
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? 'No biometry supported' : `Use ${this.supportedBiometry}`);
     return (
@@ -88,7 +85,7 @@ export class Security extends React.Component {
             isFirst
           />
           <ListMenu
-            title="Change PIN"
+            title='Change PIN'
             onPress={() => this.props.navigation.navigate('ChangePin')}
           />
           <ListMenu

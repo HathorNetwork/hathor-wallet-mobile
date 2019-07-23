@@ -9,7 +9,7 @@ import TokenSelect from '../components/TokenSelect';
  * tokens {Array} Array of token configs registered on this wallet
  * tokensBalance {Object} Object with the balance of each token {uid: {available, locked}}
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   tokens: state.tokens,
   tokensBalance: state.tokensBalance,
 });
@@ -34,9 +34,9 @@ class ChangeToken extends React.Component {
   }
 
   render() {
-    const Header = props => (
+    const Header = (props) => (
       <HathorHeader
-        title="TOKENS"
+        title='TOKENS'
         onBackPress={() => this.props.navigation.goBack()}
       />
     );
