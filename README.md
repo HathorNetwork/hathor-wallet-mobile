@@ -13,3 +13,7 @@
 ### Run linter
 
 `npm run lint`
+
+## License
+
+Code released under [the MIT license](https://github.com/HathorNetwork/hathor-wallet-mobile/blob/master/LICENSE).
