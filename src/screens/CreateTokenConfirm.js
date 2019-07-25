@@ -48,30 +48,6 @@ class CreateTokenConfirm extends React.Component {
     this.symbol = this.props.navigation.getParam('symbol');
   }
 
-  getData = () => {
-    const walletData = hathorLib.wallet.getWalletData();
-    if (walletData === null) {
-      return { error: 'Wallet not correctly initialized' };
-    }
-    const historyTransactions = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
-    const inputsData = hathorLib.wallet.getInputsFromAmount(
-      historyTransactions,
-      hathorLib.helpers.minimumAmount(),
-      hathorLib.constants.HATHOR_TOKEN_CONFIG.uid,
-    );
-    if (inputsData.inputs.length === 0) {
-      return { error: 'You don\'t have any Hathor tokens (HTR) available to create your token.' };
-    }
-
-    const input = inputsData.inputs[0];
-    const amount = inputsData.inputsAmount;
-    const outputChange = hathorLib.wallet.getOutputChange(
-      amount, hathorLib.constants.HATHOR_TOKEN_INDEX
-    );
-
-    return { input, output: outputChange };
-  }
-
   executeCreate = (pin) => {
     // show loading modal
     this.setState({
@@ -82,13 +58,9 @@ class CreateTokenConfirm extends React.Component {
           text='Creating token'
         />,
     });
-    const data = this.getData();
-    if (data.error) {
-      this.onError(data.error);
-    }
     const address = hathorLib.wallet.getAddressToUse();
     const retPromise = hathorLib.tokens.createToken(
-      data.input, data.output, address, this.name, this.symbol, this.amount, pin
+      address, this.name, this.symbol, this.amount, pin
     );
     retPromise.then((token) => {
       this.onSuccess(token);
