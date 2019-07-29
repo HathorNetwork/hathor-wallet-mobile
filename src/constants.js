@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) Hathor Labs and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 // Workaround to prevent error when using locale in android
 import 'intl';
 import 'intl/locale-data/jsonp/en';
