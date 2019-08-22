@@ -92,6 +92,7 @@ class CreateTokenConfirm extends React.Component {
     const data = this.getData();
     if (data.error) {
       this.onError(data.error);
+      return;
     }
     const address = hathorLib.wallet.getAddressToUse();
     const retPromise = hathorLib.tokens.createToken(
