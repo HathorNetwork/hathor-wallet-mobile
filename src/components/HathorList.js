@@ -5,8 +5,9 @@ import {
   StyleSheet,
   View,
   Image,
-  Share,
 } from 'react-native';
+
+import chevronRight from '../assets/icons/chevron-right.png';
 
 
 const defaultRadius = 16;
@@ -122,7 +123,8 @@ export class ListItem extends BaseItem {
     const { style } = this;
     return (
       <View style={[this.style.view, ...this.getBorderStyles()]}>
-        {this.props.title && <Text style={[style.title, this.props.titleStyle]}>{this.props.title}</Text>}
+        {this.props.title
+          && <Text style={[style.title, this.props.titleStyle]}>{this.props.title}</Text>}
         {(typeof (this.props.text) === 'string'
           ? <Text style={style.text}>{this.props.text}</Text>
           : this.props.text
@@ -134,7 +136,9 @@ export class ListItem extends BaseItem {
 
 export class ListButton extends BaseItem {
   onPress = () => {
-    this.props.onPress && this.props.onPress();
+    if (this.props.onPress) {
+      this.props.onPress();
+    }
   }
 
   renderInside() {
@@ -155,13 +159,15 @@ export class ListButton extends BaseItem {
 
 export class ListMenu extends Component {
   onPress = () => {
-    this.props.onPress && this.props.onPress();
+    if (this.props.onPress) {
+      this.props.onPress();
+    }
   }
 
   render() {
     return (
       <ListButton
-        button={<Image source={require('../assets/icons/chevron-right.png')} width={24} height={24} />}
+        button={<Image source={chevronRight} width={24} height={24} />}
         {...this.props}
       />
     );

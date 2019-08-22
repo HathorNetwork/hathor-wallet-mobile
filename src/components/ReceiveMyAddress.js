@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Dimensions, Share, StyleSheet, Text, View,
+  Dimensions, Share, StyleSheet, View,
 } from 'react-native';
 
 import QRCode from 'react-native-qrcode-svg';
@@ -30,13 +30,13 @@ class ReceiveMyAddress extends React.Component {
     });
   }
 
+  componentWillUnmount() {
+    this.willFocusEvent.remove();
+  }
+
   getNextAddress = () => {
     const nextAddress = hathorLib.wallet.nextAddress();
     this.setState({ address: nextAddress });
-  }
-
-  componentWillUnmount() {
-    this.willFocusEvent.remove();
   }
 
   shareAddress = () => {
@@ -78,13 +78,13 @@ class ReceiveMyAddress extends React.Component {
         </View>
         <View style={{ flexDirection: 'row' }}>
           <SimpleButton
-            title="New address"
+            title='New address'
             onPress={this.getNextAddress}
             containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
           />
           <SimpleButton
             onPress={this.shareAddress}
-            title="Share"
+            title='Share'
             color='#000'
             containerStyle={styles.buttonContainer}
           />
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'stretch',
     alignItems: 'center',
-    paddingVertical: 16
+    paddingVertical: 16,
   },
   leftButtonBorder: {
     borderRightWidth: 1.5,

@@ -10,7 +10,7 @@ import TokenDetails from '../components/TokenDetails';
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
 });
 
@@ -22,7 +22,7 @@ class TokenDetail extends React.Component {
   render() {
     const renderHeaderRightElement = () => (
       <SimpleButton
-        title="Unregister"
+        title='Unregister'
         onPress={this.unregisterClicked}
       />
     );
@@ -30,7 +30,7 @@ class TokenDetail extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
-          title="TOKEN DETAILS"
+          title='TOKEN DETAILS'
           onBackPress={() => this.props.navigation.goBack()}
           rightElement={renderHeaderRightElement()}
         />
@@ -42,5 +42,6 @@ class TokenDetail extends React.Component {
     );
   }
 }
+
 
 export default connect(mapStateToProps)(TokenDetail);

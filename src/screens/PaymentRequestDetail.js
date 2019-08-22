@@ -11,7 +11,7 @@ import HathorHeader from '../components/HathorHeader';
 import ModalConfirmation from '../components/ModalConfirmation';
 import OfflineBar from '../components/OfflineBar';
 import { clearInvoice } from '../actions';
-import { getShortAddress, getTokenLabel } from '../utils';
+import { getTokenLabel } from '../utils';
 
 
 /**
@@ -20,7 +20,7 @@ import { getShortAddress, getTokenLabel } from '../utils';
  * token {Object} Invoice token config
  * payment {Object} Transaction with the invoice payment
  */
-const mapInvoiceStateToProps = state => ({
+const mapInvoiceStateToProps = (state) => ({
   address: state.latestInvoice.address,
   amount: state.latestInvoice.amount,
   token: state.latestInvoice.token,
@@ -54,7 +54,7 @@ class PaymentRequestDetail extends React.Component {
   render() {
     const renderModalBody = () => (
       <Text style={{ fontSize: 18 }}>
-          You've just received
+          You&apos;ve just received
         <Text style={{ fontWeight: 'bold' }}>
           {` ${hathorLib.helpers.prettyValue(this.props.amount)} ${this.props.token.symbol}`}
         </Text>
@@ -73,7 +73,7 @@ class PaymentRequestDetail extends React.Component {
         {renderPaymentConfirm()}
         <HathorHeader
           withBorder
-          title="PAYMENT REQUEST"
+          title='PAYMENT REQUEST'
           onBackPress={() => this.props.navigation.goBack()}
         />
         <View style={{

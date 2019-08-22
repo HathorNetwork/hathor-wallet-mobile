@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import {
-  ActivityIndicator, AppState, Dimensions, StyleSheet, Text, View,
+  ActivityIndicator, AppState, StyleSheet, Text, View,
 } from 'react-native';
 
 class QRCodeReader extends React.Component {
@@ -77,9 +77,7 @@ class QRCodeReader extends React.Component {
   }
 
   onViewLayout = (e) => {
-    const {
-      x, y, width, height,
-    } = e.nativeEvent.layout;
+    const { width, height } = e.nativeEvent.layout;
     this.setState({ height, width });
   }
 
@@ -94,7 +92,7 @@ class QRCodeReader extends React.Component {
       const height = (this.state.height - this.props.height) / 2;
       const width = (this.state.width - this.props.width) / 2;
 
-      styles = StyleSheet.create({
+      const styles = StyleSheet.create({
         wrapper: {
           flex: 1,
           alignItems: 'center',
@@ -136,7 +134,7 @@ class QRCodeReader extends React.Component {
       }}
       >
         <Text>Opening camera</Text>
-        <ActivityIndicator style={{ marginTop: 16 }} size="small" animating />
+        <ActivityIndicator style={{ marginTop: 16 }} size='small' animating />
       </View>
     );
 

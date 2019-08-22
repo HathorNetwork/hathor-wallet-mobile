@@ -1,10 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { SafeAreaView } from 'react-native';
 import hathorLib from '@hathor/wallet-lib';
 import { resetData } from '../actions';
-import HathorLogo from '../components/HathorLogo';
 
 
 /**

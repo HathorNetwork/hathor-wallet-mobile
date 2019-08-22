@@ -5,66 +5,66 @@ import {
 
 import { getInset } from 'react-native-safe-area-view';
 import hathorLib from '@hathor/wallet-lib';
+import chevronRight from '../assets/icons/chevron-right.png';
 
 
 const safeViewTop = getInset('top');
 const safeViewBottom = getInset('bottom');
 
-class TokenSelect extends React.Component {
-  render() {
-    const renderItem = ({ item, index }) => {
-      const symbolWrapperStyle = [styles.symbolWrapper];
-      const symbolTextStyle = [styles.text, styles.leftText, styles.symbolText];
-      if (this.props.selectedToken && this.props.selectedToken.uid === item.uid) {
-        symbolWrapperStyle.push(styles.symbolWrapperSelected);
-        symbolTextStyle.push(styles.symbolTextSelected);
-      }
+const TokenSelect = (props) => {
+  const renderItem = ({ item, index }) => {
+    const symbolWrapperStyle = [styles.symbolWrapper];
+    const symbolTextStyle = [styles.text, styles.leftText, styles.symbolText];
+    if (props.selectedToken && props.selectedToken.uid === item.uid) {
+      symbolWrapperStyle.push(styles.symbolWrapperSelected);
+      symbolTextStyle.push(styles.symbolTextSelected);
+    }
 
-      const balance = item.uid in this.props.tokensBalance ? this.props.tokensBalance[item.uid].available : 0;
-      return (
-        <TouchableHighlight
-          style={index === 0 ? styles.firstItemWrapper : null}
-          onPress={() => { this.props.onItemPress(item); }}
-          underlayColor="rgba(227, 0, 82, 0.5)"
-        >
-          <View style={styles.itemWrapper}>
-            <View style={styles.itemLeftWrapper}>
-              <View style={symbolWrapperStyle}>
-                <Text style={symbolTextStyle}>{item.symbol}</Text>
-              </View>
-              <Text style={[styles.text, styles.leftText]}>{item.name}</Text>
-            </View>
-            <View style={styles.itemLeftWrapper}>
-              <Text style={[styles.text, styles.rightText]}>
-                {hathorLib.helpers.prettyValue(balance)}
-                {' '}
-                {item.symbol}
-              </Text>
-              {this.props.renderArrow
-                && <Image style={{ marginLeft: 8 }} source={require('../assets/icons/chevron-right.png')} width={24} height={24} />}
-            </View>
-          </View>
-        </TouchableHighlight>
-      );
-    };
-
-    // Can't use SafeAreaView because the list view must go until the end of the screen
+    const balance = item.uid in props.tokensBalance
+      ? props.tokensBalance[item.uid].available : 0;
     return (
-      <View style={styles.wrapper}>
-        {this.props.header}
-        <View style={styles.listWrapper}>
-          <FlatList
-            data={this.props.tokens}
-            // use extraData to make sure list updates (props.tokens might remain the same object)
-            extraData={[this.props.tokensBalance, this.props.selectedToken.uid]}
-            renderItem={renderItem}
-            keyExtractor={(item, index) => item.uid}
-          />
+      <TouchableHighlight
+        style={index === 0 ? styles.firstItemWrapper : null}
+        onPress={() => { props.onItemPress(item); }}
+        underlayColor='rgba(227, 0, 82, 0.5)'
+      >
+        <View style={styles.itemWrapper}>
+          <View style={styles.itemLeftWrapper}>
+            <View style={symbolWrapperStyle}>
+              <Text style={symbolTextStyle}>{item.symbol}</Text>
+            </View>
+            <Text style={[styles.text, styles.leftText]}>{item.name}</Text>
+          </View>
+          <View style={styles.itemLeftWrapper}>
+            <Text style={[styles.text, styles.rightText]}>
+              {hathorLib.helpers.prettyValue(balance)}
+              {' '}
+              {item.symbol}
+            </Text>
+            {props.renderArrow
+              && <Image style={{ marginLeft: 8 }} source={chevronRight} width={24} height={24} />}
+          </View>
         </View>
-      </View>
+      </TouchableHighlight>
     );
-  }
-}
+  };
+
+  // Can't use SafeAreaView because the list view must go until the end of the screen
+  return (
+    <View style={styles.wrapper}>
+      {props.header}
+      <View style={styles.listWrapper}>
+        <FlatList
+          data={props.tokens}
+          // use extraData to make sure list updates (props.tokens might remain the same object)
+          extraData={[props.tokensBalance, props.selectedToken.uid]}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => item.uid}
+        />
+      </View>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   wrapper: {

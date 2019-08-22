@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, Text, View,
+  KeyboardAvoidingView, SafeAreaView, StyleSheet, Text, View,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
@@ -20,7 +20,7 @@ import OfflineBar from '../components/OfflineBar';
  * selectedToken {Object} token currently selected by the user
  * tokensBalance {Object} dict with balance for each token
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   tokens: state.tokens,
   selectedToken: state.selectedToken,
   tokensBalance: state.tokensBalance,
@@ -116,7 +116,7 @@ class SendAmountInput extends React.Component {
           title={`SEND ${this.state.token.name.toUpperCase()}`}
           onBackPress={() => this.props.navigation.goBack()}
         />
-        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
+        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
               <View style={{
@@ -146,7 +146,7 @@ class SendAmountInput extends React.Component {
               <Text style={styles.error}>{this.state.error}</Text>
             </View>
             <NewHathorButton
-              title="Next"
+              title='Next'
               disabled={this.isButtonDisabled()}
               onPress={this.onButtonPress}
             />

@@ -9,3 +9,7 @@
 ## Run
 
 `npm run ios` to open on iOS simulator.
+
+### Run linter
+
+`npm run lint`

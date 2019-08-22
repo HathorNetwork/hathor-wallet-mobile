@@ -1,9 +1,5 @@
 import React from 'react';
-import {
-  AppState,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { AppState, View } from 'react-native';
 import { connect } from 'react-redux';
 
 import * as Keychain from 'react-native-keychain';
@@ -27,19 +23,19 @@ import { LOCK_TIMEOUT } from '../constants';
  * selectedToken {Object} token currently selected by the user
  * screenLocked {bool} whether the screen is locked
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   tokens: state.tokens,
   tokensBalance: state.tokensBalance,
   selectedToken: state.selectedToken,
   screenLocked: state.lockScreen,
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   resetData: () => dispatch(resetData()),
-  setTokens: tokens => dispatch(setTokens(tokens)),
+  setTokens: (tokens) => dispatch(setTokens(tokens)),
   newTx: (newElement, keys) => dispatch(newTx(newElement, keys)),
-  updateSelectedToken: token => dispatch(updateSelectedToken(token)),
-  setIsOnline: status => dispatch(setIsOnline(status)),
+  updateSelectedToken: (token) => dispatch(updateSelectedToken(token)),
+  setIsOnline: (status) => dispatch(setIsOnline(status)),
   lockScreen: () => dispatch(lockScreen()),
   activateFetchHistory: () => dispatch(activateFetchHistory()),
 });
@@ -57,8 +53,15 @@ class Dashboard extends React.Component {
     hathorLib.WebSocketHandler.on('reload_data', this.props.activateFetchHistory);
     hathorLib.WebSocketHandler.on('is_online', this.isOnlineUpdated);
     AppState.addEventListener('change', this._handleAppStateChange);
-    // We need to update the redux tokens with data from localStorage, so the user doesn't have to add the tokens again
+    // We need to update the redux tokens with data from localStorage, so the
+    // user doesn't have to add the tokens again
     this.updateReduxTokens();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.screenLocked && !this.props.screenLocked) {
+      this.backgroundTime = null;
+    }
   }
 
   componentWillUnmount() {
@@ -67,12 +70,6 @@ class Dashboard extends React.Component {
     hathorLib.WebSocketHandler.removeListener('is_online', this.isOnlineUpdated);
     AppState.removeEventListener('change', this._handleAppStateChange);
     this.props.resetData();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.screenLocked && !this.props.screenLocked) {
-      this.backgroundTime = null;
-    }
   }
 
   isOnlineUpdated = (value) => {
@@ -125,10 +122,10 @@ class Dashboard extends React.Component {
   handleWebsocketMsg = (wsData) => {
     if (wsData.type === 'wallet:address_history') {
       // TODO we also have to update some wallet lib data? Lib should do it by itself
-      const walletData = hathorLib.wallet.getWalletData();
-      const historyTransactions = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
-      const allTokens = 'allTokens' in walletData ? walletData.allTokens : [];
-      hathorLib.wallet.updateHistoryData(historyTransactions, allTokens, [wsData.history], null, walletData);
+      const data = hathorLib.wallet.getWalletData();
+      const historyTxs = data.historyTransactions || {};
+      const allTokens = 'allTokens' in data ? data.allTokens : [];
+      hathorLib.wallet.updateHistoryData(historyTxs, allTokens, [wsData.history], null, data);
 
       const newWalletData = hathorLib.wallet.getWalletData();
       const { keys } = newWalletData;
@@ -144,14 +141,14 @@ class Dashboard extends React.Component {
   render() {
     const ManualInfoButton = () => (
       <SimpleButton
-        title="Register token"
+        title='Register token'
         onPress={() => this.props.navigation.navigate('RegisterToken')}
       />
     );
 
     const Header = () => (
       <HathorHeader
-        title="TOKENS"
+        title='TOKENS'
         rightElement={<ManualInfoButton />}
       />
     );

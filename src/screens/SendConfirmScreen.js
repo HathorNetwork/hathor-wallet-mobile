@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  SafeAreaView,
-  Text,
-  View,
-} from 'react-native';
+import { Image, SafeAreaView, Text, View } from 'react-native';
 import { connect } from 'react-redux';
 
 import hathorLib from '@hathor/wallet-lib';
@@ -13,33 +7,33 @@ import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
-import { Strong } from '../utils';
 import HathorHeader from '../components/HathorHeader';
-import { sendTx } from '../actions';
 import OfflineBar from '../components/OfflineBar';
 import Spinner from '../components/Spinner';
 import FeedbackModal from '../components/FeedbackModal';
+import checkIcon from '../assets/images/icCheckBig.png';
+import errorIcon from '../assets/images/icErrorBig.png';
+import { sendTx } from '../actions';
+import { Strong } from '../utils';
 
 
 /**
  * tokensBalance {Object} dict with balance for each token
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   tokensBalance: state.tokensBalance,
 });
 
-const mapDispatchToProps = dispatch => ({
-  sendTx: (amount, address, token, pin, onSuccess, onError) => dispatch(sendTx(amount, address, token, pin, onSuccess, onError)),
+const mapDispatchToProps = (dispatch) => ({
+  sendTx: (amount, address, token, pin) => dispatch(sendTx(amount, address, token, pin)),
 });
 
 class SendConfirmScreen extends React.Component {
   /**
-   * label {string} label to identify who you're sending this tx (optional)
    * modal {FeedbackModal} modal to display. If null, do not display
    * }
    */
   state = {
-    label: null,
     modal: null,
   };
 
@@ -57,19 +51,19 @@ class SendConfirmScreen extends React.Component {
     this.amountAndToken = `${hathorLib.helpers.prettyValue(this.amount)} ${this.token.symbol}`;
   }
 
-  onLabelChange = (text) => {
-    this.setState({ label: text });
-  }
-
   executeSend = (pinCode) => {
     // show loading modal
-    this.setState({ modal: 
-      <FeedbackModal 
-        icon={<Spinner />}
-        text='Your transfer is being processed'
-      />
+    this.setState({
+      modal:
+        // eslint-disable-next-line react/jsx-indent
+        <FeedbackModal
+          icon={<Spinner />}
+          text='Your transfer is being processed'
+        />,
     });
-    this.props.sendTx(this.amount, this.address, this.token, pinCode).then(this.onSuccess, this.onError);
+    this.props.sendTx(this.amount, this.address, this.token, pinCode).then(
+      this.onSuccess, this.onError
+    );
   }
 
   onSendPress = () => {
@@ -83,22 +77,28 @@ class SendConfirmScreen extends React.Component {
   }
 
   onSuccess = () => {
-    this.setState({ modal: 
-      <FeedbackModal 
-        icon={<Image source={require('../assets/images/icCheckBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />}
-        text={<Text>Your transfer of <Strong>{this.amountAndToken}</Strong> has been confirmed</Text>}
-        onDismiss={this.exitScreen}
-      />
+    this.setState({
+      modal:
+        // eslint-disable-next-line react/jsx-indent
+        <FeedbackModal
+          icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
+          text={
+            <Text>Your transfer of <Strong>{this.amountAndToken}</Strong> has been confirmed</Text>
+          }
+          onDismiss={this.exitScreen}
+        />,
     });
   }
 
   onError = (message) => {
-    this.setState({ modal: 
-      <FeedbackModal 
-        icon={<Image source={require('../assets/images/icErrorBig.png')} style={{ height: 105, width: 105 }} resizeMode="contain" />}
-        text={message}
-        onDismiss={() => this.setState({ modal: null })}
-      />
+    this.setState({
+      modal:
+        // eslint-disable-next-line react/jsx-indent
+        <FeedbackModal
+          icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
+          text={message}
+          onDismiss={() => this.setState({ modal: null })}
+        />,
     });
   }
 
@@ -136,14 +136,14 @@ class SendConfirmScreen extends React.Component {
               </InputLabel>
             </View>
             <SimpleInput
-              label="Address"
+              label='Address'
               editable={false}
               value={this.address}
               containerStyle={{ marginTop: 48 }}
             />
           </View>
           <NewHathorButton
-            title="Send"
+            title='Send'
             onPress={this.onSendPress}
             // disable while modal is visible
             disabled={this.state.modal !== null}

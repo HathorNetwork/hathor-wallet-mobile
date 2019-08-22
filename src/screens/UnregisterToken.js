@@ -8,19 +8,18 @@ import {
 } from 'react-native';
 
 import { connect } from 'react-redux';
-import { setTokens } from '../actions';
 import hathorLib from '@hathor/wallet-lib';
+import { setTokens } from '../actions';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import baseStyle from '../styles/init';
-import { Strong } from '../utils';
-import { getTokenLabel } from '../utils';
+import { Strong, getTokenLabel } from '../utils';
 
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
 });
 
@@ -65,19 +64,24 @@ class UnregisterToken extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
-          title="UNREGISTER TOKEN"
+          title='UNREGISTER TOKEN'
           onBackPress={() => this.props.navigation.goBack()}
         />
         <View style={this.style.container}>
           <Text style={this.style.text}>
-            If you unregister this token <Strong>you won't be able to execute operations with it</Strong>, unless you register it again.
+            If you unregister this token
+            {' '}
+            <Strong>you won&apos;t be able to execute operations with it</Strong>
+            , unless you register it again.
           </Text>
           <Text style={this.style.text}>
-            You won't lose your tokens, they will just not appear on this wallet anymore.
+            You won&apos;t lose your tokens, they will just not appear on this wallet anymore.
           </Text>
           <View style={this.style.switchView}>
             <Text style={this.style.switchText}>
-              I want to unregister the token <Strong>{getTokenLabel(this.props.selectedToken)}</Strong>
+              I want to unregister the token
+              {' '}
+              <Strong>{getTokenLabel(this.props.selectedToken)}</Strong>
             </Text>
             <Switch
               onValueChange={this.toggleSwitch}
@@ -88,10 +92,10 @@ class UnregisterToken extends React.Component {
           <View style={this.style.buttonView}>
             <NewHathorButton
               secondary
-              color="#E30052"
+              color='#E30052'
               disabled={!this.state.switchValue}
               onPress={this.unregisterConfirmed}
-              title="Unregister token"
+              title='Unregister token'
             />
           </View>
         </View>

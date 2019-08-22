@@ -22,10 +22,7 @@ class AsyncStorageStore {
 
   setItem(key, value) {
     this.hathorMemoryStorage[key] = value;
-    AsyncStorage.setItem(key, JSON.stringify(value)).then(() => {
-      const allKeys = Object.keys(this.hathorMemoryStorage);
-      keysStr = JSON.stringify(allKeys);
-    });
+    AsyncStorage.setItem(key, JSON.stringify(value));
   }
 
   removeItem(key) {
@@ -34,13 +31,12 @@ class AsyncStorageStore {
   }
 
   clear() {
-    allKeys = Object.keys(this.hathorMemoryStorage);
+    const allKeys = Object.keys(this.hathorMemoryStorage);
     AsyncStorage.multiRemove(allKeys);
     this.hathorMemoryStorage = {};
   }
 
   async preStart() {
-    const keysStr = await AsyncStorage.getItem('hathorMobileKeys');
     let keys = [];
     try {
       keys = await AsyncStorage.getAllKeys();
