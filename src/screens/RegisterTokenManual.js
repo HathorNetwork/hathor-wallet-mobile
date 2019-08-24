@@ -13,6 +13,7 @@ import {
 import { connect } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
+import InfoBox from '../components/InfoBox';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 
@@ -74,32 +75,20 @@ class RegisterTokenManual extends React.Component {
 
   render() {
     const renderTokenView = () => {
-      const styles = StyleSheet.create({
-        text: {
-          fontSize: 14,
-          lineHeight: 24,
-          color: 'rgba(0, 0, 0, 0.5)',
-        },
-        wrapper: {
-          marginVertical: 16,
-          padding: 16,
-          backgroundColor: '#f7f7f7',
-          borderRadius: 8,
-        },
-      });
-
       return (
-        <View style={styles.wrapper}>
-          <Text style={styles.text}>You&apos;re going to register the following token:</Text>
-          <Text style={styles.text}>
-            <Strong>Name: </Strong>
-            {this.state.token.name}
-          </Text>
-          <Text style={styles.text}>
-            <Strong>Symbol: </Strong>
-            {this.state.token.symbol}
-          </Text>
-        </View>
+        <InfoBox
+          items={[
+            <Text style={{}}>You&apos;re going to register the following token:</Text>,
+            <Text style={{}}>
+              <Strong>Name: </Strong>
+              {this.state.token.name}
+            </Text>,
+            <Text style={{}}>
+              <Strong>Symbol: </Strong>
+              {this.state.token.symbol}
+            </Text>
+          ]}
+        />
       );
     };
 
