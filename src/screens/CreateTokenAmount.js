@@ -119,8 +119,8 @@ class CreateTokenAmount extends React.Component {
             <View>
               <InfoBox
                 items={[
-                  <Text>Deposit: <Text style={amountStyle}>{hathorLib.helpers.prettyValue(this.state.deposit)}</Text> HTR</Text>,
-                  <Text>You have <Strong><Text style={amountStyle}>{hathorLib.helpers.prettyValue(this.props.balance.available)}</Text> HTR</Strong> available</Text>
+                  <Text>Deposit: <Strong style={amountStyle}>{hathorLib.helpers.prettyValue(this.state.deposit)} HTR</Strong></Text>,
+                  <Text>You have <Strong style={amountStyle}>{hathorLib.helpers.prettyValue(this.props.balance.available)} HTR</Strong> available</Text>
                 ]}
               />
               <NewHathorButton

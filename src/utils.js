@@ -10,7 +10,7 @@ import React from 'react';
 import { Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 
-export const Strong = (props) => <Text style={{ fontWeight: 'bold' }}>{props.children}</Text>;
+export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
 export const Italic = (props) => <Text style={[{fontStyle: 'italic'}, props.style]}>{props.children}</Text>;
 
