@@ -9,6 +9,7 @@ import React from 'react';
 import {
   StyleSheet, Text, View,
 } from 'react-native';
+import PropTypes from 'prop-types';
 
 const InfoBox = (props) => {
   const items = props.items.map((item, index) => {
@@ -22,7 +23,10 @@ const InfoBox = (props) => {
   );
 };
 
-//TODO add proptypes
+InfoBox.propTypes = {
+  // The lines to display on this InfoBox
+  items: PropTypes.arrayOf(PropTypes.element).isRequired,
+};
 
 const styles = StyleSheet.create({
   text: {
