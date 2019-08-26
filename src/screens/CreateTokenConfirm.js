@@ -166,13 +166,13 @@ class CreateTokenConfirm extends React.Component {
               />
             </View>
             <SimpleInput
-              label='Name'
+              label='Token name'
               editable={false}
               value={this.name}
               containerStyle={{ marginTop: 48 }}
             />
             <SimpleInput
-              label='Symbol'
+              label='Token symbol'
               editable={false}
               value={this.symbol}
               containerStyle={{ marginTop: 32 }}

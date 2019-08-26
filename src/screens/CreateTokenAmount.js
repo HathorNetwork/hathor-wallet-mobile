@@ -35,11 +35,11 @@ const mapStateToProps = (state) => ({
 class CreateTokenAmount extends React.Component {
   /**
    * amount {string} amount of tokens to create
-   * deposit {string} HTR deposit required for creating the amount
+   * deposit {number} HTR deposit required for creating the amount
    */
   state = {
     amount: '',
-    deposit: '0.00',
+    deposit: 0,
   };
 
   constructor(props) {
@@ -68,7 +68,7 @@ class CreateTokenAmount extends React.Component {
 
   onAmountChange = (text) => {
     const amount = getIntegerAmount(text);
-    const deposit = (amount ? hathorLib.helpers.prettyValue(hathorLib.helpers.getDepositAmount(amount)) : '0.00');
+    const deposit = (amount ? hathorLib.helpers.getDepositAmount(amount) : 0);
     this.setState({ amount: text, deposit: deposit });
   }
 
@@ -81,13 +81,22 @@ class CreateTokenAmount extends React.Component {
     if (this.state.amount === '') {
       return true;
     }
+
     if (getIntegerAmount(this.state.amount) === 0) {
       return true;
     }
+    
+    // disabled if we don't have required deposit
+    if (this.state.deposit > this.props.balance.available) {
+      return true;
+    }
+
     return false;
   }
 
   render() {
+    const amountStyle = (this.state.deposit > this.props.balance.available ? {color: 'red'} : {});
+
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
@@ -110,8 +119,8 @@ class CreateTokenAmount extends React.Component {
             <View>
               <InfoBox
                 items={[
-                  <Text>Deposit: {this.state.deposit} HTR</Text>,
-                  <Text>You have <Strong>{hathorLib.helpers.prettyValue(this.props.balance.available)} HTR</Strong> available</Text>
+                  <Text>Deposit: <Text style={amountStyle}>{hathorLib.helpers.prettyValue(this.state.deposit)}</Text> HTR</Text>,
+                  <Text>You have <Strong><Text style={amountStyle}>{hathorLib.helpers.prettyValue(this.props.balance.available)}</Text> HTR</Strong> available</Text>
                 ]}
               />
               <NewHathorButton

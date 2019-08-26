@@ -11,24 +11,12 @@ import {
 } from 'react-native';
 
 const InfoBox = (props) => {
-  const renderIcon = () => {
-    if (props.icon) {
-      return (
-        <View style={[styles.icon, props.iconStyle]}>
-          <Image source={props.icon} />
-        </View>
-      );
-    }
-
-    return null;
-  };
-
   const items = props.items.map((item, index) => {
     return React.cloneElement(item, {style: [styles.text, item.style], key: index});
   });
 
   return (
-    <View style={[styles.wrapper, styles.text]}>
+    <View style={styles.wrapper}>
       {items}
     </View>
   );
