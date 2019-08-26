@@ -106,7 +106,7 @@ class CreateTokenAmount extends React.Component {
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-            <View style={{ marginTop: 40 }}>
+            <View style={{ marginTop: 24 }}>
               <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
                 {`Amount of ${this.name} (${this.symbol})`}
               </InputLabel>

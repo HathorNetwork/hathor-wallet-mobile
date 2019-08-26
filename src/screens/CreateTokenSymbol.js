@@ -65,17 +65,14 @@ class CreateTokenSymbol extends React.Component {
               label='Token symbol'
               autoFocus
               autoCapitalize='characters'
-              subtitle='Maximum of 5 characters'
+              subtitle='Between 2 and 5 characters'
               onChangeText={this.onSymbolChange}
               value={this.state.symbol}
             />
             <View>
               <InfoBox
                 items={[
-                  <Text>
-                    This is a smaller version of the token name. Symbols can{' '}
-                    have between 2 and 5 characters.
-                  </Text>,
+                  <Text>The symbol is a smaller version of the token name</Text>,
                   <Italic>E.g. HTR</Italic>
                 ]}
               />
