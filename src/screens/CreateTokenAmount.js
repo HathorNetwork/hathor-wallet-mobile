@@ -8,7 +8,6 @@
 import React from 'react';
 import { KeyboardAvoidingView, SafeAreaView, Text, View } from 'react-native';
 import { connect } from 'react-redux';
-import { getStatusBarHeight } from 'react-native-status-bar-height';
 
 import hathorLib from '@hathor/wallet-lib';
 import AmountTextInput from '../components/AmountTextInput';
@@ -17,7 +16,7 @@ import InfoBox from '../components/InfoBox';
 import InputLabel from '../components/InputLabel';
 import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
-import { getIntegerAmount, Strong } from '../utils';
+import { getIntegerAmount, getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 
 
 /**
@@ -103,8 +102,9 @@ class CreateTokenAmount extends React.Component {
         <HathorHeader
           title='CREATE TOKEN'
           onBackPress={() => this.props.navigation.goBack()}
+          onCancel={() => this.props.navigation.dismiss()}
         />
-        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
+        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View style={{ marginTop: 40 }}>
               <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
