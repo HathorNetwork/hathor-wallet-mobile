@@ -39,6 +39,18 @@ class CreateTokenSymbol extends React.Component {
     this.props.navigation.navigate('CreateTokenAmount', { name, symbol: this.state.symbol });
   }
 
+  isButtonDisabled = () => {
+    if (!this.state.symbol) {
+      return true;
+    }
+
+    if (this.state.symbol.length < 2) {
+      return true;
+    }
+
+    return false;
+  }
+
   render() {
     return (
       <SafeAreaView style={{ flex: 1 }}>
@@ -65,8 +77,7 @@ class CreateTokenSymbol extends React.Component {
               />
               <NewHathorButton
                 title='Next'
-                //TODO enable only after 2 chars
-                disabled={!this.state.symbol}
+                disabled={this.isButtonDisabled()}
                 onPress={this.onButtonPress}
               />
             </View>
