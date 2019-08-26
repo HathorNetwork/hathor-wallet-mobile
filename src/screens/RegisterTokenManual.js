@@ -78,12 +78,12 @@ class RegisterTokenManual extends React.Component {
       return (
         <InfoBox
           items={[
-            <Text style={{}}>You&apos;re going to register the following token:</Text>,
-            <Text style={{}}>
+            <Text>You&apos;re going to register the following token:</Text>,
+            <Text>
               <Strong>Name: </Strong>
               {this.state.token.name}
             </Text>,
-            <Text style={{}}>
+            <Text>
               <Strong>Symbol: </Strong>
               {this.state.token.symbol}
             </Text>

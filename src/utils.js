@@ -12,6 +12,8 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 
 export const Strong = (props) => <Text style={{ fontWeight: 'bold' }}>{props.children}</Text>;
 
+export const Italic = (props) => <Text style={[{fontStyle: 'italic'}, props.style]}>{props.children}</Text>;
+
 /**
  * Returns the balance for each token in tx, if the input/output belongs to this wallet
  */
@@ -63,8 +65,6 @@ export const getIntegerAmount = (value) => {
   const parsedValue = parseFloat(value.replace(',', '.'));
   return parsedValue * (10 ** hathorLib.constants.DECIMAL_PLACES);
 };
-
-export const getDecimalsAmount = (value) => value / (10 ** hathorLib.constants.DECIMAL_PLACES);
 
 export const getBalance = (tokenUid) => {
   // TODO should have a method in the lib to get balance by token

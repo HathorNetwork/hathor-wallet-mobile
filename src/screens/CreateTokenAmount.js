@@ -6,16 +6,26 @@
  */
 
 import React from 'react';
-import { KeyboardAvoidingView, SafeAreaView, View } from 'react-native';
+import { KeyboardAvoidingView, SafeAreaView, Text, View } from 'react-native';
+import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 
-import NewHathorButton from '../components/NewHathorButton';
+import hathorLib from '@hathor/wallet-lib';
 import AmountTextInput from '../components/AmountTextInput';
-import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
-import { getIntegerAmount } from '../utils';
+import InfoBox from '../components/InfoBox';
+import InputLabel from '../components/InputLabel';
+import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
+import { getIntegerAmount, Strong } from '../utils';
 
+
+/**
+ * balance {Object} object with token balance {'available', 'locked'}
+ */
+const mapStateToProps = (state) => ({
+  balance: state.tokensBalance[hathorLib.constants.HATHOR_TOKEN_CONFIG.uid] || { available: 0, locked: 0 },
+});
 
 /**
  * This screen expect the following parameters on the navigation:
@@ -25,9 +35,11 @@ import OfflineBar from '../components/OfflineBar';
 class CreateTokenAmount extends React.Component {
   /**
    * amount {string} amount of tokens to create
+   * deposit {string} HTR deposit required for creating the amount
    */
   state = {
     amount: '',
+    deposit: '0.00',
   };
 
   constructor(props) {
@@ -35,6 +47,7 @@ class CreateTokenAmount extends React.Component {
     this.inputRef = React.createRef();
     this.willFocusEvent = null;
     this.name = this.props.navigation.getParam('name');
+    this.symbol = this.props.navigation.getParam('symbol');
   }
 
   componentDidMount() {
@@ -54,14 +67,14 @@ class CreateTokenAmount extends React.Component {
   }
 
   onAmountChange = (text) => {
-    this.setState({ amount: text });
+    const amount = getIntegerAmount(text);
+    const deposit = (amount ? hathorLib.helpers.prettyValue(hathorLib.helpers.getDepositAmount(amount)) : '0.00');
+    this.setState({ amount: text, deposit: deposit });
   }
 
   onButtonPress = () => {
     const amount = getIntegerAmount(this.state.amount);
-    const name = this.props.navigation.getParam('name');
-    const symbol = this.props.navigation.getParam('symbol');
-    this.props.navigation.navigate('CreateTokenConfirm', { name, symbol, amount });
+    this.props.navigation.navigate('CreateTokenConfirm', { name: this.name, symbol: this.symbol, amount });
   }
 
   isButtonDisabled = () => {
@@ -85,7 +98,7 @@ class CreateTokenAmount extends React.Component {
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View style={{ marginTop: 40 }}>
               <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
-                {`Amount of ${this.name}`}
+                {`Amount of ${this.name} (${this.symbol})`}
               </InputLabel>
               <AmountTextInput
                 ref={this.inputRef}
@@ -94,11 +107,19 @@ class CreateTokenAmount extends React.Component {
                 value={this.state.amount}
               />
             </View>
-            <NewHathorButton
-              title='Next'
-              disabled={this.isButtonDisabled()}
-              onPress={this.onButtonPress}
-            />
+            <View>
+              <InfoBox
+                items={[
+                  <Text>Deposit: {this.state.deposit} HTR</Text>,
+                  <Text>You have <Strong>{hathorLib.helpers.prettyValue(this.props.balance.available)} HTR</Strong> available</Text>
+                ]}
+              />
+              <NewHathorButton
+                title='Next'
+                disabled={this.isButtonDisabled()}
+                onPress={this.onButtonPress}
+              />
+            </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
@@ -107,4 +128,4 @@ class CreateTokenAmount extends React.Component {
   }
 }
 
-export default CreateTokenAmount;
+export default connect(mapStateToProps)(CreateTokenAmount);

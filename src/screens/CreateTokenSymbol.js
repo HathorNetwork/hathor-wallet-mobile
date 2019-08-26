@@ -6,13 +6,14 @@
  */
 
 import React from 'react';
-import { KeyboardAvoidingView, SafeAreaView, View } from 'react-native';
+import { KeyboardAvoidingView, SafeAreaView, Text, View } from 'react-native';
 
-import NewHathorButton from '../components/NewHathorButton';
-import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
-import { getKeyboardAvoidingViewTopDistance } from '../utils';
+import InfoBox from '../components/InfoBox';
+import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
+import SimpleInput from '../components/SimpleInput';
+import { getKeyboardAvoidingViewTopDistance, Italic } from '../utils';
 
 
 /**
@@ -55,11 +56,20 @@ class CreateTokenSymbol extends React.Component {
               onChangeText={this.onSymbolChange}
               value={this.state.symbol}
             />
-            <NewHathorButton
-              title='Next'
-              disabled={!this.state.symbol}
-              onPress={this.onButtonPress}
-            />
+            <View>
+              <InfoBox
+                items={[
+                  <Text>This is a smaller version of the token name. Symbols can have between 2 and 5 characters.</Text>,
+                  <Italic>E.g. HTR</Italic>
+                ]}
+              />
+              <NewHathorButton
+                title='Next'
+                //TODO enable only after 2 chars
+                disabled={!this.state.symbol}
+                onPress={this.onButtonPress}
+              />
+            </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>

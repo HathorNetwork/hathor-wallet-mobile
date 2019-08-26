@@ -6,13 +6,14 @@
  */
 
 import React from 'react';
-import { KeyboardAvoidingView, SafeAreaView, View } from 'react-native';
+import { KeyboardAvoidingView, SafeAreaView, Text, View } from 'react-native';
 
-import NewHathorButton from '../components/NewHathorButton';
-import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
-import { getKeyboardAvoidingViewTopDistance } from '../utils';
+import InfoBox from '../components/InfoBox';
+import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
+import SimpleInput from '../components/SimpleInput';
+import { getKeyboardAvoidingViewTopDistance, Italic } from '../utils';
 
 
 class CreateTokenName extends React.Component {
@@ -46,11 +47,19 @@ class CreateTokenName extends React.Component {
               onChangeText={this.onNameChange}
               value={this.state.name}
             />
-            <NewHathorButton
-              title='Next'
-              disabled={!this.state.name}
-              onPress={this.onButtonPress}
-            />
+            <View>
+              <InfoBox
+                items={[
+                  <Text>Token name should be the full name of the new token you are creating</Text>,
+                  <Italic>E.g. Hathor</Italic>
+                ]}
+              />
+              <NewHathorButton
+                title='Next'
+                disabled={!this.state.name}
+                onPress={this.onButtonPress}
+              />
+            </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
