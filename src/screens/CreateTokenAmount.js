@@ -24,7 +24,8 @@ import { getIntegerAmount, Strong } from '../utils';
  * balance {Object} object with token balance {'available', 'locked'}
  */
 const mapStateToProps = (state) => ({
-  balance: state.tokensBalance[hathorLib.constants.HATHOR_TOKEN_CONFIG.uid] || { available: 0, locked: 0 },
+  balance: (state.tokensBalance[hathorLib.constants.HATHOR_TOKEN_CONFIG.uid]
+            || { available: 0, locked: 0 }),
 });
 
 /**
@@ -69,7 +70,7 @@ class CreateTokenAmount extends React.Component {
   onAmountChange = (text) => {
     const amount = getIntegerAmount(text);
     const deposit = (amount ? hathorLib.helpers.getDepositAmount(amount) : 0);
-    this.setState({ amount: text, deposit: deposit });
+    this.setState({ amount: text, deposit });
   }
 
   onButtonPress = () => {
@@ -85,7 +86,7 @@ class CreateTokenAmount extends React.Component {
     if (getIntegerAmount(this.state.amount) === 0) {
       return true;
     }
-    
+
     // disabled if we don't have required deposit
     if (this.state.deposit > this.props.balance.available) {
       return true;
@@ -95,7 +96,7 @@ class CreateTokenAmount extends React.Component {
   }
 
   render() {
-    const amountStyle = (this.state.deposit > this.props.balance.available ? {color: 'red'} : {});
+    const amountStyle = (this.state.deposit > this.props.balance.available ? { color: 'red' } : {});
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
@@ -119,8 +120,12 @@ class CreateTokenAmount extends React.Component {
             <View>
               <InfoBox
                 items={[
-                  <Text>Deposit: <Strong style={amountStyle}>{hathorLib.helpers.prettyValue(this.state.deposit)} HTR</Strong></Text>,
-                  <Text>You have <Strong style={amountStyle}>{hathorLib.helpers.prettyValue(this.props.balance.available)} HTR</Strong> available</Text>
+                  <Text>Deposit: <Strong style={amountStyle}>
+                    {hathorLib.helpers.prettyValue(this.state.deposit)} HTR
+                  </Strong></Text>,
+                  <Text>You have <Strong style={amountStyle}>
+                    {hathorLib.helpers.prettyValue(this.props.balance.available)} HTR
+                  </Strong> available</Text>
                 ]}
               />
               <NewHathorButton

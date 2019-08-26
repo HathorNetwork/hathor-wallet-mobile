@@ -71,7 +71,10 @@ class CreateTokenSymbol extends React.Component {
             <View>
               <InfoBox
                 items={[
-                  <Text>This is a smaller version of the token name. Symbols can have between 2 and 5 characters.</Text>,
+                  <Text>
+                    This is a smaller version of the token name. Symbols can{' '}
+                    have between 2 and 5 characters.
+                  </Text>,
                   <Italic>E.g. HTR</Italic>
                 ]}
               />

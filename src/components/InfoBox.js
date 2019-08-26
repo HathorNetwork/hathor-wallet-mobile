@@ -6,15 +6,14 @@
  */
 
 import React from 'react';
-import {
-  StyleSheet, Text, View,
-} from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import PropTypes from 'prop-types';
 
 const InfoBox = (props) => {
-  const items = props.items.map((item, index) => {
-    return React.cloneElement(item, {style: [styles.text, item.style], key: index});
-  });
+  /* eslint-disable react/no-array-index-key */
+  const items = props.items.map((item, index) => (
+    React.cloneElement(item, { style: [styles.text, item.style], key: index })
+  ));
 
   return (
     <View style={styles.wrapper}>

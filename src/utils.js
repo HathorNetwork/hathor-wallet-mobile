@@ -12,7 +12,7 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
-export const Italic = (props) => <Text style={[{fontStyle: 'italic'}, props.style]}>{props.children}</Text>;
+export const Italic = (props) => <Text style={[{ fontStyle: 'italic' }, props.style]}>{props.children}</Text>;
 
 /**
  * Returns the balance for each token in tx, if the input/output belongs to this wallet

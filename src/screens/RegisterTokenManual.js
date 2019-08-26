@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {
-  Keyboard, KeyboardAvoidingView, SafeAreaView, StyleSheet, Text, View,
+  Keyboard, KeyboardAvoidingView, SafeAreaView, Text, View,
 } from 'react-native';
 
 import { connect } from 'react-redux';
@@ -74,23 +74,21 @@ class RegisterTokenManual extends React.Component {
   }
 
   render() {
-    const renderTokenView = () => {
-      return (
-        <InfoBox
-          items={[
-            <Text>You&apos;re going to register the following token:</Text>,
-            <Text>
-              <Strong>Name: </Strong>
-              {this.state.token.name}
-            </Text>,
-            <Text>
-              <Strong>Symbol: </Strong>
-              {this.state.token.symbol}
-            </Text>
-          ]}
-        />
-      );
-    };
+    const renderTokenView = () => (
+      <InfoBox
+        items={[
+          <Text>You&apos;re going to register the following token:</Text>,
+          <Text>
+            <Strong>Name: </Strong>
+            {this.state.token.name}
+          </Text>,
+          <Text>
+            <Strong>Symbol: </Strong>
+            {this.state.token.symbol}
+          </Text>
+        ]}
+      />
+    );
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
