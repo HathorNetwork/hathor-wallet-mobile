@@ -43,6 +43,7 @@ import ChangePin from './screens/ChangePin';
 import ResetWallet from './screens/ResetWallet';
 import Dashboard from './screens/Dashboard';
 import LoadHistoryScreen from './screens/LoadHistoryScreen';
+import CreateTokenDepositNotice from './screens/CreateTokenDepositNotice';
 import CreateTokenName from './screens/CreateTokenName';
 import CreateTokenSymbol from './screens/CreateTokenSymbol';
 import CreateTokenAmount from './screens/CreateTokenAmount';
@@ -90,6 +91,7 @@ const SendStack = createStackNavigator(
 
 const CreateTokenStack = createStackNavigator(
   {
+    CreateTokenDepositNotice,
     CreateTokenName,
     CreateTokenSymbol,
     CreateTokenAmount,
@@ -97,7 +99,7 @@ const CreateTokenStack = createStackNavigator(
     CreateTokenDetail,
   },
   {
-    initialRouteName: 'CreateTokenName',
+    initialRouteName: 'CreateTokenDepositNotice',
     headerMode: 'none',
   }
 );

@@ -7,12 +7,19 @@
 
 import hathorLib from '@hathor/wallet-lib';
 import React from 'react';
-import { Platform, Text } from 'react-native';
+import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
+import baseStyle from './styles/init';
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
 export const Italic = (props) => <Text style={[{ fontStyle: 'italic' }, props.style]}>{props.children}</Text>;
+
+export const Link = (props) => (
+  <Text style={baseStyle.link} onPress={() => Linking.openURL(props.href)}>
+    {props.children}
+  </Text>
+);
 
 /**
  * Returns the balance for each token in tx, if the input/output belongs to this wallet

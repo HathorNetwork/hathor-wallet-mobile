@@ -12,7 +12,6 @@ import React from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
-  Linking,
   SafeAreaView,
   StyleSheet,
   Switch,
@@ -25,7 +24,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 
 import baseStyle from '../styles/init';
-import { Strong } from '../utils';
+import { Link, Strong } from '../utils';
 
 class WelcomeScreen extends React.Component {
   state = { switchValue: false };
@@ -47,12 +46,6 @@ class WelcomeScreen extends React.Component {
   }
 
   render() {
-    const Link = (props) => (
-      <Text style={this.style.link} onPress={() => Linking.openURL(props.href)}>
-        {props.children}
-      </Text>
-    );
-
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader withLogo />
