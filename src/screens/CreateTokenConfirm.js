@@ -178,6 +178,12 @@ class CreateTokenConfirm extends React.Component {
               value={this.symbol}
               containerStyle={{ marginTop: 32 }}
             />
+            <SimpleInput
+              label='Deposit'
+              editable={false}
+              value={`${hathorLib.helpers.prettyValue(hathorLib.helpers.getDepositAmount(this.amount))} HTR`}
+              containerStyle={{ marginTop: 32 }}
+            />
           </View>
           <NewHathorButton
             title='Create token'
