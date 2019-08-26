@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 
+import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
@@ -37,8 +38,11 @@ class CreateTokenDepositNotice extends React.Component {
         <View style={this.style.container}>
           <View>
             <Text style={this.style.text}>
-              When creating new tokens, a <Text style={this.style.link}>deposit of {1}%</Text> in
-              HTR is required. So if you create 1000 NewCoins, 10 HTR are needed as deposit.
+              When creating new tokens, a{' '}
+              <Text style={this.style.link}>
+                deposit of {hathorLib.tokens.getDepositPercentage() * 100}%{' '}
+              </Text>
+              in HTR is required - e.g. if you create 1000 NewCoins, 10 HTR are needed as deposit.
             </Text>
             <Text style={this.style.text}>
               If these tokens are later melted, the HTR deposit will be returned. Read more about it{' '}
