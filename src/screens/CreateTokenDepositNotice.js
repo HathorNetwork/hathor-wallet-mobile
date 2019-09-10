@@ -18,6 +18,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import { Link } from '../utils';
+import { TOKEN_DEPOSIT_URL } from '../constants';
 
 
 class CreateTokenDepositNotice extends React.Component {
@@ -47,7 +48,7 @@ class CreateTokenDepositNotice extends React.Component {
             </Text>
             <Text style={this.style.text}>
               If these tokens are later melted, the HTR deposit will be returned. Read more about it{' '}
-              <Link href='https://gitlab.com/HathorNetwork/rfcs/blob/master/text/0011-token-deposit.md'>here</Link>
+              <Link href={TOKEN_DEPOSIT_URL}>here</Link>
               .
             </Text>
           </View>
