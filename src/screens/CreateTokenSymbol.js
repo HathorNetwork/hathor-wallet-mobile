@@ -48,6 +48,10 @@ class CreateTokenSymbol extends React.Component {
       return true;
     }
 
+    if (this.state.symbol.length > 5) {
+      return true;
+    }
+
     return false;
   }
 

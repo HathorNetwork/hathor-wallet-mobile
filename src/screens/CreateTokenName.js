@@ -22,10 +22,13 @@ class CreateTokenName extends React.Component {
    */
   state = {
     name: null,
+    subtitle: '0/30 characters'
   }
 
   onNameChange = (text) => {
-    this.setState({ name: text });
+    // limit to 30 chars
+    if (text.length > 30) return;
+    this.setState({ name: text, subtitle: `${text.length}/30 characters` });
   }
 
   onButtonPress = () => {
@@ -45,6 +48,7 @@ class CreateTokenName extends React.Component {
             <SimpleInput
               label='Token Name'
               autoFocus
+              subtitle={this.state.subtitle}
               onChangeText={this.onNameChange}
               value={this.state.name}
             />
@@ -52,7 +56,7 @@ class CreateTokenName extends React.Component {
               <InfoBox
                 items={[
                   <Text>Token name should be the full name of the new token you are creating</Text>,
-                  <Italic>E.g. Hathor</Italic>
+                  <Italic>E.g. MyToken or My Token</Italic>
                 ]}
               />
               <NewHathorButton
