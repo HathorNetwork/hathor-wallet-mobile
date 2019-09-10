@@ -55,30 +55,6 @@ class CreateTokenConfirm extends React.Component {
     this.symbol = this.props.navigation.getParam('symbol');
   }
 
-  getData = () => {
-    const walletData = hathorLib.wallet.getWalletData();
-    if (walletData === null) {
-      return { error: 'Wallet not correctly initialized' };
-    }
-    const historyTransactions = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
-    const inputsData = hathorLib.wallet.getInputsFromAmount(
-      historyTransactions,
-      hathorLib.helpers.minimumAmount(),
-      hathorLib.constants.HATHOR_TOKEN_CONFIG.uid,
-    );
-    if (inputsData.inputs.length === 0) {
-      return { error: 'You don\'t have any Hathor tokens (HTR) available to create your token.' };
-    }
-
-    const input = inputsData.inputs[0];
-    const amount = inputsData.inputsAmount;
-    const outputChange = hathorLib.wallet.getOutputChange(
-      amount, hathorLib.constants.HATHOR_TOKEN_INDEX
-    );
-
-    return { input, output: outputChange };
-  }
-
   executeCreate = (pin) => {
     // show loading modal
     this.setState({
@@ -89,14 +65,10 @@ class CreateTokenConfirm extends React.Component {
           text='Creating token'
         />,
     });
-    const data = this.getData();
-    if (data.error) {
-      this.onError(data.error);
-      return;
-    }
+
     const address = hathorLib.wallet.getAddressToUse();
     const retPromise = hathorLib.tokens.createToken(
-      data.input, data.output, address, this.name, this.symbol, this.amount, pin
+      address, this.name, this.symbol, this.amount, pin
     );
     retPromise.then((token) => {
       this.onSuccess(token);
@@ -152,6 +124,7 @@ class CreateTokenConfirm extends React.Component {
         <HathorHeader
           title='CREATE TOKEN'
           onBackPress={() => this.props.navigation.goBack()}
+          onCancel={() => this.props.navigation.dismiss()}
         />
         {this.state.modal}
         <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
@@ -166,15 +139,21 @@ class CreateTokenConfirm extends React.Component {
               />
             </View>
             <SimpleInput
-              label='Name'
+              label='Token name'
               editable={false}
               value={this.name}
               containerStyle={{ marginTop: 48 }}
             />
             <SimpleInput
-              label='Symbol'
+              label='Token symbol'
               editable={false}
               value={this.symbol}
+              containerStyle={{ marginTop: 32 }}
+            />
+            <SimpleInput
+              label='Deposit'
+              editable={false}
+              value={`${hathorLib.helpers.prettyValue(hathorLib.helpers.getDepositAmount(this.amount))} HTR`}
               containerStyle={{ marginTop: 32 }}
             />
           </View>

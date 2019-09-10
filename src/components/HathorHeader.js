@@ -10,8 +10,10 @@ import {
   Image, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 
+import SimpleButton from './SimpleButton';
 import chevronLeft from '../assets/icons/chevron-left.png';
 import hathorLogo from '../assets/images/hathor-logo.png';
+import closeIcon from '../assets/icons/icCloseActive.png';
 
 const HathorHeader = (props) => {
   const renderBackButton = () => {
@@ -27,15 +29,20 @@ const HathorHeader = (props) => {
     return <View style={styles.iconWrapper} />;
   };
 
+  const CancelButton = () => (
+    <SimpleButton
+      icon={closeIcon}
+      onPress={props.onCancel}
+    />
+  );
+
   const renderHeaderRight = () => {
-    if (props.rightElement) {
-      return (
-        <View style={[styles.iconWrapper, { justifyContent: 'flex-end' }]}>
-          {props.rightElement}
-        </View>
-      );
-    }
-    return <View style={styles.iconWrapper} />;
+    const element = (props.onCancel ? <CancelButton /> : props.rightElement);
+    return (
+      <View style={[styles.iconWrapper, { justifyContent: 'flex-end' }]}>
+        {element}
+      </View>
+    );
   };
 
   const renderHeaderCentral = () => {

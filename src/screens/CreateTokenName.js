@@ -6,13 +6,14 @@
  */
 
 import React from 'react';
-import { KeyboardAvoidingView, SafeAreaView, View } from 'react-native';
+import { KeyboardAvoidingView, SafeAreaView, Text, View } from 'react-native';
 
-import NewHathorButton from '../components/NewHathorButton';
-import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
-import { getKeyboardAvoidingViewTopDistance } from '../utils';
+import InfoBox from '../components/InfoBox';
+import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
+import SimpleInput from '../components/SimpleInput';
+import { getKeyboardAvoidingViewTopDistance, Italic } from '../utils';
 
 
 class CreateTokenName extends React.Component {
@@ -21,10 +22,13 @@ class CreateTokenName extends React.Component {
    */
   state = {
     name: null,
+    subtitle: '0/30 characters'
   }
 
   onNameChange = (text) => {
-    this.setState({ name: text });
+    // limit to 30 chars
+    if (text.length > 30) return;
+    this.setState({ name: text, subtitle: `${text.length}/30 characters` });
   }
 
   onButtonPress = () => {
@@ -37,20 +41,30 @@ class CreateTokenName extends React.Component {
         <HathorHeader
           title='CREATE TOKEN'
           onBackPress={() => this.props.navigation.pop()}
+          onCancel={() => this.props.navigation.dismiss()}
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <SimpleInput
               label='Token Name'
               autoFocus
+              subtitle={this.state.subtitle}
               onChangeText={this.onNameChange}
               value={this.state.name}
             />
-            <NewHathorButton
-              title='Next'
-              disabled={!this.state.name}
-              onPress={this.onButtonPress}
-            />
+            <View>
+              <InfoBox
+                items={[
+                  <Text>Token name should be the full name of the new token you are creating</Text>,
+                  <Italic>E.g. MyToken or My Token</Italic>
+                ]}
+              />
+              <NewHathorButton
+                title='Next'
+                disabled={!this.state.name}
+                onPress={this.onButtonPress}
+              />
+            </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>

@@ -6,13 +6,14 @@
  */
 
 import React from 'react';
-import { KeyboardAvoidingView, SafeAreaView, View } from 'react-native';
+import { KeyboardAvoidingView, SafeAreaView, Text, View } from 'react-native';
 
-import NewHathorButton from '../components/NewHathorButton';
-import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
-import { getKeyboardAvoidingViewTopDistance } from '../utils';
+import InfoBox from '../components/InfoBox';
+import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
+import SimpleInput from '../components/SimpleInput';
+import { getKeyboardAvoidingViewTopDistance, Italic } from '../utils';
 
 
 /**
@@ -38,12 +39,29 @@ class CreateTokenSymbol extends React.Component {
     this.props.navigation.navigate('CreateTokenAmount', { name, symbol: this.state.symbol });
   }
 
+  isButtonDisabled = () => {
+    if (!this.state.symbol) {
+      return true;
+    }
+
+    if (this.state.symbol.length < 2) {
+      return true;
+    }
+
+    if (this.state.symbol.length > 5) {
+      return true;
+    }
+
+    return false;
+  }
+
   render() {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
           title='CREATE TOKEN'
           onBackPress={() => this.props.navigation.goBack()}
+          onCancel={() => this.props.navigation.dismiss()}
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
@@ -51,15 +69,23 @@ class CreateTokenSymbol extends React.Component {
               label='Token symbol'
               autoFocus
               autoCapitalize='characters'
-              subtitle='Maximum of 5 characters'
+              subtitle='Between 2 and 5 characters'
               onChangeText={this.onSymbolChange}
               value={this.state.symbol}
             />
-            <NewHathorButton
-              title='Next'
-              disabled={!this.state.symbol}
-              onPress={this.onButtonPress}
-            />
+            <View>
+              <InfoBox
+                items={[
+                  <Text>The symbol is a smaller version of the token name</Text>,
+                  <Italic>E.g. HTR</Italic>
+                ]}
+              />
+              <NewHathorButton
+                title='Next'
+                disabled={this.isButtonDisabled()}
+                onPress={this.onButtonPress}
+              />
+            </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>

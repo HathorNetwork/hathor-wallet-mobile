@@ -38,3 +38,8 @@ export const LOCK_TIMEOUT = 30000; // 30s
  * Username set in keychain. We don't use it currently, but a value needs to be set
  */
 export const KEYCHAIN_USER = 'hathor-keychain';
+
+/**
+ * URL with more information about token deposit
+ */
+export const TOKEN_DEPOSIT_URL = 'https://gitlab.com/HathorNetwork/rfcs/blob/master/text/0011-token-deposit.md';
