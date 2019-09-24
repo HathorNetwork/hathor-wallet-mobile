@@ -98,10 +98,10 @@ class RegisterTokenManual extends React.Component {
     );
 
     const renderSpinner = () => (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <Spinner size={32} animating />
       </View>
-    )
+    );
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
