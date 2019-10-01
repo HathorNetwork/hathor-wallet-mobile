@@ -16,6 +16,7 @@ import HathorHeader from '../components/HathorHeader';
 import InfoBox from '../components/InfoBox';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
+import Spinner from '../components/Spinner';
 
 import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 
@@ -33,11 +34,13 @@ class RegisterTokenManual extends React.Component {
      * configString {string} The value of the configuration string input
      * errorMessage {string} Error with the configuration string
      * token {Object} Config of the token from the configuration string (if valid)
+     * validating {boolean} If is running validation method for configuration string
      */
     this.state = {
       configString: this.props.navigation.getParam('configurationString', ''),
       errorMessage: '',
       token: null,
+      validating: false,
     };
   }
 
@@ -57,12 +60,16 @@ class RegisterTokenManual extends React.Component {
       return;
     }
 
-    const ret = hathorLib.tokens.validateTokenToAddByConfigurationString(this.state.configString);
-    if (ret.success) {
-      this.setState({ token: ret.tokenData, errorMessage: '' });
-    } else {
-      this.setState({ errorMessage: ret.message });
-    }
+    this.setState({ validating: true }, () => {
+      const promise = hathorLib.tokens.validateTokenToAddByConfigurationString(
+        this.state.configString
+      );
+      promise.then((tokenData) => {
+        this.setState({ token: tokenData, errorMessage: '', validating: false });
+      }, (e) => {
+        this.setState({ errorMessage: e.message, validating: false });
+      });
+    });
   }
 
   onButtonPress = () => {
@@ -90,6 +97,12 @@ class RegisterTokenManual extends React.Component {
       />
     );
 
+    const renderSpinner = () => (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Spinner size={32} animating />
+      </View>
+    );
+
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
@@ -114,6 +127,7 @@ class RegisterTokenManual extends React.Component {
               />
               {this.state.token && renderTokenView()}
             </View>
+            {this.state.validating && renderSpinner()}
             <NewHathorButton
               title='Register token'
               disabled={this.state.configString === '' || this.state.errorMessage !== ''}
