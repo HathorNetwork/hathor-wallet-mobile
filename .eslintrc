@@ -15,7 +15,7 @@
     "react/jsx-one-expression-per-line": 0,
     "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }],
     "react/jsx-closing-tag-location": 0,
-    "react/sort-comp": [0],
+    "react/sort-comp": 0,
     "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
     "comma-dangle": 0,
     "object-curly-newline": ["error", {"ObjectPattern": { "multiline": true }}],
