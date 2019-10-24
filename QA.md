@@ -59,6 +59,15 @@
 1. - [ ] Click on Share and cancel.
 1. - [ ] Close the token details.
 
+**Send and receive the new token**
+1. - [ ] Go to the Send Screen and click on Manual Info.
+1. - [ ] Enter the address of another test wallet.
+1. - [ ] Change the token to TEST and continue.
+1. - [ ] Type 3 TEST and send it.
+1. - [ ] Go to the Receive Screen and click on Payment Request.
+1. - [ ] Generate a payment request of 2 TEST.
+1. - [ ] Pay the Payment Request using your test wallet that has just received the TEST before and check the confirmation message.
+
 1. **Register a token Tests**
 1. - [ ] Go to the Dashboard Screen.
 1. - [ ] Select the Test Token.
