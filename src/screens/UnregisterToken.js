@@ -43,13 +43,20 @@ class UnregisterToken extends React.Component {
       lineHeight: 28,
       flex: 1,
     },
+    textError: {
+      marginTop: 32,
+      marginBottom: 32,
+      color: '#dc3545',
+    },
   }));
 
   /**
    * switchValue {bool} If user confirms that want to unregister the token
+   * errorMessage {string} Error message to be shown in case of failure when unregistering the token
    */
   state = {
     switchValue: false,
+    errorMessage: '',
   };
 
   toggleSwitch = (value) => {
@@ -62,9 +69,13 @@ class UnregisterToken extends React.Component {
       return;
     }
 
-    const tokens = hathorLib.tokens.unregisterToken(this.props.selectedToken.uid);
-    this.props.dispatch(setTokens(tokens));
-    this.props.navigation.navigate('Dashboard');
+    const promise = hathorLib.tokens.unregisterToken(this.props.selectedToken.uid);
+    promise.then((tokens) => {
+      this.props.dispatch(setTokens(tokens));
+      this.props.navigation.navigate('Dashboard');
+    }, (e) => {
+      this.setState({ errorMessage: e.message });
+    });
   }
 
   render() {
@@ -96,6 +107,7 @@ class UnregisterToken extends React.Component {
               value={this.state.switchValue}
             />
           </View>
+          <Text style={this.style.textError}>{this.state.errorMessage}</Text>
           <View style={this.style.buttonView}>
             <NewHathorButton
               secondary

@@ -7,14 +7,16 @@
 
 import React from 'react';
 import {
-  Keyboard, KeyboardAvoidingView, SafeAreaView, StyleSheet, Text, View,
+  Keyboard, KeyboardAvoidingView, SafeAreaView, Text, View,
 } from 'react-native';
 
 import { connect } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
+import InfoBox from '../components/InfoBox';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
+import Spinner from '../components/Spinner';
 
 import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 
@@ -32,11 +34,13 @@ class RegisterTokenManual extends React.Component {
      * configString {string} The value of the configuration string input
      * errorMessage {string} Error with the configuration string
      * token {Object} Config of the token from the configuration string (if valid)
+     * validating {boolean} If is running validation method for configuration string
      */
     this.state = {
       configString: this.props.navigation.getParam('configurationString', ''),
       errorMessage: '',
       token: null,
+      validating: false,
     };
   }
 
@@ -56,12 +60,16 @@ class RegisterTokenManual extends React.Component {
       return;
     }
 
-    const ret = hathorLib.tokens.validateTokenToAddByConfigurationString(this.state.configString);
-    if (ret.success) {
-      this.setState({ token: ret.tokenData, errorMessage: '' });
-    } else {
-      this.setState({ errorMessage: ret.message });
-    }
+    this.setState({ validating: true }, () => {
+      const promise = hathorLib.tokens.validateTokenToAddByConfigurationString(
+        this.state.configString
+      );
+      promise.then((tokenData) => {
+        this.setState({ token: tokenData, errorMessage: '', validating: false });
+      }, (e) => {
+        this.setState({ errorMessage: e.message, validating: false });
+      });
+    });
   }
 
   onButtonPress = () => {
@@ -73,35 +81,27 @@ class RegisterTokenManual extends React.Component {
   }
 
   render() {
-    const renderTokenView = () => {
-      const styles = StyleSheet.create({
-        text: {
-          fontSize: 14,
-          lineHeight: 24,
-          color: 'rgba(0, 0, 0, 0.5)',
-        },
-        wrapper: {
-          marginVertical: 16,
-          padding: 16,
-          backgroundColor: '#f7f7f7',
-          borderRadius: 8,
-        },
-      });
-
-      return (
-        <View style={styles.wrapper}>
-          <Text style={styles.text}>You&apos;re going to register the following token:</Text>
-          <Text style={styles.text}>
+    const renderTokenView = () => (
+      <InfoBox
+        items={[
+          <Text>You&apos;re going to register the following token:</Text>,
+          <Text>
             <Strong>Name: </Strong>
             {this.state.token.name}
-          </Text>
-          <Text style={styles.text}>
+          </Text>,
+          <Text>
             <Strong>Symbol: </Strong>
             {this.state.token.symbol}
           </Text>
-        </View>
-      );
-    };
+        ]}
+      />
+    );
+
+    const renderSpinner = () => (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Spinner size={32} animating />
+      </View>
+    );
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
@@ -127,6 +127,7 @@ class RegisterTokenManual extends React.Component {
               />
               {this.state.token && renderTokenView()}
             </View>
+            {this.state.validating && renderSpinner()}
             <NewHathorButton
               title='Register token'
               disabled={this.state.configString === '' || this.state.errorMessage !== ''}
