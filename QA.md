@@ -59,7 +59,7 @@
     1. Click on Share and cancel.
     1. Close the token details.
 
-**Send and receive the new token**
+1. **Send and receive the new token**
     1. Go to the Send Screen and click on Manual Info.
     1. Enter the address of another test wallet.
     1. Change the token to TEST and continue.
