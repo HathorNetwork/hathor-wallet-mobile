@@ -9,6 +9,8 @@ In the `android/app/build.gradle`, the fields `versionCode` and `versionName` mu
 
 In the `ios/HathorMobile/Info.plist`, the fields `CFBundleShortVersionString` and `CFBundleVersion` must be updated. Usually, the `CFBundleVersion` is always `1`, while the `CFBundleShortVersionString` is updated with the new version. App Store uses the pair `(CFBundleShortVersionString, CFBundleVersion)` to identify a release.
 
+Create a git tag and a new release on GitHub.
+
 # Publishing the new App
 
 ## App Store
