@@ -130,7 +130,7 @@ class RegisterTokenManual extends React.Component {
             {this.state.validating && renderSpinner()}
             <NewHathorButton
               title='Register token'
-              disabled={this.state.configString === '' || this.state.errorMessage !== ''}
+              disabled={this.state.configString === '' || this.state.errorMessage !== '' || this.state.token === null}
               onPress={this.onButtonPress}
             />
           </View>
