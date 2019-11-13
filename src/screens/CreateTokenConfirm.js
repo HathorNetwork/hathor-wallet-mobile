@@ -72,8 +72,8 @@ class CreateTokenConfirm extends React.Component {
     );
     retPromise.then((token) => {
       this.onSuccess(token);
-    }, (message) => {
-      this.onError(message);
+    }, (e) => {
+      this.onError(e.message);
     });
   }
 
