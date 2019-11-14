@@ -44,7 +44,7 @@
 	<key>NSCalendarsUsageDescription</key>
 	<string>Hathor Wallet does not use it.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Scan QR code</string>
+	<string>The camera is only used to scan QR Codes.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Protect your wallet with Face ID.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
