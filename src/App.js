@@ -16,6 +16,7 @@ import { Provider, connect } from 'react-redux';
 
 import hathorLib from '@hathor/wallet-lib';
 import IconTabBar from './icon-font';
+import { HATHOR_COLOR } from './constants';
 
 import { store } from './reducer';
 import DecideStackScreen from './screens/DecideStackScreen';
@@ -130,7 +131,7 @@ const TabNavigator = createBottomTabNavigator({
 }, {
   initialRoute: 'Home',
   tabBarOptions: {
-    activeTintColor: '#E30052',
+    activeTintColor: HATHOR_COLOR,
     inactiveTintColor: 'rgba(0, 0, 0, 0.5)',
     style: {
       paddingTop: 12,

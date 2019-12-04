@@ -20,6 +20,7 @@ import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import baseStyle from '../styles/init';
 import { Strong } from '../utils';
+import { HATHOR_COLOR } from '../constants';
 
 
 export class ResetWallet extends React.Component {
@@ -83,7 +84,7 @@ export class ResetWallet extends React.Component {
           <View style={this.style.switchView}>
             <Switch
               onValueChange={this.toggleSwitch}
-              trackColor={{ true: '#E30052' }}
+              trackColor={{ true: HATHOR_COLOR }}
               value={this.state.switchValue}
             />
             <Text style={this.style.switchText}>
@@ -94,7 +95,7 @@ export class ResetWallet extends React.Component {
           <View style={this.style.buttonView}>
             <NewHathorButton
               secondary
-              color='#E30052'
+              color={HATHOR_COLOR}
               disabled={!this.state.switchValue}
               onPress={this.onPressResetWallet}
               title='Reset Wallet'

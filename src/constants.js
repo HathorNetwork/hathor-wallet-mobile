@@ -43,3 +43,8 @@ export const KEYCHAIN_USER = 'hathor-keychain';
  * URL with more information about token deposit
  */
 export const TOKEN_DEPOSIT_URL = 'https://gitlab.com/HathorNetwork/rfcs/blob/master/text/0011-token-deposit.md';
+
+/**
+ * Purple color used as primary color
+ */
+export const HATHOR_COLOR = '#8C46FF';

@@ -26,6 +26,8 @@ import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import { Link, Strong } from '../utils';
 
+import { HATHOR_COLOR } from '../constants';
+
 class WelcomeScreen extends React.Component {
   state = { switchValue: false };
 
@@ -71,7 +73,7 @@ class WelcomeScreen extends React.Component {
           <View style={this.style.switchView}>
             <Switch
               onValueChange={this.toggleSwitch}
-              trackColor={{ true: '#E30052' }}
+              trackColor={{ true: HATHOR_COLOR }}
               value={this.state.switchValue}
             />
             <Text style={this.style.switchText}>

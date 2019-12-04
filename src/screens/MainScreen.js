@@ -30,6 +30,7 @@ import { Strong } from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import infoIcon from '../assets/icons/info-circle.png';
+import { HATHOR_COLOR } from '../constants';
 
 
 /**
@@ -94,7 +95,7 @@ class MainScreen extends React.Component {
           <Text style={{ marginTop: 8, lineHeight: 20, textAlign: 'center', width: 220 }}>
             <Text
               onPress={() => this.props.navigation.navigate('Receive')}
-              style={{ color: '#E30052', fontWeight: 'bold' }}
+              style={{ color: HATHOR_COLOR, fontWeight: 'bold' }}
             >
               Share your address
               {' '}
@@ -408,13 +409,13 @@ class BalanceView extends React.Component {
       marginBottom: 24,
     },
     networkView: {
-      backgroundColor: 'rgba(227, 0, 82, 0.1)',
+      backgroundColor: 'rgba(140, 70, 255, 0.1)',
       padding: 8,
       marginTop: 32,
       borderRadius: 8,
     },
     networkText: {
-      color: '#E30052',
+      color: HATHOR_COLOR,
       fontSize: 16,
       fontWeight: 'bold',
     },
