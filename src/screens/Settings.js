@@ -62,8 +62,8 @@ export class Settings extends React.Component {
       fontWeight: 'bold',
     },
     logoView: {
-      height: 30,
-      width: 170,
+      height: 22,
+      width: 100,
       marginTop: 16,
       marginBottom: 16,
     },
