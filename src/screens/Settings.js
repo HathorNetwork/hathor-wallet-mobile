@@ -22,7 +22,7 @@ import hathorLogo from '../assets/images/hathor-logo.png';
 
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 
-import { HATHOR_COLOR } from '../constants';
+import { HATHOR_COLOR, getLightPurpleBackground } from '../constants';
 
 
 /**
@@ -50,7 +50,7 @@ export class Settings extends React.Component {
       marginBottom: 24,
     },
     networkView: {
-      backgroundColor: 'rgba(140, 70, 255, 0.1)',
+      backgroundColor: getLightPurpleBackground(0.1),
       margin: 8,
       padding: 8,
       borderRadius: 8,

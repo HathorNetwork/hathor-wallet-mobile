@@ -30,7 +30,7 @@ import { Strong } from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import infoIcon from '../assets/icons/info-circle.png';
-import { HATHOR_COLOR } from '../constants';
+import { HATHOR_COLOR, getLightPurpleBackground } from '../constants';
 
 
 /**
@@ -409,7 +409,7 @@ class BalanceView extends React.Component {
       marginBottom: 24,
     },
     networkView: {
-      backgroundColor: 'rgba(140, 70, 255, 0.1)',
+      backgroundColor: getLightPurpleBackground(0.1),
       padding: 8,
       marginTop: 32,
       borderRadius: 8,

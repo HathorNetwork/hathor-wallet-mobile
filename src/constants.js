@@ -48,3 +48,10 @@ export const TOKEN_DEPOSIT_URL = 'https://gitlab.com/HathorNetwork/rfcs/blob/mas
  * Purple color used as primary color
  */
 export const HATHOR_COLOR = '#8C46FF';
+
+/**
+ * Light purple color used as background in some cases (varies depending on the opacity)
+ */
+export const getLightPurpleBackground = (alpha) => {
+  return `'rgba(140, 70, 255, ${alpha})'`;
+}
