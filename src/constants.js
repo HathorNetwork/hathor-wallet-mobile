@@ -52,6 +52,4 @@ export const HATHOR_COLOR = '#8C46FF';
 /**
  * Light purple color used as background in some cases (varies depending on the opacity)
  */
-export const getLightPurpleBackground = (alpha) => {
-  return `'rgba(140, 70, 255, ${alpha})'`;
-}
+export const getLightPurpleBackground = (alpha) => `'rgba(140, 70, 255, ${alpha})'`;
