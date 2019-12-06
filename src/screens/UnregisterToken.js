@@ -21,6 +21,7 @@ import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import baseStyle from '../styles/init';
 import { Strong, getTokenLabel } from '../utils';
+import { HATHOR_COLOR } from '../constants';
 
 
 /**
@@ -103,7 +104,7 @@ class UnregisterToken extends React.Component {
             </Text>
             <Switch
               onValueChange={this.toggleSwitch}
-              trackColor={{ true: '#E30052' }}
+              trackColor={{ true: HATHOR_COLOR }}
               value={this.state.switchValue}
             />
           </View>
@@ -111,7 +112,7 @@ class UnregisterToken extends React.Component {
           <View style={this.style.buttonView}>
             <NewHathorButton
               secondary
-              color='#E30052'
+              color={HATHOR_COLOR}
               disabled={!this.state.switchValue}
               onPress={this.unregisterConfirmed}
               title='Unregister token'

@@ -22,6 +22,8 @@ import hathorLogo from '../assets/images/hathor-logo.png';
 
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 
+import { HATHOR_COLOR, getLightPurpleBackground } from '../constants';
+
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -48,26 +50,26 @@ export class Settings extends React.Component {
       marginBottom: 24,
     },
     networkView: {
-      backgroundColor: 'rgba(227, 0, 82, 0.1)',
+      backgroundColor: getLightPurpleBackground(0.1),
       margin: 8,
       padding: 8,
       borderRadius: 8,
       alignItems: 'center',
     },
     networkText: {
-      color: '#E30052',
+      color: HATHOR_COLOR,
       fontSize: 16,
       fontWeight: 'bold',
     },
     logoView: {
-      height: 30,
-      width: 170,
+      height: 22,
+      width: 100,
       marginTop: 16,
       marginBottom: 16,
     },
     logo: {
-      height: 30,
-      width: 170,
+      height: 22,
+      width: 100,
     },
   });
 

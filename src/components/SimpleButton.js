@@ -9,6 +9,7 @@ import React from 'react';
 import {
   Image, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
+import { HATHOR_COLOR } from '../constants';
 
 const SimpleButton = (props) => {
   const renderTitle = () => {
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 14,
     lineHeight: 24,
-    color: '#E30052',
+    color: HATHOR_COLOR,
   },
   icon: {
     justifyContent: 'center',

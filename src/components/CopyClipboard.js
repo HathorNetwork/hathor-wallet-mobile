@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import {
   Clipboard, StyleSheet, Text,
 } from 'react-native';
+import { HATHOR_COLOR } from '../constants';
 
 class CopyClipboard extends React.Component {
   static defaultProps = {
@@ -62,7 +63,7 @@ const style = StyleSheet.create({
     fontSize: 13,
   },
   copied: {
-    color: '#E30052',
+    color: HATHOR_COLOR,
   },
 });
 
