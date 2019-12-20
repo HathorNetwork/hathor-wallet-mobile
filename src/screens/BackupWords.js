@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import _ from 'lodash';
 import {
   Image,
   SafeAreaView,
@@ -24,16 +25,13 @@ import baseStyle from '../styles/init';
 import { HATHOR_COLOR } from '../constants';
 import { Strong } from '../utils';
 
-import _ from 'lodash';
-
 
 class BackupWords extends React.Component {
   /**
    * step {number} Which validation step user is
    * indexes {Array} Array of indexes that will be used to execute the validation
-   * wordsOptions {Array} For each step we have some options for the user to choose the correct word.
+   * wordsOptions {Array} For each step we have some options for the user to choose the correct word
    * modal {FeedbackModal} modal to display. If null, do not display
-   * 
    */
   state = {
     step: 0,
@@ -71,7 +69,7 @@ class BackupWords extends React.Component {
   words = null;
 
   /**
-   * Expects 'words' as navigation parameter with all wallet words in a single string separated by space
+   * Expects 'words' as navigation parameter with all generated words as a string separated by space
    */
   constructor(props) {
     super(props);
@@ -81,7 +79,7 @@ class BackupWords extends React.Component {
 
   componentDidMount() {
     // Get 5 random indexes of word to check backup
-    const indexesArr = Array(24).fill().map((v,i)=>i+1);
+    const indexesArr = Array(24).fill().map((v, i) => i + 1);
     const indexesToBackup = _.shuffle(indexesArr).slice(0, 5);
     this.setState({ indexes: indexesToBackup }, () => {
       this.updateWordOptions();
@@ -91,8 +89,10 @@ class BackupWords extends React.Component {
   /**
    * Update state with options to be shown to the user depending on the step
    * If the step is the word in position 4, we must show the words in position 2, 3, 4, 5, 6
-   * If we get one of the corner cases (positions 1, 2, 23, or 24 we expand to the side we still have words)
-   * E.g., if we want to validate word in position 2, we must have 5 options. Positions 1, 2, 3, 4, 5 (the position 0 is substituted by position 5)
+   * If we get one of the corner cases
+   * (positions 1, 2, 23, or 24 we expand to the side we still have words) e.g., if we want to
+   * validate word in position 2, we must have 5 options.
+   * Positions 1, 2, 3, 4, 5 (the position 0 is substituted by position 5)
    */
   updateWordOptions = () => {
     const index = this.state.indexes[this.state.step] - 1;
@@ -102,7 +102,7 @@ class BackupWords extends React.Component {
     // If index is 0 or 1, startIndex would be negative
     // So we set to 0 and increment the endIndex
     if (optionsStartIndex < 0) {
-      optionsEndIndex = optionsEndIndex + (-optionsStartIndex);
+      optionsEndIndex += -optionsStartIndex;
       optionsStartIndex = 0;
     }
 
@@ -110,18 +110,19 @@ class BackupWords extends React.Component {
     // So we set to the max and decrease the startIndex
     const maxIndex = this.words.length - 1;
     if (optionsEndIndex > maxIndex) {
-      optionsStartIndex = optionsStartIndex - (optionsEndIndex - maxIndex);
+      optionsStartIndex -= optionsEndIndex - maxIndex;
       optionsEndIndex = maxIndex;
     }
 
-    const options = this.words.slice(optionsStartIndex, optionsEndIndex + 1)
+    const options = this.words.slice(optionsStartIndex, optionsEndIndex + 1);
     this.setState({ wordOptions: _.shuffle(options) });
   }
 
   /**
    * Method called after user selects a word
    * If is the wrong word we show an error and go back to the words screen
-   * If is correct we move one step until the last one. In case of the last step we show success and redirect to the ChoosePin screen
+   * If is correct we move one step until the last one.
+   * In case of the last step we show success and redirect to the ChoosePin screen
    *
    * @param {String} word Word of the button clicked
    */
@@ -130,7 +131,7 @@ class BackupWords extends React.Component {
     if (this.words[index - 1] === word) {
       if (this.state.step < 4) {
         // Move one step
-        this.setState({ step: this.state.step + 1 }, () => {
+        this.setState((prevState) => ({ step: prevState.step + 1 }), () => {
           this.updateWordOptions();
         });
       } else {
@@ -145,8 +146,8 @@ class BackupWords extends React.Component {
               }
               onDismiss={() => {
                 this.setState({ modal: null }, () => {
-                  this.props.navigation.navigate('ChoosePinScreen', { words: this.props.navigation.getParam('words') })
-                })
+                  this.props.navigation.navigate('ChoosePinScreen', { words: this.props.navigation.getParam('words') });
+                });
               }}
             />,
         });
@@ -158,12 +159,15 @@ class BackupWords extends React.Component {
           // eslint-disable-next-line react/jsx-indent
           <FeedbackModal
             icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-            text={
-              <Text><Strong>Wrong word.</Strong> Please double check the words you saved and start the process again.</Text>
-            }
+            text={(
+              <Text>
+                <Strong>Wrong word.</Strong>
+                Please double check the words you saved and start the process again.
+              </Text>
+)}
             onDismiss={() => {
               this.setState({ modal: null }, () => {
-                this.props.navigation.goBack()
+                this.props.navigation.goBack();
               });
             }}
           />,
@@ -172,15 +176,19 @@ class BackupWords extends React.Component {
   }
 
   render() {
-    const renderOptions = () => {
-      return this.state.wordOptions.map((word, index) => (
-        <NewHathorButton key={index} style={this.style.button} secondary title={word} onPress={() => this.wordSelected(word)} />
-      ));
-    }
+    const renderOptions = () => this.state.wordOptions.map((word) => (
+      <NewHathorButton
+        key={word}
+        style={this.style.button}
+        secondary
+        title={word}
+        onPress={() => this.wordSelected(word)}
+      />
+    ));
 
     const renderFooter = () => {
       const viewArr = [];
-      for (let i=0; i<this.state.indexes.length; i++) {
+      for (let i = 0; i < this.state.indexes.length; i += 1) {
         const styles = [this.style.footerView];
         if (i === this.state.step) {
           styles.push(this.style.current);
@@ -194,15 +202,15 @@ class BackupWords extends React.Component {
           styles.push(this.style.lastView);
         }
 
-        viewArr.push(<View key={i} style={styles} />)
+        viewArr.push(<View key={i} style={styles} />);
       }
 
       return (
         <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center' }}>
           {viewArr}
         </View>
-      )
-    }
+      );
+    };
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
@@ -210,11 +218,15 @@ class BackupWords extends React.Component {
           onBackPress={() => this.props.navigation.goBack()}
         />
         {this.state.modal}
-        <View style={[this.style.container, {flexDirection: 'column', justifyContent: 'space-between'}]}>
+        <View style={[this.style.container, { flexDirection: 'column', justifyContent: 'space-between' }]}>
           <View>
             <Text style={this.style.title}>To make sure you saved,</Text>
-            <Text style={this.style.text}>Please select the word that corresponds to the number below:</Text>
-            <Text style={[this.style.title, { textAlign: 'center', fontSize: 24 }]}>{this.state.indexes[this.state.step]}</Text>
+            <Text style={this.style.text}>
+              Please select the word that corresponds to the number below:
+            </Text>
+            <Text style={[this.style.title, { textAlign: 'center', fontSize: 24 }]}>
+              {this.state.indexes[this.state.step]}
+            </Text>
           </View>
           <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
             {renderOptions()}
