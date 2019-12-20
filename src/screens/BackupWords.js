@@ -29,8 +29,11 @@ import _ from 'lodash';
 
 class BackupWords extends React.Component {
   /**
+   * step {number} Which validation step user is
+   * indexes {Array} Array of indexes that will be used to execute the validation
+   * wordsOptions {Array} For each step we have some options for the user to choose the correct word.
    * modal {FeedbackModal} modal to display. If null, do not display
-   * }
+   * 
    */
   state = {
     step: 0,
@@ -64,8 +67,12 @@ class BackupWords extends React.Component {
     },
   }));
 
+  // Array of words shown on the previous screen
   words = null;
 
+  /**
+   * Expects 'words' as navigation parameter with all wallet words in a single string separated by space
+   */
   constructor(props) {
     super(props);
     const paramWords = this.props.navigation.getParam('words');
@@ -81,6 +88,12 @@ class BackupWords extends React.Component {
     });
   }
 
+  /**
+   * Update state with options to be shown to the user depending on the step
+   * If the step is the word in position 4, we must show the words in position 2, 3, 4, 5, 6
+   * If we get one of the corner cases (positions 1, 2, 23, or 24 we expand to the side we still have words)
+   * E.g., if we want to validate word in position 2, we must have 5 options. Positions 1, 2, 3, 4, 5 (the position 0 is substituted by position 5)
+   */
   updateWordOptions = () => {
     const index = this.state.indexes[this.state.step] - 1;
     let optionsStartIndex = index - 2;
@@ -105,6 +118,13 @@ class BackupWords extends React.Component {
     this.setState({ wordOptions: _.shuffle(options) });
   }
 
+  /**
+   * Method called after user selects a word
+   * If is the wrong word we show an error and go back to the words screen
+   * If is correct we move one step until the last one. In case of the last step we show success and redirect to the ChoosePin screen
+   *
+   * @param {String} word Word of the button clicked
+   */
   wordSelected = (word) => {
     const index = this.state.indexes[this.state.step];
     if (this.words[index - 1] === word) {
