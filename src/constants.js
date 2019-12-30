@@ -16,6 +16,7 @@ import AsyncStorageStore from './store';
 
 hathorLib.storage.setStore(new AsyncStorageStore());
 hathorLib.storage.setItem('wallet:server', 'https://node2.charlie.testnet.hathor.network/v1a/');
+hathorLib.network.setNetwork('mainnet');
 
 
 /**
