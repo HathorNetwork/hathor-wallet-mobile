@@ -58,7 +58,8 @@ class WelcomeScreen extends React.Component {
               This wallet is connected to the <Strong>mainnet</Strong>.
             </Text>
             <Text style={this.style.text}>
-              A mobile wallet is not the safest place to store your tokens. So, we advise you to keep only a small amount of tokens here, such as pocket money.
+              A mobile wallet is not the safest place to store your tokens.
+              So, we advise you to keep only a small amount of tokens here, such as pocket money.
             </Text>
             <Text style={this.style.text}>
               For further information, check our website{' '}
