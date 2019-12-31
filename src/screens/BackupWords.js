@@ -82,7 +82,7 @@ class BackupWords extends React.Component {
     const indexesArr = Array(24).fill().map((v, i) => i + 1);
     const indexesToBackup = _.shuffle(indexesArr).slice(0, 5);
     this.setState({ indexes: indexesToBackup }, () => {
-      this.updateWordOptions();
+      this.updateWordsShownOnScreen();
     });
   }
 
@@ -94,24 +94,24 @@ class BackupWords extends React.Component {
    * validate word in position 2, we must have 5 options.
    * Positions 1, 2, 3, 4, 5 (the position 0 is substituted by position 5)
    */
-  updateWordOptions = () => {
+  updateWordsShownOnScreen = () => {
     const index = this.state.indexes[this.state.step] - 1;
     let optionsStartIndex = index - 2;
     let optionsEndIndex = index + 2;
 
     // If index is 0 or 1, startIndex would be negative
-    // So we set to 0 and increment the endIndex
+    // So we set start to 0 and end to 4
     if (optionsStartIndex < 0) {
-      optionsEndIndex += -optionsStartIndex;
       optionsStartIndex = 0;
+      optionsEndIndex = optionsStartIndex + 4;
     }
 
     // If index is 22 or 23, endIndex would be greater than the max
     // So we set to the max and decrease the startIndex
     const maxIndex = this.words.length - 1;
     if (optionsEndIndex > maxIndex) {
-      optionsStartIndex -= optionsEndIndex - maxIndex;
       optionsEndIndex = maxIndex;
+      optionsStartIndex = maxIndex - 4;
     }
 
     const options = this.words.slice(optionsStartIndex, optionsEndIndex + 1);
@@ -132,7 +132,7 @@ class BackupWords extends React.Component {
       if (this.state.step < 4) {
         // Move one step
         this.setState((prevState) => ({ step: prevState.step + 1 }), () => {
-          this.updateWordOptions();
+          this.updateWordsShownOnScreen();
         });
       } else {
         // Success
