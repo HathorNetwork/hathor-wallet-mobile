@@ -130,7 +130,7 @@ class BackupWords extends React.Component {
     const index = this.state.indexes[this.state.step];
     if (this.words[index - 1] === word) {
       if (this.state.step < 4) {
-        // Move one step
+        // Correct word was chosen, move one step
         this.setState((prevState) => ({ step: prevState.step + 1 }), () => {
           this.updateWordsShownOnScreen();
         });
@@ -153,7 +153,7 @@ class BackupWords extends React.Component {
         });
       }
     } else {
-      // Error
+      // Error, incorrect word was chosen
       this.setState({
         modal:
           // eslint-disable-next-line react/jsx-indent
