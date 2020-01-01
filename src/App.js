@@ -24,6 +24,7 @@ import {
   WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen,
 } from './screens/InitWallet';
 import ChoosePinScreen from './screens/ChoosePinScreen';
+import BackupWords from './screens/BackupWords';
 import MainScreen from './screens/MainScreen';
 import SendScanQRCode from './screens/SendScanQRCode';
 import SendAddressInput from './screens/SendAddressInput';
@@ -58,6 +59,7 @@ const InitStack = createStackNavigator(
     InitialScreen,
     NewWordsScreen,
     LoadWordsScreen,
+    BackupWords,
     ChoosePinScreen,
   },
   {
