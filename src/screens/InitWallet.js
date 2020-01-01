@@ -208,7 +208,7 @@ class NewWordsScreen extends React.Component {
           {renderWords()}
           <View style={this.style.buttonView}>
             <NewHathorButton
-              onPress={() => this.props.navigation.navigate('ChoosePinScreen', { words: this.state.words })}
+              onPress={() => this.props.navigation.navigate('BackupWords', { words: this.state.words })}
               title='Next'
             />
           </View>
