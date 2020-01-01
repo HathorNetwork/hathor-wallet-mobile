@@ -52,17 +52,14 @@ class WelcomeScreen extends React.Component {
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader withLogo />
         <View style={this.style.container}>
-          <Text style={this.style.title}>Welcome to Hathor Testnet!</Text>
+          <Text style={this.style.title}>Welcome to Hathor Wallet!</Text>
           <View>
             <Text style={this.style.text}>
-              This wallet is connected to a <Strong>testnet</Strong>.
+              This wallet is connected to the <Strong>mainnet</Strong>.
             </Text>
             <Text style={this.style.text}>
-              This means that{' '}
-              <Strong>your Hathor token (HTR) and any other token may be reset at any time.</Strong>
-            </Text>
-            <Text style={this.style.text}>
-              If someone offers to sell some tokens to you, that person is a scammer.
+              A mobile wallet is not the safest place to store your tokens.
+              So, we advise you to keep only a small amount of tokens here, such as pocket money.
             </Text>
             <Text style={this.style.text}>
               For further information, check our website{' '}
@@ -77,8 +74,7 @@ class WelcomeScreen extends React.Component {
               value={this.state.switchValue}
             />
             <Text style={this.style.switchText}>
-              I agree to participate in the testnet of Hathor, and I acknowledge that
-              {' '}the tokens are not for real.
+              I understand the risks of using a mobile wallet
             </Text>
           </View>
           <View style={this.style.buttonView}>
