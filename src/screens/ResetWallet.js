@@ -14,12 +14,10 @@ import {
   Switch,
 } from 'react-native';
 
-import * as Keychain from 'react-native-keychain';
-import hathorLib from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import baseStyle from '../styles/init';
-import { Strong } from '../utils';
+import { Strong, resetWallet } from '../utils';
 import { HATHOR_COLOR } from '../constants';
 
 
@@ -53,18 +51,8 @@ export class ResetWallet extends React.Component {
     this.setState({ switchValue: value });
   }
 
-  onPressResetWallet = async () => {
-    // TODO we don't need to save server data
-    const server = hathorLib.storage.getItem('wallet:server');
-
-    hathorLib.wallet.unsubscribeAllAddresses();
-    hathorLib.WebSocketHandler.endConnection();
-    hathorLib.storage.clear();
-
-    // TODO make sure asyncStorage is clear when doing this. Maybe temporarily use setTimeout?
-    hathorLib.storage.setItem('wallet:server', server);
-    await Keychain.resetGenericPassword();
-    this.props.navigation.navigate('Init');
+  onPressResetWallet = () => {
+    resetWallet(this.props.navigation);
   }
 
   render() {

@@ -9,6 +9,8 @@ import hathorLib from '@hathor/wallet-lib';
 import React from 'react';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
+
+import * as Keychain from 'react-native-keychain';
 import baseStyle from './styles/init';
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
@@ -207,4 +209,23 @@ export const getKeyboardAvoidingViewTopDistance = () => {
     return getStatusBarHeight();
   }
   return 0;
+};
+
+/**
+ * Clean all wallet data and redirect to initial screen
+ *
+ * @param {Navigation} navigation React native navigation component (this.props.navigation)
+ */
+export const resetWallet = async (navigation) => {
+  // TODO we don't need to save server data
+  const server = hathorLib.storage.getItem('wallet:server');
+
+  hathorLib.wallet.unsubscribeAllAddresses();
+  hathorLib.WebSocketHandler.endConnection();
+  hathorLib.storage.clear();
+
+  // TODO make sure asyncStorage is clear when doing this. Maybe temporarily use setTimeout?
+  hathorLib.storage.setItem('wallet:server', server);
+  await Keychain.resetGenericPassword();
+  navigation.navigate('Init');
 };

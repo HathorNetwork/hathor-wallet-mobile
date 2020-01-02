@@ -18,7 +18,7 @@ import { loadHistory, clearInitWallet } from '../actions';
 import {
   Strong, setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled,
 } from '../utils';
-import { KEYCHAIN_USER } from '../constants';
+import { KEYCHAIN_USER, NETWORK } from '../constants';
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
 
@@ -113,6 +113,7 @@ class LoadHistoryScreen extends React.Component {
     }
     hathorLib.WebSocketHandler.on('addresses_loaded', this.addressesLoadedUpdate);
     this.cleanData();
+    hathorLib.storage.setItem('wallet:network', NETWORK);
     this.props.loadHistory();
   }
 

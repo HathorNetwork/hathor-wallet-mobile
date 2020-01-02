@@ -16,8 +16,14 @@ import AsyncStorageStore from './store';
 
 hathorLib.storage.setStore(new AsyncStorageStore());
 hathorLib.storage.setItem('wallet:server', 'https://node2.mainnet.hathor.network/v1a/');
-hathorLib.network.setNetwork('mainnet');
 
+const network = 'mainnet';
+hathorLib.network.setNetwork(network);
+
+/**
+ * Name of the network
+ */
+export const NETWORK = network;
 
 /**
  * Default tokens for the wallet (to start on redux)

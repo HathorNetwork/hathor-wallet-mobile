@@ -15,7 +15,8 @@ import * as Keychain from 'react-native-keychain';
 import hathorLib from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
 import PinInput from '../components/PinInput';
-import { isBiometryEnabled, getSupportedBiometry } from '../utils';
+import { NETWORK } from '../constants';
+import { isBiometryEnabled, getSupportedBiometry, resetWallet } from '../utils';
 import { lockScreen, unlockScreen, setLoadHistoryStatus } from '../actions';
 import hathorLogo from '../assets/images/hathor-logo.png';
 
@@ -61,6 +62,16 @@ class PinScreen extends React.Component {
   }
 
   componentDidMount() {
+    // If user already had our app installed for the testnet and has a wallet loaded
+    // we want to reset his wallet, so he can see the mainnet text on the initial screen
+    if (this.props.isLockScreen) {
+      const storageNetwork = hathorLib.storage.getItem('wallet:network');
+      if (storageNetwork !== NETWORK) {
+        resetWallet(this.props.navigation);
+        return;
+      }
+    }
+
     const supportedBiometry = getSupportedBiometry();
     const biometryEnabled = isBiometryEnabled();
     if (supportedBiometry && biometryEnabled) {
@@ -83,8 +94,10 @@ class PinScreen extends React.Component {
       BackHandler.removeEventListener('hardwareBackPress', this.handleBackButton);
     }
 
-    // Removing focus event
-    this.willFocusEvent.remove();
+    if (this.willFocusEvent !== null) {
+      // Removing focus event
+      this.willFocusEvent.remove();
+    }
   }
 
   handleBackButton = () => true
