@@ -73,7 +73,7 @@
     1. Select the Test Token.
     1. Click on the Token Info and unregister it.
     1. Click on Register Token, click on Manual Info, and paste the Configuration string.
-    1. Click on Register Token, and check that the Test Token is back and your balance is 100 TEST.
+    1. Click on Register Token, and check that the Test Token is back and your balance is 99 TEST.
 
 1. **Reset Wallet**
     1. Go to Settings and Reset your wallet.
