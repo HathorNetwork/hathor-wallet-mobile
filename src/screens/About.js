@@ -54,14 +54,11 @@ export class About extends React.Component {
           </Text>
 
           <Text style={this.style.text}>
-            This wallet is connected to a <Strong>testnet</Strong>.
+            This wallet is connected to the <Strong>mainnet</Strong>.
           </Text>
           <Text style={this.style.text}>
-            This means that
-            <Strong> your Hathor token (HTR) and any other token may be reset at any time.</Strong>
-          </Text>
-          <Text style={this.style.text}>
-            If someone offers to sell some tokens to you, that person is a scammer.
+            A mobile wallet is not the safest place to store your tokens.
+            So, we advise you to keep only a small amount of tokens here, such as pocket money.
           </Text>
           <Text style={this.style.text}>
             For further information, check our website <Link href='https://hathor.network'>https://hathor.network/</Link>.
