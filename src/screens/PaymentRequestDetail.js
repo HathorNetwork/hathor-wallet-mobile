@@ -10,6 +10,7 @@ import {
   SafeAreaView, StyleSheet, Text, View,
 } from 'react-native';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 
 import QRCode from 'react-native-qrcode-svg';
 
@@ -17,6 +18,7 @@ import hathorLib from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
 import ModalConfirmation from '../components/ModalConfirmation';
 import OfflineBar from '../components/OfflineBar';
+import TextFmt from '../components/TextFmt';
 import { clearInvoice } from '../actions';
 import { getTokenLabel } from '../utils';
 
@@ -59,14 +61,15 @@ class PaymentRequestDetail extends React.Component {
   }
 
   render() {
-    const renderModalBody = () => (
-      <Text style={{ fontSize: 18 }}>
-          You&apos;ve just received
-        <Text style={{ fontWeight: 'bold' }}>
-          {` ${hathorLib.helpers.prettyValue(this.props.amount)} ${this.props.token.symbol}`}
-        </Text>
-      </Text>
-    );
+    const renderModalBody = () => {
+      const amount = hathorLib.helpers.prettyValue(this.props.amount);
+      const { symbol } = this.props.token;
+      return (
+        <TextFmt style={{ fontSize: 18 }}>
+          {t`You've just received **${amount} ${symbol}**`}
+        </TextFmt>
+      );
+    };
 
     const renderPaymentConfirm = () => (
       <ModalConfirmation
@@ -80,7 +83,7 @@ class PaymentRequestDetail extends React.Component {
         {renderPaymentConfirm()}
         <HathorHeader
           withBorder
-          title='PAYMENT REQUEST'
+          title={t`PAYMENT REQUEST`}
           onBackPress={() => this.props.navigation.goBack()}
         />
         <View style={{
@@ -98,11 +101,11 @@ class PaymentRequestDetail extends React.Component {
           </View>
           <View style={{ alignItems: 'center', width: '100%' }}>
             <View style={styles.dataWrapper}>
-              <Text style={styles.title}>Token</Text>
+              <Text style={styles.title}>{t`Token`}</Text>
               <Text style={styles.data}>{getTokenLabel(this.props.token)}</Text>
             </View>
             <View style={styles.dataWrapper}>
-              <Text style={styles.title}>Amount</Text>
+              <Text style={styles.title}>{t`Amount`}</Text>
               <Text style={styles.data}>
                 {hathorLib.helpers.prettyValue(this.props.amount)}
                 {' '}
@@ -110,12 +113,12 @@ class PaymentRequestDetail extends React.Component {
               </Text>
             </View>
             <View style={styles.dataWrapper}>
-              <Text style={styles.title}>My Address</Text>
+              <Text style={styles.title}>{t`My Address`}</Text>
               <Text numberOfLines={1} style={styles.data}>{this.props.address}</Text>
             </View>
             <View style={styles.dataWrapper}>
-              <Text style={styles.title}>Status</Text>
-              <Text style={styles.data}>{this.props.payment ? 'Received' : 'Waiting confirmation'}</Text>
+              <Text style={styles.title}>{t`Status`}</Text>
+              <Text style={styles.data}>{this.props.payment ? t`Received` : t`Waiting confirmation`}</Text>
             </View>
           </View>
           <OfflineBar />

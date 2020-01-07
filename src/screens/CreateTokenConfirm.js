@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
@@ -62,7 +63,7 @@ class CreateTokenConfirm extends React.Component {
         // eslint-disable-next-line react/jsx-indent
         <FeedbackModal
           icon={<Spinner />}
-          text='Creating token'
+          text={t`Creating token`}
         />,
     });
 
@@ -80,8 +81,8 @@ class CreateTokenConfirm extends React.Component {
   onSendPress = () => {
     const params = {
       cb: this.executeCreate,
-      screenText: 'Enter your 6-digit pin to create your token',
-      biometryText: 'Authorize token creation',
+      screenText: t`Enter your 6-digit pin to create your token`,
+      biometryText: t`Authorize token creation`,
       canCancel: true,
     };
     this.props.navigation.navigate('PinScreen', params);
@@ -122,7 +123,7 @@ class CreateTokenConfirm extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
-          title='CREATE TOKEN'
+          title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
           onCancel={() => this.props.navigation.dismiss()}
         />
@@ -131,7 +132,7 @@ class CreateTokenConfirm extends React.Component {
           <View>
             <View style={{ alignItems: 'center', marginTop: 40 }}>
               <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
-                {`Amount of ${this.name}`}
+                {t`Amount of ${this.name}`}
               </InputLabel>
               <AmountTextInput
                 editable={false}
@@ -139,26 +140,26 @@ class CreateTokenConfirm extends React.Component {
               />
             </View>
             <SimpleInput
-              label='Token name'
+              label={t`Token name`}
               editable={false}
               value={this.name}
               containerStyle={{ marginTop: 48 }}
             />
             <SimpleInput
-              label='Token symbol'
+              label={t`Token symbol`}
               editable={false}
               value={this.symbol}
               containerStyle={{ marginTop: 32 }}
             />
             <SimpleInput
-              label='Deposit'
+              label={t`Deposit`}
               editable={false}
               value={`${hathorLib.helpers.prettyValue(hathorLib.helpers.getDepositAmount(this.amount))} HTR`}
               containerStyle={{ marginTop: 32 }}
             />
           </View>
           <NewHathorButton
-            title='Create token'
+            title={t`Create token`}
             onPress={this.onSendPress}
             // disable while modal is visible
             disabled={this.state.modal !== null}

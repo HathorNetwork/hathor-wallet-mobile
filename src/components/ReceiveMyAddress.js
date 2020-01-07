@@ -9,6 +9,7 @@ import React from 'react';
 import {
   Dimensions, Share, StyleSheet, View,
 } from 'react-native';
+import { t } from 'ttag';
 
 import QRCode from 'react-native-qrcode-svg';
 
@@ -48,7 +49,7 @@ class ReceiveMyAddress extends React.Component {
 
   shareAddress = () => {
     Share.share({
-      message: `Here is my address: ${this.state.address}`,
+      message: t`Here is my address: ${this.state.address}`,
     });
   }
 
@@ -85,13 +86,13 @@ class ReceiveMyAddress extends React.Component {
         </View>
         <View style={{ flexDirection: 'row' }}>
           <SimpleButton
-            title='New address'
+            title={t`New address`}
             onPress={this.getNextAddress}
             containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
           />
           <SimpleButton
             onPress={this.shareAddress}
-            title='Share'
+            title={t`Share`}
             color='#000'
             containerStyle={styles.buttonContainer}
           />

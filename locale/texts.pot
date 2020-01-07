@@ -3,35 +3,357 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
-#: src/screens/InitWallet.js:56
-msgid "Welcome to Hathor Wallet!"
+#: src/utils.js:141
+msgid "Invalid address"
 msgstr ""
 
-#: src/screens/InitWallet.js:59
-msgid "This wallet is connected to the"
+#: src/screens/About.js:43
+msgid "ABOUT"
 msgstr ""
 
-#: src/screens/InitWallet.js:62
+#: src/screens/About.js:54
+msgid "This app is developed by Hathor Labs and is distributed for free."
+msgstr ""
+
+#: src/screens/About.js:58
+msgid "This wallet is connected to the **mainnet**."
+msgstr ""
+
+#: src/screens/About.js:61
+#: src/screens/InitWallet.js:63
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
 "So, we advise you to keep only a small amount of tokens here, such as "
 "pocket money."
 msgstr ""
 
-#: src/screens/InitWallet.js:66
+#: src/screens/About.js:65
+msgid "For further information, check our website"
+msgstr ""
+
+#: src/screens/BackupWords.js:224
+msgid "To make sure you saved,"
+msgstr ""
+
+#: src/screens/BackupWords.js:226
+msgid "Please select the word that corresponds to the number below:"
+msgstr ""
+
+#: src/screens/ChangePin.js:103
+msgid "Incorrect PIN code."
+msgstr ""
+
+#: src/screens/ChangePin.js:130
+msgid "PIN codes don't match."
+msgstr ""
+
+#: src/screens/ChangePin.js:155
+#.  Should never get here because we've done all the validations before
+msgid "Error while changing PIN"
+msgstr ""
+
+#: src/screens/ChangePin.js:161
+msgid "Please enter your **current PIN**"
+msgstr ""
+
+#: src/screens/ChangePin.js:174
+msgid "Please enter your **new PIN**"
+msgstr ""
+
+#: src/screens/ChangePin.js:187
+msgid "Please enter your **new PIN** again"
+msgstr ""
+
+#: src/screens/ChangePin.js:202
+msgid "New PIN recorded"
+msgstr ""
+
+#: src/screens/ChangePin.js:212
+msgid "CHANGE PIN"
+msgstr ""
+
+#: src/screens/ChoosePinScreen.js:124
+msgid "Enter your new PIN code"
+msgstr ""
+
+#: src/screens/ChoosePinScreen.js:136
+msgid "Enter your new PIN code again"
+msgstr ""
+
+#: src/screens/ChoosePinScreen.js:68
+msgid "Create a new PIN code,"
+msgstr ""
+
+#: src/screens/ChoosePinScreen.js:71
+msgid "To confirm the PIN,"
+msgstr ""
+
+#: src/screens/ChoosePinScreen.js:150
+msgid "PIN codes don't match. Try again."
+msgstr ""
+
+#: src/screens/ChoosePinScreen.js:173
+msgid "Start the Wallet"
+msgstr ""
+
+#: src/screens/CreateToken.js:70
+msgid "You don't have any hathor tokens available to create your token."
+msgstr ""
+
+#: src/screens/CreateToken.js:85
+msgid "All fields must be filled."
+msgstr ""
+
+#: src/screens/CreateToken.js:123
+#: src/screens/CreateTokenConfirm.js:84
+msgid "Enter your 6-digit pin to create your token"
+msgstr ""
+
+#: src/screens/CreateToken.js:124
+#: src/screens/CreateTokenConfirm.js:85
+msgid "Authorize token creation"
+msgstr ""
+
+#: src/screens/CreateToken.js:140
+msgid "CREATE NEW TOKEN"
+msgstr ""
+
+#: src/screens/CreateToken.js:146
+#: src/screens/CreateTokenName.js:51
+msgid "Token Name"
+msgstr ""
+
+#: src/screens/CreateToken.js:153
+msgid "Token Symbol"
+msgstr ""
+
+#: src/screens/CreateToken.js:161
+#: src/screens/PaymentRequestDetail.js:108
+msgid "Amount"
+msgstr ""
+
+#: src/screens/CreateToken.js:172
+msgid "Create New Token"
+msgstr ""
+
+#: src/screens/CreateTokenAmount.js:109
+#: src/screens/CreateTokenConfirm.js:126
+#: src/screens/CreateTokenDepositNotice.js:39
+#: src/screens/CreateTokenName.js:44
+#: src/screens/CreateTokenSymbol.js:63
+msgid "CREATE TOKEN"
+msgstr ""
+
+#: src/screens/CreateTokenAmount.js:117
+#, javascript-format
+msgid "Amount of ${ this.name } (${ this.symbol })"
+msgstr ""
+
+#: src/screens/CreateTokenAmount.js:129
+msgid "Deposit:"
+msgstr ""
+
+#: src/screens/CreateTokenAmount.js:133
+#, javascript-format
+msgid "You have ${ amountAvailableText } HTR available"
+msgstr ""
+
+#: src/screens/CreateTokenAmount.js:138
+#: src/screens/CreateTokenName.js:65
+#: src/screens/CreateTokenSymbol.js:85
+#: src/screens/InitWallet.js:208
+#: src/screens/InitWallet.js:328
+#: src/screens/SendAddressInput.js:66
+#: src/screens/SendAmountInput.js:159
+msgid "Next"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:66
+#.  show loading modal
+#.  eslint-disable-next-line react/jsx-indent
+msgid "Creating token"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:135
+#, javascript-format
+msgid "Amount of ${ this.name }"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:143
+msgid "Token name"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:149
+#: src/screens/CreateTokenSymbol.js:70
+msgid "Token symbol"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:155
+msgid "Deposit"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:162
+msgid "Create token"
+msgstr ""
+
+#: src/screens/CreateTokenDepositNotice.js:45
+msgid "When creating new tokens, a "
+msgstr ""
+
+#: src/screens/CreateTokenDepositNotice.js:47
+#, javascript-format
+msgid "deposit of ${ deposit_percentage }% "
+msgstr ""
+
+#: src/screens/CreateTokenDepositNotice.js:49
+msgid ""
+"in HTR is required - e.g. if you create 1000 NewCoins, 10 HTR are needed as "
+"deposit."
+msgstr ""
+
+#: src/screens/CreateTokenDepositNotice.js:52
+msgid ""
+"If these tokens are later melted, the HTR deposit will be returned. Read "
+"more about it "
+msgstr ""
+
+#: src/screens/CreateTokenDepositNotice.js:53
+msgid "here"
+msgstr ""
+
+#: src/screens/CreateTokenDepositNotice.js:60
+msgid "I understand"
+msgstr ""
+
+#: src/screens/CreateTokenDetail.js:42
+#: src/screens/TokenDetail.js:41
+msgid "TOKEN DETAILS"
+msgstr ""
+
+#: src/screens/CreateTokenName.js:27
+msgid "0/30 characters"
+msgstr ""
+
+#: src/screens/CreateTokenName.js:33
+#, javascript-format
+msgid "${ text.length }/30 characters"
+msgstr ""
+
+#: src/screens/CreateTokenName.js:60
+msgid "Token name should be the full name of the new token you are creating"
+msgstr ""
+
+#: src/screens/CreateTokenName.js:61
+msgid "E.g. MyToken or My Token"
+msgstr ""
+
+#: src/screens/CreateTokenSymbol.js:73
+msgid "Between 2 and 5 characters"
+msgstr ""
+
+#: src/screens/CreateTokenSymbol.js:80
+msgid "The symbol is a smaller version of the token name"
+msgstr ""
+
+#: src/screens/CreateTokenSymbol.js:81
+msgid "E.g. HTR"
+msgstr ""
+
+#: src/screens/Dashboard.js:152
+#: src/screens/RegisterTokenManual.js:133
+msgid "Register token"
+msgstr ""
+
+#: src/screens/Dashboard.js:159
+msgid "TOKENS"
+msgstr ""
+
+#: src/screens/InitWallet.js:57
+msgid "Welcome to Hathor Wallet!"
+msgstr ""
+
+#: src/screens/InitWallet.js:60
+msgid "This wallet is connected to the"
+msgstr ""
+
+#: src/screens/InitWallet.js:67
 msgid "For further information, check our website "
 msgstr ""
 
-#: src/screens/InitWallet.js:78
+#: src/screens/InitWallet.js:79
 msgid "I understand the risks of using a mobile wallet"
 msgstr ""
 
-#: src/screens/InitWallet.js:85
+#: src/screens/InitWallet.js:86
 msgid "Start"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:142
+#: src/screens/InitWallet.js:103
+msgid "To start,"
+msgstr ""
+
+#: src/screens/InitWallet.js:105
+msgid "You need to **initialize your wallet**."
+msgstr ""
+
+#: src/screens/InitWallet.js:108
+msgid ""
+"You can either **start a new wallet** or **import a wallet** that already "
+"exists."
+msgstr ""
+
+#: src/screens/InitWallet.js:111
+msgid "To import a wallet, you will need to provide your seed words."
+msgstr ""
+
+#: src/screens/InitWallet.js:116
+msgid "Import Wallet"
+msgstr ""
+
+#: src/screens/InitWallet.js:122
+msgid "New Wallet"
+msgstr ""
+
+#: src/screens/InitWallet.js:199
+msgid "Your wallet has been created!"
+msgstr ""
+
+#: src/screens/InitWallet.js:201
+msgid ""
+"You must **do a backup** and save the words below **in the same order they "
+"appear**."
+msgstr ""
+
+#: src/screens/InitWallet.js:298
+msgid "To import a wallet,"
+msgstr ""
+
+#: src/screens/InitWallet.js:300
+#, javascript-format
+msgid ""
+"You need to **write down the ${ this.numberOfWords } seed words** of your "
+"wallet, separated by space."
+msgstr ""
+
+#: src/screens/InitWallet.js:303
+msgid "Words"
+msgstr ""
+
+#: src/screens/InitWallet.js:308
+msgid "Enter your seed words separated by space"
+msgstr ""
+
+#: src/screens/LoadHistoryScreen.js:143
 msgid "Loading your transactions"
+msgstr ""
+
+#: src/screens/LoadHistoryScreen.js:146
+#, javascript-format
+msgid "**${ _this3.state.transactions } transactions** found"
+msgstr ""
+
+#: src/screens/LoadHistoryScreen.js:149
+msgid "**${ _this3.state.addresses } addresses** found"
 msgstr ""
 
 #: src/screens/MainScreen.js:95
@@ -55,6 +377,301 @@ msgstr ""
 msgid "Locked"
 msgstr ""
 
+#: src/screens/PaymentRequestDetail.js:69
+#, javascript-format
+msgid "You've just received **${ amount } ${ symbol }**"
+msgstr ""
+
+#: src/screens/PaymentRequestDetail.js:86
+msgid "PAYMENT REQUEST"
+msgstr ""
+
+#: src/screens/PaymentRequestDetail.js:104
+msgid "Token"
+msgstr ""
+
+#: src/screens/PaymentRequestDetail.js:116
+#: src/screens/Receive.js:29
+msgid "My Address"
+msgstr ""
+
+#: src/screens/PaymentRequestDetail.js:120
+msgid "Status"
+msgstr ""
+
+#: src/screens/PaymentRequestDetail.js:121
+msgid "Received"
+msgstr ""
+
+#: src/screens/PaymentRequestDetail.js:121
+msgid "Waiting confirmation"
+msgstr ""
+
 #: src/screens/PinScreen.js:157
 msgid "Incorrect PIN Code. Try again."
+msgstr ""
+
+#: src/screens/PinScreen.js:53
+msgid "Enter your PIN Code "
+msgstr ""
+
+#: src/screens/PinScreen.js:54
+msgid "Unlock Hathor Wallet"
+msgstr ""
+
+#: src/screens/PinScreen.js:169
+msgid "Cancel"
+msgstr ""
+
+#: src/screens/PinScreen.js:172
+#: src/screens/Settings.js:128
+msgid "Reset wallet"
+msgstr ""
+
+#: src/screens/Receive.js:30
+#. *
+#.      * index {number} Selected index of the tab bar
+#.      
+#.  eslint thinks routes is not used, but TabView uses it
+#.  eslint-disable-next-line react/no-unused-state
+msgid "Payment Request"
+msgstr ""
+
+#: src/screens/Receive.js:105
+msgid "RECEIVE"
+msgstr ""
+
+#: src/screens/RegisterToken.js:31
+#: src/screens/SendScanQRCode.js:67
+msgid "Manual info"
+msgstr ""
+
+#: src/screens/RegisterToken.js:46
+#: src/screens/RegisterTokenManual.js:112
+msgid "REGISTER TOKEN"
+msgstr ""
+
+#: src/screens/RegisterToken.js:57
+msgid "Scan the token QR code"
+msgstr ""
+
+#: src/screens/RegisterTokenManual.js:88
+msgid "You're going to register the following token:"
+msgstr ""
+
+#: src/screens/RegisterTokenManual.js:90
+msgid "Name: "
+msgstr ""
+
+#: src/screens/RegisterTokenManual.js:94
+msgid "Symbol: "
+msgstr ""
+
+#: src/screens/RegisterTokenManual.js:118
+msgid "Configuration string"
+msgstr ""
+
+#: src/screens/ResetWallet.js:76
+msgid "RESET WALLET"
+msgstr ""
+
+#: src/screens/ResetWallet.js:80
+msgid "Are you sure?"
+msgstr ""
+
+#: src/screens/ResetWallet.js:83
+msgid ""
+"If you reset your wallet, **all data will be deleted**, and you will **lose "
+"access to your tokens**."
+msgstr ""
+
+#: src/screens/ResetWallet.js:85
+msgid ""
+"To recover access to your tokens, you will need to import your seed words "
+"again."
+msgstr ""
+
+#: src/screens/ResetWallet.js:94
+msgid ""
+"I want to reset my wallet, and I acknowledge that **all data will be wiped "
+"out**."
+msgstr ""
+
+#: src/screens/ResetWallet.js:103
+msgid "Reset Wallet"
+msgstr ""
+
+#: src/screens/Security.js:73
+msgid "No biometry supported"
+msgstr ""
+
+#: src/screens/Security.js:73
+#, javascript-format
+msgid "Use ${ this.supportedBiometry }"
+msgstr ""
+
+#: src/screens/Security.js:77
+msgid "SECURITY"
+msgstr ""
+
+#: src/screens/Security.js:96
+msgid "Change PIN"
+msgstr ""
+
+#: src/screens/Security.js:100
+msgid "Lock wallet"
+msgstr ""
+
+#: src/screens/SendAddressInput.js:59
+msgid "Address to send"
+msgstr ""
+
+#: src/screens/SendAmountInput.js:94
+msgid "Insufficient funds"
+msgstr ""
+
+#: src/screens/SendAmountInput.js:118
+#: src/screens/SendConfirmScreen.js:126
+#, javascript-format
+msgid "${ amountAndToken } available"
+msgid_plural "${ amountAndToken } available"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/screens/SendAmountInput.js:126
+#: src/screens/SendConfirmScreen.js:134
+msgid "SEND ${ token_name_uppercase }"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:70
+#.  show loading modal
+#.  eslint-disable-next-line react/jsx-indent
+msgid "Your transfer is being processed"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:82
+msgid "Enter your 6-digit pin to authorize operation"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:83
+msgid "Authorize operation"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:95
+#.  eslint-disable-next-line react/jsx-indent
+#, javascript-format
+msgid "Your transfer of **${ _this.amountAndToken }** has been confirmed"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:150
+msgid "Address"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:157
+msgid "Send"
+msgstr ""
+
+#: src/screens/SendScanQRCode.js:29
+msgid "Invalid QR code"
+msgstr ""
+
+#: src/screens/SendScanQRCode.js:32
+msgid "OK"
+msgstr ""
+
+#: src/screens/SendScanQRCode.js:46
+#, javascript-format
+msgid "You don't have the requested token [${ token_label }]"
+msgstr ""
+
+#: src/screens/SendScanQRCode.js:75
+msgid "SEND"
+msgstr ""
+
+#: src/screens/SendScanQRCode.js:83
+msgid "Scan the QR code"
+msgstr ""
+
+#: src/screens/Settings.js:91
+msgid "You are connected to"
+msgstr ""
+
+#: src/screens/Settings.js:103
+msgid "Connected to"
+msgstr ""
+
+#: src/screens/Settings.js:116
+msgid "Security"
+msgstr ""
+
+#: src/screens/Settings.js:120
+msgid "Create a new token"
+msgstr ""
+
+#: src/screens/Settings.js:124
+msgid "Register a token"
+msgstr ""
+
+#: src/screens/Settings.js:132
+msgid "About"
+msgstr ""
+
+#: src/screens/TokenDetail.js:33
+msgid "Unregister"
+msgstr ""
+
+#: src/screens/UnregisterToken.js:89
+msgid "UNREGISTER TOKEN"
+msgstr ""
+
+#: src/screens/UnregisterToken.js:94
+msgid ""
+"If you unregister this token **you won't be able to execute operations with "
+"it**, unless you register it again."
+msgstr ""
+
+#: src/screens/UnregisterToken.js:97
+msgid ""
+"You won't lose your tokens, they will just not appear on this wallet "
+"anymore."
+msgstr ""
+
+#: src/screens/UnregisterToken.js:101
+#, javascript-format
+msgid "I want to unregister the token **${ tokenLabel }**"
+msgstr ""
+
+#: src/screens/UnregisterToken.js:116
+msgid "Unregister token"
+msgstr ""
+
+#: src/components/CopyClipboard.js:37
+msgid "Copied to clipboard!"
+msgstr ""
+
+#: src/components/NewPaymentRequest.js:162
+msgid "Create payment request"
+msgstr ""
+
+#: src/components/QRCodeReader.js:144
+msgid "Opening camera"
+msgstr ""
+
+#: src/components/ReceiveMyAddress.js:52
+#, javascript-format
+msgid "Here is my address: ${ _this.state.address }"
+msgstr ""
+
+#: src/components/ReceiveMyAddress.js:89
+msgid "New address"
+msgstr ""
+
+#: src/components/ReceiveMyAddress.js:95
+#: src/components/TokenDetails.js:54
+msgid "Share"
+msgstr ""
+
+#: src/components/TokenDetails.js:31
+#, javascript-format
+msgid "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr ""

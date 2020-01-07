@@ -20,9 +20,10 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { t } from 'ttag'
+import { t } from 'ttag';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
+import TextFmt from '../components/TextFmt';
 
 import baseStyle from '../styles/init';
 import { Link, Strong } from '../utils';
@@ -99,27 +100,26 @@ class InitialScreen extends React.Component {
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader withLogo />
         <View style={this.style.container}>
-          <Text style={this.style.title}>To start,</Text>
+          <Text style={this.style.title}>{t`To start,`}</Text>
+          <TextFmt style={this.style.text}>
+            {t`You need to **initialize your wallet**.`}
+          </TextFmt>
+          <TextFmt style={this.style.text}>
+            {t`You can either **start a new wallet** or **import a wallet** that already exists.`}
+          </TextFmt>
           <Text style={this.style.text}>
-            You need to <Strong>initialize your wallet</Strong>.
-          </Text>
-          <Text style={this.style.text}>
-            You can either <Strong>start a new wallet</Strong> or
-            {' '}<Strong>import a wallet</Strong> that already exists.
-          </Text>
-          <Text style={this.style.text}>
-            To import a wallet, you will need to provide your seed words.
+            {t`To import a wallet, you will need to provide your seed words.`}
           </Text>
           <View style={this.style.buttonView}>
             <NewHathorButton
               onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
-              title='Import Wallet'
+              title={t`Import Wallet`}
               style={{ marginBottom: 16 }}
               secondary
             />
             <NewHathorButton
               onPress={() => this.props.navigation.navigate('NewWordsScreen')}
-              title='New Wallet'
+              title={t`New Wallet`}
             />
           </View>
         </View>
@@ -196,17 +196,16 @@ class NewWordsScreen extends React.Component {
         />
         <View style={this.style.container}>
           <View>
-            <Text style={this.style.title}>Your wallet has been created!</Text>
-            <Text style={this.style.text}>
-              You must <Strong>do a backup</Strong> and save the words below
-              {' '}<Strong>in the same order they appear</Strong>.
-            </Text>
+            <Text style={this.style.title}>{t`Your wallet has been created!`}</Text>
+            <TextFmt style={this.style.text}>
+              {t`You must **do a backup** and save the words below **in the same order they appear**.`}
+            </TextFmt>
           </View>
           {renderWords()}
           <View style={this.style.buttonView}>
             <NewHathorButton
               onPress={() => this.props.navigation.navigate('BackupWords', { words: this.state.words })}
-              title='Next'
+              title={t`Next`}
             />
           </View>
         </View>
@@ -296,18 +295,17 @@ class LoadWordsScreen extends React.Component {
           />
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={this.style.container}>
-              <Text style={this.style.title}>To import a wallet,</Text>
-              <Text style={this.style.text}>
-                You need to <Strong>write down the {this.numberOfWords} seed words</Strong> of
-                {' '}your wallet, separated by space.
-              </Text>
+              <Text style={this.style.title}>{t`To import a wallet,`}</Text>
+              <TextFmt style={this.style.text}>
+                {t`You need to **write down the ${this.numberOfWords} seed words** of your wallet, separated by space.`}
+              </TextFmt>
               <View style={this.style.inputView}>
-                <Text style={this.style.label}>Words</Text>
+                <Text style={this.style.label}>{t`Words`}</Text>
                 <TextInput
                   style={this.style.input}
                   textAlignVertical='top'
                   onChangeText={this.onChangeText}
-                  placeholder='Enter your seed words separated by space'
+                  placeholder={t`Enter your seed words separated by space`}
                   multiline
                   keyboardAppearance='dark'
                   returnKeyType='done'
@@ -327,7 +325,7 @@ class LoadWordsScreen extends React.Component {
                 <NewHathorButton
                   onPress={this.loadClicked}
                   disabled={!this.state.isValid}
-                  title='Next'
+                  title={t`Next`}
                   style={{ marginTop: 8 }}
                 />
               </View>

@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import {
   Clipboard, StyleSheet, Text,
 } from 'react-native';
+import { t } from 'ttag';
 import { HATHOR_COLOR } from '../constants';
 
 class CopyClipboard extends React.Component {
@@ -33,7 +34,7 @@ class CopyClipboard extends React.Component {
 
   render() {
     if (this.state.copying) {
-      return <Text style={[style.text, style.copied]}>Copied to clipboard!</Text>;
+      return <Text style={[style.text, style.copied]}>{t`Copied to clipboard!`}</Text>;
     }
     return (
       <Text

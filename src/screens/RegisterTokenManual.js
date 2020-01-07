@@ -9,6 +9,7 @@ import React from 'react';
 import {
   Keyboard, KeyboardAvoidingView, SafeAreaView, Text, View,
 } from 'react-native';
+import { t } from 'ttag';
 
 import { connect } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
@@ -84,13 +85,13 @@ class RegisterTokenManual extends React.Component {
     const renderTokenView = () => (
       <InfoBox
         items={[
-          <Text>You&apos;re going to register the following token:</Text>,
+          <Text>{t`You're going to register the following token:`}</Text>,
           <Text>
-            <Strong>Name: </Strong>
+            <Strong>{t`Name: `}</Strong>
             {this.state.token.name}
           </Text>,
           <Text>
-            <Strong>Symbol: </Strong>
+            <Strong>{t`Symbol: `}</Strong>
             {this.state.token.symbol}
           </Text>
         ]}
@@ -108,13 +109,13 @@ class RegisterTokenManual extends React.Component {
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <HathorHeader
             withBorder
-            title='REGISTER TOKEN'
+            title={t`REGISTER TOKEN`}
             onBackPress={() => this.props.navigation.goBack()}
           />
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
               <SimpleInput
-                label='Configuration string'
+                label={t`Configuration string`}
                 autoFocus
                 multiline
                 onChangeText={this.onConfigStringChange}
@@ -129,7 +130,7 @@ class RegisterTokenManual extends React.Component {
             </View>
             {this.state.validating && renderSpinner()}
             <NewHathorButton
-              title='Register token'
+              title={t`Register token`}
               disabled={this.state.configString === '' || this.state.errorMessage !== '' || this.state.token === null}
               onPress={this.onButtonPress}
             />

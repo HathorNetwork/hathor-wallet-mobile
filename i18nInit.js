@@ -2,7 +2,7 @@ import { addLocale, useLocale } from 'ttag';
 import RNLanguages from 'react-native-languages';
 
 const availableLocales = {
-  'pt-BR': () => require('./src/locale/pt-br/texts.po.json'),
+  'pt-BR': () => require('./src/locale/pt-br/texts.po.json'), // eslint-disable-line global-require
 };
 for (const locale of RNLanguages.languages) {
   if (locale === 'en-US') {

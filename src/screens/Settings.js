@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 import {
   ScrollView,
   StyleSheet,
@@ -87,7 +88,7 @@ export class Settings extends React.Component {
           {(this.props.isOnline
             && (
             <View style={this.style.networkContainerView}>
-              <Text>You are connected to</Text>
+              <Text>{t`You are connected to`}</Text>
               <View style={this.style.networkView}>
                 <Text style={this.style.networkText}>{this.props.network}</Text>
               </View>
@@ -99,7 +100,7 @@ export class Settings extends React.Component {
             <ListItem
               text={(
                 <View style={{ flex: 1 }}>
-                  <Text style={{ marginBottom: 8, color: 'rgba(0, 0, 0, 0.5)', fontSize: 12 }}>Connected to</Text>
+                  <Text style={{ marginBottom: 8, color: 'rgba(0, 0, 0, 0.5)', fontSize: 12 }}>{t`Connected to`}</Text>
                   <Text
                     style={{ fontSize: 12 }}
                     adjustsFontSizeToFit
@@ -112,23 +113,23 @@ export class Settings extends React.Component {
               isFirst
             />
             <ListMenu
-              title='Security'
+              title={t`Security`}
               onPress={() => this.props.navigation.navigate('Security')}
             />
             <ListMenu
-              title='Create a new token'
+              title={t`Create a new token`}
               onPress={() => this.props.navigation.navigate('CreateTokenStack')}
             />
             <ListMenu
-              title='Register a token'
+              title={t`Register a token`}
               onPress={() => this.props.navigation.navigate('RegisterToken')}
             />
             <ListMenu
-              title='Reset wallet'
+              title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}
             />
             <ListMenu
-              title='About'
+              title={t`About`}
               onPress={() => this.props.navigation.navigate('About')}
             />
           </HathorList>

@@ -17,7 +17,7 @@ import {
   TouchableHighlight,
 } from 'react-native';
 import { connect } from 'react-redux';
-import { t } from 'ttag'
+import { t } from 'ttag';
 
 import moment from 'moment';
 import hathorLib from '@hathor/wallet-lib';

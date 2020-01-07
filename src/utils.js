@@ -7,6 +7,7 @@
 
 import hathorLib from '@hathor/wallet-lib';
 import React from 'react';
+import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
@@ -137,7 +138,7 @@ export const validateAddress = (address) => {
     if (e instanceof TypeError) {
       return { isValid: false, message: e.message };
     }
-    return { isValid: false, message: 'Invalid address' };
+    return { isValid: false, message: t`Invalid address` };
   }
 };
 

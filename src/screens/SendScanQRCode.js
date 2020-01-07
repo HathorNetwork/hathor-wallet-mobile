@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { Alert, SafeAreaView, View } from 'react-native';
+import { t } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
 import QRCodeReader from '../components/QRCodeReader';
@@ -25,10 +26,10 @@ class SendScanQRCode extends React.Component {
 
   showAlertError = (message) => {
     Alert.alert(
-      'Invalid QR code',
+      t`Invalid QR code`,
       message,
       [
-        { text: 'OK', onPress: this.QRCodeReader.reactivateQrCodeScanner },
+        { text: t`OK`, onPress: this.QRCodeReader.reactivateQrCodeScanner },
       ],
       { cancelable: false },
     );
@@ -41,7 +42,8 @@ class SendScanQRCode extends React.Component {
     } else if (qrcode.token && qrcode.amount) {
       if (hathorLib.tokens.tokenExists(qrcode.token.uid) === null) {
         // Wallet does not have the selected token
-        this.showAlertError(`You don't have the requested token [${getTokenLabel(qrcode.token)}]`);
+        const tokenLabel = getTokenLabel(qrcode.token);
+        this.showAlertError(t`You don't have the requested token [${tokenLabel}]`);
       } else {
         const params = {
           address: qrcode.address,
@@ -62,7 +64,7 @@ class SendScanQRCode extends React.Component {
     const ManualInfoButton = () => (
       <SimpleButton
         withBorder
-        title='Manual info'
+        title={t`Manual info`}
         onPress={() => this.props.navigation.navigate('SendAddressInput')}
       />
     );
@@ -70,7 +72,7 @@ class SendScanQRCode extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
         <HathorHeader
-          title='SEND'
+          title={t`SEND`}
           rightElement={<ManualInfoButton />}
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
@@ -78,7 +80,7 @@ class SendScanQRCode extends React.Component {
           <QRCodeReader
             ref={(el) => { this.QRCodeReader = el; }}
             onSuccess={this.onSuccess}
-            bottomText='Scan the QR code'
+            bottomText={t`Scan the QR code`}
             {...this.props}
           />
         </View>

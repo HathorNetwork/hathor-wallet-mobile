@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { KeyboardAvoidingView, SafeAreaView, View } from 'react-native';
+import { t } from 'ttag';
 
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
@@ -55,14 +56,14 @@ class SendAddressInput extends React.Component {
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <SimpleInput
-              label='Address to send'
+              label={t`Address to send`}
               autoFocus
               onChangeText={this.onAddressChange}
               error={this.state.error}
               value={this.state.address}
             />
             <NewHathorButton
-              title='Next'
+              title={t`Next`}
               disabled={!this.state.address}
               onPress={this.onButtonPress}
             />

@@ -13,6 +13,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
@@ -64,10 +65,10 @@ class ChoosePinScreen extends React.Component {
 
     this.steps = [
       {
-        title: 'Create a new PIN code,',
+        title: t`Create a new PIN code,`,
         render: this.getPin1View,
       }, {
-        title: 'To confirm the PIN,',
+        title: t`To confirm the PIN,`,
         render: this.getPin2View,
       },
     ];
@@ -120,7 +121,7 @@ class ChoosePinScreen extends React.Component {
 
   getPin1View = () => (
     <View style={this.style.pinView}>
-      <Text style={this.style.pinText}>Enter your new PIN code</Text>
+      <Text style={this.style.pinText}>{t`Enter your new PIN code`}</Text>
       <PinInput
         maxLength={6}
         onChangeText={this.onChangePin1}
@@ -132,7 +133,7 @@ class ChoosePinScreen extends React.Component {
 
   getPin2View = () => (
     <View style={this.style.pinView}>
-      <Text style={this.style.pinText}>Enter your new PIN code again</Text>
+      <Text style={this.style.pinText}>{t`Enter your new PIN code again`}</Text>
       <PinInput
         maxLength={6}
         onChangeText={this.onChangePin2}
@@ -146,7 +147,7 @@ class ChoosePinScreen extends React.Component {
   removeOneChar() {
     const pin2 = this.state.pin2.slice(0, -1);
     if (pin2.length === 0) {
-      this.setState({ pin2: '', error: 'PIN codes don\'t match. Try again.' });
+      this.setState({ pin2: '', error: t`PIN codes don't match. Try again.` });
     } else {
       this.setState({ pin2, pin2Color: '#DE3535' });
       setTimeout(() => this.removeOneChar(), 25);
@@ -169,7 +170,7 @@ class ChoosePinScreen extends React.Component {
           <NewHathorButton
             onPress={this.goToNextScreen}
             disabled={!this.state.done}
-            title='Start the Wallet'
+            title={t`Start the Wallet`}
             style={{ marginTop: 16 }}
           />
         </View>
