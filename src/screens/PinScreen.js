@@ -18,6 +18,7 @@ import PinInput from '../components/PinInput';
 import { isBiometryEnabled, getSupportedBiometry } from '../utils';
 import { lockScreen, unlockScreen, setLoadHistoryStatus } from '../actions';
 import hathorLogo from '../assets/images/hathor-logo.png';
+import { t } from 'ttag'
 
 
 /**
@@ -153,7 +154,7 @@ class PinScreen extends React.Component {
   removeOneChar = () => {
     const pin = this.state.pin.slice(0, -1);
     if (pin.length === 0) {
-      this.setState({ pin: '', error: 'Incorrect PIN Code. Try again.' });
+      this.setState({ pin: '', error: t`Incorrect PIN Code. Try again.` });
     } else {
       this.setState({ pin, pinColor: '#DE3535' });
       setTimeout(() => this.removeOneChar(), 25);

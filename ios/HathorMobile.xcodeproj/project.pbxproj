@@ -5,7 +5,6 @@
 	};
 	objectVersion = 46;
 	objects = {
-
 /* Begin PBXBuildFile section */
 		00C302E51ABCBA2D00DB3ED1 /* libRCTActionSheet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302AC1ABCB8CE00DB3ED1 /* libRCTActionSheet.a */; };
 		00C302E71ABCBA2D00DB3ED1 /* libRCTGeolocation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302BA1ABCB90400DB3ED1 /* libRCTGeolocation.a */; };
@@ -56,6 +55,8 @@
 		ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED297162215061F000B7C4FE /* JavaScriptCore.framework */; };
 		ED2971652150620600B7C4FE /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED2971642150620600B7C4FE /* JavaScriptCore.framework */; };
 		FCE33F1232CD48888AACFB1E /* libRNKeychain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E328237ADB34808B0E2AA0A /* libRNKeychain.a */; };
+		052E3D07C02E4AE19454F3C5 /* libRNLanguages.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 663C38DEE8464B1E843CFE1E /* libRNLanguages.a */; };
+		EDC1CCF40C6F43C983CAB7CB /* libRNLanguages-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 383CA659D3CF4AD6B9D5EFED /* libRNLanguages-tvOS.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -509,6 +510,9 @@
 		CF9337FEF8384BA59C187C45 /* RNVersionNumber.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNVersionNumber.xcodeproj; path = "../node_modules/react-native-version-number/ios/RNVersionNumber.xcodeproj"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
+		52A6693A0C3D4B23B5575EEF /* RNLanguages.xcodeproj */ = {isa = PBXFileReference; name = "RNLanguages.xcodeproj"; path = "../node_modules/react-native-languages/ios/RNLanguages.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		663C38DEE8464B1E843CFE1E /* libRNLanguages.a */ = {isa = PBXFileReference; name = "libRNLanguages.a"; path = "libRNLanguages.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		383CA659D3CF4AD6B9D5EFED /* libRNLanguages-tvOS.a */ = {isa = PBXFileReference; name = "libRNLanguages-tvOS.a"; path = "libRNLanguages-tvOS.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -549,6 +553,7 @@
 				FCE33F1232CD48888AACFB1E /* libRNKeychain.a in Frameworks */,
 				E64B116DCE124712AE7C8936 /* libRNReanimated.a in Frameworks */,
 				8CB7B546002E440093523B4B /* libRNVersionNumber.a in Frameworks */,
+				052E3D07C02E4AE19454F3C5 /* libRNLanguages.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -568,6 +573,7 @@
 				58B1A9EBA821411DA84D2364 /* libRNRandomBytes-tvOS.a in Frameworks */,
 				5DF11C03AE664CB6AE64D81C /* libRNGestureHandler-tvOS.a in Frameworks */,
 				1A2CC523E3604C4792EF6FF9 /* libRNVersionNumber-tvOS.a in Frameworks */,
+				EDC1CCF40C6F43C983CAB7CB /* libRNLanguages-tvOS.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -884,6 +890,7 @@
 				6D1CABC9F40F4D8780FCDC46 /* RNKeychain.xcodeproj */,
 				CDB6380E218C4EE68CC1A88A /* RNReanimated.xcodeproj */,
 				CF9337FEF8384BA59C187C45 /* RNVersionNumber.xcodeproj */,
+				52A6693A0C3D4B23B5575EEF /* RNLanguages.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -1687,12 +1694,15 @@
 					"$(SRCROOT)/../node_modules/react-native-keychain/RNKeychainManager",
 					"$(SRCROOT)/../node_modules/react-native-reanimated/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-version-number/ios",
+					"$(SRCROOT)/../node_modules/react-native-languages/ios",
 				);
 				INFOPLIST_FILE = HathorMobileTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
@@ -1726,12 +1736,15 @@
 					"$(SRCROOT)/../node_modules/react-native-keychain/RNKeychainManager",
 					"$(SRCROOT)/../node_modules/react-native-reanimated/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-version-number/ios",
+					"$(SRCROOT)/../node_modules/react-native-languages/ios",
 				);
 				INFOPLIST_FILE = HathorMobileTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
@@ -1767,6 +1780,7 @@
 					"$(SRCROOT)/../node_modules/react-native-keychain/RNKeychainManager",
 					"$(SRCROOT)/../node_modules/react-native-reanimated/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-version-number/ios",
+					"$(SRCROOT)/../node_modules/react-native-languages/ios",
 				);
 				INFOPLIST_FILE = HathorMobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -1801,6 +1815,7 @@
 					"$(SRCROOT)/../node_modules/react-native-keychain/RNKeychainManager",
 					"$(SRCROOT)/../node_modules/react-native-reanimated/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-version-number/ios",
+					"$(SRCROOT)/../node_modules/react-native-languages/ios",
 				);
 				INFOPLIST_FILE = HathorMobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -1840,11 +1855,14 @@
 					"$(SRCROOT)/../node_modules/react-native-keychain/RNKeychainManager",
 					"$(SRCROOT)/../node_modules/react-native-reanimated/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-version-number/ios",
+					"$(SRCROOT)/../node_modules/react-native-languages/ios",
 				);
 				INFOPLIST_FILE = "HathorMobile-tvOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
@@ -1886,11 +1904,14 @@
 					"$(SRCROOT)/../node_modules/react-native-keychain/RNKeychainManager",
 					"$(SRCROOT)/../node_modules/react-native-reanimated/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-version-number/ios",
+					"$(SRCROOT)/../node_modules/react-native-languages/ios",
 				);
 				INFOPLIST_FILE = "HathorMobile-tvOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
@@ -1931,11 +1952,14 @@
 					"$(SRCROOT)/../node_modules/react-native-keychain/RNKeychainManager",
 					"$(SRCROOT)/../node_modules/react-native-reanimated/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-version-number/ios",
+					"$(SRCROOT)/../node_modules/react-native-languages/ios",
 				);
 				INFOPLIST_FILE = "HathorMobile-tvOSTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
@@ -1976,11 +2000,14 @@
 					"$(SRCROOT)/../node_modules/react-native-keychain/RNKeychainManager",
 					"$(SRCROOT)/../node_modules/react-native-reanimated/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-version-number/ios",
+					"$(SRCROOT)/../node_modules/react-native-languages/ios",
 				);
 				INFOPLIST_FILE = "HathorMobile-tvOSTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",

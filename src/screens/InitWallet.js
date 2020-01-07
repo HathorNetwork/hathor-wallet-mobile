@@ -20,6 +20,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { t } from 'ttag'
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 
@@ -52,17 +53,17 @@ class WelcomeScreen extends React.Component {
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader withLogo />
         <View style={this.style.container}>
-          <Text style={this.style.title}>Welcome to Hathor Wallet!</Text>
+          <Text style={this.style.title}>{t`Welcome to Hathor Wallet!`}</Text>
           <View>
             <Text style={this.style.text}>
-              This wallet is connected to the <Strong>mainnet</Strong>.
+              {t`This wallet is connected to the`} <Strong>mainnet</Strong>.
             </Text>
             <Text style={this.style.text}>
-              A mobile wallet is not the safest place to store your tokens.
-              So, we advise you to keep only a small amount of tokens here, such as pocket money.
+              {t`A mobile wallet is not the safest place to store your tokens.
+              So, we advise you to keep only a small amount of tokens here, such as pocket money.`}
             </Text>
             <Text style={this.style.text}>
-              For further information, check our website{' '}
+              {t`For further information, check our website `}
               <Link href='https://hathor.network'>https://hathor.network/</Link>
               .
             </Text>
@@ -74,14 +75,14 @@ class WelcomeScreen extends React.Component {
               value={this.state.switchValue}
             />
             <Text style={this.style.switchText}>
-              I understand the risks of using a mobile wallet
+              {t`I understand the risks of using a mobile wallet`}
             </Text>
           </View>
           <View style={this.style.buttonView}>
             <NewHathorButton
               disabled={!this.state.switchValue}
               onPress={() => this.props.navigation.navigate('InitialScreen')}
-              title='Start'
+              title={t`Start`}
             />
           </View>
         </View>

@@ -10,6 +10,7 @@ import {
   SafeAreaView, StyleSheet, Text, View,
 } from 'react-native';
 import { connect } from 'react-redux';
+import { t } from 'ttag'
 
 import * as Keychain from 'react-native-keychain';
 
@@ -138,7 +139,7 @@ class LoadHistoryScreen extends React.Component {
       <View style={{ alignItems: 'center' }}>
         <Spinner size={48} animating />
         <Text style={[styles.text, { marginTop: 32, color: 'rgba(0, 0, 0, 0.5)' }]}>
-          Loading your transactions
+          {t`Loading your transactions`}
         </Text>
         <Text style={[styles.text, { marginTop: 24 }]}>
           <Strong>{`${this.state.transactions} transactions`}</Strong> found

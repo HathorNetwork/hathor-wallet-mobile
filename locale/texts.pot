@@ -1,0 +1,60 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: src/screens/InitWallet.js:56
+msgid "Welcome to Hathor Wallet!"
+msgstr ""
+
+#: src/screens/InitWallet.js:59
+msgid "This wallet is connected to the"
+msgstr ""
+
+#: src/screens/InitWallet.js:62
+msgid ""
+"A mobile wallet is not the safest place to store your tokens.\n"
+"So, we advise you to keep only a small amount of tokens here, such as "
+"pocket money."
+msgstr ""
+
+#: src/screens/InitWallet.js:66
+msgid "For further information, check our website "
+msgstr ""
+
+#: src/screens/InitWallet.js:78
+msgid "I understand the risks of using a mobile wallet"
+msgstr ""
+
+#: src/screens/InitWallet.js:85
+msgid "Start"
+msgstr ""
+
+#: src/screens/LoadHistoryScreen.js:142
+msgid "Loading your transactions"
+msgstr ""
+
+#: src/screens/MainScreen.js:95
+msgid "No transactions"
+msgstr ""
+
+#: src/screens/MainScreen.js:101
+msgid "Share your address"
+msgstr ""
+
+#: src/screens/MainScreen.js:104
+msgid "with friends and start exchanging tokens"
+msgstr ""
+
+#: src/screens/MainScreen.js:444
+#: src/screens/MainScreen.js:476
+msgid "Available Balance"
+msgstr ""
+
+#: src/screens/MainScreen.js:453
+msgid "Locked"
+msgstr ""
+
+#: src/screens/PinScreen.js:157
+msgid "Incorrect PIN Code. Try again."
+msgstr ""
