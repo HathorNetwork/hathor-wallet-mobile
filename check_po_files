@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for locale in pt-br; do
+    for file in texts.po; do
+		msgcmp locale/$locale/texts.po locale/texts.pot || exit -1
+    done
+done

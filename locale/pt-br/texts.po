@@ -125,7 +125,7 @@ msgstr "Nome do Token"
 
 #: src/screens/CreateToken.js:153
 msgid "Token Symbol"
-msgstr ""
+msgstr "Símbolo do Token"
 
 #: src/screens/CreateToken.js:161 src/screens/PaymentRequestDetail.js:108
 msgid "Amount"
