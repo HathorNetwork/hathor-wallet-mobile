@@ -7,8 +7,10 @@
 
 import React, { Component } from 'react';
 import { Text, StyleSheet, View } from 'react-native';
-import hathorLib from '@hathor/wallet-lib';
 import Modal from 'react-native-modal';
+import { t } from 'ttag';
+
+import hathorLib from '@hathor/wallet-lib';
 import { getShortHash, getTokenLabel } from '../utils';
 import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
@@ -45,10 +47,10 @@ class TxDetailsModal extends Component {
             <SlideIndicatorBar />
             <BalanceView tx={tx} token={token} />
             <View>
-              <ListItem title='Token' text={fullTokenStr} />
-              <ListItem title='Description' text={description} />
-              <ListItem title='Date & Time' text={timestampStr} />
-              <ListItem title='ID' text={idStr} isLast />
+              <ListItem title={t`Token`} text={fullTokenStr} />
+              <ListItem title={t`Description`} text={description} />
+              <ListItem title={t`Date & Time`} text={timestampStr} />
+              <ListItem title={t`ID`} text={idStr} isLast />
             </View>
           </View>
         </View>
@@ -91,7 +93,7 @@ class BalanceView extends Component {
         >
           {`${balanceStr} ${this.props.token.symbol}`}
         </Text>
-        <Text style={this.style.text1}>Amount</Text>
+        <Text style={this.style.text1}>{t`Amount`}</Text>
       </View>
     );
   }

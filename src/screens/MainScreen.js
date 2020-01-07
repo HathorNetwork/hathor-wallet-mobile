@@ -17,6 +17,7 @@ import {
   TouchableHighlight,
 } from 'react-native';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 
 import moment from 'moment';
 import hathorLib from '@hathor/wallet-lib';
@@ -91,16 +92,16 @@ class MainScreen extends React.Component {
     const renderEmptyHistory = () => (
       <HathorList infinity>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Strong>No transactions</Strong>
+          <Strong>{t`No transactions`}</Strong>
           <Text style={{ marginTop: 8, lineHeight: 20, textAlign: 'center', width: 220 }}>
             <Text
               onPress={() => this.props.navigation.navigate('Receive')}
               style={{ color: HATHOR_COLOR, fontWeight: 'bold' }}
             >
-              Share your address
+              {t`Share your address`}
               {' '}
             </Text>
-            with friends and start exchanging tokens
+            {t`with friends and start exchanging tokens`}
           </Text>
         </View>
       </HathorList>
@@ -440,7 +441,7 @@ class BalanceView extends React.Component {
         >
           {`${availableStr} ${token.symbol}`}
         </Text>
-        <Text style={style.text1}>Available Balance</Text>
+        <Text style={style.text1}>{t`Available Balance`}</Text>
         <Text
           style={style.balanceLocked}
           adjustsFontSizeToFit
@@ -449,7 +450,7 @@ class BalanceView extends React.Component {
         >
           {`${lockedStr} ${token.symbol}`}
         </Text>
-        <Text style={style.text1}>Locked</Text>
+        <Text style={style.text1}>{t`Locked`}</Text>
         <View style={style.networkView}>
           <Text style={style.networkText}>{network}</Text>
         </View>
@@ -472,7 +473,7 @@ class BalanceView extends React.Component {
         >
           {`${availableStr} ${token.symbol}`}
         </Text>
-        <Text style={style.text1}>Available Balance</Text>
+        <Text style={style.text1}>{t`Available Balance`}</Text>
         <Image style={style.expandButton} source={chevronDown} width={12} height={7} />
       </View>
     );

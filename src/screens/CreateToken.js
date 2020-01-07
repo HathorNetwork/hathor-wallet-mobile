@@ -16,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
@@ -66,7 +67,7 @@ class CreateToken extends React.Component {
       hathorLib.constants.HATHOR_TOKEN_CONFIG.uid,
     );
     if (inputsData.inputs.length === 0) {
-      this.setState({ errorMessage: 'You don\'t have any hathor tokens available to create your token.' });
+      this.setState({ errorMessage: t`You don't have any hathor tokens available to create your token.` });
       return null;
     }
 
@@ -81,7 +82,7 @@ class CreateToken extends React.Component {
 
   validateAndAdd = () => {
     if (!this.state.name || !this.state.symbol || !this.state.amount) {
-      this.setState({ errorMessage: 'All fields must be filled.' });
+      this.setState({ errorMessage: t`All fields must be filled.` });
       return;
     }
     this.askPIN();
@@ -119,8 +120,8 @@ class CreateToken extends React.Component {
       'PinScreen',
       {
         cb: this.createToken,
-        screenText: 'Enter your 6-digit pin to create your token',
-        biometryText: 'Authorize token creation',
+        screenText: t`Enter your 6-digit pin to create your token`,
+        biometryText: t`Authorize token creation`,
         canCancel: true,
       },
     );
@@ -136,20 +137,20 @@ class CreateToken extends React.Component {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View>
             <HathorHeader
-              title='CREATE NEW TOKEN'
+              title={t`CREATE NEW TOKEN`}
               onBackPress={() => this.props.navigation.goBack()}
               wrapperStyle={{ borderBottomWidth: 0 }}
             />
             <View style={this.style.view}>
               <SimpleInput
-                label='Token Name'
+                label={t`Token Name`}
                 maxLength={50}
                 onChangeText={(text) => this.onChangeText('name', text)}
                 value={this.state.name}
                 containerStyle={{ marginBottom: 16 }}
               />
               <SimpleInput
-                label='Token Symbol'
+                label={t`Token Symbol`}
                 maxLength={5}
                 onChangeText={(text) => this.onChangeText('symbol', text)}
                 value={this.state.symbol}
@@ -157,7 +158,7 @@ class CreateToken extends React.Component {
                 autoCapitalize='characters'
               />
               <SimpleInput
-                label='Amount'
+                label={t`Amount`}
                 input={(
                   <AmountTextInput
                     onAmountUpdate={(amount) => this.setState({ amount })}
@@ -168,7 +169,7 @@ class CreateToken extends React.Component {
               />
               <Text style={this.style.textError}>{this.state.errorMessage}</Text>
               <NewHathorButton
-                title='Create New Token'
+                title={t`Create New Token`}
                 onPress={this.validateAndAdd}
                 disabled={this.state.loading}
               />

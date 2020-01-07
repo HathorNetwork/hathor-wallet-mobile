@@ -9,6 +9,7 @@ import React from 'react';
 import {
   Share, StyleSheet, Text, View, ViewPropTypes,
 } from 'react-native';
+import { t } from 'ttag';
 import QRCode from 'react-native-qrcode-svg';
 import PropTypes from 'prop-types';
 
@@ -27,7 +28,7 @@ const TokenDetails = (props) => {
 
   const shareClicked = () => {
     Share.share({
-      message: `Here is the configuration string of token ${tokenLabel}: ${configString}`,
+      message: t`Here is the configuration string of token ${tokenLabel}: ${configString}`,
     });
   };
 
@@ -50,7 +51,7 @@ const TokenDetails = (props) => {
       </View>
       <View style={styles.buttonWrapper}>
         <SimpleButton
-          title='Share'
+          title={t`Share`}
           onPress={shareClicked}
           color='#000'
           containerStyle={styles.simpleButtonContainer}

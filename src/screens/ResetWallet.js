@@ -13,13 +13,14 @@ import {
   View,
   Switch,
 } from 'react-native';
+import { t } from 'ttag';
 
 import * as Keychain from 'react-native-keychain';
 import hathorLib from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
+import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
-import { Strong } from '../utils';
 import { HATHOR_COLOR } from '../constants';
 
 
@@ -71,15 +72,16 @@ export class ResetWallet extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
-          title='RESET WALLET'
+          title={t`RESET WALLET`}
           onBackPress={() => this.onBackPress()}
         />
         <View style={this.style.container}>
-          <Text style={this.style.title}>Are you sure?</Text>
+          <Text style={this.style.title}>{t`Are you sure?`}</Text>
           <Text style={this.style.text}>
-            If you reset your wallet, <Strong>all data will be deleted</Strong>, and you will{' '}
-            <Strong>lose access to your tokens</Strong>. To recover access to your tokens, you will
-            {' '}need to import your seed words again.
+            <TextFmt>
+              {t`If you reset your wallet, **all data will be deleted**, and you will **lose access to your tokens**.`}
+            </TextFmt>
+            {' '}{t`To recover access to your tokens, you will need to import your seed words again.`}
           </Text>
           <View style={this.style.switchView}>
             <Switch
@@ -87,10 +89,9 @@ export class ResetWallet extends React.Component {
               trackColor={{ true: HATHOR_COLOR }}
               value={this.state.switchValue}
             />
-            <Text style={this.style.switchText}>
-              I want to reset my wallet, and I acknowledge that
-              <Strong>all data will be wiped out</Strong>.
-            </Text>
+            <TextFmt style={this.style.switchText}>
+              {t`I want to reset my wallet, and I acknowledge that **all data will be wiped out**.`}
+            </TextFmt>
           </View>
           <View style={this.style.buttonView}>
             <NewHathorButton
@@ -98,7 +99,7 @@ export class ResetWallet extends React.Component {
               color={HATHOR_COLOR}
               disabled={!this.state.switchValue}
               onPress={this.onPressResetWallet}
-              title='Reset Wallet'
+              title={t`Reset Wallet`}
             />
           </View>
         </View>
