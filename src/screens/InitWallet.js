@@ -245,8 +245,9 @@ class LoadWordsScreen extends React.Component {
   }));
 
   onChangeText = (text) => {
-    const words = text.trim().split(' ');
+    const words = text.trim(/\s+/).split(/\s+/);
     const nonEmptyWords = words.filter((value) => value.length !== 0);
+    const nonEmptyWordsLowerCase = words.map((value) => value.toLowerCase());
     const errorList = [];
 
     for (let i = 0; i < nonEmptyWords.length; i += 1) {
@@ -267,7 +268,7 @@ class LoadWordsScreen extends React.Component {
     }
 
     this.setState({
-      words: nonEmptyWords,
+      words: nonEmptyWordsLowerCase,
       errorMessage,
       isValid,
     });
@@ -308,6 +309,7 @@ class LoadWordsScreen extends React.Component {
                   onChangeText={this.onChangeText}
                   placeholder='Enter your seed words separated by space'
                   multiline
+                  maxHeight='80%'
                   keyboardAppearance='dark'
                   returnKeyType='done'
                   enablesReturnKeyAutomatically
@@ -320,8 +322,8 @@ class LoadWordsScreen extends React.Component {
 /
                   {this.numberOfWords}
                 </Text>
+                <Text style={{ color: 'red' }}>{this.state.errorMessage}</Text>
               </View>
-              <Text style={{ color: 'red' }}>{this.state.errorMessage}</Text>
               <View style={this.style.buttonView}>
                 <NewHathorButton
                   onPress={this.loadClicked}
