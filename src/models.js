@@ -6,6 +6,7 @@
  */
 
 import moment from 'moment';
+import { t } from 'ttag';
 
 export class TxHistory {
   constructor({ txId, timestamp, tokenUid, balance, isVoided }) {
@@ -20,14 +21,14 @@ export class TxHistory {
     let { symbol } = token;
     if (this.tokenUid !== token.uid) {
       // This should never happen!
-      symbol = 'Unknown';
+      symbol = t`Unknown`;
     }
     if (this.balance > 0) {
-      return `Received ${symbol}`;
+      return t`Received ${symbol}`;
     } if (this.balance < 0) {
-      return `Sent ${symbol}`;
+      return t`Sent ${symbol}`;
     }
-    return `You sent ${symbol} to yourself`;
+    return t`You sent ${symbol} to yourself`;
   }
 
   getTimestampFormat() {
@@ -37,12 +38,12 @@ export class TxHistory {
   getTimestampCalendar() {
     // See https://momentjs.com/docs/#/displaying/calendar-time/
     return moment.unix(this.timestamp).calendar(null, {
-      sameDay: '[Today •] HH:mm',
-      nextDay: '[Tomorrow •] HH:mm',
-      nextWeek: 'dddd [•] HH:mm',
-      lastDay: '[Yesterday •] HH:mm',
-      lastWeek: '[Last] dddd [•] HH:mm',
-      sameElse: 'DD MMM YYYY [•] HH:mm',
+      sameDay: t`[Today •] HH:mm`,
+      nextDay: t`[Tomorrow •] HH:mm`,
+      nextWeek: t`dddd [•] HH:mm`,
+      lastDay: t`[Yesterday •] HH:mm`,
+      lastWeek: t`[Last] dddd [•] HH:mm`,
+      sameElse: t`DD MMM YYYY [•] HH:mm`,
     });
   }
 }

@@ -64,6 +64,8 @@ class SendScanQRCode extends React.Component {
     const ManualInfoButton = () => (
       <SimpleButton
         withBorder
+        // translator: Used when the QR Code Scanner is opened, and user will manually
+        // enter the information.
         title={t`Manual info`}
         onPress={() => this.props.navigation.navigate('SendAddressInput')}
       />

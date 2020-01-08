@@ -28,6 +28,8 @@ class RegisterToken extends React.Component {
   render() {
     const renderHeaderRightElement = () => (
       <SimpleButton
+        // translator: Used when the QR Code Scanner is opened, and user will manually
+        // enter the information.
         title={t`Manual info`}
         onPress={() => this.props.navigation.navigate('RegisterTokenManual')}
       />

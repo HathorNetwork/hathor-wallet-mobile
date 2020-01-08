@@ -26,7 +26,7 @@ import HathorHeader from '../components/HathorHeader';
 import TextFmt from '../components/TextFmt';
 
 import baseStyle from '../styles/init';
-import { Link, Strong } from '../utils';
+import { Link } from '../utils';
 
 import { HATHOR_COLOR } from '../constants';
 
@@ -56,9 +56,9 @@ class WelcomeScreen extends React.Component {
         <View style={this.style.container}>
           <Text style={this.style.title}>{t`Welcome to Hathor Wallet!`}</Text>
           <View>
-            <Text style={this.style.text}>
-              {t`This wallet is connected to the`} <Strong>mainnet</Strong>.
-            </Text>
+            <TextFmt style={this.style.text}>
+              {t`This wallet is connected to the **mainnet**.`}
+            </TextFmt>
             <Text style={this.style.text}>
               {t`A mobile wallet is not the safest place to store your tokens.
               So, we advise you to keep only a small amount of tokens here, such as pocket money.`}

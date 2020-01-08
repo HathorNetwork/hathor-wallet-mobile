@@ -3,7 +3,56 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
-#: src/utils.js:141
+#.  This should never happen!
+#: src/models.js:24
+msgid "Unknown"
+msgstr "Desconhecido"
+
+#: src/models.js:27
+#, javascript-format
+msgid "Received ${ symbol }"
+msgstr "Recebido ${ symbol }"
+
+#: src/models.js:29
+msgid "Sent ${ symbol }"
+msgstr "Enviado ${ symbol }"
+
+#: src/models.js:31
+#, javascript-format
+msgid "You sent ${ symbol } to yourself"
+msgstr "Você enviou ${ symbol } para você mesmo"
+
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#: src/models.js:41
+msgid "[Today •] HH:mm"
+msgstr "[Hoje •] HH:mm"
+
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#: src/models.js:42
+msgid "[Tomorrow •] HH:mm"
+msgstr "[Amanhã •] HH:mm"
+
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#: src/models.js:43
+msgid "dddd [•] HH:mm"
+msgstr "dddd [•] HH:mm"
+
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#: src/models.js:44
+msgid "[Yesterday •] HH:mm"
+msgstr "[Ontem •] HH:mm"
+
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#: src/models.js:45
+msgid "[Last] dddd [•] HH:mm"
+msgstr "[Última] dddd [•] HH:mm"
+
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#: src/models.js:46
+msgid "DD MMM YYYY [•] HH:mm"
+msgstr "DD MMM YYYY [•] HH:mm"
+
+#: src/utils.js:181
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
@@ -16,7 +65,7 @@ msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr ""
 "Este aplicativo foi desenvolvido pela Hathor Labs e é distribuído de graça."
 
-#: src/screens/About.js:58
+#: src/screens/About.js:58 src/screens/InitWallet.js:60
 msgid "This wallet is connected to the **mainnet**."
 msgstr "Esta wallet está conectada à **mainnet**."
 
@@ -42,46 +91,46 @@ msgstr "Para conferir que você salvou,"
 msgid "Please select the word that corresponds to the number below:"
 msgstr "Por favor, selecione a palavra que corrende ao número abaixo:"
 
-#: src/screens/ChangePin.js:103
+#: src/screens/ChangePin.js:102
 msgid "Incorrect PIN code."
 msgstr "PIN incorreto."
 
-#: src/screens/ChangePin.js:130
+#: src/screens/ChangePin.js:129
 msgid "PIN codes don't match."
 msgstr "Os PINs estão diferentes."
 
 #.  Should never get here because we've done all the validations before
-#: src/screens/ChangePin.js:155
+#: src/screens/ChangePin.js:154
 msgid "Error while changing PIN"
 msgstr "Erro ao mudar o PIN"
 
-#: src/screens/ChangePin.js:161
+#: src/screens/ChangePin.js:160
 msgid "Please enter your **current PIN**"
 msgstr "Por favor entre com o seu **PIN atual**"
 
-#: src/screens/ChangePin.js:174
+#: src/screens/ChangePin.js:173
 msgid "Please enter your **new PIN**"
 msgstr "Por favor, entre com o seu **novo PIN**"
 
-#: src/screens/ChangePin.js:187
+#: src/screens/ChangePin.js:186
 msgid "Please enter your **new PIN** again"
 msgstr "Por favor, entre novamente com o seu **novo PIN**"
 
-#: src/screens/ChangePin.js:202
+#: src/screens/ChangePin.js:201
 msgid "New PIN recorded"
 msgstr "Novo PIN salvo"
 
-#: src/screens/ChangePin.js:212
+#: src/screens/ChangePin.js:211
 msgid "CHANGE PIN"
 msgstr "MUDAR PIN"
 
 #: src/screens/ChoosePinScreen.js:124
 msgid "Enter your new PIN code"
-msgstr "Entre com seu novo PIN"
+msgstr "Digite seu novo PIN"
 
 #: src/screens/ChoosePinScreen.js:136
 msgid "Enter your new PIN code again"
-msgstr "Entrei com seu novo PIN novamente"
+msgstr "Digite seu novo PIN novamente"
 
 #: src/screens/ChoosePinScreen.js:68
 msgid "Create a new PIN code,"
@@ -109,7 +158,7 @@ msgstr "Todos os campos devem ser preenchidos."
 
 #: src/screens/CreateToken.js:123 src/screens/CreateTokenConfirm.js:84
 msgid "Enter your 6-digit pin to create your token"
-msgstr "Entre com seu PIN de 6 digitos para criar o seu token"
+msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
 
 #: src/screens/CreateToken.js:124 src/screens/CreateTokenConfirm.js:85
 msgid "Authorize token creation"
@@ -127,7 +176,8 @@ msgstr "Nome do Token"
 msgid "Token Symbol"
 msgstr "Símbolo do Token"
 
-#: src/screens/CreateToken.js:161 src/screens/PaymentRequestDetail.js:108
+#: src/components/TxDetailsModal.js:96 src/screens/CreateToken.js:161
+#: src/screens/PaymentRequestDetail.js:108
 msgid "Amount"
 msgstr "Quantidade"
 
@@ -136,7 +186,7 @@ msgid "Create New Token"
 msgstr "Criar Novo Token"
 
 #: src/screens/CreateTokenAmount.js:109 src/screens/CreateTokenConfirm.js:126
-#: src/screens/CreateTokenDepositNotice.js:39 src/screens/CreateTokenName.js:44
+#: src/screens/CreateTokenDepositNotice.js:38 src/screens/CreateTokenName.js:44
 #: src/screens/CreateTokenSymbol.js:63
 msgid "CREATE TOKEN"
 msgstr "CRIAR TOKEN"
@@ -190,35 +240,24 @@ msgid "Create token"
 msgstr "Criar um token"
 
 #: src/screens/CreateTokenDepositNotice.js:45
-msgid "When creating new tokens, a "
-msgstr "Quando um novo token é criado, um "
-
-#: src/screens/CreateTokenDepositNotice.js:47
 #, javascript-format
-msgid "deposit of ${ deposit_percentage }% "
-msgstr "depósito de ${ deposit_percentage }% "
-
-#: src/screens/CreateTokenDepositNotice.js:49
 msgid ""
-"in HTR is required - e.g. if you create 1000 NewCoins, 10 HTR are needed as "
-"deposit."
+"When creating new tokens, a |fn:deposit of ${ depositPercentage }%| in HTR "
+"is required - e.g. if you create 1000 NewCoins, 10 HTR are needed as deposit."
 msgstr ""
-"é exigido em HTR - por exemplo, se você criar 1.000 MinhaMoeda, 10 HTR serão "
+"Quando um novo token é criado, um |fn:depósito de ${ depositPercentage }%| é "
+"exigido em HTR - por exemplo, se você criar 1.000 MinhaMoeda, 10 HTR serão "
 "exigidos como depósito."
 
-#: src/screens/CreateTokenDepositNotice.js:52
+#: src/screens/CreateTokenDepositNotice.js:51
 msgid ""
 "If these tokens are later melted, the HTR deposit will be returned. Read "
-"more about it "
+"more about it |link:here|."
 msgstr ""
 "Se esses tokens forem destruídos futuramente, o depósito em HTR será "
-"devoldido. Leia mais sobre esse depósito "
+"devolvido. Leia mais sobre esse depósito |link:aqui|."
 
-#: src/screens/CreateTokenDepositNotice.js:53
-msgid "here"
-msgstr "aqui"
-
-#: src/screens/CreateTokenDepositNotice.js:60
+#: src/screens/CreateTokenDepositNotice.js:59
 msgid "I understand"
 msgstr "Eu concordo"
 
@@ -250,7 +289,7 @@ msgstr "Entre 2 e 5 caracteres"
 
 #: src/screens/CreateTokenSymbol.js:80
 msgid "The symbol is a smaller version of the token name"
-msgstr "O símbolo é a versão reduzida do seu token."
+msgstr "O símbolo é a versão reduzida do nome do seu token."
 
 #: src/screens/CreateTokenSymbol.js:81
 msgid "E.g. HTR"
@@ -267,10 +306,6 @@ msgstr "TOKENS"
 #: src/screens/InitWallet.js:57
 msgid "Welcome to Hathor Wallet!"
 msgstr "Bem vindo à Hathor Wallet"
-
-#: src/screens/InitWallet.js:60
-msgid "This wallet is connected to the"
-msgstr "Esta carteira está conectada à"
 
 #: src/screens/InitWallet.js:67
 msgid "For further information, check our website "
@@ -387,7 +422,7 @@ msgstr "Você recebeu **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "REQUISIÇÃO DE PAGAMENTO"
 
-#: src/screens/PaymentRequestDetail.js:104
+#: src/components/TxDetailsModal.js:50 src/screens/PaymentRequestDetail.js:104
 msgid "Token"
 msgstr "Token"
 
@@ -413,7 +448,7 @@ msgstr "PIN incorreto. Tente novamente."
 
 #: src/screens/PinScreen.js:53
 msgid "Enter your PIN Code "
-msgstr "Entre seu PIN"
+msgstr "Digite seu PIN"
 
 #: src/screens/PinScreen.js:54
 msgid "Unlock Hathor Wallet"
@@ -440,15 +475,17 @@ msgstr "Requisição de Pagamento"
 msgid "RECEIVE"
 msgstr "RECEBER"
 
-#: src/screens/RegisterToken.js:31 src/screens/SendScanQRCode.js:67
+#.  translator: Used when the QR Code Scanner is opened, and user will manually
+#.  enter the information.
+#: src/screens/RegisterToken.js:33 src/screens/SendScanQRCode.js:69
 msgid "Manual info"
 msgstr "Digitar"
 
-#: src/screens/RegisterToken.js:46 src/screens/RegisterTokenManual.js:112
+#: src/screens/RegisterToken.js:48 src/screens/RegisterTokenManual.js:112
 msgid "REGISTER TOKEN"
 msgstr "REGISTRAR UM TOKEN"
 
-#: src/screens/RegisterToken.js:57
+#: src/screens/RegisterToken.js:59
 msgid "Scan the token QR code"
 msgstr "Leia o QR code do token"
 
@@ -468,15 +505,15 @@ msgstr "Símbolo: "
 msgid "Configuration string"
 msgstr "Configuração"
 
-#: src/screens/ResetWallet.js:76
+#: src/screens/ResetWallet.js:75
 msgid "RESET WALLET"
 msgstr "RESETAR WALLET"
 
-#: src/screens/ResetWallet.js:80
+#: src/screens/ResetWallet.js:79
 msgid "Are you sure?"
 msgstr "Você tem certeza?"
 
-#: src/screens/ResetWallet.js:83
+#: src/screens/ResetWallet.js:82
 msgid ""
 "If you reset your wallet, **all data will be deleted**, and you will **lose "
 "access to your tokens**."
@@ -484,7 +521,7 @@ msgstr ""
 "Se você resetar sua wallet, **todos os seus dados serão apagados**, e você "
 "irá **perder acesso aos seus tokens**."
 
-#: src/screens/ResetWallet.js:85
+#: src/screens/ResetWallet.js:84
 msgid ""
 "To recover access to your tokens, you will need to import your seed words "
 "again."
@@ -492,21 +529,21 @@ msgstr ""
 "Para recuperar acesso aos seus tokens, você irá precisar importar suas "
 "palavras novamente."
 
-#: src/screens/ResetWallet.js:94
+#: src/screens/ResetWallet.js:93
 msgid ""
 "I want to reset my wallet, and I acknowledge that **all data will be wiped "
 "out**."
 msgstr ""
-"Eu quero resetar minha wallet, e eu concordo que **todos os dados serão "
-"permanentemente deletados**."
+"Eu quero resetar minha wallet, e eu entendo que **todos os dados serão "
+"deletados**."
 
-#: src/screens/ResetWallet.js:103
+#: src/screens/ResetWallet.js:102
 msgid "Reset Wallet"
 msgstr "Resetar Wallet"
 
 #: src/screens/Security.js:73
 msgid "No biometry supported"
-msgstr "Nenhum biometria suportada"
+msgstr "Nenhuma biometria suportada"
 
 #: src/screens/Security.js:73
 #, javascript-format
@@ -533,40 +570,42 @@ msgstr "Endereço para enviar"
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:118 src/screens/SendConfirmScreen.js:126
+#: src/screens/SendAmountInput.js:118 src/screens/SendConfirmScreen.js:125
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:126 src/screens/SendConfirmScreen.js:134
-msgid "SEND ${ token_name_uppercase }"
-msgstr "ENVIAR ${ token_name_uppercase }"
+#: src/screens/SendAmountInput.js:126 src/screens/SendConfirmScreen.js:133
+msgid "SEND ${ tokenNameUpperCase }"
+msgstr "ENVIAR ${ tokenNameUpperCase }"
 
 #.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/SendConfirmScreen.js:70
+#: src/screens/SendConfirmScreen.js:69
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/screens/SendConfirmScreen.js:82
+#: src/screens/SendConfirmScreen.js:81
 msgid "Enter your 6-digit pin to authorize operation"
-msgstr "Entre com seu PIN de 6 digitos para autorizar a operação"
+msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
-#: src/screens/SendConfirmScreen.js:83
+#: src/screens/SendConfirmScreen.js:82
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
-#: src/screens/SendConfirmScreen.js:95
+#.  eslint-disable-next-line react/jsx-indent
+#: src/screens/SendConfirmScreen.js:94
+#, javascript-format
 msgid "Your transfer of **${ _this.amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ _this.amountAndToken }** foi confirmada"
 
-#: src/screens/SendConfirmScreen.js:150
+#: src/screens/SendConfirmScreen.js:149
 msgid "Address"
 msgstr "Endereço"
 
-#: src/screens/SendConfirmScreen.js:157
+#: src/screens/SendConfirmScreen.js:156
 msgid "Send"
 msgstr "Enviar"
 
@@ -580,14 +619,14 @@ msgstr "OK"
 
 #: src/screens/SendScanQRCode.js:46
 #, javascript-format
-msgid "You don't have the requested token [${ token_label }]"
-msgstr "Você não tem o token requisitado [${ token_label }]"
+msgid "You don't have the requested token [${ tokenLabel }]"
+msgstr "Você não tem o token requisitado [${ tokenLabel }]"
 
-#: src/screens/SendScanQRCode.js:75
+#: src/screens/SendScanQRCode.js:77
 msgid "SEND"
 msgstr "ENVIAR"
 
-#: src/screens/SendScanQRCode.js:83
+#: src/screens/SendScanQRCode.js:85
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
@@ -597,7 +636,7 @@ msgstr "Você está conectado à"
 
 #: src/screens/Settings.js:103
 msgid "Connected to"
-msgstr "Conectado a"
+msgstr "Conectado ao servidor"
 
 #: src/screens/Settings.js:116
 msgid "Security"
@@ -655,6 +694,10 @@ msgstr "Copiado!"
 msgid "Create payment request"
 msgstr "Criar requisição de pagamento"
 
+#: src/components/OfflineBar.js:52
+msgid "No internet connection"
+msgstr "Sem conexão com a internet"
+
 #: src/components/QRCodeReader.js:144
 msgid "Opening camera"
 msgstr "Abrindo a câmera"
@@ -677,3 +720,15 @@ msgstr "Compartilhar"
 msgid ""
 "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr "Essa é a configuração do seu token ${ tokenLabel }: ${ configString }"
+
+#: src/components/TxDetailsModal.js:51
+msgid "Description"
+msgstr "Descrição"
+
+#: src/components/TxDetailsModal.js:52
+msgid "Date & Time"
+msgstr "Data & Hora"
+
+#: src/components/TxDetailsModal.js:53
+msgid "ID"
+msgstr "ID"
