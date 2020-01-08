@@ -6,14 +6,15 @@
  */
 
 import React, { Component } from 'react';
-import { Text, StyleSheet, View } from 'react-native';
+import { Image, Linking, Text, StyleSheet, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { t } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
 import { getShortHash, getTokenLabel } from '../utils';
-import { ListItem } from './HathorList';
+import { ListButton, ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
+import icShareActive from '../assets/icons/icShareActive.png';
 
 class TxDetailsModal extends Component {
   style = StyleSheet.create({
@@ -32,6 +33,8 @@ class TxDetailsModal extends Component {
     const description = tx.getDescription(token);
     const timestampStr = tx.getTimestampFormat();
     const idStr = getShortHash(tx.txId, 12);
+    const explorerIcon = <Image source={icShareActive} width={24} height={24} />;
+    const explorerLink = `https://explorer.hathor.network/transaction/${tx.txId}`;
     return (
       <Modal
         isVisible
@@ -50,7 +53,8 @@ class TxDetailsModal extends Component {
               <ListItem title={t`Token`} text={fullTokenStr} />
               <ListItem title={t`Description`} text={description} />
               <ListItem title={t`Date & Time`} text={timestampStr} />
-              <ListItem title={t`ID`} text={idStr} isLast />
+              <ListItem title={t`ID`} text={idStr} />
+              <ListButton title={t`Public Explorer`} button={explorerIcon} onPress={() => { Linking.openURL(explorerLink); }} titleStyle={{ color: 'rgba(0, 0, 0, 0.5)' }} isLast />
             </View>
           </View>
         </View>
