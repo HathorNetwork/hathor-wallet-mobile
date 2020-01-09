@@ -8,6 +8,7 @@
 import React from 'react';
 import { KeyboardAvoidingView, SafeAreaView, Text, View } from 'react-native';
 import { connect } from 'react-redux';
+import { t, jt } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
 import AmountTextInput from '../components/AmountTextInput';
@@ -96,11 +97,16 @@ class CreateTokenAmount extends React.Component {
 
   render() {
     const amountStyle = (this.state.deposit > this.props.balance.available ? { color: 'red' } : {});
+    const amountAvailableText = (
+      <Strong style={amountStyle}>
+        {hathorLib.helpers.prettyValue(this.props.balance.available)} HTR
+      </Strong>
+    );
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
-          title='CREATE TOKEN'
+          title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
           onCancel={() => this.props.navigation.dismiss()}
         />
@@ -108,7 +114,7 @@ class CreateTokenAmount extends React.Component {
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View style={{ marginTop: 24 }}>
               <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
-                {`Amount of ${this.name} (${this.symbol})`}
+                {t`Amount of ${this.name} (${this.symbol})`}
               </InputLabel>
               <AmountTextInput
                 ref={this.inputRef}
@@ -120,16 +126,16 @@ class CreateTokenAmount extends React.Component {
             <View>
               <InfoBox
                 items={[
-                  <Text>Deposit: <Strong style={amountStyle}>
+                  <Text>{t`Deposit:`} <Strong style={amountStyle}>
                     {hathorLib.helpers.prettyValue(this.state.deposit)} HTR
                   </Strong></Text>,
-                  <Text>You have <Strong style={amountStyle}>
-                    {hathorLib.helpers.prettyValue(this.props.balance.available)} HTR
-                  </Strong> available</Text>
+                  <Text>
+                    {jt`You have ${amountAvailableText} HTR available`}
+                  </Text>
                 ]}
               />
               <NewHathorButton
-                title='Next'
+                title={t`Next`}
                 disabled={this.isButtonDisabled()}
                 onPress={this.onButtonPress}
               />

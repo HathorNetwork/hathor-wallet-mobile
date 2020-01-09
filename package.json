@@ -8,7 +8,8 @@
     "ios": "node node_modules/.bin/react-native run-ios",
     "android": "node node_modules/.bin/react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/ && node node_modules/.bin/react-native run-android",
     "node-hack": "node node_modules/.bin/rn-nodeify --hack",
-    "test": "jest"
+    "test": "jest",
+    "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.18",
@@ -42,6 +43,7 @@
     "react-native-crypto": "^2.1.2",
     "react-native-gesture-handler": "^1.2.1",
     "react-native-keychain": "^3.1.3",
+    "react-native-languages": "^3.0.2",
     "react-native-level-fs": "^3.0.1",
     "react-native-modal": "^11.0.2",
     "react-native-os": "1.2.2",
@@ -66,6 +68,7 @@
     "stream-browserify": "^1.0.0",
     "string_decoder": "^0.10.31",
     "timers-browserify": "^1.4.2",
+    "ttag": "^1.7.22",
     "tty-browserify": "0.0.0",
     "url": "^0.10.3",
     "util": "^0.10.4",
@@ -84,7 +87,8 @@
     "jest": "^24.8.0",
     "metro-react-native-babel-preset": "^0.54.1",
     "react-test-renderer": "16.8.3",
-    "rn-nodeify": "^10.0.1"
+    "rn-nodeify": "^10.0.1",
+    "ttag-cli": "^1.7.27"
   },
   "jest": {
     "preset": "react-native"

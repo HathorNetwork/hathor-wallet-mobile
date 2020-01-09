@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
+import { t, ngettext, msgid } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
@@ -90,7 +91,7 @@ class SendAmountInput extends React.Component {
     const available = balance ? balance.available : 0;
     const amount = getIntegerAmount(this.state.amount);
     if (available < amount) {
-      this.setState({ error: 'Insufficient funds' });
+      this.setState({ error: t`Insufficient funds` });
     } else {
       // forward the address we got from the last screen to the next one
       const address = this.props.navigation.getParam('address');
@@ -113,14 +114,16 @@ class SendAmountInput extends React.Component {
       // eg: '23.56 HTR available'
       const balance = this.props.tokensBalance[this.state.token.uid];
       const available = balance ? balance.available : 0;
-      return `${hathorLib.helpers.prettyValue(available)} ${this.state.token.symbol} available`;
+      const amountAndToken = `${hathorLib.helpers.prettyValue(available)} ${this.state.token.symbol}`;
+      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);
     };
 
+    const tokenNameUpperCase = this.state.token.name.toUpperCase();
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
           withBorder
-          title={`SEND ${this.state.token.name.toUpperCase()}`}
+          title={t`SEND ${tokenNameUpperCase}`}
           onBackPress={() => this.props.navigation.goBack()}
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
@@ -153,7 +156,7 @@ class SendAmountInput extends React.Component {
               <Text style={styles.error}>{this.state.error}</Text>
             </View>
             <NewHathorButton
-              title='Next'
+              title={t`Next`}
               disabled={this.isButtonDisabled()}
               onPress={this.onButtonPress}
             />

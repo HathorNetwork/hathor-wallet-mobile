@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { KeyboardAvoidingView, SafeAreaView, Text, View } from 'react-native';
+import { t } from 'ttag';
 
 import HathorHeader from '../components/HathorHeader';
 import InfoBox from '../components/InfoBox';
@@ -59,29 +60,29 @@ class CreateTokenSymbol extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
-          title='CREATE TOKEN'
+          title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
           onCancel={() => this.props.navigation.dismiss()}
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <SimpleInput
-              label='Token symbol'
+              label={t`Token symbol`}
               autoFocus
               autoCapitalize='characters'
-              subtitle='Between 2 and 5 characters'
+              subtitle={t`Between 2 and 5 characters`}
               onChangeText={this.onSymbolChange}
               value={this.state.symbol}
             />
             <View>
               <InfoBox
                 items={[
-                  <Text>The symbol is a smaller version of the token name</Text>,
-                  <Italic>E.g. HTR</Italic>
+                  <Text>{t`The symbol is a smaller version of the token name`}</Text>,
+                  <Italic>{t`E.g. HTR`}</Italic>
                 ]}
               />
               <NewHathorButton
-                title='Next'
+                title={t`Next`}
                 disabled={this.isButtonDisabled()}
                 onPress={this.onButtonPress}
               />

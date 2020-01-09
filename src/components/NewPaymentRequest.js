@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from './NewHathorButton';
@@ -158,7 +159,7 @@ class NewPaymentRequest extends React.Component {
           <View style={buttonWrapperStyle.style}>
             <NewHathorButton
               disabled={this.isButtonDisabled()}
-              title='Create payment request'
+              title={t`Create payment request`}
               onPress={this.createPaymentRequest}
             />
           </View>

@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 
 import {
   BackHandler, Image, SafeAreaView, Text, View,
@@ -49,8 +50,8 @@ class PinScreen extends React.Component {
     };
 
     this.canCancel = false;
-    this.screenText = 'Enter your PIN Code ';
-    this.biometryText = 'Unlock Hathor Wallet';
+    this.screenText = t`Enter your PIN Code `;
+    this.biometryText = t`Unlock Hathor Wallet`;
     if (!this.props.isLockScreen) {
       this.canCancel = props.navigation.getParam('canCancel', this.canCancel);
       this.screenText = props.navigation.getParam('screenText', this.screenText);
@@ -153,7 +154,7 @@ class PinScreen extends React.Component {
   removeOneChar = () => {
     const pin = this.state.pin.slice(0, -1);
     if (pin.length === 0) {
-      this.setState({ pin: '', error: 'Incorrect PIN Code. Try again.' });
+      this.setState({ pin: '', error: t`Incorrect PIN Code. Try again.` });
     } else {
       this.setState({ pin, pinColor: '#DE3535' });
       setTimeout(() => this.removeOneChar(), 25);
@@ -165,10 +166,10 @@ class PinScreen extends React.Component {
       let title;
       let onPress;
       if (this.canCancel) {
-        title = 'Cancel';
+        title = t`Cancel`;
         onPress = () => this.props.navigation.goBack();
       } else {
-        title = 'Reset wallet';
+        title = t`Reset wallet`;
         onPress = () => this.goToReset();
       }
       return (

@@ -8,6 +8,7 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 
 import HathorHeader from '../components/HathorHeader';
 import TokenDetails from '../components/TokenDetails';
@@ -38,7 +39,7 @@ class CreateTokenDetail extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
-          title='TOKEN DETAILS'
+          title={t`TOKEN DETAILS`}
           wrapperStyle={{ borderBottomWidth: 0 }}
           rightElement={<CancelButton />}
         />

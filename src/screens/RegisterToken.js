@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { SafeAreaView, View } from 'react-native';
+import { t } from 'ttag';
 
 import HathorHeader from '../components/HathorHeader';
 import QRCodeReader from '../components/QRCodeReader';
@@ -27,7 +28,9 @@ class RegisterToken extends React.Component {
   render() {
     const renderHeaderRightElement = () => (
       <SimpleButton
-        title='Manual info'
+        // translator: Used when the QR Code Scanner is opened, and user will manually
+        // enter the information.
+        title={t`Manual info`}
         onPress={() => this.props.navigation.navigate('RegisterTokenManual')}
       />
     );
@@ -42,7 +45,7 @@ class RegisterToken extends React.Component {
         }}
         >
           <HathorHeader
-            title='REGISTER TOKEN'
+            title={t`REGISTER TOKEN`}
             onBackPress={() => this.props.navigation.pop()}
             rightElement={renderHeaderRightElement()}
           />
@@ -53,7 +56,7 @@ class RegisterToken extends React.Component {
             <QRCodeReader
               ref={(el) => { this.QRCodeReader = el; }}
               onSuccess={this.onSuccess}
-              bottomText='Scan the token QR code'
+              bottomText={t`Scan the token QR code`}
               {...this.props}
             />
           </View>
