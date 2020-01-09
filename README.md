@@ -8,7 +8,7 @@
 
 ## Run
 
-`npm run ios` to open on iOS simulator, or `npm run ios -- --simulator "iPhone 11"
+`npm run ios` to open on iOS simulator, or `npm run ios -- --simulator "iPhone 11"`
 
 To list all available simulators, use `xcrun simctl list devices`.
 
