@@ -10,6 +10,7 @@ out_files := $(foreach locale,$(locales),$(locale_out)/$(locale)/texts.json)
 all:
 	@echo Available make targets:
 	@echo - i18n
+	@echo - check_po
 	@echo
 
 .PHONY: i18n
@@ -22,7 +23,11 @@ $(locale_out)/%/texts.json: $(locale_src)/%/texts.po
 	npx ttag po2json $< > $@
 
 .PHONY: check_po
-check_po: $(src_files)
+check_po: _touch_pot $(src_files)
+
+.PHONY: _touch_pot
+_touch_pot:
+	touch $(locale_src)/texts.pot
 
 %.po: $(locale_src)/texts.pot
 	msgcmp $@ $<
