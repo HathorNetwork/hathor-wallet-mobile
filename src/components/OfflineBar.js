@@ -9,6 +9,7 @@ import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
+import { t } from 'ttag';
 
 /**
  * isOnline {bool} Indicates whether the wallet is connected.
@@ -48,7 +49,7 @@ class OfflineBar extends React.Component {
     }
     return (
       <View style={[...style, this.props.style]}>
-        <Text style={this.style.text}>No internet connection</Text>
+        <Text style={this.style.text}>{t`No internet connection`}</Text>
       </View>
     );
   }

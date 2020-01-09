@@ -8,6 +8,7 @@
 import React from 'react';
 import { AppState, View } from 'react-native';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 
 import * as Keychain from 'react-native-keychain';
 
@@ -148,14 +149,14 @@ class Dashboard extends React.Component {
   render() {
     const ManualInfoButton = () => (
       <SimpleButton
-        title='Register token'
+        title={t`Register token`}
         onPress={() => this.props.navigation.navigate('RegisterToken')}
       />
     );
 
     const Header = () => (
       <HathorHeader
-        title='TOKENS'
+        title={t`TOKENS`}
         rightElement={<ManualInfoButton />}
       />
     );

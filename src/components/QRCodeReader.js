@@ -11,6 +11,7 @@ import QRCodeScanner from 'react-native-qrcode-scanner';
 import {
   ActivityIndicator, AppState, StyleSheet, Text, View,
 } from 'react-native';
+import { t } from 'ttag';
 
 class QRCodeReader extends React.Component {
   static defaultProps = {
@@ -140,7 +141,7 @@ class QRCodeReader extends React.Component {
         position: 'absolute', flex: 1, alignItems: 'center', justifyContent: 'center',
       }}
       >
-        <Text>Opening camera</Text>
+        <Text>{t`Opening camera`}</Text>
         <ActivityIndicator style={{ marginTop: 16 }} size='small' animating />
       </View>
     );

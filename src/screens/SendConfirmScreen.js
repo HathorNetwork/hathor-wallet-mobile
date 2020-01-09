@@ -6,8 +6,9 @@
  */
 
 import React from 'react';
-import { Image, SafeAreaView, Text, View } from 'react-native';
+import { Image, SafeAreaView, View } from 'react-native';
 import { connect } from 'react-redux';
+import { t, ngettext, msgid } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
@@ -17,11 +18,11 @@ import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import Spinner from '../components/Spinner';
+import TextFmt from '../components/TextFmt';
 import FeedbackModal from '../components/FeedbackModal';
 import checkIcon from '../assets/images/icCheckBig.png';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { sendTx } from '../actions';
-import { Strong } from '../utils';
 
 
 /**
@@ -65,7 +66,7 @@ class SendConfirmScreen extends React.Component {
         // eslint-disable-next-line react/jsx-indent
         <FeedbackModal
           icon={<Spinner />}
-          text='Your transfer is being processed'
+          text={t`Your transfer is being processed`}
         />,
     });
     this.props.sendTx(this.amount, this.address, this.token, pinCode).then(
@@ -77,8 +78,8 @@ class SendConfirmScreen extends React.Component {
     const params = {
       cb: this.executeSend,
       canCancel: true,
-      screenText: 'Enter your 6-digit pin to authorize operation',
-      biometryText: 'Authorize operation',
+      screenText: t`Enter your 6-digit pin to authorize operation`,
+      biometryText: t`Authorize operation`,
     };
     this.props.navigation.navigate('PinScreen', params);
   }
@@ -90,7 +91,7 @@ class SendConfirmScreen extends React.Component {
         <FeedbackModal
           icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
           text={
-            <Text>Your transfer of <Strong>{this.amountAndToken}</Strong> has been confirmed</Text>
+            <TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>
           }
           onDismiss={this.exitScreen}
         />,
@@ -120,14 +121,16 @@ class SendConfirmScreen extends React.Component {
       // eg: '23.56 HTR available'
       const balance = this.props.tokensBalance[this.token.uid];
       const available = balance ? balance.available : 0;
-      return `${hathorLib.helpers.prettyValue(available)} ${this.token.symbol} available`;
+      const amountAndToken = `${hathorLib.helpers.prettyValue(available)} ${this.token.symbol}`;
+      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);
     };
 
+    const tokenNameUpperCase = this.token.name.toUpperCase();
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
           withBorder
-          title={`SEND ${this.token.name.toUpperCase()}`}
+          title={t`SEND ${tokenNameUpperCase}`}
           onBackPress={() => this.props.navigation.goBack()}
         />
         {this.state.modal}
@@ -143,14 +146,14 @@ class SendConfirmScreen extends React.Component {
               </InputLabel>
             </View>
             <SimpleInput
-              label='Address'
+              label={t`Address`}
               editable={false}
               value={this.address}
               containerStyle={{ marginTop: 48 }}
             />
           </View>
           <NewHathorButton
-            title='Send'
+            title={t`Send`}
             onPress={this.onSendPress}
             // disable while modal is visible
             disabled={this.state.modal !== null}

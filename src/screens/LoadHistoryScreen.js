@@ -10,17 +10,19 @@ import {
   SafeAreaView, StyleSheet, Text, View,
 } from 'react-native';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 
 import * as Keychain from 'react-native-keychain';
 
 import hathorLib from '@hathor/wallet-lib';
 import { loadHistory, clearInitWallet } from '../actions';
 import {
-  Strong, setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled,
+  setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled,
 } from '../utils';
 import { KEYCHAIN_USER } from '../constants';
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
+import TextFmt from '../components/TextFmt';
 
 
 /**
@@ -138,14 +140,14 @@ class LoadHistoryScreen extends React.Component {
       <View style={{ alignItems: 'center' }}>
         <Spinner size={48} animating />
         <Text style={[styles.text, { marginTop: 32, color: 'rgba(0, 0, 0, 0.5)' }]}>
-          Loading your transactions
+          {t`Loading your transactions`}
         </Text>
-        <Text style={[styles.text, { marginTop: 24 }]}>
-          <Strong>{`${this.state.transactions} transactions`}</Strong> found
-        </Text>
-        <Text style={styles.text}>
-          <Strong>{`${this.state.addresses} addresses`}</Strong> found
-        </Text>
+        <TextFmt style={[styles.text, { marginTop: 24 }]}>
+          {t`**${this.state.transactions} transactions** found`}
+        </TextFmt>
+        <TextFmt style={styles.text}>
+          {t`**${this.state.addresses} addresses** found`}
+        </TextFmt>
       </View>
     );
 

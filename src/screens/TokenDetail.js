@@ -8,6 +8,7 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
@@ -29,7 +30,7 @@ class TokenDetail extends React.Component {
   render() {
     const renderHeaderRightElement = () => (
       <SimpleButton
-        title='Unregister'
+        title={t`Unregister`}
         onPress={this.unregisterClicked}
       />
     );
@@ -37,7 +38,7 @@ class TokenDetail extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
-          title='TOKEN DETAILS'
+          title={t`TOKEN DETAILS`}
           onBackPress={() => this.props.navigation.goBack()}
           rightElement={renderHeaderRightElement()}
         />

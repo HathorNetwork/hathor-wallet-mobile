@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { t } from 'ttag';
 import _ from 'lodash';
 import {
   Image,
@@ -220,9 +221,9 @@ class BackupWords extends React.Component {
         {this.state.modal}
         <View style={[this.style.container, { flexDirection: 'column', justifyContent: 'space-between' }]}>
           <View>
-            <Text style={this.style.title}>To make sure you saved,</Text>
+            <Text style={this.style.title}>{t`To make sure you saved,`}</Text>
             <Text style={this.style.text}>
-              Please select the word that corresponds to the number below:
+              {t`Please select the word that corresponds to the number below:`}
             </Text>
             <Text style={[this.style.title, { textAlign: 'center', fontSize: 24 }]}>
               {this.state.indexes[this.state.step]}

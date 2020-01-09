@@ -13,14 +13,16 @@ import {
   View,
   Switch,
 } from 'react-native';
+import { t } from 'ttag';
 
 import { connect } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
 import { setTokens } from '../actions';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
+import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
-import { Strong, getTokenLabel } from '../utils';
+import { getTokenLabel } from '../utils';
 import { HATHOR_COLOR } from '../constants';
 
 
@@ -80,28 +82,24 @@ class UnregisterToken extends React.Component {
   }
 
   render() {
+    const tokenLabel = getTokenLabel(this.props.selectedToken);
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
-          title='UNREGISTER TOKEN'
+          title={t`UNREGISTER TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
         />
         <View style={this.style.container}>
+          <TextFmt style={this.style.text}>
+            {t`If you unregister this token **you won't be able to execute operations with it**, unless you register it again.`}
+          </TextFmt>
           <Text style={this.style.text}>
-            If you unregister this token
-            {' '}
-            <Strong>you won&apos;t be able to execute operations with it</Strong>
-            , unless you register it again.
-          </Text>
-          <Text style={this.style.text}>
-            You won&apos;t lose your tokens, they will just not appear on this wallet anymore.
+            {t`You won't lose your tokens, they will just not appear on this wallet anymore.`}
           </Text>
           <View style={this.style.switchView}>
-            <Text style={this.style.switchText}>
-              I want to unregister the token
-              {' '}
-              <Strong>{getTokenLabel(this.props.selectedToken)}</Strong>
-            </Text>
+            <TextFmt style={this.style.switchText}>
+              {t`I want to unregister the token **${tokenLabel}**`}
+            </TextFmt>
             <Switch
               onValueChange={this.toggleSwitch}
               trackColor={{ true: HATHOR_COLOR }}
@@ -115,7 +113,7 @@ class UnregisterToken extends React.Component {
               color={HATHOR_COLOR}
               disabled={!this.state.switchValue}
               onPress={this.unregisterConfirmed}
-              title='Unregister token'
+              title={t`Unregister token`}
             />
           </View>
         </View>

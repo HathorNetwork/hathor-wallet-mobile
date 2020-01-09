@@ -12,6 +12,7 @@ import {
   Switch,
 } from 'react-native';
 import { connect } from 'react-redux';
+import { t } from 'ttag';
 
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
@@ -69,11 +70,11 @@ export class Security extends React.Component {
 
   render() {
     const switchDisabled = !this.supportedBiometry;
-    const biometryText = (switchDisabled ? 'No biometry supported' : `Use ${this.supportedBiometry}`);
+    const biometryText = (switchDisabled ? t`No biometry supported` : t`Use ${this.supportedBiometry}`);
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
-          title='SECURITY'
+          title={t`SECURITY`}
           onBackPress={() => this.props.navigation.goBack()}
         />
         <HathorList>
@@ -92,11 +93,11 @@ export class Security extends React.Component {
             isFirst
           />
           <ListMenu
-            title='Change PIN'
+            title={t`Change PIN`}
             onPress={() => this.props.navigation.navigate('ChangePin')}
           />
           <ListMenu
-            title='Lock wallet'
+            title={t`Lock wallet`}
             onPress={this.onLockWallet}
             isLast
           />

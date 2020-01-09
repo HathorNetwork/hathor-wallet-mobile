@@ -9,17 +9,17 @@ import React from 'react';
 import {
   Image,
   SafeAreaView,
-  Text,
   View,
   StyleSheet,
 } from 'react-native';
 import hathorLib from '@hathor/wallet-lib';
+import { t } from 'ttag';
 
 import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
 import FeedbackModal from '../components/FeedbackModal';
+import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
-import { Strong } from '../utils';
 import checkIcon from '../assets/images/icCheckBig.png';
 
 
@@ -99,7 +99,7 @@ class ChangePin extends React.Component {
     if (hathorLib.wallet.isPinCorrect(text)) {
       this.nextStep();
     } else {
-      this.removeOneChar('pin1', 'pin1Color', 'Incorrect PIN code.');
+      this.removeOneChar('pin1', 'pin1Color', t`Incorrect PIN code.`);
     }
   }
 
@@ -126,7 +126,7 @@ class ChangePin extends React.Component {
       this.setState({ pin3Color: '#0DA0A0' });
       this.executeChangePin();
     } else {
-      this.removeOneChar('pin3', 'pin3Color', 'PIN codes don\'t match.');
+      this.removeOneChar('pin3', 'pin3Color', t`PIN codes don't match.`);
     }
   }
 
@@ -151,13 +151,13 @@ class ChangePin extends React.Component {
       this.setState({ done: true });
     } else {
       // Should never get here because we've done all the validations before
-      this.removeOneChar('pin3', 'pin3Color', 'Error while changing PIN');
+      this.removeOneChar('pin3', 'pin3Color', t`Error while changing PIN`);
     }
   }
 
   getPin1View = () => (
     <View style={this.style.pinView}>
-      <Text style={this.style.pinText}>Please enter your <Strong>current PIN</Strong></Text>
+      <TextFmt style={this.style.pinText}>{t`Please enter your **current PIN**`}</TextFmt>
       <PinInput
         maxLength={6}
         onChangeText={this.onChangePin1}
@@ -170,7 +170,7 @@ class ChangePin extends React.Component {
 
   getPin2View = () => (
     <View style={this.style.pinView}>
-      <Text style={this.style.pinText}>Please enter your <Strong>new PIN</Strong></Text>
+      <TextFmt style={this.style.pinText}>{t`Please enter your **new PIN**`}</TextFmt>
       <PinInput
         maxLength={6}
         onChangeText={this.onChangePin2}
@@ -183,7 +183,7 @@ class ChangePin extends React.Component {
 
   getPin3View = () => (
     <View style={this.style.pinView}>
-      <Text style={this.style.pinText}>Please enter your <Strong>new PIN</Strong> again</Text>
+      <TextFmt style={this.style.pinText}>{t`Please enter your **new PIN** again`}</TextFmt>
       <PinInput
         maxLength={6}
         onChangeText={this.onChangePin3}
@@ -198,7 +198,7 @@ class ChangePin extends React.Component {
     const renderSuccessModal = () => (
       <FeedbackModal
         icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-        text='New PIN recorded'
+        text={t`New PIN recorded`}
         onDismiss={this.exitScreen}
       />
     );
@@ -208,7 +208,7 @@ class ChangePin extends React.Component {
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
           withBorder
-          title='CHANGE PIN'
+          title={t`CHANGE PIN`}
           onBackPress={() => this.props.navigation.goBack()}
         />
         <View style={this.style.container}>
