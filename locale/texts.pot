@@ -52,7 +52,7 @@ msgstr ""
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src/utils.js:181
+#: src/utils.js:183
 msgid "Invalid address"
 msgstr ""
 
@@ -177,7 +177,7 @@ msgstr ""
 msgid "Token Symbol"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:96
+#: src/components/TxDetailsModal.js:100
 #: src/screens/CreateToken.js:161
 #: src/screens/PaymentRequestDetail.js:108
 msgid "Amount"
@@ -213,7 +213,7 @@ msgstr ""
 #: src/screens/CreateTokenName.js:65
 #: src/screens/CreateTokenSymbol.js:85
 #: src/screens/InitWallet.js:208
-#: src/screens/InitWallet.js:328
+#: src/screens/InitWallet.js:330
 #: src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:159
 msgid "Next"
@@ -360,22 +360,22 @@ msgid ""
 "appear**."
 msgstr ""
 
-#: src/screens/InitWallet.js:298
+#: src/screens/InitWallet.js:299
 msgid "To import a wallet,"
 msgstr ""
 
-#: src/screens/InitWallet.js:300
+#: src/screens/InitWallet.js:301
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
 "wallet, separated by space."
 msgstr ""
 
-#: src/screens/InitWallet.js:303
+#: src/screens/InitWallet.js:304
 msgid "Words"
 msgstr ""
 
-#: src/screens/InitWallet.js:308
+#: src/screens/InitWallet.js:309
 msgid "Enter your seed words separated by space"
 msgstr ""
 
@@ -422,7 +422,7 @@ msgstr ""
 msgid "PAYMENT REQUEST"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:50
+#: src/components/TxDetailsModal.js:53
 #: src/screens/PaymentRequestDetail.js:104
 msgid "Token"
 msgstr ""
@@ -719,14 +719,18 @@ msgstr ""
 msgid "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:51
+#: src/components/TxDetailsModal.js:54
 msgid "Description"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:52
+#: src/components/TxDetailsModal.js:55
 msgid "Date & Time"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:53
+#: src/components/TxDetailsModal.js:56
 msgid "ID"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:57
+msgid "Public Explorer"
 msgstr ""
