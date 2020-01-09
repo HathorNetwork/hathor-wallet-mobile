@@ -3,7 +3,7 @@ package com.hathormobile;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
-import com.reactcommunity.rnlanguages.RNLanguagesPackage;
+import com.reactcommunity.rnlocalize.RNLocalizePackage;
 import com.apsl.versionnumber.RNVersionNumberPackage;
 import com.swmansion.reanimated.ReanimatedPackage;
 import com.oblador.keychain.KeychainPackage;
@@ -35,7 +35,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
-            new RNLanguagesPackage(),
+            new RNLocalizePackage(),
             new RNVersionNumberPackage(),
             new ReanimatedPackage(),
             new KeychainPackage(),
