@@ -26,7 +26,7 @@ import HathorHeader from '../components/HathorHeader';
 import TextFmt from '../components/TextFmt';
 
 import baseStyle from '../styles/init';
-import { Link } from '../utils';
+import { Link, str2jsx } from '../utils';
 
 import { HATHOR_COLOR } from '../constants';
 
@@ -64,9 +64,10 @@ class WelcomeScreen extends React.Component {
               So, we advise you to keep only a small amount of tokens here, such as pocket money.`}
             </Text>
             <Text style={this.style.text}>
-              {t`For further information, check our website `}
-              <Link href='https://hathor.network'>https://hathor.network/</Link>
-              .
+              {str2jsx(
+                t`For further information, check out our website |link:https://hathor.network/|.`,
+                { link: (x, i) => <Link key={i} href='https://hathor.network/'>{x}</Link> }
+              )}
             </Text>
           </View>
           <View style={this.style.switchView}>
