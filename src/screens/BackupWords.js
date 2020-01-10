@@ -143,7 +143,7 @@ class BackupWords extends React.Component {
             <FeedbackModal
               icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
               text={
-                <Text>Words saved correctly</Text>
+                <Text>{t`Words saved correctly`}</Text>
               }
               onDismiss={() => {
                 this.setState({ modal: null }, () => {

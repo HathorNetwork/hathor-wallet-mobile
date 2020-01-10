@@ -56,20 +56,20 @@ msgstr ""
 msgid "Invalid address"
 msgstr ""
 
-#: src/screens/About.js:43
+#: src/screens/About.js:44
 msgid "ABOUT"
 msgstr ""
 
-#: src/screens/About.js:54
+#: src/screens/About.js:55
 msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr ""
 
-#: src/screens/About.js:58
+#: src/screens/About.js:59
 #: src/screens/InitWallet.js:60
 msgid "This wallet is connected to the **mainnet**."
 msgstr ""
 
-#: src/screens/About.js:61
+#: src/screens/About.js:62
 #: src/screens/InitWallet.js:63
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
@@ -77,8 +77,17 @@ msgid ""
 "pocket money."
 msgstr ""
 
-#: src/screens/About.js:65
-msgid "For further information, check our website"
+#: src/screens/About.js:67
+#: src/screens/InitWallet.js:68
+msgid ""
+"For further information, check out our website "
+"|link:https://hathor.network/|."
+msgstr ""
+
+#: src/screens/BackupWords.js:146
+#.  Success
+#.  eslint-disable-next-line react/jsx-indent
+msgid "Words saved correctly"
 msgstr ""
 
 #: src/screens/BackupWords.js:224
@@ -155,12 +164,12 @@ msgid "All fields must be filled."
 msgstr ""
 
 #: src/screens/CreateToken.js:123
-#: src/screens/CreateTokenConfirm.js:84
+#: src/screens/CreateTokenConfirm.js:85
 msgid "Enter your 6-digit pin to create your token"
 msgstr ""
 
 #: src/screens/CreateToken.js:124
-#: src/screens/CreateTokenConfirm.js:85
+#: src/screens/CreateTokenConfirm.js:86
 msgid "Authorize token creation"
 msgstr ""
 
@@ -188,7 +197,7 @@ msgid "Create New Token"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:109
-#: src/screens/CreateTokenConfirm.js:126
+#: src/screens/CreateTokenConfirm.js:127
 #: src/screens/CreateTokenDepositNotice.js:38
 #: src/screens/CreateTokenName.js:44
 #: src/screens/CreateTokenSymbol.js:63
@@ -212,38 +221,43 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:138
 #: src/screens/CreateTokenName.js:65
 #: src/screens/CreateTokenSymbol.js:85
-#: src/screens/InitWallet.js:208
-#: src/screens/InitWallet.js:330
+#: src/screens/InitWallet.js:209
+#: src/screens/InitWallet.js:331
 #: src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:159
 msgid "Next"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:66
+#: src/screens/CreateTokenConfirm.js:67
 #.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
 msgid "Creating token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:135
+#: src/screens/CreateTokenConfirm.js:100
+#.  eslint-disable-next-line react/jsx-indent
+msgid "**{this.name}** created successfully"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:136
 #, javascript-format
 msgid "Amount of ${ this.name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:143
+#: src/screens/CreateTokenConfirm.js:144
 msgid "Token name"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:149
+#: src/screens/CreateTokenConfirm.js:150
 #: src/screens/CreateTokenSymbol.js:70
 msgid "Token symbol"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:155
+#: src/screens/CreateTokenConfirm.js:156
 msgid "Deposit"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:162
+#: src/screens/CreateTokenConfirm.js:163
 msgid "Create token"
 msgstr ""
 
@@ -312,70 +326,66 @@ msgstr ""
 msgid "Welcome to Hathor Wallet!"
 msgstr ""
 
-#: src/screens/InitWallet.js:67
-msgid "For further information, check our website "
-msgstr ""
-
-#: src/screens/InitWallet.js:79
+#: src/screens/InitWallet.js:80
 msgid "I understand the risks of using a mobile wallet"
 msgstr ""
 
-#: src/screens/InitWallet.js:86
+#: src/screens/InitWallet.js:87
 msgid "Start"
 msgstr ""
 
-#: src/screens/InitWallet.js:103
+#: src/screens/InitWallet.js:104
 msgid "To start,"
 msgstr ""
 
-#: src/screens/InitWallet.js:105
+#: src/screens/InitWallet.js:106
 msgid "You need to **initialize your wallet**."
 msgstr ""
 
-#: src/screens/InitWallet.js:108
+#: src/screens/InitWallet.js:109
 msgid ""
 "You can either **start a new wallet** or **import a wallet** that already "
 "exists."
 msgstr ""
 
-#: src/screens/InitWallet.js:111
+#: src/screens/InitWallet.js:112
 msgid "To import a wallet, you will need to provide your seed words."
 msgstr ""
 
-#: src/screens/InitWallet.js:116
+#: src/screens/InitWallet.js:117
 msgid "Import Wallet"
 msgstr ""
 
-#: src/screens/InitWallet.js:122
+#: src/screens/InitWallet.js:123
 msgid "New Wallet"
 msgstr ""
 
-#: src/screens/InitWallet.js:199
+#: src/screens/InitWallet.js:200
 msgid "Your wallet has been created!"
 msgstr ""
 
-#: src/screens/InitWallet.js:201
+#: src/screens/InitWallet.js:202
 msgid ""
 "You must **do a backup** and save the words below **in the same order they "
 "appear**."
 msgstr ""
 
-#: src/screens/InitWallet.js:299
+#: src/screens/InitWallet.js:300
 msgid "To import a wallet,"
 msgstr ""
 
-#: src/screens/InitWallet.js:301
+#: src/screens/InitWallet.js:302
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
 "wallet, separated by space."
 msgstr ""
 
-#: src/screens/InitWallet.js:304
+#: src/screens/InitWallet.js:305
 msgid "Words"
 msgstr ""
 
-#: src/screens/InitWallet.js:309
+#: src/screens/InitWallet.js:310
 msgid "Enter your seed words separated by space"
 msgstr ""
 
@@ -396,20 +406,16 @@ msgstr ""
 msgid "No transactions"
 msgstr ""
 
-#: src/screens/MainScreen.js:101
-msgid "Share your address"
+#: src/screens/MainScreen.js:98
+msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 
-#: src/screens/MainScreen.js:104
-msgid "with friends and start exchanging tokens"
-msgstr ""
-
-#: src/screens/MainScreen.js:444
-#: src/screens/MainScreen.js:476
+#: src/screens/MainScreen.js:446
+#: src/screens/MainScreen.js:478
 msgid "Available Balance"
 msgstr ""
 
-#: src/screens/MainScreen.js:453
+#: src/screens/MainScreen.js:455
 msgid "Locked"
 msgstr ""
 
@@ -561,6 +567,11 @@ msgstr ""
 msgid "Lock wallet"
 msgstr ""
 
+#: src/screens/SendAddressInput.js:53
+#: src/screens/SendScanQRCode.js:77
+msgid "SEND"
+msgstr ""
+
 #: src/screens/SendAddressInput.js:59
 msgid "Address to send"
 msgstr ""
@@ -621,10 +632,6 @@ msgstr ""
 #: src/screens/SendScanQRCode.js:46
 #, javascript-format
 msgid "You don't have the requested token [${ tokenLabel }]"
-msgstr ""
-
-#: src/screens/SendScanQRCode.js:77
-msgid "SEND"
 msgstr ""
 
 #: src/screens/SendScanQRCode.js:85

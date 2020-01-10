@@ -13,6 +13,7 @@ import HathorHeader from '../components/HathorHeader';
 import HathorLogo from '../components/HathorLogo';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
+import { str2jsx } from '../utils';
 
 export class About extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
@@ -62,7 +63,10 @@ export class About extends React.Component {
             So, we advise you to keep only a small amount of tokens here, such as pocket money.`}
           </Text>
           <Text style={this.style.text}>
-            {t`For further information, check our website`} <Link href='https://hathor.network'>https://hathor.network/</Link>.
+            {str2jsx(
+              t`For further information, check out our website |link:https://hathor.network/|.`,
+              { link: (x, i) => <Link key={i} href='https://hathor.network/'>{x}</Link> }
+            )}
           </Text>
 
           <Text style={this.style.title}>MIT License</Text>
