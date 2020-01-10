@@ -25,6 +25,7 @@ i18n: compile_msgs
 compile_msgs: $(out_files)
 
 $(locale_out)/%/texts.po.json: $(locale_src)/%/texts.po
+	mkdir -p $(dir $@)
 	npx ttag po2json $< > $@
 
 .PHONY: check_po
