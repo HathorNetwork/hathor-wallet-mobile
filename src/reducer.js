@@ -410,9 +410,10 @@ const onSetInitWallet = (state, action) => ({
 const onUpdateHeight = (state, action) => {
   if (action.payload !== state.height) {
     // Need to update tokensBalance
-    const uid = hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
-    state.tokensBalance[uid] = getBalance(uid, action.payload);
-    const newTokensBalance = Object.assign({}, state.tokensBalance);
+    const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
+    const tokensBalance = {};
+    tokensBalance[uid] = getBalance(uid, action.payload);
+    const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
     return {
       ...state,
       tokensBalance: newTokensBalance,

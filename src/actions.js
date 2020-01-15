@@ -133,7 +133,9 @@ export const sendTx = (amount, address, token, pinCode) => () => {
   const walletData = hathorLib.wallet.getWalletData();
   const historyTxs = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
   return new Promise((resolve, reject) => {
-    const preparePromise = hathorLib.wallet.prepareSendTokensData(data, token, true, historyTxs, [token]);
+    const preparePromise = hathorLib.wallet.prepareSendTokensData(
+      data, token, true, historyTxs, [token]
+    );
     preparePromise.then((ret) => {
       if (ret.success) {
         try {
