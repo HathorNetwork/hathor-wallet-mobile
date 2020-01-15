@@ -53,6 +53,7 @@ const initialState = {
   serverInfo: { version: '', network: '' },
   lockScreen: true,
   initWallet: null,
+  height: 0,
 };
 
 const reducer = (state = initialState, action) => {
@@ -91,6 +92,8 @@ const reducer = (state = initialState, action) => {
       return onSetInitWallet(state, action);
     case types.CLEAR_INIT_WALLET:
       return onSetInitWallet(state, action);
+    case types.UPDATE_HEIGHT:
+      return onUpdateHeight(state, action);
     default:
       return state;
   }
@@ -148,7 +151,7 @@ const onNewTx = (state, action) => {
     updatedHistoryMap[tokenUid] = newTokenHistory;
     // totalBalance should not be confused with tokenTxBalance. The latter is the balance of the new
     // tx, while the former is the total balance of the token, considering all tx history
-    const totalBalance = getBalance(tokenUid);
+    const totalBalance = getBalance(tokenUid, state.height);
     updatedBalanceMap[tokenUid] = totalBalance;
   }
   const newTokensHistory = Object.assign({}, state.tokensHistory, updatedHistoryMap);
@@ -331,7 +334,7 @@ const onFetchHistorySuccess = (state, action) => {
       }
       // add this tx to the history of the corresponding token
       tokenHistory.push(getTxHistoryFromTx(tx, tokenUid, tokenTxBalance));
-      const totalBalance = getBalance(tokenUid);
+      const totalBalance = getBalance(tokenUid, state.height);
       // update token total balance
       tokensBalance[tokenUid] = totalBalance;
     }
@@ -398,4 +401,26 @@ const onSetInitWallet = (state, action) => ({
   ...state,
   initWallet: action.payload,
 });
+
+
+/**
+ * Update height value on redux
+ * If value is different from last value we also update HTR balance
+ */
+const onUpdateHeight = (state, action) => {
+  if (action.payload !== state.height) {
+    // Need to update tokensBalance
+    const uid = hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
+    state.tokensBalance[uid] = getBalance(uid, action.payload);
+    const newTokensBalance = Object.assign({}, state.tokensBalance);
+    return {
+      ...state,
+      tokensBalance: newTokensBalance,
+      height: action.payload,
+    };
+  }
+
+  return state;
+};
+
 export const store = createStore(reducer, applyMiddleware(thunk));

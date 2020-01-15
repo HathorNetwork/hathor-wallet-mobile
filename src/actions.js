@@ -29,6 +29,7 @@ export const types = {
   ACTIVATE_FETCH_HISTORY: 'ACTIVATE_FETCH_HISTORY',
   SET_LOCK_SCREEN: 'SET_LOCK_SCREEN',
   SET_INIT_WALLET: 'SET_INIT_WALLET',
+  UPDATE_HEIGHT: 'UPDATE_HEIGHT',
 };
 
 /**
@@ -101,6 +102,8 @@ export const activateFetchHistory = () => ({ type: types.ACTIVATE_FETCH_HISTORY 
 export const unlockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: false });
 
 export const lockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: true });
+
+export const updateHeight = (height) => ({ type: types.UPDATE_HEIGHT, payload: height });
 
 /**
  * addresses {Array} wallet words

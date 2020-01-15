@@ -74,12 +74,12 @@ export const getIntegerAmount = (value) => {
   return parsedValue * (10 ** hathorLib.constants.DECIMAL_PLACES);
 };
 
-export const getBalance = (tokenUid) => {
+export const getBalance = (tokenUid, height) => {
   // TODO should have a method in the lib to get balance by token
   const data = hathorLib.wallet.getWalletData();
   const historyTxs = data.historyTransactions || {};
   const filteredArray = hathorLib.wallet.filterHistoryTransactions(historyTxs, tokenUid, false);
-  const balance = hathorLib.wallet.calculateBalance(filteredArray, tokenUid);
+  const balance = hathorLib.wallet.calculateBalance(filteredArray, tokenUid, height);
   return balance;
 };
 
