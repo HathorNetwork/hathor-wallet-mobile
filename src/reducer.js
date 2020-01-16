@@ -151,7 +151,7 @@ const onNewTx = (state, action) => {
     updatedHistoryMap[tokenUid] = newTokenHistory;
     // totalBalance should not be confused with tokenTxBalance. The latter is the balance of the new
     // tx, while the former is the total balance of the token, considering all tx history
-    const totalBalance = getBalance(tokenUid, state.height);
+    const totalBalance = getBalance(tokenUid);
     updatedBalanceMap[tokenUid] = totalBalance;
   }
   const newTokensHistory = Object.assign({}, state.tokensHistory, updatedHistoryMap);
@@ -334,7 +334,7 @@ const onFetchHistorySuccess = (state, action) => {
       }
       // add this tx to the history of the corresponding token
       tokenHistory.push(getTxHistoryFromTx(tx, tokenUid, tokenTxBalance));
-      const totalBalance = getBalance(tokenUid, state.height);
+      const totalBalance = getBalance(tokenUid);
       // update token total balance
       tokensBalance[tokenUid] = totalBalance;
     }
@@ -412,7 +412,7 @@ const onUpdateHeight = (state, action) => {
     // Need to update tokensBalance
     const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
     const tokensBalance = {};
-    tokensBalance[uid] = getBalance(uid, action.payload);
+    tokensBalance[uid] = getBalance(uid);
     const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
     return {
       ...state,

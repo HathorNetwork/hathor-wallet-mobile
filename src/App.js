@@ -210,18 +210,21 @@ export class _AppStackWrapper extends React.Component {
   });
 
   componentDidMount = () => {
-    hathorLib.WebSocketHandler.on('dashboard', this.dashboardMetric);
+    hathorLib.WebSocketHandler.on('height_updated', this.handleHeightUpdated);
   }
 
   componentWillUnmount = () => {
-    hathorLib.WebSocketHandler.removeListener('dashboard', this.dashboardMetric);
+    hathorLib.WebSocketHandler.removeListener('height_updated', this.handleHeightUpdated);
   }
 
   /**
-   * Handle received ws metrics message and update height on redux
+   * Method called when WebSocketHandler from lib emits a height_updated event
+   * We update the height of the network in redux
+   *
+   * @param {number} height New height of the network
    */
-  dashboardMetric = (data) => {
-    this.props.updateHeight(data.height);
+  handleHeightUpdated = (height) => {
+    this.props.updateHeight(height);
   }
 
   render() {
