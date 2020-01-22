@@ -56,20 +56,20 @@ msgstr "DD MMM YYYY [•] HH:mm"
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
-#: src/screens/About.js:43
+#: src/screens/About.js:44
 msgid "ABOUT"
 msgstr "SOBRE"
 
-#: src/screens/About.js:54
+#: src/screens/About.js:55
 msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr ""
 "Este aplicativo foi desenvolvido pela Hathor Labs e é distribuído de graça."
 
-#: src/screens/About.js:58 src/screens/InitWallet.js:60
+#: src/screens/About.js:59 src/screens/InitWallet.js:60
 msgid "This wallet is connected to the **mainnet**."
 msgstr "Esta wallet está conectada à **mainnet**."
 
-#: src/screens/About.js:61 src/screens/InitWallet.js:63
+#: src/screens/About.js:62 src/screens/InitWallet.js:63
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
 "So, we advise you to keep only a small amount of tokens here, such as pocket "
@@ -79,9 +79,18 @@ msgstr ""
 "Por isso, nós aconselhamos que você mantenha apenas uma pequena quantidade "
 "de tokens aqui."
 
-#: src/screens/About.js:65
-msgid "For further information, check our website"
-msgstr "Para mais informações, visite nosso site"
+#: src/screens/About.js:67 src/screens/InitWallet.js:68
+msgid ""
+"For further information, check out our website |link:https://hathor."
+"network/|."
+msgstr ""
+"Para mais informações, visite nosso site |link:https://hathor.network/|."
+
+#.  Success
+#.  eslint-disable-next-line react/jsx-indent
+#: src/screens/BackupWords.js:146
+msgid "Words saved correctly"
+msgstr "Palavras salvas com sucesso"
 
 #: src/screens/BackupWords.js:224
 msgid "To make sure you saved,"
@@ -156,11 +165,11 @@ msgstr "Você não tem nenhum token Hathor disponível para criar o seu token."
 msgid "All fields must be filled."
 msgstr "Todos os campos devem ser preenchidos."
 
-#: src/screens/CreateToken.js:123 src/screens/CreateTokenConfirm.js:84
+#: src/screens/CreateToken.js:123 src/screens/CreateTokenConfirm.js:85
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
 
-#: src/screens/CreateToken.js:124 src/screens/CreateTokenConfirm.js:85
+#: src/screens/CreateToken.js:124 src/screens/CreateTokenConfirm.js:86
 msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
@@ -185,7 +194,7 @@ msgstr "Quantidade"
 msgid "Create New Token"
 msgstr "Criar Novo Token"
 
-#: src/screens/CreateTokenAmount.js:109 src/screens/CreateTokenConfirm.js:126
+#: src/screens/CreateTokenAmount.js:109 src/screens/CreateTokenConfirm.js:127
 #: src/screens/CreateTokenDepositNotice.js:38 src/screens/CreateTokenName.js:44
 #: src/screens/CreateTokenSymbol.js:63
 msgid "CREATE TOKEN"
@@ -206,36 +215,41 @@ msgid "You have ${ amountAvailableText } HTR available"
 msgstr "Você tem ${ amountAvailableText } HTR disponíveis"
 
 #: src/screens/CreateTokenAmount.js:138 src/screens/CreateTokenName.js:65
-#: src/screens/CreateTokenSymbol.js:85 src/screens/InitWallet.js:208
-#: src/screens/InitWallet.js:330 src/screens/SendAddressInput.js:66
+#: src/screens/CreateTokenSymbol.js:85 src/screens/InitWallet.js:209
+#: src/screens/InitWallet.js:331 src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:159
 msgid "Next"
 msgstr "Próximo"
 
 #.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:66
+#: src/screens/CreateTokenConfirm.js:67
 msgid "Creating token"
 msgstr "Criando um token"
 
-#: src/screens/CreateTokenConfirm.js:135
+#.  eslint-disable-next-line react/jsx-indent
+#: src/screens/CreateTokenConfirm.js:100
+msgid "**{this.name}** created successfully"
+msgstr "**{this.name}** criado com sucesso"
+
+#: src/screens/CreateTokenConfirm.js:136
 #, javascript-format
 msgid "Amount of ${ this.name }"
 msgstr "Quantidade de ${ this.name }"
 
-#: src/screens/CreateTokenConfirm.js:143
+#: src/screens/CreateTokenConfirm.js:144
 msgid "Token name"
 msgstr "Nome do token"
 
-#: src/screens/CreateTokenConfirm.js:149 src/screens/CreateTokenSymbol.js:70
+#: src/screens/CreateTokenConfirm.js:150 src/screens/CreateTokenSymbol.js:70
 msgid "Token symbol"
 msgstr "Símbolo do token"
 
-#: src/screens/CreateTokenConfirm.js:155
+#: src/screens/CreateTokenConfirm.js:156
 msgid "Deposit"
 msgstr "Depósito"
 
-#: src/screens/CreateTokenConfirm.js:162
+#: src/screens/CreateTokenConfirm.js:163
 msgid "Create token"
 msgstr "Criar um token"
 
@@ -307,27 +321,23 @@ msgstr "TOKENS"
 msgid "Welcome to Hathor Wallet!"
 msgstr "Bem vindo à Hathor Wallet!"
 
-#: src/screens/InitWallet.js:67
-msgid "For further information, check our website "
-msgstr "Para mais informações, visite nosso site "
-
-#: src/screens/InitWallet.js:79
+#: src/screens/InitWallet.js:80
 msgid "I understand the risks of using a mobile wallet"
 msgstr "Eu entendo os riscos de usar uma wallet de celular"
 
-#: src/screens/InitWallet.js:86
+#: src/screens/InitWallet.js:87
 msgid "Start"
 msgstr "Iniciar"
 
-#: src/screens/InitWallet.js:103
+#: src/screens/InitWallet.js:104
 msgid "To start,"
 msgstr "Para começar,"
 
-#: src/screens/InitWallet.js:105
+#: src/screens/InitWallet.js:106
 msgid "You need to **initialize your wallet**."
 msgstr "Você precisa **inicializar sua wallet**."
 
-#: src/screens/InitWallet.js:108
+#: src/screens/InitWallet.js:109
 msgid ""
 "You can either **start a new wallet** or **import a wallet** that already "
 "exists."
@@ -335,23 +345,23 @@ msgstr ""
 "Você pode tanto **iniciar uma nova wallet** ou **importar uma wallet** que "
 "já existe."
 
-#: src/screens/InitWallet.js:111
+#: src/screens/InitWallet.js:112
 msgid "To import a wallet, you will need to provide your seed words."
 msgstr "Para importar uma wallet, você deve entrar com as suas palavras."
 
-#: src/screens/InitWallet.js:116
+#: src/screens/InitWallet.js:117
 msgid "Import Wallet"
 msgstr "Importar Wallet"
 
-#: src/screens/InitWallet.js:122
+#: src/screens/InitWallet.js:123
 msgid "New Wallet"
 msgstr "Nova Wallet"
 
-#: src/screens/InitWallet.js:199
+#: src/screens/InitWallet.js:200
 msgid "Your wallet has been created!"
 msgstr "Sua wallet foi criada!"
 
-#: src/screens/InitWallet.js:201
+#: src/screens/InitWallet.js:202
 msgid ""
 "You must **do a backup** and save the words below **in the same order they "
 "appear**."
@@ -359,11 +369,11 @@ msgstr ""
 "Você deve **realizar o backup** e salvar as palavras abaixo **na mesma ordem "
 "em que elas aparecem**."
 
-#: src/screens/InitWallet.js:299
+#: src/screens/InitWallet.js:300
 msgid "To import a wallet,"
 msgstr "Para importar sua wallet,"
 
-#: src/screens/InitWallet.js:301
+#: src/screens/InitWallet.js:302
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
@@ -372,11 +382,11 @@ msgstr ""
 "Você precisa **digitar as ${ this.numberOfWords } palavras** da sua wallet, "
 "separadas por espaço."
 
-#: src/screens/InitWallet.js:304
+#: src/screens/InitWallet.js:305
 msgid "Words"
 msgstr "Palavras"
 
-#: src/screens/InitWallet.js:309
+#: src/screens/InitWallet.js:310
 msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
@@ -397,19 +407,17 @@ msgstr "**${ _this3.state.addresses } endereços** encontrados"
 msgid "No transactions"
 msgstr "Nenhuma transação"
 
-#: src/screens/MainScreen.js:101
-msgid "Share your address"
-msgstr "Compartilhe seu endereço"
+#: src/screens/MainScreen.js:98
+msgid "|share:Share your address| with friends and start exchanging tokens"
+msgstr ""
+"|share:Compartilhe seu endereço| com seus amigos e comece a trocar seus "
+"tokens"
 
-#: src/screens/MainScreen.js:104
-msgid "with friends and start exchanging tokens"
-msgstr "com seus amigos e comece a trocar seus tokens"
-
-#: src/screens/MainScreen.js:444 src/screens/MainScreen.js:476
+#: src/screens/MainScreen.js:446 src/screens/MainScreen.js:478
 msgid "Available Balance"
 msgstr "Saldo Disponível"
 
-#: src/screens/MainScreen.js:453
+#: src/screens/MainScreen.js:455
 msgid "Locked"
 msgstr "Bloqueado"
 
@@ -562,6 +570,10 @@ msgstr "Mudar PIN"
 msgid "Lock wallet"
 msgstr "Bloquear a wallet"
 
+#: src/screens/SendAddressInput.js:53 src/screens/SendScanQRCode.js:77
+msgid "SEND"
+msgstr "ENVIAR"
+
 #: src/screens/SendAddressInput.js:59
 msgid "Address to send"
 msgstr "Endereço para enviar"
@@ -621,10 +633,6 @@ msgstr "OK"
 #, javascript-format
 msgid "You don't have the requested token [${ tokenLabel }]"
 msgstr "Você não tem o token requisitado [${ tokenLabel }]"
-
-#: src/screens/SendScanQRCode.js:77
-msgid "SEND"
-msgstr "ENVIAR"
 
 #: src/screens/SendScanQRCode.js:85
 msgid "Scan the QR code"

@@ -9,7 +9,6 @@ import React from 'react';
 import {
   Image,
   SafeAreaView,
-  Text,
   View,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -24,8 +23,8 @@ import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import FeedbackModal from '../components/FeedbackModal';
 import Spinner from '../components/Spinner';
+import TextFmt from '../components/TextFmt';
 import { newToken, updateSelectedToken } from '../actions';
-import { Strong } from '../utils';
 import checkIcon from '../assets/images/icCheckBig.png';
 import errorIcon from '../assets/images/icErrorBig.png';
 
@@ -96,7 +95,7 @@ class CreateTokenConfirm extends React.Component {
         // eslint-disable-next-line react/jsx-indent
         <FeedbackModal
           icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-          text={<Text><Strong>{this.name}</Strong> created successfully</Text>}
+          text={<TextFmt>{t`**{this.name}** created successfully`}</TextFmt>}
           onDismiss={this.exitScreen}
         />,
     });
