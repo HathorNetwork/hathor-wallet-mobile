@@ -109,11 +109,9 @@ class LoadHistoryScreen extends React.Component {
         accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
         acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
       });
-    } else {
-      // lib already handles the case where websocket is already setup
-      hathorLib.WebSocketHandler.setup();
     }
     hathorLib.WebSocketHandler.on('addresses_loaded', this.addressesLoadedUpdate);
+    hathorLib.WebSocketHandler.setup();
     this.cleanData();
     this.props.loadHistory();
   }
