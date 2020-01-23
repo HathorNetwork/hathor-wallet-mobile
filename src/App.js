@@ -17,6 +17,7 @@ import { Provider, connect } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
 import IconTabBar from './icon-font';
 import { HATHOR_COLOR } from './constants';
+import { updateHeight } from './actions';
 
 import { store } from './reducer';
 import DecideStackScreen from './screens/DecideStackScreen';
@@ -189,6 +190,10 @@ const mapStateToProps = (state) => ({
   lockScreen: state.lockScreen,
 });
 
+const mapDispatchToProps = (dispatch) => ({
+  updateHeight: (height) => dispatch(updateHeight(height)),
+});
+
 export class _AppStackWrapper extends React.Component {
   static router = AppStack.router;
 
@@ -203,6 +208,24 @@ export class _AppStackWrapper extends React.Component {
       zIndex: 100,
     },
   });
+
+  componentDidMount = () => {
+    hathorLib.WebSocketHandler.on('height_updated', this.handleHeightUpdated);
+  }
+
+  componentWillUnmount = () => {
+    hathorLib.WebSocketHandler.removeListener('height_updated', this.handleHeightUpdated);
+  }
+
+  /**
+   * Method called when WebSocketHandler from lib emits a height_updated event
+   * We update the height of the network in redux
+   *
+   * @param {number} height New height of the network
+   */
+  handleHeightUpdated = (height) => {
+    this.props.updateHeight(height);
+  }
 
   render() {
     const renderAuxiliarViews = () => {
@@ -229,7 +252,7 @@ export class _AppStackWrapper extends React.Component {
   }
 }
 
-const AppStackWrapper = connect(mapStateToProps)(_AppStackWrapper);
+const AppStackWrapper = connect(mapStateToProps, mapDispatchToProps)(_AppStackWrapper);
 
 const SwitchNavigator = createSwitchNavigator({
   Decide: DecideStackScreen,
