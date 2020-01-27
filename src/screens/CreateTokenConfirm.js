@@ -95,7 +95,7 @@ class CreateTokenConfirm extends React.Component {
         // eslint-disable-next-line react/jsx-indent
         <FeedbackModal
           icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-          text={<TextFmt>{t`**{this.name}** created successfully`}</TextFmt>}
+          text={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
           onDismiss={this.exitScreen}
         />,
     });
