@@ -27,7 +27,7 @@ import SimpleButton from '../components/SimpleButton';
 import TxDetailsModal from '../components/TxDetailsModal';
 import OfflineBar from '../components/OfflineBar';
 import { HathorList } from '../components/HathorList';
-import { Strong } from '../utils';
+import { Strong, str2jsx } from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import infoIcon from '../assets/icons/info-circle.png';
@@ -94,14 +94,16 @@ class MainScreen extends React.Component {
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Strong>{t`No transactions`}</Strong>
           <Text style={{ marginTop: 8, lineHeight: 20, textAlign: 'center', width: 220 }}>
-            <Text
-              onPress={() => this.props.navigation.navigate('Receive')}
-              style={{ color: HATHOR_COLOR, fontWeight: 'bold' }}
-            >
-              {t`Share your address`}
-              {' '}
-            </Text>
-            {t`with friends and start exchanging tokens`}
+            {str2jsx(
+              t`|share:Share your address| with friends and start exchanging tokens`,
+              { share: (x, i) => (
+                <Text
+                  key={i}
+                  onPress={() => this.props.navigation.navigate('Receive')}
+                  style={{ color: HATHOR_COLOR, fontWeight: 'bold' }}
+                >{x}</Text>
+              ) }
+            )}
           </Text>
         </View>
       </HathorList>

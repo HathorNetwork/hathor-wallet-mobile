@@ -53,6 +53,7 @@ const initialState = {
   serverInfo: { version: '', network: '' },
   lockScreen: true,
   initWallet: null,
+  height: 0,
 };
 
 const reducer = (state = initialState, action) => {
@@ -91,6 +92,8 @@ const reducer = (state = initialState, action) => {
       return onSetInitWallet(state, action);
     case types.CLEAR_INIT_WALLET:
       return onSetInitWallet(state, action);
+    case types.UPDATE_HEIGHT:
+      return onUpdateHeight(state, action);
     default:
       return state;
   }
@@ -398,4 +401,27 @@ const onSetInitWallet = (state, action) => ({
   ...state,
   initWallet: action.payload,
 });
+
+
+/**
+ * Update height value on redux
+ * If value is different from last value we also update HTR balance
+ */
+const onUpdateHeight = (state, action) => {
+  if (action.payload !== state.height) {
+    // Need to update tokensBalance
+    const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
+    const tokensBalance = {};
+    tokensBalance[uid] = getBalance(uid);
+    const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
+    return {
+      ...state,
+      tokensBalance: newTokensBalance,
+      height: action.payload,
+    };
+  }
+
+  return state;
+};
+
 export const store = createStore(reducer, applyMiddleware(thunk));

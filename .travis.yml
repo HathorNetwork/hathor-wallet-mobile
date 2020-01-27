@@ -3,5 +3,6 @@ node_js:
   - "8"
 
 script:
+  - make i18n
   - npm run lint
   - make check_po

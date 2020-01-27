@@ -29,6 +29,7 @@ export const types = {
   ACTIVATE_FETCH_HISTORY: 'ACTIVATE_FETCH_HISTORY',
   SET_LOCK_SCREEN: 'SET_LOCK_SCREEN',
   SET_INIT_WALLET: 'SET_INIT_WALLET',
+  UPDATE_HEIGHT: 'UPDATE_HEIGHT',
 };
 
 /**
@@ -102,6 +103,8 @@ export const unlockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: false
 
 export const lockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: true });
 
+export const updateHeight = (height) => ({ type: types.UPDATE_HEIGHT, payload: height });
+
 /**
  * addresses {Array} wallet words
  * history {String} Pin chosen by user
@@ -140,7 +143,9 @@ export const sendTx = (amount, address, token, pinCode) => () => {
         });
       } catch (e) {
         if (e instanceof hathorLib.errors.AddressError
-            || e instanceof hathorLib.errors.OutputValueError) {
+            || e instanceof hathorLib.errors.OutputValueError
+            || e instanceof hathorLib.errors.MaximumNumberOutputsError
+            || e instanceof hathorLib.errors.MaximumNumberInputsError) {
           reject(e.message);
         }
       }
