@@ -236,7 +236,7 @@ msgstr ""
 
 #: src/screens/CreateTokenConfirm.js:100
 #.  eslint-disable-next-line react/jsx-indent
-msgid "**{this.name}** created successfully"
+msgid "**${this.name}** created successfully"
 msgstr ""
 
 #: src/screens/CreateTokenConfirm.js:136
