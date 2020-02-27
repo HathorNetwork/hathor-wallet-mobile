@@ -9,4 +9,5 @@ install:
 script:
   - make i18n
   - npm run lint
+  - make check_pot
   - make check_po
