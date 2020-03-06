@@ -1,0 +1,725 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Hathor\n"
+"Language: da\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: POEditor.com\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#.  This should never happen!
+#: src/models.js:24
+msgid "Unknown"
+msgstr "Ukendt"
+
+#: src/models.js:27
+#, javascript-format
+msgid "Received ${ symbol }"
+msgstr "Modtaget ${ symbol }"
+
+#: src/models.js:29
+msgid "Sent ${ symbol }"
+msgstr "Sendt ${ symbol }"
+
+#: src/models.js:31
+#, javascript-format
+msgid "You sent ${ symbol } to yourself"
+msgstr "Du sendte ${ symbol } til dig selv"
+
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#: src/models.js:41
+msgid "[Today •] HH:mm"
+msgstr "[I dag •] HH: mm"
+
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#: src/models.js:42
+msgid "[Tomorrow •] HH:mm"
+msgstr "[I morgen •] HH: mm"
+
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#: src/models.js:43
+msgid "dddd [•] HH:mm"
+msgstr "dddd [•] HH: mm"
+
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#: src/models.js:44
+msgid "[Yesterday •] HH:mm"
+msgstr "[I går •] HH: mm"
+
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#: src/models.js:45
+msgid "[Last] dddd [•] HH:mm"
+msgstr "[Sidste] dddd [•] HH: mm"
+
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#: src/models.js:46
+msgid "DD MMM YYYY [•] HH:mm"
+msgstr "DD MMM YYYY [•] HH: mm"
+
+#: src/utils.js:183
+msgid "Invalid address"
+msgstr "Ugyldig adresse"
+
+#: src/screens/About.js:44
+msgid "ABOUT"
+msgstr "OM"
+
+#: src/screens/About.js:55
+msgid "This app is developed by Hathor Labs and is distributed for free."
+msgstr "Denne app er udviklet af Hathor Labs og distribueres gratis."
+
+#: src/screens/About.js:59 src/screens/InitWallet.js:60
+msgid "This wallet is connected to the **mainnet**."
+msgstr "Denne wallet er tilsluttet til ** mainnet **."
+
+#: src/screens/About.js:62 src/screens/InitWallet.js:63
+msgid ""
+"A mobile wallet is not the safest place to store your tokens.\n"
+"So, we advise you to keep only a small amount of tokens here, such as pocket "
+"money."
+msgstr ""
+"En mobil wallet er ikke det sikreste sted at gemme dine tokens.\n"
+"Så vi råder dig til kun at opbevare en lille mængde tokens her, såsom "
+"lommepenge."
+
+#: src/screens/About.js:67 src/screens/InitWallet.js:68
+msgid ""
+"For further information, check out our website |link:https://hathor."
+"network/|."
+msgstr ""
+"For yderligere information, se vores websted |link:https://hathor.network/|."
+
+#.  Success
+#.  eslint-disable-next-line react/jsx-indent
+#: src/screens/BackupWords.js:146
+msgid "Words saved correctly"
+msgstr "Ord gemt korrekt"
+
+#: src/screens/BackupWords.js:224
+msgid "To make sure you saved,"
+msgstr "For at sikre dig, at du har gemt,"
+
+#: src/screens/BackupWords.js:226
+msgid "Please select the word that corresponds to the number below:"
+msgstr "Vælg det ord, der svarer til nummeret herunder:"
+
+#: src/screens/ChangePin.js:102
+msgid "Incorrect PIN code."
+msgstr "Forkert PIN-kode."
+
+#: src/screens/ChangePin.js:129
+msgid "PIN codes don't match."
+msgstr "PIN-koder stemmer ikke overens."
+
+#.  Should never get here because we've done all the validations before
+#: src/screens/ChangePin.js:154
+msgid "Error while changing PIN"
+msgstr "Fejl under ændring af pinkode"
+
+#: src/screens/ChangePin.js:160
+msgid "Please enter your **current PIN**"
+msgstr "Indtast din **aktuelle PIN**"
+
+#: src/screens/ChangePin.js:173
+msgid "Please enter your **new PIN**"
+msgstr "Indtast din **PIN**"
+
+#: src/screens/ChangePin.js:186
+msgid "Please enter your **new PIN** again"
+msgstr "Indtast din **nye PIN** igen"
+
+#: src/screens/ChangePin.js:201
+msgid "New PIN recorded"
+msgstr "Ny PIN gemt"
+
+#: src/screens/ChangePin.js:211
+msgid "CHANGE PIN"
+msgstr "SKIFT PIN"
+
+#: src/screens/ChoosePinScreen.js:124
+msgid "Enter your new PIN code"
+msgstr "Indtast din nye PIN-kode"
+
+#: src/screens/ChoosePinScreen.js:136
+msgid "Enter your new PIN code again"
+msgstr "Indtast din nye PIN-kode igen"
+
+#: src/screens/ChoosePinScreen.js:68
+msgid "Create a new PIN code,"
+msgstr "Opret en ny PIN-kode,"
+
+#: src/screens/ChoosePinScreen.js:71
+msgid "To confirm the PIN,"
+msgstr "For at bekræfte pinkoden,"
+
+#: src/screens/ChoosePinScreen.js:150
+msgid "PIN codes don't match. Try again."
+msgstr "PIN-koder stemmer ikke overens. Prøv igen."
+
+#: src/screens/ChoosePinScreen.js:173
+msgid "Start the Wallet"
+msgstr "Start Wallet"
+
+#: src/screens/CreateTokenAmount.js:109 src/screens/CreateTokenConfirm.js:125
+#: src/screens/CreateTokenDepositNotice.js:38 src/screens/CreateTokenName.js:44
+#: src/screens/CreateTokenSymbol.js:63
+msgid "CREATE TOKEN"
+msgstr "OPRET TOKEN"
+
+#: src/screens/CreateTokenAmount.js:117
+#, javascript-format
+msgid "Amount of ${ this.name } (${ this.symbol })"
+msgstr "Antal ${ this.name } (${ this.symbol })"
+
+#: src/screens/CreateTokenAmount.js:129
+msgid "Deposit:"
+msgstr "Indsæt:"
+
+#: src/screens/CreateTokenAmount.js:133
+#, javascript-format
+msgid "You have ${ amountAvailableText } HTR available"
+msgstr "Du har ${ amountAvailableText } HTR tilgængelig"
+
+#: src/screens/CreateTokenAmount.js:138 src/screens/CreateTokenName.js:65
+#: src/screens/CreateTokenSymbol.js:85 src/screens/InitWallet.js:209
+#: src/screens/InitWallet.js:331 src/screens/SendAddressInput.js:66
+#: src/screens/SendAmountInput.js:159
+msgid "Next"
+msgstr "Næste"
+
+#.  show loading modal
+#.  eslint-disable-next-line react/jsx-indent
+#: src/screens/CreateTokenConfirm.js:65
+msgid "Creating token"
+msgstr "Opretter token"
+
+#: src/screens/CreateTokenConfirm.js:83
+msgid "Enter your 6-digit pin to create your token"
+msgstr "Indtast din 6-cifrede pin for at oprette din token"
+
+#: src/screens/CreateTokenConfirm.js:84
+msgid "Authorize token creation"
+msgstr "Autoriser oprettelse af token"
+
+#.  eslint-disable-next-line react/jsx-indent
+#: src/screens/CreateTokenConfirm.js:98
+#, javascript-format
+msgid "**${ _this.name }** created successfully"
+msgstr "**${ _this.name }** oprettet korrekt"
+
+#: src/screens/CreateTokenConfirm.js:134
+#, javascript-format
+msgid "Amount of ${ this.name }"
+msgstr "Antal af ${ this.name }"
+
+#: src/screens/CreateTokenConfirm.js:142
+msgid "Token name"
+msgstr "Token navn"
+
+#: src/screens/CreateTokenConfirm.js:148 src/screens/CreateTokenSymbol.js:70
+msgid "Token symbol"
+msgstr "Token symbol"
+
+#: src/screens/CreateTokenConfirm.js:154
+msgid "Deposit"
+msgstr "Indsæt"
+
+#: src/screens/CreateTokenConfirm.js:161
+msgid "Create token"
+msgstr "Opret token"
+
+#: src/screens/CreateTokenDepositNotice.js:45
+#, javascript-format
+msgid ""
+"When creating new tokens, a |fn:deposit of ${ depositPercentage }%| in HTR "
+"is required - e.g. if you create 1000 NewCoins, 10 HTR are needed as deposit."
+msgstr ""
+"Når du opretter nye tokens, kræves der et |fn: depositum på "
+"${ depositPercentage }%| i HTR - f.eks. hvis du opretter 1000 NewCoins, er "
+"10 HTR nødvendige som depositum."
+
+#: src/screens/CreateTokenDepositNotice.js:51
+msgid ""
+"If these tokens are later melted, the HTR deposit will be returned. Read "
+"more about it |link:here|."
+msgstr ""
+"Hvis disse tokens senere smeltes, returneres dit HTR-depositum. Læs mere om "
+"det |link:her|."
+
+#: src/screens/CreateTokenDepositNotice.js:59
+msgid "I understand"
+msgstr "Jeg forstår"
+
+#: src/screens/CreateTokenDetail.js:42 src/screens/TokenDetail.js:41
+msgid "TOKEN DETAILS"
+msgstr "TOKEN DETALJER"
+
+#: src/screens/CreateTokenName.js:27
+msgid "0/30 characters"
+msgstr "0/30 tegn"
+
+#: src/screens/CreateTokenName.js:33
+#, javascript-format
+msgid "${ text.length }/30 characters"
+msgstr "$ { text.length }/30 tegn"
+
+#: src/screens/CreateTokenName.js:51
+msgid "Token Name"
+msgstr "Token Navn"
+
+#: src/screens/CreateTokenName.js:60
+msgid "Token name should be the full name of the new token you are creating"
+msgstr "Token navn skal være det fulde navn på den nye token, du opretter"
+
+#: src/screens/CreateTokenName.js:61
+msgid "E.g. MyToken or My Token"
+msgstr "F.eks. MyToken eller My Token"
+
+#: src/screens/CreateTokenSymbol.js:73
+msgid "Between 2 and 5 characters"
+msgstr "Mellem 2 og 5 tegn"
+
+#: src/screens/CreateTokenSymbol.js:80
+msgid "The symbol is a smaller version of the token name"
+msgstr "Symbolet er en kortere version af token-navnet"
+
+#: src/screens/CreateTokenSymbol.js:81
+msgid "E.g. HTR"
+msgstr "F.eks. HTR"
+
+#: src/screens/Dashboard.js:152 src/screens/RegisterTokenManual.js:133
+msgid "Register token"
+msgstr "Registrer token"
+
+#: src/screens/Dashboard.js:159
+msgid "TOKENS"
+msgstr "TOKENS"
+
+#: src/screens/InitWallet.js:57
+msgid "Welcome to Hathor Wallet!"
+msgstr "Velkommen til Hathor Wallet!"
+
+#: src/screens/InitWallet.js:80
+msgid "I understand the risks of using a mobile wallet"
+msgstr "Jeg forstår risikoen ved at bruge en mobil wallet"
+
+#: src/screens/InitWallet.js:87
+msgid "Start"
+msgstr "Start"
+
+#: src/screens/InitWallet.js:104
+msgid "To start,"
+msgstr "For at begynde,"
+
+#: src/screens/InitWallet.js:106
+msgid "You need to **initialize your wallet**."
+msgstr "Skal du **initialisere din wallet**."
+
+#: src/screens/InitWallet.js:109
+msgid ""
+"You can either **start a new wallet** or **import a wallet** that already "
+"exists."
+msgstr ""
+"Du kan enten **oprette en ny wallet** eller **importere en wallet**, der "
+"allerede findes."
+
+#: src/screens/InitWallet.js:112
+msgid "To import a wallet, you will need to provide your seed words."
+msgstr "For at importere en wallet skal du angive dine seed-ord."
+
+#: src/screens/InitWallet.js:117
+msgid "Import Wallet"
+msgstr "Importer wallet"
+
+#: src/screens/InitWallet.js:123
+msgid "New Wallet"
+msgstr "Ny wallet"
+
+#: src/screens/InitWallet.js:200
+msgid "Your wallet has been created!"
+msgstr "Din wallet er oprettet!"
+
+#: src/screens/InitWallet.js:202
+msgid ""
+"You must **do a backup** and save the words below **in the same order they "
+"appear**."
+msgstr ""
+"Du skal **lave en sikkerhedskopi** og gemme nedenstående ord **i samme "
+"rækkefølge, som de vises**."
+
+#: src/screens/InitWallet.js:300
+msgid "To import a wallet,"
+msgstr "Hvis du vil importere en wallet,"
+
+#: src/screens/InitWallet.js:302
+#, javascript-format
+msgid ""
+"You need to **write down the ${ this.numberOfWords } seed words** of your "
+"wallet, separated by space."
+msgstr ""
+"Skal du **skrive ${ this.numberOfWords } seed-ord** i din wallet adskilt med "
+"mellemrum."
+
+#: src/screens/InitWallet.js:305
+msgid "Words"
+msgstr "Ord"
+
+#: src/screens/InitWallet.js:310
+msgid "Enter your seed words separated by space"
+msgstr "Indtast dine seed-ord adskilt med mellemrum"
+
+#: src/screens/LoadHistoryScreen.js:141
+msgid "Loading your transactions"
+msgstr "Indlæser dine transaktioner"
+
+#: src/screens/LoadHistoryScreen.js:144
+#, javascript-format
+msgid "**${ _this3.state.transactions } transactions** found"
+msgstr "**${ _this3.state.transactions } transaktioner** fundet"
+
+#: src/screens/LoadHistoryScreen.js:147
+msgid "**${ _this3.state.addresses } addresses** found"
+msgstr "**${ _this3.state.addresses } adresser** fundet"
+
+#: src/screens/MainScreen.js:95
+msgid "No transactions"
+msgstr "Ingen transaktioner"
+
+#: src/screens/MainScreen.js:98
+msgid "|share:Share your address| with friends and start exchanging tokens"
+msgstr "|share:Del din adresse| med venner og begynd at udveksle tokens"
+
+#: src/screens/MainScreen.js:446 src/screens/MainScreen.js:478
+msgid "Available Balance"
+msgstr "Tilgængelig saldo"
+
+#: src/screens/MainScreen.js:455
+msgid "Locked"
+msgstr "Låst"
+
+#: src/screens/PaymentRequestDetail.js:69
+#, javascript-format
+msgid "You've just received **${ amount } ${ symbol }**"
+msgstr "Du har lige modtaget **${ amount } ${ symbol }**"
+
+#: src/screens/PaymentRequestDetail.js:86
+msgid "PAYMENT REQUEST"
+msgstr "BETALINGSANMODNING"
+
+#: src/components/TxDetailsModal.js:53 src/screens/PaymentRequestDetail.js:104
+msgid "Token"
+msgstr "Token"
+
+#: src/components/TxDetailsModal.js:100 src/screens/PaymentRequestDetail.js:108
+msgid "Amount"
+msgstr "Antal"
+
+#: src/screens/PaymentRequestDetail.js:116 src/screens/Receive.js:29
+msgid "My Address"
+msgstr "Min adresse"
+
+#: src/screens/PaymentRequestDetail.js:120
+msgid "Status"
+msgstr "Status"
+
+#: src/screens/PaymentRequestDetail.js:121
+msgid "Received"
+msgstr "Modtaget"
+
+#: src/screens/PaymentRequestDetail.js:121
+msgid "Waiting confirmation"
+msgstr "Venter på bekræftelse"
+
+#: src/screens/PinScreen.js:157
+msgid "Incorrect PIN Code. Try again."
+msgstr "Forkert PIN-kode. Prøv igen."
+
+#: src/screens/PinScreen.js:53
+msgid "Enter your PIN Code "
+msgstr "Indtast din pinkode "
+
+#: src/screens/PinScreen.js:54
+msgid "Unlock Hathor Wallet"
+msgstr "Lås Hathor-wallet op"
+
+#: src/screens/PinScreen.js:169
+msgid "Cancel"
+msgstr "Annuller"
+
+#: src/screens/PinScreen.js:172 src/screens/Settings.js:128
+msgid "Reset wallet"
+msgstr "Nulstil wallet"
+
+#. *
+#.      * index {number} Selected index of the tab bar
+#.      
+#.  eslint thinks routes is not used, but TabView uses it
+#.  eslint-disable-next-line react/no-unused-state
+#: src/screens/Receive.js:30
+msgid "Payment Request"
+msgstr "Betalingsanmodning"
+
+#: src/screens/Receive.js:105
+msgid "RECEIVE"
+msgstr "MODTAG"
+
+#.  translator: Used when the QR Code Scanner is opened, and user will manually
+#.  enter the information.
+#: src/screens/RegisterToken.js:33 src/screens/SendScanQRCode.js:69
+msgid "Manual info"
+msgstr "Manuel information"
+
+#: src/screens/RegisterToken.js:48 src/screens/RegisterTokenManual.js:112
+msgid "REGISTER TOKEN"
+msgstr "REGISTRER TOKEN"
+
+#: src/screens/RegisterToken.js:59
+msgid "Scan the token QR code"
+msgstr "Scan QR-koden til token"
+
+#: src/screens/RegisterTokenManual.js:88
+msgid "You're going to register the following token:"
+msgstr "Du registrerer følgende token:"
+
+#: src/screens/RegisterTokenManual.js:90
+msgid "Name: "
+msgstr "Navn: "
+
+#: src/screens/RegisterTokenManual.js:94
+msgid "Symbol: "
+msgstr "Symbol: "
+
+#: src/screens/RegisterTokenManual.js:118
+msgid "Configuration string"
+msgstr "Konfigurationsstreng"
+
+#: src/screens/ResetWallet.js:75
+msgid "RESET WALLET"
+msgstr "NULSTIL WALLET"
+
+#: src/screens/ResetWallet.js:79
+msgid "Are you sure?"
+msgstr "Er du sikker?"
+
+#: src/screens/ResetWallet.js:82
+msgid ""
+"If you reset your wallet, **all data will be deleted**, and you will **lose "
+"access to your tokens**."
+msgstr ""
+"Hvis du nulstiller din wallet, **vil alle data blive slettet**, og du mister "
+"**adgang til dine tokens**."
+
+#: src/screens/ResetWallet.js:84
+msgid ""
+"To recover access to your tokens, you will need to import your seed words "
+"again."
+msgstr ""
+"For at gendanne adgang til dine tokens, skal du importere dine seed-ord igen."
+
+#: src/screens/ResetWallet.js:93
+msgid ""
+"I want to reset my wallet, and I acknowledge that **all data will be wiped "
+"out**."
+msgstr ""
+"Jeg vil nulstille min wallet, og jeg forstår, at **alle data vil blive "
+"slettet**."
+
+#: src/screens/ResetWallet.js:102
+msgid "Reset Wallet"
+msgstr "Nulstil wallet"
+
+#: src/screens/Security.js:73
+msgid "No biometry supported"
+msgstr "Ingen biometri understøttet"
+
+#: src/screens/Security.js:73
+#, javascript-format
+msgid "Use ${ this.supportedBiometry }"
+msgstr "Brug ${ this.supportedBiometry }"
+
+#: src/screens/Security.js:77
+msgid "SECURITY"
+msgstr "SIKKERHED"
+
+#: src/screens/Security.js:96
+msgid "Change PIN"
+msgstr "Skift pinkode"
+
+#: src/screens/Security.js:100
+msgid "Lock wallet"
+msgstr "Lås wallet"
+
+#: src/screens/SendAddressInput.js:53 src/screens/SendScanQRCode.js:77
+msgid "SEND"
+msgstr "SEND"
+
+#: src/screens/SendAddressInput.js:59
+msgid "Address to send"
+msgstr "Adresse, der skal sendes til"
+
+#: src/screens/SendAmountInput.js:94
+msgid "Insufficient funds"
+msgstr "Utilstrækkelige midler"
+
+#: src/screens/SendAmountInput.js:118 src/screens/SendConfirmScreen.js:125
+#, javascript-format
+msgid "${ amountAndToken } available"
+msgid_plural "${ amountAndToken } available"
+msgstr[0] "${ amountAndToken } tilgængelig"
+msgstr[1] "${ amountAndToken } tilgængelig\n"
+
+#: src/screens/SendAmountInput.js:126 src/screens/SendConfirmScreen.js:133
+msgid "SEND ${ tokenNameUpperCase }"
+msgstr "SEND ${ tokenNameUpperCase }"
+
+#.  show loading modal
+#.  eslint-disable-next-line react/jsx-indent
+#: src/screens/SendConfirmScreen.js:69
+msgid "Your transfer is being processed"
+msgstr "Din overførsel behandles"
+
+#: src/screens/SendConfirmScreen.js:81
+msgid "Enter your 6-digit pin to authorize operation"
+msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
+
+#: src/screens/SendConfirmScreen.js:82
+msgid "Authorize operation"
+msgstr "Autoriserer overførslen"
+
+#.  eslint-disable-next-line react/jsx-indent
+#: src/screens/SendConfirmScreen.js:94
+#, javascript-format
+msgid "Your transfer of **${ _this.amountAndToken }** has been confirmed"
+msgstr "Din overførsel af **${ _this.amountAndToken }** er bekræftet"
+
+#: src/screens/SendConfirmScreen.js:149
+msgid "Address"
+msgstr "Adresse"
+
+#: src/screens/SendConfirmScreen.js:156
+msgid "Send"
+msgstr "Send"
+
+#: src/screens/SendScanQRCode.js:29
+msgid "Invalid QR code"
+msgstr "Ugyldig QR-kode"
+
+#: src/screens/SendScanQRCode.js:32
+msgid "OK"
+msgstr "Okay"
+
+#: src/screens/SendScanQRCode.js:46
+#, javascript-format
+msgid "You don't have the requested token [${ tokenLabel }]"
+msgstr "Du har ikke den anmodede token [${ tokenLabel }]"
+
+#: src/screens/SendScanQRCode.js:85
+msgid "Scan the QR code"
+msgstr "Scan QR-koden"
+
+#: src/screens/Settings.js:91
+msgid "You are connected to"
+msgstr "Du er tilsluttet til"
+
+#: src/screens/Settings.js:103
+msgid "Connected to"
+msgstr "Forbundet til"
+
+#: src/screens/Settings.js:116
+msgid "Security"
+msgstr "Sikkerhed"
+
+#: src/screens/Settings.js:120
+msgid "Create a new token"
+msgstr "Opret en ny token"
+
+#: src/screens/Settings.js:124
+msgid "Register a token"
+msgstr "Registrer en token"
+
+#: src/screens/Settings.js:132
+msgid "About"
+msgstr "Om"
+
+#: src/screens/TokenDetail.js:33
+msgid "Unregister"
+msgstr "Afmeld"
+
+#: src/screens/UnregisterToken.js:89
+msgid "UNREGISTER TOKEN"
+msgstr "AFREGISTRER TOKEN"
+
+#: src/screens/UnregisterToken.js:94
+msgid ""
+"If you unregister this token **you won't be able to execute operations with "
+"it**, unless you register it again."
+msgstr ""
+"Hvis du afregistrerer denne token, **kan du ikke udføre funktioner med "
+"den**, medmindre du registrerer den igen."
+
+#: src/screens/UnregisterToken.js:97
+msgid ""
+"You won't lose your tokens, they will just not appear on this wallet anymore."
+msgstr "Du mister ikke dine tokens, de vises bare ikke længere i denne wallet."
+
+#: src/screens/UnregisterToken.js:101
+#, javascript-format
+msgid "I want to unregister the token **${ tokenLabel }**"
+msgstr "Jeg vil afregistrere token **${ tokenLabel }**"
+
+#: src/screens/UnregisterToken.js:116
+msgid "Unregister token"
+msgstr "Afregistrer token"
+
+#: src/components/CopyClipboard.js:37
+msgid "Copied to clipboard!"
+msgstr "Kopieret til udklipsholder!"
+
+#: src/components/NewPaymentRequest.js:162
+msgid "Create payment request"
+msgstr "Opret betalingsanmodning"
+
+#: src/components/OfflineBar.js:52
+msgid "No internet connection"
+msgstr "Ingen internetforbindelse"
+
+#: src/components/QRCodeReader.js:144
+msgid "Opening camera"
+msgstr "Åbner kamera"
+
+#: src/components/ReceiveMyAddress.js:52
+#, javascript-format
+msgid "Here is my address: ${ _this.state.address }"
+msgstr "Her er min adresse: ${ _this.state.address }"
+
+#: src/components/ReceiveMyAddress.js:89
+msgid "New address"
+msgstr "Ny adresse"
+
+#: src/components/ReceiveMyAddress.js:95 src/components/TokenDetails.js:54
+msgid "Share"
+msgstr "Del"
+
+#: src/components/TokenDetails.js:31
+#, javascript-format
+msgid ""
+"Here is the configuration string of token ${ tokenLabel }: ${ configString }"
+msgstr ""
+"Her er konfigurationsstrengen for token ${ tokenLabel }: ${ configString }"
+
+#: src/components/TxDetailsModal.js:54
+msgid "Description"
+msgstr "Beskrivelse"
+
+#: src/components/TxDetailsModal.js:55
+msgid "Date & Time"
+msgstr "Dato & Tid"
+
+#: src/components/TxDetailsModal.js:56
+msgid "ID"
+msgstr "ID"
+
+#: src/components/TxDetailsModal.js:57
+msgid "Public Explorer"
+msgstr "Public Explorer"
