@@ -155,49 +155,8 @@ msgstr ""
 msgid "Start the Wallet"
 msgstr ""
 
-#: src/screens/CreateToken.js:70
-msgid "You don't have any hathor tokens available to create your token."
-msgstr ""
-
-#: src/screens/CreateToken.js:85
-msgid "All fields must be filled."
-msgstr ""
-
-#: src/screens/CreateToken.js:123
-#: src/screens/CreateTokenConfirm.js:85
-msgid "Enter your 6-digit pin to create your token"
-msgstr ""
-
-#: src/screens/CreateToken.js:124
-#: src/screens/CreateTokenConfirm.js:86
-msgid "Authorize token creation"
-msgstr ""
-
-#: src/screens/CreateToken.js:140
-msgid "CREATE NEW TOKEN"
-msgstr ""
-
-#: src/screens/CreateToken.js:146
-#: src/screens/CreateTokenName.js:51
-msgid "Token Name"
-msgstr ""
-
-#: src/screens/CreateToken.js:153
-msgid "Token Symbol"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:100
-#: src/screens/CreateToken.js:161
-#: src/screens/PaymentRequestDetail.js:108
-msgid "Amount"
-msgstr ""
-
-#: src/screens/CreateToken.js:172
-msgid "Create New Token"
-msgstr ""
-
 #: src/screens/CreateTokenAmount.js:109
-#: src/screens/CreateTokenConfirm.js:127
+#: src/screens/CreateTokenConfirm.js:125
 #: src/screens/CreateTokenDepositNotice.js:38
 #: src/screens/CreateTokenName.js:44
 #: src/screens/CreateTokenSymbol.js:63
@@ -228,36 +187,45 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:67
+#: src/screens/CreateTokenConfirm.js:65
 #.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
 msgid "Creating token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:100
-#.  eslint-disable-next-line react/jsx-indent
-msgid "**${this.name}** created successfully"
+#: src/screens/CreateTokenConfirm.js:83
+msgid "Enter your 6-digit pin to create your token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:136
+#: src/screens/CreateTokenConfirm.js:84
+msgid "Authorize token creation"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:98
+#.  eslint-disable-next-line react/jsx-indent
+#, javascript-format
+msgid "**${ _this.name }** created successfully"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:134
 #, javascript-format
 msgid "Amount of ${ this.name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:144
+#: src/screens/CreateTokenConfirm.js:142
 msgid "Token name"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:150
+#: src/screens/CreateTokenConfirm.js:148
 #: src/screens/CreateTokenSymbol.js:70
 msgid "Token symbol"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:156
+#: src/screens/CreateTokenConfirm.js:154
 msgid "Deposit"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:163
+#: src/screens/CreateTokenConfirm.js:161
 msgid "Create token"
 msgstr ""
 
@@ -291,6 +259,10 @@ msgstr ""
 #: src/screens/CreateTokenName.js:33
 #, javascript-format
 msgid "${ text.length }/30 characters"
+msgstr ""
+
+#: src/screens/CreateTokenName.js:51
+msgid "Token Name"
 msgstr ""
 
 #: src/screens/CreateTokenName.js:60
@@ -389,16 +361,16 @@ msgstr ""
 msgid "Enter your seed words separated by space"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:143
+#: src/screens/LoadHistoryScreen.js:141
 msgid "Loading your transactions"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:146
+#: src/screens/LoadHistoryScreen.js:144
 #, javascript-format
 msgid "**${ _this3.state.transactions } transactions** found"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:149
+#: src/screens/LoadHistoryScreen.js:147
 msgid "**${ _this3.state.addresses } addresses** found"
 msgstr ""
 
@@ -431,6 +403,11 @@ msgstr ""
 #: src/components/TxDetailsModal.js:53
 #: src/screens/PaymentRequestDetail.js:104
 msgid "Token"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:100
+#: src/screens/PaymentRequestDetail.js:108
+msgid "Amount"
 msgstr ""
 
 #: src/screens/PaymentRequestDetail.js:116

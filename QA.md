@@ -8,9 +8,8 @@
     1. Go to Settings and Create a new Token.
     1. Enter token name Test Token, and click Next.
     1. Enter token symbol TEST, and click Next.
-    1. Enter the amount of 100, and click Next.
-    1. Click on create token and check the error message.
-    1. Check that the token has not been created.
+    1. Enter the amount of 100.
+    1. The Next button should not be clickable. Also, deposit value and your balance should turn red.
 
 1. **Receive Tests**
     1. Go to the Receive Screen and check the QR Code.
