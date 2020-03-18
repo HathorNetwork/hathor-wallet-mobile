@@ -1,5 +1,11 @@
 # Suggested Test Sequence
 
+1. **App update**
+    1. Load the last release of the app and start a wallet. You can confirm the version on Settings -> About.
+    1. Update the code to run the latest version, without resetting the wallet.
+    1. You should be shown the PIN screen. Unlock the wallet and confirm load succeeded.
+    1. Reset the wallet.
+
 1. **Simple Initialization**
     1. Initialize a new wallet (save your words, they will be used later).
     1. When creating a PIN, type the wrong PIN during the confirmation step.
