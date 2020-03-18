@@ -75,22 +75,29 @@ class LoadHistoryScreen extends React.Component {
 
   cleanData = () => {
     // Get old access data
-    const accessData = hathorLib.storage.getItem('wallet:accessData');
-    const walletData = hathorLib.wallet.getWalletData();
+    const accessData = hathorLib.wallet.getWalletAccessData();
     const server = hathorLib.storage.getItem('wallet:server');
     const tokens = hathorLib.storage.getItem('wallet:tokens');
 
     const biometryEnabled = isBiometryEnabled();
     const supportedBiometry = getSupportedBiometry();
+
+    if (accessData.xpubkey === undefined) {
+      // XXX from v0.12.0 to v0.13.0, xpubkey changes from wallet:data to wallet:accessData.
+      // That's not a problem if wallet is being initialized. However, if it's already
+      // initialized, we need to set the xpubkey in the correct place.
+      const walletData = hathorLib.wallet.getWalletData();
+      accessData.xpubkey = walletData.xpubkey;
+    }
+
     hathorLib.storage.clear();
 
     const newWalletData = {
       keys: {},
-      xpubkey: walletData.xpubkey,
     };
 
-    hathorLib.storage.setItem('wallet:accessData', accessData);
-    hathorLib.storage.setItem('wallet:data', newWalletData);
+    hathorLib.wallet.setWalletAccessData(accessData);
+    hathorLib.wallet.setWalletData(newWalletData);
     hathorLib.storage.setItem('wallet:server', server);
     hathorLib.storage.setItem('wallet:tokens', tokens);
     setBiometryEnabled(biometryEnabled);
