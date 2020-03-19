@@ -7,7 +7,7 @@ In the `package.json`, the field `version` must be updated.
 
 In the `android/app/build.gradle`, the fields `versionCode` and `versionName` must be updated. The `versionCode` must always be increased because Google Play uses it to uniquelly identify the release.
 
-In the `ios/HathorMobile.xcodeproj/project.pbxproj`, the fields `CURRENT_PROJECT_VERSION` and `MARKETING_VERSION` must be updated. Usually the `CURRENT_PROJECT_VERSION` is always `1`, while the `MARKETING_VERSION` is updated with the new version.
+In the `ios/HathorMobile.xcodeproj/project.pbxproj`, the fields `CURRENT_PROJECT_VERSION` and `MARKETING_VERSION` must be updated. Usually the `CURRENT_PROJECT_VERSION` is always `1`, while the `MARKETING_VERSION` is updated with the new version. Notice that there are two places to update the `MARKETING_VERSION` field, one for debug and another for release.
 
 App Store uses the pair `(CFBundleShortVersionString, CFBundleVersion)` to identify a release. They are both from `ios/HathorMobile/Info.plist`.
 
