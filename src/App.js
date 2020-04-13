@@ -8,18 +8,23 @@
 import '../shim';
 
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { AppState, StyleSheet, View } from 'react-native';
 import {
   createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer,
 } from 'react-navigation';
 import { Provider, connect } from 'react-redux';
 
+import * as Keychain from 'react-native-keychain';
+
 import hathorLib from '@hathor/wallet-lib';
 import IconTabBar from './icon-font';
-import { HATHOR_COLOR } from './constants';
-import { updateHeight } from './actions';
-
+import { HATHOR_COLOR, LOCK_TIMEOUT } from './constants';
+import { setSupportedBiometry } from './utils';
+import {
+  activateFetchHistory, newTx, resetData, setIsOnline, lockScreen, updateHeight, setTokens
+} from './actions';
 import { store } from './reducer';
+
 import DecideStackScreen from './screens/DecideStackScreen';
 import {
   WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen,
@@ -187,15 +192,25 @@ const AppStack = createStackNavigator({
  */
 const mapStateToProps = (state) => ({
   loadHistory: state.loadHistoryStatus.active,
-  lockScreen: state.lockScreen,
+  isScreenLocked: state.lockScreen,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   updateHeight: (height) => dispatch(updateHeight(height)),
+  newTx: (newElement, keys) => dispatch(newTx(newElement, keys)),
+  setIsOnline: (status) => dispatch(setIsOnline(status)),
+  activateFetchHistory: () => dispatch(activateFetchHistory()),
+  setTokens: (tokens) => dispatch(setTokens(tokens)),
+  lockScreen: () => dispatch(lockScreen()),
+  resetData: () => dispatch(resetData()),
 });
 
-export class _AppStackWrapper extends React.Component {
+class _AppStackWrapper extends React.Component {
   static router = AppStack.router;
+
+  backgroundTime = null;
+
+  appState = 'active';
 
   style = StyleSheet.create({
     auxView: {
@@ -210,15 +225,52 @@ export class _AppStackWrapper extends React.Component {
   });
 
   componentDidMount = () => {
+    this.getBiometry();
     hathorLib.WebSocketHandler.on('height_updated', this.handleHeightUpdated);
+    hathorLib.WebSocketHandler.on('wallet', this.handleWebsocketMsg);
+    hathorLib.WebSocketHandler.on('reload_data', this.props.activateFetchHistory);
+    hathorLib.WebSocketHandler.on('is_online', this.isOnlineUpdated);
+    AppState.addEventListener('change', this._handleAppStateChange);
+    this.updateReduxTokens();
   }
 
   componentWillUnmount = () => {
     hathorLib.WebSocketHandler.removeListener('height_updated', this.handleHeightUpdated);
+    hathorLib.WebSocketHandler.removeListener('wallet', this.handleWebsocketMsg);
+    hathorLib.WebSocketHandler.removeListener('reload_data', this.props.activateFetchHistory);
+    hathorLib.WebSocketHandler.removeListener('is_online', this.isOnlineUpdated);
+    AppState.removeEventListener('change', this._handleAppStateChange);
+    this.props.resetData();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.isScreenLocked && !this.props.isScreenLocked) {
+      this.backgroundTime = null;
+    }
   }
 
   /**
-   * Method called when WebSocketHandler from lib emits a height_updated event
+   * Gets the supported biometry (if any) and save the result
+   */
+  getBiometry = () => {
+    Keychain.getSupportedBiometryType().then((biometryType) => {
+      switch (biometryType) {
+        case Keychain.BIOMETRY_TYPE.TOUCH_ID:
+          setSupportedBiometry(biometryType);
+          break;
+        default:
+          setSupportedBiometry(null);
+        // XXX Android Fingerprint is still not supported in the react native lib we're using.
+        // https://github.com/oblador/react-native-keychain/pull/195
+        // case Keychain.BIOMETRY_TYPE.FINGERPRINT:
+        // XXX iOS FaceID also not working
+        // case Keychain.BIOMETRY_TYPE.FACE_ID:
+      }
+    });
+  }
+
+  /**
+   * Method called when WebSocketHandler from lib emits a 'height_updated' event
    * We update the height of the network in redux
    *
    * @param {number} height New height of the network
@@ -227,14 +279,77 @@ export class _AppStackWrapper extends React.Component {
     this.props.updateHeight(height);
   }
 
+  /**
+   * Method called when WebSocketHandler from lib emits a 'wallet' event
+   * We check if there is a new transaction to this wallet
+   *
+   * @param {Object} wsData The message object
+   */
+  handleWebsocketMsg = (wsData) => {
+    if (wsData.type === 'wallet:address_history') {
+      // TODO we also have to update some wallet lib data? Lib should do it by itself
+      const data = hathorLib.wallet.getWalletData();
+      const historyTxs = data.historyTransactions || {};
+      const allTokens = 'allTokens' in data ? data.allTokens : [];
+      hathorLib.wallet.updateHistoryData(historyTxs, allTokens, [wsData.history], null, data);
+
+      const newWalletData = hathorLib.wallet.getWalletData();
+      const { keys } = newWalletData;
+      this.props.newTx(wsData.history, keys);
+    }
+  }
+
+  /**
+   * Method called when WebSocket updates isOnline attribute, so we update this parameter in redux
+   *
+   * @param {boolean} value Boolean if websocket is online
+   */
+  isOnlineUpdated = (value) => {
+    this.props.setIsOnline(value);
+  }
+
+  /**
+   * Update tokens on redux with data from storage, so user doesn't need to add the tokens again
+   */
+  updateReduxTokens = () => {
+    this.props.setTokens(hathorLib.tokens.getTokens());
+  }
+
+  /**
+   * Handles when app changes its state to/from background and foreground.
+   *
+   * More info: https://reactnative.dev/docs/appstate
+   */
+  _handleAppStateChange = (nextAppState) => {
+    if (nextAppState === 'active') {
+      if (this.appState === 'inactive') {
+        // inactive state means the app wasn't in background, so no need to lock
+        // the screen. This happens when user goes to app switch view or maybe is
+        // asked for fingerprint or face if
+        this.backgroundTime = null;
+      } else if (Date.now() - this.backgroundTime > LOCK_TIMEOUT) {
+        // this means app was in background for more than LOCK_TIMEOUT seconds,
+        // so display lock screen
+        this.props.lockScreen();
+      } else {
+        this.backgroundTime = null;
+      }
+    } else if (this.backgroundTime === null) {
+      // app is leaving active state. Save timestamp to check if we need to lock
+      // screen when it becomes active again
+      this.backgroundTime = Date.now();
+    }
+    this.appState = nextAppState;
+  }
+
   render() {
     const renderAuxiliarViews = () => {
       // the auxiliar view needs to be rendered after the other views, or it won't be visible
       // on Android: https://github.com/facebook/react-native/issues/14555
-      if (this.props.loadHistory || this.props.lockScreen) {
+      if (this.props.loadHistory || this.props.isScreenLocked) {
         return (
           <View style={this.style.auxView}>
-            {this.props.lockScreen
+            {this.props.isScreenLocked
               ? <PinScreen isLockScreen navigation={this.props.navigation} />
               : <LoadHistoryScreen />}
           </View>
