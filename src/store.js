@@ -29,7 +29,10 @@ class AsyncStorageStore {
 
   setItem(key, value) {
     this.hathorMemoryStorage[key] = value;
-    AsyncStorage.setItem(key, JSON.stringify(value));
+    if (key !== 'wallet:data') {
+      // No need to save wallet data (transactions history) on the async storage
+      AsyncStorage.setItem(key, JSON.stringify(value));
+    }
   }
 
   removeItem(key) {
