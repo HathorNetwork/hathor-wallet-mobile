@@ -8,15 +8,15 @@
 import React from 'react';
 import { Image } from 'react-native';
 
-import hathorLogo from '../assets/images/hathor-logo.png';
+import logo from '../assets/images/logo.png';
 
-const HathorLogo = (props) => (
+const Logo = (props) => (
   <Image
-    source={hathorLogo}
-    style={{ height: 30, width: 170 }}
+    source={logo}
+    style={[{ height: 30, width: 170 }, props.style]}
     resizeMode='contain'
     {...props}
   />
 );
 
-export default HathorLogo;
+export default Logo;

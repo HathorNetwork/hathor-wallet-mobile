@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 
 import SimpleButton from './SimpleButton';
+import Logo from './Logo';
 import chevronLeft from '../assets/icons/chevron-left.png';
-import hathorLogo from '../assets/images/hathor-logo.png';
 import closeIcon from '../assets/icons/icCloseActive.png';
 
 const HathorHeader = (props) => {
@@ -48,10 +48,8 @@ const HathorHeader = (props) => {
   const renderHeaderCentral = () => {
     if (props.withLogo) {
       return (
-        <Image
-          source={hathorLogo}
+        <Logo
           style={{ height: 22, width: 100 }}
-          resizeMode='contain'
         />
       );
     }

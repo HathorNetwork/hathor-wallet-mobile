@@ -10,7 +10,7 @@ import thunk from 'redux-thunk';
 
 import hathorLib from '@hathor/wallet-lib';
 import { getBalance, getMyTxBalance } from './utils';
-import { INITIAL_TOKENS, SELECTED_TOKEN } from './constants';
+import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
 import { types } from './actions';
 import { TxHistory } from './models';
 
@@ -48,7 +48,7 @@ const initialState = {
   latestInvoice: null,
   invoicePayment: null,
   tokens: INITIAL_TOKENS,
-  selectedToken: SELECTED_TOKEN,
+  selectedToken: DEFAULT_TOKEN,
   isOnline: false,
   serverInfo: { version: '', network: '' },
   lockScreen: true,
@@ -292,7 +292,7 @@ const onSetTokens = (state, action) => {
   let { selectedToken } = state;
   if (action.payload.indexOf(selectedToken) === -1) {
     // We have unregistered this token
-    selectedToken = SELECTED_TOKEN;
+    selectedToken = DEFAULT_TOKEN;
   }
   return {
     ...state,

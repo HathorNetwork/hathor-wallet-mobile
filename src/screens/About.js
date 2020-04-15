@@ -10,7 +10,7 @@ import {
 import { t } from 'ttag';
 import VersionNumber from 'react-native-version-number';
 import HathorHeader from '../components/HathorHeader';
-import HathorLogo from '../components/HathorLogo';
+import Logo from '../components/Logo';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { str2jsx } from '../utils';
@@ -46,7 +46,7 @@ export class About extends React.Component {
         />
         <ScrollView pinchGestureEnabled={false} contentContainerStyle={this.style.view}>
           <View style={this.props.logoView}>
-            <HathorLogo />
+            <Logo />
           </View>
           <Text style={this.style.text}>{`v${VersionNumber.appVersion} (build ${VersionNumber.buildVersion})`}</Text>
 

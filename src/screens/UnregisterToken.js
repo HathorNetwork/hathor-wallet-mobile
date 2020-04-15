@@ -23,7 +23,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { getTokenLabel } from '../utils';
-import { HATHOR_COLOR } from '../constants';
+import { PRIMARY_COLOR } from '../constants';
 
 
 /**
@@ -102,7 +102,7 @@ class UnregisterToken extends React.Component {
             </TextFmt>
             <Switch
               onValueChange={this.toggleSwitch}
-              trackColor={{ true: HATHOR_COLOR }}
+              trackColor={{ true: PRIMARY_COLOR }}
               value={this.state.switchValue}
             />
           </View>
@@ -110,7 +110,7 @@ class UnregisterToken extends React.Component {
           <View style={this.style.buttonView}>
             <NewHathorButton
               secondary
-              color={HATHOR_COLOR}
+              color={PRIMARY_COLOR}
               disabled={!this.state.switchValue}
               onPress={this.unregisterConfirmed}
               title={t`Unregister token`}

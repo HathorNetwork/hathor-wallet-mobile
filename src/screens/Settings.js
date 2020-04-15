@@ -18,12 +18,12 @@ import {
 } from 'react-native';
 import hathorLib from '@hathor/wallet-lib';
 import OfflineBar from '../components/OfflineBar';
-import hathorLogo from '../assets/images/hathor-logo.png';
+import Logo from '../components/Logo';
 
 
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 
-import { HATHOR_COLOR, getLightPurpleBackground } from '../constants';
+import { PRIMARY_COLOR, getLightBackground } from '../constants';
 
 
 /**
@@ -51,14 +51,14 @@ export class Settings extends React.Component {
       marginBottom: 24,
     },
     networkView: {
-      backgroundColor: getLightPurpleBackground(0.1),
+      backgroundColor: getLightBackground(0.1),
       margin: 8,
       padding: 8,
       borderRadius: 8,
       alignItems: 'center',
     },
     networkText: {
-      color: HATHOR_COLOR,
+      color: PRIMARY_COLOR,
       fontSize: 16,
       fontWeight: 'bold',
     },
@@ -79,10 +79,8 @@ export class Settings extends React.Component {
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <ScrollView contentContainerStyle={this.style.scrollView}>
           <View style={this.style.logoView}>
-            <Image
-              source={hathorLogo}
+            <Logo
               style={this.style.logo}
-              resizeMode='contain'
             />
           </View>
           {(this.props.isOnline

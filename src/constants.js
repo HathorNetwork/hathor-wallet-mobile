@@ -20,14 +20,34 @@ hathorLib.network.setNetwork('mainnet');
 
 
 /**
- * Default tokens for the wallet (to start on redux)
+ * Indicates if app should handle multiple tokens or just one. If it handles just one,
+ * some modifications are made to the app:
+ * . initial screen is not the dashboard with tokens list, but the default token main screen;
+ * . remove unregister token option;
+ * . remove register token option;
+ * . remove create new token option;
  */
-export const INITIAL_TOKENS = [hathorLib.constants.HATHOR_TOKEN_CONFIG];
+export const IS_MULTI_TOKEN = true;
 
 /**
- * Default selected token
+ * Default token
  */
-export const SELECTED_TOKEN = hathorLib.constants.HATHOR_TOKEN_CONFIG;
+export const DEFAULT_TOKEN = hathorLib.constants.HATHOR_TOKEN_CONFIG;
+
+/**
+ * Default tokens for the wallet (to start on redux)
+ */
+export const INITIAL_TOKENS = [DEFAULT_TOKEN];
+
+/**
+ * App's primary color
+ */
+export const PRIMARY_COLOR = '#8C46FF';   // Hathor purple
+
+/**
+ * Light primary color used as background in some cases (varies depending on the opacity)
+ */
+export const getLightBackground = (alpha) => `'rgba(140, 70, 255, ${alpha})'`;
 
 /**
  * Wallet will lock if app goes to background for more than LOCK_TIMEOUT seconds
@@ -44,13 +64,3 @@ export const KEYCHAIN_USER = 'hathor-keychain';
  * URL with more information about token deposit
  */
 export const TOKEN_DEPOSIT_URL = 'https://gitlab.com/HathorNetwork/rfcs/blob/master/text/0011-token-deposit.md';
-
-/**
- * Purple color used as primary color
- */
-export const HATHOR_COLOR = '#8C46FF';
-
-/**
- * Light purple color used as background in some cases (varies depending on the opacity)
- */
-export const getLightPurpleBackground = (alpha) => `'rgba(140, 70, 255, ${alpha})'`;
