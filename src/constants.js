@@ -39,9 +39,9 @@ export const DEFAULT_TOKEN = hathorLib.constants.HATHOR_TOKEN_CONFIG;
 export const INITIAL_TOKENS = [DEFAULT_TOKEN];
 
 /**
- * App's primary color
+ * App's primary color (Hathor purple)
  */
-export const PRIMARY_COLOR = '#8C46FF';   // Hathor purple
+export const PRIMARY_COLOR = '#8C46FF';
 
 /**
  * Light primary color used as background in some cases (varies depending on the opacity)

@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import { t } from 'ttag';
 
 import {
-  BackHandler, Image, SafeAreaView, Text, View,
+  BackHandler, SafeAreaView, Text, View,
 } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import hathorLib from '@hathor/wallet-lib';

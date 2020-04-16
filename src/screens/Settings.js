@@ -11,20 +11,15 @@ import { t } from 'ttag';
 import {
   ScrollView,
   StyleSheet,
-  Image,
   SafeAreaView,
   Text,
   View,
 } from 'react-native';
 import hathorLib from '@hathor/wallet-lib';
-import { IS_MULTI_TOKEN } from '../constants';
 import OfflineBar from '../components/OfflineBar';
 import Logo from '../components/Logo';
-
-
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
-
-import { PRIMARY_COLOR, getLightBackground } from '../constants';
+import { IS_MULTI_TOKEN, PRIMARY_COLOR, getLightBackground } from '../constants';
 
 
 /**
@@ -115,17 +110,21 @@ export class Settings extends React.Component {
               title={t`Security`}
               onPress={() => this.props.navigation.navigate('Security')}
             />
-            {IS_MULTI_TOKEN &&
-              <ListMenu
-                title={t`Create a new token`}
-                onPress={() => this.props.navigation.navigate('CreateTokenStack')}
-              />
+            {IS_MULTI_TOKEN
+              && (
+                <ListMenu
+                  title={t`Create a new token`}
+                  onPress={() => this.props.navigation.navigate('CreateTokenStack')}
+                />
+              )
             }
-            {IS_MULTI_TOKEN &&
-              <ListMenu
-                title={t`Register a token`}
-                onPress={() => this.props.navigation.navigate('RegisterToken')}
-              />
+            {IS_MULTI_TOKEN
+              && (
+                <ListMenu
+                  title={t`Register a token`}
+                  onPress={() => this.props.navigation.navigate('RegisterToken')}
+                />
+              )
             }
             <ListMenu
               title={t`Reset wallet`}
