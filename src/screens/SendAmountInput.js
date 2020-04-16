@@ -14,12 +14,13 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
+import { IS_MULTI_TOKEN } from '../constants';
+import { getIntegerAmount } from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import TokenBox from '../components/TokenBox';
 import HathorHeader from '../components/HathorHeader';
-import { getIntegerAmount } from '../utils';
 import OfflineBar from '../components/OfflineBar';
 
 
@@ -118,6 +119,10 @@ class SendAmountInput extends React.Component {
       return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);
     };
 
+    const renderGhostElement = () => (
+      <View style={{ width: 80, height: 40 }} />
+    );
+
     const tokenNameUpperCase = this.state.token.name.toUpperCase();
     return (
       <SafeAreaView style={{ flex: 1 }}>
@@ -133,22 +138,17 @@ class SendAmountInput extends React.Component {
                 flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 40,
               }}
               >
-                <View style={{ width: 80, height: 40 }} />
+                {renderGhostElement()}
                 <AmountTextInput
                   ref={this.inputRef}
                   autoFocus
                   onAmountUpdate={this.onAmountChange}
                   value={this.state.amount}
                 />
-                <View style={{
-                  alignItems: 'center', justifyContent: 'center', height: 40, width: 80, borderWidth: 1, borderColor: '#000', borderRadius: 8,
-                }}
-                >
-                  <TokenBox
-                    onPress={this.onTokenBoxPress}
-                    label={this.state.token.symbol}
-                  />
-                </View>
+                {IS_MULTI_TOKEN
+                  ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />
+                  : renderGhostElement()
+                }
               </View>
               <InputLabel style={{ textAlign: 'center', marginTop: 8 }}>
                 {getAvailableString()}

@@ -23,8 +23,7 @@ hathorLib.network.setNetwork('mainnet');
  * Indicates if app should handle multiple tokens or just one. If it handles just one,
  * some modifications are made to the app:
  * . initial screen is not the dashboard with tokens list, but the default token main screen;
- * . remove unregister token option;
- * . remove register token option;
+ * . remove register/unregister token options;
  * . remove create new token option;
  */
 export const IS_MULTI_TOKEN = true;
@@ -53,7 +52,6 @@ export const getLightBackground = (alpha) => `'rgba(140, 70, 255, ${alpha})'`;
  * Wallet will lock if app goes to background for more than LOCK_TIMEOUT seconds
  */
 export const LOCK_TIMEOUT = 30000; // 30s
-
 
 /**
  * Username set in keychain. We don't use it currently, but a value needs to be set

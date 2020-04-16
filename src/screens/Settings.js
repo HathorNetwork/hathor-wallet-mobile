@@ -17,6 +17,7 @@ import {
   View,
 } from 'react-native';
 import hathorLib from '@hathor/wallet-lib';
+import { IS_MULTI_TOKEN } from '../constants';
 import OfflineBar from '../components/OfflineBar';
 import Logo from '../components/Logo';
 
@@ -114,14 +115,18 @@ export class Settings extends React.Component {
               title={t`Security`}
               onPress={() => this.props.navigation.navigate('Security')}
             />
-            <ListMenu
-              title={t`Create a new token`}
-              onPress={() => this.props.navigation.navigate('CreateTokenStack')}
-            />
-            <ListMenu
-              title={t`Register a token`}
-              onPress={() => this.props.navigation.navigate('RegisterToken')}
-            />
+            {IS_MULTI_TOKEN &&
+              <ListMenu
+                title={t`Create a new token`}
+                onPress={() => this.props.navigation.navigate('CreateTokenStack')}
+              />
+            }
+            {IS_MULTI_TOKEN &&
+              <ListMenu
+                title={t`Register a token`}
+                onPress={() => this.props.navigation.navigate('RegisterToken')}
+              />
+            }
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}

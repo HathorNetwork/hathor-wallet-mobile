@@ -14,6 +14,7 @@ import { connect } from 'react-redux';
 import { t } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
+import { IS_MULTI_TOKEN } from '../constants';
 import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
 import TokenBox from './TokenBox';
@@ -134,6 +135,10 @@ class NewPaymentRequest extends React.Component {
       },
     });
 
+    const renderGhostElement = () => (
+      <View style={{ width: 80, height: 40 }} />
+    );
+
     return (
       <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={topDistance}>
         <View style={{
@@ -144,17 +149,17 @@ class NewPaymentRequest extends React.Component {
             alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, marginTop: inputMargin,
           }}
           >
-            <View style={{ width: 80, height: 40 }} />
+            {renderGhostElement()}
             <AmountTextInput
               ref={this.inputRef}
               onAmountUpdate={(amount) => this.setState({ amount })}
               value={this.state.amount}
               style={{ flex: 1 }}
             />
-            <TokenBox
-              onPress={this.onTokenBoxPress}
-              label={this.state.token.symbol}
-            />
+            {IS_MULTI_TOKEN
+              ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />
+              : renderGhostElement()
+            }
           </View>
           <View style={buttonWrapperStyle.style}>
             <NewHathorButton

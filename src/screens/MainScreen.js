@@ -31,7 +31,7 @@ import { Strong, str2jsx } from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import infoIcon from '../assets/icons/info-circle.png';
-import { PRIMARY_COLOR, getLightBackground } from '../constants';
+import { IS_MULTI_TOKEN, PRIMARY_COLOR, getLightBackground } from '../constants';
 
 
 /**
@@ -144,7 +144,7 @@ class MainScreen extends React.Component {
         {this.state.modal}
         <HathorHeader
           title={this.props.selectedToken.name.toUpperCase()}
-          onBackPress={() => this.props.navigation.goBack()}
+          onBackPress={IS_MULTI_TOKEN ? () => this.props.navigation.goBack() : null}
           rightElement={renderRightElement()}
         />
         <BalanceView
