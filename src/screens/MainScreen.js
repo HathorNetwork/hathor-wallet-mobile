@@ -27,11 +27,11 @@ import SimpleButton from '../components/SimpleButton';
 import TxDetailsModal from '../components/TxDetailsModal';
 import OfflineBar from '../components/OfflineBar';
 import { HathorList } from '../components/HathorList';
-import { Strong, str2jsx } from '../utils';
+import { Strong, str2jsx, getLightBackground } from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import infoIcon from '../assets/icons/info-circle.png';
-import { IS_MULTI_TOKEN, PRIMARY_COLOR, getLightBackground } from '../constants';
+import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
 
 
 /**

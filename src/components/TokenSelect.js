@@ -13,7 +13,8 @@ import {
 import { getInset } from 'react-native-safe-area-view';
 import hathorLib from '@hathor/wallet-lib';
 import chevronRight from '../assets/icons/chevron-right.png';
-import { PRIMARY_COLOR, getLightBackground } from '../constants';
+import { PRIMARY_COLOR } from '../constants';
+import { getLightBackground } from '../utils';
 
 
 const safeViewTop = getInset('top');

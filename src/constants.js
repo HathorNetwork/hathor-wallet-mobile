@@ -13,6 +13,11 @@ import 'intl/locale-data/jsonp/en';
 // however this redux file is loaded before and we need the hathorLib here
 import hathorLib from '@hathor/wallet-lib';
 import AsyncStorageStore from './store';
+import {
+  _IS_MULTI_TOKEN as IS_MULTI_TOKEN,
+  _DEFAULT_TOKEN as DEFAULT_TOKEN,
+  _PRIMARY_COLOR as PRIMARY_COLOR,
+} from './config';
 
 hathorLib.storage.setStore(new AsyncStorageStore());
 hathorLib.storage.setItem('wallet:server', 'https://node2.mainnet.hathor.network/v1a/');
@@ -20,33 +25,9 @@ hathorLib.network.setNetwork('mainnet');
 
 
 /**
- * Indicates if app should handle multiple tokens or just one. If it handles just one,
- * some modifications are made to the app:
- * . initial screen is not the dashboard with tokens list, but the default token main screen;
- * . remove register/unregister token options;
- * . remove create new token option;
- */
-export const IS_MULTI_TOKEN = true;
-
-/**
- * Default token
- */
-export const DEFAULT_TOKEN = hathorLib.constants.HATHOR_TOKEN_CONFIG;
-
-/**
  * Default tokens for the wallet (to start on redux)
  */
 export const INITIAL_TOKENS = [DEFAULT_TOKEN];
-
-/**
- * App's primary color (Hathor purple)
- */
-export const PRIMARY_COLOR = '#8C46FF';
-
-/**
- * Light primary color used as background in some cases (varies depending on the opacity)
- */
-export const getLightBackground = (alpha) => `'rgba(140, 70, 255, ${alpha})'`;
 
 /**
  * Wallet will lock if app goes to background for more than LOCK_TIMEOUT seconds
@@ -62,3 +43,8 @@ export const KEYCHAIN_USER = 'hathor-keychain';
  * URL with more information about token deposit
  */
 export const TOKEN_DEPOSIT_URL = 'https://gitlab.com/HathorNetwork/rfcs/blob/master/text/0011-token-deposit.md';
+
+/**
+ * Re-export variables from config.js.
+ */
+export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR };

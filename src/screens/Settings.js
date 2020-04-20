@@ -19,7 +19,8 @@ import hathorLib from '@hathor/wallet-lib';
 import OfflineBar from '../components/OfflineBar';
 import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
-import { IS_MULTI_TOKEN, PRIMARY_COLOR, getLightBackground } from '../constants';
+import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
+import { getLightBackground } from '../utils';
 
 
 /**
