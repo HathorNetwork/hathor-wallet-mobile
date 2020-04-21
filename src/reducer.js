@@ -319,7 +319,6 @@ const onFetchHistorySuccess = (state, action) => {
   const { history } = action.payload;
   const { addresses } = action.payload;
   const tokensHistory = {};
-  const tokensBalance = {};
   // iterate through all txs received and map all tokens this wallet has, with
   // its history and balance
   for (const tx of Object.values(history)) {
@@ -334,10 +333,14 @@ const onFetchHistorySuccess = (state, action) => {
       }
       // add this tx to the history of the corresponding token
       tokenHistory.push(getTxHistoryFromTx(tx, tokenUid, tokenTxBalance));
-      const totalBalance = getBalance(tokenUid);
-      // update token total balance
-      tokensBalance[tokenUid] = totalBalance;
     }
+  }
+
+  const tokensBalance = {};
+  for (const tokenUid of Object.keys(tokensHistory)) {
+    const totalBalance = getBalance(tokenUid);
+    // update token total balance
+    tokensBalance[tokenUid] = totalBalance;
   }
 
   // in the end, sort (in place) all tx lists in descending order by timestamp
