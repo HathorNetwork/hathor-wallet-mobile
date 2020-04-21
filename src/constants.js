@@ -13,6 +13,11 @@ import 'intl/locale-data/jsonp/en';
 // however this redux file is loaded before and we need the hathorLib here
 import hathorLib from '@hathor/wallet-lib';
 import AsyncStorageStore from './store';
+import {
+  _IS_MULTI_TOKEN as IS_MULTI_TOKEN,
+  _DEFAULT_TOKEN as DEFAULT_TOKEN,
+  _PRIMARY_COLOR as PRIMARY_COLOR,
+} from './config';
 
 hathorLib.storage.setStore(new AsyncStorageStore());
 hathorLib.storage.setItem('wallet:server', 'https://node2.mainnet.hathor.network/v1a/');
@@ -22,18 +27,12 @@ hathorLib.network.setNetwork('mainnet');
 /**
  * Default tokens for the wallet (to start on redux)
  */
-export const INITIAL_TOKENS = [hathorLib.constants.HATHOR_TOKEN_CONFIG];
-
-/**
- * Default selected token
- */
-export const SELECTED_TOKEN = hathorLib.constants.HATHOR_TOKEN_CONFIG;
+export const INITIAL_TOKENS = [DEFAULT_TOKEN];
 
 /**
  * Wallet will lock if app goes to background for more than LOCK_TIMEOUT seconds
  */
 export const LOCK_TIMEOUT = 30000; // 30s
-
 
 /**
  * Username set in keychain. We don't use it currently, but a value needs to be set
@@ -46,11 +45,6 @@ export const KEYCHAIN_USER = 'hathor-keychain';
 export const TOKEN_DEPOSIT_URL = 'https://gitlab.com/HathorNetwork/rfcs/blob/master/text/0011-token-deposit.md';
 
 /**
- * Purple color used as primary color
+ * Re-export variables from config.js.
  */
-export const HATHOR_COLOR = '#8C46FF';
-
-/**
- * Light purple color used as background in some cases (varies depending on the opacity)
- */
-export const getLightPurpleBackground = (alpha) => `'rgba(140, 70, 255, ${alpha})'`;
+export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR };

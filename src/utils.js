@@ -11,6 +11,7 @@ import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
+import { PRIMARY_COLOR } from './constants';
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
@@ -250,4 +251,14 @@ export const getKeyboardAvoidingViewTopDistance = () => {
     return getStatusBarHeight();
   }
   return 0;
+};
+
+/**
+ * Light primary color used as background in some cases (varies depending on the opacity)
+ *
+ * We use the format #rrggbbaa
+ */
+export const getLightBackground = (alpha) => {
+  const hex = `0${Math.round(255 * alpha).toString(16).toUpperCase()}`.substr(-2);
+  return `${PRIMARY_COLOR}${hex}`;
 };

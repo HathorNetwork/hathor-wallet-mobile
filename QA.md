@@ -88,3 +88,13 @@
     1. Type anything random and check the "Invalid words" error message.
     1. Use the words saved before.
     1. Click on Start the wallet, and wait for it to be initialized. Validate your transactions are loaded.
+
+1. **Whitelabel app**
+    1. Modify parameters on src/config.js. Set at least `_IS_MULTI_TOKEN = false` and a new `_DEFAULT_TOKEN`.
+    1. Rebuild the app.
+    1. Verify some changes:
+        1. No more Dashboard screen (list of tokens and balances). Should go straight to `_DEFAULT_TOKEN` screen.
+        1. On token info screen, there's no more 'Unregister Token' option.
+        1. No more register or create token options on Settings screen.
+        1. On Send Tokens and Create Payment Request screens, there's no button to select tokens.
+        1. [If modified `_PRIMARY_COLOR` on config.js] Colors must have changed.

@@ -10,15 +10,15 @@ import { connect } from 'react-redux';
 import { t } from 'ttag';
 
 import {
-  BackHandler, Image, SafeAreaView, Text, View,
+  BackHandler, SafeAreaView, Text, View,
 } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import hathorLib from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
 import PinInput from '../components/PinInput';
+import Logo from '../components/Logo';
 import { isBiometryEnabled, getSupportedBiometry } from '../utils';
 import { lockScreen, unlockScreen, setLoadHistoryStatus } from '../actions';
-import hathorLogo from '../assets/images/hathor-logo.png';
 
 
 /**
@@ -187,10 +187,8 @@ class PinScreen extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1, alignItems: 'center', marginHorizontal: 16 }}>
         <View style={{ marginVertical: 16, alignItems: 'center', height: 21, width: 120 }}>
-          <Image
-            source={hathorLogo}
+          <Logo
             style={{ height: 21, width: 120 }}
-            resizeMode='contain'
           />
         </View>
         <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
