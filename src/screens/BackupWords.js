@@ -23,7 +23,7 @@ import errorIcon from '../assets/images/icErrorBig.png';
 
 import baseStyle from '../styles/init';
 
-import { HATHOR_COLOR } from '../constants';
+import { PRIMARY_COLOR } from '../constants';
 import { Strong } from '../utils';
 
 
@@ -52,7 +52,7 @@ class BackupWords extends React.Component {
       backgroundColor: '#000',
     },
     current: {
-      backgroundColor: HATHOR_COLOR,
+      backgroundColor: PRIMARY_COLOR,
     },
     future: {
       backgroundColor: '#000',

@@ -28,7 +28,7 @@ import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { Link, str2jsx } from '../utils';
 
-import { HATHOR_COLOR } from '../constants';
+import { PRIMARY_COLOR } from '../constants';
 
 class WelcomeScreen extends React.Component {
   state = { switchValue: false };
@@ -73,7 +73,7 @@ class WelcomeScreen extends React.Component {
           <View style={this.style.switchView}>
             <Switch
               onValueChange={this.toggleSwitch}
-              trackColor={{ true: HATHOR_COLOR }}
+              trackColor={{ true: PRIMARY_COLOR }}
               value={this.state.switchValue}
             />
             <Text style={this.style.switchText}>

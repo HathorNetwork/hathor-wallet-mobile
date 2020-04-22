@@ -10,7 +10,7 @@ import thunk from 'redux-thunk';
 
 import hathorLib from '@hathor/wallet-lib';
 import { getBalance, getMyTxBalance } from './utils';
-import { INITIAL_TOKENS, SELECTED_TOKEN } from './constants';
+import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
 import { types } from './actions';
 import { TxHistory } from './models';
 
@@ -48,7 +48,7 @@ const initialState = {
   latestInvoice: null,
   invoicePayment: null,
   tokens: INITIAL_TOKENS,
-  selectedToken: SELECTED_TOKEN,
+  selectedToken: DEFAULT_TOKEN,
   isOnline: false,
   serverInfo: { version: '', network: '' },
   lockScreen: true,
@@ -292,7 +292,7 @@ const onSetTokens = (state, action) => {
   let { selectedToken } = state;
   if (action.payload.indexOf(selectedToken) === -1) {
     // We have unregistered this token
-    selectedToken = SELECTED_TOKEN;
+    selectedToken = DEFAULT_TOKEN;
   }
   return {
     ...state,
@@ -319,7 +319,6 @@ const onFetchHistorySuccess = (state, action) => {
   const { history } = action.payload;
   const { addresses } = action.payload;
   const tokensHistory = {};
-  const tokensBalance = {};
   // iterate through all txs received and map all tokens this wallet has, with
   // its history and balance
   for (const tx of Object.values(history)) {
@@ -334,10 +333,14 @@ const onFetchHistorySuccess = (state, action) => {
       }
       // add this tx to the history of the corresponding token
       tokenHistory.push(getTxHistoryFromTx(tx, tokenUid, tokenTxBalance));
-      const totalBalance = getBalance(tokenUid);
-      // update token total balance
-      tokensBalance[tokenUid] = totalBalance;
     }
+  }
+
+  const tokensBalance = {};
+  for (const tokenUid of Object.keys(tokensHistory)) {
+    const totalBalance = getBalance(tokenUid);
+    // update token total balance
+    tokensBalance[tokenUid] = totalBalance;
   }
 
   // in the end, sort (in place) all tx lists in descending order by timestamp

@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
+import { IS_MULTI_TOKEN } from '../constants';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
 import TokenDetails from '../components/TokenDetails';
@@ -28,7 +29,7 @@ class TokenDetail extends React.Component {
   }
 
   render() {
-    const renderHeaderRightElement = () => (
+    const renderUnregisterButton = () => (
       <SimpleButton
         title={t`Unregister`}
         onPress={this.unregisterClicked}
@@ -40,7 +41,7 @@ class TokenDetail extends React.Component {
         <HathorHeader
           title={t`TOKEN DETAILS`}
           onBackPress={() => this.props.navigation.goBack()}
-          rightElement={renderHeaderRightElement()}
+          rightElement={IS_MULTI_TOKEN ? renderUnregisterButton() : null}
         />
         <TokenDetails
           token={this.props.selectedToken}
