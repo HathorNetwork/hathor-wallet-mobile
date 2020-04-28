@@ -18,7 +18,7 @@ import * as Keychain from 'react-native-keychain';
 
 import hathorLib from '@hathor/wallet-lib';
 import IconTabBar from './icon-font';
-import { HATHOR_COLOR, LOCK_TIMEOUT } from './constants';
+import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
   activateFetchHistory, newTx, resetData, setIsOnline, lockScreen, updateHeight, setTokens
@@ -132,14 +132,14 @@ const tabBarIconMap = {
 };
 
 const TabNavigator = createBottomTabNavigator({
-  Home: DashboardStack,
+  Home: (IS_MULTI_TOKEN ? DashboardStack : MainScreen),
   Send: SendStack,
   Receive: ReceiveScreen,
   Settings,
 }, {
   initialRoute: 'Home',
   tabBarOptions: {
-    activeTintColor: HATHOR_COLOR,
+    activeTintColor: PRIMARY_COLOR,
     inactiveTintColor: 'rgba(0, 0, 0, 0.5)',
     style: {
       paddingTop: 12,

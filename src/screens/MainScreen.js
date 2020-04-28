@@ -27,11 +27,11 @@ import SimpleButton from '../components/SimpleButton';
 import TxDetailsModal from '../components/TxDetailsModal';
 import OfflineBar from '../components/OfflineBar';
 import { HathorList } from '../components/HathorList';
-import { Strong, str2jsx } from '../utils';
+import { Strong, str2jsx, getLightBackground } from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import infoIcon from '../assets/icons/info-circle.png';
-import { HATHOR_COLOR, getLightPurpleBackground } from '../constants';
+import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
 
 
 /**
@@ -100,7 +100,7 @@ class MainScreen extends React.Component {
                 <Text
                   key={i}
                   onPress={() => this.props.navigation.navigate('Receive')}
-                  style={{ color: HATHOR_COLOR, fontWeight: 'bold' }}
+                  style={{ color: PRIMARY_COLOR, fontWeight: 'bold' }}
                 >{x}</Text>
               ) }
             )}
@@ -144,7 +144,7 @@ class MainScreen extends React.Component {
         {this.state.modal}
         <HathorHeader
           title={this.props.selectedToken.name.toUpperCase()}
-          onBackPress={() => this.props.navigation.goBack()}
+          onBackPress={IS_MULTI_TOKEN ? () => this.props.navigation.goBack() : null}
           rightElement={renderRightElement()}
         />
         <BalanceView
@@ -412,13 +412,13 @@ class BalanceView extends React.Component {
       marginBottom: 24,
     },
     networkView: {
-      backgroundColor: getLightPurpleBackground(0.1),
+      backgroundColor: getLightBackground(0.1),
       padding: 8,
       marginTop: 32,
       borderRadius: 8,
     },
     networkText: {
-      color: HATHOR_COLOR,
+      color: PRIMARY_COLOR,
       fontSize: 16,
       fontWeight: 'bold',
     },

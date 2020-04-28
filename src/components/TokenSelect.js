@@ -13,7 +13,8 @@ import {
 import { getInset } from 'react-native-safe-area-view';
 import hathorLib from '@hathor/wallet-lib';
 import chevronRight from '../assets/icons/chevron-right.png';
-import { HATHOR_COLOR, getLightPurpleBackground } from '../constants';
+import { PRIMARY_COLOR } from '../constants';
+import { getLightBackground } from '../utils';
 
 
 const safeViewTop = getInset('top');
@@ -34,7 +35,7 @@ const TokenSelect = (props) => {
       <TouchableHighlight
         style={index === 0 ? styles.firstItemWrapper : null}
         onPress={() => { props.onItemPress(item); }}
-        underlayColor={getLightPurpleBackground(0.3)}
+        underlayColor={getLightBackground(0.3)}
       >
         <View style={styles.itemWrapper}>
           <View style={styles.itemLeftWrapper}>
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   symbolWrapperSelected: {
-    backgroundColor: HATHOR_COLOR,
+    backgroundColor: PRIMARY_COLOR,
   },
 });
 

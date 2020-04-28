@@ -11,19 +11,16 @@ import { t } from 'ttag';
 import {
   ScrollView,
   StyleSheet,
-  Image,
   SafeAreaView,
   Text,
   View,
 } from 'react-native';
 import hathorLib from '@hathor/wallet-lib';
 import OfflineBar from '../components/OfflineBar';
-import hathorLogo from '../assets/images/hathor-logo.png';
-
-
+import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
-
-import { HATHOR_COLOR, getLightPurpleBackground } from '../constants';
+import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
+import { getLightBackground } from '../utils';
 
 
 /**
@@ -51,14 +48,14 @@ export class Settings extends React.Component {
       marginBottom: 24,
     },
     networkView: {
-      backgroundColor: getLightPurpleBackground(0.1),
+      backgroundColor: getLightBackground(0.1),
       margin: 8,
       padding: 8,
       borderRadius: 8,
       alignItems: 'center',
     },
     networkText: {
-      color: HATHOR_COLOR,
+      color: PRIMARY_COLOR,
       fontSize: 16,
       fontWeight: 'bold',
     },
@@ -79,10 +76,8 @@ export class Settings extends React.Component {
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <ScrollView contentContainerStyle={this.style.scrollView}>
           <View style={this.style.logoView}>
-            <Image
-              source={hathorLogo}
+            <Logo
               style={this.style.logo}
-              resizeMode='contain'
             />
           </View>
           {(this.props.isOnline
@@ -116,14 +111,22 @@ export class Settings extends React.Component {
               title={t`Security`}
               onPress={() => this.props.navigation.navigate('Security')}
             />
-            <ListMenu
-              title={t`Create a new token`}
-              onPress={() => this.props.navigation.navigate('CreateTokenStack')}
-            />
-            <ListMenu
-              title={t`Register a token`}
-              onPress={() => this.props.navigation.navigate('RegisterToken')}
-            />
+            {IS_MULTI_TOKEN
+              && (
+                <ListMenu
+                  title={t`Create a new token`}
+                  onPress={() => this.props.navigation.navigate('CreateTokenStack')}
+                />
+              )
+            }
+            {IS_MULTI_TOKEN
+              && (
+                <ListMenu
+                  title={t`Register a token`}
+                  onPress={() => this.props.navigation.navigate('RegisterToken')}
+                />
+              )
+            }
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}

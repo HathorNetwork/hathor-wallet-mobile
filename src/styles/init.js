@@ -6,7 +6,7 @@
  */
 
 import { StyleSheet } from 'react-native';
-import { HATHOR_COLOR } from '../constants';
+import { PRIMARY_COLOR } from '../constants';
 
 const baseStyle = StyleSheet.create({
   container: {
@@ -29,7 +29,7 @@ const baseStyle = StyleSheet.create({
     marginBottom: 24,
   },
   link: {
-    color: HATHOR_COLOR,
+    color: PRIMARY_COLOR,
     fontWeight: 'bold',
   },
 });
