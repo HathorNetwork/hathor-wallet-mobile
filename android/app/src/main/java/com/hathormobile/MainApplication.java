@@ -68,6 +68,11 @@ public class MainApplication extends Application implements ReactApplication {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
 
+    // Starting on Android 9, the sqlite has a size limit of cursor get
+    // We must increase this size because we were saving lots of data on storage
+    // We should remove this in the future because we are not saving anymore
+    // https://github.com/craftzdog/react-native-sqlite-2/issues/57#issuecomment-491156124
+
     try {
         Field field = CursorWindow.class.getDeclaredField("sCursorWindowSize");
         field.setAccessible(true);
