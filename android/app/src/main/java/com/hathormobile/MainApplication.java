@@ -19,7 +19,9 @@ import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
+import android.database.CursorWindow;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 
@@ -65,5 +67,20 @@ public class MainApplication extends Application implements ReactApplication {
   public void onCreate() {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
+
+    // Starting on Android 9, the sqlite has a size limit of cursor get
+    // We must increase this size because we were saving lots of data on storage
+    // We should remove this in the future because we are not saving anymore
+    // https://github.com/craftzdog/react-native-sqlite-2/issues/57#issuecomment-491156124
+
+    try {
+        Field field = CursorWindow.class.getDeclaredField("sCursorWindowSize");
+        field.setAccessible(true);
+        field.set(null, 50 * 1024 * 1024); // 50M is the new size
+    } catch (Exception e) {
+        if (BuildConfig.DEBUG) {
+            e.printStackTrace();
+        }
+    }
   }
 }
