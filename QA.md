@@ -80,6 +80,10 @@
     1. Click on Register Token, click on Manual Info, and paste the Configuration string.
     1. Click on Register Token, and check that the Test Token is back and your balance is 99 TEST.
 
+1. **Reload data**
+    1. Turn wifi off until you see the message 'No internet connection.'.
+    1. Turn on wifi and check if the wallet reloads the transactions correctly.
+
 1. **Reset Wallet**
     1. Go to Settings and Reset your wallet.
 
