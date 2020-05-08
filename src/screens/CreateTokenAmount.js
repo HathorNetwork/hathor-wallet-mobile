@@ -69,7 +69,7 @@ class CreateTokenAmount extends React.Component {
 
   onAmountChange = (text) => {
     const amount = getIntegerAmount(text);
-    const deposit = (amount ? hathorLib.helpers.getDepositAmount(amount) : 0);
+    const deposit = (amount ? hathorLib.tokens.getDepositAmount(amount) : 0);
     this.setState({ amount: text, deposit });
   }
 
