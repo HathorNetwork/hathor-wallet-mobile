@@ -86,7 +86,7 @@ class CreateTokenConfirm extends React.Component {
   }
 
   onTxSuccess = (response) => {
-    const token = {uid: response.tx.hash, name: this.name, symbol: this.symbol};
+    const token = { uid: response.tx.hash, name: this.name, symbol: this.symbol };
     this.props.newToken(token);
     this.props.updateSelectedToken(token);
   }

@@ -59,7 +59,7 @@ class SendConfirmScreen extends React.Component {
   }
 
   executeSend = (pinCode) => {
-    const ret = this.props.sendTx(this.amount, this.address, this.token, pinCode)
+    const ret = this.props.sendTx(this.amount, this.address, this.token, pinCode);
     if (ret.success) {
       // show loading modal
       this.setState({

@@ -135,19 +135,20 @@ export const sendTx = (amount, address, token, pinCode) => () => {
   const ret = hathorLib.wallet.prepareSendTokensData(data, token, true, historyTxs, [token]);
   if (ret.success) {
     try {
-      const preparedData = hathorLib.transaction.prepareData(ret.data, pinCode)
-      const sendTransaction = new hathorLib.SendTransaction({data: preparedData});
-      return {success: true, sendTransaction};
+      const preparedData = hathorLib.transaction.prepareData(ret.data, pinCode);
+      const sendTransaction = new hathorLib.SendTransaction({ data: preparedData });
+      return { success: true, sendTransaction };
     } catch (e) {
       if (e instanceof hathorLib.errors.AddressError
           || e instanceof hathorLib.errors.OutputValueError
           || e instanceof hathorLib.errors.MaximumNumberOutputsError
           || e instanceof hathorLib.errors.MaximumNumberInputsError) {
-        return {success: false, message: e.message};
+        return { success: false, message: e.message };
       }
+      throw e;
     }
   } else {
-    return {success: false, message: ret.message};
+    return { success: false, message: ret.message };
   }
 };
 
