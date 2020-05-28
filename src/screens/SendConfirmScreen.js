@@ -17,10 +17,9 @@ import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
-import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';
 import FeedbackModal from '../components/FeedbackModal';
-import checkIcon from '../assets/images/icCheckBig.png';
+import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { sendTx } from '../actions';
 
@@ -60,18 +59,23 @@ class SendConfirmScreen extends React.Component {
   }
 
   executeSend = (pinCode) => {
-    // show loading modal
-    this.setState({
-      modal:
-        // eslint-disable-next-line react/jsx-indent
-        <FeedbackModal
-          icon={<Spinner />}
-          text={t`Your transfer is being processed`}
-        />,
-    });
-    this.props.sendTx(this.amount, this.address, this.token, pinCode).then(
-      this.onSuccess, this.onError
-    );
+    const ret = this.props.sendTx(this.amount, this.address, this.token, pinCode)
+    if (ret.success) {
+      // show loading modal
+      this.setState({
+        modal:
+          // eslint-disable-next-line react/jsx-indent
+          <SendTransactionFeedbackModal
+            text={t`Your transfer is being processed`}
+            sendTransaction={ret.sendTransaction}
+            successText={<TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>}
+            onDismissSuccess={this.exitScreen}
+            onDismissError={() => this.setState({ modal: null })}
+          />,
+      });
+    } else {
+      this.onError(ret.message);
+    }
   }
 
   onSendPress = () => {
@@ -82,20 +86,6 @@ class SendConfirmScreen extends React.Component {
       biometryText: t`Authorize operation`,
     };
     this.props.navigation.navigate('PinScreen', params);
-  }
-
-  onSuccess = () => {
-    this.setState({
-      modal:
-        // eslint-disable-next-line react/jsx-indent
-        <FeedbackModal
-          icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-          text={
-            <TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>
-          }
-          onDismiss={this.exitScreen}
-        />,
-    });
   }
 
   onError = (message) => {

@@ -48,3 +48,8 @@ export const TOKEN_DEPOSIT_URL = 'https://gitlab.com/HathorNetwork/rfcs/blob/mas
  * Re-export variables from config.js.
  */
 export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR };
+
+/**
+ * Minimum job estimation to show to the user in seconds when mining a tx
+ */
+export const MIN_JOB_ESTIMATION = 1;
