@@ -22,10 +22,9 @@ import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import FeedbackModal from '../components/FeedbackModal';
-import Spinner from '../components/Spinner';
+import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import TextFmt from '../components/TextFmt';
 import { newToken, updateSelectedToken } from '../actions';
-import checkIcon from '../assets/images/icCheckBig.png';
 import errorIcon from '../assets/images/icErrorBig.png';
 
 
@@ -56,24 +55,23 @@ class CreateTokenConfirm extends React.Component {
   }
 
   executeCreate = (pin) => {
+    const address = hathorLib.wallet.getAddressToUse();
+    // TODO handle error
+    const sendTransaction = hathorLib.tokens.createToken(
+      address, this.name, this.symbol, this.amount, pin
+    );
     // show loading modal
     this.setState({
       modal:
         // eslint-disable-next-line react/jsx-indent
-        <FeedbackModal
-          icon={<Spinner />}
+        <SendTransactionFeedbackModal
           text={t`Creating token`}
+          sendTransaction={sendTransaction}
+          successText={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
+          onTxSuccess={this.onTxSuccess}
+          onDismissSuccess={this.exitScreen}
+          onDismissError={() => this.setState({ modal: null })}
         />,
-    });
-
-    const address = hathorLib.wallet.getAddressToUse();
-    const retPromise = hathorLib.tokens.createToken(
-      address, this.name, this.symbol, this.amount, pin
-    );
-    retPromise.then((token) => {
-      this.onSuccess(token);
-    }, (e) => {
-      this.onError(e.message);
     });
   }
 
@@ -87,18 +85,10 @@ class CreateTokenConfirm extends React.Component {
     this.props.navigation.navigate('PinScreen', params);
   }
 
-  onSuccess = (token) => {
+  onTxSuccess = (response) => {
+    const token = {uid: response.tx.hash, name: this.name, symbol: this.symbol};
     this.props.newToken(token);
     this.props.updateSelectedToken(token);
-    this.setState({
-      modal:
-        // eslint-disable-next-line react/jsx-indent
-        <FeedbackModal
-          icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-          text={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
-          onDismiss={this.exitScreen}
-        />,
-    });
   }
 
   onError = (message) => {
