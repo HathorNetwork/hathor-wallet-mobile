@@ -37,7 +37,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 class SendConfirmScreen extends React.Component {
   /**
-   * modal {FeedbackModal} modal to display. If null, do not display
+   * modal {FeedbackModal|SendTransactionFeedbackModal} modal to display. If null, do not display
    * }
    */
   state = {
@@ -58,6 +58,12 @@ class SendConfirmScreen extends React.Component {
     this.amountAndToken = `${hathorLib.helpers.prettyValue(this.amount)} ${this.token.symbol}`;
   }
 
+  /**
+   * In case we can prepare the data, open send tx feedback modal (while sending the tx)
+   * Otherwise, show error
+   *
+   * @param {String} pinCode User PIN
+   */
   executeSend = (pinCode) => {
     const ret = this.props.sendTx(this.amount, this.address, this.token, pinCode);
     if (ret.success) {
@@ -78,6 +84,9 @@ class SendConfirmScreen extends React.Component {
     }
   }
 
+  /**
+   * Executed when user clicks to send the tx and opens PIN screen
+   */
   onSendPress = () => {
     const params = {
       cb: this.executeSend,
@@ -88,6 +97,11 @@ class SendConfirmScreen extends React.Component {
     this.props.navigation.navigate('PinScreen', params);
   }
 
+  /**
+   * Show error message if there is one while sending the tx
+   *
+   * @param {String} message Error message
+   */
   onError = (message) => {
     this.setState({
       modal:
@@ -100,6 +114,9 @@ class SendConfirmScreen extends React.Component {
     });
   }
 
+  /**
+   * Method executed after dismiss success modal
+   */
   exitScreen = () => {
     this.setState({ modal: null });
     this.props.navigation.popToTop();

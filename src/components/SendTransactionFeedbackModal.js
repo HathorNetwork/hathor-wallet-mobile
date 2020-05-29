@@ -10,6 +10,7 @@ import { t } from 'ttag';
 import {
   Image
 } from 'react-native';
+import hathorLib from '@hathor/wallet-lib';
 import PropTypes from 'prop-types';
 import FeedbackModal from './FeedbackModal';
 import Spinner from './Spinner';
@@ -19,7 +20,11 @@ import errorIcon from '../assets/images/icErrorBig.png';
 
 class SendTransactionFeedbackModal extends React.Component {
   /**
-   * errorMessage {string} Message to be shown to the user in case of error in the form
+   * miningEstimation {Number} Estimated seconds to complete the job
+   * jobID {String} Mining job ID
+   * success {boolean} If succeeded to mine and propagate the tx
+   * sending {boolean} If is executing any request (mining or propagating)
+   * errorMessage {string} Message to be shown to the user in case of error
    */
   state = {
     miningEstimation: null,
@@ -30,40 +35,82 @@ class SendTransactionFeedbackModal extends React.Component {
   }
 
   componentDidMount = () => {
+    // Start event listeners
     this.addSendTxEventHandlers();
+    // Submit job
     this.props.sendTransaction.start();
   }
 
+  /**
+   * Create event listeners for all sendTransaction events
+   */
   addSendTxEventHandlers = () => {
     this.props.sendTransaction.on('job-submitted', this.updateEstimation);
     this.props.sendTransaction.on('estimation-updated', this.updateEstimation);
     this.props.sendTransaction.on('job-done', this.jobDone);
-    this.props.sendTransaction.on('tx-sent', this.txSent);
+    this.props.sendTransaction.on('send-success', this.onSendSuccess);
+    this.props.sendTransaction.on('send-error', this.onSendError);
   }
 
-  txSent = (response) => {
-    this.setState({ sending: false, success: response.success, errorMessage: response.message });
-    if (response.success && this.props.onTxSuccess) {
-      this.props.onTxSuccess(response);
-    } else if (!response.success && this.props.onTxError) {
-      this.props.onTxError(response);
+  /**
+   * Executed after tx is propagated to the network with success
+   * Update component states and call success method, if exists
+   *
+   * @param {Object} tx Transaction data
+   */
+  onSendSuccess = (tx) => {
+    this.setState({ sending: false, success: true, errorMessage: '' });
+    if (this.props.onTxSuccess) {
+      this.props.onTxSuccess(tx);
     }
   }
 
+  /**
+   * Executed when there is an error while sending the tx
+   * Update component states and call error method, if exists
+   *
+   * @param {String} message Error message
+   */
+  onSendError = (message) => {
+    this.setState({ sending: false, success: false, errorMessage: message });
+    if (this.props.onTxError) {
+      this.props.onTxError(message);
+    }
+  }
+
+  /**
+   * Method executed after the mining job is done
+   *
+   * @param {Object} data Object with jobID
+   */
   jobDone = (data) => {
     this.setState({ miningEstimation: null, jobDone: true });
   }
 
+  /**
+   * Method executed when the estimation-updated event is received
+   * Update the state with the new estimation
+   *
+   * @param {Object} data Object with jobID and estimation
+   */
   updateEstimation = (data) => {
     this.setState({ miningEstimation: data.estimation });
   }
 
+  /**
+   * Called when the success modal is dismissed
+   * If there is a dismiss success method, execute it
+   */
   onDismissSuccessModal = () => {
     if (this.props.onDismissSuccess) {
       this.props.onDismissSuccess();
     }
   }
 
+  /**
+   * Called when the error modal is dismissed
+   * If there is a dismiss error method, execute it
+   */
   onDismissErrorModal = () => {
     if (this.props.onDismissError) {
       this.props.onDismissError();
@@ -119,10 +166,18 @@ class SendTransactionFeedbackModal extends React.Component {
 }
 
 SendTransactionFeedbackModal.propTypes = {
-  // Text displayed on the modal
+  // Text displayed on the first line of the modal
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
-  // sendTransaction object
-  // TODO add other proptypes
+  // lib object that handles the mining/propagation requests and emit events
+  sendTransaction: PropTypes.instanceOf(hathorLib.SendTransaction).isRequired,
+  // optional method to be executed when the tx is mined and propagated with success
+  onTxSuccess: PropTypes.func,
+  // optional method to be executed when an error happens while sending the tx
+  onTxError: PropTypes.func,
+  // optional method to be executed when the success modal is dismissed
+  onDismissSuccess: PropTypes.func,
+  // optional method to be executed when the error modal is dismissed
+  onDismissError: PropTypes.func,
 };
 
 export default SendTransactionFeedbackModal;
