@@ -117,8 +117,9 @@ class PinScreen extends React.Component {
       // 2. When the user updated the app to the newest version directly from a version before we've
       // executed the xpubkey migration. In that case we have deleted the user walletData before
       // migrating the xpubkey to the accessData
-      const xpubkey = hathorLib.wallet.getXPubFromPin(pin);
+      const xpubkey = hathorLib.wallet.getXPubKeyFromXPrivKey(pin);
       accessData.xpubkey = xpubkey;
+      hathorLib.wallet.setWalletAccessData(accessData);
     }
   }
 
