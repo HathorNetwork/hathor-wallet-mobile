@@ -98,10 +98,36 @@ class PinScreen extends React.Component {
     });
   }
 
+  /**
+   * Handle data migration on unlock screen
+   * This method is executed when the wallet is unlocked, so we can check
+   * if we need to change anything on the app data after an update
+   *
+   * @param {String} pin Unlock PIN written by the user
+   */
+  handleDataMigration = (pin) => {
+    const accessData = hathorLib.wallet.getWalletAccessData();
+
+    if (accessData !== null && accessData.xpubkey === undefined) {
+      // Two situations are handled here:
+      // 1. From v0.12.0 to v0.13.0 of the lib, xpubkey has changed from wallet:data
+      // to wallet:accessData. So if the user is still in an app version before v0.13.0,
+      // we can't use xpubkey directly from accessData
+      //
+      // 2. When the user updated the app to the newest version directly from a version before we've
+      // executed the xpubkey migration. In that case we have deleted the user walletData before
+      // migrating the xpubkey to the accessData
+      const xpubkey = hathorLib.wallet.getXPubKeyFromXPrivKey(pin);
+      accessData.xpubkey = xpubkey;
+      hathorLib.wallet.setWalletAccessData(accessData);
+    }
+  }
+
   dismiss = (pin) => {
     if (this.props.isLockScreen) {
-      // in case it's the lock screen, we just have to change redux state. No need
-      // to execute callback or go back on navigation
+      // in case it's the lock screen, we just have to execute the data migration
+      // method an change redux state. No need to execute callback or go back on navigation
+      this.handleDataMigration(pin);
       this.props.unlockScreen();
     } else {
       // dismiss the pin screen first because doing it after the callback can
