@@ -1822,7 +1822,7 @@
 				);
 				INFOPLIST_FILE = HathorMobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 0.9.3;
+				MARKETING_VERSION = 0.9.4;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1858,7 +1858,7 @@
 				);
 				INFOPLIST_FILE = HathorMobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 0.9.3;
+				MARKETING_VERSION = 0.9.4;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
