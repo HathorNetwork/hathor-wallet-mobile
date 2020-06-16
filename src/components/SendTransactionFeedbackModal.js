@@ -50,6 +50,7 @@ class SendTransactionFeedbackModal extends React.Component {
     this.props.sendTransaction.on('job-done', this.jobDone);
     this.props.sendTransaction.on('send-success', this.onSendSuccess);
     this.props.sendTransaction.on('send-error', this.onSendError);
+    this.props.sendTransaction.on('unexpected-error', this.onSendError);
   }
 
   /**
