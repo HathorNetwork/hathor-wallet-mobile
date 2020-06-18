@@ -14,7 +14,7 @@ import hathorLib from '@hathor/wallet-lib';
 import PropTypes from 'prop-types';
 import FeedbackModal from './FeedbackModal';
 import Spinner from './Spinner';
-import { MIN_JOB_ESTIMATION } from '../constants';
+// import { MIN_JOB_ESTIMATION } from '../constants';
 import checkIcon from '../assets/images/icCheckBig.png';
 import errorIcon from '../assets/images/icErrorBig.png';
 
@@ -156,8 +156,8 @@ class SendTransactionFeedbackModal extends React.Component {
       if (this.state.jobDone) {
         secondaryText = t`Propagating transaction to the network.`;
       } else if (this.state.miningEstimation) {
-        const estimation = Math.max(Math.ceil(this.state.miningEstimation), MIN_JOB_ESTIMATION);
-        secondaryText = t`Estimated time: ${estimation}s`;
+        // const estimation = Math.max(Math.ceil(this.state.miningEstimation), MIN_JOB_ESTIMATION);
+        // secondaryText = t`Estimated time: ${estimation}s`;
       }
       return `${this.props.text}\n\n${secondaryText}`;
     };
