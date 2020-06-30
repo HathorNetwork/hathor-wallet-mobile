@@ -99,14 +99,13 @@ class ChoosePinScreen extends React.Component {
 
     this.setState({ pin1: text });
     if (text.length === PIN_SIZE) {
-      setTimeout(() => this.moveToPin2(text), 500);
+      setTimeout(this.moveToPin2, 500);
     }
   }
 
-  moveToPin2 = (pin1) => {
+  moveToPin2 = () => {
     this.setState({
       stepIndex: 1,
-      selectedPin1: pin1,
     });
   }
 
@@ -122,7 +121,7 @@ class ChoosePinScreen extends React.Component {
   }
 
   validatePin = (text) => {
-    if (this.state.selectedPin1 === text) {
+    if (this.state.pin1 === text) {
       this.setState({ pin2Color: '#0DA0A0', done: true });
     } else {
       this.removeOneChar();
