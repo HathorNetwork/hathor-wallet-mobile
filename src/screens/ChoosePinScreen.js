@@ -47,6 +47,8 @@ class ChoosePinScreen extends React.Component {
     /**
      * pin1 {string} Input value for pin
      * pin2 {string} Input value for pin confirmation
+     * selectedPin1 {string} Pin1 written when change to step2 (may differ from pin1 because
+     * there are some milliseconds until we change the step, when the pin1 input could be updated)
      * pin2Color {string} Color of the pin2's PinInput markers
      * error {string} Error message to be shown if pins do not match
      * done {boolean} Indicates whether we're ready to move to the next screen
@@ -57,6 +59,7 @@ class ChoosePinScreen extends React.Component {
     this.state = {
       pin1: '',
       pin2: '',
+      selectedPin1: '',
       pin2Color: 'black',
       error: null,
       done: false,
@@ -77,7 +80,7 @@ class ChoosePinScreen extends React.Component {
   goToNextScreen = () => {
     // we are just initializing the wallet, so make sure it's not locked when going to AppStack
     this.props.unlockScreen();
-    this.props.setInitWallet(this.words, this.state.pin1);
+    this.props.setInitWallet(this.words, this.state.selectedPin1);
     this.props.navigation.navigate('Home');
   }
 
@@ -94,13 +97,14 @@ class ChoosePinScreen extends React.Component {
   onChangePin1 = (text) => {
     this.setState({ pin1: text });
     if (text.length === 6) {
-      setTimeout(this.moveToPin2, 500);
+      setTimeout(() => this.moveToPin2(text), 500);
     }
   }
 
-  moveToPin2 = () => {
+  moveToPin2 = (pin1) => {
     this.setState({
       stepIndex: 1,
+      selectedPin1: pin1,
     });
   }
 
@@ -112,7 +116,7 @@ class ChoosePinScreen extends React.Component {
   }
 
   validatePin = (text) => {
-    if (this.state.pin1 === this.state.pin2) {
+    if (this.state.selectedPin1 === text) {
       this.setState({ pin2Color: '#0DA0A0', done: true });
     } else {
       this.removeOneChar();
