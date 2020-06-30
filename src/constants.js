@@ -48,3 +48,8 @@ export const TOKEN_DEPOSIT_URL = 'https://gitlab.com/HathorNetwork/rfcs/blob/mas
  * Re-export variables from config.js.
  */
 export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR };
+
+/**
+ * Size of the PIN
+ */
+export const PIN_SIZE = 6;

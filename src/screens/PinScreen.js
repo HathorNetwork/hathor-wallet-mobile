@@ -19,6 +19,7 @@ import PinInput from '../components/PinInput';
 import Logo from '../components/Logo';
 import { isBiometryEnabled, getSupportedBiometry } from '../utils';
 import { lockScreen, unlockScreen, setLoadHistoryStatus } from '../actions';
+import { PIN_SIZE } from '../constants';
 
 
 /**
@@ -142,7 +143,7 @@ class PinScreen extends React.Component {
   }
 
   onChangeText = (text) => {
-    if (text.length === 6) {
+    if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin(text), 300);
     }
     this.setState({ pin: text, pinColor: 'black', error: null });
@@ -219,7 +220,7 @@ class PinScreen extends React.Component {
         </View>
         <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
         <PinInput
-          maxLength={6}
+          maxLength={PIN_SIZE}
           color={this.state.pinColor}
           value={this.state.pin}
           onChangeText={this.onChangeText}

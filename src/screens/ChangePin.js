@@ -21,6 +21,7 @@ import FeedbackModal from '../components/FeedbackModal';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import checkIcon from '../assets/images/icCheckBig.png';
+import { PIN_SIZE } from '../constants';
 
 
 class ChangePin extends React.Component {
@@ -41,10 +42,6 @@ class ChangePin extends React.Component {
      * pin1 {string} Input value for your current pin
      * pin2 {string} Input value for the new pin
      * pin3 {string} Input value for the new pin confirmation
-     * selectedPin1 {string} Pin1 written when change to step2 (may differ from pin1 because
-     * there are some milliseconds until we change the step, when the pin1 input could be updated)
-     * selectedPin2 {string} Pin2 written when change to step3 (may differ from pin2 because
-     * there are some milliseconds until we change the step, when the pin2 input could be updated)
      * pin1Color {string} Color of the pin1's PinInput markers
      * pin3Color {string} Color of the pin3's PinInput markers
      * done {boolean} If step 3 was already completed with success
@@ -58,8 +55,6 @@ class ChangePin extends React.Component {
       pin1: '',
       pin2: '',
       pin3: '',
-      selectedPin1: '',
-      selectedPin2: '',
       pin1Color: 'black',
       pin3Color: 'black',
       done: false,
@@ -95,15 +90,18 @@ class ChangePin extends React.Component {
   }
 
   onChangePin1 = (text) => {
+    if (text.length > PIN_SIZE) {
+      return;
+    }
+
     this.setState({ pin1: text, pin1Color: 'black', error: null });
-    if (text.length === 6) {
+    if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin1(text), 300);
     }
   }
 
   validatePin1 = (text) => {
     if (hathorLib.wallet.isPinCorrect(text)) {
-      this.setState({ selectedPin1: text });
       this.nextStep();
     } else {
       this.removeOneChar('pin1', 'pin1Color', t`Incorrect PIN code.`);
@@ -115,22 +113,29 @@ class ChangePin extends React.Component {
   }
 
   onChangePin2 = (text) => {
+    if (text.length > PIN_SIZE) {
+      return;
+    }
+
     this.setState({ pin2: text });
-    if (text.length === 6) {
-      this.setState({ selectedPin2: text });
+    if (text.length === PIN_SIZE) {
       setTimeout(this.nextStep, 500);
     }
   }
 
   onChangePin3 = (text) => {
+    if (text.length > PIN_SIZE) {
+      return;
+    }
+
     this.setState({ pin3: text, pin3Color: 'black', error: null });
-    if (text.length === 6) {
+    if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin3(text), 300);
     }
   }
 
   validatePin3 = (text) => {
-    if (this.state.selectedPin2 === text) {
+    if (this.state.pin2 === text) {
       this.setState({ pin3Color: '#0DA0A0' });
       this.executeChangePin();
     } else {
@@ -154,7 +159,7 @@ class ChangePin extends React.Component {
   }
 
   executeChangePin = () => {
-    const success = hathorLib.wallet.changePin(this.state.selectedPin1, this.state.selectedPin2);
+    const success = hathorLib.wallet.changePin(this.state.pin1, this.state.pin2);
     if (success) {
       this.setState({ done: true });
     } else {
@@ -167,7 +172,7 @@ class ChangePin extends React.Component {
     <View style={this.style.pinView}>
       <TextFmt style={this.style.pinText}>{t`Please enter your **current PIN**`}</TextFmt>
       <PinInput
-        maxLength={6}
+        maxLength={PIN_SIZE}
         onChangeText={this.onChangePin1}
         color={this.state.pin1Color}
         value={this.state.pin1}
@@ -180,9 +185,9 @@ class ChangePin extends React.Component {
     <View style={this.style.pinView}>
       <TextFmt style={this.style.pinText}>{t`Please enter your **new PIN**`}</TextFmt>
       <PinInput
-        maxLength={6}
+        maxLength={PIN_SIZE}
         onChangeText={this.onChangePin2}
-        color={(this.state.pin2.length < 6 ? 'black' : '#0DA0A0')}
+        color={(this.state.pin2.length < PIN_SIZE ? 'black' : '#0DA0A0')}
         value={this.state.pin2}
         error={this.state.error}
       />
@@ -193,7 +198,7 @@ class ChangePin extends React.Component {
     <View style={this.style.pinView}>
       <TextFmt style={this.style.pinText}>{t`Please enter your **new PIN** again`}</TextFmt>
       <PinInput
-        maxLength={6}
+        maxLength={PIN_SIZE}
         onChangeText={this.onChangePin3}
         color={this.state.pin3Color}
         value={this.state.pin3}

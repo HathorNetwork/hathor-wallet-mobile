@@ -19,6 +19,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
 import { setInitWallet, unlockScreen } from '../actions';
+import { PIN_SIZE } from '../constants';
 
 import baseStyle from '../styles/init';
 
@@ -47,8 +48,6 @@ class ChoosePinScreen extends React.Component {
     /**
      * pin1 {string} Input value for pin
      * pin2 {string} Input value for pin confirmation
-     * selectedPin1 {string} Pin1 written when change to step2 (may differ from pin1 because
-     * there are some milliseconds until we change the step, when the pin1 input could be updated)
      * pin2Color {string} Color of the pin2's PinInput markers
      * error {string} Error message to be shown if pins do not match
      * done {boolean} Indicates whether we're ready to move to the next screen
@@ -59,7 +58,6 @@ class ChoosePinScreen extends React.Component {
     this.state = {
       pin1: '',
       pin2: '',
-      selectedPin1: '',
       pin2Color: 'black',
       error: null,
       done: false,
@@ -80,7 +78,7 @@ class ChoosePinScreen extends React.Component {
   goToNextScreen = () => {
     // we are just initializing the wallet, so make sure it's not locked when going to AppStack
     this.props.unlockScreen();
-    this.props.setInitWallet(this.words, this.state.selectedPin1);
+    this.props.setInitWallet(this.words, this.state.pin1);
     this.props.navigation.navigate('Home');
   }
 
@@ -95,8 +93,12 @@ class ChoosePinScreen extends React.Component {
   }
 
   onChangePin1 = (text) => {
+    if (text.length > PIN_SIZE) {
+      return;
+    }
+
     this.setState({ pin1: text });
-    if (text.length === 6) {
+    if (text.length === PIN_SIZE) {
       setTimeout(() => this.moveToPin2(text), 500);
     }
   }
@@ -109,8 +111,12 @@ class ChoosePinScreen extends React.Component {
   }
 
   onChangePin2 = (text) => {
+    if (text.length > PIN_SIZE) {
+      return;
+    }
+
     this.setState({ pin2: text, pin2Color: 'black', error: null });
-    if (text.length === 6) {
+    if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin(text), 300);
     }
   }
@@ -127,9 +133,9 @@ class ChoosePinScreen extends React.Component {
     <View style={this.style.pinView}>
       <Text style={this.style.pinText}>{t`Enter your new PIN code`}</Text>
       <PinInput
-        maxLength={6}
+        maxLength={PIN_SIZE}
         onChangeText={this.onChangePin1}
-        color={(this.state.pin1.length < 6 ? 'black' : '#0DA0A0')}
+        color={(this.state.pin1.length < PIN_SIZE ? 'black' : '#0DA0A0')}
         value={this.state.pin1}
       />
     </View>
@@ -139,7 +145,7 @@ class ChoosePinScreen extends React.Component {
     <View style={this.style.pinView}>
       <Text style={this.style.pinText}>{t`Enter your new PIN code again`}</Text>
       <PinInput
-        maxLength={6}
+        maxLength={PIN_SIZE}
         onChangeText={this.onChangePin2}
         color={this.state.pin2Color}
         value={this.state.pin2}
