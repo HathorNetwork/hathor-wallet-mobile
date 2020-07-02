@@ -143,6 +143,10 @@ class PinScreen extends React.Component {
   }
 
   onChangeText = (text) => {
+    if (text.length > PIN_SIZE) {
+      return;
+    }
+
     if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin(text), 300);
     }
