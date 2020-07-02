@@ -7,20 +7,20 @@
 
 import { Alert, Clipboard } from 'react-native';
 import hathorLib from '@hathor/wallet-lib';
-//import * as Sentry from '@sentry/react-native';
+import * as Sentry from '@sentry/react-native';
 import VersionNumber from 'react-native-version-number';
 
 /**
  * Send error to Sentry
  */
 export const sentryReportError = (error) => {
-  /*Sentry.init({
+  Sentry.init({
     dsn: 'https://c1ebae9159f741e8937abdbfbeba8e8a@o239606.ingest.sentry.io/5304101',
   });
   Sentry.withScope(scope => {
     scope.setExtra('App version', JSON.stringify(VersionNumber));
     Sentry.captureException(error);
-  });*/
+  });
 }
 
 /**
@@ -29,10 +29,9 @@ export const sentryReportError = (error) => {
  * all keys are correctly there.
  * With this we prevent sending sensitive data to Sentry
  */
-export const copyData = () => {
-  const accessData = hathorLib.wallet.getWalletAccessData();
-  Clipboard.setString(JSON.stringify(accessData));
-  console.log('#### ', JSON.stringify(accessData));
+export const copyData = (error) => {
+  const accessData = JSON.stringify(hathorLib.wallet.getWalletAccessData());
+  Clipboard.setString(`${error.name} - ${error.message}\n${accessData}`);
 }
 
 /**
@@ -52,7 +51,7 @@ export const errorHandler = (error, isFatal) => {
       {
         text: 'Copy data',
         onPress: () => {
-          copyData();
+          copyData(error);
         }
       }]
     );
@@ -61,3 +60,14 @@ export const errorHandler = (error, isFatal) => {
     console.log('Unhandled not fatal error', e);
   }
 };
+
+export const nativeErrorHandler = (errorString) => {
+  console.log('Native error handler', errorString);
+  //Sentry.init({
+  //  dsn: 'https://c1ebae9159f741e8937abdbfbeba8e8a@o239606.ingest.sentry.io/5304101',
+  //});
+  Sentry.withScope(scope => {
+    scope.setExtra('App version - native error', JSON.stringify(VersionNumber));
+    Sentry.captureMessage(`Native fatal error.\n${errorString}`);
+  });
+}

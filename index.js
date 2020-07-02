@@ -27,6 +27,6 @@ setJSExceptionHandler(errorHandler, true);
 //    It executes previous exception handlers if set by some other module.
 //    It will come handy when you use any other crash analytics module along with this one
 //    Default value is set to false. Set to true if you are using other analytics modules.
-setNativeExceptionHandler(nativeErrorHandler, false, false);
+setNativeExceptionHandler(nativeErrorHandler, false, true);
 
 AppRegistry.registerComponent(appName, () => App);

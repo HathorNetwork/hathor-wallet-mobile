@@ -6,6 +6,14 @@
 
 `npm run node-hack`
 
+### Podfile install for iOS
+
+#### Install cocoapods
+
+`sudo gem install cocoapods`
+
+`cd ios && pod install`
+
 ## Run
 
 `npm run ios` to open on iOS simulator, or `npm run ios -- --simulator "iPhone 11"`
