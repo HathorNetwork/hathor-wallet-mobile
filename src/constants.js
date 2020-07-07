@@ -53,3 +53,8 @@ export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR };
  * Minimum job estimation to show to the user in seconds when mining a tx
  */
 export const MIN_JOB_ESTIMATION = 1;
+
+/**
+ * Size of the PIN
+ */
+export const PIN_SIZE = 6;

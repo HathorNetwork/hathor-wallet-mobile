@@ -21,6 +21,7 @@ import FeedbackModal from '../components/FeedbackModal';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import checkIcon from '../assets/images/icCheckBig.png';
+import { PIN_SIZE } from '../constants';
 
 
 class ChangePin extends React.Component {
@@ -89,8 +90,12 @@ class ChangePin extends React.Component {
   }
 
   onChangePin1 = (text) => {
+    if (text.length > PIN_SIZE) {
+      return;
+    }
+
     this.setState({ pin1: text, pin1Color: 'black', error: null });
-    if (text.length === 6) {
+    if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin1(text), 300);
     }
   }
@@ -108,15 +113,23 @@ class ChangePin extends React.Component {
   }
 
   onChangePin2 = (text) => {
+    if (text.length > PIN_SIZE) {
+      return;
+    }
+
     this.setState({ pin2: text });
-    if (text.length === 6) {
+    if (text.length === PIN_SIZE) {
       setTimeout(this.nextStep, 500);
     }
   }
 
   onChangePin3 = (text) => {
+    if (text.length > PIN_SIZE) {
+      return;
+    }
+
     this.setState({ pin3: text, pin3Color: 'black', error: null });
-    if (text.length === 6) {
+    if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin3(text), 300);
     }
   }
@@ -159,7 +172,7 @@ class ChangePin extends React.Component {
     <View style={this.style.pinView}>
       <TextFmt style={this.style.pinText}>{t`Please enter your **current PIN**`}</TextFmt>
       <PinInput
-        maxLength={6}
+        maxLength={PIN_SIZE}
         onChangeText={this.onChangePin1}
         color={this.state.pin1Color}
         value={this.state.pin1}
@@ -172,9 +185,9 @@ class ChangePin extends React.Component {
     <View style={this.style.pinView}>
       <TextFmt style={this.style.pinText}>{t`Please enter your **new PIN**`}</TextFmt>
       <PinInput
-        maxLength={6}
+        maxLength={PIN_SIZE}
         onChangeText={this.onChangePin2}
-        color={(this.state.pin2.length < 6 ? 'black' : '#0DA0A0')}
+        color={(this.state.pin2.length < PIN_SIZE ? 'black' : '#0DA0A0')}
         value={this.state.pin2}
         error={this.state.error}
       />
@@ -185,7 +198,7 @@ class ChangePin extends React.Component {
     <View style={this.style.pinView}>
       <TextFmt style={this.style.pinText}>{t`Please enter your **new PIN** again`}</TextFmt>
       <PinInput
-        maxLength={6}
+        maxLength={PIN_SIZE}
         onChangeText={this.onChangePin3}
         color={this.state.pin3Color}
         value={this.state.pin3}
