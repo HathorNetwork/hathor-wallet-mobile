@@ -24,7 +24,7 @@ const FeedbackModal = (props) => (
   >
     <View style={styles.innerModal}>
       {props.icon}
-      <Text style={{ fontSize: 18, marginTop: 40, textAlign: 'center' }}>
+      <Text style={{ fontSize: 18, marginTop: 40, textAlign: 'center' }} {...props.textProps}>
         {props.text}
       </Text>
     </View>
