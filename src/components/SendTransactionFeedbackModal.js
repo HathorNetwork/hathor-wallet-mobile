@@ -147,7 +147,7 @@ class SendTransactionFeedbackModal extends React.Component {
           icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
           text={this.state.errorMessage}
           onDismiss={this.onDismissErrorModal}
-          textProps={{numberOfLines: 2}}
+          textProps={{ numberOfLines: 2 }}
         />
       );
     };
