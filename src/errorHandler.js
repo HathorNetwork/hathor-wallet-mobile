@@ -17,11 +17,11 @@ export const sentryReportError = (error) => {
   Sentry.init({
     dsn: 'https://c1ebae9159f741e8937abdbfbeba8e8a@o239606.ingest.sentry.io/5304101',
   });
-  Sentry.withScope(scope => {
+  Sentry.withScope((scope) => {
     scope.setExtra('App version', JSON.stringify(VersionNumber));
     Sentry.captureException(error);
   });
-}
+};
 
 /**
  * Copy access data from storage to the clipboard.
@@ -32,7 +32,7 @@ export const sentryReportError = (error) => {
 export const copyData = (error) => {
   const accessData = JSON.stringify(hathorLib.wallet.getWalletAccessData());
   Clipboard.setString(`${error.name} - ${error.message}\n${accessData}`);
-}
+};
 
 /**
  * Capture all JS exceptions that might happen and show an alert to the user
@@ -57,6 +57,6 @@ export const errorHandler = (error, isFatal) => {
     );
   } else {
     // So that we can see it in the ADB logs in case of Android if needed
-    console.log('Unhandled not fatal error', e);
+    console.log('Unhandled not fatal error', error);
   }
 };

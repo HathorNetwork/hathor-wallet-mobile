@@ -7,10 +7,9 @@
 
 import './i18nInit';
 import { AppRegistry } from 'react-native';
+import { setJSExceptionHandler } from 'react-native-exception-handler';
 import App from './src/App';
 import { name as appName } from './app.json';
-
-import { setJSExceptionHandler } from 'react-native-exception-handler';
 import { errorHandler } from './src/errorHandler';
 
 // - errorHandler is the callback
