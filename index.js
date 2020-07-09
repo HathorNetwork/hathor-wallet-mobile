@@ -10,8 +10,8 @@ import { AppRegistry } from 'react-native';
 import App from './src/App';
 import { name as appName } from './app.json';
 
-import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
-import { errorHandler, nativeErrorHandler } from './src/errorHandler';
+import { setJSExceptionHandler } from 'react-native-exception-handler';
+import { errorHandler } from './src/errorHandler';
 
 // - errorHandler is the callback
 // - 'true' is 'allowInDevMode' is an optional parameter
