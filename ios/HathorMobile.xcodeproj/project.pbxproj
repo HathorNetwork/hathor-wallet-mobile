@@ -13,6 +13,7 @@
 		00C302E91ABCBA2D00DB3ED1 /* libRCTNetwork.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302DC1ABCB9D200DB3ED1 /* libRCTNetwork.a */; };
 		00C302EA1ABCBA2D00DB3ED1 /* libRCTVibration.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302E41ABCB9EE00DB3ED1 /* libRCTVibration.a */; };
 		00E356F31AD99517003FC87E /* HathorMobileTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* HathorMobileTests.m */; };
+		0403FC6058D96EB5041230F6 /* libPods-HathorMobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BFFD86EDEDB34162E27215FF /* libPods-HathorMobile.a */; };
 		11D1A2F320CAFA9E000508D9 /* libRCTAnimation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E9157331DD0AC6500FF2AA8 /* libRCTAnimation.a */; };
 		133E29F31AD74F7200F7D852 /* libRCTLinking.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 78C398B91ACF4ADC00677621 /* libRCTLinking.a */; };
 		139105C61AF99C1200B5F7CC /* libRCTSettings.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 139105C11AF99BAD00B5F7CC /* libRCTSettings.a */; };
@@ -52,7 +53,6 @@
 		8B1C34D0B6FF4068A9BFB9BB /* libRNRandomBytes.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F44E4D4E26C49BA927D5EBA /* libRNRandomBytes.a */; };
 		8CB7B546002E440093523B4B /* libRNVersionNumber.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 32A176203E324D0AB0C2D756 /* libRNVersionNumber.a */; };
 		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
-		C12D653E43D5F1733D247BDA /* libPods-HathorMobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 40E4F9DF1C47D6D43D64BB40 /* libPods-HathorMobile.a */; };
 		CC45703A575F4C2D8D49A78E /* libUdpSockets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DD632F7AA634C0FA2B832A1 /* libUdpSockets.a */; };
 		DA89CE8AD19F421B9AD8970D /* libRNCAsyncStorage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AB963E1571FA41B1BE73C065 /* libRNCAsyncStorage.a */; };
 		E64B116DCE124712AE7C8936 /* libRNReanimated.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A5D825EFAB1453495658B18 /* libRNReanimated.a */; };
@@ -510,15 +510,14 @@
 		32A176203E324D0AB0C2D756 /* libRNVersionNumber.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNVersionNumber.a; sourceTree = "<group>"; };
 		33B91F72D8F04BE99E6BF546 /* libRNLocalize-tvOS.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = "libRNLocalize-tvOS.a"; sourceTree = "<group>"; };
 		34E492D305D947AABFC67EEE /* RNOS.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNOS.xcodeproj; path = "../node_modules/react-native-os/ios/RNOS.xcodeproj"; sourceTree = "<group>"; };
-		40E4F9DF1C47D6D43D64BB40 /* libPods-HathorMobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HathorMobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E328237ADB34808B0E2AA0A /* libRNKeychain.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNKeychain.a; sourceTree = "<group>"; };
 		4F44E4D4E26C49BA927D5EBA /* libRNRandomBytes.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNRandomBytes.a; sourceTree = "<group>"; };
 		4FD71D282C794FC8A624859F /* libReactNativePermissions.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libReactNativePermissions.a; sourceTree = "<group>"; };
 		5102253A22C0FDC0002695E1 /* tabbar.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = tabbar.ttf; path = ../src/assets/fonts/tabbar.ttf; sourceTree = "<group>"; };
 		529C8D555A904DDB9ACE878C /* TcpSockets.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = TcpSockets.xcodeproj; path = "../node_modules/react-native-tcp/ios/TcpSockets.xcodeproj"; sourceTree = "<group>"; };
+		56848849DA816861CEE72E19 /* Pods-HathorMobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HathorMobile.release.xcconfig"; path = "Target Support Files/Pods-HathorMobile/Pods-HathorMobile.release.xcconfig"; sourceTree = "<group>"; };
 		5DD632F7AA634C0FA2B832A1 /* libUdpSockets.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libUdpSockets.a; sourceTree = "<group>"; };
 		5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTAnimation.xcodeproj; path = "../node_modules/react-native/Libraries/NativeAnimation/RCTAnimation.xcodeproj"; sourceTree = "<group>"; };
-		61BA7EFBBBED34EA2ED264ED /* Pods-HathorMobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HathorMobile.debug.xcconfig"; path = "Target Support Files/Pods-HathorMobile/Pods-HathorMobile.debug.xcconfig"; sourceTree = "<group>"; };
 		6D1CABC9F40F4D8780FCDC46 /* RNKeychain.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNKeychain.xcodeproj; path = "../node_modules/react-native-keychain/RNKeychain.xcodeproj"; sourceTree = "<group>"; };
 		7803E15420A7459D966E5BF2 /* libRNLocalize.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNLocalize.a; sourceTree = "<group>"; };
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
@@ -527,6 +526,7 @@
 		879A4218B14D4E3CA405315B /* libRNVersionNumber-tvOS.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = "libRNVersionNumber-tvOS.a"; sourceTree = "<group>"; };
 		90D5D15DAB3340649EEF7C31 /* libRNRandomBytes-tvOS.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = "libRNRandomBytes-tvOS.a"; sourceTree = "<group>"; };
 		934F85567B884B24BE2CEDDE /* RNRandomBytes.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNRandomBytes.xcodeproj; path = "../node_modules/react-native-randombytes/RNRandomBytes.xcodeproj"; sourceTree = "<group>"; };
+		988389BBF33C4FC575426F92 /* Pods-HathorMobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HathorMobile.debug.xcconfig"; path = "Target Support Files/Pods-HathorMobile/Pods-HathorMobile.debug.xcconfig"; sourceTree = "<group>"; };
 		98D25F4E9E8C4D3891732E51 /* RNCAsyncStorage.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNCAsyncStorage.xcodeproj; path = "../node_modules/@react-native-community/async-storage/ios/RNCAsyncStorage.xcodeproj"; sourceTree = "<group>"; };
 		9A5D825EFAB1453495658B18 /* libRNReanimated.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNReanimated.a; sourceTree = "<group>"; };
 		9E75B46F18B547349F7B4540 /* libReactNativeExceptionHandler.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libReactNativeExceptionHandler.a; sourceTree = "<group>"; };
@@ -534,9 +534,9 @@
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
 		B24A1F3F277D4DBA989E9379 /* libRNGestureHandler-tvOS.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = "libRNGestureHandler-tvOS.a"; sourceTree = "<group>"; };
 		B542D037A2474D3282DCA333 /* libRNGestureHandler.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNGestureHandler.a; sourceTree = "<group>"; };
+		BFFD86EDEDB34162E27215FF /* libPods-HathorMobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HathorMobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9AC2C06DA304173B69DAB4C /* UdpSockets.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = UdpSockets.xcodeproj; path = "../node_modules/react-native-udp/ios/UdpSockets.xcodeproj"; sourceTree = "<group>"; };
 		CB9D36E7007A488AB8BF1B19 /* RNCamera.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNCamera.xcodeproj; path = "../node_modules/react-native-camera/ios/RNCamera.xcodeproj"; sourceTree = "<group>"; };
-		CC3F901F5A604D8E299A4049 /* Pods-HathorMobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HathorMobile.release.xcconfig"; path = "Target Support Files/Pods-HathorMobile/Pods-HathorMobile.release.xcconfig"; sourceTree = "<group>"; };
 		CDB6380E218C4EE68CC1A88A /* RNReanimated.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNReanimated.xcodeproj; path = "../node_modules/react-native-reanimated/ios/RNReanimated.xcodeproj"; sourceTree = "<group>"; };
 		CF9337FEF8384BA59C187C45 /* RNVersionNumber.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNVersionNumber.xcodeproj; path = "../node_modules/react-native-version-number/ios/RNVersionNumber.xcodeproj"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -584,7 +584,7 @@
 				8CB7B546002E440093523B4B /* libRNVersionNumber.a in Frameworks */,
 				2B52B373FDD54F10A39E2269 /* libRNLocalize.a in Frameworks */,
 				FCDF5368A09541D4BDC3EB97 /* libReactNativeExceptionHandler.a in Frameworks */,
-				C12D653E43D5F1733D247BDA /* libPods-HathorMobile.a in Frameworks */,
+				0403FC6058D96EB5041230F6 /* libPods-HathorMobile.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -850,7 +850,7 @@
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
 				2D16E6891FA4F8E400B85C8A /* libReact.a */,
-				40E4F9DF1C47D6D43D64BB40 /* libPods-HathorMobile.a */,
+				BFFD86EDEDB34162E27215FF /* libPods-HathorMobile.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -900,8 +900,8 @@
 		60AEFF018AC859802833ED12 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				61BA7EFBBBED34EA2ED264ED /* Pods-HathorMobile.debug.xcconfig */,
-				CC3F901F5A604D8E299A4049 /* Pods-HathorMobile.release.xcconfig */,
+				988389BBF33C4FC575426F92 /* Pods-HathorMobile.debug.xcconfig */,
+				56848849DA816861CEE72E19 /* Pods-HathorMobile.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -1027,7 +1027,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "HathorMobile" */;
 			buildPhases = (
-				339362917D9272E8706D2184 /* [CP] Check Pods Manifest.lock */,
+				D34A52C3FBD824C888220014 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
@@ -1701,7 +1701,21 @@
 			shellPath = /bin/sh;
 			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nexport NODE_BINARY=node\n../node_modules/@sentry/cli/bin/sentry-cli react-native xcode ../node_modules/react-native/scripts/react-native-xcode.sh";
 		};
-		339362917D9272E8706D2184 /* [CP] Check Pods Manifest.lock */ = {
+		59ECC78114694FC68BB77548 /* Upload Debug Symbols to Sentry */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Upload Debug Symbols to Sentry";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export SENTRY_PROPERTIES=sentry.properties\n../node_modules/@sentry/cli/bin/sentry-cli upload-dsym";
+		};
+		D34A52C3FBD824C888220014 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1722,20 +1736,6 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
-		};
-		59ECC78114694FC68BB77548 /* Upload Debug Symbols to Sentry */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Upload Debug Symbols to Sentry";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "export SENTRY_PROPERTIES=sentry.properties\n../node_modules/@sentry/cli/bin/sentry-cli upload-dsym";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1879,7 +1879,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61BA7EFBBBED34EA2ED264ED /* Pods-HathorMobile.debug.xcconfig */;
+			baseConfigurationReference = 988389BBF33C4FC575426F92 /* Pods-HathorMobile.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1918,7 +1918,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CC3F901F5A604D8E299A4049 /* Pods-HathorMobile.release.xcconfig */;
+			baseConfigurationReference = 56848849DA816861CEE72E19 /* Pods-HathorMobile.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CURRENT_PROJECT_VERSION = 1;
