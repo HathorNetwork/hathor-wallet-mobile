@@ -17,16 +17,6 @@ import { errorHandler, nativeErrorHandler } from './src/errorHandler';
 // - 'true' is 'allowInDevMode' is an optional parameter
 //   If set to true the handler to be called in place of RED screen
 //   in development mode also
-// XXX should be false (true only for testing)
-setJSExceptionHandler(errorHandler, true);
-
-// - error handler callback
-// - forceAppQuit is an optional ANDROID specific parameter that defines
-//    if the app should be force quit on error.  default value is true.
-// - executeDefaultHandler is an optional boolean (both IOS, ANDROID)
-//    It executes previous exception handlers if set by some other module.
-//    It will come handy when you use any other crash analytics module along with this one
-//    Default value is set to false. Set to true if you are using other analytics modules.
-setNativeExceptionHandler(nativeErrorHandler, false, true);
+setJSExceptionHandler(errorHandler, false);
 
 AppRegistry.registerComponent(appName, () => App);

@@ -60,14 +60,3 @@ export const errorHandler = (error, isFatal) => {
     console.log('Unhandled not fatal error', e);
   }
 };
-
-export const nativeErrorHandler = (errorString) => {
-  console.log('Native error handler', errorString);
-  //Sentry.init({
-  //  dsn: 'https://c1ebae9159f741e8937abdbfbeba8e8a@o239606.ingest.sentry.io/5304101',
-  //});
-  Sentry.withScope(scope => {
-    scope.setExtra('App version - native error', JSON.stringify(VersionNumber));
-    Sentry.captureMessage(`Native fatal error.\n${errorString}`);
-  });
-}

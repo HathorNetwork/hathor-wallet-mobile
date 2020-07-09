@@ -19,7 +19,6 @@ import PinInput from '../components/PinInput';
 import Logo from '../components/Logo';
 import { isBiometryEnabled, getSupportedBiometry } from '../utils';
 import { lockScreen, unlockScreen, setLoadHistoryStatus } from '../actions';
-import * as Sentry from '@sentry/react-native';
 
 
 /**
@@ -150,17 +149,6 @@ class PinScreen extends React.Component {
   }
 
   validatePin = (text) => {
-    // XXX START TEST
-    if (text === '111111') {
-      throw Error('Wtf');
-    }
-    if (text === '222222') {
-      Sentry.init({
-        dsn: 'https://c1ebae9159f741e8937abdbfbeba8e8a@o239606.ingest.sentry.io/5304101',
-      });
-      Sentry.nativeCrash();
-    }
-    // XXX END TEST
     if (hathorLib.wallet.isPinCorrect(text)) {
       this.dismiss(text);
     } else {
