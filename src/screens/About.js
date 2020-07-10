@@ -5,6 +5,7 @@ import {
   StyleSheet,
   SafeAreaView,
   Text,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { t } from 'ttag';
@@ -28,6 +29,16 @@ export class About extends React.Component {
     },
   }));
 
+  touchCount = 0;
+
+  onPressLogo = () => {
+    // Method created to test error handling
+    this.touchCount += 1
+    if (this.touchCount === 10) {
+      throw new Error('Hathor test error.')
+    }
+  }
+
   render() {
     const Link = (props) => (
       <Text
@@ -45,9 +56,11 @@ export class About extends React.Component {
           onBackPress={() => this.props.navigation.goBack()}
         />
         <ScrollView pinchGestureEnabled={false} contentContainerStyle={this.style.view}>
-          <View style={this.props.logoView}>
-            <Logo />
-          </View>
+          <TouchableWithoutFeedback onPress={this.onPressLogo}>
+            <View style={this.props.logoView}>
+              <Logo />
+            </View>
+          </TouchableWithoutFeedback>
           <Text style={this.style.text}>{`v${VersionNumber.appVersion} (build ${VersionNumber.buildVersion})`}</Text>
 
           <Text style={this.style.title}>Hathor Labs</Text>
