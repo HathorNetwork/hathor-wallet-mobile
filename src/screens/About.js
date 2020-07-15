@@ -33,9 +33,9 @@ export class About extends React.Component {
 
   onPressLogo = () => {
     // Method created to test error handling
-    this.touchCount += 1
+    this.touchCount += 1;
     if (this.touchCount === 10) {
-      throw new Error('Hathor test error.')
+      throw new Error('Hathor test error.');
     }
   }
 
