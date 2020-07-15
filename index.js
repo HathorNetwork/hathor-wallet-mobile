@@ -13,9 +13,9 @@ import { name as appName } from './app.json';
 import { errorHandler } from './src/errorHandler';
 
 // - errorHandler is the callback
-// - 'true' is 'allowInDevMode' is an optional parameter
-//   If set to true the handler to be called in place of RED screen
-//   in development mode also
-setJSExceptionHandler(errorHandler, false);
+// - second parameter is an optional boolean and defines the error handler behavior
+//   If set to true the handler will be called in place of red screen
+//   in development mode also (default is false)
+setJSExceptionHandler(errorHandler);
 
 AppRegistry.registerComponent(appName, () => App);
