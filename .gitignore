@@ -60,3 +60,7 @@ buck-out/
 
 *.swp
 *.swo
+
+# Sentry properties
+android/sentry.properties
+ios/sentry.properties
