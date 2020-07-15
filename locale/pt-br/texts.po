@@ -3,6 +3,30 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
+#: src/errorHandler.js:44
+msgid "Unexpected error occurred"
+msgstr "Um erro inesperado ocorreu"
+
+#: src/errorHandler.js:45
+msgid ""
+"Unfortunately a fatal error happened and you need to restart your app.\n"
+"\n"
+"Before doing that, we kindly ask you to report this error to the Hathor "
+"team clicking on the button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+"Infelizmente um erro fatal ocorreu e você precisa reiniciar o seu aplicativo.\n"
+"\n"
+"Antes de fazer isso, nós pedimos que você envie esse erro para o time da Hathor "
+"clicando no botão abaixo."
+"\n"
+"Nenhum dado sensível será compartilhado."
+
+#: src/errorHandler.js:47
+msgid "Report error"
+msgstr "Reportar erro"
+
 #.  This should never happen!
 #: src/models.js:24
 msgid "Unknown"

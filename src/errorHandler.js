@@ -9,6 +9,7 @@ import { Alert, Clipboard } from 'react-native';
 import hathorLib from '@hathor/wallet-lib';
 import * as Sentry from '@sentry/react-native';
 import VersionNumber from 'react-native-version-number';
+import { t } from 'ttag';
 
 /**
  * Send error to Sentry
@@ -40,10 +41,10 @@ export const copyData = (error) => {
 export const errorHandler = (error, isFatal) => {
   if (isFatal) {
     Alert.alert(
-      'Unexpected error occurred',
-      '\nUnfortunately a fatal error happened and you need to restart your app.\n\nBefore doing that, we kindly ask you to report this error to the Hathor team clicking on the button below.\n\nNo sensitive data will be shared.',
+      t`Unexpected error occurred`,
+      t`\nUnfortunately a fatal error happened and you need to restart your app.\n\nBefore doing that, we kindly ask you to report this error to the Hathor team clicking on the button below.\n\nNo sensitive data will be shared.`,
       [{
-        text: 'Report error',
+        text: t`Report error`,
         onPress: () => {
           sentryReportError(error);
         }
