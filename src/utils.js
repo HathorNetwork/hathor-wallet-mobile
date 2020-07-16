@@ -72,7 +72,7 @@ export const getShortHash = (hash, length = 4) => (
  */
 export const getIntegerAmount = (value) => {
   const parsedValue = parseFloat(value.replace(',', '.'));
-  return parsedValue * (10 ** hathorLib.constants.DECIMAL_PLACES);
+  return Math.round(parsedValue * (10 ** hathorLib.constants.DECIMAL_PLACES));
 };
 
 export const getBalance = (tokenUid) => {
