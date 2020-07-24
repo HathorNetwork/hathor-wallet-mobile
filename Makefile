@@ -29,8 +29,13 @@ $(locale_out)/%/texts.po.json: $(locale_src)/%/texts.po
 	mkdir -p $(dir $@)
 	npx ttag po2json $< > $@
 
+check_po: STRICT = 0
 .PHONY: check_po
 check_po: _touch_pot $(src_files)
+
+check_po_strict: STRICT = 1
+.PHONY: check_po_strict
+check_po_strict: _touch_pot $(src_files)
 
 .PHONY: check_pot
 check_pot:
@@ -41,5 +46,9 @@ _touch_pot:
 	touch $(locale_src)/texts.pot
 
 %.po: $(locale_src)/texts.pot
-	msgcmp $@ $<
+	if [ $(STRICT) = 1 ]; then \
+		msgcmp $@ $<; \
+	else \
+		msgcmp --use-untranslated $@ $<; \
+	fi
 	touch $@
