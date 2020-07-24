@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Alert, Clipboard } from 'react-native';
+import { Alert } from 'react-native';
 import hathorLib from '@hathor/wallet-lib';
 import * as Sentry from '@sentry/react-native';
 import VersionNumber from 'react-native-version-number';
@@ -20,19 +20,21 @@ export const sentryReportError = (error) => {
   });
   Sentry.withScope((scope) => {
     scope.setExtra('App version', JSON.stringify(VersionNumber));
+    const data = [];
+    const accessData = hathorLib.wallet.getWalletAccessData();
+    for (const key in accessData) {
+      const obj = {
+        key,
+        type: typeof accessData[key],
+      }
+      if (typeof accessData[key] === 'string') {
+        obj['size'] = accessData[key].length;
+      }
+      data.push(obj);
+    }
+    scope.setExtra('Access information', data);
     Sentry.captureException(error);
   });
-};
-
-/**
- * Copy access data from storage to the clipboard.
- * This could be useful to ask the user to copy it and check if
- * all keys are correctly there.
- * With this we prevent sending sensitive data to Sentry
- */
-export const copyData = (error) => {
-  const accessData = JSON.stringify(hathorLib.wallet.getWalletAccessData());
-  Clipboard.setString(`${error.name} - ${error.message}\n${accessData}`);
 };
 
 /**
@@ -47,12 +49,6 @@ export const errorHandler = (error, isFatal) => {
         text: t`Report error`,
         onPress: () => {
           sentryReportError(error);
-        }
-      },
-      {
-        text: 'Copy data',
-        onPress: () => {
-          copyData(error);
         }
       }]
     );
