@@ -29,10 +29,14 @@ $(locale_out)/%/texts.po.json: $(locale_src)/%/texts.po
 	mkdir -p $(dir $@)
 	npx ttag po2json $< > $@
 
+# check_po allow untranslated messages, it only checks that all .po files
+# have all messages
 check_po: STRICT = 0
 .PHONY: check_po
 check_po: _touch_pot $(src_files)
 
+# check_po_strict does not allow untranslated messages
+# it checks that all .po files have all messages and they are all translated
 check_po_strict: STRICT = 1
 .PHONY: check_po_strict
 check_po_strict: _touch_pot $(src_files)
