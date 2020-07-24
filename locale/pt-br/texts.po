@@ -21,6 +21,7 @@ msgstr ""
 "\n"
 "Antes de fazer isso, nós pedimos que você envie esse erro para o time da "
 "Hathor clicando no botão abaixo.\n"
+"\n"
 "Nenhum dado sensível será compartilhado."
 
 #: src/errorHandler.js:47
