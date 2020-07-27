@@ -102,3 +102,8 @@
         1. No more register or create token options on Settings screen.
         1. On Send Tokens and Create Payment Request screens, there's no button to select tokens.
         1. [If modified `_PRIMARY_COLOR` on config.js] Colors must have changed.
+
+1. **Translations**
+    1. Run `make check_po_strict`.
+    1. We should never have any problems with pt-br translation. We should have all texts translated.
+    1. Check if all untranslated texts are known.
