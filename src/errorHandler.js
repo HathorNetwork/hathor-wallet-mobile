@@ -22,13 +22,13 @@ export const sentryReportError = (error) => {
     scope.setExtra('App version', JSON.stringify(VersionNumber));
     const data = [];
     const accessData = hathorLib.wallet.getWalletAccessData();
-    for (const key in accessData) {
+    for (const [key, value] of Object.entries(accessData)) {
       const obj = {
         key,
-        type: typeof accessData[key],
-      }
-      if (typeof accessData[key] === 'string') {
-        obj['size'] = accessData[key].length;
+        type: typeof value,
+      };
+      if (typeof value === 'string') {
+        obj.size = value.length;
       }
       data.push(obj);
     }
