@@ -14,7 +14,7 @@ import { t } from 'ttag';
 /**
  * Send error to Sentry
  */
-export const sentryReportError = (error) => {
+const sentryReportError = (error) => {
   Sentry.init({
     dsn: 'https://c1ebae9159f741e8937abdbfbeba8e8a@o239606.ingest.sentry.io/5304101',
   });
@@ -44,13 +44,18 @@ export const errorHandler = (error, isFatal) => {
   if (isFatal) {
     Alert.alert(
       t`Unexpected error occurred`,
-      t`\nUnfortunately a fatal error happened and you need to restart your app.\n\nBefore doing that, we kindly ask you to report this error to the Hathor team clicking on the button below.\n\nNo sensitive data will be shared.`,
-      [{
-        text: t`Report error`,
-        onPress: () => {
-          sentryReportError(error);
+      t`\nUnfortunately an unhandled error happened. We kindly ask you to report this error to the Hathor team clicking on the button below.\n\nNo sensitive data will be shared.`,
+      [
+        {
+          text: t`Report error`,
+          onPress: () => {
+            sentryReportError(error);
+          }
+        },
+        {
+          text: t`Close`,
         }
-      }]
+      ]
     );
   } else {
     // So that we can see it in the ADB logs in case of Android if needed
