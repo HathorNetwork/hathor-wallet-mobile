@@ -8,22 +8,24 @@ msgstr ""
 "X-Generator: POEditor.com\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/errorHandler.js:44
+#: src/errorHandler.js:46
 msgid "Unexpected error occurred"
 msgstr ""
 
-#: src/errorHandler.js:45
+#: src/errorHandler.js:47
 msgid ""
-"Unfortunately a fatal error happened and you need to restart your app.\n"
-"\n"
-"Before doing that, we kindly ask you to report this error to the Hathor team "
-"clicking on the button below.\n"
+"Unfortunately an unhandled error happened. We kindly ask you to report this "
+"error to the Hathor team clicking on the button below.\n"
 "\n"
 "No sensitive data will be shared."
 msgstr ""
 
-#: src/errorHandler.js:47
+#: src/errorHandler.js:50
 msgid "Report error"
+msgstr ""
+
+#: src/errorHandler.js:56
+msgid "Close"
 msgstr ""
 
 #.  This should never happen!
