@@ -10,13 +10,14 @@ import hathorLib from '@hathor/wallet-lib';
 import * as Sentry from '@sentry/react-native';
 import VersionNumber from 'react-native-version-number';
 import { t } from 'ttag';
+import { SENTRY_DSN } from './constants';
 
 /**
  * Send error to Sentry
  */
 const sentryReportError = (error) => {
   Sentry.init({
-    dsn: 'https://c1ebae9159f741e8937abdbfbeba8e8a@o239606.ingest.sentry.io/5304101',
+    dsn: SENTRY_DSN,
   });
   Sentry.withScope((scope) => {
     scope.setExtra('App version', JSON.stringify(VersionNumber));
