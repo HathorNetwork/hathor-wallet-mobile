@@ -40,6 +40,9 @@ import { TxHistory } from './models';
  *   words {str} wallet words
  *   pin {str} pin selected by user
  * }
+ *
+ * showErrorModal {boolean} if app should show a modal after the error alert
+ * errorReported {boolean} if user reported the error to Sentry
  */
 const initialState = {
   tokensHistory: {},
@@ -54,6 +57,8 @@ const initialState = {
   lockScreen: true,
   initWallet: null,
   height: 0,
+  showErrorModal: false,
+  errorReported: false,
 };
 
 const reducer = (state = initialState, action) => {
@@ -94,6 +99,8 @@ const reducer = (state = initialState, action) => {
       return onSetInitWallet(state, action);
     case types.UPDATE_HEIGHT:
       return onUpdateHeight(state, action);
+    case types.SET_ERROR_MODAL:
+      return onSetErrorModal(state, action);
     default:
       return state;
   }
@@ -426,5 +433,11 @@ const onUpdateHeight = (state, action) => {
 
   return state;
 };
+
+const onSetErrorModal = (state, action) => ({
+  ...state,
+  showErrorModal: true,
+  errorReported: action.payload.errorReported,
+});
 
 export const store = createStore(reducer, applyMiddleware(thunk));

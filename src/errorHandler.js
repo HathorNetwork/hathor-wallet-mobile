@@ -11,6 +11,8 @@ import * as Sentry from '@sentry/react-native';
 import VersionNumber from 'react-native-version-number';
 import { t } from 'ttag';
 import { SENTRY_DSN } from './constants';
+import { store } from './reducer';
+import { setErrorModal } from './actions';
 
 /**
  * Send error to Sentry
@@ -36,6 +38,8 @@ const sentryReportError = (error) => {
     scope.setExtra('Access information', data);
     Sentry.captureException(error);
   });
+
+  store.dispatch(setErrorModal(true));
 };
 
 /**
@@ -45,7 +49,7 @@ export const errorHandler = (error, isFatal) => {
   if (isFatal) {
     Alert.alert(
       t`Unexpected error occurred`,
-      t`\nUnfortunately an unhandled error happened. We kindly ask you to report this error to the Hathor team clicking on the button below.\n\nNo sensitive data will be shared.`,
+      t`Unfortunately an unhandled error happened and you will need to restart your app.\n\nWe kindly ask you to report this error to the Hathor team clicking on the button below.\n\nNo sensitive data will be shared.`,
       [
         {
           text: t`Report error`,
@@ -55,8 +59,12 @@ export const errorHandler = (error, isFatal) => {
         },
         {
           text: t`Close`,
+          onPress: () => {
+            store.dispatch(setErrorModal(false));
+          }
         }
-      ]
+      ],
+      { cancelable: false }
     );
   } else {
     // So that we can see it in the ADB logs in case of Android if needed
