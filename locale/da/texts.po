@@ -8,23 +8,26 @@ msgstr ""
 "X-Generator: POEditor.com\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/errorHandler.js:46
+#: src/errorHandler.js:51
 msgid "Unexpected error occurred"
 msgstr ""
 
-#: src/errorHandler.js:47
+#: src/errorHandler.js:52
 msgid ""
-"Unfortunately an unhandled error happened. We kindly ask you to report this "
-"error to the Hathor team clicking on the button below.\n"
+"Unfortunately an unhandled error happened and you will need to restart your "
+"app.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
 "\n"
 "No sensitive data will be shared."
 msgstr ""
 
-#: src/errorHandler.js:50
+#: src/errorHandler.js:55
 msgid "Report error"
 msgstr ""
 
-#: src/errorHandler.js:56
+#: src/errorHandler.js:61
 msgid "Close"
 msgstr ""
 
@@ -695,6 +698,20 @@ msgstr "Afregistrer token"
 #: src/components/CopyClipboard.js:37
 msgid "Copied to clipboard!"
 msgstr "Kopieret til udklipsholder!"
+
+#: src/components/ErrorModal.js:27
+msgid ""
+"Thanks for reporting the error to the team. We will investigate it to "
+"prevent from happening again."
+msgstr ""
+
+#: src/components/ErrorModal.js:39
+msgid "Unexpected error"
+msgstr ""
+
+#: src/components/ErrorModal.js:43
+msgid "Please restart your app to continue using the wallet."
+msgstr ""
 
 #: src/components/NewPaymentRequest.js:167
 msgid "Create payment request"

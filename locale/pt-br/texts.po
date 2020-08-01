@@ -3,27 +3,32 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
-#: src/errorHandler.js:46
+#: src/errorHandler.js:51
 msgid "Unexpected error occurred"
 msgstr "Um erro inesperado ocorreu"
 
-#: src/errorHandler.js:47
+#: src/errorHandler.js:52
+#, fuzzy
 msgid ""
-"Unfortunately an unhandled error happened. We kindly ask you to report this "
-"error to the Hathor team clicking on the button below.\n"
+"Unfortunately an unhandled error happened and you will need to restart your "
+"app.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
 "\n"
 "No sensitive data will be shared."
 msgstr ""
-"Infelizmente um erro não tratado ocorreu. Nós pedimos que você envie "
-"esse erro para o time da Hathor clicando no botão abaixo.\n"
+"Infelizmente um erro não tratado ocorreu e você precisa reiniciar o aplicativo.\n"
+"\n"
+"Nós pedimos que você envie esse erro para o time da Hathor clicando no botão abaixo.\n"
 "\n"
 "Nenhum dado sensível será compartilhado."
 
-#: src/errorHandler.js:50
+#: src/errorHandler.js:55
 msgid "Report error"
 msgstr "Reportar erro"
 
-#: src/errorHandler.js:56
+#: src/errorHandler.js:61
 msgid "Close"
 msgstr "Fechar"
 
@@ -701,6 +706,22 @@ msgstr "Desregistrar token"
 #: src/components/CopyClipboard.js:37
 msgid "Copied to clipboard!"
 msgstr "Copiado!"
+
+#: src/components/ErrorModal.js:27
+msgid ""
+"Thanks for reporting the error to the team. We will investigate it to "
+"prevent from happening again."
+msgstr "Obrigado por enviar o erro para o time. Nós vamos investigá-lo "
+"para que não aconteça mais."
+
+#: src/components/ErrorModal.js:39
+#, fuzzy
+msgid "Unexpected error"
+msgstr "Um erro inesperado ocorreu"
+
+#: src/components/ErrorModal.js:43
+msgid "Please restart your app to continue using the wallet."
+msgstr "Por favor reinicie seu aplicativo para continuar usando a wallet."
 
 #: src/components/NewPaymentRequest.js:167
 msgid "Create payment request"
