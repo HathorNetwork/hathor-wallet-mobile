@@ -8,7 +8,6 @@ msgid "Unexpected error occurred"
 msgstr "Um erro inesperado ocorreu"
 
 #: src/errorHandler.js:52
-#, fuzzy
 msgid ""
 "Unfortunately an unhandled error happened and you will need to restart your "
 "app.\n"
@@ -715,9 +714,8 @@ msgstr "Obrigado por enviar o erro para o time. Nós vamos investigá-lo "
 "para que não aconteça mais."
 
 #: src/components/ErrorModal.js:39
-#, fuzzy
 msgid "Unexpected error"
-msgstr "Um erro inesperado ocorreu"
+msgstr "Erro inesperado"
 
 #: src/components/ErrorModal.js:43
 msgid "Please restart your app to continue using the wallet."
