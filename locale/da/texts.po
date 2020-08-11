@@ -10,7 +10,7 @@ msgstr ""
 
 #: src/errorHandler.js:51
 msgid "Unexpected error occurred"
-msgstr ""
+msgstr "En uventet fejl opstod"
 
 #: src/errorHandler.js:52
 msgid ""
@@ -22,14 +22,19 @@ msgid ""
 "\n"
 "No sensitive data will be shared."
 msgstr ""
+"Desværre opstod der en uventet fejl og du skal genstarte app'en.\n"
+"\n"
+"Vi vil værdsætte det, hvis du rapporterer denne fejl til Hathor teamet, ved at trykke på knappen herunder.\n"
+"\n"
+"Ingen følsomme data vil blive delt."
 
 #: src/errorHandler.js:55
 msgid "Report error"
-msgstr ""
+msgstr "Rapporter fejl"
 
 #: src/errorHandler.js:61
 msgid "Close"
-msgstr ""
+msgstr "Luk"
 
 #.  This should never happen!
 #: src/models.js:24
@@ -703,15 +708,15 @@ msgstr "Kopieret til udklipsholder!"
 msgid ""
 "Thanks for reporting the error to the team. We will investigate it to "
 "prevent from happening again."
-msgstr ""
+msgstr "Tak for at rapportere fejlen til teamet. Vi vil undersøge det, for at forhindre at det sker igen."
 
 #: src/components/ErrorModal.js:39
 msgid "Unexpected error"
-msgstr ""
+msgstr "Uventet fejl"
 
 #: src/components/ErrorModal.js:43
 msgid "Please restart your app to continue using the wallet."
-msgstr ""
+msgstr "Genstart venligst app'en for at kunne bruge din wallet igen."
 
 #: src/components/NewPaymentRequest.js:167
 msgid "Create payment request"
