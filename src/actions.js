@@ -30,6 +30,7 @@ export const types = {
   SET_LOCK_SCREEN: 'SET_LOCK_SCREEN',
   SET_INIT_WALLET: 'SET_INIT_WALLET',
   UPDATE_HEIGHT: 'UPDATE_HEIGHT',
+  SET_ERROR_MODAL: 'SET_ERROR_MODAL',
 };
 
 /**
@@ -175,3 +176,10 @@ export const loadHistory = () => (dispatch) => {
     dispatch(fetchHistoryError());
   });
 };
+
+/**
+ * errorReported {boolean} true if user reported the error to sentry
+ */
+export const setErrorModal = (errorReported) => (
+  { type: types.SET_ERROR_MODAL, payload: { errorReported } }
+);

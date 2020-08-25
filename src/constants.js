@@ -17,6 +17,7 @@ import {
   _IS_MULTI_TOKEN as IS_MULTI_TOKEN,
   _DEFAULT_TOKEN as DEFAULT_TOKEN,
   _PRIMARY_COLOR as PRIMARY_COLOR,
+  _SENTRY_DSN as SENTRY_DSN,
 } from './config';
 
 hathorLib.storage.setStore(new AsyncStorageStore());
@@ -47,7 +48,7 @@ export const TOKEN_DEPOSIT_URL = 'https://gitlab.com/HathorNetwork/rfcs/blob/mas
 /**
  * Re-export variables from config.js.
  */
-export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR };
+export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR, SENTRY_DSN };
 
 /**
  * Minimum job estimation to show to the user in seconds when mining a tx

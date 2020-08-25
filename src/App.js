@@ -57,6 +57,7 @@ import CreateTokenSymbol from './screens/CreateTokenSymbol';
 import CreateTokenAmount from './screens/CreateTokenAmount';
 import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
+import ErrorModal from './components/ErrorModal';
 
 
 const InitStack = createStackNavigator(
@@ -382,6 +383,7 @@ const NavigationContainer = createAppContainer(SwitchNavigator);
 const App = () => (
   <Provider store={store}>
     <NavigationContainer />
+    <ErrorModal />
   </Provider>
 );
 

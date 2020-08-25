@@ -3,6 +3,34 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
+#: src/errorHandler.js:51
+msgid "Unexpected error occurred"
+msgstr "Um erro inesperado ocorreu"
+
+#: src/errorHandler.js:52
+msgid ""
+"Unfortunately an unhandled error happened and you will need to restart your "
+"app.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+"Infelizmente um erro não tratado ocorreu e você precisa reiniciar o aplicativo.\n"
+"\n"
+"Nós pedimos que você envie esse erro para o time da Hathor clicando no botão abaixo.\n"
+"\n"
+"Nenhum dado sensível será compartilhado."
+
+#: src/errorHandler.js:55
+msgid "Report error"
+msgstr "Reportar erro"
+
+#: src/errorHandler.js:61
+msgid "Close"
+msgstr "Fechar"
+
 #.  This should never happen!
 #: src/models.js:24
 msgid "Unknown"
@@ -52,24 +80,24 @@ msgstr "[Última] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:183
+#: src/utils.js:184
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
-#: src/screens/About.js:44
+#: src/screens/About.js:55
 msgid "ABOUT"
 msgstr "SOBRE"
 
-#: src/screens/About.js:55
+#: src/screens/About.js:68
 msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr ""
 "Este aplicativo foi desenvolvido pela Hathor Labs e é distribuído de graça."
 
-#: src/screens/About.js:59 src/screens/InitWallet.js:60
+#: src/screens/About.js:72 src/screens/InitWallet.js:60
 msgid "This wallet is connected to the **mainnet**."
 msgstr "Esta wallet está conectada à **mainnet**."
 
-#: src/screens/About.js:62 src/screens/InitWallet.js:63
+#: src/screens/About.js:75 src/screens/InitWallet.js:63
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
 "So, we advise you to keep only a small amount of tokens here, such as pocket "
@@ -79,7 +107,7 @@ msgstr ""
 "Por isso, nós aconselhamos que você mantenha apenas uma pequena quantidade "
 "de tokens aqui."
 
-#: src/screens/About.js:67 src/screens/InitWallet.js:68
+#: src/screens/About.js:80 src/screens/InitWallet.js:68
 msgid ""
 "For further information, check out our website |link:https://hathor."
 "network/|."
@@ -100,60 +128,60 @@ msgstr "Para conferir que você salvou,"
 msgid "Please select the word that corresponds to the number below:"
 msgstr "Por favor, selecione a palavra que corrende ao número abaixo:"
 
-#: src/screens/ChangePin.js:102
+#: src/screens/ChangePin.js:107
 msgid "Incorrect PIN code."
 msgstr "PIN incorreto."
 
-#: src/screens/ChangePin.js:129
+#: src/screens/ChangePin.js:142
 msgid "PIN codes don't match."
 msgstr "Os PINs estão diferentes."
 
 #.  Should never get here because we've done all the validations before
-#: src/screens/ChangePin.js:154
+#: src/screens/ChangePin.js:167
 msgid "Error while changing PIN"
 msgstr "Erro ao mudar o PIN"
 
-#: src/screens/ChangePin.js:160
+#: src/screens/ChangePin.js:173
 msgid "Please enter your **current PIN**"
 msgstr "Por favor entre com o seu **PIN atual**"
 
-#: src/screens/ChangePin.js:173
+#: src/screens/ChangePin.js:186
 msgid "Please enter your **new PIN**"
 msgstr "Por favor, entre com o seu **novo PIN**"
 
-#: src/screens/ChangePin.js:186
+#: src/screens/ChangePin.js:199
 msgid "Please enter your **new PIN** again"
 msgstr "Por favor, entre novamente com o seu **novo PIN**"
 
-#: src/screens/ChangePin.js:201
+#: src/screens/ChangePin.js:214
 msgid "New PIN recorded"
 msgstr "Novo PIN salvo"
 
-#: src/screens/ChangePin.js:211
+#: src/screens/ChangePin.js:224
 msgid "CHANGE PIN"
 msgstr "MUDAR PIN"
 
-#: src/screens/ChoosePinScreen.js:124
+#: src/screens/ChoosePinScreen.js:133
 msgid "Enter your new PIN code"
 msgstr "Digite seu novo PIN"
 
-#: src/screens/ChoosePinScreen.js:136
+#: src/screens/ChoosePinScreen.js:145
 msgid "Enter your new PIN code again"
 msgstr "Digite seu novo PIN novamente"
 
-#: src/screens/ChoosePinScreen.js:68
+#: src/screens/ChoosePinScreen.js:69
 msgid "Create a new PIN code,"
 msgstr "Criar um novo PIN,"
 
-#: src/screens/ChoosePinScreen.js:71
+#: src/screens/ChoosePinScreen.js:72
 msgid "To confirm the PIN,"
 msgstr "Para confirmar o PIN,"
 
-#: src/screens/ChoosePinScreen.js:150
+#: src/screens/ChoosePinScreen.js:159
 msgid "PIN codes don't match. Try again."
 msgstr "Os PINs estão diferentes. Tente novamente."
 
-#: src/screens/ChoosePinScreen.js:173
+#: src/screens/ChoosePinScreen.js:182
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
@@ -200,6 +228,7 @@ msgstr "Autorizar criação de token"
 
 #.  eslint-disable-next-line react/jsx-indent
 #: src/screens/CreateTokenConfirm.js:98
+#, javascript-format
 msgid "**${ _this.name }** created successfully"
 msgstr "**${ _this.name }** criado com sucesso"
 
@@ -246,7 +275,7 @@ msgstr ""
 msgid "I understand"
 msgstr "Eu concordo"
 
-#: src/screens/CreateTokenDetail.js:42 src/screens/TokenDetail.js:41
+#: src/screens/CreateTokenDetail.js:42 src/screens/TokenDetail.js:42
 msgid "TOKEN DETAILS"
 msgstr "DETALHES DO TOKEN"
 
@@ -284,11 +313,11 @@ msgstr "O símbolo é a versão reduzida do nome do seu token"
 msgid "E.g. HTR"
 msgstr "Por exemplo, HTR"
 
-#: src/screens/Dashboard.js:152 src/screens/RegisterTokenManual.js:133
+#: src/screens/Dashboard.js:46 src/screens/RegisterTokenManual.js:133
 msgid "Register token"
 msgstr "Registrar um token"
 
-#: src/screens/Dashboard.js:159
+#: src/screens/Dashboard.js:53
 msgid "TOKENS"
 msgstr "TOKENS"
 
@@ -365,16 +394,16 @@ msgstr "Palavras"
 msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
-#: src/screens/LoadHistoryScreen.js:141
+#: src/screens/LoadHistoryScreen.js:140
 msgid "Loading your transactions"
 msgstr "Carregando suas transações"
 
-#: src/screens/LoadHistoryScreen.js:144
+#: src/screens/LoadHistoryScreen.js:143
 #, javascript-format
 msgid "**${ _this3.state.transactions } transactions** found"
 msgstr "**${ _this3.state.transactions } transações** encontradas"
 
-#: src/screens/LoadHistoryScreen.js:147
+#: src/screens/LoadHistoryScreen.js:146
 msgid "**${ _this3.state.addresses } addresses** found"
 msgstr "**${ _this3.state.addresses } endereços** encontrados"
 
@@ -429,23 +458,23 @@ msgstr "Recebido"
 msgid "Waiting confirmation"
 msgstr "Aguardando confirmação"
 
-#: src/screens/PinScreen.js:157
+#: src/screens/PinScreen.js:188
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
-#: src/screens/PinScreen.js:53
+#: src/screens/PinScreen.js:54
 msgid "Enter your PIN Code "
 msgstr "Digite seu PIN "
 
-#: src/screens/PinScreen.js:54
+#: src/screens/PinScreen.js:55
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
-#: src/screens/PinScreen.js:169
+#: src/screens/PinScreen.js:200
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:172 src/screens/Settings.js:128
+#: src/screens/PinScreen.js:203 src/screens/Settings.js:131
 msgid "Reset wallet"
 msgstr "Resetar a wallet"
 
@@ -557,18 +586,18 @@ msgstr "ENVIAR"
 msgid "Address to send"
 msgstr "Endereço para enviar"
 
-#: src/screens/SendAmountInput.js:94
+#: src/screens/SendAmountInput.js:95
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:118 src/screens/SendConfirmScreen.js:125
+#: src/screens/SendAmountInput.js:119 src/screens/SendConfirmScreen.js:125
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:126 src/screens/SendConfirmScreen.js:133
+#: src/screens/SendAmountInput.js:131 src/screens/SendConfirmScreen.js:133
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
@@ -617,31 +646,31 @@ msgstr "Você não tem o token requisitado [${ tokenLabel }]"
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
-#: src/screens/Settings.js:91
+#: src/screens/Settings.js:86
 msgid "You are connected to"
 msgstr "Você está conectado à"
 
-#: src/screens/Settings.js:103
+#: src/screens/Settings.js:98
 msgid "Connected to"
 msgstr "Conectado ao servidor"
 
-#: src/screens/Settings.js:116
+#: src/screens/Settings.js:111
 msgid "Security"
 msgstr "Segurança"
 
-#: src/screens/Settings.js:120
+#: src/screens/Settings.js:117
 msgid "Create a new token"
 msgstr "Criar um novo token"
 
-#: src/screens/Settings.js:124
+#: src/screens/Settings.js:125
 msgid "Register a token"
 msgstr "Registrar um token"
 
-#: src/screens/Settings.js:132
+#: src/screens/Settings.js:135
 msgid "About"
 msgstr "Sobre"
 
-#: src/screens/TokenDetail.js:33
+#: src/screens/TokenDetail.js:34
 msgid "Unregister"
 msgstr "Desregistrar"
 
@@ -677,7 +706,22 @@ msgstr "Desregistrar token"
 msgid "Copied to clipboard!"
 msgstr "Copiado!"
 
-#: src/components/NewPaymentRequest.js:162
+#: src/components/ErrorModal.js:27
+msgid ""
+"Thanks for reporting the error to the team. We will investigate it to "
+"prevent from happening again."
+msgstr "Obrigado por enviar o erro para o time. Nós vamos investigá-lo "
+"para que não aconteça mais."
+
+#: src/components/ErrorModal.js:39
+msgid "Unexpected error"
+msgstr "Erro inesperado"
+
+#: src/components/ErrorModal.js:43
+msgid "Please restart your app to continue using the wallet."
+msgstr "Por favor reinicie seu aplicativo para continuar usando a wallet."
+
+#: src/components/NewPaymentRequest.js:167
 msgid "Create payment request"
 msgstr "Criar requisição de pagamento"
 

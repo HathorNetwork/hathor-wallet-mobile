@@ -3,6 +3,8 @@ package com.hathormobile;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import io.sentry.RNSentryPackage;
+import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
 import com.reactcommunity.rnlocalize.RNLocalizePackage;
 import com.apsl.versionnumber.RNVersionNumberPackage;
 import com.swmansion.reanimated.ReanimatedPackage;
@@ -37,6 +39,8 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNSentryPackage(),
+            new ReactNativeExceptionHandlerPackage(),
             new RNLocalizePackage(),
             new RNVersionNumberPackage(),
             new ReanimatedPackage(),
