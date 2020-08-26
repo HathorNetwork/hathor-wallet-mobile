@@ -21,7 +21,7 @@ import {
 } from './config';
 
 hathorLib.storage.setStore(new AsyncStorageStore());
-hathorLib.storage.setItem('wallet:server', 'https://node2.mainnet.hathor.network/v1a/');
+hathorLib.storage.setItem('wallet:server', 'https://node1.mainnet.hathor.network/v1a/');
 hathorLib.network.setNetwork('mainnet');
 
 
