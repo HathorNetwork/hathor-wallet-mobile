@@ -134,26 +134,23 @@ export const sendTx = (amount, address, token, pinCode) => () => {
   const walletData = hathorLib.wallet.getWalletData();
   const historyTxs = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
   const ret = hathorLib.wallet.prepareSendTokensData(data, token, true, historyTxs, [token]);
-  return new Promise((resolve, reject) => {
-    if (ret.success) {
-      try {
-        hathorLib.transaction.sendTransaction(ret.data, pinCode).then(() => {
-          resolve();
-        }, (error) => {
-          reject(error);
-        });
-      } catch (e) {
-        if (e instanceof hathorLib.errors.AddressError
-            || e instanceof hathorLib.errors.OutputValueError
-            || e instanceof hathorLib.errors.MaximumNumberOutputsError
-            || e instanceof hathorLib.errors.MaximumNumberInputsError) {
-          reject(e.message);
-        }
+  if (ret.success) {
+    try {
+      const preparedData = hathorLib.transaction.prepareData(ret.data, pinCode);
+      const sendTransaction = new hathorLib.SendTransaction({ data: preparedData });
+      return { success: true, sendTransaction };
+    } catch (e) {
+      if (e instanceof hathorLib.errors.AddressError
+          || e instanceof hathorLib.errors.OutputValueError
+          || e instanceof hathorLib.errors.MaximumNumberOutputsError
+          || e instanceof hathorLib.errors.MaximumNumberInputsError) {
+        return { success: false, message: e.message };
       }
-    } else {
-      reject(ret.message);
+      throw e;
     }
-  });
+  } else {
+    return { success: false, message: ret.message };
+  }
 };
 
 export const loadHistory = () => (dispatch) => {
