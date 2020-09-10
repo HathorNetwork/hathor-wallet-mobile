@@ -22,10 +22,9 @@ import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import FeedbackModal from '../components/FeedbackModal';
-import Spinner from '../components/Spinner';
+import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import TextFmt from '../components/TextFmt';
 import { newToken, updateSelectedToken } from '../actions';
-import checkIcon from '../assets/images/icCheckBig.png';
 import errorIcon from '../assets/images/icErrorBig.png';
 
 
@@ -55,28 +54,40 @@ class CreateTokenConfirm extends React.Component {
     this.symbol = this.props.navigation.getParam('symbol');
   }
 
+  /**
+   * Prepare data and execute create token
+   * If success when preparing, show feedback modal, otherwise show error
+   *
+   * @param {String} pinCode User PIN
+   */
   executeCreate = (pin) => {
-    // show loading modal
-    this.setState({
-      modal:
-        // eslint-disable-next-line react/jsx-indent
-        <FeedbackModal
-          icon={<Spinner />}
-          text={t`Creating token`}
-        />,
-    });
-
     const address = hathorLib.wallet.getAddressToUse();
-    const retPromise = hathorLib.tokens.createToken(
+    const ret = hathorLib.tokens.createToken(
       address, this.name, this.symbol, this.amount, pin
     );
-    retPromise.then((token) => {
-      this.onSuccess(token);
-    }, (e) => {
-      this.onError(e.message);
-    });
+
+    if (ret.success) {
+      // show loading modal
+      this.setState({
+        modal:
+          // eslint-disable-next-line react/jsx-indent
+          <SendTransactionFeedbackModal
+            text={t`Creating token`}
+            sendTransaction={ret.sendTransaction}
+            successText={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
+            onTxSuccess={this.onTxSuccess}
+            onDismissSuccess={this.exitScreen}
+            onDismissError={() => this.setState({ modal: null })}
+          />,
+      });
+    } else {
+      this.onError(ret.message);
+    }
   }
 
+  /**
+   * Executed when user clicks to create the token and opens the PIN screen
+   */
   onSendPress = () => {
     const params = {
       cb: this.executeCreate,
@@ -87,20 +98,22 @@ class CreateTokenConfirm extends React.Component {
     this.props.navigation.navigate('PinScreen', params);
   }
 
-  onSuccess = (token) => {
+  /**
+   * Method execute after creating the token with success
+   *
+   * @param {Object} tx Create token tx data
+   */
+  onTxSuccess = (tx) => {
+    const token = { uid: tx.hash, name: this.name, symbol: this.symbol };
     this.props.newToken(token);
     this.props.updateSelectedToken(token);
-    this.setState({
-      modal:
-        // eslint-disable-next-line react/jsx-indent
-        <FeedbackModal
-          icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-          text={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
-          onDismiss={this.exitScreen}
-        />,
-    });
   }
 
+  /**
+   * Show error message if there is one while creating the token
+   *
+   * @param {String} message Error message
+   */
   onError = (message) => {
     this.setState({
       modal:
@@ -113,6 +126,9 @@ class CreateTokenConfirm extends React.Component {
     });
   }
 
+  /**
+   * Method executed after dismiss success modal
+   */
   exitScreen = () => {
     this.setState({ modal: null });
     this.props.navigation.navigate('CreateTokenDetail');

@@ -19,6 +19,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
 import { setInitWallet, unlockScreen } from '../actions';
+import { PIN_SIZE } from '../constants';
 
 import baseStyle from '../styles/init';
 
@@ -92,8 +93,12 @@ class ChoosePinScreen extends React.Component {
   }
 
   onChangePin1 = (text) => {
+    if (text.length > PIN_SIZE) {
+      return;
+    }
+
     this.setState({ pin1: text });
-    if (text.length === 6) {
+    if (text.length === PIN_SIZE) {
       setTimeout(this.moveToPin2, 500);
     }
   }
@@ -105,14 +110,18 @@ class ChoosePinScreen extends React.Component {
   }
 
   onChangePin2 = (text) => {
+    if (text.length > PIN_SIZE) {
+      return;
+    }
+
     this.setState({ pin2: text, pin2Color: 'black', error: null });
-    if (text.length === 6) {
+    if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin(text), 300);
     }
   }
 
   validatePin = (text) => {
-    if (this.state.pin1 === this.state.pin2) {
+    if (this.state.pin1 === text) {
       this.setState({ pin2Color: '#0DA0A0', done: true });
     } else {
       this.removeOneChar();
@@ -123,9 +132,9 @@ class ChoosePinScreen extends React.Component {
     <View style={this.style.pinView}>
       <Text style={this.style.pinText}>{t`Enter your new PIN code`}</Text>
       <PinInput
-        maxLength={6}
+        maxLength={PIN_SIZE}
         onChangeText={this.onChangePin1}
-        color={(this.state.pin1.length < 6 ? 'black' : '#0DA0A0')}
+        color={(this.state.pin1.length < PIN_SIZE ? 'black' : '#0DA0A0')}
         value={this.state.pin1}
       />
     </View>
@@ -135,7 +144,7 @@ class ChoosePinScreen extends React.Component {
     <View style={this.style.pinView}>
       <Text style={this.style.pinText}>{t`Enter your new PIN code again`}</Text>
       <PinInput
-        maxLength={6}
+        maxLength={PIN_SIZE}
         onChangeText={this.onChangePin2}
         color={this.state.pin2Color}
         value={this.state.pin2}

@@ -13,6 +13,29 @@ msgstr ""
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 "X-Generator: Poedit 2.2.4\n"
 
+#: src/errorHandler.js:51
+msgid "Unexpected error occurred"
+msgstr ""
+
+#: src/errorHandler.js:52
+msgid ""
+"Unfortunately an unhandled error happened and you will need to restart your "
+"app.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+
+#: src/errorHandler.js:55
+msgid "Report error"
+msgstr ""
+
+#: src/errorHandler.js:61
+msgid "Close"
+msgstr ""
+
 #.  This should never happen!
 #: src/models.js:24
 msgid "Unknown"
@@ -62,23 +85,23 @@ msgstr "[Последний] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:183
+#: src/utils.js:184
 msgid "Invalid address"
 msgstr "Неправильный адрес"
 
-#: src/screens/About.js:44
+#: src/screens/About.js:55
 msgid "ABOUT"
 msgstr "О НАС"
 
-#: src/screens/About.js:55
+#: src/screens/About.js:68
 msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr "Это приложение разработано Hathor Labs и распространяется бесплатно."
 
-#: src/screens/About.js:59 src/screens/InitWallet.js:60
+#: src/screens/About.js:72 src/screens/InitWallet.js:60
 msgid "This wallet is connected to the **mainnet**."
 msgstr "Этот кошелек подключен к **mainnet**."
 
-#: src/screens/About.js:62 src/screens/InitWallet.js:63
+#: src/screens/About.js:75 src/screens/InitWallet.js:63
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
 "So, we advise you to keep only a small amount of tokens here, such as pocket "
@@ -87,7 +110,7 @@ msgstr ""
 "Мобильный кошелек - не самый безопасный способ для хранения ваших токенов.\n"
 "Поэтому мы не советуем хранить на нем большие суммы."
 
-#: src/screens/About.js:67 src/screens/InitWallet.js:68
+#: src/screens/About.js:80 src/screens/InitWallet.js:68
 msgid ""
 "For further information, check out our website |link:https://hathor."
 "network/|."
@@ -109,60 +132,60 @@ msgstr "Чтобы убедиться в том, что вы сохранили,
 msgid "Please select the word that corresponds to the number below:"
 msgstr "Пожалуйста, выберите слово, которое соответствует номеру ниже:"
 
-#: src/screens/ChangePin.js:102
+#: src/screens/ChangePin.js:107
 msgid "Incorrect PIN code."
 msgstr "Неверный PIN-код."
 
-#: src/screens/ChangePin.js:129
+#: src/screens/ChangePin.js:142
 msgid "PIN codes don't match."
 msgstr "PIN-коды не совпадают."
 
 #.  Should never get here because we've done all the validations before
-#: src/screens/ChangePin.js:154
+#: src/screens/ChangePin.js:167
 msgid "Error while changing PIN"
 msgstr "Ошибка при смене PIN-кода"
 
-#: src/screens/ChangePin.js:160
+#: src/screens/ChangePin.js:173
 msgid "Please enter your **current PIN**"
 msgstr "Пожалуйста, введите ваш **текущий PIN-код**"
 
-#: src/screens/ChangePin.js:173
+#: src/screens/ChangePin.js:186
 msgid "Please enter your **new PIN**"
 msgstr "Пожалуйста, введите ваш новый **PIN-код**"
 
-#: src/screens/ChangePin.js:186
+#: src/screens/ChangePin.js:199
 msgid "Please enter your **new PIN** again"
 msgstr "Пожалуйста, введите ваш **новый PIN-код** снова"
 
-#: src/screens/ChangePin.js:201
+#: src/screens/ChangePin.js:214
 msgid "New PIN recorded"
 msgstr "Новый PIN-код сохранен"
 
-#: src/screens/ChangePin.js:211
+#: src/screens/ChangePin.js:224
 msgid "CHANGE PIN"
 msgstr "ИЗМЕНИТЬ PIN-код"
 
-#: src/screens/ChoosePinScreen.js:124
+#: src/screens/ChoosePinScreen.js:133
 msgid "Enter your new PIN code"
 msgstr "Введите новый PIN-код"
 
-#: src/screens/ChoosePinScreen.js:136
+#: src/screens/ChoosePinScreen.js:145
 msgid "Enter your new PIN code again"
 msgstr "Введите новый PIN-код еще раз"
 
-#: src/screens/ChoosePinScreen.js:68
+#: src/screens/ChoosePinScreen.js:69
 msgid "Create a new PIN code,"
 msgstr "Создать новый PIN-код,"
 
-#: src/screens/ChoosePinScreen.js:71
+#: src/screens/ChoosePinScreen.js:72
 msgid "To confirm the PIN,"
 msgstr "Для подтверждения PIN-кода,"
 
-#: src/screens/ChoosePinScreen.js:150
+#: src/screens/ChoosePinScreen.js:159
 msgid "PIN codes don't match. Try again."
 msgstr "PIN-коды не совпадают. Попробуйте еще раз."
 
-#: src/screens/ChoosePinScreen.js:173
+#: src/screens/ChoosePinScreen.js:182
 msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
@@ -209,6 +232,7 @@ msgstr "Авторизовать создание токена"
 
 #.  eslint-disable-next-line react/jsx-indent
 #: src/screens/CreateTokenConfirm.js:98
+#, javascript-format
 msgid "**${ _this.name }** created successfully"
 msgstr "**${ _this.name }** успешно создан"
 
@@ -255,7 +279,7 @@ msgstr ""
 msgid "I understand"
 msgstr "Я понимаю"
 
-#: src/screens/CreateTokenDetail.js:42 src/screens/TokenDetail.js:41
+#: src/screens/CreateTokenDetail.js:42 src/screens/TokenDetail.js:42
 msgid "TOKEN DETAILS"
 msgstr "ДЕТАЛИ ТОКЕНА"
 
@@ -292,11 +316,11 @@ msgstr "Символ является сокращенной версией им
 msgid "E.g. HTR"
 msgstr "Например, HTR"
 
-#: src/screens/Dashboard.js:152 src/screens/RegisterTokenManual.js:133
+#: src/screens/Dashboard.js:46 src/screens/RegisterTokenManual.js:133
 msgid "Register token"
 msgstr "Зарегистрировать токен"
 
-#: src/screens/Dashboard.js:159
+#: src/screens/Dashboard.js:53
 msgid "TOKENS"
 msgstr "ТОКЕНЫ"
 
@@ -372,16 +396,16 @@ msgstr "Слова"
 msgid "Enter your seed words separated by space"
 msgstr "Введите seed-фразу"
 
-#: src/screens/LoadHistoryScreen.js:141
+#: src/screens/LoadHistoryScreen.js:140
 msgid "Loading your transactions"
 msgstr "Загрузка ваших транзакций"
 
-#: src/screens/LoadHistoryScreen.js:144
+#: src/screens/LoadHistoryScreen.js:143
 #, javascript-format
 msgid "**${ _this3.state.transactions } transactions** found"
 msgstr "**${ _this3.state.transactions } транзакций** найдено"
 
-#: src/screens/LoadHistoryScreen.js:147
+#: src/screens/LoadHistoryScreen.js:146
 msgid "**${ _this3.state.addresses } addresses** found"
 msgstr "**${ _this3.state.addresses } адресов** найдено"
 
@@ -435,23 +459,23 @@ msgstr "Получено"
 msgid "Waiting confirmation"
 msgstr "Ожидание подтверждения"
 
-#: src/screens/PinScreen.js:157
+#: src/screens/PinScreen.js:188
 msgid "Incorrect PIN Code. Try again."
 msgstr "Неверный PIN-код. Попробуйте еще раз."
 
-#: src/screens/PinScreen.js:53
+#: src/screens/PinScreen.js:54
 msgid "Enter your PIN Code "
 msgstr "Введите свой PIN-код "
 
-#: src/screens/PinScreen.js:54
+#: src/screens/PinScreen.js:55
 msgid "Unlock Hathor Wallet"
 msgstr "Разблокировать Hathor Wallet"
 
-#: src/screens/PinScreen.js:169
+#: src/screens/PinScreen.js:200
 msgid "Cancel"
 msgstr "Отмена"
 
-#: src/screens/PinScreen.js:172 src/screens/Settings.js:128
+#: src/screens/PinScreen.js:203 src/screens/Settings.js:131
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
 
@@ -561,11 +585,11 @@ msgstr "ОТПРАВИТЬ"
 msgid "Address to send"
 msgstr "Адрес отправки"
 
-#: src/screens/SendAmountInput.js:94
+#: src/screens/SendAmountInput.js:95
 msgid "Insufficient funds"
 msgstr "Недостаточно средств"
 
-#: src/screens/SendAmountInput.js:118 src/screens/SendConfirmScreen.js:125
+#: src/screens/SendAmountInput.js:119 src/screens/SendConfirmScreen.js:125
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
@@ -573,7 +597,7 @@ msgstr[0] "${ amountAndToken } доступно"
 msgstr[1] "${ amountAndToken } доступно"
 msgstr[2] "${ amountAndToken } доступно"
 
-#: src/screens/SendAmountInput.js:126 src/screens/SendConfirmScreen.js:133
+#: src/screens/SendAmountInput.js:131 src/screens/SendConfirmScreen.js:133
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
@@ -622,31 +646,31 @@ msgstr "У вас нет запрошенного токена [${ tokenLabel }]
 msgid "Scan the QR code"
 msgstr "Сканировать QR-код"
 
-#: src/screens/Settings.js:91
+#: src/screens/Settings.js:86
 msgid "You are connected to"
 msgstr "Вы подключены к"
 
-#: src/screens/Settings.js:103
+#: src/screens/Settings.js:98
 msgid "Connected to"
 msgstr "Подключены к"
 
-#: src/screens/Settings.js:116
+#: src/screens/Settings.js:111
 msgid "Security"
 msgstr "Безопасность"
 
-#: src/screens/Settings.js:120
+#: src/screens/Settings.js:117
 msgid "Create a new token"
 msgstr "Создать новый токен"
 
-#: src/screens/Settings.js:124
+#: src/screens/Settings.js:125
 msgid "Register a token"
 msgstr "Зарегистрировать токен"
 
-#: src/screens/Settings.js:132
+#: src/screens/Settings.js:135
 msgid "About"
 msgstr "О нас"
 
-#: src/screens/TokenDetail.js:33
+#: src/screens/TokenDetail.js:34
 msgid "Unregister"
 msgstr "Отменить регистрацию"
 
@@ -682,7 +706,21 @@ msgstr "Отменить регистрацию токена"
 msgid "Copied to clipboard!"
 msgstr "Скопировано в буфер обмена!"
 
-#: src/components/NewPaymentRequest.js:162
+#: src/components/ErrorModal.js:27
+msgid ""
+"Thanks for reporting the error to the team. We will investigate it to "
+"prevent from happening again."
+msgstr ""
+
+#: src/components/ErrorModal.js:39
+msgid "Unexpected error"
+msgstr ""
+
+#: src/components/ErrorModal.js:43
+msgid "Please restart your app to continue using the wallet."
+msgstr ""
+
+#: src/components/NewPaymentRequest.js:167
 msgid "Create payment request"
 msgstr "Создать запрос на получение средств"
 

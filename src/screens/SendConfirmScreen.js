@@ -17,10 +17,9 @@ import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
-import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';
 import FeedbackModal from '../components/FeedbackModal';
-import checkIcon from '../assets/images/icCheckBig.png';
+import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { sendTx } from '../actions';
 
@@ -38,7 +37,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 class SendConfirmScreen extends React.Component {
   /**
-   * modal {FeedbackModal} modal to display. If null, do not display
+   * modal {FeedbackModal|SendTransactionFeedbackModal} modal to display. If null, do not display
    * }
    */
   state = {
@@ -59,21 +58,35 @@ class SendConfirmScreen extends React.Component {
     this.amountAndToken = `${hathorLib.helpers.prettyValue(this.amount)} ${this.token.symbol}`;
   }
 
+  /**
+   * In case we can prepare the data, open send tx feedback modal (while sending the tx)
+   * Otherwise, show error
+   *
+   * @param {String} pinCode User PIN
+   */
   executeSend = (pinCode) => {
-    // show loading modal
-    this.setState({
-      modal:
-        // eslint-disable-next-line react/jsx-indent
-        <FeedbackModal
-          icon={<Spinner />}
-          text={t`Your transfer is being processed`}
-        />,
-    });
-    this.props.sendTx(this.amount, this.address, this.token, pinCode).then(
-      this.onSuccess, this.onError
-    );
+    const ret = this.props.sendTx(this.amount, this.address, this.token, pinCode);
+    if (ret.success) {
+      // show loading modal
+      this.setState({
+        modal:
+          // eslint-disable-next-line react/jsx-indent
+          <SendTransactionFeedbackModal
+            text={t`Your transfer is being processed`}
+            sendTransaction={ret.sendTransaction}
+            successText={<TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>}
+            onDismissSuccess={this.exitScreen}
+            onDismissError={() => this.setState({ modal: null })}
+          />,
+      });
+    } else {
+      this.onError(ret.message);
+    }
   }
 
+  /**
+   * Executed when user clicks to send the tx and opens PIN screen
+   */
   onSendPress = () => {
     const params = {
       cb: this.executeSend,
@@ -84,20 +97,11 @@ class SendConfirmScreen extends React.Component {
     this.props.navigation.navigate('PinScreen', params);
   }
 
-  onSuccess = () => {
-    this.setState({
-      modal:
-        // eslint-disable-next-line react/jsx-indent
-        <FeedbackModal
-          icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-          text={
-            <TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>
-          }
-          onDismiss={this.exitScreen}
-        />,
-    });
-  }
-
+  /**
+   * Show error message if there is one while sending the tx
+   *
+   * @param {String} message Error message
+   */
   onError = (message) => {
     this.setState({
       modal:
@@ -110,6 +114,9 @@ class SendConfirmScreen extends React.Component {
     });
   }
 
+  /**
+   * Method executed after dismiss success modal
+   */
   exitScreen = () => {
     this.setState({ modal: null });
     this.props.navigation.popToTop();
