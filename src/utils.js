@@ -33,7 +33,7 @@ export const getMyTxBalance = (tx, myKeys) => {
       continue;
     }
     if (txout.decoded && txout.decoded.address
-        && txout.decoded.address in myKeys) {
+        && myKeys.includes(txout.decoded.address)) {
       if (!balance[txout.token]) {
         balance[txout.token] = 0;
       }
@@ -46,7 +46,7 @@ export const getMyTxBalance = (tx, myKeys) => {
       continue;
     }
     if (txin.decoded && txin.decoded.address
-        && txin.decoded.address in myKeys) {
+        && myKeys.includes(txin.decoded.address)) {
       if (!balance[txin.token]) {
         balance[txin.token] = 0;
       }

@@ -13,9 +13,13 @@ import { t } from 'ttag';
 
 import QRCode from 'react-native-qrcode-svg';
 
-import hathorLib from '@hathor/wallet-lib';
 import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
+import { connect } from 'react-redux';
+
+const mapStateToProps = (state) => ({
+  wallet: state.wallet,
+});
 
 class ReceiveMyAddress extends React.Component {
   constructor(props) {
@@ -34,7 +38,7 @@ class ReceiveMyAddress extends React.Component {
   componentDidMount() {
     const { navigation } = this.props;
     this.willFocusEvent = navigation.addListener('willFocus', () => {
-      this.setState({ address: hathorLib.wallet.getCurrentAddress() });
+      this.setState({ address: this.props.wallet.getCurrentAddress() });
     });
   }
 
@@ -43,8 +47,9 @@ class ReceiveMyAddress extends React.Component {
   }
 
   getNextAddress = () => {
-    const nextAddress = hathorLib.wallet.nextAddress();
-    this.setState({ address: nextAddress });
+    // Mark current address as used, then get the next
+    this.props.wallet.getCurrentAddress({ markAsUsed: true });
+    this.setState({ address: this.props.wallet.getCurrentAddress() });
   }
 
   shareAddress = () => {
@@ -129,4 +134,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ReceiveMyAddress;
+export default connect(mapStateToProps)(ReceiveMyAddress);

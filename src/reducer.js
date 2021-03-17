@@ -59,6 +59,8 @@ const initialState = {
   height: 0,
   showErrorModal: false,
   errorReported: false,
+  wallet: null,
+  loadedData: { transactions: 0, addresses: 0 },
 };
 
 const reducer = (state = initialState, action) => {
@@ -101,6 +103,12 @@ const reducer = (state = initialState, action) => {
       return onUpdateHeight(state, action);
     case types.SET_ERROR_MODAL:
       return onSetErrorModal(state, action);
+    case types.SET_WALLET:
+      return onSetWallet(state, action);
+    case types.RESET_LOADED_DATA:
+      return onResetLoadedData(state, action);
+    case types.UPDATE_LOADED_DATA:
+      return onUpdateLoadedData(state, action);
     default:
       return state;
   }
@@ -434,10 +442,32 @@ const onUpdateHeight = (state, action) => {
   return state;
 };
 
+const onSetWallet = (state, action) => {
+  if (state.wallet && state.wallet.state !== 0) {
+    // Wallet was not closed
+    state.wallet.stop();
+  }
+
+  return {
+    ...state,
+    wallet: action.payload
+  };
+};
+
 const onSetErrorModal = (state, action) => ({
   ...state,
   showErrorModal: true,
   errorReported: action.payload.errorReported,
+});
+
+const onResetLoadedData = (state, action) => ({
+  ...state,
+  loadedData: { transactions: 0, addresses: 0 },
+});
+
+const onUpdateLoadedData = (state, action) => ({
+  ...state,
+  loadedData: action.payload,
 });
 
 export const store = createStore(reducer, applyMiddleware(thunk));

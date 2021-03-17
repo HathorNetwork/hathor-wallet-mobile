@@ -20,10 +20,8 @@ import {
   _SENTRY_DSN as SENTRY_DSN,
 } from './config';
 
-hathorLib.storage.setStore(new AsyncStorageStore());
-hathorLib.storage.setItem('wallet:server', 'https://mobile.wallet.hathor.network/v1a/');
-hathorLib.network.setNetwork('mainnet');
-
+export const STORE = new AsyncStorageStore()
+hathorLib.storage.setStore(STORE);
 
 /**
  * Default tokens for the wallet (to start on redux)

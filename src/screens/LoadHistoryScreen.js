@@ -15,7 +15,7 @@ import { t } from 'ttag';
 import * as Keychain from 'react-native-keychain';
 
 import hathorLib from '@hathor/wallet-lib';
-import { loadHistory, clearInitWallet } from '../actions';
+import { startWallet, clearInitWallet, resetLoadedData } from '../actions';
 import {
   setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled,
 } from '../utils';
@@ -38,43 +38,28 @@ import TextFmt from '../components/TextFmt';
 const mapStateToProps = (state) => ({
   loadHistoryStatus: state.loadHistoryStatus,
   initWallet: state.initWallet,
+  loadedData: state.loadedData,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  loadHistory: () => dispatch(loadHistory()),
+  startWallet: (words, pin) => dispatch(startWallet(words, pin)),
   clearInitWallet: () => dispatch(clearInitWallet()),
+  resetLoadedData: () => dispatch(resetLoadedData()),
 });
 
 class LoadHistoryScreen extends React.Component {
-  state = {
-    transactions: 0,
-    addresses: 0,
-  };
-
   componentDidMount() {
     // This setTimeout exists to prevent blocking the main thread
     setTimeout(() => this.initializeWallet(), 0);
+    this.props.resetLoadedData();
   }
 
   componentWillUnmount() {
-    hathorLib.WebSocketHandler.removeListener('addresses_loaded', this.addressesLoadedUpdate);
     this.props.clearInitWallet();
   }
 
-  /**
-   * Method called when WebSocket receives a message after loading address history
-   * We just update redux data with new loading info
-   *
-   * @param {Object} data Object with {'historyTransactions', 'addressesFound'}
-   */
-  addressesLoadedUpdate = (data) => {
-    const txs = Object.keys(data.historyTransactions).length;
-    const addresses = data.addressesFound;
-    this.setState({ transactions: txs, addresses });
-  }
-
   cleanData = () => {
-    // Get old access data
+    // TODO create callback to execute before reload, after reload and execute this to save biometry and to save tokens array
     const accessData = hathorLib.wallet.getWalletAccessData();
     const server = hathorLib.storage.getItem('wallet:server');
     const tokens = hathorLib.storage.getItem('wallet:tokens');
@@ -100,19 +85,13 @@ class LoadHistoryScreen extends React.Component {
     if (this.props.initWallet) {
       const { words, pin } = this.props.initWallet;
 
-      // This is the slow step. It takes around 3s in Pedro's iPhone.
-      hathorLib.wallet.executeGenerateWallet(words, '', pin, pin, false);
-      // ------
+      this.props.startWallet(words, pin);
 
       Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
         accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
         acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
       });
     }
-    hathorLib.WebSocketHandler.on('addresses_loaded', this.addressesLoadedUpdate);
-    hathorLib.WebSocketHandler.setup();
-    this.cleanData();
-    this.props.loadHistory();
   }
 
   render() {
@@ -140,10 +119,10 @@ class LoadHistoryScreen extends React.Component {
           {t`Loading your transactions`}
         </Text>
         <TextFmt style={[styles.text, { marginTop: 24 }]}>
-          {t`**${this.state.transactions} transactions** found`}
+          {t`**${this.props.loadedData.transactions} transactions** found`}
         </TextFmt>
         <TextFmt style={styles.text}>
-          {t`**${this.state.addresses} addresses** found`}
+          {t`**${this.props.loadedData.addresses} addresses** found`}
         </TextFmt>
       </View>
     );

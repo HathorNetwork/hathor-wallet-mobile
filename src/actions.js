@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import hathorLib from '@hathor/wallet-lib';
-
+import { Connection, HathorWallet } from '@hathor/wallet-lib';
+import { STORE } from './constants';
 
 export const types = {
   HISTORY_UPDATE: 'HISTORY_UPDATE',
@@ -31,6 +31,9 @@ export const types = {
   SET_INIT_WALLET: 'SET_INIT_WALLET',
   UPDATE_HEIGHT: 'UPDATE_HEIGHT',
   SET_ERROR_MODAL: 'SET_ERROR_MODAL',
+  SET_WALLET: 'SET_WALLET',
+  RESET_LOADED_DATA: 'RESET_LOADED_DATA',
+  UPDATE_LOADED_DATA: 'UPDATE_LOADED_DATA',
 };
 
 /**
@@ -107,8 +110,8 @@ export const lockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: true })
 export const updateHeight = (height) => ({ type: types.UPDATE_HEIGHT, payload: height });
 
 /**
- * addresses {Array} wallet words
- * history {String} Pin chosen by user
+ * words {String} wallet words
+ * pin {String} Pin chosen by user
  */
 export const setInitWallet = (words, pin) => (
   { type: types.SET_INIT_WALLET, payload: { words, pin } }
@@ -121,65 +124,102 @@ export const clearInitWallet = () => ({ type: types.SET_INIT_WALLET, payload: nu
  * amount {int} amount to be sent
  * address {String} destination address
  * token {Object} token being sent
- * pinCode {String} user's pin
  */
-export const sendTx = (amount, address, token, pinCode) => () => {
-  const data = {};
-  const isHathorToken = token.uid === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
-  data.tokens = isHathorToken ? [] : [token.uid];
-  data.inputs = [];
-  data.outputs = [{
-    address, value: amount, timelock: null, tokenData: isHathorToken ? 0 : 1,
-  }];
-  const walletData = hathorLib.wallet.getWalletData();
-  const historyTxs = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
-  const ret = hathorLib.wallet.prepareSendTokensData(data, token, true, historyTxs, [token]);
-  if (ret.success) {
-    try {
-      const preparedData = hathorLib.transaction.prepareData(ret.data, pinCode);
-      const sendTransaction = new hathorLib.SendTransaction({ data: preparedData });
-      return { success: true, sendTransaction };
-    } catch (e) {
-      if (e instanceof hathorLib.errors.AddressError
-          || e instanceof hathorLib.errors.OutputValueError
-          || e instanceof hathorLib.errors.MaximumNumberOutputsError
-          || e instanceof hathorLib.errors.MaximumNumberInputsError) {
-        return { success: false, message: e.message };
-      }
-      throw e;
-    }
-  } else {
-    return { success: false, message: ret.message };
-  }
+export const sendTx = (wallet, amount, address, token) => () => {
+  return wallet.sendTransaction(address, amount, token);
 };
 
-export const loadHistory = () => (dispatch) => {
-  dispatch(fetchHistoryBegin());
-  hathorLib.version.checkApiVersion().then((data) => {
-    // Save server info.
-    dispatch(setServerInfo({
-      version: data.version,
-      network: data.network,
-    }));
-
-    // Load address history.
-    hathorLib.wallet.loadAddressHistory(0, hathorLib.constants.GAP_LIMIT).then(() => {
-      const walletData = hathorLib.wallet.getWalletData();
-      // Update historyTransactions with new one
-      const historyTransactions = walletData.historyTransactions || {};
-      const { keys } = hathorLib.wallet.getWalletData();
-      dispatch(fetchHistorySuccess(historyTransactions, keys));
-    }, () => {
-      dispatch(fetchHistoryError());
-    });
-  }, () => {
-    dispatch(fetchHistoryError());
+export const startWallet = (words, pin) => (dispatch) => {
+  const connection = new Connection({
+    network: 'mainnet', // app currently connects only to mainnet
+    servers: ['https://mobile.wallet.hathor.network/v1a/'],
   });
+
+  const walletConfig = {
+    seed: words,
+    store: STORE,
+    connection,
+    password: pin,
+    pinCode: pin
+  }
+
+  const wallet = new HathorWallet(walletConfig);
+
+  dispatch(setWallet(wallet));
+
+  dispatch(fetchHistoryBegin());
+
+  wallet.start().then((serverInfo) => {
+    console.log('Wallet started', serverInfo);
+    dispatch(setServerInfo(serverInfo));
+    wallet.on('state', (state) => {
+      console.log('State emit', state);
+      if (state === 4) {
+        // ERROR
+        dispatch(fetchHistoryError());
+      } else if (state === 3) {
+        // READY
+        const historyTransactions = wallet.getTxHistory();
+        const addresses = wallet.getAllAddresses()
+        dispatch(fetchHistorySuccess(historyTransactions, addresses));
+      } else if (state === 0) {
+        // CLOSED
+        // TODO Remove event listeners for conn and wallet
+      }
+    })
+
+    wallet.on('new-tx', (tx) => {
+      const addresses = wallet.getAllAddresses()
+      dispatch(newTx(tx, addresses));
+    });
+
+    wallet.on('update-tx', (tx) => {
+      const addresses = wallet.getAllAddresses()
+      dispatch(newTx(tx, addresses));
+    });
+
+    wallet.conn.websocket.on('height_updated', (height) => {
+      console.log('Height updated', height);
+      dispatch(updateHeight(height));
+    });
+
+    wallet.conn.websocket.on('is_online', (value) => {
+      console.log('Is online', value);
+      dispatch(setIsOnline(value));
+    });
+
+    wallet.conn.websocket.on('reload_data', () => {
+      console.log('Reload data');
+      dispatch(activateFetchHistory());
+    });
+
+    wallet.conn.websocket.on('addresses_loaded', (data) => {
+      console.log('Addresses loaded', data);
+      const transactions = Object.keys(data.historyTransactions).length;
+      const addresses = data.addressesFound;
+      dispatch(updateLoadedData({ transactions, addresses }))
+    });
+  });;
 };
+
+export const resetLoadedData = () => (
+  { type: types.RESET_LOADED_DATA }
+);
+
+export const updateLoadedData = (payload) => (
+  { type: types.UPDATE_LOADED_DATA, payload }
+);
 
 /**
  * errorReported {boolean} true if user reported the error to sentry
  */
 export const setErrorModal = (errorReported) => (
   { type: types.SET_ERROR_MODAL, payload: { errorReported } }
+);
+
+/**
+ * wallet {HathorWallet} wallet object
+ */
+export const setWallet = (wallet) => (
+  { type: types.SET_WALLET, payload: wallet }
 );
