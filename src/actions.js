@@ -190,29 +190,21 @@ export const startWallet = (words, pin) => (dispatch) => {
     });
 
     connection.on('height-updated', (height) => {
-      if (wallet.state !== 0) {
-        dispatch(updateHeight(height));
-      }
+      dispatch(updateHeight(height));
     });
 
     connection.on('is-online', (value) => {
-      if (wallet.state !== 0) {
-        dispatch(setIsOnline(value));
-      }
+      dispatch(setIsOnline(value));
     });
 
     connection.on('reload-data', () => {
-      if (wallet.state !== 0) {
-        dispatch(activateFetchHistory());
-      }
+      dispatch(activateFetchHistory());
     });
 
     connection.on('addresses-loaded', (data) => {
-      if (wallet.state !== 0) {
-        const transactions = Object.keys(data.historyTransactions).length;
-        const addresses = data.addressesFound;
-        dispatch(updateLoadedData({ transactions, addresses }))
-      }
+      const transactions = Object.keys(data.historyTransactions).length;
+      const addresses = data.addressesFound;
+      dispatch(updateLoadedData({ transactions, addresses }))
     });
   });;
 
