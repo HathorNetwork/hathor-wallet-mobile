@@ -5,8 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Connection, HathorWallet } from '@hathor/wallet-lib';
-import { STORE } from './constants';
+import { Connection, HathorWallet, wallet as walletUtil } from '@hathor/wallet-lib';
+import { KEYCHAIN_USER, STORE } from './constants';
+
+import * as Keychain from 'react-native-keychain';
 
 export const types = {
   HISTORY_UPDATE: 'HISTORY_UPDATE',
@@ -32,6 +34,7 @@ export const types = {
   UPDATE_HEIGHT: 'UPDATE_HEIGHT',
   SET_ERROR_MODAL: 'SET_ERROR_MODAL',
   SET_WALLET: 'SET_WALLET',
+  RESET_WALLET: 'RESET_WALLET',
   RESET_LOADED_DATA: 'RESET_LOADED_DATA',
   UPDATE_LOADED_DATA: 'UPDATE_LOADED_DATA',
 };
@@ -130,17 +133,26 @@ export const sendTx = (wallet, amount, address, token) => () => {
 };
 
 export const startWallet = (words, pin) => (dispatch) => {
+  // If we've lost redux data, we could not properly stop the wallet object
+  // then we don't know if we've cleaned up the wallet data in the storage
+  walletUtil.cleanLoadedData();
+
   const connection = new Connection({
     network: 'mainnet', // app currently connects only to mainnet
     servers: ['https://mobile.wallet.hathor.network/v1a/'],
   });
+
+  const beforeReloadCallback = () => {
+    dispatch(activateFetchHistory());
+  }
 
   const walletConfig = {
     seed: words,
     store: STORE,
     connection,
     password: pin,
-    pinCode: pin
+    pinCode: pin,
+    beforeReloadCallback
   }
 
   const wallet = new HathorWallet(walletConfig);
@@ -150,10 +162,8 @@ export const startWallet = (words, pin) => (dispatch) => {
   dispatch(fetchHistoryBegin());
 
   wallet.start().then((serverInfo) => {
-    console.log('Wallet started', serverInfo);
     dispatch(setServerInfo(serverInfo));
     wallet.on('state', (state) => {
-      console.log('State emit', state);
       if (state === 4) {
         // ERROR
         dispatch(fetchHistoryError());
@@ -164,7 +174,8 @@ export const startWallet = (words, pin) => (dispatch) => {
         dispatch(fetchHistorySuccess(historyTransactions, addresses));
       } else if (state === 0) {
         // CLOSED
-        // TODO Remove event listeners for conn and wallet
+        // XXX Should we remove the conn event listeners?
+        // we are already closing the connection, is it enough?
       }
     })
 
@@ -178,28 +189,38 @@ export const startWallet = (words, pin) => (dispatch) => {
       dispatch(newTx(tx, addresses));
     });
 
-    wallet.conn.websocket.on('height_updated', (height) => {
-      console.log('Height updated', height);
-      dispatch(updateHeight(height));
+    connection.on('height-updated', (height) => {
+      if (wallet.state !== 0) {
+        dispatch(updateHeight(height));
+      }
     });
 
-    wallet.conn.websocket.on('is_online', (value) => {
-      console.log('Is online', value);
-      dispatch(setIsOnline(value));
+    connection.on('is-online', (value) => {
+      if (wallet.state !== 0) {
+        dispatch(setIsOnline(value));
+      }
     });
 
-    wallet.conn.websocket.on('reload_data', () => {
-      console.log('Reload data');
-      dispatch(activateFetchHistory());
+    connection.on('reload-data', () => {
+      if (wallet.state !== 0) {
+        dispatch(activateFetchHistory());
+      }
     });
 
-    wallet.conn.websocket.on('addresses_loaded', (data) => {
-      console.log('Addresses loaded', data);
-      const transactions = Object.keys(data.historyTransactions).length;
-      const addresses = data.addressesFound;
-      dispatch(updateLoadedData({ transactions, addresses }))
+    connection.on('addresses-loaded', (data) => {
+      if (wallet.state !== 0) {
+        const transactions = Object.keys(data.historyTransactions).length;
+        const addresses = data.addressesFound;
+        dispatch(updateLoadedData({ transactions, addresses }))
+      }
     });
   });;
+
+
+  Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
+    accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
+    acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
+  });
 };
 
 export const resetLoadedData = () => (
@@ -222,4 +243,8 @@ export const setErrorModal = (errorReported) => (
  */
 export const setWallet = (wallet) => (
   { type: types.SET_WALLET, payload: wallet }
+);
+
+export const resetWallet = () => (
+  { type: types.RESET_WALLET }
 );

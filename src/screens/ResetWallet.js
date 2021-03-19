@@ -22,9 +22,15 @@ import NewHathorButton from '../components/NewHathorButton';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { PRIMARY_COLOR } from '../constants';
+import { connect } from 'react-redux';
+import { resetWallet } from '../actions';
+
+const mapDispatchToProps = (dispatch) => ({
+  resetWallet: () => dispatch(resetWallet()),
+});
 
 
-export class ResetWallet extends React.Component {
+class ResetWallet extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
     switchView: {
       flexDirection: 'row',
@@ -55,15 +61,7 @@ export class ResetWallet extends React.Component {
   }
 
   onPressResetWallet = async () => {
-    // TODO we don't need to save server data
-    const server = hathorLib.storage.getItem('wallet:server');
-
-    hathorLib.wallet.unsubscribeAllAddresses();
-    hathorLib.WebSocketHandler.endConnection();
-    hathorLib.storage.clear();
-
-    // TODO make sure asyncStorage is clear when doing this. Maybe temporarily use setTimeout?
-    hathorLib.storage.setItem('wallet:server', server);
+    this.props.resetWallet();
     await Keychain.resetGenericPassword();
     this.props.navigation.navigate('Init');
   }
@@ -108,4 +106,4 @@ export class ResetWallet extends React.Component {
   }
 }
 
-export default ResetWallet;
+export default connect(null, mapDispatchToProps)(ResetWallet);

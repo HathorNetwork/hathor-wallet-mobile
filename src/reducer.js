@@ -105,6 +105,8 @@ const reducer = (state = initialState, action) => {
       return onSetErrorModal(state, action);
     case types.SET_WALLET:
       return onSetWallet(state, action);
+    case types.RESET_WALLET:
+      return onResetWallet(state, action);
     case types.RESET_LOADED_DATA:
       return onResetLoadedData(state, action);
     case types.UPDATE_LOADED_DATA:
@@ -451,6 +453,18 @@ const onSetWallet = (state, action) => {
   return {
     ...state,
     wallet: action.payload
+  };
+};
+
+const onResetWallet = (state, action) => {
+  if (state.wallet) {
+    // Stop wallet
+    state.wallet.stop();
+  }
+
+  return {
+    ...state,
+    wallet: null,
   };
 };
 

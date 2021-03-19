@@ -12,14 +12,10 @@ import {
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import * as Keychain from 'react-native-keychain';
-
-import hathorLib from '@hathor/wallet-lib';
 import { startWallet, clearInitWallet, resetLoadedData } from '../actions';
 import {
   setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled,
 } from '../utils';
-import { KEYCHAIN_USER } from '../constants';
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';
@@ -58,39 +54,11 @@ class LoadHistoryScreen extends React.Component {
     this.props.clearInitWallet();
   }
 
-  cleanData = () => {
-    // TODO create callback to execute before reload, after reload and execute this to save biometry and to save tokens array
-    const accessData = hathorLib.wallet.getWalletAccessData();
-    const server = hathorLib.storage.getItem('wallet:server');
-    const tokens = hathorLib.storage.getItem('wallet:tokens');
-
-    const biometryEnabled = isBiometryEnabled();
-    const supportedBiometry = getSupportedBiometry();
-
-    hathorLib.storage.clear();
-
-    const newWalletData = {
-      keys: {},
-    };
-
-    hathorLib.wallet.setWalletAccessData(accessData);
-    hathorLib.wallet.setWalletData(newWalletData);
-    hathorLib.storage.setItem('wallet:server', server);
-    hathorLib.storage.setItem('wallet:tokens', tokens);
-    setBiometryEnabled(biometryEnabled);
-    setSupportedBiometry(supportedBiometry);
-  }
-
   initializeWallet() {
     if (this.props.initWallet) {
       const { words, pin } = this.props.initWallet;
 
       this.props.startWallet(words, pin);
-
-      Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
-        accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
-        acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
-      });
     }
   }
 
