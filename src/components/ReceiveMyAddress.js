@@ -47,9 +47,7 @@ class ReceiveMyAddress extends React.Component {
   }
 
   getNextAddress = () => {
-    // Mark current address as used, then get the next
-    this.props.wallet.getCurrentAddress({ markAsUsed: true });
-    this.setState({ address: this.props.wallet.getCurrentAddress() });
+    this.setState({ address: this.props.wallet.getNextAddress() });
   }
 
   shareAddress = () => {
