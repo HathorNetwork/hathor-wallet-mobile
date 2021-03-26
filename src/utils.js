@@ -75,15 +75,6 @@ export const getIntegerAmount = (value) => {
   return Math.round(parsedValue * (10 ** hathorLib.constants.DECIMAL_PLACES));
 };
 
-export const getBalance = (tokenUid) => {
-  // TODO should have a method in the lib to get balance by token
-  const data = hathorLib.wallet.getWalletData();
-  const historyTxs = data.historyTransactions || {};
-  const filteredArray = hathorLib.wallet.filterHistoryTransactions(historyTxs, tokenUid, false);
-  const balance = hathorLib.wallet.calculateBalance(filteredArray, tokenUid);
-  return balance;
-};
-
 export const getAmountParsed = (text) => {
   let parts = [];
   let separator = '';
@@ -262,3 +253,14 @@ export const getLightBackground = (alpha) => {
   const hex = `0${Math.round(255 * alpha).toString(16).toUpperCase()}`.substr(-2);
   return `${PRIMARY_COLOR}${hex}`;
 };
+
+/**
+ * Get the words saved in storage from the user PIN
+ *
+ * @params {string} pin User PIN to get encrypted words
+ *
+ * @return {string} Wallet seed
+ */
+export const getWalletWords = (pin) => {
+  return hathorLib.wallet.getWalletWords(pin);
+}

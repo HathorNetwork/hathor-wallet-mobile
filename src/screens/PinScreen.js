@@ -17,7 +17,7 @@ import hathorLib from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
 import PinInput from '../components/PinInput';
 import Logo from '../components/Logo';
-import { isBiometryEnabled, getSupportedBiometry } from '../utils';
+import { isBiometryEnabled, getSupportedBiometry, getWalletWords } from '../utils';
 import { lockScreen, unlockScreen, setLoadHistoryStatus, setInitWallet } from '../actions';
 import { PIN_SIZE } from '../constants';
 
@@ -134,7 +134,7 @@ class PinScreen extends React.Component {
       if (!this.props.wallet) {
         // We are saving HathorWallet object in redux, so if the app has lost redux information and is in locked screen
         // we must start the HathorWallet object again
-        const words = hathorLib.wallet.getWalletWords(pin);
+        const words = getWalletWords(pin);
         this.props.setInitWallet(words, pin)
       }
       this.props.unlockScreen();
