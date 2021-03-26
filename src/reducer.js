@@ -9,7 +9,7 @@ import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 
 import hathorLib from '@hathor/wallet-lib';
-import { getBalance, getMyTxBalance } from './utils';
+import { getMyTxBalance } from './utils';
 import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
 import { types } from './actions';
 import { TxHistory } from './models';
@@ -168,7 +168,7 @@ const onNewTx = (state, action) => {
     updatedHistoryMap[tokenUid] = newTokenHistory;
     // totalBalance should not be confused with tokenTxBalance. The latter is the balance of the new
     // tx, while the former is the total balance of the token, considering all tx history
-    const totalBalance = getBalance(tokenUid);
+    const totalBalance = state.wallet.getBalance(tokenUid);
     updatedBalanceMap[tokenUid] = totalBalance;
   }
   const newTokensHistory = Object.assign({}, state.tokensHistory, updatedHistoryMap);
@@ -355,7 +355,7 @@ const onFetchHistorySuccess = (state, action) => {
 
   const tokensBalance = {};
   for (const tokenUid of Object.keys(tokensHistory)) {
-    const totalBalance = getBalance(tokenUid);
+    const totalBalance = state.wallet.getBalance(tokenUid);
     // update token total balance
     tokensBalance[tokenUid] = totalBalance;
   }
@@ -432,7 +432,7 @@ const onUpdateHeight = (state, action) => {
     // Need to update tokensBalance
     const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
     const tokensBalance = {};
-    tokensBalance[uid] = getBalance(uid);
+    tokensBalance[uid] = state.wallet.getBalance(uid);
     const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
     return {
       ...state,
@@ -445,7 +445,7 @@ const onUpdateHeight = (state, action) => {
 };
 
 const onSetWallet = (state, action) => {
-  if (state.wallet && state.wallet.state !== 0) {
+  if (state.wallet && state.wallet.state !== hathorLib.HathorWallet.CLOSED) {
     // Wallet was not closed
     state.wallet.stop();
   }
