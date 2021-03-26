@@ -164,18 +164,14 @@ export const startWallet = (words, pin) => (dispatch) => {
   wallet.start().then((serverInfo) => {
     dispatch(setServerInfo(serverInfo));
     wallet.on('state', (state) => {
-      if (state === 4) {
+      if (state === HathorWallet.ERROR) {
         // ERROR
         dispatch(fetchHistoryError());
-      } else if (state === 3) {
+      } else if (state === HathorWallet.READY) {
         // READY
         const historyTransactions = wallet.getTxHistory();
         const addresses = wallet.getAllAddresses()
         dispatch(fetchHistorySuccess(historyTransactions, addresses));
-      } else if (state === 0) {
-        // CLOSED
-        // XXX Should we remove the conn event listeners?
-        // we are already closing the connection, is it enough?
       }
     })
 
@@ -189,16 +185,18 @@ export const startWallet = (words, pin) => (dispatch) => {
       dispatch(newTx(tx, addresses));
     });
 
-    connection.on('height-updated', (height) => {
+    connection.on('best-block-update', (height) => {
       dispatch(updateHeight(height));
     });
 
-    connection.on('is-online', (value) => {
-      dispatch(setIsOnline(value));
-    });
-
-    connection.on('reload-data', () => {
-      dispatch(activateFetchHistory());
+    connection.on('state', (state) => {
+      let isOnline;
+      if (state === Connection.CONNECTED) {
+        isOnline = true;
+      } else {
+        isOnline = false;
+      }
+      dispatch(setIsOnline(isOnline));
     });
 
     connection.on('addresses-loaded', (data) => {
