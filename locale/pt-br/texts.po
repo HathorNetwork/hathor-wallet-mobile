@@ -400,12 +400,12 @@ msgstr "Carregando suas transações"
 
 #: src/screens/LoadHistoryScreen.js:143
 #, javascript-format
-msgid "**${ _this3.state.transactions } transactions** found"
-msgstr "**${ _this3.state.transactions } transações** encontradas"
+msgid "**${ _this2.props.loadedData.transactions } transactions** found"
+msgstr "**${ _this2.props.loadedData.transactions } transações** encontradas"
 
 #: src/screens/LoadHistoryScreen.js:146
-msgid "**${ _this3.state.addresses } addresses** found"
-msgstr "**${ _this3.state.addresses } endereços** encontrados"
+msgid "**${ _this2.props.loadedData.addresses } addresses** found"
+msgstr "**${ _this2.props.loadedData.addresses } endereços** encontrados"
 
 #: src/screens/MainScreen.js:95
 msgid "No transactions"
@@ -767,3 +767,7 @@ msgstr "ID"
 #: src/components/TxDetailsModal.js:57
 msgid "Public Explorer"
 msgstr "Explorer Público"
+
+#: src/components/SendTransactionFeedbackModal.js:156
+msgid "Propagating transaction to the network."
+msgstr "Propagando a transação para a rede."
