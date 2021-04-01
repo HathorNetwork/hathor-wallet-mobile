@@ -199,7 +199,7 @@ export const startWallet = (words, pin) => (dispatch) => {
       dispatch(setIsOnline(isOnline));
     });
 
-    connection.on('addresses-loaded', (data) => {
+    connection.on('wallet-load-partial-update', (data) => {
       const transactions = Object.keys(data.historyTransactions).length;
       const addresses = data.addressesFound;
       dispatch(updateLoadedData({ transactions, addresses }))
