@@ -132,10 +132,10 @@ class PinScreen extends React.Component {
       // method an change redux state. No need to execute callback or go back on navigation
       this.handleDataMigration(pin);
       if (!this.props.wallet) {
-        // We are saving HathorWallet object in redux, so if the app has lost redux information and is in locked screen
-        // we must start the HathorWallet object again
+        // We are saving HathorWallet object in redux, so if the app has lost redux information
+        // and is in locked screen we must start the HathorWallet object again
         const words = getWalletWords(pin);
-        this.props.setInitWallet(words, pin)
+        this.props.setInitWallet(words, pin);
       }
       this.props.unlockScreen();
     } else {

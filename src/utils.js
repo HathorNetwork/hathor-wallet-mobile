@@ -261,6 +261,6 @@ export const getLightBackground = (alpha) => {
  *
  * @return {string} Wallet seed
  */
-export const getWalletWords = (pin) => {
-  return hathorLib.wallet.getWalletWords(pin);
-}
+export const getWalletWords = (pin) => (
+  hathorLib.wallet.getWalletWords(pin)
+);

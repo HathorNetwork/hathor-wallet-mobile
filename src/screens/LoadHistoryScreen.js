@@ -13,9 +13,6 @@ import { connect } from 'react-redux';
 import { t } from 'ttag';
 
 import { startWallet, clearInitWallet, resetLoadedData } from '../actions';
-import {
-  setSupportedBiometry, getSupportedBiometry, setBiometryEnabled, isBiometryEnabled,
-} from '../utils';
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';

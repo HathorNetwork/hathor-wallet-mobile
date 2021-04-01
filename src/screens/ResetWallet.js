@@ -16,13 +16,13 @@ import {
 import { t } from 'ttag';
 
 import * as Keychain from 'react-native-keychain';
-import hathorLib from '@hathor/wallet-lib';
+import { connect } from 'react-redux';
+
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { PRIMARY_COLOR } from '../constants';
-import { connect } from 'react-redux';
 import { resetWallet } from '../actions';
 
 const mapDispatchToProps = (dispatch) => ({

@@ -20,9 +20,10 @@ import {
   _SENTRY_DSN as SENTRY_DSN,
 } from './config';
 
-export const STORE = new AsyncStorageStore()
+export const STORE = new AsyncStorageStore();
 // The storage is needed in the whole wallet, not only when we have a wallet object.
-// Because of that we need to have a global store in the lib (we have some keys that are used in the wallet, e.g. 'loaded').
+// Because of that we need to have a global store in the lib
+// (we have some keys that are used in the wallet, e.g. 'loaded').
 // We should do a refactor later to remove this dependency
 hathorLib.storage.setStore(STORE);
 

@@ -13,9 +13,10 @@ import { t } from 'ttag';
 
 import QRCode from 'react-native-qrcode-svg';
 
+import { connect } from 'react-redux';
+
 import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
-import { connect } from 'react-redux';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,

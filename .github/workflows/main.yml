@@ -25,10 +25,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
       run: npm install
-    - name: Linter
-      run: npm run lint
     - name: i18n
       run: make i18n
+    - name: Linter
+      run: npm run lint
     - name: Pot file
       run: make check_pot
     - name: Po file

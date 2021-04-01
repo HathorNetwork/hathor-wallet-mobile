@@ -5,10 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import * as Keychain from 'react-native-keychain';
 import { Connection, HathorWallet, wallet as walletUtil } from '@hathor/wallet-lib';
 import { KEYCHAIN_USER, STORE } from './constants';
-
-import * as Keychain from 'react-native-keychain';
 
 export const types = {
   HISTORY_UPDATE: 'HISTORY_UPDATE',
@@ -128,9 +127,9 @@ export const clearInitWallet = () => ({ type: types.SET_INIT_WALLET, payload: nu
  * address {String} destination address
  * token {Object} token being sent
  */
-export const sendTx = (wallet, amount, address, token) => () => {
-  return wallet.sendTransaction(address, amount, token);
-};
+export const sendTx = (wallet, amount, address, token) => (
+  wallet.sendTransaction(address, amount, token)
+);
 
 export const startWallet = (words, pin) => (dispatch) => {
   // If we've lost redux data, we could not properly stop the wallet object
@@ -144,7 +143,7 @@ export const startWallet = (words, pin) => (dispatch) => {
 
   const beforeReloadCallback = () => {
     dispatch(activateFetchHistory());
-  }
+  };
 
   const walletConfig = {
     seed: words,
@@ -153,7 +152,7 @@ export const startWallet = (words, pin) => (dispatch) => {
     password: pin,
     pinCode: pin,
     beforeReloadCallback
-  }
+  };
 
   const wallet = new HathorWallet(walletConfig);
 
@@ -170,18 +169,18 @@ export const startWallet = (words, pin) => (dispatch) => {
       } else if (state === HathorWallet.READY) {
         // READY
         const historyTransactions = wallet.getTxHistory();
-        const addresses = wallet.getAllAddresses()
+        const addresses = wallet.getAllAddresses();
         dispatch(fetchHistorySuccess(historyTransactions, addresses));
       }
-    })
+    });
 
     wallet.on('new-tx', (tx) => {
-      const addresses = wallet.getAllAddresses()
+      const addresses = wallet.getAllAddresses();
       dispatch(newTx(tx, addresses));
     });
 
     wallet.on('update-tx', (tx) => {
-      const addresses = wallet.getAllAddresses()
+      const addresses = wallet.getAllAddresses();
       dispatch(newTx(tx, addresses));
     });
 
@@ -202,10 +201,9 @@ export const startWallet = (words, pin) => (dispatch) => {
     connection.on('wallet-load-partial-update', (data) => {
       const transactions = Object.keys(data.historyTransactions).length;
       const addresses = data.addressesFound;
-      dispatch(updateLoadedData({ transactions, addresses }))
+      dispatch(updateLoadedData({ transactions, addresses }));
     });
-  });;
-
+  });
 
   Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
     accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
