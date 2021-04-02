@@ -34,7 +34,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  sendTx: (amount, address, token) => dispatch(sendTx(amount, address, token)),
+  sendTx: (wallet, amount, address, token) => dispatch(sendTx(wallet, amount, address, token)),
 });
 
 class SendConfirmScreen extends React.Component {
