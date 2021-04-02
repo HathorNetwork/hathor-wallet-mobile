@@ -5,7 +5,7 @@
   "scripts": {
     "lint": "eslint --ext .js --ext .jsx .",
     "start": "node node_modules/react-native/local-cli/cli.js start",
-    "ios": "node node_modules/.bin/react-native run-ios --simulator='iPhone 8'",
+    "ios": "node node_modules/.bin/react-native run-ios",
     "android": "node node_modules/.bin/react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/ && node node_modules/.bin/react-native run-android",
     "node-hack": "node node_modules/.bin/rn-nodeify --hack",
     "test": "jest",
