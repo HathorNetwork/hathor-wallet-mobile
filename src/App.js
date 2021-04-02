@@ -21,7 +21,7 @@ import IconTabBar from './icon-font';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
-  activateFetchHistory, newTx, resetData, setIsOnline, lockScreen, updateHeight, setTokens
+  resetData, lockScreen, setTokens
 } from './actions';
 import { store } from './reducer';
 
@@ -197,10 +197,6 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  updateHeight: (height) => dispatch(updateHeight(height)),
-  newTx: (newElement, keys) => dispatch(newTx(newElement, keys)),
-  setIsOnline: (status) => dispatch(setIsOnline(status)),
-  activateFetchHistory: () => dispatch(activateFetchHistory()),
   setTokens: (tokens) => dispatch(setTokens(tokens)),
   lockScreen: () => dispatch(lockScreen()),
   resetData: () => dispatch(resetData()),
@@ -227,19 +223,11 @@ class _AppStackWrapper extends React.Component {
 
   componentDidMount = () => {
     this.getBiometry();
-    hathorLib.WebSocketHandler.on('height_updated', this.handleHeightUpdated);
-    hathorLib.WebSocketHandler.on('wallet', this.handleWebsocketMsg);
-    hathorLib.WebSocketHandler.on('reload_data', this.props.activateFetchHistory);
-    hathorLib.WebSocketHandler.on('is_online', this.isOnlineUpdated);
     AppState.addEventListener('change', this._handleAppStateChange);
     this.updateReduxTokens();
   }
 
   componentWillUnmount = () => {
-    hathorLib.WebSocketHandler.removeListener('height_updated', this.handleHeightUpdated);
-    hathorLib.WebSocketHandler.removeListener('wallet', this.handleWebsocketMsg);
-    hathorLib.WebSocketHandler.removeListener('reload_data', this.props.activateFetchHistory);
-    hathorLib.WebSocketHandler.removeListener('is_online', this.isOnlineUpdated);
     AppState.removeEventListener('change', this._handleAppStateChange);
     this.props.resetData();
   }
@@ -268,45 +256,6 @@ class _AppStackWrapper extends React.Component {
         // case Keychain.BIOMETRY_TYPE.FACE_ID:
       }
     });
-  }
-
-  /**
-   * Method called when WebSocketHandler from lib emits a 'height_updated' event
-   * We update the height of the network in redux
-   *
-   * @param {number} height New height of the network
-   */
-  handleHeightUpdated = (height) => {
-    this.props.updateHeight(height);
-  }
-
-  /**
-   * Method called when WebSocketHandler from lib emits a 'wallet' event
-   * We check if there is a new transaction to this wallet
-   *
-   * @param {Object} wsData The message object
-   */
-  handleWebsocketMsg = (wsData) => {
-    if (wsData.type === 'wallet:address_history') {
-      // TODO we also have to update some wallet lib data? Lib should do it by itself
-      const data = hathorLib.wallet.getWalletData();
-      const historyTxs = data.historyTransactions || {};
-      const allTokens = 'allTokens' in data ? data.allTokens : [];
-      hathorLib.wallet.updateHistoryData(historyTxs, allTokens, [wsData.history], null, data);
-
-      const newWalletData = hathorLib.wallet.getWalletData();
-      const { keys } = newWalletData;
-      this.props.newTx(wsData.history, keys);
-    }
-  }
-
-  /**
-   * Method called when WebSocket updates isOnline attribute, so we update this parameter in redux
-   *
-   * @param {boolean} value Boolean if websocket is online
-   */
-  isOnlineUpdated = (value) => {
-    this.props.setIsOnline(value);
   }
 
   /**

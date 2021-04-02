@@ -9,7 +9,6 @@ import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 
 import hathorLib from '@hathor/wallet-lib';
-import { getBalance, getMyTxBalance } from './utils';
 import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
 import { types } from './actions';
 import { TxHistory } from './models';
@@ -59,6 +58,8 @@ const initialState = {
   height: 0,
   showErrorModal: false,
   errorReported: false,
+  wallet: null,
+  loadedData: { transactions: 0, addresses: 0 },
 };
 
 const reducer = (state = initialState, action) => {
@@ -101,6 +102,14 @@ const reducer = (state = initialState, action) => {
       return onUpdateHeight(state, action);
     case types.SET_ERROR_MODAL:
       return onSetErrorModal(state, action);
+    case types.SET_WALLET:
+      return onSetWallet(state, action);
+    case types.RESET_WALLET:
+      return onResetWallet(state, action);
+    case types.RESET_LOADED_DATA:
+      return onResetLoadedData(state, action);
+    case types.UPDATE_LOADED_DATA:
+      return onUpdateLoadedData(state, action);
     default:
       return state;
   }
@@ -125,7 +134,6 @@ const onSetIsOnline = (state, action) => ({
  */
 const onNewTx = (state, action) => {
   const { tx } = action.payload;
-  const { addresses } = action.payload;
 
   // if we have the invoice modal, check if this tx settles it
   let invoicePayment = null;
@@ -148,7 +156,7 @@ const onNewTx = (state, action) => {
 
   const updatedHistoryMap = {};
   const updatedBalanceMap = {};
-  const balances = getMyTxBalance(tx, addresses);
+  const balances = state.wallet.getTxBalance(tx);
 
   // we now loop through all tokens present in the new tx to get the new history and balance
   for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
@@ -158,7 +166,7 @@ const onNewTx = (state, action) => {
     updatedHistoryMap[tokenUid] = newTokenHistory;
     // totalBalance should not be confused with tokenTxBalance. The latter is the balance of the new
     // tx, while the former is the total balance of the token, considering all tx history
-    const totalBalance = getBalance(tokenUid);
+    const totalBalance = state.wallet.getBalance(tokenUid);
     updatedBalanceMap[tokenUid] = totalBalance;
   }
   const newTokensHistory = Object.assign({}, state.tokensHistory, updatedHistoryMap);
@@ -324,14 +332,13 @@ const onFetchHistoryBegin = (state, action) => ({
  */
 const onFetchHistorySuccess = (state, action) => {
   const { history } = action.payload;
-  const { addresses } = action.payload;
   const tokensHistory = {};
   // iterate through all txs received and map all tokens this wallet has, with
   // its history and balance
   for (const tx of Object.values(history)) {
     // we first get all tokens present in this tx (that belong to the user) and
     // the corresponding balances
-    const balances = getMyTxBalance(tx, addresses);
+    const balances = state.wallet.getTxBalance(tx);
     for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
       let tokenHistory = tokensHistory[tokenUid];
       if (tokenHistory === undefined) {
@@ -345,7 +352,7 @@ const onFetchHistorySuccess = (state, action) => {
 
   const tokensBalance = {};
   for (const tokenUid of Object.keys(tokensHistory)) {
-    const totalBalance = getBalance(tokenUid);
+    const totalBalance = state.wallet.getBalance(tokenUid);
     // update token total balance
     tokensBalance[tokenUid] = totalBalance;
   }
@@ -422,7 +429,7 @@ const onUpdateHeight = (state, action) => {
     // Need to update tokensBalance
     const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
     const tokensBalance = {};
-    tokensBalance[uid] = getBalance(uid);
+    tokensBalance[uid] = state.wallet.getBalance(uid);
     const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
     return {
       ...state,
@@ -434,10 +441,44 @@ const onUpdateHeight = (state, action) => {
   return state;
 };
 
+const onSetWallet = (state, action) => {
+  if (state.wallet && state.wallet.state !== hathorLib.HathorWallet.CLOSED) {
+    // Wallet was not closed
+    state.wallet.stop();
+  }
+
+  return {
+    ...state,
+    wallet: action.payload
+  };
+};
+
+const onResetWallet = (state, action) => {
+  if (state.wallet) {
+    // Stop wallet
+    state.wallet.stop();
+  }
+
+  return {
+    ...state,
+    wallet: null,
+  };
+};
+
 const onSetErrorModal = (state, action) => ({
   ...state,
   showErrorModal: true,
   errorReported: action.payload.errorReported,
+});
+
+const onResetLoadedData = (state, action) => ({
+  ...state,
+  loadedData: { transactions: 0, addresses: 0 },
+});
+
+const onUpdateLoadedData = (state, action) => ({
+  ...state,
+  loadedData: action.payload,
 });
 
 export const store = createStore(reducer, applyMiddleware(thunk));

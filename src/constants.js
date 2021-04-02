@@ -20,10 +20,12 @@ import {
   _SENTRY_DSN as SENTRY_DSN,
 } from './config';
 
-hathorLib.storage.setStore(new AsyncStorageStore());
-hathorLib.storage.setItem('wallet:server', 'https://mobile.wallet.hathor.network/v1a/');
-hathorLib.network.setNetwork('mainnet');
-
+export const STORE = new AsyncStorageStore();
+// The storage is needed in the whole wallet, not only when we have a wallet object.
+// Because of that we need to have a global store in the lib
+// (we have some keys that are used in the wallet, e.g. 'loaded').
+// We should do a refactor later to remove this dependency
+hathorLib.storage.setStore(STORE);
 
 /**
  * Default tokens for the wallet (to start on redux)

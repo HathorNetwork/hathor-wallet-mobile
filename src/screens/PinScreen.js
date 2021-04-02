@@ -17,8 +17,8 @@ import hathorLib from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
 import PinInput from '../components/PinInput';
 import Logo from '../components/Logo';
-import { isBiometryEnabled, getSupportedBiometry } from '../utils';
-import { lockScreen, unlockScreen, setLoadHistoryStatus } from '../actions';
+import { isBiometryEnabled, getSupportedBiometry, getWalletWords } from '../utils';
+import { lockScreen, unlockScreen, setLoadHistoryStatus, setInitWallet } from '../actions';
 import { PIN_SIZE } from '../constants';
 
 
@@ -27,12 +27,14 @@ import { PIN_SIZE } from '../constants';
  */
 const mapStateToProps = (state) => ({
   loadHistoryActive: state.loadHistoryStatus.active,
+  wallet: state.wallet,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
   lockScreen: () => dispatch(lockScreen()),
   setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),
+  setInitWallet: (words, pin) => dispatch(setInitWallet(words, pin)),
 });
 
 class PinScreen extends React.Component {
@@ -129,6 +131,12 @@ class PinScreen extends React.Component {
       // in case it's the lock screen, we just have to execute the data migration
       // method an change redux state. No need to execute callback or go back on navigation
       this.handleDataMigration(pin);
+      if (!this.props.wallet) {
+        // We are saving HathorWallet object in redux, so if the app has lost redux information
+        // and is in locked screen we must start the HathorWallet object again
+        const words = getWalletWords(pin);
+        this.props.setInitWallet(words, pin);
+      }
       this.props.unlockScreen();
     } else {
       // dismiss the pin screen first because doing it after the callback can

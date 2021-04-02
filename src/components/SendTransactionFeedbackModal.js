@@ -37,8 +37,6 @@ class SendTransactionFeedbackModal extends React.Component {
   componentDidMount = () => {
     // Start event listeners
     this.addSendTxEventHandlers();
-    // Submit job
-    this.props.sendTransaction.start();
   }
 
   /**
