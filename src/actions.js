@@ -55,7 +55,7 @@ export const setServerInfo = ({ version, network }) => (
  * tx {Object} the new transaction
  * addresses {Array} this wallet addresses
  */
-export const newTx = (tx, addresses) => ({ type: types.NEW_TX, payload: { tx, addresses } });
+export const newTx = (tx) => ({ type: types.NEW_TX, payload: { tx } });
 
 /**
  * address {String} address to each payment should be sent
@@ -93,8 +93,8 @@ export const fetchHistoryBegin = () => ({ type: types.FETCH_HISTORY_BEGIN });
  * history {Object} history of this wallet (including txs from all tokens)
  * addresses {Array} this wallet addresses
  */
-export const fetchHistorySuccess = (history, addresses) => (
-  { type: types.FETCH_HISTORY_SUCCESS, payload: { history, addresses } }
+export const fetchHistorySuccess = (history) => (
+  { type: types.FETCH_HISTORY_SUCCESS, payload: { history } }
 );
 
 export const fetchHistoryError = () => ({ type: types.FETCH_HISTORY_ERROR });
@@ -127,7 +127,7 @@ export const clearInitWallet = () => ({ type: types.SET_INIT_WALLET, payload: nu
  * address {String} destination address
  * token {Object} token being sent
  */
-export const sendTx = (wallet, amount, address, token) => (
+export const sendTx = (wallet, amount, address, token) => () => (
   wallet.sendTransaction(address, amount, token)
 );
 
@@ -169,19 +169,16 @@ export const startWallet = (words, pin) => (dispatch) => {
       } else if (state === HathorWallet.READY) {
         // READY
         const historyTransactions = wallet.getTxHistory();
-        const addresses = wallet.getAllAddresses();
-        dispatch(fetchHistorySuccess(historyTransactions, addresses));
+        dispatch(fetchHistorySuccess(historyTransactions));
       }
     });
 
     wallet.on('new-tx', (tx) => {
-      const addresses = wallet.getAllAddresses();
-      dispatch(newTx(tx, addresses));
+      dispatch(newTx(tx));
     });
 
     wallet.on('update-tx', (tx) => {
-      const addresses = wallet.getAllAddresses();
-      dispatch(newTx(tx, addresses));
+      dispatch(newTx(tx));
     });
 
     connection.on('best-block-update', (height) => {

@@ -9,7 +9,6 @@ import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 
 import hathorLib from '@hathor/wallet-lib';
-import { getMyTxBalance } from './utils';
 import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
 import { types } from './actions';
 import { TxHistory } from './models';
@@ -135,7 +134,6 @@ const onSetIsOnline = (state, action) => ({
  */
 const onNewTx = (state, action) => {
   const { tx } = action.payload;
-  const { addresses } = action.payload;
 
   // if we have the invoice modal, check if this tx settles it
   let invoicePayment = null;
@@ -158,7 +156,7 @@ const onNewTx = (state, action) => {
 
   const updatedHistoryMap = {};
   const updatedBalanceMap = {};
-  const balances = getMyTxBalance(tx, addresses);
+  const balances = state.wallet.getTxBalance(tx);
 
   // we now loop through all tokens present in the new tx to get the new history and balance
   for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
@@ -334,14 +332,13 @@ const onFetchHistoryBegin = (state, action) => ({
  */
 const onFetchHistorySuccess = (state, action) => {
   const { history } = action.payload;
-  const { addresses } = action.payload;
   const tokensHistory = {};
   // iterate through all txs received and map all tokens this wallet has, with
   // its history and balance
   for (const tx of Object.values(history)) {
     // we first get all tokens present in this tx (that belong to the user) and
     // the corresponding balances
-    const balances = getMyTxBalance(tx, addresses);
+    const balances = state.wallet.getTxBalance(tx);
     for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
       let tokenHistory = tokensHistory[tokenUid];
       if (tokenHistory === undefined) {

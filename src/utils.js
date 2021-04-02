@@ -23,40 +23,6 @@ export const Link = (props) => (
   </Text>
 );
 
-/**
- * Returns the balance for each token in tx, if the input/output belongs to this wallet
- */
-export const getMyTxBalance = (tx, myKeys) => {
-  const balance = {};
-  for (const txout of tx.outputs) {
-    if (hathorLib.wallet.isAuthorityOutput(txout)) {
-      continue;
-    }
-    if (txout.decoded && txout.decoded.address
-        && myKeys.includes(txout.decoded.address)) {
-      if (!balance[txout.token]) {
-        balance[txout.token] = 0;
-      }
-      balance[txout.token] += txout.value;
-    }
-  }
-
-  for (const txin of tx.inputs) {
-    if (hathorLib.wallet.isAuthorityOutput(txin)) {
-      continue;
-    }
-    if (txin.decoded && txin.decoded.address
-        && myKeys.includes(txin.decoded.address)) {
-      if (!balance[txin.token]) {
-        balance[txin.token] = 0;
-      }
-      balance[txin.token] -= txin.value;
-    }
-  }
-
-  return balance;
-};
-
 export const getShortHash = (hash, length = 4) => (
   `${hash.substring(0, length)}...${hash.substring(64 - length, 64)}`
 );
