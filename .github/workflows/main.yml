@@ -25,6 +25,8 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
       run: npm install
+    - name: Install gettext
+      run: apt-get install gettext
     - name: i18n
       run: make i18n
     - name: Linter
