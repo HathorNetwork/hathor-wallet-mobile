@@ -75,7 +75,7 @@ msgstr ""
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src/utils.js:184
+#: src/utils.js:175
 msgid "Invalid address"
 msgstr ""
 
@@ -179,7 +179,7 @@ msgid "Start the Wallet"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:109
-#: src/screens/CreateTokenConfirm.js:125
+#: src/screens/CreateTokenConfirm.js:148
 #: src/screens/CreateTokenDepositNotice.js:38
 #: src/screens/CreateTokenName.js:44
 #: src/screens/CreateTokenSymbol.js:63
@@ -210,45 +210,46 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:65
+#: src/screens/CreateTokenConfirm.js:82
 #.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
 msgid "Creating token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:83
-msgid "Enter your 6-digit pin to create your token"
-msgstr ""
-
 #: src/screens/CreateTokenConfirm.js:84
-msgid "Authorize token creation"
-msgstr ""
-
-#: src/screens/CreateTokenConfirm.js:98
+#.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
 #, javascript-format
 msgid "**${ _this.name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:134
+#: src/screens/CreateTokenConfirm.js:101
+msgid "Enter your 6-digit pin to create your token"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:102
+msgid "Authorize token creation"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:157
 #, javascript-format
 msgid "Amount of ${ this.name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:142
+#: src/screens/CreateTokenConfirm.js:165
 msgid "Token name"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:148
+#: src/screens/CreateTokenConfirm.js:171
 #: src/screens/CreateTokenSymbol.js:70
 msgid "Token symbol"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:154
+#: src/screens/CreateTokenConfirm.js:177
 msgid "Deposit"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:161
+#: src/screens/CreateTokenConfirm.js:184
 msgid "Create token"
 msgstr ""
 
@@ -384,17 +385,17 @@ msgstr ""
 msgid "Enter your seed words separated by space"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:140
+#: src/screens/LoadHistoryScreen.js:84
 msgid "Loading your transactions"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:143
+#: src/screens/LoadHistoryScreen.js:87
 #, javascript-format
-msgid "**${ _this3.state.transactions } transactions** found"
+msgid "**${ _this2.props.loadedData.transactions } transactions** found"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:146
-msgid "**${ _this3.state.addresses } addresses** found"
+#: src/screens/LoadHistoryScreen.js:90
+msgid "**${ _this2.props.loadedData.addresses } addresses** found"
 msgstr ""
 
 #: src/screens/MainScreen.js:95
@@ -450,23 +451,23 @@ msgstr ""
 msgid "Waiting confirmation"
 msgstr ""
 
-#: src/screens/PinScreen.js:188
+#: src/screens/PinScreen.js:196
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
-#: src/screens/PinScreen.js:54
+#: src/screens/PinScreen.js:56
 msgid "Enter your PIN Code "
 msgstr ""
 
-#: src/screens/PinScreen.js:55
+#: src/screens/PinScreen.js:57
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
-#: src/screens/PinScreen.js:200
+#: src/screens/PinScreen.js:208
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:203
+#: src/screens/PinScreen.js:211
 #: src/screens/Settings.js:131
 msgid "Reset wallet"
 msgstr ""
@@ -516,33 +517,33 @@ msgstr ""
 msgid "Configuration string"
 msgstr ""
 
-#: src/screens/ResetWallet.js:75
+#: src/screens/ResetWallet.js:73
 msgid "RESET WALLET"
 msgstr ""
 
-#: src/screens/ResetWallet.js:79
+#: src/screens/ResetWallet.js:77
 msgid "Are you sure?"
 msgstr ""
 
-#: src/screens/ResetWallet.js:82
+#: src/screens/ResetWallet.js:80
 msgid ""
 "If you reset your wallet, **all data will be deleted**, and you will **lose "
 "access to your tokens**."
 msgstr ""
 
-#: src/screens/ResetWallet.js:84
+#: src/screens/ResetWallet.js:82
 msgid ""
 "To recover access to your tokens, you will need to import your seed words "
 "again."
 msgstr ""
 
-#: src/screens/ResetWallet.js:93
+#: src/screens/ResetWallet.js:91
 msgid ""
 "I want to reset my wallet, and I acknowledge that **all data will be wiped "
 "out**."
 msgstr ""
 
-#: src/screens/ResetWallet.js:102
+#: src/screens/ResetWallet.js:100
 msgid "Reset Wallet"
 msgstr ""
 
@@ -581,7 +582,7 @@ msgid "Insufficient funds"
 msgstr ""
 
 #: src/screens/SendAmountInput.js:119
-#: src/screens/SendConfirmScreen.js:125
+#: src/screens/SendConfirmScreen.js:132
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
@@ -589,35 +590,36 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: src/screens/SendAmountInput.js:131
-#: src/screens/SendConfirmScreen.js:133
+#: src/screens/SendConfirmScreen.js:140
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:69
+#: src/screens/SendConfirmScreen.js:75
 #.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
 msgid "Your transfer is being processed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:81
-msgid "Enter your 6-digit pin to authorize operation"
-msgstr ""
-
-#: src/screens/SendConfirmScreen.js:82
-msgid "Authorize operation"
-msgstr ""
-
-#: src/screens/SendConfirmScreen.js:94
+#: src/screens/SendConfirmScreen.js:77
+#.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
 #, javascript-format
 msgid "Your transfer of **${ _this.amountAndToken }** has been confirmed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:149
-msgid "Address"
+#: src/screens/SendConfirmScreen.js:94
+msgid "Enter your 6-digit pin to authorize operation"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:95
+msgid "Authorize operation"
 msgstr ""
 
 #: src/screens/SendConfirmScreen.js:156
+msgid "Address"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:163
 msgid "Send"
 msgstr ""
 
@@ -721,18 +723,22 @@ msgstr ""
 msgid "Opening camera"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:52
+#: src/components/ReceiveMyAddress.js:56
 #, javascript-format
 msgid "Here is my address: ${ _this.state.address }"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:89
+#: src/components/ReceiveMyAddress.js:93
 msgid "New address"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:95
+#: src/components/ReceiveMyAddress.js:99
 #: src/components/TokenDetails.js:54
 msgid "Share"
+msgstr ""
+
+#: src/components/SendTransactionFeedbackModal.js:156
+msgid "Propagating transaction to the network."
 msgstr ""
 
 #: src/components/TokenDetails.js:31
