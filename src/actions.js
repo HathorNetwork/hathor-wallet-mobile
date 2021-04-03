@@ -5,8 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import hathorLib from '@hathor/wallet-lib';
-
+import * as Keychain from 'react-native-keychain';
+import { Connection, HathorWallet, wallet as walletUtil } from '@hathor/wallet-lib';
+import { KEYCHAIN_USER, STORE } from './constants';
 
 export const types = {
   HISTORY_UPDATE: 'HISTORY_UPDATE',
@@ -31,6 +32,10 @@ export const types = {
   SET_INIT_WALLET: 'SET_INIT_WALLET',
   UPDATE_HEIGHT: 'UPDATE_HEIGHT',
   SET_ERROR_MODAL: 'SET_ERROR_MODAL',
+  SET_WALLET: 'SET_WALLET',
+  RESET_WALLET: 'RESET_WALLET',
+  RESET_LOADED_DATA: 'RESET_LOADED_DATA',
+  UPDATE_LOADED_DATA: 'UPDATE_LOADED_DATA',
 };
 
 /**
@@ -50,7 +55,7 @@ export const setServerInfo = ({ version, network }) => (
  * tx {Object} the new transaction
  * addresses {Array} this wallet addresses
  */
-export const newTx = (tx, addresses) => ({ type: types.NEW_TX, payload: { tx, addresses } });
+export const newTx = (tx) => ({ type: types.NEW_TX, payload: { tx } });
 
 /**
  * address {String} address to each payment should be sent
@@ -88,8 +93,8 @@ export const fetchHistoryBegin = () => ({ type: types.FETCH_HISTORY_BEGIN });
  * history {Object} history of this wallet (including txs from all tokens)
  * addresses {Array} this wallet addresses
  */
-export const fetchHistorySuccess = (history, addresses) => (
-  { type: types.FETCH_HISTORY_SUCCESS, payload: { history, addresses } }
+export const fetchHistorySuccess = (history) => (
+  { type: types.FETCH_HISTORY_SUCCESS, payload: { history } }
 );
 
 export const fetchHistoryError = () => ({ type: types.FETCH_HISTORY_ERROR });
@@ -107,8 +112,8 @@ export const lockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: true })
 export const updateHeight = (height) => ({ type: types.UPDATE_HEIGHT, payload: height });
 
 /**
- * addresses {Array} wallet words
- * history {String} Pin chosen by user
+ * words {String} wallet words
+ * pin {String} Pin chosen by user
  */
 export const setInitWallet = (words, pin) => (
   { type: types.SET_INIT_WALLET, payload: { words, pin } }
@@ -121,65 +126,110 @@ export const clearInitWallet = () => ({ type: types.SET_INIT_WALLET, payload: nu
  * amount {int} amount to be sent
  * address {String} destination address
  * token {Object} token being sent
- * pinCode {String} user's pin
  */
-export const sendTx = (amount, address, token, pinCode) => () => {
-  const data = {};
-  const isHathorToken = token.uid === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
-  data.tokens = isHathorToken ? [] : [token.uid];
-  data.inputs = [];
-  data.outputs = [{
-    address, value: amount, timelock: null, tokenData: isHathorToken ? 0 : 1,
-  }];
-  const walletData = hathorLib.wallet.getWalletData();
-  const historyTxs = 'historyTransactions' in walletData ? walletData.historyTransactions : {};
-  const ret = hathorLib.wallet.prepareSendTokensData(data, token, true, historyTxs, [token]);
-  if (ret.success) {
-    try {
-      const preparedData = hathorLib.transaction.prepareData(ret.data, pinCode);
-      const sendTransaction = new hathorLib.SendTransaction({ data: preparedData });
-      return { success: true, sendTransaction };
-    } catch (e) {
-      if (e instanceof hathorLib.errors.AddressError
-          || e instanceof hathorLib.errors.OutputValueError
-          || e instanceof hathorLib.errors.MaximumNumberOutputsError
-          || e instanceof hathorLib.errors.MaximumNumberInputsError) {
-        return { success: false, message: e.message };
-      }
-      throw e;
-    }
-  } else {
-    return { success: false, message: ret.message };
-  }
-};
+export const sendTx = (wallet, amount, address, token) => () => (
+  wallet.sendTransaction(address, amount, token)
+);
 
-export const loadHistory = () => (dispatch) => {
+export const startWallet = (words, pin) => (dispatch) => {
+  // If we've lost redux data, we could not properly stop the wallet object
+  // then we don't know if we've cleaned up the wallet data in the storage
+  walletUtil.cleanLoadedData();
+
+  const connection = new Connection({
+    network: 'mainnet', // app currently connects only to mainnet
+    servers: ['https://mobile.wallet.hathor.network/v1a/'],
+  });
+
+  const beforeReloadCallback = () => {
+    dispatch(activateFetchHistory());
+  };
+
+  const walletConfig = {
+    seed: words,
+    store: STORE,
+    connection,
+    password: pin,
+    pinCode: pin,
+    beforeReloadCallback
+  };
+
+  const wallet = new HathorWallet(walletConfig);
+
+  dispatch(setWallet(wallet));
+
   dispatch(fetchHistoryBegin());
-  hathorLib.version.checkApiVersion().then((data) => {
-    // Save server info.
-    dispatch(setServerInfo({
-      version: data.version,
-      network: data.network,
-    }));
 
-    // Load address history.
-    hathorLib.wallet.loadAddressHistory(0, hathorLib.constants.GAP_LIMIT).then(() => {
-      const walletData = hathorLib.wallet.getWalletData();
-      // Update historyTransactions with new one
-      const historyTransactions = walletData.historyTransactions || {};
-      const { keys } = hathorLib.wallet.getWalletData();
-      dispatch(fetchHistorySuccess(historyTransactions, keys));
-    }, () => {
-      dispatch(fetchHistoryError());
+  wallet.start().then((serverInfo) => {
+    dispatch(setServerInfo(serverInfo));
+    wallet.on('state', (state) => {
+      if (state === HathorWallet.ERROR) {
+        // ERROR
+        dispatch(fetchHistoryError());
+      } else if (state === HathorWallet.READY) {
+        // READY
+        const historyTransactions = wallet.getTxHistory();
+        dispatch(fetchHistorySuccess(historyTransactions));
+      }
     });
-  }, () => {
-    dispatch(fetchHistoryError());
+
+    wallet.on('new-tx', (tx) => {
+      dispatch(newTx(tx));
+    });
+
+    wallet.on('update-tx', (tx) => {
+      dispatch(newTx(tx));
+    });
+
+    connection.on('best-block-update', (height) => {
+      dispatch(updateHeight(height));
+    });
+
+    connection.on('state', (state) => {
+      let isOnline;
+      if (state === Connection.CONNECTED) {
+        isOnline = true;
+      } else {
+        isOnline = false;
+      }
+      dispatch(setIsOnline(isOnline));
+    });
+
+    connection.on('wallet-load-partial-update', (data) => {
+      const transactions = Object.keys(data.historyTransactions).length;
+      const addresses = data.addressesFound;
+      dispatch(updateLoadedData({ transactions, addresses }));
+    });
+  });
+
+  Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
+    accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
+    acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
   });
 };
+
+export const resetLoadedData = () => (
+  { type: types.RESET_LOADED_DATA }
+);
+
+export const updateLoadedData = (payload) => (
+  { type: types.UPDATE_LOADED_DATA, payload }
+);
 
 /**
  * errorReported {boolean} true if user reported the error to sentry
  */
 export const setErrorModal = (errorReported) => (
   { type: types.SET_ERROR_MODAL, payload: { errorReported } }
+);
+
+/**
+ * wallet {HathorWallet} wallet object
+ */
+export const setWallet = (wallet) => (
+  { type: types.SET_WALLET, payload: wallet }
+);
+
+export const resetWallet = () => (
+  { type: types.RESET_WALLET }
 );

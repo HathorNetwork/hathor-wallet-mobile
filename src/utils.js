@@ -23,40 +23,6 @@ export const Link = (props) => (
   </Text>
 );
 
-/**
- * Returns the balance for each token in tx, if the input/output belongs to this wallet
- */
-export const getMyTxBalance = (tx, myKeys) => {
-  const balance = {};
-  for (const txout of tx.outputs) {
-    if (hathorLib.wallet.isAuthorityOutput(txout)) {
-      continue;
-    }
-    if (txout.decoded && txout.decoded.address
-        && txout.decoded.address in myKeys) {
-      if (!balance[txout.token]) {
-        balance[txout.token] = 0;
-      }
-      balance[txout.token] += txout.value;
-    }
-  }
-
-  for (const txin of tx.inputs) {
-    if (hathorLib.wallet.isAuthorityOutput(txin)) {
-      continue;
-    }
-    if (txin.decoded && txin.decoded.address
-        && txin.decoded.address in myKeys) {
-      if (!balance[txin.token]) {
-        balance[txin.token] = 0;
-      }
-      balance[txin.token] -= txin.value;
-    }
-  }
-
-  return balance;
-};
-
 export const getShortHash = (hash, length = 4) => (
   `${hash.substring(0, length)}...${hash.substring(64 - length, 64)}`
 );
@@ -73,15 +39,6 @@ export const getShortHash = (hash, length = 4) => (
 export const getIntegerAmount = (value) => {
   const parsedValue = parseFloat(value.replace(',', '.'));
   return Math.round(parsedValue * (10 ** hathorLib.constants.DECIMAL_PLACES));
-};
-
-export const getBalance = (tokenUid) => {
-  // TODO should have a method in the lib to get balance by token
-  const data = hathorLib.wallet.getWalletData();
-  const historyTxs = data.historyTransactions || {};
-  const filteredArray = hathorLib.wallet.filterHistoryTransactions(historyTxs, tokenUid, false);
-  const balance = hathorLib.wallet.calculateBalance(filteredArray, tokenUid);
-  return balance;
 };
 
 export const getAmountParsed = (text) => {
@@ -262,3 +219,14 @@ export const getLightBackground = (alpha) => {
   const hex = `0${Math.round(255 * alpha).toString(16).toUpperCase()}`.substr(-2);
   return `${PRIMARY_COLOR}${hex}`;
 };
+
+/**
+ * Get the words saved in storage from the user PIN
+ *
+ * @params {string} pin User PIN to get encrypted words
+ *
+ * @return {string} Wallet seed
+ */
+export const getWalletWords = (pin) => (
+  hathorLib.wallet.getWalletWords(pin)
+);

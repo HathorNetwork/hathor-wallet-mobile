@@ -26,13 +26,15 @@ import { sendTx } from '../actions';
 
 /**
  * tokensBalance {Object} dict with balance for each token
+ * wallet {HathorWallet} HathorWallet lib object
  */
 const mapStateToProps = (state) => ({
   tokensBalance: state.tokensBalance,
+  wallet: state.wallet,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  sendTx: (amount, address, token, pin) => dispatch(sendTx(amount, address, token, pin)),
+  sendTx: (wallet, amount, address, token) => dispatch(sendTx(wallet, amount, address, token)),
 });
 
 class SendConfirmScreen extends React.Component {
@@ -61,11 +63,9 @@ class SendConfirmScreen extends React.Component {
   /**
    * In case we can prepare the data, open send tx feedback modal (while sending the tx)
    * Otherwise, show error
-   *
-   * @param {String} pinCode User PIN
    */
-  executeSend = (pinCode) => {
-    const ret = this.props.sendTx(this.amount, this.address, this.token, pinCode);
+  executeSend = () => {
+    const ret = this.props.sendTx(this.props.wallet, this.amount, this.address, this.token);
     if (ret.success) {
       // show loading modal
       this.setState({

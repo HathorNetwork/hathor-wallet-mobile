@@ -27,6 +27,13 @@ import TextFmt from '../components/TextFmt';
 import { newToken, updateSelectedToken } from '../actions';
 import errorIcon from '../assets/images/icErrorBig.png';
 
+/**
+ * wallet {HathorWallet} HathorWallet lib object
+ */
+const mapStateToProps = (state) => ({
+  wallet: state.wallet,
+});
+
 
 const mapDispatchToProps = (dispatch) => ({
   newToken: (token) => dispatch(newToken(token)),
@@ -61,9 +68,9 @@ class CreateTokenConfirm extends React.Component {
    * @param {String} pinCode User PIN
    */
   executeCreate = (pin) => {
-    const address = hathorLib.wallet.getAddressToUse();
-    const ret = hathorLib.tokens.createToken(
-      address, this.name, this.symbol, this.amount, pin
+    const address = this.props.wallet.getCurrentAddress({ markAsUsed: true });
+    const ret = this.props.wallet.createNewToken(
+      this.name, this.symbol, this.amount, address
     );
 
     if (ret.success) {
@@ -186,4 +193,4 @@ class CreateTokenConfirm extends React.Component {
   }
 }
 
-export default connect(null, mapDispatchToProps)(CreateTokenConfirm);
+export default connect(mapStateToProps, mapDispatchToProps)(CreateTokenConfirm);
