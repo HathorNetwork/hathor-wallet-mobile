@@ -70,7 +70,7 @@ class CreateTokenConfirm extends React.Component {
   executeCreate = (pin) => {
     const address = this.props.wallet.getCurrentAddress({ markAsUsed: true });
     const ret = this.props.wallet.createNewToken(
-      this.name, this.symbol, this.amount, address
+      this.name, this.symbol, this.amount, address, { pinCode: pin }
     );
 
     if (ret.success) {

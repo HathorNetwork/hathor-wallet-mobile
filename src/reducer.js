@@ -66,6 +66,8 @@ const reducer = (state = initialState, action) => {
   switch (action.type) {
     case types.NEW_TX:
       return onNewTx(state, action);
+    case types.UPDATE_TX:
+      return onUpdateTx(state, action);
     case types.NEW_INVOICE:
       return onNewInvoice(state, action);
     case types.CLEAR_INVOICE:
@@ -179,6 +181,42 @@ const onNewTx = (state, action) => {
     tokensBalance: newTokensBalance,
   };
 };
+
+/**
+ * Updates the balance and history data when a tx is updated
+ * because it might have been voided
+ */
+const onUpdateTx = (state, action) => {
+  const { tx } = action.payload;
+
+  const updatedHistoryMap = {};
+  const updatedBalanceMap = {};
+  const balances = state.wallet.getTxBalance(tx, { includeAuthorities: true });
+
+  for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
+    const currentHistory = state.tokensHistory[tokenUid] || [];
+    const txIndex = currentHistory.findIndex((el) => {
+      return el.tx_id === tx.tx_id;
+    });
+
+    // We update the balance and the history
+    const totalBalance = state.wallet.getBalance(tokenUid);
+    updatedBalanceMap[tokenUid] = totalBalance;
+
+    const newHistory = [...currentHistory];
+    newHistory[txIndex] = getTxHistoryFromTx(tx, tokenUid, tokenTxBalance)
+    updatedHistoryMap[tokenUid] = newHistory;
+  }
+
+  const newTokensHistory = Object.assign({}, state.tokensHistory, updatedHistoryMap);
+  const newTokensBalance = Object.assign({}, state.tokensBalance, updatedBalanceMap);
+
+  return Object.assign({}, state, {
+    tokensHistory: newTokensHistory,
+    tokensBalance: newTokensBalance,
+  });
+};
+
 
 /**
  * This method adds a new tx to the history of a token (we have one history per token)

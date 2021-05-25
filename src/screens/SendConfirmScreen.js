@@ -34,7 +34,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  sendTx: (wallet, amount, address, token) => dispatch(sendTx(wallet, amount, address, token)),
+  sendTx: (wallet, amount, address, token, pin) => dispatch(sendTx(wallet, amount, address, token, pin)),
 });
 
 class SendConfirmScreen extends React.Component {
@@ -63,9 +63,11 @@ class SendConfirmScreen extends React.Component {
   /**
    * In case we can prepare the data, open send tx feedback modal (while sending the tx)
    * Otherwise, show error
+   *
+   * @param {String} pin User PIN already validated
    */
-  executeSend = () => {
-    const ret = this.props.sendTx(this.props.wallet, this.amount, this.address, this.token);
+  executeSend = (pin) => {
+    const ret = this.props.sendTx(this.props.wallet, this.amount, this.address, this.token, pin);
     if (ret.success) {
       // show loading modal
       this.setState({
