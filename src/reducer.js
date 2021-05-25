@@ -195,16 +195,14 @@ const onUpdateTx = (state, action) => {
 
   for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
     const currentHistory = state.tokensHistory[tokenUid] || [];
-    const txIndex = currentHistory.findIndex((el) => {
-      return el.tx_id === tx.tx_id;
-    });
+    const txIndex = currentHistory.findIndex((el) => el.tx_id === tx.tx_id);
 
     // We update the balance and the history
     const totalBalance = state.wallet.getBalance(tokenUid);
     updatedBalanceMap[tokenUid] = totalBalance;
 
     const newHistory = [...currentHistory];
-    newHistory[txIndex] = getTxHistoryFromTx(tx, tokenUid, tokenTxBalance)
+    newHistory[txIndex] = getTxHistoryFromTx(tx, tokenUid, tokenTxBalance);
     updatedHistoryMap[tokenUid] = newHistory;
   }
 
