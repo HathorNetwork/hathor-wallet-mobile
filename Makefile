@@ -9,11 +9,16 @@ out_files := $(foreach locale,$(locales),$(locale_out)/$(locale)/texts.po.json)
 .PHONY: all
 all:
 	@echo Available make targets:
+	@echo - check_version
 	@echo - i18n
 	@echo - check_po
 	@echo - check_pot
 	@echo - update_pot
 	@echo
+
+.PHONY: check_version
+check_version:
+	./scripts/check_version
 
 .PHONY: update_pot
 update_pot:
