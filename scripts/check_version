@@ -2,7 +2,7 @@
 
 PACKAGE_VERSION=`grep '"version":' ./package.json | cut -d '"' -f4`
 ANDROID_GRADLE_VERSION=`grep "versionName " ./android/app/build.gradle | cut -d '"' -f2`
-TEMP_IOS_VAR=`grep "MARKETING_VERSION " ./ios/HathorMobile.xcodeproj/project.pbxproj | cut -d"=" -f2 | awk '{print substr($0, 2, length($0) - 2)}'`
+TEMP_IOS_VAR=`perl -n -e '/MARKETING_VERSION = (.*);/ && print "$1\n"' ./ios/HathorMobile.xcodeproj/project.pbxproj`
 IOS_PROJECT_VERSION_1=`echo $TEMP_IOS_VAR | awk '{print $1}'`
 IOS_PROJECT_VERSION_2=`echo $TEMP_IOS_VAR | awk '{print $2}'`
 
