@@ -12,6 +12,7 @@ import { KEYCHAIN_USER, STORE } from './constants';
 export const types = {
   HISTORY_UPDATE: 'HISTORY_UPDATE',
   NEW_TX: 'NEW_TX',
+  UPDATE_TX: 'UPDATE_TX',
   BALANCE_UPDATE: 'BALANCE_UPDATE',
   NEW_INVOICE: 'NEW_INVOICE',
   CLEAR_INVOICE: 'CLEAR_INVOICE',
@@ -53,9 +54,13 @@ export const setServerInfo = ({ version, network }) => (
 
 /**
  * tx {Object} the new transaction
- * addresses {Array} this wallet addresses
  */
 export const newTx = (tx) => ({ type: types.NEW_TX, payload: { tx } });
+
+/**
+ * tx {Object} the new transaction
+ */
+export const updateTx = (tx) => ({ type: types.UPDATE_TX, payload: { tx } });
 
 /**
  * address {String} address to each payment should be sent
@@ -123,12 +128,14 @@ export const clearInitWallet = () => ({ type: types.SET_INIT_WALLET, payload: nu
 
 
 /**
+ * wallet {HathorWallet} Wallet object from redux
  * amount {int} amount to be sent
  * address {String} destination address
  * token {Object} token being sent
+ * pin {String} User PIN
  */
-export const sendTx = (wallet, amount, address, token) => () => (
-  wallet.sendTransaction(address, amount, token)
+export const sendTx = (wallet, amount, address, token, pin) => () => (
+  wallet.sendTransaction(address, amount, token, { pinCode: pin })
 );
 
 export const startWallet = (words, pin) => (dispatch) => {
@@ -149,8 +156,6 @@ export const startWallet = (words, pin) => (dispatch) => {
     seed: words,
     store: STORE,
     connection,
-    password: pin,
-    pinCode: pin,
     beforeReloadCallback
   };
 
@@ -160,7 +165,7 @@ export const startWallet = (words, pin) => (dispatch) => {
 
   dispatch(fetchHistoryBegin());
 
-  wallet.start().then((serverInfo) => {
+  wallet.start({ pinCode: pin, password: pin }).then((serverInfo) => {
     dispatch(setServerInfo(serverInfo));
     wallet.on('state', (state) => {
       if (state === HathorWallet.ERROR) {
@@ -178,7 +183,7 @@ export const startWallet = (words, pin) => (dispatch) => {
     });
 
     wallet.on('update-tx', (tx) => {
-      dispatch(newTx(tx));
+      dispatch(updateTx(tx));
     });
 
     connection.on('best-block-update', (height) => {
