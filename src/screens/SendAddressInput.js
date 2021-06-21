@@ -15,7 +15,8 @@ import SimpleButton from '../components/SimpleButton';
 import HathorHeader from '../components/HathorHeader';
 import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
-import pasteIcon from '../assets/icons/paste.png';
+// import pasteIcon from '../assets/icons/paste.png';
+import qrcodeIcon from '../assets/icons/qrcode.png';
 
 
 class SendAddressInput extends React.Component {
@@ -57,12 +58,21 @@ class SendAddressInput extends React.Component {
   }
 
   render() {
+    const QRCodeButton = () => (
+      <SimpleButton
+        withBorder
+        icon={qrcodeIcon}
+        onPress={() => this.props.navigation.navigate('SendScanQRCode')}
+      />
+    );
+
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
           withBorder
           title={t`SEND`}
-          onBackPress={() => this.props.navigation.goBack()}
+          onBackPress={() => this.props.navigation.navigate('Dashboard')}
+          rightElement={QRCodeButton()}
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
@@ -76,7 +86,7 @@ class SendAddressInput extends React.Component {
                 containerStyle={{ flex: 1 }}
               />
               <SimpleButton
-                icon={pasteIcon}
+                title={t`Paste`}
                 onPress={this.onPasteAddress}
               />
             </View>
