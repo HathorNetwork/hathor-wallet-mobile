@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { KeyboardAvoidingView, SafeAreaView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, SafeAreaView, Text, ScrollView, View } from 'react-native';
 import { connect } from 'react-redux';
 import { t, jt } from 'ttag';
 
@@ -110,39 +110,41 @@ class CreateTokenAmount extends React.Component {
           onBackPress={() => this.props.navigation.goBack()}
           onCancel={() => this.props.navigation.dismiss()}
         />
-        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
-          <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-            <View style={{ marginTop: 24 }}>
-              <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
-                {t`Amount of ${this.name} (${this.symbol})`}
-              </InputLabel>
-              <AmountTextInput
-                ref={this.inputRef}
-                autoFocus
-                onAmountUpdate={this.onAmountChange}
-                value={this.state.amount}
-              />
+        <ScrollView>
+          <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
+            <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
+              <View style={{ marginTop: 24 }}>
+                <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
+                  {t`Amount of ${this.name} (${this.symbol})`}
+                </InputLabel>
+                <AmountTextInput
+                  ref={this.inputRef}
+                  autoFocus
+                  onAmountUpdate={this.onAmountChange}
+                  value={this.state.amount}
+                />
+              </View>
+              <View>
+                <InfoBox
+                  items={[
+                    <Text>{t`Deposit:`} <Strong style={amountStyle}>
+                      {hathorLib.helpers.prettyValue(this.state.deposit)} HTR
+                    </Strong></Text>,
+                    <Text>
+                      {jt`You have ${amountAvailableText} HTR available`}
+                    </Text>
+                  ]}
+                />
+                <NewHathorButton
+                  title={t`Next`}
+                  disabled={this.isButtonDisabled()}
+                  onPress={this.onButtonPress}
+                />
+              </View>
             </View>
-            <View>
-              <InfoBox
-                items={[
-                  <Text>{t`Deposit:`} <Strong style={amountStyle}>
-                    {hathorLib.helpers.prettyValue(this.state.deposit)} HTR
-                  </Strong></Text>,
-                  <Text>
-                    {jt`You have ${amountAvailableText} HTR available`}
-                  </Text>
-                ]}
-              />
-              <NewHathorButton
-                title={t`Next`}
-                disabled={this.isButtonDisabled()}
-                onPress={this.onButtonPress}
-              />
-            </View>
-          </View>
-          <OfflineBar style={{ position: 'relative' }} />
-        </KeyboardAvoidingView>
+            <OfflineBar style={{ position: 'relative' }} />
+          </KeyboardAvoidingView>
+        </ScrollView>
       </SafeAreaView>
     );
   }

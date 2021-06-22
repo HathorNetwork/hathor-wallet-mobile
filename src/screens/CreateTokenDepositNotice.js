@@ -9,6 +9,7 @@ import React from 'react';
 import {
   SafeAreaView,
   StyleSheet,
+  ScrollView,
   Text,
   View,
 } from 'react-native';
@@ -38,28 +39,30 @@ class CreateTokenDepositNotice extends React.Component {
           title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.dismiss()}
         />
-        <View style={this.style.container}>
-          <View>
-            <Text style={this.style.text}>
-              {str2jsx(
-                t`When creating new tokens, a |fn:deposit of ${depositPercentage}%| in HTR is required - e.g. if you create 1000 NewCoins, 10 HTR are needed as deposit.`,
-                { fn: (x, i) => <Text key={i} style={this.style.link}>{x}</Text> }
-              )}
-            </Text>
-            <Text style={this.style.text}>
-              {str2jsx(
-                t`If these tokens are later melted, the HTR deposit will be returned. Read more about it |link:here|.`,
-                { link: (x, i) => <Link key={i} href={TOKEN_DEPOSIT_URL}>{x}</Link> }
-              )}
-            </Text>
+        <ScrollView>
+          <View style={this.style.container}>
+            <View>
+              <Text style={this.style.text}>
+                {str2jsx(
+                  t`When creating new tokens, a |fn:deposit of ${depositPercentage}%| in HTR is required - e.g. if you create 1000 NewCoins, 10 HTR are needed as deposit.`,
+                  { fn: (x, i) => <Text key={i} style={this.style.link}>{x}</Text> }
+                )}
+              </Text>
+              <Text style={this.style.text}>
+                {str2jsx(
+                  t`If these tokens are later melted, the HTR deposit will be returned. Read more about it |link:here|.`,
+                  { link: (x, i) => <Link key={i} href={TOKEN_DEPOSIT_URL}>{x}</Link> }
+                )}
+              </Text>
+            </View>
+            <View style={this.style.buttonView}>
+              <NewHathorButton
+                onPress={() => this.props.navigation.navigate('CreateTokenName')}
+                title={t`I understand`}
+              />
+            </View>
           </View>
-          <View style={this.style.buttonView}>
-            <NewHathorButton
-              onPress={() => this.props.navigation.navigate('CreateTokenName')}
-              title={t`I understand`}
-            />
-          </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
