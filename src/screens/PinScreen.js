@@ -231,7 +231,7 @@ class PinScreen extends React.Component {
           />
         </View>
         <ScrollView>
-        <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
+          <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
           <PinInput
             maxLength={PIN_SIZE}
             color={this.state.pinColor}
