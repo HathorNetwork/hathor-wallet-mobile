@@ -481,7 +481,7 @@ msgstr "Nulstil wallet"
 
 #. *
 #.      * index {number} Selected index of the tab bar
-#.      
+#.
 #.  eslint thinks routes is not used, but TabView uses it
 #.  eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:30
@@ -581,6 +581,10 @@ msgstr "Lås wallet"
 #: src/screens/SendAddressInput.js:53 src/screens/SendScanQRCode.js:77
 msgid "SEND"
 msgstr "SEND"
+
+#: src/screens/SendAddressInput.js:89
+msgid "Paste"
+msgstr "Einfügen"
 
 #: src/screens/SendAddressInput.js:59
 msgid "Address to send"

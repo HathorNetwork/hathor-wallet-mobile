@@ -481,7 +481,7 @@ msgstr "Сбросить кошелек"
 
 #. *
 #.      * index {number} Selected index of the tab bar
-#.      
+#.
 #.  eslint thinks routes is not used, but TabView uses it
 #.  eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:30
@@ -580,6 +580,10 @@ msgstr "Заблокировать кошелек"
 #: src/screens/SendAddressInput.js:53 src/screens/SendScanQRCode.js:77
 msgid "SEND"
 msgstr "ОТПРАВИТЬ"
+
+#: src/screens/SendAddressInput.js:89
+msgid "Paste"
+msgstr "вставить"
 
 #: src/screens/SendAddressInput.js:59
 msgid "Address to send"

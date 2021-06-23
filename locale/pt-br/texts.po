@@ -17,9 +17,11 @@ msgid ""
 "\n"
 "No sensitive data will be shared."
 msgstr ""
-"Infelizmente um erro não tratado ocorreu e você precisa reiniciar o aplicativo.\n"
+"Infelizmente um erro não tratado ocorreu e você precisa reiniciar o "
+"aplicativo.\n"
 "\n"
-"Nós pedimos que você envie esse erro para o time da Hathor clicando no botão abaixo.\n"
+"Nós pedimos que você envie esse erro para o time da Hathor clicando no botão "
+"abaixo.\n"
 "\n"
 "Nenhum dado sensível será compartilhado."
 
@@ -80,7 +82,7 @@ msgstr "[Última] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:184
+#: src/utils.js:141
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
@@ -185,7 +187,7 @@ msgstr "Os PINs estão diferentes. Tente novamente."
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
-#: src/screens/CreateTokenAmount.js:109 src/screens/CreateTokenConfirm.js:125
+#: src/screens/CreateTokenAmount.js:109 src/screens/CreateTokenConfirm.js:148
 #: src/screens/CreateTokenDepositNotice.js:38 src/screens/CreateTokenName.js:44
 #: src/screens/CreateTokenSymbol.js:63
 msgid "CREATE TOKEN"
@@ -207,49 +209,50 @@ msgstr "Você tem ${ amountAvailableText } HTR disponíveis"
 
 #: src/screens/CreateTokenAmount.js:138 src/screens/CreateTokenName.js:65
 #: src/screens/CreateTokenSymbol.js:85 src/screens/InitWallet.js:209
-#: src/screens/InitWallet.js:331 src/screens/SendAddressInput.js:66
+#: src/screens/InitWallet.js:331 src/screens/SendAddressInput.js:94
 #: src/screens/SendAmountInput.js:159
 msgid "Next"
 msgstr "Próximo"
 
 #.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:65
+#: src/screens/CreateTokenConfirm.js:82
 msgid "Creating token"
 msgstr "Criando um token"
 
-#: src/screens/CreateTokenConfirm.js:83
-msgid "Enter your 6-digit pin to create your token"
-msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
-
-#: src/screens/CreateTokenConfirm.js:84
-msgid "Authorize token creation"
-msgstr "Autorizar criação de token"
-
+#.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:98
+#: src/screens/CreateTokenConfirm.js:84
 #, javascript-format
 msgid "**${ _this.name }** created successfully"
 msgstr "**${ _this.name }** criado com sucesso"
 
-#: src/screens/CreateTokenConfirm.js:134
+#: src/screens/CreateTokenConfirm.js:101
+msgid "Enter your 6-digit pin to create your token"
+msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
+
+#: src/screens/CreateTokenConfirm.js:102
+msgid "Authorize token creation"
+msgstr "Autorizar criação de token"
+
+#: src/screens/CreateTokenConfirm.js:157
 #, javascript-format
 msgid "Amount of ${ this.name }"
 msgstr "Quantidade de ${ this.name }"
 
-#: src/screens/CreateTokenConfirm.js:142
+#: src/screens/CreateTokenConfirm.js:165
 msgid "Token name"
 msgstr "Nome do token"
 
-#: src/screens/CreateTokenConfirm.js:148 src/screens/CreateTokenSymbol.js:70
+#: src/screens/CreateTokenConfirm.js:171 src/screens/CreateTokenSymbol.js:70
 msgid "Token symbol"
 msgstr "Símbolo do token"
 
-#: src/screens/CreateTokenConfirm.js:154
+#: src/screens/CreateTokenConfirm.js:177
 msgid "Deposit"
 msgstr "Depósito"
 
-#: src/screens/CreateTokenConfirm.js:161
+#: src/screens/CreateTokenConfirm.js:184
 msgid "Create token"
 msgstr "Criar um token"
 
@@ -394,16 +397,16 @@ msgstr "Palavras"
 msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
-#: src/screens/LoadHistoryScreen.js:140
+#: src/screens/LoadHistoryScreen.js:84
 msgid "Loading your transactions"
 msgstr "Carregando suas transações"
 
-#: src/screens/LoadHistoryScreen.js:143
+#: src/screens/LoadHistoryScreen.js:87
 #, javascript-format
 msgid "**${ _this2.props.loadedData.transactions } transactions** found"
 msgstr "**${ _this2.props.loadedData.transactions } transações** encontradas"
 
-#: src/screens/LoadHistoryScreen.js:146
+#: src/screens/LoadHistoryScreen.js:90
 msgid "**${ _this2.props.loadedData.addresses } addresses** found"
 msgstr "**${ _this2.props.loadedData.addresses } endereços** encontrados"
 
@@ -458,23 +461,23 @@ msgstr "Recebido"
 msgid "Waiting confirmation"
 msgstr "Aguardando confirmação"
 
-#: src/screens/PinScreen.js:188
+#: src/screens/PinScreen.js:196
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
-#: src/screens/PinScreen.js:54
+#: src/screens/PinScreen.js:56
 msgid "Enter your PIN Code "
 msgstr "Digite seu PIN "
 
-#: src/screens/PinScreen.js:55
+#: src/screens/PinScreen.js:57
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
-#: src/screens/PinScreen.js:200
+#: src/screens/PinScreen.js:208
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:203 src/screens/Settings.js:131
+#: src/screens/PinScreen.js:211 src/screens/Settings.js:131
 msgid "Reset wallet"
 msgstr "Resetar a wallet"
 
@@ -521,15 +524,15 @@ msgstr "Símbolo: "
 msgid "Configuration string"
 msgstr "Configuração"
 
-#: src/screens/ResetWallet.js:75
+#: src/screens/ResetWallet.js:73
 msgid "RESET WALLET"
 msgstr "RESETAR WALLET"
 
-#: src/screens/ResetWallet.js:79
+#: src/screens/ResetWallet.js:77
 msgid "Are you sure?"
 msgstr "Você tem certeza?"
 
-#: src/screens/ResetWallet.js:82
+#: src/screens/ResetWallet.js:80
 msgid ""
 "If you reset your wallet, **all data will be deleted**, and you will **lose "
 "access to your tokens**."
@@ -537,7 +540,7 @@ msgstr ""
 "Se você resetar sua wallet, **todos os seus dados serão apagados**, e você "
 "irá **perder acesso aos seus tokens**."
 
-#: src/screens/ResetWallet.js:84
+#: src/screens/ResetWallet.js:82
 msgid ""
 "To recover access to your tokens, you will need to import your seed words "
 "again."
@@ -545,7 +548,7 @@ msgstr ""
 "Para recuperar acesso aos seus tokens, você irá precisar importar suas "
 "palavras novamente."
 
-#: src/screens/ResetWallet.js:93
+#: src/screens/ResetWallet.js:91
 msgid ""
 "I want to reset my wallet, and I acknowledge that **all data will be wiped "
 "out**."
@@ -553,7 +556,7 @@ msgstr ""
 "Eu quero resetar minha wallet, e eu entendo que **todos os dados serão "
 "deletados**."
 
-#: src/screens/ResetWallet.js:102
+#: src/screens/ResetWallet.js:100
 msgid "Reset Wallet"
 msgstr "Resetar Wallet"
 
@@ -578,54 +581,59 @@ msgstr "Mudar PIN"
 msgid "Lock wallet"
 msgstr "Bloquear a wallet"
 
-#: src/screens/SendAddressInput.js:53 src/screens/SendScanQRCode.js:77
+#: src/screens/SendAddressInput.js:73 src/screens/SendScanQRCode.js:77
 msgid "SEND"
 msgstr "ENVIAR"
 
-#: src/screens/SendAddressInput.js:59
+#: src/screens/SendAddressInput.js:81
 msgid "Address to send"
 msgstr "Endereço para enviar"
+
+#: src/screens/SendAddressInput.js:89
+msgid "Paste"
+msgstr "Colar"
 
 #: src/screens/SendAmountInput.js:95
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:119 src/screens/SendConfirmScreen.js:125
+#: src/screens/SendAmountInput.js:119 src/screens/SendConfirmScreen.js:142
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:131 src/screens/SendConfirmScreen.js:133
+#: src/screens/SendAmountInput.js:131 src/screens/SendConfirmScreen.js:150
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
 #.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/SendConfirmScreen.js:69
+#: src/screens/SendConfirmScreen.js:85
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/screens/SendConfirmScreen.js:81
-msgid "Enter your 6-digit pin to authorize operation"
-msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
-
-#: src/screens/SendConfirmScreen.js:82
-msgid "Authorize operation"
-msgstr "Autorizar operação"
-
+#.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/SendConfirmScreen.js:94
+#: src/screens/SendConfirmScreen.js:87
 #, javascript-format
 msgid "Your transfer of **${ _this.amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ _this.amountAndToken }** foi confirmada"
 
-#: src/screens/SendConfirmScreen.js:149
+#: src/screens/SendConfirmScreen.js:104
+msgid "Enter your 6-digit pin to authorize operation"
+msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
+
+#: src/screens/SendConfirmScreen.js:105
+msgid "Authorize operation"
+msgstr "Autorizar operação"
+
+#: src/screens/SendConfirmScreen.js:166
 msgid "Address"
 msgstr "Endereço"
 
-#: src/screens/SendConfirmScreen.js:156
+#: src/screens/SendConfirmScreen.js:173
 msgid "Send"
 msgstr "Enviar"
 
@@ -710,8 +718,9 @@ msgstr "Copiado!"
 msgid ""
 "Thanks for reporting the error to the team. We will investigate it to "
 "prevent from happening again."
-msgstr "Obrigado por enviar o erro para o time. Nós vamos investigá-lo "
-"para que não aconteça mais."
+msgstr ""
+"Obrigado por enviar o erro para o time. Nós vamos investigá-lo para que não "
+"aconteça mais."
 
 #: src/components/ErrorModal.js:39
 msgid "Unexpected error"
@@ -733,18 +742,22 @@ msgstr "Sem conexão com a internet"
 msgid "Opening camera"
 msgstr "Abrindo a câmera"
 
-#: src/components/ReceiveMyAddress.js:52
+#: src/components/ReceiveMyAddress.js:56
 #, javascript-format
 msgid "Here is my address: ${ _this.state.address }"
 msgstr "Esse é o meu endereço: ${ _this.state.address }"
 
-#: src/components/ReceiveMyAddress.js:89
+#: src/components/ReceiveMyAddress.js:93
 msgid "New address"
 msgstr "Novo endereço"
 
-#: src/components/ReceiveMyAddress.js:95 src/components/TokenDetails.js:54
+#: src/components/ReceiveMyAddress.js:99 src/components/TokenDetails.js:54
 msgid "Share"
 msgstr "Compartilhar"
+
+#: src/components/SendTransactionFeedbackModal.js:156
+msgid "Propagating transaction to the network."
+msgstr "Propagando a transação para a rede."
 
 #: src/components/TokenDetails.js:31
 #, javascript-format
@@ -767,7 +780,3 @@ msgstr "ID"
 #: src/components/TxDetailsModal.js:57
 msgid "Public Explorer"
 msgstr "Explorer Público"
-
-#: src/components/SendTransactionFeedbackModal.js:156
-msgid "Propagating transaction to the network."
-msgstr "Propagando a transação para a rede."
