@@ -9,6 +9,7 @@ import React from 'react';
 import {
   FlatList,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -112,11 +113,13 @@ class MainScreen extends React.Component {
     const renderTxHistory = () => {
       if (this.props.txList && (this.props.txList.length > 0)) {
         return (
-          <TxHistoryView
-            txList={this.props.txList}
-            token={this.props.selectedToken}
-            onTxPress={this.onTxPress}
-          />
+          <ScrollView>
+            <TxHistoryView
+              txList={this.props.txList}
+              token={this.props.selectedToken}
+              onTxPress={this.onTxPress}
+            />
+          </ScrollView>
         );
       }
       // empty history

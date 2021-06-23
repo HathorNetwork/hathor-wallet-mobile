@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { SafeAreaView } from 'react-native';
+import { SafeAreaView, ScrollView } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
@@ -43,10 +43,12 @@ class CreateTokenDetail extends React.Component {
           wrapperStyle={{ borderBottomWidth: 0 }}
           rightElement={<CancelButton />}
         />
-        <TokenDetails
-          token={this.props.selectedToken}
-          contentStyle={{ marginHorizontal: 16, marginTop: 16 }}
-        />
+        <ScrollView>
+          <TokenDetails
+            token={this.props.selectedToken}
+            contentStyle={{ marginHorizontal: 16, marginTop: 16 }}
+          />
+        </ScrollView>
       </SafeAreaView>
     );
   }

@@ -13,6 +13,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -53,41 +54,43 @@ class WelcomeScreen extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader withLogo />
-        <View style={this.style.container}>
-          <Text style={this.style.title}>{t`Welcome to Hathor Wallet!`}</Text>
-          <View>
-            <TextFmt style={this.style.text}>
-              {t`This wallet is connected to the **mainnet**.`}
-            </TextFmt>
-            <Text style={this.style.text}>
-              {t`A mobile wallet is not the safest place to store your tokens.
-              So, we advise you to keep only a small amount of tokens here, such as pocket money.`}
-            </Text>
-            <Text style={this.style.text}>
-              {str2jsx(
-                t`For further information, check out our website |link:https://hathor.network/|.`,
-                { link: (x, i) => <Link key={i} href='https://hathor.network/'>{x}</Link> }
-              )}
-            </Text>
+        <ScrollView>
+          <View style={this.style.container}>
+            <Text style={this.style.title}>{t`Welcome to Hathor Wallet!`}</Text>
+            <View>
+              <TextFmt style={this.style.text}>
+                {t`This wallet is connected to the **mainnet**.`}
+              </TextFmt>
+              <Text style={this.style.text}>
+                {t`A mobile wallet is not the safest place to store your tokens.
+                So, we advise you to keep only a small amount of tokens here, such as pocket money.`}
+              </Text>
+              <Text style={this.style.text}>
+                {str2jsx(
+                  t`For further information, check out our website |link:https://hathor.network/|.`,
+                  { link: (x, i) => <Link key={i} href='https://hathor.network/'>{x}</Link> }
+                )}
+              </Text>
+            </View>
+            <View style={this.style.switchView}>
+              <Switch
+                onValueChange={this.toggleSwitch}
+                trackColor={{ true: PRIMARY_COLOR }}
+                value={this.state.switchValue}
+              />
+              <Text style={this.style.switchText}>
+                {t`I understand the risks of using a mobile wallet`}
+              </Text>
+            </View>
+            <View style={this.style.buttonView}>
+              <NewHathorButton
+                disabled={!this.state.switchValue}
+                onPress={() => this.props.navigation.navigate('InitialScreen')}
+                title={t`Start`}
+              />
+            </View>
           </View>
-          <View style={this.style.switchView}>
-            <Switch
-              onValueChange={this.toggleSwitch}
-              trackColor={{ true: PRIMARY_COLOR }}
-              value={this.state.switchValue}
-            />
-            <Text style={this.style.switchText}>
-              {t`I understand the risks of using a mobile wallet`}
-            </Text>
-          </View>
-          <View style={this.style.buttonView}>
-            <NewHathorButton
-              disabled={!this.state.switchValue}
-              onPress={() => this.props.navigation.navigate('InitialScreen')}
-              title={t`Start`}
-            />
-          </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -100,30 +103,32 @@ class InitialScreen extends React.Component {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader withLogo />
-        <View style={this.style.container}>
-          <Text style={this.style.title}>{t`To start,`}</Text>
-          <TextFmt style={this.style.text}>
-            {t`You need to **initialize your wallet**.`}
-          </TextFmt>
-          <TextFmt style={this.style.text}>
-            {t`You can either **start a new wallet** or **import a wallet** that already exists.`}
-          </TextFmt>
-          <Text style={this.style.text}>
-            {t`To import a wallet, you will need to provide your seed words.`}
-          </Text>
-          <View style={this.style.buttonView}>
-            <NewHathorButton
-              onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
-              title={t`Import Wallet`}
-              style={{ marginBottom: 16 }}
-              secondary
-            />
-            <NewHathorButton
-              onPress={() => this.props.navigation.navigate('NewWordsScreen')}
-              title={t`New Wallet`}
-            />
+        <ScrollView>
+          <View style={this.style.container}>
+            <Text style={this.style.title}>{t`To start,`}</Text>
+            <TextFmt style={this.style.text}>
+              {t`You need to **initialize your wallet**.`}
+            </TextFmt>
+            <TextFmt style={this.style.text}>
+              {t`You can either **start a new wallet** or **import a wallet** that already exists.`}
+            </TextFmt>
+            <Text style={this.style.text}>
+              {t`To import a wallet, you will need to provide your seed words.`}
+            </Text>
+            <View style={this.style.buttonView}>
+              <NewHathorButton
+                onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
+                title={t`Import Wallet`}
+                style={{ marginBottom: 16 }}
+                secondary
+              />
+              <NewHathorButton
+                onPress={() => this.props.navigation.navigate('NewWordsScreen')}
+                title={t`New Wallet`}
+              />
+            </View>
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -195,21 +200,23 @@ class NewWordsScreen extends React.Component {
           withLogo
           onBackPress={() => this.props.navigation.goBack()}
         />
-        <View style={this.style.container}>
-          <View>
-            <Text style={this.style.title}>{t`Your wallet has been created!`}</Text>
-            <TextFmt style={this.style.text}>
-              {t`You must **do a backup** and save the words below **in the same order they appear**.`}
-            </TextFmt>
+        <ScrollView>
+          <View style={this.style.container}>
+            <View>
+              <Text style={this.style.title}>{t`Your wallet has been created!`}</Text>
+              <TextFmt style={this.style.text}>
+                {t`You must **do a backup** and save the words below **in the same order they appear**.`}
+              </TextFmt>
+            </View>
+            {renderWords()}
+            <View style={this.style.buttonView}>
+              <NewHathorButton
+                onPress={() => this.props.navigation.navigate('BackupWords', { words: this.state.words })}
+                title={t`Next`}
+              />
+            </View>
           </View>
-          {renderWords()}
-          <View style={this.style.buttonView}>
-            <NewHathorButton
-              onPress={() => this.props.navigation.navigate('BackupWords', { words: this.state.words })}
-              title={t`Next`}
-            />
-          </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -295,45 +302,47 @@ class LoadWordsScreen extends React.Component {
             withLogo
             onBackPress={() => this.props.navigation.goBack()}
           />
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={this.style.container}>
-              <Text style={this.style.title}>{t`To import a wallet,`}</Text>
-              <TextFmt style={this.style.text}>
-                {t`You need to **write down the ${this.numberOfWords} seed words** of your wallet, separated by space.`}
-              </TextFmt>
-              <View style={this.style.inputView}>
-                <Text style={this.style.label}>{t`Words`}</Text>
-                <TextInput
-                  style={this.style.input}
-                  textAlignVertical='top'
-                  onChangeText={this.onChangeText}
-                  placeholder={t`Enter your seed words separated by space`}
-                  multiline
-                  maxHeight='80%'
-                  keyboardAppearance='dark'
-                  returnKeyType='done'
-                  enablesReturnKeyAutomatically
-                  autoFocus
-                  onSubmitEditing={this.loadClicked}
-                  blurOnSubmit
-                />
-                <Text style={this.style.label}>
-                  {this.state.words.length}
-/
-                  {this.numberOfWords}
-                </Text>
-                <Text style={{ color: 'red' }}>{this.state.errorMessage}</Text>
+          <ScrollView>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={this.style.container}>
+                <Text style={this.style.title}>{t`To import a wallet,`}</Text>
+                <TextFmt style={this.style.text}>
+                  {t`You need to **write down the ${this.numberOfWords} seed words** of your wallet, separated by space.`}
+                </TextFmt>
+                <View style={this.style.inputView}>
+                  <Text style={this.style.label}>{t`Words`}</Text>
+                  <TextInput
+                    style={this.style.input}
+                    textAlignVertical='top'
+                    onChangeText={this.onChangeText}
+                    placeholder={t`Enter your seed words separated by space`}
+                    multiline
+                    maxHeight='80%'
+                    keyboardAppearance='dark'
+                    returnKeyType='done'
+                    enablesReturnKeyAutomatically
+                    autoFocus
+                    onSubmitEditing={this.loadClicked}
+                    blurOnSubmit
+                  />
+                  <Text style={this.style.label}>
+                    {this.state.words.length}
+  /
+                    {this.numberOfWords}
+                  </Text>
+                  <Text style={{ color: 'red' }}>{this.state.errorMessage}</Text>
+                </View>
+                <View style={this.style.buttonView}>
+                  <NewHathorButton
+                    onPress={this.loadClicked}
+                    disabled={!this.state.isValid}
+                    title={t`Next`}
+                    style={{ marginTop: 8 }}
+                  />
+                </View>
               </View>
-              <View style={this.style.buttonView}>
-                <NewHathorButton
-                  onPress={this.loadClicked}
-                  disabled={!this.state.isValid}
-                  title={t`Next`}
-                  style={{ marginTop: 8 }}
-                />
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
+            </TouchableWithoutFeedback>
+          </ScrollView>
         </SafeAreaView>
       </KeyboardAvoidingView>
     );

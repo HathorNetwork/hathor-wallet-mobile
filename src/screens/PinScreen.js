@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import { t } from 'ttag';
 
 import {
-  BackHandler, SafeAreaView, Text, View,
+  BackHandler, SafeAreaView, ScrollView, Text, View,
 } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import hathorLib from '@hathor/wallet-lib';
@@ -230,14 +230,16 @@ class PinScreen extends React.Component {
             style={{ height: 21, width: 120 }}
           />
         </View>
-        <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
-        <PinInput
-          maxLength={PIN_SIZE}
-          color={this.state.pinColor}
-          value={this.state.pin}
-          onChangeText={this.onChangeText}
-          error={this.state.error}
-        />
+        <ScrollView>
+          <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
+          <PinInput
+            maxLength={PIN_SIZE}
+            color={this.state.pinColor}
+            value={this.state.pin}
+            onChangeText={this.onChangeText}
+            error={this.state.error}
+          />
+        </ScrollView>
         {renderButton()}
       </SafeAreaView>
     );

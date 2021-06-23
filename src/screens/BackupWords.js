@@ -11,6 +11,7 @@ import _ from 'lodash';
 import {
   Image,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -218,22 +219,24 @@ class BackupWords extends React.Component {
         <HathorHeader
           onBackPress={() => this.props.navigation.goBack()}
         />
-        {this.state.modal}
-        <View style={[this.style.container, { flexDirection: 'column', justifyContent: 'space-between' }]}>
-          <View>
-            <Text style={this.style.title}>{t`To make sure you saved,`}</Text>
-            <Text style={this.style.text}>
-              {t`Please select the word that corresponds to the number below:`}
-            </Text>
-            <Text style={[this.style.title, { textAlign: 'center', fontSize: 24 }]}>
-              {this.state.indexes[this.state.step]}
-            </Text>
+        <ScrollView>
+          {this.state.modal}
+          <View style={[this.style.container, { flexDirection: 'column', justifyContent: 'space-between' }]}>
+            <View>
+              <Text style={this.style.title}>{t`To make sure you saved,`}</Text>
+              <Text style={this.style.text}>
+                {t`Please select the word that corresponds to the number below:`}
+              </Text>
+              <Text style={[this.style.title, { textAlign: 'center', fontSize: 24 }]}>
+                {this.state.indexes[this.state.step]}
+              </Text>
+            </View>
+            <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
+              {renderOptions()}
+            </View>
+            {renderFooter()}
           </View>
-          <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
-            {renderOptions()}
-          </View>
-          {renderFooter()}
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }

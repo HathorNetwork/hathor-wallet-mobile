@@ -9,6 +9,7 @@ import React from 'react';
 import {
   Image,
   SafeAreaView,
+  ScrollView,
   View,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -149,45 +150,47 @@ class CreateTokenConfirm extends React.Component {
           onBackPress={() => this.props.navigation.goBack()}
           onCancel={() => this.props.navigation.dismiss()}
         />
-        {this.state.modal}
-        <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-          <View>
-            <View style={{ alignItems: 'center', marginTop: 40 }}>
-              <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
-                {t`Amount of ${this.name}`}
-              </InputLabel>
-              <AmountTextInput
+        <ScrollView>
+          {this.state.modal}
+          <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
+            <View>
+              <View style={{ alignItems: 'center', marginTop: 40 }}>
+                <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
+                  {t`Amount of ${this.name}`}
+                </InputLabel>
+                <AmountTextInput
+                  editable={false}
+                  value={hathorLib.helpers.prettyValue(this.amount)}
+                />
+              </View>
+              <SimpleInput
+                label={t`Token name`}
                 editable={false}
-                value={hathorLib.helpers.prettyValue(this.amount)}
+                value={this.name}
+                containerStyle={{ marginTop: 48 }}
+              />
+              <SimpleInput
+                label={t`Token symbol`}
+                editable={false}
+                value={this.symbol}
+                containerStyle={{ marginTop: 32 }}
+              />
+              <SimpleInput
+                label={t`Deposit`}
+                editable={false}
+                value={`${hathorLib.helpers.prettyValue(hathorLib.tokens.getDepositAmount(this.amount))} HTR`}
+                containerStyle={{ marginTop: 32 }}
               />
             </View>
-            <SimpleInput
-              label={t`Token name`}
-              editable={false}
-              value={this.name}
-              containerStyle={{ marginTop: 48 }}
-            />
-            <SimpleInput
-              label={t`Token symbol`}
-              editable={false}
-              value={this.symbol}
-              containerStyle={{ marginTop: 32 }}
-            />
-            <SimpleInput
-              label={t`Deposit`}
-              editable={false}
-              value={`${hathorLib.helpers.prettyValue(hathorLib.tokens.getDepositAmount(this.amount))} HTR`}
-              containerStyle={{ marginTop: 32 }}
+            <NewHathorButton
+              title={t`Create token`}
+              onPress={this.onSendPress}
+              // disable while modal is visible
+              disabled={this.state.modal !== null}
             />
           </View>
-          <NewHathorButton
-            title={t`Create token`}
-            onPress={this.onSendPress}
-            // disable while modal is visible
-            disabled={this.state.modal !== null}
-          />
-        </View>
-        <OfflineBar />
+          <OfflineBar />
+        </ScrollView>
       </SafeAreaView>
     );
   }
