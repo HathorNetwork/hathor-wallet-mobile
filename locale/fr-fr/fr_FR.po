@@ -132,7 +132,7 @@ msgstr "Les mots ont été correctement enregistrés"
 
 #: src/screens/BackupWords.js:224
 msgid "To make sure you saved,"
-msgstr "Pour être que vous avez enregistré,"
+msgstr "Pour être sûr que vous avez enregistré,"
 
 #: src/screens/BackupWords.js:226
 msgid "Please select the word that corresponds to the number below:"
@@ -270,7 +270,7 @@ msgid ""
 "When creating new tokens, a |fn:deposit of ${ depositPercentage }%| in HTR "
 "is required - e.g. if you create 1000 NewCoins, 10 HTR are needed as deposit."
 msgstr ""
-"Pendant la création de nouveaux jetons, un |fn:un dépôt de "
+"Pendant la création de nouveaux jetons, un |fn:dépôt de "
 "${ depositPercentage }% de HTR est requis - ex : si vous créez 1000 "
 "NewCoins, 10 HTR seront nécessaires comme dépôt."
 
@@ -305,7 +305,7 @@ msgstr "Nom du jeton"
 
 #: src/screens/CreateTokenName.js:60
 msgid "Token name should be the full name of the new token you are creating"
-msgstr "Le nom du jeton devrait être le nom complet du nouveau jeton que créez"
+msgstr "Le nom du jeton est le nom complet du nouveau jeton que créez"
 
 #: src/screens/CreateTokenName.js:61
 msgid "E.g. MyToken or My Token"
@@ -317,7 +317,7 @@ msgstr "Entre 2 et 5 caractères"
 
 #: src/screens/CreateTokenSymbol.js:80
 msgid "The symbol is a smaller version of the token name"
-msgstr "Le symbole est la version courte du nom du jeton"
+msgstr "Le symbole est la forme courte du nom du jeton"
 
 #: src/screens/CreateTokenSymbol.js:81
 msgid "E.g. HTR"
@@ -361,7 +361,9 @@ msgstr ""
 
 #: src/screens/InitWallet.js:112
 msgid "To import a wallet, you will need to provide your seed words."
-msgstr "Pour importer un portefeuille, vous devez fournir les mots secrets."
+msgstr ""
+"Pour importer un portefeuille, vous devez fournir les mots de votre phrase "
+"de récupération."
 
 #: src/screens/InitWallet.js:117
 msgid "Import Wallet"
@@ -393,8 +395,8 @@ msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
 "wallet, separated by space."
 msgstr ""
-"Vous avez besoin **d’entrer les ${ this.numberOfWords } mots secrets** de "
-"votre portefeuille, séparés par des espaces."
+"Vous avez besoin **d’entrer les ${ this.numberOfWords } mots de phrase de "
+"récupération** de votre portefeuille, séparés par des espaces."
 
 #: src/screens/InitWallet.js:305
 msgid "Words"
@@ -402,7 +404,9 @@ msgstr "Mots"
 
 #: src/screens/InitWallet.js:310
 msgid "Enter your seed words separated by space"
-msgstr "Entrez votre speed phrase (phrase de récupération) par des espaces"
+msgstr ""
+"Entrez les mots de seed phrase (phrase de récupération) séparés par des "
+"espaces"
 
 #: src/screens/LoadHistoryScreen.js:84
 msgid "Loading your transactions"
@@ -411,7 +415,8 @@ msgstr "Chargement de vos transactions"
 #: src/screens/LoadHistoryScreen.js:87
 #, javascript-format
 msgid "**${ _this2.props.loadedData.transactions } transactions** found"
-msgstr "**${ _this2.props.loadedData.transactions } transactions** trouvée(s)"
+msgstr ""
+"**${ _this2.props.loadedData.transactions } transaction(s)** trouvée(s)"
 
 #: src/screens/LoadHistoryScreen.js:90
 msgid "**${ _this2.props.loadedData.addresses } addresses** found"
