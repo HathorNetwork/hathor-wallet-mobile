@@ -405,8 +405,8 @@ msgstr "Mots"
 #: src/screens/InitWallet.js:310
 msgid "Enter your seed words separated by space"
 msgstr ""
-"Entrez les mots de seed phrase (phrase de récupération) séparés par des "
-"espaces"
+"Entrez les mots de votre seed phrase (phrase de récupération) séparés par "
+"des espaces"
 
 #: src/screens/LoadHistoryScreen.js:84
 msgid "Loading your transactions"
