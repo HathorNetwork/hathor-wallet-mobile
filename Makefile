@@ -1,4 +1,4 @@
-locales := pt-br da ru-ru
+locales := pt-br da ru-ru fr-fr
 
 locale_src = ./locale
 src_files := $(foreach locale,$(locales),$(locale_src)/$(locale)/texts.po)
