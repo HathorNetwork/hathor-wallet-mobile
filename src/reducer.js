@@ -210,9 +210,6 @@ const onUpdateTx = (state, action) => {
   });
 };
 
-/**
- * Update token history after fetching more data in pagination
- */
 const onUpdateTokenHistory = (state, action) => {
   const { token, newHistory } = action.payload;
   const currentHistory = state.tokensHistory[token] || [];
@@ -224,7 +221,7 @@ const onUpdateTokenHistory = (state, action) => {
     ...state,
     tokensHistory: newTokensHistory,
   };
-};
+}
 
 /**
  * This method adds a new tx to the history of a token (we have one history per token)
@@ -377,7 +374,10 @@ const onFetchHistoryBegin = (state, action) => ({
  * Got history. Update history and balance for each token.
  */
 const onFetchHistorySuccess = (state, action) => {
+
   const { tokensHistory, tokensBalance } = action.payload;
+
+
   return {
     ...state,
     tokensHistory,
@@ -441,16 +441,24 @@ const onSetInitWallet = (state, action) => ({
  * If value is different from last value we also update HTR balance
  */
 const onUpdateHeight = (state, action) => {
-  if (action.payload.height !== state.height) {
-    const tokensBalance = {};
-    const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
-    tokensBalance[uid] = action.payload.htrBalance;
-    const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
-    return {
-      ...state,
-      tokensBalance: newTokensBalance,
-      height: action.payload.height,
-    };
+  if (action.payload !== state.height) {
+    if (state.wallet.isReady()) {
+      // Need to update tokensBalance if wallet is ready
+      const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
+      const tokensBalance = {};
+      tokensBalance[uid] = state.wallet.getBalance(uid);
+      const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
+      return {
+        ...state,
+        tokensBalance: newTokensBalance,
+        height: action.payload,
+      };
+    } else {
+      return {
+        ...state,
+        height: action.payload,
+      };
+    }
   }
 
   return state;

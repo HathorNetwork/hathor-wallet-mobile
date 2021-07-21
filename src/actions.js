@@ -154,32 +154,6 @@ export const sendTx = (wallet, amount, address, token, pin) => () => (
   wallet.sendTransactionEvents(address, amount, token, { pinCode: pin })
 );
 
-/**
- * Map history element to expected TxHistory model object
- *
- * element {Object} Tx history element with {txId, timestamp, balance, voided?}
- * token {string} Token uid
- */
-const mapTokenHistory = (element, token) => {
-  const data = {
-    txId: element.txId,
-    timestamp: element.timestamp,
-    balance: element.balance,
-    // in wallet service this comes as 0/1 and in the full node comes with true/false
-    voided: Boolean(element.voided),
-    tokenUid: token
-  };
-  return new TxHistory(data);
-};
-
-/**
- * Get all tokens that this wallet has any transaction and fetch balance/history for each of them
- * We could do a lazy history load only when the user selects to see the token
- * but this would change the behaviour of the wallet and was not the goal of this moment
- * We should do this in the future anwyay
- *
- * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
- */
 export const fetchHistoryAndBalance = async (wallet) => {
   // First we get the tokens in the wallet
   const tokens = await wallet.getTokens();
@@ -187,38 +161,32 @@ export const fetchHistoryAndBalance = async (wallet) => {
   const tokensHistory = {};
   const tokensBalance = {};
   for (const token of tokens) {
-    /* eslint-disable no-await-in-loop */
     const balance = await wallet.getBalance(token);
     const tokenBalance = balance[0].balance;
     tokensBalance[token] = { available: tokenBalance.unlocked, locked: tokenBalance.locked };
     const history = await wallet.getTxHistory({ token_id: token });
-    tokensHistory[token] = history.map((element) => mapTokenHistory(element, token));
-    /* eslint-enable no-await-in-loop */
+    tokensHistory[token] = history.map((element) => new TxHistory(element));
   }
 
   return { tokensHistory, tokensBalance };
-};
+}
 
-/**
- * Fetch paginated history for specific token
- *
- * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
- * token {string} Token uid
- * history {Array} current token history array
- */
 export const fetchMoreHistory = async (wallet, token, history) => {
   const newHistory = await wallet.getTxHistory({ token_id: token, skip: history.length });
-  const newHistoryObjects = newHistory.map((element) => mapTokenHistory(element, token));
+  const newHistoryObjects = newHistory.map((element) => new TxHistory(element));
 
   return newHistoryObjects;
-};
+}
 
-export const startWallet = (words, pin, useWalletService) => (dispatch) => {
+export const startWallet = (words, pin) => (dispatch) => {
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
 
-  const networkName = 'mainnet';
+  const connection = new Connection({
+    network: 'testnet', // app currently connects only to mainnet
+    servers: ['https://node1.foxtrot.testnet.hathor.network/v1a/'],
+  });
 
   let wallet;
   if (useWalletService) {
@@ -248,17 +216,41 @@ export const startWallet = (words, pin, useWalletService) => (dispatch) => {
 
   dispatch(fetchHistoryBegin());
 
-  wallet.on('state', (state) => {
-    if (state === HathorWallet.ERROR) {
-      // ERROR
-      dispatch(fetchHistoryError());
-    } else if (wallet.isReady()) {
-      // READY
-      fetchHistoryAndBalance(wallet).then((data) => {
-        dispatch(fetchHistorySuccess(data));
-      });
-    }
-  });
+  wallet.start({ pinCode: pin, password: pin }).then((serverInfo) => {
+    dispatch(setServerInfo(serverInfo));
+    wallet.on('state', (state) => {
+      if (state === HathorWallet.ERROR) {
+        // ERROR
+        dispatch(fetchHistoryError());
+      } else if (state === HathorWallet.READY) {
+        // READY
+        fetchHistoryAndBalance(wallet).then((data) => {
+          dispatch(fetchHistorySuccess(data));
+        });
+      }
+    });
+
+    /*wallet.on('new-tx', (tx) => {
+      dispatch(newTx(tx));
+    });
+
+    wallet.on('update-tx', (tx) => {
+      dispatch(updateTx(tx));
+    });
+
+    connection.on('best-block-update', (height) => {
+      dispatch(updateHeight(height));
+    });*/
+
+    connection.on('state', (state) => {
+      let isOnline;
+      if (state === Connection.CONNECTED) {
+        isOnline = true;
+      } else {
+        isOnline = false;
+      }
+      dispatch(setIsOnline(isOnline));
+    });
 
   wallet.start({ pinCode: pin, password: pin }).then((serverInfo) => {
     walletUtil.storePasswordHash(pin);
