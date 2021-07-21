@@ -22,7 +22,6 @@ import TextFmt from '../components/TextFmt';
 import { clearInvoice } from '../actions';
 import { getTokenLabel } from '../utils';
 
-
 /**
  * address {string} Invoice destination address
  * amount {number} Invoice amount
@@ -34,6 +33,7 @@ const mapInvoiceStateToProps = (state) => ({
   amount: state.latestInvoice.amount,
   token: state.latestInvoice.token,
   payment: state.invoicePayment,
+  wallet: state.wallet,
 });
 
 class PaymentRequestDetail extends React.Component {
@@ -45,7 +45,7 @@ class PaymentRequestDetail extends React.Component {
 
   componentDidMount() {
     // When we create a new payment request we update the address for a new one
-    hathorLib.wallet.nextAddress();
+    this.props.wallet.getNextAddress();
   }
 
   componentDidUpdate(prevProps) {
