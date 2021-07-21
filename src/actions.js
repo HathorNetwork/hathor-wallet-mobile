@@ -8,6 +8,7 @@
 import * as Keychain from 'react-native-keychain';
 import { Connection, HathorWallet, wallet as walletUtil } from '@hathor/wallet-lib';
 import { KEYCHAIN_USER, STORE } from './constants';
+import { TxHistory } from './models';
 
 export const types = {
   HISTORY_UPDATE: 'HISTORY_UPDATE',
@@ -25,6 +26,7 @@ export const types = {
   FETCH_HISTORY_BEGIN: 'FETCH_HISTORY_BEGIN',
   FETCH_HISTORY_SUCCESS: 'FETCH_HISTORY_SUCCESS',
   FETCH_HISTORY_ERROR: 'FETCH_HISTORY_ERROR',
+  UPDATE_TOKEN_HISTORY: 'UPDATE_TOKEN_HISTORY',
   SET_LOAD_HISTORY_STATUS: 'SET_LOAD_HISTORY_STATUS',
   SET_IS_ONLINE: 'SET_IS_ONLINE',
   SET_SERVER_INFO: 'SET_SERVER_INFO',
@@ -98,8 +100,8 @@ export const fetchHistoryBegin = () => ({ type: types.FETCH_HISTORY_BEGIN });
  * history {Object} history of this wallet (including txs from all tokens)
  * addresses {Array} this wallet addresses
  */
-export const fetchHistorySuccess = (history) => (
-  { type: types.FETCH_HISTORY_SUCCESS, payload: { history } }
+export const fetchHistorySuccess = (data) => (
+  { type: types.FETCH_HISTORY_SUCCESS, payload: data }
 );
 
 export const fetchHistoryError = () => ({ type: types.FETCH_HISTORY_ERROR });
@@ -126,6 +128,9 @@ export const setInitWallet = (words, pin) => (
 
 export const clearInitWallet = () => ({ type: types.SET_INIT_WALLET, payload: null });
 
+export const updateTokenHistory = (token, newHistory) => (
+  { type: types.UPDATE_TOKEN_HISTORY, payload: { token, newHistory } }
+);
 
 /**
  * wallet {HathorWallet} Wallet object from redux
@@ -138,14 +143,38 @@ export const sendTx = (wallet, amount, address, token, pin) => () => (
   wallet.sendTransaction(address, amount, token, { pinCode: pin })
 );
 
+export const fetchHistoryAndBalance = async (wallet) => {
+  // First we get the tokens in the wallet
+  const tokens = await wallet.getTokens();
+
+  const tokensHistory = {};
+  const tokensBalance = {};
+  for (const token of tokens) {
+    const balance = await wallet.getBalance(token);
+    const tokenBalance = balance[0].balance;
+    tokensBalance[token] = { available: tokenBalance.unlocked, locked: tokenBalance.locked };
+    const history = await wallet.getTxHistory({ token_id: token });
+    tokensHistory[token] = history.map((element) => new TxHistory(element));
+  }
+
+  return { tokensHistory, tokensBalance };
+}
+
+export const fetchMoreHistory = async (wallet, token, history) => {
+  const newHistory = await wallet.getTxHistory({ token_id: token, skip: history.length });
+  const newHistoryObjects = newHistory.map((element) => new TxHistory(element));
+
+  return newHistoryObjects;
+}
+
 export const startWallet = (words, pin) => (dispatch) => {
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
 
   const connection = new Connection({
-    network: 'mainnet', // app currently connects only to mainnet
-    servers: ['https://mobile.wallet.hathor.network/v1a/'],
+    network: 'testnet', // app currently connects only to mainnet
+    servers: ['https://node1.foxtrot.testnet.hathor.network/v1a/'],
   });
 
   const beforeReloadCallback = () => {
@@ -173,12 +202,13 @@ export const startWallet = (words, pin) => (dispatch) => {
         dispatch(fetchHistoryError());
       } else if (state === HathorWallet.READY) {
         // READY
-        const historyTransactions = wallet.getTxHistory();
-        dispatch(fetchHistorySuccess(historyTransactions));
+        fetchHistoryAndBalance(wallet).then((data) => {
+          dispatch(fetchHistorySuccess(data));
+        });
       }
     });
 
-    wallet.on('new-tx', (tx) => {
+    /*wallet.on('new-tx', (tx) => {
       dispatch(newTx(tx));
     });
 
@@ -188,7 +218,7 @@ export const startWallet = (words, pin) => (dispatch) => {
 
     connection.on('best-block-update', (height) => {
       dispatch(updateHeight(height));
-    });
+    });*/
 
     connection.on('state', (state) => {
       let isOnline;

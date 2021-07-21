@@ -86,6 +86,8 @@ const reducer = (state = initialState, action) => {
       return onFetchHistorySuccess(state, action);
     case types.FETCH_HISTORY_ERROR:
       return onFetchHistoryError(state, action);
+    case types.UPDATE_TOKEN_HISTORY:
+      return onUpdateTokenHistory(state, action);
     case types.ACTIVATE_FETCH_HISTORY:
       return onActivateFetchHistory(state, action);
     case types.SET_LOAD_HISTORY_STATUS:
@@ -215,6 +217,18 @@ const onUpdateTx = (state, action) => {
   });
 };
 
+const onUpdateTokenHistory = (state, action) => {
+  const { token, newHistory } = action.payload;
+  const currentHistory = state.tokensHistory[token] || [];
+
+  const updatedHistoryMap = {};
+  updatedHistoryMap[token] = [...currentHistory, ...newHistory];
+  const newTokensHistory = Object.assign({}, state.tokensHistory, updatedHistoryMap);
+  return {
+    ...state,
+    tokensHistory: newTokensHistory,
+  };
+}
 
 /**
  * This method adds a new tx to the history of a token (we have one history per token)
@@ -367,36 +381,9 @@ const onFetchHistoryBegin = (state, action) => ({
  * Got history. Update history and balance for each token.
  */
 const onFetchHistorySuccess = (state, action) => {
-  const { history } = action.payload;
-  const tokensHistory = {};
-  // iterate through all txs received and map all tokens this wallet has, with
-  // its history and balance
-  for (const tx of Object.values(history)) {
-    // we first get all tokens present in this tx (that belong to the user) and
-    // the corresponding balances
-    const balances = state.wallet.getTxBalance(tx);
-    for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
-      let tokenHistory = tokensHistory[tokenUid];
-      if (tokenHistory === undefined) {
-        tokenHistory = [];
-        tokensHistory[tokenUid] = tokenHistory;
-      }
-      // add this tx to the history of the corresponding token
-      tokenHistory.push(getTxHistoryFromTx(tx, tokenUid, tokenTxBalance));
-    }
-  }
 
-  const tokensBalance = {};
-  for (const tokenUid of Object.keys(tokensHistory)) {
-    const totalBalance = state.wallet.getBalance(tokenUid);
-    // update token total balance
-    tokensBalance[tokenUid] = totalBalance;
-  }
+  const { tokensHistory, tokensBalance } = action.payload;
 
-  // in the end, sort (in place) all tx lists in descending order by timestamp
-  for (const txList of Object.values(tokensHistory)) {
-    txList.sort((elem1, elem2) => elem2.timestamp - elem1.timestamp);
-  }
 
   return {
     ...state,
@@ -462,16 +449,23 @@ const onSetInitWallet = (state, action) => ({
  */
 const onUpdateHeight = (state, action) => {
   if (action.payload !== state.height) {
-    // Need to update tokensBalance
-    const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
-    const tokensBalance = {};
-    tokensBalance[uid] = state.wallet.getBalance(uid);
-    const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
-    return {
-      ...state,
-      tokensBalance: newTokensBalance,
-      height: action.payload,
-    };
+    if (state.wallet.isReady()) {
+      // Need to update tokensBalance if wallet is ready
+      const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
+      const tokensBalance = {};
+      tokensBalance[uid] = state.wallet.getBalance(uid);
+      const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
+      return {
+        ...state,
+        tokensBalance: newTokensBalance,
+        height: action.payload,
+      };
+    } else {
+      return {
+        ...state,
+        height: action.payload,
+      };
+    }
   }
 
   return state;

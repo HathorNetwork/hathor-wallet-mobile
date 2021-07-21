@@ -7,6 +7,7 @@
 
 import React from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   SafeAreaView,
   StyleSheet,
@@ -32,6 +33,7 @@ import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import infoIcon from '../assets/icons/info-circle.png';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
+import { fetchMoreHistory, updateTokenHistory } from '../actions';
 
 
 /**
@@ -45,6 +47,11 @@ const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
   isOnline: state.isOnline,
   network: state.serverInfo.network,
+  wallet: state.wallet,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  updateTokenHistory: (token, history) => dispatch(updateTokenHistory(token, history)),
 });
 
 class MainScreen extends React.Component {
@@ -116,6 +123,8 @@ class MainScreen extends React.Component {
             txList={this.props.txList}
             token={this.props.selectedToken}
             onTxPress={this.onTxPress}
+            wallet={this.props.wallet}
+            updateTokenHistory={this.props.updateTokenHistory}
           />
         );
       }
@@ -162,6 +171,8 @@ class MainScreen extends React.Component {
 }
 
 class TxHistoryView extends React.Component {
+  state = { loading: false, canLoadMore: true };
+
   renderItem = ({ item, index }) => {
     const isFirst = (index === 0);
     const isLast = (index === (this.props.txList.length - 1));
@@ -176,6 +187,31 @@ class TxHistoryView extends React.Component {
     );
   }
 
+  renderFooter = () => {
+    if (!this.state.loading) return null;
+    return (
+      <View style={{ marginTop: 16 }}>
+        <ActivityIndicator />
+      </View>
+    );
+  };
+
+  loadMoreHistory = async () => {
+    if (!this.state.canLoadMore) {
+      // Already loaded all history
+      return;
+    }
+
+    this.setState({ loading: true });
+    const newHistory = await fetchMoreHistory(this.props.wallet, this.props.token.uid, this.props.txList);
+    if (newHistory.length) {
+      this.props.updateTokenHistory(this.props.token.uid, newHistory);
+      this.setState({ loading: false });
+    } else {
+      this.setState({ canLoadMore: false, loading: false });
+    }
+  }
+
   render() {
     return (
       <View style={{ flex: 1, alignSelf: 'stretch' }}>
@@ -183,6 +219,9 @@ class TxHistoryView extends React.Component {
           data={this.props.txList}
           renderItem={this.renderItem}
           keyExtractor={(item, index) => item.txId}
+          onEndReached={this.loadMoreHistory}
+          onEndReachedThreshold={0.2}
+          ListFooterComponent={this.renderFooter}
         />
       </View>
     );
@@ -497,4 +536,4 @@ class BalanceView extends React.Component {
 }
 
 
-export default connect(mapStateToProps)(MainScreen);
+export default connect(mapStateToProps, mapDispatchToProps)(MainScreen);
