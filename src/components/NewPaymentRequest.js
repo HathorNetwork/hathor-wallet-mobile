@@ -83,8 +83,8 @@ class NewPaymentRequest extends React.Component {
   }
 
   createPaymentRequest = () => {
-    const { address } = this.props.wallet.getCurrentAddress();
-    this.props.dispatch(newInvoice(address, getIntegerAmount(this.state.amount), this.state.token));
+    const addressObj = this.props.wallet.getCurrentAddress();
+    this.props.dispatch(newInvoice(addressObj.address, getIntegerAmount(this.state.amount), this.state.token));
     this.modalOpened = true;
     this.props.navigation.navigate('PaymentRequestDetail');
   }
