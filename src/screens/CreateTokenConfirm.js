@@ -69,20 +69,10 @@ class CreateTokenConfirm extends React.Component {
    * @param {String} pinCode User PIN
    */
   executeCreate = (pin) => {
-    const { address } = this.props.wallet.getCurrentAddress({ markAsUsed: true });
-    this.props.wallet.prepareCreateNewToken(
+    const address = this.props.wallet.getCurrentAddress({ markAsUsed: true }).address;
+    const promise = this.props.wallet.createNewToken(
       this.name, this.symbol, this.amount, { address, pinCode: pin }
-    ).then((tx) => {
-      let sendTransaction;
-      if (this.props.useWalletService) {
-        sendTransaction = new hathorLib.SendTransactionWalletService(
-          this.props.wallet, { transaction: tx }
-        );
-      } else {
-        sendTransaction = new hathorLib.SendTransaction({ transaction: tx, pin });
-      }
-
-      const promise = sendTransaction.runFromMining();
+    );
 
       // show loading modal
       this.setState({

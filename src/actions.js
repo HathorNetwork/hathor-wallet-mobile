@@ -6,7 +6,7 @@
  */
 
 import * as Keychain from 'react-native-keychain';
-import { Connection, HathorWallet, HathorWalletServiceWallet, Network, wallet as walletUtil, constants as hathorLibConstants } from '@hathor/wallet-lib';
+import { Connection, HathorWallet, HathorWalletServiceWallet, Network, wallet as walletUtil } from '@hathor/wallet-lib';
 import { KEYCHAIN_USER, STORE } from './constants';
 import { TxHistory } from './models';
 
@@ -154,6 +154,17 @@ export const sendTx = (wallet, amount, address, token, pin) => () => (
   wallet.sendTransactionEvents(address, amount, token, { pinCode: pin })
 );
 
+const mapTokenHistory = (element, token) => {
+  const data = {
+    txId: element.txId,
+    timestamp: element.timestamp,
+    balance: element.balance,
+    voided: element.voided ? true : false, // in wallet service this comes as 0/1 and in the full node comes with true/false
+    tokenUid: token
+  };
+  return new TxHistory(data);
+}
+
 export const fetchHistoryAndBalance = async (wallet) => {
   // First we get the tokens in the wallet
   const tokens = await wallet.getTokens();
@@ -165,7 +176,7 @@ export const fetchHistoryAndBalance = async (wallet) => {
     const tokenBalance = balance[0].balance;
     tokensBalance[token] = { available: tokenBalance.unlocked, locked: tokenBalance.locked };
     const history = await wallet.getTxHistory({ token_id: token });
-    tokensHistory[token] = history.map((element) => new TxHistory(element));
+    tokensHistory[token] = history.map((element) => mapTokenHistory(element, token));
   }
 
   return { tokensHistory, tokensBalance };
@@ -173,7 +184,7 @@ export const fetchHistoryAndBalance = async (wallet) => {
 
 export const fetchMoreHistory = async (wallet, token, history) => {
   const newHistory = await wallet.getTxHistory({ token_id: token, skip: history.length });
-  const newHistoryObjects = newHistory.map((element) => new TxHistory(element));
+  const newHistoryObjects = newHistory.map((element) => mapTokenHistory(element, token));
 
   return newHistoryObjects;
 }
@@ -183,19 +194,11 @@ export const startWallet = (words, pin) => (dispatch) => {
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
 
-  const connection = new Connection({
-    network: 'testnet', // app currently connects only to mainnet
-    servers: ['https://node1.foxtrot.testnet.hathor.network/v1a/'],
-  });
-
   let wallet;
-  if (useWalletService) {
-    const network = new Network(networkName);
-    wallet = new HathorWalletServiceWallet(words, network);
-  } else {
+  if (false) {
     const connection = new Connection({
-      network: networkName, // app currently connects only to mainnet
-      servers: ['https://mobile.wallet.hathor.network/v1a/'],
+      network: 'testnet', // app currently connects only to mainnet
+      servers: ['https://node1.foxtrot.testnet.hathor.network/v1a/'],
     });
 
     const beforeReloadCallback = () => {
@@ -210,25 +213,31 @@ export const startWallet = (words, pin) => (dispatch) => {
     };
 
     wallet = new HathorWallet(walletConfig);
+  } else {
+    const network = new Network('testnet');
+    wallet = new HathorWalletServiceWallet(words, network);
   }
 
   dispatch(setWallet(wallet));
 
   dispatch(fetchHistoryBegin());
 
+  wallet.on('state', (state) => {
+    if (state === HathorWallet.ERROR) {
+      // ERROR
+      dispatch(fetchHistoryError());
+    } else if (state === HathorWallet.READY || state === 'Ready') {
+      // READY
+      fetchHistoryAndBalance(wallet).then((data) => {
+        dispatch(fetchHistorySuccess(data));
+      });
+    }
+  });
+
   wallet.start({ pinCode: pin, password: pin }).then((serverInfo) => {
-    dispatch(setServerInfo(serverInfo));
-    wallet.on('state', (state) => {
-      if (state === HathorWallet.ERROR) {
-        // ERROR
-        dispatch(fetchHistoryError());
-      } else if (state === HathorWallet.READY) {
-        // READY
-        fetchHistoryAndBalance(wallet).then((data) => {
-          dispatch(fetchHistorySuccess(data));
-        });
-      }
-    });
+    walletUtil.storePasswordHash(pin);
+    walletUtil.storeEncryptedWords(words, pin);
+    //dispatch(setServerInfo(serverInfo));
 
     /*wallet.on('new-tx', (tx) => {
       dispatch(newTx(tx));
@@ -240,7 +249,7 @@ export const startWallet = (words, pin) => (dispatch) => {
 
     connection.on('best-block-update', (height) => {
       dispatch(updateHeight(height));
-    });*/
+    });
 
     connection.on('state', (state) => {
       let isOnline;
@@ -252,52 +261,11 @@ export const startWallet = (words, pin) => (dispatch) => {
       dispatch(setIsOnline(isOnline));
     });
 
-  wallet.start({ pinCode: pin, password: pin }).then((serverInfo) => {
-    walletUtil.storePasswordHash(pin);
-    walletUtil.storeEncryptedWords(words, pin);
-    dispatch(setServerInfo({ version: null, network: networkName }));
-
-    if (!useWalletService) {
-      wallet.on('new-tx', (tx) => {
-        fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
-          if (updatedBalanceMap) {
-            dispatch(newTx(tx, updatedBalanceMap));
-          }
-        });
-      });
-
-      wallet.on('update-tx', (tx) => {
-        fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
-          if (updatedBalanceMap) {
-            dispatch(updateTx(tx, updatedBalanceMap));
-          }
-        });
-      });
-
-      wallet.conn.on('best-block-update', (height) => {
-        fetchNewHTRBalance(wallet).then((data) => {
-          if (data) {
-            dispatch(updateHeight(height, data));
-          }
-        });
-      });
-
-      wallet.conn.on('state', (state) => {
-        let isOnline;
-        if (state === Connection.CONNECTED) {
-          isOnline = true;
-        } else {
-          isOnline = false;
-        }
-        dispatch(setIsOnline(isOnline));
-      });
-
-      wallet.conn.on('wallet-load-partial-update', (data) => {
-        const transactions = Object.keys(data.historyTransactions).length;
-        const addresses = data.addressesFound;
-        dispatch(updateLoadedData({ transactions, addresses }));
-      });
-    }
+    connection.on('wallet-load-partial-update', (data) => {
+      const transactions = Object.keys(data.historyTransactions).length;
+      const addresses = data.addressesFound;
+      dispatch(updateLoadedData({ transactions, addresses }));
+    });*/
   });
 
 
