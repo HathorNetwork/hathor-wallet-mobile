@@ -68,9 +68,9 @@ class CreateTokenConfirm extends React.Component {
    * @param {String} pinCode User PIN
    */
   executeCreate = (pin) => {
-    const address = this.props.wallet.getCurrentAddress({ markAsUsed: true });
-    const ret = this.props.wallet.createNewToken(
-      this.name, this.symbol, this.amount, address, { pinCode: pin }
+    const address = this.props.wallet.getCurrentAddress({ markAsUsed: true }).address;
+    const promise = this.props.wallet.createNewToken(
+      this.name, this.symbol, this.amount, { address, pinCode: pin }
     );
 
     if (ret.success) {

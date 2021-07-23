@@ -75,23 +75,19 @@ class SendConfirmScreen extends React.Component {
    * @param {String} pin User PIN already validated
    */
   executeSend = (pin) => {
-    const ret = this.props.sendTx(this.props.wallet, this.amount, this.address, this.token, pin);
-    if (ret.success) {
-      // show loading modal
-      this.setState({
-        modal:
-          // eslint-disable-next-line react/jsx-indent
-          <SendTransactionFeedbackModal
-            text={t`Your transfer is being processed`}
-            sendTransaction={ret.sendTransaction}
-            successText={<TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>}
-            onDismissSuccess={this.exitScreen}
-            onDismissError={() => this.setState({ modal: null })}
-          />,
-      });
-    } else {
-      this.onError(ret.message);
-    }
+    const promise = this.props.sendTx(this.props.wallet, this.amount, this.address, this.token, pin);
+    // show loading modal
+    this.setState({
+      modal:
+        // eslint-disable-next-line react/jsx-indent
+        <SendTransactionFeedbackModal
+          text={t`Your transfer is being processed`}
+          sendTransactionPromise={promise}
+          successText={<TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>}
+          onDismissSuccess={this.exitScreen}
+          onDismissError={() => this.setState({ modal: null })}
+        />,
+    });
   }
 
   /**
