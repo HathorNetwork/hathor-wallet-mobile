@@ -35,28 +35,18 @@ class SendTransactionFeedbackModal extends React.Component {
   }
 
   componentDidMount = () => {
-    this.props.sendTransactionPromise.then((data) => {
-      if (data.success) {
-        // Start event listeners
-        this.addSendTxEventHandlers(data.sendTransaction);
-      } else {
-        this.onSendError('Error sending transaction.');
-      }
-    }, (err) => {
-      this.onSendError(err.message);
-    });
+    this.addSendTxEventHandlers();
   }
 
   /**
    * Create event listeners for all sendTransaction events
    */
-  addSendTxEventHandlers = (sendTransaction) => {
-    sendTransaction.on('job-submitted', this.updateEstimation);
-    sendTransaction.on('estimation-updated', this.updateEstimation);
-    sendTransaction.on('job-done', this.jobDone);
-    sendTransaction.on('send-success', this.onSendSuccess);
-    sendTransaction.on('send-error', this.onSendError);
-    sendTransaction.on('unexpected-error', this.onSendError);
+  addSendTxEventHandlers = () => {
+    this.props.sendTransaction.on('job-submitted', this.updateEstimation);
+    this.props.sendTransaction.on('estimation-updated', this.updateEstimation);
+    this.props.sendTransaction.on('job-done', this.jobDone);
+    this.props.sendTransaction.on('send-tx-success', this.onSendSuccess);
+    this.props.sendTransaction.on('send-error', this.onSendError);
   }
 
   /**
@@ -177,7 +167,7 @@ SendTransactionFeedbackModal.propTypes = {
   // Text displayed on the first line of the modal
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
   // lib object that handles the mining/propagation requests and emit events
-  sendTransactionPromise: PropTypes.instanceOf(Promise).isRequired,
+  sendTransaction: PropTypes.oneOfType([PropTypes.instanceOf(hathorLib.SendTransaction), PropTypes.instanceOf(hathorLib.SendTransactionWalletService)]).isRequired,
   // optional method to be executed when the tx is mined and propagated with success
   onTxSuccess: PropTypes.func,
   // optional method to be executed when an error happens while sending the tx
