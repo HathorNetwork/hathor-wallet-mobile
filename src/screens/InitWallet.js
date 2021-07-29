@@ -250,7 +250,7 @@ class LoadWordsScreen extends React.Component {
       try {
         hathorLib.walletUtils.wordsValid(words);
         isValid = true;
-      } catch (e) {
+      } catch(e) {
         if (e instanceof hathorLib.errors.InvalidWords) {
           errorMessage = e.message;
           if (e.invalidWords && e.invalidWords.length > 0) {
