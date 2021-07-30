@@ -70,9 +70,23 @@ class CreateTokenConfirm extends React.Component {
    */
   executeCreate = (pin) => {
     const address = this.props.wallet.getCurrentAddress({ markAsUsed: true }).address;
-    const promise = this.props.wallet.createNewToken(
-      this.name, this.symbol, this.amount, { address, pinCode: pin }
-    );
+    this.props.wallet.prepareCreateNewToken(this.name, this.symbol, this.amount, { address, pinCode: pin }).then((tx) => {
+      let sendTransaction;
+      if (false) {
+        sendTransaction = new hathorLib.SendTransaction({ transaction: tx, pin });
+      } else {
+        sendTransaction = new hathorLib.SendTransactionWalletService(this.props.wallet, { transaction: tx });
+      }
+
+      try {
+        sendTransaction.runFromMining();
+      } catch (err) {
+        if (err instanceof hathorLib.errors.WalletError) {
+          this.onError(err);
+        } else {
+          throw err;
+        }
+      }
 
       // show loading modal
       this.setState({
@@ -81,7 +95,6 @@ class CreateTokenConfirm extends React.Component {
           <SendTransactionFeedbackModal
             text={t`Creating token`}
             sendTransaction={sendTransaction}
-            promise={promise}
             successText={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
             onTxSuccess={this.onTxSuccess}
             onDismissSuccess={this.exitScreen}

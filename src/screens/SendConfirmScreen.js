@@ -86,8 +86,6 @@ class SendConfirmScreen extends React.Component {
     try {
       sendTransaction.run();
     } catch (err) {
-      console.log('Error')
-      console.log(err);
       if (err instanceof hathorLib.errors.WalletError) {
         this.onError(err);
       } else {
