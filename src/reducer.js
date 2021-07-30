@@ -217,6 +217,9 @@ const onUpdateTx = (state, action) => {
   });
 };
 
+/**
+ * Update token history after fetching more data in pagination
+ */
 const onUpdateTokenHistory = (state, action) => {
   const { token, newHistory } = action.payload;
   const currentHistory = state.tokensHistory[token] || [];

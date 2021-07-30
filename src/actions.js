@@ -97,8 +97,7 @@ export const setTokens = (tokens) => ({ type: types.SET_TOKENS, payload: tokens 
 export const fetchHistoryBegin = () => ({ type: types.FETCH_HISTORY_BEGIN });
 
 /**
- * history {Object} history of this wallet (including txs from all tokens)
- * addresses {Array} this wallet addresses
+ * data {Object} { tokensHistory, tokensBalance } history and balance for each token
  */
 export const fetchHistorySuccess = (data) => (
   { type: types.FETCH_HISTORY_SUCCESS, payload: data }
@@ -143,6 +142,12 @@ export const sendTx = (wallet, amount, address, token, pin) => () => (
   wallet.sendTransactionEvents(address, amount, token, { pinCode: pin })
 );
 
+/**
+ * Map history element to expected TxHistory model object
+ *
+ * element {Object} Tx history element with {txId, timestamp, balance, voided?}
+ * token {string} Token uid
+ */
 const mapTokenHistory = (element, token) => {
   const data = {
     txId: element.txId,
@@ -154,6 +159,14 @@ const mapTokenHistory = (element, token) => {
   return new TxHistory(data);
 }
 
+/**
+ * Get all tokens that this wallet has any transaction and fetch balance/history for each of them
+ * We could do a lazy history load only when the user selects to see the token
+ * but this would change the behaviour of the wallet and was not the goal of this moment
+ * We should do this in the future anwyay
+ *
+ * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
+ */
 export const fetchHistoryAndBalance = async (wallet) => {
   // First we get the tokens in the wallet
   const tokens = await wallet.getTokens();
@@ -171,6 +184,13 @@ export const fetchHistoryAndBalance = async (wallet) => {
   return { tokensHistory, tokensBalance };
 }
 
+/**
+ * Fetch pagination history for specific token
+ *
+ * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
+ * token {string} Token uid
+ * history {Array} current token history array
+ */
 export const fetchMoreHistory = async (wallet, token, history) => {
   const newHistory = await wallet.getTxHistory({ token_id: token, skip: history.length });
   const newHistoryObjects = newHistory.map((element) => mapTokenHistory(element, token));
@@ -186,6 +206,7 @@ export const startWallet = (words, pin) => (dispatch) => {
   const networkName = 'testnet';
 
   let wallet;
+  // TODO substitute for feature flag when rollout code is implemented
   if (false) {
     const connection = new Connection({
       network: networkName, // app currently connects only to mainnet
@@ -230,6 +251,7 @@ export const startWallet = (words, pin) => (dispatch) => {
     walletUtil.storeEncryptedWords(words, pin);
     dispatch(setServerInfo({ version: null, network: networkName }));
 
+    // XXX no real time update for now
     /*wallet.on('new-tx', (tx) => {
       dispatch(newTx(tx));
     });

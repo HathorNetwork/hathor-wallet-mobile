@@ -35,6 +35,7 @@ class SendTransactionFeedbackModal extends React.Component {
   }
 
   componentDidMount = () => {
+    // Start event listeners
     this.addSendTxEventHandlers();
   }
 
