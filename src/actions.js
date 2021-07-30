@@ -183,10 +183,12 @@ export const startWallet = (words, pin) => (dispatch) => {
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
 
+  const networkName = 'testnet';
+
   let wallet;
   if (false) {
     const connection = new Connection({
-      network: 'testnet', // app currently connects only to mainnet
+      network: networkName, // app currently connects only to mainnet
       servers: ['https://node1.foxtrot.testnet.hathor.network/v1a/'],
     });
 
@@ -203,7 +205,7 @@ export const startWallet = (words, pin) => (dispatch) => {
 
     wallet = new HathorWallet(walletConfig);
   } else {
-    const network = new Network('testnet');
+    const network = new Network(networkName);
     wallet = new HathorWalletServiceWallet(words, network);
   }
 
@@ -226,7 +228,7 @@ export const startWallet = (words, pin) => (dispatch) => {
   wallet.start({ pinCode: pin, password: pin }).then((serverInfo) => {
     walletUtil.storePasswordHash(pin);
     walletUtil.storeEncryptedWords(words, pin);
-    //dispatch(setServerInfo(serverInfo));
+    dispatch(setServerInfo({ version: null, network: networkName }));
 
     /*wallet.on('new-tx', (tx) => {
       dispatch(newTx(tx));
