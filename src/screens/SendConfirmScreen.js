@@ -78,6 +78,7 @@ class SendConfirmScreen extends React.Component {
   executeSend = (pin) => {
     const outputs = [{ address: this.address, value: this.amount, token: this.token.uid }];
     let sendTransaction;
+    // TODO substitute for feature flag when rollout code is implemented
     if (false) {
       sendTransaction = new hathorLib.SendTransaction({ outputs, pin });
     } else {
