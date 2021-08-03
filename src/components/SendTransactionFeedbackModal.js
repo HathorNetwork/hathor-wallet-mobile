@@ -168,7 +168,10 @@ SendTransactionFeedbackModal.propTypes = {
   // Text displayed on the first line of the modal
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
   // lib object that handles the mining/propagation requests and emit events
-  sendTransaction: PropTypes.oneOfType([PropTypes.instanceOf(hathorLib.SendTransaction), PropTypes.instanceOf(hathorLib.SendTransactionWalletService)]).isRequired,
+  sendTransaction: PropTypes.oneOfType([
+    PropTypes.instanceOf(hathorLib.SendTransaction),
+    PropTypes.instanceOf(hathorLib.SendTransactionWalletService)
+  ]).isRequired,
   // optional method to be executed when the tx is mined and propagated with success
   onTxSuccess: PropTypes.func,
   // optional method to be executed when an error happens while sending the tx

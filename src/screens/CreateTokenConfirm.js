@@ -69,14 +69,18 @@ class CreateTokenConfirm extends React.Component {
    * @param {String} pinCode User PIN
    */
   executeCreate = (pin) => {
-    const address = this.props.wallet.getCurrentAddress({ markAsUsed: true }).address;
-    this.props.wallet.prepareCreateNewToken(this.name, this.symbol, this.amount, { address, pinCode: pin }).then((tx) => {
+    const { address } = this.props.wallet.getCurrentAddress({ markAsUsed: true });
+    this.props.wallet.prepareCreateNewToken(
+      this.name, this.symbol, this.amount, { address, pinCode: pin }
+    ).then((tx) => {
       let sendTransaction;
       // TODO substitute for feature flag when rollout code is implemented
       if (false) {
         sendTransaction = new hathorLib.SendTransaction({ transaction: tx, pin });
       } else {
-        sendTransaction = new hathorLib.SendTransactionWalletService(this.props.wallet, { transaction: tx });
+        sendTransaction = new hathorLib.SendTransactionWalletService(
+          this.props.wallet, { transaction: tx }
+        );
       }
 
       try {

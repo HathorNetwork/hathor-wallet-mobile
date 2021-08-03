@@ -224,7 +224,7 @@ const onUpdateTokenHistory = (state, action) => {
     ...state,
     tokensHistory: newTokensHistory,
   };
-}
+};
 
 /**
  * This method adds a new tx to the history of a token (we have one history per token)
@@ -377,10 +377,7 @@ const onFetchHistoryBegin = (state, action) => ({
  * Got history. Update history and balance for each token.
  */
 const onFetchHistorySuccess = (state, action) => {
-
   const { tokensHistory, tokensBalance } = action.payload;
-
-
   return {
     ...state,
     tokensHistory,
@@ -456,12 +453,12 @@ const onUpdateHeight = (state, action) => {
         tokensBalance: newTokensBalance,
         height: action.payload,
       };
-    } else {
-      return {
-        ...state,
-        height: action.payload,
-      };
     }
+
+    return {
+      ...state,
+      height: action.payload,
+    };
   }
 
   return state;
