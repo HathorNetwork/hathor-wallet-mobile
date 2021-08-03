@@ -203,7 +203,9 @@ class TxHistoryView extends React.Component {
     }
 
     this.setState({ loading: true });
-    const newHistory = await fetchMoreHistory(this.props.wallet, this.props.token.uid, this.props.txList);
+    const newHistory = await fetchMoreHistory(
+      this.props.wallet, this.props.token.uid, this.props.txList
+    );
     if (newHistory.length) {
       this.props.updateTokenHistory(this.props.token.uid, newHistory);
       this.setState({ loading: false });

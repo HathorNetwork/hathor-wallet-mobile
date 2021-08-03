@@ -153,11 +153,12 @@ const mapTokenHistory = (element, token) => {
     txId: element.txId,
     timestamp: element.timestamp,
     balance: element.balance,
-    voided: element.voided ? true : false, // in wallet service this comes as 0/1 and in the full node comes with true/false
+    // in wallet service this comes as 0/1 and in the full node comes with true/false
+    voided: Boolean(element.voided),
     tokenUid: token
   };
   return new TxHistory(data);
-}
+};
 
 /**
  * Get all tokens that this wallet has any transaction and fetch balance/history for each of them
@@ -174,15 +175,17 @@ export const fetchHistoryAndBalance = async (wallet) => {
   const tokensHistory = {};
   const tokensBalance = {};
   for (const token of tokens) {
+    /* eslint-disable no-await-in-loop */
     const balance = await wallet.getBalance(token);
     const tokenBalance = balance[0].balance;
     tokensBalance[token] = { available: tokenBalance.unlocked, locked: tokenBalance.locked };
     const history = await wallet.getTxHistory({ token_id: token });
     tokensHistory[token] = history.map((element) => mapTokenHistory(element, token));
+    /* eslint-enable no-await-in-loop */
   }
 
   return { tokensHistory, tokensBalance };
-}
+};
 
 /**
  * Fetch pagination history for specific token
@@ -196,7 +199,7 @@ export const fetchMoreHistory = async (wallet, token, history) => {
   const newHistoryObjects = newHistory.map((element) => mapTokenHistory(element, token));
 
   return newHistoryObjects;
-}
+};
 
 export const startWallet = (words, pin) => (dispatch) => {
   // If we've lost redux data, we could not properly stop the wallet object
@@ -252,7 +255,7 @@ export const startWallet = (words, pin) => (dispatch) => {
     dispatch(setServerInfo({ version: null, network: networkName }));
 
     // XXX no real time update for now
-    /*wallet.on('new-tx', (tx) => {
+    /* wallet.on('new-tx', (tx) => {
       dispatch(newTx(tx));
     });
 
@@ -278,7 +281,7 @@ export const startWallet = (words, pin) => (dispatch) => {
       const transactions = Object.keys(data.historyTransactions).length;
       const addresses = data.addressesFound;
       dispatch(updateLoadedData({ transactions, addresses }));
-    });*/
+    }); */
   });
 
 
