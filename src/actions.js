@@ -252,7 +252,7 @@ export const startWallet = (words, pin, useWalletService) => (dispatch) => {
     if (state === HathorWallet.ERROR) {
       // ERROR
       dispatch(fetchHistoryError());
-    } else if (state === HathorWallet.READY || state === 'Ready') {
+    } else if (wallet.isReady()) {
       // READY
       fetchHistoryAndBalance(wallet).then((data) => {
         dispatch(fetchHistorySuccess(data));
