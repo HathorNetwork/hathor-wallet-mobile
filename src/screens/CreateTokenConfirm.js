@@ -32,6 +32,7 @@ import errorIcon from '../assets/images/icErrorBig.png';
  */
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
+  useWalletService: state.useWalletService,
 });
 
 
@@ -73,24 +74,15 @@ class CreateTokenConfirm extends React.Component {
       this.name, this.symbol, this.amount, { address, pinCode: pin }
     ).then((tx) => {
       let sendTransaction;
-      // TODO substitute for feature flag when rollout code is implemented
-      if (false) {
-        sendTransaction = new hathorLib.SendTransaction({ transaction: tx, pin });
-      } else {
+      if (this.props.useWalletService) {
         sendTransaction = new hathorLib.SendTransactionWalletService(
           this.props.wallet, { transaction: tx }
         );
+      } else {
+        sendTransaction = new hathorLib.SendTransaction({ transaction: tx, pin });
       }
 
-      try {
-        sendTransaction.runFromMining();
-      } catch (err) {
-        if (err instanceof hathorLib.errors.WalletError) {
-          this.onError(err);
-        } else {
-          throw err;
-        }
-      }
+      const promise = sendTransaction.runFromMining();
 
       // show loading modal
       this.setState({
@@ -99,6 +91,7 @@ class CreateTokenConfirm extends React.Component {
           <SendTransactionFeedbackModal
             text={t`Creating token`}
             sendTransaction={sendTransaction}
+            promise={promise}
             successText={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
             onTxSuccess={this.onTxSuccess}
             onDismissSuccess={this.exitScreen}

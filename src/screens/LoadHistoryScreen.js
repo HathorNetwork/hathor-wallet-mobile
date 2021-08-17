@@ -32,10 +32,11 @@ const mapStateToProps = (state) => ({
   loadHistoryStatus: state.loadHistoryStatus,
   initWallet: state.initWallet,
   loadedData: state.loadedData,
+  useWalletService: state.useWalletService,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  startWallet: (words, pin) => dispatch(startWallet(words, pin)),
+  startWallet: (words, pin, useWalletService) => dispatch(startWallet(words, pin, useWalletService)),
   clearInitWallet: () => dispatch(clearInitWallet()),
   resetLoadedData: () => dispatch(resetLoadedData()),
 });
@@ -55,7 +56,7 @@ class LoadHistoryScreen extends React.Component {
     if (this.props.initWallet) {
       const { words, pin } = this.props.initWallet;
 
-      this.props.startWallet(words, pin);
+      this.props.startWallet(words, pin, this.props.useWalletService);
     }
   }
 

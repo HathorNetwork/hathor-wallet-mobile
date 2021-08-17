@@ -42,6 +42,7 @@ import { TxHistory } from './models';
  *
  * showErrorModal {boolean} if app should show a modal after the error alert
  * errorReported {boolean} if user reported the error to Sentry
+ * useWalletService {boolean} if should use wallet service facade (feature flag that should be updated from rollout service)
  */
 const initialState = {
   tokensHistory: {},
@@ -60,6 +61,7 @@ const initialState = {
   errorReported: false,
   wallet: null,
   loadedData: { transactions: 0, addresses: 0 },
+  useWalletService: false,
 };
 
 const reducer = (state = initialState, action) => {

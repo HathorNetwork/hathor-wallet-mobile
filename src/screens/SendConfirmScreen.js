@@ -31,6 +31,7 @@ import { sendTx } from '../actions';
 const mapStateToProps = (state) => ({
   tokensBalance: state.tokensBalance,
   wallet: state.wallet,
+  useWalletService: state.useWalletService,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -77,21 +78,14 @@ class SendConfirmScreen extends React.Component {
   executeSend = (pin) => {
     const outputs = [{ address: this.address, value: this.amount, token: this.token.uid }];
     let sendTransaction;
-    // TODO substitute for feature flag when rollout code is implemented
-    if (false) {
-      sendTransaction = new hathorLib.SendTransaction({ outputs, pin });
-    } else {
+    if (this.props.useWalletService) {
       sendTransaction = new hathorLib.SendTransactionWalletService(this.props.wallet, { outputs });
+    } else {
+      sendTransaction = new hathorLib.SendTransaction({ outputs, pin });
     }
-    try {
-      sendTransaction.run();
-    } catch (err) {
-      if (err instanceof hathorLib.errors.WalletError) {
-        this.onError(err);
-      } else {
-        throw err;
-      }
-    }
+
+    const promise = sendTransaction.run();
+
     // show loading modal
     this.setState({
       modal:
@@ -99,6 +93,7 @@ class SendConfirmScreen extends React.Component {
         <SendTransactionFeedbackModal
           text={t`Your transfer is being processed`}
           sendTransaction={sendTransaction}
+          promise={promise}
           successText={<TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>}
           onDismissSuccess={this.exitScreen}
           onDismissError={() => this.setState({ modal: null })}
