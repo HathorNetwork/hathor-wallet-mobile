@@ -90,14 +90,14 @@ class SendConfirmScreen extends React.Component {
     this.setState({
       modal:
         // eslint-disable-next-line react/jsx-indent
-        <SendTransactionFeedbackModal
+        ( <SendTransactionFeedbackModal
           text={t`Your transfer is being processed`}
           sendTransaction={sendTransaction}
           promise={promise}
           successText={<TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>}
           onDismissSuccess={this.exitScreen}
           onDismissError={() => this.setState({ modal: null })}
-        />,
+        /> ),
     });
   }
 

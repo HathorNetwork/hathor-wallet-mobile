@@ -188,7 +188,7 @@ export const fetchHistoryAndBalance = async (wallet) => {
 };
 
 /**
- * Fetch pagination history for specific token
+ * Fetch paginated history for specific token
  *
  * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
  * token {string} Token uid
