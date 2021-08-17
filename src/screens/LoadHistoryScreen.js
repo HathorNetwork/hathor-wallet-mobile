@@ -36,8 +36,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  startWallet:
-    (words, pin, useWalletService) => dispatch(startWallet(words, pin, useWalletService)),
+  startWallet: (words, pin, useWalletService) => dispatch(startWallet(words, pin, useWalletService)),
   clearInitWallet: () => dispatch(clearInitWallet()),
   resetLoadedData: () => dispatch(resetLoadedData()),
 });

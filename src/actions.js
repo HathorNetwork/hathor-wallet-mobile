@@ -213,19 +213,21 @@ export const fetchMoreHistory = async (wallet, token, history) => {
   return newHistoryObjects;
 };
 
-export const startWallet = (words, pin) => (dispatch) => {
+export const startWallet = (words, pin, useWalletService) => (dispatch) => {
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
 
-  const networkName = 'testnet';
+  const networkName = 'mainnet';
 
   let wallet;
-  // TODO substitute for feature flag when rollout code is implemented
-  if (false) {
+  if (useWalletService) {
+    const network = new Network(networkName);
+    wallet = new HathorWalletServiceWallet(words, network);
+  } else {
     const connection = new Connection({
       network: networkName, // app currently connects only to mainnet
-      servers: ['https://node1.foxtrot.testnet.hathor.network/v1a/'],
+      servers: ['https://mobile.wallet.hathor.network/v1a/'],
     });
 
     const beforeReloadCallback = () => {
@@ -240,9 +242,6 @@ export const startWallet = (words, pin) => (dispatch) => {
     };
 
     wallet = new HathorWallet(walletConfig);
-  } else {
-    const network = new Network(networkName);
-    wallet = new HathorWalletServiceWallet(words, network);
   }
 
   dispatch(setWallet(wallet));

@@ -46,8 +46,11 @@ class SendTransactionFeedbackModal extends React.Component {
     this.props.sendTransaction.on('job-submitted', this.updateEstimation);
     this.props.sendTransaction.on('estimation-updated', this.updateEstimation);
     this.props.sendTransaction.on('job-done', this.jobDone);
-    this.props.sendTransaction.on('send-tx-success', this.onSendSuccess);
-    this.props.sendTransaction.on('send-error', this.onSendError);
+    this.props.promise.then((tx) => {
+      this.onSendSuccess(tx);
+    }, (err) => {
+      this.onSendError(err.message);
+    });
   }
 
   /**
