@@ -23,11 +23,9 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
-	<true/>
+    <true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
 			<key>localhost</key>
@@ -48,8 +46,6 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>Protect your wallet with Face ID.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Hathor Wallet does not use it.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Hathor Wallet does not use it.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Hathor Wallet does not use it.</string>
