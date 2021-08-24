@@ -140,7 +140,7 @@ const onSetIsOnline = (state, action) => ({
  * if this tx settles an open invoice.
  */
 const onNewTx = (state, action) => {
-  const { tx } = action.payload;
+  const { tx, updatedBalanceMap } = action.payload;
 
   // if we have the invoice modal, check if this tx settles it
   let invoicePayment = null;
@@ -162,7 +162,6 @@ const onNewTx = (state, action) => {
   }
 
   const updatedHistoryMap = {};
-  const updatedBalanceMap = {};
   const balances = state.wallet.getTxBalance(tx);
 
   // we now loop through all tokens present in the new tx to get the new history and balance
@@ -171,10 +170,6 @@ const onNewTx = (state, action) => {
     const currentHistory = state.tokensHistory[tokenUid] || [];
     const newTokenHistory = addTxToSortedList(tokenUid, tx, tokenTxBalance, currentHistory);
     updatedHistoryMap[tokenUid] = newTokenHistory;
-    // totalBalance should not be confused with tokenTxBalance. The latter is the balance of the new
-    // tx, while the former is the total balance of the token, considering all tx history
-    const totalBalance = state.wallet.getBalance(tokenUid);
-    updatedBalanceMap[tokenUid] = totalBalance;
   }
   const newTokensHistory = Object.assign({}, state.tokensHistory, updatedHistoryMap);
   const newTokensBalance = Object.assign({}, state.tokensBalance, updatedBalanceMap);
@@ -192,19 +187,14 @@ const onNewTx = (state, action) => {
  * because it might have been voided
  */
 const onUpdateTx = (state, action) => {
-  const { tx } = action.payload;
+  const { tx, updatedBalanceMap } = action.payload;
 
   const updatedHistoryMap = {};
-  const updatedBalanceMap = {};
   const balances = state.wallet.getTxBalance(tx, { includeAuthorities: true });
 
   for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
     const currentHistory = state.tokensHistory[tokenUid] || [];
     const txIndex = currentHistory.findIndex((el) => el.tx_id === tx.tx_id);
-
-    // We update the balance and the history
-    const totalBalance = state.wallet.getBalance(tokenUid);
-    updatedBalanceMap[tokenUid] = totalBalance;
 
     const newHistory = [...currentHistory];
     newHistory[txIndex] = getTxHistoryFromTx(tx, tokenUid, tokenTxBalance);
@@ -451,23 +441,15 @@ const onSetInitWallet = (state, action) => ({
  * If value is different from last value we also update HTR balance
  */
 const onUpdateHeight = (state, action) => {
-  if (action.payload !== state.height) {
-    if (state.wallet.isReady()) {
-      // Need to update tokensBalance if wallet is ready
-      const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
-      const tokensBalance = {};
-      tokensBalance[uid] = state.wallet.getBalance(uid);
-      const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
-      return {
-        ...state,
-        tokensBalance: newTokensBalance,
-        height: action.payload,
-      };
-    }
-
+  if (action.payload.height !== state.height) {
+    const tokensBalance = {};
+    const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
+    tokensBalance[uid] = action.payload.htrBalance;
+    const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
     return {
       ...state,
-      height: action.payload,
+      tokensBalance: newTokensBalance,
+      height: action.payload.height,
     };
   }
 

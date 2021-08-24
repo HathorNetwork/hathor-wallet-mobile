@@ -9,6 +9,7 @@ import * as Keychain from 'react-native-keychain';
 import { Connection, HathorWallet, HathorWalletServiceWallet, Network, wallet as walletUtil } from '@hathor/wallet-lib';
 import { KEYCHAIN_USER, STORE } from './constants';
 import { TxHistory } from './models';
+import hathorLib from '@hathor/wallet-lib';
 
 export const types = {
   HISTORY_UPDATE: 'HISTORY_UPDATE',
@@ -56,13 +57,15 @@ export const setServerInfo = ({ version, network }) => (
 
 /**
  * tx {Object} the new transaction
+ * updatedBalanceMap {Object} balance map updated for each token in this tx
  */
-export const newTx = (tx) => ({ type: types.NEW_TX, payload: { tx } });
+export const newTx = (tx, updatedBalanceMap) => ({ type: types.NEW_TX, payload: { tx, updatedBalanceMap } });
 
 /**
  * tx {Object} the new transaction
+ * updatedBalanceMap {Object} balance map updated for each token in this tx
  */
-export const updateTx = (tx) => ({ type: types.UPDATE_TX, payload: { tx } });
+export const updateTx = (tx, updatedBalanceMap) => ({ type: types.UPDATE_TX, payload: { tx, updatedBalanceMap } });
 
 /**
  * address {String} address to each payment should be sent
@@ -115,7 +118,11 @@ export const unlockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: false
 
 export const lockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: true });
 
-export const updateHeight = (height) => ({ type: types.UPDATE_HEIGHT, payload: height });
+/**
+ * height {number} new height of the network
+ * htrBalance {Object} new balance of HTR
+ */
+export const updateHeight = (height, htrBalance) => ({ type: types.UPDATE_HEIGHT, payload: { height, htrBalance } });
 
 /**
  * words {String} wallet words
@@ -253,34 +260,43 @@ export const startWallet = (words, pin, useWalletService) => (dispatch) => {
     walletUtil.storeEncryptedWords(words, pin);
     dispatch(setServerInfo({ version: null, network: networkName }));
 
-    // XXX no real time update for now
-    /* wallet.on('new-tx', (tx) => {
-      dispatch(newTx(tx));
-    });
+    if (!useWalletService) {
+      wallet.on('new-tx', (tx) => {
+        fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
+          dispatch(newTx(tx, updatedBalanceMap));
+        });
+      });
 
-    wallet.on('update-tx', (tx) => {
-      dispatch(updateTx(tx));
-    });
+      wallet.on('update-tx', (tx) => {
+        fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
+          dispatch(updateTx(tx, updatedBalanceMap));
+        });
+      });
 
-    connection.on('best-block-update', (height) => {
-      dispatch(updateHeight(height));
-    });
+      wallet.conn.on('best-block-update', (height) => {
+        fetchNewHTRBalance(wallet).then((data) => {
+          if (data) {
+            dispatch(updateHeight(height, data));
+          }
+        });
+      });
 
-    connection.on('state', (state) => {
-      let isOnline;
-      if (state === Connection.CONNECTED) {
-        isOnline = true;
-      } else {
-        isOnline = false;
-      }
-      dispatch(setIsOnline(isOnline));
-    });
+      wallet.conn.on('state', (state) => {
+        let isOnline;
+        if (state === Connection.CONNECTED) {
+          isOnline = true;
+        } else {
+          isOnline = false;
+        }
+        dispatch(setIsOnline(isOnline));
+      });
 
-    connection.on('wallet-load-partial-update', (data) => {
-      const transactions = Object.keys(data.historyTransactions).length;
-      const addresses = data.addressesFound;
-      dispatch(updateLoadedData({ transactions, addresses }));
-    }); */
+      wallet.conn.on('wallet-load-partial-update', (data) => {
+        const transactions = Object.keys(data.historyTransactions).length;
+        const addresses = data.addressesFound;
+        dispatch(updateLoadedData({ transactions, addresses }));
+      });
+    }
   });
 
 
@@ -289,6 +305,50 @@ export const startWallet = (words, pin, useWalletService) => (dispatch) => {
     acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
   });
 };
+
+/**
+ * After a new transaction arrives in the websocket we must
+ * fetch the new balance for each token on it and use
+ * this new data to update redux info
+ *
+ * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
+ * tx {Object} full transaction object from the websocket
+ */
+export const fetchNewTxTokenBalance = async (wallet, tx) => {
+  const updatedBalanceMap = {};
+  const balances = wallet.getTxBalance(tx);
+  // we now loop through all tokens present in the new tx to get the new balance
+  for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
+    updatedBalanceMap[tokenUid] = await fetchTokenBalance(wallet, tokenUid);
+  }
+  return updatedBalanceMap;
+}
+
+/**
+ * Method that fetches the balance of a token
+ * and pre process for the expected format
+ *
+ * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
+ * uid {String} Token uid to fetch balance
+ */
+export const fetchTokenBalance = async (wallet, uid) => {
+  const balance = await wallet.getBalance(uid);
+  const tokenBalance = balance[0].balance;
+  return { available: tokenBalance.unlocked, locked: tokenBalance.locked };
+}
+
+/**
+ * Fetch HTR balance
+ *
+ * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
+ */
+export const fetchNewHTRBalance = async (wallet) => {
+  if (wallet.isReady()) {
+    // Need to update tokensBalance if wallet is ready
+    const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
+    return await fetchTokenBalance(wallet, uid);
+  }
+}
 
 export const resetLoadedData = () => (
   { type: types.RESET_LOADED_DATA }
