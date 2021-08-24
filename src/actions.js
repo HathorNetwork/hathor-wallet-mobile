@@ -6,10 +6,9 @@
  */
 
 import * as Keychain from 'react-native-keychain';
-import { Connection, HathorWallet, HathorWalletServiceWallet, Network, wallet as walletUtil } from '@hathor/wallet-lib';
+import { Connection, HathorWallet, HathorWalletServiceWallet, Network, wallet as walletUtil, constants as hathorLibConstants } from '@hathor/wallet-lib';
 import { KEYCHAIN_USER, STORE } from './constants';
 import { TxHistory } from './models';
-import hathorLib from '@hathor/wallet-lib';
 
 export const types = {
   HISTORY_UPDATE: 'HISTORY_UPDATE',
@@ -59,13 +58,17 @@ export const setServerInfo = ({ version, network }) => (
  * tx {Object} the new transaction
  * updatedBalanceMap {Object} balance map updated for each token in this tx
  */
-export const newTx = (tx, updatedBalanceMap) => ({ type: types.NEW_TX, payload: { tx, updatedBalanceMap } });
+export const newTx = (tx, updatedBalanceMap) => (
+  { type: types.NEW_TX, payload: { tx, updatedBalanceMap } }
+);
 
 /**
  * tx {Object} the new transaction
  * updatedBalanceMap {Object} balance map updated for each token in this tx
  */
-export const updateTx = (tx, updatedBalanceMap) => ({ type: types.UPDATE_TX, payload: { tx, updatedBalanceMap } });
+export const updateTx = (tx, updatedBalanceMap) => (
+  { type: types.UPDATE_TX, payload: { tx, updatedBalanceMap } }
+);
 
 /**
  * address {String} address to each payment should be sent
@@ -122,7 +125,9 @@ export const lockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: true })
  * height {number} new height of the network
  * htrBalance {Object} new balance of HTR
  */
-export const updateHeight = (height, htrBalance) => ({ type: types.UPDATE_HEIGHT, payload: { height, htrBalance } });
+export const updateHeight = (height, htrBalance) => (
+  { type: types.UPDATE_HEIGHT, payload: { height, htrBalance } }
+);
 
 /**
  * words {String} wallet words
@@ -319,10 +324,11 @@ export const fetchNewTxTokenBalance = async (wallet, tx) => {
   const balances = wallet.getTxBalance(tx);
   // we now loop through all tokens present in the new tx to get the new balance
   for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
+    /* eslint-disable no-await-in-loop */
     updatedBalanceMap[tokenUid] = await fetchTokenBalance(wallet, tokenUid);
   }
   return updatedBalanceMap;
-}
+};
 
 /**
  * Method that fetches the balance of a token
@@ -335,7 +341,7 @@ export const fetchTokenBalance = async (wallet, uid) => {
   const balance = await wallet.getBalance(uid);
   const tokenBalance = balance[0].balance;
   return { available: tokenBalance.unlocked, locked: tokenBalance.locked };
-}
+};
 
 /**
  * Fetch HTR balance
@@ -345,10 +351,12 @@ export const fetchTokenBalance = async (wallet, uid) => {
 export const fetchNewHTRBalance = async (wallet) => {
   if (wallet.isReady()) {
     // Need to update tokensBalance if wallet is ready
-    const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
-    return await fetchTokenBalance(wallet, uid);
+    const { uid } = hathorLibConstants.HATHOR_TOKEN_CONFIG;
+    return fetchTokenBalance(wallet, uid);
   }
-}
+
+  return null;
+};
 
 export const resetLoadedData = () => (
   { type: types.RESET_LOADED_DATA }
