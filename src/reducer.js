@@ -162,7 +162,7 @@ const onNewTx = (state, action) => {
   }
 
   const updatedHistoryMap = {};
-  const balances = state.wallet.getTxBalance(tx, { includeAuthorities: true });
+  const balances = state.wallet.getTxBalance(tx);
 
   // we now loop through all tokens present in the new tx to get the new history and balance
   for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
@@ -441,23 +441,15 @@ const onSetInitWallet = (state, action) => ({
  * If value is different from last value we also update HTR balance
  */
 const onUpdateHeight = (state, action) => {
-  if (action.payload !== state.height) {
-    if (state.wallet.isReady()) {
-      // Need to update tokensBalance if wallet is ready
-      const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
-      const tokensBalance = {};
-      tokensBalance[uid] = state.wallet.getBalance(uid);
-      const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
-      return {
-        ...state,
-        tokensBalance: newTokensBalance,
-        height: action.payload,
-      };
-    }
-
+  if (action.payload.height !== state.height) {
+    const tokensBalance = {};
+    const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
+    tokensBalance[uid] = action.payload.htrBalance;
+    const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
     return {
       ...state,
-      height: action.payload,
+      tokensBalance: newTokensBalance,
+      height: action.payload.height,
     };
   }
 
