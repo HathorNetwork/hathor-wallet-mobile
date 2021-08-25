@@ -162,7 +162,7 @@ const onNewTx = (state, action) => {
   }
 
   const updatedHistoryMap = {};
-  const balances = state.wallet.getTxBalance(tx);
+  const balances = state.wallet.getTxBalance(tx, { includeAuthorities: true });
 
   // we now loop through all tokens present in the new tx to get the new history and balance
   for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
