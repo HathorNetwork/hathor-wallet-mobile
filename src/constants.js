@@ -61,3 +61,9 @@ export const MIN_JOB_ESTIMATION = 1;
  * Size of the PIN
  */
 export const PIN_SIZE = 6;
+
+/**
+ * Unleash constants
+ */
+export const UNLEASH_URL = 'https://unleash-proxy.b7e6a7f52ee9fefaf0c53e300cfcb014.hathor.network/proxy';
+export const UNLEASH_CLIENT_KEY = 'wKNhpEXKa39aTRgIjcNsO4Im618bRGTq';

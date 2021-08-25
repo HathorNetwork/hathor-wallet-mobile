@@ -6,9 +6,21 @@
  */
 
 import * as Keychain from 'react-native-keychain';
-import { Connection, HathorWallet, HathorWalletServiceWallet, Network, wallet as walletUtil, constants as hathorLibConstants } from '@hathor/wallet-lib';
-import { KEYCHAIN_USER, STORE } from './constants';
+import {
+  Connection,
+  HathorWallet,
+  HathorWalletServiceWallet,
+  Network,
+  wallet as walletUtil,
+  constants as hathorLibConstants,
+} from '@hathor/wallet-lib';
+import {
+  KEYCHAIN_USER,
+  STORE,
+} from './constants';
 import { TxHistory } from './models';
+import { getFirstAddressFromWords } from './utils';
+import { shouldUseWalletService } from './featureFlags';
 
 export const types = {
   HISTORY_UPDATE: 'HISTORY_UPDATE',
@@ -39,6 +51,7 @@ export const types = {
   RESET_WALLET: 'RESET_WALLET',
   RESET_LOADED_DATA: 'RESET_LOADED_DATA',
   UPDATE_LOADED_DATA: 'UPDATE_LOADED_DATA',
+  SET_USE_WALLET_SERVICE: 'SET_USE_WALLET_SERVICE',
 };
 
 /**
@@ -116,6 +129,8 @@ export const setLoadHistoryStatus = (active, error) => (
 );
 
 export const activateFetchHistory = () => ({ type: types.ACTIVATE_FETCH_HISTORY });
+
+export const setUseWalletService = (data) => ({ type: types.SET_USE_WALLET_SERVICE, payload: data });
 
 export const unlockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: false });
 
@@ -213,12 +228,17 @@ export const fetchMoreHistory = async (wallet, token, history) => {
   return newHistoryObjects;
 };
 
-export const startWallet = (words, pin, useWalletService) => (dispatch) => {
+export const startWallet = (words, pin) => async (dispatch) => {
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
 
-  const networkName = 'mainnet';
+  const networkName = 'testnet';
+  const firstAddress = getFirstAddressFromWords(words, networkName);
+  const useWalletService = await shouldUseWalletService(firstAddress, networkName);
+
+  // Set useWalletService on the redux store
+  dispatch(setUseWalletService(useWalletService));
 
   let wallet;
   if (useWalletService) {
@@ -227,7 +247,7 @@ export const startWallet = (words, pin, useWalletService) => (dispatch) => {
   } else {
     const connection = new Connection({
       network: networkName, // app currently connects only to mainnet
-      servers: ['https://mobile.wallet.hathor.network/v1a/'],
+      servers: ['https://node1.foxtrot.testnet.hathor.network/v1a/'],
     });
 
     const beforeReloadCallback = () => {
