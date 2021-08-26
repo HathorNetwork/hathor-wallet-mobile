@@ -233,7 +233,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
 
-  const networkName = 'testnet';
+  const networkName = 'mainnet';
   const firstAddress = getFirstAddressFromWords(words, networkName);
   const useWalletService = await shouldUseWalletService(firstAddress, networkName);
 
@@ -247,7 +247,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
   } else {
     const connection = new Connection({
       network: networkName, // app currently connects only to mainnet
-      servers: ['https://node1.foxtrot.testnet.hathor.network/v1a/'],
+      servers: ['https://mobile.wallet.hathor.network/v1a/'],
     });
 
     const beforeReloadCallback = () => {

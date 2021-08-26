@@ -28,7 +28,7 @@ export const shouldUseWalletService = async (userId, network) => {
     await client.fetchToggles();
 
     const featureFlagName = `wallet-service-mobile-${Platform.OS}-${network}.rollout`;
-    console.log('Featureflagname: ', featureFlagName);
+
     return client.isEnabled(featureFlagName);
   } catch (e) {
     // If our feature flag service is unavailable, we default to the
