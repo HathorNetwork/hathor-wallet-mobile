@@ -268,13 +268,17 @@ export const startWallet = (words, pin, useWalletService) => (dispatch) => {
     if (!useWalletService) {
       wallet.on('new-tx', (tx) => {
         fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
-          dispatch(newTx(tx, updatedBalanceMap));
+          if (updatedBalanceMap) {
+            dispatch(newTx(tx, updatedBalanceMap));
+          }
         });
       });
 
       wallet.on('update-tx', (tx) => {
         fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
-          dispatch(updateTx(tx, updatedBalanceMap));
+          if (updatedBalanceMap) {
+            dispatch(updateTx(tx, updatedBalanceMap));
+          }
         });
       });
 
@@ -320,12 +324,17 @@ export const startWallet = (words, pin, useWalletService) => (dispatch) => {
  * tx {Object} full transaction object from the websocket
  */
 export const fetchNewTxTokenBalance = async (wallet, tx) => {
+  if (!wallet.isReady()) {
+    return null;
+  }
+
   const updatedBalanceMap = {};
   const balances = wallet.getTxBalance(tx);
   // we now loop through all tokens present in the new tx to get the new balance
   for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
     /* eslint-disable no-await-in-loop */
     updatedBalanceMap[tokenUid] = await fetchTokenBalance(wallet, tokenUid);
+    /* eslint-enable no-await-in-loop */
   }
   return updatedBalanceMap;
 };
@@ -338,6 +347,10 @@ export const fetchNewTxTokenBalance = async (wallet, tx) => {
  * uid {String} Token uid to fetch balance
  */
 export const fetchTokenBalance = async (wallet, uid) => {
+  if (!wallet.isReady()) {
+    return null;
+  }
+
   const balance = await wallet.getBalance(uid);
   const tokenBalance = balance[0].balance;
   return { available: tokenBalance.unlocked, locked: tokenBalance.locked };
@@ -349,13 +362,8 @@ export const fetchTokenBalance = async (wallet, uid) => {
  * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
  */
 export const fetchNewHTRBalance = async (wallet) => {
-  if (wallet.isReady()) {
-    // Need to update tokensBalance if wallet is ready
-    const { uid } = hathorLibConstants.HATHOR_TOKEN_CONFIG;
-    return fetchTokenBalance(wallet, uid);
-  }
-
-  return null;
+  const { uid } = hathorLibConstants.HATHOR_TOKEN_CONFIG;
+  return fetchTokenBalance(wallet, uid);
 };
 
 export const resetLoadedData = () => (
