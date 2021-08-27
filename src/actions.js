@@ -348,6 +348,8 @@ export const fetchNewTxTokenBalance = async (wallet, tx) => {
  */
 export const fetchTokenBalance = async (wallet, uid) => {
   if (!wallet.isReady()) {
+    // We can safely do nothing here since we will fetch all history and balance
+    // as soon as the wallet gets ready
     return null;
   }
 
