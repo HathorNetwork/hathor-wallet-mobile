@@ -5,7 +5,7 @@
   "scripts": {
     "lint": "eslint --ext .js --ext .jsx .",
     "start": "node node_modules/react-native/local-cli/cli.js start",
-    "ios": "node node_modules/.bin/react-native run-ios",
+    "ios": "node node_modules/.bin/react-native run-ios --simulator='iPhone 8'",
     "android": "node node_modules/.bin/react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/ && node node_modules/.bin/react-native run-android",
     "node-hack": "node node_modules/.bin/rn-nodeify --hack",
     "test": "jest",
@@ -16,7 +16,7 @@
     "@fortawesome/free-regular-svg-icons": "^5.8.2",
     "@fortawesome/free-solid-svg-icons": "^5.8.2",
     "@fortawesome/react-native-fontawesome": "^0.1.0",
-    "@hathor/wallet-lib": "^0.20.3",
+    "@hathor/wallet-lib": "^0.22.0",
     "@react-native-community/async-storage": "^1.4.0",
     "@sentry/react-native": "^1.5.0",
     "@tradle/react-native-http": "^2.0.1",
