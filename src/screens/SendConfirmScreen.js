@@ -31,6 +31,7 @@ import { sendTx } from '../actions';
 const mapStateToProps = (state) => ({
   tokensBalance: state.tokensBalance,
   wallet: state.wallet,
+  useWalletService: state.useWalletService,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -75,23 +76,29 @@ class SendConfirmScreen extends React.Component {
    * @param {String} pin User PIN already validated
    */
   executeSend = (pin) => {
-    const ret = this.props.sendTx(this.props.wallet, this.amount, this.address, this.token, pin);
-    if (ret.success) {
-      // show loading modal
-      this.setState({
-        modal:
-          // eslint-disable-next-line react/jsx-indent
-          <SendTransactionFeedbackModal
-            text={t`Your transfer is being processed`}
-            sendTransaction={ret.sendTransaction}
-            successText={<TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>}
-            onDismissSuccess={this.exitScreen}
-            onDismissError={() => this.setState({ modal: null })}
-          />,
-      });
+    const outputs = [{ address: this.address, value: this.amount, token: this.token.uid }];
+    let sendTransaction;
+    if (this.props.useWalletService) {
+      sendTransaction = new hathorLib.SendTransactionWalletService(this.props.wallet, { outputs });
     } else {
-      this.onError(ret.message);
+      sendTransaction = new hathorLib.SendTransaction({ outputs, pin });
     }
+
+    const promise = sendTransaction.run();
+
+    // show loading modal
+    this.setState({
+      modal:
+        // eslint-disable-next-line react/jsx-indent
+        (<SendTransactionFeedbackModal
+          text={t`Your transfer is being processed`}
+          sendTransaction={sendTransaction}
+          promise={promise}
+          successText={<TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>}
+          onDismissSuccess={this.exitScreen}
+          onDismissError={() => this.setState({ modal: null })}
+        />),
+    });
   }
 
   /**

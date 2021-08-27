@@ -46,9 +46,11 @@ class SendTransactionFeedbackModal extends React.Component {
     this.props.sendTransaction.on('job-submitted', this.updateEstimation);
     this.props.sendTransaction.on('estimation-updated', this.updateEstimation);
     this.props.sendTransaction.on('job-done', this.jobDone);
-    this.props.sendTransaction.on('send-success', this.onSendSuccess);
-    this.props.sendTransaction.on('send-error', this.onSendError);
-    this.props.sendTransaction.on('unexpected-error', this.onSendError);
+    this.props.promise.then((tx) => {
+      this.onSendSuccess(tx);
+    }, (err) => {
+      this.onSendError(err.message);
+    });
   }
 
   /**
@@ -169,7 +171,10 @@ SendTransactionFeedbackModal.propTypes = {
   // Text displayed on the first line of the modal
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
   // lib object that handles the mining/propagation requests and emit events
-  sendTransaction: PropTypes.instanceOf(hathorLib.SendTransaction).isRequired,
+  sendTransaction: PropTypes.oneOfType([
+    PropTypes.instanceOf(hathorLib.SendTransaction),
+    PropTypes.instanceOf(hathorLib.SendTransactionWalletService)
+  ]).isRequired,
   // optional method to be executed when the tx is mined and propagated with success
   onTxSuccess: PropTypes.func,
   // optional method to be executed when an error happens while sending the tx

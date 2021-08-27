@@ -6,7 +6,6 @@
  */
 
 import hathorLib from '@hathor/wallet-lib';
-import Mnemonic from 'bitcore-mnemonic';
 
 import React from 'react';
 import {
@@ -222,8 +221,6 @@ class LoadWordsScreen extends React.Component {
     isValid: false,
   };
 
-  wordlist = Mnemonic.Words.ENGLISH;
-
   numberOfWords = 24;
 
   style = Object.assign({}, baseStyle, StyleSheet.create({
@@ -246,28 +243,28 @@ class LoadWordsScreen extends React.Component {
   }));
 
   onChangeText = (text) => {
-    const words = text.trim(/\s+/).split(/\s+/);
-    const nonEmptyWords = words.filter((value) => value.length !== 0);
-    const nonEmptyWordsLowerCase = words.map((value) => value.toLowerCase());
-    const errorList = [];
-
-    for (let i = 0; i < nonEmptyWords.length; i += 1) {
-      const w = nonEmptyWords[i];
-      if (this.wordlist.indexOf(w.toLowerCase()) < 0) {
-        errorList.push(w);
+    const words = text.trim(/\s+/);
+    let errorMessage = '';
+    let isValid = false;
+    if (words) {
+      try {
+        hathorLib.walletUtils.wordsValid(words);
+        isValid = true;
+      } catch (e) {
+        if (e instanceof hathorLib.errors.InvalidWords) {
+          errorMessage = e.message;
+          if (e.invalidWords && e.invalidWords.length > 0) {
+            errorMessage = `${errorMessage} List of invalid words: ${e.invalidWords.join(', ')}.`;
+          }
+        } else {
+          throw e;
+        }
       }
     }
 
-    let errorMessage = '';
-    let isValid = false;
-    if (errorList.length > 0) {
-      errorMessage = `Invalid words: ${errorList.join(' ')}`;
-    } else if (nonEmptyWords.length === this.numberOfWords) {
-      isValid = true;
-    } else if (nonEmptyWords.length > this.numberOfWords) {
-      errorMessage = 'Too many words.';
-    }
-
+    const wordsArr = words.split(/\s+/);
+    const nonEmptyWords = wordsArr.filter((value) => value.length !== 0);
+    const nonEmptyWordsLowerCase = nonEmptyWords.map((value) => value.toLowerCase());
     this.setState({
       words: nonEmptyWordsLowerCase,
       errorMessage,

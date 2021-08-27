@@ -39,7 +39,7 @@ class ReceiveMyAddress extends React.Component {
   componentDidMount() {
     const { navigation } = this.props;
     this.willFocusEvent = navigation.addListener('willFocus', () => {
-      this.setState({ address: this.props.wallet.getCurrentAddress() });
+      this.setState({ address: this.props.wallet.getCurrentAddress().address });
     });
   }
 
@@ -48,7 +48,7 @@ class ReceiveMyAddress extends React.Component {
   }
 
   getNextAddress = () => {
-    this.setState({ address: this.props.wallet.getNextAddress() });
+    this.setState({ address: this.props.wallet.getNextAddress().address });
   }
 
   shareAddress = () => {

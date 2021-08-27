@@ -32,6 +32,7 @@ import errorIcon from '../assets/images/icErrorBig.png';
  */
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
+  useWalletService: state.useWalletService,
 });
 
 
@@ -68,28 +69,38 @@ class CreateTokenConfirm extends React.Component {
    * @param {String} pinCode User PIN
    */
   executeCreate = (pin) => {
-    const address = this.props.wallet.getCurrentAddress({ markAsUsed: true });
-    const ret = this.props.wallet.createNewToken(
-      this.name, this.symbol, this.amount, address, { pinCode: pin }
-    );
+    const { address } = this.props.wallet.getCurrentAddress({ markAsUsed: true });
+    this.props.wallet.prepareCreateNewToken(
+      this.name, this.symbol, this.amount, { address, pinCode: pin }
+    ).then((tx) => {
+      let sendTransaction;
+      if (this.props.useWalletService) {
+        sendTransaction = new hathorLib.SendTransactionWalletService(
+          this.props.wallet, { transaction: tx }
+        );
+      } else {
+        sendTransaction = new hathorLib.SendTransaction({ transaction: tx, pin });
+      }
 
-    if (ret.success) {
+      const promise = sendTransaction.runFromMining();
+
       // show loading modal
       this.setState({
         modal:
           // eslint-disable-next-line react/jsx-indent
           <SendTransactionFeedbackModal
             text={t`Creating token`}
-            sendTransaction={ret.sendTransaction}
+            sendTransaction={sendTransaction}
+            promise={promise}
             successText={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
             onTxSuccess={this.onTxSuccess}
             onDismissSuccess={this.exitScreen}
             onDismissError={() => this.setState({ modal: null })}
           />,
       });
-    } else {
-      this.onError(ret.message);
-    }
+    }, (err) => {
+      this.onError(err.message);
+    });
   }
 
   /**

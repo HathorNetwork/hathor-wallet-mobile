@@ -13,7 +13,6 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import hathorLib from '@hathor/wallet-lib';
 import { IS_MULTI_TOKEN } from '../constants';
 import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
@@ -28,8 +27,8 @@ import OfflineBar from './OfflineBar';
  */
 const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
+  wallet: state.wallet,
 });
-
 
 class NewPaymentRequest extends React.Component {
   constructor(props) {
@@ -84,7 +83,7 @@ class NewPaymentRequest extends React.Component {
   }
 
   createPaymentRequest = () => {
-    const address = hathorLib.wallet.getCurrentAddress();
+    const { address } = this.props.wallet.getCurrentAddress();
     this.props.dispatch(newInvoice(address, getIntegerAmount(this.state.amount), this.state.token));
     this.modalOpened = true;
     this.props.navigation.navigate('PaymentRequestDetail');
