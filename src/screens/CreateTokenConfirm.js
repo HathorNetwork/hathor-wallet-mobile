@@ -125,6 +125,7 @@ class CreateTokenConfirm extends React.Component {
     const token = { uid: tx.hash, name: this.name, symbol: this.symbol };
     this.props.newToken(token);
     this.props.updateSelectedToken(token);
+    hathorLib.tokens.addToken(token.uid, token.name, token.symbol);
   }
 
   /**
