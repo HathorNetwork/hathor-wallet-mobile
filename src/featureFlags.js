@@ -1,9 +1,9 @@
 import { Platform } from 'react-native';
+import { UnleashClient } from 'unleash-proxy-client';
 import {
   UNLEASH_URL,
   UNLEASH_CLIENT_KEY,
 } from './constants';
-import { UnleashClient } from 'unleash-proxy-client';
 
 /**
  * Uses the Hathor Unleash Server and Proxy to determine if the

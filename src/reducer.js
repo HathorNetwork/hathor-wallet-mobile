@@ -470,12 +470,10 @@ const onSetWallet = (state, action) => {
   };
 };
 
-const onSetUseWalletService = (state, action) => {
-  return {
-    ...state,
-    useWalletService: action.payload
-  }
-};
+const onSetUseWalletService = (state, action) => ({
+  ...state,
+  useWalletService: action.payload,
+});
 
 const onResetWallet = (state, action) => {
   if (state.wallet) {

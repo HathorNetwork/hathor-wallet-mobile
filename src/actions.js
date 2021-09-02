@@ -130,7 +130,10 @@ export const setLoadHistoryStatus = (active, error) => (
 
 export const activateFetchHistory = () => ({ type: types.ACTIVATE_FETCH_HISTORY });
 
-export const setUseWalletService = (data) => ({ type: types.SET_USE_WALLET_SERVICE, payload: data });
+export const setUseWalletService = (data) => ({
+  type: types.SET_USE_WALLET_SERVICE,
+  payload: data,
+});
 
 export const unlockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: false });
 
