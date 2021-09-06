@@ -117,6 +117,8 @@ const reducer = (state = initialState, action) => {
       return onResetLoadedData(state, action);
     case types.UPDATE_LOADED_DATA:
       return onUpdateLoadedData(state, action);
+    case types.SET_USE_WALLET_SERVICE:
+      return onSetUseWalletService(state, action);
     default:
       return state;
   }
@@ -467,6 +469,11 @@ const onSetWallet = (state, action) => {
     wallet: action.payload
   };
 };
+
+const onSetUseWalletService = (state, action) => ({
+  ...state,
+  useWalletService: action.payload,
+});
 
 const onResetWallet = (state, action) => {
   if (state.wallet) {

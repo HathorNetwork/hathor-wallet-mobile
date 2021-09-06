@@ -6,9 +6,21 @@
  */
 
 import * as Keychain from 'react-native-keychain';
-import { Connection, HathorWallet, HathorWalletServiceWallet, Network, wallet as walletUtil, constants as hathorLibConstants } from '@hathor/wallet-lib';
-import { KEYCHAIN_USER, STORE } from './constants';
+import {
+  Connection,
+  HathorWallet,
+  HathorWalletServiceWallet,
+  Network,
+  wallet as walletUtil,
+  constants as hathorLibConstants,
+} from '@hathor/wallet-lib';
+import {
+  KEYCHAIN_USER,
+  STORE,
+} from './constants';
 import { TxHistory } from './models';
+import { getFirstAddressFromWords } from './utils';
+import { shouldUseWalletService } from './featureFlags';
 
 export const types = {
   HISTORY_UPDATE: 'HISTORY_UPDATE',
@@ -39,6 +51,7 @@ export const types = {
   RESET_WALLET: 'RESET_WALLET',
   RESET_LOADED_DATA: 'RESET_LOADED_DATA',
   UPDATE_LOADED_DATA: 'UPDATE_LOADED_DATA',
+  SET_USE_WALLET_SERVICE: 'SET_USE_WALLET_SERVICE',
 };
 
 /**
@@ -116,6 +129,11 @@ export const setLoadHistoryStatus = (active, error) => (
 );
 
 export const activateFetchHistory = () => ({ type: types.ACTIVATE_FETCH_HISTORY });
+
+export const setUseWalletService = (data) => ({
+  type: types.SET_USE_WALLET_SERVICE,
+  payload: data,
+});
 
 export const unlockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: false });
 
@@ -213,12 +231,17 @@ export const fetchMoreHistory = async (wallet, token, history) => {
   return newHistoryObjects;
 };
 
-export const startWallet = (words, pin, useWalletService) => (dispatch) => {
+export const startWallet = (words, pin) => async (dispatch) => {
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
 
   const networkName = 'mainnet';
+  const firstAddress = getFirstAddressFromWords(words, networkName);
+  const useWalletService = await shouldUseWalletService(firstAddress, networkName);
+
+  // Set useWalletService on the redux store
+  dispatch(setUseWalletService(useWalletService));
 
   let wallet;
   if (useWalletService) {
@@ -327,14 +350,12 @@ export const fetchNewTxTokenBalance = async (wallet, tx) => {
   if (!wallet.isReady()) {
     return null;
   }
-
   const updatedBalanceMap = {};
   const balances = wallet.getTxBalance(tx);
   // we now loop through all tokens present in the new tx to get the new balance
   for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
     /* eslint-disable no-await-in-loop */
     updatedBalanceMap[tokenUid] = await fetchTokenBalance(wallet, tokenUid);
-    /* eslint-enable no-await-in-loop */
   }
   return updatedBalanceMap;
 };
@@ -349,10 +370,9 @@ export const fetchNewTxTokenBalance = async (wallet, tx) => {
 export const fetchTokenBalance = async (wallet, uid) => {
   if (!wallet.isReady()) {
     // We can safely do nothing here since we will fetch all history and balance
-    // as soon as the wallet gets ready
+    // as soon as the wallets gets ready
     return null;
   }
-
   const balance = await wallet.getBalance(uid);
   const tokenBalance = balance[0].balance;
   return { available: tokenBalance.unlocked, locked: tokenBalance.locked };
