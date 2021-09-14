@@ -111,7 +111,7 @@ class PinScreen extends React.Component {
   handleDataMigration = (pin) => {
     const accessData = hathorLib.wallet.getWalletAccessData();
 
-    if (accessData !== null && accessData.xpubkey === undefined) {
+    if (accessData !== null && accessData.xpubkey === undefined && accessData.mainKey) {
       // Two situations are handled here:
       // 1. From v0.12.0 to v0.13.0 of the lib, xpubkey has changed from wallet:data
       // to wallet:accessData. So if the user is still in an app version before v0.13.0,
