@@ -1407,10 +1407,10 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@hathor/wallet-lib@^0.22.0":
-  "integrity" "sha512-kKOTNHnCr36o66ehGgCijEcUP2yvPop6rGyQKbbcB3iQ8yi0WuVMShQvUGqC725yJ3Dd18pXv4dOgwz3k4V6pA=="
-  "resolved" "https://registry.npmjs.org/@hathor/wallet-lib/-/wallet-lib-0.22.0.tgz"
-  "version" "0.22.0"
+"@hathor/wallet-lib@^0.23.0":
+  "integrity" "sha512-h0xWD8kN7gATSiL4Jysw4ejV1lrGrXCeoIOwdIZ/2KS6nKA0sIVAcYcFc0zYBUBO91TfUvc3+cWXdWTKsutpKw=="
+  "resolved" "https://registry.npmjs.org/@hathor/wallet-lib/-/wallet-lib-0.23.0.tgz"
+  "version" "0.23.0"
   dependencies:
     "axios" "^0.18.0"
     "bitcore-lib" "^8.25.10"
