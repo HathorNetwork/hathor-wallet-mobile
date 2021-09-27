@@ -249,3 +249,19 @@ export const getFirstAddressFromWords = (words, network) => {
 
   return firstAddress;
 };
+
+/**
+ * Render value to integer or decimal
+ *
+ * @params {number} amount Amount to render
+ * @params {boolean} isInteger If it's an integer or decimal
+ *
+ * @return {string} rendered value
+ */
+export const renderValue = (amount, isInteger) => {
+  if (isInteger) {
+    return hathorLib.helpersUtils.prettyIntegerValue(amount);
+  } else {
+    return hathorLib.helpersUtils.prettyValue(amount);
+  }
+};

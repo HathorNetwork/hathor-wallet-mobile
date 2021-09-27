@@ -21,11 +21,13 @@ import { updateSelectedToken } from '../actions';
  * tokens {Array} array with all added tokens on this wallet
  * tokensBalance {Object} dict with balance for each token
  * selectedToken {Object} token currently selected by the user
+ * tokenMetadata {Object} metadata of tokens
  */
 const mapStateToProps = (state) => ({
   tokens: state.tokens,
   tokensBalance: state.tokensBalance,
   selectedToken: state.selectedToken,
+  tokenMetadata: state.tokenMetadata,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -64,6 +66,7 @@ class Dashboard extends React.Component {
           selectedToken={this.props.selectedToken}
           tokens={this.props.tokens}
           tokensBalance={this.props.tokensBalance}
+          tokenMetadata={this.props.tokenMetadata}
         />
         <OfflineBar />
       </View>
