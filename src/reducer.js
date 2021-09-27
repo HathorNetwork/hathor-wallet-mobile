@@ -44,6 +44,9 @@ import { TxHistory } from './models';
  * errorReported {boolean} if user reported the error to Sentry
  * useWalletService {boolean} if should use wallet service facade
  * (feature flag that should be updated from rollout service)
+ *
+ * tokenMetadata {Object} Metadata of tokens {uid: {metaObject}}
+ * metadataLoaded {boolean} If metadata was fully loaded from the explorer service
  */
 const initialState = {
   tokensHistory: {},
@@ -63,6 +66,8 @@ const initialState = {
   wallet: null,
   loadedData: { transactions: 0, addresses: 0 },
   useWalletService: false,
+  tokenMetadata: {},
+  metadataLoaded: false,
 };
 
 const reducer = (state = initialState, action) => {
@@ -119,6 +124,12 @@ const reducer = (state = initialState, action) => {
       return onUpdateLoadedData(state, action);
     case types.SET_USE_WALLET_SERVICE:
       return onSetUseWalletService(state, action);
+    case types.TOKEN_METADATA_UPDATED:
+      return onTokenMetadataUpdated(state, action);
+    case types.TOKEN_METADATA_REMOVED:
+      return onTokenMetadataRemoved(state, action);
+    case types.TOKEN_METADATA_LOADED:
+      return onTokenMetadataLoaded(state, action);
     default:
       return state;
   }
@@ -502,5 +513,44 @@ const onUpdateLoadedData = (state, action) => ({
   ...state,
   loadedData: action.payload,
 });
+
+/**
+ * Token metadata loaded
+ */
+const onTokenMetadataLoaded = (state, action) => ({
+  ...state,
+  metadataLoaded: action.payload,
+});
+
+/**
+ * Update token metadata
+ */
+const onTokenMetadataUpdated = (state, action) => {
+  const { data } = action.payload;
+  const newMeta = Object.assign({}, state.tokenMetadata, data);
+
+  return {
+    ...state,
+    metadataLoaded: true,
+    tokenMetadata: newMeta,
+  };
+};
+
+/**
+ * Remove token metadata
+ */
+const onTokenMetadataRemoved = (state, action) => {
+  const uid = action.payload;
+
+  const newMeta = Object.assign({}, state.tokenMetadata);
+  if (uid in newMeta) {
+    delete newMeta[uid];
+  }
+
+  return {
+    ...state,
+    tokenMetadata: newMeta,
+  };
+};
 
 export const store = createStore(reducer, applyMiddleware(thunk));
