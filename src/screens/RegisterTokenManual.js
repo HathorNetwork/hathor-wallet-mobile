@@ -21,7 +21,15 @@ import Spinner from '../components/Spinner';
 
 import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 
-import { newToken, updateSelectedToken } from '../actions';
+import { newToken, updateSelectedToken, fetchTokensMetadata } from '../actions';
+
+/**
+ * wallet {HathorWallet} HathorWallet lib object
+ */
+const mapStateToProps = (state) => ({
+  wallet: state.wallet,
+  useWalletService: state.useWalletService,
+});
 
 
 class RegisterTokenManual extends React.Component {
@@ -78,6 +86,13 @@ class RegisterTokenManual extends React.Component {
     hathorLib.tokens.addToken(token.uid, token.name, token.symbol);
     this.props.dispatch(newToken(token));
     this.props.dispatch(updateSelectedToken(token));
+    let network;
+    if (this.props.useWalletService) {
+      network = this.props.wallet.network.name;
+    } else {
+      network = this.props.wallet.conn.network;
+    }
+    this.props.dispatch(fetchTokensMetadata([token.uid], network));
     this.props.navigation.dismiss();
   }
 
@@ -141,4 +156,4 @@ class RegisterTokenManual extends React.Component {
   }
 }
 
-export default connect(null)(RegisterTokenManual);
+export default connect(mapStateToProps)(RegisterTokenManual);
