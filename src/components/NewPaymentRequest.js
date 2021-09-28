@@ -24,10 +24,12 @@ import OfflineBar from './OfflineBar';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
+ * tokenMetadata {Object} metadata of tokens
  */
 const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
   wallet: state.wallet,
+  tokenMetadata: state.tokenMetadata,
 });
 
 class NewPaymentRequest extends React.Component {
@@ -67,6 +69,10 @@ class NewPaymentRequest extends React.Component {
     this.willFocusEvent.remove();
   }
 
+  isNFT = () => {
+    return this.state.token.uid in this.props.tokenMetadata && this.props.tokenMetadata[this.state.token.uid].nft;
+  }
+
   focus = () => {
     this.setState({ amount: '', token: this.props.selectedToken });
     this.focusInput();
@@ -84,7 +90,13 @@ class NewPaymentRequest extends React.Component {
 
   createPaymentRequest = () => {
     const { address } = this.props.wallet.getCurrentAddress();
-    this.props.dispatch(newInvoice(address, getIntegerAmount(this.state.amount), this.state.token));
+    let amount;
+    if (this.isNFT()) {
+      amount = parseInt(this.state.amount);
+    } else {
+      amount = getIntegerAmount(this.state.amount);
+    }
+    this.props.dispatch(newInvoice(address, amount, this.state.token));
     this.modalOpened = true;
     this.props.navigation.navigate('PaymentRequestDetail');
   }
@@ -154,6 +166,7 @@ class NewPaymentRequest extends React.Component {
               onAmountUpdate={(amount) => this.setState({ amount })}
               value={this.state.amount}
               style={{ flex: 1 }}
+              allowOnlyInteger={this.isNFT()}
             />
             {IS_MULTI_TOKEN
               ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />

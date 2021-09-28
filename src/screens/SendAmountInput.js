@@ -15,7 +15,7 @@ import { t, ngettext, msgid } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
 import { IS_MULTI_TOKEN } from '../constants';
-import { getIntegerAmount } from '../utils';
+import { getIntegerAmount, renderValue } from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -28,11 +28,13 @@ import OfflineBar from '../components/OfflineBar';
  * tokens {Object} array with all added tokens on this wallet
  * selectedToken {Object} token currently selected by the user
  * tokensBalance {Object} dict with balance for each token
+ * tokenMetadata {Object} metadata of tokens
  */
 const mapStateToProps = (state) => ({
   tokens: state.tokens,
   selectedToken: state.selectedToken,
   tokensBalance: state.tokensBalance,
+  tokenMetadata: state.tokenMetadata,
 });
 
 class SendAmountInput extends React.Component {
@@ -90,7 +92,12 @@ class SendAmountInput extends React.Component {
   onButtonPress = () => {
     const balance = this.props.tokensBalance[this.state.token.uid];
     const available = balance ? balance.available : 0;
-    const amount = getIntegerAmount(this.state.amount);
+    let amount;
+    if (this.isNFT()) {
+      amount = parseInt(this.state.amount);
+    } else {
+      amount = getIntegerAmount(this.state.amount);
+    }
     if (available < amount) {
       this.setState({ error: t`Insufficient funds` });
     } else {
@@ -110,12 +117,17 @@ class SendAmountInput extends React.Component {
     return false;
   }
 
+  isNFT = () => {
+    return this.state.token.uid in this.props.tokenMetadata && this.props.tokenMetadata[this.state.token.uid].nft;
+  }
+
   render() {
+
     const getAvailableString = () => {
       // eg: '23.56 HTR available'
       const balance = this.props.tokensBalance[this.state.token.uid];
       const available = balance ? balance.available : 0;
-      const amountAndToken = `${hathorLib.helpers.prettyValue(available)} ${this.state.token.symbol}`;
+      const amountAndToken = `${renderValue(available, this.isNFT())} ${this.state.token.symbol}`;
       return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);
     };
 
@@ -144,6 +156,7 @@ class SendAmountInput extends React.Component {
                   autoFocus
                   onAmountUpdate={this.onAmountChange}
                   value={this.state.amount}
+                  allowOnlyInteger={this.isNFT()}
                 />
                 {IS_MULTI_TOKEN
                   ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />

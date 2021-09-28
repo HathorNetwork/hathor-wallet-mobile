@@ -20,13 +20,14 @@ import ModalConfirmation from '../components/ModalConfirmation';
 import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
 import { clearInvoice } from '../actions';
-import { getTokenLabel } from '../utils';
+import { getTokenLabel, renderValue } from '../utils';
 
 /**
  * address {string} Invoice destination address
  * amount {number} Invoice amount
  * token {Object} Invoice token config
  * payment {Object} Transaction with the invoice payment
+ * tokenMetadata {Object} metadata of tokens
  */
 const mapInvoiceStateToProps = (state) => ({
   address: state.latestInvoice.address,
@@ -34,6 +35,7 @@ const mapInvoiceStateToProps = (state) => ({
   token: state.latestInvoice.token,
   payment: state.invoicePayment,
   wallet: state.wallet,
+  tokenMetadata: state.tokenMetadata,
 });
 
 class PaymentRequestDetail extends React.Component {
@@ -61,9 +63,11 @@ class PaymentRequestDetail extends React.Component {
   }
 
   render() {
+    const { symbol, uid } = this.props.token;
+    const isNFT = uid in this.props.tokenMetadata && this.props.tokenMetadata[uid].nft;
+
     const renderModalBody = () => {
-      const amount = hathorLib.helpers.prettyValue(this.props.amount);
-      const { symbol } = this.props.token;
+      const amount = renderValue(this.props.amount, isNFT);
       return (
         <TextFmt style={{ fontSize: 18 }}>
           {t`You've just received **${amount} ${symbol}**`}
@@ -107,9 +111,9 @@ class PaymentRequestDetail extends React.Component {
             <View style={styles.dataWrapper}>
               <Text style={styles.title}>{t`Amount`}</Text>
               <Text style={styles.data}>
-                {hathorLib.helpers.prettyValue(this.props.amount)}
+                {renderValue(this.props.amount, isNFT)}
                 {' '}
-                {this.props.token.symbol}
+                {symbol}
               </Text>
             </View>
             <View style={styles.dataWrapper}>
