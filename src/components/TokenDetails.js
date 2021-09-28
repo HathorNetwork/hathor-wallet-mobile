@@ -32,10 +32,14 @@ const TokenDetails = (props) => {
     });
   };
 
+  const renderNFTType = () => {
+    return props.isNFT && '- NFT';
+  }
+
   return (
     <View style={[styles.contentWrapper, props.contentStyle]}>
       <View style={styles.tokenWrapper}>
-        <Text style={{ fontSize: 14, lineHeight: 17, fontWeight: 'bold' }}>{tokenLabel}</Text>
+        <Text style={{ fontSize: 14, lineHeight: 17, fontWeight: 'bold' }}>{tokenLabel} {renderNFTType()}</Text>
       </View>
       <View style={styles.qrcodeWrapper}>
         <QRCode

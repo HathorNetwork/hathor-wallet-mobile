@@ -18,9 +18,11 @@ import TokenDetails from '../components/TokenDetails';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
+ * tokenMetadata {Object} metadata of tokens
  */
 const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
+  tokenMetadata: state.tokenMetadata,
 });
 
 class TokenDetail extends React.Component {
@@ -36,6 +38,8 @@ class TokenDetail extends React.Component {
       />
     );
 
+    const isNFT = this.props.selectedToken.uid in this.props.tokenMetadata && this.props.tokenMetadata[this.props.selectedToken.uid].nft;
+
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
@@ -46,6 +50,7 @@ class TokenDetail extends React.Component {
         <TokenDetails
           token={this.props.selectedToken}
           contentStyle={{ marginHorizontal: 16, marginTop: 16 }}
+          isNFT={isNFT}
         />
       </SafeAreaView>
     );
