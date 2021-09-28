@@ -32,9 +32,9 @@ const TokenDetails = (props) => {
     });
   };
 
-  const renderNFTType = () => {
-    return props.isNFT && '- NFT';
-  }
+  const renderNFTType = () => (
+    props.isNFT && '- NFT'
+  );
 
   return (
     <View style={[styles.contentWrapper, props.contentStyle]}>

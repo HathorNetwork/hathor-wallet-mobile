@@ -27,12 +27,13 @@ class AmountTextInput extends React.Component {
       return;
     }
 
+    let parsedText = text;
     if (this.props.allowOnlyInteger) {
       // We allow only integers for NFT
-      text = text.replace(/[^0-9]/g, '');
+      parsedText = parsedText.replace(/[^0-9]/g, '');
     }
 
-    const parsedText = getAmountParsed(text);
+    parsedText = getAmountParsed(parsedText);
 
     if (!this.props.allowOnlyInteger) {
       const amount = getIntegerAmount(parsedText);

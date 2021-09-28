@@ -11,16 +11,16 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
+import { get } from 'lodash';
 
 import QRCode from 'react-native-qrcode-svg';
 
-import hathorLib from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
 import ModalConfirmation from '../components/ModalConfirmation';
 import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
 import { clearInvoice } from '../actions';
-import { getTokenLabel, renderValue } from '../utils';
+import { getTokenLabel, renderValue, isTokenNFT } from '../utils';
 
 /**
  * address {string} Invoice destination address
@@ -63,8 +63,8 @@ class PaymentRequestDetail extends React.Component {
   }
 
   render() {
-    const { symbol, uid } = this.props.token;
-    const isNFT = uid in this.props.tokenMetadata && this.props.tokenMetadata[uid].nft;
+    const { symbol } = this.props.token;
+    const isNFT = isTokenNFT(get(this.props, 'token.uid'), this.props.tokenMetadata);
 
     const renderModalBody = () => {
       const amount = renderValue(this.props.amount, isNFT);

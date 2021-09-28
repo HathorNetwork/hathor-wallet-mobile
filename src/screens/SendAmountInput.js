@@ -12,10 +12,10 @@ import {
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
+import { get } from 'lodash';
 
-import hathorLib from '@hathor/wallet-lib';
 import { IS_MULTI_TOKEN } from '../constants';
-import { getIntegerAmount, renderValue } from '../utils';
+import { getIntegerAmount, renderValue, isTokenNFT } from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -94,7 +94,7 @@ class SendAmountInput extends React.Component {
     const available = balance ? balance.available : 0;
     let amount;
     if (this.isNFT()) {
-      amount = parseInt(this.state.amount);
+      amount = parseInt(this.state.amount, 10);
     } else {
       amount = getIntegerAmount(this.state.amount);
     }
@@ -117,12 +117,11 @@ class SendAmountInput extends React.Component {
     return false;
   }
 
-  isNFT = () => {
-    return this.state.token.uid in this.props.tokenMetadata && this.props.tokenMetadata[this.state.token.uid].nft;
-  }
+  isNFT = () => (
+    isTokenNFT(get(this.state, 'token.uid'), this.props.tokenMetadata)
+  )
 
   render() {
-
     const getAvailableString = () => {
       // eg: '23.56 HTR available'
       const balance = this.props.tokensBalance[this.state.token.uid];

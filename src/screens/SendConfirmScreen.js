@@ -22,7 +22,7 @@ import FeedbackModal from '../components/FeedbackModal';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { sendTx } from '../actions';
-import { renderValue } from '../utils';
+import { renderValue, isTokenNFT } from '../utils';
 
 
 /**
@@ -69,7 +69,7 @@ class SendConfirmScreen extends React.Component {
     this.amount = this.props.navigation.getParam('amount');
     this.address = this.props.navigation.getParam('address');
     this.token = this.props.navigation.getParam('token');
-    this.isNFT = this.token.uid in this.props.tokenMetadata && this.props.tokenMetadata[this.token.uid].nft;
+    this.isNFT = isTokenNFT(this.token.uid, this.props.tokenMetadata);
     this.amountAndToken = `${renderValue(this.amount, this.isNFT)} ${this.token.symbol}`;
   }
 

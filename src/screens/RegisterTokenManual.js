@@ -86,13 +86,13 @@ class RegisterTokenManual extends React.Component {
     hathorLib.tokens.addToken(token.uid, token.name, token.symbol);
     this.props.dispatch(newToken(token));
     this.props.dispatch(updateSelectedToken(token));
-    let network;
+    let networkName;
     if (this.props.useWalletService) {
-      network = this.props.wallet.network.name;
+      networkName = this.props.wallet.network.name;
     } else {
-      network = this.props.wallet.conn.network;
+      networkName = this.props.wallet.conn.network;
     }
-    fetchTokensMetadata([token.uid], network).then((metadatas) => {
+    fetchTokensMetadata([token.uid], networkName).then((metadatas) => {
       this.props.dispatch(tokenMetadataUpdated(metadatas));
     });
     this.props.navigation.dismiss();

@@ -261,7 +261,19 @@ export const getFirstAddressFromWords = (words, network) => {
 export const renderValue = (amount, isInteger) => {
   if (isInteger) {
     return hathorLib.helpersUtils.prettyIntegerValue(amount);
-  } else {
-    return hathorLib.helpersUtils.prettyValue(amount);
   }
+
+  return hathorLib.helpersUtils.prettyValue(amount);
 };
+
+/**
+ * Render value to integer or decimal
+ *
+ * @params {string} uid Token uid
+ * @params {Object} metadatas Object with tokens metadata
+ *
+ * @return {boolean} If token is marked as NFT in metadata
+ */
+export const isTokenNFT = (uid, metadatas) => (
+  uid in metadatas && metadatas[uid].nft
+);

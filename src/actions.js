@@ -245,11 +245,12 @@ export const fetchMoreHistory = async (wallet, token, history) => {
  *
  * @memberof Wallet
  * @inner
- **/
+ */
 export const fetchTokensMetadata = async (tokens, network) => {
   const metadatas = {};
 
   for (const token of tokens) {
+    /* eslint-disable no-await-in-loop */
     try {
       const response = await metadataApi.getDag(token, network);
       if (response.data && token in response.data) {
@@ -259,6 +260,7 @@ export const fetchTokensMetadata = async (tokens, network) => {
     } catch (e) {
       // No need to do anything, the metadata for this token was not found
     }
+    /* eslint-enable no-await-in-loop */
   }
 
   return metadatas;
@@ -471,11 +473,13 @@ export const tokenMetadataUpdated = (data) => (
  *
  * data {boolean} If metadata is loaded or not
  */
-export const tokenMetadataLoaded = data => ({ type: types.TOKEN_METADATA_LOADED, payload: data });
+export const tokenMetadataLoaded = (data) => ({ type: types.TOKEN_METADATA_LOADED, payload: data });
 
 /**
  * Remove token metadata after unregister token
  *
  * data {String} Token uid to remove from metadata
  */
-export const tokenMetadataRemoved = data => ({ type: types.TOKEN_METADATA_REMOVED, payload: data });
+export const tokenMetadataRemoved = (data) => (
+  { type: types.TOKEN_METADATA_REMOVED, payload: data }
+);

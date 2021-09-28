@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
+import { get } from 'lodash';
 
 import moment from 'moment';
 import hathorLib from '@hathor/wallet-lib';
@@ -28,7 +29,7 @@ import SimpleButton from '../components/SimpleButton';
 import TxDetailsModal from '../components/TxDetailsModal';
 import OfflineBar from '../components/OfflineBar';
 import { HathorList } from '../components/HathorList';
-import { Strong, str2jsx, getLightBackground, renderValue } from '../utils';
+import { Strong, str2jsx, getLightBackground, renderValue, isTokenNFT } from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import infoIcon from '../assets/icons/info-circle.png';
@@ -79,9 +80,9 @@ class MainScreen extends React.Component {
     this.setState({ modal: null });
   }
 
-  isNFT = () => {
-    return this.props.selectedToken && this.props.selectedToken.uid in this.props.tokenMetadata && this.props.tokenMetadata[this.props.selectedToken.uid].nft;
-  }
+  isNFT = () => (
+    isTokenNFT(get(this.props, 'selectedToken.uid'), this.props.tokenMetadata)
+  )
 
   onTxPress = (tx) => {
     const txDetailsModal = (

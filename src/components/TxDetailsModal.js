@@ -10,7 +10,6 @@ import { Image, Linking, Text, StyleSheet, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { t } from 'ttag';
 
-import hathorLib from '@hathor/wallet-lib';
 import { getShortHash, getTokenLabel, renderValue } from '../utils';
 import { ListButton, ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';

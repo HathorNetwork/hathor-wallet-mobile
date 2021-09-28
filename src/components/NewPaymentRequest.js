@@ -12,13 +12,14 @@ import {
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
+import { get } from 'lodash';
 
 import { IS_MULTI_TOKEN } from '../constants';
 import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
 import TokenBox from './TokenBox';
 import { newInvoice } from '../actions';
-import { getIntegerAmount } from '../utils';
+import { getIntegerAmount, isTokenNFT } from '../utils';
 import OfflineBar from './OfflineBar';
 
 
@@ -69,10 +70,6 @@ class NewPaymentRequest extends React.Component {
     this.willFocusEvent.remove();
   }
 
-  isNFT = () => {
-    return this.state.token.uid in this.props.tokenMetadata && this.props.tokenMetadata[this.state.token.uid].nft;
-  }
-
   focus = () => {
     this.setState({ amount: '', token: this.props.selectedToken });
     this.focusInput();
@@ -88,11 +85,15 @@ class NewPaymentRequest extends React.Component {
     this.setState({ token });
   }
 
+  getTokenUID = () => (
+    get(this.state, 'token.uid')
+  )
+
   createPaymentRequest = () => {
     const { address } = this.props.wallet.getCurrentAddress();
     let amount;
-    if (this.isNFT()) {
-      amount = parseInt(this.state.amount);
+    if (isTokenNFT(this.getTokenUID(), this.props.tokenMetadata)) {
+      amount = parseInt(this.state.amount, 10);
     } else {
       amount = getIntegerAmount(this.state.amount);
     }
@@ -166,7 +167,7 @@ class NewPaymentRequest extends React.Component {
               onAmountUpdate={(amount) => this.setState({ amount })}
               value={this.state.amount}
               style={{ flex: 1 }}
-              allowOnlyInteger={this.isNFT()}
+              allowOnlyInteger={isTokenNFT(this.getTokenUID(), this.props.tokenMetadata)}
             />
             {IS_MULTI_TOKEN
               ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />
