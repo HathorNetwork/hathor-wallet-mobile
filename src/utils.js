@@ -230,22 +230,3 @@ export const getLightBackground = (alpha) => {
 export const getWalletWords = (pin) => (
   hathorLib.wallet.getWalletWords(pin)
 );
-
-/**
- * Get the firstAddress from a given set of words
- *
- * @params {string} words The wallet seed
- * @params {string} network The network string
- *
- * @return {string} Wallet's first address
- */
-export const getFirstAddressFromWords = (words, network) => {
-  const xpub = hathorLib.walletUtils.getXPubKeyFromSeed(words, {
-    passphrase: '', // We don't use the passphrase on the mobile wallet
-    networkName: network,
-  });
-  const xpubChangeDerivation = hathorLib.walletUtils.xpubDeriveChild(xpub, 0);
-  const firstAddress = hathorLib.walletUtils.getAddressAtIndex(xpubChangeDerivation, 0, network);
-
-  return firstAddress;
-};

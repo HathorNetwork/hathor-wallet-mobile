@@ -63,6 +63,7 @@ const initialState = {
   wallet: null,
   loadedData: { transactions: 0, addresses: 0 },
   useWalletService: false,
+  uniqueDeviceId: null,
 };
 
 const reducer = (state = initialState, action) => {
@@ -119,6 +120,8 @@ const reducer = (state = initialState, action) => {
       return onUpdateLoadedData(state, action);
     case types.SET_USE_WALLET_SERVICE:
       return onSetUseWalletService(state, action);
+    case types.SET_UNIQUE_DEVICE_ID:
+      return onSetUniqueDeviceId(state, action);
     default:
       return state;
   }
@@ -469,6 +472,11 @@ const onSetWallet = (state, action) => {
     wallet: action.payload
   };
 };
+
+const onSetUniqueDeviceId = (state, action) => ({
+  ...state,
+  uniqueDeviceId: action.payload,
+});
 
 const onSetUseWalletService = (state, action) => ({
   ...state,
