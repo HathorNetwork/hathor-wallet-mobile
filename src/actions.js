@@ -359,7 +359,7 @@ export const fetchNewTxTokenBalance = async (wallet, tx) => {
   const updatedBalanceMap = {};
   const balances = wallet.getTxBalance(tx);
   // we now loop through all tokens present in the new tx to get the new balance
-  for (const [tokenUid, _tokenTxBalance] of Object.entries(balances)) {
+  for (const [tokenUid] of Object.entries(balances)) {
     /* eslint-disable no-await-in-loop */
     updatedBalanceMap[tokenUid] = await fetchTokenBalance(wallet, tokenUid);
   }
