@@ -21,6 +21,7 @@ import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
 import { getLightBackground } from '../utils';
+import CopyClipboard from '../components/CopyClipboard';
 
 
 /**
@@ -33,6 +34,7 @@ const mapStateToProps = (state) => {
     selectedToken: state.selectedToken,
     isOnline: state.isOnline,
     network: state.serverInfo.network,
+    uniqueDeviceId: state.uniqueDeviceId,
     server,
   };
 };
@@ -134,6 +136,20 @@ export class Settings extends React.Component {
             <ListMenu
               title={t`About`}
               onPress={() => this.props.navigation.navigate('About')}
+            />
+            <ListItem
+              text={(
+                <View style={{ flex: 1 }}>
+                  <Text style={{ marginBottom: 8, color: 'rgba(0, 0, 0, 0.5)', fontSize: 12 }}>
+                    {t`Unique app identifier`}
+                  </Text>
+
+                  <CopyClipboard
+                    text={this.props.uniqueDeviceId}
+                    textStyle={{ fontSize: 12 }}
+                  />
+                </View>
+              )}
             />
           </HathorList>
         </ScrollView>
