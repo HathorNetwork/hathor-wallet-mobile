@@ -15,10 +15,12 @@ import TokenSelect from '../components/TokenSelect';
 /**
  * tokens {Array} Array of token configs registered on this wallet
  * tokensBalance {Object} Object with the balance of each token {uid: {available, locked}}
+ * tokenMetadata {Object} metadata of tokens
  */
 const mapStateToProps = (state) => ({
   tokens: state.tokens,
   tokensBalance: state.tokensBalance,
+  tokenMetadata: state.tokenMetadata,
 });
 
 class ChangeToken extends React.Component {
@@ -55,6 +57,7 @@ class ChangeToken extends React.Component {
         selectedToken={this.token}
         tokens={this.props.tokens}
         tokensBalance={this.props.tokensBalance}
+        tokenMetadata={this.props.tokenMetadata}
       />
     );
   }

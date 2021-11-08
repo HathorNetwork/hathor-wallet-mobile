@@ -6,18 +6,22 @@
  */
 
 import * as Keychain from 'react-native-keychain';
+import { chunk } from 'lodash';
 import {
   Connection,
   HathorWallet,
   HathorWalletServiceWallet,
   Network,
   wallet as walletUtil,
+  tokens as tokensUtils,
   constants as hathorLibConstants,
+  metadataApi,
 } from '@hathor/wallet-lib';
 import { getUniqueId } from 'react-native-device-info';
 import {
   KEYCHAIN_USER,
   STORE,
+  METADATA_CONCURRENT_DOWNLOAD
 } from './constants';
 import { TxHistory } from './models';
 import { shouldUseWalletService } from './featureFlags';
@@ -52,6 +56,9 @@ export const types = {
   RESET_LOADED_DATA: 'RESET_LOADED_DATA',
   UPDATE_LOADED_DATA: 'UPDATE_LOADED_DATA',
   SET_USE_WALLET_SERVICE: 'SET_USE_WALLET_SERVICE',
+  TOKEN_METADATA_UPDATED: 'TOKEN_METADATA_UPDATED',
+  TOKEN_METADATA_REMOVED: 'TOKEN_METADATA_REMOVED',
+  TOKEN_METADATA_LOADED: 'TOKEN_METADATA_LOADED',
   SET_UNIQUE_DEVICE_ID: 'SET_UNIQUE_DEVICE_ID',
 };
 
@@ -237,6 +244,47 @@ export const fetchMoreHistory = async (wallet, token, history) => {
   return newHistoryObjects;
 };
 
+/**
+ * The wallet needs each token metadata to show information correctly
+ * So we fetch the tokens metadata and store on redux
+ *
+ * @param {Array} tokens Array of token uids
+ * @param {String} network Network name
+ *
+ * @memberof Wallet
+ * @inner
+ */
+export const fetchTokensMetadata = async (tokens, network) => {
+  const metadataPerToken = {};
+
+  const tokenChunks = chunk(tokens, METADATA_CONCURRENT_DOWNLOAD);
+  for (const tokenChunk of tokenChunks) {
+    /* eslint-disable no-await-in-loop */
+    await Promise.all(tokenChunk.map(async (token) => {
+      if (token === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid) {
+        return;
+      }
+
+      try {
+        const data = await metadataApi.getDagMetadata(token, network);
+        // When the getDagMetadata method returns null
+        // it means that we have no metadata for this token
+        if (data) {
+          const tokenMeta = data[token];
+          metadataPerToken[token] = tokenMeta;
+        }
+      } catch (e) {
+        // Error downloading metadata, then we should wait a few seconds
+        // and retry if still didn't reached retry limit
+        console.log('Error downloading metadata of token', token);
+      }
+    }));
+    /* eslint-enable no-await-in-loop */
+  }
+
+  return metadataPerToken;
+};
+
 export const startWallet = (words, pin) => async (dispatch) => {
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
@@ -274,6 +322,17 @@ export const startWallet = (words, pin) => async (dispatch) => {
   }
 
   dispatch(setWallet(wallet));
+
+  // Handle token metadata
+  // 1. Set metadata loaded to false
+  dispatch(tokenMetadataLoaded(false));
+
+  // 2. Fetch registered tokens metadata
+  const registeredTokens = tokensUtils.getTokens().map((token) => token.uid);
+  fetchTokensMetadata(registeredTokens, networkName).then((metadatas) => {
+    dispatch(tokenMetadataUpdated(metadatas));
+  });
+
   dispatch(fetchHistoryBegin());
   dispatch(setUniqueDeviceId(uniqueDeviceId));
 
@@ -418,4 +477,29 @@ export const setWallet = (wallet) => (
 
 export const resetWallet = () => (
   { type: types.RESET_WALLET }
+);
+
+/**
+ * Update metadata object with new data
+ *
+ * data {Object} object with token metadata
+ */
+export const tokenMetadataUpdated = (data) => (
+  { type: types.TOKEN_METADATA_UPDATED, payload: { data } }
+);
+
+/**
+ * Set if metadata was already loaded from the lib
+ *
+ * data {boolean} If metadata is loaded or not
+ */
+export const tokenMetadataLoaded = (data) => ({ type: types.TOKEN_METADATA_LOADED, payload: data });
+
+/**
+ * Remove token metadata after unregister token
+ *
+ * data {String} Token uid to remove from metadata
+ */
+export const tokenMetadataRemoved = (data) => (
+  { type: types.TOKEN_METADATA_REMOVED, payload: data }
 );

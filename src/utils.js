@@ -230,3 +230,31 @@ export const getLightBackground = (alpha) => {
 export const getWalletWords = (pin) => (
   hathorLib.wallet.getWalletWords(pin)
 );
+
+/**
+ * Render value to integer or decimal
+ *
+ * @params {number} amount Amount to render
+ * @params {boolean} isInteger If it's an integer or decimal
+ *
+ * @return {string} rendered value
+ */
+export const renderValue = (amount, isInteger) => {
+  if (isInteger) {
+    return hathorLib.helpersUtils.prettyIntegerValue(amount);
+  }
+
+  return hathorLib.helpersUtils.prettyValue(amount);
+};
+
+/**
+ * Render value to integer or decimal
+ *
+ * @params {string} uid Token uid
+ * @params {Object} metadatas Object with tokens metadata
+ *
+ * @return {boolean} If token is marked as NFT in metadata
+ */
+export const isTokenNFT = (uid, metadatas) => (
+  uid in metadatas && metadatas[uid].nft
+);

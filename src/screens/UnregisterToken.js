@@ -17,7 +17,7 @@ import { t } from 'ttag';
 
 import { connect } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
-import { setTokens } from '../actions';
+import { setTokens, tokenMetadataRemoved } from '../actions';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import TextFmt from '../components/TextFmt';
@@ -67,13 +67,15 @@ class UnregisterToken extends React.Component {
   }
 
   unregisterConfirmed = () => {
+    const tokenUnregister = this.props.selectedToken.uid;
     // Preventing unregistering HTR token, even if the user gets on this screen because of an error
-    if (this.props.selectedToken.uid === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
+    if (tokenUnregister === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
       return;
     }
 
-    const promise = hathorLib.tokens.unregisterToken(this.props.selectedToken.uid);
+    const promise = hathorLib.tokens.unregisterToken(tokenUnregister);
     promise.then((tokens) => {
+      this.props.dispatch(tokenMetadataRemoved(tokenUnregister));
       this.props.dispatch(setTokens(tokens));
       this.props.navigation.navigate('Dashboard');
     }, (e) => {

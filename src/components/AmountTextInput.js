@@ -27,16 +27,26 @@ class AmountTextInput extends React.Component {
       return;
     }
 
-    const parsedText = getAmountParsed(text);
-    const amount = getIntegerAmount(parsedText);
-    if (Number.isNaN(amount) || amount < 0) {
-      return;
+    let parsedText = text;
+    if (this.props.allowOnlyInteger) {
+      // We allow only integers for NFT
+      parsedText = parsedText.replace(/[^0-9]/g, '');
+    }
+
+    parsedText = getAmountParsed(parsedText);
+
+    if (!this.props.allowOnlyInteger) {
+      const amount = getIntegerAmount(parsedText);
+      if (Number.isNaN(amount) || amount < 0) {
+        return;
+      }
     }
 
     this.props.onAmountUpdate(parsedText);
   }
 
   render() {
+    const placeholder = this.props.allowOnlyInteger ? '0' : '0.00';
     const { style: customStyle, ...props } = this.props;
     return (
       <TextInput
@@ -47,7 +57,7 @@ class AmountTextInput extends React.Component {
         textAlignVertical='bottom'
         keyboardAppearance='dark'
         keyboardType='numeric'
-        placeholder='0.00'
+        placeholder={placeholder}
         {...props}
       />
     );

@@ -9,8 +9,10 @@ import React from 'react';
 import { SafeAreaView } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
+import { get } from 'lodash';
 
 import { IS_MULTI_TOKEN } from '../constants';
+import { isTokenNFT } from '../utils';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
 import TokenDetails from '../components/TokenDetails';
@@ -18,9 +20,11 @@ import TokenDetails from '../components/TokenDetails';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
+ * tokenMetadata {Object} metadata of tokens
  */
 const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
+  tokenMetadata: state.tokenMetadata,
 });
 
 class TokenDetail extends React.Component {
@@ -36,6 +40,8 @@ class TokenDetail extends React.Component {
       />
     );
 
+    const isNFT = isTokenNFT(get(this.props, 'selectedToken.uid'), this.props.tokenMetadata);
+
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
@@ -46,6 +52,7 @@ class TokenDetail extends React.Component {
         <TokenDetails
           token={this.props.selectedToken}
           contentStyle={{ marginHorizontal: 16, marginTop: 16 }}
+          isNFT={isNFT}
         />
       </SafeAreaView>
     );

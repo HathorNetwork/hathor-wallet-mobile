@@ -22,16 +22,19 @@ import FeedbackModal from '../components/FeedbackModal';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { sendTx } from '../actions';
+import { renderValue, isTokenNFT } from '../utils';
 
 
 /**
  * tokensBalance {Object} dict with balance for each token
  * wallet {HathorWallet} HathorWallet lib object
+ * tokenMetadata {Object} metadata of tokens
  */
 const mapStateToProps = (state) => ({
   tokensBalance: state.tokensBalance,
   wallet: state.wallet,
   useWalletService: state.useWalletService,
+  tokenMetadata: state.tokenMetadata,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -66,7 +69,8 @@ class SendConfirmScreen extends React.Component {
     this.amount = this.props.navigation.getParam('amount');
     this.address = this.props.navigation.getParam('address');
     this.token = this.props.navigation.getParam('token');
-    this.amountAndToken = `${hathorLib.helpers.prettyValue(this.amount)} ${this.token.symbol}`;
+    this.isNFT = isTokenNFT(this.token.uid, this.props.tokenMetadata);
+    this.amountAndToken = `${renderValue(this.amount, this.isNFT)} ${this.token.symbol}`;
   }
 
   /**
@@ -82,7 +86,9 @@ class SendConfirmScreen extends React.Component {
     if (this.props.useWalletService) {
       sendTransaction = new hathorLib.SendTransactionWalletService(this.props.wallet, { outputs });
     } else {
-      sendTransaction = new hathorLib.SendTransaction({ outputs, pin });
+      sendTransaction = new hathorLib.SendTransaction(
+        { outputs, pin, network: this.props.wallet.getNetworkObject() }
+      );
     }
 
     const promise = sendTransaction.run();
@@ -146,7 +152,7 @@ class SendConfirmScreen extends React.Component {
       // eg: '23.56 HTR available'
       const balance = this.props.tokensBalance[this.token.uid];
       const available = balance ? balance.available : 0;
-      const amountAndToken = `${hathorLib.helpers.prettyValue(available)} ${this.token.symbol}`;
+      const amountAndToken = `${renderValue(available, this.isNFT)} ${this.token.symbol}`;
       return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);
     };
 
