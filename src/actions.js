@@ -267,13 +267,15 @@ export const fetchTokensMetadata = async (tokens, network) => {
 
       try {
         const data = await metadataApi.getDagMetadata(token, network);
-        // When the getDagMetadata method returns null, it means that we have no metadata for this token
+        // When the getDagMetadata method returns null
+        // it means that we have no metadata for this token
         if (data) {
           const tokenMeta = data[token];
           metadataPerToken[token] = tokenMeta;
         }
       } catch (e) {
-        // Error downloading metadata, then we should wait a few seconds and retry if still didn't reached retry limit
+        // Error downloading metadata, then we should wait a few seconds
+        // and retry if still didn't reached retry limit
         console.log('Error downloading metadata of token', token);
       }
     }));
