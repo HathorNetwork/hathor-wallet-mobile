@@ -68,6 +68,7 @@ const initialState = {
   useWalletService: false,
   tokenMetadata: {},
   metadataLoaded: false,
+  uniqueDeviceId: null,
 };
 
 const reducer = (state = initialState, action) => {
@@ -130,6 +131,8 @@ const reducer = (state = initialState, action) => {
       return onTokenMetadataRemoved(state, action);
     case types.TOKEN_METADATA_LOADED:
       return onTokenMetadataLoaded(state, action);
+    case types.SET_UNIQUE_DEVICE_ID:
+      return onSetUniqueDeviceId(state, action);
     default:
       return state;
   }
@@ -480,6 +483,11 @@ const onSetWallet = (state, action) => {
     wallet: action.payload
   };
 };
+
+const onSetUniqueDeviceId = (state, action) => ({
+  ...state,
+  uniqueDeviceId: action.payload,
+});
 
 const onSetUseWalletService = (state, action) => ({
   ...state,

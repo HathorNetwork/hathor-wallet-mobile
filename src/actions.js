@@ -17,13 +17,13 @@ import {
   constants as hathorLibConstants,
   metadataApi,
 } from '@hathor/wallet-lib';
+import { getUniqueId } from 'react-native-device-info';
 import {
   KEYCHAIN_USER,
   STORE,
   METADATA_CONCURRENT_DOWNLOAD
 } from './constants';
 import { TxHistory } from './models';
-import { getFirstAddressFromWords } from './utils';
 import { shouldUseWalletService } from './featureFlags';
 
 export const types = {
@@ -59,6 +59,7 @@ export const types = {
   TOKEN_METADATA_UPDATED: 'TOKEN_METADATA_UPDATED',
   TOKEN_METADATA_REMOVED: 'TOKEN_METADATA_REMOVED',
   TOKEN_METADATA_LOADED: 'TOKEN_METADATA_LOADED',
+  SET_UNIQUE_DEVICE_ID: 'SET_UNIQUE_DEVICE_ID',
 };
 
 /**
@@ -140,6 +141,11 @@ export const activateFetchHistory = () => ({ type: types.ACTIVATE_FETCH_HISTORY 
 export const setUseWalletService = (data) => ({
   type: types.SET_USE_WALLET_SERVICE,
   payload: data,
+});
+
+export const setUniqueDeviceId = (uniqueId) => ({
+  type: types.SET_UNIQUE_DEVICE_ID,
+  payload: uniqueId,
 });
 
 export const unlockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: false });
@@ -283,8 +289,8 @@ export const startWallet = (words, pin) => async (dispatch) => {
   walletUtil.cleanLoadedData();
 
   const networkName = 'mainnet';
-  const firstAddress = getFirstAddressFromWords(words, networkName);
-  const useWalletService = await shouldUseWalletService(firstAddress, networkName);
+  const uniqueDeviceId = await getUniqueId();
+  const useWalletService = await shouldUseWalletService(uniqueDeviceId, networkName);
 
   // Set useWalletService on the redux store
   dispatch(setUseWalletService(useWalletService));
@@ -326,6 +332,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
   });
 
   dispatch(fetchHistoryBegin());
+  dispatch(setUniqueDeviceId(uniqueDeviceId));
 
   wallet.on('state', (state) => {
     if (state === HathorWallet.ERROR) {
@@ -409,7 +416,7 @@ export const fetchNewTxTokenBalance = async (wallet, tx) => {
   const updatedBalanceMap = {};
   const balances = wallet.getTxBalance(tx);
   // we now loop through all tokens present in the new tx to get the new balance
-  for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
+  for (const [tokenUid] of Object.entries(balances)) {
     /* eslint-disable no-await-in-loop */
     updatedBalanceMap[tokenUid] = await fetchTokenBalance(wallet, tokenUid);
   }
