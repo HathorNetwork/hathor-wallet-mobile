@@ -6,6 +6,7 @@
  */
 
 import * as Keychain from 'react-native-keychain';
+import { chunk } from 'lodash';
 import {
   Connection,
   HathorWallet,
@@ -19,6 +20,7 @@ import {
 import {
   KEYCHAIN_USER,
   STORE,
+  METADATA_CONCURRENT_DOWNLOAD
 } from './constants';
 import { TxHistory } from './models';
 import { getFirstAddressFromWords } from './utils';
@@ -247,23 +249,32 @@ export const fetchMoreHistory = async (wallet, token, history) => {
  * @inner
  */
 export const fetchTokensMetadata = async (tokens, network) => {
-  const metadatas = {};
+  const metadataPerToken = {};
 
-  for (const token of tokens) {
+  const tokenChunks = chunk(tokens, METADATA_CONCURRENT_DOWNLOAD);
+  for (const tokenChunk of tokenChunks) {
     /* eslint-disable no-await-in-loop */
-    try {
-      const response = await metadataApi.getDag(token, network);
-      if (response.data && token in response.data) {
-        const tokenMeta = response.data[token];
-        metadatas[token] = tokenMeta;
+    await Promise.all(tokenChunk.map(async (token) => {
+      if (token === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid) {
+        return;
       }
-    } catch (e) {
-      // No need to do anything, the metadata for this token was not found
-    }
+
+      try {
+        const data = await metadataApi.getDagMetadata(token, network);
+        // When the getDagMetadata method returns null, it means that we have no metadata for this token
+        if (data) {
+          const tokenMeta = data[token];
+          metadataPerToken[token] = tokenMeta;
+        }
+      } catch (e) {
+        // Error downloading metadata, then we should wait a few seconds and retry if still didn't reached retry limit
+        console.log('Error downloading metadata of token', token);
+      }
+    }));
     /* eslint-enable no-await-in-loop */
   }
 
-  return metadatas;
+  return metadataPerToken;
 };
 
 export const startWallet = (words, pin) => async (dispatch) => {
