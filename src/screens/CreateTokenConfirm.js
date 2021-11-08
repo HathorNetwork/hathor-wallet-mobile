@@ -80,7 +80,7 @@ class CreateTokenConfirm extends React.Component {
         );
       } else {
         sendTransaction = new hathorLib.SendTransaction(
-          { transaction: tx, pin, network: this.props.wallet.getNetworkObject() }
+          { transaction: tx, pin }
         );
       }
 
