@@ -79,7 +79,7 @@ class CreateTokenConfirm extends React.Component {
           this.props.wallet, { transaction: tx }
         );
       } else {
-        sendTransaction = new hathorLib.SendTransaction({ transaction: tx, pin });
+        sendTransaction = new hathorLib.SendTransaction({ transaction: tx, pin, network: this.props.wallet.getNetworkObject() });
       }
 
       const promise = sendTransaction.runFromMining();

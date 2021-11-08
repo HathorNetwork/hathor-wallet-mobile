@@ -86,7 +86,7 @@ class SendConfirmScreen extends React.Component {
     if (this.props.useWalletService) {
       sendTransaction = new hathorLib.SendTransactionWalletService(this.props.wallet, { outputs });
     } else {
-      sendTransaction = new hathorLib.SendTransaction({ outputs, pin });
+      sendTransaction = new hathorLib.SendTransaction({ outputs, pin, network: this.props.wallet.getNetworkObject() });
     }
 
     const promise = sendTransaction.run();
