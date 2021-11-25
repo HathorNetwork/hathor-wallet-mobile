@@ -45,6 +45,7 @@ class RecoverPinScreen extends React.Component {
 
     this.state = {
       erroed: false,
+      progress: 0,
     };
   }
 
@@ -60,10 +61,10 @@ class RecoverPinScreen extends React.Component {
     this.props.setLoadHistoryStatus(false, false);
   }
 
-  recoverPin() {
+  async recoverPin() {
     const accessData = hathorLib.wallet.getWalletAccessData();
-    const [success, pin] = guessPin(accessData, (progress) => {
-      console.log('Progress: ', progress);
+    const [success, pin] = await guessPin(accessData, (progress) => {
+      this.setState({ progress });
     });
 
     if (!success) {
@@ -110,18 +111,27 @@ class RecoverPinScreen extends React.Component {
       </View>
     );
 
-    const renderLoading = () => (
-      <View style={{ alignItems: 'center' }}>
-        <Spinner size={48} animating />
-        <Text style={[styles.text, { marginTop: 32, color: 'rgba(0, 0, 0, 0.5)' }]}>
-          {t`Upgrading your wallet, please hang on.`}
-        </Text>
-      </View>
-    );
+    const renderLoading = (progress) => {
+      return (
+        <View style={{ alignItems: 'center' }} key={`${progress}`}>
+          <Spinner size={48} animating />
+          <Text
+            style={{
+              textAlign: 'center',
+              marginTop: 8,
+            }}>
+            {progress}%
+          </Text>
+          <Text style={[styles.text, { marginTop: 32, color: 'rgba(0, 0, 0, 0.5)' }]}>
+            {t`Upgrading your wallet, please hang on.`}
+          </Text>
+        </View>
+      );
+    };
 
     return (
       <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        {this.state.erroed ? renderError() : renderLoading()}
+        {this.state.erroed ? renderError() : renderLoading(this.state.progress)}
       </SafeAreaView>
     );
   }
