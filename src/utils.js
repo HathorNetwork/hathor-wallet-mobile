@@ -259,15 +259,8 @@ export const isTokenNFT = (uid, metadatas) => (
   uid in metadatas && metadatas[uid].nft
 );
 
-
-/**
- * @return {[boolean, string]} Tuple <success:boolean, pin:string> with the result
- *
- * @params {Object} The encrypted data from storage
- */
-export const guessPin = (accessData, cb) => {
+const guessPartial = (data, begin, end) => {
   const CryptoJS = require('crypto-js');
-  const data = accessData.words;
 
   const decrypt = (data, pin) => CryptoJS
     .AES
@@ -275,16 +268,8 @@ export const guessPin = (accessData, cb) => {
     .toString(CryptoJS.enc.Utf8);
 
   let pinFound = -1;
-  let lastProgressUpdate = -1;
-  for (let i = 0; i <= 999999; i++) {
-    const progress = Math.floor((i / 999999) * 100);
+  for (let i = begin; i <= end; i++) {
     const pin = `${i}`.padStart(6, '0');
-
-    // update progress every 10%
-    if (progress % 10 === 0 && progress > lastProgressUpdate) {
-      lastProgressUpdate = progress;
-      cb(progress);
-    }
 
     try {
       // decrypted is a string with a space-delimited list of words
@@ -308,4 +293,45 @@ export const guessPin = (accessData, cb) => {
   }
 
   return [false, ''];
-}
+};
+
+const guessScheduler = (data, begin, step, cb, errorCb) => {
+  const LIMIT = 999999;
+  let end = begin + step;
+  if (end > LIMIT) {
+    end = LIMIT;
+  }
+
+  const [success, pin] = guessPartial(data, begin, end);
+
+  if (!success) {
+    const newBegin = end + 1;
+
+    if (newBegin > LIMIT) {
+      return errorCb('Reached limit');
+    }
+
+    // update progress
+    const progress = Math.floor((newBegin / LIMIT) * 100);
+    cb(progress);
+
+    setTimeout(() => guessScheduler(data, newBegin, step, cb, errorCb), 0);
+  } else {
+    cb(pin);
+  }
+};
+
+/**
+ * @return {[boolean, string]} Tuple <success:boolean, pin:string> with the result
+ *
+ * @params {Object} The encrypted data from storage
+ */
+export const guessPin = async (accessData, progressCb) => {
+  const data = accessData.words;
+
+  return new Promise((resolve, reject) => {
+    guessScheduler(data, 0, 1000, progressCb, (error) => {
+      reject(error);
+    });
+  });
+};
