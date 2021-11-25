@@ -295,7 +295,7 @@ const guessPartial = (data, begin, end) => {
   return [false, ''];
 };
 
-const guessScheduler = (data, begin, step, cb, errorCb) => {
+const guessScheduler = (data, begin, step, progressCb, successCb, errorCb) => {
   const LIMIT = 999999;
   let end = begin + step;
   if (end > LIMIT) {
@@ -312,12 +312,11 @@ const guessScheduler = (data, begin, step, cb, errorCb) => {
     }
 
     // update progress
-    const progress = Math.floor((newBegin / LIMIT) * 100);
-    cb(progress);
+    progressCb(Math.floor((newBegin / LIMIT) * 100));
 
-    setTimeout(() => guessScheduler(data, newBegin, step, cb, errorCb), 0);
+    setTimeout(() => guessScheduler(data, newBegin, step, progressCb, successCb, errorCb), 0);
   } else {
-    cb(pin);
+    successCb(pin);
   }
 };
 
@@ -330,8 +329,10 @@ export const guessPin = async (accessData, progressCb) => {
   const data = accessData.words;
 
   return new Promise((resolve, reject) => {
-    guessScheduler(data, 0, 1000, progressCb, (error) => {
-      reject(error);
+    guessScheduler(data, 0, 1000, progressCb, (pin) => {
+      resolve([true, pin]);
+    }, (error) => {
+      resolve([false, '']);
     });
   });
 };
