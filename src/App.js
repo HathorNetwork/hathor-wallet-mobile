@@ -295,16 +295,22 @@ class _AppStackWrapper extends React.Component {
   }
 
   render() {
-    console.log('Is recovering pin:', this.props.isRecoveringPin);
     const renderAuxiliarViews = () => {
       // the auxiliar view needs to be rendered after the other views, or it won't be visible
       // on Android: https://github.com/facebook/react-native/issues/14555
       if (this.props.loadHistory || this.props.isScreenLocked) {
         return (
           <View style={this.style.auxView}>
-            {!this.props.isRecoveringPin ? (this.props.isScreenLocked
-              ? <PinScreen isLockScreen navigation={this.props.navigation} />
-              : <LoadHistoryScreen />) : <RecoverPin />}
+            {
+              !this.props.isRecoveringPin ? (
+                this.props.isScreenLocked ?
+                  <PinScreen
+                    isLockScreen
+                    navigation={this.props.navigation} /> :
+                  <LoadHistoryScreen />
+              ) :
+              <RecoverPin />
+            }
           </View>
         );
       }

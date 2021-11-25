@@ -170,17 +170,24 @@ class PinScreen extends React.Component {
     this.setState({ pin: text, pinColor: 'black', error: null });
   }
 
-  validatePin = (text) => {
+  validatePin = (pin) => {
     try {
-      if (hathorLib.wallet.isPinCorrect(text)) {
-        this.dismiss(text);
+      if (hathorLib.wallet.isPinCorrect(pin)) {
+        // also validate if we are able to decrypt the seed using this PIN
+        const words = hathorLib.wallet.getWalletWords(pin);
+
+        if (!hathorLib.wallet.wordsValid(pin)) {
+          throw new Error('Words decrypted with pin are invalid');
+        }
+
+        this.dismiss(pin);
       } else {
         this.removeOneChar();
       }
     } catch(e) {
       this.props.unlockScreen();
       this.props.setRecoveringPin(true);
-      this.props.setTempPin(text);
+      this.props.setTempPin(pin);
     }
   }
 
