@@ -22,6 +22,9 @@ import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import checkIcon from '../assets/images/icCheckBig.png';
 import { PIN_SIZE } from '../constants';
+import {
+  changePin,
+} from '../utils';
 
 
 class ChangePin extends React.Component {
@@ -159,18 +162,12 @@ class ChangePin extends React.Component {
   }
 
   executeChangePin = () => {
-    const successChangePin = hathorLib.wallet.changePin(
-      this.state.pin1,
-      this.state.pin2,
-    );
-    // We also need to change the password because on the mobile app we
-    // use the PIN as Password
-    const successChangePassword = hathorLib.wallet.changePassword(
+    const success = changePin(
       this.state.pin1,
       this.state.pin2,
     );
 
-    if (successChangePin && successChangePassword) {
+    if (success) {
       this.setState({ done: true });
     } else {
       // Should never get here because we've done all the validations before

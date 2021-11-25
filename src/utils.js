@@ -344,3 +344,24 @@ export const guessPin = async (accessData, progressCb) => {
     });
   });
 };
+
+/**
+ * @params {string} oldPin
+ * @params {string} newPin
+ *
+ * @return {boolean} Wether the change password was successful
+ */
+export const changePin = (oldPin, newPin) => {
+  const successChangePin = hathorLib.wallet.changePin(
+    oldPin,
+    newPin,
+  );
+  // We also need to change the password because on the mobile app we
+  // use the PIN as Password
+  const successChangePassword = hathorLib.wallet.changePassword(
+    oldPin,
+    newPin,
+  );
+
+  return successChangePassword && successChangePin;
+};
