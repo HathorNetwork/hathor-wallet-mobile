@@ -258,3 +258,54 @@ export const renderValue = (amount, isInteger) => {
 export const isTokenNFT = (uid, metadatas) => (
   uid in metadatas && metadatas[uid].nft
 );
+
+
+/**
+ * @return {[boolean, string]} Tuple <success:boolean, pin:string> with the result
+ *
+ * @params {Object} The encrypted data from storage
+ */
+export const guessPin = (accessData, cb) => {
+  const CryptoJS = require('crypto-js');
+  const data = accessData.words;
+
+  const decrypt = (data, pin) => CryptoJS
+    .AES
+    .decrypt(data, pin)
+    .toString(CryptoJS.enc.Utf8);
+
+  let pinFound = -1;
+  let lastProgressUpdate = -1;
+  for (let i = 0; i <= 999999; i++) {
+    const progress = Math.floor((i / 999999) * 100);
+    const pin = `${i}`.padStart(6, '0');
+
+    // update progress every 10%
+    if (progress % 10 === 0 && progress > lastProgressUpdate) {
+      lastProgressUpdate = progress;
+      cb(progress);
+    }
+
+    try {
+      // decrypted is a string with a space-delimited list of words
+      const decrypted = decrypt(data, pin);
+
+      // the biggest word on the BIP39 word list in english has 8 characters
+      // so the max possible length for the word list is (8 * 24 + 23)
+      if (decrypted.length > 215) continue;
+      // the smallest word has 3 characters
+      if (decrypted.length < 95) continue;
+
+      if (this.wordsValid(decrypted)) {
+        pinFound = pin;
+        break;
+      }
+    } catch(e) {}
+  }
+
+  if (pinFound !== -1) {
+    return [true, pinFound];
+  }
+
+  return [false, ''];
+}
