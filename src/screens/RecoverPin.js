@@ -55,7 +55,9 @@ class RecoverPinScreen extends React.Component {
 
   goToReset () {
     // navigate to reset screen
-    this.props.navigation.navigate('ResetWallet');
+    this.props.navigation.navigate('ResetWallet', {
+      hideBackButton: true,
+    });
 
     // make sure we won't show loadHistory screen
     this.props.setLoadHistoryStatus(false, false);
