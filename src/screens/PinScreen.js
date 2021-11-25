@@ -174,7 +174,9 @@ class PinScreen extends React.Component {
     try {
       if (hathorLib.wallet.isPinCorrect(pin)) {
         // also validate if we are able to decrypt the seed using this PIN
-        const words = hathorLib.wallet.getWalletWords(pin);
+        // this will throw if the words are not able to be decoded with this
+        // pin.
+        hathorLib.wallet.getWalletWords(pin);
 
         if (!hathorLib.wallet.wordsValid(pin)) {
           throw new Error('Words decrypted with pin are invalid');
@@ -184,7 +186,7 @@ class PinScreen extends React.Component {
       } else {
         this.removeOneChar();
       }
-    } catch(e) {
+    } catch (e) {
       this.props.unlockScreen();
       this.props.setRecoveringPin(true);
       this.props.setTempPin(pin);

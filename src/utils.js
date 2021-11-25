@@ -6,6 +6,7 @@
  */
 
 import hathorLib from '@hathor/wallet-lib';
+import CryptoJS from 'crypto-js';
 import React from 'react';
 import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
@@ -260,15 +261,13 @@ export const isTokenNFT = (uid, metadatas) => (
 );
 
 const guessPartial = (data, begin, end) => {
-  const CryptoJS = require('crypto-js');
-
-  const decrypt = (data, pin) => CryptoJS
+  const decrypt = (_data, pin) => CryptoJS
     .AES
-    .decrypt(data, pin)
+    .decrypt(_data, pin)
     .toString(CryptoJS.enc.Utf8);
 
   let pinFound = -1;
-  for (let i = begin; i <= end; i++) {
+  for (let i = begin; i <= end; i += 1) {
     const pin = `${i}`.padStart(6, '0');
 
     try {
@@ -281,11 +280,13 @@ const guessPartial = (data, begin, end) => {
       // the smallest word has 3 characters
       if (decrypted.length < 95) continue;
 
-      if (this.wordsValid(decrypted)) {
+      if (hathorLib.wallet.wordsValid(decrypted)) {
         pinFound = pin;
         break;
       }
-    } catch(e) {}
+    } catch (e) {
+      // decrypt failed, ignoring
+    }
   }
 
   if (pinFound !== -1) {
@@ -295,7 +296,7 @@ const guessPartial = (data, begin, end) => {
   return [false, ''];
 };
 
-const guessScheduler = (data, begin, step, progressCb, successCb, errorCb) => {
+function guessScheduler(data, begin, step, progressCb, successCb, errorCb) {
   const LIMIT = 999999;
   let end = begin + step;
   if (end > LIMIT) {
@@ -314,11 +315,18 @@ const guessScheduler = (data, begin, step, progressCb, successCb, errorCb) => {
     // update progress
     progressCb(Math.floor((newBegin / LIMIT) * 100));
 
-    setTimeout(() => guessScheduler(data, newBegin, step, progressCb, successCb, errorCb), 0);
-  } else {
-    successCb(pin);
+    return setTimeout(() => guessScheduler(
+      data,
+      newBegin,
+      step,
+      progressCb,
+      successCb,
+      errorCb,
+    ), 0);
   }
-};
+
+  return successCb(pin);
+}
 
 /**
  * @return {[boolean, string]} Tuple <success:boolean, pin:string> with the result

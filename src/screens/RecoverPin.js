@@ -12,21 +12,18 @@ import {
   Text,
   View,
 } from 'react-native';
+import hathorLib from '@hathor/wallet-lib';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 import {
-  startWallet,
-  clearInitWallet,
-  resetLoadedData,
   setRecoveringPin,
   lockScreen,
   setTempPin,
   setLoadHistoryStatus,
 } from '../actions';
+import { guessPin } from '../utils';
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
-import hathorLib from '@hathor/wallet-lib';
-import { guessPin } from '../utils';
 
 const mapStateToProps = (state) => ({
   tempPin: state.tempPin,
@@ -50,10 +47,10 @@ class RecoverPinScreen extends React.Component {
   }
 
   componentDidMount() {
-    setTimeout(() => this.recoverPin(), 0)
+    setTimeout(() => this.recoverPin(), 0);
   }
 
-  goToReset () {
+  goToReset() {
     // navigate to reset screen
     this.props.navigation.navigate('ResetWallet', {
       hideBackButton: true,
@@ -92,7 +89,8 @@ class RecoverPinScreen extends React.Component {
           lineHeight: 22,
           width: 200,
           textAlign: 'center'
-        }}>
+        }}
+        >
           There&apos;s been an error upgrading your wallet.
         </Text>
         <Text style={{
@@ -101,7 +99,8 @@ class RecoverPinScreen extends React.Component {
           lineHeight: 22,
           width: 200,
           textAlign: 'center'
-        }}>
+        }}
+        >
           Please reset it and restore it with your seed.
         </Text>
         <SimpleButton
@@ -113,23 +112,22 @@ class RecoverPinScreen extends React.Component {
       </View>
     );
 
-    const renderLoading = (progress) => {
-      return (
-        <View style={{ alignItems: 'center' }} key={`${progress}`}>
-          <Spinner size={48} animating />
-          <Text
-            style={{
-              textAlign: 'center',
-              marginTop: 8,
-            }}>
-            {progress}%
-          </Text>
-          <Text style={[styles.text, { marginTop: 32, color: 'rgba(0, 0, 0, 0.5)' }]}>
-            {t`Upgrading your wallet, please hang on.`}
-          </Text>
-        </View>
-      );
-    };
+    const renderLoading = (progress) => (
+      <View style={{ alignItems: 'center' }} key={`${progress}`}>
+        <Spinner size={48} animating />
+        <Text
+          style={{
+            textAlign: 'center',
+            marginTop: 8,
+          }}
+        >
+          {progress}%
+        </Text>
+        <Text style={[styles.text, { marginTop: 32, color: 'rgba(0, 0, 0, 0.5)' }]}>
+          {t`Upgrading your wallet, please hang on.`}
+        </Text>
+      </View>
+    );
 
     return (
       <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>

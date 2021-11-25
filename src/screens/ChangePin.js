@@ -159,10 +159,16 @@ class ChangePin extends React.Component {
   }
 
   executeChangePin = () => {
-    const successChangePin = hathorLib.wallet.changePin(this.state.pin1, this.state.pin2);
+    const successChangePin = hathorLib.wallet.changePin(
+      this.state.pin1,
+      this.state.pin2,
+    );
     // We also need to change the password because on the mobile app we
     // use the PIN as Password
-    const successChangePassword = hathorLib.wallet.changePassword(this.state.pin1, this.state.pin2);
+    const successChangePassword = hathorLib.wallet.changePassword(
+      this.state.pin1,
+      this.state.pin2,
+    );
 
     if (successChangePin && successChangePassword) {
       this.setState({ done: true });
