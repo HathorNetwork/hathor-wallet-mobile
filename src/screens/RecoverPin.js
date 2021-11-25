@@ -91,7 +91,7 @@ class RecoverPinScreen extends React.Component {
           textAlign: 'center'
         }}
         >
-          There&apos;s been an error upgrading your wallet.
+          {t`There has been an error upgrading your wallet.`}
         </Text>
         <Text style={{
           marginTop: 16,
@@ -101,13 +101,13 @@ class RecoverPinScreen extends React.Component {
           textAlign: 'center'
         }}
         >
-          Please reset it and restore it with your seed.
+          {t`Please reset it and restore it with your seed.`}
         </Text>
         <SimpleButton
           containerStyle={{ marginTop: 12 }}
           textStyle={{ fontSize: 18 }}
           onPress={() => this.goToReset()}
-          title='RESET WALLET'
+          title={t`Reset wallet`}
         />
       </View>
     );
