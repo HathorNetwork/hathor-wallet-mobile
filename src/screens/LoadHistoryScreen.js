@@ -44,6 +44,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 class LoadHistoryScreen extends React.Component {
   componentDidMount() {
+    console.log('Component did mount on load history screen');
     // This setTimeout exists to prevent blocking the main thread
     setTimeout(() => this.initializeWallet(), 0);
     this.props.resetLoadedData();

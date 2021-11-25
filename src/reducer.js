@@ -69,6 +69,8 @@ const initialState = {
   tokenMetadata: {},
   metadataLoaded: false,
   uniqueDeviceId: null,
+  recoveringPin: false,
+  tempPin: null,
 };
 
 const reducer = (state = initialState, action) => {
@@ -133,6 +135,10 @@ const reducer = (state = initialState, action) => {
       return onTokenMetadataLoaded(state, action);
     case types.SET_UNIQUE_DEVICE_ID:
       return onSetUniqueDeviceId(state, action);
+    case types.SET_RECOVERING_PIN:
+      return onSetRecoveringPin(state, action);
+    case types.SET_TEMP_PIN:
+      return onSetTempPin(state, action);
     default:
       return state;
   }
@@ -451,6 +457,16 @@ const onSetInitWallet = (state, action) => ({
   initWallet: action.payload,
 });
 
+
+const onSetRecoveringPin = (state, action) => ({
+  ...state,
+  recoveringPin: action.payload,
+});
+
+const onSetTempPin = (state, action) => ({
+  ...state,
+  tempPin: action.payload,
+});
 
 /**
  * Update height value on redux

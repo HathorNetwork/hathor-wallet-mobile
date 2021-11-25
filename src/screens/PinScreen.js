@@ -18,7 +18,14 @@ import SimpleButton from '../components/SimpleButton';
 import PinInput from '../components/PinInput';
 import Logo from '../components/Logo';
 import { isBiometryEnabled, getSupportedBiometry, getWalletWords } from '../utils';
-import { lockScreen, unlockScreen, setLoadHistoryStatus, setInitWallet } from '../actions';
+import {
+  lockScreen,
+  unlockScreen,
+  setLoadHistoryStatus,
+  setInitWallet,
+  setRecoveringPin,
+  setTempPin,
+} from '../actions';
 import { PIN_SIZE } from '../constants';
 
 
@@ -31,10 +38,12 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
+  setRecoveringPin: (state) => dispatch(setRecoveringPin(state)),
   unlockScreen: () => dispatch(unlockScreen()),
   lockScreen: () => dispatch(lockScreen()),
   setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),
   setInitWallet: (words, pin) => dispatch(setInitWallet(words, pin)),
+  setTempPin: (pin) => dispatch(setTempPin(pin)),
 });
 
 class PinScreen extends React.Component {
@@ -162,10 +171,16 @@ class PinScreen extends React.Component {
   }
 
   validatePin = (text) => {
-    if (hathorLib.wallet.isPinCorrect(text)) {
-      this.dismiss(text);
-    } else {
-      this.removeOneChar();
+    try {
+      if (hathorLib.wallet.isPinCorrect(text)) {
+        this.dismiss(text);
+      } else {
+        this.removeOneChar();
+      }
+    } catch(e) {
+      this.props.unlockScreen();
+      this.props.setRecoveringPin(true);
+      this.props.setTempPin(text);
     }
   }
 
