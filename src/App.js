@@ -309,7 +309,7 @@ class _AppStackWrapper extends React.Component {
                     navigation={this.props.navigation} /> :
                   <LoadHistoryScreen />
               ) :
-              <RecoverPin />
+              <RecoverPin navigation={this.props.navigation} />
             }
           </View>
         );
