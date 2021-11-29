@@ -260,6 +260,11 @@ export const isTokenNFT = (uid, metadatas) => (
   uid in metadatas && metadatas[uid].nft
 );
 
+/**
+ * @params {string} data - Encrypted data to decrypt
+ * @params {number} begin - Start of sequence to guess
+ * @params {number} end - End of sequence to guess
+ */
 const guessPartial = (data, begin, end) => {
   const decrypt = (_data, pin) => CryptoJS
     .AES
@@ -296,6 +301,14 @@ const guessPartial = (data, begin, end) => {
   return [false, ''];
 };
 
+/**
+ * @params {string} data - Encrypted data to decrypt
+ * @params {number} begin - Start of sequence to guess
+ * @params {number} step - Step size to schedule `guessPin`
+ * @params {Function} progressCb - Callback called on progress
+ * @params {Function} successCb - Callback called on success
+ * @params {Function} errorCb - Callback called on failure
+ */
 function guessScheduler(data, begin, step, progressCb, successCb, errorCb) {
   const LIMIT = 999999;
   let end = begin + step;
@@ -331,7 +344,8 @@ function guessScheduler(data, begin, step, progressCb, successCb, errorCb) {
 /**
  * @return {[boolean, string]} Tuple <success:boolean, pin:string> with the result
  *
- * @params {Object} The encrypted data from storage
+ * @params {Object} accessData - The encrypted data from storage
+ * @params {Function} progressCb - A callback that will be called on progress
  */
 export const guessPin = async (accessData, progressCb) => {
   const data = accessData.words;
