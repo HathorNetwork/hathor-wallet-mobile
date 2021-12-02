@@ -365,11 +365,11 @@ export const guessPin = async (accessData, progressCb) => {
  *
  * @return {boolean} Wether the change password was successful
  */
-export const changePin = (oldPin, newPin) => {
-  return hathorLib.wallet.changePinAndPassword({
+export const changePin = (oldPin, newPin) => (
+  hathorLib.wallet.changePinAndPassword({
     oldPin,
     newPin,
     oldPassword: oldPin,
     newPassword: newPin,
-  });
-};
+  })
+);
