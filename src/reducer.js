@@ -69,7 +69,12 @@ const initialState = {
   tokenMetadata: {},
   metadataLoaded: false,
   uniqueDeviceId: null,
+  // If recoveringPin is set, the app will display
+  // the RecoverPin screen instead of the default navigator
   recoveringPin: false,
+  // tempPin is used to hold the user PIN when recovering the
+  // PIN that encrypted the data on accessData on the RecoverPin
+  // screen
   tempPin: null,
 };
 
