@@ -466,6 +466,8 @@ const onSetInitWallet = (state, action) => ({
 const onSetRecoveringPin = (state, action) => ({
   ...state,
   recoveringPin: action.payload,
+  // Reset temp pin if recovering pin is set to false
+  tempPin: !action.payload ? null : state.tempPin,
 });
 
 const onSetTempPin = (state, action) => ({

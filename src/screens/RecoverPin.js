@@ -18,7 +18,6 @@ import { t } from 'ttag';
 import {
   setRecoveringPin,
   lockScreen,
-  setTempPin,
   setLoadHistoryStatus,
 } from '../actions';
 import { guessPin } from '../utils';
@@ -32,7 +31,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   setRecoveringPin: (state) => dispatch(setRecoveringPin(state)),
   lockScreen: () => dispatch(lockScreen()),
-  setTempPin: (pin) => dispatch(setTempPin(pin)),
   setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),
 });
 
@@ -78,8 +76,6 @@ class RecoverPinScreen extends React.Component {
     hathorLib.wallet.changePassword(pin, currentPin);
 
     this.props.setRecoveringPin(false);
-    // Clean up the PIN from memory
-    this.props.setTempPin(null);
     this.props.lockScreen();
   }
 
