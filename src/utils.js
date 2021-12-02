@@ -366,16 +366,10 @@ export const guessPin = async (accessData, progressCb) => {
  * @return {boolean} Wether the change password was successful
  */
 export const changePin = (oldPin, newPin) => {
-  const successChangePin = hathorLib.wallet.changePin(
+  return hathorLib.wallet.changePinAndPassword({
     oldPin,
     newPin,
-  );
-  // We also need to change the password because on the mobile app we
-  // use the PIN as Password
-  const successChangePassword = hathorLib.wallet.changePassword(
-    oldPin,
-    newPin,
-  );
-
-  return successChangePassword && successChangePin;
+    oldPassword: oldPin,
+    newPassword: newPin,
+  });
 };
