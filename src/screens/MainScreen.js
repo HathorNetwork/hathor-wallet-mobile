@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
+import { get } from 'lodash';
 
 import moment from 'moment';
 import hathorLib from '@hathor/wallet-lib';
@@ -28,7 +29,7 @@ import SimpleButton from '../components/SimpleButton';
 import TxDetailsModal from '../components/TxDetailsModal';
 import OfflineBar from '../components/OfflineBar';
 import { HathorList } from '../components/HathorList';
-import { Strong, str2jsx, getLightBackground } from '../utils';
+import { Strong, str2jsx, getLightBackground, renderValue, isTokenNFT } from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import infoIcon from '../assets/icons/info-circle.png';
@@ -48,6 +49,7 @@ const mapStateToProps = (state) => ({
   isOnline: state.isOnline,
   network: state.serverInfo.network,
   wallet: state.wallet,
+  tokenMetadata: state.tokenMetadata,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -78,12 +80,17 @@ class MainScreen extends React.Component {
     this.setState({ modal: null });
   }
 
+  isNFT = () => (
+    isTokenNFT(get(this.props, 'selectedToken.uid'), this.props.tokenMetadata)
+  )
+
   onTxPress = (tx) => {
     const txDetailsModal = (
       <TxDetailsModal
         tx={tx}
         token={this.props.selectedToken}
         onRequestClose={this.closeTxDetails}
+        isNFT={this.isNFT()}
       />
     );
     this.setState({ modal: txDetailsModal });
@@ -125,6 +132,7 @@ class MainScreen extends React.Component {
             onTxPress={this.onTxPress}
             wallet={this.props.wallet}
             updateTokenHistory={this.props.updateTokenHistory}
+            isNFT={this.isNFT()}
           />
         );
       }
@@ -160,6 +168,7 @@ class MainScreen extends React.Component {
           network={this.props.network}
           balance={this.props.balance}
           token={this.props.selectedToken}
+          isNFT={this.isNFT()}
         />
         <View style={{ flex: 1, justifyContent: 'center', alignSelf: 'stretch' }}>
           {renderTxHistory()}
@@ -183,6 +192,7 @@ class TxHistoryView extends React.Component {
         isLast={isLast}
         token={this.props.token}
         onTxPress={this.props.onTxPress}
+        isNFT={this.props.isNFT}
       />
     );
   }
@@ -396,7 +406,7 @@ class TxListItem extends React.Component {
       touchStyle.push(style.lastItemBorder);
     }
 
-    const balanceStr = hathorLib.helpers.prettyValue(item.balance);
+    const balanceStr = renderValue(item.balance, this.props.isNFT);
     const description = item.getDescription(this.props.token);
     const { timestamp } = this.state;
     return (
@@ -470,8 +480,8 @@ class BalanceView extends React.Component {
   }
 
   renderExpanded() {
-    const availableStr = hathorLib.helpers.prettyValue(this.props.balance.available);
-    const lockedStr = hathorLib.helpers.prettyValue(this.props.balance.locked);
+    const availableStr = renderValue(this.props.balance.available, this.props.isNFT);
+    const lockedStr = renderValue(this.props.balance.locked, this.props.isNFT);
     const { network, token } = this.props;
     const { style } = this;
     return (
@@ -503,7 +513,7 @@ class BalanceView extends React.Component {
   }
 
   renderSimple() {
-    const availableStr = hathorLib.helpers.prettyValue(this.props.balance.available);
+    const availableStr = renderValue(this.props.balance.available, this.props.isNFT);
     const { token } = this.props;
     const { style } = this;
     return (

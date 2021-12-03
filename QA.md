@@ -49,8 +49,9 @@
         1. Disable TouchID (iOS only).
         1. Lock wallet and it must require you to type your PIN Code.
     1. Test Security > Change PIN.
+        1. Close and open the app and check wether the wallet unlocks correctly.
     1. Open About and go back.
-    1. Click on Register a Token e check whether the camera loads correctly.
+    1. Click on Register a Token and check whether the camera loads correctly.
     1. Go to Manual Info, type anything and get a Invalid Configuration string.
 
 1. **Create a new token Tests**

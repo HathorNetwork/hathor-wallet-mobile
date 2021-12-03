@@ -43,6 +43,7 @@ import RegisterToken from './screens/RegisterToken';
 import RegisterTokenManual from './screens/RegisterTokenManual';
 import Settings from './screens/Settings';
 import TokenDetail from './screens/TokenDetail';
+import RecoverPin from './screens/RecoverPin';
 import UnregisterToken from './screens/UnregisterToken';
 import PinScreen from './screens/PinScreen';
 import About from './screens/About';
@@ -194,6 +195,7 @@ const AppStack = createStackNavigator({
 const mapStateToProps = (state) => ({
   loadHistory: state.loadHistoryStatus.active,
   isScreenLocked: state.lockScreen,
+  isRecoveringPin: state.recoveringPin,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -296,12 +298,22 @@ class _AppStackWrapper extends React.Component {
     const renderAuxiliarViews = () => {
       // the auxiliar view needs to be rendered after the other views, or it won't be visible
       // on Android: https://github.com/facebook/react-native/issues/14555
+      let screen = null;
+
+      if (!this.props.isRecoveringPin) {
+        if (this.props.isScreenLocked) {
+          screen = <PinScreen isLockScreen navigation={this.props.navigation} />;
+        } else {
+          screen = <LoadHistoryScreen />;
+        }
+      } else {
+        screen = <RecoverPin navigation={this.props.navigation} />;
+      }
+
       if (this.props.loadHistory || this.props.isScreenLocked) {
         return (
           <View style={this.style.auxView}>
-            {this.props.isScreenLocked
-              ? <PinScreen isLockScreen navigation={this.props.navigation} />
-              : <LoadHistoryScreen />}
+            { screen }
           </View>
         );
       }

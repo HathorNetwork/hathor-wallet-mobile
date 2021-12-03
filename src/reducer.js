@@ -44,6 +44,9 @@ import { TxHistory } from './models';
  * errorReported {boolean} if user reported the error to Sentry
  * useWalletService {boolean} if should use wallet service facade
  * (feature flag that should be updated from rollout service)
+ *
+ * tokenMetadata {Object} Metadata of tokens {uid: {metaObject}}
+ * metadataLoaded {boolean} If metadata was fully loaded from the explorer service
  */
 const initialState = {
   tokensHistory: {},
@@ -63,7 +66,16 @@ const initialState = {
   wallet: null,
   loadedData: { transactions: 0, addresses: 0 },
   useWalletService: false,
+  tokenMetadata: {},
+  metadataLoaded: false,
   uniqueDeviceId: null,
+  // If recoveringPin is set, the app will display
+  // the RecoverPin screen instead of the default navigator
+  recoveringPin: false,
+  // tempPin is used to hold the user PIN when recovering the
+  // PIN that encrypted the data on accessData on the RecoverPin
+  // screen
+  tempPin: null,
 };
 
 const reducer = (state = initialState, action) => {
@@ -120,8 +132,18 @@ const reducer = (state = initialState, action) => {
       return onUpdateLoadedData(state, action);
     case types.SET_USE_WALLET_SERVICE:
       return onSetUseWalletService(state, action);
+    case types.TOKEN_METADATA_UPDATED:
+      return onTokenMetadataUpdated(state, action);
+    case types.TOKEN_METADATA_REMOVED:
+      return onTokenMetadataRemoved(state, action);
+    case types.TOKEN_METADATA_LOADED:
+      return onTokenMetadataLoaded(state, action);
     case types.SET_UNIQUE_DEVICE_ID:
       return onSetUniqueDeviceId(state, action);
+    case types.SET_RECOVERING_PIN:
+      return onSetRecoveringPin(state, action);
+    case types.SET_TEMP_PIN:
+      return onSetTempPin(state, action);
     default:
       return state;
   }
@@ -441,6 +463,18 @@ const onSetInitWallet = (state, action) => ({
 });
 
 
+const onSetRecoveringPin = (state, action) => ({
+  ...state,
+  recoveringPin: action.payload,
+  // Reset temp pin if recovering pin is set to false
+  tempPin: !action.payload ? null : state.tempPin,
+});
+
+const onSetTempPin = (state, action) => ({
+  ...state,
+  tempPin: action.payload,
+});
+
 /**
  * Update height value on redux
  * If value is different from last value we also update HTR balance
@@ -510,5 +544,44 @@ const onUpdateLoadedData = (state, action) => ({
   ...state,
   loadedData: action.payload,
 });
+
+/**
+ * Token metadata loaded
+ */
+const onTokenMetadataLoaded = (state, action) => ({
+  ...state,
+  metadataLoaded: action.payload,
+});
+
+/**
+ * Update token metadata
+ */
+const onTokenMetadataUpdated = (state, action) => {
+  const { data } = action.payload;
+  const newMeta = Object.assign({}, state.tokenMetadata, data);
+
+  return {
+    ...state,
+    metadataLoaded: true,
+    tokenMetadata: newMeta,
+  };
+};
+
+/**
+ * Remove token metadata
+ */
+const onTokenMetadataRemoved = (state, action) => {
+  const uid = action.payload;
+
+  const newMeta = Object.assign({}, state.tokenMetadata);
+  if (uid in newMeta) {
+    delete newMeta[uid];
+  }
+
+  return {
+    ...state,
+    tokenMetadata: newMeta,
+  };
+};
 
 export const store = createStore(reducer, applyMiddleware(thunk));

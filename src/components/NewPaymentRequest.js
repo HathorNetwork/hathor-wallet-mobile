@@ -12,22 +12,25 @@ import {
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
+import { get } from 'lodash';
 
 import { IS_MULTI_TOKEN } from '../constants';
 import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
 import TokenBox from './TokenBox';
 import { newInvoice } from '../actions';
-import { getIntegerAmount } from '../utils';
+import { getIntegerAmount, isTokenNFT } from '../utils';
 import OfflineBar from './OfflineBar';
 
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
+ * tokenMetadata {Object} metadata of tokens
  */
 const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
   wallet: state.wallet,
+  tokenMetadata: state.tokenMetadata,
 });
 
 class NewPaymentRequest extends React.Component {
@@ -82,9 +85,19 @@ class NewPaymentRequest extends React.Component {
     this.setState({ token });
   }
 
+  getTokenUID = () => (
+    get(this.state, 'token.uid')
+  )
+
   createPaymentRequest = () => {
     const { address } = this.props.wallet.getCurrentAddress();
-    this.props.dispatch(newInvoice(address, getIntegerAmount(this.state.amount), this.state.token));
+    let amount;
+    if (isTokenNFT(this.getTokenUID(), this.props.tokenMetadata)) {
+      amount = parseInt(this.state.amount, 10);
+    } else {
+      amount = getIntegerAmount(this.state.amount);
+    }
+    this.props.dispatch(newInvoice(address, amount, this.state.token));
     this.modalOpened = true;
     this.props.navigation.navigate('PaymentRequestDetail');
   }
@@ -154,6 +167,7 @@ class NewPaymentRequest extends React.Component {
               onAmountUpdate={(amount) => this.setState({ amount })}
               value={this.state.amount}
               style={{ flex: 1 }}
+              allowOnlyInteger={isTokenNFT(this.getTokenUID(), this.props.tokenMetadata)}
             />
             {IS_MULTI_TOKEN
               ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />

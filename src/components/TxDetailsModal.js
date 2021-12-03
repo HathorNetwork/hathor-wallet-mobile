@@ -10,8 +10,7 @@ import { Image, Linking, Text, StyleSheet, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { t } from 'ttag';
 
-import hathorLib from '@hathor/wallet-lib';
-import { getShortHash, getTokenLabel } from '../utils';
+import { getShortHash, getTokenLabel, renderValue } from '../utils';
 import { ListButton, ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 import icShareActive from '../assets/icons/icShareActive.png';
@@ -28,7 +27,7 @@ class TxDetailsModal extends Component {
   });
 
   render() {
-    const { token, tx } = this.props;
+    const { token, tx, isNFT } = this.props;
     const fullTokenStr = getTokenLabel(token);
     const description = tx.getDescription(token);
     const timestampStr = tx.getTimestampFormat();
@@ -48,7 +47,7 @@ class TxDetailsModal extends Component {
         <View>
           <View style={this.style.inner}>
             <SlideIndicatorBar />
-            <BalanceView tx={tx} token={token} />
+            <BalanceView tx={tx} token={token} isNFT={isNFT} />
             <View>
               <ListItem title={t`Token`} text={fullTokenStr} />
               <ListItem title={t`Description`} text={description} />
@@ -85,8 +84,8 @@ class BalanceView extends Component {
   });
 
   render() {
-    const { tx } = this.props;
-    const balanceStr = hathorLib.helpers.prettyValue(tx.balance);
+    const { tx, isNFT } = this.props;
+    const balanceStr = renderValue(tx.balance, isNFT);
     return (
       <View style={this.style.view}>
         <Text

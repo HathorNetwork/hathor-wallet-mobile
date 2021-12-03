@@ -11,10 +11,9 @@ import {
 } from 'react-native';
 
 import { getInset } from 'react-native-safe-area-view';
-import hathorLib from '@hathor/wallet-lib';
 import chevronRight from '../assets/icons/chevron-right.png';
 import { PRIMARY_COLOR } from '../constants';
-import { getLightBackground } from '../utils';
+import { getLightBackground, renderValue, isTokenNFT } from '../utils';
 
 
 const safeViewTop = getInset('top');
@@ -31,6 +30,7 @@ const TokenSelect = (props) => {
 
     const balance = item.uid in props.tokensBalance
       ? props.tokensBalance[item.uid].available : 0;
+
     return (
       <TouchableHighlight
         style={index === 0 ? styles.firstItemWrapper : null}
@@ -46,7 +46,7 @@ const TokenSelect = (props) => {
           </View>
           <View style={styles.itemLeftWrapper}>
             <Text style={[styles.text, styles.rightText]}>
-              {hathorLib.helpers.prettyValue(balance)}
+              {renderValue(balance, isTokenNFT(item.uid, props.tokenMetadata))}
               {' '}
               {item.symbol}
             </Text>
