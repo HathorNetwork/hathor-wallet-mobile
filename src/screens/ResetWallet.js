@@ -54,6 +54,7 @@ class ResetWallet extends React.Component {
   constructor(props) {
     super(props);
     this.onBackPress = this.props.navigation.getParam('onBackPress', this.props.navigation.goBack);
+    this.hideBackButton = this.props.navigation.getParam('hideBackButton', false);
   }
 
   toggleSwitch = (value) => {
@@ -71,7 +72,7 @@ class ResetWallet extends React.Component {
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
           title={t`RESET WALLET`}
-          onBackPress={() => this.onBackPress()}
+          onBackPress={this.hideBackButton ? null : () => this.onBackPress()}
         />
         <View style={this.style.container}>
           <Text style={this.style.title}>{t`Are you sure?`}</Text>

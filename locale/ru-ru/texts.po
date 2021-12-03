@@ -85,7 +85,7 @@ msgstr "[Последний] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:141
+#: src/utils.js:142
 msgid "Invalid address"
 msgstr "Неправильный адрес"
 
@@ -132,36 +132,36 @@ msgstr "Чтобы убедиться в том, что вы сохранили,
 msgid "Please select the word that corresponds to the number below:"
 msgstr "Пожалуйста, выберите слово, которое соответствует номеру ниже:"
 
-#: src/screens/ChangePin.js:107
+#: src/screens/ChangePin.js:110
 msgid "Incorrect PIN code."
 msgstr "Неверный PIN-код."
 
-#: src/screens/ChangePin.js:142
+#: src/screens/ChangePin.js:145
 msgid "PIN codes don't match."
 msgstr "PIN-коды не совпадают."
 
 #.  Should never get here because we've done all the validations before
-#: src/screens/ChangePin.js:167
+#: src/screens/ChangePin.js:174
 msgid "Error while changing PIN"
 msgstr "Ошибка при смене PIN-кода"
 
-#: src/screens/ChangePin.js:173
+#: src/screens/ChangePin.js:180
 msgid "Please enter your **current PIN**"
 msgstr "Пожалуйста, введите ваш **текущий PIN-код**"
 
-#: src/screens/ChangePin.js:186
+#: src/screens/ChangePin.js:193
 msgid "Please enter your **new PIN**"
 msgstr "Пожалуйста, введите ваш новый **PIN-код**"
 
-#: src/screens/ChangePin.js:199
+#: src/screens/ChangePin.js:206
 msgid "Please enter your **new PIN** again"
 msgstr "Пожалуйста, введите ваш **новый PIN-код** снова"
 
-#: src/screens/ChangePin.js:214
+#: src/screens/ChangePin.js:221
 msgid "New PIN recorded"
 msgstr "Новый PIN-код сохранен"
 
-#: src/screens/ChangePin.js:224
+#: src/screens/ChangePin.js:231
 msgid "CHANGE PIN"
 msgstr "ИЗМЕНИТЬ PIN-код"
 
@@ -189,7 +189,7 @@ msgstr "PIN-коды не совпадают. Попробуйте еще раз
 msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
-#: src/screens/CreateTokenAmount.js:109 src/screens/CreateTokenConfirm.js:160
+#: src/screens/CreateTokenAmount.js:109 src/screens/CreateTokenConfirm.js:162
 #: src/screens/CreateTokenDepositNotice.js:38 src/screens/CreateTokenName.js:44
 #: src/screens/CreateTokenSymbol.js:63
 msgid "CREATE TOKEN"
@@ -212,49 +212,49 @@ msgstr "У вас ${ amountAvailableText } HTR"
 #: src/screens/CreateTokenAmount.js:138 src/screens/CreateTokenName.js:65
 #: src/screens/CreateTokenSymbol.js:85 src/screens/InitWallet.js:208
 #: src/screens/InitWallet.js:328 src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:159
+#: src/screens/SendAmountInput.js:171
 msgid "Next"
 msgstr "Далее"
 
 #.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:92
+#: src/screens/CreateTokenConfirm.js:94
 msgid "Creating token"
 msgstr "Создать токен"
 
 #.  show loading modal
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:95
+#: src/screens/CreateTokenConfirm.js:97
 #, javascript-format
 msgid "**${ _this.name }** created successfully"
 msgstr "**${ _this.name }** успешно создан"
 
-#: src/screens/CreateTokenConfirm.js:112
+#: src/screens/CreateTokenConfirm.js:114
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Введите 6-значный PIN-код для создания токена"
 
-#: src/screens/CreateTokenConfirm.js:113
+#: src/screens/CreateTokenConfirm.js:115
 msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
-#: src/screens/CreateTokenConfirm.js:169
+#: src/screens/CreateTokenConfirm.js:171
 #, javascript-format
 msgid "Amount of ${ this.name }"
 msgstr "Количество ${ this.name }"
 
-#: src/screens/CreateTokenConfirm.js:177
+#: src/screens/CreateTokenConfirm.js:179
 msgid "Token name"
 msgstr "Имя токена"
 
-#: src/screens/CreateTokenConfirm.js:183 src/screens/CreateTokenSymbol.js:70
+#: src/screens/CreateTokenConfirm.js:185 src/screens/CreateTokenSymbol.js:70
 msgid "Token symbol"
 msgstr "Символ токена"
 
-#: src/screens/CreateTokenConfirm.js:189
+#: src/screens/CreateTokenConfirm.js:191
 msgid "Deposit"
 msgstr "Депозит"
 
-#: src/screens/CreateTokenConfirm.js:196
+#: src/screens/CreateTokenConfirm.js:198
 msgid "Create token"
 msgstr "Создать токен"
 
@@ -280,7 +280,7 @@ msgstr ""
 msgid "I understand"
 msgstr "Я понимаю"
 
-#: src/screens/CreateTokenDetail.js:42 src/screens/TokenDetail.js:42
+#: src/screens/CreateTokenDetail.js:42 src/screens/TokenDetail.js:48
 msgid "TOKEN DETAILS"
 msgstr "ДЕТАЛИ ТОКЕНА"
 
@@ -317,11 +317,11 @@ msgstr "Символ является сокращенной версией им
 msgid "E.g. HTR"
 msgstr "Например, HTR"
 
-#: src/screens/Dashboard.js:46 src/screens/RegisterTokenManual.js:133
+#: src/screens/Dashboard.js:48 src/screens/RegisterTokenManual.js:150
 msgid "Register token"
 msgstr "Зарегистрировать токен"
 
-#: src/screens/Dashboard.js:53
+#: src/screens/Dashboard.js:55
 msgid "TOKENS"
 msgstr "ТОКЕНЫ"
 
@@ -410,73 +410,74 @@ msgstr "**${ _this2.props.loadedData.transactions } транзакций** на�
 msgid "**${ _this2.props.loadedData.addresses } addresses** found"
 msgstr "**${ _this2.props.loadedData.addresses } адресов** найдено"
 
-#: src/screens/MainScreen.js:102
+#: src/screens/MainScreen.js:109
 msgid "No transactions"
 msgstr "Нет транзакций"
 
-#: src/screens/MainScreen.js:105
+#: src/screens/MainScreen.js:112
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 "|share:Поделитесь своим адресом| с друзьями и начните обменивать свои токены"
 
-#: src/screens/MainScreen.js:487 src/screens/MainScreen.js:519
+#: src/screens/MainScreen.js:497 src/screens/MainScreen.js:529
 msgid "Available Balance"
 msgstr "Доступный Баланс"
 
-#: src/screens/MainScreen.js:496
+#: src/screens/MainScreen.js:506
 msgid "Locked"
 msgstr "Заблокированный"
 
-#: src/screens/PaymentRequestDetail.js:69
+#: src/screens/PaymentRequestDetail.js:73
 #, javascript-format
 msgid "You've just received **${ amount } ${ symbol }**"
 msgstr "Вы только что получили **${ amount } ${ symbol }**"
 
-#: src/screens/PaymentRequestDetail.js:86
+#: src/screens/PaymentRequestDetail.js:90
 msgid "PAYMENT REQUEST"
 msgstr "ЗАПРОС СРЕДСТВ"
 
-#: src/components/TxDetailsModal.js:53 src/screens/PaymentRequestDetail.js:104
+#: src/components/TxDetailsModal.js:52 src/screens/PaymentRequestDetail.js:108
 msgid "Token"
 msgstr "Токен"
 
-#: src/components/TxDetailsModal.js:100 src/screens/PaymentRequestDetail.js:108
+#: src/components/TxDetailsModal.js:99 src/screens/PaymentRequestDetail.js:112
 msgid "Amount"
 msgstr "Количество"
 
-#: src/screens/PaymentRequestDetail.js:116 src/screens/Receive.js:29
+#: src/screens/PaymentRequestDetail.js:120 src/screens/Receive.js:29
 msgid "My Address"
 msgstr "Мой Адрес"
 
-#: src/screens/PaymentRequestDetail.js:120
+#: src/screens/PaymentRequestDetail.js:124
 msgid "Status"
 msgstr "Статус"
 
-#: src/screens/PaymentRequestDetail.js:121
+#: src/screens/PaymentRequestDetail.js:125
 msgid "Received"
 msgstr "Получено"
 
-#: src/screens/PaymentRequestDetail.js:121
+#: src/screens/PaymentRequestDetail.js:125
 msgid "Waiting confirmation"
 msgstr "Ожидание подтверждения"
 
-#: src/screens/PinScreen.js:196
+#: src/screens/PinScreen.js:220
 msgid "Incorrect PIN Code. Try again."
 msgstr "Неверный PIN-код. Попробуйте еще раз."
 
-#: src/screens/PinScreen.js:56
+#: src/screens/PinScreen.js:65
 msgid "Enter your PIN Code "
 msgstr "Введите свой PIN-код "
 
-#: src/screens/PinScreen.js:57
+#: src/screens/PinScreen.js:66
 msgid "Unlock Hathor Wallet"
 msgstr "Разблокировать Hathor Wallet"
 
-#: src/screens/PinScreen.js:208
+#: src/screens/PinScreen.js:232
 msgid "Cancel"
 msgstr "Отмена"
 
-#: src/screens/PinScreen.js:211 src/screens/Settings.js:133
+#: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:110
+#: src/screens/Settings.js:133
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
 
@@ -493,13 +494,25 @@ msgstr "Запрос Средств"
 msgid "RECEIVE"
 msgstr "ПОЛУЧИТЬ"
 
+#: src/screens/RecoverPin.js:94
+msgid "There has been an error upgrading your wallet."
+msgstr ""
+
+#: src/screens/RecoverPin.js:104
+msgid "Please reset it and restore it with your seed."
+msgstr ""
+
+#: src/screens/RecoverPin.js:127
+msgid "Upgrading your wallet, please hang on."
+msgstr ""
+
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/RegisterToken.js:33 src/screens/SendScanQRCode.js:69
 msgid "Manual info"
 msgstr "Ручной ввод"
 
-#: src/screens/RegisterToken.js:48 src/screens/RegisterTokenManual.js:112
+#: src/screens/RegisterToken.js:48 src/screens/RegisterTokenManual.js:129
 msgid "REGISTER TOKEN"
 msgstr "РЕГИСТРАЦИЯ ТОКЕНА"
 
@@ -507,31 +520,31 @@ msgstr "РЕГИСТРАЦИЯ ТОКЕНА"
 msgid "Scan the token QR code"
 msgstr "Сканировать QR-код токена"
 
-#: src/screens/RegisterTokenManual.js:88
+#: src/screens/RegisterTokenManual.js:105
 msgid "You're going to register the following token:"
 msgstr "Вы зарегистрируете следующий токен:"
 
-#: src/screens/RegisterTokenManual.js:90
+#: src/screens/RegisterTokenManual.js:107
 msgid "Name: "
 msgstr "Имя: "
 
-#: src/screens/RegisterTokenManual.js:94
+#: src/screens/RegisterTokenManual.js:111
 msgid "Symbol: "
 msgstr "Символ: "
 
-#: src/screens/RegisterTokenManual.js:118
+#: src/screens/RegisterTokenManual.js:135
 msgid "Configuration string"
 msgstr "Конфигурация"
 
-#: src/screens/ResetWallet.js:73
+#: src/screens/ResetWallet.js:74
 msgid "RESET WALLET"
 msgstr "СБРОСИТЬ КОШЕЛЕК"
 
-#: src/screens/ResetWallet.js:77
+#: src/screens/ResetWallet.js:78
 msgid "Are you sure?"
 msgstr "Вы уверены?"
 
-#: src/screens/ResetWallet.js:80
+#: src/screens/ResetWallet.js:81
 msgid ""
 "If you reset your wallet, **all data will be deleted**, and you will **lose "
 "access to your tokens**."
@@ -539,21 +552,21 @@ msgstr ""
 "Если вы сбросите свой кошелек, **все данные будут удалены**, и вы "
 "**потеряете доступ к своим токенам**."
 
-#: src/screens/ResetWallet.js:82
+#: src/screens/ResetWallet.js:83
 msgid ""
 "To recover access to your tokens, you will need to import your seed words "
 "again."
 msgstr ""
 "Чтобы восстановить доступ к вашим токенам, вам потребуется ввести seed-фразу."
 
-#: src/screens/ResetWallet.js:91
+#: src/screens/ResetWallet.js:92
 msgid ""
 "I want to reset my wallet, and I acknowledge that **all data will be wiped "
 "out**."
 msgstr ""
 "Я хочу сбросить свой кошелек и понимаю, что **все данные будут удалены**."
 
-#: src/screens/ResetWallet.js:100
+#: src/screens/ResetWallet.js:101
 msgid "Reset Wallet"
 msgstr "Сбросить Кошелек"
 
@@ -586,11 +599,11 @@ msgstr "ОТПРАВИТЬ"
 msgid "Address to send"
 msgstr "Адрес отправки"
 
-#: src/screens/SendAmountInput.js:95
+#: src/screens/SendAmountInput.js:102
 msgid "Insufficient funds"
 msgstr "Недостаточно средств"
 
-#: src/screens/SendAmountInput.js:119 src/screens/SendConfirmScreen.js:150
+#: src/screens/SendAmountInput.js:130 src/screens/SendConfirmScreen.js:156
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
@@ -598,34 +611,34 @@ msgstr[0] "${ amountAndToken } доступно"
 msgstr[1] "${ amountAndToken } доступно"
 msgstr[2] "${ amountAndToken } доступно"
 
-#: src/screens/SendAmountInput.js:131 src/screens/SendConfirmScreen.js:158
+#: src/screens/SendAmountInput.js:142 src/screens/SendConfirmScreen.js:164
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:95
+#: src/screens/SendConfirmScreen.js:101
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:98
+#: src/screens/SendConfirmScreen.js:104
 #, javascript-format
 msgid "Your transfer of **${ _this.amountAndToken }** has been confirmed"
 msgstr "Ваш перевод **${ _this.amountAndToken }** был подтвержден"
 
-#: src/screens/SendConfirmScreen.js:112
+#: src/screens/SendConfirmScreen.js:118
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
-#: src/screens/SendConfirmScreen.js:113
+#: src/screens/SendConfirmScreen.js:119
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
-#: src/screens/SendConfirmScreen.js:174
+#: src/screens/SendConfirmScreen.js:180
 msgid "Address"
 msgstr "Адрес"
 
-#: src/screens/SendConfirmScreen.js:181
+#: src/screens/SendConfirmScreen.js:187
 msgid "Send"
 msgstr "Отправить"
 
@@ -674,15 +687,15 @@ msgstr "О нас"
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/TokenDetail.js:34
+#: src/screens/TokenDetail.js:38
 msgid "Unregister"
 msgstr "Отменить регистрацию"
 
-#: src/screens/UnregisterToken.js:89
+#: src/screens/UnregisterToken.js:91
 msgid "UNREGISTER TOKEN"
 msgstr "ОТМЕНИТЬ РЕГИСТРАЦИЮ ТОКЕНА"
 
-#: src/screens/UnregisterToken.js:94
+#: src/screens/UnregisterToken.js:96
 msgid ""
 "If you unregister this token **you won't be able to execute operations with "
 "it**, unless you register it again."
@@ -690,19 +703,19 @@ msgstr ""
 "Если вы отмените регистрацию этого токена, **вы не сможете выполнять "
 "операции с ним**, пока не зарегистрируете его снова."
 
-#: src/screens/UnregisterToken.js:97
+#: src/screens/UnregisterToken.js:99
 msgid ""
 "You won't lose your tokens, they will just not appear on this wallet anymore."
 msgstr ""
 "Вы не потеряете свои токены, они просто больше не будут появляться на этом "
 "кошельке."
 
-#: src/screens/UnregisterToken.js:101
+#: src/screens/UnregisterToken.js:103
 #, javascript-format
 msgid "I want to unregister the token **${ tokenLabel }**"
 msgstr "Я хочу отменить регистрацию токена **${ tokenLabel }**"
 
-#: src/screens/UnregisterToken.js:116
+#: src/screens/UnregisterToken.js:118
 msgid "Unregister token"
 msgstr "Отменить регистрацию токена"
 
@@ -724,7 +737,7 @@ msgstr ""
 msgid "Please restart your app to continue using the wallet."
 msgstr ""
 
-#: src/components/NewPaymentRequest.js:166
+#: src/components/NewPaymentRequest.js:180
 msgid "Create payment request"
 msgstr "Создать запрос на получение средств"
 
@@ -745,7 +758,7 @@ msgstr "Это мой адрес: ${ _this.state.address }"
 msgid "New address"
 msgstr "Новый адрес"
 
-#: src/components/ReceiveMyAddress.js:99 src/components/TokenDetails.js:54
+#: src/components/ReceiveMyAddress.js:99 src/components/TokenDetails.js:58
 msgid "Share"
 msgstr "Поделиться"
 
@@ -759,18 +772,18 @@ msgid ""
 "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr "Это конфигурация вашего токена ${ tokenLabel }: ${ configString }"
 
-#: src/components/TxDetailsModal.js:54
+#: src/components/TxDetailsModal.js:53
 msgid "Description"
 msgstr "Описание"
 
-#: src/components/TxDetailsModal.js:55
+#: src/components/TxDetailsModal.js:54
 msgid "Date & Time"
 msgstr "Дата и Время"
 
-#: src/components/TxDetailsModal.js:56
+#: src/components/TxDetailsModal.js:55
 msgid "ID"
 msgstr "ID"
 
-#: src/components/TxDetailsModal.js:57
+#: src/components/TxDetailsModal.js:56
 msgid "Public Explorer"
 msgstr "Public Explorer"

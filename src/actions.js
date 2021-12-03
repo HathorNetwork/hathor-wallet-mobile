@@ -27,6 +27,8 @@ import { TxHistory } from './models';
 import { shouldUseWalletService } from './featureFlags';
 
 export const types = {
+  SET_TEMP_PIN: 'SET_TEMP_PIN',
+  SET_RECOVERING_PIN: 'SET_RECOVERING_PIN',
   HISTORY_UPDATE: 'HISTORY_UPDATE',
   NEW_TX: 'NEW_TX',
   UPDATE_TX: 'UPDATE_TX',
@@ -502,4 +504,22 @@ export const tokenMetadataLoaded = (data) => ({ type: types.TOKEN_METADATA_LOADE
  */
 export const tokenMetadataRemoved = (data) => (
   { type: types.TOKEN_METADATA_REMOVED, payload: data }
+);
+
+/**
+ * Set if we are trying to recover the user PIN
+ *
+ * data {boolean} If we are trying or not
+ */
+export const setRecoveringPin = (data) => (
+  { type: types.SET_RECOVERING_PIN, payload: data }
+);
+
+/**
+ * Sets or unsets the user PIN
+ *
+ * data {string} The user PIN or null
+ */
+export const setTempPin = (data) => (
+  { type: types.SET_TEMP_PIN, payload: data }
 );

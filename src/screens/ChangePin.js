@@ -22,6 +22,9 @@ import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import checkIcon from '../assets/images/icCheckBig.png';
 import { PIN_SIZE } from '../constants';
+import {
+  changePin,
+} from '../utils';
 
 
 class ChangePin extends React.Component {
@@ -159,7 +162,11 @@ class ChangePin extends React.Component {
   }
 
   executeChangePin = () => {
-    const success = hathorLib.wallet.changePin(this.state.pin1, this.state.pin2);
+    const success = changePin(
+      this.state.pin1,
+      this.state.pin2,
+    );
+
     if (success) {
       this.setState({ done: true });
     } else {
