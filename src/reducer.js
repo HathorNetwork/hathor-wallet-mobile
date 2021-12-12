@@ -144,6 +144,8 @@ const reducer = (state = initialState, action) => {
       return onSetRecoveringPin(state, action);
     case types.SET_TEMP_PIN:
       return onSetTempPin(state, action);
+    case types.PARTIALLY_UPDATE_HISTORY_AND_BALANCE:
+      return partiallyUpdateHistoryAndBalance(state, action);
     default:
       return state;
   }
@@ -581,6 +583,22 @@ const onTokenMetadataRemoved = (state, action) => {
   return {
     ...state,
     tokenMetadata: newMeta,
+  };
+};
+
+export const partiallyUpdateHistoryAndBalance = (state, action) => {
+  const { tokensHistory, tokensBalance } = action.payload;
+
+  return {
+    ...state,
+    tokensHistory: {
+      ...state.tokensHistory,
+      ...tokensHistory,
+    },
+    tokensBalance: {
+      ...state.tokensBalance,
+      ...tokensBalance,
+    },
   };
 };
 
