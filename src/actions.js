@@ -358,6 +358,27 @@ export const startWallet = (words, pin) => async (dispatch) => {
     }
   });
 
+  const handlePartialUpdate = async (updatedBalanceMap) => {
+    const tokens = Object.keys(updatedBalanceMap);
+    const tokensHistory = {};
+    const tokensBalance = {};
+
+    for (const token of tokens) {
+      /* eslint-disable no-await-in-loop */
+      const balance = await wallet.getBalance(token);
+      const tokenBalance = balance[0].balance;
+      tokensBalance[token] = {
+        available: tokenBalance.unlocked,
+        locked: tokenBalance.locked,
+      };
+      const history = await wallet.getTxHistory({ token_id: token });
+      tokensHistory[token] = history.map((element) => mapTokenHistory(element, token));
+      /* eslint-enable no-await-in-loop */
+    }
+
+    dispatch(partiallyUpdateHistoryAndBalance({ tokensHistory, tokensBalance }));
+  };
+
   wallet.start({ pinCode: pin, password: pin }).then((serverInfo) => {
     walletUtil.storePasswordHash(pin);
     walletUtil.storeEncryptedWords(words, pin);
@@ -372,29 +393,8 @@ export const startWallet = (words, pin) => async (dispatch) => {
           // Since we are not keeping track of the tokens balance and history
           // on the wallet service facade, we need to fetch it from the server
           // on every new transaction received
-
-          // XXX: Maybe we should throttle this if the wallet is receiving multiple
-          // transactions at the same time to prevent overloading the wallet-service
-          // with requests
           if (useWalletService) {
-            const tokens = Object.keys(updatedBalanceMap);
-            const tokensHistory = {};
-            const tokensBalance = {};
-
-            for (const token of tokens) {
-              /* eslint-disable no-await-in-loop */
-              const balance = await wallet.getBalance(token);
-              const tokenBalance = balance[0].balance;
-              tokensBalance[token] = {
-                available: tokenBalance.unlocked,
-                locked: tokenBalance.locked,
-              };
-              const history = await wallet.getTxHistory({ token_id: token });
-              tokensHistory[token] = history.map((element) => mapTokenHistory(element, token));
-              /* eslint-enable no-await-in-loop */
-            }
-
-            dispatch(partiallyUpdateHistoryAndBalance({ tokensHistory, tokensBalance }));
+            handlePartialUpdate(updatedBalanceMap);
           }
         }
       });
@@ -404,6 +404,11 @@ export const startWallet = (words, pin) => async (dispatch) => {
       fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
         if (updatedBalanceMap) {
           dispatch(updateTx(tx, updatedBalanceMap));
+
+          // Read comment on new-tx event
+          if (useWalletService) {
+            handlePartialUpdate(updatedBalanceMap);
+          }
         }
       });
     });
