@@ -16,12 +16,15 @@ import {
   tokens as tokensUtils,
   constants as hathorLibConstants,
   metadataApi,
+  config,
 } from '@hathor/wallet-lib';
 import { getUniqueId } from 'react-native-device-info';
 import {
   KEYCHAIN_USER,
   STORE,
-  METADATA_CONCURRENT_DOWNLOAD
+  METADATA_CONCURRENT_DOWNLOAD,
+  WALLET_SERVICE_MAINNET_BASE_WS_URL,
+  WALLET_SERVICE_MAINNET_BASE_URL,
 } from './constants';
 import { TxHistory } from './models';
 import { shouldUseWalletService } from './featureFlags';
@@ -310,6 +313,11 @@ export const startWallet = (words, pin) => async (dispatch) => {
   let wallet;
   if (useWalletService) {
     const network = new Network(networkName);
+
+    // Set urls for wallet service
+    config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
+    config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
+
     wallet = new HathorWalletServiceWallet(words, network);
   } else {
     const connection = new Connection({
