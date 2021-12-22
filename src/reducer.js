@@ -190,6 +190,17 @@ const onNewTx = (state, action) => {
     }
   }
 
+  const newState = {
+    ...state,
+    invoicePayment: invoicePayment || state.invoicePayment,
+  };
+
+  // The wallet service will handle the balance and history updates on another action
+  // as getTxBalance is async on its facade.
+  if (state.useWalletService) {
+    return newState;
+  }
+
   const updatedHistoryMap = {};
   const balances = state.wallet.getTxBalance(tx, { includeAuthorities: true });
 
@@ -205,6 +216,7 @@ const onNewTx = (state, action) => {
 
   return {
     ...state,
+    ...newState,
     invoicePayment: invoicePayment || state.invoicePayment,
     tokensHistory: newTokensHistory,
     tokensBalance: newTokensBalance,

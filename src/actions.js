@@ -398,9 +398,6 @@ export const startWallet = (words, pin) => async (dispatch) => {
         if (updatedBalanceMap) {
           dispatch(newTx(tx, updatedBalanceMap));
 
-          // Since we are not keeping track of the tokens balance and history
-          // on the wallet service facade, we need to fetch it from the server
-          // on every new transaction received
           if (useWalletService) {
             handlePartialUpdate(updatedBalanceMap);
           }
