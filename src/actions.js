@@ -35,7 +35,6 @@ export const types = {
   SET_RECOVERING_PIN: 'SET_RECOVERING_PIN',
   HISTORY_UPDATE: 'HISTORY_UPDATE',
   NEW_TX: 'NEW_TX',
-  UPDATE_TX: 'UPDATE_TX',
   BALANCE_UPDATE: 'BALANCE_UPDATE',
   NEW_INVOICE: 'NEW_INVOICE',
   CLEAR_INVOICE: 'CLEAR_INVOICE',
@@ -87,14 +86,6 @@ export const setServerInfo = ({ version, network }) => (
  */
 export const newTx = (tx, updatedBalanceMap) => (
   { type: types.NEW_TX, payload: { tx, updatedBalanceMap } }
-);
-
-/**
- * tx {Object} the new transaction
- * updatedBalanceMap {Object} balance map updated for each token in this tx
- */
-export const updateTx = (tx, updatedBalanceMap) => (
-  { type: types.UPDATE_TX, payload: { tx, updatedBalanceMap } }
 );
 
 /**
@@ -375,6 +366,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
       /* eslint-disable no-await-in-loop */
       const balance = await wallet.getBalance(token);
       const tokenBalance = balance[0].balance;
+
       tokensBalance[token] = {
         available: tokenBalance.unlocked,
         locked: tokenBalance.locked,
@@ -397,10 +389,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
       fetchNewTxTokenBalance(wallet, tx).then(async (updatedBalanceMap) => {
         if (updatedBalanceMap) {
           dispatch(newTx(tx, updatedBalanceMap));
-
-          if (useWalletService) {
-            handlePartialUpdate(updatedBalanceMap);
-          }
+          handlePartialUpdate(updatedBalanceMap);
         }
       });
     });
@@ -408,12 +397,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
     wallet.on('update-tx', (tx) => {
       fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
         if (updatedBalanceMap) {
-          dispatch(updateTx(tx, updatedBalanceMap));
-
-          // Read comment on new-tx event
-          if (useWalletService) {
-            handlePartialUpdate(updatedBalanceMap);
-          }
+          handlePartialUpdate(updatedBalanceMap);
         }
       });
     });
