@@ -410,15 +410,9 @@ export const startWallet = (words, pin) => async (dispatch) => {
       });
     });
 
-    wallet.conn.on('state', (state) => {
-      let isOnline;
-      if (state === Connection.CONNECTED) {
-        isOnline = true;
-      } else {
-        isOnline = false;
-      }
-      dispatch(setIsOnline(isOnline));
-    });
+    wallet.conn.on('state', (state) => (
+      dispatch(setIsOnline(state === Connection.CONNECTED))
+    ));
 
     wallet.conn.on('wallet-load-partial-update', (data) => {
       const transactions = Object.keys(data.historyTransactions).length;
