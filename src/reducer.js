@@ -82,8 +82,6 @@ const reducer = (state = initialState, action) => {
   switch (action.type) {
     case types.NEW_TX:
       return onNewTx(state, action);
-    case types.UPDATE_TX:
-      return onUpdateTx(state, action);
     case types.NEW_INVOICE:
       return onNewInvoice(state, action);
     case types.CLEAR_INVOICE:
@@ -144,6 +142,8 @@ const reducer = (state = initialState, action) => {
       return onSetRecoveringPin(state, action);
     case types.SET_TEMP_PIN:
       return onSetTempPin(state, action);
+    case types.PARTIALLY_UPDATE_HISTORY_AND_BALANCE:
+      return partiallyUpdateHistoryAndBalance(state, action);
     default:
       return state;
   }
@@ -188,53 +188,10 @@ const onNewTx = (state, action) => {
     }
   }
 
-  const updatedHistoryMap = {};
-  const balances = state.wallet.getTxBalance(tx, { includeAuthorities: true });
-
-  // we now loop through all tokens present in the new tx to get the new history and balance
-  for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
-    // we may not have this token yet, so state.tokensHistory[tokenUid] would return undefined
-    const currentHistory = state.tokensHistory[tokenUid] || [];
-    const newTokenHistory = addTxToSortedList(tokenUid, tx, tokenTxBalance, currentHistory);
-    updatedHistoryMap[tokenUid] = newTokenHistory;
-  }
-  const newTokensHistory = Object.assign({}, state.tokensHistory, updatedHistoryMap);
-  const newTokensBalance = Object.assign({}, state.tokensBalance, updatedBalanceMap);
-
   return {
     ...state,
     invoicePayment: invoicePayment || state.invoicePayment,
-    tokensHistory: newTokensHistory,
-    tokensBalance: newTokensBalance,
   };
-};
-
-/**
- * Updates the balance and history data when a tx is updated
- * because it might have been voided
- */
-const onUpdateTx = (state, action) => {
-  const { tx, updatedBalanceMap } = action.payload;
-
-  const updatedHistoryMap = {};
-  const balances = state.wallet.getTxBalance(tx, { includeAuthorities: true });
-
-  for (const [tokenUid, tokenTxBalance] of Object.entries(balances)) {
-    const currentHistory = state.tokensHistory[tokenUid] || [];
-    const txIndex = currentHistory.findIndex((el) => el.tx_id === tx.tx_id);
-
-    const newHistory = [...currentHistory];
-    newHistory[txIndex] = getTxHistoryFromTx(tx, tokenUid, tokenTxBalance);
-    updatedHistoryMap[tokenUid] = newHistory;
-  }
-
-  const newTokensHistory = Object.assign({}, state.tokensHistory, updatedHistoryMap);
-  const newTokensBalance = Object.assign({}, state.tokensBalance, updatedBalanceMap);
-
-  return Object.assign({}, state, {
-    tokensHistory: newTokensHistory,
-    tokensBalance: newTokensBalance,
-  });
 };
 
 /**
@@ -581,6 +538,22 @@ const onTokenMetadataRemoved = (state, action) => {
   return {
     ...state,
     tokenMetadata: newMeta,
+  };
+};
+
+export const partiallyUpdateHistoryAndBalance = (state, action) => {
+  const { tokensHistory, tokensBalance } = action.payload;
+
+  return {
+    ...state,
+    tokensHistory: {
+      ...state.tokensHistory,
+      ...tokensHistory,
+    },
+    tokensBalance: {
+      ...state.tokensBalance,
+      ...tokensBalance,
+    },
   };
 };
 

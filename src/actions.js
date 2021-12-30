@@ -16,22 +16,25 @@ import {
   tokens as tokensUtils,
   constants as hathorLibConstants,
   metadataApi,
+  config,
 } from '@hathor/wallet-lib';
 import { getUniqueId } from 'react-native-device-info';
 import {
   KEYCHAIN_USER,
   STORE,
-  METADATA_CONCURRENT_DOWNLOAD
+  METADATA_CONCURRENT_DOWNLOAD,
+  WALLET_SERVICE_MAINNET_BASE_WS_URL,
+  WALLET_SERVICE_MAINNET_BASE_URL,
 } from './constants';
 import { TxHistory } from './models';
 import { shouldUseWalletService } from './featureFlags';
 
 export const types = {
+  PARTIALLY_UPDATE_HISTORY_AND_BALANCE: 'PARTIALLY_UPDATE_HISTORY_AND_BALANCE',
   SET_TEMP_PIN: 'SET_TEMP_PIN',
   SET_RECOVERING_PIN: 'SET_RECOVERING_PIN',
   HISTORY_UPDATE: 'HISTORY_UPDATE',
   NEW_TX: 'NEW_TX',
-  UPDATE_TX: 'UPDATE_TX',
   BALANCE_UPDATE: 'BALANCE_UPDATE',
   NEW_INVOICE: 'NEW_INVOICE',
   CLEAR_INVOICE: 'CLEAR_INVOICE',
@@ -86,14 +89,6 @@ export const newTx = (tx, updatedBalanceMap) => (
 );
 
 /**
- * tx {Object} the new transaction
- * updatedBalanceMap {Object} balance map updated for each token in this tx
- */
-export const updateTx = (tx, updatedBalanceMap) => (
-  { type: types.UPDATE_TX, payload: { tx, updatedBalanceMap } }
-);
-
-/**
  * address {String} address to each payment should be sent
  * amount {int} amount to be paid
  * token {Object} token we're expecting to receive
@@ -130,6 +125,13 @@ export const fetchHistoryBegin = () => ({ type: types.FETCH_HISTORY_BEGIN });
  */
 export const fetchHistorySuccess = (data) => (
   { type: types.FETCH_HISTORY_SUCCESS, payload: data }
+);
+
+/**
+ * data {Object} { tokensHistory, tokensBalance } history and balance for each token
+ */
+export const partiallyUpdateHistoryAndBalance = (data) => (
+  { type: types.PARTIALLY_UPDATE_HISTORY_AND_BALANCE, payload: data }
 );
 
 export const fetchHistoryError = () => ({ type: types.FETCH_HISTORY_ERROR });
@@ -302,6 +304,11 @@ export const startWallet = (words, pin) => async (dispatch) => {
   let wallet;
   if (useWalletService) {
     const network = new Network(networkName);
+
+    // Set urls for wallet service
+    config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
+    config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
+
     wallet = new HathorWalletServiceWallet(words, network);
   } else {
     const connection = new Connection({
@@ -350,52 +357,68 @@ export const startWallet = (words, pin) => async (dispatch) => {
     }
   });
 
+  const handlePartialUpdate = async (updatedBalanceMap) => {
+    const tokens = Object.keys(updatedBalanceMap);
+    const tokensHistory = {};
+    const tokensBalance = {};
+
+    for (const token of tokens) {
+      /* eslint-disable no-await-in-loop */
+      const balance = await wallet.getBalance(token);
+      const tokenBalance = balance[0].balance;
+
+      tokensBalance[token] = {
+        available: tokenBalance.unlocked,
+        locked: tokenBalance.locked,
+      };
+      const history = await wallet.getTxHistory({ token_id: token });
+      tokensHistory[token] = history.map((element) => mapTokenHistory(element, token));
+      /* eslint-enable no-await-in-loop */
+    }
+
+    dispatch(partiallyUpdateHistoryAndBalance({ tokensHistory, tokensBalance }));
+  };
+
   wallet.start({ pinCode: pin, password: pin }).then((serverInfo) => {
     walletUtil.storePasswordHash(pin);
     walletUtil.storeEncryptedWords(words, pin);
+
     dispatch(setServerInfo({ version: null, network: networkName }));
 
-    if (!useWalletService) {
-      wallet.on('new-tx', (tx) => {
-        fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
-          if (updatedBalanceMap) {
-            dispatch(newTx(tx, updatedBalanceMap));
-          }
-        });
-      });
-
-      wallet.on('update-tx', (tx) => {
-        fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
-          if (updatedBalanceMap) {
-            dispatch(updateTx(tx, updatedBalanceMap));
-          }
-        });
-      });
-
-      wallet.conn.on('best-block-update', (height) => {
-        fetchNewHTRBalance(wallet).then((data) => {
-          if (data) {
-            dispatch(updateHeight(height, data));
-          }
-        });
-      });
-
-      wallet.conn.on('state', (state) => {
-        let isOnline;
-        if (state === Connection.CONNECTED) {
-          isOnline = true;
-        } else {
-          isOnline = false;
+    wallet.on('new-tx', (tx) => {
+      fetchNewTxTokenBalance(wallet, tx).then(async (updatedBalanceMap) => {
+        if (updatedBalanceMap) {
+          dispatch(newTx(tx, updatedBalanceMap));
+          handlePartialUpdate(updatedBalanceMap);
         }
-        dispatch(setIsOnline(isOnline));
       });
+    });
 
-      wallet.conn.on('wallet-load-partial-update', (data) => {
-        const transactions = Object.keys(data.historyTransactions).length;
-        const addresses = data.addressesFound;
-        dispatch(updateLoadedData({ transactions, addresses }));
+    wallet.on('update-tx', (tx) => {
+      fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
+        if (updatedBalanceMap) {
+          handlePartialUpdate(updatedBalanceMap);
+        }
       });
-    }
+    });
+
+    wallet.conn.on('best-block-update', (height) => {
+      fetchNewHTRBalance(wallet).then((data) => {
+        if (data) {
+          dispatch(updateHeight(height, data));
+        }
+      });
+    });
+
+    wallet.conn.on('state', (state) => (
+      dispatch(setIsOnline(state === Connection.CONNECTED))
+    ));
+
+    wallet.conn.on('wallet-load-partial-update', (data) => {
+      const transactions = Object.keys(data.historyTransactions).length;
+      const addresses = data.addressesFound;
+      dispatch(updateLoadedData({ transactions, addresses }));
+    });
   });
 
 
@@ -418,7 +441,7 @@ export const fetchNewTxTokenBalance = async (wallet, tx) => {
     return null;
   }
   const updatedBalanceMap = {};
-  const balances = wallet.getTxBalance(tx);
+  const balances = await wallet.getTxBalance(tx);
   // we now loop through all tokens present in the new tx to get the new balance
   for (const [tokenUid] of Object.entries(balances)) {
     /* eslint-disable no-await-in-loop */
