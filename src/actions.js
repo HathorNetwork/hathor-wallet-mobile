@@ -19,6 +19,7 @@ import {
   config,
 } from '@hathor/wallet-lib';
 import { getUniqueId } from 'react-native-device-info';
+import { t } from 'ttag';
 import {
   KEYCHAIN_USER,
   STORE,
@@ -28,6 +29,7 @@ import {
 } from './constants';
 import { TxHistory } from './models';
 import { shouldUseWalletService } from './featureFlags';
+import NavigationService from './NavigationService';
 
 export const types = {
   PARTIALLY_UPDATE_HISTORY_AND_BALANCE: 'PARTIALLY_UPDATE_HISTORY_AND_BALANCE',
@@ -289,6 +291,18 @@ export const fetchTokensMetadata = async (tokens, network) => {
   return metadataPerToken;
 };
 
+export const showPinScreenForResult = async () => new Promise((resolve) => {
+  console.log('Showing pin screen');
+  const params = {
+    cb: resolve,
+    canCancel: true,
+    screenText: t`Enter your 6-digit pin to authorize operation`,
+    biometryText: t`Authorize operation`,
+  };
+
+  NavigationService.navigate('PinScreen', params);
+});
+
 export const startWallet = (words, pin) => async (dispatch) => {
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
@@ -309,7 +323,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
     config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
     config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
 
-    wallet = new HathorWalletServiceWallet(words, network);
+    wallet = new HathorWalletServiceWallet(showPinScreenForResult, words, network);
   } else {
     const connection = new Connection({
       network: networkName, // app currently connects only to mainnet
