@@ -321,7 +321,6 @@ export const reloadHistory = (wallet) => async (dispatch) => {
 };
 
 export const startWallet = (words, pin) => async (dispatch) => {
-  console.log('Starting wallet');
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
@@ -330,7 +329,6 @@ export const startWallet = (words, pin) => async (dispatch) => {
   const uniqueDeviceId = await getUniqueId();
   const featureFlags = new FeatureFlags(uniqueDeviceId, networkName);
   const useWalletService = await featureFlags.shouldUseWalletService();
-  console.log('Using wallet service?', useWalletService);
 
   // Set useWalletService on the redux store
   dispatch(setUseWalletService(useWalletService));
@@ -485,9 +483,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
   });
 
   featureFlags.on('wallet-service-enabled', (newFlag) => {
-    console.log('Flag changed!', newFlag);
     if (useWalletService !== newFlag) {
-      console.log('is actually different');
       // cleanup
       wallet.removeAllListeners();
       wallet.conn.removeAllListeners();
