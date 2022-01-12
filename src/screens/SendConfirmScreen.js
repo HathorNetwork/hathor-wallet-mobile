@@ -81,14 +81,12 @@ class SendConfirmScreen extends React.Component {
    * @param {String} pin User PIN already validated
    */
   executeSend = async (pin) => {
-    if (this.props.useWalletService) {
-      await this.props.wallet.validateAndRenewAuthToken(pin);
-    }
-
     const outputs = [{ address: this.address, value: this.amount, token: this.token.uid }];
     let sendTransaction;
 
     if (this.props.useWalletService) {
+      await this.props.wallet.validateAndRenewAuthToken(pin);
+
       sendTransaction = new hathorLib.SendTransactionWalletService(this.props.wallet, {
         outputs,
         pin,
