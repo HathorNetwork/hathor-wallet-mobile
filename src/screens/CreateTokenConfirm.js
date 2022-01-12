@@ -33,6 +33,7 @@ import errorIcon from '../assets/images/icErrorBig.png';
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
   useWalletService: state.useWalletService,
+  isShowingPinScreen: state.isShowingPinScreen,
 });
 
 
@@ -68,7 +69,11 @@ class CreateTokenConfirm extends React.Component {
    *
    * @param {String} pinCode User PIN
    */
-  executeCreate = (pin) => {
+  executeCreate = async (pin) => {
+    if (this.props.useWalletService) {
+      await this.props.wallet.validateAndRenewAuthToken(pin);
+    }
+
     const { address } = this.props.wallet.getCurrentAddress({ markAsUsed: true });
     this.props.wallet.prepareCreateNewToken(
       this.name, this.symbol, this.amount, { address, pinCode: pin }
@@ -88,17 +93,11 @@ class CreateTokenConfirm extends React.Component {
 
       // show loading modal
       this.setState({
-        modal:
-          // eslint-disable-next-line react/jsx-indent
-          <SendTransactionFeedbackModal
-            text={t`Creating token`}
-            sendTransaction={sendTransaction}
-            promise={promise}
-            successText={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
-            onTxSuccess={this.onTxSuccess}
-            onDismissSuccess={this.exitScreen}
-            onDismissError={() => this.setState({ modal: null })}
-          />,
+        modal: {
+          text: t`Creating token`,
+          sendTransaction,
+          promise,
+        },
       });
     }, (err) => {
       this.onError(err.message);
@@ -163,7 +162,21 @@ class CreateTokenConfirm extends React.Component {
           onBackPress={() => this.props.navigation.goBack()}
           onCancel={() => this.props.navigation.dismiss()}
         />
-        {this.state.modal}
+
+        { this.state.modal && (
+          // eslint-disable-next-line react/jsx-indent
+          <SendTransactionFeedbackModal
+            text={this.state.modal.text}
+            sendTransaction={this.state.modal.sendTransaction}
+            promise={this.state.modal.promise}
+            successText={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
+            onTxSuccess={this.onTxSuccess}
+            onDismissSuccess={this.exitScreen}
+            onDismissError={() => this.setState({ modal: null })}
+            hide={this.props.isShowingPinScreen}
+          />
+        )}
+
         <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
           <View>
             <View style={{ alignItems: 'center', marginTop: 40 }}>
