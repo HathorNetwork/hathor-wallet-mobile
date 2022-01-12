@@ -119,6 +119,10 @@ class SendTransactionFeedbackModal extends React.Component {
   }
 
   render() {
+    if (this.props.hide) {
+      return null;
+    }
+
     const renderModal = () => {
       // Is sending tx
       if (this.state.sending) {
@@ -183,6 +187,7 @@ SendTransactionFeedbackModal.propTypes = {
   onDismissSuccess: PropTypes.func,
   // optional method to be executed when the error modal is dismissed
   onDismissError: PropTypes.func,
+  hide: PropTypes.bool,
 };
 
 export default SendTransactionFeedbackModal;

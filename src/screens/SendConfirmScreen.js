@@ -35,6 +35,7 @@ const mapStateToProps = (state) => ({
   wallet: state.wallet,
   useWalletService: state.useWalletService,
   tokenMetadata: state.tokenMetadata,
+  isShowingPinScreen: state.isShowingPinScreen,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -79,12 +80,19 @@ class SendConfirmScreen extends React.Component {
    *
    * @param {String} pin User PIN already validated
    */
-  executeSend = (pin) => {
+  executeSend = async (pin) => {
+    if (this.props.useWalletService) {
+      await this.props.wallet.validateAndRenewAuthToken(pin);
+    }
+
     const outputs = [{ address: this.address, value: this.amount, token: this.token.uid }];
     let sendTransaction;
 
     if (this.props.useWalletService) {
-      sendTransaction = new hathorLib.SendTransactionWalletService(this.props.wallet, { outputs });
+      sendTransaction = new hathorLib.SendTransactionWalletService(this.props.wallet, {
+        outputs,
+        pin,
+      });
     } else {
       sendTransaction = new hathorLib.SendTransaction(
         { outputs, pin, network: this.props.wallet.getNetworkObject() }
@@ -95,16 +103,11 @@ class SendConfirmScreen extends React.Component {
 
     // show loading modal
     this.setState({
-      modal:
-        // eslint-disable-next-line react/jsx-indent
-        (<SendTransactionFeedbackModal
-          text={t`Your transfer is being processed`}
-          sendTransaction={sendTransaction}
-          promise={promise}
-          successText={<TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>}
-          onDismissSuccess={this.exitScreen}
-          onDismissError={() => this.setState({ modal: null })}
-        />),
+      modal: {
+        text: t`Your transfer is being processed`,
+        sendTransaction,
+        promise,
+      }
     });
   }
 
@@ -164,7 +167,19 @@ class SendConfirmScreen extends React.Component {
           title={t`SEND ${tokenNameUpperCase}`}
           onBackPress={() => this.props.navigation.goBack()}
         />
-        {this.state.modal}
+
+        {this.state.modal && (
+          <SendTransactionFeedbackModal
+            text={this.state.modal.text}
+            sendTransaction={this.state.modal.sendTransaction}
+            promise={this.state.modal.promise}
+            successText={<TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>}
+            onDismissSuccess={this.exitScreen}
+            onDismissError={() => this.setState({ modal: null })}
+            hide={this.props.isShowingPinScreen}
+          />
+        )}
+
         <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
           <View>
             <View style={{ alignItems: 'center', marginTop: 32 }}>

@@ -67,7 +67,16 @@ export const types = {
   TOKEN_METADATA_REMOVED: 'TOKEN_METADATA_REMOVED',
   TOKEN_METADATA_LOADED: 'TOKEN_METADATA_LOADED',
   SET_UNIQUE_DEVICE_ID: 'SET_UNIQUE_DEVICE_ID',
+  SET_IS_SHOWING_PIN_SCREEN: 'SET_IS_SHOWING_PIN_SCREEN',
 };
+
+/**
+ * isShowingPinScreen {bool}
+ * */
+export const setIsShowingPinScreen = (isShowingPinScreen) => ({
+  type: types.SET_IS_SHOWING_PIN_SCREEN,
+  payload: isShowingPinScreen,
+});
 
 /**
  * status {bool} True for connected, and False for disconnected.
@@ -291,18 +300,6 @@ export const fetchTokensMetadata = async (tokens, network) => {
   return metadataPerToken;
 };
 
-export const showPinScreenForResult = async () => new Promise((resolve) => {
-  console.log('Showing pin screen');
-  const params = {
-    cb: resolve,
-    canCancel: true,
-    screenText: t`Enter your 6-digit pin to authorize operation`,
-    biometryText: t`Authorize operation`,
-  };
-
-  NavigationService.navigate('PinScreen', params);
-});
-
 export const startWallet = (words, pin) => async (dispatch) => {
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
@@ -314,6 +311,24 @@ export const startWallet = (words, pin) => async (dispatch) => {
 
   // Set useWalletService on the redux store
   dispatch(setUseWalletService(useWalletService));
+
+  const showPinScreenForResult = async () => new Promise((resolve) => {
+    const params = {
+      cb: (pin) => {
+        dispatch(setIsShowingPinScreen(false));
+        console.log('Setting is showing pin screen to false');
+        resolve(pin);
+      },
+      canCancel: true,
+      screenText: t`Enter your 6-digit pin to authorize operation`,
+      biometryText: t`Authorize operation`,
+    };
+
+    NavigationService.navigate('PinScreen', params);
+
+    // We should set the global isShowingPinScreen
+    dispatch(setIsShowingPinScreen(true));
+  });
 
   let wallet;
   if (useWalletService) {

@@ -76,6 +76,7 @@ const initialState = {
   // PIN that encrypted the data on accessData on the RecoverPin
   // screen
   tempPin: null,
+  isShowingPinScreen: false,
 };
 
 const reducer = (state = initialState, action) => {
@@ -144,6 +145,8 @@ const reducer = (state = initialState, action) => {
       return onSetTempPin(state, action);
     case types.PARTIALLY_UPDATE_HISTORY_AND_BALANCE:
       return partiallyUpdateHistoryAndBalance(state, action);
+    case types.SET_IS_SHOWING_PIN_SCREEN:
+      return onSetIsShowingPinScreen(state, action);
     default:
       return state;
   }
@@ -161,6 +164,14 @@ const onSetIsOnline = (state, action) => ({
   ...state,
   isOnline: action.payload,
 });
+
+const onSetIsShowingPinScreen = (state, action) => {
+  console.log('Will set is showing pin screen:', action.payload);
+  return {
+    ...state,
+    isShowingPinScreen: action.payload,
+  };
+};
 
 /**
  * Updates the history and balance when a new tx arrives. Also checks
