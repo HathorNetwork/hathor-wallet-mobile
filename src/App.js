@@ -343,7 +343,9 @@ const NavigationContainer = createAppContainer(SwitchNavigator);
 
 const App = () => (
   <Provider store={store}>
-    <NavigationContainer ref={(navigatorRef) => NavigationService.setTopLevelNavigator(navigatorRef)} />
+    <NavigationContainer
+      ref={(navigatorRef) => NavigationService.setTopLevelNavigator(navigatorRef)}
+    />
     <ErrorModal />
   </Provider>
 );

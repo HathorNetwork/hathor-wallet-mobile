@@ -314,10 +314,9 @@ export const startWallet = (words, pin) => async (dispatch) => {
 
   const showPinScreenForResult = async () => new Promise((resolve) => {
     const params = {
-      cb: (pin) => {
+      cb: (_pin) => {
         dispatch(setIsShowingPinScreen(false));
-        console.log('Setting is showing pin screen to false');
-        resolve(pin);
+        resolve(_pin);
       },
       canCancel: true,
       screenText: t`Enter your 6-digit pin to authorize operation`,

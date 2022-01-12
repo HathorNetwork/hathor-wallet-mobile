@@ -165,20 +165,17 @@ const onSetIsOnline = (state, action) => ({
   isOnline: action.payload,
 });
 
-const onSetIsShowingPinScreen = (state, action) => {
-  console.log('Will set is showing pin screen:', action.payload);
-  return {
-    ...state,
-    isShowingPinScreen: action.payload,
-  };
-};
+const onSetIsShowingPinScreen = (state, action) => ({
+  ...state,
+  isShowingPinScreen: action.payload,
+});
 
 /**
  * Updates the history and balance when a new tx arrives. Also checks
  * if this tx settles an open invoice.
  */
 const onNewTx = (state, action) => {
-  const { tx, updatedBalanceMap } = action.payload;
+  const { tx } = action.payload;
 
   // if we have the invoice modal, check if this tx settles it
   let invoicePayment = null;
