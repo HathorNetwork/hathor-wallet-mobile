@@ -3,6 +3,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
+#: src/actions.js:322 src/screens/SendConfirmScreen.js:119
+msgid "Enter your 6-digit pin to authorize operation"
+msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
+
+#: src/actions.js:323 src/screens/SendConfirmScreen.js:120
+msgid "Authorize operation"
+msgstr "Autorizar operação"
+
 #: src/errorHandler.js:51
 msgid "Unexpected error occurred"
 msgstr "Um erro inesperado ocorreu"
@@ -187,7 +195,7 @@ msgstr "Os PINs estão diferentes. Tente novamente."
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
-#: src/screens/CreateTokenAmount.js:109 src/screens/CreateTokenConfirm.js:162
+#: src/screens/CreateTokenAmount.js:109 src/screens/CreateTokenConfirm.js:161
 #: src/screens/CreateTokenDepositNotice.js:38 src/screens/CreateTokenName.js:44
 #: src/screens/CreateTokenSymbol.js:63
 msgid "CREATE TOKEN"
@@ -215,44 +223,40 @@ msgid "Next"
 msgstr "Próximo"
 
 #.  show loading modal
-#.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:94
+#: src/screens/CreateTokenConfirm.js:97
 msgid "Creating token"
 msgstr "Criando um token"
 
-#.  show loading modal
-#.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:97
-#, javascript-format
-msgid "**${ _this.name }** created successfully"
-msgstr "**${ _this.name }** criado com sucesso"
-
-#: src/screens/CreateTokenConfirm.js:114
+#: src/screens/CreateTokenConfirm.js:113
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
 
-#: src/screens/CreateTokenConfirm.js:115
+#: src/screens/CreateTokenConfirm.js:114
 msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
-#: src/screens/CreateTokenConfirm.js:171
-#, javascript-format
+#.  eslint-disable-next-line react/jsx-indent
+#: src/screens/CreateTokenConfirm.js:172
+msgid "**${ this.name }** created successfully"
+msgstr "**${ this.name }** criado com sucesso"
+
+#: src/screens/CreateTokenConfirm.js:184
 msgid "Amount of ${ this.name }"
 msgstr "Quantidade de ${ this.name }"
 
-#: src/screens/CreateTokenConfirm.js:179
+#: src/screens/CreateTokenConfirm.js:192
 msgid "Token name"
 msgstr "Nome do token"
 
-#: src/screens/CreateTokenConfirm.js:185 src/screens/CreateTokenSymbol.js:70
+#: src/screens/CreateTokenConfirm.js:198 src/screens/CreateTokenSymbol.js:70
 msgid "Token symbol"
 msgstr "Símbolo do token"
 
-#: src/screens/CreateTokenConfirm.js:191
+#: src/screens/CreateTokenConfirm.js:204
 msgid "Deposit"
 msgstr "Depósito"
 
-#: src/screens/CreateTokenConfirm.js:198
+#: src/screens/CreateTokenConfirm.js:211
 msgid "Create token"
 msgstr "Criar um token"
 
@@ -477,14 +481,14 @@ msgstr "Desbloqueie sua Hathor Wallet"
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:110
+#: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:108
 #: src/screens/Settings.js:133
 msgid "Reset wallet"
 msgstr "Resetar a wallet"
 
 #. *
 #.      * index {number} Selected index of the tab bar
-#.
+#.      
 #.  eslint thinks routes is not used, but TabView uses it
 #.  eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:30
@@ -495,15 +499,15 @@ msgstr "Requisição de Pagamento"
 msgid "RECEIVE"
 msgstr "RECEBER"
 
-#: src/screens/RecoverPin.js:94
+#: src/screens/RecoverPin.js:92
 msgid "There has been an error upgrading your wallet."
 msgstr "Ocorreu um erro ao atualizar sua wallet."
 
-#: src/screens/RecoverPin.js:104
+#: src/screens/RecoverPin.js:102
 msgid "Please reset it and restore it with your seed."
 msgstr "Por favor resete sua wallet e restaure utilizando sua seed."
 
-#: src/screens/RecoverPin.js:127
+#: src/screens/RecoverPin.js:125
 msgid "Upgrading your wallet, please hang on."
 msgstr "Atualizando sua wallet, por favor aguarde."
 
@@ -606,41 +610,31 @@ msgstr "Endereço para enviar"
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:130 src/screens/SendConfirmScreen.js:156
+#: src/screens/SendAmountInput.js:130 src/screens/SendConfirmScreen.js:157
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:142 src/screens/SendConfirmScreen.js:164
+#: src/screens/SendAmountInput.js:142 src/screens/SendConfirmScreen.js:165
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:101
+#: src/screens/SendConfirmScreen.js:105
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#.  show loading modal
-#: src/screens/SendConfirmScreen.js:104
-#, javascript-format
-msgid "Your transfer of **${ _this.amountAndToken }** has been confirmed"
-msgstr "Sua transferência de **${ _this.amountAndToken }** foi confirmada"
+#: src/screens/SendConfirmScreen.js:174
+msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
+msgstr "Sua transferência de **${ this.amountAndToken }** foi confirmada"
 
-#: src/screens/SendConfirmScreen.js:118
-msgid "Enter your 6-digit pin to authorize operation"
-msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
-
-#: src/screens/SendConfirmScreen.js:119
-msgid "Authorize operation"
-msgstr "Autorizar operação"
-
-#: src/screens/SendConfirmScreen.js:180
+#: src/screens/SendConfirmScreen.js:193
 msgid "Address"
 msgstr "Endereço"
 
-#: src/screens/SendConfirmScreen.js:187
+#: src/screens/SendConfirmScreen.js:200
 msgid "Send"
 msgstr "Enviar"
 
@@ -766,7 +760,7 @@ msgstr "Novo endereço"
 msgid "Share"
 msgstr "Compartilhar"
 
-#: src/components/SendTransactionFeedbackModal.js:158
+#: src/components/SendTransactionFeedbackModal.js:162
 msgid "Propagating transaction to the network."
 msgstr "Propagando a transação para a rede."
 

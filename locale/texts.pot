@@ -3,6 +3,16 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
+#: src/actions.js:322
+#: src/screens/SendConfirmScreen.js:119
+msgid "Enter your 6-digit pin to authorize operation"
+msgstr ""
+
+#: src/actions.js:323
+#: src/screens/SendConfirmScreen.js:120
+msgid "Authorize operation"
+msgstr ""
+
 #: src/errorHandler.js:51
 msgid "Unexpected error occurred"
 msgstr ""
@@ -179,7 +189,7 @@ msgid "Start the Wallet"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:109
-#: src/screens/CreateTokenConfirm.js:162
+#: src/screens/CreateTokenConfirm.js:161
 #: src/screens/CreateTokenDepositNotice.js:38
 #: src/screens/CreateTokenName.js:44
 #: src/screens/CreateTokenSymbol.js:63
@@ -210,46 +220,43 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:94
+#: src/screens/CreateTokenConfirm.js:97
 #.  show loading modal
-#.  eslint-disable-next-line react/jsx-indent
 msgid "Creating token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:97
-#.  show loading modal
-#.  eslint-disable-next-line react/jsx-indent
-#, javascript-format
-msgid "**${ _this.name }** created successfully"
-msgstr ""
-
-#: src/screens/CreateTokenConfirm.js:114
+#: src/screens/CreateTokenConfirm.js:113
 msgid "Enter your 6-digit pin to create your token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:115
+#: src/screens/CreateTokenConfirm.js:114
 msgid "Authorize token creation"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:171
+#: src/screens/CreateTokenConfirm.js:172
+#.  eslint-disable-next-line react/jsx-indent
 #, javascript-format
+msgid "**${ this.name }** created successfully"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:184
 msgid "Amount of ${ this.name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:179
+#: src/screens/CreateTokenConfirm.js:192
 msgid "Token name"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:185
+#: src/screens/CreateTokenConfirm.js:198
 #: src/screens/CreateTokenSymbol.js:70
 msgid "Token symbol"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:191
+#: src/screens/CreateTokenConfirm.js:204
 msgid "Deposit"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:198
+#: src/screens/CreateTokenConfirm.js:211
 msgid "Create token"
 msgstr ""
 
@@ -468,7 +475,7 @@ msgid "Cancel"
 msgstr ""
 
 #: src/screens/PinScreen.js:235
-#: src/screens/RecoverPin.js:110
+#: src/screens/RecoverPin.js:108
 #: src/screens/Settings.js:133
 msgid "Reset wallet"
 msgstr ""
@@ -486,15 +493,15 @@ msgstr ""
 msgid "RECEIVE"
 msgstr ""
 
-#: src/screens/RecoverPin.js:94
+#: src/screens/RecoverPin.js:92
 msgid "There has been an error upgrading your wallet."
 msgstr ""
 
-#: src/screens/RecoverPin.js:104
+#: src/screens/RecoverPin.js:102
 msgid "Please reset it and restore it with your seed."
 msgstr ""
 
-#: src/screens/RecoverPin.js:127
+#: src/screens/RecoverPin.js:125
 msgid "Upgrading your wallet, please hang on."
 msgstr ""
 
@@ -595,7 +602,7 @@ msgid "Insufficient funds"
 msgstr ""
 
 #: src/screens/SendAmountInput.js:130
-#: src/screens/SendConfirmScreen.js:156
+#: src/screens/SendConfirmScreen.js:157
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
@@ -603,34 +610,25 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: src/screens/SendAmountInput.js:142
-#: src/screens/SendConfirmScreen.js:164
+#: src/screens/SendConfirmScreen.js:165
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:101
+#: src/screens/SendConfirmScreen.js:105
 #.  show loading modal
 msgid "Your transfer is being processed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:104
-#.  show loading modal
+#: src/screens/SendConfirmScreen.js:174
 #, javascript-format
-msgid "Your transfer of **${ _this.amountAndToken }** has been confirmed"
+msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:118
-msgid "Enter your 6-digit pin to authorize operation"
-msgstr ""
-
-#: src/screens/SendConfirmScreen.js:119
-msgid "Authorize operation"
-msgstr ""
-
-#: src/screens/SendConfirmScreen.js:180
+#: src/screens/SendConfirmScreen.js:193
 msgid "Address"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:187
+#: src/screens/SendConfirmScreen.js:200
 msgid "Send"
 msgstr ""
 
@@ -752,7 +750,7 @@ msgstr ""
 msgid "Share"
 msgstr ""
 
-#: src/components/SendTransactionFeedbackModal.js:158
+#: src/components/SendTransactionFeedbackModal.js:162
 msgid "Propagating transaction to the network."
 msgstr ""
 

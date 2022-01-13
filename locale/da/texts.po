@@ -8,6 +8,14 @@ msgstr ""
 "X-Generator: POEditor.com\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: src/actions.js:322 src/screens/SendConfirmScreen.js:119
+msgid "Enter your 6-digit pin to authorize operation"
+msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
+
+#: src/actions.js:323 src/screens/SendConfirmScreen.js:120
+msgid "Authorize operation"
+msgstr "Autoriserer overførslen"
+
 #: src/errorHandler.js:51
 msgid "Unexpected error occurred"
 msgstr "En uventet fejl opstod"
@@ -190,7 +198,7 @@ msgstr "PIN-koder stemmer ikke overens. Prøv igen."
 msgid "Start the Wallet"
 msgstr "Start Wallet"
 
-#: src/screens/CreateTokenAmount.js:109 src/screens/CreateTokenConfirm.js:162
+#: src/screens/CreateTokenAmount.js:109 src/screens/CreateTokenConfirm.js:161
 #: src/screens/CreateTokenDepositNotice.js:38 src/screens/CreateTokenName.js:44
 #: src/screens/CreateTokenSymbol.js:63
 msgid "CREATE TOKEN"
@@ -218,44 +226,40 @@ msgid "Next"
 msgstr "Næste"
 
 #.  show loading modal
-#.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:94
+#: src/screens/CreateTokenConfirm.js:97
 msgid "Creating token"
 msgstr "Opretter token"
 
-#.  show loading modal
-#.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:97
-#, javascript-format
-msgid "**${ _this.name }** created successfully"
-msgstr "**${ _this.name }** oprettet korrekt"
-
-#: src/screens/CreateTokenConfirm.js:114
+#: src/screens/CreateTokenConfirm.js:113
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Indtast din 6-cifrede pin for at oprette din token"
 
-#: src/screens/CreateTokenConfirm.js:115
+#: src/screens/CreateTokenConfirm.js:114
 msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
-#: src/screens/CreateTokenConfirm.js:171
-#, javascript-format
+#.  eslint-disable-next-line react/jsx-indent
+#: src/screens/CreateTokenConfirm.js:172
+msgid "**${ this.name }** created successfully"
+msgstr "**${ this.name }** oprettet korrekt"
+
+#: src/screens/CreateTokenConfirm.js:184
 msgid "Amount of ${ this.name }"
 msgstr "Antal af ${ this.name }"
 
-#: src/screens/CreateTokenConfirm.js:179
+#: src/screens/CreateTokenConfirm.js:192
 msgid "Token name"
 msgstr "Token navn"
 
-#: src/screens/CreateTokenConfirm.js:185 src/screens/CreateTokenSymbol.js:70
+#: src/screens/CreateTokenConfirm.js:198 src/screens/CreateTokenSymbol.js:70
 msgid "Token symbol"
 msgstr "Token symbol"
 
-#: src/screens/CreateTokenConfirm.js:191
+#: src/screens/CreateTokenConfirm.js:204
 msgid "Deposit"
 msgstr "Indsæt"
 
-#: src/screens/CreateTokenConfirm.js:198
+#: src/screens/CreateTokenConfirm.js:211
 msgid "Create token"
 msgstr "Opret token"
 
@@ -477,7 +481,7 @@ msgstr "Lås Hathor-wallet op"
 msgid "Cancel"
 msgstr "Annuller"
 
-#: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:110
+#: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:108
 #: src/screens/Settings.js:133
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
@@ -495,15 +499,15 @@ msgstr "Betalingsanmodning"
 msgid "RECEIVE"
 msgstr "MODTAG"
 
-#: src/screens/RecoverPin.js:94
+#: src/screens/RecoverPin.js:92
 msgid "There has been an error upgrading your wallet."
 msgstr ""
 
-#: src/screens/RecoverPin.js:104
+#: src/screens/RecoverPin.js:102
 msgid "Please reset it and restore it with your seed."
 msgstr ""
 
-#: src/screens/RecoverPin.js:127
+#: src/screens/RecoverPin.js:125
 msgid "Upgrading your wallet, please hang on."
 msgstr ""
 
@@ -605,41 +609,31 @@ msgstr "Adresse, der skal sendes til"
 msgid "Insufficient funds"
 msgstr "Utilstrækkelige midler"
 
-#: src/screens/SendAmountInput.js:130 src/screens/SendConfirmScreen.js:156
+#: src/screens/SendAmountInput.js:130 src/screens/SendConfirmScreen.js:157
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } tilgængelig"
 msgstr[1] "${ amountAndToken } tilgængelig\n"
 
-#: src/screens/SendAmountInput.js:142 src/screens/SendConfirmScreen.js:164
+#: src/screens/SendAmountInput.js:142 src/screens/SendConfirmScreen.js:165
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:101
+#: src/screens/SendConfirmScreen.js:105
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
-#.  show loading modal
-#: src/screens/SendConfirmScreen.js:104
-#, javascript-format
-msgid "Your transfer of **${ _this.amountAndToken }** has been confirmed"
+#: src/screens/SendConfirmScreen.js:174
+msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr "Din overførsel af **${ _this.amountAndToken }** er bekræftet"
 
-#: src/screens/SendConfirmScreen.js:118
-msgid "Enter your 6-digit pin to authorize operation"
-msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
-
-#: src/screens/SendConfirmScreen.js:119
-msgid "Authorize operation"
-msgstr "Autoriserer overførslen"
-
-#: src/screens/SendConfirmScreen.js:180
+#: src/screens/SendConfirmScreen.js:193
 msgid "Address"
 msgstr "Adresse"
 
-#: src/screens/SendConfirmScreen.js:187
+#: src/screens/SendConfirmScreen.js:200
 msgid "Send"
 msgstr "Send"
 
@@ -763,7 +757,7 @@ msgstr "Ny adresse"
 msgid "Share"
 msgstr "Del"
 
-#: src/components/SendTransactionFeedbackModal.js:158
+#: src/components/SendTransactionFeedbackModal.js:162
 msgid "Propagating transaction to the network."
 msgstr ""
 
