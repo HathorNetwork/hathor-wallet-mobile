@@ -171,6 +171,10 @@ class SendTransactionFeedbackModal extends React.Component {
   }
 }
 
+SendTransactionFeedbackModal.defaultProps = {
+  hide: false,
+};
+
 SendTransactionFeedbackModal.propTypes = {
   // Text displayed on the first line of the modal
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
