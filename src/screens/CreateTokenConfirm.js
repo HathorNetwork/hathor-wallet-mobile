@@ -93,6 +93,7 @@ class CreateTokenConfirm extends React.Component {
 
       // show loading modal
       this.setState({
+        modalType: 'SendTransactionFeedbackModal',
         modal: {
           text: t`Creating token`,
           sendTransaction,
@@ -136,13 +137,12 @@ class CreateTokenConfirm extends React.Component {
    */
   onError = (message) => {
     this.setState({
-      modal:
-        // eslint-disable-next-line react/jsx-indent
-        <FeedbackModal
-          icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-          text={message}
-          onDismiss={() => this.setState({ modal: null })}
-        />,
+      modalType: 'FeedbackModal',
+      modal: {
+        icon: <Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />,
+        text: message,
+        onDismiss: () => this.setState({ modal: null }),
+      },
     });
   }
 
@@ -164,17 +164,26 @@ class CreateTokenConfirm extends React.Component {
         />
 
         { this.state.modal && (
-          // eslint-disable-next-line react/jsx-indent
-          <SendTransactionFeedbackModal
-            text={this.state.modal.text}
-            sendTransaction={this.state.modal.sendTransaction}
-            promise={this.state.modal.promise}
-            successText={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
-            onTxSuccess={this.onTxSuccess}
-            onDismissSuccess={this.exitScreen}
-            onDismissError={() => this.setState({ modal: null })}
-            hide={this.props.isShowingPinScreen}
-          />
+          this.state.modalType === 'FeedbackModal' ? (
+            // eslint-disable-next-line react/jsx-indent
+            <FeedbackModal
+              icon={this.modal.icon}
+              text={this.modal.message}
+              onDismiss={this.modal.onDismiss}
+            />
+          ) : (
+            // eslint-disable-next-line react/jsx-indent
+            <SendTransactionFeedbackModal
+              text={this.state.modal.text}
+              sendTransaction={this.state.modal.sendTransaction}
+              promise={this.state.modal.promise}
+              successText={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
+              onTxSuccess={this.onTxSuccess}
+              onDismissSuccess={this.exitScreen}
+              onDismissError={() => this.setState({ modal: null })}
+              hide={this.props.isShowingPinScreen}
+            />
+          )
         )}
 
         <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>

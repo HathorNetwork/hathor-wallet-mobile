@@ -123,23 +123,6 @@ class SendConfirmScreen extends React.Component {
   }
 
   /**
-   * Show error message if there is one while sending the tx
-   *
-   * @param {String} message Error message
-   */
-  onError = (message) => {
-    this.setState({
-      modal:
-        // eslint-disable-next-line react/jsx-indent
-        <FeedbackModal
-          icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-          text={message}
-          onDismiss={() => this.setState({ modal: null })}
-        />,
-    });
-  }
-
-  /**
    * Method executed after dismiss success modal
    */
   exitScreen = () => {
