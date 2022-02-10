@@ -318,7 +318,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
         dispatch(setIsShowingPinScreen(false));
         resolve(_pin);
       },
-      canCancel: true,
+      canCancel: false,
       screenText: t`Enter your 6-digit pin to authorize operation`,
       biometryText: t`Authorize operation`,
     };
