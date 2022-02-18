@@ -28,7 +28,7 @@ import {
   WALLET_SERVICE_MAINNET_BASE_URL,
 } from './constants';
 import { TxHistory } from './models';
-import { shouldUseWalletService } from './featureFlags';
+import { FeatureFlags } from './featureFlags';
 import NavigationService from './NavigationService';
 
 export const types = {
@@ -321,13 +321,16 @@ export const reloadHistory = (wallet) => async (dispatch) => {
 };
 
 export const startWallet = (words, pin) => async (dispatch) => {
+  console.log('Starting wallet');
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
 
   const networkName = 'mainnet';
   const uniqueDeviceId = await getUniqueId();
-  const useWalletService = await shouldUseWalletService(uniqueDeviceId, networkName);
+  const featureFlags = new FeatureFlags(uniqueDeviceId, networkName);
+  const useWalletService = await featureFlags.shouldUseWalletService();
+  console.log('Using wallet service?', useWalletService);
 
   // Set useWalletService on the redux store
   dispatch(setUseWalletService(useWalletService));
@@ -479,6 +482,20 @@ export const startWallet = (words, pin) => async (dispatch) => {
   Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
     accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
     acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
+  });
+
+  featureFlags.on('wallet-service-enabled', (newFlag) => {
+    console.log('Flag changed!', newFlag);
+    if (useWalletService !== newFlag) {
+      console.log('is actually different');
+      // cleanup
+      wallet.removeAllListeners();
+      wallet.conn.removeAllListeners();
+      featureFlags.removeAllListeners();
+
+      // start the wallet again
+      startWallet(words, pin);
+    }
   });
 };
 
