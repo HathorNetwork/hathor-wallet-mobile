@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
+import { NativeModules } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import { chunk } from 'lodash';
 import {
@@ -321,6 +321,7 @@ export const reloadHistory = (wallet) => async (dispatch) => {
 };
 
 export const startWallet = (words, pin) => async (dispatch) => {
+  console.log('Starting wallet');
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
@@ -355,7 +356,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
     const network = new Network(networkName);
 
     // Set urls for wallet service
-    config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
+    config.setWalletServiceBaseUrl('http://localhost:3000');
     config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
 
     wallet = new HathorWalletServiceWallet(showPinScreenForResult, words, network);
@@ -484,13 +485,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
 
   featureFlags.on('wallet-service-enabled', (newFlag) => {
     if (useWalletService !== newFlag) {
-      // cleanup
-      wallet.removeAllListeners();
-      wallet.conn.removeAllListeners();
-      featureFlags.removeAllListeners();
-
-      // start the wallet again
-      startWallet(words, pin);
+      NativeModules.HTRReloadBundleModule.restart()
     }
   });
 };
