@@ -76,6 +76,7 @@ const initialState = {
   // PIN that encrypted the data on accessData on the RecoverPin
   // screen
   tempPin: null,
+  isShowingPinScreen: false,
 };
 
 const reducer = (state = initialState, action) => {
@@ -144,6 +145,8 @@ const reducer = (state = initialState, action) => {
       return onSetTempPin(state, action);
     case types.PARTIALLY_UPDATE_HISTORY_AND_BALANCE:
       return partiallyUpdateHistoryAndBalance(state, action);
+    case types.SET_IS_SHOWING_PIN_SCREEN:
+      return onSetIsShowingPinScreen(state, action);
     default:
       return state;
   }
@@ -162,12 +165,17 @@ const onSetIsOnline = (state, action) => ({
   isOnline: action.payload,
 });
 
+const onSetIsShowingPinScreen = (state, action) => ({
+  ...state,
+  isShowingPinScreen: action.payload,
+});
+
 /**
  * Updates the history and balance when a new tx arrives. Also checks
  * if this tx settles an open invoice.
  */
 const onNewTx = (state, action) => {
-  const { tx, updatedBalanceMap } = action.payload;
+  const { tx } = action.payload;
 
   // if we have the invoice modal, check if this tx settles it
   let invoicePayment = null;

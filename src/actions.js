@@ -19,6 +19,7 @@ import {
   config,
 } from '@hathor/wallet-lib';
 import { getUniqueId } from 'react-native-device-info';
+import { t } from 'ttag';
 import {
   KEYCHAIN_USER,
   STORE,
@@ -28,6 +29,7 @@ import {
 } from './constants';
 import { TxHistory } from './models';
 import { shouldUseWalletService } from './featureFlags';
+import NavigationService from './NavigationService';
 
 export const types = {
   PARTIALLY_UPDATE_HISTORY_AND_BALANCE: 'PARTIALLY_UPDATE_HISTORY_AND_BALANCE',
@@ -65,7 +67,16 @@ export const types = {
   TOKEN_METADATA_REMOVED: 'TOKEN_METADATA_REMOVED',
   TOKEN_METADATA_LOADED: 'TOKEN_METADATA_LOADED',
   SET_UNIQUE_DEVICE_ID: 'SET_UNIQUE_DEVICE_ID',
+  SET_IS_SHOWING_PIN_SCREEN: 'SET_IS_SHOWING_PIN_SCREEN',
 };
+
+/**
+ * isShowingPinScreen {bool}
+ * */
+export const setIsShowingPinScreen = (isShowingPinScreen) => ({
+  type: types.SET_IS_SHOWING_PIN_SCREEN,
+  payload: isShowingPinScreen,
+});
 
 /**
  * status {bool} True for connected, and False for disconnected.
@@ -301,6 +312,23 @@ export const startWallet = (words, pin) => async (dispatch) => {
   // Set useWalletService on the redux store
   dispatch(setUseWalletService(useWalletService));
 
+  const showPinScreenForResult = async () => new Promise((resolve) => {
+    const params = {
+      cb: (_pin) => {
+        dispatch(setIsShowingPinScreen(false));
+        resolve(_pin);
+      },
+      canCancel: false,
+      screenText: t`Enter your 6-digit pin to authorize operation`,
+      biometryText: t`Authorize operation`,
+    };
+
+    NavigationService.navigate('PinScreen', params);
+
+    // We should set the global isShowingPinScreen
+    dispatch(setIsShowingPinScreen(true));
+  });
+
   let wallet;
   if (useWalletService) {
     const network = new Network(networkName);
@@ -309,7 +337,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
     config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
     config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
 
-    wallet = new HathorWalletServiceWallet(words, network);
+    wallet = new HathorWalletServiceWallet(showPinScreenForResult, words, network);
   } else {
     const connection = new Connection({
       network: networkName, // app currently connects only to mainnet

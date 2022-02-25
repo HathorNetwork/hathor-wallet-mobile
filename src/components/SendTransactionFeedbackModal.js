@@ -119,6 +119,10 @@ class SendTransactionFeedbackModal extends React.Component {
   }
 
   render() {
+    if (this.props.hide) {
+      return null;
+    }
+
     const renderModal = () => {
       // Is sending tx
       if (this.state.sending) {
@@ -167,6 +171,11 @@ class SendTransactionFeedbackModal extends React.Component {
   }
 }
 
+SendTransactionFeedbackModal.defaultProps = {
+  // Defaults to not hide the modal
+  hide: false,
+};
+
 SendTransactionFeedbackModal.propTypes = {
   // Text displayed on the first line of the modal
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
@@ -183,6 +192,11 @@ SendTransactionFeedbackModal.propTypes = {
   onDismissSuccess: PropTypes.func,
   // optional method to be executed when the error modal is dismissed
   onDismissError: PropTypes.func,
+  // This is used to hide the feedback modal when we need to display something above it.
+  // react-navigation should be able to hide it automatically when something is pushed
+  // to the navigation stack, but it is currently not doing it automatically
+  // Discussion at https://github.com/HathorNetwork/hathor-wallet-mobile/pull/142#discussion_r785095290
+  hide: PropTypes.bool,
 };
 
 export default SendTransactionFeedbackModal;
