@@ -13,11 +13,11 @@ import {
   createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer,
 } from 'react-navigation';
 import { Provider, connect } from 'react-redux';
-
 import * as Keychain from 'react-native-keychain';
 
 import hathorLib from '@hathor/wallet-lib';
 import IconTabBar from './icon-font';
+import NavigationService from './NavigationService';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
@@ -343,7 +343,9 @@ const NavigationContainer = createAppContainer(SwitchNavigator);
 
 const App = () => (
   <Provider store={store}>
-    <NavigationContainer />
+    <NavigationContainer
+      ref={(navigatorRef) => NavigationService.setTopLevelNavigator(navigatorRef)}
+    />
     <ErrorModal />
   </Provider>
 );
