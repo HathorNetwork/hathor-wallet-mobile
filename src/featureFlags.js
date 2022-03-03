@@ -1,6 +1,7 @@
 import events from 'events';
 import { Platform } from 'react-native';
 import { UnleashClient } from 'unleash-proxy-client';
+import AsyncStorage from '@react-native-community/async-storage';
 import {
   UNLEASH_URL,
   UNLEASH_CLIENT_KEY,
@@ -44,6 +45,10 @@ export class FeatureFlags extends events.EventEmitter {
   */
   async shouldUseWalletService() {
     try {
+      const shouldIgnore = AsyncStorage.getItem('featureFlags:ignoreWalletServiceFlag');
+      if (shouldIgnore) {
+        return false;
+      }
       this.client.updateContext({ userId: this.userId });
       this.client.start();
 
@@ -59,5 +64,12 @@ export class FeatureFlags extends events.EventEmitter {
       // old facade
       return false;
     }
+  }
+
+  ignoreWalletServiceFlag() {
+    AsyncStorage.setItem('featureFlags:ignoreWalletServiceFlag', true);
+    this.walletServiceEnabled = false;
+    // Stop the client from polling
+    this.client.stop();
   }
 }

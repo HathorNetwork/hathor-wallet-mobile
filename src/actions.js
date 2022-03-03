@@ -321,7 +321,6 @@ export const reloadHistory = (wallet) => async (dispatch) => {
 };
 
 export const startWallet = (words, pin) => async (dispatch) => {
-  console.log('Starting wallet');
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
@@ -476,6 +475,12 @@ export const startWallet = (words, pin) => async (dispatch) => {
     walletUtil.storeEncryptedWords(words, pin);
 
     dispatch(setServerInfo({ version: null, network: networkName }));
+  }).catch((err) => {
+    if (useWalletService) {
+      // Store the ignore on the local storage
+      featureFlags.ignoreWalletServiceFlag();
+      NativeModules.HTRReloadBundleModule.restart();
+    }
   });
 
   Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
@@ -485,7 +490,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
 
   featureFlags.on('wallet-service-enabled', (newFlag) => {
     if (useWalletService !== newFlag) {
-      NativeModules.HTRReloadBundleModule.restart()
+      NativeModules.HTRReloadBundleModule.restart();
     }
   });
 };
