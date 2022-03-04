@@ -412,6 +412,10 @@ export const startWallet = (words, pin) => async (dispatch) => {
     walletUtil.storeEncryptedWords(words, pin);
 
     dispatch(setServerInfo({ version: null, network: networkName }));
+    // Connection might have already been established before we setup
+    // the state event listener, so we initialize it to the current
+    // state of the connection to prevent a potential race condition
+    dispatch(setIsOnline(wallet.conn.isOnline));
 
     wallet.on('new-tx', (tx) => {
       fetchNewTxTokenBalance(wallet, tx).then(async (updatedBalanceMap) => {
