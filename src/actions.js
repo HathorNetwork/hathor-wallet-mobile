@@ -449,7 +449,6 @@ export const startWallet = (words, pin) => async (dispatch) => {
     });
   });
 
-
   Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
     accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
     acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
