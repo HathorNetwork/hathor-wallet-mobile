@@ -300,6 +300,27 @@ export const fetchTokensMetadata = async (tokens, network) => {
   return metadataPerToken;
 };
 
+/**
+ * Reloads history data
+ *
+ * @param {HathorWallet | HathorWalletServiceWallet} wallet - The current wallet object
+ * @param {Dispatch} dispatch - The dispatch object to be able to trigger redux actions
+ *
+ * @memberof Wallet
+ * @inner
+ */
+export const reloadHistory = (wallet) => async (dispatch) => {
+  // Display the load history screen
+  dispatch(activateFetchHistory());
+
+  try {
+    const historyAndBalance = await fetchHistoryAndBalance(wallet);
+    dispatch(fetchHistorySuccess(historyAndBalance));
+  } catch (e) {
+    dispatch(fetchHistoryError());
+  }
+};
+
 export const startWallet = (words, pin) => async (dispatch) => {
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
@@ -443,6 +464,10 @@ export const startWallet = (words, pin) => async (dispatch) => {
     const addresses = data.addressesFound;
     dispatch(updateLoadedData({ transactions, addresses }));
   });
+
+  // This event is only available on the WalletService facade as reconnections
+  // are being handled on the lib on the old facade
+  wallet.on('reload-data', () => dispatch(reloadHistory(wallet)));
 
   wallet.start({ pinCode: pin, password: pin }).then((serverInfo) => {
     walletUtil.storePasswordHash(pin);
