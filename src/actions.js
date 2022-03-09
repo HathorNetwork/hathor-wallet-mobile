@@ -407,48 +407,49 @@ export const startWallet = (words, pin) => async (dispatch) => {
     dispatch(partiallyUpdateHistoryAndBalance({ tokensHistory, tokensBalance }));
   };
 
+  // Setup listeners before starting the wallet so we don't lose events
+
+  wallet.on('new-tx', (tx) => {
+    fetchNewTxTokenBalance(wallet, tx).then(async (updatedBalanceMap) => {
+      if (updatedBalanceMap) {
+        dispatch(newTx(tx, updatedBalanceMap));
+        handlePartialUpdate(updatedBalanceMap);
+      }
+    });
+  });
+
+  wallet.on('update-tx', (tx) => {
+    fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
+      if (updatedBalanceMap) {
+        handlePartialUpdate(updatedBalanceMap);
+      }
+    });
+  });
+
+  wallet.conn.on('best-block-update', (height) => {
+    fetchNewHTRBalance(wallet).then((data) => {
+      if (data) {
+        dispatch(updateHeight(height, data));
+      }
+    });
+  });
+
+  wallet.conn.on('state', (state) => {
+    dispatch(setIsOnline(state === Connection.CONNECTED));
+  });
+
+  wallet.conn.on('wallet-load-partial-update', (data) => {
+    const transactions = Object.keys(data.historyTransactions).length;
+    const addresses = data.addressesFound;
+    dispatch(updateLoadedData({ transactions, addresses }));
+  });
+
   wallet.start({ pinCode: pin, password: pin }).then((serverInfo) => {
     walletUtil.storePasswordHash(pin);
     walletUtil.storeEncryptedWords(words, pin);
 
     dispatch(setServerInfo({ version: null, network: networkName }));
-
-    wallet.on('new-tx', (tx) => {
-      fetchNewTxTokenBalance(wallet, tx).then(async (updatedBalanceMap) => {
-        if (updatedBalanceMap) {
-          dispatch(newTx(tx, updatedBalanceMap));
-          handlePartialUpdate(updatedBalanceMap);
-        }
-      });
-    });
-
-    wallet.on('update-tx', (tx) => {
-      fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
-        if (updatedBalanceMap) {
-          handlePartialUpdate(updatedBalanceMap);
-        }
-      });
-    });
-
-    wallet.conn.on('best-block-update', (height) => {
-      fetchNewHTRBalance(wallet).then((data) => {
-        if (data) {
-          dispatch(updateHeight(height, data));
-        }
-      });
-    });
-
-    wallet.conn.on('state', (state) => (
-      dispatch(setIsOnline(state === Connection.CONNECTED))
-    ));
-
-    wallet.conn.on('wallet-load-partial-update', (data) => {
-      const transactions = Object.keys(data.historyTransactions).length;
-      const addresses = data.addressesFound;
-      dispatch(updateLoadedData({ transactions, addresses }));
-    });
   });
-
 
   Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
     accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
