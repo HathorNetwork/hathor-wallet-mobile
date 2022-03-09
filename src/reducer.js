@@ -7,12 +7,9 @@
 
 import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
-
 import hathorLib from '@hathor/wallet-lib';
 import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
 import { types } from './actions';
-import { TxHistory } from './models';
-
 
 /**
  * tokensBalance {Object} stores the balance for each
@@ -215,48 +212,6 @@ const onUpdateTokenHistory = (state, action) => {
     tokensHistory: newTokensHistory,
   };
 };
-
-/**
- * Return an object to be saved in the history.
- *
- * tx: {
- *   tx_id: str,
- *   timestamp: int,
- *   is_voided: bool,
- *   inputs: [
- *     index: int,
- *     script: str,
- *     token: str,
- *     token_data: int,
- *     tx_id: str,
- *     value: int,
- *     decoded: {
- *       address: str,
- *       timelock: Optional[int],
- *       type: str,
- *     }
- *   ],
- *   outputs: [
- *     value: int,
- *     token_data: int,
- *     token: str,
- *     spent_by: Optional[str],
- *     script: str,
- *     decoded: {
- *       address: str,
- *       timelock: Optional[int],
- *       type: str,
- *     }
- *   ]
- * }
- * */
-const getTxHistoryFromTx = (tx, tokenUid, tokenTxBalance) => new TxHistory({
-  txId: tx.tx_id,
-  timestamp: tx.timestamp,
-  tokenUid,
-  balance: tokenTxBalance,
-  isVoided: tx.is_voided,
-});
 
 /**
  * Create a new payment request
