@@ -311,7 +311,7 @@ export const fetchTokensMetadata = async (tokens, network) => {
  */
 export const reloadHistory = (wallet) => async (dispatch) => {
   // Display the load history screen
-  dispatch(activateFetchHistory());
+  dispatch(fetchHistoryBegin());
 
   try {
     const historyAndBalance = await fetchHistoryAndBalance(wallet);
@@ -400,9 +400,10 @@ export const startWallet = (words, pin) => async (dispatch) => {
       dispatch(fetchHistoryError());
     } else if (wallet.isReady()) {
       // READY
-      fetchHistoryAndBalance(wallet).then((data) => {
-        dispatch(fetchHistorySuccess(data));
-      });
+      fetchHistoryAndBalance(wallet)
+        .then((data) => {
+          dispatch(fetchHistorySuccess(data));
+        }).catch(() => dispatch(fetchHistoryError()));
     }
   });
 
