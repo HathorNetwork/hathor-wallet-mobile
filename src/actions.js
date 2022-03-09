@@ -289,6 +289,7 @@ export const fetchTokensMetadata = async (tokens, network) => {
       } catch (e) {
         // Error downloading metadata, then we should wait a few seconds
         // and retry if still didn't reached retry limit
+        // eslint-disable-next-line
         console.log('Error downloading metadata of token', token);
       }
     }));
