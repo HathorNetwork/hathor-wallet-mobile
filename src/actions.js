@@ -151,8 +151,6 @@ export const setLoadHistoryStatus = (active, error) => (
   { type: types.SET_LOAD_HISTORY_STATUS, payload: { active, error } }
 );
 
-export const activateFetchHistory = () => ({ type: types.ACTIVATE_FETCH_HISTORY });
-
 export const setUseWalletService = (data) => ({
   type: types.SET_USE_WALLET_SERVICE,
   payload: data,
@@ -366,7 +364,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
     });
 
     const beforeReloadCallback = () => {
-      dispatch(activateFetchHistory());
+      dispatch(fetchHistoryBegin());
     };
 
     const walletConfig = {

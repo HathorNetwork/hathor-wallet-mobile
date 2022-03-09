@@ -103,8 +103,6 @@ const reducer = (state = initialState, action) => {
       return onFetchHistoryError(state, action);
     case types.UPDATE_TOKEN_HISTORY:
       return onUpdateTokenHistory(state, action);
-    case types.ACTIVATE_FETCH_HISTORY:
-      return onActivateFetchHistory(state, action);
     case types.SET_LOAD_HISTORY_STATUS:
       return onSetLoadHistoryStatus(state, action);
     case types.SET_IS_ONLINE:
@@ -349,17 +347,6 @@ const onFetchHistoryError = (state, action) => ({
   loadHistoryStatus: {
     active: true,
     error: true,
-  },
-});
-
-/**
- * Activate fetch history screen
- */
-const onActivateFetchHistory = (state, action) => ({
-  ...state,
-  loadHistoryStatus: {
-    active: true,
-    error: false,
   },
 });
 
