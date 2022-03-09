@@ -68,6 +68,7 @@ export const errorHandler = (error, isFatal) => {
     );
   } else {
     // So that we can see it in the ADB logs in case of Android if needed
+    // eslint-disable-next-line
     console.log('Unhandled not fatal error', error);
   }
 };
