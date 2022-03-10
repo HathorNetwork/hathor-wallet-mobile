@@ -12,7 +12,7 @@ import {
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import { startWallet, clearInitWallet, resetLoadedData } from '../actions';
+import { startWallet, reloadHistory, clearInitWallet, resetLoadedData } from '../actions';
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';
@@ -33,11 +33,14 @@ const mapStateToProps = (state) => ({
   initWallet: state.initWallet,
   loadedData: state.loadedData,
   useWalletService: state.useWalletService,
+  wallet: state.wallet,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   startWallet:
     (words, pin, useWalletService) => dispatch(startWallet(words, pin, useWalletService)),
+  reloadHistory:
+    (wallet) => dispatch(reloadHistory(wallet)),
   clearInitWallet: () => dispatch(clearInitWallet()),
   resetLoadedData: () => dispatch(resetLoadedData()),
 });
@@ -57,7 +60,7 @@ class LoadHistoryScreen extends React.Component {
     if (this.props.initWallet) {
       const { words, pin } = this.props.initWallet;
 
-      this.props.startWallet(words, pin, this.props.useWalletService);
+      this.props.startWallet(words, pin);
     }
   }
 
@@ -73,7 +76,7 @@ class LoadHistoryScreen extends React.Component {
         <SimpleButton
           containerStyle={{ marginTop: 12 }}
           textStyle={{ fontSize: 18 }}
-          onPress={this.props.loadHistory}
+          onPress={() => this.props.reloadHistory(this.props.wallet)}
           title='Try again'
         />
       </View>

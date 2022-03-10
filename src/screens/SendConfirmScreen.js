@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Image, SafeAreaView, View } from 'react-native';
+import { SafeAreaView, View } from 'react-native';
 import { connect } from 'react-redux';
 import { t, ngettext, msgid } from 'ttag';
 
@@ -18,9 +18,7 @@ import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
-import FeedbackModal from '../components/FeedbackModal';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
-import errorIcon from '../assets/images/icErrorBig.png';
 import { sendTx } from '../actions';
 import { renderValue, isTokenNFT } from '../utils';
 

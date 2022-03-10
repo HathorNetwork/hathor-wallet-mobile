@@ -151,8 +151,6 @@ export const setLoadHistoryStatus = (active, error) => (
   { type: types.SET_LOAD_HISTORY_STATUS, payload: { active, error } }
 );
 
-export const activateFetchHistory = () => ({ type: types.ACTIVATE_FETCH_HISTORY });
-
 export const setUseWalletService = (data) => ({
   type: types.SET_USE_WALLET_SERVICE,
   payload: data,
@@ -291,6 +289,7 @@ export const fetchTokensMetadata = async (tokens, network) => {
       } catch (e) {
         // Error downloading metadata, then we should wait a few seconds
         // and retry if still didn't reached retry limit
+        // eslint-disable-next-line
         console.log('Error downloading metadata of token', token);
       }
     }));
@@ -298,6 +297,27 @@ export const fetchTokensMetadata = async (tokens, network) => {
   }
 
   return metadataPerToken;
+};
+
+/**
+ * Reloads history data
+ *
+ * @param {HathorWallet | HathorWalletServiceWallet} wallet - The current wallet object
+ * @param {Dispatch} dispatch - The dispatch object to be able to trigger redux actions
+ *
+ * @memberof Wallet
+ * @inner
+ */
+export const reloadHistory = (wallet) => async (dispatch) => {
+  // Display the load history screen
+  dispatch(fetchHistoryBegin());
+
+  try {
+    const historyAndBalance = await fetchHistoryAndBalance(wallet);
+    dispatch(fetchHistorySuccess(historyAndBalance));
+  } catch (e) {
+    dispatch(fetchHistoryError());
+  }
 };
 
 export const startWallet = (words, pin) => async (dispatch) => {
@@ -345,7 +365,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
     });
 
     const beforeReloadCallback = () => {
-      dispatch(activateFetchHistory());
+      dispatch(fetchHistoryBegin());
     };
 
     const walletConfig = {
@@ -379,9 +399,10 @@ export const startWallet = (words, pin) => async (dispatch) => {
       dispatch(fetchHistoryError());
     } else if (wallet.isReady()) {
       // READY
-      fetchHistoryAndBalance(wallet).then((data) => {
-        dispatch(fetchHistorySuccess(data));
-      });
+      fetchHistoryAndBalance(wallet)
+        .then((data) => {
+          dispatch(fetchHistorySuccess(data));
+        }).catch(() => dispatch(fetchHistoryError()));
     }
   });
 
@@ -407,48 +428,53 @@ export const startWallet = (words, pin) => async (dispatch) => {
     dispatch(partiallyUpdateHistoryAndBalance({ tokensHistory, tokensBalance }));
   };
 
+  // Setup listeners before starting the wallet so we don't lose events
+
+  wallet.on('new-tx', (tx) => {
+    fetchNewTxTokenBalance(wallet, tx).then(async (updatedBalanceMap) => {
+      if (updatedBalanceMap) {
+        dispatch(newTx(tx, updatedBalanceMap));
+        handlePartialUpdate(updatedBalanceMap);
+      }
+    });
+  });
+
+  wallet.on('update-tx', (tx) => {
+    fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
+      if (updatedBalanceMap) {
+        handlePartialUpdate(updatedBalanceMap);
+      }
+    });
+  });
+
+  wallet.conn.on('best-block-update', (height) => {
+    fetchNewHTRBalance(wallet).then((data) => {
+      if (data) {
+        dispatch(updateHeight(height, data));
+      }
+    });
+  });
+
+  wallet.conn.on('state', (state) => {
+    dispatch(setIsOnline(state === Connection.CONNECTED));
+  });
+
+  wallet.conn.on('wallet-load-partial-update', (data) => {
+    const transactions = Object.keys(data.historyTransactions).length;
+    const addresses = data.addressesFound;
+    dispatch(updateLoadedData({ transactions, addresses }));
+  });
+
+  // This event is only available on the WalletService facade as reconnections
+  // are being handled on the lib on the old facade
+  wallet.on('reload-data', () => dispatch(reloadHistory(wallet)));
+
   wallet.start({ pinCode: pin, password: pin }).then((serverInfo) => {
     walletUtil.storePasswordHash(pin);
     walletUtil.storeEncryptedWords(words, pin);
 
     dispatch(setServerInfo({ version: null, network: networkName }));
-
-    wallet.on('new-tx', (tx) => {
-      fetchNewTxTokenBalance(wallet, tx).then(async (updatedBalanceMap) => {
-        if (updatedBalanceMap) {
-          dispatch(newTx(tx, updatedBalanceMap));
-          handlePartialUpdate(updatedBalanceMap);
-        }
-      });
-    });
-
-    wallet.on('update-tx', (tx) => {
-      fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
-        if (updatedBalanceMap) {
-          handlePartialUpdate(updatedBalanceMap);
-        }
-      });
-    });
-
-    wallet.conn.on('best-block-update', (height) => {
-      fetchNewHTRBalance(wallet).then((data) => {
-        if (data) {
-          dispatch(updateHeight(height, data));
-        }
-      });
-    });
-
-    wallet.conn.on('state', (state) => (
-      dispatch(setIsOnline(state === Connection.CONNECTED))
-    ));
-
-    wallet.conn.on('wallet-load-partial-update', (data) => {
-      const transactions = Object.keys(data.historyTransactions).length;
-      const addresses = data.addressesFound;
-      dispatch(updateLoadedData({ transactions, addresses }));
-    });
   });
-
 
   Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
     accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,

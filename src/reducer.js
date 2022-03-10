@@ -7,12 +7,9 @@
 
 import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
-
 import hathorLib from '@hathor/wallet-lib';
 import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
 import { types } from './actions';
-import { TxHistory } from './models';
-
 
 /**
  * tokensBalance {Object} stores the balance for each
@@ -103,8 +100,6 @@ const reducer = (state = initialState, action) => {
       return onFetchHistoryError(state, action);
     case types.UPDATE_TOKEN_HISTORY:
       return onUpdateTokenHistory(state, action);
-    case types.ACTIVATE_FETCH_HISTORY:
-      return onActivateFetchHistory(state, action);
     case types.SET_LOAD_HISTORY_STATUS:
       return onSetLoadHistoryStatus(state, action);
     case types.SET_IS_ONLINE:
@@ -219,88 +214,6 @@ const onUpdateTokenHistory = (state, action) => {
 };
 
 /**
- * This method adds a new tx to the history of a token (we have one history per token)
- *
- * tokenUid {string} uid of the token being updated
- * tx {Object} the new transaction
- * tokenBalance {int} balance of this token in the new transaction
- * currentHistory {Array} currenty history of the token, sorted by timestamp descending
- */
-const addTxToSortedList = (tokenUid, tx, txTokenBalance, currentHistory) => {
-  let index = 0;
-  for (let i = 0; i < currentHistory.length; i += 1) {
-    if (tx.tx_id === currentHistory[i].txId) {
-      // If is_voided changed, we update the tx in the history
-      // otherwise we just return the currentHistory without change
-      if (tx.is_voided !== currentHistory[i].isVoided) {
-        const txHistory = getTxHistoryFromTx(tx, tokenUid, txTokenBalance);
-        // return new object so redux triggers update
-        const newHistory = [...currentHistory];
-        newHistory[i] = txHistory;
-        return newHistory;
-      }
-      return currentHistory;
-    }
-    if (tx.timestamp > currentHistory[i].timestamp) {
-      // we're past the timestamp from this new tx, so stop the search
-      break;
-    } else if (currentHistory[i].timestamp > tx.timestamp) {
-      // we only update the index in this situation beacause we want to add the new tx to the
-      // beginning of the list if it has the same timestamp as others. We cannot break the
-      // first time the timestamp matches because we gotta check if it's not a duplicate tx
-      index = i + 1;
-    }
-  }
-  const txHistory = getTxHistoryFromTx(tx, tokenUid, txTokenBalance);
-  // return new object so redux triggers update
-  const newHistory = [...currentHistory];
-  newHistory.splice(index, 0, txHistory);
-  return newHistory;
-};
-
-/**
- * Return an object to be saved in the history.
- *
- * tx: {
- *   tx_id: str,
- *   timestamp: int,
- *   is_voided: bool,
- *   inputs: [
- *     index: int,
- *     script: str,
- *     token: str,
- *     token_data: int,
- *     tx_id: str,
- *     value: int,
- *     decoded: {
- *       address: str,
- *       timelock: Optional[int],
- *       type: str,
- *     }
- *   ],
- *   outputs: [
- *     value: int,
- *     token_data: int,
- *     token: str,
- *     spent_by: Optional[str],
- *     script: str,
- *     decoded: {
- *       address: str,
- *       timelock: Optional[int],
- *       type: str,
- *     }
- *   ]
- * }
- * */
-const getTxHistoryFromTx = (tx, tokenUid, tokenTxBalance) => new TxHistory({
-  txId: tx.tx_id,
-  timestamp: tx.timestamp,
-  tokenUid,
-  balance: tokenTxBalance,
-  isVoided: tx.is_voided,
-});
-
-/**
  * Create a new payment request
  */
 const onNewInvoice = (state, action) => {
@@ -389,17 +302,6 @@ const onFetchHistoryError = (state, action) => ({
   loadHistoryStatus: {
     active: true,
     error: true,
-  },
-});
-
-/**
- * Activate fetch history screen
- */
-const onActivateFetchHistory = (state, action) => ({
-  ...state,
-  loadHistoryStatus: {
-    active: true,
-    error: false,
   },
 });
 
