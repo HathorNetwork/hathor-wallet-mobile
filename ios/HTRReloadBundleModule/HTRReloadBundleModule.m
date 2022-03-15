@@ -1,12 +1,10 @@
-//
-//  HTRReloadBundleModule.m
-//  HathorMobile
-//
-//  Created by Andre Cardoso on 24/02/22.
-//  Copyright © 2022 Facebook. All rights reserved.
-//
+/**
+ * Copyright (c) Hathor Labs and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 
-// HTRReloadBundleModule.m
 #import "HTRReloadBundleModule.h"
 
 @implementation HTRReloadBundleModule
