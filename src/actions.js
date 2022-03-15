@@ -355,7 +355,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
     const network = new Network(networkName);
 
     // Set urls for wallet service
-    config.setWalletServiceBaseUrl('http://localhost:3000');
+    config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
     config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
 
     wallet = new HathorWalletServiceWallet(showPinScreenForResult, words, network);
