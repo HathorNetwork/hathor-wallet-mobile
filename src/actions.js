@@ -475,10 +475,15 @@ export const startWallet = (words, pin) => async (dispatch) => {
     walletUtil.storeEncryptedWords(words, pin);
 
     dispatch(setServerInfo({ version: null, network: networkName }));
-  }).catch((err) => {
+  }).catch(async () => {
     if (useWalletService) {
-      // Store the ignore on the local storage
-      featureFlags.ignoreWalletServiceFlag();
+      // Wallet Service start wallet will fail if the status returned from
+      // the service is 'error' or if the start wallet request failed.
+      // We should fallback to the old facade by storing the flag to ignore
+      // the feature flag
+      await featureFlags.ignoreWalletServiceFlag();
+
+      // Restart the whole bundle to make sure we clear all events
       NativeModules.HTRReloadBundleModule.restart();
     }
   });
@@ -488,8 +493,11 @@ export const startWallet = (words, pin) => async (dispatch) => {
     acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
   });
 
-  featureFlags.on('wallet-service-enabled', (newFlag) => {
-    if (useWalletService !== newFlag) {
+  featureFlags.on('wallet-service-enabled', (newUseWalletService) => {
+    // We should only force reset the bundle if the user was on
+    // the wallet service facade and the newflag sends him to
+    // the old facade
+    if (useWalletService && useWalletService !== newUseWalletService) {
       NativeModules.HTRReloadBundleModule.restart();
     }
   });
@@ -567,9 +575,11 @@ export const setWallet = (wallet) => (
   { type: types.SET_WALLET, payload: wallet }
 );
 
-export const resetWallet = () => (
-  { type: types.RESET_WALLET }
-);
+export const resetWallet = () => async (dispatch) => {
+  await FeatureFlags.clearIgnoreWalletServiceFlag();
+  // Dispatch the reset wallet action
+  dispatch({ type: types.RESET_WALLET });
+};
 
 /**
  * Update metadata object with new data

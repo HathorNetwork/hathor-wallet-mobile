@@ -3,6 +3,8 @@ package com.hathormobile;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.facebook.react.bridge.NativeModule;
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import io.sentry.RNSentryPackage;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
@@ -25,6 +27,7 @@ import com.facebook.soloader.SoLoader;
 import android.database.CursorWindow;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,21 +43,22 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
-            new RNDeviceInfo(),
-            new RNSentryPackage(),
-            new ReactNativeExceptionHandlerPackage(),
-            new RNLocalizePackage(),
-            new RNVersionNumberPackage(),
-            new ReanimatedPackage(),
-            new KeychainPackage(),
-            new AsyncStoragePackage(),
-            new SvgPackage(),
-            new RNCameraPackage(),
-            new RNGestureHandlerPackage(),
-            new UdpSocketsModule(),
-            new TcpSocketsModule(),
-            new RNOSModule(),
-            new RandomBytesPackage()
+          new RNDeviceInfo(),
+          new RNSentryPackage(),
+          new ReactNativeExceptionHandlerPackage(),
+          new RNLocalizePackage(),
+          new RNVersionNumberPackage(),
+          new ReanimatedPackage(),
+          new KeychainPackage(),
+          new AsyncStoragePackage(),
+          new SvgPackage(),
+          new RNCameraPackage(),
+          new RNGestureHandlerPackage(),
+          new UdpSocketsModule(),
+          new TcpSocketsModule(),
+          new RNOSModule(),
+          new RandomBytesPackage(),
+          new HTRReloadBundlePackage()
       );
     }
 

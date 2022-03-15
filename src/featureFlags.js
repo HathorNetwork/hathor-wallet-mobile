@@ -45,7 +45,7 @@ export class FeatureFlags extends events.EventEmitter {
   */
   async shouldUseWalletService() {
     try {
-      const shouldIgnore = AsyncStorage.getItem('featureFlags:ignoreWalletServiceFlag');
+      const shouldIgnore = await AsyncStorage.getItem('featureFlags:ignoreWalletServiceFlag');
       if (shouldIgnore) {
         return false;
       }
@@ -66,10 +66,14 @@ export class FeatureFlags extends events.EventEmitter {
     }
   }
 
-  ignoreWalletServiceFlag() {
-    AsyncStorage.setItem('featureFlags:ignoreWalletServiceFlag', true);
+  async ignoreWalletServiceFlag() {
+    await AsyncStorage.setItem('featureFlags:ignoreWalletServiceFlag', 'true');
     this.walletServiceEnabled = false;
     // Stop the client from polling
     this.client.stop();
+  }
+
+  static async clearIgnoreWalletServiceFlag() {
+    await AsyncStorage.removeItem('featureFlags:ignoreWalletServiceFlag');
   }
 }
