@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import {
   UNLEASH_URL,
   UNLEASH_CLIENT_KEY,
+  UNLEASH_POLLING_INTERVAL,
 } from './constants';
 
 export class FeatureFlags extends events.EventEmitter {
@@ -18,13 +19,16 @@ export class FeatureFlags extends events.EventEmitter {
     this.client = new UnleashClient({
       url: UNLEASH_URL,
       clientKey: UNLEASH_CLIENT_KEY,
-      refreshInterval: 15,
+      refreshInterval: UNLEASH_POLLING_INTERVAL,
       appName: `wallet-service-mobile-${Platform.OS}`,
     });
 
     this.client.on('update', () => {
+      // Get current flag
       const walletServiceEnabled = this.client.isEnabled(this.walletServiceFlag);
 
+      // We should only emit an update if we already had a value on the instance
+      // and if the value has changed
       if (this.walletServiceEnabled !== null && (
         this.walletServiceEnabled !== walletServiceEnabled
       )) {
@@ -50,12 +54,12 @@ export class FeatureFlags extends events.EventEmitter {
         return false;
       }
       this.client.updateContext({ userId: this.userId });
-      this.client.start();
 
-      await this.client.fetchToggles();
+      // Start polling for feature flag updates
+      await this.client.start();
 
+      // start() method will have already called the fetchToggles, so the flag should be enabled
       const isWalletServiceEnabled = this.client.isEnabled(this.walletServiceFlag);
-
       this.walletServiceEnabled = isWalletServiceEnabled;
 
       return this.walletServiceEnabled;
@@ -66,13 +70,20 @@ export class FeatureFlags extends events.EventEmitter {
     }
   }
 
+  /**
+   * Sets the ignore flag on the storage to persist it between app restarts
+   */
   async ignoreWalletServiceFlag() {
     await AsyncStorage.setItem('featureFlags:ignoreWalletServiceFlag', 'true');
     this.walletServiceEnabled = false;
+
     // Stop the client from polling
     this.client.stop();
   }
 
+  /**
+   * Removes the ignore flag from the storage
+   */
   static async clearIgnoreWalletServiceFlag() {
     await AsyncStorage.removeItem('featureFlags:ignoreWalletServiceFlag');
   }
