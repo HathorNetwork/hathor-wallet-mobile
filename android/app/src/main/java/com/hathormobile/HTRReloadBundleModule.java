@@ -21,7 +21,7 @@ public class HTRReloadBundleModule extends ReactContextBaseJavaModule {
         super(context);
     }
 
-    private void loadBundleLegacy() {
+    private void reloadBundleLegacy() {
         final Activity currentActivity = getCurrentActivity();
         if (currentActivity == null) {
             return;
@@ -35,7 +35,7 @@ public class HTRReloadBundleModule extends ReactContextBaseJavaModule {
         });
     }
 
-    private void loadBundle() {
+    private void reloadBundle() {
         clearLifecycleEventListener();
 
         try {
@@ -50,12 +50,12 @@ public class HTRReloadBundleModule extends ReactContextBaseJavaModule {
                     try {
                         instanceManager.recreateReactContextInBackground();
                     } catch (Throwable t) {
-                        loadBundleLegacy();
+                        reloadBundleLegacy();
                     }
                 }
             });
         } catch (Throwable t) {
-            loadBundleLegacy();
+            reloadBundleLegacy();
         }
     }
 
@@ -93,7 +93,7 @@ public class HTRReloadBundleModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void restart() {
-        loadBundle();
+        reloadBundle();
     }
 
     @NonNull
