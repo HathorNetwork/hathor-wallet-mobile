@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
+import { NativeModules } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import { chunk } from 'lodash';
 import {
@@ -28,7 +28,7 @@ import {
   WALLET_SERVICE_MAINNET_BASE_URL,
 } from './constants';
 import { TxHistory } from './models';
-import { shouldUseWalletService } from './featureFlags';
+import { FeatureFlags } from './featureFlags';
 import NavigationService from './NavigationService';
 
 export const types = {
@@ -327,7 +327,8 @@ export const startWallet = (words, pin) => async (dispatch) => {
 
   const networkName = 'mainnet';
   const uniqueDeviceId = await getUniqueId();
-  const useWalletService = await shouldUseWalletService(uniqueDeviceId, networkName);
+  const featureFlags = new FeatureFlags(uniqueDeviceId, networkName);
+  const useWalletService = await featureFlags.shouldUseWalletService();
 
   // Set useWalletService on the redux store
   dispatch(setUseWalletService(useWalletService));
@@ -474,11 +475,31 @@ export const startWallet = (words, pin) => async (dispatch) => {
     walletUtil.storeEncryptedWords(words, pin);
 
     dispatch(setServerInfo({ version: null, network: networkName }));
+  }).catch(async () => {
+    if (useWalletService) {
+      // Wallet Service start wallet will fail if the status returned from
+      // the service is 'error' or if the start wallet request failed.
+      // We should fallback to the old facade by storing the flag to ignore
+      // the feature flag
+      await featureFlags.ignoreWalletServiceFlag();
+
+      // Restart the whole bundle to make sure we clear all events
+      NativeModules.HTRReloadBundleModule.restart();
+    }
   });
 
   Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
     accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
     acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
+  });
+
+  featureFlags.on('wallet-service-enabled', (newUseWalletService) => {
+    // We should only force reset the bundle if the user was on
+    // the wallet service facade and the newflag sends him to
+    // the old facade
+    if (useWalletService && useWalletService !== newUseWalletService) {
+      NativeModules.HTRReloadBundleModule.restart();
+    }
   });
 };
 
@@ -554,9 +575,11 @@ export const setWallet = (wallet) => (
   { type: types.SET_WALLET, payload: wallet }
 );
 
-export const resetWallet = () => (
-  { type: types.RESET_WALLET }
-);
+export const resetWallet = () => async (dispatch) => {
+  await FeatureFlags.clearIgnoreWalletServiceFlag();
+  // Dispatch the reset wallet action
+  dispatch({ type: types.RESET_WALLET });
+};
 
 /**
  * Update metadata object with new data
