@@ -87,12 +87,18 @@
 
 1. **Reset Wallet**
     1. Go to Settings and Reset your wallet.
+    1. Close and open the app again to make sure that it was properly reset
 
 1. **Import a wallet**
     1. Click on Import Wallet.
     1. Type anything random and check the "Invalid words" error message.
     1. Use the words saved before.
     1. Click on Start the wallet, and wait for it to be initialized. Validate your transactions are loaded.
+
+1. **Wallet Service**
+    1. Go to Settings and copy the Unique app identifier
+    1. Go to the unleash dashboard and add it to the list of UserIDs
+    1. Repeat all steps, starting from step 2
 
 1. **Whitelabel app**
     1. Modify parameters on src/config.js. Set at least `_IS_MULTI_TOKEN = false` and a new `_DEFAULT_TOKEN`.
