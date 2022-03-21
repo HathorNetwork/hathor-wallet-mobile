@@ -1,6 +1,6 @@
 {
   "name": "HathorMobile",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js --ext .jsx .",
@@ -16,7 +16,7 @@
     "@fortawesome/free-regular-svg-icons": "^5.8.2",
     "@fortawesome/free-solid-svg-icons": "^5.8.2",
     "@fortawesome/react-native-fontawesome": "^0.1.0",
-    "@hathor/wallet-lib": "^0.32.0",
+    "@hathor/wallet-lib": "^0.32.1",
     "@react-native-community/async-storage": "^1.4.0",
     "@sentry/react-native": "^1.5.0",
     "@tradle/react-native-http": "^2.0.1",
@@ -74,7 +74,7 @@
     "timers-browserify": "^1.4.2",
     "ttag": "^1.7.22",
     "tty-browserify": "0.0.0",
-    "unleash-proxy-client": "1.3.0",
+    "unleash-proxy-client": "^1.11.0",
     "url": "^0.10.3",
     "util": "^0.10.4",
     "vm-browserify": "0.0.4"
