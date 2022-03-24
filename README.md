@@ -82,7 +82,7 @@ Finally, run `make i18n` to compile all po files to json files.
 
 Try to run `npx jetifier` to fix the issue.
 
-All check this issue: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/135
+This is a known problem, reported in this issue: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/135
 
 ## License
 
