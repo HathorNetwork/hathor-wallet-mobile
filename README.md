@@ -60,7 +60,7 @@ Then build the app for Android. Make sure you have a device ready, be it on Andr
 
 `npm run android`
 
-If you need to open the Dev Menu on Android Studio Emulator, use `Ctrl + M` or run `adb shell input keyevent 82` you a terminal.
+If you need to open the Dev Menu on Android Studio Emulator, use `Ctrl + M` or run `adb shell input keyevent 82` in a terminal.
 
 ### Run linter
 
