@@ -38,9 +38,29 @@ auth.token=YOUR-SENTRY-TOKEN
 
 ## Run
 
+### iOS
+
+First start the Metro bundler:
+
+`npm start`
+
+Then build the app for iOS:
+
 `npm run ios` to open on iOS simulator, or `npm run ios -- --simulator "iPhone 11"`
 
 To list all available simulators, use `xcrun simctl list devices`.
+
+### Android
+
+First start the Metro bundler:
+
+`npm start`
+
+Then build the app for Android. Make sure you have a device ready, be it on Android Studio's Emulator or a real device.
+
+`npm run android`
+
+If you need to open the Dev Menu on Android Studio Emulator, use `Ctrl + M` or run `adb shell input keyevent 82` you a terminal.
 
 ### Run linter
 
@@ -55,6 +75,14 @@ Run `npm run locale-update-pot` to update the pot file (`locale/texts.pot`).
 Run `msgmerge pt-br/texts.po texts.pot -o pt-br/texts.po` to merge a pot file with a po file.
 
 Finally, run `make i18n` to compile all po files to json files.
+
+## Troubleshooting
+
+### Cannot compile for Android
+
+Try to run `npx jetifier` to fix the issue.
+
+All check this issue: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/135
 
 ## License
 
