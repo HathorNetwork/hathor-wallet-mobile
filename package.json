@@ -33,7 +33,7 @@
     "intl": "1.2.4",
     "lodash": "^4.17.15",
     "metro-config": "0.59.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "path-browserify": "0.0.0",
     "process": "^0.11.10",
     "prop-types": "^15.7.2",
