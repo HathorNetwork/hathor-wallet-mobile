@@ -316,7 +316,7 @@ class LoadWordsScreen extends React.Component {
                 />
                 <Text style={this.style.label}>
                   {this.state.words.length}
-/
+                  /
                   {this.numberOfWords}
                 </Text>
                 <Text style={{ color: 'red' }}>{this.state.errorMessage}</Text>
