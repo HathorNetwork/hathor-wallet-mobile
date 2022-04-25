@@ -10,14 +10,9 @@ import {
   FlatList, Image, StyleSheet, View, Text, TouchableHighlight,
 } from 'react-native';
 
-import { getInset } from 'react-native-safe-area-view';
 import chevronRight from '../assets/icons/chevron-right.png';
 import { PRIMARY_COLOR } from '../constants';
 import { getLightBackground, renderValue, isTokenNFT } from '../utils';
-
-
-const safeViewTop = getInset('top');
-const safeViewBottom = getInset('bottom');
 
 const TokenSelect = (props) => {
   const renderItem = ({ item, index }) => {
@@ -81,7 +76,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f7f7f7',
-    paddingTop: safeViewTop,
+    paddingTop: 0,
   },
   listWrapper: {
     alignSelf: 'stretch',
@@ -95,7 +90,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowColor: 'black',
     shadowOpacity: 0.08,
-    paddingBottom: safeViewBottom,
+    paddingBottom: 0,
   },
   itemWrapper: {
     height: 80,
