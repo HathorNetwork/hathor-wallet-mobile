@@ -7,12 +7,43 @@
 
 import React from 'react';
 import {
-  FlatList, Image, StyleSheet, View, Text, TouchableHighlight,
+  FlatList, Image, StyleSheet, View, Text, TouchableHighlight, Platform
 } from 'react-native';
+
+import DeviceInfo from 'react-native-device-info';
 
 import chevronRight from '../assets/icons/chevron-right.png';
 import { PRIMARY_COLOR } from '../constants';
 import { getLightBackground, renderValue, isTokenNFT } from '../utils';
+
+
+/*
+This method is a workaround the `getInset` from
+https://github.com/react-navigation/react-native-safe-area-view/blob/v0.14.6/index.js#L348-L371
+The method was deprecated since it does not cover newer models.
+
+To cover all models we should migrate to react-native-safe-area-context on the whole app
+*/
+const getInsets = () => {
+  if (Platform.OS === 'android' || Platform.OS === 'web' || Platform.OS === 'windows') {
+    return [0, 0];
+  }
+
+  const model = DeviceInfo.getModel();
+  // The values are taken from the list at
+  // https://github.com/react-native-device-info/react-native-device-info/blob/master/ios/RNDeviceInfo/RNDeviceInfo.m#L181-L296
+  if (model.startsWith('iPhone X')) {
+    // This covers IPhone X, XS, XS Max, XR
+    return [44, 34];
+  }
+  if (model.startsWith('IPad Pro')) {
+    // This covers all 3 gen of IPad Pro and all 5 screen sizes
+    return [24, 20];
+  }
+  return [20, 0];
+};
+
+const [paddingTop, paddingBottom] = getInsets();
 
 const TokenSelect = (props) => {
   const renderItem = ({ item, index }) => {
@@ -76,7 +107,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f7f7f7',
-    paddingTop: 0,
+    paddingTop,
   },
   listWrapper: {
     alignSelf: 'stretch',
@@ -90,7 +121,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowColor: 'black',
     shadowOpacity: 0.08,
-    paddingBottom: 0,
+    paddingBottom,
   },
   itemWrapper: {
     height: 80,
