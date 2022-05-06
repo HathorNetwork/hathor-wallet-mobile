@@ -23,6 +23,13 @@ target 'HathorMobile' do
   # you should disable the next line.
   use_flipper!()
 
+  # The react-native-qrcode-scanner requires installing react-native-permissions now
+  # https://github.com/moaazsidat/react-native-qrcode-scanner#react-native-permissions
+  # The two lines below are required by the installation of react-native-permissions
+  # https://github.com/zoontek/react-native-permissions#ios
+  permissions_path = '../node_modules/react-native-permissions/ios'
+  pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
+
   post_install do |installer|
     react_native_post_install(installer)
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
