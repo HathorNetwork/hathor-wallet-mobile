@@ -62,3 +62,7 @@ buck-out/
 *.swp
 *.swo
 .editorconfig
+
+# Sentry properties
+android/sentry.properties
+ios/sentry.properties
