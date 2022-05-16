@@ -23,6 +23,8 @@ https://github.com/react-navigation/react-native-safe-area-view/blob/v0.14.6/ind
 The method was deprecated since it does not cover newer models.
 
 To cover all models we should migrate to react-native-safe-area-context on the whole app
+
+This is a temporary patch until we upgrade react-navigation to use the latest version for the SafeAreaView
 */
 const getInsets = () => {
   if (Platform.OS === 'android' || Platform.OS === 'web' || Platform.OS === 'windows') {
