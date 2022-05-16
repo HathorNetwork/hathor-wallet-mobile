@@ -22,6 +22,8 @@ This method is a workaround the `getInset` from
 https://github.com/react-navigation/react-native-safe-area-view/blob/v0.14.6/index.js#L348-L371
 The method was deprecated since it does not cover newer models.
 
+TODO
+
 To cover all models we should migrate to react-native-safe-area-context on the whole app
 
 This is a temporary patch until we upgrade react-navigation to use the latest version for the SafeAreaView
