@@ -247,15 +247,12 @@ class _AppStackWrapper extends React.Component {
     Keychain.getSupportedBiometryType().then((biometryType) => {
       switch (biometryType) {
         case Keychain.BIOMETRY_TYPE.TOUCH_ID:
+        case Keychain.BIOMETRY_TYPE.FINGERPRINT:
+        case Keychain.BIOMETRY_TYPE.FACE_ID:
           setSupportedBiometry(biometryType);
           break;
         default:
           setSupportedBiometry(null);
-        // XXX Android Fingerprint is still not supported in the react native lib we're using.
-        // https://github.com/oblador/react-native-keychain/pull/195
-        // case Keychain.BIOMETRY_TYPE.FINGERPRINT:
-        // XXX iOS FaceID also not working
-        // case Keychain.BIOMETRY_TYPE.FACE_ID:
       }
     });
   }
