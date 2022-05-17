@@ -7,17 +7,85 @@
 
 import React from 'react';
 import {
-  FlatList, Image, StyleSheet, View, Text, TouchableHighlight,
+  FlatList, Image, StyleSheet, View, Text, TouchableHighlight, Platform
 } from 'react-native';
 
-import { getInset } from 'react-native-safe-area-view';
+import DeviceInfo from 'react-native-device-info';
+
 import chevronRight from '../assets/icons/chevron-right.png';
 import { PRIMARY_COLOR } from '../constants';
 import { getLightBackground, renderValue, isTokenNFT } from '../utils';
 
 
-const safeViewTop = getInset('top');
-const safeViewBottom = getInset('bottom');
+/*
+This method is a workaround the `getInset` from
+https://github.com/react-navigation/react-native-safe-area-view/blob/v0.14.6/index.js#L348-L371
+The method was deprecated since it does not cover newer models.
+
+TODO
+
+To cover all models we should migrate to react-native-safe-area-context on the whole app
+
+This is a temporary patch until we upgrade react-navigation
+to use the latest version for the SafeAreaView
+*/
+const getInsets = () => {
+  if (Platform.OS === 'android' || Platform.OS === 'web' || Platform.OS === 'windows') {
+    return [0, 0];
+  }
+
+  const model = DeviceInfo.getModel();
+  const deviceId = DeviceInfo.getDeviceId();
+
+  // This method will return true for devices with new screen format (introduced in iPhone X)
+  // this is important to get the best padding top here
+  const isNewIphoneScreen = () => {
+    // The values are taken from the list at
+    // https://github.com/react-native-device-info/react-native-device-info/blob/master/ios/RNDeviceInfo/RNDeviceInfo.m#L181-L296
+
+    if (model === 'iPhone X') {
+      return true;
+    }
+
+    if (model === 'iPhone SE') {
+      return false;
+    }
+
+    if (deviceId.startsWith('iPhone')) {
+      // Device ids for iphone have the format 'iPhone<number>,<othernumber>'
+      // The first number is incremental for each year release
+      // iPhone X and iPhone 8 are number 10 but they have different screen (only X has the new one)
+      // however we have already taken care of X in the previous condition, so here we consider
+      // only numbers >= 11
+      // The only exception is iPhone SE, which has model as 'iPhone SE' for all of them,
+      // even though they are new releases
+      // that's why we handle them before this condition here
+
+      // It's safe to do this here because the string starts with iPhone
+      const number = deviceId.split(',')[0].replace('iPhone', '');
+
+      // If number is not a number parseInt(number) will return NaN and the if will return false
+      if (parseInt(number, 10) >= 11) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  if (isNewIphoneScreen()) {
+    return [44, 34];
+  }
+
+  if (model.startsWith('IPad Pro')) {
+    // This covers all 3 gen of IPad Pro and all 5 screen sizes
+    return [24, 20];
+  }
+
+  return [20, 0];
+};
+
+const [paddingTop, paddingBottom] = getInsets();
 
 const TokenSelect = (props) => {
   const renderItem = ({ item, index }) => {
@@ -81,7 +149,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f7f7f7',
-    paddingTop: safeViewTop,
+    paddingTop,
   },
   listWrapper: {
     alignSelf: 'stretch',
@@ -95,7 +163,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowColor: 'black',
     shadowOpacity: 0.08,
-    paddingBottom: safeViewBottom,
+    paddingBottom,
   },
   itemWrapper: {
     height: 80,

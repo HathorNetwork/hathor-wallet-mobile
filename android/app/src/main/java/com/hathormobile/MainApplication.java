@@ -1,72 +1,39 @@
 package com.hathormobile;
 
 import android.app.Application;
-
+import android.content.Context;
+import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
-import com.facebook.react.bridge.NativeModule;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.learnium.RNDeviceInfo.RNDeviceInfo;
-import io.sentry.RNSentryPackage;
-import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
-import com.reactcommunity.rnlocalize.RNLocalizePackage;
-import com.apsl.versionnumber.RNVersionNumberPackage;
-import com.swmansion.reanimated.ReanimatedPackage;
-import com.oblador.keychain.KeychainPackage;
-import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
-import com.horcrux.svg.SvgPackage;
-import org.reactnative.camera.RNCameraPackage;
-import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
-import com.tradle.react.UdpSocketsModule;
-import com.peel.react.TcpSocketsModule;
-import com.peel.react.rnos.RNOSModule;
-import com.bitgo.randombytes.RandomBytesPackage;
+import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
-import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
-import android.database.CursorWindow;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class MainApplication extends Application implements ReactApplication {
 
-  private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
-    @Override
-    public boolean getUseDeveloperSupport() {
-      return BuildConfig.DEBUG;
-    }
+  private final ReactNativeHost mReactNativeHost =
+      new ReactNativeHost(this) {
+        @Override
+        public boolean getUseDeveloperSupport() {
+          return BuildConfig.DEBUG;
+        }
 
-    @Override
-    protected List<ReactPackage> getPackages() {
-      return Arrays.<ReactPackage>asList(
-          new MainReactPackage(),
-          new RNDeviceInfo(),
-          new RNSentryPackage(),
-          new ReactNativeExceptionHandlerPackage(),
-          new RNLocalizePackage(),
-          new RNVersionNumberPackage(),
-          new ReanimatedPackage(),
-          new KeychainPackage(),
-          new AsyncStoragePackage(),
-          new SvgPackage(),
-          new RNCameraPackage(),
-          new RNGestureHandlerPackage(),
-          new UdpSocketsModule(),
-          new TcpSocketsModule(),
-          new RNOSModule(),
-          new RandomBytesPackage(),
-          new HTRReloadBundlePackage()
-      );
-    }
+        @Override
+        protected List<ReactPackage> getPackages() {
+          List<ReactPackage> packages = new PackageList(this).getPackages();
+          // Packages that cannot be autolinked yet can be added manually here, for example:
+          packages.add(new HTRReloadBundlePackage());
 
-    @Override
-    protected String getJSMainModuleName() {
-      return "index";
-    }
-  };
+          return packages;
+        }
+
+        @Override
+        protected String getJSMainModuleName() {
+          return "index";
+        }
+      };
 
   @Override
   public ReactNativeHost getReactNativeHost() {
@@ -77,20 +44,37 @@ public class MainApplication extends Application implements ReactApplication {
   public void onCreate() {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
+    initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+  }
 
-    // Starting on Android 9, the sqlite has a size limit of cursor get
-    // We must increase this size because we were saving lots of data on storage
-    // We should remove this in the future because we are not saving anymore
-    // https://github.com/craftzdog/react-native-sqlite-2/issues/57#issuecomment-491156124
-
-    try {
-        Field field = CursorWindow.class.getDeclaredField("sCursorWindowSize");
-        field.setAccessible(true);
-        field.set(null, 50 * 1024 * 1024); // 50M is the new size
-    } catch (Exception e) {
-        if (BuildConfig.DEBUG) {
-            e.printStackTrace();
-        }
+  /**
+   * Loads Flipper in React Native templates. Call this in the onCreate method with something like
+   * initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+   *
+   * @param context
+   * @param reactInstanceManager
+   */
+  private static void initializeFlipper(
+      Context context, ReactInstanceManager reactInstanceManager) {
+    if (BuildConfig.DEBUG) {
+      try {
+        /*
+         We use reflection here to pick up the class that initializes Flipper,
+        since Flipper library is not available in release mode
+        */
+        Class<?> aClass = Class.forName("com.hathormobile.ReactNativeFlipper");
+        aClass
+            .getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
+            .invoke(null, context, reactInstanceManager);
+      } catch (ClassNotFoundException e) {
+        e.printStackTrace();
+      } catch (NoSuchMethodException e) {
+        e.printStackTrace();
+      } catch (IllegalAccessException e) {
+        e.printStackTrace();
+      } catch (InvocationTargetException e) {
+        e.printStackTrace();
+      }
     }
   }
 }
