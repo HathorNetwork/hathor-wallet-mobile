@@ -26,7 +26,8 @@ TODO
 
 To cover all models we should migrate to react-native-safe-area-context on the whole app
 
-This is a temporary patch until we upgrade react-navigation to use the latest version for the SafeAreaView
+This is a temporary patch until we upgrade react-navigation
+to use the latest version for the SafeAreaView
 */
 const getInsets = () => {
   if (Platform.OS === 'android' || Platform.OS === 'web' || Platform.OS === 'windows') {
@@ -56,20 +57,21 @@ const getInsets = () => {
       // iPhone X and iPhone 8 are number 10 but they have different screen (only X has the new one)
       // however we have already taken care of X in the previous condition, so here we consider
       // only numbers >= 11
-      // The only exception is iPhone SE, which has model as 'iPhone SE' for all of them, even though they are new releases
+      // The only exception is iPhone SE, which has model as 'iPhone SE' for all of them,
+      // even though they are new releases
       // that's why we handle them before this condition here
 
       // It's safe to do this here because the string starts with iPhone
       const number = deviceId.split(',')[0].replace('iPhone', '');
 
       // If number is not a number parseInt(number) will return NaN and the if will return false
-      if (parseInt(number) >= 11) {
+      if (parseInt(number, 10) >= 11) {
         return true;
       }
-
-      return false;
     }
-  }
+
+    return false;
+  };
 
   if (isNewIphoneScreen()) {
     return [44, 34];
