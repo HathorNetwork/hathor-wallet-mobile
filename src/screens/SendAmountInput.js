@@ -156,7 +156,8 @@ class SendAmountInput extends React.Component {
                   onAmountUpdate={this.onAmountChange}
                   value={this.state.amount}
                   allowOnlyInteger={this.isNFT()}
-                  style={{ flex: 1 }}
+                  style={{ flex: 1 }}  // we need this so the placeholder doesn't break in android devices
+                                       // after erasing the text https://github.com/facebook/react-native/issues/30666
                 />
                 {IS_MULTI_TOKEN
                   ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />
