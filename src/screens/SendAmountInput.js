@@ -156,6 +156,7 @@ class SendAmountInput extends React.Component {
                   onAmountUpdate={this.onAmountChange}
                   value={this.state.amount}
                   allowOnlyInteger={this.isNFT()}
+                  style={{ flex: 1 }}
                 />
                 {IS_MULTI_TOKEN
                   ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />
