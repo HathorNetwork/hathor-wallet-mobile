@@ -14,6 +14,7 @@ import {
 } from 'react-navigation';
 import { Provider, connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
+import DeviceInfo from 'react-native-device-info';
 
 import hathorLib from '@hathor/wallet-lib';
 import IconTabBar from './icon-font';
@@ -227,6 +228,10 @@ class _AppStackWrapper extends React.Component {
     this.getBiometry();
     AppState.addEventListener('change', this._handleAppStateChange);
     this.updateReduxTokens();
+    // We need the version of the app in the user agent to get some stats from the logs
+    // this method getVersion returns a string in the format <major>.<minor>.<patch>
+    const version = DeviceInfo.getVersion();
+    hathorLib.config.setUserAgent(`Hathor Wallet Mobile / ${version}`);
   }
 
   componentWillUnmount = () => {
