@@ -66,7 +66,6 @@ class AmountTextInput extends React.Component {
 
 const style = StyleSheet.create({
   input: {
-    flex: 1,
     height: 38,
     lineHeight: 38,
     fontSize: 32,
