@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 import { NativeModules } from 'react-native';
-import * as Keychain from 'react-native-keychain';
 import { chunk } from 'lodash';
 import {
   Connection,
@@ -21,7 +20,6 @@ import {
 import { getUniqueId } from 'react-native-device-info';
 import { t } from 'ttag';
 import {
-  KEYCHAIN_USER,
   STORE,
   METADATA_CONCURRENT_DOWNLOAD,
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
@@ -30,6 +28,7 @@ import {
 import { TxHistory } from './models';
 import { FeatureFlags } from './featureFlags';
 import NavigationService from './NavigationService';
+import { setKeychainPin } from './utils';
 
 export const types = {
   PARTIALLY_UPDATE_HISTORY_AND_BALANCE: 'PARTIALLY_UPDATE_HISTORY_AND_BALANCE',
@@ -488,10 +487,7 @@ export const startWallet = (words, pin) => async (dispatch) => {
     }
   });
 
-  Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
-    accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
-    acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
-  });
+  setKeychainPin(pin);
 
   featureFlags.on('wallet-service-enabled', (newUseWalletService) => {
     // We should only force reset the bundle if the user was on
