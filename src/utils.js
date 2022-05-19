@@ -361,6 +361,17 @@ export const guessPin = async (accessData, progressCb) => {
 };
 
 /**
+ * Set the pin on the keychain so the user can use biometry
+ * @params {string} pinin
+ */
+export const setKeychainPin = (pin) => {
+  Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
+    accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
+    acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
+  });
+};
+
+/**
  * @params {string} oldPin
  * @params {string} newPin
  *
@@ -374,10 +385,7 @@ export const changePin = (oldPin, newPin) => {
     newPassword: newPin,
   });
   if (success) {
-    Keychain.setGenericPassword(KEYCHAIN_USER, newPin, {
-      accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
-      acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
-    });
+    setKeychainPin(newPin);
   }
   return success;
 };
