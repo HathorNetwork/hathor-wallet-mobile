@@ -362,7 +362,7 @@ export const guessPin = async (accessData, progressCb) => {
 
 /**
  * Set the pin on the keychain so the user can use biometry
- * @params {string} pinin
+ * @params {string} pin
  */
 export const setKeychainPin = (pin) => {
   Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
