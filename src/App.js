@@ -240,6 +240,7 @@ class _AppStackWrapper extends React.Component {
   componentWillUnmount = () => {
     if (this.appStateChangeEventSub) {
       this.appStateChangeEventSub.remove();
+      this.appStateChangeEventSub = null;
     }
     this.props.resetData();
   }
