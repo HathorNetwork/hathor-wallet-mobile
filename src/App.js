@@ -212,6 +212,9 @@ class _AppStackWrapper extends React.Component {
 
   appState = 'active';
 
+  // Event subscription for app state change
+  appStateChangeEventSub = null;
+
   style = StyleSheet.create({
     auxView: {
       backgroundColor: 'white',
@@ -226,7 +229,7 @@ class _AppStackWrapper extends React.Component {
 
   componentDidMount = () => {
     this.getBiometry();
-    AppState.addEventListener('change', this._handleAppStateChange);
+    this.appStateChangeEventSub = AppState.addEventListener('change', this._handleAppStateChange);
     this.updateReduxTokens();
     // We need the version of the app in the user agent to get some stats from the logs
     // this method getVersion returns a string in the format <major>.<minor>.<patch>
@@ -235,7 +238,10 @@ class _AppStackWrapper extends React.Component {
   }
 
   componentWillUnmount = () => {
-    AppState.removeEventListener('change', this._handleAppStateChange);
+    if (this.appStateChangeEventSub) {
+      this.appStateChangeEventSub.remove();
+      this.appStateChangeEventSub = null;
+    }
     this.props.resetData();
   }
 
