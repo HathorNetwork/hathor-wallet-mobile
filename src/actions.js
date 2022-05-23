@@ -357,7 +357,11 @@ export const startWallet = (words, pin) => async (dispatch) => {
     config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
     config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
 
-    wallet = new HathorWalletServiceWallet(showPinScreenForResult, words, network);
+    wallet = new HathorWalletServiceWallet({
+      requestPassword: showPinScreenForResult,
+      seed: words,
+      network
+    });
   } else {
     const connection = new Connection({
       network: networkName, // app currently connects only to mainnet
