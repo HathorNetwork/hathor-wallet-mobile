@@ -9,9 +9,9 @@ import '../shim';
 
 import React from 'react';
 import { AppState, StyleSheet, View } from 'react-native';
-import {
-  createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer,
-} from 'react-navigation';
+import { createSwitchNavigator, createAppContainer, } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack';
+import { createBottomTabNavigator } from 'react-navigation-tabs';
 import { Provider, connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';

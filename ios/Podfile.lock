@@ -394,6 +394,9 @@ PODS:
     - React-RCTText
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNScreens (3.13.1):
+    - React-Core
+    - React-RCTImage
   - RNSentry (3.4.1):
     - React-Core
     - Sentry (= 7.11.0)
@@ -475,6 +478,7 @@ DEPENDENCIES:
   - RNLocalize (from `../node_modules/react-native-localize`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
+  - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
@@ -583,6 +587,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-permissions"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
+  RNScreens:
+    :path: "../node_modules/react-native-screens"
   RNSentry:
     :path: "../node_modules/@sentry/react-native"
   RNSVG:
@@ -648,6 +654,7 @@ SPEC CHECKSUMS:
   RNLocalize: 414c99a0f6625a58dfee7f5780678d98c4ffabc2
   RNPermissions: 7ad8d93b004e6bc85c89e27a102afcde90e07efa
   RNReanimated: 46cdb89ca59ab7181334f4ed05a70e82ddb36751
+  RNScreens: 40a2cb40a02a609938137a1e0acfbf8fc9eebf19
   RNSentry: fbbdcd7213058e3de5fbaa452b25a06a16b4b382
   RNSVG: 302bfc9905bd8122f08966dc2ce2d07b7b52b9f8
   RNVectorIcons: 7923e585eaeb139b9f4531d25a125a1500162a0b
