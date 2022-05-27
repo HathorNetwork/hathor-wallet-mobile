@@ -53,6 +53,15 @@
     1. Open About and go back.
     1. Click on Register a Token and check whether the camera loads correctly.
     1. Go to Manual Info, type anything and get a Invalid Configuration string.
+    1. Test Biometry (Only close the app on the steps required, this is important)
+        1. Enable biometry (either Fingerprint, FaceID or TouchID depending on the device)
+        1. Send 1 HTR to your own address (it will ask for the biometry instead of pin)
+        1. Change the pin
+        1. Send 1 HTR to your own address (it will ask for the biometry again)
+        1. Close the app and open, it should ask for biometry instead of pin when opening the wallet.
+        1. Send 1 HTR to your own address (it will ask for the biometry again)
+        1. Disable biometry
+        1. Lock wallet and it must require you to type your PIN Code.
 
 1. **Create a new token Tests**
     1. Click on Create a new token.

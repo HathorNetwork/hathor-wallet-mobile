@@ -6,13 +6,14 @@
  */
 
 import hathorLib from '@hathor/wallet-lib';
+import * as Keychain from 'react-native-keychain';
 import CryptoJS from 'crypto-js';
 import React from 'react';
 import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
-import { PRIMARY_COLOR } from './constants';
+import { PRIMARY_COLOR, KEYCHAIN_USER } from './constants';
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
@@ -360,16 +361,31 @@ export const guessPin = async (accessData, progressCb) => {
 };
 
 /**
+ * Set the pin on the keychain so the user can use biometry
+ * @params {string} pin
+ */
+export const setKeychainPin = (pin) => {
+  Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
+    accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
+    acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
+  });
+};
+
+/**
  * @params {string} oldPin
  * @params {string} newPin
  *
  * @return {boolean} Wether the change password was successful
  */
-export const changePin = (oldPin, newPin) => (
-  hathorLib.wallet.changePinAndPassword({
+export const changePin = (oldPin, newPin) => {
+  const success = hathorLib.wallet.changePinAndPassword({
     oldPin,
     newPin,
     oldPassword: oldPin,
     newPassword: newPin,
-  })
-);
+  });
+  if (success) {
+    setKeychainPin(newPin);
+  }
+  return success;
+};

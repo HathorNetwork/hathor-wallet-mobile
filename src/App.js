@@ -9,11 +9,12 @@ import '../shim';
 
 import React from 'react';
 import { AppState, StyleSheet, View } from 'react-native';
-import {
-  createBottomTabNavigator, createStackNavigator, createSwitchNavigator, createAppContainer,
-} from 'react-navigation';
+import { createSwitchNavigator, createAppContainer, } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack';
+import { createBottomTabNavigator } from 'react-navigation-tabs';
 import { Provider, connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
+import DeviceInfo from 'react-native-device-info';
 
 import hathorLib from '@hathor/wallet-lib';
 import IconTabBar from './icon-font';
@@ -211,6 +212,9 @@ class _AppStackWrapper extends React.Component {
 
   appState = 'active';
 
+  // Event subscription for app state change
+  appStateChangeEventSub = null;
+
   style = StyleSheet.create({
     auxView: {
       backgroundColor: 'white',
@@ -225,12 +229,19 @@ class _AppStackWrapper extends React.Component {
 
   componentDidMount = () => {
     this.getBiometry();
-    AppState.addEventListener('change', this._handleAppStateChange);
+    this.appStateChangeEventSub = AppState.addEventListener('change', this._handleAppStateChange);
     this.updateReduxTokens();
+    // We need the version of the app in the user agent to get some stats from the logs
+    // this method getVersion returns a string in the format <major>.<minor>.<patch>
+    const version = DeviceInfo.getVersion();
+    hathorLib.config.setUserAgent(`Hathor Wallet Mobile / ${version}`);
   }
 
   componentWillUnmount = () => {
-    AppState.removeEventListener('change', this._handleAppStateChange);
+    if (this.appStateChangeEventSub) {
+      this.appStateChangeEventSub.remove();
+      this.appStateChangeEventSub = null;
+    }
     this.props.resetData();
   }
 
@@ -247,15 +258,12 @@ class _AppStackWrapper extends React.Component {
     Keychain.getSupportedBiometryType().then((biometryType) => {
       switch (biometryType) {
         case Keychain.BIOMETRY_TYPE.TOUCH_ID:
+        case Keychain.BIOMETRY_TYPE.FINGERPRINT:
+        case Keychain.BIOMETRY_TYPE.FACE_ID:
           setSupportedBiometry(biometryType);
           break;
         default:
           setSupportedBiometry(null);
-        // XXX Android Fingerprint is still not supported in the react native lib we're using.
-        // https://github.com/oblador/react-native-keychain/pull/195
-        // case Keychain.BIOMETRY_TYPE.FINGERPRINT:
-        // XXX iOS FaceID also not working
-        // case Keychain.BIOMETRY_TYPE.FACE_ID:
       }
     });
   }

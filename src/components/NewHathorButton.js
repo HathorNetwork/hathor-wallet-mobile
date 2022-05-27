@@ -78,7 +78,6 @@ const style = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.5)',
   },
   touchable: {
-    padding: 16,
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
