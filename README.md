@@ -4,8 +4,6 @@
 
 `npm install`
 
-`npm run node-hack`
-
 ### Podfile install for iOS
 
 #### Install cocoapods
@@ -62,6 +60,8 @@ Then build the app for Android. Make sure you have a device ready, be it on Andr
 
 If you need to open the Dev Menu on Android Studio Emulator, use `Ctrl + M` or run `adb shell input keyevent 82` in a terminal.
 
+Obs: To run on your device some configuration may need to be done (see [running on device](https://reactnative.dev/docs/running-on-device))
+
 ### Run linter
 
 `npm run lint`
@@ -75,14 +75,6 @@ Run `npm run locale-update-pot` to update the pot file (`locale/texts.pot`).
 Run `msgmerge pt-br/texts.po texts.pot -o pt-br/texts.po` to merge a pot file with a po file.
 
 Finally, run `make i18n` to compile all po files to json files.
-
-## Troubleshooting
-
-### Cannot compile for Android
-
-Try to run `npx jetifier` to fix the issue.
-
-This is a known problem, reported in this issue: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/135
 
 ## License
 
