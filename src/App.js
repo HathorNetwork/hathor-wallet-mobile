@@ -234,6 +234,8 @@ class _AppStackWrapper extends React.Component {
     // We need the version of the app in the user agent to get some stats from the logs
     // this method getVersion returns a string in the format <major>.<minor>.<patch>
     const version = DeviceInfo.getVersion();
+    // We use this string to parse the version from user agent
+    // in some of our services, so changing this might break another service
     hathorLib.config.setUserAgent(`Hathor Wallet Mobile / ${version}`);
   }
 
