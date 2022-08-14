@@ -98,6 +98,10 @@ msgstr "Endereço inválido"
 msgid "ABOUT"
 msgstr "SOBRE"
 
+#: src/screens/SendAddressInput.js:87
+msgid "Paste"
+msgstr "Colar"
+
 #: src/screens/About.js:68
 msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr ""

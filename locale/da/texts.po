@@ -59,6 +59,10 @@ msgstr "Modtaget ${ symbol }"
 msgid "Sent ${ symbol }"
 msgstr "Sendt ${ symbol }"
 
+#: src/screens/SendAddressInput.js:87
+msgid "Paste"
+msgstr "Paste"
+
 #: src/models.js:31
 #, javascript-format
 msgid "You sent ${ symbol } to yourself"

@@ -90,13 +90,13 @@ const DashboardStack = createStackNavigator(
 
 const SendStack = createStackNavigator(
   {
-    SendScanQRCode,
     SendAddressInput,
+    SendScanQRCode,    
     SendAmountInput,
     SendConfirmScreen,
   },
   {
-    initialRouteName: 'SendScanQRCode',
+    initialRouteName: 'SendAddressInput',
     headerMode: 'none',
   },
 );

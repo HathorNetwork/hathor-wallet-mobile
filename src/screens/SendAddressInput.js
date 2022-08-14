@@ -6,14 +6,16 @@
  */
 
 import React from 'react';
-import { KeyboardAvoidingView, SafeAreaView, View } from 'react-native';
+import { KeyboardAvoidingView, SafeAreaView, View, Clipboard } from 'react-native';
 import { t } from 'ttag';
 
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
+import SimpleButton from '../components/SimpleButton';
 import HathorHeader from '../components/HathorHeader';
 import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
+import qrcodeIcon from '../assets/icons/qrcode.png';
 
 
 class SendAddressInput extends React.Component {
@@ -36,6 +38,15 @@ class SendAddressInput extends React.Component {
     this.setState({ address: text, error: null });
   }
 
+  onPasteAddress = async () => {
+    let pasteText = await Clipboard.getString();
+    if (this.state.address.length === 0) {
+      this.state.address = '';
+    }
+    pasteText = this.state.address + pasteText;
+    this.setState({ address: pasteText, error: null });
+  }
+
   onButtonPress = () => {
     const validation = validateAddress(this.state.address);
     if (validation.isValid) {
@@ -46,22 +57,39 @@ class SendAddressInput extends React.Component {
   }
 
   render() {
+
+    const QRCodeButton = () => (
+      <SimpleButton
+        withBorder
+        icon={qrcodeIcon}
+        onPress={() => this.props.navigation.navigate('SendScanQRCode')}
+      />
+    );
+
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
           withBorder
           title={t`SEND`}
-          onBackPress={() => this.props.navigation.goBack()}
+          onBackPress={() => this.props.navigation.navigate('Dashboard')}
+          rightElement={QRCodeButton()}
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row', padding: 16, width: '100%' }}>
             <SimpleInput
               label={t`Address to send`}
               autoFocus
               onChangeText={this.onAddressChange}
               error={this.state.error}
               value={this.state.address}
+              containerStyle={{ flex: 1 }}
             />
+            <SimpleButton
+                title={t`Paste`}
+                onPress={this.onPasteAddress}
+              />
+            </View>
             <NewHathorButton
               title={t`Next`}
               disabled={!this.state.address}
