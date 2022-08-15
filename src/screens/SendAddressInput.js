@@ -76,7 +76,7 @@ class SendAddressInput extends React.Component {
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', padding: 16, width: '100%' }}>
+          <View style={{ flexDirection: 'row', padding: 16, width: '100%', height:'15%' }}>
             <SimpleInput
               label={t`Address to send`}
               autoFocus
@@ -88,6 +88,7 @@ class SendAddressInput extends React.Component {
             <SimpleButton
                 title={t`Paste`}
                 onPress={this.onPasteAddress}
+                   
               />
             </View>
             <NewHathorButton
