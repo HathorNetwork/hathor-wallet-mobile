@@ -40,9 +40,7 @@ class SendAddressInput extends React.Component {
 
   onPasteAddress = async () => {
     let pasteText = await Clipboard.getString();
-    if (this.state.address.length === 0) {
-      this.state.address = '';
-    }
+
     pasteText = this.state.address + pasteText;
     this.setState({ address: pasteText, error: null });
   }
@@ -76,19 +74,19 @@ class SendAddressInput extends React.Component {
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', padding: 16, width: '100%', height:'15%' }}>
-            <SimpleInput
-              label={t`Address to send`}
-              autoFocus
-              onChangeText={this.onAddressChange}
-              error={this.state.error}
-              value={this.state.address}
-              containerStyle={{ flex: 1 }}
-            />
-            <SimpleButton
+            <View style={{ flexDirection: 'row', padding: 15, width: '100%', height: '15%', justifyContent: 'center' }}>
+              <SimpleInput
+                label={t`Address to send`}
+                autoFocus
+                onChangeText={this.onAddressChange}
+                error={this.state.error}
+                value={this.state.address}
+                containerStyle={{ flex: 1 }}
+              />
+              <SimpleButton
                 title={t`Paste`}
                 onPress={this.onPasteAddress}
-                   
+                containerStyle={{ top: 8 }}
               />
             </View>
             <NewHathorButton
