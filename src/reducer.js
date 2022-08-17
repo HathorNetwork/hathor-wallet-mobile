@@ -6,10 +6,12 @@
  */
 
 import { createStore, applyMiddleware } from 'redux';
+import createSagaMiddleware from 'redux-saga';
 import thunk from 'redux-thunk';
 import hathorLib from '@hathor/wallet-lib';
 import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
 import { types } from './actions';
+import rootSagas from './sagas';
 
 /**
  * tokensBalance {Object} stores the balance for each
@@ -66,6 +68,7 @@ const initialState = {
   tokenMetadata: {},
   metadataLoaded: false,
   uniqueDeviceId: null,
+  tokenLoadingState: {},
   // If recoveringPin is set, the app will display
   // the RecoverPin screen instead of the default navigator
   recoveringPin: false,
@@ -142,6 +145,12 @@ const reducer = (state = initialState, action) => {
       return partiallyUpdateHistoryAndBalance(state, action);
     case types.SET_IS_SHOWING_PIN_SCREEN:
       return onSetIsShowingPinScreen(state, action);
+    case types.TOKEN_FETCH_REQUESTED:
+      return onFetchTokenRequested(state, action);
+    case types.TOKEN_FETCH_SUCCEEDED:
+      return onFetchTokenSucceeded(state, action);
+    case types.TOKEN_FETCH_FAILED:
+      return onFetchTokenFailed(state, action);
     default:
       return state;
   }
@@ -467,4 +476,45 @@ export const partiallyUpdateHistoryAndBalance = (state, action) => {
   };
 };
 
-export const store = createStore(reducer, applyMiddleware(thunk));
+export const onFetchTokenRequested = (state, action) => {
+  const tokenId = action.payload;
+
+  return {
+    ...state,
+    tokenLoadingState: {
+      ...state.tokenLoadingState,
+      [tokenId]: 'loading',
+    },
+  };
+};
+
+export const onFetchTokenSucceeded = (state, action) => {
+  const tokenId = action.payload;
+
+  return {
+    ...state,
+    tokenLoadingState: {
+      ...state.tokenLoadingState,
+      [tokenId]: 'ready',
+    },
+  };
+};
+
+export const onFetchTokenFailed = (state, action) => {
+  const tokenId = action.payload;
+
+  return {
+    ...state,
+    tokenLoadingState: {
+      ...state.tokenLoadingState,
+      [tokenId]: 'failed',
+    },
+  };
+};
+
+const saga = createSagaMiddleware();
+const middlewares = [saga, thunk];
+
+export const store = createStore(reducer, applyMiddleware(...middlewares));
+
+saga.run(rootSagas);

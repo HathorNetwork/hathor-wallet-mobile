@@ -67,6 +67,9 @@ export const types = {
   TOKEN_METADATA_LOADED: 'TOKEN_METADATA_LOADED',
   SET_UNIQUE_DEVICE_ID: 'SET_UNIQUE_DEVICE_ID',
   SET_IS_SHOWING_PIN_SCREEN: 'SET_IS_SHOWING_PIN_SCREEN',
+  TOKEN_FETCH_REQUESTED: 'TOKEN_FETCH_REQUESTED',
+  TOKEN_FETCH_SUCCEEDED: 'TOKEN_FETCH_SUCCEEDED',
+  TOKEN_FETCH_FAILED: 'TOKEN_FETCH_FAILED',
 };
 
 /**
@@ -622,4 +625,16 @@ export const setRecoveringPin = (data) => (
  */
 export const setTempPin = (data) => (
   { type: types.SET_TEMP_PIN, payload: data }
+);
+
+export const fetchTokenRequested = (data) => (
+  { type: types.TOKEN_FETCH_REQUESTED, payload: data }
+);
+
+export const fetchTokenSucceeded = (data) => (
+  { type: types.TOKEN_FETCH_SUCCEEDED, payload: data }
+);
+
+export const fetchTokenFailed = (data) => (
+  { type: types.TOKEN_FETCH_FAILED, payload: data }
 );

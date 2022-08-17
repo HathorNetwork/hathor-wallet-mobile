@@ -14,7 +14,7 @@ import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
 import SimpleButton from '../components/SimpleButton';
 import OfflineBar from '../components/OfflineBar';
-import { updateSelectedToken } from '../actions';
+import { updateSelectedToken, fetchTokenRequested} from '../actions';
 
 
 /**
@@ -28,14 +28,24 @@ const mapStateToProps = (state) => ({
   tokensBalance: state.tokensBalance,
   selectedToken: state.selectedToken,
   tokenMetadata: state.tokenMetadata,
+  tokenLoadingState: state.tokenLoadingState,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   updateSelectedToken: (token) => dispatch(updateSelectedToken(token)),
+  fetchToken: (token) => dispatch(fetchTokenRequested(token.uid)),
 });
 
 class Dashboard extends React.Component {
   static navigatorStyle = { tabBarVisible: false }
+
+  componentDidMount = () => {
+    // Trigger token balance download
+    this.props.tokens.forEach((token) => {
+      console.log('Will fetch:', token);
+      this.props.fetchToken(token);
+    });
+  }
 
   onItemPress = (item) => {
     this.props.updateSelectedToken(item);
@@ -60,11 +70,12 @@ class Dashboard extends React.Component {
     return (
       <View style={{ flex: 1 }}>
         <TokenSelect
-          header=<Header />
+          header={<Header />}
           renderArrow
           onItemPress={this.onItemPress}
           selectedToken={this.props.selectedToken}
           tokens={this.props.tokens}
+          tokensLoadingState={this.props.tokenLoadingState}
           tokensBalance={this.props.tokensBalance}
           tokenMetadata={this.props.tokenMetadata}
         />

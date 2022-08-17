@@ -13,6 +13,8 @@ import {
 import DeviceInfo from 'react-native-device-info';
 
 import chevronRight from '../assets/icons/chevron-right.png';
+import icCloseActive from '../assets/icons/icCloseActive.png';
+import Spinner from './Spinner';
 import { PRIMARY_COLOR } from '../constants';
 import { getLightBackground, renderValue, isTokenNFT } from '../utils';
 
@@ -99,6 +101,11 @@ const TokenSelect = (props) => {
     const balance = item.uid in props.tokensBalance
       ? props.tokensBalance[item.uid].available : 0;
 
+    const tokensLoadingState = props.tokensLoadingState || {};
+    const tokenState = Object.prototype.hasOwnProperty.call(tokensLoadingState, item.uid)
+      ? props.tokensLoadingState[item.uid]
+      : 'loading';
+
     return (
       <TouchableHighlight
         style={index === 0 ? styles.firstItemWrapper : null}
@@ -118,8 +125,17 @@ const TokenSelect = (props) => {
               {' '}
               {item.symbol}
             </Text>
-            {props.renderArrow
-              && <Image style={{ marginLeft: 8 }} source={chevronRight} width={24} height={24} />}
+            {props.renderArrow && tokenState === 'ready' && (
+              <Image style={{ marginLeft: 8 }} source={chevronRight} width={24} height={24} />
+            )}
+
+            {props.renderArrow && tokenState === 'failed' && (
+              <Image style={{ marginLeft: 8 }} source={icCloseActive} width={24} height={24} />
+            )}
+
+            {props.renderArrow && tokenState === 'loading' && (
+              <Spinner style={{ marginLeft: 8 }} size={24} animating />
+            )}
           </View>
         </View>
       </TouchableHighlight>
