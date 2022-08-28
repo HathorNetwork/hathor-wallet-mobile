@@ -121,21 +121,23 @@ const TokenSelect = (props) => {
           </View>
           <View style={styles.itemLeftWrapper}>
             <Text style={[styles.text, styles.rightText]}>
-              {renderValue(balance, isTokenNFT(item.uid, props.tokenMetadata))}
+              {tokenState === 'ready' && (
+                renderValue(balance, isTokenNFT(item.uid, props.tokenMetadata))
+              )}
+
+              {props.renderArrow && tokenState === 'failed' && (
+                <Image style={{ marginLeft: 8 }} source={icCloseActive} width={24} height={24} />
+              )}
+
+              {props.renderArrow && tokenState === 'loading' && (
+                <Spinner size={14} animating />
+              )}
+
               {' '}
               {item.symbol}
             </Text>
-            {props.renderArrow && tokenState === 'ready' && (
-              <Image style={{ marginLeft: 8 }} source={chevronRight} width={24} height={24} />
-            )}
-
-            {props.renderArrow && tokenState === 'failed' && (
-              <Image style={{ marginLeft: 8 }} source={icCloseActive} width={24} height={24} />
-            )}
-
-            {props.renderArrow && tokenState === 'loading' && (
-              <Spinner style={{ marginLeft: 8 }} size={24} animating />
-            )}
+            {props.renderArrow
+              && <Image style={{ marginLeft: 8 }} source={chevronRight} width={24} height={24} />}
           </View>
         </View>
       </TouchableHighlight>
