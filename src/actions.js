@@ -324,8 +324,6 @@ export const reloadHistory = (wallet) => async (dispatch) => {
   }
 };
 
-export const startWallet = (words, pin) => async (dispatch) => {};
-
 /**
  * After a new transaction arrives in the websocket we must
  * fetch the new balance for each token on it and use

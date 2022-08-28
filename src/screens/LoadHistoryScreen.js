@@ -12,7 +12,7 @@ import {
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import { startWallet, reloadHistory, clearInitWallet, resetLoadedData } from '../actions';
+import { reloadHistory, clearInitWallet, resetLoadedData } from '../actions';
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';
@@ -39,7 +39,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   startWallet:
     (words, pin) => {
-      dispatch(startWallet(words, pin));
       dispatch({
         type: 'START_WALLET_REQUESTED',
         payload: { words, pin },
