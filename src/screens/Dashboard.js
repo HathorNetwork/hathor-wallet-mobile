@@ -26,6 +26,7 @@ import { updateSelectedToken, fetchTokenRequested} from '../actions';
 const mapStateToProps = (state) => ({
   tokens: state.tokens,
   tokensBalance: state.tokensBalance,
+  tokensHistory: state.tokensHistory,
   selectedToken: state.selectedToken,
   tokenMetadata: state.tokenMetadata,
   tokenLoadingState: state.tokenLoadingState,
@@ -38,14 +39,6 @@ const mapDispatchToProps = (dispatch) => ({
 
 class Dashboard extends React.Component {
   static navigatorStyle = { tabBarVisible: false }
-
-  componentDidMount = () => {
-    // Trigger token balance download
-    this.props.tokens.forEach((token) => {
-      console.log('Will fetch:', token);
-      this.props.fetchToken(token);
-    });
-  }
 
   onItemPress = (item) => {
     this.props.updateSelectedToken(item);
