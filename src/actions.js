@@ -67,9 +67,11 @@ export const types = {
   TOKEN_METADATA_LOADED: 'TOKEN_METADATA_LOADED',
   SET_UNIQUE_DEVICE_ID: 'SET_UNIQUE_DEVICE_ID',
   SET_IS_SHOWING_PIN_SCREEN: 'SET_IS_SHOWING_PIN_SCREEN',
-  TOKEN_FETCH_REQUESTED: 'TOKEN_FETCH_REQUESTED',
-  TOKEN_FETCH_SUCCEEDED: 'TOKEN_FETCH_SUCCEEDED',
-  TOKEN_FETCH_FAILED: 'TOKEN_FETCH_FAILED',
+  TOKEN_FETCH_BALANCE_REQUESTED: 'TOKEN_FETCH_BALANCE_REQUESTED',
+  TOKEN_FETCH_BALANCE_SUCCESS: 'TOKEN_FETCH_BALANCE_SUCCESS',
+  TOKEN_FETCH_BALANCE_FAILED: 'TOKEN_FETCH_BALANCE_FAILED',
+  START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
+  START_WALLET_FAILED: 'START_WALLET_FAILED',
 };
 
 /**
@@ -322,189 +324,7 @@ export const reloadHistory = (wallet) => async (dispatch) => {
   }
 };
 
-export const startWallet = (words, pin) => async (dispatch) => {
-  // If we've lost redux data, we could not properly stop the wallet object
-  // then we don't know if we've cleaned up the wallet data in the storage
-  walletUtil.cleanLoadedData();
-
-  const networkName = 'mainnet';
-  const uniqueDeviceId = await getUniqueId();
-  const featureFlags = new FeatureFlags(uniqueDeviceId, networkName);
-  const useWalletService = await featureFlags.shouldUseWalletService();
-
-  // Set useWalletService on the redux store
-  dispatch(setUseWalletService(useWalletService));
-
-  const showPinScreenForResult = async () => new Promise((resolve) => {
-    const params = {
-      cb: (_pin) => {
-        dispatch(setIsShowingPinScreen(false));
-        resolve(_pin);
-      },
-      canCancel: false,
-      screenText: t`Enter your 6-digit pin to authorize operation`,
-      biometryText: t`Authorize operation`,
-    };
-
-    NavigationService.navigate('PinScreen', params);
-
-    // We should set the global isShowingPinScreen
-    dispatch(setIsShowingPinScreen(true));
-  });
-
-  let wallet;
-  if (useWalletService) {
-    const network = new Network(networkName);
-
-    // Set urls for wallet service
-    config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
-    config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
-
-    wallet = new HathorWalletServiceWallet({
-      requestPassword: showPinScreenForResult,
-      seed: words,
-      network
-    });
-  } else {
-    const connection = new Connection({
-      network: networkName, // app currently connects only to mainnet
-      servers: ['https://mobile.wallet.hathor.network/v1a/'],
-    });
-
-    const beforeReloadCallback = () => {
-      dispatch(fetchHistoryBegin());
-    };
-
-    const walletConfig = {
-      seed: words,
-      store: STORE,
-      connection,
-      beforeReloadCallback
-    };
-
-    wallet = new HathorWallet(walletConfig);
-  }
-
-  dispatch(setWallet(wallet));
-
-  // Handle token metadata
-  // 1. Set metadata loaded to false
-  dispatch(tokenMetadataLoaded(false));
-
-  // 2. Fetch registered tokens metadata
-  const registeredTokens = tokensUtils.getTokens().map((token) => token.uid);
-  fetchTokensMetadata(registeredTokens, networkName).then((metadatas) => {
-    dispatch(tokenMetadataUpdated(metadatas));
-  });
-
-  dispatch(fetchHistoryBegin());
-  dispatch(setUniqueDeviceId(uniqueDeviceId));
-
-  wallet.on('state', (state) => {
-    if (state === HathorWallet.ERROR) {
-      // ERROR
-      dispatch(fetchHistoryError());
-    } else if (wallet.isReady()) {
-      // READY
-      fetchHistoryAndBalance(wallet)
-        .then((data) => {
-          dispatch(fetchHistorySuccess(data));
-        }).catch(() => dispatch(fetchHistoryError()));
-    }
-  });
-
-  const handlePartialUpdate = async (updatedBalanceMap) => {
-    const tokens = Object.keys(updatedBalanceMap);
-    const tokensHistory = {};
-    const tokensBalance = {};
-
-    for (const token of tokens) {
-      /* eslint-disable no-await-in-loop */
-      const balance = await wallet.getBalance(token);
-      const tokenBalance = balance[0].balance;
-
-      tokensBalance[token] = {
-        available: tokenBalance.unlocked,
-        locked: tokenBalance.locked,
-      };
-      const history = await wallet.getTxHistory({ token_id: token });
-      tokensHistory[token] = history.map((element) => mapTokenHistory(element, token));
-      /* eslint-enable no-await-in-loop */
-    }
-
-    dispatch(partiallyUpdateHistoryAndBalance({ tokensHistory, tokensBalance }));
-  };
-
-  // Setup listeners before starting the wallet so we don't lose events
-
-  wallet.on('new-tx', (tx) => {
-    fetchNewTxTokenBalance(wallet, tx).then(async (updatedBalanceMap) => {
-      if (updatedBalanceMap) {
-        dispatch(newTx(tx, updatedBalanceMap));
-        handlePartialUpdate(updatedBalanceMap);
-      }
-    });
-  });
-
-  wallet.on('update-tx', (tx) => {
-    fetchNewTxTokenBalance(wallet, tx).then((updatedBalanceMap) => {
-      if (updatedBalanceMap) {
-        handlePartialUpdate(updatedBalanceMap);
-      }
-    });
-  });
-
-  wallet.conn.on('best-block-update', (height) => {
-    fetchNewHTRBalance(wallet).then((data) => {
-      if (data) {
-        dispatch(updateHeight(height, data));
-      }
-    });
-  });
-
-  wallet.conn.on('state', (state) => {
-    dispatch(setIsOnline(state === Connection.CONNECTED));
-  });
-
-  wallet.conn.on('wallet-load-partial-update', (data) => {
-    const transactions = Object.keys(data.historyTransactions).length;
-    const addresses = data.addressesFound;
-    dispatch(updateLoadedData({ transactions, addresses }));
-  });
-
-  // This event is only available on the WalletService facade as reconnections
-  // are being handled on the lib on the old facade
-  wallet.on('reload-data', () => dispatch(reloadHistory(wallet)));
-
-  wallet.start({ pinCode: pin, password: pin }).then((serverInfo) => {
-    walletUtil.storePasswordHash(pin);
-    walletUtil.storeEncryptedWords(words, pin);
-
-    dispatch(setServerInfo({ version: null, network: networkName }));
-  }).catch(async () => {
-    if (useWalletService) {
-      // Wallet Service start wallet will fail if the status returned from
-      // the service is 'error' or if the start wallet request failed.
-      // We should fallback to the old facade by storing the flag to ignore
-      // the feature flag
-      await featureFlags.ignoreWalletServiceFlag();
-
-      // Restart the whole bundle to make sure we clear all events
-      NativeModules.HTRReloadBundleModule.restart();
-    }
-  });
-
-  setKeychainPin(pin);
-
-  featureFlags.on('wallet-service-enabled', (newUseWalletService) => {
-    // We should only force reset the bundle if the user was on
-    // the wallet service facade and the newflag sends him to
-    // the old facade
-    if (useWalletService && useWalletService !== newUseWalletService) {
-      NativeModules.HTRReloadBundleModule.restart();
-    }
-  });
-};
+export const startWallet = (words, pin) => async (dispatch) => {};
 
 /**
  * After a new transaction arrives in the websocket we must
@@ -625,16 +445,4 @@ export const setRecoveringPin = (data) => (
  */
 export const setTempPin = (data) => (
   { type: types.SET_TEMP_PIN, payload: data }
-);
-
-export const fetchTokenRequested = (data) => (
-  { type: types.TOKEN_FETCH_REQUESTED, payload: data }
-);
-
-export const fetchTokenSucceeded = (data) => (
-  { type: types.TOKEN_FETCH_SUCCEEDED, payload: data }
-);
-
-export const fetchTokenFailed = (data) => (
-  { type: types.TOKEN_FETCH_FAILED, payload: data }
 );

@@ -77,6 +77,8 @@ const initialState = {
   // screen
   tempPin: null,
   isShowingPinScreen: false,
+  walletStartState: 'loading',
+  walletStartError: false,
 };
 
 const reducer = (state = initialState, action) => {
@@ -145,12 +147,16 @@ const reducer = (state = initialState, action) => {
       return partiallyUpdateHistoryAndBalance(state, action);
     case types.SET_IS_SHOWING_PIN_SCREEN:
       return onSetIsShowingPinScreen(state, action);
-    case types.TOKEN_FETCH_REQUESTED:
-      return onFetchTokenRequested(state, action);
-    case types.TOKEN_FETCH_SUCCEEDED:
-      return onFetchTokenSucceeded(state, action);
-    case types.TOKEN_FETCH_FAILED:
-      return onFetchTokenFailed(state, action);
+    case types.TOKEN_FETCH_BALANCE_REQUESTED:
+      return onTokenFetchBalanceRequested(state, action);
+    case types.TOKEN_FETCH_BALANCE_SUCCESS:
+      return onTokenFetchBalanceSuccess(state, action);
+    case types.TOKEN_FETCH_BALANCE_FAILED:
+      return onTokenFetchBalanceFailed(state, action);
+    case types.START_WALLET_SUCCESS:
+      return onStartWalletSuccess(state);
+    case types.START_WALLET_FAILED:
+      return onStartWalletFailed(state);
     default:
       return state;
   }
@@ -291,11 +297,11 @@ const onFetchHistoryBegin = (state, action) => ({
  * Got history. Update history and balance for each token.
  */
 const onFetchHistorySuccess = (state, action) => {
-  const { tokensHistory, tokensBalance } = action.payload;
+  // const { tokensHistory, tokensBalance } = action.payload;
   return {
     ...state,
-    tokensHistory,
-    tokensBalance,
+    tokensHistory: {},
+    tokensBalance: {},
     loadHistoryStatus: {
       active: false,
       error: false,
@@ -476,7 +482,7 @@ export const partiallyUpdateHistoryAndBalance = (state, action) => {
   };
 };
 
-export const onFetchTokenRequested = (state, action) => {
+export const onTokenFetchBalanceRequested = (state, action) => {
   const tokenId = action.payload;
 
   return {
@@ -488,7 +494,7 @@ export const onFetchTokenRequested = (state, action) => {
   };
 };
 
-export const onFetchTokenSucceeded = (state, action) => {
+export const onTokenFetchBalanceSuccess = (state, action) => {
   const tokenId = action.payload;
 
   return {
@@ -500,7 +506,7 @@ export const onFetchTokenSucceeded = (state, action) => {
   };
 };
 
-export const onFetchTokenFailed = (state, action) => {
+export const onTokenFetchBalanceFailed = (state, action) => {
   const tokenId = action.payload;
 
   return {
@@ -511,6 +517,18 @@ export const onFetchTokenFailed = (state, action) => {
     },
   };
 };
+
+export const onStartWalletFailed = (state) => ({
+  ...state,
+  walletStartError: true,
+  walletStartState: 'error',
+});
+
+export const onStartWalletSuccess = (state) => ({
+  ...state,
+  walletStartError: false,
+  walletStartState: 'ready',
+});
 
 const saga = createSagaMiddleware();
 const middlewares = [saga, thunk];
