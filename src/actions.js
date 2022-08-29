@@ -4,31 +4,18 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-import { NativeModules } from 'react-native';
 import { chunk } from 'lodash';
 import {
-  Connection,
-  HathorWallet,
-  HathorWalletServiceWallet,
-  Network,
   wallet as walletUtil,
   tokens as tokensUtils,
   constants as hathorLibConstants,
   metadataApi,
-  config,
 } from '@hathor/wallet-lib';
-import { getUniqueId } from 'react-native-device-info';
-import { t } from 'ttag';
 import {
-  STORE,
   METADATA_CONCURRENT_DOWNLOAD,
-  WALLET_SERVICE_MAINNET_BASE_WS_URL,
-  WALLET_SERVICE_MAINNET_BASE_URL,
 } from './constants';
 import { TxHistory } from './models';
 import { FeatureFlags } from './featureFlags';
-import NavigationService from './NavigationService';
-import { setKeychainPin } from './utils';
 
 export const types = {
   PARTIALLY_UPDATE_HISTORY_AND_BALANCE: 'PARTIALLY_UPDATE_HISTORY_AND_BALANCE',
