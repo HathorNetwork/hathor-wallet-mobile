@@ -35,11 +35,11 @@ import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
   tokenInvalidateHistory,
-  tokenInvalidateBalance,
   setUseWalletService,
   startWalletSuccess,
   startWalletFailed,
   setUniqueDeviceId,
+  updateLoadedData,
   walletStateReady,
   walletStateError,
   setIsOnline,
@@ -305,9 +305,22 @@ export function* setupWalletListeners(wallet) {
   }
 }
 
-export function* onWalletConnStateUpdate(action) {
-  const state = action.payload;
-  const isOnline = state === Connection.CONNECTED;
+export function* loadPartialUpdate({ payload }) {
+  const transactions = Object.keys(payload.historyTransactions).length;
+  const addresses = payload.addressesFound;
+  yield put(updateLoadedData({ transactions, addresses }));
+}
+
+export function* bestBlockUpdate({ payload }) {
+  const currentHeight = yield select((state) => state.height);
+
+  if (currentHeight !== payload) {
+    yield put(tokenFetchBalanceRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
+  }
+}
+
+export function* onWalletConnStateUpdate({ payload }) {
+  const isOnline = payload === Connection.CONNECTED;
 
   yield put(setIsOnline(isOnline));
 }
@@ -317,5 +330,7 @@ export function* saga() {
     takeLatest('START_WALLET_REQUESTED', startWallet),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeEvery('WALLET_NEW_TX', handleNewTx),
+    takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
+    takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
   ]);
 }

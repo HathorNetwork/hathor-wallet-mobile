@@ -118,8 +118,6 @@ const reducer = (state = initialState, action) => {
       return onSetInitWallet(state, action);
     case types.CLEAR_INIT_WALLET:
       return onSetInitWallet(state, action);
-    case types.UPDATE_HEIGHT:
-      return onUpdateHeight(state, action);
     case types.SET_ERROR_MODAL:
       return onSetErrorModal(state, action);
     case types.SET_WALLET:
@@ -168,6 +166,8 @@ const reducer = (state = initialState, action) => {
       return onStartWalletSuccess(state);
     case types.START_WALLET_FAILED:
       return onStartWalletFailed(state);
+    case types.WALLET_BEST_BLOCK_UPDATE:
+      return onWalletBestBlockUpdate(state, action);
     default:
       return state;
   }
@@ -367,26 +367,6 @@ const onSetTempPin = (state, action) => ({
   ...state,
   tempPin: action.payload,
 });
-
-/**
- * Update height value on redux
- * If value is different from last value we also update HTR balance
- */
-const onUpdateHeight = (state, action) => {
-  if (action.payload.height !== state.height) {
-    const tokensBalance = {};
-    const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
-    tokensBalance[uid] = action.payload.htrBalance;
-    const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
-    return {
-      ...state,
-      tokensBalance: newTokensBalance,
-      height: action.payload.height,
-    };
-  }
-
-  return state;
-};
 
 const onSetWallet = (state, action) => {
   if (state.wallet && state.wallet.state !== hathorLib.HathorWallet.CLOSED) {
@@ -624,6 +604,15 @@ export const onTokenInvalidateHistory = (state, action) => {
         status: 'invalidated',
       },
     },
+  };
+};
+
+export const onWalletBestBlockUpdate = (state, action) => {
+  const { data } = action;
+
+  return {
+    ...state,
+    height: data,
   };
 };
 
