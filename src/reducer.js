@@ -491,12 +491,17 @@ export const partiallyUpdateHistoryAndBalance = (state, action) => {
 
 export const onTokenFetchBalanceRequested = (state, action) => {
   const { tokenId } = action;
+  const oldState = get(state.tokensBalance, tokenId, {});
 
   return {
     ...state,
-    tokenLoadingState: {
-      ...state.tokenLoadingState,
-      [tokenId]: 'loading',
+    tokensBalance: {
+      ...state.tokensBalance,
+      [tokenId]: {
+        ...oldState,
+        status: 'loading',
+        oldStatus: oldState.status,
+      },
     },
   };
 };

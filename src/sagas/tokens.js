@@ -29,10 +29,20 @@ const mapTokenHistory = (element, token) => {
 
 
 function* fetchTokenBalance(action) {
-  const { tokenId } = action;
+  const { tokenId, force } = action;
 
   try {
     const wallet = yield select((state) => state.wallet);
+    const tokenBalance = yield select((state) => get(state.tokensBalance, tokenId));
+    if (!force && tokenBalance && tokenBalance.oldStatus === 'ready') {
+      console.log('Skipping download as we already have the balance data');
+      // The data is already loaded, we should dispatch success
+      yield put(tokenFetchBalanceSuccess(tokenId, tokenBalance.data));
+      return;
+    }
+
+    yield delay(4500);
+
     const [token] = yield call(wallet.getBalance.bind(wallet), tokenId);
     const balance = {
       available: token.balance.unlocked,
@@ -47,16 +57,16 @@ function* fetchTokenBalance(action) {
 }
 
 function* fetchTokenHistory(action) {
-  const { tokenId } = action;
+  const { tokenId, force } = action;
 
   try {
     const wallet = yield select((state) => state.wallet);
-    const tokensHistory = yield select((state) => state.tokensHistory);
-    const tokenHistory = get(tokensHistory, tokenId);
+    const tokenHistory = yield select((state) => get(state.tokensHistory, tokenId));
 
-    if (tokenHistory && tokenHistory.oldStatus === 'ready') {
+    if (!force && tokenHistory && tokenHistory.oldStatus === 'ready') {
       // The data is already loaded, we should dispatch success
-      yield put(tokenFetchHistorySuccess(tokenId, data));
+      yield put(tokenFetchHistorySuccess(tokenId, tokenHistory.data));
+      return;
     }
 
     yield delay(1500);

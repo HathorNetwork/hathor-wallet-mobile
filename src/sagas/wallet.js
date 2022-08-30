@@ -265,16 +265,13 @@ export function* handleNewTx(action) {
     return;
   }
 
-  const newTxTokenBalance = yield call(fetchNewTxTokenBalance, wallet, tx);
+  // find tokens affected by the transaction
+  const balances = yield call(wallet.getTxBalance.bind(wallet), tx);
 
-  for (const tokenId of Object.keys(newTxTokenBalance)) {
-    yield put({
-      type: 'TOKEN_FETCH_BALANCE_SUCCESS',
-      payload: {
-        tokenId,
-        data: newTxTokenBalance[tokenId],
-      },
-    });
+  for (const [tokenUid] of Object.entries(balances)) {
+    console.log('Will dispatch getBalance for token', tokenUid);
+    // second param is true so we force download the balance
+    yield put(tokenFetchBalanceRequested(tokenUid, true));
   }
 }
 
