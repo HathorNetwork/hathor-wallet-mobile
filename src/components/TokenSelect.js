@@ -9,6 +9,7 @@ import React from 'react';
 import {
   FlatList, Image, StyleSheet, View, Text, TouchableHighlight, Platform
 } from 'react-native';
+import { get } from 'lodash';
 
 import DeviceInfo from 'react-native-device-info';
 
@@ -98,12 +99,8 @@ const TokenSelect = (props) => {
       symbolTextStyle.push(styles.symbolTextSelected);
     }
 
-    const balance = item.uid in props.tokensBalance
-      ? props.tokensBalance[item.uid].data.available : 0;
-
-    const tokenState = item.uid in props.tokensBalance
-      ? props.tokensBalance[item.uid].status
-      : 'loading';
+    const balance = get(props.tokensBalance, `${item.uid}.data.available`, 0);
+    const tokenState = get(props.tokensBalance, `${item.uid}.status`, 'loading');
 
     return (
       <TouchableHighlight
