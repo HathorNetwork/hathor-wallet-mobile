@@ -1,3 +1,4 @@
+import { NativeModules } from 'react-native';
 import {
   Connection,
   HathorWallet,
@@ -44,6 +45,7 @@ import {
   updateLoadedData,
   walletStateReady,
   walletStateError,
+  setServerInfo,
   setIsOnline,
   setWallet,
   types,
@@ -52,6 +54,7 @@ import {
   specificTypeAndPayload,
 } from './helpers';
 import NavigationService from '../NavigationService';
+import { setKeychainPin } from '../utils';
 
 
 export function* startWallet(action) {
@@ -101,6 +104,10 @@ export function* startWallet(action) {
     });
 
     const beforeReloadCallback = () => {
+      console.log('BEFORE CALLBACK!!!!!');
+      store.dispatch({
+        type: 'teta',
+      });
       // dispatch(fetchHistoryBegin());
     };
 
@@ -117,7 +124,32 @@ export function* startWallet(action) {
 
   // Setup listeners before starting the wallet so we don't lose messages
   yield fork(setupWalletListeners, wallet);
-  yield wallet.start({ pinCode: pin, password: pin });
+  try {
+    yield call(wallet.start.bind(wallet), {
+      pinCode: pin,
+      password: pin,
+    });
+  } catch (e) {
+    if (useWalletService) {
+      // Wallet Service start wallet will fail if the status returned from
+      // the service is 'error' or if the start wallet request failed.
+      // We should fallback to the old facade by storing the flag to ignore
+      // the feature flag
+      yield call(featureFlags.ignoreWalletServiceFlag.bind(featureFlags));
+
+      // Restart the whole bundle to make sure we clear all events
+      NativeModules.HTRReloadBundleModule.restart();
+    }
+  }
+
+  walletUtil.storePasswordHash(pin);
+  walletUtil.storeEncryptedWords(words, pin);
+  setKeychainPin(pin);
+
+  yield put(setServerInfo({
+    version: null,
+    network: networkName,
+  }));
 
   // Fetch registered tokens metadata
   yield put({ type: 'LOAD_TOKEN_METADATA_REQUESTED' });
@@ -139,6 +171,7 @@ export function* startWallet(action) {
 
   yield call(loadTokens);
   yield put(startWalletSuccess());
+  yield fork(listenForFeatureFlags, featureFlags);
 }
 
 export function* loadTokens() {
@@ -185,6 +218,35 @@ export function* loadTokens() {
   // and continue, loading the tokens asynchronously
   for (const token of registeredTokens) {
     yield put(tokenFetchBalanceRequested(token));
+  }
+}
+
+// This will create a channel to listen for featureFlag updates
+export function* listenForFeatureFlags(featureFlags) {
+  const channel = eventChannel((emitter) => {
+    const listener = (state) => emitter(state);
+    featureFlags.on('wallet-service-enabled', (state) => {
+      emitter(state);
+    });
+
+    // Cleanup when the channel is closed
+    return () => {
+      featureFlags.removeListener('wallet-service-enabled', listener);
+    };
+  });
+
+  try {
+    while (true) {
+      const newUseWalletService = yield take(channel);
+      const oldUseWalletService = yield select((state) => state.useWalletService);
+
+      if (oldUseWalletService && oldUseWalletService !== newUseWalletService) {
+        NativeModules.HTRReloadBundleModule.restart();
+      }
+    }
+  } finally {
+    // When we close the channel, it will remove the event listener
+    channel.close();
   }
 }
 
