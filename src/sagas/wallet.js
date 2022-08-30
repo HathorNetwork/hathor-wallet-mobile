@@ -34,6 +34,8 @@ import { FeatureFlags } from '../featureFlags';
 import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
+  tokenInvalidateHistory,
+  tokenInvalidateBalance,
   setUseWalletService,
   startWalletSuccess,
   startWalletFailed,
@@ -220,43 +222,6 @@ export function* listenForWalletReady(wallet) {
   channel.close();
 }
 
-/**
- * Method that fetches the balance of a token
- * and pre process for the expected format
- *
- * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
- * uid {String} Token uid to fetch balance
- */
-export const fetchTokenBalance = async (wallet, uid) => {
-  if (!wallet.isReady()) {
-    // We can safely do nothing here since we will fetch all history and balance
-    // as soon as the wallets gets ready
-    return null;
-  }
-  const balance = await wallet.getBalance(uid);
-  const tokenBalance = balance[0].balance;
-  return { available: tokenBalance.unlocked, locked: tokenBalance.locked };
-};
-
-/**
- * After a new transaction arrives in the websocket we must
- * fetch the new balance for each token on it and use
- * this new data to update redux info
- *
- * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
- * tx {Object} full transaction object from the websocket
- */
-export const fetchNewTxTokenBalance = async (wallet, tx) => {
-  const updatedBalanceMap = {};
-  const balances = await wallet.getTxBalance(tx);
-  // we now loop through all tokens present in the new tx to get the new balance
-  for (const [tokenUid] of Object.entries(balances)) {
-    /* eslint-disable no-await-in-loop */
-    updatedBalanceMap[tokenUid] = await fetchTokenBalance(wallet, tokenUid);
-  }
-  return updatedBalanceMap;
-};
-
 export function* handleNewTx(action) {
   const tx = action.payload;
   const wallet = yield select((state) => state.wallet);
@@ -276,12 +241,15 @@ export function* handleNewTx(action) {
     if (registeredTokens.indexOf(tokenUid) === -1) {
       continue;
     }
-
     yield put(tokenFetchBalanceRequested(tokenUid, true));
 
     if (tokenUid === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid
         || tokenUid === DEFAULT_TOKEN.uid) {
       yield put(tokenFetchHistoryRequested(tokenUid, true));
+    } else {
+      // Invalidate the history so it will get requested the next time
+      // the user enters the history screen
+      yield put(tokenInvalidateHistory(tokenUid));
     }
   }
 }

@@ -57,9 +57,11 @@ export const types = {
   TOKEN_FETCH_BALANCE_REQUESTED: 'TOKEN_FETCH_BALANCE_REQUESTED',
   TOKEN_FETCH_BALANCE_SUCCESS: 'TOKEN_FETCH_BALANCE_SUCCESS',
   TOKEN_FETCH_BALANCE_FAILED: 'TOKEN_FETCH_BALANCE_FAILED',
+  TOKEN_INVALIDATE_BALANCE: 'TOKEN_INVALIDATE_BALANCE',
   TOKEN_FETCH_HISTORY_REQUESTED: 'TOKEN_FETCH_HISTORY_REQUESTED',
   TOKEN_FETCH_HISTORY_SUCCESS: 'TOKEN_FETCH_HISTORY_SUCCESS',
   TOKEN_FETCH_HISTORY_FAILED: 'TOKEN_FETCH_HISTORY_FAILED',
+  TOKEN_INVALIDATE_HISTORY: 'TOKEN_INVALIDATE_HISTORY',
   START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
   START_WALLET_FAILED: 'START_WALLET_FAILED',
   WALLET_STATE_READY: 'WALLET_STATE_READY',
@@ -465,6 +467,11 @@ export const tokenFetchHistoryFailed = (tokenId) => ({
   tokenId,
 });
 
+export const tokenInvalidateHistory = (tokenId) => ({
+  type: types.TOKEN_INVALIDATE_HISTORY,
+  tokenId,
+});
+
 /**
  * tokenId: The tokenId to request balance from
  * force: Should we ignore the stored data?
@@ -490,6 +497,11 @@ export const tokenFetchBalanceSuccess = (tokenId, data) => ({
  */
 export const tokenFetchBalanceFailed = (tokenId) => ({
   type: types.TOKEN_FETCH_BALANCE_FAILED,
+  tokenId,
+});
+
+export const tokenInvalidateBalance = (tokenId) => ({
+  type: types.TOKEN_INVALIDATE_BALANCE,
   tokenId,
 });
 

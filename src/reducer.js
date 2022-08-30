@@ -160,6 +160,10 @@ const reducer = (state = initialState, action) => {
       return onTokenFetchHistorySuccess(state, action);
     case types.TOKEN_FETCH_HISTORY_FAILED:
       return onTokenFetchHistoryFailed(state, action);
+    case types.TOKEN_INVALIDATE_HISTORY:
+      return onTokenInvalidateHistory(state, action);
+    case types.TOKEN_INVALIDATE_BALANCE:
+      return onTokenInvalidateBalance(state, action);
     case types.START_WALLET_SUCCESS:
       return onStartWalletSuccess(state);
     case types.START_WALLET_FAILED:
@@ -594,6 +598,34 @@ export const onStartWalletSuccess = (state) => ({
   walletStartError: false,
   walletStartState: 'ready',
 });
+
+export const onTokenInvalidateBalance = (state, action) => {
+  const { tokenId } = action;
+
+  return {
+    ...state,
+    tokensBalance: {
+      ...state.tokensBalance,
+      [tokenId]: {
+        status: 'invalidated',
+      },
+    },
+  };
+};
+
+export const onTokenInvalidateHistory = (state, action) => {
+  const { tokenId } = action;
+
+  return {
+    ...state,
+    tokensHistory: {
+      ...state.tokensHistory,
+      [tokenId]: {
+        status: 'invalidated',
+      },
+    },
+  };
+};
 
 const saga = createSagaMiddleware();
 const middlewares = [saga, thunk];
