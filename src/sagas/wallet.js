@@ -50,7 +50,7 @@ import {
 import NavigationService from '../NavigationService';
 
 
-function* startWallet(action) {
+export function* startWallet(action) {
   const { words, pin } = action.payload;
 
   const networkName = 'mainnet';
@@ -267,11 +267,22 @@ export function* handleNewTx(action) {
 
   // find tokens affected by the transaction
   const balances = yield call(wallet.getTxBalance.bind(wallet), tx);
+  const stateTokens = yield select((state) => state.tokens);
+  const registeredTokens = stateTokens.map((token) => token.uid);
 
+  // We should download the **balance** for every token involved in the transaction
+  // and history for hathor and DEFAULT_TOKEN
   for (const [tokenUid] of Object.entries(balances)) {
-    console.log('Will dispatch getBalance for token', tokenUid);
-    // second param is true so we force download the balance
+    if (registeredTokens.indexOf(tokenUid) === -1) {
+      continue;
+    }
+
     yield put(tokenFetchBalanceRequested(tokenUid, true));
+
+    if (tokenUid === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid
+        || tokenUid === DEFAULT_TOKEN.uid) {
+      yield put(tokenFetchHistoryRequested(tokenUid, true));
+    }
   }
 }
 
