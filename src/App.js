@@ -62,6 +62,8 @@ import CreateTokenDetail from './screens/CreateTokenDetail';
 import ErrorModal from './components/ErrorModal';
 
 
+console.disableYellowBox = true; 
+
 const InitStack = createStackNavigator(
   {
     WelcomeScreen,
@@ -197,6 +199,7 @@ const mapStateToProps = (state) => ({
   loadHistory: state.loadHistoryStatus.active,
   isScreenLocked: state.lockScreen,
   isRecoveringPin: state.recoveringPin,
+  walletStartState: state.walletStartState,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -320,7 +323,7 @@ class _AppStackWrapper extends React.Component {
         screen = <RecoverPin navigation={this.props.navigation} />;
       }
 
-      if (this.props.loadHistory || this.props.isScreenLocked) {
+      if (this.props.walletStartState === 'loading' || this.props.isScreenLocked) {
         return (
           <View style={this.style.auxView}>
             { screen }
