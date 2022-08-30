@@ -153,6 +153,12 @@ const reducer = (state = initialState, action) => {
       return onTokenFetchBalanceSuccess(state, action);
     case types.TOKEN_FETCH_BALANCE_FAILED:
       return onTokenFetchBalanceFailed(state, action);
+    case types.TOKEN_FETCH_HISTORY_REQUESTED:
+      return onTokenFetchHistoryRequested(state, action);
+    case types.TOKEN_FETCH_HISTORY_SUCCESS:
+      return onTokenFetchHistorySuccess(state, action);
+    case types.TOKEN_FETCH_HISTORY_FAILED:
+      return onTokenFetchHistoryFailed(state, action);
     case types.START_WALLET_SUCCESS:
       return onStartWalletSuccess(state);
     case types.START_WALLET_FAILED:
@@ -495,13 +501,17 @@ export const onTokenFetchBalanceRequested = (state, action) => {
 };
 
 export const onTokenFetchBalanceSuccess = (state, action) => {
-  const tokenId = action.payload;
+  const { tokenId, data } = action.payload;
 
   return {
     ...state,
-    tokenLoadingState: {
-      ...state.tokenLoadingState,
-      [tokenId]: 'ready',
+    tokensBalance: {
+      ...state.tokensBalance,
+      [tokenId]: {
+        status: 'ready',
+        updatedAt: new Date().getTime(),
+        data,
+      },
     },
   };
 };
@@ -516,6 +526,53 @@ export const onTokenFetchBalanceFailed = (state, action) => {
       [tokenId]: 'failed',
     },
   };
+};
+
+export const onTokenFetchHistorySuccess = (state, action) => {
+  const { tokenId, data } = action.payload;
+
+  return {
+    ...state,
+    tokensHistory: {
+      ...state.tokensHistory,
+      [tokenId]: {
+        status: 'ready',
+        updatedAt: new Date().getTime(),
+        data,
+      },
+    },
+  };
+};
+
+export const onTokenFetchHistoryFailed = (state, action) => {
+  const { tokenId } = action.payload;
+
+  return {
+    ...state,
+    tokensHistory: {
+      ...state.tokensHistory,
+      [tokenId]: {
+        status: 'failed',
+        data: [],
+      },
+    },
+  };
+};
+
+export const onTokenFetchHistoryRequested = (state, action) => {
+  const { tokenId } = action;
+
+  return {
+    ...state,
+    tokensHistory: {
+      ...state.tokensHistory,
+      [tokenId]: {
+        status: 'loading',
+        data: [],
+      },
+    },
+  };
+;
 };
 
 export const onStartWalletFailed = (state) => ({

@@ -32,14 +32,20 @@ import { FeatureFlags } from '../featureFlags';
 import {
   setUseWalletService,
   setUniqueDeviceId,
-  fetchHistorySuccess,
-  fetchHistoryError,
   setWallet,
+  setIsOnline,
 } from '../actions';
 import {
   specificTypeAndPayload,
 } from './helpers';
 import NavigationService from '../NavigationService';
+
+function* setupWalletServiceListeners(action) {
+
+}
+
+function* setupOldFacadeListeners(action) {
+}
 
 function* startWallet(action) {
   const { words, pin } = action.payload;
@@ -103,8 +109,10 @@ function* startWallet(action) {
   yield fork(listenForWalletReady, wallet);
   yield put(setWallet(wallet));
 
-  const walletData = yield wallet.start({ pinCode: pin, password: pin });
-  
+  // Setup listeners before starting the wallet so we don't lose messages
+  yield fork(setupWalletListeners, wallet);
+  yield wallet.start({ pinCode: pin, password: pin });
+
   // Fetch registered tokens metadata
   yield put({ type: 'LOAD_TOKEN_METADATA_REQUESTED' });
   // Store the unique device id on redux
@@ -118,7 +126,7 @@ function* startWallet(action) {
   if (!error) {
     // Wallet loaded succesfully here, we should load the hathor token balance and history
     yield put({ type: 'TOKEN_FETCH_BALANCE_REQUESTED', payload: hathorLibConstants.HATHOR_TOKEN_CONFIG.uid });
-    // yield put({ type: 'TOKEN_FETCH_HISTORY_REQUESTED', payload: hathorLibConstants.HATHOR_TOKEN_CONFIG.uid });
+    yield put({ type: 'TOKEN_FETCH_HISTORY_REQUESTED', payload: hathorLibConstants.HATHOR_TOKEN_CONFIG.uid });
 
     const customTokenUid = DEFAULT_TOKEN.uid;
     const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
@@ -135,8 +143,8 @@ function* startWallet(action) {
     // The `all` effect will wait for all effects in the list
     yield all([
       // The `take` effect will wait until one action that passes the predicate is captured
-      take(specificTypeAndPayload('TOKEN_FETCH_BALANCE_SUCCESS', htrUid)),
-      // take(specificTypeAndPayload('TOKEN_FETCH_HISTORY_SUCCESS', htrUid)),
+      take(specificTypeAndPayload('TOKEN_FETCH_BALANCE_SUCCESS', { tokenId: htrUid })),
+      take(specificTypeAndPayload('TOKEN_FETCH_HISTORY_SUCCESS', { tokenId: htrUid })),
       ...loadCustom,
     ]);
 
@@ -208,8 +216,67 @@ export function* listenForWalletReady(wallet) {
   channel.close();
 }
 
+export function* setupWalletListeners(wallet) {
+  const channel = eventChannel((emitter) => {
+    const listener = (state) => emitter(state);
+    wallet.conn.on('best-block-update', (blockHeight) => emitter({
+      type: 'WALLET_BEST_BLOCK_UPDATE',
+      data: blockHeight,
+    }));
+    wallet.conn.on('wallet-load-partial-update', (data) => emitter({
+      type: 'WALLET_PARTIAL_UPDATE',
+      data,
+    }));
+    wallet.conn.on('state', (state) => emitter({
+      type: 'WALLET_CONN_STATE_UPDATE',
+      data: state,
+    }));
+    wallet.on('reload-data', () => emitter({
+      type: 'WALLET_RELOAD_DATA',
+    }));
+    wallet.on('update-tx', (data) => emitter({
+      type: 'WALLET_UPDATE_TX',
+      data,
+    }));
+    wallet.on('new-tx', (data) => emitter({
+      type: 'WALLET_NEW_TX',
+      data,
+    }));
+
+    return () => {
+      wallet.conn.removeListener('best-block-update', listener);
+      wallet.conn.removeListener('wallet-load-partial-update', listener);
+      wallet.conn.removeListener('state', listener);
+      wallet.removeListener('reload-data', listener);
+      wallet.removeListener('update-tx', listener);
+      wallet.removeListener('new-tx', listener);
+    };
+  });
+
+  try {
+    while (true) {
+      const message = yield take(channel);
+
+      yield put({
+        type: message.type,
+        payload: message.data,
+      });
+    }
+  } finally {
+    channel.close();
+  }
+}
+
+export function* onWalletConnStateUpdate(action) {
+  const state = action.payload;
+  const isOnline = state === Connection.CONNECTED;
+
+  yield put(setIsOnline(isOnline));
+}
+
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', startWallet),
+    takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
   ]);
 }
