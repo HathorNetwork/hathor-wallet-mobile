@@ -9,6 +9,7 @@ import { createStore, applyMiddleware } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import thunk from 'redux-thunk';
 import hathorLib from '@hathor/wallet-lib';
+import { get } from 'lodash';
 import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
 import { types } from './actions';
 import rootSagas from './sagas';
@@ -562,17 +563,19 @@ export const onTokenFetchHistoryFailed = (state, action) => {
 export const onTokenFetchHistoryRequested = (state, action) => {
   const { tokenId } = action;
 
+  const oldState = get(state.tokensHistory, tokenId, {});
+
   return {
     ...state,
     tokensHistory: {
       ...state.tokensHistory,
       [tokenId]: {
+        ...oldState,
         status: 'loading',
-        data: [],
+        oldStatus: oldState.status,
       },
     },
   };
-;
 };
 
 export const onStartWalletFailed = (state) => ({
