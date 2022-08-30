@@ -6,6 +6,7 @@ import {
   all,
   put,
 } from 'redux-saga/effects';
+import { get } from 'lodash';
 import { TxHistory } from '../models';
 
 const mapTokenHistory = (element, token) => {
@@ -50,10 +51,24 @@ function* fetchTokenBalance(action) {
 function* fetchTokenHistory(action) {
   const { tokenId } = action;
 
-  yield delay(1500);
-
   try {
     const wallet = yield select((state) => state.wallet);
+    const tokensHistory = yield select((state) => state.tokensHistory);
+    const tokenHistory = get(tokensHistory, tokenId);
+
+    if (tokenHistory && tokenHistory.oldStatus === 'ready') {
+      // The data is already loaded, we should dispatch success
+      yield put({
+        type: 'TOKEN_FETCH_HISTORY_SUCCESS',
+        payload: {
+          tokenId,
+          data: tokenHistory.data,
+        },
+      });
+    }
+
+    yield delay(1500);
+
     const response = yield call(wallet.getTxHistory.bind(wallet), { token_id: tokenId });
     const data = response.map((txHistory) => mapTokenHistory(txHistory, tokenId));
 
