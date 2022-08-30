@@ -62,6 +62,8 @@ export const types = {
   TOKEN_FETCH_HISTORY_FAILED: 'TOKEN_FETCH_HISTORY_FAILED',
   START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
   START_WALLET_FAILED: 'START_WALLET_FAILED',
+  WALLET_STATE_READY: 'WALLET_STATE_READY',
+  WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
 };
 
 /**
@@ -434,3 +436,75 @@ export const setRecoveringPin = (data) => (
 export const setTempPin = (data) => (
   { type: types.SET_TEMP_PIN, payload: data }
 );
+
+/**
+ * tokenId: The tokenId to request history from
+ * force: Should we ignore the stored data?
+ */
+export const tokenFetchHistoryRequested = (tokenId, force) => ({
+  type: types.TOKEN_FETCH_HISTORY_REQUESTED,
+  tokenId,
+  force,
+});
+
+/**
+ * tokenId: The tokenId to store history data
+ * data: The downloaded history data
+ */
+export const tokenFetchHistorySuccess = (tokenId, data) => ({
+  type: types.TOKEN_FETCH_HISTORY_SUCCESS,
+  tokenId,
+  data,
+});
+
+/**
+ * tokenId: The tokenId of the history request
+ */
+export const tokenFetchHistoryFailed = (tokenId) => ({
+  type: types.TOKEN_FETCH_HISTORY_FAILED,
+  tokenId,
+});
+
+/**
+ * tokenId: The tokenId to request balance from
+ * force: Should we ignore the stored data?
+ */
+export const tokenFetchBalanceRequested = (tokenId, force) => ({
+  type: types.TOKEN_FETCH_BALANCE_REQUESTED,
+  tokenId,
+  force,
+});
+
+/**
+ * tokenId: The tokenId to store balance data
+ * data: The downloaded history data
+ */
+export const tokenFetchBalanceSuccess = (tokenId, data) => ({
+  type: types.TOKEN_FETCH_BALANCE_SUCCESS,
+  tokenId,
+  data,
+});
+
+/**
+ * tokenId: The tokenId of the balance request
+ */
+export const tokenFetchBalanceFailed = (tokenId) => ({
+  type: types.TOKEN_FETCH_BALANCE_FAILED,
+  tokenId,
+});
+
+export const startWalletFailed = () => ({
+  type: types.START_WALLET_FAILED,
+});
+
+export const startWalletSuccess = () => ({
+  type: types.START_WALLET_SUCCESS,
+});
+
+export const walletStateError = () => ({
+  type: types.WALLET_STATE_ERROR,
+});
+
+export const walletStateReady = () => ({
+  type: types.WALLET_STATE_READY,
+});

@@ -490,7 +490,7 @@ export const partiallyUpdateHistoryAndBalance = (state, action) => {
 };
 
 export const onTokenFetchBalanceRequested = (state, action) => {
-  const tokenId = action.payload;
+  const { tokenId } = action;
 
   return {
     ...state,
@@ -502,7 +502,7 @@ export const onTokenFetchBalanceRequested = (state, action) => {
 };
 
 export const onTokenFetchBalanceSuccess = (state, action) => {
-  const { tokenId, data } = action.payload;
+  const { tokenId, data } = action;
 
   return {
     ...state,
@@ -518,7 +518,7 @@ export const onTokenFetchBalanceSuccess = (state, action) => {
 };
 
 export const onTokenFetchBalanceFailed = (state, action) => {
-  const tokenId = action.payload;
+  const { tokenId } = action;
 
   return {
     ...state,
@@ -530,7 +530,7 @@ export const onTokenFetchBalanceFailed = (state, action) => {
 };
 
 export const onTokenFetchHistorySuccess = (state, action) => {
-  const { tokenId, data } = action.payload;
+  const { tokenId, data } = action;
 
   return {
     ...state,
@@ -546,7 +546,7 @@ export const onTokenFetchHistorySuccess = (state, action) => {
 };
 
 export const onTokenFetchHistoryFailed = (state, action) => {
-  const { tokenId } = action.payload;
+  const { tokenId } = action;
 
   return {
     ...state,

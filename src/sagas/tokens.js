@@ -8,6 +8,12 @@ import {
 } from 'redux-saga/effects';
 import { get } from 'lodash';
 import { TxHistory } from '../models';
+import {
+  tokenFetchBalanceSuccess,
+  tokenFetchBalanceFailed,
+  tokenFetchHistorySuccess,
+  tokenFetchHistoryFailed,
+} from '../actions';
 
 const mapTokenHistory = (element, token) => {
   const data = {
@@ -23,7 +29,7 @@ const mapTokenHistory = (element, token) => {
 
 
 function* fetchTokenBalance(action) {
-  const tokenId = action.payload;
+  const { tokenId } = action;
 
   try {
     const wallet = yield select((state) => state.wallet);
@@ -33,18 +39,10 @@ function* fetchTokenBalance(action) {
       locked: token.balance.locked,
     };
 
-    yield put({
-      type: 'TOKEN_FETCH_BALANCE_SUCCESS',
-      payload: {
-        tokenId,
-        data: balance,
-      },
-    });
+    yield put(tokenFetchBalanceSuccess(tokenId, balance));
   } catch (e) {
-    yield put({
-      type: 'TOKEN_FETCH_BALANCE_FAILED',
-      payload: { tokenId },
-    });
+    console.log('E:', e);
+    yield put(tokenFetchBalanceFailed(tokenId));
   }
 }
 
@@ -58,13 +56,7 @@ function* fetchTokenHistory(action) {
 
     if (tokenHistory && tokenHistory.oldStatus === 'ready') {
       // The data is already loaded, we should dispatch success
-      yield put({
-        type: 'TOKEN_FETCH_HISTORY_SUCCESS',
-        payload: {
-          tokenId,
-          data: tokenHistory.data,
-        },
-      });
+      yield put(tokenFetchHistorySuccess(tokenId, data));
     }
 
     yield delay(1500);
@@ -72,19 +64,10 @@ function* fetchTokenHistory(action) {
     const response = yield call(wallet.getTxHistory.bind(wallet), { token_id: tokenId });
     const data = response.map((txHistory) => mapTokenHistory(txHistory, tokenId));
 
-    yield put({
-      type: 'TOKEN_FETCH_HISTORY_SUCCESS',
-      payload: {
-        tokenId,
-        data,
-      }
-    });
+    yield put(tokenFetchHistorySuccess(tokenId, data));
   } catch (e) {
     console.log('E: ', e);
-    yield put({
-      type: 'TOKEN_FETCH_HISTORY_FAILED',
-      payload: { tokenId },
-    });
+    yield put(tokenFetchHistoryFailed(tokenId));
   }
 }
 

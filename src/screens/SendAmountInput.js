@@ -124,7 +124,7 @@ class SendAmountInput extends React.Component {
   render() {
     const getAvailableString = () => {
       // eg: '23.56 HTR available'
-      const balance = this.props.tokensBalance[this.state.token.uid];
+      const balance = this.props.tokensBalance[this.state.token.uid].data;
       const available = balance ? balance.available : 0;
       const amountAndToken = `${renderValue(available, this.isNFT())} ${this.state.token.symbol}`;
       return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);

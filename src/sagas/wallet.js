@@ -11,6 +11,8 @@ import {
 } from '@hathor/wallet-lib';
 import {
   takeLatest,
+  takeEvery,
+  select,
   all,
   put,
   call,
@@ -30,22 +32,23 @@ import {
 } from '../constants';
 import { FeatureFlags } from '../featureFlags';
 import {
+  tokenFetchBalanceRequested,
+  tokenFetchHistoryRequested,
   setUseWalletService,
+  startWalletSuccess,
+  startWalletFailed,
   setUniqueDeviceId,
-  setWallet,
+  walletStateReady,
+  walletStateError,
   setIsOnline,
+  setWallet,
+  types,
 } from '../actions';
 import {
   specificTypeAndPayload,
 } from './helpers';
 import NavigationService from '../NavigationService';
 
-function* setupWalletServiceListeners(action) {
-
-}
-
-function* setupOldFacadeListeners(action) {
-}
 
 function* startWallet(action) {
   const { words, pin } = action.payload;
@@ -119,66 +122,67 @@ function* startWallet(action) {
   yield put(setUniqueDeviceId(uniqueDeviceId));
   // Wait until the wallet is ready
   const { error } = yield race({
-    success: take('WALLET_STATE_READY'),
-    error: take('WALLET_STATE_ERROR'),
+    success: take(types.WALLET_STATE_READY),
+    error: take(types.WALLET_STATE_ERROR),
   });
 
-  if (!error) {
-    // Wallet loaded succesfully here, we should load the hathor token balance and history
-    yield put({ type: 'TOKEN_FETCH_BALANCE_REQUESTED', payload: hathorLibConstants.HATHOR_TOKEN_CONFIG.uid });
-    yield put({ type: 'TOKEN_FETCH_HISTORY_REQUESTED', tokenId: hathorLibConstants.HATHOR_TOKEN_CONFIG.uid });
+  if (error) {
+    return yield put(startWalletFailed());
+  }
+  // Wallet loaded succesfully here, we should load the hathor token balance and history
+  yield put(tokenFetchBalanceRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
+  yield put(tokenFetchHistoryRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
 
-    const customTokenUid = DEFAULT_TOKEN.uid;
-    const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
+  const customTokenUid = DEFAULT_TOKEN.uid;
+  const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
 
-    // If the DEFAULT_TOKEN is not HTR, also download its balance and history:
-    const loadCustom = [];
-    if (customTokenUid !== htrUid) {
-      // TODO: Also dispatch load history actions
-      yield put({ type: 'TOKEN_FETCH_BALANCE_REQUESTED', payload: customTokenUid });
+  // If the DEFAULT_TOKEN is not HTR, also download its balance and history:
+  let loadCustom = [];
+  if (customTokenUid !== htrUid) {
+    yield put(tokenFetchBalanceRequested(customTokenUid));
+    yield put(tokenFetchHistoryRequested(customTokenUid));
 
-      loadCustom.push(take(specificTypeAndPayload('TOKEN_FETCH_BALANCE_SUCCESS', customTokenUid)));
-    }
-
-    // The `all` effect will wait for all effects in the list
-    yield all([
-      // The `take` effect will wait until one action that passes the predicate is captured
-      take(specificTypeAndPayload('TOKEN_FETCH_BALANCE_SUCCESS', { tokenId: htrUid })),
-      take(specificTypeAndPayload('TOKEN_FETCH_HISTORY_SUCCESS', { tokenId: htrUid })),
-      ...loadCustom,
-    ]);
-
-    const registeredTokens = tokensUtils
-      .getTokens()
-      .reduce((acc, token) => {
-        // remove htr since we will always download the HTR token
-        if (token.uid === '00') {
-          return acc;
-        }
-
-        return [...acc, token.uid];
-      }, []);
-
-    // Since we already know here what tokens are registered, we can dispatch actions
-    // to asynchronously load the balances of each one. The `put` effect will just dispatch
-    // and continue, loading the tokens asynchronously
-    for (const token of registeredTokens) {
-      yield put({
-        type: 'TOKEN_FETCH_BALANCE_REQUESTED',
-        payload: token,
-      });
-    }
-  } else {
-    yield put({
-      type: 'START_WALLET_FAILURE',
-    });
-
-    return;
+    loadCustom = [
+      take(specificTypeAndPayload(
+        types.TOKEN_FETCH_BALANCE_SUCCESS, {
+          tokenId: customTokenUid,
+        },
+      )),
+      take(specificTypeAndPayload(
+        types.TOKEN_FETCH_HISTORY_SUCCESS, {
+          tokenId: customTokenUid,
+        },
+      )),
+    ];
   }
 
-  yield put({
-    type: 'START_WALLET_SUCCESS',
-  });
+  // The `all` effect will wait for all effects in the list
+  yield all([
+    // The `take` effect will wait until one action that passes the predicate is captured
+    take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, { tokenId: htrUid })),
+    take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, { tokenId: htrUid })),
+    ...loadCustom,
+  ]);
+
+  const registeredTokens = tokensUtils
+    .getTokens()
+    .reduce((acc, token) => {
+      // remove htr since we will always download the HTR token
+      if (token.uid === '00') {
+        return acc;
+      }
+
+      return [...acc, token.uid];
+    }, []);
+
+  // Since we already know here what tokens are registered, we can dispatch actions
+  // to asynchronously load the balances of each one. The `put` effect will just dispatch
+  // and continue, loading the tokens asynchronously
+  for (const token of registeredTokens) {
+    yield put(tokenFetchBalanceRequested(token));
+  }
+
+  yield put(startWalletSuccess());
 }
 
 // This will create a channel from an EventEmitter to wait until the wallet is loaded,
@@ -200,11 +204,11 @@ export function* listenForWalletReady(wallet) {
     const message = yield take(channel);
 
     if (message === HathorWallet.ERROR) {
-      yield put({ type: 'WALLET_STATE_ERROR' });
+      yield put(walletStateError());
       break;
     } else {
       if (wallet.isReady()) {
-        yield put({ type: 'WALLET_STATE_READY' });
+        yield put(walletStateReady());
         break;
       }
 
@@ -214,6 +218,64 @@ export function* listenForWalletReady(wallet) {
 
   // When we close the channel, it will remove the event listener
   channel.close();
+}
+
+/**
+ * Method that fetches the balance of a token
+ * and pre process for the expected format
+ *
+ * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
+ * uid {String} Token uid to fetch balance
+ */
+export const fetchTokenBalance = async (wallet, uid) => {
+  if (!wallet.isReady()) {
+    // We can safely do nothing here since we will fetch all history and balance
+    // as soon as the wallets gets ready
+    return null;
+  }
+  const balance = await wallet.getBalance(uid);
+  const tokenBalance = balance[0].balance;
+  return { available: tokenBalance.unlocked, locked: tokenBalance.locked };
+};
+
+/**
+ * After a new transaction arrives in the websocket we must
+ * fetch the new balance for each token on it and use
+ * this new data to update redux info
+ *
+ * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
+ * tx {Object} full transaction object from the websocket
+ */
+export const fetchNewTxTokenBalance = async (wallet, tx) => {
+  const updatedBalanceMap = {};
+  const balances = await wallet.getTxBalance(tx);
+  // we now loop through all tokens present in the new tx to get the new balance
+  for (const [tokenUid] of Object.entries(balances)) {
+    /* eslint-disable no-await-in-loop */
+    updatedBalanceMap[tokenUid] = await fetchTokenBalance(wallet, tokenUid);
+  }
+  return updatedBalanceMap;
+};
+
+export function* handleNewTx(action) {
+  const tx = action.payload;
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet.isReady()) {
+    return;
+  }
+
+  const newTxTokenBalance = yield call(fetchNewTxTokenBalance, wallet, tx);
+
+  for (const tokenId of Object.keys(newTxTokenBalance)) {
+    yield put({
+      type: 'TOKEN_FETCH_BALANCE_SUCCESS',
+      payload: {
+        tokenId,
+        data: newTxTokenBalance[tokenId],
+      },
+    });
+  }
 }
 
 export function* setupWalletListeners(wallet) {
@@ -278,5 +340,6 @@ export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', startWallet),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
+    takeEvery('WALLET_NEW_TX', handleNewTx),
   ]);
 }
