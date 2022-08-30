@@ -124,12 +124,22 @@ export function* startWallet(action) {
 
   // Setup listeners before starting the wallet so we don't lose messages
   yield fork(setupWalletListeners, wallet);
+  console.log('Will start wallet!');
+  // Create a channel to listen for the ready state and
+  // wait until the wallet is ready
+  console.log('Will listen for wallet ready');
+  yield fork(listenForWalletReady, wallet);
+
+  // Store the unique device id on redux
+  yield put(setUniqueDeviceId(uniqueDeviceId));
+
   try {
     yield call(wallet.start.bind(wallet), {
       pinCode: pin,
       password: pin,
     });
   } catch (e) {
+    console.log('Erroed: ', e);
     if (useWalletService) {
       // Wallet Service start wallet will fail if the status returned from
       // the service is 'error' or if the start wallet request failed.
@@ -151,24 +161,21 @@ export function* startWallet(action) {
     network: networkName,
   }));
 
-  // Fetch registered tokens metadata
-  yield put({ type: 'LOAD_TOKEN_METADATA_REQUESTED' });
+  // Wallet might be already ready at this point
+  if (!wallet.isReady()) {
+    const { error } = yield race({
+      success: take('WALLET_STATE_READY'),
+      error: take(types.WALLET_STATE_ERROR),
+    });
 
-  // Store the unique device id on redux
-  yield put(setUniqueDeviceId(uniqueDeviceId));
-
-  // Create a channel to listen for the ready state and
-  // wait until the wallet is ready
-  yield fork(listenForWalletReady, wallet);
-  const { error } = yield race({
-    success: take(types.WALLET_STATE_READY),
-    error: take(types.WALLET_STATE_ERROR),
-  });
-
-  if (error) {
-    return yield put(startWalletFailed());
+    if (error) {
+      console.log('ERROR', error);
+      return yield put(startWalletFailed());
+    }
   }
 
+  // Fetch registered tokens metadata
+  yield put({ type: 'LOAD_TOKEN_METADATA_REQUESTED' });
   yield call(loadTokens);
   yield put(startWalletSuccess());
   yield fork(listenForFeatureFlags, featureFlags);
@@ -181,7 +188,7 @@ export function* loadTokens() {
   // Download hathor token balance
   yield put(tokenFetchBalanceRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
   yield take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, { tokenId: htrUid }));
-  // .. and history
+  // ...and history
   yield put(tokenFetchHistoryRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
   yield take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, { tokenId: htrUid }));
 
@@ -193,7 +200,7 @@ export function* loadTokens() {
         tokenId: customTokenUid,
       }),
     );
-    // .. and history
+    // ...and history
     yield put(tokenFetchHistoryRequested(customTokenUid));
     yield take(
       specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, {
@@ -256,6 +263,7 @@ export function* listenForWalletReady(wallet) {
   const channel = eventChannel((emitter) => {
     const listener = (state) => emitter(state);
     wallet.on('state', (state) => {
+      console.log('Got state update', state);
       emitter(state);
     });
 
