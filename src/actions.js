@@ -62,6 +62,7 @@ export const types = {
   TOKEN_FETCH_HISTORY_SUCCESS: 'TOKEN_FETCH_HISTORY_SUCCESS',
   TOKEN_FETCH_HISTORY_FAILED: 'TOKEN_FETCH_HISTORY_FAILED',
   TOKEN_INVALIDATE_HISTORY: 'TOKEN_INVALIDATE_HISTORY',
+  ON_START_WALLET_LOCK: 'ON_START_WALLET_LOCK',
   START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
   START_WALLET_FAILED: 'START_WALLET_FAILED',
   WALLET_STATE_READY: 'WALLET_STATE_READY',
@@ -298,27 +299,6 @@ export const fetchTokensMetadata = async (tokens, network) => {
 };
 
 /**
- * Reloads history data
- *
- * @param {HathorWallet | HathorWalletServiceWallet} wallet - The current wallet object
- * @param {Dispatch} dispatch - The dispatch object to be able to trigger redux actions
- *
- * @memberof Wallet
- * @inner
- */
-export const reloadHistory = (wallet) => async (dispatch) => {
-  // Display the load history screen
-  dispatch(fetchHistoryBegin());
-
-  try {
-    const historyAndBalance = await fetchHistoryAndBalance(wallet);
-    dispatch(fetchHistorySuccess(historyAndBalance));
-  } catch (e) {
-    dispatch(fetchHistoryError());
-  }
-};
-
-/**
  * After a new transaction arrives in the websocket we must
  * fetch the new balance for each token on it and use
  * this new data to update redux info
@@ -511,6 +491,10 @@ export const startWalletFailed = () => ({
 
 export const startWalletSuccess = () => ({
   type: types.START_WALLET_SUCCESS,
+});
+
+export const onStartWalletLock = () => ({
+  type: types.ON_START_WALLET_LOCK,
 });
 
 export const walletStateError = () => ({

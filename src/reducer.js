@@ -162,6 +162,8 @@ const reducer = (state = initialState, action) => {
       return onTokenInvalidateHistory(state, action);
     case types.TOKEN_INVALIDATE_BALANCE:
       return onTokenInvalidateBalance(state, action);
+    case types.ON_START_WALLET_LOCK:
+      return onStartWalletLock(state);
     case types.START_WALLET_SUCCESS:
       return onStartWalletSuccess(state);
     case types.START_WALLET_FAILED:
@@ -571,6 +573,12 @@ export const onStartWalletFailed = (state) => ({
   ...state,
   walletStartError: true,
   walletStartState: 'error',
+});
+
+export const onStartWalletLock = (state) => ({
+  ...state,
+  walletStartError: false,
+  walletStartState: 'loading',
 });
 
 export const onStartWalletSuccess = (state) => ({

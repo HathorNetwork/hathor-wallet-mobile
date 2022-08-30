@@ -13,6 +13,7 @@ import {
   takeLatest,
   takeEvery,
   select,
+  delay,
   all,
   put,
   call,
@@ -36,6 +37,7 @@ import {
   tokenFetchHistoryRequested,
   tokenInvalidateHistory,
   setUseWalletService,
+  onStartWalletLock,
   startWalletSuccess,
   startWalletFailed,
   setUniqueDeviceId,
@@ -111,7 +113,6 @@ export function* startWallet(action) {
     wallet = new HathorWallet(walletConfig);
   }
 
-  yield fork(listenForWalletReady, wallet);
   yield put(setWallet(wallet));
 
   // Setup listeners before starting the wallet so we don't lose messages
@@ -120,9 +121,13 @@ export function* startWallet(action) {
 
   // Fetch registered tokens metadata
   yield put({ type: 'LOAD_TOKEN_METADATA_REQUESTED' });
+
   // Store the unique device id on redux
   yield put(setUniqueDeviceId(uniqueDeviceId));
-  // Wait until the wallet is ready
+
+  // Create a channel to listen for the ready state and
+  // wait until the wallet is ready
+  yield fork(listenForWalletReady, wallet);
   const { error } = yield race({
     success: take(types.WALLET_STATE_READY),
     error: take(types.WALLET_STATE_ERROR),
@@ -131,40 +136,38 @@ export function* startWallet(action) {
   if (error) {
     return yield put(startWalletFailed());
   }
-  // Wallet loaded succesfully here, we should load the hathor token balance and history
-  yield put(tokenFetchBalanceRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
-  yield put(tokenFetchHistoryRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
 
+  yield call(loadTokens);
+  yield put(startWalletSuccess());
+}
+
+export function* loadTokens() {
   const customTokenUid = DEFAULT_TOKEN.uid;
   const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
 
-  // If the DEFAULT_TOKEN is not HTR, also download its balance and history:
-  let loadCustom = [];
+  // Download hathor token balance
+  yield put(tokenFetchBalanceRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
+  yield take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, { tokenId: htrUid }));
+  // .. and history
+  yield put(tokenFetchHistoryRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
+  yield take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, { tokenId: htrUid }));
+
   if (customTokenUid !== htrUid) {
+    // Download custom token balance
     yield put(tokenFetchBalanceRequested(customTokenUid));
+    yield take(
+      specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, {
+        tokenId: customTokenUid,
+      }),
+    );
+    // .. and history
     yield put(tokenFetchHistoryRequested(customTokenUid));
-
-    loadCustom = [
-      take(specificTypeAndPayload(
-        types.TOKEN_FETCH_BALANCE_SUCCESS, {
-          tokenId: customTokenUid,
-        },
-      )),
-      take(specificTypeAndPayload(
-        types.TOKEN_FETCH_HISTORY_SUCCESS, {
-          tokenId: customTokenUid,
-        },
-      )),
-    ];
+    yield take(
+      specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, {
+        tokenId: customTokenUid,
+      }),
+    );
   }
-
-  // The `all` effect will wait for all effects in the list
-  yield all([
-    // The `take` effect will wait until one action that passes the predicate is captured
-    take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, { tokenId: htrUid })),
-    take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, { tokenId: htrUid })),
-    ...loadCustom,
-  ]);
 
   const registeredTokens = tokensUtils
     .getTokens()
@@ -183,8 +186,6 @@ export function* startWallet(action) {
   for (const token of registeredTokens) {
     yield put(tokenFetchBalanceRequested(token));
   }
-
-  yield put(startWalletSuccess());
 }
 
 // This will create a channel from an EventEmitter to wait until the wallet is loaded,
@@ -313,6 +314,11 @@ export function* loadPartialUpdate({ payload }) {
 
 export function* bestBlockUpdate({ payload }) {
   const currentHeight = yield select((state) => state.height);
+  const walletStartState = yield select((state) => state.walletStartState);
+
+  if (walletStartState === 'loading') {
+    return;
+  }
 
   if (currentHeight !== payload) {
     yield put(tokenFetchBalanceRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
@@ -325,6 +331,12 @@ export function* onWalletConnStateUpdate({ payload }) {
   yield put(setIsOnline(isOnline));
 }
 
+export function* reloadData() {
+  yield put(onStartWalletLock());
+  yield call(loadTokens);
+  yield put(startWalletSuccess());
+}
+
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', startWallet),
@@ -332,5 +344,6 @@ export function* saga() {
     takeEvery('WALLET_NEW_TX', handleNewTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
+    takeEvery('WALLET_RELOAD_DATA', reloadData),
   ]);
 }
