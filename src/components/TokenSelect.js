@@ -99,11 +99,10 @@ const TokenSelect = (props) => {
     }
 
     const balance = item.uid in props.tokensBalance
-      ? props.tokensBalance[item.uid].available : 0;
+      ? props.tokensBalance[item.uid].data.available : 0;
 
-    const tokensLoadingState = props.tokensLoadingState || {};
-    const tokenState = Object.prototype.hasOwnProperty.call(tokensLoadingState, item.uid)
-      ? props.tokensLoadingState[item.uid]
+    const tokenState = item.uid in props.tokensBalance
+      ? props.tokensBalance[item.uid].status
       : 'loading';
 
     return (
@@ -132,7 +131,6 @@ const TokenSelect = (props) => {
               {props.renderArrow && tokenState === 'loading' && (
                 <Spinner size={14} animating />
               )}
-
               {' '}
               {item.symbol}
             </Text>

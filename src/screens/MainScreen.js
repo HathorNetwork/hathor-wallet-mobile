@@ -17,6 +17,7 @@ import {
   TouchableWithoutFeedback,
   TouchableHighlight,
 } from 'react-native';
+import Spinner from '../components/Spinner';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
@@ -43,8 +44,10 @@ import { fetchMoreHistory, updateTokenHistory } from '../actions';
  * selectedToken {string} uid of the selected token
  */
 const mapStateToProps = (state) => ({
-  txList: state.tokensHistory[state.selectedToken.uid] || [],
-  balance: state.tokensBalance[state.selectedToken.uid] || { available: 0, locked: 0 },
+  tokenHistory: state.tokensHistory[state.selectedToken.uid] || { status: 'failed' },
+  // If we are on this screen, we can be sure that the balance is loaded since we don't navigate
+  // to it if the status is `failed`
+  balance: state.tokensBalance[state.selectedToken.uid].data,
   selectedToken: state.selectedToken,
   isOnline: state.isOnline,
   network: state.serverInfo.network,
@@ -54,6 +57,10 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   updateTokenHistory: (token, history) => dispatch(updateTokenHistory(token, history)),
+  getHistory: (token) => dispatch({
+    type: 'TOKEN_FETCH_HISTORY_REQUESTED',
+    tokenId: token.uid,
+  })
 });
 
 class MainScreen extends React.Component {
@@ -80,6 +87,10 @@ class MainScreen extends React.Component {
     this.setState({ modal: null });
   }
 
+  componentDidMount() {
+    this.props.getHistory(this.props.selectedToken);
+  }
+
   isNFT = () => (
     isTokenNFT(get(this.props, 'selectedToken.uid'), this.props.tokenMetadata)
   )
@@ -100,6 +111,10 @@ class MainScreen extends React.Component {
     if (this.props.selectedToken.uid !== hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
       this.props.navigation.navigate('TokenDetail');
     }
+  }
+
+  retryTxHistory = () => {
+    this.props.getHistory(this.props.selectedToken);
   }
 
   render() {
@@ -123,11 +138,48 @@ class MainScreen extends React.Component {
       </HathorList>
     );
 
+    const renderLoadingHistory = () => (
+      <HathorList infinity>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Strong>{t`Loading transactions`}</Strong>
+          <Spinner size={48} animating style={{ marginTop: 32 }} />
+        </View>
+      </HathorList>
+    );
+
+    const renderErrorHistory = () => (
+      <HathorList infinity>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 64 }}>
+          <Strong style={{ textAlign: 'center' }}>{t`There was an error loading your transaction history`}</Strong>
+          <Text style={{ marginTop: 8, lineHeight: 20, textAlign: 'center', width: 220 }}>
+            {str2jsx(
+              t`Please |tryAgain:try again|`,
+              {
+                tryAgain: (x, i) => (
+                  <Text
+                    key={i}
+                    onPress={() => this.retryTxHistory()}
+                    style={{ color: PRIMARY_COLOR, fontWeight: 'bold' }}
+                  > {x} </Text>
+                )
+              }
+            )}
+          </Text>
+        </View>
+      </HathorList>
+    );
+
     const renderTxHistory = () => {
-      if (this.props.txList && (this.props.txList.length > 0)) {
+      const status = get(this.props.tokenHistory, 'status');
+      if (status === 'ready') {
+        if (get(this.props.tokenHistory, 'data.length') <= 0) {
+          // empty history
+          return renderEmptyHistory();
+        }
+
         return (
           <TxHistoryView
-            txList={this.props.txList}
+            txList={this.props.tokenHistory.data}
             token={this.props.selectedToken}
             onTxPress={this.onTxPress}
             wallet={this.props.wallet}
@@ -136,8 +188,12 @@ class MainScreen extends React.Component {
           />
         );
       }
-      // empty history
-      return renderEmptyHistory();
+
+      if (status === 'loading') {
+        return renderLoadingHistory();
+      }
+
+      return renderErrorHistory();
     };
 
     const renderRightElement = () => {
