@@ -126,7 +126,7 @@ function* startWallet(action) {
   if (!error) {
     // Wallet loaded succesfully here, we should load the hathor token balance and history
     yield put({ type: 'TOKEN_FETCH_BALANCE_REQUESTED', payload: hathorLibConstants.HATHOR_TOKEN_CONFIG.uid });
-    yield put({ type: 'TOKEN_FETCH_HISTORY_REQUESTED', payload: hathorLibConstants.HATHOR_TOKEN_CONFIG.uid });
+    yield put({ type: 'TOKEN_FETCH_HISTORY_REQUESTED', tokenId: hathorLibConstants.HATHOR_TOKEN_CONFIG.uid });
 
     const customTokenUid = DEFAULT_TOKEN.uid;
     const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
