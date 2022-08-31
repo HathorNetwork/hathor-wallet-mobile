@@ -230,14 +230,18 @@ const onNewTx = (state, action) => {
  */
 const onUpdateTokenHistory = (state, action) => {
   const { token, newHistory } = action.payload;
-  const currentHistory = state.tokensHistory[token] || [];
 
-  const updatedHistoryMap = {};
-  updatedHistoryMap[token] = [...currentHistory, ...newHistory];
-  const newTokensHistory = Object.assign({}, state.tokensHistory, updatedHistoryMap);
   return {
     ...state,
-    tokensHistory: newTokensHistory,
+    tokensHistory: {
+      [token]: {
+        ...state.tokensHistory[token],
+        data: [
+          ...state.tokensHistory[token].data,
+          ...newHistory,
+        ]
+      }
+    },
   };
 };
 
