@@ -9,6 +9,7 @@ import {
 import { get } from 'lodash';
 import { TxHistory } from '../models';
 import {
+  types,
   tokenFetchBalanceSuccess,
   tokenFetchBalanceFailed,
   tokenFetchHistorySuccess,
@@ -84,6 +85,11 @@ function* fetchTokenHistory(action) {
   }
 }
 
+/**
+ * This saga will route the actions dispatched from SET_TOKEN and NEW_TOKEN to the
+ * TOKEN_FETCH_BALANCE_REQUESTED saga, the idea is to load the balance for new tokens
+ * registered or created on the app.
+ */
 function* routeTokenChange(action) {
   const wallet = yield select((state) => state.wallet);
 
@@ -95,21 +101,20 @@ function* routeTokenChange(action) {
     default:
     case 'SET_TOKENS':
       for (const token of action.payload) {
-        yield put({ type: 'TOKEN_FETCH_BALANCE_REQUESTED', tokenId: token.uid });
+        yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: token.uid });
       }
       break;
     case 'NEW_TOKEN':
-      yield put({ type: 'TOKEN_FETCH_BALANCE_REQUESTED', tokenId: action.payload.uid });
+      yield put({ type: types.TOKEN_FETCH_HISTORY_REQUESTED, tokenId: action.payload.uid });
       break;
   }
 }
 
 export function* saga() {
   yield all([
-    // takeEvery('LOAD_TOKEN_METADATA_REQUESTED', loadTokenMetadata),
-    takeEvery('TOKEN_FETCH_BALANCE_REQUESTED', fetchTokenBalance),
-    takeEvery('TOKEN_FETCH_HISTORY_REQUESTED', fetchTokenHistory),
-    takeEvery('NEW_TOKEN', routeTokenChange),
-    takeEvery('SET_TOKENS', routeTokenChange),
+    takeEvery(types.TOKEN_FETCH_BALANCE_REQUESTED, fetchTokenBalance),
+    takeEvery(types.TOKEN_FETCH_HISTORY_REQUESTED, fetchTokenHistory),
+    takeEvery(types.NEW_TOKEN, routeTokenChange),
+    takeEvery(types.SET_TOKENS, routeTokenChange),
   ]);
 }
