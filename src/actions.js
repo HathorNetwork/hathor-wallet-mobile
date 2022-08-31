@@ -445,6 +445,9 @@ export const tokenFetchHistoryFailed = (tokenId) => ({
   tokenId,
 });
 
+/**
+ * tokenId: The tokenId of the invalidate history request
+ */
 export const tokenInvalidateHistory = (tokenId) => ({
   type: types.TOKEN_INVALIDATE_HISTORY,
   tokenId,
