@@ -88,7 +88,7 @@ function* routeTokenChange(action) {
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet || !wallet.isReady()) {
-    return false;
+    return;
   }
 
   switch (action.type) {
