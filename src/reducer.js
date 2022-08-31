@@ -69,7 +69,6 @@ const initialState = {
   tokenMetadata: {},
   metadataLoaded: false,
   uniqueDeviceId: null,
-  tokenLoadingState: {},
   // If recoveringPin is set, the app will display
   // the RecoverPin screen instead of the default navigator
   recoveringPin: false,
@@ -473,9 +472,11 @@ export const onTokenFetchBalanceFailed = (state, action) => {
 
   return {
     ...state,
-    tokenLoadingState: {
-      ...state.tokenLoadingState,
-      [tokenId]: 'failed',
+    tokensBalance: {
+      ...state.tokensBalance,
+      [tokenId]: {
+        status: 'failed',
+      },
     },
   };
 };
