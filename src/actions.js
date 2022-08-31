@@ -6,8 +6,6 @@
  */
 import { chunk } from 'lodash';
 import {
-  wallet as walletUtil,
-  tokens as tokensUtils,
   constants as hathorLibConstants,
   metadataApi,
 } from '@hathor/wallet-lib';

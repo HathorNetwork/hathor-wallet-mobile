@@ -105,9 +105,6 @@ export function* startWallet(action) {
 
     const beforeReloadCallback = () => {
       console.log('BEFORE CALLBACK!!!!!');
-      store.dispatch({
-        type: 'teta',
-      });
       // dispatch(fetchHistoryBegin());
     };
 

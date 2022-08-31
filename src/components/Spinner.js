@@ -38,7 +38,12 @@ class Spinner extends React.Component {
 
     return (
       <Animated.Image
-        style={[this.props.style, { height: this.props.size, width: this.props.size, transform: [{ rotate: spin }] }]}
+        style={[
+          this.props.style, {
+            height: this.props.size,
+            width: this.props.size,
+            transform: [{ rotate: spin }]
+          }]}
         source={loadingIcon}
       />
     );
@@ -48,7 +53,6 @@ class Spinner extends React.Component {
 Spinner.propTypes = {
   // Optional (default 105). Size of the spinner. Used for width and height
   size: PropTypes.number,
-  style: PropTypes.object,
 };
 
 export default Spinner;

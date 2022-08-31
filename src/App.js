@@ -22,7 +22,9 @@ import NavigationService from './NavigationService';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
-  resetData, lockScreen, setTokens
+  resetData,
+  lockScreen,
+  setTokens,
 } from './actions';
 import { store } from './reducer';
 
@@ -61,8 +63,6 @@ import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
 import ErrorModal from './components/ErrorModal';
 
-
-console.disableYellowBox = true; 
 
 const InitStack = createStackNavigator(
   {

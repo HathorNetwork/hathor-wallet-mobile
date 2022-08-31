@@ -98,12 +98,6 @@ const reducer = (state = initialState, action) => {
       return onNewToken(state, action);
     case types.SET_TOKENS:
       return onSetTokens(state, action);
-    case types.FETCH_HISTORY_BEGIN:
-      return onFetchHistoryBegin(state, action);
-    case types.FETCH_HISTORY_SUCCESS:
-      return onFetchHistorySuccess(state, action);
-    case types.FETCH_HISTORY_ERROR:
-      return onFetchHistoryError(state, action);
     case types.UPDATE_TOKEN_HISTORY:
       return onUpdateTokenHistory(state, action);
     case types.SET_LOAD_HISTORY_STATUS:
@@ -298,44 +292,6 @@ const onSetTokens = (state, action) => {
     selectedToken,
   };
 };
-
-/**
- * Start fetching history. This means clear any past errors and show loading
- */
-const onFetchHistoryBegin = (state, action) => ({
-  ...state,
-  loadHistoryStatus: {
-    active: true,
-    error: false,
-  },
-});
-
-/**
- * Got history. Update history and balance for each token.
- */
-const onFetchHistorySuccess = (state, action) => {
-  // const { tokensHistory, tokensBalance } = action.payload;
-  return {
-    ...state,
-    tokensHistory: {},
-    tokensBalance: {},
-    loadHistoryStatus: {
-      active: false,
-      error: false,
-    },
-  };
-};
-
-/**
- * Error fetching history
- */
-const onFetchHistoryError = (state, action) => ({
-  ...state,
-  loadHistoryStatus: {
-    active: true,
-    error: true,
-  },
-});
 
 /**
  * Set loadHistoryStatus
