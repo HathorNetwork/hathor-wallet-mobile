@@ -50,6 +50,7 @@ import {
   setServerInfo,
   setIsOnline,
   setWallet,
+  newTx,
   types,
 } from '../actions';
 import {
@@ -359,7 +360,7 @@ export function* listenForWalletReady(wallet) {
   }
 }
 
-export function* handleNewTx(action) {
+export function* handleTx(action) {
   const tx = action.payload;
   const wallet = yield select((state) => state.wallet);
 
@@ -388,6 +389,11 @@ export function* handleNewTx(action) {
       // the user enters the history screen
       yield put(tokenInvalidateHistory(tokenUid));
     }
+  }
+
+  // If this is a new tx, we should dispatch newTx
+  if (action.type === 'WALLET_NEW_TX') {
+    yield put(newTx(tx));
   }
 }
 
@@ -477,7 +483,8 @@ export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', startWallet),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
-    takeEvery('WALLET_NEW_TX', handleNewTx),
+    takeEvery('WALLET_NEW_TX', handleTx),
+    takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
     takeEvery('WALLET_RELOAD_DATA', reloadData),
