@@ -1,7 +1,6 @@
 import {
   takeEvery,
   select,
-  delay,
   call,
   all,
   put,
@@ -57,7 +56,6 @@ function* fetchTokenBalance(action) {
 
     yield put(tokenFetchBalanceSuccess(tokenId, balance));
   } catch (e) {
-    console.log('E:', e);
     yield put(tokenFetchBalanceFailed(tokenId));
   }
 }
@@ -80,7 +78,6 @@ function* fetchTokenHistory(action) {
 
     yield put(tokenFetchHistorySuccess(tokenId, data));
   } catch (e) {
-    console.log('E: ', e);
     yield put(tokenFetchHistoryFailed(tokenId));
   }
 }

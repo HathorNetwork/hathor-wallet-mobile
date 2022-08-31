@@ -121,10 +121,9 @@ export function* startWallet(action) {
 
   // Setup listeners before starting the wallet so we don't lose messages
   yield fork(setupWalletListeners, wallet);
-  console.log('Will start wallet!');
+
   // Create a channel to listen for the ready state and
   // wait until the wallet is ready
-  console.log('Will listen for wallet ready');
   yield fork(listenForWalletReady, wallet);
 
   // Store the unique device id on redux
@@ -136,7 +135,6 @@ export function* startWallet(action) {
       password: pin,
     });
   } catch (e) {
-    console.log('Erroed: ', e);
     if (useWalletService) {
       // Wallet Service start wallet will fail if the status returned from
       // the service is 'error' or if the start wallet request failed.
@@ -166,8 +164,8 @@ export function* startWallet(action) {
     });
 
     if (error) {
-      console.log('ERROR', error);
-      return yield put(startWalletFailed());
+      yield put(startWalletFailed());
+      return;
     }
   }
 
@@ -255,7 +253,6 @@ export async function fetchTokenMetadata(token, network) {
       metadataPerToken[token] = tokenMeta;
     }
   } catch (e) {
-    console.log('E: ', e);
     // Error downloading metadata, then we should wait a few seconds
     // and retry if still didn't reached retry limit
     // eslint-disable-next-line
@@ -322,10 +319,7 @@ export function* listenForFeatureFlags(featureFlags) {
 export function* listenForWalletReady(wallet) {
   const channel = eventChannel((emitter) => {
     const listener = (state) => emitter(state);
-    wallet.on('state', (state) => {
-      console.log('Got state update', state);
-      emitter(state);
-    });
+    wallet.on('state', (state) => emitter(state));
 
     // Cleanup when the channel is closed
     return () => {
