@@ -22,6 +22,7 @@ import {
   take,
   fork,
 } from 'redux-saga/effects';
+import { chunk } from 'lodash';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
 import { t } from 'ttag';
@@ -37,6 +38,7 @@ import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
   tokenInvalidateHistory,
+  tokenMetadataUpdated,
   setUseWalletService,
   onStartWalletLock,
   startWalletSuccess,
@@ -217,12 +219,77 @@ export function* loadTokens() {
       return [...acc, token.uid];
     }, []);
 
+  // We don't need to wait for the metadatas response, so just fork it
+  yield fork(fetchTokensMetadata, registeredTokens);
+
   // Since we already know here what tokens are registered, we can dispatch actions
   // to asynchronously load the balances of each one. The `put` effect will just dispatch
   // and continue, loading the tokens asynchronously
   for (const token of registeredTokens) {
     yield put(tokenFetchBalanceRequested(token));
   }
+}
+
+/**
+ * Fetch a single token from the metadataApi
+ *
+ * @param {Array} token The token to fetch from the metadata api
+ * @param {String} network Network name
+ *
+ * @memberof Wallet
+ * @inner
+ */
+export async function fetchTokenMetadata(token, network) {
+  if (token === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid) {
+    return {};
+  }
+
+  const metadataPerToken = {};
+
+  try {
+    const data = await metadataApi.getDagMetadata(
+      token,
+      network,
+    );
+
+    // When the getDagMetadata method returns null
+    // it means that we have no metadata for this token
+    if (data) {
+      const tokenMeta = data[token];
+      metadataPerToken[token] = tokenMeta;
+    }
+  } catch (e) {
+    console.log('E: ', e);
+    // Error downloading metadata, then we should wait a few seconds
+    // and retry if still didn't reached retry limit
+    // eslint-disable-next-line
+    console.log('Error downloading metadata of token', token);
+  }
+
+  return metadataPerToken;
+}
+
+/**
+ * The wallet needs each token metadata to show information correctly
+ * So we fetch the tokens metadata and store on redux
+ */
+export function* fetchTokensMetadata(tokens) {
+  const { network } = yield select((state) => state.serverInfo);
+
+  const tokenChunks = chunk(tokens, METADATA_CONCURRENT_DOWNLOAD);
+
+  let tokenMetadatas = {};
+  for (const tokenChunk of tokenChunks) {
+    const responses = yield all(tokenChunk.map((token) => fetchTokenMetadata(token, network)));
+    for (const response of responses) {
+      tokenMetadatas = {
+        ...tokenMetadatas,
+        ...response,
+      };
+    }
+  }
+
+  yield put(tokenMetadataUpdated(tokenMetadatas));
 }
 
 // This will create a channel to listen for featureFlag updates
@@ -270,24 +337,26 @@ export function* listenForWalletReady(wallet) {
     };
   });
 
-  while (true) {
-    const message = yield take(channel);
+  try {
+    while (true) {
+      const message = yield take(channel);
 
-    if (message === HathorWallet.ERROR) {
-      yield put(walletStateError());
-      break;
-    } else {
-      if (wallet.isReady()) {
-        yield put(walletStateReady());
+      if (message === HathorWallet.ERROR) {
+        yield put(walletStateError());
         break;
+      } else {
+        if (wallet.isReady()) {
+          yield put(walletStateReady());
+          break;
+        }
+
+        continue;
       }
-
-      continue;
     }
+  } finally {
+    // When we close the channel, it will remove the event listener
+    channel.close();
   }
-
-  // When we close the channel, it will remove the event listener
-  channel.close();
 }
 
 export function* handleNewTx(action) {
