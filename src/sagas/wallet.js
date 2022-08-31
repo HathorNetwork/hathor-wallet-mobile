@@ -14,7 +14,6 @@ import {
   takeLatest,
   takeEvery,
   select,
-  delay,
   all,
   put,
   call,
@@ -56,6 +55,7 @@ import {
 import {
   specificTypeAndPayload,
 } from './helpers';
+import { store } from '../reducer';
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
@@ -106,10 +106,7 @@ export function* startWallet(action) {
       servers: ['https://mobile.wallet.hathor.network/v1a/'],
     });
 
-    const beforeReloadCallback = () => {
-      console.log('BEFORE CALLBACK!!!!!');
-      // dispatch(fetchHistoryBegin());
-    };
+    const beforeReloadCallback = () => store.dispatch(onStartWalletLock());
 
     const walletConfig = {
       seed: words,
@@ -174,8 +171,6 @@ export function* startWallet(action) {
     }
   }
 
-  // Fetch registered tokens metadata
-  yield put({ type: 'LOAD_TOKEN_METADATA_REQUESTED' });
   yield call(loadTokens);
   yield put(startWalletSuccess());
   yield fork(listenForFeatureFlags, featureFlags);
