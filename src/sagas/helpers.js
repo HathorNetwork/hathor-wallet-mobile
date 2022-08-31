@@ -1,5 +1,12 @@
 import { get } from 'lodash';
-// Helper method to wait until a specific action with a specific payload, this should be a helper
+
+/**
+ * Helper method to be used on take saga effect, will wait until an action
+ * with type and payload matching the passed (type, payload)
+ *
+ * @param type - String with the action type
+ * @param payload - Object with the keys and values to compare
+ */
 export const specificTypeAndPayload = (type, payload) => (action) => {
   if (type !== action.type) {
     return false;
