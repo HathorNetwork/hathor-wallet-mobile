@@ -14,7 +14,7 @@ import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
 import SimpleButton from '../components/SimpleButton';
 import OfflineBar from '../components/OfflineBar';
-import { updateSelectedToken, fetchTokenRequested} from '../actions';
+import { updateSelectedToken } from '../actions';
 
 
 /**
@@ -34,7 +34,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   updateSelectedToken: (token) => dispatch(updateSelectedToken(token)),
-  fetchToken: (token) => dispatch(fetchTokenRequested(token.uid)),
 });
 
 class Dashboard extends React.Component {
