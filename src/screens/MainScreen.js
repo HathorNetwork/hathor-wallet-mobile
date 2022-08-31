@@ -17,7 +17,6 @@ import {
   TouchableWithoutFeedback,
   TouchableHighlight,
 } from 'react-native';
-import Spinner from '../components/Spinner';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
@@ -36,6 +35,7 @@ import chevronDown from '../assets/icons/chevron-down.png';
 import infoIcon from '../assets/icons/info-circle.png';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
 import { fetchMoreHistory, updateTokenHistory } from '../actions';
+import Spinner from '../components/Spinner';
 
 
 /**
