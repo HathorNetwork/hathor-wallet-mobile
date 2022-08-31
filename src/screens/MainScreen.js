@@ -272,6 +272,7 @@ class TxHistoryView extends React.Component {
     const newHistory = await fetchMoreHistory(
       this.props.wallet, this.props.token.uid, this.props.txList
     );
+
     if (newHistory.length) {
       this.props.updateTokenHistory(this.props.token.uid, newHistory);
       this.setState({ loading: false });
@@ -286,7 +287,7 @@ class TxHistoryView extends React.Component {
         <FlatList
           data={this.props.txList}
           renderItem={this.renderItem}
-          keyExtractor={(item, index) => item.txId}
+          keyExtractor={(item) => item.txId}
           onEndReached={this.loadMoreHistory}
           onEndReachedThreshold={0.2}
           ListFooterComponent={this.renderFooter}

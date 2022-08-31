@@ -84,13 +84,32 @@ function* fetchTokenHistory(action) {
   }
 }
 
+function* routeTokenChange(action) {
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet || !wallet.isReady()) {
+    return false;
+  }
+
+  switch (action.type) {
+    default:
+    case 'SET_TOKENS':
+      for (const token of action.payload) {
+        yield put({ type: 'TOKEN_FETCH_BALANCE_REQUESTED', tokenId: token.uid });
+      }
+      break;
+    case 'NEW_TOKEN':
+      yield put({ type: 'TOKEN_FETCH_BALANCE_REQUESTED', tokenId: action.payload.uid });
+      break;
+  }
+}
 
 export function* saga() {
   yield all([
     // takeEvery('LOAD_TOKEN_METADATA_REQUESTED', loadTokenMetadata),
     takeEvery('TOKEN_FETCH_BALANCE_REQUESTED', fetchTokenBalance),
     takeEvery('TOKEN_FETCH_HISTORY_REQUESTED', fetchTokenHistory),
-    /* takeEvery('NEW_TOKEN', routeTokenChange),
-    takeEvery('SET_TOKENS', routeTokenChange), */
+    takeEvery('NEW_TOKEN', routeTokenChange),
+    takeEvery('SET_TOKENS', routeTokenChange),
   ]);
 }
