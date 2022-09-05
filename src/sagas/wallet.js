@@ -37,6 +37,7 @@ import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
   tokenInvalidateHistory,
+  setIsShowingPinScreen,
   tokenMetadataUpdated,
   setUseWalletService,
   onStartWalletLock,
@@ -55,10 +56,15 @@ import {
 import {
   specificTypeAndPayload,
 } from './helpers';
-import { store } from '../reducer';
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
+export function createEventChannel(setEmitter) {
+  return eventChannel((emitter) => {
+    setEmitter(emitter);
+    return () => {};
+  });
+}
 
 export function* startWallet(action) {
   const { words, pin } = action.payload;
@@ -74,9 +80,17 @@ export function* startWallet(action) {
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
 
+  // This is a work-around to be able to dispatch actions from inside callbacks
+  // it will be used on both showPinScreenForResult and beforeReloadCallbacks.
+  let emitter;
+  const walletEvents = yield call(createEventChannel, (em) => {
+    emitter = em;
+  });
+
   const showPinScreenForResult = async () => new Promise((resolve) => {
     const params = {
       cb: (_pin) => {
+        emitter(setIsShowingPinScreen(false));
         resolve(_pin);
       },
       canCancel: false,
@@ -85,7 +99,12 @@ export function* startWallet(action) {
     };
 
     NavigationService.navigate('PinScreen', params);
+
+    // We should set the global isShowingPinScreen
+    emitter(setIsShowingPinScreen(true));
   });
+
+  yield fork(setupWalletEvents, walletEvents);
 
   let wallet;
   if (useWalletService) {
@@ -106,13 +125,11 @@ export function* startWallet(action) {
       servers: ['https://mobile.wallet.hathor.network/v1a/'],
     });
 
-    const beforeReloadCallback = () => store.dispatch(onStartWalletLock());
-
     const walletConfig = {
       seed: words,
       store: STORE,
       connection,
-      beforeReloadCallback
+      beforeReloadCallback: () => emitter(onStartWalletLock()),
     };
     wallet = new HathorWallet(walletConfig);
   }
@@ -174,6 +191,10 @@ export function* startWallet(action) {
   yield fork(listenForFeatureFlags, featureFlags);
 }
 
+/**
+ * This saga will load both HTR and DEFAULT_TOKEN (if they are different)
+ * and dispatch actions to asynchronously load all registered tokens
+ */
 export function* loadTokens() {
   const customTokenUid = DEFAULT_TOKEN.uid;
   const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
@@ -383,6 +404,13 @@ export function* handleTx(action) {
   // If this is a new tx, we should dispatch newTx
   if (action.type === 'WALLET_NEW_TX') {
     yield put(newTx(tx));
+  }
+}
+
+export function* setupWalletEvents(channel) {
+  while (true) {
+    const action = yield take(channel);
+    yield put(action);
   }
 }
 
