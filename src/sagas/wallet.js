@@ -497,11 +497,6 @@ export function* onWalletConnStateUpdate({ payload }) {
   yield put(setIsOnline(isOnline));
 }
 
-export function* reloadData() {
-  yield call(loadTokens);
-  yield put(startWalletSuccess());
-}
-
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', startWallet),
@@ -510,6 +505,6 @@ export function* saga() {
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
-    takeEvery('WALLET_RELOAD_DATA', reloadData),
+    takeEvery('WALLET_RELOAD_DATA', loadTokens),
   ]);
 }
