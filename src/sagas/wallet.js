@@ -1,4 +1,5 @@
 import { NativeModules } from 'react-native';
+import { batch } from 'react-redux';
 import {
   Connection,
   HathorWallet,
@@ -236,9 +237,14 @@ export function* loadTokens() {
   // Since we already know here what tokens are registered, we can dispatch actions
   // to asynchronously load the balances of each one. The `put` effect will just dispatch
   // and continue, loading the tokens asynchronously
-  for (const token of registeredTokens) {
-    yield put(tokenFetchBalanceRequested(token));
-  }
+  yield put((dispatch) => {
+    // Will only trigger a single render():
+    batch(() => {
+      for (const token of registeredTokens) {
+        dispatch(tokenFetchBalanceRequested(token));
+      }
+    });
+  });
 }
 
 /**
