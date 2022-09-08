@@ -81,17 +81,16 @@ export function* startWallet(action) {
   // then we don't know if we've cleaned up the wallet data in the storage
   walletUtil.cleanLoadedData();
 
-  // This is a work-around to be able to dispatch actions from inside callbacks
-  // it will be used on both showPinScreenForResult and beforeReloadCallbacks.
-  let emitter;
-  const walletEvents = yield call(createEventChannel, (em) => {
-    emitter = em;
+  // This is a work-around so we can dispatch actions from inside callbacks.
+  let dispatch;
+  yield put((_dispatch) => {
+    dispatch = _dispatch;
   });
 
   const showPinScreenForResult = async () => new Promise((resolve) => {
     const params = {
       cb: (_pin) => {
-        emitter(setIsShowingPinScreen(false));
+        dispatch(setIsShowingPinScreen(false));
         resolve(_pin);
       },
       canCancel: false,
@@ -102,10 +101,8 @@ export function* startWallet(action) {
     NavigationService.navigate('PinScreen', params);
 
     // We should set the global isShowingPinScreen
-    emitter(setIsShowingPinScreen(true));
+    dispatch(setIsShowingPinScreen(true));
   });
-
-  yield fork(setupWalletEvents, walletEvents);
 
   let wallet;
   if (useWalletService) {
@@ -188,7 +185,6 @@ export function* startWallet(action) {
   }
 
   yield call(loadTokens);
-  yield put(startWalletSuccess());
   yield fork(listenForFeatureFlags, featureFlags);
 }
 
@@ -197,6 +193,10 @@ export function* startWallet(action) {
  * and dispatch actions to asynchronously load all registered tokens
  */
 export function* loadTokens() {
+  // Since we are reloading the token balances and history for HTR and DEFAULT_TOKEN,
+  // we should display the loading history screen, as the current balance is now unreliable
+  yield put(onStartWalletLock());
+
   const customTokenUid = DEFAULT_TOKEN.uid;
   const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
 
@@ -223,6 +223,9 @@ export function* loadTokens() {
       }),
     );
   }
+
+  // Hide the loading history screen
+  yield put(startWalletSuccess());
 
   const registeredTokens = tokensUtils
     .getTokens()
@@ -497,7 +500,6 @@ export function* onWalletConnStateUpdate({ payload }) {
 }
 
 export function* reloadData() {
-  yield put(onStartWalletLock());
   yield call(loadTokens);
   yield put(startWalletSuccess());
 }
