@@ -59,14 +59,6 @@ import {
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
-export function createEventChannel(setEmitter) {
-  return eventChannel((emitter) => {
-    setEmitter(emitter);
-    // Nothing to cleanup, return a noop
-    return () => {};
-  });
-}
-
 export function* startWallet(action) {
   const { words, pin } = action.payload;
 
