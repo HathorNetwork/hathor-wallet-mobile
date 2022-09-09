@@ -120,7 +120,7 @@ export function* startWallet(action) {
       seed: words,
       store: STORE,
       connection,
-      beforeReloadCallback: () => emitter(onStartWalletLock()),
+      beforeReloadCallback: () => dispatch(onStartWalletLock()),
     };
     wallet = new HathorWallet(walletConfig);
   }
@@ -276,8 +276,9 @@ export async function fetchTokenMetadata(token, network) {
       metadataPerToken[token] = tokenMeta;
     }
   } catch (e) {
-    // Error downloading metadata, then we should wait a few seconds
-    // and retry if still didn't reached retry limit
+    // Error downloading metadata.
+    // TODO: We should wait a few seconds and retry if still didn't
+    // reach the retry limit
     // eslint-disable-next-line
     console.log('Error downloading metadata of token', token);
   }
