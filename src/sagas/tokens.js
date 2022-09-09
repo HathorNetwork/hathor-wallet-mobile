@@ -2,11 +2,15 @@ import {
   takeEvery,
   select,
   call,
+  fork,
+  take,
   all,
   put,
 } from 'redux-saga/effects';
+import { channel } from 'redux-saga';
 import { get } from 'lodash';
 import { TxHistory } from '../models';
+import { specificTypeAndPayload } from './helpers';
 import {
   types,
   tokenFetchBalanceSuccess,
@@ -14,6 +18,8 @@ import {
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
 } from '../actions';
+
+const CONCURRENT_FETCH_BALANCE_REQUESTS = 5;
 
 const mapTokenHistory = (element, token) => {
   const data = {
@@ -27,6 +33,43 @@ const mapTokenHistory = (element, token) => {
   return new TxHistory(data);
 };
 
+/**
+ * This saga will create a channel to queue TOKEN_FETCH_BALANCE_REQUESTED actions and
+ * consumers that will run in parallel consuming those actions.
+ *
+ * More information about channels can be read on https://redux-saga.js.org/docs/api/#takechannel
+ */
+function* fetchTokenBalanceQueue() {
+  const fetchTokenBalanceChannel = yield call(channel);
+
+  // Fork CONCURRENT_FETCH_BALANCE_REQUESTS threads to download token balances
+  for (let i = 0; i < CONCURRENT_FETCH_BALANCE_REQUESTS; i += 1) {
+    yield fork(fetchTokenBalanceConsumer, fetchTokenBalanceChannel);
+  }
+
+  while (true) {
+    const action = yield take(types.TOKEN_FETCH_BALANCE_REQUESTED);
+    yield put(fetchTokenBalanceChannel, action);
+  }
+}
+
+/**
+ * This saga will consume the fetchTokenBalanceChannel for TOKEN_FETCH_BALANCE_REQUEST actions
+ * and wait until the TOKEN_FETCH_BALANCE_SUCCESS action is dispatched with the specific tokenId
+ */
+function* fetchTokenBalanceConsumer(fetchTokenBalanceChannel) {
+  while (true) {
+    const action = yield take(fetchTokenBalanceChannel);
+
+    yield fork(fetchTokenBalance, action);
+    // Wait until the success action is dispatched before consuming another action
+    yield take(
+      specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, {
+        tokenId: action.tokenId,
+      }),
+    );
+  }
+}
 
 function* fetchTokenBalance(action) {
   const { tokenId, force } = action;
@@ -109,7 +152,7 @@ function* routeTokenChange(action) {
 
 export function* saga() {
   yield all([
-    takeEvery(types.TOKEN_FETCH_BALANCE_REQUESTED, fetchTokenBalance),
+    fork(fetchTokenBalanceQueue),
     takeEvery(types.TOKEN_FETCH_HISTORY_REQUESTED, fetchTokenHistory),
     takeEvery(types.NEW_TOKEN, routeTokenChange),
     takeEvery(types.SET_TOKENS, routeTokenChange),
