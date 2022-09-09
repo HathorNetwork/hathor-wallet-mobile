@@ -168,7 +168,7 @@ export function* startWallet(action) {
   // Wallet might be already ready at this point
   if (!wallet.isReady()) {
     const { error } = yield race({
-      success: take('WALLET_STATE_READY'),
+      success: take(types.WALLET_STATE_READY),
       error: take(types.WALLET_STATE_ERROR),
     });
 
