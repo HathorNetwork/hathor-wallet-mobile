@@ -9,6 +9,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
+import { get } from 'lodash';
 
 import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
@@ -40,6 +41,12 @@ class Dashboard extends React.Component {
   static navigatorStyle = { tabBarVisible: false }
 
   onItemPress = (item) => {
+    // Check if the token balance is already loaded
+    const tokenBalanceStatus = get(this.props.tokensBalance, `${item.uid}.status`, 'loading');
+    if (tokenBalanceStatus === 'loading') {
+      return;
+    }
+
     this.props.updateSelectedToken(item);
     this.props.navigation.navigate('MainScreen');
   }
