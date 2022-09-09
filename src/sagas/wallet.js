@@ -15,6 +15,7 @@ import {
   takeEvery,
   select,
   cancel,
+  cancelled,
   all,
   put,
   call,
@@ -189,9 +190,11 @@ export function* startWallet(action) {
   // all attached forks (that will cause the event listeners to be cleaned).
   while (true) {
     yield take('START_WALLET_REQUESTED');
-    yield cancel(featureFlagsThread);
-    yield cancel(walletListenerThread);
-    yield cancel(walletReadyThread);
+    yield cancel([
+      walletListenerThread,
+      walletReadyThread,
+      featureFlagsThread
+    ]);
   }
 }
 
@@ -342,8 +345,10 @@ export function* listenForFeatureFlags(featureFlags) {
       }
     }
   } finally {
-    // When we close the channel, it will remove the event listener
-    channel.close();
+    if (yield cancelled()) {
+      // When we close the channel, it will remove the event listener
+      channel.close();
+    }
   }
 }
 
@@ -366,19 +371,21 @@ export function* listenForWalletReady(wallet) {
 
       if (message === HathorWallet.ERROR) {
         yield put(walletStateError());
-        break;
+        yield cancel();
       } else {
         if (wallet.isReady()) {
           yield put(walletStateReady());
-          break;
+          yield cancel();
         }
 
         continue;
       }
     }
   } finally {
-    // When we close the channel, it will remove the event listener
-    channel.close();
+    if (yield cancelled()) {
+      // When we close the channel, it will remove the event listener
+      channel.close();
+    }
   }
 }
 
@@ -466,7 +473,10 @@ export function* setupWalletListeners(wallet) {
       });
     }
   } finally {
-    channel.close();
+    if (yield cancelled()) {
+      // When we close the channel, it will remove the event listener
+      channel.close();
+    }
   }
 }
 
