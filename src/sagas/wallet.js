@@ -15,6 +15,7 @@ import {
   takeLatest,
   takeEvery,
   select,
+  cancel,
   all,
   put,
   call,
@@ -128,11 +129,11 @@ export function* startWallet(action) {
   yield put(setWallet(wallet));
 
   // Setup listeners before starting the wallet so we don't lose messages
-  yield fork(setupWalletListeners, wallet);
+  const walletListenerThread = yield fork(setupWalletListeners, wallet);
 
   // Create a channel to listen for the ready state and
   // wait until the wallet is ready
-  yield fork(listenForWalletReady, wallet);
+  const walletReadyThread = yield fork(listenForWalletReady, wallet);
 
   // Store the unique device id on redux
   yield put(setUniqueDeviceId(uniqueDeviceId));
@@ -178,7 +179,20 @@ export function* startWallet(action) {
   }
 
   yield call(loadTokens);
-  yield fork(listenForFeatureFlags, featureFlags);
+  const featureFlagsThread = yield fork(listenForFeatureFlags, featureFlags);
+
+  // The way the redux-saga fork model works is that if a saga has `forked`
+  // another saga (using the `fork` effect), it will remain active until all
+  // the forks are terminated. You can read more details at
+  // https://redux-saga.js.org/docs/advanced/ForkModel
+  // So, if a new START_WALLET_REQUESTED action is dispatched, we need to cleanup
+  // all attached forks (that will cause the event listeners to be cleaned).
+  while (true) {
+    yield take('START_WALLET_REQUESTED');
+    yield cancel(featureFlagsThread);
+    yield cancel(walletListenerThread);
+    yield cancel(walletReadyThread);
+  }
 }
 
 /**
