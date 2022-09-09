@@ -419,18 +419,6 @@ export function* handleTx(action) {
   }
 }
 
-/**
- * This will receive a channel and simply dispatch actions that are emmited from
- * it. The idea here is to capture events that are emitted from inside a callback,
- * this is used for the `beforeReloadCallback` and the showPinScreenForResult callback
- */
-export function* setupWalletEvents(channel) {
-  while (true) {
-    const action = yield take(channel);
-    yield put(action);
-  }
-}
-
 export function* setupWalletListeners(wallet) {
   const channel = eventChannel((emitter) => {
     const listener = (state) => emitter(state);
