@@ -15,7 +15,7 @@ import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
 import SimpleButton from '../components/SimpleButton';
 import OfflineBar from '../components/OfflineBar';
-import { updateSelectedToken } from '../actions';
+import { tokenFetchBalanceRequested, updateSelectedToken } from '../actions';
 
 
 /**
@@ -35,6 +35,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   updateSelectedToken: (token) => dispatch(updateSelectedToken(token)),
+  getBalance: (token) => dispatch(tokenFetchBalanceRequested(token)),
 });
 
 class Dashboard extends React.Component {
@@ -43,7 +44,14 @@ class Dashboard extends React.Component {
   onItemPress = (item) => {
     // Check if the token balance is already loaded
     const tokenBalanceStatus = get(this.props.tokensBalance, `${item.uid}.status`, 'loading');
+
     if (tokenBalanceStatus === 'loading') {
+      return;
+    }
+
+    if (tokenBalanceStatus === 'failed') {
+      // If the token balance status is failed, we should try again
+      this.props.getBalance(item.uid);
       return;
     }
 

@@ -10,6 +10,8 @@ import {
   FlatList, Image, StyleSheet, View, Text, TouchableHighlight, Platform
 } from 'react-native';
 import { get } from 'lodash';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 
 import DeviceInfo from 'react-native-device-info';
 
@@ -122,12 +124,17 @@ const TokenSelect = (props) => {
               )}
 
               {props.renderArrow && tokenState === 'failed' && (
-                <Image style={{ marginLeft: 8 }} source={icCloseActive} width={24} height={24} />
+                <FontAwesomeIcon
+                  icon={faCircleExclamation}
+                  color='rgba(255, 0, 0, 0.7)'
+                  style={{ fontSize: 14 }}
+                />
               )}
 
               {props.renderArrow && tokenState === 'loading' && (
                 <Spinner size={14} animating />
               )}
+
               {' '}
               {item.symbol}
             </Text>
