@@ -15,7 +15,6 @@ import { t } from 'ttag';
 import {
   walletReloadData,
   startWalletRequested,
-  clearInitWallet,
   resetLoadedData,
 } from '../actions';
 import SimpleButton from '../components/SimpleButton';
@@ -48,7 +47,6 @@ const mapDispatchToProps = (dispatch) => ({
     },
   reloadHistory:
     () => dispatch(walletReloadData()),
-  clearInitWallet: () => dispatch(clearInitWallet()),
   resetLoadedData: () => dispatch(resetLoadedData()),
 });
 
@@ -57,10 +55,6 @@ class LoadHistoryScreen extends React.Component {
     // This setTimeout exists to prevent blocking the main thread
     setTimeout(() => this.initializeWallet(), 0);
     this.props.resetLoadedData();
-  }
-
-  componentWillUnmount() {
-    this.props.clearInitWallet();
   }
 
   initializeWallet() {

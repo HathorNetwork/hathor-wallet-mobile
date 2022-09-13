@@ -8,7 +8,7 @@
 import '../shim';
 
 import React from 'react';
-import { AppState, StyleSheet, View } from 'react-native';
+import { AppState, Text, StyleSheet, View } from 'react-native';
 import { createSwitchNavigator, createAppContainer, } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import { createBottomTabNavigator } from 'react-navigation-tabs';
@@ -62,6 +62,7 @@ import CreateTokenAmount from './screens/CreateTokenAmount';
 import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
 import ErrorModal from './components/ErrorModal';
+import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 
 
 const InitStack = createStackNavigator(
@@ -330,8 +331,15 @@ class _AppStackWrapper extends React.Component {
           </View>
         );
       }
+
       return null;
     };
+
+    if (this.props.walletStartState === 'error') {
+      return (
+        <LoadWalletErrorScreen />
+      );
+    }
 
     return (
       <View style={{ flex: 1 }}>

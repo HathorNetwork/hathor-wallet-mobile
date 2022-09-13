@@ -7,7 +7,6 @@ import {
   wallet as walletUtil,
   tokens as tokensUtils,
   constants as hathorLibConstants,
-  metadataApi,
   config,
 } from '@hathor/wallet-lib';
 import {
@@ -23,14 +22,12 @@ import {
   take,
   fork,
 } from 'redux-saga/effects';
-import { chunk } from 'lodash';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
 import { t } from 'ttag';
 import {
   STORE,
   DEFAULT_TOKEN,
-  METADATA_CONCURRENT_DOWNLOAD,
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
   WALLET_SERVICE_MAINNET_BASE_URL,
 } from '../constants';
@@ -179,8 +176,17 @@ export function* startWallet(action) {
     }
   }
 
-  yield call(loadTokens);
+  try {
+    yield call(loadTokens);
+  } catch (e) {
+    console.log('Captured error: ', e);
+    yield put(startWalletFailed());
+    return;
+  }
+
   const featureFlagsThread = yield fork(listenForFeatureFlags, featureFlags);
+
+  yield put(startWalletSuccess());
 
   // The way the redux-saga fork model works is that if a saga has `forked`
   // another saga (using the `fork` effect), it will remain active until all
@@ -203,10 +209,6 @@ export function* startWallet(action) {
  * and dispatch actions to asynchronously load all registered tokens
  */
 export function* loadTokens() {
-  // Since we are reloading the token balances and history for HTR and DEFAULT_TOKEN,
-  // we should display the loading history screen, as the current balance is now unreliable
-  yield put(onStartWalletLock());
-
   const customTokenUid = DEFAULT_TOKEN.uid;
   const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
 
@@ -262,9 +264,6 @@ export function* loadTokens() {
     }
   }
 
-  // Hide the loading history screen
-  yield put(startWalletSuccess());
-
   const registeredTokens = tokensUtils
     .getTokens()
     .reduce((acc, token) => {
@@ -285,45 +284,6 @@ export function* loadTokens() {
   for (const token of registeredTokens) {
     yield put(tokenFetchBalanceRequested(token));
   }
-}
-
-/**
- * Fetch a single token from the metadataApi
- *
- * @param {Array} token The token to fetch from the metadata api
- * @param {String} network Network name
- *
- * @memberof Wallet
- * @inner
- */
-export async function fetchTokenMetadata(token, network) {
-  if (token === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid) {
-    return {};
-  }
-
-  const metadataPerToken = {};
-
-  try {
-    const data = await metadataApi.getDagMetadata(
-      token,
-      network,
-    );
-
-    // When the getDagMetadata method returns null
-    // it means that we have no metadata for this token
-    if (data) {
-      const tokenMeta = data[token];
-      metadataPerToken[token] = tokenMeta;
-    }
-  } catch (e) {
-    // Error downloading metadata.
-    // TODO: We should wait a few seconds and retry if still didn't
-    // reach the retry limit
-    // eslint-disable-next-line
-    console.log('Error downloading metadata of token', token);
-  }
-
-  return metadataPerToken;
 }
 
 /**
@@ -554,6 +514,19 @@ export function* onWalletConnStateUpdate({ payload }) {
   yield put(setIsOnline(isOnline));
 }
 
+export function* onWalletReloadData() {
+  // Since we are reloading the token balances and history for HTR and DEFAULT_TOKEN,
+  // we should display the loading history screen, as the current balance is now unreliable
+  yield put(onStartWalletLock());
+  try {
+    yield call(loadTokens());
+  } catch (e) {
+    yield put(startWalletFailed());
+  }
+
+  yield put(startWalletSuccess());
+}
+
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', startWallet),
@@ -562,6 +535,6 @@ export function* saga() {
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
-    takeEvery('WALLET_RELOAD_DATA', loadTokens),
+    takeEvery('WALLET_RELOAD_DATA', onWalletReloadData),
   ]);
 }

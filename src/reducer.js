@@ -157,6 +157,8 @@ const reducer = (state = initialState, action) => {
       return onTokenInvalidateBalance(state, action);
     case types.ON_START_WALLET_LOCK:
       return onStartWalletLock(state);
+    case types.START_WALLET_REQUESTED:
+      return onStartWalletRequested(state, action);
     case types.START_WALLET_SUCCESS:
       return onStartWalletSuccess(state);
     case types.START_WALLET_FAILED:
@@ -315,7 +317,6 @@ const onSetInitWallet = (state, action) => ({
   ...state,
   initWallet: action.payload,
 });
-
 
 const onSetRecoveringPin = (state, action) => ({
   ...state,
@@ -542,10 +543,19 @@ export const onStartWalletLock = (state) => ({
   walletStartState: 'loading',
 });
 
+export const onStartWalletRequested = (state, action) => ({
+  ...state,
+  initWallet: {
+    words: action.payload.words,
+    pin: action.payload.pin,
+  },
+});
+
 export const onStartWalletSuccess = (state) => ({
   ...state,
   walletStartError: false,
   walletStartState: 'ready',
+  initWallet: {}, // Remove words and pin from memory
 });
 
 export const onTokenInvalidateBalance = (state, action) => {
