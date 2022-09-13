@@ -210,28 +210,56 @@ export function* loadTokens() {
   const customTokenUid = DEFAULT_TOKEN.uid;
   const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
 
-  // Download hathor token balance
+  // Download hathor token balance and history:
   yield put(tokenFetchBalanceRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
-  yield take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, { tokenId: htrUid }));
-  // ...and history
+  const { htrBalanceError } = yield race({
+    success: take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, {
+      tokenId: htrUid,
+    })),
+    htrBalanceError: take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_FAILED, {
+      tokenId: htrUid,
+    })),
+  });
+  // ...and history:
   yield put(tokenFetchHistoryRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
-  yield take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, { tokenId: htrUid }));
+  const { htrHistoryError } = yield race({
+    success: take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, {
+      tokenId: htrUid,
+    })),
+    htrHistoryError: take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_FAILED, {
+      tokenId: htrUid,
+    })),
+  });
+
+  if (htrBalanceError || htrHistoryError) {
+    throw new Error('Error loading HTR history or balance');
+  }
 
   if (customTokenUid !== htrUid) {
-    // Download custom token balance
+    // Download custom token balance:
     yield put(tokenFetchBalanceRequested(customTokenUid));
-    yield take(
-      specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, {
+    const { customBalanceError } = yield race({
+      success: take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, {
         tokenId: customTokenUid,
-      }),
-    );
-    // ...and history
+      })),
+      customBalanceError: take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_FAILED, {
+        tokenId: htrUid,
+      })),
+    });
+    // ...and history:
     yield put(tokenFetchHistoryRequested(customTokenUid));
-    yield take(
-      specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, {
+    const { customHistoryError } = yield race({
+      success: take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, {
         tokenId: customTokenUid,
-      }),
-    );
+      })),
+      customHistoryError: take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_FAILED, {
+        tokenId: customTokenUid,
+      })),
+    });
+
+    if (customBalanceError || customHistoryError) {
+      throw new Error('Error loading custom token history or balance');
+    }
   }
 
   // Hide the loading history screen
