@@ -22,6 +22,7 @@ import {
 } from '../actions';
 
 const CONCURRENT_FETCH_REQUESTS = 5;
+const METADATA_MAX_RETRIES = 0;
 
 const mapTokenHistory = (element, token) => {
   const data = {
@@ -86,7 +87,6 @@ function* fetchTokenBalance(action) {
       return;
     }
 
-    yield delay(1500);
     const response = yield call(wallet.getBalance.bind(wallet), tokenId);
     const token = get(response, 0, {
       balance: {
@@ -208,13 +208,23 @@ export function* fetchTokenMetadata({ tokenId }) {
   const { network } = yield select((state) => state.serverInfo);
 
   try {
-    const data = yield call(metadataApi.getDagMetadata, tokenId, network);
+    // Retry mechanism
+    for (let i = 0; i <= METADATA_MAX_RETRIES; i += 1) {
+      try {
+        const data = yield call(metadataApi.getDagMetadata, tokenId, network);
 
-    yield put({
-      type: types.TOKEN_FETCH_METADATA_SUCCESS,
-      tokenId,
-      data: get(data, tokenId, null),
-    });
+        yield put({
+          type: types.TOKEN_FETCH_METADATA_SUCCESS,
+          tokenId,
+          data: get(data, tokenId, null),
+        });
+        return;
+      } catch (e) {
+        yield delay(1000); // Wait 1s before trying again
+      }
+    }
+
+    throw new Error(`Max retries requesting metadata for ${tokenId}`);
   } catch (e) {
     yield put({
       type: types.TOKEN_FETCH_METADATA_FAILED,
