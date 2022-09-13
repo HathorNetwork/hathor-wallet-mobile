@@ -79,7 +79,7 @@ const initialState = {
   // screen
   tempPin: null,
   isShowingPinScreen: false,
-  walletStartState: 'loading',
+  walletStartState: WALLET_STATUS.LOADING,
   walletStartError: false,
 };
 
