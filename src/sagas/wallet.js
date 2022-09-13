@@ -303,18 +303,39 @@ export async function fetchTokenMetadata(token, network) {
  * So we fetch the tokens metadata and store on redux
  */
 export function* fetchTokensMetadata(tokens) {
-  const { network } = yield select((state) => state.serverInfo);
+  // No tokens to load
+  if (!tokens.length) {
+    return;
+  }
 
-  const tokenChunks = chunk(tokens, METADATA_CONCURRENT_DOWNLOAD);
+  for (const token of tokens) {
+    yield put({
+      type: types.TOKEN_FETCH_METADATA_REQUESTED,
+      tokenId: token,
+    });
+  }
 
-  let tokenMetadatas = {};
-  for (const tokenChunk of tokenChunks) {
-    const responses = yield all(tokenChunk.map((token) => fetchTokenMetadata(token, network)));
-    for (const response of responses) {
-      tokenMetadatas = {
-        ...tokenMetadatas,
-        ...response,
-      };
+  const responses = yield all(
+    tokens.map((token) => take(
+      specificTypeAndPayload([
+        types.TOKEN_FETCH_METADATA_SUCCESS,
+        types.TOKEN_FETCH_METADATA_FAILED,
+      ], {
+        tokenId: token,
+      }),
+    ))
+  );
+
+  const tokenMetadatas = {};
+  for (const response of responses) {
+    if (response.type === types.TOKEN_FETCH_METADATA_FAILED) {
+      // eslint-disable-next-line
+      console.log('Error downloading metadata of token', response.tokenId);
+    } else if (response.type === types.TOKEN_FETCH_METADATA_SUCCESS) {
+      // When the request returns null, it means that we have no metadata for this token
+      if (response.data) {
+        tokenMetadatas[response.tokenId] = response.data;
+      }
     }
   }
 
