@@ -8,7 +8,7 @@
 import '../shim';
 
 import React from 'react';
-import { AppState, Text, StyleSheet, View } from 'react-native';
+import { AppState, StyleSheet, View } from 'react-native';
 import { createSwitchNavigator, createAppContainer, } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import { createBottomTabNavigator } from 'react-navigation-tabs';

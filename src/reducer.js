@@ -14,7 +14,7 @@ import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
 import { types } from './actions';
 import rootSagas from './sagas';
 import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
-import {WALLET_STATUS} from './sagas/wallet';
+import { WALLET_STATUS } from './sagas/wallet';
 
 /**
  * tokensBalance {Object} stores the balance for each
