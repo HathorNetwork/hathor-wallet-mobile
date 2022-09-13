@@ -21,6 +21,12 @@ import {
   tokenFetchHistoryFailed,
 } from '../actions';
 
+export const TOKEN_DOWNLOAD_STATUS = {
+  READY: 'ready',
+  FAILED: 'failed',
+  LOADING: 'loading',
+};
+
 const CONCURRENT_FETCH_REQUESTS = 5;
 const METADATA_MAX_RETRIES = 0;
 

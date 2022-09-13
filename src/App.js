@@ -63,6 +63,7 @@ import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
 import ErrorModal from './components/ErrorModal';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
+import { WALLET_STATUS } from './sagas/wallet';
 
 
 const InitStack = createStackNavigator(
@@ -324,7 +325,7 @@ class _AppStackWrapper extends React.Component {
         screen = <RecoverPin navigation={this.props.navigation} />;
       }
 
-      if (this.props.walletStartState === 'loading' || this.props.isScreenLocked) {
+      if (this.props.walletStartState === WALLET_STATUS.LOADING || this.props.isScreenLocked) {
         return (
           <View style={this.style.auxView}>
             { screen }
@@ -335,7 +336,7 @@ class _AppStackWrapper extends React.Component {
       return null;
     };
 
-    if (this.props.walletStartState === 'error') {
+    if (this.props.walletStartState === WALLET_STATUS.FAILED) {
       return (
         <LoadWalletErrorScreen />
       );

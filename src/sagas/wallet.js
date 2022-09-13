@@ -58,8 +58,13 @@ import {
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
+export const WALLET_STATUS = {
+  READY: 'ready',
+  FAILED: 'failed',
+  LOADING: 'loading',
+};
+
 export function* startWallet(action) {
-  yield put(onStartWalletLock());
   const { words, pin } = action.payload;
 
   const networkName = 'mainnet';
@@ -504,7 +509,7 @@ export function* bestBlockUpdate({ payload }) {
     return;
   }
 
-  if (walletStartState === 'loading') {
+  if (walletStartState === WALLET_STATUS.LOADING) {
     return;
   }
 

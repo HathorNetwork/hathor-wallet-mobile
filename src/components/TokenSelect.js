@@ -16,10 +16,10 @@ import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 import DeviceInfo from 'react-native-device-info';
 
 import chevronRight from '../assets/icons/chevron-right.png';
-import icCloseActive from '../assets/icons/icCloseActive.png';
 import Spinner from './Spinner';
 import { PRIMARY_COLOR } from '../constants';
 import { getLightBackground, renderValue, isTokenNFT } from '../utils';
+import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 
 
 /*
@@ -119,11 +119,11 @@ const TokenSelect = (props) => {
           </View>
           <View style={styles.itemLeftWrapper}>
             <Text style={[styles.text, styles.rightText]}>
-              {tokenState === 'ready' && (
+              {tokenState === TOKEN_DOWNLOAD_STATUS.READY && (
                 renderValue(balance, isTokenNFT(item.uid, props.tokenMetadata))
               )}
 
-              {props.renderArrow && tokenState === 'failed' && (
+              {props.renderArrow && tokenState === TOKEN_DOWNLOAD_STATUS.FAILED && (
                 <FontAwesomeIcon
                   icon={faCircleExclamation}
                   color='rgba(255, 0, 0, 0.7)'
@@ -131,11 +131,12 @@ const TokenSelect = (props) => {
                 />
               )}
 
-              {props.renderArrow && tokenState === 'loading' && (
+              {props.renderArrow && tokenState === TOKEN_DOWNLOAD_STATUS.LOADING && (
                 <Spinner size={14} animating />
               )}
 
               {' '}
+
               {item.symbol}
             </Text>
             {props.renderArrow

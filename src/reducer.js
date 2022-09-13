@@ -13,6 +13,8 @@ import { get } from 'lodash';
 import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
 import { types } from './actions';
 import rootSagas from './sagas';
+import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
+import {WALLET_STATUS} from './sagas/wallet';
 
 /**
  * tokensBalance {Object} stores the balance for each
@@ -445,7 +447,7 @@ export const onTokenFetchBalanceRequested = (state, action) => {
       ...state.tokensBalance,
       [tokenId]: {
         ...oldState,
-        status: 'loading',
+        status: TOKEN_DOWNLOAD_STATUS.LOADING,
         oldStatus: oldState.status,
       },
     },
@@ -460,7 +462,7 @@ export const onTokenFetchBalanceSuccess = (state, action) => {
     tokensBalance: {
       ...state.tokensBalance,
       [tokenId]: {
-        status: 'ready',
+        status: TOKEN_DOWNLOAD_STATUS.READY,
         updatedAt: new Date().getTime(),
         data,
       },
@@ -476,7 +478,7 @@ export const onTokenFetchBalanceFailed = (state, action) => {
     tokensBalance: {
       ...state.tokensBalance,
       [tokenId]: {
-        status: 'failed',
+        status: TOKEN_DOWNLOAD_STATUS.FAILED,
       },
     },
   };
@@ -490,7 +492,7 @@ export const onTokenFetchHistorySuccess = (state, action) => {
     tokensHistory: {
       ...state.tokensHistory,
       [tokenId]: {
-        status: 'ready',
+        status: TOKEN_DOWNLOAD_STATUS.READY,
         updatedAt: new Date().getTime(),
         data,
       },
@@ -506,7 +508,7 @@ export const onTokenFetchHistoryFailed = (state, action) => {
     tokensHistory: {
       ...state.tokensHistory,
       [tokenId]: {
-        status: 'failed',
+        status: TOKEN_DOWNLOAD_STATUS.FAILED,
         data: [],
       },
     },
@@ -524,7 +526,7 @@ export const onTokenFetchHistoryRequested = (state, action) => {
       ...state.tokensHistory,
       [tokenId]: {
         ...oldState,
-        status: 'loading',
+        status: TOKEN_DOWNLOAD_STATUS.LOADING,
         oldStatus: oldState.status,
       },
     },
@@ -534,17 +536,19 @@ export const onTokenFetchHistoryRequested = (state, action) => {
 export const onStartWalletFailed = (state) => ({
   ...state,
   walletStartError: true,
-  walletStartState: 'error',
+  walletStartState: WALLET_STATUS.FAILED,
 });
 
 export const onStartWalletLock = (state) => ({
   ...state,
   walletStartError: false,
-  walletStartState: 'loading',
+  walletStartState: WALLET_STATUS.LOADING,
 });
 
 export const onStartWalletRequested = (state, action) => ({
   ...state,
+  walletStartError: false,
+  walletStartState: WALLET_STATUS.LOADING,
   initWallet: {
     words: action.payload.words,
     pin: action.payload.pin,
@@ -554,7 +558,7 @@ export const onStartWalletRequested = (state, action) => ({
 export const onStartWalletSuccess = (state) => ({
   ...state,
   walletStartError: false,
-  walletStartState: 'ready',
+  walletStartState: WALLET_STATUS.READY,
   initWallet: {}, // Remove words and pin from memory
 });
 
