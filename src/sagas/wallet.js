@@ -498,6 +498,11 @@ export function* loadPartialUpdate({ payload }) {
 export function* bestBlockUpdate({ payload }) {
   const currentHeight = yield select((state) => state.height);
   const walletStartState = yield select((state) => state.walletStartState);
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet.isReady()) {
+    return;
+  }
 
   if (walletStartState === 'loading') {
     return;
