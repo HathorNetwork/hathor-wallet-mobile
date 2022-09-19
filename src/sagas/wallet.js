@@ -255,7 +255,7 @@ export function* loadTokens() {
         tokenId: customTokenUid,
       })),
       customBalanceError: take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_FAILED, {
-        tokenId: htrUid,
+        tokenId: customTokenUid,
       })),
     });
     // ...and history:
@@ -278,7 +278,7 @@ export function* loadTokens() {
     .getTokens()
     .reduce((acc, token) => {
       // remove htr since we will always download the HTR token
-      if (token.uid === '00') {
+      if (token.uid === htrUid) {
         return acc;
       }
 
