@@ -25,6 +25,7 @@ export const TOKEN_DOWNLOAD_STATUS = {
   READY: 'ready',
   FAILED: 'failed',
   LOADING: 'loading',
+  INVALIDATED: 'invalidated',
 };
 
 const CONCURRENT_FETCH_REQUESTS = 5;

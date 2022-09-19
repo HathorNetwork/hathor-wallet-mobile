@@ -580,7 +580,7 @@ export const onTokenInvalidateBalance = (state, action) => {
     tokensBalance: {
       ...state.tokensBalance,
       [tokenId]: {
-        status: 'invalidated',
+        status: TOKEN_DOWNLOAD_STATUS.INVALIDATED,
       },
     },
   };
@@ -594,7 +594,7 @@ export const onTokenInvalidateHistory = (state, action) => {
     tokensHistory: {
       ...state.tokensHistory,
       [tokenId]: {
-        status: 'invalidated',
+        status: TOKEN_DOWNLOAD_STATUS.INVALIDATED,
       },
     },
   };
