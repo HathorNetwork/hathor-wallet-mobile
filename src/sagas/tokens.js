@@ -86,7 +86,7 @@ function* fetchTokenBalance(action) {
     const wallet = yield select((state) => state.wallet);
     const tokenBalance = yield select((state) => get(state.tokensBalance, tokenId));
 
-    if (!force && tokenBalance && tokenBalance.oldStatus === 'ready') {
+    if (!force && tokenBalance && tokenBalance.oldStatus === TOKEN_DOWNLOAD_STATUS.READY) {
       // The data is already loaded, we should dispatch success
       yield put(tokenFetchBalanceSuccess(tokenId, tokenBalance.data));
       return;
@@ -118,7 +118,7 @@ function* fetchTokenHistory(action) {
     const wallet = yield select((state) => state.wallet);
     const tokenHistory = yield select((state) => get(state.tokensHistory, tokenId));
 
-    if (!force && tokenHistory && tokenHistory.oldStatus === 'ready') {
+    if (!force && tokenHistory && tokenHistory.oldStatus === TOKEN_DOWNLOAD_STATUS.READY) {
       // The data is already loaded, we should dispatch success
       yield put(tokenFetchHistorySuccess(tokenId, tokenHistory.data));
       return;
