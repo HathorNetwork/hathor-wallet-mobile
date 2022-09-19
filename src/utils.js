@@ -14,6 +14,7 @@ import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
 import { PRIMARY_COLOR, KEYCHAIN_USER } from './constants';
+import { TxHistory } from './models';
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
@@ -388,4 +389,22 @@ export const changePin = (oldPin, newPin) => {
     setKeychainPin(newPin);
   }
   return success;
+};
+
+/**
+ * Map history element to expected TxHistory model object
+ *
+ * element {Object} Tx history element with {txId, timestamp, balance, voided?}
+ * token {string} Token uid
+ */
+export const mapTokenHistory = (element, token) => {
+  const data = {
+    txId: element.txId,
+    timestamp: element.timestamp,
+    balance: element.balance,
+    // in wallet service this comes as 0/1 and in the full node comes with true/false
+    voided: Boolean(element.voided),
+    tokenUid: token
+  };
+  return new TxHistory(data);
 };

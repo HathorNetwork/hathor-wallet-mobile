@@ -18,8 +18,8 @@ import {
 import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
-import { TxHistory } from '../models';
 import { specificTypeAndPayload } from './helpers';
+import { mapTokenHistory } from '../utils';
 import {
   types,
   tokenFetchBalanceSuccess,
@@ -37,18 +37,6 @@ export const TOKEN_DOWNLOAD_STATUS = {
 
 const CONCURRENT_FETCH_REQUESTS = 5;
 const METADATA_MAX_RETRIES = 3;
-
-const mapTokenHistory = (element, token) => {
-  const data = {
-    txId: element.txId,
-    timestamp: element.timestamp,
-    balance: element.balance,
-    // in wallet service this comes as 0/1 and in the full node comes with true/false
-    voided: Boolean(element.voided),
-    tokenUid: token
-  };
-  return new TxHistory(data);
-};
 
 /**
  * This saga will create a channel to queue TOKEN_FETCH_BALANCE_REQUESTED actions and

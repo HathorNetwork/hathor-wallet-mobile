@@ -12,7 +12,7 @@ import {
 import {
   METADATA_CONCURRENT_DOWNLOAD,
 } from './constants';
-import { TxHistory } from './models';
+import { mapTokenHistory } from './utils';
 import { FeatureFlags } from './featureFlags';
 
 export const types = {
@@ -199,24 +199,6 @@ export const updateTokenHistory = (token, newHistory) => (
 export const sendTx = (wallet, amount, address, token, pin) => () => (
   wallet.sendTransactionEvents(address, amount, token, { pinCode: pin })
 );
-
-/**
- * Map history element to expected TxHistory model object
- *
- * element {Object} Tx history element with {txId, timestamp, balance, voided?}
- * token {string} Token uid
- */
-const mapTokenHistory = (element, token) => {
-  const data = {
-    txId: element.txId,
-    timestamp: element.timestamp,
-    balance: element.balance,
-    // in wallet service this comes as 0/1 and in the full node comes with true/false
-    voided: Boolean(element.voided),
-    tokenUid: token
-  };
-  return new TxHistory(data);
-};
 
 /**
  * Get all tokens that this wallet has any transaction and fetch balance/history for each of them
