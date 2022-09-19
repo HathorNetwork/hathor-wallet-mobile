@@ -59,9 +59,8 @@ import {
   newTx,
   types,
 } from '../actions';
-import {
-  specificTypeAndPayload,
-} from './helpers';
+import { fetchTokenData } from './tokens';
+import { specificTypeAndPayload } from './helpers';
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
@@ -216,62 +215,20 @@ export function* startWallet(action) {
 
 /**
  * This saga will load both HTR and DEFAULT_TOKEN (if they are different)
- * and dispatch actions to asynchronously load all registered tokens
+ * and dispatch actions to asynchronously load all registered tokens.
+ *
+ * Will throw an error if the download fails for any token.
  */
 export function* loadTokens() {
   const customTokenUid = DEFAULT_TOKEN.uid;
   const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
 
-  // Download hathor token balance and history:
-  yield put(tokenFetchBalanceRequested(htrUid));
-  const { htrBalanceError } = yield race({
-    success: take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, {
-      tokenId: htrUid,
-    })),
-    htrBalanceError: take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_FAILED, {
-      tokenId: htrUid,
-    })),
-  });
-  // ...and history:
-  yield put(tokenFetchHistoryRequested(htrUid));
-  const { htrHistoryError } = yield race({
-    success: take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, {
-      tokenId: htrUid,
-    })),
-    htrHistoryError: take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_FAILED, {
-      tokenId: htrUid,
-    })),
-  });
-
-  if (htrBalanceError || htrHistoryError) {
-    throw new Error('Error loading HTR history or balance');
-  }
+  // fetchTokenData will throw an error if the download failed, we should just
+  // let it crash as throwing an error is the default behavior for loadTokens
+  yield call(fetchTokenData, htrUid);
 
   if (customTokenUid !== htrUid) {
-    // Download custom token balance:
-    yield put(tokenFetchBalanceRequested(customTokenUid));
-    const { customBalanceError } = yield race({
-      success: take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, {
-        tokenId: customTokenUid,
-      })),
-      customBalanceError: take(specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_FAILED, {
-        tokenId: customTokenUid,
-      })),
-    });
-    // ...and history:
-    yield put(tokenFetchHistoryRequested(customTokenUid));
-    const { customHistoryError } = yield race({
-      success: take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, {
-        tokenId: customTokenUid,
-      })),
-      customHistoryError: take(specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_FAILED, {
-        tokenId: customTokenUid,
-      })),
-    });
-
-    if (customBalanceError || customHistoryError) {
-      throw new Error('Error loading custom token history or balance');
-    }
+    yield call(fetchTokenData, customTokenUid);
   }
 
   const registeredTokens = tokensUtils

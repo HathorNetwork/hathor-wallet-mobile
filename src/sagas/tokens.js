@@ -18,12 +18,14 @@ import {
 import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
-import { specificTypeAndPayload } from './helpers';
+import { specificTypeAndPayload, dispatchAndWait } from './helpers';
 import { mapTokenHistory } from '../utils';
 import {
   types,
+  tokenFetchBalanceRequested,
   tokenFetchBalanceSuccess,
   tokenFetchBalanceFailed,
+  tokenFetchHistoryRequested,
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
 } from '../actions';
@@ -237,6 +239,33 @@ export function* fetchTokenMetadata({ tokenId }) {
     });
     // eslint-disable-next-line
     console.log('Error downloading metadata of token', tokenId);
+  }
+}
+
+export function* fetchTokenData(tokenId) {
+  const fetchBalanceResponse = yield call(
+    dispatchAndWait,
+    tokenFetchBalanceRequested(tokenId),
+    specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, {
+      tokenId,
+    }),
+    specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_FAILED, {
+      tokenId,
+    }),
+  );
+  const fetchHistoryResponse = yield call(
+    dispatchAndWait,
+    tokenFetchHistoryRequested(tokenId),
+    specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, {
+      tokenId,
+    }),
+    specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_FAILED, {
+      tokenId,
+    }),
+  );
+
+  if (fetchHistoryResponse.failure || fetchBalanceResponse.failure) {
+    throw new Error(`Error loading HTR history or balance for token ${tokenId}`);
   }
 }
 
