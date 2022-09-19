@@ -526,7 +526,6 @@ export const onTokenFetchHistoryFailed = (state, action) => {
       ...state.tokensHistory,
       [tokenId]: {
         status: TOKEN_DOWNLOAD_STATUS.FAILED,
-        data: [],
       },
     },
   };
