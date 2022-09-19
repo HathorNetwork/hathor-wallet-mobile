@@ -12,8 +12,8 @@ import { put, race, take } from 'redux-saga/effects';
  * Helper method to be used on take saga effect, will wait until an action
  * with type and payload matching the passed (type, payload)
  *
- * @param type - String[] with the action types
- * @param payload - Object with the keys and values to compare
+ * @param {String[]} type - String[] with the action types
+ * @param {Object} payload - Object with the keys and values to compare
  */
 export const specificTypeAndPayload = (_types, payload) => (action) => {
   let types = _types;
