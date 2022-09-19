@@ -247,6 +247,7 @@ const onUpdateTokenHistory = (state, action) => {
   return {
     ...state,
     tokensHistory: {
+      ...state.tokensHistory,
       [token]: {
         ...state.tokensHistory[token],
         data: [
