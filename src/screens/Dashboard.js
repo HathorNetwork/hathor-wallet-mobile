@@ -82,7 +82,6 @@ class Dashboard extends React.Component {
           onItemPress={this.onItemPress}
           selectedToken={this.props.selectedToken}
           tokens={this.props.tokens}
-          tokensLoadingState={this.props.tokenLoadingState}
           tokensBalance={this.props.tokensBalance}
           tokenMetadata={this.props.tokenMetadata}
         />
