@@ -38,7 +38,10 @@ import {
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
   WALLET_SERVICE_MAINNET_BASE_URL,
 } from '../constants';
-import { FeatureFlags } from '../featureFlags';
+import {
+  Events as FeatureFlagEvents,
+  FeatureFlags,
+} from '../featureFlags';
 import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
@@ -301,13 +304,13 @@ export function* fetchTokensMetadata(tokens) {
 export function* listenForFeatureFlags(featureFlags) {
   const channel = eventChannel((emitter) => {
     const listener = (state) => emitter(state);
-    featureFlags.on('wallet-service-enabled', (state) => {
+    featureFlags.on(FeatureFlagEvents.WALLET_SERVICE_ENABLED, (state) => {
       emitter(state);
     });
 
     // Cleanup when the channel is closed
     return () => {
-      featureFlags.removeListener('wallet-service-enabled', listener);
+      featureFlags.removeListener(FeatureFlagEvents.WALLET_SERVICE_ENABLED, listener);
     };
   });
 
