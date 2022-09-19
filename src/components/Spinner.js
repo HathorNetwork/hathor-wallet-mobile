@@ -53,6 +53,8 @@ class Spinner extends React.Component {
 Spinner.propTypes = {
   // Optional (default 105). Size of the spinner. Used for width and height
   size: PropTypes.number,
+  /* eslint react/forbid-prop-types: 0 */
+  style: PropTypes.object,
 };
 
 export default Spinner;
