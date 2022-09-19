@@ -191,7 +191,7 @@ export function* startWallet(action) {
   try {
     yield call(loadTokens);
   } catch (e) {
-    console.log('Captured error: ', e);
+    console.error('Tokens load failed: ', e);
     yield put(startWalletFailed());
     return;
   }
@@ -206,14 +206,12 @@ export function* startWallet(action) {
   // https://redux-saga.js.org/docs/advanced/ForkModel
   // So, if a new START_WALLET_REQUESTED action is dispatched, we need to cleanup
   // all attached forks (that will cause the event listeners to be cleaned).
-  while (true) {
-    yield take('START_WALLET_REQUESTED');
-    yield cancel([
-      walletListenerThread,
-      walletReadyThread,
-      featureFlagsThread
-    ]);
-  }
+  yield take('START_WALLET_REQUESTED');
+  yield cancel([
+    walletListenerThread,
+    walletReadyThread,
+    featureFlagsThread
+  ]);
 }
 
 /**
