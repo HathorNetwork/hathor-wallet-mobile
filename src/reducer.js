@@ -559,7 +559,6 @@ export const onStartWalletSuccess = (state) => ({
   ...state,
   walletStartError: false,
   walletStartState: WALLET_STATUS.READY,
-  initWallet: {}, // Remove words and pin from memory
 });
 
 export const onTokenInvalidateBalance = (state, action) => {
