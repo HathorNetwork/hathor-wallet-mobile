@@ -17,8 +17,24 @@ import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
 import { WALLET_STATUS } from './sagas/wallet';
 
 /**
- * tokensBalance {Object} stores the balance for each
- *   token (Dict[tokenUid: str, {available: int, locked: int}])
+ * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
+*    status: string,
+*    oldStatus: string,
+*    updatedAt: int,
+*    data: {
+*      available: int,
+*      locked: int
+*    }
+ * }])
+ * tokensHistory {Object} stores the history for each token (Dict[tokenUid: str, {
+ *  status: string,
+ *  oldStatus: string,
+ *  updatedAt: int,
+ *  data: {
+ *    available: int,
+ *    locked: int,
+ *  }
+ * }])
  * loadHistoryStatus {Object} progress on loading tx history {
  *   active {boolean} indicates we're loading the tx history
  *   error {boolean} error loading history
