@@ -319,7 +319,7 @@ export function* listenForFeatureFlags(featureFlags) {
       const newUseWalletService = yield take(channel);
       const oldUseWalletService = yield select((state) => state.useWalletService);
 
-      if (oldUseWalletService && oldUseWalletService !== newUseWalletService) {
+      if (oldUseWalletService !== newUseWalletService) {
         NativeModules.HTRReloadBundleModule.restart();
       }
     }
