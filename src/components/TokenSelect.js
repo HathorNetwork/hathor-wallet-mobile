@@ -123,7 +123,7 @@ const TokenSelect = (props) => {
                 renderValue(balance, isTokenNFT(item.uid, props.tokenMetadata))
               )}
 
-              {props.renderArrow && tokenState === TOKEN_DOWNLOAD_STATUS.FAILED && (
+              {tokenState === TOKEN_DOWNLOAD_STATUS.FAILED && (
                 <FontAwesomeIcon
                   icon={faCircleExclamation}
                   color='rgba(255, 0, 0, 0.7)'
@@ -131,7 +131,7 @@ const TokenSelect = (props) => {
                 />
               )}
 
-              {props.renderArrow && tokenState === TOKEN_DOWNLOAD_STATUS.LOADING && (
+              {tokenState === TOKEN_DOWNLOAD_STATUS.LOADING && (
                 <Spinner size={14} animating />
               )}
 
