@@ -153,7 +153,7 @@ function* routeTokenChange(action) {
       }
       break;
     case 'NEW_TOKEN':
-      yield put({ type: types.TOKEN_FETCH_HISTORY_REQUESTED, tokenId: action.payload.uid });
+      yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: action.payload.uid });
       break;
   }
 }
