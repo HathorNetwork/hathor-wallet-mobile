@@ -36,6 +36,7 @@ import infoIcon from '../assets/icons/info-circle.png';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
 import { fetchMoreHistory, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
+import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 
 
 /**
@@ -44,10 +45,12 @@ import Spinner from '../components/Spinner';
  * selectedToken {string} uid of the selected token
  */
 const mapStateToProps = (state) => ({
-  tokenHistory: state.tokensHistory[state.selectedToken.uid] || { status: 'failed' },
+  tokenHistory: get(state.tokensHistory, state.selectedToken.uid, {
+    status: TOKEN_DOWNLOAD_STATUS.LOADING,
+  }),
   // If we are on this screen, we can be sure that the balance is loaded since we don't navigate
   // to it if the status is `failed`
-  balance: state.tokensBalance[state.selectedToken.uid].data,
+  balance: get(state.tokensBalance, `${state.selectedToken.uid}.data`, { available: 0, locked: 0 }),
   selectedToken: state.selectedToken,
   isOnline: state.isOnline,
   network: state.serverInfo.network,
