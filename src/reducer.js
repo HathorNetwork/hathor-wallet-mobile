@@ -96,7 +96,6 @@ const initialState = {
   tempPin: null,
   isShowingPinScreen: false,
   walletStartState: WALLET_STATUS.LOADING,
-  walletStartError: false,
 };
 
 const reducer = (state = initialState, action) => {
@@ -551,19 +550,16 @@ export const onTokenFetchHistoryRequested = (state, action) => {
 
 export const onStartWalletFailed = (state) => ({
   ...state,
-  walletStartError: true,
   walletStartState: WALLET_STATUS.FAILED,
 });
 
 export const onStartWalletLock = (state) => ({
   ...state,
-  walletStartError: false,
   walletStartState: WALLET_STATUS.LOADING,
 });
 
 export const onStartWalletRequested = (state, action) => ({
   ...state,
-  walletStartError: false,
   walletStartState: WALLET_STATUS.LOADING,
   initWallet: {
     words: action.payload.words,
@@ -573,7 +569,6 @@ export const onStartWalletRequested = (state, action) => ({
 
 export const onStartWalletSuccess = (state) => ({
   ...state,
-  walletStartError: false,
   walletStartState: WALLET_STATUS.READY,
 });
 
