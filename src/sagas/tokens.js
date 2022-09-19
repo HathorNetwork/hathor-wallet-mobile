@@ -36,7 +36,7 @@ export const TOKEN_DOWNLOAD_STATUS = {
 };
 
 const CONCURRENT_FETCH_REQUESTS = 5;
-const METADATA_MAX_RETRIES = 0;
+const METADATA_MAX_RETRIES = 3;
 
 const mapTokenHistory = (element, token) => {
   const data = {
