@@ -30,10 +30,7 @@ import { WALLET_STATUS } from './sagas/wallet';
  *  status: string,
  *  oldStatus: string,
  *  updatedAt: int,
- *  data: {
- *    available: int,
- *    locked: int,
- *  }
+ *  data: TxHistory[]
  * }])
  * loadHistoryStatus {Object} progress on loading tx history {
  *   active {boolean} indicates we're loading the tx history
