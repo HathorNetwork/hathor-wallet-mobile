@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { KeyboardAvoidingView, SafeAreaView, Text, View } from 'react-native';
+import { get } from 'lodash';
 import { connect } from 'react-redux';
 import { t, jt } from 'ttag';
 
@@ -24,8 +25,11 @@ import { getIntegerAmount, getKeyboardAvoidingViewTopDistance, Strong } from '..
  * balance {Object} object with token balance {'available', 'locked'}
  */
 const mapStateToProps = (state) => ({
-  balance: (state.tokensBalance[hathorLib.constants.HATHOR_TOKEN_CONFIG.uid]
-            || { available: 0, locked: 0 }),
+  balance: get(state.tokensBalance,
+    `[${hathorLib.constants.HATHOR_TOKEN_CONFIG.uid}].data`, {
+      available: 0,
+      locked: 0,
+    }),
 });
 
 /**

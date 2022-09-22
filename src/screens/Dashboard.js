@@ -9,12 +9,13 @@ import React from 'react';
 import { View } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
+import { get } from 'lodash';
 
 import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
 import SimpleButton from '../components/SimpleButton';
 import OfflineBar from '../components/OfflineBar';
-import { updateSelectedToken } from '../actions';
+import { tokenFetchBalanceRequested, updateSelectedToken } from '../actions';
 
 
 /**
@@ -26,18 +27,34 @@ import { updateSelectedToken } from '../actions';
 const mapStateToProps = (state) => ({
   tokens: state.tokens,
   tokensBalance: state.tokensBalance,
+  tokensHistory: state.tokensHistory,
   selectedToken: state.selectedToken,
   tokenMetadata: state.tokenMetadata,
+  tokenLoadingState: state.tokenLoadingState,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   updateSelectedToken: (token) => dispatch(updateSelectedToken(token)),
+  getBalance: (token) => dispatch(tokenFetchBalanceRequested(token)),
 });
 
 class Dashboard extends React.Component {
   static navigatorStyle = { tabBarVisible: false }
 
   onItemPress = (item) => {
+    // Check if the token balance is already loaded
+    const tokenBalanceStatus = get(this.props.tokensBalance, `${item.uid}.status`, 'loading');
+
+    if (tokenBalanceStatus === 'loading') {
+      return;
+    }
+
+    if (tokenBalanceStatus === 'failed') {
+      // If the token balance status is failed, we should try again
+      this.props.getBalance(item.uid);
+      return;
+    }
+
     this.props.updateSelectedToken(item);
     this.props.navigation.navigate('MainScreen');
   }
@@ -60,7 +77,7 @@ class Dashboard extends React.Component {
     return (
       <View style={{ flex: 1 }}>
         <TokenSelect
-          header=<Header />
+          header={<Header />}
           renderArrow
           onItemPress={this.onItemPress}
           selectedToken={this.props.selectedToken}

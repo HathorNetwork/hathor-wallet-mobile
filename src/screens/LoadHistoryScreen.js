@@ -12,7 +12,11 @@ import {
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import { startWallet, reloadHistory, clearInitWallet, resetLoadedData } from '../actions';
+import {
+  walletReloadData,
+  startWalletRequested,
+  resetLoadedData,
+} from '../actions';
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';
@@ -38,10 +42,11 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   startWallet:
-    (words, pin) => dispatch(startWallet(words, pin)),
+    (words, pin) => {
+      dispatch(startWalletRequested({ words, pin }));
+    },
   reloadHistory:
-    (wallet) => dispatch(reloadHistory(wallet)),
-  clearInitWallet: () => dispatch(clearInitWallet()),
+    () => dispatch(walletReloadData()),
   resetLoadedData: () => dispatch(resetLoadedData()),
 });
 
@@ -50,10 +55,6 @@ class LoadHistoryScreen extends React.Component {
     // This setTimeout exists to prevent blocking the main thread
     setTimeout(() => this.initializeWallet(), 0);
     this.props.resetLoadedData();
-  }
-
-  componentWillUnmount() {
-    this.props.clearInitWallet();
   }
 
   initializeWallet() {
