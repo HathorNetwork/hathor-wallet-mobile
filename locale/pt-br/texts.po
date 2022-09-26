@@ -419,15 +419,15 @@ msgstr ""
 
 #: src/screens/MainScreen.js:147
 msgid "Loading transactions"
-msgstr "Carregando suas transações"
+msgstr "Carregando transações"
 
 #: src/screens/MainScreen.js:156
 msgid "There was an error loading your transaction history"
-msgstr "Ocorreu um erro ao atualizar sua wallet."
+msgstr "Ocorreu um erro ao carregar seu histórico de transações."
 
 #: src/screens/MainScreen.js:159
 msgid "Please |tryAgain:try again|"
-msgstr ""
+msgstr "Por favor |tryAgain:tente novamente|"
 
 #: src/screens/MainScreen.js:557 src/screens/MainScreen.js:589
 msgid "Available Balance"

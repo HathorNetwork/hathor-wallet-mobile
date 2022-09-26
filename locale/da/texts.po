@@ -423,7 +423,7 @@ msgstr "Indlæser dine transaktioner"
 
 #: src/screens/MainScreen.js:156
 msgid "There was an error loading your transaction history"
-msgstr "Indlæser dine transaktioner"
+msgstr ""
 
 #: src/screens/MainScreen.js:159
 msgid "Please |tryAgain:try again|"
