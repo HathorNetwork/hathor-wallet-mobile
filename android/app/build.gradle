@@ -135,8 +135,8 @@ android {
         applicationId "network.hathor.wallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 39
-        versionName "0.18.0"
+        versionCode 40
+        versionName "0.19.0"
         missingDimensionStrategy "react-native-camera", "general"
     }
     splits {
