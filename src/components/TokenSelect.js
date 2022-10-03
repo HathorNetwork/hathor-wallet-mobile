@@ -9,12 +9,17 @@ import React from 'react';
 import {
   FlatList, Image, StyleSheet, View, Text, TouchableHighlight, Platform
 } from 'react-native';
+import { get } from 'lodash';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 
 import DeviceInfo from 'react-native-device-info';
 
 import chevronRight from '../assets/icons/chevron-right.png';
+import Spinner from './Spinner';
 import { PRIMARY_COLOR } from '../constants';
 import { getLightBackground, renderValue, isTokenNFT } from '../utils';
+import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 
 
 /*
@@ -96,8 +101,8 @@ const TokenSelect = (props) => {
       symbolTextStyle.push(styles.symbolTextSelected);
     }
 
-    const balance = item.uid in props.tokensBalance
-      ? props.tokensBalance[item.uid].available : 0;
+    const balance = get(props.tokensBalance, `${item.uid}.data.available`, 0);
+    const tokenState = get(props.tokensBalance, `${item.uid}.status`, 'loading');
 
     return (
       <TouchableHighlight
@@ -114,8 +119,24 @@ const TokenSelect = (props) => {
           </View>
           <View style={styles.itemLeftWrapper}>
             <Text style={[styles.text, styles.rightText]}>
-              {renderValue(balance, isTokenNFT(item.uid, props.tokenMetadata))}
+              {tokenState === TOKEN_DOWNLOAD_STATUS.READY && (
+                renderValue(balance, isTokenNFT(item.uid, props.tokenMetadata))
+              )}
+
+              {tokenState === TOKEN_DOWNLOAD_STATUS.FAILED && (
+                <FontAwesomeIcon
+                  icon={faCircleExclamation}
+                  color='rgba(255, 0, 0, 0.7)'
+                  style={{ fontSize: 14 }}
+                />
+              )}
+
+              {tokenState === TOKEN_DOWNLOAD_STATUS.LOADING && (
+                <Spinner size={14} animating />
+              )}
+
               {' '}
+
               {item.symbol}
             </Text>
             {props.renderArrow

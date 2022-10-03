@@ -8,6 +8,10 @@ import {
   UNLEASH_POLLING_INTERVAL,
 } from './constants';
 
+export const Events = {
+  WALLET_SERVICE_ENABLED: 'wallet-service-enabled',
+};
+
 export class FeatureFlags extends events.EventEmitter {
   constructor(userId, network) {
     super();

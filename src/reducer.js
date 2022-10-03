@@ -6,14 +6,32 @@
  */
 
 import { createStore, applyMiddleware } from 'redux';
+import createSagaMiddleware from 'redux-saga';
 import thunk from 'redux-thunk';
 import hathorLib from '@hathor/wallet-lib';
+import { get } from 'lodash';
 import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
 import { types } from './actions';
+import rootSagas from './sagas';
+import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
+import { WALLET_STATUS } from './sagas/wallet';
 
 /**
- * tokensBalance {Object} stores the balance for each
- *   token (Dict[tokenUid: str, {available: int, locked: int}])
+ * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
+*    status: string,
+*    oldStatus: string,
+*    updatedAt: int,
+*    data: {
+*      available: int,
+*      locked: int
+*    }
+ * }])
+ * tokensHistory {Object} stores the history for each token (Dict[tokenUid: str, {
+ *  status: string,
+ *  oldStatus: string,
+ *  updatedAt: int,
+ *  data: TxHistory[]
+ * }])
  * loadHistoryStatus {Object} progress on loading tx history {
  *   active {boolean} indicates we're loading the tx history
  *   error {boolean} error loading history
@@ -74,6 +92,7 @@ const initialState = {
   // screen
   tempPin: null,
   isShowingPinScreen: false,
+  walletStartState: WALLET_STATUS.LOADING,
 };
 
 const reducer = (state = initialState, action) => {
@@ -92,12 +111,6 @@ const reducer = (state = initialState, action) => {
       return onNewToken(state, action);
     case types.SET_TOKENS:
       return onSetTokens(state, action);
-    case types.FETCH_HISTORY_BEGIN:
-      return onFetchHistoryBegin(state, action);
-    case types.FETCH_HISTORY_SUCCESS:
-      return onFetchHistorySuccess(state, action);
-    case types.FETCH_HISTORY_ERROR:
-      return onFetchHistoryError(state, action);
     case types.UPDATE_TOKEN_HISTORY:
       return onUpdateTokenHistory(state, action);
     case types.SET_LOAD_HISTORY_STATUS:
@@ -112,8 +125,6 @@ const reducer = (state = initialState, action) => {
       return onSetInitWallet(state, action);
     case types.CLEAR_INIT_WALLET:
       return onSetInitWallet(state, action);
-    case types.UPDATE_HEIGHT:
-      return onUpdateHeight(state, action);
     case types.SET_ERROR_MODAL:
       return onSetErrorModal(state, action);
     case types.SET_WALLET:
@@ -142,6 +153,32 @@ const reducer = (state = initialState, action) => {
       return partiallyUpdateHistoryAndBalance(state, action);
     case types.SET_IS_SHOWING_PIN_SCREEN:
       return onSetIsShowingPinScreen(state, action);
+    case types.TOKEN_FETCH_BALANCE_REQUESTED:
+      return onTokenFetchBalanceRequested(state, action);
+    case types.TOKEN_FETCH_BALANCE_SUCCESS:
+      return onTokenFetchBalanceSuccess(state, action);
+    case types.TOKEN_FETCH_BALANCE_FAILED:
+      return onTokenFetchBalanceFailed(state, action);
+    case types.TOKEN_FETCH_HISTORY_REQUESTED:
+      return onTokenFetchHistoryRequested(state, action);
+    case types.TOKEN_FETCH_HISTORY_SUCCESS:
+      return onTokenFetchHistorySuccess(state, action);
+    case types.TOKEN_FETCH_HISTORY_FAILED:
+      return onTokenFetchHistoryFailed(state, action);
+    case types.TOKEN_INVALIDATE_HISTORY:
+      return onTokenInvalidateHistory(state, action);
+    case types.TOKEN_INVALIDATE_BALANCE:
+      return onTokenInvalidateBalance(state, action);
+    case types.ON_START_WALLET_LOCK:
+      return onStartWalletLock(state);
+    case types.START_WALLET_REQUESTED:
+      return onStartWalletRequested(state, action);
+    case types.START_WALLET_SUCCESS:
+      return onStartWalletSuccess(state);
+    case types.START_WALLET_FAILED:
+      return onStartWalletFailed(state);
+    case types.WALLET_BEST_BLOCK_UPDATE:
+      return onWalletBestBlockUpdate(state, action);
     default:
       return state;
   }
@@ -202,14 +239,19 @@ const onNewTx = (state, action) => {
  */
 const onUpdateTokenHistory = (state, action) => {
   const { token, newHistory } = action.payload;
-  const currentHistory = state.tokensHistory[token] || [];
 
-  const updatedHistoryMap = {};
-  updatedHistoryMap[token] = [...currentHistory, ...newHistory];
-  const newTokensHistory = Object.assign({}, state.tokensHistory, updatedHistoryMap);
   return {
     ...state,
-    tokensHistory: newTokensHistory,
+    tokensHistory: {
+      ...state.tokensHistory,
+      [token]: {
+        ...state.tokensHistory[token],
+        data: [
+          ...get(state.tokensHistory, `${token}.data`, []),
+          ...newHistory,
+        ]
+      }
+    },
   };
 };
 
@@ -268,44 +310,6 @@ const onSetTokens = (state, action) => {
 };
 
 /**
- * Start fetching history. This means clear any past errors and show loading
- */
-const onFetchHistoryBegin = (state, action) => ({
-  ...state,
-  loadHistoryStatus: {
-    active: true,
-    error: false,
-  },
-});
-
-/**
- * Got history. Update history and balance for each token.
- */
-const onFetchHistorySuccess = (state, action) => {
-  const { tokensHistory, tokensBalance } = action.payload;
-  return {
-    ...state,
-    tokensHistory,
-    tokensBalance,
-    loadHistoryStatus: {
-      active: false,
-      error: false,
-    },
-  };
-};
-
-/**
- * Error fetching history
- */
-const onFetchHistoryError = (state, action) => ({
-  ...state,
-  loadHistoryStatus: {
-    active: true,
-    error: true,
-  },
-});
-
-/**
  * Set loadHistoryStatus
  */
 const onSetLoadHistoryStatus = (state, action) => ({
@@ -329,7 +333,6 @@ const onSetInitWallet = (state, action) => ({
   initWallet: action.payload,
 });
 
-
 const onSetRecoveringPin = (state, action) => ({
   ...state,
   recoveringPin: action.payload,
@@ -341,26 +344,6 @@ const onSetTempPin = (state, action) => ({
   ...state,
   tempPin: action.payload,
 });
-
-/**
- * Update height value on redux
- * If value is different from last value we also update HTR balance
- */
-const onUpdateHeight = (state, action) => {
-  if (action.payload.height !== state.height) {
-    const tokensBalance = {};
-    const { uid } = hathorLib.constants.HATHOR_TOKEN_CONFIG;
-    tokensBalance[uid] = action.payload.htrBalance;
-    const newTokensBalance = Object.assign({}, state.tokensBalance, tokensBalance);
-    return {
-      ...state,
-      tokensBalance: newTokensBalance,
-      height: action.payload.height,
-    };
-  }
-
-  return state;
-};
 
 const onSetWallet = (state, action) => {
   if (state.wallet && state.wallet.state !== hathorLib.HathorWallet.CLOSED) {
@@ -467,4 +450,198 @@ export const partiallyUpdateHistoryAndBalance = (state, action) => {
   };
 };
 
-export const store = createStore(reducer, applyMiddleware(thunk));
+/**
+ * @param {String} action.tokenId - The tokenId to mark as loading
+ */
+export const onTokenFetchBalanceRequested = (state, action) => {
+  const { tokenId } = action;
+  const oldState = get(state.tokensBalance, tokenId, {});
+
+  return {
+    ...state,
+    tokensBalance: {
+      ...state.tokensBalance,
+      [tokenId]: {
+        ...oldState,
+        status: TOKEN_DOWNLOAD_STATUS.LOADING,
+        oldStatus: oldState.status,
+      },
+    },
+  };
+};
+
+/**
+ * @param {String} action.tokenId - The tokenId to mark as success
+ * @param {Object} action.data - The token balance information to store on redux
+ */
+export const onTokenFetchBalanceSuccess = (state, action) => {
+  const { tokenId, data } = action;
+
+  return {
+    ...state,
+    tokensBalance: {
+      ...state.tokensBalance,
+      [tokenId]: {
+        status: TOKEN_DOWNLOAD_STATUS.READY,
+        updatedAt: new Date().getTime(),
+        data,
+      },
+    },
+  };
+};
+
+/**
+ * @param {String} action.tokenId - The tokenId to mark as failure
+ */
+export const onTokenFetchBalanceFailed = (state, action) => {
+  const { tokenId } = action;
+
+  return {
+    ...state,
+    tokensBalance: {
+      ...state.tokensBalance,
+      [tokenId]: {
+        status: TOKEN_DOWNLOAD_STATUS.FAILED,
+      },
+    },
+  };
+};
+
+/**
+ * @param {String} action.tokenId - The tokenId to mark as success
+ * @param {Object} action.data - The token history information to store on redux
+ */
+export const onTokenFetchHistorySuccess = (state, action) => {
+  const { tokenId, data } = action;
+
+  return {
+    ...state,
+    tokensHistory: {
+      ...state.tokensHistory,
+      [tokenId]: {
+        status: TOKEN_DOWNLOAD_STATUS.READY,
+        updatedAt: new Date().getTime(),
+        data,
+      },
+    },
+  };
+};
+
+/**
+ * @param {String} action.tokenId - The tokenId to mark as failed
+ */
+export const onTokenFetchHistoryFailed = (state, action) => {
+  const { tokenId } = action;
+
+  return {
+    ...state,
+    tokensHistory: {
+      ...state.tokensHistory,
+      [tokenId]: {
+        status: TOKEN_DOWNLOAD_STATUS.FAILED,
+      },
+    },
+  };
+};
+
+/**
+ * @param {String} action.tokenId - The tokenId to fetch history
+ */
+export const onTokenFetchHistoryRequested = (state, action) => {
+  const { tokenId } = action;
+
+  const oldState = get(state.tokensHistory, tokenId, {});
+
+  return {
+    ...state,
+    tokensHistory: {
+      ...state.tokensHistory,
+      [tokenId]: {
+        ...oldState,
+        status: TOKEN_DOWNLOAD_STATUS.LOADING,
+        oldStatus: oldState.status,
+      },
+    },
+  };
+};
+
+export const onStartWalletFailed = (state) => ({
+  ...state,
+  walletStartState: WALLET_STATUS.FAILED,
+});
+
+export const onStartWalletLock = (state) => ({
+  ...state,
+  walletStartState: WALLET_STATUS.LOADING,
+});
+
+/**
+ * @param {String} action.words - The wallet's words
+ * @param {String} action.pin - The wallet's pinCode
+ */
+export const onStartWalletRequested = (state, action) => ({
+  ...state,
+  walletStartState: WALLET_STATUS.LOADING,
+  initWallet: {
+    words: action.payload.words,
+    pin: action.payload.pin,
+  },
+});
+
+export const onStartWalletSuccess = (state) => ({
+  ...state,
+  walletStartState: WALLET_STATUS.READY,
+});
+
+/**
+ * @param {String} action.tokenId - The tokenId to invalidate
+ */
+export const onTokenInvalidateBalance = (state, action) => {
+  const { tokenId } = action;
+
+  return {
+    ...state,
+    tokensBalance: {
+      ...state.tokensBalance,
+      [tokenId]: {
+        status: TOKEN_DOWNLOAD_STATUS.INVALIDATED,
+      },
+    },
+  };
+};
+
+/**
+ * @param {String} action.tokenId - The tokenId to invalidate
+ */
+export const onTokenInvalidateHistory = (state, action) => {
+  const { tokenId } = action;
+
+  return {
+    ...state,
+    tokensHistory: {
+      ...state.tokensHistory,
+      [tokenId]: {
+        status: TOKEN_DOWNLOAD_STATUS.INVALIDATED,
+      },
+    },
+  };
+};
+
+/**
+ * @param {Number} action.data Best block height
+ */
+export const onWalletBestBlockUpdate = (state, action) => {
+  const { data } = action;
+
+  return {
+    ...state,
+    height: data,
+  };
+};
+
+const saga = createSagaMiddleware();
+const middlewares = [saga, thunk];
+
+export const store = createStore(reducer, applyMiddleware(...middlewares));
+
+saga.run(rootSagas);

@@ -22,7 +22,9 @@ import NavigationService from './NavigationService';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
-  resetData, lockScreen, setTokens
+  resetData,
+  lockScreen,
+  setTokens,
 } from './actions';
 import { store } from './reducer';
 
@@ -60,6 +62,8 @@ import CreateTokenAmount from './screens/CreateTokenAmount';
 import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
 import ErrorModal from './components/ErrorModal';
+import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
+import { WALLET_STATUS } from './sagas/wallet';
 
 
 const InitStack = createStackNavigator(
@@ -197,6 +201,7 @@ const mapStateToProps = (state) => ({
   loadHistory: state.loadHistoryStatus.active,
   isScreenLocked: state.lockScreen,
   isRecoveringPin: state.recoveringPin,
+  walletStartState: state.walletStartState,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -234,6 +239,8 @@ class _AppStackWrapper extends React.Component {
     // We need the version of the app in the user agent to get some stats from the logs
     // this method getVersion returns a string in the format <major>.<minor>.<patch>
     const version = DeviceInfo.getVersion();
+    // We use this string to parse the version from user agent
+    // in some of our services, so changing this might break another service
     hathorLib.config.setUserAgent(`Hathor Wallet Mobile / ${version}`);
   }
 
@@ -318,15 +325,22 @@ class _AppStackWrapper extends React.Component {
         screen = <RecoverPin navigation={this.props.navigation} />;
       }
 
-      if (this.props.loadHistory || this.props.isScreenLocked) {
+      if (this.props.walletStartState === WALLET_STATUS.LOADING || this.props.isScreenLocked) {
         return (
           <View style={this.style.auxView}>
             { screen }
           </View>
         );
       }
+
       return null;
     };
+
+    if (this.props.walletStartState === WALLET_STATUS.FAILED) {
+      return (
+        <LoadWalletErrorScreen />
+      );
+    }
 
     return (
       <View style={{ flex: 1 }}>

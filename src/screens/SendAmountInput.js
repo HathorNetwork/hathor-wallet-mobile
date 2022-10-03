@@ -22,6 +22,7 @@ import InputLabel from '../components/InputLabel';
 import TokenBox from '../components/TokenBox';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
+import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 
 
 /**
@@ -90,8 +91,14 @@ class SendAmountInput extends React.Component {
   }
 
   onButtonPress = () => {
-    const balance = this.props.tokensBalance[this.state.token.uid];
-    const available = balance ? balance.available : 0;
+    const balance = get(this.props.tokensBalance, this.state.token.uid, {
+      data: {
+        available: 0,
+        locked: 0,
+      },
+      status: TOKEN_DOWNLOAD_STATUS.LOADING,
+    });
+    const { available } = balance.data;
     let amount;
     if (this.isNFT()) {
       amount = parseInt(this.state.amount, 10);
@@ -124,8 +131,11 @@ class SendAmountInput extends React.Component {
   render() {
     const getAvailableString = () => {
       // eg: '23.56 HTR available'
-      const balance = this.props.tokensBalance[this.state.token.uid];
-      const available = balance ? balance.available : 0;
+      const balance = get(this.props.tokensBalance, `${this.state.token.uid}.data`, {
+        available: 0,
+        locked: 0,
+      });
+      const { available } = balance;
       const amountAndToken = `${renderValue(available, this.isNFT())} ${this.state.token.symbol}`;
       return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);
     };
