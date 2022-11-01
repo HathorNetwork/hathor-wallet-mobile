@@ -28,7 +28,7 @@ Set `ANDROID_HOME`
 [System.Environment]::SetEnvironmentVariable('ANDROID_HOME',"$env:USERPROFILE\AppData\Local\Android\Sdk",[System.EnvironmentVariableTarget]::User)
 ```
 
-Now add the parth for the Android Virtual Devices (AVD), this folder contains your configured devices.
+Now add the path for the Android Virtual Devices (AVD), this folder contains your configured devices.
 
 Set `ANDROID_AVD_HOME`
 
@@ -94,7 +94,7 @@ For intel processors and necessity to run Windows feature hyper-v (required by W
 
 ## Install Chocolatey
 
-It is a streight foraward package manager sotware for Windows and it will be used in installation instructions that follows. Read the [installation instructions](https://chocolatey.org/install).
+It is a straight forward package manager software for Windows and it will be used in installation instructions that follows. Read the [installation instructions for Chocolatey](https://chocolatey.org/install).
 
 ## Install Java OpenJDK 11
 
@@ -126,7 +126,7 @@ winget install Microsoft.OpenJDK.11
 
 The installed JDK should be found at `C:\Program Files\Microsoft\jdk-11.0.16.101-hotspot`.
 
-## Configure JDK environment varible
+## Configure JDK environment variable
 
 Add `JAVA_HOME` to your environment varibales targeting your user:
 
@@ -148,7 +148,7 @@ choco install make
 
 ## Install POEDIT
 
-See more about [POEDIT](https://poedit.net/), an utility to manage and edit translations, see [TRANSLATING.md](./TRANSLATING.md)
+See more about [POEDIT](https://poedit.net/), a utility to manage and edit translations, see [TRANSLATING.md](./TRANSLATING.md)
 
 <details><summary>Install by Chocolatey</summary>
 
@@ -161,7 +161,7 @@ choco install poedit
 However the current available version is ****`2.4.2`,** while downloading from the website you get the most recent version.
 </details>
 
-- or instal by downaload
+- or install by download
 
 The installed POEDIT should be found at `C:\Program Files (x86)\Poedit`.
 
@@ -181,7 +181,7 @@ Persist the new `PATH` value in your `user` environment:
 [System.Environment]::SetEnvironmentVariable('Path',$env:PATH,[System.EnvironmentVariableTarget]::User)
 ```
 
-After run the command above restart you PowerShell session, then verify running the following command:
+After run the command above restart your PowerShell session, then verify running the following command:
 
 ```powershell
 msgmerge --version
@@ -243,7 +243,7 @@ make: *** [Makefile:34: src/locale/pt-br/texts.po.json] Error 1
 ```
 then comment the line 34 from `Makefile` file and run again.
 
-If you get an erro like this:
+If you get an error like this:
 ```
 npx ttag po2json locale/pt-br/texts.po > src/locale/pt-br/texts.po.json
 if [  = 1 ]; then \
@@ -255,8 +255,6 @@ fi
 make: *** [Makefile:57: locale/da/texts.po] Error 255
 ```
 then copy the file `src\pt-br\texts.po.json` to `src\da\` and `src\ru-ru\`, just to make the android build pass.
-
-> NOTE: 
 
 ## Add a mobile device in the emulator
 
