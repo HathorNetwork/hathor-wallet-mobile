@@ -12,9 +12,7 @@ See the [releases](https://developer.android.com/studio) that most fits for your
 
 ## Configure Android Studio Environment Variables
 
-<aside>
-INFO: The following commands should be run in your PowerShell terminal.
-</aside>
+> INFO: The following commands should be run in your PowerShell terminal.
 
 As the SDK installation by default is installed at `$env:USERPROFILE\AppData\Local\Android\Sdk`, add the following environment variables targeting your user:
 
@@ -39,9 +37,7 @@ Set `ANDROID_AVD_HOME`
 ```
 ## Add Android Studio tools on executables PATH
 
-<aside>
-INFO: For more details see [Command-line tools](https://developer.android.com/studio/command-line).
-</aside>
+> INFO: For more details see [Command-line tools](https://developer.android.com/studio/command-line).
 
 Add the following paths to your environment `PATH` variable:
 
@@ -83,9 +79,7 @@ Check the `PATH` variable in your `user` environment
 
 ## Hardware Acceleration
 
-<aside>
-INFO: For more details read [Configure hardware acceleration for the Android Emulator](https://developer.android.com/studio/run/emulator-acceleration)
-</aside>
+> INFO: For more details read [Configure hardware acceleration for the Android Emulator](https://developer.android.com/studio/run/emulator-acceleration)
 
 ### Intel processor + enabled Hyper-V
 
