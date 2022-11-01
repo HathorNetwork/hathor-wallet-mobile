@@ -258,6 +258,8 @@ export function* loadTokens() {
   for (const token of registeredTokens) {
     yield put(tokenFetchBalanceRequested(token));
   }
+
+  return registeredTokens;
 }
 
 /**
@@ -519,13 +521,13 @@ export function* walletReloading() {
   try {
     // Store all tokens on redux as we might have lost tokens during the disconnected
     // period.
-    const { allTokens } = yield call(loadTokens);
+    const registeredTokens = yield call(loadTokens);
 
     const customTokenUid = DEFAULT_TOKEN.uid;
     const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
     // We might have lost transactions during the reload, so we must invalidate the
     // token histories:
-    for (const tokenUid of allTokens) {
+    for (const tokenUid of registeredTokens) {
       if (tokenUid === htrUid
           || tokenUid === customTokenUid) {
         continue;
