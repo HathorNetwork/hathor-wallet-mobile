@@ -519,8 +519,6 @@ export function* walletReloading() {
   yield take(types.WALLET_STATE_READY);
 
   try {
-    // Store all tokens on redux as we might have lost tokens during the disconnected
-    // period.
     const registeredTokens = yield call(loadTokens);
 
     const customTokenUid = DEFAULT_TOKEN.uid;
