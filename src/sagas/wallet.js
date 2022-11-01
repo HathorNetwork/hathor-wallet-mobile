@@ -56,6 +56,7 @@ import {
   updateLoadedData,
   walletStateReady,
   walletStateError,
+  reloadingWallet,
   setServerInfo,
   setIsOnline,
   setWallet,
@@ -133,7 +134,10 @@ export function* startWallet(action) {
       seed: words,
       store: STORE,
       connection,
-      beforeReloadCallback: () => dispatch(onStartWalletLock()),
+      beforeReloadCallback: () => {
+        dispatch(onStartWalletLock());
+        dispatch(reloadingWallet());
+      }
     };
     wallet = new HathorWallet(walletConfig);
   }
@@ -517,17 +521,21 @@ export function* walletReloading() {
     // period.
     const { allTokens } = yield call(loadTokens);
 
+    const customTokenUid = DEFAULT_TOKEN.uid;
+    const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
     // We might have lost transactions during the reload, so we must invalidate the
     // token histories:
     for (const tokenUid of allTokens) {
-      if (tokenUid === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid) {
+      if (tokenUid === htrUid
+          || tokenUid === customTokenUid) {
         continue;
       }
+
       yield put(tokenInvalidateHistory(tokenUid));
     }
+    yield put(startWalletSuccess());
   } catch (e) {
     yield put(startWalletFailed());
-    return;
   }
 }
 
@@ -535,6 +543,7 @@ export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', startWallet),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
+    takeLatest('WALLET_RELOADING', walletReloading),
     takeEvery('WALLET_NEW_TX', handleTx),
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
