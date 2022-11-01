@@ -502,6 +502,35 @@ export function* onWalletReloadData() {
   yield put(startWalletSuccess());
 }
 
+export function* walletReloading() {
+  const wallet = yield select((state) => state.wallet);
+
+  // Since we close the channel after a walletReady event is received,
+  // we must fork this saga again so we setup listeners again.
+  yield fork(listenForWalletReady, wallet);
+
+  // Wait until the wallet is ready
+  yield take(types.WALLET_STATE_READY);
+
+  try {
+    // Store all tokens on redux as we might have lost tokens during the disconnected
+    // period.
+    const { allTokens } = yield call(loadTokens);
+
+    // We might have lost transactions during the reload, so we must invalidate the
+    // token histories:
+    for (const tokenUid of allTokens) {
+      if (tokenUid === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid) {
+        continue;
+      }
+      yield put(tokenInvalidateHistory(tokenUid));
+    }
+  } catch (e) {
+    yield put(startWalletFailed());
+    return;
+  }
+}
+
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', startWallet),
