@@ -59,7 +59,7 @@ class RegisterTokenManual extends React.Component {
   }
 
   onConfigStringChange = (text) => {
-    this.setState({ configString: text, errorMessage: '', token: null }, () => {
+    this.setState({ configString: text.trim(), errorMessage: '', token: null }, () => {
       this.validateConfigurationString();
     });
   }
