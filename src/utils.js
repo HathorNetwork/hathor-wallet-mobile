@@ -163,22 +163,16 @@ export const parseQRCode = (data) => {
     // if it's not json, maybe it's just the address from wallet ("hathor:{address}")
     hathorAddress = data;
   }
-  const addressParts = hathorAddress.split(':');
-  if (addressParts[0] !== 'hathor' || addressParts.length !== 2) {
-    return {
-      isValid: false,
-      error: 'This QR code does not contain a Hathor address or payment request.',
-    };
-  } if (!qrcode) {
+  
+  const address = extractAddress(hathorAddress);
+  if (!qrcode) {
     // just the address (no token or amount)
-    const address = addressParts[1];
     return {
       isValid: true,
       address,
     };
   }
   // complete qr code
-  const address = addressParts[1];
   const { token } = qrcode;
   const { amount } = qrcode;
   if (token && !amount) {
@@ -199,6 +193,23 @@ export const parseQRCode = (data) => {
     amount,
   };
 };
+
+/**
+ * Extract a wallet address from a plain text string.
+ * 
+ * @example
+ * 'hathor:<address>' -> '<address>'
+ * 
+ * @example
+ * '<address>' -> '<address>'
+ * 
+ * @param {string} plainText containing wallet address.
+ */
+function extractAddress(plainText) {
+  const [addressAlone, addressFromComposition] = plainText.split(':');
+  if (addressFromComposition) return addressFromComposition
+  else return addressAlone
+}
 
 /**
  * Get the distance to be set on the topDistance when using a KeyboardAvoidingView
