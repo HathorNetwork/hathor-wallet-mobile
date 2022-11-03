@@ -163,7 +163,7 @@ export const parseQRCode = (data) => {
     // if it's not json, maybe it's just the address from wallet ("hathor:{address}")
     hathorAddress = data;
   }
-  
+
   const address = extractAddress(hathorAddress);
   if (!qrcode) {
     // just the address (no token or amount)
@@ -196,19 +196,19 @@ export const parseQRCode = (data) => {
 
 /**
  * Extract a wallet address from a plain text string.
- * 
+ *
  * @example
  * 'hathor:<address>' -> '<address>'
- * 
+ *
  * @example
  * '<address>' -> '<address>'
- * 
+ *
  * @param {string} plainText containing wallet address.
  */
 function extractAddress(plainText) {
   const [addressAlone, addressFromComposition] = plainText.split(':');
-  if (addressFromComposition) return addressFromComposition
-  else return addressAlone
+  if (addressFromComposition) return addressFromComposition;
+  return addressAlone;
 }
 
 /**

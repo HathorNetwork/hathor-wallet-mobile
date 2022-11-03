@@ -5,7 +5,7 @@
   	"react"
   ],
   "rules": {
-    "linebreak-style": ["error", "unix"],
+    "linebreak-style": ["error", "windows"],
     "arrow-parens": ["error", "always"],
     "import/no-named-as-default": 0,
     "import/prefer-default-export": 0,
@@ -42,6 +42,6 @@
     "no-use-before-define": 0,
     "no-unused-vars": [1, {"vars": "all", "args": "none"}],
     "no-underscore-dangle": 0,
-    "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
+    "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"]
   }
 }
