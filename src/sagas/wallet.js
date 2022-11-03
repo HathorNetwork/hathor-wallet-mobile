@@ -56,7 +56,7 @@ import {
   updateLoadedData,
   walletStateReady,
   walletStateError,
-  reloadingWallet,
+  onWalletReload,
   setServerInfo,
   setIsOnline,
   setWallet,
@@ -136,7 +136,7 @@ export function* startWallet(action) {
       connection,
       beforeReloadCallback: () => {
         dispatch(onStartWalletLock());
-        dispatch(reloadingWallet());
+        dispatch(onWalletReload());
       }
     };
     wallet = new HathorWallet(walletConfig);
@@ -426,9 +426,7 @@ export function* setupWalletListeners(wallet) {
       type: 'WALLET_CONN_STATE_UPDATE',
       data: state,
     }));
-    wallet.on('reload-data', () => emitter({
-      type: 'WALLET_RELOAD_DATA',
-    }));
+    wallet.on('reload-data', () => emitter(onWalletReload()));
     wallet.on('update-tx', (data) => emitter({
       type: 'WALLET_UPDATE_TX',
       data,
@@ -496,19 +494,6 @@ export function* onWalletConnStateUpdate({ payload }) {
 }
 
 export function* onWalletReloadData() {
-  // Since we are reloading the token balances and history for HTR and DEFAULT_TOKEN,
-  // we should display the loading history screen, as the current balance is now unreliable
-  yield put(onStartWalletLock());
-  try {
-    yield call(loadTokens());
-  } catch (e) {
-    yield put(startWalletFailed());
-  }
-
-  yield put(startWalletSuccess());
-}
-
-export function* walletReloading() {
   const wallet = yield select((state) => state.wallet);
 
   // Since we close the channel after a walletReady event is received,
@@ -523,9 +508,11 @@ export function* walletReloading() {
 
     const customTokenUid = DEFAULT_TOKEN.uid;
     const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
+
     // We might have lost transactions during the reload, so we must invalidate the
     // token histories:
     for (const tokenUid of registeredTokens) {
+      // Skip customtoken and HTR since we already force-download the history on loadTokens
       if (tokenUid === htrUid
           || tokenUid === customTokenUid) {
         continue;
@@ -543,11 +530,11 @@ export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', startWallet),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
-    takeLatest('WALLET_RELOADING', walletReloading),
+    takeLatest('WALLET_RELOADING', onWalletReloadData),
+    takeLatest('WALLET_RELOAD_DATA', onWalletReloadData),
     takeEvery('WALLET_NEW_TX', handleTx),
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
-    takeEvery('WALLET_RELOAD_DATA', onWalletReloadData),
   ]);
 }

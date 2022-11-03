@@ -499,10 +499,6 @@ export const walletStateReady = () => ({
   type: types.WALLET_STATE_READY,
 });
 
-export const walletReloadData = () => ({
-  type: types.WALLET_RELOAD_DATA,
-});
-
-export const reloadingWallet = () => ({
+export const onWalletReload = () => ({
   type: types.WALLET_RELOADING,
 });
