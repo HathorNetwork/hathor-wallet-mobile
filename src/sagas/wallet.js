@@ -135,9 +135,8 @@ export function* startWallet(action) {
       store: STORE,
       connection,
       beforeReloadCallback: () => {
-        dispatch(onStartWalletLock());
         dispatch(onWalletReload());
-      }
+      },
     };
     wallet = new HathorWallet(walletConfig);
   }
@@ -494,6 +493,8 @@ export function* onWalletConnStateUpdate({ payload }) {
 }
 
 export function* onWalletReloadData() {
+  yield put(onStartWalletLock());
+
   const wallet = yield select((state) => state.wallet);
 
   // Since we close the channel after a walletReady event is received,
