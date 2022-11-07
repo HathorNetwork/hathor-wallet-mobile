@@ -13,7 +13,7 @@ import { connect } from 'react-redux';
 import { t } from 'ttag';
 
 import {
-  walletReloadData,
+  onWalletReload,
   startWalletRequested,
   resetLoadedData,
 } from '../actions';
@@ -46,7 +46,7 @@ const mapDispatchToProps = (dispatch) => ({
       dispatch(startWalletRequested({ words, pin }));
     },
   reloadHistory:
-    () => dispatch(walletReloadData()),
+    () => dispatch(onWalletReload()),
   resetLoadedData: () => dispatch(resetLoadedData()),
 });
 
