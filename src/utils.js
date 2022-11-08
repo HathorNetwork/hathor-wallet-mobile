@@ -202,19 +202,15 @@ export const parseQRCode = (data) => {
  * Extract a wallet address from a plain text string.
  *
  * @example
- * 'hathor:<address>' -> '<address>'
+ * 'hathor:<address>' -> { isValid: true, address }
  *
  * @example
- * '<address>' -> '<address>'
+ * '<address>' -> { isValid: true, address }
  *
  * @param {string} plainText containing wallet address.
  *
- * @typedef ExtractedAddress
- * @property {boolean} isValid indicate if the address is valid.
- * @property {string} error error message when the address is invalid.
- * @property {string} address a valid address extracted.
- *
- * @return {ExtractedAddress} represent the extracted address be it valid or invalid.
+ * @return {{ isValid: boolean, error?: string, address?: string }}
+ * represent the extracted address be it valid or invalid.
  */
 function extractAddress(plainText) {
   const HATHOR_PREFIX = 'hathor';
