@@ -69,7 +69,7 @@ export const types = {
   START_WALLET_FAILED: 'START_WALLET_FAILED',
   WALLET_STATE_READY: 'WALLET_STATE_READY',
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
-  WALLET_RELOAD_DATA: 'WALLET_RELOAD_DATA',
+  WALLET_RELOADING: 'WALLET_RELOADING',
 };
 
 /**
@@ -498,6 +498,6 @@ export const walletStateReady = () => ({
   type: types.WALLET_STATE_READY,
 });
 
-export const walletReloadData = () => ({
-  type: types.WALLET_RELOAD_DATA,
+export const onWalletReload = () => ({
+  type: types.WALLET_RELOADING,
 });

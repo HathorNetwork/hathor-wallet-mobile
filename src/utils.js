@@ -163,22 +163,20 @@ export const parseQRCode = (data) => {
     // if it's not json, maybe it's just the address from wallet ("hathor:{address}")
     hathorAddress = data;
   }
-  const addressParts = hathorAddress.split(':');
-  if (addressParts[0] !== 'hathor' || addressParts.length !== 2) {
-    return {
-      isValid: false,
-      error: 'This QR code does not contain a Hathor address or payment request.',
-    };
-  } if (!qrcode) {
+
+  const { isValid, error, address } = extractAddress(hathorAddress);
+  if (!isValid) {
+    return { isValid, error };
+  }
+
+  if (!qrcode) {
     // just the address (no token or amount)
-    const address = addressParts[1];
     return {
       isValid: true,
       address,
     };
   }
   // complete qr code
-  const address = addressParts[1];
   const { token } = qrcode;
   const { amount } = qrcode;
   if (token && !amount) {
@@ -199,6 +197,45 @@ export const parseQRCode = (data) => {
     amount,
   };
 };
+
+/**
+ * Extract a wallet address from a plain text string.
+ *
+ * @example
+ * 'hathor:<address>' -> { isValid: true, address }
+ *
+ * @example
+ * '<address>' -> { isValid: true, address }
+ *
+ * @param {string} plainText containing wallet address.
+ *
+ * @return {{ isValid: boolean, error?: string, address?: string }}
+ * represent the extracted address be it valid or invalid.
+ */
+function extractAddress(plainText) {
+  const HATHOR_PREFIX = 'hathor';
+  const failedResult = {
+    isValid: false,
+    error: 'This QR code does not contain a Hathor address or payment request.',
+  };
+  const sucessResult = {
+    isValid: true,
+  };
+
+  const segments = plainText.split(':');
+  const { 0: firstSegment, 1: secondSegment, length: sizeOfSegments } = segments;
+
+  if (sizeOfSegments > 2) {
+    return { ...failedResult };
+  }
+
+  if (sizeOfSegments === 2 && firstSegment !== HATHOR_PREFIX) {
+    return { ...failedResult };
+  }
+
+  if (secondSegment) return { ...sucessResult, address: secondSegment };
+  return { ...sucessResult, address: firstSegment };
+}
 
 /**
  * Get the distance to be set on the topDistance when using a KeyboardAvoidingView
