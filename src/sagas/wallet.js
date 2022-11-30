@@ -28,6 +28,7 @@ import {
   race,
   take,
   fork,
+  spawn,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
@@ -249,7 +250,7 @@ export function* loadTokens() {
     }, []);
 
   // We don't need to wait for the metadatas response, so just fork it
-  yield fork(fetchTokensMetadata, registeredTokens);
+  yield spawn(fetchTokensMetadata, registeredTokens);
 
   // Since we already know here what tokens are registered, we can dispatch actions
   // to asynchronously load the balances of each one. The `put` effect will just dispatch
