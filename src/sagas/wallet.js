@@ -249,7 +249,10 @@ export function* loadTokens() {
       return [...acc, token.uid];
     }, []);
 
-  // We don't need to wait for the metadatas response, so just fork it
+  // We don't need to wait for the metadatas response, so we can just
+  // spawn a new "thread" to handle it.
+  //
+  // `spawn` is similar to `fork`, but it creates a `detached` fork
   yield spawn(fetchTokensMetadata, registeredTokens);
 
   // Since we already know here what tokens are registered, we can dispatch actions
