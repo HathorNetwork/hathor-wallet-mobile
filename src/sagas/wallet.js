@@ -64,7 +64,7 @@ import {
   types,
 } from '../actions';
 import { fetchTokenData } from './tokens';
-import { specificTypeAndPayload } from './helpers';
+import { specificTypeAndPayload, errorHandler } from './helpers';
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
@@ -546,7 +546,7 @@ export function* onWalletReloadData() {
 
 export function* saga() {
   yield all([
-    takeLatest('START_WALLET_REQUESTED', startWallet),
+    takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeLatest('WALLET_RELOADING', onWalletReloadData),
     takeEvery('WALLET_NEW_TX', handleTx),
