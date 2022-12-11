@@ -150,6 +150,15 @@ export function* startWallet(action) {
   // wait until the wallet is ready
   const walletReadyThread = yield fork(listenForWalletReady, wallet);
 
+  // Thread to listen for feature flags from Unleash
+  const featureFlagsThread = yield fork(listenForFeatureFlags, featureFlags);
+
+  const threads = [
+    walletListenerThread,
+    walletReadyThread,
+    featureFlagsThread
+  ];
+
   // Store the unique device id on redux
   yield put(setUniqueDeviceId(uniqueDeviceId));
 
@@ -166,8 +175,11 @@ export function* startWallet(action) {
       // the feature flag
       yield call(featureFlags.ignoreWalletServiceFlag.bind(featureFlags));
 
-      // Restart the whole bundle to make sure we clear all events
-      NativeModules.HTRReloadBundleModule.restart();
+      // Cleanup all listeners
+      yield cancel(threads);
+
+      // Yield the same action so it will now load on the old facade
+      yield put(action);
     }
   }
 
@@ -201,8 +213,6 @@ export function* startWallet(action) {
     return;
   }
 
-  const featureFlagsThread = yield fork(listenForFeatureFlags, featureFlags);
-
   yield put(startWalletSuccess());
 
   // The way the redux-saga fork model works is that if a saga has `forked`
@@ -212,11 +222,7 @@ export function* startWallet(action) {
   // So, if a new START_WALLET_REQUESTED action is dispatched, we need to cleanup
   // all attached forks (that will cause the event listeners to be cleaned).
   yield take('START_WALLET_REQUESTED');
-  yield cancel([
-    walletListenerThread,
-    walletReadyThread,
-    featureFlagsThread
-  ]);
+  yield cancel(threads);
 }
 
 /**
