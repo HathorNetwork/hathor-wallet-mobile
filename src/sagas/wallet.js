@@ -86,7 +86,7 @@ export function* startWallet(action) {
 
   // If we've lost redux data, we could not properly stop the wallet object
   // then we don't know if we've cleaned up the wallet data in the storage
-  walletUtil.cleanLoadedData();
+  walletUtil.cleanLoadedData({ cleanAccessData: false });
 
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
