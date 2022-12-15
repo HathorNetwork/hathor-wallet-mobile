@@ -1,5 +1,7 @@
 # Hathor Wallet Mobile
 
+See the instructions to run on (Windows)[./WINDOWS.md].
+
 ## Install
 
 `npm install`

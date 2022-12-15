@@ -163,8 +163,12 @@ export const parseQRCode = (data) => {
     // if it's not json, maybe it's just the address from wallet ("hathor:{address}")
     hathorAddress = data;
   }
-  
-  const address = extractAddress(hathorAddress);
+
+  const { isValid, error, address } = extractAddress(hathorAddress);
+  if (!isValid) {
+    return { isValid, error };
+  }
+
   if (!qrcode) {
     // just the address (no token or amount)
     return {
@@ -196,19 +200,41 @@ export const parseQRCode = (data) => {
 
 /**
  * Extract a wallet address from a plain text string.
- * 
+ *
  * @example
- * 'hathor:<address>' -> '<address>'
- * 
+ * 'hathor:<address>' -> { isValid: true, address }
+ *
  * @example
- * '<address>' -> '<address>'
- * 
+ * '<address>' -> { isValid: true, address }
+ *
  * @param {string} plainText containing wallet address.
+ *
+ * @return {{ isValid: boolean, error?: string, address?: string }}
+ * represent the extracted address be it valid or invalid.
  */
 function extractAddress(plainText) {
-  const [addressAlone, addressFromComposition] = plainText.split(':');
-  if (addressFromComposition) return addressFromComposition
-  else return addressAlone
+  const HATHOR_PREFIX = 'hathor';
+  const failedResult = {
+    isValid: false,
+    error: 'This QR code does not contain a Hathor address or payment request.',
+  };
+  const sucessResult = {
+    isValid: true,
+  };
+
+  const segments = plainText.split(':');
+  const { 0: firstSegment, 1: secondSegment, length: sizeOfSegments } = segments;
+
+  if (sizeOfSegments > 2) {
+    return { ...failedResult };
+  }
+
+  if (sizeOfSegments === 2 && firstSegment !== HATHOR_PREFIX) {
+    return { ...failedResult };
+  }
+
+  if (secondSegment) return { ...sucessResult, address: secondSegment };
+  return { ...sucessResult, address: firstSegment };
 }
 
 /**
