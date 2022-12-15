@@ -51,6 +51,7 @@ import UnregisterToken from './screens/UnregisterToken';
 import PinScreen from './screens/PinScreen';
 import About from './screens/About';
 import Security from './screens/Security';
+import PushNotification from './screens/PushNotification';
 import ChangePin from './screens/ChangePin';
 import ResetWallet from './screens/ResetWallet';
 import Dashboard from './screens/Dashboard';
@@ -175,6 +176,7 @@ const AppStack = createStackNavigator({
   Main: TabNavigator,
   About,
   Security,
+  PushNotification,
   ChangePin,
   ResetWallet,
   PaymentRequestDetail,
