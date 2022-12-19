@@ -445,3 +445,10 @@ export const mapTokenHistory = (element, token) => {
   };
   return new TxHistory(data);
 };
+
+/**
+ * Verifies if user is enabling a feature
+ * @param {boolean} value should be true or false and comes from Switch component
+ * @returns {boolean} true if user is enabling a feature, false otherwise
+ */
+export const isEnablingFeature = (value) => (value && value === true);

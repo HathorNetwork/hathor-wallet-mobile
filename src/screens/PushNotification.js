@@ -1,15 +1,23 @@
 import React from 'react';
 import {
   StyleSheet,
-  Text,
-  ScrollView,
   SafeAreaView,
   Switch,
 } from 'react-native';
+import { connect } from 'react-redux';
 import HathorHeader from '../components/HathorHeader';
-import { HathorList, ListItem, ListMenu } from '../components/HathorList';
+import { HathorList, ListItem } from '../components/HathorList';
+import ActionModal from '../components/ActionModal';
+import { isEnablingFeature } from '../utils';
 
-export default class PushNotification extends React.Component {
+/**
+ * wallet {Object} wallet at user's device
+ */
+const mapInvoiceStateToProps = (state) => ({
+  wallet: state.wallet,
+});
+
+class PushNotification extends React.Component {
   styles = StyleSheet.create({
     view: {
       padding: 16,
@@ -30,11 +38,21 @@ export default class PushNotification extends React.Component {
     super(props);
     // set state
     this.state = {
-      // set default value for pushNotificationEnabled to false
       pushNotificationEnabled: false,
-      // set default value for showAmountEnabled to false
       showAmountEnabled: false,
+      /**
+       * hasPushNotificationBeenEnabled {boolean} if user has enabled push notification before
+       * this is used to show the terms and conditions modal only the first time
+       * user enables push notification
+       */
+      hasPushNotificationBeenEnabled: false,
+      /**
+       * modal {ActionModal.propTypes} action modal properties. If null, do not display
+       */
+      modal: null,
     };
+
+    console.log('Wallet', this.props.wallet);
   }
 
   // create componentDidMount method
@@ -45,8 +63,32 @@ export default class PushNotification extends React.Component {
     // });
   }
 
+  onPushNotificationAgreement() {
+    // call pushRegister from wallet-lib
+    // hathorLib.wallet.PushNotification.pushRegister();
+
+    this.setState({
+      pushNotificationEnabled: true,
+      hasPushNotificationBeenEnabled: false,
+      modal: null
+    });
+  }
+
   onPushNotificationSwitchChange = (value) => {
     // if first time enabling push notification, ask for consent on terms and conditions
+    if (isEnablingFeature(value) && !this.state.hasPushNotificationBeenEnabled) {
+      this.setState({
+        modal: {
+          title: 'Push Notification',
+          message: 'By enabling push notification, you agree to our terms and conditions.',
+          button: 'I agree',
+          onPress: () => this.onPushNotificationAgreement(),
+          onDismiss: () => this.setState({ modal: null }),
+        },
+      });
+      // exit method early
+      return;
+    }
 
     // if user is enabling push notification, ask for bio-metric confirmation
 
@@ -58,6 +100,7 @@ export default class PushNotification extends React.Component {
   onShowAmountSwitchChange = (value) => {
     this.setState({ showAmountEnabled: value });
   }
+
 
   // create render method
   render() {
@@ -73,6 +116,17 @@ export default class PushNotification extends React.Component {
           title='Push Notification'
           onBackPress={() => this.props.navigation.goBack()}
         />
+
+        {this.state.modal && (
+          <ActionModal
+            title={this.state.modal.title}
+            message={this.state.modal.message}
+            button={this.state.modal.button}
+            onPress={this.state.modal.onPress}
+            onDismiss={() => this.setState({ modal: null })}
+          />
+        )}
+
         <HathorList>
           <ListItem
             title={pushNotificationEnabledText}
@@ -102,3 +156,5 @@ export default class PushNotification extends React.Component {
     );
   }
 }
+
+export default connect(mapInvoiceStateToProps)(PushNotification);
