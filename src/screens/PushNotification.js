@@ -13,6 +13,7 @@ import ActionModal from '../components/ActionModal';
 import { isEnablingFeature } from '../utils';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
+import { STORE } from '../constants';
 
 /**
  * wallet {Object} wallet at user's device
@@ -38,6 +39,8 @@ class PushNotification extends React.Component {
       color: 'black',
     },
   });
+
+  store = STORE;
 
   // create constructor
   constructor(props) {
@@ -66,9 +69,10 @@ class PushNotification extends React.Component {
   // create componentDidMount method
   componentDidMount() {
     // set pushNotificationEnabled to true
-    // this.setState({
-    //   pushNotificationEnabled: true,
-    // });
+    this.setState({
+      pushNotificationEnabled: this.store.getItem('pushNotification:enabled'),
+      hasPushNotificationBeenEnabled: this.store.getItem('pushNotification:hasBeenEnabled'),
+    });
   }
 
   isFirstTimeEnablingPushNotification(value) {
@@ -107,6 +111,8 @@ class PushNotification extends React.Component {
         pushNotificationEnabled: true,
         hasPushNotificationBeenEnabled: true,
       });
+      this.store.setItem('pushNotification:enabled', this.state.pushNotificationEnabled);
+      this.store.setItem('pushNotification:hasBeenEnabled', this.state.hasPushNotificationBeenEnabled);
     } else {
       this.setState({
         feedbackModal: {
