@@ -15,11 +15,11 @@ import { PRIMARY_COLOR } from '../constants';
  *  title={this.state.modal.title}
  *  message={this.state.modal.message}
  *  button={this.state.modal.button}
- *  onPress={this.state.modal.onPress}
+ *  onAction={this.state.modal.onAction}
  *  onDismiss={this.state.modal.onDismiss}
  * />
  *
- * @param {{ title, message, button, onPress, onDismiss }} props The props of the component
+ * @param {{ title, message, button, onAction, onDismiss }} props The props of the component
  * @returns The action modal component to display
  */
 const ActionModal = (props) => (
@@ -44,7 +44,7 @@ const ActionModal = (props) => (
           <Text style={styles.modalMessage}>{props.message}</Text>
         </View>
         <View style={styles.modalButtonContainer}>
-          <TouchableOpacity onPress={props.onPress}>
+          <TouchableOpacity onPress={props.onAction}>
             <Text style={styles.modalButton}>{props.button}</Text>
           </TouchableOpacity>
         </View>
@@ -57,7 +57,7 @@ ActionModal.propTypes = {
   title: PropTypes.string.isRequired,
   message: PropTypes.string.isRequired,
   button: PropTypes.string.isRequired,
-  onPress: PropTypes.func.isRequired,
+  onAction: PropTypes.func.isRequired,
   onDismiss: PropTypes.func.isRequired,
 };
 
