@@ -3,18 +3,24 @@ import {
   StyleSheet,
   SafeAreaView,
   Switch,
+  Image,
 } from 'react-native';
 import { connect } from 'react-redux';
+import { PushNotification as PushNotificationFromLib } from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
 import { HathorList, ListItem } from '../components/HathorList';
 import ActionModal from '../components/ActionModal';
 import { isEnablingFeature } from '../utils';
+import FeedbackModal from '../components/FeedbackModal';
+import errorIcon from '../assets/images/icErrorBig.png';
 
 /**
  * wallet {Object} wallet at user's device
  */
 const mapInvoiceStateToProps = (state) => ({
   wallet: state.wallet,
+  useWalletService: state.useWalletService,
+  isShowingPinScreen: state.isShowingPinScreen,
 });
 
 class PushNotification extends React.Component {
@@ -47,12 +53,14 @@ class PushNotification extends React.Component {
        */
       hasPushNotificationBeenEnabled: false,
       /**
-       * modal {ActionModal.propTypes} action modal properties. If null, do not display
+       * actionModal {ActionModal.propTypes} action modal properties. If null, do not display
        */
-      modal: null,
+      actionModal: null,
+      /**
+       * feedbackModal {Feedback.propTypes} feedback modal properties. If null, do not display
+       */
+      feedbackModal: null,
     };
-
-    console.log('Wallet', this.props.wallet);
   }
 
   // create componentDidMount method
@@ -63,30 +71,72 @@ class PushNotification extends React.Component {
     // });
   }
 
-  onPushNotificationAgreement() {
-    // call pushRegister from wallet-lib
-    // hathorLib.wallet.PushNotification.pushRegister();
+  isFirstTimeEnablingPushNotification(value) {
+    return isEnablingFeature(value) && !this.state.hasPushNotificationBeenEnabled;
+  }
 
+  dismissActionModal() {
+    this.setState({ actionModal: null });
+  }
+
+  dismissFeedbackModal() {
+    this.setState({ feedbackModal: null });
+  }
+
+  actionOnTermsAndConditions() {
     this.setState({
-      pushNotificationEnabled: true,
-      hasPushNotificationBeenEnabled: false,
-      modal: null
+      actionModal: {
+        title: 'Push Notification',
+        message: 'By enabling push notification, you agree to our terms and conditions.',
+        button: 'I agree',
+        onAction: () => this.onPushNotificationAgreement(),
+        onDismiss: () => this.dismissActionModal(),
+      },
     });
   }
 
-  onPushNotificationSwitchChange = (value) => {
-    // if first time enabling push notification, ask for consent on terms and conditions
-    if (isEnablingFeature(value) && !this.state.hasPushNotificationBeenEnabled) {
+  async executeFirstRegistrationOnPushNotification(pin) {
+    // NOTE: what happen if user is not using wallet service?
+    if (this.props.useWalletService) {
+      await this.props.wallet.validateAndRenewAuthToken(pin);
+    }
+
+    const { success } = PushNotificationFromLib.registerDevice(this.props.wallet, { token: '123' });
+    if (success) {
       this.setState({
-        modal: {
-          title: 'Push Notification',
-          message: 'By enabling push notification, you agree to our terms and conditions.',
-          button: 'I agree',
-          onPress: () => this.onPushNotificationAgreement(),
-          onDismiss: () => this.setState({ modal: null }),
+        pushNotificationEnabled: true,
+        hasPushNotificationBeenEnabled: true,
+      });
+    } else {
+      this.setState({
+        feedbackModal: {
+          icon: <Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />,
+          text: 'There was an error enabling push notification. Please try again later.',
+          onDismiss: () => this.dismissFeedbackModal(),
         },
       });
-      // exit method early
+    }
+  }
+
+  /**
+   * Called when user agrees to push notification terms and conditions,
+   * so we need to confirm the pin to start the registration process.
+   */
+  onPushNotificationAgreement() {
+    this.dismissActionModal();
+
+    const params = {
+      cb: () => this.executeFirstRegistrationOnPushNotification(),
+      screenText: 'Enter your 6-digit pin to confirm registration of your device',
+      biometryText: 'Authorize device registration to push notification',
+      canCancel: true,
+    };
+    this.props.navigation.navigate('PinScreen', params);
+  }
+
+  onPushNotificationSwitchChange = (value) => {
+    if (this.isFirstTimeEnablingPushNotification(value)) {
+      this.actionOnTermsAndConditions();
       return;
     }
 
@@ -117,20 +167,28 @@ class PushNotification extends React.Component {
           onBackPress={() => this.props.navigation.goBack()}
         />
 
-        {this.state.modal && (
+        {this.state.feedbackModal && (
+          <FeedbackModal
+            icon={this.state.feedbackModal.icon}
+            text={this.state.feedbackModal.text}
+            onDismiss={this.state.feedbackModal.onDismiss}
+          />
+        )}
+
+        {this.state.actionModal && (
           <ActionModal
-            title={this.state.modal.title}
-            message={this.state.modal.message}
-            button={this.state.modal.button}
-            onPress={this.state.modal.onPress}
-            onDismiss={() => this.setState({ modal: null })}
+            title={this.state.actionModal.title}
+            message={this.state.actionModal.message}
+            button={this.state.actionModal.button}
+            onAction={this.state.actionModal.onAction}
+            onDismiss={this.state.actionModal.onDismiss}
           />
         )}
 
         <HathorList>
           <ListItem
             title={pushNotificationEnabledText}
-            titleStyle={this.state.pushNotificationEnabled ? this.styles.switchEnabled : null}
+            titleStyle={this.styles.switchEnabled}
             text={(
               <Switch
                 onValueChange={this.onPushNotificationSwitchChange}
@@ -141,7 +199,7 @@ class PushNotification extends React.Component {
           />
           <ListItem
             title={showAmountEnabledText}
-            titleStyle={this.state.showAmountEnabled ? this.styles.switchEnabled : null}
+            titleStyle={isPushNotificationEnabled ? this.styles.switchEnabled : null}
             text={(
               <Switch
                 onValueChange={this.onShowAmountSwitchChange}
