@@ -93,6 +93,24 @@ const initialState = {
   tempPin: null,
   isShowingPinScreen: false,
   walletStartState: WALLET_STATUS.LOADING,
+  pushNotification: {
+    requestState: 'not_requested',
+    /**
+     * enabled {boolean} if user has enabled push notification
+     */
+    enabled: false,
+    /**
+     * hasBeenEnabled {boolean} if user has enabled push notification before
+     * this is used to show the terms and conditions modal only the first time
+     * user enables push notification
+     */
+    hasBeenEnabled: false,
+    /**
+     * showAmountEnabled {boolean} if user has enabled the option to show amount
+     * of token balance on the push notification
+     */
+    showAmountEnabled: false,
+  }
 };
 
 const reducer = (state = initialState, action) => {
@@ -179,6 +197,10 @@ const reducer = (state = initialState, action) => {
       return onStartWalletFailed(state);
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
+    case types.PUSH_REGISTER_SUCCESS:
+      return onPushRegisterSuccess(state, action);
+    case types.PUSH_REGISTER_FAILED:
+      return onPushRegisterFailed(state);
     default:
       return state;
   }
@@ -638,6 +660,34 @@ export const onWalletBestBlockUpdate = (state, action) => {
     height: data,
   };
 };
+
+/**
+ * @param {{enabled: boolean, hasBeenEnabled: boolean}} action
+ */
+export const onPushRegisterSuccess = (state, action) => {
+  const { enabled, hasBeenEnabled } = action;
+  console.log('onPushRegisterSuccess', enabled, hasBeenEnabled);
+
+  return ({
+    ...state,
+    pushNotifications: {
+      ...state.pushNotifications,
+      requestState: 'success',
+      enabled,
+      hasBeenEnabled,
+      // pushApiState: PUSH_API_STATUS.READY,
+    },
+  });
+};
+
+export const onPushRegisterFailed = (state) => ({
+  ...state,
+  pushNotifications: {
+    ...state.pushNotifications,
+    requestState: 'error',
+    // pushApiState: PUSH_API_STATUS.FAILED,
+  },
+});
 
 const saga = createSagaMiddleware();
 const middlewares = [saga, thunk];

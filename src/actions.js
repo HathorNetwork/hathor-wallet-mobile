@@ -71,6 +71,13 @@ export const types = {
   WALLET_STATE_READY: 'WALLET_STATE_READY',
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
+  // Push Notification actions
+  PUSH_FIRST_REGISTRATION_REQUESTED: 'PUSH_OPT_IN_REQUESTED',
+  PUSH_REGISTER_SUCCESS: 'PUSH_REGISTER_SUCCESS',
+  PUSH_REGISTER_FAILED: 'PUSH_REGISTER_FAILED',
+  PUSH_UPDATE_REQUESTED: 'PUSH_UPDATE_REQUESTED',
+  PUSH_UPDATE_SUCCESS: 'PUSH_UPDATE_SUCCESS',
+  PUSH_UPDATE_FAILED: 'PUSH_UPDATE_FAILED',
 };
 
 /**
@@ -505,4 +512,24 @@ export const walletStateReady = () => ({
 
 export const onWalletReload = () => ({
   type: types.WALLET_RELOADING,
+});
+
+/**
+ * @param {{deviceId: string, xpub: string}} payload
+ */
+export const pushFirstTimeRegistration = (payload) => ({
+  type: types.PUSH_FIRST_REGISTRATION_REQUESTED,
+  payload,
+});
+
+/**
+ * @param {{enabled: boolean, hasBeenEnabled: boolean}} data
+ */
+export const pushRegisterSuccess = (data) => ({
+  type: types.PUSH_REGISTER_SUCCESS,
+  data,
+});
+
+export const pushRegisterFailed = () => ({
+  type: types.PUSH_REGISTER_FAILED,
 });
