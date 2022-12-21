@@ -24,6 +24,11 @@ const mapInvoiceStateToProps = (state) => ({
   isShowingPinScreen: state.isShowingPinScreen,
 });
 
+const pushNotificationKey = {
+  enabled: 'pushNotification:enabled',
+  hasBeenEnabled: 'pushNotification:hasBeenEnabled',
+};
+
 class PushNotification extends React.Component {
   styles = StyleSheet.create({
     view: {
@@ -129,11 +134,22 @@ class PushNotification extends React.Component {
     }
   }
 
+  executeUpdateOnPushNotification = (value) => {
+    this.setState({ pushNotification: { ...this.state.pushNotification, enabled: value } });
+    this.persistPushNotificationSettings();
+  }
+
+  persistPushNotificationSettings = () => {
+    this.store.setItem(pushNotificationKey.enabled, this.state.pushNotification.enabled);
+    this.store.setItem(pushNotificationKey.hasBeenEnabled, this.state.pushNotification.hasBeenEnabled);
+    this.store.setItem(pushNotificationKey.showAmountEnabled, this.state.pushNotification.showAmountEnabled);
+  }
+
   /**
    * Called when user agrees to push notification terms and conditions,
    * so we need to confirm the pin to start the registration process.
    */
-  onPushNotificationAgreement() {
+  onPushNotificationAgreement = () => {
     this.dismissActionModal();
 
     const params = {
