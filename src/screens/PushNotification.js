@@ -47,14 +47,16 @@ class PushNotification extends React.Component {
     super(props);
     // set state
     this.state = {
-      pushNotificationEnabled: false,
-      showAmountEnabled: false,
-      /**
-       * hasPushNotificationBeenEnabled {boolean} if user has enabled push notification before
-       * this is used to show the terms and conditions modal only the first time
-       * user enables push notification
-       */
-      hasPushNotificationBeenEnabled: false,
+      pushNotification: {
+        enabled: false,
+        /**
+         * hasPushNotificationBeenEnabled {boolean} if user has enabled push notification before
+         * this is used to show the terms and conditions modal only the first time
+         * user enables push notification
+         */
+        hasBeenEnabled: false,
+        showAmountEnabled: false,
+      },
       /**
        * actionModal {ActionModal.propTypes} action modal properties. If null, do not display
        */
@@ -70,13 +72,17 @@ class PushNotification extends React.Component {
   componentDidMount() {
     // set pushNotificationEnabled to true
     this.setState({
-      pushNotificationEnabled: this.store.getItem('pushNotification:enabled'),
-      hasPushNotificationBeenEnabled: this.store.getItem('pushNotification:hasBeenEnabled'),
+      pushNotification: {
+        ...this.state.pushNotification,
+        enabled: this.store.getItem(pushNotificationKey.enabled),
+        hasBeenEnabled: this.store.getItem(pushNotificationKey.hasBeenEnabled),
+        showAmountEnabled: this.store.getItem(pushNotificationKey.showAmountEnabled),
+      }
     });
   }
 
   isFirstTimeEnablingPushNotification(value) {
-    return isEnablingFeature(value) && !this.state.hasPushNotificationBeenEnabled;
+    return isEnablingFeature(value) && !this.state.pushNotification.hasBeenEnabled;
   }
 
   dismissActionModal() {
@@ -87,7 +93,7 @@ class PushNotification extends React.Component {
     this.setState({ feedbackModal: null });
   }
 
-  actionOnTermsAndConditions() {
+  actionOnTermsAndConditions = () => {
     this.setState({
       actionModal: {
         title: 'Push Notification',
@@ -100,19 +106,18 @@ class PushNotification extends React.Component {
   }
 
   async executeFirstRegistrationOnPushNotification(pin) {
-    // NOTE: what happen if user is not using wallet service?
-    if (this.props.useWalletService) {
-      await this.props.wallet.validateAndRenewAuthToken(pin);
-    }
+    // NOTE: this wallet needs to be the wallet without web socket connection
 
     const { success } = PushNotificationFromLib.registerDevice(this.props.wallet, { token: '123' });
     if (success) {
       this.setState({
-        pushNotificationEnabled: true,
-        hasPushNotificationBeenEnabled: true,
+        pushNotification: {
+          ...this.state.pushNotification,
+          enabled: true,
+          hasBeenEnabled: true,
+        }
       });
-      this.store.setItem('pushNotification:enabled', this.state.pushNotificationEnabled);
-      this.store.setItem('pushNotification:hasBeenEnabled', this.state.hasPushNotificationBeenEnabled);
+      this.persistPushNotificationSettings();
     } else {
       this.setState({
         feedbackModal: {
@@ -146,21 +151,17 @@ class PushNotification extends React.Component {
       return;
     }
 
-    // if user is enabling push notification, ask for bio-metric confirmation
-
-    // persist value
-
-    this.setState({ pushNotificationEnabled: value });
+    this.executeUpdateOnPushNotification(value);
   }
 
   onShowAmountSwitchChange = (value) => {
-    this.setState({ showAmountEnabled: value });
+    this.setState({ pushNotification: { ...this.state.pushNotification, showAmountEnabled: value } });
+    this.persistPushNotificationSettings();
   }
-
 
   // create render method
   render() {
-    const isPushNotificationEnabled = this.state.pushNotificationEnabled;
+    const isPushNotificationEnabled = this.state.pushNotification.enabled;
     const pushNotificationEnabledText = 'Enable Push Notification';
     const showAmountEnabledText = 'Show amounts on notification';
 
@@ -198,7 +199,7 @@ class PushNotification extends React.Component {
             text={(
               <Switch
                 onValueChange={this.onPushNotificationSwitchChange}
-                value={this.state.pushNotificationEnabled}
+                value={this.state.pushNotification.enabled}
               />
             )}
             isFirst
@@ -209,7 +210,7 @@ class PushNotification extends React.Component {
             text={(
               <Switch
                 onValueChange={this.onShowAmountSwitchChange}
-                value={this.state.showAmountEnabled}
+                value={this.state.pushNotification.showAmountEnabled}
                 disabled={!isPushNotificationEnabled}
               />
             )}
