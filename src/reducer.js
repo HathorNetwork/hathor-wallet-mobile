@@ -15,6 +15,7 @@ import { types } from './actions';
 import rootSagas from './sagas';
 import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
 import { WALLET_STATUS } from './sagas/wallet';
+import { PUSH_API_STATUS } from './sagas/pushNotification';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
@@ -94,7 +95,15 @@ const initialState = {
   isShowingPinScreen: false,
   walletStartState: WALLET_STATUS.LOADING,
   pushNotification: {
-    requestState: 'not_requested',
+    /**
+     * noChange {boolean} if user has changed the push notification settings
+     * this is used to load persistent settings on the first time afert app is opened
+     */
+    noChange: true,
+    /**
+     * apiStatus {string} status of the push notification api request
+     */
+    apiStatus: PUSH_API_STATUS.READY,
     /**
      * enabled {boolean} if user has enabled push notification
      */
@@ -197,10 +206,16 @@ const reducer = (state = initialState, action) => {
       return onStartWalletFailed(state);
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
+    case types.PUSH_API_READY:
+      return onPushApiReady(state);
     case types.PUSH_REGISTER_SUCCESS:
       return onPushRegisterSuccess(state, action);
     case types.PUSH_REGISTER_FAILED:
       return onPushRegisterFailed(state);
+    case types.PUSH_UPDATE_SUCCESS:
+      return onPushUpdateSuccess(state, action);
+    case types.PUSH_UPDATE_FAILED:
+      return onPushUpdateFailed(state);
     default:
       return state;
   }
@@ -661,31 +676,64 @@ export const onWalletBestBlockUpdate = (state, action) => {
   };
 };
 
+export const onPushApiReady = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    noChange: false,
+    apiStatus: PUSH_API_STATUS.READY,
+  },
+});
+
 /**
  * @param {{enabled: boolean, hasBeenEnabled: boolean}} action
  */
 export const onPushRegisterSuccess = (state, action) => {
-  const { enabled, hasBeenEnabled } = action;
-  console.log('onPushRegisterSuccess', enabled, hasBeenEnabled);
-
+  const { enabled, hasBeenEnabled } = action.data;
   return ({
     ...state,
-    pushNotifications: {
-      ...state.pushNotifications,
-      requestState: 'success',
+    pushNotification: {
+      ...state.pushNotification,
+      noChange: false,
+      apiStatus: PUSH_API_STATUS.READY,
       enabled,
       hasBeenEnabled,
-      // pushApiState: PUSH_API_STATUS.READY,
     },
   });
 };
 
 export const onPushRegisterFailed = (state) => ({
   ...state,
-  pushNotifications: {
-    ...state.pushNotifications,
-    requestState: 'error',
-    // pushApiState: PUSH_API_STATUS.FAILED,
+  pushNotification: {
+    ...state.pushNotification,
+    noChange: false,
+    apiStatus: PUSH_API_STATUS.FAILED,
+  },
+});
+
+/**
+ * @param {{enabled, showAmountEnabled}} action
+ */
+export const onPushUpdateSuccess = (state, action) => {
+  const { enabled, showAmountEnabled } = action.data;
+  return {
+    ...state,
+    pushNotification: {
+      ...state.pushNotification,
+      noChange: false,
+      apiStatus: PUSH_API_STATUS.READY,
+      enabled,
+      showAmountEnabled,
+    },
+  };
+};
+
+export const onPushUpdateFailed = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    noChange: false,
+    apiStatus: PUSH_API_STATUS.FAILED,
   },
 });
 

@@ -6,7 +6,7 @@ import {
   Image,
 } from 'react-native';
 import { connect } from 'react-redux';
-import { PushNotification as PushNotificationFromLib } from '@hathor/wallet-lib';
+import { isEqual } from 'lodash';
 import HathorHeader from '../components/HathorHeader';
 import { HathorList, ListItem } from '../components/HathorList';
 import ActionModal from '../components/ActionModal';
@@ -14,20 +14,42 @@ import { isEnablingFeature } from '../utils';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { STORE } from '../constants';
+import { pushApiReady, pushFirstTimeRegistration, pushUpdateRequested } from '../actions';
+import { PUSH_API_STATUS } from '../sagas/pushNotification';
+
+const pushNotificationKey = {
+  settings: 'pushNotification:settings',
+  hasBeenEnabled: 'pushNotification:hasBeenEnabled',
+};
+
+const getPushNotificationSettings = (pushNotification) => {
+  const { enabled, showAmountEnabled } = pushNotification;
+  return {
+    enabled,
+    showAmountEnabled
+  };
+};
+
+const hasApiStatusFailed = (pushNotification) => pushNotification.apiStatus === PUSH_API_STATUS.FAILED;
 
 /**
  * wallet {Object} wallet at user's device
  */
 const mapInvoiceStateToProps = (state) => ({
   wallet: state.wallet,
-  useWalletService: state.useWalletService,
-  isShowingPinScreen: state.isShowingPinScreen,
+  pushNotification: {
+    ...state.pushNotification,
+    ...(state.pushNotification.noChange && STORE.getItem(pushNotificationKey.settings)),
+    hasBeenEnabled: STORE.getItem(pushNotificationKey.hasBeenEnabled),
+    hasPushApiFailed: hasApiStatusFailed(state.pushNotification),
+  },
 });
 
-const pushNotificationKey = {
-  enabled: 'pushNotification:enabled',
-  hasBeenEnabled: 'pushNotification:hasBeenEnabled',
-};
+const mapInvoiceDispatchToProps = (dispatch) => ({
+  pushApiReady: () => dispatch(pushApiReady()),
+  pushFirstTimeRegistration: (deviceId, xpub) => dispatch(pushFirstTimeRegistration({ deviceId, xpub })),
+  pushUpdateRequested: (settings) => dispatch(pushUpdateRequested(settings)),
+});
 
 class PushNotification extends React.Component {
   styles = StyleSheet.create({
@@ -45,49 +67,35 @@ class PushNotification extends React.Component {
     },
   });
 
-  store = STORE;
-
   // create constructor
   constructor(props) {
     super(props);
+
     // set state
     this.state = {
-      pushNotification: {
-        enabled: false,
-        /**
-         * hasPushNotificationBeenEnabled {boolean} if user has enabled push notification before
-         * this is used to show the terms and conditions modal only the first time
-         * user enables push notification
-         */
-        hasBeenEnabled: false,
-        showAmountEnabled: false,
-      },
       /**
        * actionModal {ActionModal.propTypes} action modal properties. If null, do not display
        */
       actionModal: null,
-      /**
-       * feedbackModal {Feedback.propTypes} feedback modal properties. If null, do not display
-       */
-      feedbackModal: null,
     };
   }
 
-  // create componentDidMount method
-  componentDidMount() {
-    // set pushNotificationEnabled to true
-    this.setState({
-      pushNotification: {
-        ...this.state.pushNotification,
-        enabled: this.store.getItem(pushNotificationKey.enabled),
-        hasBeenEnabled: this.store.getItem(pushNotificationKey.hasBeenEnabled),
-        showAmountEnabled: this.store.getItem(pushNotificationKey.showAmountEnabled),
-      }
-    });
+  componentDidUpdate(prevProps) {
+    const oldSettings = getPushNotificationSettings(prevProps.pushNotification);
+    const currSettings = getPushNotificationSettings(this.props.pushNotification);
+    if (!isEqual(oldSettings, currSettings)) {
+      STORE.setItem(pushNotificationKey.settings, currSettings);
+    }
+
+    const oldHasBeenEnabled = prevProps.pushNotification.hasBeenEnabled;
+    const currHasBeenEnabled = this.props.pushNotification.hasBeenEnabled;
+    if (oldHasBeenEnabled !== currHasBeenEnabled) {
+      STORE.setItem(pushNotificationKey.hasBeenEnabled, currHasBeenEnabled);
+    }
   }
 
   isFirstTimeEnablingPushNotification(value) {
-    return isEnablingFeature(value) && !this.state.pushNotification.hasBeenEnabled;
+    return isEnablingFeature(value) && !this.props.pushNotification.hasBeenEnabled;
   }
 
   dismissActionModal() {
@@ -95,7 +103,16 @@ class PushNotification extends React.Component {
   }
 
   dismissFeedbackModal() {
-    this.setState({ feedbackModal: null });
+    this.props.pushApiReady();
+  }
+
+  onPushNotificationSwitchChange = (value) => {
+    if (this.isFirstTimeEnablingPushNotification(value)) {
+      this.actionOnTermsAndConditions();
+      return;
+    }
+
+    this.executeUpdateOnPushNotification(value);
   }
 
   actionOnTermsAndConditions = () => {
@@ -110,39 +127,15 @@ class PushNotification extends React.Component {
     });
   }
 
-  async executeFirstRegistrationOnPushNotification(pin) {
-    // NOTE: this wallet needs to be the wallet without web socket connection
-
-    const { success } = PushNotificationFromLib.registerDevice(this.props.wallet, { token: '123' });
-    if (success) {
-      this.setState({
-        pushNotification: {
-          ...this.state.pushNotification,
-          enabled: true,
-          hasBeenEnabled: true,
-        }
-      });
-      this.persistPushNotificationSettings();
-    } else {
-      this.setState({
-        feedbackModal: {
-          icon: <Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />,
-          text: 'There was an error enabling push notification. Please try again later.',
-          onDismiss: () => this.dismissFeedbackModal(),
-        },
-      });
-    }
-  }
-
+  /**
+   * @param {boolean} value as the new value of the switch
+   */
   executeUpdateOnPushNotification = (value) => {
-    this.setState({ pushNotification: { ...this.state.pushNotification, enabled: value } });
-    this.persistPushNotificationSettings();
-  }
-
-  persistPushNotificationSettings = () => {
-    this.store.setItem(pushNotificationKey.enabled, this.state.pushNotification.enabled);
-    this.store.setItem(pushNotificationKey.hasBeenEnabled, this.state.pushNotification.hasBeenEnabled);
-    this.store.setItem(pushNotificationKey.showAmountEnabled, this.state.pushNotification.showAmountEnabled);
+    const settings = {
+      ...getPushNotificationSettings(this.props.pushNotification),
+      enabled: value,
+    };
+    this.props.pushUpdateRequested(settings);
   }
 
   /**
@@ -161,23 +154,23 @@ class PushNotification extends React.Component {
     this.props.navigation.navigate('PinScreen', params);
   }
 
-  onPushNotificationSwitchChange = (value) => {
-    if (this.isFirstTimeEnablingPushNotification(value)) {
-      this.actionOnTermsAndConditions();
-      return;
-    }
-
-    this.executeUpdateOnPushNotification(value);
+  async executeFirstRegistrationOnPushNotification(pin) {
+    // NOTE: this wallet needs to be the wallet without web socket connection
+    this.props.pushFirstTimeRegistration({ deviceId: 'deviceId', xpub: 'walletXpub' });
   }
 
   onShowAmountSwitchChange = (value) => {
-    this.setState({ pushNotification: { ...this.state.pushNotification, showAmountEnabled: value } });
-    this.persistPushNotificationSettings();
+    const settings = {
+      ...getPushNotificationSettings(this.props.pushNotification),
+      showAmountEnabled: value,
+    };
+    this.props.pushUpdateRequested(settings);
   }
 
   // create render method
   render() {
-    const isPushNotificationEnabled = this.state.pushNotification.enabled;
+    const isPushNotificationEnabled = this.props.pushNotification.enabled;
+    const { showAmountEnabled, hasPushApiFailed } = this.props.pushNotification;
     const pushNotificationEnabledText = 'Enable Push Notification';
     const showAmountEnabledText = 'Show amounts on notification';
 
@@ -190,11 +183,11 @@ class PushNotification extends React.Component {
           onBackPress={() => this.props.navigation.goBack()}
         />
 
-        {this.state.feedbackModal && (
+        {hasPushApiFailed && (
           <FeedbackModal
-            icon={this.state.feedbackModal.icon}
-            text={this.state.feedbackModal.text}
-            onDismiss={this.state.feedbackModal.onDismiss}
+            icon={(<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />)}
+            text='There was an error enabling push notification. Please try again later.'
+            onDismiss={() => this.dismissFeedbackModal()}
           />
         )}
 
@@ -215,7 +208,7 @@ class PushNotification extends React.Component {
             text={(
               <Switch
                 onValueChange={this.onPushNotificationSwitchChange}
-                value={this.state.pushNotification.enabled}
+                value={isPushNotificationEnabled}
               />
             )}
             isFirst
@@ -226,7 +219,7 @@ class PushNotification extends React.Component {
             text={(
               <Switch
                 onValueChange={this.onShowAmountSwitchChange}
-                value={this.state.pushNotification.showAmountEnabled}
+                value={showAmountEnabled}
                 disabled={!isPushNotificationEnabled}
               />
             )}
@@ -238,4 +231,4 @@ class PushNotification extends React.Component {
   }
 }
 
-export default connect(mapInvoiceStateToProps)(PushNotification);
+export default connect(mapInvoiceStateToProps, mapInvoiceDispatchToProps)(PushNotification);

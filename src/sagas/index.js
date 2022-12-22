@@ -8,10 +8,12 @@
 import { all, fork } from 'redux-saga/effects';
 import { saga as walletSagas } from './wallet';
 import { saga as tokensSagas } from './tokens';
+import { saga as pushNotificationSaga } from './pushNotification';
 
 const sagas = [
   walletSagas,
   tokensSagas,
+  pushNotificationSaga,
 ];
 
 function* defaultSaga() {

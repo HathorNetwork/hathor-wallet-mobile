@@ -12,7 +12,15 @@ import {
   types,
   pushRegisterSuccess,
   pushRegisterFailed,
+  pushUpdateSuccess,
+  pushUpdateFailed,
 } from '../actions';
+
+export const PUSH_API_STATUS = {
+  READY: 'ready',
+  FAILED: 'failed',
+  LOADING: 'loading',
+};
 
 /**
  * This function is the actual opt-in of a user to the Push Notifications feature.
@@ -20,7 +28,6 @@ import {
  * This should load the wallet on the wallet-service and register it with the deviceId.
  */
 export function* firstTimeRegistration({ deviceId, xpub }) {
-  console.log('firstTimeRegistration');
   // const walletId = HathorWalletServiceWallet.getWalletIdFromXPub(xpub);
   
   // yield put(pushWalletIdUpdated({ walletId }));
@@ -42,12 +49,26 @@ export function* firstTimeRegistration({ deviceId, xpub }) {
   //   wallet: success.wallet,
   // }));
   // const { success } = PushNotificationFromLib.registerDevice(this.props.wallet, { token: '123' });
-  yield put(pushRegisterSuccess({ enabled: true, hasBeenEnabled: false }));
-  // yield put(pushRegisterFailed());
+  const success = true;
+  if (success) {
+    yield put(pushRegisterSuccess({ enabled: true, hasBeenEnabled: true }));
+  } else {
+    yield put(pushRegisterFailed());
+  }
+}
+
+export function* updateRegistration({ payload: { enabled, showAmountEnabled }}) {
+  const success = true;
+  if (success) {
+    yield put(pushUpdateSuccess({ enabled, showAmountEnabled }));
+  } else {
+    yield put(pushUpdateFailed());
+  }
 }
 
 export function* saga() {
   yield all([
     takeEvery(types.PUSH_FIRST_REGISTRATION_REQUESTED, firstTimeRegistration),
+    takeEvery(types.PUSH_UPDATE_REQUESTED, updateRegistration),
   ]);
 }
