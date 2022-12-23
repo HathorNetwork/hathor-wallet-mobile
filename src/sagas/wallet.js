@@ -84,8 +84,8 @@ export function* startWallet(action) {
 
   yield put(setUseWalletService(useWalletService));
 
-  // If we've lost redux data, we could not properly stop the wallet object
-  // then we don't know if we've cleaned up the wallet data in the storage
+  // We don't want to clean access data since as if something goes
+  // wrong here, the stored words would be lost forever.
   walletUtil.cleanLoadedData({ cleanAccessData: false });
 
   // This is a work-around so we can dispatch actions from inside callbacks.
