@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { NativeModules } from 'react-native';
 import {
   Connection,
   HathorWallet,
@@ -47,6 +46,7 @@ import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
   tokenInvalidateHistory,
+  reloadWalletRequested,
   setIsShowingPinScreen,
   tokenMetadataUpdated,
   setUseWalletService,
@@ -65,7 +65,7 @@ import {
   types,
 } from '../actions';
 import { fetchTokenData } from './tokens';
-import { specificTypeAndPayload } from './helpers';
+import { specificTypeAndPayload, errorHandler } from './helpers';
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
@@ -85,9 +85,9 @@ export function* startWallet(action) {
 
   yield put(setUseWalletService(useWalletService));
 
-  // If we've lost redux data, we could not properly stop the wallet object
-  // then we don't know if we've cleaned up the wallet data in the storage
-  walletUtil.cleanLoadedData();
+  // We don't want to clean access data since as if something goes
+  // wrong here, the stored words would be lost forever.
+  walletUtil.cleanLoadedData({ cleanAccessData: false });
 
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
@@ -151,6 +151,15 @@ export function* startWallet(action) {
   // wait until the wallet is ready
   const walletReadyThread = yield fork(listenForWalletReady, wallet);
 
+  // Thread to listen for feature flags from Unleash
+  const featureFlagsThread = yield fork(listenForFeatureFlags, featureFlags);
+
+  const threads = [
+    walletListenerThread,
+    walletReadyThread,
+    featureFlagsThread
+  ];
+
   // Store the unique device id on redux
   yield put(setUniqueDeviceId(uniqueDeviceId));
 
@@ -167,8 +176,11 @@ export function* startWallet(action) {
       // the feature flag
       yield call(featureFlags.ignoreWalletServiceFlag.bind(featureFlags));
 
-      // Restart the whole bundle to make sure we clear all events
-      NativeModules.HTRReloadBundleModule.restart();
+      // Cleanup all listeners
+      yield cancel(threads);
+
+      // Yield the same action so it will now load on the old facade
+      yield put(action);
     }
   }
 
@@ -202,22 +214,27 @@ export function* startWallet(action) {
     return;
   }
 
-  const featureFlagsThread = yield fork(listenForFeatureFlags, featureFlags);
-
   yield put(startWalletSuccess());
 
   // The way the redux-saga fork model works is that if a saga has `forked`
   // another saga (using the `fork` effect), it will remain active until all
   // the forks are terminated. You can read more details at
   // https://redux-saga.js.org/docs/advanced/ForkModel
-  // So, if a new START_WALLET_REQUESTED action is dispatched, we need to cleanup
-  // all attached forks (that will cause the event listeners to be cleaned).
-  yield take('START_WALLET_REQUESTED');
-  yield cancel([
-    walletListenerThread,
-    walletReadyThread,
-    featureFlagsThread
-  ]);
+  // So, if a new START_WALLET_REQUESTED action is dispatched or a RELOAD_WALLET_REQUESTED
+  // is dispatched, we need to cleanup all attached forks (that will cause the event
+  // listeners to be cleaned).
+  const { reload } = yield race({
+    start: take(types.START_WALLET_REQUESTED),
+    reload: take(types.RELOAD_WALLET_REQUESTED),
+  });
+
+  // We need to cancel threads on both reload and start
+  yield cancel(threads);
+
+  if (reload) {
+    // Yield the same action again to reload the wallet
+    yield put(action);
+  }
 }
 
 /**
@@ -329,7 +346,7 @@ export function* listenForFeatureFlags(featureFlags) {
       const oldUseWalletService = yield select((state) => state.useWalletService);
 
       if (oldUseWalletService !== newUseWalletService) {
-        NativeModules.HTRReloadBundleModule.restart();
+        yield put(reloadWalletRequested());
       }
     }
   } finally {
@@ -533,7 +550,7 @@ export function* onWalletReloadData() {
 
 export function* saga() {
   yield all([
-    takeLatest('START_WALLET_REQUESTED', startWallet),
+    takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeLatest('WALLET_RELOADING', onWalletReloadData),
     takeEvery('WALLET_NEW_TX', handleTx),
