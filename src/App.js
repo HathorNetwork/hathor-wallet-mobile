@@ -303,7 +303,10 @@ class _AppStackWrapper extends React.Component {
         // the screen. This happens when user goes to app switch view or maybe is
         // asked for fingerprint or face if
         this.backgroundTime = null;
-      } else if (Date.now() - this.backgroundTime > LOCK_TIMEOUT) {
+
+        // We must guarantee backgroundTime is not null because javascript considers null to be 0
+        // in a subtraction
+      } else if (this.backgroundTime != null && (Date.now() - this.backgroundTime > LOCK_TIMEOUT)) {
         // this means app was in background for more than LOCK_TIMEOUT seconds,
         // so display lock screen
         this.props.lockScreen();
