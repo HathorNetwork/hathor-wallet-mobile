@@ -289,6 +289,15 @@ class _AppStackWrapper extends React.Component {
    */
   _handleAppStateChange = (nextAppState) => {
     if (nextAppState === 'active') {
+      if (this.appState === 'active') {
+        // As per the Apple lifecycle documentation,  an active → active state
+        // transition should never happen, but we observed this happening in production
+        // builds on a very specific situation, described in
+        // https://github.com/HathorNetwork/internal-issues/issues/144 so we should ignore
+        // this transition as there should be no action here.
+        return;
+      }
+
       if (this.appState === 'inactive') {
         // inactive state means the app wasn't in background, so no need to lock
         // the screen. This happens when user goes to app switch view or maybe is
