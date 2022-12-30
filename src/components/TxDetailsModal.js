@@ -52,7 +52,7 @@ class TxDetailsModal extends Component {
               <ListItem title={t`Token`} text={fullTokenStr} />
               <ListItem title={t`Description`} text={description} />
               <ListItem title={t`Date & Time`} text={timestampStr} />
-              <ListItem title={t`ID`} text={idStr} />
+              <ListItem title={t`ID`} text={idStr} copyStr={tx.txId} />
               <ListButton title={t`Public Explorer`} button={explorerIcon} onPress={() => { Linking.openURL(explorerLink); }} titleStyle={{ color: 'rgba(0, 0, 0, 0.5)' }} isLast />
             </View>
           </View>

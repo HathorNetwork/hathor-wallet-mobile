@@ -7,6 +7,7 @@
 
 import React, { Component } from 'react';
 import {
+  Clipboard,
   Text,
   TouchableHighlight,
   StyleSheet,
@@ -15,6 +16,7 @@ import {
 } from 'react-native';
 
 import chevronRight from '../assets/icons/chevron-right.png';
+import icShareActive from '../assets/icons/icShareActive.png';
 
 
 const defaultRadius = 16;
@@ -136,6 +138,16 @@ export class ListItem extends BaseItem {
           ? <Text style={style.text}>{this.props.text}</Text>
           : this.props.text
         )}
+        {this.props.copyStr &&
+            <TouchableHighlight
+              activeOpacity={0.75}
+              underlayColor={'white'}
+              style={{marginLeft: 4}}
+              onPress={() => Clipboard.setString(this.props.copyStr)}
+            >
+              <Image source={icShareActive} width={24} height={24} />
+            </TouchableHighlight>
+        }
       </View>
     );
   }
