@@ -288,13 +288,26 @@ class _AppStackWrapper extends React.Component {
    * More info: https://reactnative.dev/docs/appstate
    */
   _handleAppStateChange = (nextAppState) => {
+    if (this.appState === nextAppState) {
+      // As per the Apple lifecycle documentation, an active → active state
+      // transition should never happen, but we observed this happening in production
+      // builds on a very specific situation, described in
+      // https://github.com/HathorNetwork/internal-issues/issues/144 so we should ignore
+      // all transitions that are not changing
+      console.warn(`App transition from ${this.appState} to ${nextAppState}. This should never happen.`);
+      return;
+    }
+
     if (nextAppState === 'active') {
       if (this.appState === 'inactive') {
         // inactive state means the app wasn't in background, so no need to lock
         // the screen. This happens when user goes to app switch view or maybe is
         // asked for fingerprint or face if
         this.backgroundTime = null;
-      } else if (Date.now() - this.backgroundTime > LOCK_TIMEOUT) {
+
+        // We must guarantee backgroundTime is not null because javascript considers null to be 0
+        // in a subtraction
+      } else if (this.backgroundTime != null && (Date.now() - this.backgroundTime > LOCK_TIMEOUT)) {
         // this means app was in background for more than LOCK_TIMEOUT seconds,
         // so display lock screen
         this.props.lockScreen();
