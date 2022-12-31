@@ -294,6 +294,7 @@ class _AppStackWrapper extends React.Component {
       // builds on a very specific situation, described in
       // https://github.com/HathorNetwork/internal-issues/issues/144 so we should ignore
       // all transitions that are not changing
+      console.warn(`App transition from ${this.appState} to ${nextAppState}. This should never happen.`);
       return;
     }
 
