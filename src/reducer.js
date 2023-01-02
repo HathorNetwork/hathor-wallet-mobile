@@ -96,6 +96,10 @@ const initialState = {
   walletStartState: WALLET_STATUS.LOADING,
   pushNotification: {
     /**
+     * deviceId {string} device id for push notification
+     */
+    deviceId: '',
+    /**
      * noChange {boolean} if user has changed the push notification settings
      * this is used to load persistent settings on the first time afert app is opened
      */
@@ -109,16 +113,20 @@ const initialState = {
      */
     enabled: false,
     /**
+     * showAmountEnabled {boolean} if user has enabled the option to show amount
+     * of token balance on the push notification
+     */
+    showAmountEnabled: false,
+    /**
      * hasBeenEnabled {boolean} if user has enabled push notification before
      * this is used to show the terms and conditions modal only the first time
      * user enables push notification
      */
     hasBeenEnabled: false,
     /**
-     * showAmountEnabled {boolean} if user has enabled the option to show amount
-     * of token balance on the push notification
+     * enabledAt {number} timestamp of when push notification was enabled
      */
-    showAmountEnabled: false,
+    enabledAt: 0,
   }
 };
 
@@ -206,6 +214,10 @@ const reducer = (state = initialState, action) => {
       return onStartWalletFailed(state);
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
+    case types.PUSH_INIT:
+      return onPushInit(state, action);
+    case types.PUSH_UPDATE_DEVICE_ID:
+      return onPushUpdateDeviceId(state, action);
     case types.PUSH_API_READY:
       return onPushApiReady(state);
     case types.PUSH_REGISTER_SUCCESS:
@@ -676,6 +688,35 @@ export const onWalletBestBlockUpdate = (state, action) => {
   };
 };
 
+// Push notification
+
+/**
+ * @param {{ deviceId: string, settings: { enabled, showAmountEnabled }, hasBeenEnabled: boolean }} action
+ */
+export const onPushInit = (state, action) => {
+  const { deviceId, settings, hasBeenEnabled } = action.payload;
+  return ({
+    ...state,
+    pushNotification: {
+      ...state.pushNotification,
+      ...settings,
+      deviceId,
+      hasBeenEnabled,
+    },
+  });
+};
+
+export const onPushUpdateDeviceId = (state, action) => {
+  const { deviceId } = action.payload;
+  return ({
+    ...state,
+    pushNotification: {
+      ...state.pushNotification,
+      deviceId,
+    },
+  });
+};
+
 export const onPushApiReady = (state) => ({
   ...state,
   pushNotification: {
@@ -686,10 +727,11 @@ export const onPushApiReady = (state) => ({
 });
 
 /**
- * @param {{enabled: boolean, hasBeenEnabled: boolean}} action
+ * @param {{enabled: boolean, hasBeenEnabled: boolean, enabledAt: number }} action
  */
 export const onPushRegisterSuccess = (state, action) => {
-  const { enabled, hasBeenEnabled } = action.data;
+  const { enabled, hasBeenEnabled, enabledAt } = action.data;
+  console.log('hasBeenEnabled on reduce:', hasBeenEnabled);
   return ({
     ...state,
     pushNotification: {
@@ -698,6 +740,7 @@ export const onPushRegisterSuccess = (state, action) => {
       apiStatus: PUSH_API_STATUS.READY,
       enabled,
       hasBeenEnabled,
+      enabledAt,
     },
   });
 };

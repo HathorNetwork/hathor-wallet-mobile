@@ -88,3 +88,10 @@ export const METADATA_CONCURRENT_DOWNLOAD = 5;
 // Wallet service URLs
 export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://wallet-service.hathor.network/';
 export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.wallet-service.hathor.network/';
+
+export const pushNotificationKey = {
+  deviceId: 'pushNotification:deviceId',
+  settings: 'pushNotification:settings',
+  hasBeenEnabled: 'pushNotification:hasBeenEnabled',
+  enabledAt: 'pushNotification:enabledAt',
+};

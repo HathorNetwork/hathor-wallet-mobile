@@ -7,20 +7,16 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { isEqual } from 'lodash';
+import messaging from '@react-native-firebase/messaging';
 import HathorHeader from '../components/HathorHeader';
 import { HathorList, ListItem } from '../components/HathorList';
 import ActionModal from '../components/ActionModal';
 import { isEnablingFeature } from '../utils';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
-import { STORE } from '../constants';
+import { STORE, pushNotificationKey } from '../constants';
 import { pushApiReady, pushFirstTimeRegistration, pushUpdateRequested } from '../actions';
 import { PUSH_API_STATUS } from '../sagas/pushNotification';
-
-const pushNotificationKey = {
-  settings: 'pushNotification:settings',
-  hasBeenEnabled: 'pushNotification:hasBeenEnabled',
-};
 
 const getPushNotificationSettings = (pushNotification) => {
   const { enabled, showAmountEnabled } = pushNotification;
@@ -40,14 +36,13 @@ const mapInvoiceStateToProps = (state) => ({
   pushNotification: {
     ...state.pushNotification,
     ...(state.pushNotification.noChange && STORE.getItem(pushNotificationKey.settings)),
-    hasBeenEnabled: STORE.getItem(pushNotificationKey.hasBeenEnabled),
     hasPushApiFailed: hasApiStatusFailed(state.pushNotification),
   },
 });
 
 const mapInvoiceDispatchToProps = (dispatch) => ({
   pushApiReady: () => dispatch(pushApiReady()),
-  pushFirstTimeRegistration: (deviceId, xpub) => dispatch(pushFirstTimeRegistration({ deviceId, xpub })),
+  pushFirstTimeRegistration: (deviceId) => dispatch(pushFirstTimeRegistration({ deviceId })),
   pushUpdateRequested: (settings) => dispatch(pushUpdateRequested(settings)),
 });
 
@@ -85,12 +80,6 @@ class PushNotification extends React.Component {
     const currSettings = getPushNotificationSettings(this.props.pushNotification);
     if (!isEqual(oldSettings, currSettings)) {
       STORE.setItem(pushNotificationKey.settings, currSettings);
-    }
-
-    const oldHasBeenEnabled = prevProps.pushNotification.hasBeenEnabled;
-    const currHasBeenEnabled = this.props.pushNotification.hasBeenEnabled;
-    if (oldHasBeenEnabled !== currHasBeenEnabled) {
-      STORE.setItem(pushNotificationKey.hasBeenEnabled, currHasBeenEnabled);
     }
   }
 
@@ -155,8 +144,7 @@ class PushNotification extends React.Component {
   }
 
   async executeFirstRegistrationOnPushNotification(pin) {
-    // NOTE: this wallet needs to be the wallet without web socket connection
-    this.props.pushFirstTimeRegistration({ deviceId: 'deviceId', xpub: 'walletXpub' });
+    this.props.pushFirstTimeRegistration(this.props.pushNotification.deviceId);
   }
 
   onShowAmountSwitchChange = (value) => {
