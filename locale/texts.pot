@@ -79,20 +79,20 @@ msgstr ""
 msgid "Invalid address"
 msgstr ""
 
-#: src/screens/About.js:55
+#: src/screens/About.js:56
 msgid "ABOUT"
 msgstr ""
 
-#: src/screens/About.js:68
+#: src/screens/About.js:69
 msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr ""
 
-#: src/screens/About.js:72
+#: src/screens/About.js:73
 #: src/screens/InitWallet.js:59
 msgid "This wallet is connected to the **mainnet**."
 msgstr ""
 
-#: src/screens/About.js:75
+#: src/screens/About.js:76
 #: src/screens/InitWallet.js:62
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
@@ -100,11 +100,10 @@ msgid ""
 "pocket money."
 msgstr ""
 
-#: src/screens/About.js:80
-#: src/screens/InitWallet.js:67
+#: src/screens/About.js:81
 msgid ""
-"For further information, check out our website "
-"|link:https://hathor.network/|."
+"For further information, check out the |link1:Terms of Service| and "
+"|link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
 #: src/screens/BackupWords.js:146
@@ -203,8 +202,8 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:142
 #: src/screens/CreateTokenName.js:65
 #: src/screens/CreateTokenSymbol.js:85
-#: src/screens/InitWallet.js:208
-#: src/screens/InitWallet.js:328
+#: src/screens/InitWallet.js:214
+#: src/screens/InitWallet.js:334
 #: src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:184
 msgid "Next"
@@ -319,66 +318,74 @@ msgstr ""
 msgid "Welcome to Hathor Wallet!"
 msgstr ""
 
-#: src/screens/InitWallet.js:79
-msgid "I understand the risks of using a mobile wallet"
+#: src/screens/InitWallet.js:67
+msgid ""
+"For further information, check out our website "
+"|link:https://hathor.network/|."
 msgstr ""
 
-#: src/screens/InitWallet.js:86
+#: src/screens/InitWallet.js:80
+msgid ""
+"I agree with the |link1:Terms of Service| and |link2:Privacy Policy| and "
+"understand the risks of using a mobile wallet"
+msgstr ""
+
+#: src/screens/InitWallet.js:92
 msgid "Start"
 msgstr ""
 
-#: src/screens/InitWallet.js:103
+#: src/screens/InitWallet.js:109
 msgid "To start,"
 msgstr ""
 
-#: src/screens/InitWallet.js:105
+#: src/screens/InitWallet.js:111
 msgid "You need to **initialize your wallet**."
 msgstr ""
 
-#: src/screens/InitWallet.js:108
+#: src/screens/InitWallet.js:114
 msgid ""
 "You can either **start a new wallet** or **import a wallet** that already "
 "exists."
 msgstr ""
 
-#: src/screens/InitWallet.js:111
+#: src/screens/InitWallet.js:117
 msgid "To import a wallet, you will need to provide your seed words."
 msgstr ""
 
-#: src/screens/InitWallet.js:116
+#: src/screens/InitWallet.js:122
 msgid "Import Wallet"
 msgstr ""
 
-#: src/screens/InitWallet.js:122
+#: src/screens/InitWallet.js:128
 msgid "New Wallet"
 msgstr ""
 
-#: src/screens/InitWallet.js:199
+#: src/screens/InitWallet.js:205
 msgid "Your wallet has been created!"
 msgstr ""
 
-#: src/screens/InitWallet.js:201
+#: src/screens/InitWallet.js:207
 msgid ""
 "You must **do a backup** and save the words below **in the same order they "
 "appear**."
 msgstr ""
 
-#: src/screens/InitWallet.js:297
+#: src/screens/InitWallet.js:303
 msgid "To import a wallet,"
 msgstr ""
 
-#: src/screens/InitWallet.js:299
+#: src/screens/InitWallet.js:305
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
 "wallet, separated by space."
 msgstr ""
 
-#: src/screens/InitWallet.js:302
+#: src/screens/InitWallet.js:308
 msgid "Words"
 msgstr ""
 
-#: src/screens/InitWallet.js:307
+#: src/screens/InitWallet.js:313
 msgid "Enter your seed words separated by space"
 msgstr ""
 
@@ -621,12 +628,12 @@ msgstr ""
 msgid "Your transfer is being processed"
 msgstr ""
 
-#: src/sagas/wallet.js:103
+#: src/sagas/wallet.js:105
 #: src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
-#: src/sagas/wallet.js:104
+#: src/sagas/wallet.js:106
 #: src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr ""
