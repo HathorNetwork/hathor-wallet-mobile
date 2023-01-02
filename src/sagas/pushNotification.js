@@ -40,6 +40,13 @@ export const PUSH_API_STATUS = {
   LOADING: 'loading',
 };
 
+/**
+ * this is the network name that will be used to load the wallet on the wallet-service,
+ * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
+ */
+const NETWORK = 'mainnet';
+
+
 const getDeviceId = async () => {
   try {
     const deviceId = await messaging().getToken();
@@ -131,12 +138,6 @@ export function* appInitialization(action) {
  * This should load the wallet on the wallet-service and register it with the deviceId.
  */
 export function* firstTimeRegistration({ payload: { deviceId } }) {
-  /**
-   * this is the network name that will be used to load the wallet on the wallet-service,
-   * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
-   */
-  const networkName = 'mainnet';
-
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
   yield put((_dispatch) => {
@@ -154,7 +155,7 @@ export function* firstTimeRegistration({ payload: { deviceId } }) {
     // Set urls for wallet service
     config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
     config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
-    const network = new Network(networkName);
+    const network = new Network(NETWORK);
 
     const pin = yield call(showPinScreenForResult, dispatch);
     walletService = new HathorWalletServiceWallet({
