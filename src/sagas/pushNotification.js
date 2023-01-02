@@ -190,32 +190,130 @@ export function* firstTimeRegistration({ payload: { deviceId } }) {
       STORE.setItem(pushNotificationKey.hasBeenEnabled, true);
       yield put(pushRegisterSuccess({ enabled: true, hasBeenEnabled: true, enabledAt }));
     } else {
+      // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
       yield put(pushRegisterFailed());
     }
   } catch (error) {
+    console.log('Error registering device for the first time: ', error.cause);
     yield put(pushRegisterFailed());
   }
 }
 
 export function* registration({ payload: { enabled, showAmountEnabled, deviceId } }) {
-  // const { success } = PushNotificationFromLib.registerDevice(wallet, { pushProvider: 'android', enablePush: enabled, enableShowAmount: showAmountEnabled, deviceId });
-  const success = true;
-  if (success) {
-    const enabledAt = Date.now();
-    STORE.setItem(pushNotificationKey.enabledAt, enabledAt);
-    STORE.setItem(pushNotificationKey.hasBeenEnabled, true);
-    yield put(pushRegisterSuccess({ enabled, showAmountEnabled, hasBeenEnabled: true, enabledAt }));
+  // This is a work-around so we can dispatch actions from inside callbacks.
+  let dispatch;
+  yield put((_dispatch) => {
+    dispatch = _dispatch;
+  });
+
+  const wallet = yield select((state) => state.wallet);
+  const useWalletService = yield select((state) => state.useWalletService);
+  // const deviceId = yield select((state) => state.pushNotification.deviceId);
+
+  // If the user is not using the wallet-service,
+  // we need to initialize the wallet on the wallet-service first
+  let walletService;
+  if (!useWalletService) {
+    // Set urls for wallet service
+    config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
+    config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
+    const network = new Network(NETWORK);
+
+    const pin = yield call(showPinScreenForResult, dispatch);
+    walletService = new HathorWalletServiceWallet({
+      requestPassword: pin,
+      seed: walletUtil.getWalletWords(pin),
+      network,
+      enableWs: false,
+    });
+
+    try {
+      yield call(walletService.start.bind(walletService), {
+        pinCode: pin,
+        password: pin,
+      });
+    } catch (error) {
+      yield put(pushRegisterFailed());
+    }
   } else {
+    walletService = wallet;
+  }
+
+  try {
+    const { success } = yield call(pushLib.PushNotification.registerDevice, walletService, {
+      pushProvider: pushLib.PushNotificationProvider.ANDROID,
+      deviceId,
+      enablePush: true,
+    });
+
+    if (success) {
+      const enabledAt = Date.now();
+      STORE.setItem(pushNotificationKey.enabledAt, enabledAt);
+      yield put(pushRegisterSuccess({ enablePush: enabled, enableShowAmounts: showAmountEnabled, hasBeenEnabled: true, enabledAt }));
+    } else {
+      // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
+      yield put(pushRegisterFailed());
+    }
+  } catch (error) {
+    console.log('Error registering device: ', error.cause);
     yield put(pushRegisterFailed());
   }
 }
 
 export function* updateRegistration({ payload: { enabled, showAmountEnabled, deviceId } }) {
-  // const { success } = PushNotificationFromLib.updateDevice(wallet, { enablePush: enabled, enableShowAmount: showAmountEnabled, deviceId });
-  const success = true;
-  if (success) {
-    yield put(pushUpdateSuccess({ enabled, showAmountEnabled }));
+  // This is a work-around so we can dispatch actions from inside callbacks.
+  let dispatch;
+  yield put((_dispatch) => {
+    dispatch = _dispatch;
+  });
+
+  const wallet = yield select((state) => state.wallet);
+  const useWalletService = yield select((state) => state.useWalletService);
+  // const deviceId = yield select((state) => state.pushNotification.deviceId);
+
+  // If the user is not using the wallet-service,
+  // we need to initialize the wallet on the wallet-service first
+  let walletService;
+  if (!useWalletService) {
+    // Set urls for wallet service
+    config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
+    config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
+    const network = new Network(NETWORK);
+
+    const pin = yield call(showPinScreenForResult, dispatch);
+    walletService = new HathorWalletServiceWallet({
+      requestPassword: pin,
+      seed: walletUtil.getWalletWords(pin),
+      network,
+      enableWs: false,
+    });
+
+    try {
+      yield call(walletService.start.bind(walletService), {
+        pinCode: pin,
+        password: pin,
+      });
+    } catch (error) {
+      yield put(pushRegisterFailed());
+    }
   } else {
+    walletService = wallet;
+  }
+
+  try {
+    const { success } = yield call(pushLib.PushNotification.updateDevice, walletService, {
+      deviceId,
+      enablePush: enabled,
+      enableShowAmounts: showAmountEnabled,
+    });
+    if (success) {
+      yield put(pushUpdateSuccess({ enabled, showAmountEnabled }));
+    } else {
+      // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
+      yield put(pushUpdateFailed());
+    }
+  } catch (error) {
+    console.log('Error updating device: ', error.cause);
     yield put(pushUpdateFailed());
   }
 }

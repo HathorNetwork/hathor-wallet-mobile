@@ -117,12 +117,13 @@ class PushNotification extends React.Component {
   }
 
   /**
-   * @param {boolean} value as the new value of the switch
+   * @param {boolean} enabled as the new value of the switch
    */
-  executeUpdateOnPushNotification = (value) => {
+  executeUpdateOnPushNotification = (enabled) => {
     const settings = {
       ...getPushNotificationSettings(this.props.pushNotification),
-      enabled: value,
+      enabled,
+      deviceId: this.props.pushNotification.deviceId,
     };
     this.props.pushUpdateRequested(settings);
   }
@@ -147,11 +148,13 @@ class PushNotification extends React.Component {
     this.props.pushFirstTimeRegistration(this.props.pushNotification.deviceId);
   }
 
-  onShowAmountSwitchChange = (value) => {
+  onShowAmountSwitchChange = (showAmountEnabled) => {
     const settings = {
       ...getPushNotificationSettings(this.props.pushNotification),
-      showAmountEnabled: value,
+      showAmountEnabled,
+      deviceId: this.props.pushNotification.deviceId,
     };
+    console.log('settings', settings);
     this.props.pushUpdateRequested(settings);
   }
 
