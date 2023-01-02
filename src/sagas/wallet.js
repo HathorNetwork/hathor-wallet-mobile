@@ -425,8 +425,8 @@ export function* handleTx(action) {
   const txWalletAddresses = yield call(wallet.checkAddressesMine.bind(wallet), [...txAddresses]);
   const tokensToDownload = [];
 
-  for (const [tokenUid, addresses] of tokenAddressesMap) {
-    for (const address of addresses) {
+  for (const [tokenUid, addresses] of Object.entries(tokenAddressesMap)) {
+    for (const [address] of addresses.entries()) {
       // txWalletAddresses should always have the address we requested, but we should double check
       // here using lodash just in case
       const inWallet = get(txWalletAddresses, address, false);
