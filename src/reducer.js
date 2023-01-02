@@ -755,10 +755,9 @@ export const onPushRegisterFailed = (state) => ({
 });
 
 /**
- * @param {{enabled, showAmountEnabled}} action
+ * @param {{payload: {enabled, showAmountEnabled}}} action
  */
-export const onPushUpdateSuccess = (state, action) => {
-  const { enabled, showAmountEnabled } = action.data;
+export const onPushUpdateSuccess = (state, { payload: { enabled, showAmountEnabled } }) => {
   return {
     ...state,
     pushNotification: {

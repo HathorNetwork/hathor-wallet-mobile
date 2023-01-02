@@ -577,11 +577,11 @@ export const pushUpdateRequested = (payload) => ({
 });
 
 /**
- * @param {{enabled: boolean, showAmountEnabled: boolean}} data
+ * @param {{enabled: boolean, showAmountEnabled: boolean}} payload
  */
-export const pushUpdateSuccess = (data) => ({
+export const pushUpdateSuccess = (payload) => ({
   type: types.PUSH_UPDATE_SUCCESS,
-  data,
+  payload,
 });
 
 export const pushUpdateFailed = () => ({
