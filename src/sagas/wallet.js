@@ -33,6 +33,7 @@ import {
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
 import { t } from 'ttag';
+import { get } from 'lodash';
 import {
   STORE,
   DEFAULT_TOKEN,
@@ -68,7 +69,6 @@ import { fetchTokenData } from './tokens';
 import { specificTypeAndPayload } from './helpers';
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
-import { get } from 'lodash';
 
 export const WALLET_STATUS = {
   READY: 'ready',
@@ -411,7 +411,7 @@ export function* handleTx(action) {
         return acc;
       }
 
-      if (!acc[token]) {
+      if (!acc[0][token]) {
         acc[0][token] = new Set([]);
       }
 
