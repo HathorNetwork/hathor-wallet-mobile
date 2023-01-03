@@ -72,13 +72,6 @@ const getDeviceId = async () => {
   }
 };
 
-const onNotificationClick = async (notification) => {
-  const { data: { txId } } = notification;
-  put(pushTxClick({
-    txId,
-  }));
-};
-
 /**
  * localization utils to map the message key to the correct message to localize
  */
