@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { isEqual } from 'lodash';
-import messaging from '@react-native-firebase/messaging';
 import HathorHeader from '../components/HathorHeader';
 import { HathorList, ListItem } from '../components/HathorList';
 import ActionModal from '../components/ActionModal';
@@ -110,7 +109,7 @@ class PushNotification extends React.Component {
         title: 'Push Notification',
         message: 'By enabling push notification, you agree to our terms and conditions.',
         button: 'I agree',
-        onAction: () => this.onPushNotificationAgreement(),
+        onAction: () => this.executeFirstRegistrationOnPushNotification(),
         onDismiss: () => this.dismissActionModal(),
       },
     });
@@ -128,23 +127,8 @@ class PushNotification extends React.Component {
     this.props.pushUpdateRequested(settings);
   }
 
-  /**
-   * Called when user agrees to push notification terms and conditions,
-   * so we need to confirm the pin to start the registration process.
-   */
-  onPushNotificationAgreement = () => {
+  async executeFirstRegistrationOnPushNotification() {
     this.dismissActionModal();
-
-    const params = {
-      cb: () => this.executeFirstRegistrationOnPushNotification(),
-      screenText: 'Enter your 6-digit pin to confirm registration of your device',
-      biometryText: 'Authorize device registration to push notification',
-      canCancel: true,
-    };
-    this.props.navigation.navigate('PinScreen', params);
-  }
-
-  async executeFirstRegistrationOnPushNotification(pin) {
     this.props.pushFirstTimeRegistration(this.props.pushNotification.deviceId);
   }
 
