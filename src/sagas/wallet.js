@@ -400,7 +400,7 @@ export function* handleTx(action) {
   // txAddresses should be a Set with all addresses involved in the tx
   const [tokenAddressesMap, txAddresses] = data.reduce(
     (acc, io) => {
-      if (!io.decoded) {
+      if (!io.decoded || !io.decoded.address) {
         return acc;
       }
 
