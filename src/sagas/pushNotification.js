@@ -14,7 +14,7 @@ import {
   select,
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
-import { TOKEN_AUTHORITY_MASK } from '@hathor/wallet-lib/lib/constants';
+import notifee from '@notifee/react-native';
 import { t } from 'ttag';
 import {
   types,
@@ -45,7 +45,22 @@ export const PUSH_API_STATUS = {
  * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
  */
 const NETWORK = 'mainnet';
-
+/**
+ * this is the message key for localization of new transaction when show amount is enabled
+ */
+const NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITH_TOKENS = 'new_transaction_received_description_with_tokens';
+/**
+ * this is the message key for localization of new transaction when show amount is disabled
+ */
+const NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITHOUT_TOKENS = 'new_transaction_received_description_without_tokens';
+/**
+ * this is the message key for localization of new transaction title
+ */
+const NEW_TRANSACTION_RECEIVED_TITLE = 'new_transaction_received_title';
+/**
+ * this is the channel id for the transaction notification
+ */
+const TRANSACTION_CHANNEL_ID = 'transaction';
 
 const getDeviceId = async () => {
   try {
@@ -64,8 +79,92 @@ const onNotificationClick = async (notification) => {
   }));
 };
 
+/**
+ * localization utils to map the message key to the correct message to localize
+ */
+const localization = {
+  keys: new Set([
+    NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITH_TOKENS,
+    NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITHOUT_TOKENS,
+    NEW_TRANSACTION_RECEIVED_TITLE
+  ]),
+  hasKey: (key) => localization.keys.has(key),
+  getMessage: (key, args) => {
+    if (!localization.hasKey(key)) {
+      console.log('unknown key', key);
+      return '';
+    }
+
+    let message = '';
+    if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITH_TOKENS) {
+      if (!args) {
+        console.log('args is null for key', key);
+        return '';
+      }
+      const countArgs = args.length;
+      if (countArgs === 3) {
+        const [firstToken, secondToken, other] = args;
+        const otherCount = parseInt(other, 10);
+        message = t`you have received ${firstToken}, ${secondToken} and ${otherCount} other token on a new transaction.`;
+      } else if (countArgs === 2) {
+        const [firstToken, secondToken] = args;
+        message = t`you have received ${firstToken} and ${secondToken}.`;
+      } else if (countArgs === 1) {
+        const [firstToken] = args;
+        message = `you have received ${firstToken}.`;
+      }
+    } else if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITHOUT_TOKENS) {
+      message = t`There is a new transaction in your wallet.`;
+    } else if (key === NEW_TRANSACTION_RECEIVED_TITLE) {
+      message = t`New transaction received`;
+    }
+    return message;
+  }
+};
+
+const onForegroundMessage = async (message) => {
+  await messageHandler(message);
+};
+
 const onBackgroundMessage = async (message) => {
-  console.log('onBackgroundMessage', message);
+  await messageHandler(message);
+};
+
+/**
+ * Handle the message received when application is in foreground and background (not closed) state
+ * @param {{ data: Object, from: string, messageId: string, sentTime: number, ttl: number }} message - Message received from wallet-service
+ * @example
+ * {
+ *   bodyLocArgs: '[\"10 T2\",\"5 T1\",\"2\"]',
+ *   bodyLocKey: 'new_transaction_received_description_with_tokens',
+ *   titleLocKey: 'new_transaction_received_title',
+ *   txId: 'txId1',
+ * }
+ * @inner
+ */
+const messageHandler = async (message) => {
+  const { data } = message;
+  if (!localization.hasKey(data.titleLocKey)) {
+    console.log('unknown message titleLocKey', data.titleLocKey);
+    return;
+  }
+
+  if (!localization.hasKey(data.bodyLocKey)) {
+    console.log('unknown message bodyLocKey', data.bodyLocKey);
+    return;
+  }
+
+  const bodyArgs = JSON.parse(data.bodyLocArgs);
+  const title = localization.getMessage(data.titleLocKey);
+  const body = localization.getMessage(data.bodyLocKey, bodyArgs);
+
+  notifee.displayNotification({
+    title,
+    body,
+    android: {
+      channelId: TRANSACTION_CHANNEL_ID,
+    },
+  });
 };
 
 const showPinScreenForResult = async (dispatch) => new Promise((resolve) => {
@@ -107,12 +206,20 @@ export function* appInitialization(action) {
     // TODO: this action should call the wallet-service to update the deviceId
     put(pushUpdateDeviceId({ deviceId }));
   }
-  console.log('deviceId', deviceId);
+
+  const hasTransactionChannel = yield call(notifee.isChannelCreated, 'transaction');
+  if (!hasTransactionChannel) {
+    console.log('creating channel transaction');
+    yield call(notifee.createChannel, {
+      id: 'transaction',
+      name: 'Transaction',
+    });
+  }
 
   // Make sure deviceId is registered on the FCM
   messaging().registerDeviceForRemoteMessages();
 
-  messaging().onMessage(onBackgroundMessage);
+  messaging().onMessage(onForegroundMessage);
   messaging().setBackgroundMessageHandler(onBackgroundMessage);
 
   // Handling notifications and navigating to MainScreen -> TxDetails modal
