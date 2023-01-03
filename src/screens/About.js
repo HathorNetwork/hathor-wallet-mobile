@@ -15,6 +15,7 @@ import Logo from '../components/Logo';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { str2jsx } from '../utils';
+import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '../constants';
 
 export class About extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
@@ -77,8 +78,12 @@ export class About extends React.Component {
           </Text>
           <Text style={this.style.text}>
             {str2jsx(
-              t`For further information, check out our website |link:https://hathor.network/|.`,
-              { link: (x, i) => <Link key={i} href='https://hathor.network/'>{x}</Link> }
+              t`For further information, check out the |link1:Terms of Service| and |link2:Privacy Policy|, or our website |link3:https://hathor.network/|.`,
+              {
+                link1: (x, i) => <Link key={i} href={TERMS_OF_SERVICE_URL}>{x}</Link>,
+                link2: (x, i) => <Link key={i} href={PRIVACY_POLICY_URL}>{x}</Link>,
+                link3: (x, i) => <Link key={i} href='https://hathor.network/'>{x}</Link>,
+              }
             )}
           </Text>
 
