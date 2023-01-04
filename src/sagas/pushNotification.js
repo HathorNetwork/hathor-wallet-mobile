@@ -66,6 +66,7 @@ const NEW_TRANSACTION_RECEIVED_TITLE = 'new_transaction_received_title';
  * this is the channel id for the transaction notification
  */
 const TRANSACTION_CHANNEL_ID = 'transaction';
+const TRANSACTION_CHANNEL_NAME = t`Transaction`;
 
 const getDeviceId = async () => {
   try {
@@ -183,6 +184,7 @@ const showPinScreenForResult = async (dispatch) => new Promise((resolve) => {
 });
 
 /**
+ * This function is called when the application is initialized.
  * @param {{ payload: { deviceId: string, settings: { enabled, showAmountEnabled }, hasBeenEnabled: boolean, enabledAt: number } }} action 
  */
 export function* appInitialization(action) {
@@ -199,29 +201,26 @@ export function* appInitialization(action) {
   } = action;
   const deviceId = yield call(getDeviceId);
 
+  // If the deviceId is different from the persisted one, we should update it
   if (persistedDeviceId && persistedDeviceId !== deviceId.toString()) {
     STORE.setItem(pushNotificationKey.deviceId, deviceId);
-    // TODO: this action should call the wallet-service to update the deviceId
     put(pushUpdateDeviceId({ deviceId }));
   }
 
-  const hasTransactionChannel = yield call(notifee.isChannelCreated, 'transaction');
+  // Create the transaction channel if it doesn't exist
+  const hasTransactionChannel = yield call(notifee.isChannelCreated, TRANSACTION_CHANNEL_ID);
   if (!hasTransactionChannel) {
-    console.log('creating channel transaction');
     yield call(notifee.createChannel, {
-      id: 'transaction',
-      name: 'Transaction',
+      id: TRANSACTION_CHANNEL_ID,
+      name: TRANSACTION_CHANNEL_NAME,
     });
   }
 
   // Make sure deviceId is registered on the FCM
   messaging().registerDeviceForRemoteMessages();
-
+  // Add listeners for push notifications on foreground and background
   messaging().onMessage(onForegroundMessage);
   messaging().setBackgroundMessageHandler(onBackgroundMessage);
-
-  // Handling notifications and navigating to MainScreen -> TxDetails modal
-  // TODO: this listener should be implemented on details modal screen
 
   // Check if the last registration call was made more then a week ago
   if (hasBeenEnabled) {
