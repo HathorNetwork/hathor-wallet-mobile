@@ -12,6 +12,8 @@ import {
   all,
   call,
   select,
+  race,
+  take,
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
@@ -25,6 +27,9 @@ import {
   pushUpdateDeviceId,
   pushRegistrationRequested,
   setIsShowingPinScreen,
+  pushLoadWalletRequested,
+  pushLoadWalletSuccess,
+  pushLoadWalletFailed,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -233,20 +238,18 @@ export function* appInitialization(action) {
 }
 
 /**
- * This function is the actual opt-in of a user to the Push Notifications feature.
- * It should be called when the push notifications are not loaded and/or registered.
- * This should load the wallet on the wallet-service and register it with the deviceId.
+ * It is responsible for loading the wallet for every push notification action that requires
+ * to interact with the wallet service api. When the user is using the facade wallet, it will
+ * load the wallet service, otherwise it will use the wallet already loaded in the redux store.
  */
-export function* firstTimeRegistration({ payload: { deviceId } }) {
+export function* loadWallet() {
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
   yield put((_dispatch) => {
     dispatch = _dispatch;
   });
 
-  const wallet = yield select((state) => state.wallet);
   const useWalletService = yield select((state) => state.useWalletService);
-  // const deviceId = yield select((state) => state.pushNotification.deviceId);
 
   // If the user is not using the wallet-service,
   // we need to initialize the wallet on the wallet-service first
@@ -271,12 +274,35 @@ export function* firstTimeRegistration({ payload: { deviceId } }) {
         password: pin,
       });
     } catch (error) {
-      yield put(pushRegisterFailed());
+      yield put(pushLoadWalletFailed({ error }));
     }
   } else {
-    walletService = wallet;
+    walletService = yield select((state) => state.wallet);
   }
 
+  yield put(pushLoadWalletSuccess({ walletService }));
+}
+
+/**
+ * This function is the actual opt-in of a user to the Push Notifications feature.
+ * It should be called when the push notifications are not loaded and/or registered.
+ * This should load the wallet on the wallet-service and register it with the deviceId.
+ * @param {{ payload: { deviceId: string } }} action
+ */
+export function* firstTimeRegistration({ payload: { deviceId } }) {
+  yield put(pushLoadWalletRequested());
+
+  // wait for the wallet to be loaded
+  const [loadWalletSuccess, loadWalletFail] = yield race([
+    take(types.PUSH_WALLET_LOAD_SUCCESS),
+    take(types.PUSH_WALLET_LOAD_FAILED)
+  ]);
+
+  if (loadWalletFail) {
+    yield put(pushRegisterFailed());
+  }
+
+  const { walletService } = loadWalletSuccess.payload;
   try {
     const { success } = yield call(pushLib.PushNotification.registerDevice, walletService, {
       pushProvider: pushLib.PushNotificationProvider.ANDROID,
@@ -299,46 +325,24 @@ export function* firstTimeRegistration({ payload: { deviceId } }) {
   }
 }
 
+/**
+ * This function is responsible for registering the device on the wallet-service in the event
+ * of renewing the registration.
+ */
 export function* registration({ payload: { enabled, showAmountEnabled, deviceId } }) {
-  // This is a work-around so we can dispatch actions from inside callbacks.
-  let dispatch;
-  yield put((_dispatch) => {
-    dispatch = _dispatch;
-  });
+  yield put(pushLoadWalletRequested());
 
-  const wallet = yield select((state) => state.wallet);
-  const useWalletService = yield select((state) => state.useWalletService);
-  // const deviceId = yield select((state) => state.pushNotification.deviceId);
+  // wait for the wallet to be loaded
+  const [loadWalletSuccess, loadWalletFail] = yield race([
+    take(types.PUSH_WALLET_LOAD_SUCCESS),
+    take(types.PUSH_WALLET_LOAD_FAILED)
+  ]);
 
-  // If the user is not using the wallet-service,
-  // we need to initialize the wallet on the wallet-service first
-  let walletService;
-  if (!useWalletService) {
-    // Set urls for wallet service
-    config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
-    config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
-    const network = new Network(NETWORK);
-
-    const pin = yield call(showPinScreenForResult, dispatch);
-    walletService = new HathorWalletServiceWallet({
-      requestPassword: pin,
-      seed: walletUtil.getWalletWords(pin),
-      network,
-      enableWs: false,
-    });
-
-    try {
-      yield call(walletService.start.bind(walletService), {
-        pinCode: pin,
-        password: pin,
-      });
-    } catch (error) {
-      yield put(pushRegisterFailed());
-    }
-  } else {
-    walletService = wallet;
+  if (loadWalletFail) {
+    yield put(pushRegisterFailed());
   }
 
+  const { walletService } = loadWalletSuccess.payload;
   try {
     const { success } = yield call(pushLib.PushNotification.registerDevice, walletService, {
       pushProvider: pushLib.PushNotificationProvider.ANDROID,
@@ -360,46 +364,25 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
   }
 }
 
+/**
+ * This function is responsible for updating the registration of the device on the wallet-service
+ * in the event of changing the settings of the push notifications.
+ * @param {{ payload: { enabled: boolean, showAmountEnabled: boolean, deviceId: string } }} action
+ */
 export function* updateRegistration({ payload: { enabled, showAmountEnabled, deviceId } }) {
-  // This is a work-around so we can dispatch actions from inside callbacks.
-  let dispatch;
-  yield put((_dispatch) => {
-    dispatch = _dispatch;
-  });
+  yield put(pushLoadWalletRequested());
 
-  const wallet = yield select((state) => state.wallet);
-  const useWalletService = yield select((state) => state.useWalletService);
-  // const deviceId = yield select((state) => state.pushNotification.deviceId);
+  // wait for the wallet to be loaded
+  const [loadWalletSuccess, loadWalletFail] = yield race([
+    take(types.PUSH_WALLET_LOAD_SUCCESS),
+    take(types.PUSH_WALLET_LOAD_FAILED)
+  ]);
 
-  // If the user is not using the wallet-service,
-  // we need to initialize the wallet on the wallet-service first
-  let walletService;
-  if (!useWalletService) {
-    // Set urls for wallet service
-    config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
-    config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
-    const network = new Network(NETWORK);
-
-    const pin = yield call(showPinScreenForResult, dispatch);
-    walletService = new HathorWalletServiceWallet({
-      requestPassword: pin,
-      seed: walletUtil.getWalletWords(pin),
-      network,
-      enableWs: false,
-    });
-
-    try {
-      yield call(walletService.start.bind(walletService), {
-        pinCode: pin,
-        password: pin,
-      });
-    } catch (error) {
-      yield put(pushRegisterFailed());
-    }
-  } else {
-    walletService = wallet;
+  if (loadWalletFail) {
+    yield put(pushRegisterFailed());
   }
 
+  const { walletService } = loadWalletSuccess.payload;
   try {
     const { success } = yield call(pushLib.PushNotification.updateDevice, walletService, {
       deviceId,
@@ -421,6 +404,7 @@ export function* updateRegistration({ payload: { enabled, showAmountEnabled, dev
 export function* saga() {
   yield all([
     takeEvery(types.PUSH_INIT, appInitialization),
+    takeEvery(types.PUSH_WALLET_LOAD_REQUESTED, loadWallet),
     takeEvery(types.PUSH_FIRST_REGISTRATION_REQUESTED, firstTimeRegistration),
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
     takeEvery(types.PUSH_UPDATE_REQUESTED, updateRegistration),

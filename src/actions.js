@@ -75,6 +75,9 @@ export const types = {
   PUSH_INIT: 'PUSH_INIT',
   PUSH_UPDATE_DEVICE_ID: 'PUSH_UPDATE_DEVICE_ID',
   PUSH_API_READY: 'PUSH_API_READY',
+  PUSH_WALLET_LOAD_REQUESTED: 'PUSH_WALLET_LOAD_REQUESTED',
+  PUSH_WALLET_LOAD_SUCCESS: 'PUSH_WALLET_LOAD_SUCCESS',
+  PUSH_WALLET_LOAD_FAILED: 'PUSH_WALLET_LOAD_FAILED',
   PUSH_FIRST_REGISTRATION_REQUESTED: 'PUSH_OPT_IN_REQUESTED',
   PUSH_REGISTRATION_REQUESTED: 'PUSH_REGISTRATION_REQUESTED',
   PUSH_REGISTER_SUCCESS: 'PUSH_REGISTER_SUCCESS',
@@ -538,6 +541,26 @@ export const pushUpdateDeviceId = (payload) => ({
 
 export const pushApiReady = () => ({
   type: types.PUSH_API_READY,
+});
+
+export const pushLoadWalletRequested = () => ({
+  type: types.PUSH_WALLET_LOAD_REQUESTED,
+});
+
+/**
+ * @param {{ walletService }} payload
+ */
+export const pushLoadWalletSuccess = (payload) => ({
+  type: types.PUSH_WALLET_LOAD_SUCCESS,
+  payload,
+});
+
+/**
+ * @param {{ error }} payload
+ */
+export const pushLoadWalletFailed = (payload) => ({
+  type: types.PUSH_WALLET_LOAD_FAILED,
+  payload,
 });
 
 /**
