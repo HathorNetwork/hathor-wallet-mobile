@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /**
  * Copyright (c) Hathor Labs and its affiliates.
  *
@@ -757,18 +758,16 @@ export const onPushRegisterFailed = (state) => ({
 /**
  * @param {{payload: {enabled, showAmountEnabled}}} action
  */
-export const onPushUpdateSuccess = (state, { payload: { enabled, showAmountEnabled } }) => {
-  return {
-    ...state,
-    pushNotification: {
-      ...state.pushNotification,
-      noChange: false,
-      apiStatus: PUSH_API_STATUS.READY,
-      enabled,
-      showAmountEnabled,
-    },
-  };
-};
+export const onPushUpdateSuccess = (state, { payload: { enabled, showAmountEnabled } }) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    noChange: false,
+    apiStatus: PUSH_API_STATUS.READY,
+    enabled,
+    showAmountEnabled,
+  },
+});
 
 export const onPushUpdateFailed = (state) => ({
   ...state,

@@ -25,6 +25,7 @@ const getPushNotificationSettings = (pushNotification) => {
   };
 };
 
+// eslint-disable-next-line max-len
 const hasApiStatusFailed = (pushNotification) => pushNotification.apiStatus === PUSH_API_STATUS.FAILED;
 
 /**

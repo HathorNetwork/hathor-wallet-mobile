@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import {
   HathorWalletServiceWallet,
   PushNotification as pushLib,
@@ -185,7 +186,7 @@ const showPinScreenForResult = async (dispatch) => new Promise((resolve) => {
 
 /**
  * This function is called when the application is initialized.
- * @param {{ payload: { deviceId: string, settings: { enabled, showAmountEnabled }, hasBeenEnabled: boolean, enabledAt: number } }} action 
+ * @param {{ payload: { deviceId: string, settings: { enabled, showAmountEnabled }, hasBeenEnabled: boolean, enabledAt: number } }} action
  */
 export function* appInitialization(action) {
   const {
