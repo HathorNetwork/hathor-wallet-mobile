@@ -32,7 +32,7 @@ const hasApiStatusFailed = (pushNotification) => pushNotification.apiStatus === 
 /**
  * wallet {Object} wallet at user's device
  */
-const mapInvoiceStateToProps = (state) => ({
+const mapPushNotificationStateToProps = (state) => ({
   wallet: state.wallet,
   pushNotification: {
     ...state.pushNotification,
@@ -41,7 +41,7 @@ const mapInvoiceStateToProps = (state) => ({
   },
 });
 
-const mapInvoiceDispatchToProps = (dispatch) => ({
+const mapPushNotificationDispatchToProps = (dispatch) => ({
   pushApiReady: () => dispatch(pushApiReady()),
   pushFirstTimeRegistration: (deviceId) => dispatch(pushFirstTimeRegistration({ deviceId })),
   pushUpdateRequested: (settings) => dispatch(pushUpdateRequested(settings)),
@@ -208,4 +208,4 @@ class PushNotification extends React.Component {
   }
 }
 
-export default connect(mapInvoiceStateToProps, mapInvoiceDispatchToProps)(PushNotification);
+export default connect(mapPushNotificationStateToProps, mapPushNotificationDispatchToProps)(PushNotification);
