@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { isEqual } from 'lodash';
+import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
 import { HathorList, ListItem } from '../components/HathorList';
 import ActionModal from '../components/ActionModal';
@@ -147,22 +148,22 @@ class PushNotification extends React.Component {
   render() {
     const isPushNotificationEnabled = this.props.pushNotification.enabled;
     const { showAmountEnabled, hasPushApiFailed } = this.props.pushNotification;
-    const pushNotificationEnabledText = 'Enable Push Notification';
-    const showAmountEnabledText = 'Show amounts on notification';
+    const pushNotificationEnabledText = t`Enable Push Notification`;
+    const showAmountEnabledText = t`Show amounts on notification`;
 
     // return the following
     return (
       // return the following
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
-          title='Push Notification'
+          title={t`Push Notification`}
           onBackPress={() => this.props.navigation.goBack()}
         />
 
         {hasPushApiFailed && (
           <FeedbackModal
             icon={(<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />)}
-            text='There was an error enabling push notification. Please try again later.'
+            text={t`There was an error enabling push notification. Please try again later.`}
             onDismiss={() => this.dismissFeedbackModal()}
           />
         )}
