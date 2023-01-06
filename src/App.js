@@ -19,13 +19,12 @@ import DeviceInfo from 'react-native-device-info';
 import hathorLib from '@hathor/wallet-lib';
 import IconTabBar from './icon-font';
 import NavigationService from './NavigationService';
-import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT, STORE, pushNotificationKey } from './constants';
+import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
   resetData,
   lockScreen,
   setTokens,
-  pushInit,
 } from './actions';
 import { store } from './reducer';
 
@@ -211,7 +210,6 @@ const mapDispatchToProps = (dispatch) => ({
   setTokens: (tokens) => dispatch(setTokens(tokens)),
   lockScreen: () => dispatch(lockScreen()),
   resetData: () => dispatch(resetData()),
-  pushInit: (payload) => dispatch(pushInit(payload)),
 });
 
 class _AppStackWrapper extends React.Component {
@@ -240,7 +238,6 @@ class _AppStackWrapper extends React.Component {
     this.getBiometry();
     this.appStateChangeEventSub = AppState.addEventListener('change', this._handleAppStateChange);
     this.updateReduxTokens();
-    this.initPushNotification();
     // We need the version of the app in the user agent to get some stats from the logs
     // this method getVersion returns a string in the format <major>.<minor>.<patch>
     const version = DeviceInfo.getVersion();
@@ -285,14 +282,6 @@ class _AppStackWrapper extends React.Component {
    */
   updateReduxTokens = () => {
     this.props.setTokens(hathorLib.tokens.getTokens());
-  }
-
-  initPushNotification = () => {
-    const deviceId = STORE.getItem(pushNotificationKey.deviceId);
-    const settings = STORE.getItem(pushNotificationKey.settings);
-    const hasBeenEnabled = STORE.getItem(pushNotificationKey.hasBeenEnabled);
-    const enabledAt = STORE.getItem(pushNotificationKey.enabledAt);
-    this.props.pushInit({ deviceId, settings, hasBeenEnabled, enabledAt });
   }
 
   /**

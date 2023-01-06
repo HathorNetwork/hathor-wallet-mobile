@@ -15,6 +15,7 @@ import {
   select,
   race,
   take,
+  fork,
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
@@ -31,6 +32,7 @@ import {
   pushLoadWalletRequested,
   pushLoadWalletSuccess,
   pushLoadWalletFailed,
+  pushInit,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -185,28 +187,33 @@ const showPinScreenForResult = async (dispatch) => new Promise((resolve) => {
 });
 
 /**
- * This function is called when the application is initialized.
- * @param {{ payload: { deviceId: string, settings: { enabled, showAmountEnabled }, hasBeenEnabled: boolean, enabledAt: number } }} action
+ * This function is called when the wallet is initialized with success.
  */
-export function* appInitialization(action) {
-  const {
-    payload: {
-      deviceId: persistedDeviceId,
-      settings: {
-        enabled,
-        showAmountEnabled
-      },
-      hasBeenEnabled,
-      enabledAt
-    }
-  } = action;
-  const deviceId = yield call(getDeviceId);
+export function* onAppInitialization() {
+  yield take(types.START_WALLET_SUCCESS);
 
+  const { enabled, showAmountEnabled } = STORE.getItem(pushNotificationKey.settings);
+  const hasBeenEnabled = STORE.getItem(pushNotificationKey.hasBeenEnabled);
+  const enabledAt = STORE.getItem(pushNotificationKey.enabledAt);
+
+  const persistedDeviceId = STORE.getItem(pushNotificationKey.deviceId);
+  const deviceId = yield call(getDeviceId);
   // If the deviceId is different from the persisted one, we should update it
   if (persistedDeviceId && persistedDeviceId !== deviceId.toString()) {
     STORE.setItem(pushNotificationKey.deviceId, deviceId);
-    put(pushUpdateDeviceId({ deviceId }));
+    yield put(pushUpdateDeviceId({ deviceId }));
   }
+
+  // Initialize the pushNotification state on the redux store
+  yield put(pushInit({
+    deviceId,
+    settings: {
+      enabled,
+      showAmountEnabled,
+    },
+    hasBeenEnabled,
+    enabledAt,
+  }));
 
   // Create the transaction channel if it doesn't exist
   const hasTransactionChannel = yield call(notifee.isChannelCreated, TRANSACTION_CHANNEL_ID);
@@ -228,7 +235,7 @@ export function* appInitialization(action) {
     const timeSinceLastRegistration = moment().diff(enabledAt, 'weeks');
     if (timeSinceLastRegistration > 1) {
       // Update the registration, as per Firebase's recommendation
-      put(pushRegistrationRequested({
+      yield put(pushRegistrationRequested({
         enabled,
         showAmountEnabled,
         deviceId,
@@ -380,6 +387,7 @@ export function* updateRegistration({ payload: { enabled, showAmountEnabled, dev
 
   if (loadWalletFail) {
     yield put(pushRegisterFailed());
+    return;
   }
 
   const { walletService } = loadWalletSuccess.payload;
@@ -403,7 +411,7 @@ export function* updateRegistration({ payload: { enabled, showAmountEnabled, dev
 
 export function* saga() {
   yield all([
-    takeEvery(types.PUSH_INIT, appInitialization),
+    fork(onAppInitialization),
     takeEvery(types.PUSH_WALLET_LOAD_REQUESTED, loadWallet),
     takeEvery(types.PUSH_FIRST_REGISTRATION_REQUESTED, firstTimeRegistration),
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
