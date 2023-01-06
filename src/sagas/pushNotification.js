@@ -93,27 +93,27 @@ const localization = {
   hasKey: (key) => localization.keys.has(key),
   getMessage: (key, args) => {
     if (!localization.hasKey(key)) {
-      console.log('unknown key', key);
+      console.log('Unknown localization key for push notification message.', key);
       return '';
     }
 
     let message = '';
     if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITH_TOKENS) {
       if (!args) {
-        console.log('args is null for key', key);
+        console.log(`The args for push notification message key ${NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITH_TOKENS} cannot be null or undefined.`, key);
         return '';
       }
       const countArgs = args.length;
       if (countArgs === 3) {
         const [firstToken, secondToken, other] = args;
         const otherCount = parseInt(other, 10);
-        message = t`you have received ${firstToken}, ${secondToken} and ${otherCount} other token on a new transaction.`;
+        message = t`You have received ${firstToken}, ${secondToken} and ${otherCount} other token on a new transaction.`;
       } else if (countArgs === 2) {
         const [firstToken, secondToken] = args;
-        message = t`you have received ${firstToken} and ${secondToken}.`;
+        message = t`You have received ${firstToken} and ${secondToken}.`;
       } else if (countArgs === 1) {
         const [firstToken] = args;
-        message = `you have received ${firstToken}.`;
+        message = t`You have received ${firstToken}.`;
       }
     } else if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITHOUT_TOKENS) {
       message = t`There is a new transaction in your wallet.`;
