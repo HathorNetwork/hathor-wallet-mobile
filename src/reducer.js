@@ -732,7 +732,6 @@ export const onPushApiReady = (state) => ({
  */
 export const onPushRegisterSuccess = (state, action) => {
   const { enabled, hasBeenEnabled, enabledAt } = action.data;
-  console.log('hasBeenEnabled on reduce:', hasBeenEnabled);
   return ({
     ...state,
     pushNotification: {
