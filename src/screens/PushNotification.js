@@ -108,9 +108,9 @@ class PushNotification extends React.Component {
   actionOnTermsAndConditions = () => {
     this.setState({
       actionModal: {
-        title: 'Push Notification',
-        message: 'By enabling push notification, you agree to our terms and conditions.',
-        button: 'I agree',
+        title: t`Push Notification`,
+        message: t`By enabling push notification, you agree to our terms and conditions.`,
+        button: t`I agree`,
         onAction: () => this.executeFirstRegistrationOnPushNotification(),
         onDismiss: () => this.dismissActionModal(),
       },
