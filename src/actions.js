@@ -64,6 +64,7 @@ export const types = {
   TOKEN_FETCH_HISTORY_FAILED: 'TOKEN_FETCH_HISTORY_FAILED',
   TOKEN_INVALIDATE_HISTORY: 'TOKEN_INVALIDATE_HISTORY',
   ON_START_WALLET_LOCK: 'ON_START_WALLET_LOCK',
+  RELOAD_WALLET_REQUESTED: 'RELOAD_WALLET_REQUESTED',
   START_WALLET_REQUESTED: 'START_WALLET_REQUESTED',
   START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
   START_WALLET_FAILED: 'START_WALLET_FAILED',
@@ -471,6 +472,10 @@ export const tokenFetchBalanceFailed = (tokenId) => ({
 export const tokenInvalidateBalance = (tokenId) => ({
   type: types.TOKEN_INVALIDATE_BALANCE,
   tokenId,
+});
+
+export const reloadWalletRequested = () => ({
+  type: types.RELOAD_WALLET_REQUESTED,
 });
 
 export const startWalletRequested = (payload) => ({
