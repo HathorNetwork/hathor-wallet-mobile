@@ -73,6 +73,8 @@ export const types = {
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
   // Push Notification actions
+  PUSH_ASK_OPT_IN_QUESTION: 'PUSH_ASK_OPT_IN_QUESTION',
+  PUSH_DISMISS_OPT_IN_QUESTION: 'PUSH_DISMISS_OPT_IN_QUESTION',
   PUSH_INIT: 'PUSH_INIT',
   PUSH_UPDATE_DEVICE_ID: 'PUSH_UPDATE_DEVICE_ID',
   PUSH_API_READY: 'PUSH_API_READY',
@@ -523,6 +525,14 @@ export const onWalletReload = () => ({
 });
 
 // Push notification actions
+
+export const pushAskOptInQuestion = () => ({
+  type: types.PUSH_ASK_OPT_IN_QUESTION,
+});
+
+export const pushDismissOptInQuestion = () => ({
+  type: types.PUSH_DISMISS_OPT_IN_QUESTION,
+});
 
 /**
  * @param {{deviceId: string, settings: { enabled, showAmountEnabled }, hasBeenEnabled: boolean, enabledAt: number}} payload

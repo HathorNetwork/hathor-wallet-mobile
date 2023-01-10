@@ -16,6 +16,7 @@ import {
   race,
   take,
   fork,
+  takeLatest,
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
@@ -33,6 +34,7 @@ import {
   pushLoadWalletSuccess,
   pushLoadWalletFailed,
   pushInit,
+  pushAskOptInQuestion,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -251,6 +253,13 @@ export function* onAppInitialization() {
       }));
     }
   }
+
+  // If the user has not been asked yet, we should ask him if he wants to enable push notifications
+  // We should appear only once, so we should save the fact that the user has dismissed the question
+  const askOptIn = !STORE.getItem(pushNotificationKey.optInDismissed);
+  if (askOptIn) {
+    yield put(pushAskOptInQuestion());
+  }
 }
 
 /**
@@ -428,6 +437,13 @@ export function* updateStore() {
   STORE.setItem(pushNotificationKey.settings, { enabled, showAmountEnabled });
 }
 
+/**
+ * This function is responsible for save the state of opt-in dismissed.
+ */
+export function* dismissOptInQuestion() {
+  yield STORE.setItem(pushNotificationKey.optInDismissed, true);
+}
+
 export function* saga() {
   yield all([
     fork(onAppInitialization),
@@ -436,5 +452,6 @@ export function* saga() {
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
     takeEvery(types.PUSH_UPDATE_REQUESTED, updateRegistration),
     takeEvery([types.PUSH_REGISTER_SUCCESS, types.PUSH_UPDATE_SUCCESS], updateStore),
+    takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion)
   ]);
 }

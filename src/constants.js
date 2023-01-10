@@ -97,6 +97,7 @@ export const pushNotificationKey = {
   settings: 'pushNotification:settings',
   hasBeenEnabled: 'pushNotification:hasBeenEnabled',
   enabledAt: 'pushNotification:enabledAt',
+  optInDismissed: 'pushNotification:optInDismissed'
 };
 /**
  * this is the network name that will be used to load the wallet on the wallet-service,

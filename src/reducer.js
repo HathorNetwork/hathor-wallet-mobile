@@ -97,6 +97,15 @@ const initialState = {
   walletStartState: WALLET_STATUS.LOADING,
   pushNotification: {
     /**
+     * optInQuestionDismissed {boolean} if user has dismissed the push notification modal
+     * this is used to show the modal only the first time user opens the app
+     * after the modal is dismissed, it will not be shown again
+     * until the user clears the app data
+     * (this is done to avoid showing the modal to users that have already
+     * enabled push notification)
+     */
+    optInQuestionDismissed: true,
+    /**
      * deviceId {string} device id for push notification
      */
     deviceId: '',
@@ -210,6 +219,10 @@ const reducer = (state = initialState, action) => {
       return onStartWalletFailed(state);
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
+    case types.PUSH_ASK_OPT_IN_QUESTION:
+      return onPushAskOptInQuestiong(state);
+    case types.PUSH_DISMISS_OPT_IN_QUESTION:
+      return onPushDismissOptInQuestion(state);
     case types.PUSH_INIT:
       return onPushInit(state, action);
     case types.PUSH_UPDATE_DEVICE_ID:
@@ -691,6 +704,22 @@ export const onWalletBestBlockUpdate = (state, action) => {
 };
 
 // Push notification
+
+export const onPushAskOptInQuestiong = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    optInQuestionDismissed: false,
+  }
+});
+
+export const onPushDismissOptInQuestion = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    optInQuestionDismissed: true,
+  }
+});
 
 /**
  * @param {{ deviceId: string, settings: { enabled, showAmountEnabled }, hasBeenEnabled: boolean }} action
