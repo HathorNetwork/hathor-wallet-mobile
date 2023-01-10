@@ -367,17 +367,10 @@ const onSetUseWalletService = (state, action) => ({
   useWalletService: action.payload,
 });
 
-const onResetWallet = (state, action) => {
-  if (state.wallet) {
-    // Stop wallet
-    state.wallet.stop();
-  }
-
-  return {
-    ...state,
-    wallet: null,
-  };
-};
+const onResetWallet = (state) => ({
+  ...state,
+  wallet: null,
+});
 
 const onSetErrorModal = (state, action) => ({
   ...state,
