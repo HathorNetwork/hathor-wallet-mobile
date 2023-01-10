@@ -11,6 +11,7 @@ import { connect } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
 
+import AskForPushNotification from '../components/AskForPushNotification';
 import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
 import SimpleButton from '../components/SimpleButton';
@@ -76,6 +77,7 @@ class Dashboard extends React.Component {
 
     return (
       <View style={{ flex: 1 }}>
+        <AskForPushNotification navigation={this.props.navigation} />
         <TokenSelect
           header={<Header />}
           renderArrow
