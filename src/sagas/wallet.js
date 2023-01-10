@@ -596,11 +596,29 @@ export function* onWalletReloadData() {
   }
 }
 
+export function* onResetWallet() {
+  const wallet = yield select((state) => state.wallet);
+
+  if (wallet) {
+    // wallet.stop() will remove all event listeners and call
+    // hathorLib.wallet.cleanWallet
+    wallet.stop({ cleanStorage: true });
+
+    return;
+  }
+
+  // Wallet was not initialized yet, this might happen if resetWallet
+  // is called from the PinScreen. There is no event listeners to cleanup
+  // so we can call the cleanWallet method directly.
+  walletUtil.cleanWallet();
+}
+
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeLatest('WALLET_RELOADING', onWalletReloadData),
+    takeLatest('RESET_WALLET', onResetWallet),
     takeEvery('WALLET_NEW_TX', handleTx),
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
