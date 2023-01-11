@@ -101,11 +101,6 @@ const initialState = {
      */
     deviceId: '',
     /**
-     * noChange {boolean} if user has changed the push notification settings
-     * this is used to load persistent settings on the first time afert app is opened
-     */
-    noChange: true,
-    /**
      * apiStatus {string} status of the push notification api request
      */
     apiStatus: PUSH_API_STATUS.READY,
@@ -722,7 +717,6 @@ export const onPushApiReady = (state) => ({
   ...state,
   pushNotification: {
     ...state.pushNotification,
-    noChange: false,
     apiStatus: PUSH_API_STATUS.READY,
   },
 });
@@ -736,7 +730,6 @@ export const onPushRegisterSuccess = (state, action) => {
     ...state,
     pushNotification: {
       ...state.pushNotification,
-      noChange: false,
       apiStatus: PUSH_API_STATUS.READY,
       enabled,
       hasBeenEnabled,
@@ -749,7 +742,6 @@ export const onPushRegisterFailed = (state) => ({
   ...state,
   pushNotification: {
     ...state.pushNotification,
-    noChange: false,
     apiStatus: PUSH_API_STATUS.FAILED,
   },
 });
@@ -761,7 +753,6 @@ export const onPushUpdateSuccess = (state, { payload: { enabled, showAmountEnabl
   ...state,
   pushNotification: {
     ...state.pushNotification,
-    noChange: false,
     apiStatus: PUSH_API_STATUS.READY,
     enabled,
     showAmountEnabled,
@@ -772,7 +763,6 @@ export const onPushUpdateFailed = (state) => ({
   ...state,
   pushNotification: {
     ...state.pushNotification,
-    noChange: false,
     apiStatus: PUSH_API_STATUS.FAILED,
   },
 });

@@ -1,43 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   SafeAreaView,
   Switch,
   Image,
 } from 'react-native';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
 import { HathorList, ListItem } from '../components/HathorList';
 import ActionModal from '../components/ActionModal';
-import { isEnablingFeature, getPushNotificationSettings } from '../utils';
+import { isEnablingFeature } from '../utils';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
-import { STORE, pushNotificationKey } from '../constants';
 import { pushApiReady, pushFirstTimeRegistration, pushUpdateRequested } from '../actions';
 import { PUSH_API_STATUS } from '../sagas/pushNotification';
 
 
 // eslint-disable-next-line max-len
 const hasApiStatusFailed = (pushNotification) => pushNotification.apiStatus === PUSH_API_STATUS.FAILED;
-
-/**
- * wallet {Object} wallet at user's device
- */
-const mapPushNotificationStateToProps = (state) => ({
-  wallet: state.wallet,
-  pushNotification: {
-    ...state.pushNotification,
-    ...(state.pushNotification.noChange && STORE.getItem(pushNotificationKey.settings)),
-    hasPushApiFailed: hasApiStatusFailed(state.pushNotification),
-  },
-});
-
-const mapPushNotificationDispatchToProps = (dispatch) => ({
-  pushApiReady: () => dispatch(pushApiReady()),
-  pushFirstTimeRegistration: (deviceId) => dispatch(pushFirstTimeRegistration({ deviceId })),
-  pushUpdateRequested: (settings) => dispatch(pushUpdateRequested(settings)),
-});
 
 const styles = StyleSheet.create({
   view: {
@@ -65,37 +46,28 @@ const termsAndConditionsModalTitleText = t`Push Notification`;
 const termsAndConditionsModalMessageText = t`By enabling push notification, you agree to our terms and conditions.`;
 const termsAndConditionsModalActionButtonText = t`I agree`;
 
-function PushNotification(props) {
+export default function PushNotification(props) {
+  const {
+    enabled,
+    showAmountEnabled,
+    deviceId,
+    hasBeenEnabled,
+  } = useSelector((state) => state.pushNotification);
+  const hasPushApiFailed = useSelector((state) => hasApiStatusFailed(state.pushNotification));
+  const dispatch = useDispatch();
+
   /**
    * actionModal {ActionModal.propTypes} action modal properties. If null, do not display
    */
   const [actionModal, setActionModal] = useState(null);
-  const [
-    {
-      enabled: isEnabled,
-      showAmountEnabled,
-      hasPushApiFailed
-    },
-    setSettings
-  ] = useState(props.pushNotification);
-
-  useEffect(() => {
-    setSettings(props.pushNotification);
-  });
-
-  // eslint-disable-next-line max-len
-  const isFirstTimeEnablingPushNotification = (value) => isEnablingFeature(value) && !props.pushNotification.hasBeenEnabled;
 
   const dismissActionModal = () => {
     setActionModal(null);
   };
 
-  const dismissFeedbackModal = () => {
-    props.pushApiReady();
-  };
-
   const onPushNotificationSwitchChange = (value) => {
-    if (isFirstTimeEnablingPushNotification(value)) {
+    const isFirstTime = isEnablingFeature(value) && !hasBeenEnabled;
+    if (isFirstTime) {
       actionOnTermsAndConditions();
       return;
     }
@@ -118,25 +90,25 @@ function PushNotification(props) {
    */
   const executeUpdateOnPushNotification = (enabled) => {
     const settings = {
-      ...getPushNotificationSettings(props.pushNotification),
+      deviceId,
       enabled,
-      deviceId: props.pushNotification.deviceId,
+      showAmountEnabled,
     };
-    props.pushUpdateRequested(settings);
+    dispatch(pushUpdateRequested(settings));
   };
 
   const executeFirstRegistrationOnPushNotification = async () => {
     dismissActionModal();
-    props.pushFirstTimeRegistration(props.pushNotification.deviceId);
+    dispatch(pushFirstTimeRegistration({ deviceId }));
   };
 
   const onShowAmountSwitchChange = (showAmountEnabled) => {
     const settings = {
-      ...getPushNotificationSettings(props.pushNotification),
+      deviceId,
+      enabled,
       showAmountEnabled,
-      deviceId: props.pushNotification.deviceId,
     };
-    props.pushUpdateRequested(settings);
+    dispatch(pushUpdateRequested(settings));
   };
 
   return (
@@ -150,7 +122,7 @@ function PushNotification(props) {
         <FeedbackModal
           icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
           text={apiRequestFailedText}
-          onDismiss={() => dismissFeedbackModal()}
+          onDismiss={() => dispatch(pushApiReady())}
         />
       )}
 
@@ -171,19 +143,19 @@ function PushNotification(props) {
           text={(
             <Switch
               onValueChange={onPushNotificationSwitchChange}
-              value={isEnabled}
+              value={enabled}
             />
           )}
           isFirst
         />
         <ListItem
           title={showAmountsOnNotificationText}
-          titleStyle={isEnabled ? styles.switchEnabled : null}
+          titleStyle={enabled ? styles.switchEnabled : null}
           text={(
             <Switch
               onValueChange={onShowAmountSwitchChange}
               value={showAmountEnabled}
-              disabled={!isEnabled}
+              disabled={!enabled}
             />
           )}
           isLast
@@ -192,6 +164,3 @@ function PushNotification(props) {
     </SafeAreaView>
   );
 }
-
-// eslint-disable-next-line max-len
-export default connect(mapPushNotificationStateToProps, mapPushNotificationDispatchToProps)(PushNotification);
