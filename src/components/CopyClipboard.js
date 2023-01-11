@@ -26,7 +26,7 @@ class CopyClipboard extends React.Component {
   };
 
   textCopy = () => {
-    Clipboard.setString(this.props.text);
+    Clipboard.setString(this.props.copyText || this.props.text);
     this.setState({ copying: true }, () => {
       setTimeout(() => this.setState({ copying: false }), this.props.copiedTimeout);
     });
