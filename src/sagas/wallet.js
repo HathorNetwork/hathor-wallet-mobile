@@ -32,6 +32,7 @@ import {
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
 import { t } from 'ttag';
+import { get } from 'lodash';
 import {
   STORE,
   DEFAULT_TOKEN,
@@ -403,24 +404,71 @@ export function* handleTx(action) {
   }
 
   // find tokens affected by the transaction
-  const balances = yield call(wallet.getTxBalance.bind(wallet), tx);
   const stateTokens = yield select((state) => state.tokens);
   const registeredTokens = stateTokens.map((token) => token.uid);
 
-  // We should download the **balance** for every token involved in the transaction
-  // and history for hathor and DEFAULT_TOKEN
-  for (const [tokenUid] of Object.entries(balances)) {
-    if (registeredTokens.indexOf(tokenUid) === -1) {
-      continue;
+  // To be able to only download balances for tokens belonging to this wallet, we
+  // need a list of tokens and addresses involved in the transaction from both the
+  // inputs and outputs.
+  const { inputs, outputs } = tx;
+  const data = [...inputs, ...outputs];
+
+  // tokenAddressesMap should be an object { [tokenUid]: Set(addresses) }
+  // txAddresses should be a Set with all addresses involved in the tx
+  const [tokenAddressesMap, txAddresses] = data.reduce(
+    (acc, io) => {
+      if (!io.decoded || !io.decoded.address) {
+        return acc;
+      }
+
+      const { token, decoded: { address } } = io;
+
+      // We are only interested in registered tokens
+      if (registeredTokens.indexOf(token) === -1) {
+        return acc;
+      }
+
+      if (!acc[0][token]) {
+        acc[0][token] = new Set([]);
+      }
+
+      acc[0][token].add(address);
+      acc[1].add(address);
+
+      return acc;
+    }, [{}, new Set([])],
+  );
+
+  const txWalletAddresses = yield call(wallet.checkAddressesMine.bind(wallet), [...txAddresses]);
+  const tokensToDownload = [];
+
+  for (const [tokenUid, addresses] of Object.entries(tokenAddressesMap)) {
+    for (const [address] of addresses.entries()) {
+      // txWalletAddresses should always have the address we requested, but we should double check
+      // here using lodash just in case
+      const inWallet = get(txWalletAddresses, address, false);
+
+      if (inWallet) {
+        // If any of the addresses from this token belongs to the wallet, we should
+        // download its balance, so we can break early
+        tokensToDownload.push(tokenUid);
+        break;
+      }
     }
+  }
+
+  // We should download the **balance** for every token involved in the
+  // transaction and that is going to a wallet address and also history for hathor
+  // and DEFAULT_TOKEN
+  for (const tokenUid of tokensToDownload) {
     yield put(tokenFetchBalanceRequested(tokenUid, true));
 
     if (tokenUid === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid
         || tokenUid === DEFAULT_TOKEN.uid) {
       yield put(tokenFetchHistoryRequested(tokenUid, true));
     } else {
-      // Invalidate the history so it will get requested the next time
-      // the user enters the history screen
+      // Invalidate the history so it will get requested the next time the user enters the history
+      // screen
       yield put(tokenInvalidateHistory(tokenUid));
     }
   }

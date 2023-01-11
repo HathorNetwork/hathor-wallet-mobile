@@ -27,7 +27,7 @@ import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { Link, str2jsx } from '../utils';
 
-import { PRIMARY_COLOR } from '../constants';
+import { PRIMARY_COLOR, TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '../constants';
 
 class WelcomeScreen extends React.Component {
   state = { switchValue: false };
@@ -76,7 +76,13 @@ class WelcomeScreen extends React.Component {
               value={this.state.switchValue}
             />
             <Text style={this.style.switchText}>
-              {t`I understand the risks of using a mobile wallet`}
+              {str2jsx(
+                t`I agree with the |link1:Terms of Service| and |link2:Privacy Policy| and understand the risks of using a mobile wallet`,
+                {
+                  link1: (x, i) => <Link key={i} href={TERMS_OF_SERVICE_URL}>{x}</Link>,
+                  link2: (x, i) => <Link key={i} href={PRIVACY_POLICY_URL}>{x}</Link>
+                }
+              )}
             </Text>
           </View>
           <View style={this.style.buttonView}>

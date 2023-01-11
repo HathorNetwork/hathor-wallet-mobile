@@ -35,7 +35,14 @@ class TxDetailsModal extends Component {
     const idStr = getShortHash(tx.txId, 12);
     const explorerIcon = <Image source={icShareActive} width={24} height={24} />;
     const explorerLink = `https://explorer.hathor.network/transaction/${tx.txId}`;
-    const txIdComponent = <CopyClipboard text={idStr} copyText={tx.txId} textStyle={{ fontSize: 16 }}/>;
+    const txIdComponent = (
+      <CopyClipboard
+        text={idStr}
+        copyText={tx.txId}
+        copiedTimeout={800}
+        textStyle={{ fontSize: 16 }}
+      />
+    );
     return (
       <Modal
         isVisible

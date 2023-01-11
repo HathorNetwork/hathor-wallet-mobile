@@ -90,19 +90,19 @@ msgstr "DD MMM YYYY [•] HH: mm"
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 
-#: src/screens/About.js:55
+#: src/screens/About.js:56
 msgid "ABOUT"
 msgstr "OM"
 
-#: src/screens/About.js:68
+#: src/screens/About.js:69
 msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr "Denne app er udviklet af Hathor Labs og distribueres gratis."
 
-#: src/screens/About.js:72 src/screens/InitWallet.js:59
+#: src/screens/About.js:73 src/screens/InitWallet.js:59
 msgid "This wallet is connected to the **mainnet**."
 msgstr "Denne wallet er tilsluttet til ** mainnet **."
 
-#: src/screens/About.js:75 src/screens/InitWallet.js:62
+#: src/screens/About.js:76 src/screens/InitWallet.js:62
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
 "So, we advise you to keep only a small amount of tokens here, such as pocket "
@@ -112,12 +112,11 @@ msgstr ""
 "Så vi råder dig til kun at opbevare en lille mængde tokens her, såsom "
 "lommepenge."
 
-#: src/screens/About.js:80 src/screens/InitWallet.js:67
+#: src/screens/About.js:81
 msgid ""
-"For further information, check out our website |link:https://hathor."
-"network/|."
+"For further information, check out the |link1:Terms of Service| and |link2:"
+"Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
-"For yderligere information, se vores websted |link:https://hathor.network/|."
 
 #.  Success
 #.  eslint-disable-next-line react/jsx-indent
@@ -211,8 +210,8 @@ msgid "You have ${ amountAvailableText } HTR available"
 msgstr "Du har ${ amountAvailableText } HTR tilgængelig"
 
 #: src/screens/CreateTokenAmount.js:142 src/screens/CreateTokenName.js:65
-#: src/screens/CreateTokenSymbol.js:85 src/screens/InitWallet.js:208
-#: src/screens/InitWallet.js:328 src/screens/SendAddressInput.js:66
+#: src/screens/CreateTokenSymbol.js:85 src/screens/InitWallet.js:214
+#: src/screens/InitWallet.js:334 src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:184
 msgid "Next"
 msgstr "Næste"
@@ -327,23 +326,32 @@ msgstr "TOKENS"
 msgid "Welcome to Hathor Wallet!"
 msgstr "Velkommen til Hathor Wallet!"
 
-#: src/screens/InitWallet.js:79
-msgid "I understand the risks of using a mobile wallet"
-msgstr "Jeg forstår risikoen ved at bruge en mobil wallet"
+#: src/screens/InitWallet.js:67
+msgid ""
+"For further information, check out our website |link:https://hathor."
+"network/|."
+msgstr ""
+"For yderligere information, se vores websted |link:https://hathor.network/|."
 
-#: src/screens/InitWallet.js:86
+#: src/screens/InitWallet.js:80
+msgid ""
+"I agree with the |link1:Terms of Service| and |link2:Privacy Policy| and "
+"understand the risks of using a mobile wallet"
+msgstr ""
+
+#: src/screens/InitWallet.js:92
 msgid "Start"
 msgstr "Start"
 
-#: src/screens/InitWallet.js:103
+#: src/screens/InitWallet.js:109
 msgid "To start,"
 msgstr "For at begynde,"
 
-#: src/screens/InitWallet.js:105
+#: src/screens/InitWallet.js:111
 msgid "You need to **initialize your wallet**."
 msgstr "Skal du **initialisere din wallet**."
 
-#: src/screens/InitWallet.js:108
+#: src/screens/InitWallet.js:114
 msgid ""
 "You can either **start a new wallet** or **import a wallet** that already "
 "exists."
@@ -351,23 +359,23 @@ msgstr ""
 "Du kan enten **oprette en ny wallet** eller **importere en wallet**, der "
 "allerede findes."
 
-#: src/screens/InitWallet.js:111
+#: src/screens/InitWallet.js:117
 msgid "To import a wallet, you will need to provide your seed words."
 msgstr "For at importere en wallet skal du angive dine seed-ord."
 
-#: src/screens/InitWallet.js:116
+#: src/screens/InitWallet.js:122
 msgid "Import Wallet"
 msgstr "Importer wallet"
 
-#: src/screens/InitWallet.js:122
+#: src/screens/InitWallet.js:128
 msgid "New Wallet"
 msgstr "Ny wallet"
 
-#: src/screens/InitWallet.js:199
+#: src/screens/InitWallet.js:205
 msgid "Your wallet has been created!"
 msgstr "Din wallet er oprettet!"
 
-#: src/screens/InitWallet.js:201
+#: src/screens/InitWallet.js:207
 msgid ""
 "You must **do a backup** and save the words below **in the same order they "
 "appear**."
@@ -375,11 +383,11 @@ msgstr ""
 "Du skal **lave en sikkerhedskopi** og gemme nedenstående ord **i samme "
 "rækkefølge, som de vises**."
 
-#: src/screens/InitWallet.js:297
+#: src/screens/InitWallet.js:303
 msgid "To import a wallet,"
 msgstr "Hvis du vil importere en wallet,"
 
-#: src/screens/InitWallet.js:299
+#: src/screens/InitWallet.js:305
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
@@ -388,11 +396,11 @@ msgstr ""
 "Skal du **skrive ${ this.numberOfWords } seed-ord** i din wallet adskilt med "
 "mellemrum."
 
-#: src/screens/InitWallet.js:302
+#: src/screens/InitWallet.js:308
 msgid "Words"
 msgstr "Ord"
 
-#: src/screens/InitWallet.js:307
+#: src/screens/InitWallet.js:313
 msgid "Enter your seed words separated by space"
 msgstr "Indtast dine seed-ord adskilt med mellemrum"
 
@@ -630,11 +638,11 @@ msgstr "SEND ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
-#: src/sagas/wallet.js:103 src/screens/SendConfirmScreen.js:117
+#: src/sagas/wallet.js:105 src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
-#: src/sagas/wallet.js:104 src/screens/SendConfirmScreen.js:118
+#: src/sagas/wallet.js:106 src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -797,3 +805,6 @@ msgstr "ID"
 #: src/components/TxDetailsModal.js:56
 msgid "Public Explorer"
 msgstr "Public Explorer"
+
+#~ msgid "I understand the risks of using a mobile wallet"
+#~ msgstr "Jeg forstår risikoen ved at bruge en mobil wallet"

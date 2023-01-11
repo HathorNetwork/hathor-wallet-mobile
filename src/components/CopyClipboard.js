@@ -49,8 +49,11 @@ class CopyClipboard extends React.Component {
 }
 
 CopyClipboard.propTypes = {
-  // The text to be copied
+  // The text to be displayed. If copyText is not set, it's also the copied text
   text: PropTypes.string.isRequired,
+
+  // The text to be copied. If not set, text will be used
+  copyText: PropTypes.string,
 
   // Style of the text component
   textStyle: Text.propTypes.style,
