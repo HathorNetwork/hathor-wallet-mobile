@@ -83,9 +83,8 @@ function PushNotification(props) {
     setSettings(props.pushNotification);
   });
 
-  const isFirstTimeEnablingPushNotification = (value) => {
-    return isEnablingFeature(value) && !props.pushNotification.hasBeenEnabled;
-  };
+  // eslint-disable-next-line max-len
+  const isFirstTimeEnablingPushNotification = (value) => isEnablingFeature(value) && !props.pushNotification.hasBeenEnabled;
 
   const dismissActionModal = () => {
     setActionModal(null);
@@ -194,4 +193,5 @@ function PushNotification(props) {
   );
 }
 
+// eslint-disable-next-line max-len
 export default connect(mapPushNotificationStateToProps, mapPushNotificationDispatchToProps)(PushNotification);
