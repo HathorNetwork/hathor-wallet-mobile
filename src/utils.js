@@ -452,3 +452,16 @@ export const mapTokenHistory = (element, token) => {
  * @returns {boolean} true if user is enabling a feature, false otherwise
  */
 export const isEnablingFeature = (value) => (value && value === true);
+
+/**
+ * Select the push notification settings from redux state
+ * @param {Object} pushNotification pushNotification object from redux
+ * @returns the push notification settings object
+ */
+export const getPushNotificationSettings = (pushNotification) => {
+  const { enabled, showAmountEnabled } = pushNotification;
+  return {
+    enabled,
+    showAmountEnabled
+  };
+};

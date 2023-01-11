@@ -41,6 +41,7 @@ import {
   WALLET_SERVICE_MAINNET_BASE_URL,
 } from '../constants';
 import NavigationService from '../NavigationService';
+import { getPushNotificationSettings } from '../utils';
 
 export const PUSH_API_STATUS = {
   READY: 'ready',
@@ -409,6 +410,14 @@ export function* updateRegistration({ payload: { enabled, showAmountEnabled, dev
   }
 }
 
+/**
+ * This function is responsible for updating the store with the new push notification settings.
+ */
+export function* updateStore() {
+  const { enabled, showAmountEnabled } = yield select((state) => getPushNotificationSettings(state.pushNotification));
+  STORE.setItem(pushNotificationKey.settings, { enabled, showAmountEnabled });
+}
+
 export function* saga() {
   yield all([
     fork(onAppInitialization),
@@ -416,5 +425,6 @@ export function* saga() {
     takeEvery(types.PUSH_FIRST_REGISTRATION_REQUESTED, firstTimeRegistration),
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
     takeEvery(types.PUSH_UPDATE_REQUESTED, updateRegistration),
+    takeEvery([types.PUSH_REGISTER_SUCCESS, types.PUSH_UPDATE_SUCCESS], updateStore),
   ]);
 }

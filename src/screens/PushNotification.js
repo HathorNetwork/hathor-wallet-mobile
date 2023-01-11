@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -6,25 +6,17 @@ import {
   Image,
 } from 'react-native';
 import { connect } from 'react-redux';
-import { isEqual } from 'lodash';
 import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
 import { HathorList, ListItem } from '../components/HathorList';
 import ActionModal from '../components/ActionModal';
-import { isEnablingFeature } from '../utils';
+import { isEnablingFeature, getPushNotificationSettings } from '../utils';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { STORE, pushNotificationKey } from '../constants';
 import { pushApiReady, pushFirstTimeRegistration, pushUpdateRequested } from '../actions';
 import { PUSH_API_STATUS } from '../sagas/pushNotification';
 
-const getPushNotificationSettings = (pushNotification) => {
-  const { enabled, showAmountEnabled } = pushNotification;
-  return {
-    enabled,
-    showAmountEnabled
-  };
-};
 
 // eslint-disable-next-line max-len
 const hasApiStatusFailed = (pushNotification) => pushNotification.apiStatus === PUSH_API_STATUS.FAILED;
@@ -47,165 +39,159 @@ const mapPushNotificationDispatchToProps = (dispatch) => ({
   pushUpdateRequested: (settings) => dispatch(pushUpdateRequested(settings)),
 });
 
-class PushNotification extends React.Component {
-  styles = StyleSheet.create({
-    view: {
-      padding: 16,
-      justifyContent: 'space-between',
-      flexGrow: 1,
+const styles = StyleSheet.create({
+  view: {
+    flex: 1,
+    backgroundColor: '#F7F7F7',
+  },
+  feedbackModalIcon: {
+    height: 105,
+    width: 105
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  switchEnabled: {
+    color: 'black',
+  },
+});
+
+const pageTitleText = t`Push Notification`;
+const enablePushNotificationText = t`Enable Push Notification`;
+const showAmountsOnNotificationText = t`Show amounts on notification`;
+const apiRequestFailedText = t`There was an error enabling push notification. Please try again later.`;
+const termsAndConditionsModalTitleText = t`Push Notification`;
+const termsAndConditionsModalMessageText = t`By enabling push notification, you agree to our terms and conditions.`;
+const termsAndConditionsModalActionButtonText = t`I agree`;
+
+function PushNotification(props) {
+  /**
+   * actionModal {ActionModal.propTypes} action modal properties. If null, do not display
+   */
+  const [actionModal, setActionModal] = useState(null);
+  const [
+    {
+      enabled: isEnabled,
+      showAmountEnabled,
+      hasPushApiFailed
     },
-    text: {
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-    switchEnabled: {
-      color: 'black',
-    },
+    setSettings
+  ] = useState(props.pushNotification);
+
+  useEffect(() => {
+    setSettings(props.pushNotification);
   });
 
-  // create constructor
-  constructor(props) {
-    super(props);
+  const isFirstTimeEnablingPushNotification = (value) => {
+    return isEnablingFeature(value) && !props.pushNotification.hasBeenEnabled;
+  };
 
-    // set state
-    this.state = {
-      /**
-       * actionModal {ActionModal.propTypes} action modal properties. If null, do not display
-       */
-      actionModal: null,
-    };
-  }
+  const dismissActionModal = () => {
+    setActionModal(null);
+  };
 
-  componentDidUpdate(prevProps) {
-    const oldSettings = getPushNotificationSettings(prevProps.pushNotification);
-    const currSettings = getPushNotificationSettings(this.props.pushNotification);
-    if (!isEqual(oldSettings, currSettings)) {
-      STORE.setItem(pushNotificationKey.settings, currSettings);
-    }
-  }
+  const dismissFeedbackModal = () => {
+    props.pushApiReady();
+  };
 
-  isFirstTimeEnablingPushNotification(value) {
-    return isEnablingFeature(value) && !this.props.pushNotification.hasBeenEnabled;
-  }
-
-  dismissActionModal() {
-    this.setState({ actionModal: null });
-  }
-
-  dismissFeedbackModal() {
-    this.props.pushApiReady();
-  }
-
-  onPushNotificationSwitchChange = (value) => {
-    if (this.isFirstTimeEnablingPushNotification(value)) {
-      this.actionOnTermsAndConditions();
+  const onPushNotificationSwitchChange = (value) => {
+    if (isFirstTimeEnablingPushNotification(value)) {
+      actionOnTermsAndConditions();
       return;
     }
 
-    this.executeUpdateOnPushNotification(value);
-  }
+    executeUpdateOnPushNotification(value);
+  };
 
-  actionOnTermsAndConditions = () => {
-    this.setState({
-      actionModal: {
-        title: t`Push Notification`,
-        message: t`By enabling push notification, you agree to our terms and conditions.`,
-        button: t`I agree`,
-        onAction: () => this.executeFirstRegistrationOnPushNotification(),
-        onDismiss: () => this.dismissActionModal(),
-      },
+  const actionOnTermsAndConditions = () => {
+    setActionModal({
+      title: termsAndConditionsModalTitleText,
+      message: termsAndConditionsModalMessageText,
+      button: termsAndConditionsModalActionButtonText,
+      onAction: () => executeFirstRegistrationOnPushNotification(),
+      onDismiss: () => dismissActionModal(),
     });
-  }
+  };
 
   /**
    * @param {boolean} enabled as the new value of the switch
    */
-  executeUpdateOnPushNotification = (enabled) => {
+  const executeUpdateOnPushNotification = (enabled) => {
     const settings = {
-      ...getPushNotificationSettings(this.props.pushNotification),
+      ...getPushNotificationSettings(props.pushNotification),
       enabled,
-      deviceId: this.props.pushNotification.deviceId,
+      deviceId: props.pushNotification.deviceId,
     };
-    this.props.pushUpdateRequested(settings);
-  }
+    props.pushUpdateRequested(settings);
+  };
 
-  async executeFirstRegistrationOnPushNotification() {
-    this.dismissActionModal();
-    this.props.pushFirstTimeRegistration(this.props.pushNotification.deviceId);
-  }
+  const executeFirstRegistrationOnPushNotification = async () => {
+    dismissActionModal();
+    props.pushFirstTimeRegistration(props.pushNotification.deviceId);
+  };
 
-  onShowAmountSwitchChange = (showAmountEnabled) => {
+  const onShowAmountSwitchChange = (showAmountEnabled) => {
     const settings = {
-      ...getPushNotificationSettings(this.props.pushNotification),
+      ...getPushNotificationSettings(props.pushNotification),
       showAmountEnabled,
-      deviceId: this.props.pushNotification.deviceId,
+      deviceId: props.pushNotification.deviceId,
     };
-    console.log('settings', settings);
-    this.props.pushUpdateRequested(settings);
-  }
+    props.pushUpdateRequested(settings);
+  };
 
-  // create render method
-  render() {
-    const isPushNotificationEnabled = this.props.pushNotification.enabled;
-    const { showAmountEnabled, hasPushApiFailed } = this.props.pushNotification;
-    const pushNotificationEnabledText = t`Enable Push Notification`;
-    const showAmountEnabledText = t`Show amounts on notification`;
+  return (
+    <SafeAreaView style={styles.view}>
+      <HathorHeader
+        title={pageTitleText}
+        onBackPress={() => props.navigation.goBack()}
+      />
 
-    // return the following
-    return (
-      // return the following
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
-        <HathorHeader
-          title={t`Push Notification`}
-          onBackPress={() => this.props.navigation.goBack()}
+      {hasPushApiFailed && (
+        <FeedbackModal
+          icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+          text={apiRequestFailedText}
+          onDismiss={() => dismissFeedbackModal()}
         />
+      )}
 
-        {hasPushApiFailed && (
-          <FeedbackModal
-            icon={(<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />)}
-            text={t`There was an error enabling push notification. Please try again later.`}
-            onDismiss={() => this.dismissFeedbackModal()}
-          />
-        )}
+      {actionModal && (
+        <ActionModal
+          title={actionModal.title}
+          message={actionModal.message}
+          button={actionModal.button}
+          onAction={actionModal.onAction}
+          onDismiss={actionModal.onDismiss}
+        />
+      )}
 
-        {this.state.actionModal && (
-          <ActionModal
-            title={this.state.actionModal.title}
-            message={this.state.actionModal.message}
-            button={this.state.actionModal.button}
-            onAction={this.state.actionModal.onAction}
-            onDismiss={this.state.actionModal.onDismiss}
-          />
-        )}
-
-        <HathorList>
-          <ListItem
-            title={pushNotificationEnabledText}
-            titleStyle={this.styles.switchEnabled}
-            text={(
-              <Switch
-                onValueChange={this.onPushNotificationSwitchChange}
-                value={isPushNotificationEnabled}
-              />
-            )}
-            isFirst
-          />
-          <ListItem
-            title={showAmountEnabledText}
-            titleStyle={isPushNotificationEnabled ? this.styles.switchEnabled : null}
-            text={(
-              <Switch
-                onValueChange={this.onShowAmountSwitchChange}
-                value={showAmountEnabled}
-                disabled={!isPushNotificationEnabled}
-              />
-            )}
-            isLast
-          />
-        </HathorList>
-      </SafeAreaView>
-    );
-  }
+      <HathorList>
+        <ListItem
+          title={enablePushNotificationText}
+          titleStyle={styles.switchEnabled}
+          text={(
+            <Switch
+              onValueChange={onPushNotificationSwitchChange}
+              value={isEnabled}
+            />
+          )}
+          isFirst
+        />
+        <ListItem
+          title={showAmountsOnNotificationText}
+          titleStyle={isEnabled ? styles.switchEnabled : null}
+          text={(
+            <Switch
+              onValueChange={onShowAmountSwitchChange}
+              value={showAmountEnabled}
+              disabled={!isEnabled}
+            />
+          )}
+          isLast
+        />
+      </HathorList>
+    </SafeAreaView>
+  );
 }
 
 export default connect(mapPushNotificationStateToProps, mapPushNotificationDispatchToProps)(PushNotification);
