@@ -5,30 +5,39 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
-import { connect } from 'react-redux';
-
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
-import { resetData } from '../actions';
 
+import { resetData } from '../actions';
+import { useGlobalModalContext } from '../components/GlobalErrorModal';
 
 /**
  * Only used for deciding which stack (App or Init) to display, so nothing is rendered.
  */
-class DecideStackScreen extends React.Component {
-  async componentDidMount() {
-    this.props.dispatch(resetData());
-    await hathorLib.storage.store.preStart();
-    if (hathorLib.wallet.loaded()) {
-      this.props.navigation.navigate('App');
-    } else {
-      this.props.navigation.navigate('Init');
-    }
-  }
+export function DecideStackScreen({ navigation }) {
+  const dispatch = useDispatch();
+  const globalModal = useGlobalModalContext();
 
-  render() {
-    return null;
-  }
+  useEffect(() => {
+    (async () => {
+      dispatch(resetData());
+
+      try {
+        await hathorLib.storage.store.preStart();
+      } catch (e) {
+        globalModal.showModal(e.message, false);
+      }
+
+      if (hathorLib.wallet.loaded()) {
+        navigation.navigate('App');
+      } else {
+        navigation.navigate('Init');
+      }
+    })();
+  }, [dispatch]);
+
+  return null;
 }
 
-export default connect(null)(DecideStackScreen);
+export default DecideStackScreen;

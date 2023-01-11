@@ -12,6 +12,7 @@ import {
 import Modal from 'react-native-modal';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
+import { setErrorModal } from '../actions';
 
 /**
  * showErrorModal {boolean} If should show error modal
@@ -20,6 +21,10 @@ import { t } from 'ttag';
 const mapStateToProps = (state) => ({
   showErrorModal: state.showErrorModal,
   errorReported: state.errorReported,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  setErrorModal: (value) => dispatch(setErrorModal(value)),
 });
 
 const showErrorReportedMessage = () => (
@@ -32,6 +37,10 @@ const ErrorModal = (props) => (
   <Modal
     isVisible={props.showErrorModal}
     animationIn='slideInUp'
+    swipeDirection={['down']}
+    onSwipeComplete={() => props.setErrorModal(false)}
+    onBackButtonPress={() => props.setErrorModal(false)}
+    onBackdropPress={() => props.setErrorModal(false)}
     style={styles.modal}
   >
     <View style={styles.innerModal}>
@@ -72,4 +81,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default connect(mapStateToProps)(ErrorModal);
+export default connect(mapStateToProps, mapDispatchToProps)(ErrorModal);

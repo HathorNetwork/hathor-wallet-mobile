@@ -15,8 +15,8 @@ import { createBottomTabNavigator } from 'react-navigation-tabs';
 import { Provider, connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
-
 import hathorLib from '@hathor/wallet-lib';
+
 import IconTabBar from './icon-font';
 import NavigationService from './NavigationService';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT } from './constants';
@@ -27,6 +27,7 @@ import {
   setTokens,
 } from './actions';
 import { store } from './reducer';
+import { GlobalModal } from './components/GlobalErrorModal';
 
 import DecideStackScreen from './screens/DecideStackScreen';
 import {
@@ -409,10 +410,12 @@ const NavigationContainer = createAppContainer(SwitchNavigator);
 
 const App = () => (
   <Provider store={store}>
-    <NavigationContainer
-      ref={(navigatorRef) => NavigationService.setTopLevelNavigator(navigatorRef)}
-    />
-    <ErrorModal />
+    <GlobalModal>
+      <NavigationContainer
+        ref={(navigatorRef) => NavigationService.setTopLevelNavigator(navigatorRef)}
+      />
+      <ErrorModal />
+    </GlobalModal>
   </Provider>
 );
 

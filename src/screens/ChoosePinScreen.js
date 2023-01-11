@@ -23,6 +23,9 @@ import { PIN_SIZE } from '../constants';
 
 import baseStyle from '../styles/init';
 
+const mapStateToProps = (state) => ({
+  walletStartState: state.walletStartState,
+});
 
 const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
@@ -191,4 +194,4 @@ class ChoosePinScreen extends React.Component {
   }
 }
 
-export default connect(null, mapDispatchToProps)(ChoosePinScreen);
+export default connect(mapStateToProps, mapDispatchToProps)(ChoosePinScreen);
