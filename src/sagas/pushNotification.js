@@ -308,6 +308,7 @@ export function* firstTimeRegistration({ payload: { deviceId } }) {
 
   if (loadWalletFail) {
     yield put(pushRegisterFailed());
+    return;
   }
 
   const { walletService } = loadWalletSuccess.payload;
@@ -348,6 +349,7 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
 
   if (loadWalletFail) {
     yield put(pushRegisterFailed());
+    return;
   }
 
   const { walletService } = loadWalletSuccess.payload;
