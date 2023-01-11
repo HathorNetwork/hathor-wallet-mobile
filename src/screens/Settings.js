@@ -114,7 +114,7 @@ export class Settings extends React.Component {
               onPress={() => this.props.navigation.navigate('Security')}
             />
             <ListMenu
-              title='Push Notification'
+              title={t`Push Notification`}
               onPress={() => this.props.navigation.navigate('PushNotification')}
             />
             {IS_MULTI_TOKEN
