@@ -584,6 +584,7 @@ export const onStartWalletRequested = (state, action) => ({
 export const onStartWalletSuccess = (state) => ({
   ...state,
   walletStartState: WALLET_STATUS.READY,
+  initWallet: null,
 });
 
 /**
