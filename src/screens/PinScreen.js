@@ -26,7 +26,7 @@ import {
   setRecoveringPin,
   setTempPin,
   startWalletSuccess,
-  startWalletLock,
+  onStartWalletLock,
 } from '../actions';
 import { PIN_SIZE } from '../constants';
 
@@ -47,7 +47,7 @@ const mapDispatchToProps = (dispatch) => ({
   setInitWallet: (words, pin) => dispatch(setInitWallet(words, pin)),
   setTempPin: (pin) => dispatch(setTempPin(pin)),
   startWalletSuccess: () => dispatch(startWalletSuccess()),
-  startWalletLock: () => dispatch(startWalletLock()),
+  onStartWalletLock: () => dispatch(onStartWalletLock()),
 });
 
 class PinScreen extends React.Component {
@@ -201,7 +201,7 @@ class PinScreen extends React.Component {
     // navigate to reset screen
     this.props.navigation.navigate('ResetWallet', {
       onBackPress: () => {
-        this.props.startWalletLock();
+        this.props.onStartWalletLock();
         this.backFromReset();
       },
     });
