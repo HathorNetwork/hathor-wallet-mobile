@@ -478,11 +478,6 @@ export const reloadWalletRequested = () => ({
   type: types.RELOAD_WALLET_REQUESTED,
 });
 
-export const startWalletLock = (payload) => ({
-  type: types.ON_START_WALLET_LOCK,
-  payload,
-});
-
 export const startWalletRequested = (payload) => ({
   type: types.START_WALLET_REQUESTED,
   payload,
