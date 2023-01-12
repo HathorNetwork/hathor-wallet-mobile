@@ -39,7 +39,6 @@ class TxDetailsModal extends Component {
       <CopyClipboard
         text={idStr}
         copyText={tx.txId}
-        copiedTimeout={800}
         textStyle={{ fontSize: 16 }}
       />
     );

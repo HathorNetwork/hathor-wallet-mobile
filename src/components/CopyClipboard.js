@@ -18,6 +18,8 @@ class CopyClipboard extends React.Component {
     copiedTimeout: 1500,
   };
 
+  timeoutRef = null;
+
   /**
    * copying {boolean} If is copying address (if should show copied feedback)
    */
@@ -25,10 +27,18 @@ class CopyClipboard extends React.Component {
     copying: false,
   };
 
+  componentWillUnmount() {
+    if (this.timeoutRef) {
+      clearTimeout(this.timeoutRef);
+    }
+  }
+
   textCopy = () => {
     Clipboard.setString(this.props.copyText || this.props.text);
     this.setState({ copying: true }, () => {
-      setTimeout(() => this.setState({ copying: false }), this.props.copiedTimeout);
+      this.timeoutRef = setTimeout(
+        () => this.setState({ copying: false }), this.props.copiedTimeout
+      );
     });
   }
 
