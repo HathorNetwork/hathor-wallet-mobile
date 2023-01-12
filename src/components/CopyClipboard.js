@@ -18,6 +18,8 @@ class CopyClipboard extends React.Component {
     copiedTimeout: 1500,
   };
 
+  timeoutRef = null;
+
   /**
    * copying {boolean} If is copying address (if should show copied feedback)
    */
@@ -25,10 +27,18 @@ class CopyClipboard extends React.Component {
     copying: false,
   };
 
+  componentWillUnmount() {
+    if (this.timeoutRef) {
+      clearTimeout(this.timeoutRef);
+    }
+  }
+
   textCopy = () => {
-    Clipboard.setString(this.props.text);
+    Clipboard.setString(this.props.copyText || this.props.text);
     this.setState({ copying: true }, () => {
-      setTimeout(() => this.setState({ copying: false }), this.props.copiedTimeout);
+      this.timeoutRef = setTimeout(
+        () => this.setState({ copying: false }), this.props.copiedTimeout
+      );
     });
   }
 
@@ -49,8 +59,11 @@ class CopyClipboard extends React.Component {
 }
 
 CopyClipboard.propTypes = {
-  // The text to be copied
+  // The text to be displayed. If copyText is not set, it's also the copied text
   text: PropTypes.string.isRequired,
+
+  // The text to be copied. If not set, text will be used
+  copyText: PropTypes.string,
 
   // Style of the text component
   textStyle: Text.propTypes.style,
