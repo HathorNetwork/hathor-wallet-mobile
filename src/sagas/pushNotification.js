@@ -162,16 +162,25 @@ const messageHandler = async (message) => {
     return;
   }
 
+  // TODO: filter by registered tokens
   const bodyArgs = JSON.parse(data.bodyLocArgs);
   const title = localization.getMessage(data.titleLocKey);
   const body = localization.getMessage(data.bodyLocKey, bodyArgs);
+  const { txId } = data;
 
   notifee.displayNotification({
     title,
     body,
     android: {
       channelId: TRANSACTION_CHANNEL_ID,
+      pressAction: {
+        id: 'see_transaction',
+        mainComponent: appName,
+      }
     },
+    data: {
+      txId
+    }
   });
 };
 
