@@ -25,7 +25,6 @@ import {
   setInitWallet,
   setRecoveringPin,
   setTempPin,
-  startWalletSuccess,
   onStartWalletLock,
 } from '../actions';
 import { PIN_SIZE } from '../constants';
@@ -46,7 +45,6 @@ const mapDispatchToProps = (dispatch) => ({
   setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),
   setInitWallet: (words, pin) => dispatch(setInitWallet(words, pin)),
   setTempPin: (pin) => dispatch(setTempPin(pin)),
-  startWalletSuccess: () => dispatch(startWalletSuccess()),
   onStartWalletLock: () => dispatch(onStartWalletLock()),
 });
 
