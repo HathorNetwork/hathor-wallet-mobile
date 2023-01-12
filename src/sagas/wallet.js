@@ -609,8 +609,8 @@ export function* onResetWallet() {
 
   // Wallet was not initialized yet, this might happen if resetWallet
   // is called from the PinScreen. There is no event listeners to cleanup
-  // so we can call the cleanWallet method directly.
-  walletUtil.cleanWallet();
+  // so we can call the cleanLoadedData method directly.
+  walletUtil.cleanLoadedData({ cleanAccessData: true });
 }
 
 export function* saga() {
