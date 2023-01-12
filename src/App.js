@@ -15,6 +15,7 @@ import { createBottomTabNavigator } from 'react-navigation-tabs';
 import { Provider, connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
+import notifee, { EventType } from '@notifee/react-native';
 
 import hathorLib from '@hathor/wallet-lib';
 import IconTabBar from './icon-font';
@@ -234,7 +235,7 @@ class _AppStackWrapper extends React.Component {
     },
   });
 
-  componentDidMount = () => {
+  componentDidMount = async () => {
     this.getBiometry();
     this.appStateChangeEventSub = AppState.addEventListener('change', this._handleAppStateChange);
     this.updateReduxTokens();
@@ -244,6 +245,23 @@ class _AppStackWrapper extends React.Component {
     // We use this string to parse the version from user agent
     // in some of our services, so changing this might break another service
     hathorLib.config.setUserAgent(`Hathor Wallet Mobile / ${version}`);
+
+    /**
+     * We need to check if the app was opened from a notification. If it was, we need to
+     * redirect the user to the correct screen.
+     */
+    notifee.onForegroundEvent(({ type, detail }) => {
+      switch (type) {
+        case EventType.DISMISSED:
+          console.log('User dismissed notification', detail.notification);
+          break;
+        case EventType.PRESS:
+          console.log('User pressed notification', detail.notification);
+          break;
+        default:
+          // to nothing
+      }
+    });
   }
 
   componentWillUnmount = () => {
