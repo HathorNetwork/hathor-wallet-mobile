@@ -207,9 +207,7 @@ class PinScreen extends React.Component {
     });
     // make sure we won't show loadHistory screen
     this.props.setLoadHistoryStatus(false, false);
-    // Start wallet might be set to LOADING, we also need to
-    // set it to READY so the loading screen will hide
-    this.props.startWalletSuccess();
+
     // unlock so we remove this lock screen
     this.props.unlockScreen();
   }

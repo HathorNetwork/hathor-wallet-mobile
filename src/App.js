@@ -344,7 +344,14 @@ class _AppStackWrapper extends React.Component {
         screen = <RecoverPin navigation={this.props.navigation} />;
       }
 
-      if (this.props.walletStartState === WALLET_STATUS.LOADING || this.props.isScreenLocked) {
+      const currentRouteIdx = this.props.navigation.state.index;
+      const currentRoute = this.props.navigation.state.routes[currentRouteIdx];
+
+      // We need to hide the loading screen if the wallet is being reset, otherwise
+      // the loading screen will be on top of the reset screen.
+      if (currentRoute.routeName !== 'ResetWallet'
+          && (this.props.walletStartState === WALLET_STATUS.LOADING
+              || this.props.isScreenLocked)) {
         return (
           <View style={this.style.auxView}>
             { screen }
