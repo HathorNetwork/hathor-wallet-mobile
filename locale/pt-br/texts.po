@@ -164,27 +164,27 @@ msgstr "Novo PIN salvo"
 msgid "CHANGE PIN"
 msgstr "MUDAR PIN"
 
-#: src/screens/ChoosePinScreen.js:133
+#: src/screens/ChoosePinScreen.js:136
 msgid "Enter your new PIN code"
 msgstr "Digite seu novo PIN"
 
-#: src/screens/ChoosePinScreen.js:145
+#: src/screens/ChoosePinScreen.js:148
 msgid "Enter your new PIN code again"
 msgstr "Digite seu novo PIN novamente"
 
-#: src/screens/ChoosePinScreen.js:69
+#: src/screens/ChoosePinScreen.js:72
 msgid "Create a new PIN code,"
 msgstr "Criar um novo PIN,"
 
-#: src/screens/ChoosePinScreen.js:72
+#: src/screens/ChoosePinScreen.js:75
 msgid "To confirm the PIN,"
 msgstr "Para confirmar o PIN,"
 
-#: src/screens/ChoosePinScreen.js:159
+#: src/screens/ChoosePinScreen.js:162
 msgid "PIN codes don't match. Try again."
 msgstr "Os PINs estão diferentes. Tente novamente."
 
-#: src/screens/ChoosePinScreen.js:182
+#: src/screens/ChoosePinScreen.js:185
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
@@ -406,17 +406,18 @@ msgstr "Palavras"
 msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
-#: src/screens/LoadHistoryScreen.js:90
+#: src/screens/LoadHistoryScreen.js:75
 msgid "Loading your transactions"
 msgstr "Carregando suas transações"
 
-#: src/screens/LoadHistoryScreen.js:93
-#, javascript-format
-msgid "**${ _this2.props.loadedData.transactions } transactions** found"
+#: src/screens/LoadHistoryScreen.js:78
+#, fuzzy, javascript-format
+msgid "**${ _this.props.loadedData.transactions } transactions** found"
 msgstr "**${ _this2.props.loadedData.transactions } transações** encontradas"
 
-#: src/screens/LoadHistoryScreen.js:96
-msgid "**${ _this2.props.loadedData.addresses } addresses** found"
+#: src/screens/LoadHistoryScreen.js:81
+#, fuzzy
+msgid "**${ _this.props.loadedData.addresses } addresses** found"
 msgstr "**${ _this2.props.loadedData.addresses } endereços** encontrados"
 
 #: src/screens/MainScreen.js:127
@@ -482,23 +483,23 @@ msgstr "Recebido"
 msgid "Waiting confirmation"
 msgstr "Aguardando confirmação"
 
-#: src/screens/PinScreen.js:220
+#: src/screens/PinScreen.js:235
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
-#: src/screens/PinScreen.js:65
+#: src/screens/PinScreen.js:72
 msgid "Enter your PIN Code "
 msgstr "Digite seu PIN "
 
-#: src/screens/PinScreen.js:66
+#: src/screens/PinScreen.js:73
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
-#: src/screens/PinScreen.js:232
+#: src/screens/PinScreen.js:247
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:108
+#: src/screens/PinScreen.js:250 src/screens/RecoverPin.js:108
 #: src/screens/Settings.js:133
 msgid "Reset wallet"
 msgstr "Resetar a wallet"
@@ -643,11 +644,11 @@ msgstr "ENVIAR ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/sagas/wallet.js:106 src/screens/SendConfirmScreen.js:117
+#: src/sagas/wallet.js:109 src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
-#: src/sagas/wallet.js:107 src/screens/SendConfirmScreen.js:118
+#: src/sagas/wallet.js:110 src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
