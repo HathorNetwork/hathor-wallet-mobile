@@ -177,6 +177,8 @@ const reducer = (state = initialState, action) => {
       return onStartWalletSuccess(state);
     case types.START_WALLET_FAILED:
       return onStartWalletFailed(state);
+    case types.START_WALLET_NOT_STARTED:
+      return onStartWalletNotStarted(state);
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
     default:
@@ -557,6 +559,11 @@ export const onTokenFetchHistoryRequested = (state, action) => {
     },
   };
 };
+
+export const onStartWalletNotStarted = (state) => ({
+  ...state,
+  walletStartState: WALLET_STATUS.NOT_STARTED,
+});
 
 export const onStartWalletFailed = (state) => ({
   ...state,
