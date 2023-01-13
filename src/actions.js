@@ -68,6 +68,7 @@ export const types = {
   START_WALLET_REQUESTED: 'START_WALLET_REQUESTED',
   START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
   START_WALLET_FAILED: 'START_WALLET_FAILED',
+  START_WALLET_NOT_STARTED: 'START_WALLET_NOT_STARTED',
   WALLET_STATE_READY: 'WALLET_STATE_READY',
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
@@ -476,6 +477,10 @@ export const tokenInvalidateBalance = (tokenId) => ({
 
 export const reloadWalletRequested = () => ({
   type: types.RELOAD_WALLET_REQUESTED,
+});
+
+export const startWalletNotStarted = () => ({
+  type: types.START_WALLET_NOT_STARTED,
 });
 
 export const startWalletRequested = (payload) => ({
