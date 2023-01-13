@@ -228,7 +228,10 @@ export function* startWallet(action) {
   // is dispatched, we need to cleanup all attached forks (that will cause the event
   // listeners to be cleaned).
   const { reload } = yield race({
-    start: take(types.START_WALLET_REQUESTED),
+    start: take([
+      types.START_WALLET_REQUESTED,
+      types.RESET_WALLET,
+    ]),
     reload: take(types.RELOAD_WALLET_REQUESTED),
   });
 
