@@ -27,14 +27,9 @@ import TextFmt from '../components/TextFmt';
  *   active {boolean} indicates we're loading the tx history
  *   error {boolean} error loading history
  * }
- * initWallet {Object} Information on wallet initialization (if not needed, set to null)
- *   words {str} wallet words
- *   pin {str} pin selected by user
- * }
  */
 const mapStateToProps = (state) => ({
   loadHistoryStatus: state.loadHistoryStatus,
-  initWallet: state.initWallet,
   loadedData: state.loadedData,
   useWalletService: state.useWalletService,
   wallet: state.wallet,

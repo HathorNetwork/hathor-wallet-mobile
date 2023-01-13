@@ -50,10 +50,6 @@ import { WALLET_STATUS } from './sagas/wallet';
  *   network {str} network of the connected server (e.g., mainnet, testnet)
  * }
  * lockScreen {bool} Indicates screen is locked
- * initWallet {Object} Information on wallet initialization (if not needed, set to null) {
- *   words {str} wallet words
- *   pin {str} pin selected by user
- * }
  *
  * showErrorModal {boolean} if app should show a modal after the error alert
  * errorReported {boolean} if user reported the error to Sentry
@@ -74,7 +70,6 @@ const initialState = {
   isOnline: false,
   serverInfo: { version: '', network: '' },
   lockScreen: true,
-  initWallet: null,
   height: 0,
   showErrorModal: false,
   errorReported: false,
@@ -327,14 +322,6 @@ const onSetLockScreen = (state, action) => ({
   lockScreen: action.payload,
 });
 
-/**
- * Update information about wallet initialization
- */
-const onSetInitWallet = (state, action) => ({
-  ...state,
-  initWallet: action.payload,
-});
-
 const onSetRecoveringPin = (state, action) => ({
   ...state,
   recoveringPin: action.payload,
@@ -582,16 +569,11 @@ export const onStartWalletLock = (state) => ({
 export const onStartWalletRequested = (state, action) => ({
   ...state,
   walletStartState: WALLET_STATUS.LOADING,
-  initWallet: {
-    words: action.payload.words,
-    pin: action.payload.pin,
-  },
 });
 
 export const onStartWalletSuccess = (state) => ({
   ...state,
   walletStartState: WALLET_STATUS.READY,
-  initWallet: null,
 });
 
 /**
