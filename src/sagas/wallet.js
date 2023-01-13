@@ -71,6 +71,7 @@ import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
 export const WALLET_STATUS = {
+  NOT_STARTED: 'not_started',
   READY: 'ready',
   FAILED: 'failed',
   LOADING: 'loading',
@@ -78,6 +79,8 @@ export const WALLET_STATUS = {
 
 export function* startWallet(action) {
   const { words, pin } = action.payload;
+
+  NavigationService.navigate('LoadHistoryScreen');
 
   const networkName = 'mainnet';
   const uniqueDeviceId = getUniqueId();

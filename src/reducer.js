@@ -92,7 +92,7 @@ const initialState = {
   // screen
   tempPin: null,
   isShowingPinScreen: false,
-  walletStartState: WALLET_STATUS.LOADING,
+  walletStartState: WALLET_STATUS.NOT_STARTED,
 };
 
 const reducer = (state = initialState, action) => {
