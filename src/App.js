@@ -26,6 +26,7 @@ import {
   resetData,
   lockScreen,
   setTokens,
+  pushLoadTxDetails,
 } from './actions';
 import { store } from './reducer';
 
@@ -66,6 +67,7 @@ import CreateTokenDetail from './screens/CreateTokenDetail';
 import ErrorModal from './components/ErrorModal';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 import { WALLET_STATUS } from './sagas/wallet';
+import { PUSH_TRANSACTION_ID } from './sagas/pushNotification';
 
 
 const InitStack = createStackNavigator(
@@ -211,6 +213,7 @@ const mapDispatchToProps = (dispatch) => ({
   setTokens: (tokens) => dispatch(setTokens(tokens)),
   lockScreen: () => dispatch(lockScreen()),
   resetData: () => dispatch(resetData()),
+  loadTxDetails: ({ tx, token }) => dispatch(pushLoadTxDetails({ tx, token })),
 });
 
 class _AppStackWrapper extends React.Component {
@@ -235,6 +238,36 @@ class _AppStackWrapper extends React.Component {
     },
   });
 
+  /**
+   * This method set the listener for the notifee foreground event
+   * It's used to handle the press event on the notification
+   */
+  setNotifeeForegroundListener = () => {
+    try {
+      notifee.onForegroundEvent(({ type, detail }) => {
+        console.log('Foreground event:', type, detail);
+        switch (type) {
+          case EventType.PRESS:
+            try {
+              // eslint-disable-next-line max-len
+              if (detail.pressAction && detail.pressAction.id === PUSH_TRANSACTION_ID.NEW_TRANSACTION) {
+                const tx = JSON.parse(detail.notification.data.tx);
+                const token = JSON.parse(detail.notification.data.token);
+                this.props.loadTxDetails({ tx, token });
+              }
+            } catch (error) {
+              console.error('Error processing notification press event', error);
+            }
+            break;
+          default:
+            // to nothing
+        }
+      });
+    } catch (error) {
+      console.error('Error setting notifee foreground event listener', error);
+    }
+  }
+
   componentDidMount = async () => {
     this.getBiometry();
     this.appStateChangeEventSub = AppState.addEventListener('change', this._handleAppStateChange);
@@ -245,23 +278,8 @@ class _AppStackWrapper extends React.Component {
     // We use this string to parse the version from user agent
     // in some of our services, so changing this might break another service
     hathorLib.config.setUserAgent(`Hathor Wallet Mobile / ${version}`);
-
-    /**
-     * We need to check if the app was opened from a notification. If it was, we need to
-     * redirect the user to the correct screen.
-     */
-    notifee.onForegroundEvent(({ type, detail }) => {
-      switch (type) {
-        case EventType.DISMISSED:
-          console.log('User dismissed notification', detail.notification);
-          break;
-        case EventType.PRESS:
-          console.log('User pressed notification', detail.notification);
-          break;
-        default:
-          // to nothing
-      }
-    });
+    // set notification foreground listener
+    this.setNotifeeForegroundListener();
   }
 
   componentWillUnmount = () => {
