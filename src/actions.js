@@ -177,15 +177,6 @@ export const updateHeight = (height, htrBalance) => (
   { type: types.UPDATE_HEIGHT, payload: { height, htrBalance } }
 );
 
-/**
- * words {String} wallet words
- * pin {String} Pin chosen by user
- */
-export const setInitWallet = (words, pin) => (
-  { type: types.SET_INIT_WALLET, payload: { words, pin } }
-);
-
-export const clearInitWallet = () => ({ type: types.SET_INIT_WALLET, payload: null });
 
 export const updateTokenHistory = (token, newHistory) => (
   { type: types.UPDATE_TOKEN_HISTORY, payload: { token, newHistory } }

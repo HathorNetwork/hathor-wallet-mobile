@@ -22,7 +22,6 @@ import {
   lockScreen,
   unlockScreen,
   setLoadHistoryStatus,
-  setInitWallet,
   setRecoveringPin,
   setTempPin,
   onStartWalletLock,
@@ -45,7 +44,6 @@ const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
   lockScreen: () => dispatch(lockScreen()),
   setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),
-  setInitWallet: (words, pin) => dispatch(setInitWallet(words, pin)),
   setTempPin: (pin) => dispatch(setTempPin(pin)),
   onStartWalletLock: () => dispatch(onStartWalletLock()),
   startWalletRequested: (words, pin) => dispatch(startWalletRequested({
