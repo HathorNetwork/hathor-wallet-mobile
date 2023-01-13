@@ -17,6 +17,7 @@ import rootSagas from './sagas';
 import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
 import { WALLET_STATUS } from './sagas/wallet';
 import { PUSH_API_STATUS } from './sagas/pushNotification';
+import { TxHistory } from './models';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
@@ -132,6 +133,10 @@ const initialState = {
      * enabledAt {number} timestamp of when push notification was enabled
      */
     enabledAt: 0,
+    /**
+     * txDetails {Object} tx to show on tx details modal
+     */
+    txDetails: null,
   }
 };
 
@@ -243,6 +248,10 @@ const reducer = (state = initialState, action) => {
       return onPushUpdateSuccess(state, action);
     case types.PUSH_UPDATE_FAILED:
       return onPushApiFailed(state);
+    case types.PUSH_LOAD_TX_DETAILS:
+      return onPushLoadTxDetails(state, action);
+    case types.PUSH_CLEAN_TX_DETAILS:
+      return onPushCleanTxDetails(state);
     case types.PUSH_RESET:
       return onPushReset(state);
     default:
@@ -803,6 +812,37 @@ export const onPushApiFailed = (state) => ({
     apiStatus: PUSH_API_STATUS.FAILED,
   },
 });
+
+/**
+ * @param {{ tx, token }} action
+ */
+export const onPushLoadTxDetails = (state, action) => {
+  const { tx, token } = action.payload;
+  console.log('onPushLoadTxDetails', tx, token);
+
+  const txDetails = {
+    tx: new TxHistory(tx),
+    token,
+  };
+  return {
+    ...state,
+    pushNotification: {
+      ...state.pushNotification,
+      txDetails,
+    },
+  };
+};
+
+export const onPushCleanTxDetails = (state) => {
+  console.log('onPushCleanTxDetails');
+  return {
+    ...state,
+    pushNotification: {
+      ...state.pushNotification,
+      txDetails: null,
+    },
+  };
+};
 
 export const onPushReset = (state) => ({
   ...state,

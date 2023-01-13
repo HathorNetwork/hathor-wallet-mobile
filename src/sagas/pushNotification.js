@@ -36,6 +36,7 @@ import {
   pushInit,
   pushAskOptInQuestion,
   pushReset,
+  pushLoadTxDetails,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -50,11 +51,16 @@ import {
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
 import { showPinScreenForResult } from './helpers';
+import { name as appName } from '../../app.json';
 
 export const PUSH_API_STATUS = {
   READY: 'ready',
   FAILED: 'failed',
   LOADING: 'loading',
+};
+
+export const PUSH_TRANSACTION_ID = {
+  NEW_TRANSACTION: 'new-transaction',
 };
 
 const TRANSACTION_CHANNEL_NAME = t`Transaction`;
@@ -135,12 +141,14 @@ const localization = {
 };
 
 const onForegroundMessage = async (message) => {
-  await messageHandler(message);
+  await messageHandler(message, true);
 };
 
 /**
  * Handle the message received when application is in foreground and background (not closed) state
  * @param {{ data: Object, from: string, messageId: string, sentTime: number, ttl: number }} message - Message received from wallet-service
+ * @param {boolean?} isForeground - If the application is in foreground or not
+ *
  * @example
  * {
  *   bodyLocArgs: '[\"10 T2\",\"5 T1\",\"2\"]',
@@ -150,7 +158,7 @@ const onForegroundMessage = async (message) => {
  * }
  * @inner
  */
-const messageHandler = async (message) => {
+export const messageHandler = async (message, isForeground) => {
   const { data } = message;
   if (!localization.hasKey(data.titleLocKey)) {
     console.debug('unknown message titleLocKey', data.titleLocKey);
@@ -166,22 +174,27 @@ const messageHandler = async (message) => {
   const bodyArgs = JSON.parse(data.bodyLocArgs);
   const title = localization.getMessage(data.titleLocKey);
   const body = localization.getMessage(data.bodyLocKey, bodyArgs);
-  const { txId } = data;
+  const { tx, token } = data;
 
-  notifee.displayNotification({
-    title,
-    body,
-    android: {
-      channelId: TRANSACTION_CHANNEL_ID,
-      pressAction: {
-        id: 'see_transaction',
-        mainComponent: appName,
+  try {
+    notifee.displayNotification({
+      title,
+      body,
+      android: {
+        channelId: TRANSACTION_CHANNEL_ID,
+        pressAction: {
+          id: PUSH_TRANSACTION_ID.NEW_TRANSACTION,
+          ...(!isForeground && { mainComponent: appName })
+        }
+      },
+      data: {
+        tx,
+        token,
       }
-    },
-    data: {
-      txId
-    }
-  });
+    });
+  } catch (error) {
+    console.error('Error displaying notification from notifee while handling message', error);
+  }
 };
 
 const confirmDeviceRegistrationOnFirebase = async () => {
@@ -192,6 +205,9 @@ const confirmDeviceRegistrationOnFirebase = async () => {
     console.error(`Error confirming the device is registered on FCM: ${error.message}`, error);
   }
 };
+function* handleMessage(message) {
+  yield call(messageHandler, message);
+}
 
 const installForegroundListener = () => {
   try {
@@ -454,6 +470,58 @@ export function* dismissOptInQuestion() {
   yield STORE.setItem(pushNotificationKey.optInDismissed, true);
 }
 
+/**
+ * This function is responsible for checking if the app was opened by a push notification
+ * and if so, it will load the tx and token data to show the tx detail modal.
+ */
+export function* checkOpenPushNotification() {
+  try {
+    /**
+     * @example
+     * {
+     *  notification: {
+     *    id: '36f30UJBYhxiIOgVzAft',
+     *    title: 'New transaction received',
+     *    body: 'You have received 10 T2, 5 T1 and 2 other token on a new transaction.',
+     *    data: {
+     *      tx: <stringfied>{
+     *        txId: '000021e7addbb94a8e43d7f1237d556d47efc4d34800c5923ed3a75bf5a2886e',
+     *        timestamp: 1673039453,
+     *        balance: 500,
+     *        voided: false,
+     *        tokenUid: '00',
+     *      }
+     *      token: <stringfied>{
+     *        name: 'Hathor',
+     *        symbol: 'HTR',
+     *        uid: '00',
+     *      }
+     *    },
+     *    android: {
+     *     channelId: 'transaction',
+     *    },
+     *  }
+     *  pressAction: {
+     *   id: 'new-transaction',
+     *   mainComponent: 'HathorMobile',
+     *  },
+     * }
+     */
+    const initialNotification = yield call(notifee.getInitialNotification);
+    // Check if the app was opened by a push notification and if it is a new transaction
+    if (initialNotification && initialNotification.pressAction.id === PUSH_TRANSACTION_ID.NEW_TRANSACTION) {
+      // Wait for the wallet to be loaded
+      yield take(types.START_WALLET_SUCCESS);
+      // Populate transaction details on store
+      const tx = JSON.parse(initialNotification.notification.data.tx);
+      const token = JSON.parse(initialNotification.notification.data.token);
+      yield put(pushLoadTxDetails({ tx, token }));
+    }
+  } catch (error) {
+    console.error('Error checking if app was opened by a push notification', error);
+  }
+}
+
 const cleanToken = async () => {
   await messaging().unregisterDeviceForRemoteMessages();
   await messaging().deleteToken();
@@ -485,6 +553,8 @@ export function* saga() {
     takeEvery(types.PUSH_UPDATE_REQUESTED, updateRegistration),
     takeEvery([types.PUSH_REGISTER_SUCCESS, types.PUSH_UPDATE_SUCCESS], updateStore),
     takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion),
+    takeEvery(types.PUSH_HANDLE_MESSAGE, handleMessage),
+    takeEvery(types.SET_INIT_WALLET, checkOpenPushNotification),
     takeEvery(types.RESET_WALLET, resetPushNotification)
   ]);
 }

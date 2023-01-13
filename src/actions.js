@@ -88,6 +88,9 @@ export const types = {
   PUSH_UPDATE_REQUESTED: 'PUSH_UPDATE_REQUESTED',
   PUSH_UPDATE_SUCCESS: 'PUSH_UPDATE_SUCCESS',
   PUSH_UPDATE_FAILED: 'PUSH_UPDATE_FAILED',
+  PUSH_LOAD_TX_DETAILS: 'PUSH_LOAD_TX_DETAILS',
+  PUSH_CLEAN_TX_DETAILS: 'PUSH_ENRICH_TX_FAILED',
+  PUSH_HANDLE_MESSAGE: 'PUSH_HANDLE_MESSAGE',
   PUSH_RESET: 'PUSH_RESET',
 };
 
@@ -621,6 +624,20 @@ export const pushUpdateSuccess = (payload) => ({
 
 export const pushUpdateFailed = () => ({
   type: types.PUSH_UPDATE_FAILED,
+});
+
+export const pushHandleMessage = (payload) => ({
+  type: types.PUSH_HANDLE_MESSAGE,
+  payload,
+});
+
+export const pushLoadTxDetails = (payload) => ({
+  type: types.PUSH_LOAD_TX_DETAILS,
+  payload,
+});
+
+export const pushCleanTxDetails = () => ({
+  type: types.PUSH_CLEAN_TX_DETAILS,
 });
 
 export const pushReset = () => ({

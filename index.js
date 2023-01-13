@@ -16,19 +16,34 @@ import { errorHandler } from './src/errorHandler';
 import { messageHandler } from './src/sagas/pushNotification';
 
 /**
- * This function is called when the app is in background or quit
- * and a push notification from notifee is received.
+ * This function is called when the app is in background or **quit** state
+ * and a push notification from **notifee** is received. It also handles
+ * notification events like dismiss and action press.
  *
- * Notifee is used to interprete the data message received from firebase
- * and show the notification to the user.
+ * @see https://notifee.app/react-native/reference/eventtype
+ *
+ * In this project the Notifee is used to interprete the data message received
+ * from firebase and show the notification to the user.
  */
-notifee.onBackgroundEvent(async ({ type, detail }) => {
-  const { notification, pressAction } = detail;
+const setNotifeeBackgroundListener = () => {
+  try {
+    notifee.onBackgroundEvent(async ({ type, detail }) => {
+      const { notification } = detail;
 
-  if (type === EventType.ACTION_PRESS) {
-    console.log('User pressed notification', notification, pressAction);
+      if (type === EventType.DISMISSED) {
+        notifee.cancelNotification(notification.id);
+        return;
+      }
+
+      if (type === EventType.ACTION_PRESS) {
+        notifee.cancelNotification(notification.id);
+      }
+    });
+  } catch (error) {
+    console.error('Error setting notifee background listener.', error);
   }
-});
+};
+setNotifeeBackgroundListener();
 
 /**
  * This function is called when the app is in background or quit
