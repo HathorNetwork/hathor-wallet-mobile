@@ -411,14 +411,13 @@ msgid "Loading your transactions"
 msgstr "Carregando suas transações"
 
 #: src/screens/LoadHistoryScreen.js:78
-#, fuzzy, javascript-format
+#, javascript-format
 msgid "**${ _this.props.loadedData.transactions } transactions** found"
-msgstr "**${ _this2.props.loadedData.transactions } transações** encontradas"
+msgstr "**${ _this.props.loadedData.transactions } transações** encontradas"
 
 #: src/screens/LoadHistoryScreen.js:81
-#, fuzzy
 msgid "**${ _this.props.loadedData.addresses } addresses** found"
-msgstr "**${ _this2.props.loadedData.addresses } endereços** encontrados"
+msgstr "**${ _this.props.loadedData.addresses } endereços** encontrados"
 
 #: src/screens/MainScreen.js:127
 msgid "No transactions"
@@ -436,7 +435,7 @@ msgstr "Carregando transações"
 
 #: src/screens/MainScreen.js:156
 msgid "There was an error loading your transaction history"
-msgstr "Ocorreu um erro ao carregar seu histórico de transações."
+msgstr "Ocorreu um erro ao carregar seu histórico de transações"
 
 #: src/screens/MainScreen.js:159
 msgid "Please |tryAgain:try again|"

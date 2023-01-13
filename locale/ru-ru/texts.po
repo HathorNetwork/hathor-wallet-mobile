@@ -407,14 +407,13 @@ msgid "Loading your transactions"
 msgstr "Загрузка ваших транзакций"
 
 #: src/screens/LoadHistoryScreen.js:78
-#, fuzzy, javascript-format
+#, javascript-format
 msgid "**${ _this.props.loadedData.transactions } transactions** found"
-msgstr "**${ _this2.props.loadedData.transactions } транзакций** найдено"
+msgstr "**${ _this.props.loadedData.transactions } транзакций** найдено"
 
 #: src/screens/LoadHistoryScreen.js:81
-#, fuzzy
 msgid "**${ _this.props.loadedData.addresses } addresses** found"
-msgstr "**${ _this2.props.loadedData.addresses } адресов** найдено"
+msgstr "**${ _this.props.loadedData.addresses } адресов** найдено"
 
 #: src/screens/MainScreen.js:127
 msgid "No transactions"
