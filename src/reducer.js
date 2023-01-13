@@ -116,10 +116,6 @@ const reducer = (state = initialState, action) => {
       return onSetServerInfo(state, action);
     case types.SET_LOCK_SCREEN:
       return onSetLockScreen(state, action);
-    case types.SET_INIT_WALLET:
-      return onSetInitWallet(state, action);
-    case types.CLEAR_INIT_WALLET:
-      return onSetInitWallet(state, action);
     case types.SET_ERROR_MODAL:
       return onSetErrorModal(state, action);
     case types.SET_WALLET:
