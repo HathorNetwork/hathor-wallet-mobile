@@ -52,17 +52,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 class LoadHistoryScreen extends React.Component {
   componentDidMount() {
-    // This setTimeout exists to prevent blocking the main thread
-    setTimeout(() => this.initializeWallet(), 0);
     this.props.resetLoadedData();
-  }
-
-  initializeWallet() {
-    if (this.props.initWallet) {
-      const { words, pin } = this.props.initWallet;
-
-      this.props.startWallet(words, pin);
-    }
   }
 
   render() {
