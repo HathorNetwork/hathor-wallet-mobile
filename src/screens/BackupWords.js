@@ -74,8 +74,10 @@ class BackupWords extends React.Component {
    */
   constructor(props) {
     super(props);
-    const paramWords = this.props.navigation.getParam('words');
-    this.words = paramWords ? paramWords.split(' ') : [];
+
+    const paramWords = this.props.navigation.getParam('words')?.split(' ') ?? [];
+
+    this.words = paramWords.map((word, id) => ({ word, id }));
   }
 
   componentDidMount() {
@@ -129,7 +131,7 @@ class BackupWords extends React.Component {
    */
   wordSelected = (word) => {
     const index = this.state.indexes[this.state.step];
-    if (this.words[index - 1] === word) {
+    if (this.words[index - 1].word === word) {
       if (this.state.step < 4) {
         // Correct word was chosen, move one step
         this.setState((prevState) => ({ step: prevState.step + 1 }), () => {
@@ -177,9 +179,9 @@ class BackupWords extends React.Component {
   }
 
   render() {
-    const renderOptions = () => this.state.wordOptions.map((word) => (
+    const renderOptions = () => this.state.wordOptions.map(({ id, word }) => (
       <NewHathorButton
-        key={word}
+        key={id}
         style={this.style.button}
         secondary
         title={word}
