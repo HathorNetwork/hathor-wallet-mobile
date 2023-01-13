@@ -619,12 +619,34 @@ export function* onResetWallet() {
   walletUtil.cleanLoadedData({ cleanAccessData: true });
 }
 
+export function* onStartWalletfailed() {
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet) {
+    return;
+  }
+
+  // Wallet is an instance of EventEmitter, so we can call removeAllListeners
+  // to properly prevent events from leaking when an error gets thrown
+  wallet.removeAllListeners();
+
+  if (wallet.conn) {
+    // Same with wallet.conn
+    wallet.conn.removeAllListeners();
+  }
+
+  // Remove the wallet from redux so we can retry the
+  // startWallet on the next PIN unlock
+  yield put(setWallet(null));
+}
+
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeLatest('WALLET_RELOADING', onWalletReloadData),
     takeLatest('RESET_WALLET', onResetWallet),
+    takeLatest('START_WALLET_FAILED', onStartWalletfailed),
     takeEvery('WALLET_NEW_TX', handleTx),
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
