@@ -28,7 +28,6 @@ import {
   pushUpdateFailed,
   pushUpdateDeviceId,
   pushRegistrationRequested,
-  setIsShowingPinScreen,
   pushLoadWalletRequested,
   pushLoadWalletSuccess,
   pushLoadWalletFailed,
@@ -40,8 +39,8 @@ import {
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
   WALLET_SERVICE_MAINNET_BASE_URL,
 } from '../constants';
-import NavigationService from '../NavigationService';
 import { getPushNotificationSettings } from '../utils';
+import { showPinScreenForResult } from './helpers';
 
 export const PUSH_API_STATUS = {
   READY: 'ready',
@@ -169,23 +168,6 @@ const messageHandler = async (message) => {
     },
   });
 };
-
-const showPinScreenForResult = async (dispatch) => new Promise((resolve) => {
-  const params = {
-    cb: (_pin) => {
-      dispatch(setIsShowingPinScreen(false));
-      resolve(_pin);
-    },
-    canCancel: false,
-    screenText: t`Enter your 6-digit pin to authorize operation`,
-    biometryText: t`Authorize operation`,
-  };
-
-  NavigationService.navigate('PinScreen', params);
-
-  // We should set the global isShowingPinScreen
-  dispatch(setIsShowingPinScreen(true));
-});
 
 /**
  * This function is called when the wallet is initialized with success.

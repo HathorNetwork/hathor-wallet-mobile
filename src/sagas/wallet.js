@@ -66,7 +66,7 @@ import {
   types,
 } from '../actions';
 import { fetchTokenData } from './tokens';
-import { specificTypeAndPayload, errorHandler } from './helpers';
+import { specificTypeAndPayload, errorHandler, showPinScreenForResult } from './helpers';
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
@@ -94,23 +94,6 @@ export function* startWallet(action) {
   let dispatch;
   yield put((_dispatch) => {
     dispatch = _dispatch;
-  });
-
-  const showPinScreenForResult = async () => new Promise((resolve) => {
-    const params = {
-      cb: (_pin) => {
-        dispatch(setIsShowingPinScreen(false));
-        resolve(_pin);
-      },
-      canCancel: false,
-      screenText: t`Enter your 6-digit pin to authorize operation`,
-      biometryText: t`Authorize operation`,
-    };
-
-    NavigationService.navigate('PinScreen', params);
-
-    // We should set the global isShowingPinScreen
-    dispatch(setIsShowingPinScreen(true));
   });
 
   let wallet;
