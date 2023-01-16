@@ -26,7 +26,6 @@ import {
   setTempPin,
   onStartWalletLock,
   startWalletRequested,
-  startWalletNotStarted,
 } from '../actions';
 import { PIN_SIZE } from '../constants';
 
@@ -50,7 +49,6 @@ const mapDispatchToProps = (dispatch) => ({
     words,
     pin
   })),
-  startWalletNotStarted: () => dispatch(startWalletNotStarted()),
 });
 
 class PinScreen extends React.Component {
@@ -223,8 +221,6 @@ class PinScreen extends React.Component {
     this.props.setLoadHistoryStatus(this.props.loadHistoryActive, false);
     // show lock screen again
     this.props.lockScreen();
-    // set the wallet state as NOT_STARTED so the LoadingScreen will hide.
-    this.props.startWalletNotStarted();
     // navigate to dashboard (will be hidden under lock screen)
     this.props.navigation.navigate('Dashboard');
   }

@@ -470,10 +470,6 @@ export const reloadWalletRequested = () => ({
   type: types.RELOAD_WALLET_REQUESTED,
 });
 
-export const startWalletNotStarted = () => ({
-  type: types.START_WALLET_NOT_STARTED,
-});
-
 export const startWalletRequested = (payload) => ({
   type: types.START_WALLET_REQUESTED,
   payload,
