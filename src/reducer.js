@@ -555,7 +555,7 @@ export const onStartWalletFailed = (state) => ({
 
 export const onStartWalletLock = (state) => ({
   ...state,
-  walletStartState: WALLET_STATUS.LOADING,
+  walletStartState: WALLET_STATUS.NOT_STARTED,
 });
 
 /**
