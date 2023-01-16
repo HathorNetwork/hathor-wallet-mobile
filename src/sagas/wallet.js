@@ -619,7 +619,7 @@ export function* onResetWallet() {
   walletUtil.cleanLoadedData({ cleanAccessData: true });
 }
 
-export function* onStartWalletfailed() {
+export function* onStartWalletFailed() {
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet) {
@@ -646,7 +646,7 @@ export function* saga() {
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeLatest('WALLET_RELOADING', onWalletReloadData),
     takeLatest('RESET_WALLET', onResetWallet),
-    takeLatest('START_WALLET_FAILED', onStartWalletfailed),
+    takeLatest('START_WALLET_FAILED', onStartWalletFailed),
     takeEvery('WALLET_NEW_TX', handleTx),
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
