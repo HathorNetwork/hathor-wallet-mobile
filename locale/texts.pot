@@ -106,17 +106,17 @@ msgid ""
 "|link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-#: src/screens/BackupWords.js:146
+#: src/screens/BackupWords.js:148
 #.  Success
 #.  eslint-disable-next-line react/jsx-indent
 msgid "Words saved correctly"
 msgstr ""
 
-#: src/screens/BackupWords.js:224
+#: src/screens/BackupWords.js:226
 msgid "To make sure you saved,"
 msgstr ""
 
-#: src/screens/BackupWords.js:226
+#: src/screens/BackupWords.js:228
 msgid "Please select the word that corresponds to the number below:"
 msgstr ""
 
@@ -440,12 +440,12 @@ msgstr ""
 msgid "PAYMENT REQUEST"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:52
+#: src/components/TxDetailsModal.js:60
 #: src/screens/PaymentRequestDetail.js:108
 msgid "Token"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:99
+#: src/components/TxDetailsModal.js:107
 #: src/screens/PaymentRequestDetail.js:112
 msgid "Amount"
 msgstr ""
@@ -628,12 +628,12 @@ msgstr ""
 msgid "Your transfer is being processed"
 msgstr ""
 
-#: src/sagas/wallet.js:105
+#: src/sagas/wallet.js:106
 #: src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
-#: src/sagas/wallet.js:106
+#: src/sagas/wallet.js:107
 #: src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr ""
@@ -725,7 +725,7 @@ msgstr ""
 msgid "Unregister token"
 msgstr ""
 
-#: src/components/CopyClipboard.js:37
+#: src/components/CopyClipboard.js:47
 msgid "Copied to clipboard!"
 msgstr ""
 
@@ -778,18 +778,18 @@ msgstr ""
 msgid "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:53
+#: src/components/TxDetailsModal.js:61
 msgid "Description"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:54
+#: src/components/TxDetailsModal.js:62
 msgid "Date & Time"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:55
+#: src/components/TxDetailsModal.js:63
 msgid "ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:56
+#: src/components/TxDetailsModal.js:64
 msgid "Public Explorer"
 msgstr ""
