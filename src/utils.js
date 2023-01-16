@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /**
  * Copyright (c) Hathor Labs and its affiliates.
  *
