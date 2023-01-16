@@ -73,6 +73,7 @@ const initialState = {
   height: 0,
   showErrorModal: false,
   errorReported: false,
+  errorFatal: false,
   wallet: null,
   loadedData: { transactions: 0, addresses: 0 },
   useWalletService: false,
@@ -118,6 +119,8 @@ const reducer = (state = initialState, action) => {
       return onSetLockScreen(state, action);
     case types.SET_ERROR_MODAL:
       return onSetErrorModal(state, action);
+    case types.HIDE_ERROR_MODAL:
+      return onHideErrorModal(state);
     case types.SET_WALLET:
       return onSetWallet(state, action);
     case types.RESET_WALLET:
@@ -357,10 +360,16 @@ const onResetWallet = (state) => ({
   wallet: null,
 });
 
+const onHideErrorModal = (state) => ({
+  ...state,
+  showErrorModal: false,
+});
+
 const onSetErrorModal = (state, action) => ({
   ...state,
   showErrorModal: true,
   errorReported: action.payload.errorReported,
+  errorFatal: action.payload.errorFatal,
 });
 
 const onResetLoadedData = (state, action) => ({

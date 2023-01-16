@@ -57,7 +57,10 @@ export class FeatureFlags extends events.EventEmitter {
       if (shouldIgnore) {
         return false;
       }
-      this.client.updateContext({ userId: this.userId });
+      this.client.updateContext({
+        userId: this.userId,
+        platform: Platform.OS,
+      });
 
       // Start polling for feature flag updates
       await this.client.start();

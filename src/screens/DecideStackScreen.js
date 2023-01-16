@@ -26,7 +26,7 @@ export function DecideStackScreen({ navigation }) {
       try {
         await hathorLib.storage.store.preStart();
       } catch (e) {
-        globalModal.showModal(e.message, false);
+        globalModal.showModal(true, e);
       }
 
       if (hathorLib.wallet.loaded()) {

@@ -42,6 +42,7 @@ export const types = {
   SET_INIT_WALLET: 'SET_INIT_WALLET',
   UPDATE_HEIGHT: 'UPDATE_HEIGHT',
   SET_ERROR_MODAL: 'SET_ERROR_MODAL',
+  HIDE_ERROR_MODAL: 'HIDE_ERROR_MODAL',
   SET_WALLET: 'SET_WALLET',
   RESET_WALLET: 'RESET_WALLET',
   RESET_LOADED_DATA: 'RESET_LOADED_DATA',
@@ -337,9 +338,15 @@ export const updateLoadedData = (payload) => (
 /**
  * errorReported {boolean} true if user reported the error to sentry
  */
-export const setErrorModal = (errorReported) => (
-  { type: types.SET_ERROR_MODAL, payload: { errorReported } }
-);
+export const setErrorModal = (errorReported, errorFatal, capturedError) => ({
+  type: types.SET_ERROR_MODAL,
+  payload: {
+    errorReported,
+    errorFatal,
+  },
+});
+
+export const hideErrorModal = () => ({ type: types.HIDE_ERROR_MODAL });
 
 /**
  * wallet {HathorWallet} wallet object

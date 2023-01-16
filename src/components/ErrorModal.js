@@ -12,7 +12,7 @@ import {
 import Modal from 'react-native-modal';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
-import { setErrorModal } from '../actions';
+import { hideErrorModal } from '../actions';
 
 /**
  * showErrorModal {boolean} If should show error modal
@@ -21,10 +21,13 @@ import { setErrorModal } from '../actions';
 const mapStateToProps = (state) => ({
   showErrorModal: state.showErrorModal,
   errorReported: state.errorReported,
+  errorFatal: state.errorFatal,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setErrorModal: (value) => dispatch(setErrorModal(value)),
+  hideErrorModal: () => {
+    dispatch(hideErrorModal());
+  },
 });
 
 const showErrorReportedMessage = () => (
@@ -33,27 +36,33 @@ const showErrorReportedMessage = () => (
   </Text>
 );
 
-const ErrorModal = (props) => (
-  <Modal
-    isVisible={props.showErrorModal}
-    animationIn='slideInUp'
-    swipeDirection={['down']}
-    onSwipeComplete={() => props.setErrorModal(false)}
-    onBackButtonPress={() => props.setErrorModal(false)}
-    onBackdropPress={() => props.setErrorModal(false)}
-    style={styles.modal}
-  >
-    <View style={styles.innerModal}>
-      <Text style={styles.title}>
-        {t`Unexpected error`}
-      </Text>
-      {props.errorReported && showErrorReportedMessage()}
-      <Text style={styles.text}>
-        {t`Please restart your app to continue using the wallet.`}
-      </Text>
-    </View>
-  </Modal>
-);
+const ErrorModal = (props) => {
+  console.log('is errorFatal?', props.errorFatal);
+
+  return (
+    <Modal
+      isVisible={props.showErrorModal}
+      {...(!props.errorFatal && {
+        animationType: 'slide',
+        swipeDirection: ['down'],
+        onSwipeComplete: () => props.hideErrorModal(),
+        onBackButtonPress: () => props.hideErrorModal(),
+        onBackdropPress: () => props.hideErrorModal(),
+      })}
+      style={styles.modal}
+    >
+      <View style={styles.innerModal}>
+        <Text style={styles.title}>
+          {t`Unexpected error`}
+        </Text>
+        {props.errorReported && showErrorReportedMessage()}
+        <Text style={styles.text}>
+          {t`Please restart your app to continue using the wallet.`}
+        </Text>
+      </View>
+    </Modal>
+  );
+};
 
 const styles = StyleSheet.create({
   modal: {

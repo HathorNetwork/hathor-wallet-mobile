@@ -410,7 +410,7 @@ const NavigationContainer = createAppContainer(SwitchNavigator);
 
 const App = () => (
   <Provider store={store}>
-    <GlobalModal>
+    <GlobalModal store={store}>
       <NavigationContainer
         ref={(navigatorRef) => NavigationService.setTopLevelNavigator(navigatorRef)}
       />
