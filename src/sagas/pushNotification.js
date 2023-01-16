@@ -5,6 +5,7 @@ import {
   wallet as walletUtil,
   Network,
   config,
+  tokens,
 } from '@hathor/wallet-lib';
 import moment from 'moment';
 import {
@@ -170,11 +171,10 @@ export const messageHandler = async (message, isForeground) => {
     return;
   }
 
-  // TODO: filter by registered tokens
   const bodyArgs = JSON.parse(data.bodyLocArgs);
   const title = localization.getMessage(data.titleLocKey);
   const body = localization.getMessage(data.bodyLocKey, bodyArgs);
-  const { tx, token } = data;
+  const { txId } = data;
 
   try {
     notifee.displayNotification({
@@ -188,8 +188,7 @@ export const messageHandler = async (message, isForeground) => {
         }
       },
       data: {
-        tx,
-        token,
+        txId
       }
     });
   } catch (error) {
@@ -251,6 +250,11 @@ export function* onAppInitialization() {
     STORE.setItem(pushNotificationKey.deviceId, deviceId);
     yield put(pushUpdateDeviceId({ deviceId }));
   }
+
+  // Make sure deviceId is registered on the FCM
+  messaging().registerDeviceForRemoteMessages();
+  // Add listeners for push notifications on foreground and background
+  messaging().onMessage(onForegroundMessage);
 
   // Initialize the pushNotification state on the redux store
   yield put(pushInit({
@@ -471,51 +475,124 @@ export function* dismissOptInQuestion() {
 }
 
 /**
+ * This function is responsible for calculate the balance of each token in the transaction.
+ * that belongs to the wallet.
+ * @param {{ txId: string, timestamp: number, voided: boolean }} tx
+ * @returns {{ [tokenUid]: number }} Object with the token uid as key and the balance as value
+ */
+const getTokensBalance = (tx) => {
+  const mineOutputs = tx.outputs.filter((output) => walletUtil.isAddressMine(output.decoded.address));
+  const tokensBalance = mineOutputs.reduce((acc, output) => {
+    const { token, value } = output;
+    if (acc[token]) {
+      acc[token] += value;
+    } else {
+      acc[token] = value;
+    }
+    return acc;
+  }, {});
+  return tokensBalance;
+};
+
+/**
+ * This function is responsible for getting the details of each token in the transaction.
+ * @param {Object} wallet the current wallet
+ * @param {{ [tokenUid]: number }} tokenBalances Object with the token uid as key and the balance as value
+ * @returns {Promise<Array<{ uid: string, name: string, symbol: string, balance: number, isRegistered: boolean }>> } Array of token details
+ * @example
+ * [
+ *  {
+ *   uid: '00',
+ *   name: 'Hathor',
+ *   symbol: 'HTR',
+ *   balance: 100,
+ *   isRegistered: true,
+ *  },
+ * ]
+ */
+const getTokenDetails = async (wallet, tokenBalances) => {
+  const tokenUids = Object.keys(tokenBalances);
+  try {
+    const tokenDetails = await Promise.all(
+      tokenUids.map(async (token) => {
+        const tokenInfo = await wallet.getTokenDetails(token);
+        return {
+          uid: token,
+          name: tokenInfo.tokenInfo.name,
+          symbol: tokenInfo.tokenInfo.symbol,
+          balance: tokenBalances[token],
+          isRegistered: !!tokens.tokenExists(token),
+        };
+      })
+    );
+    return tokenDetails;
+  } catch (error) {
+    console.error('Error getting token details: ', error);
+    return [];
+  }
+};
+
+/**
+ * This function retrieves the tx details from the wallet history.
+ * @param {Object} wallet the current wallet
+ * @param {string} txId the tx id
+ * @returns {Promise<{
+ *  tx: { txId: string, timestamp: number, voided: boolean },
+ *  tokens: { uid: string, name: string, symbol: string, balance: number, isRegistered: boolean }[]
+ * }}>} the tx details
+ * @example
+ * {
+ *   tx: {
+ *     txId: '000021e7addbb94a8e43d7f1237d556d47efc4d34800c5923ed3a75bf5a2886e',
+ *     timestamp: 1673039453,
+ *     voided: false,
+ *   },
+ *   tokens: [
+ *     {
+ *       uid: '00',
+ *       name: 'Hathor',
+ *       symbol: 'HTR',
+ *       balance: 500,
+ *       isRegistered: true,
+ *     }
+ *   ],
+ */
+export const getTxDetails = async (wallet, txId) => {
+  const history = wallet.getFullHistory();
+  const tx = history[txId];
+  const tokenBalances = getTokensBalance(tx);
+  const tokenDetails = await getTokenDetails(wallet, tokenBalances);
+  const txDetails = {
+    tx: {
+      txId,
+      timestamp: tx.timestamp,
+      voided: tx.is_voided,
+    },
+    tokens: tokenDetails,
+  };
+  return txDetails;
+};
+
+export function setInitialNotificationData(notification) {
+  STORE.setItem(pushNotificationKey.notificationData, notification.data);
+}
+
+/**
  * This function is responsible for checking if the app was opened by a push notification
  * and if so, it will load the tx and token data to show the tx detail modal.
  */
 export function* checkOpenPushNotification() {
   try {
-    /**
-     * @example
-     * {
-     *  notification: {
-     *    id: '36f30UJBYhxiIOgVzAft',
-     *    title: 'New transaction received',
-     *    body: 'You have received 10 T2, 5 T1 and 2 other token on a new transaction.',
-     *    data: {
-     *      tx: <stringfied>{
-     *        txId: '000021e7addbb94a8e43d7f1237d556d47efc4d34800c5923ed3a75bf5a2886e',
-     *        timestamp: 1673039453,
-     *        balance: 500,
-     *        voided: false,
-     *        tokenUid: '00',
-     *      }
-     *      token: <stringfied>{
-     *        name: 'Hathor',
-     *        symbol: 'HTR',
-     *        uid: '00',
-     *      }
-     *    },
-     *    android: {
-     *     channelId: 'transaction',
-     *    },
-     *  }
-     *  pressAction: {
-     *   id: 'new-transaction',
-     *   mainComponent: 'HathorMobile',
-     *  },
-     * }
-     */
-    const initialNotification = yield call(notifee.getInitialNotification);
-    // Check if the app was opened by a push notification and if it is a new transaction
-    if (initialNotification && initialNotification.pressAction.id === PUSH_TRANSACTION_ID.NEW_TRANSACTION) {
+    const notificationData = STORE.getItem(pushNotificationKey.notificationData);
+    // Check if the app was opened by a push notification on press action
+    if (notificationData) {
+      STORE.removeItem(pushNotificationKey.notificationData);
       // Wait for the wallet to be loaded
       yield take(types.START_WALLET_SUCCESS);
-      // Populate transaction details on store
-      const tx = JSON.parse(initialNotification.notification.data.tx);
-      const token = JSON.parse(initialNotification.notification.data.token);
-      yield put(pushLoadTxDetails({ tx, token }));
+
+      const wallet = yield select((state) => state.wallet);
+      const txDetails = yield call(getTxDetails, wallet, notificationData.txId);
+      yield put(pushLoadTxDetails(txDetails));
     }
   } catch (error) {
     console.error('Error checking if app was opened by a push notification', error);

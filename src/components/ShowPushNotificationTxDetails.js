@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { pushCleanTxDetails } from '../actions';
-import TxDetailsModal from './TxDetailsModal';
+import PushTxDetailsModal from './PushTxDetailsModal';
 
 export default function ShowPushNotificationTxDetails() {
   const txDetails = useSelector((state) => state.pushNotification.txDetails);
@@ -9,9 +9,9 @@ export default function ShowPushNotificationTxDetails() {
 
   if (!txDetails) return null;
   return (
-    <TxDetailsModal
+    <PushTxDetailsModal
       tx={txDetails.tx}
-      token={txDetails.token}
+      tokens={txDetails.tokens}
       onRequestClose={() => dispatch(pushCleanTxDetails())}
       isNFT={false}
     />

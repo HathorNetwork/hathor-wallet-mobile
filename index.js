@@ -13,7 +13,7 @@ import notifee, { EventType } from '@notifee/react-native';
 import App from './src/App';
 import { name as appName } from './app.json';
 import { errorHandler } from './src/errorHandler';
-import { messageHandler } from './src/sagas/pushNotification';
+import { messageHandler, setInitialNotificationData } from './src/sagas/pushNotification';
 
 /**
  * This function is called when the app is in background or **quit** state
@@ -24,6 +24,7 @@ import { messageHandler } from './src/sagas/pushNotification';
  *
  * In this project the Notifee is used to interprete the data message received
  * from firebase and show the notification to the user.
+ *
  */
 const setNotifeeBackgroundListener = () => {
   try {
@@ -31,12 +32,13 @@ const setNotifeeBackgroundListener = () => {
       const { notification } = detail;
 
       if (type === EventType.DISMISSED) {
-        notifee.cancelNotification(notification.id);
+        await notifee.cancelNotification(notification.id);
         return;
       }
 
-      if (type === EventType.ACTION_PRESS) {
-        notifee.cancelNotification(notification.id);
+      if (type === EventType.PRESS || type === EventType.ACTION_PRESS) {
+        setInitialNotificationData(notification);
+        await notifee.cancelNotification(notification.id);
       }
     });
   } catch (error) {

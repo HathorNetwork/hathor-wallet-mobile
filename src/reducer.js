@@ -17,7 +17,6 @@ import rootSagas from './sagas';
 import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
 import { WALLET_STATUS } from './sagas/wallet';
 import { PUSH_API_STATUS } from './sagas/pushNotification';
-import { TxHistory } from './models';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
@@ -776,7 +775,8 @@ export const onPushApiReady = (state) => ({
 });
 
 /**
- * @param {{enabled: boolean, hasBeenEnabled: boolean, enabledAt: number }} action
+ * @param {Object} state
+ * @param {{ data: { enabled: boolean, hasBeenEnabled: boolean, enabledAt: number }}} action
  */
 export const onPushRegisterSuccess = (state, action) => {
   const { enabled, hasBeenEnabled, enabledAt } = action.data;
@@ -793,7 +793,8 @@ export const onPushRegisterSuccess = (state, action) => {
 };
 
 /**
- * @param {{payload: {enabled, showAmountEnabled}}} action
+ * @param {Object} state
+ * @param {{payload: {enabled: boolean, showAmountEnabled: boolean}}} action
  */
 export const onPushUpdateSuccess = (state, { payload: { enabled, showAmountEnabled } }) => ({
   ...state,
@@ -814,16 +815,14 @@ export const onPushApiFailed = (state) => ({
 });
 
 /**
- * @param {{ tx, token }} action
+ * @param {Object} state
+ * @param {{ payload: {
+ *   tx: { txId: string, timestamp: number, voided: boolean },
+ *   tokens: { uid: string, name: string, symbol: string, balance: number, isRegistered: boolean }[],
+ * } }} action
  */
 export const onPushLoadTxDetails = (state, action) => {
-  const { tx, token } = action.payload;
-  console.log('onPushLoadTxDetails', tx, token);
-
-  const txDetails = {
-    tx: new TxHistory(tx),
-    token,
-  };
+  const txDetails = action.payload;
   return {
     ...state,
     pushNotification: {
@@ -833,16 +832,13 @@ export const onPushLoadTxDetails = (state, action) => {
   };
 };
 
-export const onPushCleanTxDetails = (state) => {
-  console.log('onPushCleanTxDetails');
-  return {
-    ...state,
-    pushNotification: {
-      ...state.pushNotification,
-      txDetails: null,
-    },
-  };
-};
+export const onPushCleanTxDetails = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    txDetails: null,
+  },
+});
 
 export const onPushReset = (state) => ({
   ...state,

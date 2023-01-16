@@ -67,7 +67,7 @@ import CreateTokenDetail from './screens/CreateTokenDetail';
 import ErrorModal from './components/ErrorModal';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 import { WALLET_STATUS } from './sagas/wallet';
-import { PUSH_TRANSACTION_ID } from './sagas/pushNotification';
+import { getTxDetails, PUSH_TRANSACTION_ID } from './sagas/pushNotification';
 
 
 const InitStack = createStackNavigator(
@@ -207,13 +207,14 @@ const mapStateToProps = (state) => ({
   isScreenLocked: state.lockScreen,
   isRecoveringPin: state.recoveringPin,
   walletStartState: state.walletStartState,
+  wallet: state.wallet,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   setTokens: (tokens) => dispatch(setTokens(tokens)),
   lockScreen: () => dispatch(lockScreen()),
   resetData: () => dispatch(resetData()),
-  loadTxDetails: ({ tx, token }) => dispatch(pushLoadTxDetails({ tx, token })),
+  loadTxDetails: (txDetails) => dispatch(pushLoadTxDetails(txDetails)),
 });
 
 class _AppStackWrapper extends React.Component {
@@ -240,20 +241,18 @@ class _AppStackWrapper extends React.Component {
 
   /**
    * This method set the listener for the notifee foreground event
-   * It's used to handle the press event on the notification
    */
   setNotifeeForegroundListener = () => {
     try {
-      notifee.onForegroundEvent(({ type, detail }) => {
+      notifee.onForegroundEvent(async ({ type, detail }) => {
         console.log('Foreground event:', type, detail);
         switch (type) {
           case EventType.PRESS:
             try {
               // eslint-disable-next-line max-len
               if (detail.pressAction && detail.pressAction.id === PUSH_TRANSACTION_ID.NEW_TRANSACTION) {
-                const tx = JSON.parse(detail.notification.data.tx);
-                const token = JSON.parse(detail.notification.data.token);
-                this.props.loadTxDetails({ tx, token });
+                const txDetails = await getTxDetails(this.props.wallet, detail.notification.data.txId);
+                this.props.loadTxDetails(txDetails);
               }
             } catch (error) {
               console.error('Error processing notification press event', error);
