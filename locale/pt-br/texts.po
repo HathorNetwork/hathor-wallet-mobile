@@ -114,20 +114,20 @@ msgid ""
 "For further information, check out the |link1:Terms of Service| and |link2:"
 "Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
-"Para mais informações, veja os |link1:Termos de Serviço| e "
-"|link2:Política de Privacidade|, ou visite nosso site |link3:https://hathor.network/|."
+"Para mais informações, veja os |link1:Termos de Serviço| e |link2:Política "
+"de Privacidade|, ou visite nosso site |link3:https://hathor.network/|."
 
 #.  Success
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/BackupWords.js:146
+#: src/screens/BackupWords.js:148
 msgid "Words saved correctly"
 msgstr "Palavras salvas com sucesso"
 
-#: src/screens/BackupWords.js:224
+#: src/screens/BackupWords.js:226
 msgid "To make sure you saved,"
 msgstr "Para conferir que você salvou,"
 
-#: src/screens/BackupWords.js:226
+#: src/screens/BackupWords.js:228
 msgid "Please select the word that corresponds to the number below:"
 msgstr "Por favor, selecione a palavra que corrende ao número abaixo:"
 
@@ -337,8 +337,9 @@ msgstr ""
 msgid ""
 "I agree with the |link1:Terms of Service| and |link2:Privacy Policy| and "
 "understand the risks of using a mobile wallet"
-msgstr "Eu concordo com os |link1:Termos de Serviço| e |link2:Política de Privacidade| "
-"e entendo os riscos de usar uma wallet de celular"
+msgstr ""
+"Eu concordo com os |link1:Termos de Serviço| e |link2:Política de "
+"Privacidade| e entendo os riscos de usar uma wallet de celular"
 
 #: src/screens/InitWallet.js:92
 msgid "Start"
@@ -457,11 +458,11 @@ msgstr "Você recebeu **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "REQUISIÇÃO DE PAGAMENTO"
 
-#: src/components/TxDetailsModal.js:52 src/screens/PaymentRequestDetail.js:108
+#: src/components/TxDetailsModal.js:60 src/screens/PaymentRequestDetail.js:108
 msgid "Token"
 msgstr "Token"
 
-#: src/components/TxDetailsModal.js:99 src/screens/PaymentRequestDetail.js:112
+#: src/components/TxDetailsModal.js:107 src/screens/PaymentRequestDetail.js:112
 msgid "Amount"
 msgstr "Quantidade"
 
@@ -642,11 +643,11 @@ msgstr "ENVIAR ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/sagas/wallet.js:105 src/screens/SendConfirmScreen.js:117
+#: src/sagas/wallet.js:106 src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
-#: src/sagas/wallet.js:106 src/screens/SendConfirmScreen.js:118
+#: src/sagas/wallet.js:107 src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -740,7 +741,7 @@ msgstr "Eu quero desregistrar o token **${ tokenLabel }**"
 msgid "Unregister token"
 msgstr "Desregistrar token"
 
-#: src/components/CopyClipboard.js:37
+#: src/components/CopyClipboard.js:47
 msgid "Copied to clipboard!"
 msgstr "Copiado!"
 
@@ -795,19 +796,19 @@ msgid ""
 "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr "Essa é a configuração do seu token ${ tokenLabel }: ${ configString }"
 
-#: src/components/TxDetailsModal.js:53
+#: src/components/TxDetailsModal.js:61
 msgid "Description"
 msgstr "Descrição"
 
-#: src/components/TxDetailsModal.js:54
+#: src/components/TxDetailsModal.js:62
 msgid "Date & Time"
 msgstr "Data & Hora"
 
-#: src/components/TxDetailsModal.js:55
+#: src/components/TxDetailsModal.js:63
 msgid "ID"
 msgstr "ID"
 
-#: src/components/TxDetailsModal.js:56
+#: src/components/TxDetailsModal.js:64
 msgid "Public Explorer"
 msgstr "Explorer Público"
 
