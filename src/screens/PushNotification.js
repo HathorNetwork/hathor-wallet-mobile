@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -9,14 +9,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
 import { HathorList, ListItem } from '../components/HathorList';
-import ActionModal from '../components/ActionModal';
 import { isEnablingFeature } from '../utils';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { pushApiReady, pushFirstTimeRegistration, pushUpdateRequested } from '../actions';
 import { PUSH_API_STATUS } from '../sagas/pushNotification';
+import Spinner from '../components/Spinner';
 
-
+// eslint-disable-next-line max-len
+const isApiStatusLoading = (state) => !state.isShowingPinScreen && state.pushNotification.apiStatus === PUSH_API_STATUS.LOADING;
 // eslint-disable-next-line max-len
 const hasApiStatusFailed = (pushNotification) => pushNotification.apiStatus === PUSH_API_STATUS.FAILED;
 
@@ -41,10 +42,8 @@ const styles = StyleSheet.create({
 const pageTitleText = t`Push Notification`;
 const enablePushNotificationText = t`Enable Push Notification`;
 const showAmountsOnNotificationText = t`Show amounts on notification`;
+const apiRequestLoadingText = t`Updating push notification...`;
 const apiRequestFailedText = t`There was an error enabling push notification. Please try again later.`;
-const termsAndConditionsModalTitleText = t`Push Notification`;
-const termsAndConditionsModalMessageText = t`By enabling push notification, you agree to our terms and conditions.`;
-const termsAndConditionsModalActionButtonText = t`I agree`;
 
 export default function PushNotification(props) {
   const {
@@ -53,36 +52,18 @@ export default function PushNotification(props) {
     deviceId,
     hasBeenEnabled,
   } = useSelector((state) => state.pushNotification);
+  const isPushApiLoading = useSelector((state) => isApiStatusLoading(state));
   const hasPushApiFailed = useSelector((state) => hasApiStatusFailed(state.pushNotification));
   const dispatch = useDispatch();
-
-  /**
-   * actionModal {ActionModal.propTypes} action modal properties. If null, do not display
-   */
-  const [actionModal, setActionModal] = useState(null);
-
-  const dismissActionModal = () => {
-    setActionModal(null);
-  };
 
   const onPushNotificationSwitchChange = (value) => {
     const isFirstTime = isEnablingFeature(value) && !hasBeenEnabled;
     if (isFirstTime) {
-      actionOnTermsAndConditions();
+      executeFirstRegistrationOnPushNotification();
       return;
     }
 
     executeUpdateOnPushNotification(value);
-  };
-
-  const actionOnTermsAndConditions = () => {
-    setActionModal({
-      title: termsAndConditionsModalTitleText,
-      message: termsAndConditionsModalMessageText,
-      button: termsAndConditionsModalActionButtonText,
-      onAction: () => executeFirstRegistrationOnPushNotification(),
-      onDismiss: () => dismissActionModal(),
-    });
   };
 
   /**
@@ -98,7 +79,6 @@ export default function PushNotification(props) {
   };
 
   const executeFirstRegistrationOnPushNotification = async () => {
-    dismissActionModal();
     dispatch(pushFirstTimeRegistration({ deviceId }));
   };
 
@@ -118,21 +98,18 @@ export default function PushNotification(props) {
         onBackPress={() => props.navigation.goBack()}
       />
 
+      {isPushApiLoading && (
+        <FeedbackModal
+          icon={<Spinner />}
+          text={apiRequestLoadingText}
+        />
+      )}
+
       {hasPushApiFailed && (
         <FeedbackModal
           icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
           text={apiRequestFailedText}
           onDismiss={() => dispatch(pushApiReady())}
-        />
-      )}
-
-      {actionModal && (
-        <ActionModal
-          title={actionModal.title}
-          message={actionModal.message}
-          button={actionModal.button}
-          onAction={actionModal.onAction}
-          onDismiss={actionModal.onDismiss}
         />
       )}
 

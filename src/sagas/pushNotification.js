@@ -20,6 +20,7 @@ import {
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
 import { t } from 'ttag';
+import { Platform } from 'react-native';
 import {
   types,
   pushRegisterSuccess,
@@ -71,6 +72,10 @@ const NEW_TRANSACTION_RECEIVED_TITLE = 'new_transaction_received_title';
 const TRANSACTION_CHANNEL_ID = 'transaction';
 const TRANSACTION_CHANNEL_NAME = t`Transaction`;
 
+/**
+ * This function gets the device id registered in the FCM.
+ * @returns {Promise<string>} the device id
+ */
 const getDeviceId = async () => {
   try {
     const deviceId = await messaging().getToken();
@@ -128,10 +133,6 @@ const onForegroundMessage = async (message) => {
   await messageHandler(message);
 };
 
-const onBackgroundMessage = async (message) => {
-  await messageHandler(message);
-};
-
 /**
  * Handle the message received when application is in foreground and background (not closed) state
  * @param {{ data: Object, from: string, messageId: string, sentTime: number, ttl: number }} message - Message received from wallet-service
@@ -169,20 +170,54 @@ const messageHandler = async (message) => {
   });
 };
 
+const confirmDeviceRegistrationOnFirebase = async () => {
+  try {
+    // Make sure deviceId is registered on the FCM
+    await messaging().registerDeviceForRemoteMessages();
+  } catch (error) {
+    console.error(`Error confirming the device is registered on FCM: ${error.message}`, error);
+  }
+};
+
+const installForegroundListener = () => {
+  try {
+    // Add listeners for push notifications on foreground and background
+    messaging().onMessage(onForegroundMessage);
+  } catch (error) {
+    console.error(`Error installing foreground listener to push notification: ${error.message}`, error);
+  }
+};
+
+const createChannelIfNotExists = async () => {
+  try {
+    const hasTransactionChannel = await notifee.isChannelCreated(TRANSACTION_CHANNEL_ID);
+    if (!hasTransactionChannel) {
+      await notifee.createChannel({
+        id: TRANSACTION_CHANNEL_ID,
+        name: TRANSACTION_CHANNEL_NAME,
+      });
+    }
+  } catch (error) {
+    console.error(`Error creating channel for push notification: ${error.message}`, error);
+  }
+};
+
 /**
  * This function is called when the wallet is initialized with success.
  */
 export function* onAppInitialization() {
   yield take(types.START_WALLET_SUCCESS);
 
-  const { enabled, showAmountEnabled } = STORE.getItem(pushNotificationKey.settings);
+  const { enabled, showAmountEnabled } = STORE.getItem(pushNotificationKey.settings) || { enabled: false, showAmountEnabled: false };
   const hasBeenEnabled = STORE.getItem(pushNotificationKey.hasBeenEnabled);
   const enabledAt = STORE.getItem(pushNotificationKey.enabledAt);
 
   const persistedDeviceId = STORE.getItem(pushNotificationKey.deviceId);
   const deviceId = yield call(getDeviceId);
-  // If the deviceId is different from the persisted one, we should update it
-  if (persistedDeviceId && persistedDeviceId !== deviceId.toString()) {
+  // If the deviceId is different from the persisted one, we should update it.
+  // The first time the perisistedDeviceId will be null, and the deviceId will be
+  // the one returned by getDeviceId, which gets the deviceId from FCM.
+  if (deviceId && persistedDeviceId !== deviceId) {
     STORE.setItem(pushNotificationKey.deviceId, deviceId);
     yield put(pushUpdateDeviceId({ deviceId }));
   }
@@ -198,20 +233,9 @@ export function* onAppInitialization() {
     enabledAt,
   }));
 
-  // Create the transaction channel if it doesn't exist
-  const hasTransactionChannel = yield call(notifee.isChannelCreated, TRANSACTION_CHANNEL_ID);
-  if (!hasTransactionChannel) {
-    yield call(notifee.createChannel, {
-      id: TRANSACTION_CHANNEL_ID,
-      name: TRANSACTION_CHANNEL_NAME,
-    });
-  }
-
-  // Make sure deviceId is registered on the FCM
-  messaging().registerDeviceForRemoteMessages();
-  // Add listeners for push notifications on foreground and background
-  messaging().onMessage(onForegroundMessage);
-  messaging().setBackgroundMessageHandler(onBackgroundMessage);
+  yield call(createChannelIfNotExists);
+  yield call(confirmDeviceRegistrationOnFirebase);
+  yield call(installForegroundListener);
 
   // Check if the last registration call was made more then a week ago
   if (hasBeenEnabled) {
@@ -296,7 +320,7 @@ export function* firstTimeRegistration({ payload: { deviceId } }) {
   const { walletService } = loadWalletSuccess.payload;
   try {
     const { success } = yield call(pushLib.PushNotification.registerDevice, walletService, {
-      pushProvider: pushLib.PushNotificationProvider.ANDROID,
+      pushProvider: Platform.OS,
       deviceId,
       enablePush: true,
     });
@@ -337,7 +361,7 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
   const { walletService } = loadWalletSuccess.payload;
   try {
     const { success } = yield call(pushLib.PushNotification.registerDevice, walletService, {
-      pushProvider: pushLib.PushNotificationProvider.ANDROID,
+      pushProvider: Platform.OS,
       deviceId,
       enablePush: true,
     });

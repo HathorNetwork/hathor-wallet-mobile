@@ -214,6 +214,12 @@ const reducer = (state = initialState, action) => {
       return onPushInit(state, action);
     case types.PUSH_UPDATE_DEVICE_ID:
       return onPushUpdateDeviceId(state, action);
+    case types.PUSH_FIRST_REGISTRATION_REQUESTED:
+      return onPushApiLoading(state);
+    case types.PUSH_REGISTRATION_REQUESTED:
+      return onPushApiLoading(state);
+    case types.PUSH_UPDATE_REQUESTED:
+      return onPushApiLoading(state);
     case types.PUSH_API_READY:
       return onPushApiReady(state);
     case types.PUSH_REGISTER_SUCCESS:
@@ -712,6 +718,14 @@ export const onPushUpdateDeviceId = (state, action) => {
     },
   });
 };
+
+export const onPushApiLoading = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    apiStatus: PUSH_API_STATUS.LOADING,
+  },
+});
 
 export const onPushApiReady = (state) => ({
   ...state,

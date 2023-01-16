@@ -549,7 +549,7 @@ export const pushLoadWalletRequested = () => ({
 });
 
 /**
- * @param {{ walletService }} payload
+ * @param {{ walletService: HathorWalletServiceWallet }} payload
  */
 export const pushLoadWalletSuccess = (payload) => ({
   type: types.PUSH_WALLET_LOAD_SUCCESS,
