@@ -755,7 +755,6 @@ msgid "Unregister token"
 msgstr "Afregistrer token"
 
 #: src\sagas\pushNotification.js:73
-#, fuzzy
 msgid "Transaction"
 msgstr "Ingen transaktioner"
 
@@ -780,7 +779,6 @@ msgid "There is a new transaction in your wallet."
 msgstr ""
 
 #: src\sagas\pushNotification.js:126
-#, fuzzy
 msgid "New transaction received"
 msgstr "Ingen transaktioner"
 
