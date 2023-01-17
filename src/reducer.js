@@ -97,14 +97,14 @@ const initialState = {
   walletStartState: WALLET_STATUS.LOADING,
   pushNotification: {
     /**
-     * optInQuestionDismissed {boolean} if user has dismissed the push notification modal
+     * showOptInQuestion {boolean}
      * this is used to show the modal only the first time user opens the app
      * after the modal is dismissed, it will not be shown again
      * until the user clears the app data
      * (this is done to avoid showing the modal to users that have already
      * enabled push notification)
      */
-    optInQuestionDismissed: true,
+    showOptInQuestion: false,
     /**
      * deviceId {string} device id for push notification
      */
@@ -709,7 +709,7 @@ export const onPushAskOptInQuestiong = (state) => ({
   ...state,
   pushNotification: {
     ...state.pushNotification,
-    optInQuestionDismissed: false,
+    showOptInQuestion: true,
   }
 });
 
@@ -717,7 +717,7 @@ export const onPushDismissOptInQuestion = (state) => ({
   ...state,
   pushNotification: {
     ...state.pushNotification,
-    optInQuestionDismissed: true,
+    showOptInQuestion: false,
   }
 });
 

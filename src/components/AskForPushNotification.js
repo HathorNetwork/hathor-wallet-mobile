@@ -1,33 +1,26 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
-import ActionModal from './ActionModal';
 import { pushDismissOptInQuestion } from '../actions';
+import ActionModal from './ActionModal';
 
-const mapStateToProps = (state) => ({
-  optInDismissed: state.pushNotification.optInQuestionDismissed,
-});
+export default function AskForPushNotification(props) {
+  const showOptIn = useSelector((state) => state.pushNotification.showOptInQuestion);
+  const dispatch = useDispatch();
 
-const mapDispatchToProps = (dispatch) => ({
-  dismissOptInQuestion: () => dispatch(pushDismissOptInQuestion()),
-});
+  const onEnablePushNotifications = () => {
+    props.navigation.navigate('PushNotification');
+    dispatch(pushDismissOptInQuestion());
+  };
 
-const onEnablePushNotifications = (props) => {
-  props.navigation.navigate('PushNotification');
-  props.dismissOptInQuestion();
-};
-
-function AskForPushNotification(props) {
-  if (props.optInDismissed) return null;
+  if (!showOptIn) return null;
   return (
     <ActionModal
       title={t`Do you want to enable push notifications for this wallet?`}
-      message={t`You can always change this later in the settings menu.`}
+      text={t`You can always change this later in the settings menu`}
       button={t`Yes, enable`}
-      onAction={() => onEnablePushNotifications(props)}
-      onDismiss={() => props.dismissOptInQuestion()}
+      onAction={() => onEnablePushNotifications()}
+      onDismiss={() => dispatch(pushDismissOptInQuestion())}
     />
   );
 }
-
-export default connect(mapStateToProps, mapDispatchToProps)(AskForPushNotification);
