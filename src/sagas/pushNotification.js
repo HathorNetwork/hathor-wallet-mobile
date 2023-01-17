@@ -251,11 +251,6 @@ export function* onAppInitialization() {
     yield put(pushUpdateDeviceId({ deviceId }));
   }
 
-  // Make sure deviceId is registered on the FCM
-  messaging().registerDeviceForRemoteMessages();
-  // Add listeners for push notifications on foreground and background
-  messaging().onMessage(onForegroundMessage);
-
   // Initialize the pushNotification state on the redux store
   yield put(pushInit({
     deviceId,
@@ -475,64 +470,6 @@ export function* dismissOptInQuestion() {
 }
 
 /**
- * This function is responsible for calculate the balance of each token in the transaction.
- * that belongs to the wallet.
- * @param {{ txId: string, timestamp: number, voided: boolean }} tx
- * @returns {{ [tokenUid]: number }} Object with the token uid as key and the balance as value
- */
-const getTokensBalance = (tx) => {
-  const mineOutputs = tx.outputs.filter((output) => walletUtil.isAddressMine(output.decoded.address));
-  const tokensBalance = mineOutputs.reduce((acc, output) => {
-    const { token, value } = output;
-    if (acc[token]) {
-      acc[token] += value;
-    } else {
-      acc[token] = value;
-    }
-    return acc;
-  }, {});
-  return tokensBalance;
-};
-
-/**
- * This function is responsible for getting the details of each token in the transaction.
- * @param {Object} wallet the current wallet
- * @param {{ [tokenUid]: number }} tokenBalances Object with the token uid as key and the balance as value
- * @returns {Promise<Array<{ uid: string, name: string, symbol: string, balance: number, isRegistered: boolean }>> } Array of token details
- * @example
- * [
- *  {
- *   uid: '00',
- *   name: 'Hathor',
- *   symbol: 'HTR',
- *   balance: 100,
- *   isRegistered: true,
- *  },
- * ]
- */
-const getTokenDetails = async (wallet, tokenBalances) => {
-  const tokenUids = Object.keys(tokenBalances);
-  try {
-    const tokenDetails = await Promise.all(
-      tokenUids.map(async (token) => {
-        const tokenInfo = await wallet.getTokenDetails(token);
-        return {
-          uid: token,
-          name: tokenInfo.tokenInfo.name,
-          symbol: tokenInfo.tokenInfo.symbol,
-          balance: tokenBalances[token],
-          isRegistered: !!tokens.tokenExists(token),
-        };
-      })
-    );
-    return tokenDetails;
-  } catch (error) {
-    console.error('Error getting token details: ', error);
-    return [];
-  }
-};
-
-/**
  * This function retrieves the tx details from the wallet history.
  * @param {Object} wallet the current wallet
  * @param {string} txId the tx id
@@ -558,17 +495,21 @@ const getTokenDetails = async (wallet, tokenBalances) => {
  *   ],
  */
 export const getTxDetails = async (wallet, txId) => {
-  const history = wallet.getFullHistory();
-  const tx = history[txId];
-  const tokenBalances = getTokensBalance(tx);
-  const tokenDetails = await getTokenDetails(wallet, tokenBalances);
+  const txTokensBalance = await wallet.getTxById(txId);
+  const [tx] = txTokensBalance;
   const txDetails = {
     tx: {
-      txId,
+      txId: tx.txId,
       timestamp: tx.timestamp,
-      voided: tx.is_voided,
+      voided: tx.voided,
     },
-    tokens: tokenDetails,
+    tokens: txTokensBalance.map((each) => ({
+      uid: each.tokenId,
+      name: each.tokenName,
+      symbol: each.tokenSymbol,
+      balance: each.balance,
+      isRegistered: !!tokens.tokenExists(each.tokenId),
+    })),
   };
   return txDetails;
 };

@@ -245,7 +245,6 @@ class _AppStackWrapper extends React.Component {
   setNotifeeForegroundListener = () => {
     try {
       notifee.onForegroundEvent(async ({ type, detail }) => {
-        console.log('Foreground event:', type, detail);
         switch (type) {
           case EventType.PRESS:
             try {
@@ -255,7 +254,7 @@ class _AppStackWrapper extends React.Component {
                 this.props.loadTxDetails(txDetails);
               }
             } catch (error) {
-              console.error('Error processing notification press event', error);
+              console.error('Error processing notification press event.', error);
             }
             break;
           default:
@@ -263,7 +262,7 @@ class _AppStackWrapper extends React.Component {
         }
       });
     } catch (error) {
-      console.error('Error setting notifee foreground event listener', error);
+      console.error('Error setting notifee foreground event listener.', error);
     }
   }
 
