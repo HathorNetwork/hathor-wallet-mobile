@@ -85,7 +85,7 @@ msgstr "[Последний] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src\utils.js:144
+#: src\utils.js:145
 msgid "Invalid address"
 msgstr "Неправильный адрес"
 
@@ -118,15 +118,15 @@ msgstr ""
 
 #.  Success
 #.  eslint-disable-next-line react/jsx-indent
-#: src\screens\BackupWords.js:146
+#: src\screens\BackupWords.js:148
 msgid "Words saved correctly"
 msgstr "Seed-фраза введена верно"
 
-#: src\screens\BackupWords.js:224
+#: src\screens\BackupWords.js:226
 msgid "To make sure you saved,"
 msgstr "Чтобы убедиться в том, что вы сохранили,"
 
-#: src\screens\BackupWords.js:226
+#: src\screens\BackupWords.js:228
 msgid "Please select the word that corresponds to the number below:"
 msgstr "Пожалуйста, выберите слово, которое соответствует номеру ниже:"
 
@@ -312,11 +312,11 @@ msgstr "Символ является сокращенной версией им
 msgid "E.g. HTR"
 msgstr "Например, HTR"
 
-#: src\screens\Dashboard.js:65 src\screens\RegisterTokenManual.js:150
+#: src\screens\Dashboard.js:66 src\screens\RegisterTokenManual.js:150
 msgid "Register token"
 msgstr "Зарегистрировать токен"
 
-#: src\screens\Dashboard.js:72
+#: src\screens\Dashboard.js:73
 msgid "TOKENS"
 msgstr "ТОКЕНЫ"
 
@@ -755,33 +755,45 @@ msgstr "Я хочу отменить регистрацию токена **${ to
 msgid "Unregister token"
 msgstr "Отменить регистрацию токена"
 
-#: src\sagas\pushNotification.js:73
+#: src\sagas\pushNotification.js:75
 msgid "Transaction"
 msgstr "Нет транзакций"
 
-#: src\sagas\pushNotification.js:115
+#: src\sagas\pushNotification.js:117
 #, javascript-format
 msgid ""
 "You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
 "other token on a new transaction."
 msgstr ""
 
-#: src\sagas\pushNotification.js:118
+#: src\sagas\pushNotification.js:120
 #, javascript-format
 msgid "You have received ${ _firstToken } and ${ _secondToken }."
 msgstr ""
 
-#: src\sagas\pushNotification.js:121
+#: src\sagas\pushNotification.js:123
 msgid "You have received ${ _firstToken2 }."
 msgstr ""
 
-#: src\sagas\pushNotification.js:124
+#: src\sagas\pushNotification.js:126
 msgid "There is a new transaction in your wallet."
 msgstr ""
 
-#: src\sagas\pushNotification.js:126
+#: src\sagas\pushNotification.js:128
 msgid "New transaction received"
 msgstr "Нет транзакций"
+
+#: src\components\AskForPushNotification.js:19
+msgid "Do you want to enable push notifications for this wallet?"
+msgstr ""
+
+#: src\components\AskForPushNotification.js:20
+msgid "You can always change this later in the settings menu"
+msgstr ""
+
+#: src\components\AskForPushNotification.js:21
+msgid "Yes, enable"
+msgstr ""
 
 #: src\components\CopyClipboard.js:47
 msgid "Copied to clipboard!"

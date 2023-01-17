@@ -75,7 +75,7 @@ msgstr ""
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src\utils.js:144
+#: src\utils.js:145
 msgid "Invalid address"
 msgstr ""
 
@@ -106,17 +106,17 @@ msgid ""
 "|link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-#: src\screens\BackupWords.js:146
+#: src\screens\BackupWords.js:148
 #.  Success
 #.  eslint-disable-next-line react/jsx-indent
 msgid "Words saved correctly"
 msgstr ""
 
-#: src\screens\BackupWords.js:224
+#: src\screens\BackupWords.js:226
 msgid "To make sure you saved,"
 msgstr ""
 
-#: src\screens\BackupWords.js:226
+#: src\screens\BackupWords.js:228
 msgid "Please select the word that corresponds to the number below:"
 msgstr ""
 
@@ -305,12 +305,12 @@ msgstr ""
 msgid "E.g. HTR"
 msgstr ""
 
-#: src\screens\Dashboard.js:65
+#: src\screens\Dashboard.js:66
 #: src\screens\RegisterTokenManual.js:150
 msgid "Register token"
 msgstr ""
 
-#: src\screens\Dashboard.js:72
+#: src\screens\Dashboard.js:73
 msgid "TOKENS"
 msgstr ""
 
@@ -746,32 +746,44 @@ msgstr ""
 msgid "Unregister token"
 msgstr ""
 
-#: src\sagas\pushNotification.js:73
+#: src\sagas\pushNotification.js:75
 msgid "Transaction"
 msgstr ""
 
-#: src\sagas\pushNotification.js:115
+#: src\sagas\pushNotification.js:117
 #, javascript-format
 msgid ""
 "You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
 "other token on a new transaction."
 msgstr ""
 
-#: src\sagas\pushNotification.js:118
+#: src\sagas\pushNotification.js:120
 #, javascript-format
 msgid "You have received ${ _firstToken } and ${ _secondToken }."
 msgstr ""
 
-#: src\sagas\pushNotification.js:121
+#: src\sagas\pushNotification.js:123
 msgid "You have received ${ _firstToken2 }."
 msgstr ""
 
-#: src\sagas\pushNotification.js:124
+#: src\sagas\pushNotification.js:126
 msgid "There is a new transaction in your wallet."
 msgstr ""
 
-#: src\sagas\pushNotification.js:126
+#: src\sagas\pushNotification.js:128
 msgid "New transaction received"
+msgstr ""
+
+#: src\components\AskForPushNotification.js:19
+msgid "Do you want to enable push notifications for this wallet?"
+msgstr ""
+
+#: src\components\AskForPushNotification.js:20
+msgid "You can always change this later in the settings menu"
+msgstr ""
+
+#: src\components\AskForPushNotification.js:21
+msgid "Yes, enable"
 msgstr ""
 
 #: src\components\CopyClipboard.js:47
