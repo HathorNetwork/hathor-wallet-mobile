@@ -35,6 +35,7 @@ import {
   pushLoadWalletFailed,
   pushInit,
   pushAskOptInQuestion,
+  pushReset,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -213,8 +214,8 @@ export function* onAppInitialization() {
   yield take(types.START_WALLET_SUCCESS);
 
   const { enabled, showAmountEnabled } = STORE.getItem(pushNotificationKey.settings) || { enabled: false, showAmountEnabled: false };
-  const hasBeenEnabled = STORE.getItem(pushNotificationKey.hasBeenEnabled);
-  const enabledAt = STORE.getItem(pushNotificationKey.enabledAt);
+  const hasBeenEnabled = STORE.getItem(pushNotificationKey.hasBeenEnabled) || false;
+  const enabledAt = STORE.getItem(pushNotificationKey.enabledAt) || 0;
 
   const persistedDeviceId = STORE.getItem(pushNotificationKey.deviceId);
   const deviceId = yield call(getDeviceId);
@@ -256,8 +257,8 @@ export function* onAppInitialization() {
 
   // If the user has not been asked yet, we should ask him if he wants to enable push notifications
   // We should appear only once, so we should save the fact that the user has dismissed the question
-  const askOptIn = !STORE.getItem(pushNotificationKey.optInDismissed);
-  if (askOptIn) {
+  const optInDismissed = STORE.getItem(pushNotificationKey.optInDismissed);
+  if (optInDismissed === null || !optInDismissed) {
     yield put(pushAskOptInQuestion());
   }
 }
@@ -444,6 +445,26 @@ export function* dismissOptInQuestion() {
   yield STORE.setItem(pushNotificationKey.optInDismissed, true);
 }
 
+const cleanToken = async () => {
+  await messaging().unregisterDeviceForRemoteMessages();
+  await messaging().deleteToken();
+};
+
+/**
+ * This function is responsible for reset the push notification.
+ */
+export function* resetPushNotification() {
+  // Unregister the device from FCM
+  yield call(cleanToken);
+  // Clean the store
+  yield STORE.removeItem(pushNotificationKey.enabledAt);
+  yield STORE.removeItem(pushNotificationKey.settings);
+  yield STORE.removeItem(pushNotificationKey.hasBeenEnabled);
+  yield STORE.removeItem(pushNotificationKey.optInDismissed);
+  // Reset the state
+  yield put(pushReset());
+}
+
 export function* saga() {
   yield all([
     fork(onAppInitialization),
@@ -452,6 +473,7 @@ export function* saga() {
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
     takeEvery(types.PUSH_UPDATE_REQUESTED, updateRegistration),
     takeEvery([types.PUSH_REGISTER_SUCCESS, types.PUSH_UPDATE_SUCCESS], updateStore),
-    takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion)
+    takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion),
+    takeEvery(types.RESET_WALLET, resetPushNotification)
   ]);
 }

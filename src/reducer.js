@@ -243,6 +243,8 @@ const reducer = (state = initialState, action) => {
       return onPushUpdateSuccess(state, action);
     case types.PUSH_UPDATE_FAILED:
       return onPushApiFailed(state);
+    case types.PUSH_RESET:
+      return onPushReset(state);
     default:
       return state;
   }
@@ -799,6 +801,20 @@ export const onPushApiFailed = (state) => ({
   pushNotification: {
     ...state.pushNotification,
     apiStatus: PUSH_API_STATUS.FAILED,
+  },
+});
+
+export const onPushReset = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    showOptInQuestion: false,
+    deviceId: '',
+    apiStatus: PUSH_API_STATUS.READY,
+    enabled: false,
+    showAmountEnabled: false,
+    hasBeenEnabled: false,
+    enabledAt: 0,
   },
 });
 

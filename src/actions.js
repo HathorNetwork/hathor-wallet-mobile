@@ -88,6 +88,7 @@ export const types = {
   PUSH_UPDATE_REQUESTED: 'PUSH_UPDATE_REQUESTED',
   PUSH_UPDATE_SUCCESS: 'PUSH_UPDATE_SUCCESS',
   PUSH_UPDATE_FAILED: 'PUSH_UPDATE_FAILED',
+  PUSH_RESET: 'PUSH_RESET',
 };
 
 /**
@@ -620,4 +621,8 @@ export const pushUpdateSuccess = (payload) => ({
 
 export const pushUpdateFailed = () => ({
   type: types.PUSH_UPDATE_FAILED,
+});
+
+export const pushReset = () => ({
+  type: types.PUSH_RESET,
 });
