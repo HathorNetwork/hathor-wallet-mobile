@@ -314,11 +314,11 @@ msgstr "Symbolet er en kortere version af token-navnet"
 msgid "E.g. HTR"
 msgstr "F.eks. HTR"
 
-#: src\screens\Dashboard.js:66 src\screens\RegisterTokenManual.js:150
+#: src\screens\Dashboard.js:67 src\screens\RegisterTokenManual.js:150
 msgid "Register token"
 msgstr "Registrer token"
 
-#: src\screens\Dashboard.js:73
+#: src\screens\Dashboard.js:74
 msgid "TOKENS"
 msgstr "TOKENS"
 
@@ -754,31 +754,31 @@ msgstr "Jeg vil afregistrere token **${ tokenLabel }**"
 msgid "Unregister token"
 msgstr "Afregistrer token"
 
-#: src\sagas\pushNotification.js:75
+#: src\sagas\pushNotification.js:83
 msgid "Transaction"
 msgstr "Ingen transaktioner"
 
-#: src\sagas\pushNotification.js:117
+#: src\sagas\pushNotification.js:125
 #, javascript-format
 msgid ""
 "You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
 "other token on a new transaction."
 msgstr ""
 
-#: src\sagas\pushNotification.js:120
+#: src\sagas\pushNotification.js:128
 #, javascript-format
 msgid "You have received ${ _firstToken } and ${ _secondToken }."
 msgstr ""
 
-#: src\sagas\pushNotification.js:123
+#: src\sagas\pushNotification.js:131
 msgid "You have received ${ _firstToken2 }."
 msgstr ""
 
-#: src\sagas\pushNotification.js:126
+#: src\sagas\pushNotification.js:134
 msgid "There is a new transaction in your wallet."
 msgstr ""
 
-#: src\sagas\pushNotification.js:128
+#: src\sagas\pushNotification.js:136
 msgid "New transaction received"
 msgstr "Ingen transaktioner"
 
@@ -822,6 +822,22 @@ msgstr "Opret betalingsanmodning"
 msgid "No internet connection"
 msgstr "Ingen internetforbindelse"
 
+#: src\components\PushTxDetailsModal.js:58 src\components\TxDetailsModal.js:62
+msgid "Date & Time"
+msgstr "Dato & Tid"
+
+#: src\components\PushTxDetailsModal.js:59 src\components\TxDetailsModal.js:63
+msgid "ID"
+msgstr "ID"
+
+#: src\components\PushTxDetailsModal.js:60 src\components\TxDetailsModal.js:64
+msgid "Public Explorer"
+msgstr "Public Explorer"
+
+#: src\components\PushTxDetailsModal.js:84
+msgid "New Transaction"
+msgstr "Ingen transaktioner"
+
 #: src\components\QRCodeReader.js:157
 msgid "Opening camera"
 msgstr "Åbner kamera"
@@ -853,18 +869,6 @@ msgstr ""
 #: src\components\TxDetailsModal.js:61
 msgid "Description"
 msgstr "Beskrivelse"
-
-#: src\components\TxDetailsModal.js:62
-msgid "Date & Time"
-msgstr "Dato & Tid"
-
-#: src\components\TxDetailsModal.js:63
-msgid "ID"
-msgstr "ID"
-
-#: src\components\TxDetailsModal.js:64
-msgid "Public Explorer"
-msgstr "Public Explorer"
 
 #~ msgid "I understand the risks of using a mobile wallet"
 #~ msgstr "Jeg forstår risikoen ved at bruge en mobil wallet"

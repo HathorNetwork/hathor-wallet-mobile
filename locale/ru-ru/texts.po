@@ -312,11 +312,11 @@ msgstr "Символ является сокращенной версией им
 msgid "E.g. HTR"
 msgstr "Например, HTR"
 
-#: src\screens\Dashboard.js:66 src\screens\RegisterTokenManual.js:150
+#: src\screens\Dashboard.js:67 src\screens\RegisterTokenManual.js:150
 msgid "Register token"
 msgstr "Зарегистрировать токен"
 
-#: src\screens\Dashboard.js:73
+#: src\screens\Dashboard.js:74
 msgid "TOKENS"
 msgstr "ТОКЕНЫ"
 
@@ -755,31 +755,31 @@ msgstr "Я хочу отменить регистрацию токена **${ to
 msgid "Unregister token"
 msgstr "Отменить регистрацию токена"
 
-#: src\sagas\pushNotification.js:75
+#: src\sagas\pushNotification.js:83
 msgid "Transaction"
 msgstr "Нет транзакций"
 
-#: src\sagas\pushNotification.js:117
+#: src\sagas\pushNotification.js:125
 #, javascript-format
 msgid ""
 "You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
 "other token on a new transaction."
 msgstr ""
 
-#: src\sagas\pushNotification.js:120
+#: src\sagas\pushNotification.js:128
 #, javascript-format
 msgid "You have received ${ _firstToken } and ${ _secondToken }."
 msgstr ""
 
-#: src\sagas\pushNotification.js:123
+#: src\sagas\pushNotification.js:131
 msgid "You have received ${ _firstToken2 }."
 msgstr ""
 
-#: src\sagas\pushNotification.js:126
+#: src\sagas\pushNotification.js:134
 msgid "There is a new transaction in your wallet."
 msgstr ""
 
-#: src\sagas\pushNotification.js:128
+#: src\sagas\pushNotification.js:136
 msgid "New transaction received"
 msgstr "Нет транзакций"
 
@@ -821,6 +821,22 @@ msgstr "Создать запрос на получение средств"
 msgid "No internet connection"
 msgstr "Нет соединения с интернетом"
 
+#: src\components\PushTxDetailsModal.js:58 src\components\TxDetailsModal.js:62
+msgid "Date & Time"
+msgstr "Дата и Время"
+
+#: src\components\PushTxDetailsModal.js:59 src\components\TxDetailsModal.js:63
+msgid "ID"
+msgstr "ID"
+
+#: src\components\PushTxDetailsModal.js:60 src\components\TxDetailsModal.js:64
+msgid "Public Explorer"
+msgstr "Public Explorer"
+
+#: src\components\PushTxDetailsModal.js:84
+msgid "New Transaction"
+msgstr "Нет транзакций"
+
 #: src\components\QRCodeReader.js:157
 msgid "Opening camera"
 msgstr "Камера открывается"
@@ -851,18 +867,6 @@ msgstr "Это конфигурация вашего токена ${ tokenLabel 
 #: src\components\TxDetailsModal.js:61
 msgid "Description"
 msgstr "Описание"
-
-#: src\components\TxDetailsModal.js:62
-msgid "Date & Time"
-msgstr "Дата и Время"
-
-#: src\components\TxDetailsModal.js:63
-msgid "ID"
-msgstr "ID"
-
-#: src\components\TxDetailsModal.js:64
-msgid "Public Explorer"
-msgstr "Public Explorer"
 
 #~ msgid "I understand the risks of using a mobile wallet"
 #~ msgstr "Я осознаю риски использования мобильного кошелька"
