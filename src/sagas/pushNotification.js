@@ -75,7 +75,7 @@ const getDeviceId = async () => {
     const deviceId = await messaging().getToken();
     return deviceId;
   } catch (error) {
-    console.error(`Error getting deviceId: ${error.message}`, error);
+    console.error('Error getting deviceId from firebase.', error);
     return null;
   }
 };
@@ -192,7 +192,7 @@ export const messageHandler = async (message, isForeground) => {
       }
     });
   } catch (error) {
-    console.error('Error displaying notification from notifee while handling message', error);
+    console.error('Error displaying notification from notifee while handling message.', error);
   }
 };
 
@@ -201,7 +201,7 @@ const confirmDeviceRegistrationOnFirebase = async () => {
     // Make sure deviceId is registered on the FCM
     await messaging().registerDeviceForRemoteMessages();
   } catch (error) {
-    console.error(`Error confirming the device is registered on FCM: ${error.message}`, error);
+    console.error('Error confirming the device is registered on firebase.', error);
   }
 };
 function* handleMessage(message) {
@@ -213,7 +213,7 @@ const installForegroundListener = () => {
     // Add listeners for push notifications on foreground and background
     messaging().onMessage(onForegroundMessage);
   } catch (error) {
-    console.error(`Error installing foreground listener to push notification: ${error.message}`, error);
+    console.error('Error installing foreground listener to push notification.', error);
   }
 };
 
@@ -227,7 +227,7 @@ const createChannelIfNotExists = async () => {
       });
     }
   } catch (error) {
-    console.error(`Error creating channel for push notification: ${error.message}`, error);
+    console.error('Error creating channel for push notification.', error);
   }
 };
 
@@ -371,7 +371,7 @@ export function* firstTimeRegistration({ payload: { deviceId } }) {
       yield put(pushRegisterFailed());
     }
   } catch (error) {
-    console.error('Error registering device for the first time: ', error.cause);
+    console.error('Error registering device in wallet-service for the first time.', error);
     yield put(pushRegisterFailed());
   }
 }
@@ -411,7 +411,7 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
       yield put(pushRegisterFailed());
     }
   } catch (error) {
-    console.error('Error registering device: ', error.cause);
+    console.error('Error registering device in wallet-service.', error);
     yield put(pushRegisterFailed());
   }
 }
@@ -449,7 +449,7 @@ export function* updateRegistration({ payload: { enabled, showAmountEnabled, dev
       yield put(pushUpdateFailed());
     }
   } catch (error) {
-    console.error('Error updating device: ', error.cause);
+    console.error('Error updating device in wallet-service.', error);
     yield put(pushUpdateFailed());
   }
 }
@@ -476,7 +476,7 @@ export function* dismissOptInQuestion() {
  * @returns {Promise<{
  *  tx: { txId: string, timestamp: number, voided: boolean },
  *  tokens: { uid: string, name: string, symbol: string, balance: number, isRegistered: boolean }[]
- * }}>} the tx details
+ * }>} the tx details
  * @example
  * {
  *   tx: {
