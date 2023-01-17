@@ -247,6 +247,16 @@ export function* onAppInitialization() {
 
   yield call(installForegroundListener);
 
+  const cleanToken = false;
+  if (cleanToken) {
+    const token = yield call(getDeviceId);
+    console.log('token to clean', token);
+
+    const fcm = messaging();
+    yield call(fcm.unregisterDeviceForRemoteMessages.bind(fcm));
+    yield call(fcm.deleteToken.bind(fcm));
+  }
+
   const persistedDeviceId = STORE.getItem(pushNotificationKey.deviceId);
   const deviceId = yield call(getDeviceId);
   // If the deviceId is different from the persisted one, we should update it.
@@ -256,6 +266,7 @@ export function* onAppInitialization() {
     STORE.setItem(pushNotificationKey.deviceId, deviceId);
     yield put(pushUpdateDeviceId({ deviceId }));
   }
+  console.log('deviceId', deviceId);
 
   const getSettingsOrFallback = () => {
     const settings = STORE.getItem(pushNotificationKey.settings);
