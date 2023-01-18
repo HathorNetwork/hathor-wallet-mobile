@@ -14,7 +14,7 @@ import PropTypes from 'prop-types';
 import Modal from 'react-native-modal';
 import NewHathorButton from './NewHathorButton';
 
-const FeedbackModal = (props) => (
+const ActionModal = (props) => (
   <Modal
     isVisible
     animationIn='slideInUp'
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
 });
 
-FeedbackModal.propTypes = {
+ActionModal.propTypes = {
   // Text displayed on the modal
   title: PropTypes.string,
 
@@ -71,4 +71,4 @@ FeedbackModal.propTypes = {
   onAction: PropTypes.func,
 };
 
-export default FeedbackModal;
+export default ActionModal;
