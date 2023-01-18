@@ -220,7 +220,7 @@ const reducer = (state = initialState, action) => {
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
     case types.PUSH_ASK_OPT_IN_QUESTION:
-      return onPushAskOptInQuestiong(state);
+      return onPushAskOptInQuestion(state);
     case types.PUSH_DISMISS_OPT_IN_QUESTION:
       return onPushDismissOptInQuestion(state);
     case types.PUSH_INIT:
@@ -705,7 +705,7 @@ export const onWalletBestBlockUpdate = (state, action) => {
 
 // Push notification
 
-export const onPushAskOptInQuestiong = (state) => ({
+export const onPushAskOptInQuestion = (state) => ({
   ...state,
   pushNotification: {
     ...state.pushNotification,
