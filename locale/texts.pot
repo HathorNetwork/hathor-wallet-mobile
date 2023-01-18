@@ -153,27 +153,27 @@ msgstr ""
 msgid "CHANGE PIN"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:133
+#: src/screens/ChoosePinScreen.js:136
 msgid "Enter your new PIN code"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:145
+#: src/screens/ChoosePinScreen.js:148
 msgid "Enter your new PIN code again"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:69
+#: src/screens/ChoosePinScreen.js:72
 msgid "Create a new PIN code,"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:72
+#: src/screens/ChoosePinScreen.js:75
 msgid "To confirm the PIN,"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:159
+#: src/screens/ChoosePinScreen.js:162
 msgid "PIN codes don't match. Try again."
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:182
+#: src/screens/ChoosePinScreen.js:185
 msgid "Start the Wallet"
 msgstr ""
 
@@ -389,17 +389,17 @@ msgstr ""
 msgid "Enter your seed words separated by space"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:90
+#: src/screens/LoadHistoryScreen.js:75
 msgid "Loading your transactions"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:93
+#: src/screens/LoadHistoryScreen.js:78
 #, javascript-format
-msgid "**${ _this2.props.loadedData.transactions } transactions** found"
+msgid "**${ _this.props.loadedData.transactions } transactions** found"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:96
-msgid "**${ _this2.props.loadedData.addresses } addresses** found"
+#: src/screens/LoadHistoryScreen.js:81
+msgid "**${ _this.props.loadedData.addresses } addresses** found"
 msgstr ""
 
 #: src/screens/MainScreen.js:127
@@ -467,23 +467,23 @@ msgstr ""
 msgid "Waiting confirmation"
 msgstr ""
 
-#: src/screens/PinScreen.js:220
+#: src/screens/PinScreen.js:235
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
-#: src/screens/PinScreen.js:65
+#: src/screens/PinScreen.js:72
 msgid "Enter your PIN Code "
 msgstr ""
 
-#: src/screens/PinScreen.js:66
+#: src/screens/PinScreen.js:73
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
-#: src/screens/PinScreen.js:232
+#: src/screens/PinScreen.js:247
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:235
+#: src/screens/PinScreen.js:250
 #: src/screens/RecoverPin.js:108
 #: src/screens/Settings.js:133
 msgid "Reset wallet"
@@ -628,12 +628,12 @@ msgstr ""
 msgid "Your transfer is being processed"
 msgstr ""
 
-#: src/sagas/wallet.js:106
+#: src/sagas/wallet.js:109
 #: src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
-#: src/sagas/wallet.js:107
+#: src/sagas/wallet.js:110
 #: src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr ""

@@ -18,7 +18,7 @@ import { t } from 'ttag';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
-import { setInitWallet, unlockScreen } from '../actions';
+import { startWalletRequested, unlockScreen } from '../actions';
 import { PIN_SIZE } from '../constants';
 
 import baseStyle from '../styles/init';
@@ -26,7 +26,10 @@ import baseStyle from '../styles/init';
 
 const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
-  setInitWallet: (words, pin) => dispatch(setInitWallet(words, pin)),
+  startWalletRequested: (words, pin) => dispatch(startWalletRequested({
+    words,
+    pin
+  })),
 });
 
 class ChoosePinScreen extends React.Component {
@@ -78,7 +81,7 @@ class ChoosePinScreen extends React.Component {
   goToNextScreen = () => {
     // we are just initializing the wallet, so make sure it's not locked when going to AppStack
     this.props.unlockScreen();
-    this.props.setInitWallet(this.words, this.state.pin1);
+    this.props.startWalletRequested(this.words, this.state.pin1);
     this.props.navigation.navigate('Home');
   }
 
