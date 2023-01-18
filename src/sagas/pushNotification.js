@@ -82,7 +82,7 @@ const localization = {
   hasKey: (key) => localization.keys.has(key),
   getMessage: (key, args) => {
     if (!localization.hasKey(key)) {
-      console.log('Unknown localization key for push notification message.', key);
+      console.debug('Unknown localization key for push notification message.', key);
       return '';
     }
 
@@ -92,16 +92,34 @@ const localization = {
         console.debug(`The args for push notification message key ${NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED} cannot be null or undefined.`, key);
         return '';
       }
+      /**
+       * We have 3 cases:
+       * - 3 or more tokens: You have received 10 T2, 5 T1 and 2 other token on a new transaction.
+       * - 2 tokens: You have received 10 T2 and 5 T1 on a new transaction.
+       * - 1 token: You have received 10 T2 on a new transaction.
+      */
       const countArgs = args.length;
       if (countArgs === 3) {
         const [firstToken, secondToken, other] = args;
         const otherCount = parseInt(other, 10);
+        /**
+         * @example
+         * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
+         */
         message = t`You have received ${firstToken}, ${secondToken} and ${otherCount} other token on a new transaction.`;
       } else if (countArgs === 2) {
         const [firstToken, secondToken] = args;
+        /**
+         * @example
+         * You have received 10 T2 and 5 T1 on a new transaction.
+         */
         message = t`You have received ${firstToken} and ${secondToken}.`;
       } else if (countArgs === 1) {
         const [firstToken] = args;
+        /**
+         * @example
+         * You have received 10 T2 on a new transaction.
+         */
         message = t`You have received ${firstToken}.`;
       }
     } else if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED) {
@@ -132,12 +150,12 @@ const onForegroundMessage = async (message) => {
 const messageHandler = async (message) => {
   const { data } = message;
   if (!localization.hasKey(data.titleLocKey)) {
-    console.log('unknown message titleLocKey', data.titleLocKey);
+    console.debug('unknown message titleLocKey', data.titleLocKey);
     return;
   }
 
   if (!localization.hasKey(data.bodyLocKey)) {
-    console.log('unknown message bodyLocKey', data.bodyLocKey);
+    console.debug('unknown message bodyLocKey', data.bodyLocKey);
     return;
   }
 
@@ -319,7 +337,7 @@ export function* firstTimeRegistration({ payload: { deviceId } }) {
       yield put(pushRegisterFailed());
     }
   } catch (error) {
-    console.log('Error registering device for the first time: ', error.cause);
+    console.error('Error registering device for the first time: ', error.cause);
     yield put(pushRegisterFailed());
   }
 }
@@ -359,7 +377,7 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
       yield put(pushRegisterFailed());
     }
   } catch (error) {
-    console.log('Error registering device: ', error.cause);
+    console.error('Error registering device: ', error.cause);
     yield put(pushRegisterFailed());
   }
 }
@@ -397,7 +415,7 @@ export function* updateRegistration({ payload: { enabled, showAmountEnabled, dev
       yield put(pushUpdateFailed());
     }
   } catch (error) {
-    console.log('Error updating device: ', error.cause);
+    console.error('Error updating device: ', error.cause);
     yield put(pushUpdateFailed());
   }
 }
