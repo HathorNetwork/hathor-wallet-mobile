@@ -38,6 +38,7 @@ import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
   WALLET_SERVICE_MAINNET_BASE_URL,
+  NETWORK,
 } from '../constants';
 import {
   Events as FeatureFlagEvents,
@@ -79,9 +80,8 @@ export const WALLET_STATUS = {
 export function* startWallet(action) {
   const { words, pin } = action.payload;
 
-  const networkName = 'mainnet';
   const uniqueDeviceId = getUniqueId();
-  const featureFlags = new FeatureFlags(uniqueDeviceId, networkName);
+  const featureFlags = new FeatureFlags(uniqueDeviceId, NETWORK);
   const useWalletService = yield call(() => featureFlags.shouldUseWalletService());
 
   yield put(setUseWalletService(useWalletService));
@@ -98,7 +98,7 @@ export function* startWallet(action) {
 
   let wallet;
   if (useWalletService) {
-    const network = new Network(networkName);
+    const network = new Network(NETWORK);
 
     // Set urls for wallet service
     config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
@@ -111,7 +111,7 @@ export function* startWallet(action) {
     });
   } else {
     const connection = new Connection({
-      network: networkName, // app currently connects only to mainnet
+      network: NETWORK, // app currently connects only to mainnet
       servers: ['https://mobile.wallet.hathor.network/v1a/'],
     });
 
@@ -174,7 +174,7 @@ export function* startWallet(action) {
 
   yield put(setServerInfo({
     version: null,
-    network: networkName,
+    network: NETWORK,
   }));
 
   // Wallet might be already ready at this point

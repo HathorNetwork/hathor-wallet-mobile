@@ -39,6 +39,11 @@ import {
   STORE,
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
   WALLET_SERVICE_MAINNET_BASE_URL,
+  NETWORK,
+  NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED,
+  NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED,
+  NEW_TRANSACTION_RECEIVED_TITLE,
+  TRANSACTION_CHANNEL_ID,
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
 import { showPinScreenForResult } from './helpers';
@@ -49,27 +54,6 @@ export const PUSH_API_STATUS = {
   LOADING: 'loading',
 };
 
-/**
- * this is the network name that will be used to load the wallet on the wallet-service,
- * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
- */
-const NETWORK = 'mainnet';
-/**
- * this is the message key for localization of new transaction when show amount is enabled
- */
-const NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITH_TOKENS = 'new_transaction_received_description_with_tokens';
-/**
- * this is the message key for localization of new transaction when show amount is disabled
- */
-const NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITHOUT_TOKENS = 'new_transaction_received_description_without_tokens';
-/**
- * this is the message key for localization of new transaction title
- */
-const NEW_TRANSACTION_RECEIVED_TITLE = 'new_transaction_received_title';
-/**
- * this is the channel id for the transaction notification
- */
-const TRANSACTION_CHANNEL_ID = 'transaction';
 const TRANSACTION_CHANNEL_NAME = t`Transaction`;
 
 /**
@@ -91,8 +75,8 @@ const getDeviceId = async () => {
  */
 const localization = {
   keys: new Set([
-    NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITH_TOKENS,
-    NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITHOUT_TOKENS,
+    NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED,
+    NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED,
     NEW_TRANSACTION_RECEIVED_TITLE
   ]),
   hasKey: (key) => localization.keys.has(key),
@@ -103,9 +87,9 @@ const localization = {
     }
 
     let message = '';
-    if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITH_TOKENS) {
+    if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED) {
       if (!args) {
-        console.log(`The args for push notification message key ${NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITH_TOKENS} cannot be null or undefined.`, key);
+        console.debug(`The args for push notification message key ${NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED} cannot be null or undefined.`, key);
         return '';
       }
       const countArgs = args.length;
@@ -120,7 +104,7 @@ const localization = {
         const [firstToken] = args;
         message = t`You have received ${firstToken}.`;
       }
-    } else if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_WITHOUT_TOKENS) {
+    } else if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED) {
       message = t`There is a new transaction in your wallet.`;
     } else if (key === NEW_TRANSACTION_RECEIVED_TITLE) {
       message = t`New transaction received`;

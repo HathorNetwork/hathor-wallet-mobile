@@ -89,9 +89,33 @@ export const METADATA_CONCURRENT_DOWNLOAD = 5;
 export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://wallet-service.hathor.network/';
 export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.wallet-service.hathor.network/';
 
+/**
+ * Push notification constants
+ */
 export const pushNotificationKey = {
   deviceId: 'pushNotification:deviceId',
   settings: 'pushNotification:settings',
   hasBeenEnabled: 'pushNotification:hasBeenEnabled',
   enabledAt: 'pushNotification:enabledAt',
 };
+/**
+ * this is the network name that will be used to load the wallet on the wallet-service,
+ * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
+ */
+export const NETWORK = 'mainnet';
+/**
+ * this is the message key for localization of new transaction when show amount is enabled
+ */
+export const NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED = 'new_transaction_received_description_with_tokens';
+/**
+ * this is the message key for localization of new transaction when show amount is disabled
+ */
+export const NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED = 'new_transaction_received_description_without_tokens';
+/**
+ * this is the message key for localization of new transaction title
+ */
+export const NEW_TRANSACTION_RECEIVED_TITLE = 'new_transaction_received_title';
+/**
+ * this is the channel id for the transaction notification
+ */
+export const TRANSACTION_CHANNEL_ID = 'transaction';
