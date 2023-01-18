@@ -115,8 +115,8 @@ const initialState = {
     showAmountEnabled: false,
     /**
      * hasBeenEnabled {boolean} if user has enabled push notification before
-     * this is used to show the terms and conditions modal only the first time
-     * user enables push notification
+     * this is used to trigger registration on the push notification api
+     * when the user enables it the first time
      */
     hasBeenEnabled: false,
     /**
@@ -225,11 +225,11 @@ const reducer = (state = initialState, action) => {
     case types.PUSH_REGISTER_SUCCESS:
       return onPushRegisterSuccess(state, action);
     case types.PUSH_REGISTER_FAILED:
-      return onPushRegisterFailed(state);
+      return onPushApiFailed(state);
     case types.PUSH_UPDATE_SUCCESS:
       return onPushUpdateSuccess(state, action);
     case types.PUSH_UPDATE_FAILED:
-      return onPushUpdateFailed(state);
+      return onPushApiFailed(state);
     default:
       return state;
   }
@@ -752,14 +752,6 @@ export const onPushRegisterSuccess = (state, action) => {
   });
 };
 
-export const onPushRegisterFailed = (state) => ({
-  ...state,
-  pushNotification: {
-    ...state.pushNotification,
-    apiStatus: PUSH_API_STATUS.FAILED,
-  },
-});
-
 /**
  * @param {{payload: {enabled, showAmountEnabled}}} action
  */
@@ -773,7 +765,7 @@ export const onPushUpdateSuccess = (state, { payload: { enabled, showAmountEnabl
   },
 });
 
-export const onPushUpdateFailed = (state) => ({
+export const onPushApiFailed = (state) => ({
   ...state,
   pushNotification: {
     ...state.pushNotification,
