@@ -11,16 +11,17 @@ import {
   View,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { startWalletRequested } from '../actions';
+import { onStartWalletLock, lockScreen } from '../actions';
 import SimpleButton from '../components/SimpleButton';
 
 export default () => {
   const dispatch = useDispatch();
-  const { words, pin } = useSelector((state) => state.initWallet);
-  const onReload = useCallback(() => dispatch(startWalletRequested({
-    words,
-    pin,
-  })), [dispatch]);
+  const onReload = useCallback(() => {
+    // This will set the walletState to LOADING
+    dispatch(onStartWalletLock());
+    // Display the PinScreen
+    dispatch(lockScreen());
+  }, [dispatch]);
 
   return (
     <View style={{

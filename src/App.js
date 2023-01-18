@@ -178,7 +178,13 @@ const AppStack = createStackNavigator({
   Security,
   PushNotification,
   ChangePin,
-  ResetWallet,
+  ResetWallet: {
+    screen: ResetWallet,
+    // Dismissing the screen on ResetWallet would lead to a
+    // MainScreen with broken state if started from the PinScreen,
+    // so just disable the swipeDown animation
+    navigationOptions: disableSwipeDown,
+  },
   PaymentRequestDetail,
   RegisterToken: RegisterTokenStack,
   ChangeToken,

@@ -51,10 +51,6 @@ import { PUSH_API_STATUS } from './sagas/pushNotification';
  *   network {str} network of the connected server (e.g., mainnet, testnet)
  * }
  * lockScreen {bool} Indicates screen is locked
- * initWallet {Object} Information on wallet initialization (if not needed, set to null) {
- *   words {str} wallet words
- *   pin {str} pin selected by user
- * }
  *
  * showErrorModal {boolean} if app should show a modal after the error alert
  * errorReported {boolean} if user reported the error to Sentry
@@ -75,7 +71,6 @@ const initialState = {
   isOnline: false,
   serverInfo: { version: '', network: '' },
   lockScreen: true,
-  initWallet: null,
   height: 0,
   showErrorModal: false,
   errorReported: false,
@@ -93,7 +88,6 @@ const initialState = {
   // screen
   tempPin: null,
   isShowingPinScreen: false,
-  walletStartState: WALLET_STATUS.LOADING,
   pushNotification: {
     /**
      * deviceId {string} device id for push notification
@@ -116,7 +110,8 @@ const initialState = {
      * enabledAt {number} timestamp of when push notification was enabled
      */
     enabledAt: 0,
-  }
+  },
+  walletStartState: WALLET_STATUS.NOT_STARTED,
 };
 
 const reducer = (state = initialState, action) => {
@@ -145,10 +140,6 @@ const reducer = (state = initialState, action) => {
       return onSetServerInfo(state, action);
     case types.SET_LOCK_SCREEN:
       return onSetLockScreen(state, action);
-    case types.SET_INIT_WALLET:
-      return onSetInitWallet(state, action);
-    case types.CLEAR_INIT_WALLET:
-      return onSetInitWallet(state, action);
     case types.SET_ERROR_MODAL:
       return onSetErrorModal(state, action);
     case types.SET_WALLET:
@@ -201,6 +192,8 @@ const reducer = (state = initialState, action) => {
       return onStartWalletSuccess(state);
     case types.START_WALLET_FAILED:
       return onStartWalletFailed(state);
+    case types.START_WALLET_NOT_STARTED:
+      return onStartWalletNotStarted(state);
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
     case types.PUSH_INIT:
@@ -363,14 +356,6 @@ const onSetLockScreen = (state, action) => ({
   lockScreen: action.payload,
 });
 
-/**
- * Update information about wallet initialization
- */
-const onSetInitWallet = (state, action) => ({
-  ...state,
-  initWallet: action.payload,
-});
-
 const onSetRecoveringPin = (state, action) => ({
   ...state,
   recoveringPin: action.payload,
@@ -405,17 +390,10 @@ const onSetUseWalletService = (state, action) => ({
   useWalletService: action.payload,
 });
 
-const onResetWallet = (state, action) => {
-  if (state.wallet) {
-    // Stop wallet
-    state.wallet.stop();
-  }
-
-  return {
-    ...state,
-    wallet: null,
-  };
-};
+const onResetWallet = (state) => ({
+  ...state,
+  wallet: null,
+});
 
 const onSetErrorModal = (state, action) => ({
   ...state,
@@ -603,6 +581,11 @@ export const onTokenFetchHistoryRequested = (state, action) => {
   };
 };
 
+export const onStartWalletNotStarted = (state) => ({
+  ...state,
+  walletStartState: WALLET_STATUS.NOT_STARTED,
+});
+
 export const onStartWalletFailed = (state) => ({
   ...state,
   walletStartState: WALLET_STATUS.FAILED,
@@ -610,7 +593,7 @@ export const onStartWalletFailed = (state) => ({
 
 export const onStartWalletLock = (state) => ({
   ...state,
-  walletStartState: WALLET_STATUS.LOADING,
+  walletStartState: WALLET_STATUS.NOT_STARTED,
 });
 
 /**
@@ -620,10 +603,6 @@ export const onStartWalletLock = (state) => ({
 export const onStartWalletRequested = (state, action) => ({
   ...state,
   walletStartState: WALLET_STATUS.LOADING,
-  initWallet: {
-    words: action.payload.words,
-    pin: action.payload.pin,
-  },
 });
 
 export const onStartWalletSuccess = (state) => ({

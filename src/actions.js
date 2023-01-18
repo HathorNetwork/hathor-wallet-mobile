@@ -69,6 +69,7 @@ export const types = {
   START_WALLET_REQUESTED: 'START_WALLET_REQUESTED',
   START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
   START_WALLET_FAILED: 'START_WALLET_FAILED',
+  START_WALLET_NOT_STARTED: 'START_WALLET_NOT_STARTED',
   WALLET_STATE_READY: 'WALLET_STATE_READY',
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
@@ -187,15 +188,6 @@ export const updateHeight = (height, htrBalance) => (
   { type: types.UPDATE_HEIGHT, payload: { height, htrBalance } }
 );
 
-/**
- * words {String} wallet words
- * pin {String} Pin chosen by user
- */
-export const setInitWallet = (words, pin) => (
-  { type: types.SET_INIT_WALLET, payload: { words, pin } }
-);
-
-export const clearInitWallet = () => ({ type: types.SET_INIT_WALLET, payload: null });
 
 export const updateTokenHistory = (token, newHistory) => (
   { type: types.UPDATE_TOKEN_HISTORY, payload: { token, newHistory } }
