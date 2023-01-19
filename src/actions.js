@@ -503,6 +503,12 @@ export const onWalletReload = () => ({
   type: types.WALLET_RELOADING,
 });
 
+/**
+ * Remove token metadata after unregister token
+ *
+ * error {Error} Error object to report
+ * isFatal {Boolean} Whether is fatal or not
+ */
 export const onExceptionCaptured = (error, isFatal) => ({
   type: types.EXCEPTION_CAPTURED,
   payload: {
