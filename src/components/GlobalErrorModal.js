@@ -5,89 +5,130 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState, createContext, useContext } from 'react';
-import { Alert, View } from 'react-native';
+import React from 'react';
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import Modal from 'react-native-modal';
+import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
-import { setErrorModal } from '../actions';
-import { sentryReportError } from '../errorHandler';
 
-const initialState = {
-  showModal: () => {},
-  hideModal: () => {},
-  modalHidden: true,
-  data: {},
-  error: null,
+import { hideErrorModal } from '../actions';
+
+const styles = StyleSheet.create({
+  modal: {
+    justifyContent: 'flex-end',
+  },
+  innerModal: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 56,
+    paddingTop: 48,
+    height: 290,
+  },
+  text: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  title: {
+    fontWeight: 'bold',
+    fontSize: 20,
+    textAlign: 'center',
+    marginBottom: 24,
+  }
+});
+
+const showErrorReportedMessage = () => (
+  <Text style={styles.text}>
+    {t`Thanks for reporting the error to the team. We will investigate it to prevent from happening again.`}
+  </Text>
+);
+
+export const ErrorModal = () => {
+  const dispatch = useDispatch();
+  const errorHandler = useSelector((state) => state.errorHandler);
+
+  const {
+    showModal,
+    isFatal,
+    errorReported,
+  } = errorHandler;
+
+  const hide = () => dispatch(hideErrorModal());
+
+  return (
+    <Modal
+      isVisible={showModal}
+      {...(!isFatal && {
+        animationType: 'slide',
+        swipeDirection: ['down'],
+        onSwipeComplete: () => hide(),
+        onBackButtonPress: () => hide(),
+        onBackdropPress: () => hide(),
+      })}
+      style={styles.modal}
+    >
+      <View style={styles.innerModal}>
+        <Text style={styles.title}>
+          {t`Unexpected error`}
+        </Text>
+        {errorReported && showErrorReportedMessage()}
+        <Text style={styles.text}>
+          {t`Please restart your app to continue using the wallet.`}
+        </Text>
+      </View>
+    </Modal>
+  );
 };
 
-export const GlobalModalContext = createContext(initialState);
+export const GlobalErrorHandler = () => {
+  const dispatch = useDispatch();
+  const {
+    showModal,
+    showAlert,
+    isFatal,
+  } = useSelector((state) => state.errorHandler);
 
-export const useGlobalModalContext = () => useContext(GlobalModalContext);
+  if (showModal) {
+    return <ErrorModal />;
+  }
 
-export const GlobalModal = ({ children, store }) => {
-  const [data, setData] = useState(initialState);
-
-  const hideModal = () => {
-    setData({
-      ...data,
-      modalHidden: true,
-      error: null,
-      modalProps: {},
-    });
-  };
-
-  const showModal = (fatal, error, modalProps = {}) => {
-    setData({
-      ...data,
-      modalHidden: false,
-      modalProps,
-      fatal,
-      error,
-    });
-  };
-
-  const renderComponent = () => {
-    const {
-      modalHidden,
-      fatal,
-      error,
-    } = data;
-
-    if (modalHidden) {
-      return null;
+  const getMessage = () => {
+    if (isFatal) {
+      return t`Unfortunately an unhandled error happened and you will need to restart your app.\n\nWe kindly ask you to report this error to the Hathor team clicking on the button below.\n\nNo sensitive data will be shared.`;
     }
 
+    return t`Unfortunately an unhandled error happened.\n\nWe kindly ask you to report this error to the Hathor team clicking on the button below.\n\nNo sensitive data will be shared.`;
+  };
+
+  if (showAlert) {
     return (
       <>
         {Alert.alert(
           t`Unexpected error occurred`,
-          t`Unfortunately an unhandled error happened and you will need to restart your app.\n\nWe kindly ask you to report this error to the Hathor team clicking on the button below.\n\nNo sensitive data will be shared.`,
+          getMessage(),
           [{
             text: t`Report error`,
             onPress: () => {
-              sentryReportError(error);
-              store.dispatch(setErrorModal(true, fatal));
+              dispatch({ type: 'ALERT_REPORT_ERROR' });
             },
           }, {
             text: t`Close`,
             onPress: () => {
-              store.dispatch(setErrorModal(false, fatal));
+              dispatch({ type: 'ALERT_DONT_REPORT_ERROR' });
             }
           }],
           { cancelable: false },
         )}
       </>
     );
-  };
+  }
 
-  return (
-    <GlobalModalContext.Provider value={{
-      data,
-      showModal,
-      hideModal,
-    }}
-    >
-      { renderComponent() }
-      { children }
-    </GlobalModalContext.Provider>
-  );
+  return null;
 };

@@ -41,7 +41,7 @@ export const types = {
   SET_LOCK_SCREEN: 'SET_LOCK_SCREEN',
   SET_INIT_WALLET: 'SET_INIT_WALLET',
   UPDATE_HEIGHT: 'UPDATE_HEIGHT',
-  SET_ERROR_MODAL: 'SET_ERROR_MODAL',
+  SHOW_ERROR_MODAL: 'SHOW_ERROR_MODAL',
   HIDE_ERROR_MODAL: 'HIDE_ERROR_MODAL',
   SET_WALLET: 'SET_WALLET',
   RESET_WALLET: 'RESET_WALLET',
@@ -73,6 +73,7 @@ export const types = {
   WALLET_STATE_READY: 'WALLET_STATE_READY',
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
+  EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
 };
 
 /**
@@ -338,14 +339,10 @@ export const updateLoadedData = (payload) => (
 /**
  * errorReported {boolean} true if user reported the error to sentry
  */
-export const setErrorModal = (errorReported, errorFatal, capturedError) => ({
-  type: types.SET_ERROR_MODAL,
-  payload: {
-    errorReported,
-    errorFatal,
-  },
+export const showErrorModal = (errorReported) => ({
+  type: types.SHOW_ERROR_MODAL,
+  payload: errorReported,
 });
-
 export const hideErrorModal = () => ({ type: types.HIDE_ERROR_MODAL });
 
 /**
@@ -504,4 +501,12 @@ export const walletStateReady = () => ({
 
 export const onWalletReload = () => ({
   type: types.WALLET_RELOADING,
+});
+
+export const onExceptionCaptured = (error, isFatal) => ({
+  type: types.EXCEPTION_CAPTURED,
+  payload: {
+    error,
+    isFatal,
+  },
 });

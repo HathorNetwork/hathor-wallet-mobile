@@ -50,6 +50,7 @@ class AsyncStorageStore {
     // Old wallet storage had wallet:data saved, which was causing crash in some phones
     // We've fixed it, so we don't save it on storage anymore but we still need to clean it
     AsyncStorage.removeItem('wallet:data');
+
     let keys = [];
     try {
       keys = await AsyncStorage.getAllKeys();

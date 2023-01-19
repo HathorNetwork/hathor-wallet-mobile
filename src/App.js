@@ -27,7 +27,7 @@ import {
   setTokens,
 } from './actions';
 import { store } from './reducer';
-import { GlobalModal } from './components/GlobalErrorModal';
+import { GlobalErrorHandler } from './components/GlobalErrorModal';
 
 import DecideStackScreen from './screens/DecideStackScreen';
 import {
@@ -62,7 +62,6 @@ import CreateTokenSymbol from './screens/CreateTokenSymbol';
 import CreateTokenAmount from './screens/CreateTokenAmount';
 import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
-import ErrorModal from './components/ErrorModal';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 import { WALLET_STATUS } from './sagas/wallet';
 
@@ -410,12 +409,10 @@ const NavigationContainer = createAppContainer(SwitchNavigator);
 
 const App = () => (
   <Provider store={store}>
-    <GlobalModal store={store}>
-      <NavigationContainer
-        ref={(navigatorRef) => NavigationService.setTopLevelNavigator(navigatorRef)}
-      />
-      <ErrorModal />
-    </GlobalModal>
+    <NavigationContainer
+      ref={(navigatorRef) => NavigationService.setTopLevelNavigator(navigatorRef)}
+    />
+    <GlobalErrorHandler />
   </Provider>
 );
 
