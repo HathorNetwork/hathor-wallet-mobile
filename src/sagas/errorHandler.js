@@ -54,7 +54,11 @@ export function* errorModalHandler(action) {
     dontReportError: take('ALERT_DONT_REPORT_ERROR'),
   });
 
-  const { isFatal } = action.payload;
+  const { isFatal, error } = action.payload;
+
+  if (reportError) {
+    sentryReportError(error);
+  }
 
   if (isFatal) {
     yield put(showErrorModal(!!reportError));

@@ -51,12 +51,8 @@ class AsyncStorageStore {
     // We've fixed it, so we don't save it on storage anymore but we still need to clean it
     AsyncStorage.removeItem('wallet:data');
 
-    let keys = [];
-    try {
-      keys = await AsyncStorage.getAllKeys();
-    } catch (e) {
-      // TODO read key error
-    }
+    const keys = await AsyncStorage.getAllKeys() || [];
+
     const allValues = await AsyncStorage.multiGet(keys);
     for (const arr of allValues) {
       const key = arr[0];
