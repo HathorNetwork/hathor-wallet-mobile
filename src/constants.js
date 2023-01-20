@@ -45,7 +45,17 @@ export const KEYCHAIN_USER = 'hathor-keychain';
 /**
  * URL with more information about token deposit
  */
-export const TOKEN_DEPOSIT_URL = 'https://gitlab.com/HathorNetwork/rfcs/blob/master/text/0011-token-deposit.md';
+export const TOKEN_DEPOSIT_URL = 'https://github.com/HathorNetwork/rfcs/blob/master/text/0011-token-deposit.md';
+
+/**
+ * URL for the Terms of Service
+ */
+export const TERMS_OF_SERVICE_URL = 'https://hathor.network/terms-and-conditions/';
+
+/**
+ * URL for the Privacy Policy
+ */
+export const PRIVACY_POLICY_URL = 'https://hathor.network/privacy-policy/';
 
 /**
  * Re-export variables from config.js.

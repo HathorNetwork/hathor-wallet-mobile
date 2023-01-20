@@ -9,8 +9,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 "X-Generator: Poedit 2.2.4\n"
 
 #: src/errorHandler.js:51
@@ -89,19 +89,19 @@ msgstr "DD MMM YYYY [•] HH:mm"
 msgid "Invalid address"
 msgstr "Неправильный адрес"
 
-#: src/screens/About.js:55
+#: src/screens/About.js:56
 msgid "ABOUT"
 msgstr "О НАС"
 
-#: src/screens/About.js:68
+#: src/screens/About.js:69
 msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr "Это приложение разработано Hathor Labs и распространяется бесплатно."
 
-#: src/screens/About.js:72 src/screens/InitWallet.js:59
+#: src/screens/About.js:73 src/screens/InitWallet.js:59
 msgid "This wallet is connected to the **mainnet**."
 msgstr "Этот кошелек подключен к **mainnet**."
 
-#: src/screens/About.js:75 src/screens/InitWallet.js:62
+#: src/screens/About.js:76 src/screens/InitWallet.js:62
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
 "So, we advise you to keep only a small amount of tokens here, such as pocket "
@@ -110,13 +110,11 @@ msgstr ""
 "Мобильный кошелек - не самый безопасный способ для хранения ваших токенов.\n"
 "Поэтому мы не советуем хранить на нем большие суммы."
 
-#: src/screens/About.js:80 src/screens/InitWallet.js:67
+#: src/screens/About.js:81
 msgid ""
-"For further information, check out our website |link:https://hathor."
-"network/|."
+"For further information, check out the |link1:Terms of Service| and |link2:"
+"Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
-"Для получения дополнительной информации, посетите наш веб-сайт |link:https://"
-"hathor.network/|."
 
 #.  Success
 #.  eslint-disable-next-line react/jsx-indent
@@ -165,27 +163,27 @@ msgstr "Новый PIN-код сохранен"
 msgid "CHANGE PIN"
 msgstr "ИЗМЕНИТЬ PIN-код"
 
-#: src/screens/ChoosePinScreen.js:133
+#: src/screens/ChoosePinScreen.js:136
 msgid "Enter your new PIN code"
 msgstr "Введите новый PIN-код"
 
-#: src/screens/ChoosePinScreen.js:145
+#: src/screens/ChoosePinScreen.js:148
 msgid "Enter your new PIN code again"
 msgstr "Введите новый PIN-код еще раз"
 
-#: src/screens/ChoosePinScreen.js:69
+#: src/screens/ChoosePinScreen.js:72
 msgid "Create a new PIN code,"
 msgstr "Создать новый PIN-код,"
 
-#: src/screens/ChoosePinScreen.js:72
+#: src/screens/ChoosePinScreen.js:75
 msgid "To confirm the PIN,"
 msgstr "Для подтверждения PIN-кода,"
 
-#: src/screens/ChoosePinScreen.js:159
+#: src/screens/ChoosePinScreen.js:162
 msgid "PIN codes don't match. Try again."
 msgstr "PIN-коды не совпадают. Попробуйте еще раз."
 
-#: src/screens/ChoosePinScreen.js:182
+#: src/screens/ChoosePinScreen.js:185
 msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
@@ -210,8 +208,8 @@ msgid "You have ${ amountAvailableText } HTR available"
 msgstr "У вас ${ amountAvailableText } HTR"
 
 #: src/screens/CreateTokenAmount.js:142 src/screens/CreateTokenName.js:65
-#: src/screens/CreateTokenSymbol.js:85 src/screens/InitWallet.js:208
-#: src/screens/InitWallet.js:328 src/screens/SendAddressInput.js:66
+#: src/screens/CreateTokenSymbol.js:85 src/screens/InitWallet.js:214
+#: src/screens/InitWallet.js:334 src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:184
 msgid "Next"
 msgstr "Далее"
@@ -326,23 +324,33 @@ msgstr "ТОКЕНЫ"
 msgid "Welcome to Hathor Wallet!"
 msgstr "Добро пожаловать в Hathor Wallet!"
 
-#: src/screens/InitWallet.js:79
-msgid "I understand the risks of using a mobile wallet"
-msgstr "Я осознаю риски использования мобильного кошелька"
+#: src/screens/InitWallet.js:67
+msgid ""
+"For further information, check out our website |link:https://hathor."
+"network/|."
+msgstr ""
+"Для получения дополнительной информации, посетите наш веб-сайт |link:https://"
+"hathor.network/|."
 
-#: src/screens/InitWallet.js:86
+#: src/screens/InitWallet.js:80
+msgid ""
+"I agree with the |link1:Terms of Service| and |link2:Privacy Policy| and "
+"understand the risks of using a mobile wallet"
+msgstr ""
+
+#: src/screens/InitWallet.js:92
 msgid "Start"
 msgstr "Начать"
 
-#: src/screens/InitWallet.js:103
+#: src/screens/InitWallet.js:109
 msgid "To start,"
 msgstr "Начать,"
 
-#: src/screens/InitWallet.js:105
+#: src/screens/InitWallet.js:111
 msgid "You need to **initialize your wallet**."
 msgstr "Вам нужно **инициализировать свой кошелек**."
 
-#: src/screens/InitWallet.js:108
+#: src/screens/InitWallet.js:114
 msgid ""
 "You can either **start a new wallet** or **import a wallet** that already "
 "exists."
@@ -350,23 +358,23 @@ msgstr ""
 "Вы можете **создать новый кошелек**, либо **импортировать кошелек**, который "
 "уже существует."
 
-#: src/screens/InitWallet.js:111
+#: src/screens/InitWallet.js:117
 msgid "To import a wallet, you will need to provide your seed words."
 msgstr "Чтобы импортировать кошелек, необходимо ввести seed-фразу."
 
-#: src/screens/InitWallet.js:116
+#: src/screens/InitWallet.js:122
 msgid "Import Wallet"
 msgstr "Импортировать Кошелек"
 
-#: src/screens/InitWallet.js:122
+#: src/screens/InitWallet.js:128
 msgid "New Wallet"
 msgstr "Новый Кошелек"
 
-#: src/screens/InitWallet.js:199
+#: src/screens/InitWallet.js:205
 msgid "Your wallet has been created!"
 msgstr "Ваш кошелек создан!"
 
-#: src/screens/InitWallet.js:201
+#: src/screens/InitWallet.js:207
 msgid ""
 "You must **do a backup** and save the words below **in the same order they "
 "appear**."
@@ -374,11 +382,11 @@ msgstr ""
 "Вы должны **сделать резервную копию** и сохранить слова ниже **в том же "
 "порядке, в котором они появились**."
 
-#: src/screens/InitWallet.js:297
+#: src/screens/InitWallet.js:303
 msgid "To import a wallet,"
 msgstr "Чтобы импортировать кошелек,"
 
-#: src/screens/InitWallet.js:299
+#: src/screens/InitWallet.js:305
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
@@ -386,26 +394,26 @@ msgid ""
 msgstr ""
 "Вам нужно **записать ${ this.numberOfWords } seed-фразу** вашего кошелька."
 
-#: src/screens/InitWallet.js:302
+#: src/screens/InitWallet.js:308
 msgid "Words"
 msgstr "Слова"
 
-#: src/screens/InitWallet.js:307
+#: src/screens/InitWallet.js:313
 msgid "Enter your seed words separated by space"
 msgstr "Введите seed-фразу"
 
-#: src/screens/LoadHistoryScreen.js:90
+#: src/screens/LoadHistoryScreen.js:75
 msgid "Loading your transactions"
 msgstr "Загрузка ваших транзакций"
 
-#: src/screens/LoadHistoryScreen.js:93
+#: src/screens/LoadHistoryScreen.js:78
 #, javascript-format
-msgid "**${ _this2.props.loadedData.transactions } transactions** found"
-msgstr "**${ _this2.props.loadedData.transactions } транзакций** найдено"
+msgid "**${ _this.props.loadedData.transactions } transactions** found"
+msgstr "**${ _this.props.loadedData.transactions } транзакций** найдено"
 
-#: src/screens/LoadHistoryScreen.js:96
-msgid "**${ _this2.props.loadedData.addresses } addresses** found"
-msgstr "**${ _this2.props.loadedData.addresses } адресов** найдено"
+#: src/screens/LoadHistoryScreen.js:81
+msgid "**${ _this.props.loadedData.addresses } addresses** found"
+msgstr "**${ _this.props.loadedData.addresses } адресов** найдено"
 
 #: src/screens/MainScreen.js:127
 msgid "No transactions"
@@ -469,23 +477,23 @@ msgstr "Получено"
 msgid "Waiting confirmation"
 msgstr "Ожидание подтверждения"
 
-#: src/screens/PinScreen.js:220
+#: src/screens/PinScreen.js:235
 msgid "Incorrect PIN Code. Try again."
 msgstr "Неверный PIN-код. Попробуйте еще раз."
 
-#: src/screens/PinScreen.js:65
+#: src/screens/PinScreen.js:72
 msgid "Enter your PIN Code "
 msgstr "Введите свой PIN-код "
 
-#: src/screens/PinScreen.js:66
+#: src/screens/PinScreen.js:73
 msgid "Unlock Hathor Wallet"
 msgstr "Разблокировать Hathor Wallet"
 
-#: src/screens/PinScreen.js:232
+#: src/screens/PinScreen.js:247
 msgid "Cancel"
 msgstr "Отмена"
 
-#: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:108
+#: src/screens/PinScreen.js:250 src/screens/RecoverPin.js:108
 #: src/screens/Settings.js:133
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
@@ -629,11 +637,11 @@ msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
-#: src/sagas/wallet.js:103 src/screens/SendConfirmScreen.js:117
+#: src/sagas/wallet.js:109 src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
-#: src/sagas/wallet.js:104 src/screens/SendConfirmScreen.js:118
+#: src/sagas/wallet.js:110 src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
@@ -795,3 +803,6 @@ msgstr "ID"
 #: src/components/TxDetailsModal.js:56
 msgid "Public Explorer"
 msgstr "Public Explorer"
+
+#~ msgid "I understand the risks of using a mobile wallet"
+#~ msgstr "Я осознаю риски использования мобильного кошелька"

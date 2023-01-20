@@ -86,20 +86,20 @@ msgstr "DD MMM YYYY [•] HH:mm"
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
-#: src/screens/About.js:55
+#: src/screens/About.js:56
 msgid "ABOUT"
 msgstr "SOBRE"
 
-#: src/screens/About.js:68
+#: src/screens/About.js:69
 msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr ""
 "Este aplicativo foi desenvolvido pela Hathor Labs e é distribuído de graça."
 
-#: src/screens/About.js:72 src/screens/InitWallet.js:59
+#: src/screens/About.js:73 src/screens/InitWallet.js:59
 msgid "This wallet is connected to the **mainnet**."
 msgstr "Esta wallet está conectada à **mainnet**."
 
-#: src/screens/About.js:75 src/screens/InitWallet.js:62
+#: src/screens/About.js:76 src/screens/InitWallet.js:62
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
 "So, we advise you to keep only a small amount of tokens here, such as pocket "
@@ -109,24 +109,25 @@ msgstr ""
 "Por isso, nós aconselhamos que você mantenha apenas uma pequena quantidade "
 "de tokens aqui."
 
-#: src/screens/About.js:80 src/screens/InitWallet.js:67
+#: src/screens/About.js:81
 msgid ""
-"For further information, check out our website |link:https://hathor."
-"network/|."
+"For further information, check out the |link1:Terms of Service| and |link2:"
+"Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
-"Para mais informações, visite nosso site |link:https://hathor.network/|."
+"Para mais informações, veja os |link1:Termos de Serviço| e |link2:Política "
+"de Privacidade|, ou visite nosso site |link3:https://hathor.network/|."
 
 #.  Success
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/BackupWords.js:146
+#: src/screens/BackupWords.js:148
 msgid "Words saved correctly"
 msgstr "Palavras salvas com sucesso"
 
-#: src/screens/BackupWords.js:224
+#: src/screens/BackupWords.js:226
 msgid "To make sure you saved,"
 msgstr "Para conferir que você salvou,"
 
-#: src/screens/BackupWords.js:226
+#: src/screens/BackupWords.js:228
 msgid "Please select the word that corresponds to the number below:"
 msgstr "Por favor, selecione a palavra que corrende ao número abaixo:"
 
@@ -163,27 +164,27 @@ msgstr "Novo PIN salvo"
 msgid "CHANGE PIN"
 msgstr "MUDAR PIN"
 
-#: src/screens/ChoosePinScreen.js:133
+#: src/screens/ChoosePinScreen.js:136
 msgid "Enter your new PIN code"
 msgstr "Digite seu novo PIN"
 
-#: src/screens/ChoosePinScreen.js:145
+#: src/screens/ChoosePinScreen.js:148
 msgid "Enter your new PIN code again"
 msgstr "Digite seu novo PIN novamente"
 
-#: src/screens/ChoosePinScreen.js:69
+#: src/screens/ChoosePinScreen.js:72
 msgid "Create a new PIN code,"
 msgstr "Criar um novo PIN,"
 
-#: src/screens/ChoosePinScreen.js:72
+#: src/screens/ChoosePinScreen.js:75
 msgid "To confirm the PIN,"
 msgstr "Para confirmar o PIN,"
 
-#: src/screens/ChoosePinScreen.js:159
+#: src/screens/ChoosePinScreen.js:162
 msgid "PIN codes don't match. Try again."
 msgstr "Os PINs estão diferentes. Tente novamente."
 
-#: src/screens/ChoosePinScreen.js:182
+#: src/screens/ChoosePinScreen.js:185
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
@@ -208,8 +209,8 @@ msgid "You have ${ amountAvailableText } HTR available"
 msgstr "Você tem ${ amountAvailableText } HTR disponíveis"
 
 #: src/screens/CreateTokenAmount.js:142 src/screens/CreateTokenName.js:65
-#: src/screens/CreateTokenSymbol.js:85 src/screens/InitWallet.js:208
-#: src/screens/InitWallet.js:328 src/screens/SendAddressInput.js:66
+#: src/screens/CreateTokenSymbol.js:85 src/screens/InitWallet.js:214
+#: src/screens/InitWallet.js:334 src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:184
 msgid "Next"
 msgstr "Próximo"
@@ -325,23 +326,34 @@ msgstr "TOKENS"
 msgid "Welcome to Hathor Wallet!"
 msgstr "Bem vindo à Hathor Wallet!"
 
-#: src/screens/InitWallet.js:79
-msgid "I understand the risks of using a mobile wallet"
-msgstr "Eu entendo os riscos de usar uma wallet de celular"
+#: src/screens/InitWallet.js:67
+msgid ""
+"For further information, check out our website |link:https://hathor."
+"network/|."
+msgstr ""
+"Para mais informações, visite nosso site |link:https://hathor.network/|."
 
-#: src/screens/InitWallet.js:86
+#: src/screens/InitWallet.js:80
+msgid ""
+"I agree with the |link1:Terms of Service| and |link2:Privacy Policy| and "
+"understand the risks of using a mobile wallet"
+msgstr ""
+"Eu concordo com os |link1:Termos de Serviço| e |link2:Política de "
+"Privacidade| e entendo os riscos de usar uma wallet de celular"
+
+#: src/screens/InitWallet.js:92
 msgid "Start"
 msgstr "Iniciar"
 
-#: src/screens/InitWallet.js:103
+#: src/screens/InitWallet.js:109
 msgid "To start,"
 msgstr "Para começar,"
 
-#: src/screens/InitWallet.js:105
+#: src/screens/InitWallet.js:111
 msgid "You need to **initialize your wallet**."
 msgstr "Você precisa **inicializar sua wallet**."
 
-#: src/screens/InitWallet.js:108
+#: src/screens/InitWallet.js:114
 msgid ""
 "You can either **start a new wallet** or **import a wallet** that already "
 "exists."
@@ -349,23 +361,23 @@ msgstr ""
 "Você pode tanto **iniciar uma nova wallet** ou **importar uma wallet** que "
 "já existe."
 
-#: src/screens/InitWallet.js:111
+#: src/screens/InitWallet.js:117
 msgid "To import a wallet, you will need to provide your seed words."
 msgstr "Para importar uma wallet, você deve entrar com as suas palavras."
 
-#: src/screens/InitWallet.js:116
+#: src/screens/InitWallet.js:122
 msgid "Import Wallet"
 msgstr "Importar Wallet"
 
-#: src/screens/InitWallet.js:122
+#: src/screens/InitWallet.js:128
 msgid "New Wallet"
 msgstr "Nova Wallet"
 
-#: src/screens/InitWallet.js:199
+#: src/screens/InitWallet.js:205
 msgid "Your wallet has been created!"
 msgstr "Sua wallet foi criada!"
 
-#: src/screens/InitWallet.js:201
+#: src/screens/InitWallet.js:207
 msgid ""
 "You must **do a backup** and save the words below **in the same order they "
 "appear**."
@@ -373,11 +385,11 @@ msgstr ""
 "Você deve **realizar o backup** e salvar as palavras abaixo **na mesma ordem "
 "em que elas aparecem**."
 
-#: src/screens/InitWallet.js:297
+#: src/screens/InitWallet.js:303
 msgid "To import a wallet,"
 msgstr "Para importar sua wallet,"
 
-#: src/screens/InitWallet.js:299
+#: src/screens/InitWallet.js:305
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
@@ -386,26 +398,26 @@ msgstr ""
 "Você precisa **digitar as ${ this.numberOfWords } palavras** da sua wallet, "
 "separadas por espaço."
 
-#: src/screens/InitWallet.js:302
+#: src/screens/InitWallet.js:308
 msgid "Words"
 msgstr "Palavras"
 
-#: src/screens/InitWallet.js:307
+#: src/screens/InitWallet.js:313
 msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
-#: src/screens/LoadHistoryScreen.js:90
+#: src/screens/LoadHistoryScreen.js:75
 msgid "Loading your transactions"
 msgstr "Carregando suas transações"
 
-#: src/screens/LoadHistoryScreen.js:93
+#: src/screens/LoadHistoryScreen.js:78
 #, javascript-format
-msgid "**${ _this2.props.loadedData.transactions } transactions** found"
-msgstr "**${ _this2.props.loadedData.transactions } transações** encontradas"
+msgid "**${ _this.props.loadedData.transactions } transactions** found"
+msgstr "**${ _this.props.loadedData.transactions } transações** encontradas"
 
-#: src/screens/LoadHistoryScreen.js:96
-msgid "**${ _this2.props.loadedData.addresses } addresses** found"
-msgstr "**${ _this2.props.loadedData.addresses } endereços** encontrados"
+#: src/screens/LoadHistoryScreen.js:81
+msgid "**${ _this.props.loadedData.addresses } addresses** found"
+msgstr "**${ _this.props.loadedData.addresses } endereços** encontrados"
 
 #: src/screens/MainScreen.js:127
 msgid "No transactions"
@@ -423,7 +435,7 @@ msgstr "Carregando transações"
 
 #: src/screens/MainScreen.js:156
 msgid "There was an error loading your transaction history"
-msgstr "Ocorreu um erro ao carregar seu histórico de transações."
+msgstr "Ocorreu um erro ao carregar seu histórico de transações"
 
 #: src/screens/MainScreen.js:159
 msgid "Please |tryAgain:try again|"
@@ -446,11 +458,11 @@ msgstr "Você recebeu **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "REQUISIÇÃO DE PAGAMENTO"
 
-#: src/components/TxDetailsModal.js:52 src/screens/PaymentRequestDetail.js:108
+#: src/components/TxDetailsModal.js:60 src/screens/PaymentRequestDetail.js:108
 msgid "Token"
 msgstr "Token"
 
-#: src/components/TxDetailsModal.js:99 src/screens/PaymentRequestDetail.js:112
+#: src/components/TxDetailsModal.js:107 src/screens/PaymentRequestDetail.js:112
 msgid "Amount"
 msgstr "Quantidade"
 
@@ -470,23 +482,23 @@ msgstr "Recebido"
 msgid "Waiting confirmation"
 msgstr "Aguardando confirmação"
 
-#: src/screens/PinScreen.js:220
+#: src/screens/PinScreen.js:235
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
-#: src/screens/PinScreen.js:65
+#: src/screens/PinScreen.js:72
 msgid "Enter your PIN Code "
 msgstr "Digite seu PIN "
 
-#: src/screens/PinScreen.js:66
+#: src/screens/PinScreen.js:73
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
-#: src/screens/PinScreen.js:232
+#: src/screens/PinScreen.js:247
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:108
+#: src/screens/PinScreen.js:250 src/screens/RecoverPin.js:108
 #: src/screens/Settings.js:133
 msgid "Reset wallet"
 msgstr "Resetar a wallet"
@@ -631,11 +643,11 @@ msgstr "ENVIAR ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/sagas/wallet.js:103 src/screens/SendConfirmScreen.js:117
+#: src/sagas/wallet.js:109 src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
-#: src/sagas/wallet.js:104 src/screens/SendConfirmScreen.js:118
+#: src/sagas/wallet.js:110 src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -729,7 +741,7 @@ msgstr "Eu quero desregistrar o token **${ tokenLabel }**"
 msgid "Unregister token"
 msgstr "Desregistrar token"
 
-#: src/components/CopyClipboard.js:37
+#: src/components/CopyClipboard.js:47
 msgid "Copied to clipboard!"
 msgstr "Copiado!"
 
@@ -784,18 +796,21 @@ msgid ""
 "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr "Essa é a configuração do seu token ${ tokenLabel }: ${ configString }"
 
-#: src/components/TxDetailsModal.js:53
+#: src/components/TxDetailsModal.js:61
 msgid "Description"
 msgstr "Descrição"
 
-#: src/components/TxDetailsModal.js:54
+#: src/components/TxDetailsModal.js:62
 msgid "Date & Time"
 msgstr "Data & Hora"
 
-#: src/components/TxDetailsModal.js:55
+#: src/components/TxDetailsModal.js:63
 msgid "ID"
 msgstr "ID"
 
-#: src/components/TxDetailsModal.js:56
+#: src/components/TxDetailsModal.js:64
 msgid "Public Explorer"
 msgstr "Explorer Público"
+
+#~ msgid "I understand the risks of using a mobile wallet"
+#~ msgstr "Eu entendo os riscos de usar uma wallet de celular"

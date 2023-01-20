@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { NativeModules } from 'react-native';
 import {
   Connection,
   HathorWallet,
@@ -28,10 +27,12 @@ import {
   race,
   take,
   fork,
+  spawn,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
 import { t } from 'ttag';
+import { get } from 'lodash';
 import {
   STORE,
   DEFAULT_TOKEN,
@@ -46,6 +47,7 @@ import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
   tokenInvalidateHistory,
+  reloadWalletRequested,
   setIsShowingPinScreen,
   tokenMetadataUpdated,
   setUseWalletService,
@@ -64,11 +66,12 @@ import {
   types,
 } from '../actions';
 import { fetchTokenData } from './tokens';
-import { specificTypeAndPayload } from './helpers';
+import { specificTypeAndPayload, errorHandler } from './helpers';
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
 export const WALLET_STATUS = {
+  NOT_STARTED: 'not_started',
   READY: 'ready',
   FAILED: 'failed',
   LOADING: 'loading',
@@ -77,6 +80,8 @@ export const WALLET_STATUS = {
 export function* startWallet(action) {
   const { words, pin } = action.payload;
 
+  NavigationService.navigate('LoadHistoryScreen');
+
   const networkName = 'mainnet';
   const uniqueDeviceId = getUniqueId();
   const featureFlags = new FeatureFlags(uniqueDeviceId, networkName);
@@ -84,9 +89,9 @@ export function* startWallet(action) {
 
   yield put(setUseWalletService(useWalletService));
 
-  // If we've lost redux data, we could not properly stop the wallet object
-  // then we don't know if we've cleaned up the wallet data in the storage
-  walletUtil.cleanLoadedData();
+  // We don't want to clean access data since as if something goes
+  // wrong here, the stored words would be lost forever.
+  walletUtil.cleanLoadedData({ cleanAccessData: false });
 
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
@@ -150,6 +155,15 @@ export function* startWallet(action) {
   // wait until the wallet is ready
   const walletReadyThread = yield fork(listenForWalletReady, wallet);
 
+  // Thread to listen for feature flags from Unleash
+  const featureFlagsThread = yield fork(listenForFeatureFlags, featureFlags);
+
+  const threads = [
+    walletListenerThread,
+    walletReadyThread,
+    featureFlagsThread
+  ];
+
   // Store the unique device id on redux
   yield put(setUniqueDeviceId(uniqueDeviceId));
 
@@ -166,8 +180,11 @@ export function* startWallet(action) {
       // the feature flag
       yield call(featureFlags.ignoreWalletServiceFlag.bind(featureFlags));
 
-      // Restart the whole bundle to make sure we clear all events
-      NativeModules.HTRReloadBundleModule.restart();
+      // Cleanup all listeners
+      yield cancel(threads);
+
+      // Yield the same action so it will now load on the old facade
+      yield put(action);
     }
   }
 
@@ -201,22 +218,30 @@ export function* startWallet(action) {
     return;
   }
 
-  const featureFlagsThread = yield fork(listenForFeatureFlags, featureFlags);
-
   yield put(startWalletSuccess());
 
   // The way the redux-saga fork model works is that if a saga has `forked`
   // another saga (using the `fork` effect), it will remain active until all
   // the forks are terminated. You can read more details at
   // https://redux-saga.js.org/docs/advanced/ForkModel
-  // So, if a new START_WALLET_REQUESTED action is dispatched, we need to cleanup
-  // all attached forks (that will cause the event listeners to be cleaned).
-  yield take('START_WALLET_REQUESTED');
-  yield cancel([
-    walletListenerThread,
-    walletReadyThread,
-    featureFlagsThread
-  ]);
+  // So, if a new START_WALLET_REQUESTED action is dispatched or a RELOAD_WALLET_REQUESTED
+  // is dispatched, we need to cleanup all attached forks (that will cause the event
+  // listeners to be cleaned).
+  const { reload } = yield race({
+    start: take([
+      types.START_WALLET_REQUESTED,
+      types.RESET_WALLET,
+    ]),
+    reload: take(types.RELOAD_WALLET_REQUESTED),
+  });
+
+  // We need to cancel threads on both reload and start
+  yield cancel(threads);
+
+  if (reload) {
+    // Yield the same action again to reload the wallet
+    yield put(action);
+  }
 }
 
 /**
@@ -248,8 +273,11 @@ export function* loadTokens() {
       return [...acc, token.uid];
     }, []);
 
-  // We don't need to wait for the metadatas response, so just fork it
-  yield fork(fetchTokensMetadata, registeredTokens);
+  // We don't need to wait for the metadatas response, so we can just
+  // spawn a new "thread" to handle it.
+  //
+  // `spawn` is similar to `fork`, but it creates a `detached` fork
+  yield spawn(fetchTokensMetadata, registeredTokens);
 
   // Since we already know here what tokens are registered, we can dispatch actions
   // to asynchronously load the balances of each one. The `put` effect will just dispatch
@@ -325,7 +353,7 @@ export function* listenForFeatureFlags(featureFlags) {
       const oldUseWalletService = yield select((state) => state.useWalletService);
 
       if (oldUseWalletService !== newUseWalletService) {
-        NativeModules.HTRReloadBundleModule.restart();
+        yield put(reloadWalletRequested());
       }
     }
   } finally {
@@ -382,24 +410,71 @@ export function* handleTx(action) {
   }
 
   // find tokens affected by the transaction
-  const balances = yield call(wallet.getTxBalance.bind(wallet), tx);
   const stateTokens = yield select((state) => state.tokens);
   const registeredTokens = stateTokens.map((token) => token.uid);
 
-  // We should download the **balance** for every token involved in the transaction
-  // and history for hathor and DEFAULT_TOKEN
-  for (const [tokenUid] of Object.entries(balances)) {
-    if (registeredTokens.indexOf(tokenUid) === -1) {
-      continue;
+  // To be able to only download balances for tokens belonging to this wallet, we
+  // need a list of tokens and addresses involved in the transaction from both the
+  // inputs and outputs.
+  const { inputs, outputs } = tx;
+  const data = [...inputs, ...outputs];
+
+  // tokenAddressesMap should be an object { [tokenUid]: Set(addresses) }
+  // txAddresses should be a Set with all addresses involved in the tx
+  const [tokenAddressesMap, txAddresses] = data.reduce(
+    (acc, io) => {
+      if (!io.decoded || !io.decoded.address) {
+        return acc;
+      }
+
+      const { token, decoded: { address } } = io;
+
+      // We are only interested in registered tokens
+      if (registeredTokens.indexOf(token) === -1) {
+        return acc;
+      }
+
+      if (!acc[0][token]) {
+        acc[0][token] = new Set([]);
+      }
+
+      acc[0][token].add(address);
+      acc[1].add(address);
+
+      return acc;
+    }, [{}, new Set([])],
+  );
+
+  const txWalletAddresses = yield call(wallet.checkAddressesMine.bind(wallet), [...txAddresses]);
+  const tokensToDownload = [];
+
+  for (const [tokenUid, addresses] of Object.entries(tokenAddressesMap)) {
+    for (const [address] of addresses.entries()) {
+      // txWalletAddresses should always have the address we requested, but we should double check
+      // here using lodash just in case
+      const inWallet = get(txWalletAddresses, address, false);
+
+      if (inWallet) {
+        // If any of the addresses from this token belongs to the wallet, we should
+        // download its balance, so we can break early
+        tokensToDownload.push(tokenUid);
+        break;
+      }
     }
+  }
+
+  // We should download the **balance** for every token involved in the
+  // transaction and that is going to a wallet address and also history for hathor
+  // and DEFAULT_TOKEN
+  for (const tokenUid of tokensToDownload) {
     yield put(tokenFetchBalanceRequested(tokenUid, true));
 
     if (tokenUid === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid
         || tokenUid === DEFAULT_TOKEN.uid) {
       yield put(tokenFetchHistoryRequested(tokenUid, true));
     } else {
-      // Invalidate the history so it will get requested the next time
-      // the user enters the history screen
+      // Invalidate the history so it will get requested the next time the user enters the history
+      // screen
       yield put(tokenInvalidateHistory(tokenUid));
     }
   }
@@ -527,11 +602,51 @@ export function* onWalletReloadData() {
   }
 }
 
+export function* onResetWallet() {
+  const wallet = yield select((state) => state.wallet);
+
+  if (wallet) {
+    // wallet.stop() will remove all event listeners and call
+    // hathorLib.wallet.cleanWallet
+    wallet.stop({ cleanStorage: true });
+
+    return;
+  }
+
+  // Wallet was not initialized yet, this might happen if resetWallet
+  // is called from the PinScreen. There is no event listeners to cleanup
+  // so we can call the cleanLoadedData method directly.
+  walletUtil.cleanLoadedData({ cleanAccessData: true });
+}
+
+export function* onStartWalletFailed() {
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet) {
+    return;
+  }
+
+  // Wallet is an instance of EventEmitter, so we can call removeAllListeners
+  // to properly prevent events from leaking when an error gets thrown
+  wallet.removeAllListeners();
+
+  if (wallet.conn) {
+    // Same with wallet.conn
+    wallet.conn.removeAllListeners();
+  }
+
+  // Remove the wallet from redux so we can retry the
+  // startWallet on the next PIN unlock
+  yield put(setWallet(null));
+}
+
 export function* saga() {
   yield all([
-    takeLatest('START_WALLET_REQUESTED', startWallet),
+    takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeLatest('WALLET_RELOADING', onWalletReloadData),
+    takeLatest('RESET_WALLET', onResetWallet),
+    takeLatest('START_WALLET_FAILED', onStartWalletFailed),
     takeEvery('WALLET_NEW_TX', handleTx),
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
