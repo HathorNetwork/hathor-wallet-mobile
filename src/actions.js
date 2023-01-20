@@ -504,7 +504,9 @@ export const onWalletReload = () => ({
 });
 
 /**
- * Remove token metadata after unregister token
+ * Exception captured, will update the store with the Error
+ * instance and whether it should force the user to restart
+ * the wallet or not.
  *
  * error {Error} Error object to report
  * isFatal {Boolean} Whether is fatal or not
