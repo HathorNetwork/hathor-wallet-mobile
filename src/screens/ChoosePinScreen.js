@@ -23,7 +23,6 @@ import { PIN_SIZE } from '../constants';
 
 import baseStyle from '../styles/init';
 
-
 const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
   startWalletRequested: (words, pin) => dispatch(startWalletRequested({

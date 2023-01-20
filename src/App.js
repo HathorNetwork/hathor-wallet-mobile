@@ -15,8 +15,8 @@ import { createBottomTabNavigator } from 'react-navigation-tabs';
 import { Provider, connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
-
 import hathorLib from '@hathor/wallet-lib';
+
 import IconTabBar from './icon-font';
 import NavigationService from './NavigationService';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT } from './constants';
@@ -27,6 +27,7 @@ import {
   setTokens,
 } from './actions';
 import { store } from './reducer';
+import { GlobalErrorHandler } from './components/GlobalErrorModal';
 
 import DecideStackScreen from './screens/DecideStackScreen';
 import {
@@ -62,7 +63,6 @@ import CreateTokenSymbol from './screens/CreateTokenSymbol';
 import CreateTokenAmount from './screens/CreateTokenAmount';
 import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
-import ErrorModal from './components/ErrorModal';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 import { WALLET_STATUS } from './sagas/wallet';
 
@@ -414,7 +414,7 @@ const App = () => (
     <NavigationContainer
       ref={(navigatorRef) => NavigationService.setTopLevelNavigator(navigatorRef)}
     />
-    <ErrorModal />
+    <GlobalErrorHandler />
   </Provider>
 );
 
