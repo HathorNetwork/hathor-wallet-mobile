@@ -41,7 +41,8 @@ export const types = {
   SET_LOCK_SCREEN: 'SET_LOCK_SCREEN',
   SET_INIT_WALLET: 'SET_INIT_WALLET',
   UPDATE_HEIGHT: 'UPDATE_HEIGHT',
-  SET_ERROR_MODAL: 'SET_ERROR_MODAL',
+  SHOW_ERROR_MODAL: 'SHOW_ERROR_MODAL',
+  HIDE_ERROR_MODAL: 'HIDE_ERROR_MODAL',
   SET_WALLET: 'SET_WALLET',
   RESET_WALLET: 'RESET_WALLET',
   RESET_LOADED_DATA: 'RESET_LOADED_DATA',
@@ -72,6 +73,7 @@ export const types = {
   WALLET_STATE_READY: 'WALLET_STATE_READY',
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
+  EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
 };
 
 /**
@@ -337,9 +339,11 @@ export const updateLoadedData = (payload) => (
 /**
  * errorReported {boolean} true if user reported the error to sentry
  */
-export const setErrorModal = (errorReported) => (
-  { type: types.SET_ERROR_MODAL, payload: { errorReported } }
-);
+export const showErrorModal = (errorReported) => ({
+  type: types.SHOW_ERROR_MODAL,
+  payload: errorReported,
+});
+export const hideErrorModal = () => ({ type: types.HIDE_ERROR_MODAL });
 
 /**
  * wallet {HathorWallet} wallet object
@@ -497,4 +501,20 @@ export const walletStateReady = () => ({
 
 export const onWalletReload = () => ({
   type: types.WALLET_RELOADING,
+});
+
+/**
+ * Exception captured, will update the store with the Error
+ * instance and whether it should force the user to restart
+ * the wallet or not.
+ *
+ * error {Error} Error object to report
+ * isFatal {Boolean} Whether is fatal or not
+ */
+export const onExceptionCaptured = (error, isFatal) => ({
+  type: types.EXCEPTION_CAPTURED,
+  payload: {
+    error,
+    isFatal,
+  },
 });

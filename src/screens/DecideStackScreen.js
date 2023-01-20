@@ -5,30 +5,44 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
-import { connect } from 'react-redux';
-
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
-import { resetData } from '../actions';
 
+import { onExceptionCaptured, resetData } from '../actions';
 
 /**
  * Only used for deciding which stack (App or Init) to display, so nothing is rendered.
  */
-class DecideStackScreen extends React.Component {
-  async componentDidMount() {
-    this.props.dispatch(resetData());
-    await hathorLib.storage.store.preStart();
-    if (hathorLib.wallet.loaded()) {
-      this.props.navigation.navigate('App');
-    } else {
-      this.props.navigation.navigate('Init');
-    }
-  }
+export function DecideStackScreen({ navigation }) {
+  const dispatch = useDispatch();
 
-  render() {
-    return null;
-  }
+  useEffect(() => {
+    dispatch(resetData());
+    hathorLib
+      .storage
+      .store
+      .preStart()
+      .then(() => {
+        if (hathorLib.wallet.loaded()) {
+          navigation.navigate('App');
+        } else {
+          navigation.navigate('Init');
+        }
+      }).catch((e) => {
+        // The promise here is swallowing the error,
+        // so we need to explicitly catch here.
+        //
+        // If we have a fail here, the wallet will
+        // show up as if it was the first time it was
+        // opened, so we need to capture and display
+        // an error to give a chance for the user
+        // to recover his loaded wallet.
+        dispatch(onExceptionCaptured(e, true));
+      });
+  }, []);
+
+  return null;
 }
 
-export default connect(null)(DecideStackScreen);
+export default DecideStackScreen;
