@@ -9,8 +9,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
 
-import { resetData } from '../actions';
-import { onExceptionCaptured } from '../actions';
+import { onExceptionCaptured, resetData } from '../actions';
 
 /**
  * Only used for deciding which stack (App or Init) to display, so nothing is rendered.
@@ -40,7 +39,7 @@ export function DecideStackScreen({ navigation }) {
         // an error to give a chance for the user
         // to recover his loaded wallet.
         dispatch(onExceptionCaptured(e, true));
-      })
+      });
   }, []);
 
   return null;
