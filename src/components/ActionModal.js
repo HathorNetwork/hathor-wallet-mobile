@@ -8,51 +8,27 @@
 
 import React from 'react';
 import {
-  StyleSheet, Text, View,
+  Text, View,
 } from 'react-native';
 import PropTypes from 'prop-types';
-import Modal from 'react-native-modal';
 import NewHathorButton from './NewHathorButton';
+import HathorModal from './HathorModal';
 
 const ActionModal = (props) => (
-  <Modal
-    isVisible
-    animationIn='slideInUp'
-    swipeDirection={['down']}
-    onSwipeComplete={props.onDismiss}
-    onBackButtonPress={props.onDismiss}
-    onBackdropPress={props.onDismiss}
-    style={styles.modal}
-  >
-    <View style={styles.innerModal}>
-      <View style={{ alignItems: 'center' }}>
-        <Text style={{ fontSize: 18, marginTop: 20, textAlign: 'center' }}>
-          {props.title}
-        </Text>
-        <Text style={{ fontSize: 14, marginTop: 20, textAlign: 'center' }} {...props.textProps}>
-          {props.text}
-        </Text>
-      </View>
-      <View style={{ justifyContent: 'flex-end', marginTop: 60 }}>
-        <NewHathorButton onPress={() => props.onAction()} title={props.button} />
-      </View>
+  <HathorModal onDismiss={props.onDismiss}>
+    <View style={{ alignItems: 'center' }}>
+      <Text style={{ fontSize: 18, marginTop: 20, textAlign: 'center' }}>
+        {props.title}
+      </Text>
+      <Text style={{ fontSize: 14, marginTop: 20, textAlign: 'center' }} {...props.textProps}>
+        {props.text}
+      </Text>
     </View>
-  </Modal>
+    <View style={{ width: '100%', justifyContent: 'flex-end', marginTop: 60 }}>
+      <NewHathorButton onPress={() => props.onAction()} title={props.button} />
+    </View>
+  </HathorModal>
 );
-
-const styles = StyleSheet.create({
-  modal: {
-    justifyContent: 'flex-end',
-  },
-  innerModal: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 56,
-    paddingTop: 48,
-    height: 290,
-  },
-});
 
 ActionModal.propTypes = {
   // Text displayed on the modal
