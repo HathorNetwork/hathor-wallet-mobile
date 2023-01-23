@@ -28,6 +28,17 @@ export const STORE = new AsyncStorageStore();
 hathorLib.storage.setStore(STORE);
 
 /**
+ * This is the environment stage that will be used to load the unleash feature flags.
+ */
+export const STAGE = 'dev-testnet';
+
+/**
+ * this is the network name that will be used to load the wallet on the wallet-service,
+ * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
+ */
+export const NETWORK = 'mainnet';
+
+/**
  * Default tokens for the wallet (to start on redux)
  */
 export const INITIAL_TOKENS = [DEFAULT_TOKEN];
@@ -78,6 +89,9 @@ export const PIN_SIZE = 6;
 export const UNLEASH_URL = 'https://unleash-proxy.b7e6a7f52ee9fefaf0c53e300cfcb014.hathor.network/proxy';
 export const UNLEASH_CLIENT_KEY = 'wKNhpEXKa39aTRgIjcNsO4Im618bRGTq';
 export const UNLEASH_POLLING_INTERVAL = 15; // seconds
+export const unleashStorageKey = {
+  ignoreWalletServiceFlag: 'featureFlags:ignoreWalletServiceFlag',
+};
 
 /**
  * Quantity of token metadata to download concurrently
@@ -90,7 +104,7 @@ export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://wallet-service.hathor.ne
 export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.wallet-service.hathor.network/';
 
 /**
- * Push notification constants
+ * Push notification storage keys.
  */
 export const pushNotificationKey = {
   deviceId: 'pushNotification:deviceId',
@@ -99,12 +113,8 @@ export const pushNotificationKey = {
   enabledAt: 'pushNotification:enabledAt',
   optInDismissed: 'pushNotification:optInDismissed',
   notificationData: 'pushNotification:notificationData',
+  use: 'pushNotification:use',
 };
-/**
- * this is the network name that will be used to load the wallet on the wallet-service,
- * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
- */
-export const NETWORK = 'mainnet';
 /**
  * this is the message key for localization of new transaction when show amount is enabled
  */

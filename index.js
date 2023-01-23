@@ -48,8 +48,7 @@ const setNotifeeBackgroundListener = () => {
 setNotifeeBackgroundListener();
 
 /**
- * This function is called when the app is in background or quit
- * and a push notification from firebase is received.
+ * This function sets the data message listener for firebase.
  */
 const setBackgroundMessageListener = () => {
   const onBackgroundMessage = async (message) => messageHandler(message);

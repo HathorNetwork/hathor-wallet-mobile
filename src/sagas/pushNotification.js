@@ -18,11 +18,13 @@ import {
   take,
   fork,
   takeLatest,
+  debounce,
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
 import { t } from 'ttag';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   types,
   pushRegisterSuccess,
@@ -38,6 +40,7 @@ import {
   pushAskOptInQuestion,
   pushReset,
   pushLoadTxDetails,
+  initPushNotification,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -160,6 +163,13 @@ const onForegroundMessage = async (message) => {
  * @inner
  */
 export const messageHandler = async (message, isForeground) => {
+  const usePushNotification = await AsyncStorage.getItem(pushNotificationKey.use) === 'true';
+
+  if (!usePushNotification) {
+    console.debug('Push notification is disabled. Ignoring message.');
+    return;
+  }
+
   const { data } = message;
   if (!localization.hasKey(data.titleLocKey)) {
     console.debug('unknown message titleLocKey', data.titleLocKey);
@@ -171,7 +181,7 @@ export const messageHandler = async (message, isForeground) => {
     return;
   }
 
-  const bodyArgs = JSON.parse(data.bodyLocArgs);
+  const bodyArgs = data.bodyLocArgs && JSON.parse(data.bodyLocArgs);
   const title = localization.getMessage(data.titleLocKey);
   const body = localization.getMessage(data.bodyLocKey, bodyArgs);
   const { txId } = data;
@@ -234,8 +244,13 @@ const createChannelIfNotExists = async () => {
 /**
  * This function is called when the wallet is initialized with success.
  */
-export function* onAppInitialization() {
-  yield take(types.START_WALLET_SUCCESS);
+export function* init() {
+  // If push notification feature flag is disabled, we should not initialize it.
+  const usePushNotification = yield select((state) => state.pushNotification.use);
+  if (!usePushNotification) {
+    console.log('onAppInitialization: halting push notification initialization');
+    return;
+  }
 
   const { enabled, showAmountEnabled } = STORE.getItem(pushNotificationKey.settings) || { enabled: false, showAmountEnabled: false };
   const hasBeenEnabled = STORE.getItem(pushNotificationKey.hasBeenEnabled) || false;
@@ -285,6 +300,17 @@ export function* onAppInitialization() {
   if (optInDismissed === null || !optInDismissed) {
     yield put(pushAskOptInQuestion());
   }
+}
+
+/**
+ * It is responsible for persisting the usePushNotification value, so we can use it when the app in any state.
+ * By using STORE we couln't use it on quit state.
+ * @param {{ payload: boolean }} action - The action that contains the value of the usePushNotification
+ */
+export function* setUsePushNotification(action) {
+  const use = action.payload;
+  yield call(AsyncStorage.setItem, pushNotificationKey.use, use.toString());
+  yield put(initPushNotification());
 }
 
 /**
@@ -559,12 +585,14 @@ export function* resetPushNotification() {
   yield STORE.removeItem(pushNotificationKey.deviceId);
   // Reset the state
   yield put(pushReset());
-  yield fork(onAppInitialization);
+  yield put(initPushNotification());
+  console.log('Push notification reset successfully');
 }
 
 export function* saga() {
   yield all([
-    fork(onAppInitialization),
+    debounce(500, [[types.START_WALLET_SUCCESS, types.INIT_PUSH_NOTIFICATION]], init),
+    takeLatest(types.SET_USE_PUSH_NOTIFICATION, setUsePushNotification),
     takeEvery(types.PUSH_WALLET_LOAD_REQUESTED, loadWallet),
     takeEvery(types.PUSH_FIRST_REGISTRATION_REQUESTED, firstTimeRegistration),
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),

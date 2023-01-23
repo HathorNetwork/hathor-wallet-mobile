@@ -73,6 +73,8 @@ export const types = {
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
   // Push Notification actions
+  INIT_PUSH_NOTIFICATION: 'INIT_PUSH_NOTIFICATION',
+  SET_USE_PUSH_NOTIFICATION: 'SET_USE_PUSH_NOTIFICATION',
   PUSH_ASK_OPT_IN_QUESTION: 'PUSH_ASK_OPT_IN_QUESTION',
   PUSH_DISMISS_OPT_IN_QUESTION: 'PUSH_DISMISS_OPT_IN_QUESTION',
   PUSH_INIT: 'PUSH_INIT',
@@ -529,6 +531,19 @@ export const onWalletReload = () => ({
 });
 
 // Push notification actions
+
+export const initPushNotification = () => ({
+  type: types.INIT_PUSH_NOTIFICATION,
+});
+
+/**
+ * @param {boolean} payload - true if unleash enables the push notification feature
+ */
+export const setUsePushNotification = (payload) => ({
+  type: types.SET_USE_PUSH_NOTIFICATION,
+  payload,
+});
+
 
 export const pushAskOptInQuestion = () => ({
   type: types.PUSH_ASK_OPT_IN_QUESTION,
