@@ -51,7 +51,6 @@ import {
   setIsShowingPinScreen,
   tokenMetadataUpdated,
   setUseWalletService,
-  onStartWalletLock,
   startWalletSuccess,
   startWalletFailed,
   setUniqueDeviceId,
@@ -568,16 +567,19 @@ export function* onWalletConnStateUpdate({ payload }) {
 }
 
 export function* onWalletReloadData() {
-  yield put(onStartWalletLock());
-
+  const useWalletService = yield select((state) => state.useWalletService);
   const wallet = yield select((state) => state.wallet);
 
-  // Since we close the channel after a walletReady event is received,
-  // we must fork this saga again so we setup listeners again.
-  yield fork(listenForWalletReady, wallet);
+  // If we are using the wallet-service, we don't need to wait until the addresses
+  // are reloaded since they are stored on the wallet-service itself.
+  if (!useWalletService) {
+    // Since we close the channel after a walletReady event is received,
+    // we must fork this saga again so we setup listeners again.
+    yield fork(listenForWalletReady, wallet);
 
-  // Wait until the wallet is ready
-  yield take(types.WALLET_STATE_READY);
+    // Wait until the wallet is ready
+    yield take(types.WALLET_STATE_READY);
+  }
 
   try {
     const registeredTokens = yield call(loadTokens);

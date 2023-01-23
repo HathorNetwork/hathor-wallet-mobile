@@ -187,6 +187,8 @@ const reducer = (state = initialState, action) => {
       return onWalletBestBlockUpdate(state, action);
     case types.EXCEPTION_CAPTURED:
       return onExceptionCaptured(state, action);
+    case types.WALLET_RELOADING:
+      return onWalletReloading(state);
     default:
       return state;
   }
@@ -660,6 +662,11 @@ export const onExceptionCaptured = (state, { payload }) => {
     },
   };
 };
+
+const onWalletReloading = (state) => ({
+  ...state,
+  walletStartState: WALLET_STATUS.LOADING,
+});
 
 const saga = createSagaMiddleware();
 const middlewares = [
