@@ -24,7 +24,6 @@ import { messageHandler, setInitialNotificationData } from './src/sagas/pushNoti
  *
  * In this project the Notifee is used to interprete the data message received
  * from firebase and show the notification to the user.
- *
  */
 const setNotifeeBackgroundListener = () => {
   try {
@@ -48,7 +47,7 @@ const setNotifeeBackgroundListener = () => {
 setNotifeeBackgroundListener();
 
 /**
- * This function sets the data message listener for firebase.
+ * Install the listener to handle push notifications when the application is in background or quit.
  */
 const setBackgroundMessageListener = () => {
   const onBackgroundMessage = async (message) => messageHandler(message);
