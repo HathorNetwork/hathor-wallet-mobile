@@ -244,7 +244,7 @@ class _AppStackWrapper extends React.Component {
    */
   setNotifeeForegroundListener = () => {
     try {
-      notifee.onForegroundEvent(async ({ type, detail }) => {
+      const onForegroundMessage = async ({ type, detail }) => {
         switch (type) {
           case EventType.PRESS:
             try {
@@ -260,7 +260,8 @@ class _AppStackWrapper extends React.Component {
           default:
             // to nothing
         }
-      });
+      };
+      notifee.onForegroundEvent(onForegroundMessage);
     } catch (error) {
       console.error('Error setting notifee foreground event listener.', error);
     }

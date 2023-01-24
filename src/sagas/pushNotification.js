@@ -16,7 +16,6 @@ import {
   select,
   race,
   take,
-  fork,
   takeLatest,
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
@@ -178,6 +177,7 @@ export const messageHandler = async (message, isForeground) => {
 
   try {
     notifee.displayNotification({
+      id: txId,
       title,
       body,
       android: {
@@ -208,10 +208,24 @@ function* handleMessage(message) {
   yield call(messageHandler, message);
 }
 
+/**
+ * This flag is used to avoid installing the listener more than once.
+ * It is effemeral and will be reset when the application is closed.
+ */
+let isForegroundListenerInstalled = false;
+
+/**
+ * Install the listener to handle push notifications when the application is in foreground.
+ */
 const installForegroundListener = () => {
+  if (isForegroundListenerInstalled) {
+    return;
+  }
+
   try {
     // Add listeners for push notifications on foreground and background
     messaging().onMessage(onForegroundMessage);
+    isForegroundListenerInstalled = true;
   } catch (error) {
     console.error('Error installing foreground listener to push notification.', error);
   }
