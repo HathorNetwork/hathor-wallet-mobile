@@ -280,8 +280,9 @@ class _AppStackWrapper extends React.Component {
         switch (type) {
           case EventType.PRESS:
             try {
-              if (detail.pressAction && detail.pressAction.id === PUSH_TRANSACTION_ID.NEW_TRANSACTION) {
-                const txDetails = await getTxDetails(this.props.wallet, detail.notification.data.txId);
+              if (detail.pressAction?.id === PUSH_TRANSACTION_ID.NEW_TRANSACTION) {
+                const { txId } = detail.notification.data;
+                const txDetails = await getTxDetails(this.props.wallet, txId);
                 this.props.loadTxDetails(txDetails);
               }
             } catch (error) {
