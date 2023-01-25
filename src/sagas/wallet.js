@@ -606,11 +606,17 @@ export function* onWalletReloadData() {
       yield put(tokenInvalidateHistory(tokenUid));
     }
 
-    // We also need to refresh the addresses since we are not starting the wallet again
-    yield call(wallet.getNewAddresses.bind(wallet));
+    // If we are on the wallet-service, we also need to refresh the
+    // facade instance internal addresses
+    if (useWalletService) {
+      yield call(wallet.getNewAddresses.bind(wallet));
+    }
 
-    // Then dispatch the refreshSharedAddress so our redux store is updated
+    // dispatch the refreshSharedAddress so our redux store is potentially
+    // updated with the new addresses that we missed during the disconnection
+    // time
     yield put(walletRefreshSharedAddress());
+
 
     // Finally, set the wallet to READY by dispatching startWalletSuccess
     yield put(startWalletSuccess());
