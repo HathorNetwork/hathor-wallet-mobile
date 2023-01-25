@@ -234,8 +234,6 @@ export function* onAppInitialization() {
     return;
   }
 
-  const hasBeenEnabled = STORE.getItem(pushNotificationKey.hasBeenEnabled);
-  const enabledAt = STORE.getItem(pushNotificationKey.enabledAt);
 
   const persistedDeviceId = STORE.getItem(pushNotificationKey.deviceId);
   const deviceId = yield call(getDeviceId);
@@ -268,12 +266,11 @@ export function* onAppInitialization() {
       enabled,
       showAmountEnabled,
     },
-    hasBeenEnabled,
     enabledAt,
   }));
 
   // Check if the last registration call was made more then a week ago
-  if (hasBeenEnabled) {
+  if (enabledAt) {
     const timeSinceLastRegistration = moment().diff(enabledAt, 'weeks');
     if (timeSinceLastRegistration > 1) {
       // Update the registration, as per Firebase's recommendation

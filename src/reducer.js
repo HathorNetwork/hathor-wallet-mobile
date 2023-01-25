@@ -113,12 +113,6 @@ const initialState = {
      */
     showAmountEnabled: false,
     /**
-     * hasBeenEnabled {boolean} if user has enabled push notification before
-     * this is used to trigger registration on the push notification api
-     * when the user enables it the first time
-     */
-    hasBeenEnabled: false,
-    /**
      * enabledAt {number} timestamp of when push notification was enabled
      */
     enabledAt: 0,
@@ -686,17 +680,16 @@ export const onWalletBestBlockUpdate = (state, action) => {
 // Push notification
 
 /**
- * @param {{ deviceId: string, settings: { enabled, showAmountEnabled }, hasBeenEnabled: boolean }} action
+ * @param {{ deviceId: string, settings: { enabled, showAmountEnabled } }} action
  */
 export const onPushInit = (state, action) => {
-  const { deviceId, settings, hasBeenEnabled } = action.payload;
+  const { deviceId, settings } = action.payload;
   return ({
     ...state,
     pushNotification: {
       ...state.pushNotification,
       ...settings,
       deviceId,
-      hasBeenEnabled,
     },
   });
 };
@@ -729,17 +722,17 @@ export const onPushApiReady = (state) => ({
 });
 
 /**
- * @param {{enabled: boolean, hasBeenEnabled: boolean, enabledAt: number }} action
+ * @param {{enabled: boolean, showAmountEnabled: boolean, enabledAt: number }} action
  */
 export const onPushRegisterSuccess = (state, action) => {
-  const { enabled, hasBeenEnabled, enabledAt } = action.data;
+  const { enabled, showAmountEnabled, enabledAt } = action.data;
   return ({
     ...state,
     pushNotification: {
       ...state.pushNotification,
       apiStatus: PUSH_API_STATUS.READY,
       enabled,
-      hasBeenEnabled,
+      showAmountEnabled,
       enabledAt,
     },
   });

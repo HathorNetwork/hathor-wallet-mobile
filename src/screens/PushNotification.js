@@ -52,7 +52,6 @@ export default function PushNotification(props) {
     enabled,
     showAmountEnabled,
     deviceId,
-    hasBeenEnabled,
   } = useSelector((state) => state.pushNotification);
   const isPushApiLoading = useSelector((state) => isApiStatusLoading(state));
   const hasPushApiFailed = useSelector((state) => hasApiStatusFailed(state.pushNotification));

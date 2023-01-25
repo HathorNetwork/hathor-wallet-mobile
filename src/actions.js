@@ -521,7 +521,7 @@ export const onWalletReload = () => ({
 // Push notification actions
 
 /**
- * @param {{deviceId: string, settings: { enabled, showAmountEnabled }, hasBeenEnabled: boolean, enabledAt: number}} payload
+ * @param {{deviceId: string, settings: { enabled, showAmountEnabled }, enabledAt: number}} payload
  */
 export const pushInit = (payload) => ({
   type: types.PUSH_INIT,
@@ -569,7 +569,7 @@ export const pushRegistrationRequested = (payload) => ({
 });
 
 /**
- * @param {{enabled: boolean, hasBeenEnabled: boolean}} data
+ * @param {{ enabled: boolean }} data
  */
 export const pushRegisterSuccess = (data) => ({
   type: types.PUSH_REGISTER_SUCCESS,
