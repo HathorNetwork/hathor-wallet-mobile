@@ -16,11 +16,13 @@ import { PUSH_API_STATUS } from '../sagas/pushNotification';
 import Spinner from '../components/Spinner';
 
 const isApiStatusLoading = (state) => {
-  return !state.isShowingPinScreen && state.pushNotification.apiStatus === PUSH_API_STATUS.LOADING;
+  const isApiLoading = state.pushNotification.apiStatus === PUSH_API_STATUS.LOADING;
+  return !state.isShowingPinScreen && isApiLoading;
 };
 
 const hasApiStatusFailed = (pushNotification) => {
-  return pushNotification.apiStatus === PUSH_API_STATUS.FAILED;
+  const hasApiFailed = pushNotification.apiStatus === PUSH_API_STATUS.FAILED;
+  return hasApiFailed;
 };
 
 const styles = StyleSheet.create({
