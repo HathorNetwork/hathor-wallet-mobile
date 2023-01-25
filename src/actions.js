@@ -73,6 +73,8 @@ export const types = {
   WALLET_STATE_READY: 'WALLET_STATE_READY',
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
+  WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
+  SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
 };
 
@@ -501,6 +503,18 @@ export const walletStateReady = () => ({
 
 export const onWalletReload = () => ({
   type: types.WALLET_RELOADING,
+});
+
+export const walletRefreshSharedAddress = () => ({
+  type: types.WALLET_REFRESH_SHARED_ADDRESS,
+});
+
+/**
+ * Update address that must be shared with user
+ */
+export const sharedAddressUpdate = (data) => ({
+  type: types.SHARED_ADDRESS_UPDATE,
+  payload: data,
 });
 
 /**

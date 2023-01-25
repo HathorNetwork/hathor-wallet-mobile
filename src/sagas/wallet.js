@@ -46,10 +46,12 @@ import {
 import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
+  walletRefreshSharedAddress,
   tokenInvalidateHistory,
   reloadWalletRequested,
   setIsShowingPinScreen,
   tokenMetadataUpdated,
+  sharedAddressUpdate,
   setUseWalletService,
   startWalletSuccess,
   startWalletFailed,
@@ -216,6 +218,8 @@ export function* startWallet(action) {
     yield put(startWalletFailed());
     return;
   }
+
+  yield put(walletRefreshSharedAddress());
 
   yield put(startWalletSuccess());
 
@@ -598,6 +602,11 @@ export function* onWalletReloadData() {
 
       yield put(tokenInvalidateHistory(tokenUid));
     }
+
+    // We also need to refresh the addresses since we are not starting the wallet again
+    yield call(wallet.getNewAddresses.bind(wallet));
+
+    // Finally, set the wallet to READY by dispatching startWalletSuccess
     yield put(startWalletSuccess());
   } catch (e) {
     yield put(startWalletFailed());
@@ -642,6 +651,17 @@ export function* onStartWalletFailed() {
   yield put(setWallet(null));
 }
 
+export function* refreshSharedAddress() {
+  const wallet = yield select((state) => state.wallet);
+
+  const { address, index } = wallet.getCurrentAddress();
+
+  yield put(sharedAddressUpdate({
+    lastSharedAddress: address,
+    lastSharedIndex: index,
+  }));
+}
+
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
@@ -653,5 +673,6 @@ export function* saga() {
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
+    takeEvery(types.WALLET_REFRESH_SHARED_ADDRESS, refreshSharedAddress),
   ]);
 }
