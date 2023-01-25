@@ -494,13 +494,8 @@ msgstr "Lås Hathor-wallet op"
 msgid "Cancel"
 msgstr "Annuller"
 
-<<<<<<< HEAD
 #: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:108
 #: src/screens/Settings.js:137
-=======
-#: src/screens/PinScreen.js:250 src/screens/RecoverPin.js:108
-#: src/screens/Settings.js:133
->>>>>>> dev
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
@@ -663,19 +658,11 @@ msgstr "SEND ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
-<<<<<<< HEAD
 #: src/sagas/helpers.js:96 src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
 #: src/sagas/helpers.js:97 src/screens/SendConfirmScreen.js:118
-=======
-#: src/sagas/wallet.js:109 src/screens/SendConfirmScreen.js:117
-msgid "Enter your 6-digit pin to authorize operation"
-msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
-
-#: src/sagas/wallet.js:110 src/screens/SendConfirmScreen.js:118
->>>>>>> dev
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
