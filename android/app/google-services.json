@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "285705757888",
+    "project_id": "hathor-wallet-dev",
+    "storage_bucket": "hathor-wallet-dev.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:285705757888:android:c525f7e76e69671565b925",
+        "android_client_info": {
+          "package_name": "network.hathor.wallet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "285705757888-t7bhi1ot4i8dp98rnufs7d3aberqa6ve.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIzDyWnVBnu-Aw5R56r2n5Ab31QURkpuw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "285705757888-t7bhi1ot4i8dp98rnufs7d3aberqa6ve.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
