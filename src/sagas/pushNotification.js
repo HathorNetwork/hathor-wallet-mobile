@@ -18,7 +18,7 @@ import {
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
-import { t } from 'ttag';
+import { msgid, ngettext, t } from 'ttag';
 import { Platform } from 'react-native';
 import {
   types,
@@ -103,7 +103,11 @@ const localization = {
          * @example
          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
          */
-        message = t`You have received ${firstToken}, ${secondToken} and ${otherCount} other ${otherCount === 1 ? 'token' : 'tokens'} on a new transaction.`;
+        message = ngettext(
+          msgid`You have received ${firstToken}, ${secondToken} and ${otherCount} other token on a new transaction.`,
+          `You have received ${firstToken}, ${secondToken} and ${otherCount} other tokens on a new transaction.`,
+          otherCount
+        );
       } else if (countArgs === 2) {
         const [firstToken, secondToken] = args;
         /**
