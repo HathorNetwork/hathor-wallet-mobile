@@ -8,35 +8,6 @@ msgstr ""
 "X-Generator: POEditor.com\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/errorHandler.js:51
-msgid "Unexpected error occurred"
-msgstr "En uventet fejl opstod"
-
-#: src/errorHandler.js:52
-msgid ""
-"Unfortunately an unhandled error happened and you will need to restart your "
-"app.\n"
-"\n"
-"We kindly ask you to report this error to the Hathor team clicking on the "
-"button below.\n"
-"\n"
-"No sensitive data will be shared."
-msgstr ""
-"Desværre opstod der en uventet fejl og du skal genstarte app'en.\n"
-"\n"
-"Vi vil værdsætte det, hvis du rapporterer denne fejl til Hathor teamet, ved "
-"at trykke på knappen herunder.\n"
-"\n"
-"Ingen følsomme data vil blive delt."
-
-#: src/errorHandler.js:55
-msgid "Report error"
-msgstr "Rapporter fejl"
-
-#: src/errorHandler.js:61
-msgid "Close"
-msgstr "Luk"
-
 #.  This should never happen!
 #: src/models.js:24
 msgid "Unknown"
@@ -120,15 +91,15 @@ msgstr ""
 
 #.  Success
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/BackupWords.js:146
+#: src/screens/BackupWords.js:148
 msgid "Words saved correctly"
 msgstr "Ord gemt korrekt"
 
-#: src/screens/BackupWords.js:224
+#: src/screens/BackupWords.js:226
 msgid "To make sure you saved,"
 msgstr "For at sikre dig, at du har gemt,"
 
-#: src/screens/BackupWords.js:226
+#: src/screens/BackupWords.js:228
 msgid "Please select the word that corresponds to the number below:"
 msgstr "Vælg det ord, der svarer til nummeret herunder:"
 
@@ -165,27 +136,27 @@ msgstr "Ny PIN gemt"
 msgid "CHANGE PIN"
 msgstr "SKIFT PIN"
 
-#: src/screens/ChoosePinScreen.js:136
+#: src/screens/ChoosePinScreen.js:135
 msgid "Enter your new PIN code"
 msgstr "Indtast din nye PIN-kode"
 
-#: src/screens/ChoosePinScreen.js:148
+#: src/screens/ChoosePinScreen.js:147
 msgid "Enter your new PIN code again"
 msgstr "Indtast din nye PIN-kode igen"
 
-#: src/screens/ChoosePinScreen.js:72
+#: src/screens/ChoosePinScreen.js:71
 msgid "Create a new PIN code,"
 msgstr "Opret en ny PIN-kode,"
 
-#: src/screens/ChoosePinScreen.js:75
+#: src/screens/ChoosePinScreen.js:74
 msgid "To confirm the PIN,"
 msgstr "For at bekræfte pinkoden,"
 
-#: src/screens/ChoosePinScreen.js:162
+#: src/screens/ChoosePinScreen.js:161
 msgid "PIN codes don't match. Try again."
 msgstr "PIN-koder stemmer ikke overens. Prøv igen."
 
-#: src/screens/ChoosePinScreen.js:185
+#: src/screens/ChoosePinScreen.js:184
 msgid "Start the Wallet"
 msgstr "Start Wallet"
 
@@ -454,11 +425,11 @@ msgstr "Du har lige modtaget **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "BETALINGSANMODNING"
 
-#: src/components/TxDetailsModal.js:52 src/screens/PaymentRequestDetail.js:108
+#: src/components/TxDetailsModal.js:60 src/screens/PaymentRequestDetail.js:108
 msgid "Token"
 msgstr "Token"
 
-#: src/components/TxDetailsModal.js:99 src/screens/PaymentRequestDetail.js:112
+#: src/components/TxDetailsModal.js:107 src/screens/PaymentRequestDetail.js:112
 msgid "Amount"
 msgstr "Antal"
 
@@ -478,24 +449,24 @@ msgstr "Modtaget"
 msgid "Waiting confirmation"
 msgstr "Venter på bekræftelse"
 
-#: src/screens/PinScreen.js:235
+#: src/screens/PinScreen.js:231
 msgid "Incorrect PIN Code. Try again."
 msgstr "Forkert PIN-kode. Prøv igen."
 
-#: src/screens/PinScreen.js:72
+#: src/screens/PinScreen.js:70
 msgid "Enter your PIN Code "
 msgstr "Indtast din pinkode "
 
-#: src/screens/PinScreen.js:73
+#: src/screens/PinScreen.js:71
 msgid "Unlock Hathor Wallet"
 msgstr "Lås Hathor-wallet op"
 
-#: src/screens/PinScreen.js:247
+#: src/screens/PinScreen.js:243
 msgid "Cancel"
 msgstr "Annuller"
 
-#: src/screens/PinScreen.js:250 src/screens/RecoverPin.js:108
-#: src/screens/Settings.js:133
+#: src/screens/PinScreen.js:246 src/screens/RecoverPin.js:108
+#: src/screens/Settings.js:135
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
@@ -638,11 +609,11 @@ msgstr "SEND ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
-#: src/sagas/wallet.js:109 src/screens/SendConfirmScreen.js:117
+#: src/sagas/wallet.js:110 src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
-#: src/sagas/wallet.js:110 src/screens/SendConfirmScreen.js:118
+#: src/sagas/wallet.js:111 src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -676,31 +647,31 @@ msgstr "Du har ikke den anmodede token [${ tokenLabel }]"
 msgid "Scan the QR code"
 msgstr "Scan QR-koden"
 
-#: src/screens/Settings.js:88
+#: src/screens/Settings.js:90
 msgid "You are connected to"
 msgstr "Du er tilsluttet til"
 
-#: src/screens/Settings.js:100
+#: src/screens/Settings.js:102
 msgid "Connected to"
 msgstr "Forbundet til"
 
-#: src/screens/Settings.js:113
+#: src/screens/Settings.js:115
 msgid "Security"
 msgstr "Sikkerhed"
 
-#: src/screens/Settings.js:119
+#: src/screens/Settings.js:121
 msgid "Create a new token"
 msgstr "Opret en ny token"
 
-#: src/screens/Settings.js:127
+#: src/screens/Settings.js:129
 msgid "Register a token"
 msgstr "Registrer en token"
 
-#: src/screens/Settings.js:137
+#: src/screens/Settings.js:139
 msgid "About"
 msgstr "Om"
 
-#: src/screens/Settings.js:144
+#: src/screens/Settings.js:146
 msgid "Unique app identifier"
 msgstr ""
 
@@ -734,11 +705,11 @@ msgstr "Jeg vil afregistrere token **${ tokenLabel }**"
 msgid "Unregister token"
 msgstr "Afregistrer token"
 
-#: src/components/CopyClipboard.js:37
+#: src/components/CopyClipboard.js:47
 msgid "Copied to clipboard!"
 msgstr "Kopieret til udklipsholder!"
 
-#: src/components/ErrorModal.js:27
+#: src/components/GlobalErrorModal.js:49
 msgid ""
 "Thanks for reporting the error to the team. We will investigate it to "
 "prevent from happening again."
@@ -746,13 +717,59 @@ msgstr ""
 "Tak for at rapportere fejlen til teamet. Vi vil undersøge det, for at "
 "forhindre at det sker igen."
 
-#: src/components/ErrorModal.js:39
+#: src/components/GlobalErrorModal.js:79
 msgid "Unexpected error"
 msgstr "Uventet fejl"
 
-#: src/components/ErrorModal.js:43
+#: src/components/GlobalErrorModal.js:83
 msgid "Please restart your app to continue using the wallet."
 msgstr "Genstart venligst app'en for at kunne bruge din wallet igen."
+
+#: src/components/GlobalErrorModal.js:104
+msgid ""
+"Unfortunately an unhandled error happened and you will need to restart your "
+"app.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+"Desværre opstod der en uventet fejl og du skal genstarte app'en.\n"
+"\n"
+"Vi vil værdsætte det, hvis du rapporterer denne fejl til Hathor teamet, ved "
+"at trykke på knappen herunder.\n"
+"\n"
+"Ingen følsomme data vil blive delt."
+
+#: src/components/GlobalErrorModal.js:107
+#, fuzzy
+msgid ""
+"Unfortunately an unhandled error happened.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+"Desværre opstod der en uventet fejl og du skal genstarte app'en.\n"
+"\n"
+"Vi vil værdsætte det, hvis du rapporterer denne fejl til Hathor teamet, ved "
+"at trykke på knappen herunder.\n"
+"\n"
+"Ingen følsomme data vil blive delt."
+
+#: src/components/GlobalErrorModal.js:114
+msgid "Unexpected error occurred"
+msgstr "En uventet fejl opstod"
+
+#: src/components/GlobalErrorModal.js:117
+msgid "Report error"
+msgstr "Rapporter fejl"
+
+#: src/components/GlobalErrorModal.js:122
+msgid "Close"
+msgstr "Luk"
 
 #: src/components/NewPaymentRequest.js:180
 msgid "Create payment request"
@@ -766,16 +783,16 @@ msgstr "Ingen internetforbindelse"
 msgid "Opening camera"
 msgstr "Åbner kamera"
 
-#: src/components/ReceiveMyAddress.js:56
-#, javascript-format
-msgid "Here is my address: ${ _this.state.address }"
+#: src/components/ReceiveMyAddress.js:36
+#, fuzzy, javascript-format
+msgid "Here is my address: ${ lastSharedAddress }"
 msgstr "Her er min adresse: ${ _this.state.address }"
 
-#: src/components/ReceiveMyAddress.js:93
+#: src/components/ReceiveMyAddress.js:74
 msgid "New address"
 msgstr "Ny adresse"
 
-#: src/components/ReceiveMyAddress.js:99 src/components/TokenDetails.js:58
+#: src/components/ReceiveMyAddress.js:80 src/components/TokenDetails.js:58
 msgid "Share"
 msgstr "Del"
 
@@ -790,19 +807,19 @@ msgid ""
 msgstr ""
 "Her er konfigurationsstrengen for token ${ tokenLabel }: ${ configString }"
 
-#: src/components/TxDetailsModal.js:53
+#: src/components/TxDetailsModal.js:61
 msgid "Description"
 msgstr "Beskrivelse"
 
-#: src/components/TxDetailsModal.js:54
+#: src/components/TxDetailsModal.js:62
 msgid "Date & Time"
 msgstr "Dato & Tid"
 
-#: src/components/TxDetailsModal.js:55
+#: src/components/TxDetailsModal.js:63
 msgid "ID"
 msgstr "ID"
 
-#: src/components/TxDetailsModal.js:56
+#: src/components/TxDetailsModal.js:64
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
