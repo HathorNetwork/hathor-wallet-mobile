@@ -208,12 +208,15 @@ export const messageHandler = async (message, isForeground) => {
 
 const confirmDeviceRegistrationOnFirebase = async () => {
   try {
-    // Make sure deviceId is registered on the FCM
-    await messaging().registerDeviceForRemoteMessages();
+    const isDeviceRegistered = messaging().isDeviceRegisteredForRemoteMessages;
+    if (!isDeviceRegistered) {
+      await messaging().registerDeviceForRemoteMessages();
+    }
   } catch (error) {
     console.error('Error confirming the device is registered on firebase.', error);
   }
 };
+
 function* handleMessage(message) {
   yield call(messageHandler, message);
 }
