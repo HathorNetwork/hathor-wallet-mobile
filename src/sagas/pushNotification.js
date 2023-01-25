@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import {
   HathorWalletServiceWallet,
   PushNotification as pushLib,
@@ -113,14 +112,14 @@ const localization = {
          * @example
          * You have received 10 T2 and 5 T1 on a new transaction.
          */
-        message = t`You have received ${firstToken} and ${secondToken}.`;
+        message = t`You have received ${firstToken} and ${secondToken} on a new transaction.`;
       } else if (countArgs === 1) {
         const [firstToken] = args;
         /**
          * @example
          * You have received 10 T2 on a new transaction.
          */
-        message = t`You have received ${firstToken}.`;
+        message = t`You have received ${firstToken} on a new transaction.`;
       }
     } else if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED) {
       message = t`There is a new transaction in your wallet.`;
@@ -137,7 +136,13 @@ const onForegroundMessage = async (message) => {
 
 /**
  * Handle the message received when application is in foreground and background (not closed) state
- * @param {{ data: Object, from: string, messageId: string, sentTime: number, ttl: number }} message - Message received from wallet-service
+ * @param {{
+ *  data: Object,
+ *  from: string,
+ *  messageId: string,
+ *  sentTime: number,
+ *  ttl: number
+ * }} message - Message received from wallet-service
  * @example
  * {
  *   bodyLocArgs: '[\"10 T2\",\"5 T1\",\"2\"]',
@@ -190,6 +195,9 @@ const installForegroundListener = () => {
   }
 };
 
+/**
+ * @returns {Promise<boolean>} true if the channel was created or already exists, false otherwise
+ */
 const createChannelIfNotExists = async () => {
   try {
     const hasTransactionChannel = await notifee.isChannelCreated(TRANSACTION_CHANNEL_ID);
@@ -199,8 +207,10 @@ const createChannelIfNotExists = async () => {
         name: TRANSACTION_CHANNEL_NAME,
       });
     }
+    return true;
   } catch (error) {
     console.error(`Error creating channel for push notification: ${error.message}`, error);
+    return false;
   }
 };
 
@@ -210,7 +220,22 @@ const createChannelIfNotExists = async () => {
 export function* onAppInitialization() {
   yield take(types.START_WALLET_SUCCESS);
 
-  const { enabled, showAmountEnabled } = STORE.getItem(pushNotificationKey.settings) || { enabled: false, showAmountEnabled: false };
+  // If the channel is not created, we should not continue.
+  const isChannelCreated = yield call(createChannelIfNotExists);
+  if (!isChannelCreated) {
+    console.debug('Halting push notification initialization because the channel was not created.');
+    return;
+  }
+
+  yield call(confirmDeviceRegistrationOnFirebase);
+  yield call(installForegroundListener);
+  // If the device is not registered on FCM, we should not continue.
+  const isDeviceRegistered = yield call(confirmDeviceRegistrationOnFirebase);
+  if (!isDeviceRegistered) {
+    console.debug('Halting push notification initialization because the device is not registered on FCM.');
+    return;
+  }
+
   const hasBeenEnabled = STORE.getItem(pushNotificationKey.hasBeenEnabled);
   const enabledAt = STORE.getItem(pushNotificationKey.enabledAt);
 
@@ -224,6 +249,20 @@ export function* onAppInitialization() {
     yield put(pushUpdateDeviceId({ deviceId }));
   }
 
+  const getSettingsOrFallback = () => {
+    const settings = STORE.getItem(pushNotificationKey.settings);
+    if (!settings) {
+      return { enabled: false, showAmountEnabled: false };
+    }
+    return settings;
+  };
+
+  const {
+    enabled,
+    showAmountEnabled
+  } = getSettingsOrFallback();
+  const enabledAt = STORE.getItem(pushNotificationKey.enabledAt);
+
   // Initialize the pushNotification state on the redux store
   yield put(pushInit({
     deviceId,
@@ -234,10 +273,6 @@ export function* onAppInitialization() {
     hasBeenEnabled,
     enabledAt,
   }));
-
-  yield call(createChannelIfNotExists);
-  yield call(confirmDeviceRegistrationOnFirebase);
-  yield call(installForegroundListener);
 
   // Check if the last registration call was made more then a week ago
   if (hasBeenEnabled) {
@@ -278,7 +313,7 @@ export function* loadWallet() {
 
     const pin = yield call(showPinScreenForResult, dispatch);
     walletService = new HathorWalletServiceWallet({
-      requestPassword: pin,
+      requestPassword: null,
       seed: walletUtil.getWalletWords(pin),
       network,
       enableWs: false,
@@ -371,7 +406,13 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
     if (success) {
       const enabledAt = Date.now();
       STORE.setItem(pushNotificationKey.enabledAt, enabledAt);
-      yield put(pushRegisterSuccess({ enablePush: enabled, enableShowAmounts: showAmountEnabled, hasBeenEnabled: true, enabledAt }));
+
+      const payload = {
+        enabled: !!enabled,
+        showAmountEnabled: !!showAmountEnabled,
+        enabledAt,
+      };
+      yield put(pushRegisterSuccess(payload));
     } else {
       // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
       yield put(pushRegisterFailed());

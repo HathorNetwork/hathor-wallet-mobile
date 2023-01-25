@@ -112,7 +112,8 @@ export function* startWallet(action) {
   } else {
     const connection = new Connection({
       network: NETWORK, // app currently connects only to mainnet
-      servers: ['https://mobile.wallet.hathor.network/v1a/'],
+      // servers: ['https://mobile.wallet.hathor.network/v1a/'],
+      servers: ['https://node1.testnet.hathor.network/v1a/'],
     });
 
     const walletConfig = {

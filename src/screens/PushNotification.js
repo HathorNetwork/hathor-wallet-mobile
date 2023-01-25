@@ -16,10 +16,13 @@ import { pushApiReady, pushFirstTimeRegistration, pushUpdateRequested } from '..
 import { PUSH_API_STATUS } from '../sagas/pushNotification';
 import Spinner from '../components/Spinner';
 
-// eslint-disable-next-line max-len
-const isApiStatusLoading = (state) => !state.isShowingPinScreen && state.pushNotification.apiStatus === PUSH_API_STATUS.LOADING;
-// eslint-disable-next-line max-len
-const hasApiStatusFailed = (pushNotification) => pushNotification.apiStatus === PUSH_API_STATUS.FAILED;
+const isApiStatusLoading = (state) => {
+  return !state.isShowingPinScreen && state.pushNotification.apiStatus === PUSH_API_STATUS.LOADING;
+};
+
+const hasApiStatusFailed = (pushNotification) => {
+  return pushNotification.apiStatus === PUSH_API_STATUS.FAILED;
+};
 
 const styles = StyleSheet.create({
   view: {
