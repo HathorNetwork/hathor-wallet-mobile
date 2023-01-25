@@ -26,10 +26,13 @@ import CopyClipboard from '../components/CopyClipboard';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
- * server {str} URL of the full node this wallet is connected to
+ * server {str} URL of server this wallet is connected to
  */
 const mapStateToProps = (state) => {
-  const server = hathorLib.storage.getItem('wallet:server');
+  const server = state.useWalletService
+    ? hathorLib.config.getWalletServiceBaseUrl()
+    : hathorLib.config.getServerUrl();
+
   return {
     selectedToken: state.selectedToken,
     isOnline: state.isOnline,
