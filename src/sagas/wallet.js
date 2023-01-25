@@ -331,7 +331,7 @@ export function* listenForWalletServiceFeatureFlag(featureFlags) {
     // Cleanup when the channel is closed
     return () => {
       featureFlags.removeListener(FeatureFlagEvents.WALLET_SERVICE_ENABLED, listener);
-      featureFlags.offUpdateWalletServiceHandler();
+      featureFlags.offUpdateWalletService();
     };
   });
 
@@ -362,7 +362,7 @@ export function* listenForPushNotificationFeatureFlag(featureFlags) {
     // Cleanup when the channel is closed
     return () => {
       featureFlags.removeListener(FeatureFlagEvents.PUSH_NOTIFICATION_ENABLED, listener);
-      featureFlags.offUpdatePushNotificationHandler();
+      featureFlags.offUpdatePushNotification();
     };
   });
 
