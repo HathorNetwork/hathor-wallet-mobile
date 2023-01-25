@@ -42,7 +42,8 @@ export const types = {
   SET_LOCK_SCREEN: 'SET_LOCK_SCREEN',
   SET_INIT_WALLET: 'SET_INIT_WALLET',
   UPDATE_HEIGHT: 'UPDATE_HEIGHT',
-  SET_ERROR_MODAL: 'SET_ERROR_MODAL',
+  SHOW_ERROR_MODAL: 'SHOW_ERROR_MODAL',
+  HIDE_ERROR_MODAL: 'HIDE_ERROR_MODAL',
   SET_WALLET: 'SET_WALLET',
   RESET_WALLET: 'RESET_WALLET',
   RESET_LOADED_DATA: 'RESET_LOADED_DATA',
@@ -69,6 +70,7 @@ export const types = {
   START_WALLET_REQUESTED: 'START_WALLET_REQUESTED',
   START_WALLET_SUCCESS: 'START_WALLET_SUCCESS',
   START_WALLET_FAILED: 'START_WALLET_FAILED',
+  START_WALLET_NOT_STARTED: 'START_WALLET_NOT_STARTED',
   WALLET_STATE_READY: 'WALLET_STATE_READY',
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
@@ -81,13 +83,10 @@ export const types = {
   PUSH_WALLET_LOAD_REQUESTED: 'PUSH_WALLET_LOAD_REQUESTED',
   PUSH_WALLET_LOAD_SUCCESS: 'PUSH_WALLET_LOAD_SUCCESS',
   PUSH_WALLET_LOAD_FAILED: 'PUSH_WALLET_LOAD_FAILED',
-  PUSH_FIRST_REGISTRATION_REQUESTED: 'PUSH_OPT_IN_REQUESTED',
   PUSH_REGISTRATION_REQUESTED: 'PUSH_REGISTRATION_REQUESTED',
   PUSH_REGISTER_SUCCESS: 'PUSH_REGISTER_SUCCESS',
   PUSH_REGISTER_FAILED: 'PUSH_REGISTER_FAILED',
-  PUSH_UPDATE_REQUESTED: 'PUSH_UPDATE_REQUESTED',
-  PUSH_UPDATE_SUCCESS: 'PUSH_UPDATE_SUCCESS',
-  PUSH_UPDATE_FAILED: 'PUSH_UPDATE_FAILED',
+  EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
 };
 
 /**
@@ -193,15 +192,6 @@ export const updateHeight = (height, htrBalance) => (
   { type: types.UPDATE_HEIGHT, payload: { height, htrBalance } }
 );
 
-/**
- * words {String} wallet words
- * pin {String} Pin chosen by user
- */
-export const setInitWallet = (words, pin) => (
-  { type: types.SET_INIT_WALLET, payload: { words, pin } }
-);
-
-export const clearInitWallet = () => ({ type: types.SET_INIT_WALLET, payload: null });
 
 export const updateTokenHistory = (token, newHistory) => (
   { type: types.UPDATE_TOKEN_HISTORY, payload: { token, newHistory } }
@@ -362,9 +352,11 @@ export const updateLoadedData = (payload) => (
 /**
  * errorReported {boolean} true if user reported the error to sentry
  */
-export const setErrorModal = (errorReported) => (
-  { type: types.SET_ERROR_MODAL, payload: { errorReported } }
-);
+export const showErrorModal = (errorReported) => ({
+  type: types.SHOW_ERROR_MODAL,
+  payload: errorReported,
+});
+export const hideErrorModal = () => ({ type: types.HIDE_ERROR_MODAL });
 
 /**
  * wallet {HathorWallet} wallet object
@@ -535,7 +527,7 @@ export const pushDismissOptInQuestion = () => ({
 });
 
 /**
- * @param {{deviceId: string, settings: { enabled, showAmountEnabled }, hasBeenEnabled: boolean, enabledAt: number}} payload
+ * @param {{deviceId: string, settings: { enabled, showAmountEnabled }, enabledAt: number}} payload
  */
 export const pushInit = (payload) => ({
   type: types.PUSH_INIT,
@@ -575,14 +567,6 @@ export const pushLoadWalletFailed = (payload) => ({
 });
 
 /**
- * @param {{deviceId: string}} payload
- */
-export const pushFirstTimeRegistration = (payload) => ({
-  type: types.PUSH_FIRST_REGISTRATION_REQUESTED,
-  payload,
-});
-
-/**
  * @param {{enabled: boolean, showAmountEnabled: boolean, deviceId: string}} payload
  */
 export const pushRegistrationRequested = (payload) => ({
@@ -591,7 +575,7 @@ export const pushRegistrationRequested = (payload) => ({
 });
 
 /**
- * @param {{enabled: boolean, hasBeenEnabled: boolean}} data
+ * @param {{ enabled: boolean }} data
  */
 export const pushRegisterSuccess = (data) => ({
   type: types.PUSH_REGISTER_SUCCESS,
@@ -603,21 +587,17 @@ export const pushRegisterFailed = () => ({
 });
 
 /**
- * @param {{enabled: boolean, showAmountEnabled: boolean}} payload
+ * Exception captured, will update the store with the Error
+ * instance and whether it should force the user to restart
+ * the wallet or not.
+ *
+ * error {Error} Error object to report
+ * isFatal {Boolean} Whether is fatal or not
  */
-export const pushUpdateRequested = (payload) => ({
-  type: types.PUSH_UPDATE_REQUESTED,
-  payload,
-});
-
-/**
- * @param {{enabled: boolean, showAmountEnabled: boolean}} payload
- */
-export const pushUpdateSuccess = (payload) => ({
-  type: types.PUSH_UPDATE_SUCCESS,
-  payload,
-});
-
-export const pushUpdateFailed = () => ({
-  type: types.PUSH_UPDATE_FAILED,
+export const onExceptionCaptured = (error, isFatal) => ({
+  type: types.EXCEPTION_CAPTURED,
+  payload: {
+    error,
+    isFatal,
+  },
 });
