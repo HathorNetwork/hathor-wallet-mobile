@@ -51,18 +51,20 @@ import { PUSH_API_STATUS } from './sagas/pushNotification';
  *   network {str} network of the connected server (e.g., mainnet, testnet)
  * }
  * lockScreen {bool} Indicates screen is locked
- * initWallet {Object} Information on wallet initialization (if not needed, set to null) {
- *   words {str} wallet words
- *   pin {str} pin selected by user
- * }
  *
- * showErrorModal {boolean} if app should show a modal after the error alert
- * errorReported {boolean} if user reported the error to Sentry
  * useWalletService {boolean} if should use wallet service facade
  * (feature flag that should be updated from rollout service)
  *
  * tokenMetadata {Object} Metadata of tokens {uid: {metaObject}}
  * metadataLoaded {boolean} If metadata was fully loaded from the explorer service
+ *
+ * errorHandler {Object} Information on the captured erorr {
+ *   showAlert {boolean} Indicates if we need to show the alert dialog
+ *   showModal {boolean} Indicates if we need to show the alert modal
+ *   errorReported {boolean} Indicates if the user reported the alert to Sentry
+ *   isFatal {boolean} Indicates if the error is fatal
+ *   error {Error} Error object with the stacktrace, to be sent to Sentry
+ * }
  */
 const initialState = {
   tokensHistory: {},
@@ -75,10 +77,14 @@ const initialState = {
   isOnline: false,
   serverInfo: { version: '', network: '' },
   lockScreen: true,
-  initWallet: null,
   height: 0,
-  showErrorModal: false,
-  errorReported: false,
+  errorHandler: {
+    showAlert: false,
+    showModal: false,
+    errorReported: null,
+    isFatal: null,
+    error: null,
+  },
   wallet: null,
   loadedData: { transactions: 0, addresses: 0 },
   useWalletService: false,
@@ -93,7 +99,7 @@ const initialState = {
   // screen
   tempPin: null,
   isShowingPinScreen: false,
-  walletStartState: WALLET_STATUS.LOADING,
+  walletStartState: WALLET_STATUS.NOT_STARTED,
   pushNotification: {
     /**
      * deviceId {string} device id for push notification
@@ -145,12 +151,10 @@ const reducer = (state = initialState, action) => {
       return onSetServerInfo(state, action);
     case types.SET_LOCK_SCREEN:
       return onSetLockScreen(state, action);
-    case types.SET_INIT_WALLET:
-      return onSetInitWallet(state, action);
-    case types.CLEAR_INIT_WALLET:
-      return onSetInitWallet(state, action);
-    case types.SET_ERROR_MODAL:
-      return onSetErrorModal(state, action);
+    case types.SHOW_ERROR_MODAL:
+      return onShowErrorModal(state, action);
+    case types.HIDE_ERROR_MODAL:
+      return onHideErrorModal(state);
     case types.SET_WALLET:
       return onSetWallet(state, action);
     case types.RESET_WALLET:
@@ -201,6 +205,8 @@ const reducer = (state = initialState, action) => {
       return onStartWalletSuccess(state);
     case types.START_WALLET_FAILED:
       return onStartWalletFailed(state);
+    case types.START_WALLET_NOT_STARTED:
+      return onStartWalletNotStarted(state);
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
     case types.PUSH_INIT:
@@ -217,6 +223,8 @@ const reducer = (state = initialState, action) => {
       return onPushRegisterSuccess(state, action);
     case types.PUSH_REGISTER_FAILED:
       return onPushApiFailed(state);
+    case types.EXCEPTION_CAPTURED:
+      return onExceptionCaptured(state, action);
     default:
       return state;
   }
@@ -363,14 +371,6 @@ const onSetLockScreen = (state, action) => ({
   lockScreen: action.payload,
 });
 
-/**
- * Update information about wallet initialization
- */
-const onSetInitWallet = (state, action) => ({
-  ...state,
-  initWallet: action.payload,
-});
-
 const onSetRecoveringPin = (state, action) => ({
   ...state,
   recoveringPin: action.payload,
@@ -405,22 +405,24 @@ const onSetUseWalletService = (state, action) => ({
   useWalletService: action.payload,
 });
 
-const onResetWallet = (state, action) => {
-  if (state.wallet) {
-    // Stop wallet
-    state.wallet.stop();
-  }
-
-  return {
-    ...state,
-    wallet: null,
-  };
-};
-
-const onSetErrorModal = (state, action) => ({
+const onResetWallet = (state) => ({
   ...state,
-  showErrorModal: true,
-  errorReported: action.payload.errorReported,
+  wallet: null,
+});
+
+const onHideErrorModal = (state) => ({
+  ...state,
+  errorHandler: initialState.errorHandler,
+});
+
+const onShowErrorModal = (state, action) => ({
+  ...state,
+  errorHandler: {
+    ...state.errorHandler,
+    errorReported: action.payload,
+    showAlert: false,
+    showModal: true,
+  },
 });
 
 const onResetLoadedData = (state, action) => ({
@@ -603,6 +605,11 @@ export const onTokenFetchHistoryRequested = (state, action) => {
   };
 };
 
+export const onStartWalletNotStarted = (state) => ({
+  ...state,
+  walletStartState: WALLET_STATUS.NOT_STARTED,
+});
+
 export const onStartWalletFailed = (state) => ({
   ...state,
   walletStartState: WALLET_STATUS.FAILED,
@@ -610,7 +617,7 @@ export const onStartWalletFailed = (state) => ({
 
 export const onStartWalletLock = (state) => ({
   ...state,
-  walletStartState: WALLET_STATUS.LOADING,
+  walletStartState: WALLET_STATUS.NOT_STARTED,
 });
 
 /**
@@ -620,10 +627,6 @@ export const onStartWalletLock = (state) => ({
 export const onStartWalletRequested = (state, action) => ({
   ...state,
   walletStartState: WALLET_STATUS.LOADING,
-  initWallet: {
-    words: action.payload.words,
-    pin: action.payload.pin,
-  },
 });
 
 export const onStartWalletSuccess = (state) => ({
@@ -759,8 +762,30 @@ export const onPushApiFailed = (state) => ({
   },
 });
 
+/**
+ * @param {Boolean} action.payload.error The captured Error object
+ * @param {Boolean} action.payload.isFatal Indicates if the error is fatal
+ */
+export const onExceptionCaptured = (state, { payload }) => {
+  const { error, isFatal } = payload;
+
+  return {
+    ...state,
+    errorHandler: {
+      ...state.errorHandler,
+      error,
+      isFatal,
+      showAlert: true,
+      showModal: false,
+    },
+  };
+};
+
 const saga = createSagaMiddleware();
-const middlewares = [saga, thunk];
+const middlewares = [
+  saga,
+  thunk,
+];
 
 export const store = createStore(reducer, applyMiddleware(...middlewares));
 

@@ -72,6 +72,7 @@ import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
 export const WALLET_STATUS = {
+  NOT_STARTED: 'not_started',
   READY: 'ready',
   FAILED: 'failed',
   LOADING: 'loading',
@@ -79,6 +80,8 @@ export const WALLET_STATUS = {
 
 export function* startWallet(action) {
   const { words, pin } = action.payload;
+
+  NavigationService.navigate('LoadHistoryScreen');
 
   const uniqueDeviceId = getUniqueId();
   const featureFlags = new FeatureFlags(uniqueDeviceId, NETWORK);
@@ -209,7 +212,10 @@ export function* startWallet(action) {
   // is dispatched, we need to cleanup all attached forks (that will cause the event
   // listeners to be cleaned).
   const { reload } = yield race({
-    start: take(types.START_WALLET_REQUESTED),
+    start: take([
+      types.START_WALLET_REQUESTED,
+      types.RESET_WALLET,
+    ]),
     reload: take(types.RELOAD_WALLET_REQUESTED),
   });
 
@@ -580,11 +586,51 @@ export function* onWalletReloadData() {
   }
 }
 
+export function* onResetWallet() {
+  const wallet = yield select((state) => state.wallet);
+
+  if (wallet) {
+    // wallet.stop() will remove all event listeners and call
+    // hathorLib.wallet.cleanWallet
+    wallet.stop({ cleanStorage: true });
+
+    return;
+  }
+
+  // Wallet was not initialized yet, this might happen if resetWallet
+  // is called from the PinScreen. There is no event listeners to cleanup
+  // so we can call the cleanLoadedData method directly.
+  walletUtil.cleanLoadedData({ cleanAccessData: true });
+}
+
+export function* onStartWalletFailed() {
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet) {
+    return;
+  }
+
+  // Wallet is an instance of EventEmitter, so we can call removeAllListeners
+  // to properly prevent events from leaking when an error gets thrown
+  wallet.removeAllListeners();
+
+  if (wallet.conn) {
+    // Same with wallet.conn
+    wallet.conn.removeAllListeners();
+  }
+
+  // Remove the wallet from redux so we can retry the
+  // startWallet on the next PIN unlock
+  yield put(setWallet(null));
+}
+
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeLatest('WALLET_RELOADING', onWalletReloadData),
+    takeLatest('RESET_WALLET', onResetWallet),
+    takeLatest('START_WALLET_FAILED', onStartWalletFailed),
     takeEvery('WALLET_NEW_TX', handleTx),
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
