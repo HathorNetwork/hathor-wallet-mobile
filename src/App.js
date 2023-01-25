@@ -15,8 +15,8 @@ import { createBottomTabNavigator } from 'react-navigation-tabs';
 import { Provider, connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
-
 import hathorLib from '@hathor/wallet-lib';
+
 import IconTabBar from './icon-font';
 import NavigationService from './NavigationService';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT } from './constants';
@@ -27,6 +27,7 @@ import {
   setTokens,
 } from './actions';
 import { store } from './reducer';
+import { GlobalErrorHandler } from './components/GlobalErrorModal';
 
 import DecideStackScreen from './screens/DecideStackScreen';
 import {
@@ -62,7 +63,6 @@ import CreateTokenSymbol from './screens/CreateTokenSymbol';
 import CreateTokenAmount from './screens/CreateTokenAmount';
 import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
-import ErrorModal from './components/ErrorModal';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 import { WALLET_STATUS } from './sagas/wallet';
 
@@ -139,6 +139,30 @@ const tabBarIconMap = {
   Settings: 'icSettings',
 };
 
+/**
+ * This workaround is similar to the one in TokenSelect.js
+ *
+ * It should be removed after we upgrade react-navigation to
+ * to use the latest version of SafeAreaView
+ */
+const tabNavigatorMarginWorkaround = () => {
+  const deviceId = DeviceInfo.getDeviceId();
+  const workaroundDeviceIds = [
+    'iPhone13,2', // iPhone 12
+    'iPhone13,3', // iPhone 12 Pro
+    'iPhone13,4', // iPhone 12 Pro Max
+    'iPhone14,5', // iPhone 13
+    'iPhone14,2', // iPhone 13 Pro
+    'iPhone14,3', // iPhone 13 Pro Max
+    'iPhone14,7', // iPhone 14
+    'iPhone14,8', // iPhone 14 Plus
+    'iPhone15,2', // iPhone 14 Pro
+    'iPhone15,3', // iPhone 14 Pro Max
+  ];
+
+  return workaroundDeviceIds.includes(deviceId);
+};
+
 const TabNavigator = createBottomTabNavigator({
   Home: (IS_MULTI_TOKEN ? DashboardStack : MainScreen),
   Send: SendStack,
@@ -152,6 +176,7 @@ const TabNavigator = createBottomTabNavigator({
     style: {
       paddingTop: 12,
       paddingBottom: 12,
+      ...(tabNavigatorMarginWorkaround() ? { marginBottom: 34 } : {})
     },
     tabStyle: {
       justifyContent: 'center',
@@ -178,7 +203,13 @@ const AppStack = createStackNavigator({
   Security,
   PushNotification,
   ChangePin,
-  ResetWallet,
+  ResetWallet: {
+    screen: ResetWallet,
+    // Dismissing the screen on ResetWallet would lead to a
+    // MainScreen with broken state if started from the PinScreen,
+    // so just disable the swipeDown animation
+    navigationOptions: disableSwipeDown,
+  },
   PaymentRequestDetail,
   RegisterToken: RegisterTokenStack,
   ChangeToken,
@@ -383,7 +414,7 @@ const App = () => (
     <NavigationContainer
       ref={(navigatorRef) => NavigationService.setTopLevelNavigator(navigatorRef)}
     />
-    <ErrorModal />
+    <GlobalErrorHandler />
   </Provider>
 );
 

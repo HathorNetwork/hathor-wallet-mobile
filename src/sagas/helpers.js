@@ -79,6 +79,13 @@ export function errorHandler(saga, failureAction) {
   };
 }
 
+/**
+ * Opens the pin screen and waits for the user to enter the pin.
+ * This method is used while processing some action on saga
+ * and we need to wait for the user to enter the pin to continue.
+ * @param {Function} dispatch - dispatch function from redux
+ * @returns {Promise<string>} - Promise that resolves with the pin entered by the user
+ */
 export const showPinScreenForResult = async (dispatch) => new Promise((resolve) => {
   const params = {
     cb: (_pin) => {

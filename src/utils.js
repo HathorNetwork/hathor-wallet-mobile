@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 /**
  * Copyright (c) Hathor Labs and its affiliates.
  *
@@ -448,15 +447,11 @@ export const mapTokenHistory = (element, token) => {
 };
 
 /**
- * Verifies if user is enabling a feature
- * @param {boolean} value should be true or false and comes from Switch component
- * @returns {boolean} true if user is enabling a feature, false otherwise
- */
-export const isEnablingFeature = (value) => (value && value === true);
-
-/**
  * Select the push notification settings from redux state
- * @param {{ enabled: boolean, showAmountEnabled: boolean }} pushNotification pushNotification object from redux
+ * @param {{
+ *  enabled: boolean,
+ *  showAmountEnabled: boolean
+ * }} pushNotification pushNotification object from redux
  * @returns the push notification settings object
  */
 export const getPushNotificationSettings = (pushNotification) => {

@@ -22,9 +22,10 @@ import {
   lockScreen,
   unlockScreen,
   setLoadHistoryStatus,
-  setInitWallet,
   setRecoveringPin,
   setTempPin,
+  onStartWalletLock,
+  startWalletRequested,
 } from '../actions';
 import { PIN_SIZE } from '../constants';
 
@@ -42,8 +43,12 @@ const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
   lockScreen: () => dispatch(lockScreen()),
   setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),
-  setInitWallet: (words, pin) => dispatch(setInitWallet(words, pin)),
   setTempPin: (pin) => dispatch(setTempPin(pin)),
+  onStartWalletLock: () => dispatch(onStartWalletLock()),
+  startWalletRequested: (words, pin) => dispatch(startWalletRequested({
+    words,
+    pin
+  })),
 });
 
 class PinScreen extends React.Component {
@@ -144,7 +149,7 @@ class PinScreen extends React.Component {
         // We are saving HathorWallet object in redux, so if the app has lost redux information
         // and is in locked screen we must start the HathorWallet object again
         const words = getWalletWords(pin);
-        this.props.setInitWallet(words, pin);
+        this.props.startWalletRequested(words, pin);
       }
       this.props.unlockScreen();
     } else {
@@ -195,9 +200,15 @@ class PinScreen extends React.Component {
 
   goToReset = () => {
     // navigate to reset screen
-    this.props.navigation.navigate('ResetWallet', { onBackPress: () => this.backFromReset() });
+    this.props.navigation.navigate('ResetWallet', {
+      onBackPress: () => {
+        this.props.onStartWalletLock();
+        this.backFromReset();
+      },
+    });
     // make sure we won't show loadHistory screen
     this.props.setLoadHistoryStatus(false, false);
+
     // unlock so we remove this lock screen
     this.props.unlockScreen();
   }
