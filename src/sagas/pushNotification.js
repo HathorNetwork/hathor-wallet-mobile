@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import {
   HathorWalletServiceWallet,
   PushNotification as pushLib,
@@ -17,17 +16,16 @@ import {
   race,
   take,
   takeLatest,
+  fork,
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
-import { t } from 'ttag';
+import { msgid, ngettext, t } from 'ttag';
 import { Platform } from 'react-native';
 import {
   types,
   pushRegisterSuccess,
   pushRegisterFailed,
-  pushUpdateSuccess,
-  pushUpdateFailed,
   pushUpdateDeviceId,
   pushRegistrationRequested,
   pushLoadWalletRequested,
@@ -115,21 +113,25 @@ const localization = {
          * @example
          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
          */
-        message = t`You have received ${firstToken}, ${secondToken} and ${otherCount} other token on a new transaction.`;
+        message = ngettext(
+          msgid`You have received ${firstToken}, ${secondToken} and ${otherCount} other token on a new transaction.`,
+          `You have received ${firstToken}, ${secondToken} and ${otherCount} other tokens on a new transaction.`,
+          otherCount
+        );
       } else if (countArgs === 2) {
         const [firstToken, secondToken] = args;
         /**
          * @example
          * You have received 10 T2 and 5 T1 on a new transaction.
          */
-        message = t`You have received ${firstToken} and ${secondToken}.`;
+        message = t`You have received ${firstToken} and ${secondToken} on a new transaction.`;
       } else if (countArgs === 1) {
         const [firstToken] = args;
         /**
          * @example
          * You have received 10 T2 on a new transaction.
          */
-        message = t`You have received ${firstToken}.`;
+        message = t`You have received ${firstToken} on a new transaction.`;
       }
     } else if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED) {
       message = t`There is a new transaction in your wallet.`;
@@ -146,9 +148,13 @@ const onForegroundMessage = async (message) => {
 
 /**
  * Handle the message received when application is in foreground and background (not closed) state
- * @param {{ data: Object, from: string, messageId: string, sentTime: number, ttl: number }} message - Message received from wallet-service
- * @param {boolean?} isForeground - If the application is in foreground or not
- *
+ * @param {{
+ *  data: Object,
+ *  from: string,
+ *  messageId: string,
+ *  sentTime: number,
+ *  ttl: number
+ * }} message - Message received from wallet-service
  * @example
  * {
  *   bodyLocArgs: '[\"10 T2\",\"5 T1\",\"2\"]',
@@ -196,10 +202,16 @@ export const messageHandler = async (message, isForeground) => {
   }
 };
 
+/**
+ * @returns {Promise<boolean>} true if the device is registered on the FCM, false otherwise
+ */
 const confirmDeviceRegistrationOnFirebase = async () => {
   try {
     // Make sure deviceId is registered on the FCM
-    await messaging().registerDeviceForRemoteMessages();
+    if (messaging().isDeviceRegisteredForRemoteMessages) {
+      await messaging().registerDeviceForRemoteMessages();
+    }
+    return true;
   } catch (error) {
     console.error('Error confirming the device is registered on firebase.', error);
   }
@@ -231,6 +243,9 @@ const installForegroundListener = () => {
   }
 };
 
+/**
+ * @returns {Promise<boolean>} true if the channel was created or already exists, false otherwise
+ */
 const createChannelIfNotExists = async () => {
   try {
     const hasTransactionChannel = await notifee.isChannelCreated(TRANSACTION_CHANNEL_ID);
@@ -240,6 +255,7 @@ const createChannelIfNotExists = async () => {
         name: TRANSACTION_CHANNEL_NAME,
       });
     }
+    return true;
   } catch (error) {
     console.error('Error creating channel for push notification.', error);
   }
@@ -251,9 +267,21 @@ const createChannelIfNotExists = async () => {
 export function* onAppInitialization() {
   yield take(types.START_WALLET_SUCCESS);
 
-  const { enabled, showAmountEnabled } = STORE.getItem(pushNotificationKey.settings) || { enabled: false, showAmountEnabled: false };
-  const hasBeenEnabled = STORE.getItem(pushNotificationKey.hasBeenEnabled) || false;
-  const enabledAt = STORE.getItem(pushNotificationKey.enabledAt) || 0;
+  // If the channel is not created, we should not continue.
+  const isChannelCreated = yield call(createChannelIfNotExists);
+  if (!isChannelCreated) {
+    console.debug('Halting push notification initialization because the channel was not created.');
+    return;
+  }
+
+  // If the device is not registered on FCM, we should not continue.
+  const isDeviceRegistered = yield call(confirmDeviceRegistrationOnFirebase);
+  if (!isDeviceRegistered) {
+    console.debug('Halting push notification initialization because the device is not registered on FCM.');
+    return;
+  }
+
+  yield call(installForegroundListener);
 
   const persistedDeviceId = STORE.getItem(pushNotificationKey.deviceId);
   const deviceId = yield call(getDeviceId);
@@ -265,6 +293,20 @@ export function* onAppInitialization() {
     yield put(pushUpdateDeviceId({ deviceId }));
   }
 
+  const getSettingsOrFallback = () => {
+    const settings = STORE.getItem(pushNotificationKey.settings);
+    if (!settings) {
+      return { enabled: false, showAmountEnabled: false };
+    }
+    return settings;
+  };
+
+  const {
+    enabled,
+    showAmountEnabled
+  } = getSettingsOrFallback();
+  const enabledAt = STORE.getItem(pushNotificationKey.enabledAt);
+
   // Initialize the pushNotification state on the redux store
   yield put(pushInit({
     deviceId,
@@ -272,16 +314,11 @@ export function* onAppInitialization() {
       enabled,
       showAmountEnabled,
     },
-    hasBeenEnabled,
     enabledAt,
   }));
 
-  yield call(createChannelIfNotExists);
-  yield call(confirmDeviceRegistrationOnFirebase);
-  yield call(installForegroundListener);
-
   // Check if the last registration call was made more then a week ago
-  if (hasBeenEnabled) {
+  if (enabledAt) {
     const timeSinceLastRegistration = moment().diff(enabledAt, 'weeks');
     if (timeSinceLastRegistration > 1) {
       // Update the registration, as per Firebase's recommendation
@@ -326,7 +363,6 @@ export function* loadWallet() {
 
     const pin = yield call(showPinScreenForResult, dispatch);
     walletService = new HathorWalletServiceWallet({
-      requestPassword: pin,
       seed: walletUtil.getWalletWords(pin),
       network,
       enableWs: false,
@@ -345,49 +381,6 @@ export function* loadWallet() {
   }
 
   yield put(pushLoadWalletSuccess({ walletService }));
-}
-
-/**
- * This function is the actual opt-in of a user to the Push Notifications feature.
- * It should be called when the push notifications are not loaded and/or registered.
- * This should load the wallet on the wallet-service and register it with the deviceId.
- * @param {{ payload: { deviceId: string } }} action
- */
-export function* firstTimeRegistration({ payload: { deviceId } }) {
-  yield put(pushLoadWalletRequested());
-
-  // wait for the wallet to be loaded
-  const [loadWalletSuccess, loadWalletFail] = yield race([
-    take(types.PUSH_WALLET_LOAD_SUCCESS),
-    take(types.PUSH_WALLET_LOAD_FAILED)
-  ]);
-
-  if (loadWalletFail) {
-    yield put(pushRegisterFailed());
-    return;
-  }
-
-  const { walletService } = loadWalletSuccess.payload;
-  try {
-    const { success } = yield call(pushLib.PushNotification.registerDevice, walletService, {
-      pushProvider: Platform.OS,
-      deviceId,
-      enablePush: true,
-    });
-
-    if (success) {
-      const enabledAt = Date.now();
-      STORE.setItem(pushNotificationKey.enabledAt, enabledAt);
-      STORE.setItem(pushNotificationKey.hasBeenEnabled, true);
-      yield put(pushRegisterSuccess({ enabled: true, hasBeenEnabled: true, enabledAt }));
-    } else {
-      // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
-      yield put(pushRegisterFailed());
-    }
-  } catch (error) {
-    console.error('Error registering device in wallet-service for the first time.', error);
-    yield put(pushRegisterFailed());
-  }
 }
 
 /**
@@ -413,15 +406,23 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
     const { success } = yield call(pushLib.PushNotification.registerDevice, walletService, {
       pushProvider: Platform.OS,
       deviceId,
-      enablePush: true,
+      enablePush: !!enabled,
+      enableShowAmounts: !!showAmountEnabled,
     });
 
     if (success) {
       const enabledAt = Date.now();
       STORE.setItem(pushNotificationKey.enabledAt, enabledAt);
-      yield put(pushRegisterSuccess({ enablePush: enabled, enableShowAmounts: showAmountEnabled, hasBeenEnabled: true, enabledAt }));
+
+      const payload = {
+        enabled: !!enabled,
+        showAmountEnabled: !!showAmountEnabled,
+        enabledAt,
+      };
+      yield put(pushRegisterSuccess(payload));
     } else {
-      // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
+      // NOTE: theoretically, this should never happen
+      // because when the client call fails, it throws an error
       yield put(pushRegisterFailed());
     }
   } catch (error) {
@@ -431,48 +432,12 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
 }
 
 /**
- * This function is responsible for updating the registration of the device on the wallet-service
- * in the event of changing the settings of the push notifications.
- * @param {{ payload: { enabled: boolean, showAmountEnabled: boolean, deviceId: string } }} action
- */
-export function* updateRegistration({ payload: { enabled, showAmountEnabled, deviceId } }) {
-  yield put(pushLoadWalletRequested());
-
-  // wait for the wallet to be loaded
-  const [loadWalletSuccess, loadWalletFail] = yield race([
-    take(types.PUSH_WALLET_LOAD_SUCCESS),
-    take(types.PUSH_WALLET_LOAD_FAILED)
-  ]);
-
-  if (loadWalletFail) {
-    yield put(pushRegisterFailed());
-    return;
-  }
-
-  const { walletService } = loadWalletSuccess.payload;
-  try {
-    const { success } = yield call(pushLib.PushNotification.updateDevice, walletService, {
-      deviceId,
-      enablePush: enabled,
-      enableShowAmounts: showAmountEnabled,
-    });
-    if (success) {
-      yield put(pushUpdateSuccess({ enabled, showAmountEnabled }));
-    } else {
-      // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
-      yield put(pushUpdateFailed());
-    }
-  } catch (error) {
-    console.error('Error updating device in wallet-service.', error);
-    yield put(pushUpdateFailed());
-  }
-}
-
-/**
  * This function is responsible for updating the store with the new push notification settings.
  */
 export function* updateStore() {
-  const { enabled, showAmountEnabled } = yield select((state) => getPushNotificationSettings(state.pushNotification));
+  const { enabled, showAmountEnabled } = yield select(
+    (state) => getPushNotificationSettings(state.pushNotification),
+  );
   STORE.setItem(pushNotificationKey.settings, { enabled, showAmountEnabled });
 }
 
@@ -580,13 +545,11 @@ export function* saga() {
   yield all([
     fork(onAppInitialization),
     takeEvery(types.PUSH_WALLET_LOAD_REQUESTED, loadWallet),
-    takeEvery(types.PUSH_FIRST_REGISTRATION_REQUESTED, firstTimeRegistration),
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
-    takeEvery(types.PUSH_UPDATE_REQUESTED, updateRegistration),
-    takeEvery([types.PUSH_REGISTER_SUCCESS, types.PUSH_UPDATE_SUCCESS], updateStore),
+    takeEvery(types.RESET_WALLET, resetPushNotification),
     takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion),
     takeEvery(types.PUSH_HANDLE_MESSAGE, handleMessage),
     takeEvery(types.SET_INIT_WALLET, checkOpenPushNotification),
-    takeEvery(types.RESET_WALLET, resetPushNotification)
+    takeEvery(types.PUSH_REGISTER_SUCCESS, updateStore),
   ]);
 }
