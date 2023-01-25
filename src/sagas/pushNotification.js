@@ -376,7 +376,8 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
       };
       yield put(pushRegisterSuccess(payload));
     } else {
-      // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
+      // NOTE: theoretically, this should never happen
+      // because when the client call fails, it throws an error
       yield put(pushRegisterFailed());
     }
   } catch (error) {
@@ -389,7 +390,9 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
  * This function is responsible for updating the store with the new push notification settings.
  */
 export function* updateStore() {
-  const { enabled, showAmountEnabled } = yield select((state) => getPushNotificationSettings(state.pushNotification));
+  const { enabled, showAmountEnabled } = yield select(
+    (state) => getPushNotificationSettings(state.pushNotification),
+  );
   STORE.setItem(pushNotificationKey.settings, { enabled, showAmountEnabled });
 }
 
