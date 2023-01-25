@@ -510,11 +510,17 @@ export const walletRefreshSharedAddress = () => ({
 });
 
 /**
- * Update address that must be shared with user
+ * Update address that will be shared with user
+ *
+ * lastSharedAddress {string} The address to use
+ * lastSharedIndex {int} The address index to use
  */
-export const sharedAddressUpdate = (data) => ({
+export const sharedAddressUpdate = (lastSharedAddress, lastSharedIndex) => ({
   type: types.SHARED_ADDRESS_UPDATE,
-  payload: data,
+  payload: {
+    lastSharedAddress,
+    lastSharedIndex,
+  },
 });
 
 /**

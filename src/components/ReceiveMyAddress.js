@@ -25,10 +25,7 @@ export default function ReceiveMyAddress() {
   const getNextAddress = async () => {
     const { address, index } = await wallet.getNextAddress();
 
-    dispatch(sharedAddressUpdate({
-      lastSharedAddress: address,
-      lastSharedIndex: index,
-    }));
+    dispatch(sharedAddressUpdate(address, index));
   };
 
   const shareAddress = () => {

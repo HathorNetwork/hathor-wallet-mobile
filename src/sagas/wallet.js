@@ -659,10 +659,7 @@ export function* refreshSharedAddress() {
 
   const { address, index } = wallet.getCurrentAddress();
 
-  yield put(sharedAddressUpdate({
-    lastSharedAddress: address,
-    lastSharedIndex: index,
-  }));
+  yield put(sharedAddressUpdate(address, index));
 }
 
 export function* saga() {

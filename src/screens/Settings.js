@@ -23,7 +23,6 @@ import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
 import { getLightBackground } from '../utils';
 import CopyClipboard from '../components/CopyClipboard';
 
-
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  * server {str} URL of server this wallet is connected to
