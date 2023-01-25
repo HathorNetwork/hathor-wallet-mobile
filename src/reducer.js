@@ -354,17 +354,10 @@ const onSetTempPin = (state, action) => ({
   tempPin: action.payload,
 });
 
-const onSetWallet = (state, action) => {
-  if (state.wallet && state.wallet.state !== hathorLib.HathorWallet.CLOSED) {
-    // Wallet was not closed
-    state.wallet.stop();
-  }
-
-  return {
-    ...state,
-    wallet: action.payload
-  };
-};
+const onSetWallet = (state, action) => ({
+  ...state,
+  wallet: action.payload,
+});
 
 const onSetUniqueDeviceId = (state, action) => ({
   ...state,
