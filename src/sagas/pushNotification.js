@@ -103,7 +103,7 @@ const localization = {
          * @example
          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
          */
-        message = t`You have received ${firstToken}, ${secondToken} and ${otherCount} other token on a new transaction.`;
+        message = t`You have received ${firstToken}, ${secondToken} and ${otherCount} other ${otherCount === 1 ? 'token' : 'tokens'} on a new transaction.`;
       } else if (countArgs === 2) {
         const [firstToken, secondToken] = args;
         /**
@@ -175,12 +175,19 @@ const messageHandler = async (message) => {
   });
 };
 
+/**
+ * @returns {Promise<boolean>} true if the device is registered on the FCM, false otherwise
+ */
 const confirmDeviceRegistrationOnFirebase = async () => {
   try {
     // Make sure deviceId is registered on the FCM
-    await messaging().registerDeviceForRemoteMessages();
+    if (messaging().isDeviceRegisteredForRemoteMessages) {
+      await messaging().registerDeviceForRemoteMessages();
+    }
+    return true;
   } catch (error) {
     console.error(`Error confirming the device is registered on FCM: ${error.message}`, error);
+    return false;
   }
 };
 
@@ -225,8 +232,6 @@ export function* onAppInitialization() {
     return;
   }
 
-  yield call(confirmDeviceRegistrationOnFirebase);
-  yield call(installForegroundListener);
   // If the device is not registered on FCM, we should not continue.
   const isDeviceRegistered = yield call(confirmDeviceRegistrationOnFirebase);
   if (!isDeviceRegistered) {
@@ -234,6 +239,7 @@ export function* onAppInitialization() {
     return;
   }
 
+  yield call(installForegroundListener);
 
   const persistedDeviceId = STORE.getItem(pushNotificationKey.deviceId);
   const deviceId = yield call(getDeviceId);
@@ -308,7 +314,6 @@ export function* loadWallet() {
 
     const pin = yield call(showPinScreenForResult, dispatch);
     walletService = new HathorWalletServiceWallet({
-      requestPassword: null,
       seed: walletUtil.getWalletWords(pin),
       network,
       enableWs: false,
