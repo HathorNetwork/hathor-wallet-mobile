@@ -799,16 +799,7 @@ export const onPushApiFailed = (state) => ({
 
 export const onPushReset = (state) => ({
   ...state,
-  pushNotification: {
-    ...state.pushNotification,
-    showOptInQuestion: false,
-    deviceId: '',
-    apiStatus: PUSH_API_STATUS.READY,
-    enabled: false,
-    showAmountEnabled: false,
-    hasBeenEnabled: false,
-    enabledAt: 0,
-  },
+  pushNotification: initialState.pushNotification,
 });
 
 /**
