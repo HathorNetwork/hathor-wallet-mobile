@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 /**
  * Copyright (c) Hathor Labs and its affiliates.
  *
@@ -214,8 +213,6 @@ const reducer = (state = initialState, action) => {
       return onPushInit(state, action);
     case types.PUSH_UPDATE_DEVICE_ID:
       return onPushUpdateDeviceId(state, action);
-    case types.PUSH_FIRST_REGISTRATION_REQUESTED:
-      return onPushApiLoading(state);
     case types.PUSH_REGISTRATION_REQUESTED:
       return onPushApiLoading(state);
     case types.PUSH_UPDATE_REQUESTED:
@@ -225,10 +222,6 @@ const reducer = (state = initialState, action) => {
     case types.PUSH_REGISTER_SUCCESS:
       return onPushRegisterSuccess(state, action);
     case types.PUSH_REGISTER_FAILED:
-      return onPushApiFailed(state);
-    case types.PUSH_UPDATE_SUCCESS:
-      return onPushUpdateSuccess(state, action);
-    case types.PUSH_UPDATE_FAILED:
       return onPushApiFailed(state);
     default:
       return state;

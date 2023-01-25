@@ -79,13 +79,9 @@ export const types = {
   PUSH_WALLET_LOAD_REQUESTED: 'PUSH_WALLET_LOAD_REQUESTED',
   PUSH_WALLET_LOAD_SUCCESS: 'PUSH_WALLET_LOAD_SUCCESS',
   PUSH_WALLET_LOAD_FAILED: 'PUSH_WALLET_LOAD_FAILED',
-  PUSH_FIRST_REGISTRATION_REQUESTED: 'PUSH_OPT_IN_REQUESTED',
   PUSH_REGISTRATION_REQUESTED: 'PUSH_REGISTRATION_REQUESTED',
   PUSH_REGISTER_SUCCESS: 'PUSH_REGISTER_SUCCESS',
   PUSH_REGISTER_FAILED: 'PUSH_REGISTER_FAILED',
-  PUSH_UPDATE_REQUESTED: 'PUSH_UPDATE_REQUESTED',
-  PUSH_UPDATE_SUCCESS: 'PUSH_UPDATE_SUCCESS',
-  PUSH_UPDATE_FAILED: 'PUSH_UPDATE_FAILED',
 };
 
 /**
@@ -565,14 +561,6 @@ export const pushLoadWalletFailed = (payload) => ({
 });
 
 /**
- * @param {{deviceId: string}} payload
- */
-export const pushFirstTimeRegistration = (payload) => ({
-  type: types.PUSH_FIRST_REGISTRATION_REQUESTED,
-  payload,
-});
-
-/**
  * @param {{enabled: boolean, showAmountEnabled: boolean, deviceId: string}} payload
  */
 export const pushRegistrationRequested = (payload) => ({
@@ -590,24 +578,4 @@ export const pushRegisterSuccess = (data) => ({
 
 export const pushRegisterFailed = () => ({
   type: types.PUSH_REGISTER_FAILED,
-});
-
-/**
- * @param {{enabled: boolean, showAmountEnabled: boolean}} payload
- */
-export const pushUpdateRequested = (payload) => ({
-  type: types.PUSH_UPDATE_REQUESTED,
-  payload,
-});
-
-/**
- * @param {{enabled: boolean, showAmountEnabled: boolean}} payload
- */
-export const pushUpdateSuccess = (payload) => ({
-  type: types.PUSH_UPDATE_SUCCESS,
-  payload,
-});
-
-export const pushUpdateFailed = () => ({
-  type: types.PUSH_UPDATE_FAILED,
 });

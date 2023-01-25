@@ -24,8 +24,6 @@ import {
   types,
   pushRegisterSuccess,
   pushRegisterFailed,
-  pushUpdateSuccess,
-  pushUpdateFailed,
   pushUpdateDeviceId,
   pushRegistrationRequested,
   pushLoadWalletRequested,
@@ -335,49 +333,6 @@ export function* loadWallet() {
 }
 
 /**
- * This function is the actual opt-in of a user to the Push Notifications feature.
- * It should be called when the push notifications are not loaded and/or registered.
- * This should load the wallet on the wallet-service and register it with the deviceId.
- * @param {{ payload: { deviceId: string } }} action
- */
-export function* firstTimeRegistration({ payload: { deviceId } }) {
-  yield put(pushLoadWalletRequested());
-
-  // wait for the wallet to be loaded
-  const [loadWalletSuccess, loadWalletFail] = yield race([
-    take(types.PUSH_WALLET_LOAD_SUCCESS),
-    take(types.PUSH_WALLET_LOAD_FAILED)
-  ]);
-
-  if (loadWalletFail) {
-    yield put(pushRegisterFailed());
-    return;
-  }
-
-  const { walletService } = loadWalletSuccess.payload;
-  try {
-    const { success } = yield call(pushLib.PushNotification.registerDevice, walletService, {
-      pushProvider: Platform.OS,
-      deviceId,
-      enablePush: true,
-    });
-
-    if (success) {
-      const enabledAt = Date.now();
-      STORE.setItem(pushNotificationKey.enabledAt, enabledAt);
-      STORE.setItem(pushNotificationKey.hasBeenEnabled, true);
-      yield put(pushRegisterSuccess({ enabled: true, hasBeenEnabled: true, enabledAt }));
-    } else {
-      // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
-      yield put(pushRegisterFailed());
-    }
-  } catch (error) {
-    console.error('Error registering device for the first time: ', error.cause);
-    yield put(pushRegisterFailed());
-  }
-}
-
-/**
  * This function is responsible for registering the device on the wallet-service in the event
  * of renewing the registration.
  */
@@ -400,7 +355,8 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
     const { success } = yield call(pushLib.PushNotification.registerDevice, walletService, {
       pushProvider: Platform.OS,
       deviceId,
-      enablePush: true,
+      enablePush: !!enabled,
+      enableShowAmounts: !!showAmountEnabled,
     });
 
     if (success) {
@@ -424,44 +380,6 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
 }
 
 /**
- * This function is responsible for updating the registration of the device on the wallet-service
- * in the event of changing the settings of the push notifications.
- * @param {{ payload: { enabled: boolean, showAmountEnabled: boolean, deviceId: string } }} action
- */
-export function* updateRegistration({ payload: { enabled, showAmountEnabled, deviceId } }) {
-  yield put(pushLoadWalletRequested());
-
-  // wait for the wallet to be loaded
-  const [loadWalletSuccess, loadWalletFail] = yield race([
-    take(types.PUSH_WALLET_LOAD_SUCCESS),
-    take(types.PUSH_WALLET_LOAD_FAILED)
-  ]);
-
-  if (loadWalletFail) {
-    yield put(pushRegisterFailed());
-    return;
-  }
-
-  const { walletService } = loadWalletSuccess.payload;
-  try {
-    const { success } = yield call(pushLib.PushNotification.updateDevice, walletService, {
-      deviceId,
-      enablePush: enabled,
-      enableShowAmounts: showAmountEnabled,
-    });
-    if (success) {
-      yield put(pushUpdateSuccess({ enabled, showAmountEnabled }));
-    } else {
-      // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
-      yield put(pushUpdateFailed());
-    }
-  } catch (error) {
-    console.error('Error updating device: ', error.cause);
-    yield put(pushUpdateFailed());
-  }
-}
-
-/**
  * This function is responsible for updating the store with the new push notification settings.
  */
 export function* updateStore() {
@@ -473,9 +391,7 @@ export function* saga() {
   yield all([
     fork(onAppInitialization),
     takeEvery(types.PUSH_WALLET_LOAD_REQUESTED, loadWallet),
-    takeEvery(types.PUSH_FIRST_REGISTRATION_REQUESTED, firstTimeRegistration),
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
-    takeEvery(types.PUSH_UPDATE_REQUESTED, updateRegistration),
-    takeEvery([types.PUSH_REGISTER_SUCCESS, types.PUSH_UPDATE_SUCCESS], updateStore),
+    takeEvery(types.PUSH_REGISTER_SUCCESS, updateStore),
   ]);
 }

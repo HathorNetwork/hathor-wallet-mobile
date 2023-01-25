@@ -9,10 +9,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
 import { HathorList, ListItem } from '../components/HathorList';
-import { isEnablingFeature } from '../utils';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
-import { pushApiReady, pushFirstTimeRegistration, pushUpdateRequested } from '../actions';
+import { pushApiReady, pushRegistrationRequested } from '../actions';
 import { PUSH_API_STATUS } from '../sagas/pushNotification';
 import Spinner from '../components/Spinner';
 
@@ -59,39 +58,12 @@ export default function PushNotification(props) {
   const hasPushApiFailed = useSelector((state) => hasApiStatusFailed(state.pushNotification));
   const dispatch = useDispatch();
 
-  const onPushNotificationSwitchChange = (value) => {
-    const isFirstTime = isEnablingFeature(value) && !hasBeenEnabled;
-    if (isFirstTime) {
-      executeFirstRegistrationOnPushNotification();
-      return;
-    }
-
-    executeUpdateOnPushNotification(value);
-  };
-
-  /**
-   * @param {boolean} enabled as the new value of the switch
-   */
-  const executeUpdateOnPushNotification = (enabled) => {
-    const settings = {
-      deviceId,
-      enabled,
-      showAmountEnabled,
-    };
-    dispatch(pushUpdateRequested(settings));
-  };
-
-  const executeFirstRegistrationOnPushNotification = async () => {
-    dispatch(pushFirstTimeRegistration({ deviceId }));
+  const onEnableSwitchChange = (enabled) => {
+    dispatch(pushRegistrationRequested({ enabled, showAmountEnabled, deviceId }));
   };
 
   const onShowAmountSwitchChange = (showAmountEnabled) => {
-    const settings = {
-      deviceId,
-      enabled,
-      showAmountEnabled,
-    };
-    dispatch(pushUpdateRequested(settings));
+    dispatch(pushRegistrationRequested({ enabled, showAmountEnabled, deviceId }));
   };
 
   return (
@@ -122,7 +94,7 @@ export default function PushNotification(props) {
           titleStyle={styles.switchEnabled}
           text={(
             <Switch
-              onValueChange={onPushNotificationSwitchChange}
+              onValueChange={onEnableSwitchChange}
               value={enabled}
             />
           )}
