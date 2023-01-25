@@ -609,6 +609,9 @@ export function* onWalletReloadData() {
     // We also need to refresh the addresses since we are not starting the wallet again
     yield call(wallet.getNewAddresses.bind(wallet));
 
+    // Then dispatch the refreshSharedAddress so our redux store is updated
+    yield put(walletRefreshSharedAddress());
+
     // Finally, set the wallet to READY by dispatching startWalletSuccess
     yield put(startWalletSuccess());
   } catch (e) {
