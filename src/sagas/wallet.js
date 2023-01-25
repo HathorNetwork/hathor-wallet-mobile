@@ -486,6 +486,9 @@ export function* handleTx(action) {
   if (action.type === 'WALLET_NEW_TX') {
     yield put(newTx(tx));
   }
+
+  // We should sync the last shared address on our redux store with the facade's internal state
+  yield put(walletRefreshSharedAddress());
 }
 
 export function* setupWalletListeners(wallet) {
