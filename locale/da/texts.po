@@ -1,14 +1,18 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Hathor\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: POEditor.com\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.2.2\n"
 
-#.  This should never happen!
+#. This should never happen!
 #: src/models.js:24
 msgid "Unknown"
 msgstr "Ukendt"
@@ -27,32 +31,32 @@ msgstr "Sendt ${ symbol }"
 msgid "You sent ${ symbol } to yourself"
 msgstr "Du sendte ${ symbol } til dig selv"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:41
 msgid "[Today •] HH:mm"
 msgstr "[I dag •] HH: mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:42
 msgid "[Tomorrow •] HH:mm"
 msgstr "[I morgen •] HH: mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:43
 msgid "dddd [•] HH:mm"
 msgstr "dddd [•] HH: mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:44
 msgid "[Yesterday •] HH:mm"
 msgstr "[I går •] HH: mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:45
 msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH: mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:46
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH: mm"
@@ -89,8 +93,8 @@ msgid ""
 "Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-#.  Success
-#.  eslint-disable-next-line react/jsx-indent
+#. Success
+#. eslint-disable-next-line react/jsx-indent
 #: src/screens/BackupWords.js:148
 msgid "Words saved correctly"
 msgstr "Ord gemt korrekt"
@@ -111,7 +115,7 @@ msgstr "Forkert PIN-kode."
 msgid "PIN codes don't match."
 msgstr "PIN-koder stemmer ikke overens."
 
-#.  Should never get here because we've done all the validations before
+#. Should never get here because we've done all the validations before
 #: src/screens/ChangePin.js:174
 msgid "Error while changing PIN"
 msgstr "Fejl under ændring af pinkode"
@@ -187,7 +191,7 @@ msgstr "Du har ${ amountAvailableText } HTR tilgængelig"
 msgid "Next"
 msgstr "Næste"
 
-#.  show loading modal
+#. show loading modal
 #: src/screens/CreateTokenConfirm.js:98
 msgid "Creating token"
 msgstr "Opretter token"
@@ -200,7 +204,7 @@ msgstr "Indtast din 6-cifrede pin for at oprette din token"
 msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
-#.  eslint-disable-next-line react/jsx-indent
+#. eslint-disable-next-line react/jsx-indent
 #: src/screens/CreateTokenConfirm.js:180
 #, javascript-format
 msgid "**${ this.name }** created successfully"
@@ -471,10 +475,10 @@ msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
 #. *
-#.      * index {number} Selected index of the tab bar
-#.      
-#.  eslint thinks routes is not used, but TabView uses it
-#.  eslint-disable-next-line react/no-unused-state
+#. * index {number} Selected index of the tab bar
+#.
+#. eslint thinks routes is not used, but TabView uses it
+#. eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:30
 msgid "Payment Request"
 msgstr "Betalingsanmodning"
@@ -495,8 +499,8 @@ msgstr ""
 msgid "Upgrading your wallet, please hang on."
 msgstr ""
 
-#.  translator: Used when the QR Code Scanner is opened, and user will manually
-#.  enter the information.
+#. translator: Used when the QR Code Scanner is opened, and user will manually
+#. enter the information.
 #: src/screens/RegisterToken.js:33 src/screens/SendScanQRCode.js:69
 msgid "Manual info"
 msgstr "Manuel information"
@@ -604,7 +608,7 @@ msgstr[1] "${ amountAndToken } tilgængelig\n"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
-#.  show loading modal
+#. show loading modal
 #: src/screens/SendConfirmScreen.js:103
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
@@ -735,7 +739,7 @@ msgid ""
 "\n"
 "No sensitive data will be shared."
 msgstr ""
-"Desværre opstod der en uventet fejl og du skal genstarte app'en.\n"
+"Desværre opstod der en uventet fejl.\n"
 "\n"
 "Vi vil værdsætte det, hvis du rapporterer denne fejl til Hathor teamet, ved "
 "at trykke på knappen herunder.\n"
@@ -743,7 +747,6 @@ msgstr ""
 "Ingen følsomme data vil blive delt."
 
 #: src/components/GlobalErrorModal.js:107
-#, fuzzy
 msgid ""
 "Unfortunately an unhandled error happened.\n"
 "\n"
@@ -752,7 +755,7 @@ msgid ""
 "\n"
 "No sensitive data will be shared."
 msgstr ""
-"Desværre opstod der en uventet fejl og du skal genstarte app'en.\n"
+"Desværre opstod der en uventet fejl.\n"
 "\n"
 "Vi vil værdsætte det, hvis du rapporterer denne fejl til Hathor teamet, ved "
 "at trykke på knappen herunder.\n"
@@ -783,16 +786,16 @@ msgstr "Ingen internetforbindelse"
 msgid "Opening camera"
 msgstr "Åbner kamera"
 
-#: src/components/ReceiveMyAddress.js:36
-#, fuzzy, javascript-format
+#: src/components/ReceiveMyAddress.js:33
+#, javascript-format
 msgid "Here is my address: ${ lastSharedAddress }"
-msgstr "Her er min adresse: ${ _this.state.address }"
+msgstr "Her er min adresse: ${ lastSharedAddress }"
 
-#: src/components/ReceiveMyAddress.js:74
+#: src/components/ReceiveMyAddress.js:71
 msgid "New address"
 msgstr "Ny adresse"
 
-#: src/components/ReceiveMyAddress.js:80 src/components/TokenDetails.js:58
+#: src/components/ReceiveMyAddress.js:77 src/components/TokenDetails.js:58
 msgid "Share"
 msgstr "Del"
 

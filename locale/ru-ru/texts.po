@@ -11,9 +11,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 3.2.2\n"
 
-#.  This should never happen!
+#. This should never happen!
 #: src/models.js:24
 msgid "Unknown"
 msgstr "Неизвестно"
@@ -32,32 +32,32 @@ msgstr "Отправлено ${ symbol }"
 msgid "You sent ${ symbol } to yourself"
 msgstr "Вы отправили себе ${ symbol }"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:41
 msgid "[Today •] HH:mm"
 msgstr "[Сегодня •] HH:mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:42
 msgid "[Tomorrow •] HH:mm"
 msgstr "[Завтра •] HH:mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:43
 msgid "dddd [•] HH:mm"
 msgstr "dddd [•] HH:mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:44
 msgid "[Yesterday •] HH:mm"
 msgstr "[Вчера •] HH:mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:45
 msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:46
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
@@ -93,8 +93,8 @@ msgid ""
 "Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-#.  Success
-#.  eslint-disable-next-line react/jsx-indent
+#. Success
+#. eslint-disable-next-line react/jsx-indent
 #: src/screens/BackupWords.js:148
 msgid "Words saved correctly"
 msgstr "Seed-фраза введена верно"
@@ -115,7 +115,7 @@ msgstr "Неверный PIN-код."
 msgid "PIN codes don't match."
 msgstr "PIN-коды не совпадают."
 
-#.  Should never get here because we've done all the validations before
+#. Should never get here because we've done all the validations before
 #: src/screens/ChangePin.js:174
 msgid "Error while changing PIN"
 msgstr "Ошибка при смене PIN-кода"
@@ -191,7 +191,7 @@ msgstr "У вас ${ amountAvailableText } HTR"
 msgid "Next"
 msgstr "Далее"
 
-#.  show loading modal
+#. show loading modal
 #: src/screens/CreateTokenConfirm.js:98
 msgid "Creating token"
 msgstr "Создать токен"
@@ -204,7 +204,7 @@ msgstr "Введите 6-значный PIN-код для создания то�
 msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
-#.  eslint-disable-next-line react/jsx-indent
+#. eslint-disable-next-line react/jsx-indent
 #: src/screens/CreateTokenConfirm.js:180
 #, javascript-format
 msgid "**${ this.name }** created successfully"
@@ -476,10 +476,10 @@ msgid "Reset wallet"
 msgstr "Сбросить кошелек"
 
 #. *
-#.      * index {number} Selected index of the tab bar
-#.      
-#.  eslint thinks routes is not used, but TabView uses it
-#.  eslint-disable-next-line react/no-unused-state
+#. * index {number} Selected index of the tab bar
+#.
+#. eslint thinks routes is not used, but TabView uses it
+#. eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:30
 msgid "Payment Request"
 msgstr "Запрос Средств"
@@ -500,8 +500,8 @@ msgstr ""
 msgid "Upgrading your wallet, please hang on."
 msgstr ""
 
-#.  translator: Used when the QR Code Scanner is opened, and user will manually
-#.  enter the information.
+#. translator: Used when the QR Code Scanner is opened, and user will manually
+#. enter the information.
 #: src/screens/RegisterToken.js:33 src/screens/SendScanQRCode.js:69
 msgid "Manual info"
 msgstr "Ручной ввод"
@@ -609,7 +609,7 @@ msgstr[2] "${ amountAndToken } доступно"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
-#.  show loading modal
+#. show loading modal
 #: src/screens/SendConfirmScreen.js:103
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
@@ -775,16 +775,16 @@ msgstr "Нет соединения с интернетом"
 msgid "Opening camera"
 msgstr "Камера открывается"
 
-#: src/components/ReceiveMyAddress.js:36
-#, fuzzy, javascript-format
+#: src/components/ReceiveMyAddress.js:33
+#, javascript-format
 msgid "Here is my address: ${ lastSharedAddress }"
-msgstr "Это мой адрес: ${ _this.state.address }"
+msgstr "Это мой адрес: ${ lastSharedAddress }"
 
-#: src/components/ReceiveMyAddress.js:74
+#: src/components/ReceiveMyAddress.js:71
 msgid "New address"
 msgstr "Новый адрес"
 
-#: src/components/ReceiveMyAddress.js:80 src/components/TokenDetails.js:58
+#: src/components/ReceiveMyAddress.js:77 src/components/TokenDetails.js:58
 msgid "Share"
 msgstr "Поделиться"
 

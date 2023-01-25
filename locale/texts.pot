@@ -765,16 +765,16 @@ msgstr ""
 msgid "Opening camera"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:36
+#: src/components/ReceiveMyAddress.js:33
 #, javascript-format
 msgid "Here is my address: ${ lastSharedAddress }"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:74
+#: src/components/ReceiveMyAddress.js:71
 msgid "New address"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:80
+#: src/components/ReceiveMyAddress.js:77
 #: src/components/TokenDetails.js:58
 msgid "Share"
 msgstr ""
