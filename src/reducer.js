@@ -64,6 +64,17 @@ import { WALLET_STATUS } from './sagas/wallet';
  *   isFatal {boolean} Indicates if the error is fatal
  *   error {Error} Error object with the stacktrace, to be sent to Sentry
  * }
+ *
+ * pushNotification {Object} Information on the push notification {
+ *  showOptInQuestion {boolean} Indicates if we need to show the modal to ask the user
+ *    if he wants to enable push notification
+ *  deviceId {string} device id for push notification
+ *  apiStatus {string} status of the push notification api
+ *  enabled {boolean} if user has enabled push notification
+ *  enabledAt {number} timestamp of when push notification was enabled
+ *  showAmountEnabled {boolean} if user has enabled the option to show amount in push notification
+ *  txDetails {Object} tx info to show on tx details modal
+ * }
  */
 const initialState = {
   tokensHistory: {},
@@ -131,7 +142,44 @@ const initialState = {
      */
     enabledAt: 0,
     /**
-     * txDetails {Object} tx to show on tx details modal
+     * txDetails {{
+     *  tx: {
+     *    txId: string,
+     *    timestamp: number,
+     *    voided: boolean
+     *  },
+     *  tokens: {
+     *    uid: string,
+     *    name: string,
+     *    symbol: string,
+     *    balance: number,
+     *    isRegistered: boolean
+     *   }[]
+     * }} tx info to show on tx details modal
+     * @example
+     * {
+     *   tx: {
+     *     txId: '00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185',
+     *     timestamp: 1673039453,
+     *     voided: false,
+     *   },
+     *   tokens: [
+     *     {
+     *       uid: '00',
+     *       name: 'Hathor',
+     *       symbol: 'HTR',
+     *       balance: 200,
+     *       isRegistered: true,
+     *     },
+     *     {
+     *       uid: '0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4',
+     *       name: 'TestNft',
+     *       symbol: 'TN1',
+     *       balance: 2,
+     *       isRegistered: false,
+     *     },
+     *   ],
+     * }
      */
     txDetails: null,
   },
