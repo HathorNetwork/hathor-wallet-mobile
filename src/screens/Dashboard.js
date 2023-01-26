@@ -78,7 +78,7 @@ class Dashboard extends React.Component {
 
     return (
       <View style={{ flex: 1 }}>
-        <ShowPushNotificationTxDetails />
+        <ShowPushNotificationTxDetails navigation={this.props.navigation} />
         <AskForPushNotification navigation={this.props.navigation} />
         <TokenSelect
           header={<Header />}

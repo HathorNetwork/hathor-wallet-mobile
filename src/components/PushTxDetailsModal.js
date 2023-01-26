@@ -1,13 +1,14 @@
 import React from 'react';
-import { Text, StyleSheet, View } from 'react-native';
+import { Text, StyleSheet, View, Touchable, TouchableHighlight } from 'react-native';
 import Modal from 'react-native-modal';
 import { t } from 'ttag';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getShortHash, isTokenNFT } from '../utils';
-import { ListItem } from './HathorList';
+import { ListButton, ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 import { TxHistory } from '../models';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
+import { updateSelectedToken } from '../actions';
 
 const style = StyleSheet.create({
   modal: {
@@ -38,9 +39,15 @@ const getTokenBalance = (token, isNFT) => {
 export default function PushTxDetailsModal(props) {
   const { tx, tokens } = props;
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
+  const dispatch = useDispatch();
 
   const idStr = getShortHash(tx.txId, 12);
   const timestampStr = getTimestampFormat(tx);
+  const navigateToTokenDetailPage = (token) => {
+    props.onRequestClose();
+    dispatch(updateSelectedToken(token));
+    props.navigation.navigate('MainScreen');
+  };
 
   return (
     <Modal
@@ -58,12 +65,14 @@ export default function PushTxDetailsModal(props) {
           <NewTransactionTitle />
           <View>
             {tokens.map((token) => (
-              <ListItem
-                titleStyle={token.isRegistered && style.registeredToken}
-                key={token.uid}
-                title={getTokenTitle(token)}
-                text={getTokenBalance(token, isTokenNFT(token.uid, tokenMetadata))}
-              />
+              <TouchableHighlight key={token.uid} onPress={() => navigateToTokenDetailPage(token)}>
+                <ListItem
+                  titleStyle={token.isRegistered && style.registeredToken}
+                  key={token.uid}
+                  title={getTokenTitle(token)}
+                  text={getTokenBalance(token, isTokenNFT(token.uid, tokenMetadata))}
+                />
+              </TouchableHighlight>
             ))}
             <ListItem title={t`Date & Time`} text={timestampStr} />
             <ListItem title={t`ID`} text={idStr} />
