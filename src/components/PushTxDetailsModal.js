@@ -69,14 +69,15 @@ export default function PushTxDetailsModal(props) {
           <NewTransactionTitle />
           <View>
             {tokens.map((token) => (
-              <TouchableHighlight key={token.uid} onPress={() => navigateToTokenDetailPage(token)}>
-                <ListItem
-                  titleStyle={token.isRegistered && style.registeredToken}
-                  key={token.uid}
-                  title={getTokenTitle(token)}
-                  text={getTokenBalance(token, isTokenNFT(token.uid, tokenMetadata))}
-                />
-              </TouchableHighlight>
+              <ListButton
+                key={token.uid}
+                onPress={() => navigateToTokenDetailPage(token)}
+                title={getTokenTitle(token)}
+                titleStyle={token.isRegistered && style.registeredToken}
+                button={(
+                  <Text>{getTokenBalance(token, isTokenNFT(token.uid, tokenMetadata))}</Text>
+                )}
+              />
             ))}
             <ListItem title={t`Date & Time`} text={timestampStr} />
             <ListItem title={t`ID`} text={idStr} />
