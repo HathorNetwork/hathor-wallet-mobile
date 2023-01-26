@@ -21,7 +21,7 @@ import hathorLib from '@hathor/wallet-lib';
 
 import IconTabBar from './icon-font';
 import NavigationService from './NavigationService';
-import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT } from './constants';
+import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT, PUSH_ACTION } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
   resetData,
@@ -68,7 +68,7 @@ import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 import { WALLET_STATUS } from './sagas/wallet';
-import { getTxDetails, PUSH_TRANSACTION_ID } from './sagas/pushNotification';
+import { getTxDetails } from './sagas/pushNotification';
 
 
 const InitStack = createStackNavigator(
@@ -280,7 +280,7 @@ class _AppStackWrapper extends React.Component {
         switch (type) {
           case EventType.PRESS:
             try {
-              if (detail.pressAction?.id === PUSH_TRANSACTION_ID.NEW_TRANSACTION) {
+              if (detail.pressAction?.id === PUSH_ACTION.NEW_TRANSACTION) {
                 const { txId } = detail.notification.data;
                 const txDetails = await getTxDetails(this.props.wallet, txId);
                 this.props.loadTxDetails(txDetails);
