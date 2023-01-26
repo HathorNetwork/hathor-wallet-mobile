@@ -44,6 +44,10 @@ export default function PushTxDetailsModal(props) {
   const idStr = getShortHash(tx.txId, 12);
   const timestampStr = getTimestampFormat(tx);
   const navigateToTokenDetailPage = (token) => {
+    if (!token.isRegistered) {
+      return;
+    }
+
     props.onRequestClose();
     dispatch(updateSelectedToken(token));
     props.navigation.navigate('MainScreen');
