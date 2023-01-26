@@ -722,16 +722,17 @@ export const onPushDismissOptInQuestion = (state) => ({
 });
 
 /**
- * @param {{ deviceId: string, settings: { enabled, showAmountEnabled } }} action
+ * @param {{ deviceId: string, settings: { enabled, showAmountEnabled }, enabledAt: number }} action
  */
 export const onPushInit = (state, action) => {
-  const { deviceId, settings } = action.payload;
+  const { deviceId, settings, enabledAt } = action.payload;
   return ({
     ...state,
     pushNotification: {
       ...state.pushNotification,
       ...settings,
       deviceId,
+      enabledAt,
     },
   });
 };
