@@ -133,4 +133,18 @@ export const NEW_TRANSACTION_RECEIVED_TITLE = 'new_transaction_received_title';
 /**
  * this is the channel id for the transaction notification
  */
-export const TRANSACTION_CHANNEL_ID = 'transaction';
+export const PUSH_CHANNEL_TRANSACTION = 'transaction';
+/**
+ * this is the channel id for the transaction notification
+ */
+export const PUSH_API_STATUS = {
+  READY: 'ready',
+  FAILED: 'failed',
+  LOADING: 'loading',
+};
+/**
+ * this is the transaction id for the transaction notification
+ */
+export const PUSH_ACTION = {
+  NEW_TRANSACTION: 'new-transaction',
+};

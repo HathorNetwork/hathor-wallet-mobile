@@ -12,8 +12,8 @@ import { HathorList, ListItem } from '../components/HathorList';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { pushApiReady, pushRegistrationRequested } from '../actions';
-import { PUSH_API_STATUS } from '../sagas/pushNotification';
 import Spinner from '../components/Spinner';
+import { PUSH_API_STATUS } from '../constants';
 
 const isApiStatusLoading = (state) => {
   const isApiLoading = state.pushNotification.apiStatus === PUSH_API_STATUS.LOADING;

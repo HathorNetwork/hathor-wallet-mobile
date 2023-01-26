@@ -88,7 +88,6 @@ export const types = {
   PUSH_REGISTER_FAILED: 'PUSH_REGISTER_FAILED',
   PUSH_LOAD_TX_DETAILS: 'PUSH_LOAD_TX_DETAILS',
   PUSH_CLEAN_TX_DETAILS: 'PUSH_ENRICH_TX_FAILED',
-  PUSH_HANDLE_MESSAGE: 'PUSH_HANDLE_MESSAGE',
   PUSH_RESET: 'PUSH_RESET',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
 };
@@ -604,11 +603,6 @@ export const onExceptionCaptured = (error, isFatal) => ({
     error,
     isFatal,
   },
-});
-
-export const pushHandleMessage = (payload) => ({
-  type: types.PUSH_HANDLE_MESSAGE,
-  payload,
 });
 
 export const pushLoadTxDetails = (payload) => ({

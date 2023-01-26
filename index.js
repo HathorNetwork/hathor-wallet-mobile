@@ -12,9 +12,9 @@ import App from './src/App';
 import { name as appName } from './app.json';
 import { errorHandler } from './src/errorHandler';
 import {
+  setBackgroundMessageListener,
   setNotifeeBackgroundListener,
-  setBackgroundMessageListener
-} from './src/sagas/pushNotification';
+} from './src/backgroundListeners';
 
 // Set the background listeners for push notifications
 setNotifeeBackgroundListener();

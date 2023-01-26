@@ -10,12 +10,11 @@ import createSagaMiddleware from 'redux-saga';
 import thunk from 'redux-thunk';
 import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
-import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
+import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS } from './constants';
 import { types } from './actions';
 import rootSagas from './sagas';
 import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
 import { WALLET_STATUS } from './sagas/wallet';
-import { PUSH_API_STATUS } from './sagas/pushNotification';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
