@@ -2,6 +2,8 @@ import React from 'react';
 import { Text, StyleSheet, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { t } from 'ttag';
+import { useSelector } from 'react-redux';
+import { getShortHash, isTokenNFT } from '../utils';
 import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 import { TxHistory } from '../models';
@@ -34,7 +36,8 @@ const getTokenBalance = (token, isNFT) => {
 };
 
 export default function PushTxDetailsModal(props) {
-  const { tx, tokens, isNft } = props;
+  const { tx, tokens } = props;
+  const tokenMetadata = useSelector((state) => state.tokenMetadata);
 
   const idStr = getShortHash(tx.txId, 12);
   const timestampStr = getTimestampFormat(tx);
@@ -59,7 +62,7 @@ export default function PushTxDetailsModal(props) {
                 titleStyle={token.isRegistered && style.registeredToken}
                 key={token.uid}
                 title={getTokenTitle(token)}
-                text={getTokenBalance(token, isNft)}
+                text={getTokenBalance(token, isTokenNFT(token.uid, tokenMetadata))}
               />
             ))}
             <ListItem title={t`Date & Time`} text={timestampStr} />
