@@ -117,6 +117,7 @@ export const pushNotificationKey = {
   enabledAt: 'pushNotification:enabledAt',
   optInDismissed: 'pushNotification:optInDismissed',
   notificationData: 'pushNotification:notificationData',
+  notificationError: 'pushNotification:notificationError',
 };
 /**
  * this is the message key for localization of new transaction when show amount is enabled

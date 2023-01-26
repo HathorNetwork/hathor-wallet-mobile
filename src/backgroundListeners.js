@@ -12,13 +12,21 @@ import { onExceptionCaptured } from './actions';
 import {
   messageHandler,
   setInitialNotificationData,
+  setNotificationError,
 } from './pushNotificationHandler';
 
 /**
  * Install the listener to handle push notifications when the application is in background or quit.
  */
 export const setBackgroundMessageListener = () => {
-  const onBackgroundMessage = async (message) => messageHandler(message);
+  const onBackgroundMessage = async (message) => {
+    try {
+      await messageHandler(message);
+    } catch (error) {
+      setNotificationError({ message: error.message });
+    }
+  };
+
   try {
     messaging().setBackgroundMessageHandler(onBackgroundMessage);
   } catch (error) {

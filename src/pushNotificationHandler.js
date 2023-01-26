@@ -18,8 +18,20 @@ import {
 } from './constants';
 import { name as appName } from '../app.json';
 
+/**
+ * Persists the notification data from firebase message to be used when the app is opened.
+ * @param {Object} notification - the firebase notification message.
+ */
 export function setInitialNotificationData(notification) {
   STORE.setItem(pushNotificationKey.notificationData, notification.data);
+}
+
+/**
+ * Persist the error message to be used when the app is opened.
+ * @param {{ message: string }} error - the error message to be stored.
+ */
+export function setNotificationError(error) {
+  STORE.setItem(pushNotificationKey.notificationError, error.message);
 }
 
 /**
@@ -103,22 +115,23 @@ const localization = {
  *   titleLocKey: 'new_transaction_received_title',
  *   txId: 'txId1',
  * }
- * @inner
  */
 export const messageHandler = async (message, isForeground) => {
   const { data } = message;
+  if (!data) {
+    throw new Error('Error while handling push notification message. Message data is null or undefined.');
+  }
+
   if (!localization.hasKey(data.titleLocKey)) {
-    console.debug('unknown message titleLocKey', data.titleLocKey);
-    return;
+    throw new Error(`Error while handling push notification message. Unknown message titleLocKey ${data.titleLocKey}.`);
   }
 
   if (!localization.hasKey(data.bodyLocKey)) {
-    console.debug('unknown message bodyLocKey', data.bodyLocKey);
-    return;
+    throw new Error(`Error while handling push notification message. Unknown message bodyLocKey ${data.bodyLocKey}.`);
   }
 
   try {
-    const bodyArgs = JSON.parse(data.bodyLocArgs);
+    const bodyArgs = data.bodyLocArgs && JSON.parse(data.bodyLocArgs);
     const title = localization.getMessage(data.titleLocKey);
     const body = localization.getMessage(data.bodyLocKey, bodyArgs);
     const { txId } = data;
@@ -139,6 +152,7 @@ export const messageHandler = async (message, isForeground) => {
       }
     });
   } catch (error) {
-    console.error('Error while handling push notification message to be displayed.', error);
+    console.log('Error while handling push notification message to be displayed.', error);
+    throw new Error(`Error while handling push notification message to be displayed. ErrorMessage: ${error.message}`, error);
   }
 };

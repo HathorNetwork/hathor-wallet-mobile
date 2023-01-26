@@ -111,14 +111,6 @@ async function getDeviceId() {
 }
 
 /**
- * Handle the message received from firebase when the application is in foreground.
- * @param {Promise<void>} message - The message received from firebase
- */
-const onForegroundMessage = async (message) => {
-  await messageHandler(message, true);
-};
-
-/**
  * This flag is used to install the listener only once.
  * It is effemeral and will be reset when the application is closed.
  */
@@ -133,6 +125,24 @@ function* installForegroundListener() {
   if (isForegroundListenerInstalled) {
     return true;
   }
+
+  let dispatch;
+  yield put((_dispatch) => {
+    dispatch = _dispatch;
+  });
+
+  /**
+   * Handle the message received from firebase when the application is in foreground.
+   * @param {Promise<void>} message - The message received from firebase
+   */
+  const onForegroundMessage = async (message) => {
+    console.log('onForegroundMessage', message);
+    try {
+      await messageHandler(message, true);
+    } catch (error) {
+      dispatch(onExceptionCaptured(error));
+    }
+  };
 
   try {
     // Add listeners for push notifications on foreground and background
@@ -394,6 +404,13 @@ export const getTxDetails = async (wallet, txId) => {
  * If so, it will load the tx detail modal.
  */
 export function* checkOpenPushNotification() {
+  const notificationError = STORE.getItem(pushNotificationKey.notificationError);
+  if (notificationError) {
+    STORE.removeItem(pushNotificationKey.notificationError);
+    yield put(onExceptionCaptured(new Error(notificationError)));
+    return;
+  }
+
   try {
     const notificationData = STORE.getItem(pushNotificationKey.notificationData);
     // Check if the app was opened by a push notification on press action
@@ -446,7 +463,7 @@ export function* saga() {
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
     takeEvery(types.RESET_WALLET, resetPushNotification),
     takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion),
-    takeEvery(types.SET_INIT_WALLET, checkOpenPushNotification),
+    takeEvery(types.START_WALLET_REQUESTED, checkOpenPushNotification),
     takeEvery(types.PUSH_REGISTER_SUCCESS, updateStore),
   ]);
 }
