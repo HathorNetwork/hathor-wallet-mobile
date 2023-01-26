@@ -1,13 +1,11 @@
 import React from 'react';
-import { Image, Linking, Text, StyleSheet, View } from 'react-native';
+import { Text, StyleSheet, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { t } from 'ttag';
-
-import { getShortHash } from '../utils';
-import { ListButton, ListItem } from './HathorList';
+import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
-import icShareActive from '../assets/icons/icShareActive.png';
 import { TxHistory } from '../models';
+import { PublicExplorerListButton } from './PublicExplorerListButton';
 
 const style = StyleSheet.create({
   modal: {
@@ -40,8 +38,6 @@ export default function PushTxDetailsModal(props) {
 
   const idStr = getShortHash(tx.txId, 12);
   const timestampStr = getTimestampFormat(tx);
-  const explorerIcon = <Image source={icShareActive} width={24} height={24} />;
-  const explorerLink = `https://explorer.hathor.network/transaction/${tx.txId}`;
 
   return (
     <Modal
@@ -68,7 +64,7 @@ export default function PushTxDetailsModal(props) {
             ))}
             <ListItem title={t`Date & Time`} text={timestampStr} />
             <ListItem title={t`ID`} text={idStr} />
-            <ListButton title={t`Public Explorer`} button={explorerIcon} onPress={() => { Linking.openURL(explorerLink); }} titleStyle={{ color: 'rgba(0, 0, 0, 0.5)' }} isLast />
+            <PublicExplorerListButton txId={tx.txId} />
           </View>
         </View>
       </View>
@@ -89,6 +85,7 @@ const styleModalTitle = StyleSheet.create({
     paddingTop: 8,
   },
 });
+
 function NewTransactionTitle() {
   return (
     <View style={styleModalTitle.view}>
