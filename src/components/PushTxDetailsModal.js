@@ -29,10 +29,14 @@ const getTimestampFormat = (tx) => {
 };
 
 const getTokenTitle = (token) => `${token.symbol} - ${token.name}`;
-const getTokenBalance = (token) => (token.balance / 100).toFixed(2);
+const getTokenBalance = (token, isNFT) => {
+  const dividend = isNFT ? 1 : 100;
+  const decimal = isNFT ? 0 : 2;
+  return (token.balance / dividend).toFixed(decimal);
+};
 
 export default function PushTxDetailsModal(props) {
-  const { tx, tokens } = props;
+  const { tx, tokens, isNft } = props;
 
   const idStr = getShortHash(tx.txId, 12);
   const timestampStr = getTimestampFormat(tx);
@@ -54,7 +58,14 @@ export default function PushTxDetailsModal(props) {
           <SlideIndicatorBar />
           <NewTransactionTitle />
           <View>
-            {tokens.map((token) => (<ListItem titleStyle={token.isRegistered && style.registeredToken} key={token.uid} title={getTokenTitle(token)} text={getTokenBalance(token)} />))}
+            {tokens.map((token) => (
+              <ListItem
+                titleStyle={token.isRegistered && style.registeredToken}
+                key={token.uid}
+                title={getTokenTitle(token)}
+                text={getTokenBalance(token, isNft)}
+              />
+            ))}
             <ListItem title={t`Date & Time`} text={timestampStr} />
             <ListItem title={t`ID`} text={idStr} />
             <ListButton title={t`Public Explorer`} button={explorerIcon} onPress={() => { Linking.openURL(explorerLink); }} titleStyle={{ color: 'rgba(0, 0, 0, 0.5)' }} isLast />
