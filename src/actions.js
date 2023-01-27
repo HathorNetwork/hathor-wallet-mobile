@@ -103,6 +103,8 @@ export const types = {
   SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
   SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
   FEATURE_TOGGLE_INITIALIZED: 'FEATURE_TOGGLE_INITIALIZED',
+  SET_WALLET_CONNECT: 'SET_WALLET_CONNECT',
+  WC_QRCODE_READ: 'WC_QRCODE_READ',
 };
 
 export const featureToggleInitialized = () => ({
@@ -699,6 +701,16 @@ export const sharedAddressUpdate = (lastSharedAddress, lastSharedIndex) => ({
     lastSharedAddress,
     lastSharedIndex,
   },
+});
+
+export const setWalletConnect = (walletConnect) => ({
+  type: types.SET_WALLET_CONNECT,
+  payload: walletConnect,
+});
+
+export const walletConnectQRCodeRead = (data) => ({
+  type: types.WC_QRCODE_READ,
+  payload: data,
 });
 
 /**

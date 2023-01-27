@@ -202,6 +202,7 @@ const initialState = {
   featureToggles: {
     ...FEATURE_TOGGLE_DEFAULTS,
   },
+  walletConnect: null,
 };
 
 const reducer = (state = initialState, action) => {
@@ -330,6 +331,8 @@ const reducer = (state = initialState, action) => {
       return onSetFeatureToggles(state, action);
     case types.FEATURE_TOGGLE_INITIALIZED:
       return onFeatureToggleInitialized(state);
+    case types.SET_WALLET_CONNECT:
+      return onSetWalletConnect(state, action);
     default:
       return state;
   }
@@ -1014,6 +1017,14 @@ const onSharedAddressUpdate = (state, action) => ({
   ...state,
   lastSharedAddress: action.payload.lastSharedAddress,
   lastSharedIndex: action.payload.lastSharedIndex,
+});
+
+/**
+ * @param {WalletConnect} action.payload The wallet connect instance
+ */
+export const onSetWalletConnect = (state, { payload }) => ({
+  ...state,
+  walletConnect: payload,
 });
 
 const saga = createSagaMiddleware();

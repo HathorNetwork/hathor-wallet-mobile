@@ -10,6 +10,13 @@ import { UnleashClient, EVENTS as UnleashEvents } from 'unleash-proxy-client';
 import { get } from 'lodash';
 
 import {
+  UNLEASH_URL,
+  UNLEASH_CLIENT_KEY,
+  UNLEASH_POLLING_INTERVAL,
+} from '../constants';
+
+import {
+  takeLatest,
   takeEvery,
   all,
   call,
@@ -24,6 +31,7 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
+
 import {
   setUnleashClient,
   setFeatureToggles,

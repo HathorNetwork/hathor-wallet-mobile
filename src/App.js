@@ -79,6 +79,7 @@ import UnregisterToken from './screens/UnregisterToken';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
 import baseStyle from './styles/init';
+import WalletConnectScan from './screens/WalletConnectScan';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -390,6 +391,7 @@ const AppStack = () => {
         <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
         <Stack.Screen name='TokenDetail' component={TokenDetail} />
         <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
+        <Stack.Screen name='WalletConnectScan' component={WalletConnectScan} />
       </Stack.Navigator>
     </SafeAreaView>
   );
@@ -521,11 +523,7 @@ class _AppStackWrapper extends React.Component {
    * These tokens are known as 'registered' tokens
    */
   updateReduxTokens = async () => {
-<<<<<<< HEAD
     if (!this.props.wallet?.storage) {
-=======
-    if ((!this.props.wallet) || (!this.props.wallet.storage)) {
->>>>>>> 3cddf12 (fix: do not reset entire redux when resetting from pin screen)
       return;
     }
     const tokens = [...INITIAL_TOKENS];
