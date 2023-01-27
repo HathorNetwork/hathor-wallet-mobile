@@ -11,32 +11,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 3.2.2\n"
 
-#: src/errorHandler.js:51
-msgid "Unexpected error occurred"
-msgstr ""
-
-#: src/errorHandler.js:52
-msgid ""
-"Unfortunately an unhandled error happened and you will need to restart your "
-"app.\n"
-"\n"
-"We kindly ask you to report this error to the Hathor team clicking on the "
-"button below.\n"
-"\n"
-"No sensitive data will be shared."
-msgstr ""
-
-#: src/errorHandler.js:55
-msgid "Report error"
-msgstr ""
-
-#: src/errorHandler.js:61
-msgid "Close"
-msgstr ""
-
-#.  This should never happen!
+#. This should never happen!
 #: src/models.js:24
 msgid "Unknown"
 msgstr "Неизвестно"
@@ -55,32 +32,32 @@ msgstr "Отправлено ${ symbol }"
 msgid "You sent ${ symbol } to yourself"
 msgstr "Вы отправили себе ${ symbol }"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:41
 msgid "[Today •] HH:mm"
 msgstr "[Сегодня •] HH:mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:42
 msgid "[Tomorrow •] HH:mm"
 msgstr "[Завтра •] HH:mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:43
 msgid "dddd [•] HH:mm"
 msgstr "dddd [•] HH:mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:44
 msgid "[Yesterday •] HH:mm"
 msgstr "[Вчера •] HH:mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:45
 msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:46
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
@@ -138,7 +115,7 @@ msgstr "Неверный PIN-код."
 msgid "PIN codes don't match."
 msgstr "PIN-коды не совпадают."
 
-#.  Should never get here because we've done all the validations before
+#. Should never get here because we've done all the validations before
 #: src/screens/ChangePin.js:174
 msgid "Error while changing PIN"
 msgstr "Ошибка при смене PIN-кода"
@@ -163,27 +140,27 @@ msgstr "Новый PIN-код сохранен"
 msgid "CHANGE PIN"
 msgstr "ИЗМЕНИТЬ PIN-код"
 
-#: src/screens/ChoosePinScreen.js:136
+#: src/screens/ChoosePinScreen.js:135
 msgid "Enter your new PIN code"
 msgstr "Введите новый PIN-код"
 
-#: src/screens/ChoosePinScreen.js:148
+#: src/screens/ChoosePinScreen.js:147
 msgid "Enter your new PIN code again"
 msgstr "Введите новый PIN-код еще раз"
 
-#: src/screens/ChoosePinScreen.js:72
+#: src/screens/ChoosePinScreen.js:71
 msgid "Create a new PIN code,"
 msgstr "Создать новый PIN-код,"
 
-#: src/screens/ChoosePinScreen.js:75
+#: src/screens/ChoosePinScreen.js:74
 msgid "To confirm the PIN,"
 msgstr "Для подтверждения PIN-кода,"
 
-#: src/screens/ChoosePinScreen.js:162
+#: src/screens/ChoosePinScreen.js:161
 msgid "PIN codes don't match. Try again."
 msgstr "PIN-коды не совпадают. Попробуйте еще раз."
 
-#: src/screens/ChoosePinScreen.js:185
+#: src/screens/ChoosePinScreen.js:184
 msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
@@ -214,7 +191,7 @@ msgstr "У вас ${ amountAvailableText } HTR"
 msgid "Next"
 msgstr "Далее"
 
-#.  show loading modal
+#. show loading modal
 #: src/screens/CreateTokenConfirm.js:98
 msgid "Creating token"
 msgstr "Создать токен"
@@ -227,7 +204,7 @@ msgstr "Введите 6-значный PIN-код для создания то�
 msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
-#.  eslint-disable-next-line react/jsx-indent
+#. eslint-disable-next-line react/jsx-indent
 #: src/screens/CreateTokenConfirm.js:180
 #, javascript-format
 msgid "**${ this.name }** created successfully"
@@ -477,22 +454,23 @@ msgstr "Получено"
 msgid "Waiting confirmation"
 msgstr "Ожидание подтверждения"
 
-#: src/screens/PinScreen.js:235
+#: src/screens/PinScreen.js:231
 msgid "Incorrect PIN Code. Try again."
 msgstr "Неверный PIN-код. Попробуйте еще раз."
 
-#: src/screens/PinScreen.js:72
+#: src/screens/PinScreen.js:70
 msgid "Enter your PIN Code "
 msgstr "Введите свой PIN-код "
 
-#: src/screens/PinScreen.js:73
+#: src/screens/PinScreen.js:71
 msgid "Unlock Hathor Wallet"
 msgstr "Разблокировать Hathor Wallet"
 
-#: src/screens/PinScreen.js:247
+#: src/screens/PinScreen.js:243
 msgid "Cancel"
 msgstr "Отмена"
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 #: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:108
 #: src/screens/Settings.js:137
@@ -500,6 +478,10 @@ msgstr "Отмена"
 #: src/screens/PinScreen.js:250 src/screens/RecoverPin.js:108
 #: src/screens/Settings.js:133
 >>>>>>> 24d35d6 (fix: reset wallet from lockscreen was sending the user to the loading… (#229))
+=======
+#: src/screens/PinScreen.js:246 src/screens/RecoverPin.js:108
+#: src/screens/Settings.js:135
+>>>>>>> 89b914a (fix: wallet not reloading data after a reconnect and wallet reset after an error (#241))
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
 
@@ -524,10 +506,10 @@ msgid "There was an error enabling push notification. Please try again later."
 msgstr ""
 
 #. *
-#.      * index {number} Selected index of the tab bar
-#.      
-#.  eslint thinks routes is not used, but TabView uses it
-#.  eslint-disable-next-line react/no-unused-state
+#. * index {number} Selected index of the tab bar
+#.
+#. eslint thinks routes is not used, but TabView uses it
+#. eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:30
 msgid "Payment Request"
 msgstr "Запрос Средств"
@@ -548,8 +530,8 @@ msgstr ""
 msgid "Upgrading your wallet, please hang on."
 msgstr ""
 
-#.  translator: Used when the QR Code Scanner is opened, and user will manually
-#.  enter the information.
+#. translator: Used when the QR Code Scanner is opened, and user will manually
+#. enter the information.
 #: src/screens/RegisterToken.js:33 src/screens/SendScanQRCode.js:69
 msgid "Manual info"
 msgstr "Ручной ввод"
@@ -657,16 +639,24 @@ msgstr[2] "${ amountAndToken } доступно"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
-#.  show loading modal
+#. show loading modal
 #: src/screens/SendConfirmScreen.js:103
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
+<<<<<<< HEAD
 #: src/sagas/helpers.js:96 src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
 #: src/sagas/helpers.js:97 src/screens/SendConfirmScreen.js:118
+=======
+#: src/sagas/wallet.js:110 src/screens/SendConfirmScreen.js:117
+msgid "Enter your 6-digit pin to authorize operation"
+msgstr "Введите 6-значный PIN-код для авторизации операции"
+
+#: src/sagas/wallet.js:111 src/screens/SendConfirmScreen.js:118
+>>>>>>> 89b914a (fix: wallet not reloading data after a reconnect and wallet reset after an error (#241))
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
@@ -700,18 +690,19 @@ msgstr "У вас нет запрошенного токена [${ tokenLabel }]
 msgid "Scan the QR code"
 msgstr "Сканировать QR-код"
 
-#: src/screens/Settings.js:88
+#: src/screens/Settings.js:90
 msgid "You are connected to"
 msgstr "Вы подключены к"
 
-#: src/screens/Settings.js:100
+#: src/screens/Settings.js:102
 msgid "Connected to"
 msgstr "Подключены к"
 
-#: src/screens/Settings.js:113
+#: src/screens/Settings.js:115
 msgid "Security"
 msgstr "Безопасность"
 
+<<<<<<< HEAD
 #: src/screens/Settings.js:123
 msgid "Create a new token"
 msgstr "Создать новый токен"
@@ -725,6 +716,21 @@ msgid "About"
 msgstr "О нас"
 
 #: src/screens/Settings.js:148
+=======
+#: src/screens/Settings.js:121
+msgid "Create a new token"
+msgstr "Создать новый токен"
+
+#: src/screens/Settings.js:129
+msgid "Register a token"
+msgstr "Зарегистрировать токен"
+
+#: src/screens/Settings.js:139
+msgid "About"
+msgstr "О нас"
+
+#: src/screens/Settings.js:146
+>>>>>>> 89b914a (fix: wallet not reloading data after a reconnect and wallet reset after an error (#241))
 msgid "Unique app identifier"
 msgstr ""
 
@@ -760,6 +766,7 @@ msgstr "Я хочу отменить регистрацию токена **${ to
 msgid "Unregister token"
 msgstr "Отменить регистрацию токена"
 
+<<<<<<< HEAD
 #: src/sagas/pushNotification.js:54
 msgid "Transaction"
 msgstr "Нет транзакций"
@@ -807,22 +814,57 @@ msgstr ""
 msgid "New transaction received"
 msgstr "Нет транзакций"
 
+=======
+>>>>>>> 89b914a (fix: wallet not reloading data after a reconnect and wallet reset after an error (#241))
 #: src/components/CopyClipboard.js:47
 msgid "Copied to clipboard!"
 msgstr "Скопировано в буфер обмена!"
 
-#: src/components/ErrorModal.js:27
+#: src/components/GlobalErrorModal.js:49
 msgid ""
 "Thanks for reporting the error to the team. We will investigate it to "
 "prevent from happening again."
 msgstr ""
 
-#: src/components/ErrorModal.js:39
+#: src/components/GlobalErrorModal.js:79
 msgid "Unexpected error"
 msgstr ""
 
-#: src/components/ErrorModal.js:43
+#: src/components/GlobalErrorModal.js:83
 msgid "Please restart your app to continue using the wallet."
+msgstr ""
+
+#: src/components/GlobalErrorModal.js:104
+msgid ""
+"Unfortunately an unhandled error happened and you will need to restart your "
+"app.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+
+#: src/components/GlobalErrorModal.js:107
+msgid ""
+"Unfortunately an unhandled error happened.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+
+#: src/components/GlobalErrorModal.js:114
+msgid "Unexpected error occurred"
+msgstr ""
+
+#: src/components/GlobalErrorModal.js:117
+msgid "Report error"
+msgstr ""
+
+#: src/components/GlobalErrorModal.js:122
+msgid "Close"
 msgstr ""
 
 #: src/components/NewPaymentRequest.js:180
@@ -837,16 +879,16 @@ msgstr "Нет соединения с интернетом"
 msgid "Opening camera"
 msgstr "Камера открывается"
 
-#: src/components/ReceiveMyAddress.js:56
+#: src/components/ReceiveMyAddress.js:33
 #, javascript-format
-msgid "Here is my address: ${ _this.state.address }"
-msgstr "Это мой адрес: ${ _this.state.address }"
+msgid "Here is my address: ${ lastSharedAddress }"
+msgstr "Это мой адрес: ${ lastSharedAddress }"
 
-#: src/components/ReceiveMyAddress.js:93
+#: src/components/ReceiveMyAddress.js:71
 msgid "New address"
 msgstr "Новый адрес"
 
-#: src/components/ReceiveMyAddress.js:99 src/components/TokenDetails.js:58
+#: src/components/ReceiveMyAddress.js:77 src/components/TokenDetails.js:58
 msgid "Share"
 msgstr "Поделиться"
 
