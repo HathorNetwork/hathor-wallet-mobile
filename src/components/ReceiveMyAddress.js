@@ -10,100 +10,77 @@ import {
   Dimensions, Share, StyleSheet, View,
 } from 'react-native';
 import { t } from 'ttag';
-
 import QRCode from 'react-native-qrcode-svg';
-
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
+import { sharedAddressUpdate } from '../actions';
 
-const mapStateToProps = (state) => ({
-  wallet: state.wallet,
-});
+export default function ReceiveMyAddress() {
+  const dispatch = useDispatch();
+  const wallet = useSelector((state) => state.wallet);
+  const lastSharedAddress = useSelector((state) => state.lastSharedAddress);
 
-class ReceiveMyAddress extends React.Component {
-  constructor(props) {
-    super(props);
+  const getNextAddress = async () => {
+    const { address, index } = await wallet.getNextAddress();
 
-    /**
-     * address {string} Wallet address
-     */
-    this.state = {
-      address: '',
-    };
+    dispatch(sharedAddressUpdate(address, index));
+  };
 
-    this.willFocusEvent = null;
-  }
-
-  componentDidMount() {
-    const { navigation } = this.props;
-    this.willFocusEvent = navigation.addListener('willFocus', () => {
-      this.setState({ address: this.props.wallet.getCurrentAddress().address });
-    });
-  }
-
-  componentWillUnmount() {
-    this.willFocusEvent.remove();
-  }
-
-  getNextAddress = () => {
-    this.setState({ address: this.props.wallet.getNextAddress().address });
-  }
-
-  shareAddress = () => {
+  const shareAddress = () => {
     Share.share({
-      message: t`Here is my address: ${this.state.address}`,
+      message: t`Here is my address: ${lastSharedAddress}`,
     });
+  };
+
+  if (!lastSharedAddress) {
+    return null;
   }
 
-  render() {
-    if (!this.state.address) return null;
+  // This is used to set the width of the address wrapper view
+  // For some reason I was not being able to set as 100%, so I had to use this
+  const { height, width } = Dimensions.get('window');
 
-    // This is used to set the width of the address wrapper view
-    // For some reason I was not being able to set as 100%, so I had to use this
-    const { height, width } = Dimensions.get('window');
+  const addressWrapperStyle = StyleSheet.create({
+    style: {
+      padding: 16,
+      borderBottomWidth: 1.5,
+      borderTopWidth: 1.5,
+      borderColor: '#e5e5ea',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: width - 32,
+    },
+  });
 
-    const addressWrapperStyle = StyleSheet.create({
-      style: {
-        padding: 16,
-        borderBottomWidth: 1.5,
-        borderTopWidth: 1.5,
-        borderColor: '#e5e5ea',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: width - 32,
-      },
-    });
-
-    return (
-      <View style={styles.wrapper}>
-        <View style={styles.qrcodeWrapper}>
-          <QRCode value={`hathor:${this.state.address}`} size={height < 650 ? 160 : 250} />
-        </View>
-        <View style={addressWrapperStyle.style}>
-          <CopyClipboard
-            text={this.state.address}
-            textStyle={{ fontSize: height < 650 ? 11 : 13 }}
-          />
-        </View>
-        <View style={{ flexDirection: 'row' }}>
-          <SimpleButton
-            title={t`New address`}
-            onPress={this.getNextAddress}
-            containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
-          />
-          <SimpleButton
-            onPress={this.shareAddress}
-            title={t`Share`}
-            color='#000'
-            containerStyle={styles.buttonContainer}
-          />
-        </View>
+  return (
+    <View style={styles.wrapper}>
+      <View style={styles.qrcodeWrapper}>
+        <QRCode value={`hathor:${lastSharedAddress}`} size={height < 650 ? 160 : 250} />
       </View>
-    );
-  }
+      <View style={addressWrapperStyle.style}>
+        <CopyClipboard
+          text={lastSharedAddress}
+          textStyle={{ fontSize: height < 650 ? 11 : 13 }}
+        />
+      </View>
+      <View style={{ flexDirection: 'row' }}>
+        <SimpleButton
+          title={t`New address`}
+          onPress={getNextAddress}
+          containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
+        />
+        <SimpleButton
+          onPress={shareAddress}
+          title={t`Share`}
+          color='#000'
+          containerStyle={styles.buttonContainer}
+        />
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -132,5 +109,3 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
   },
 });
-
-export default connect(mapStateToProps)(ReceiveMyAddress);
