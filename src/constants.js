@@ -30,13 +30,13 @@ hathorLib.storage.setStore(STORE);
 /**
  * This is the environment stage that will be used to load the unleash feature flags.
  */
-export const STAGE = 'dev-testnet';
+export const STAGE = 'mainnet';
 
 /**
  * this is the network name that will be used to load the wallet on the wallet-service,
  * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
  */
-export const NETWORK = 'testnet';
+export const NETWORK = 'mainnet';
 
 /**
  * Default tokens for the wallet (to start on redux)
@@ -88,7 +88,7 @@ export const PIN_SIZE = 6;
  */
 export const UNLEASH_URL = 'https://unleash-proxy.b7e6a7f52ee9fefaf0c53e300cfcb014.hathor.network/proxy';
 export const UNLEASH_CLIENT_KEY = 'wKNhpEXKa39aTRgIjcNsO4Im618bRGTq';
-export const UNLEASH_POLLING_INTERVAL = 5; // seconds
+export const UNLEASH_POLLING_INTERVAL = 15; // seconds
 export const unleashStorageKey = {
   ignoreWalletServiceFlag: 'featureFlags:ignoreWalletServiceFlag',
 };
@@ -100,12 +100,8 @@ export const METADATA_CONCURRENT_DOWNLOAD = 5;
 
 
 // Wallet service URLs
-// export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://wallet-service.hathor.network/';
-// export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.wallet-service.hathor.network/';
-
-// dev-testnet?
-export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://dev.wallet-service.testnet.hathor.network/';
-export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.dev.wallet-service.testnet.hathor.network/';
+export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://wallet-service.hathor.network/';
+export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.wallet-service.hathor.network/';
 
 /**
  * Push notification constants
