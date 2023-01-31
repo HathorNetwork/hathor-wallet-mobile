@@ -428,7 +428,6 @@ export function* resetPushNotification() {
   yield STORE.removeItem(pushNotificationKey.enabledAt);
   yield STORE.removeItem(pushNotificationKey.settings);
   yield STORE.removeItem(pushNotificationKey.hasBeenEnabled);
-  yield STORE.removeItem(pushNotificationKey.optInDismissed);
   yield STORE.removeItem(pushNotificationKey.deviceId);
   // Reset the state
   yield put(pushReset());
