@@ -462,28 +462,28 @@ msgstr ""
 
 #: src/screens/PinScreen.js:246
 #: src/screens/RecoverPin.js:108
-#: src/screens/Settings.js:137
+#: src/screens/Settings.js:139
 msgid "Reset wallet"
 msgstr ""
 
-#: src/screens/PushNotification.js:44
-#: src/screens/Settings.js:117
+#: src/screens/PushNotification.js:46
+#: src/screens/Settings.js:119
 msgid "Push Notification"
 msgstr ""
 
-#: src/screens/PushNotification.js:45
+#: src/screens/PushNotification.js:47
 msgid "Enable Push Notification"
 msgstr ""
 
-#: src/screens/PushNotification.js:46
+#: src/screens/PushNotification.js:48
 msgid "Show amounts on notification"
 msgstr ""
 
-#: src/screens/PushNotification.js:47
+#: src/screens/PushNotification.js:49
 msgid "Updating push notification..."
 msgstr ""
 
-#: src/screens/PushNotification.js:48
+#: src/screens/PushNotification.js:50
 msgid "There was an error enabling push notification. Please try again later."
 msgstr ""
 
@@ -678,19 +678,19 @@ msgstr ""
 msgid "Security"
 msgstr ""
 
-#: src/screens/Settings.js:123
+#: src/screens/Settings.js:125
 msgid "Create a new token"
 msgstr ""
 
-#: src/screens/Settings.js:131
+#: src/screens/Settings.js:133
 msgid "Register a token"
 msgstr ""
 
-#: src/screens/Settings.js:141
+#: src/screens/Settings.js:143
 msgid "About"
 msgstr ""
 
-#: src/screens/Settings.js:148
+#: src/screens/Settings.js:150
 msgid "Unique app identifier"
 msgstr ""
 
