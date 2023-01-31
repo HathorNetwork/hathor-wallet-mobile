@@ -144,10 +144,12 @@ export function* startWallet(action) {
   const walletReadyThread = yield fork(listenForWalletReady, wallet);
 
   // Thread to listen for feature flags from Unleash
-  // eslint-disable-next-line max-len
-  const featureFlagWalletServiceThread = yield fork(listenForWalletServiceFeatureFlag, featureFlags);
-  // eslint-disable-next-line max-len
-  const featureFlagPushNotificationThread = yield fork(listenForPushNotificationFeatureFlag, featureFlags);
+  const featureFlagWalletServiceThread = yield fork(
+    listenForWalletServiceFeatureFlag, featureFlags
+  );
+  const featureFlagPushNotificationThread = yield fork(
+    listenForPushNotificationFeatureFlag, featureFlags
+  );
 
   const threads = [
     walletListenerThread,

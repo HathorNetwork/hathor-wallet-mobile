@@ -26,7 +26,7 @@ export class FeatureFlags extends events.EventEmitter {
     this.network = network;
     this.walletServiceFlag = `wallet-service-mobile-${Platform.OS}-${this.network}.rollout`;
     this.walletServiceEnabled = null;
-    this.pushNotificationFlag = `push-notification.rollout`;
+    this.pushNotificationFlag = 'push-notification.rollout';
     this.pushNotificationEnabled = null;
     this.client = new UnleashClient({
       url: UNLEASH_URL,
@@ -47,8 +47,8 @@ export class FeatureFlags extends events.EventEmitter {
         userId: this.userId,
         properties: {
           platform: Platform.OS,
-          stage: STAGE
-        }
+          stage: STAGE,
+        },
       };
       this.client.updateContext(options);
 
