@@ -89,6 +89,8 @@ export const types = {
   PUSH_LOAD_TX_DETAILS: 'PUSH_LOAD_TX_DETAILS',
   PUSH_CLEAN_TX_DETAILS: 'PUSH_ENRICH_TX_FAILED',
   PUSH_RESET: 'PUSH_RESET',
+  WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
+  SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
 };
 
@@ -587,6 +589,24 @@ export const pushRegisterSuccess = (data) => ({
 
 export const pushRegisterFailed = () => ({
   type: types.PUSH_REGISTER_FAILED,
+});
+
+export const walletRefreshSharedAddress = () => ({
+  type: types.WALLET_REFRESH_SHARED_ADDRESS,
+});
+
+/**
+ * Update address that will be shared with user
+ *
+ * lastSharedAddress {string} The address to use
+ * lastSharedIndex {int} The address index to use
+ */
+export const sharedAddressUpdate = (lastSharedAddress, lastSharedIndex) => ({
+  type: types.SHARED_ADDRESS_UPDATE,
+  payload: {
+    lastSharedAddress,
+    lastSharedIndex,
+  },
 });
 
 /**
