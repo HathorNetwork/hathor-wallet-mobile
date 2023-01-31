@@ -1,43 +1,18 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Hathor\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: POEditor.com\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.2.2\n"
 
-#: src/errorHandler.js:51
-msgid "Unexpected error occurred"
-msgstr "En uventet fejl opstod"
-
-#: src/errorHandler.js:52
-msgid ""
-"Unfortunately an unhandled error happened and you will need to restart your "
-"app.\n"
-"\n"
-"We kindly ask you to report this error to the Hathor team clicking on the "
-"button below.\n"
-"\n"
-"No sensitive data will be shared."
-msgstr ""
-"Desværre opstod der en uventet fejl og du skal genstarte app'en.\n"
-"\n"
-"Vi vil værdsætte det, hvis du rapporterer denne fejl til Hathor teamet, ved "
-"at trykke på knappen herunder.\n"
-"\n"
-"Ingen følsomme data vil blive delt."
-
-#: src/errorHandler.js:55
-msgid "Report error"
-msgstr "Rapporter fejl"
-
-#: src/errorHandler.js:61
-msgid "Close"
-msgstr "Luk"
-
-#.  This should never happen!
+#. This should never happen!
 #: src/models.js:24
 msgid "Unknown"
 msgstr "Ukendt"
@@ -56,32 +31,32 @@ msgstr "Sendt ${ symbol }"
 msgid "You sent ${ symbol } to yourself"
 msgstr "Du sendte ${ symbol } til dig selv"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:41
 msgid "[Today •] HH:mm"
 msgstr "[I dag •] HH: mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:42
 msgid "[Tomorrow •] HH:mm"
 msgstr "[I morgen •] HH: mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:43
 msgid "dddd [•] HH:mm"
 msgstr "dddd [•] HH: mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:44
 msgid "[Yesterday •] HH:mm"
 msgstr "[I går •] HH: mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:45
 msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH: mm"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:46
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH: mm"
@@ -118,17 +93,17 @@ msgid ""
 "Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-#.  Success
-#.  eslint-disable-next-line react/jsx-indent
-#: src/screens/BackupWords.js:146
+#. Success
+#. eslint-disable-next-line react/jsx-indent
+#: src/screens/BackupWords.js:148
 msgid "Words saved correctly"
 msgstr "Ord gemt korrekt"
 
-#: src/screens/BackupWords.js:224
+#: src/screens/BackupWords.js:226
 msgid "To make sure you saved,"
 msgstr "For at sikre dig, at du har gemt,"
 
-#: src/screens/BackupWords.js:226
+#: src/screens/BackupWords.js:228
 msgid "Please select the word that corresponds to the number below:"
 msgstr "Vælg det ord, der svarer til nummeret herunder:"
 
@@ -140,7 +115,7 @@ msgstr "Forkert PIN-kode."
 msgid "PIN codes don't match."
 msgstr "PIN-koder stemmer ikke overens."
 
-#.  Should never get here because we've done all the validations before
+#. Should never get here because we've done all the validations before
 #: src/screens/ChangePin.js:174
 msgid "Error while changing PIN"
 msgstr "Fejl under ændring af pinkode"
@@ -165,27 +140,27 @@ msgstr "Ny PIN gemt"
 msgid "CHANGE PIN"
 msgstr "SKIFT PIN"
 
-#: src/screens/ChoosePinScreen.js:133
+#: src/screens/ChoosePinScreen.js:135
 msgid "Enter your new PIN code"
 msgstr "Indtast din nye PIN-kode"
 
-#: src/screens/ChoosePinScreen.js:145
+#: src/screens/ChoosePinScreen.js:147
 msgid "Enter your new PIN code again"
 msgstr "Indtast din nye PIN-kode igen"
 
-#: src/screens/ChoosePinScreen.js:69
+#: src/screens/ChoosePinScreen.js:71
 msgid "Create a new PIN code,"
 msgstr "Opret en ny PIN-kode,"
 
-#: src/screens/ChoosePinScreen.js:72
+#: src/screens/ChoosePinScreen.js:74
 msgid "To confirm the PIN,"
 msgstr "For at bekræfte pinkoden,"
 
-#: src/screens/ChoosePinScreen.js:159
+#: src/screens/ChoosePinScreen.js:161
 msgid "PIN codes don't match. Try again."
 msgstr "PIN-koder stemmer ikke overens. Prøv igen."
 
-#: src/screens/ChoosePinScreen.js:182
+#: src/screens/ChoosePinScreen.js:184
 msgid "Start the Wallet"
 msgstr "Start Wallet"
 
@@ -216,7 +191,7 @@ msgstr "Du har ${ amountAvailableText } HTR tilgængelig"
 msgid "Next"
 msgstr "Næste"
 
-#.  show loading modal
+#. show loading modal
 #: src/screens/CreateTokenConfirm.js:98
 msgid "Creating token"
 msgstr "Opretter token"
@@ -229,7 +204,7 @@ msgstr "Indtast din 6-cifrede pin for at oprette din token"
 msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
-#.  eslint-disable-next-line react/jsx-indent
+#. eslint-disable-next-line react/jsx-indent
 #: src/screens/CreateTokenConfirm.js:180
 #, javascript-format
 msgid "**${ this.name }** created successfully"
@@ -404,18 +379,18 @@ msgstr "Ord"
 msgid "Enter your seed words separated by space"
 msgstr "Indtast dine seed-ord adskilt med mellemrum"
 
-#: src/screens/LoadHistoryScreen.js:90
+#: src/screens/LoadHistoryScreen.js:75
 msgid "Loading your transactions"
 msgstr "Indlæser dine transaktioner"
 
-#: src/screens/LoadHistoryScreen.js:93
+#: src/screens/LoadHistoryScreen.js:78
 #, javascript-format
-msgid "**${ _this2.props.loadedData.transactions } transactions** found"
-msgstr "**${ _this2.props.loadedData.transactions } transaktioner** fundet"
+msgid "**${ _this.props.loadedData.transactions } transactions** found"
+msgstr "**${ _this.props.loadedData.transactions } transaktioner** fundet"
 
-#: src/screens/LoadHistoryScreen.js:96
-msgid "**${ _this2.props.loadedData.addresses } addresses** found"
-msgstr "**${ _this2.props.loadedData.addresses } adresser** fundet"
+#: src/screens/LoadHistoryScreen.js:81
+msgid "**${ _this.props.loadedData.addresses } addresses** found"
+msgstr "**${ _this.props.loadedData.addresses } adresser** fundet"
 
 #: src/screens/MainScreen.js:127
 msgid "No transactions"
@@ -454,11 +429,11 @@ msgstr "Du har lige modtaget **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "BETALINGSANMODNING"
 
-#: src/components/TxDetailsModal.js:52 src/screens/PaymentRequestDetail.js:108
+#: src/components/TxDetailsModal.js:60 src/screens/PaymentRequestDetail.js:108
 msgid "Token"
 msgstr "Token"
 
-#: src/components/TxDetailsModal.js:99 src/screens/PaymentRequestDetail.js:112
+#: src/components/TxDetailsModal.js:107 src/screens/PaymentRequestDetail.js:112
 msgid "Amount"
 msgstr "Antal"
 
@@ -478,32 +453,32 @@ msgstr "Modtaget"
 msgid "Waiting confirmation"
 msgstr "Venter på bekræftelse"
 
-#: src/screens/PinScreen.js:220
+#: src/screens/PinScreen.js:231
 msgid "Incorrect PIN Code. Try again."
 msgstr "Forkert PIN-kode. Prøv igen."
 
-#: src/screens/PinScreen.js:65
+#: src/screens/PinScreen.js:70
 msgid "Enter your PIN Code "
 msgstr "Indtast din pinkode "
 
-#: src/screens/PinScreen.js:66
+#: src/screens/PinScreen.js:71
 msgid "Unlock Hathor Wallet"
 msgstr "Lås Hathor-wallet op"
 
-#: src/screens/PinScreen.js:232
+#: src/screens/PinScreen.js:243
 msgid "Cancel"
 msgstr "Annuller"
 
-#: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:108
-#: src/screens/Settings.js:133
+#: src/screens/PinScreen.js:246 src/screens/RecoverPin.js:108
+#: src/screens/Settings.js:135
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
 #. *
-#.      * index {number} Selected index of the tab bar
-#.      
-#.  eslint thinks routes is not used, but TabView uses it
-#.  eslint-disable-next-line react/no-unused-state
+#. * index {number} Selected index of the tab bar
+#.
+#. eslint thinks routes is not used, but TabView uses it
+#. eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:30
 msgid "Payment Request"
 msgstr "Betalingsanmodning"
@@ -524,8 +499,8 @@ msgstr ""
 msgid "Upgrading your wallet, please hang on."
 msgstr ""
 
-#.  translator: Used when the QR Code Scanner is opened, and user will manually
-#.  enter the information.
+#. translator: Used when the QR Code Scanner is opened, and user will manually
+#. enter the information.
 #: src/screens/RegisterToken.js:33 src/screens/SendScanQRCode.js:69
 msgid "Manual info"
 msgstr "Manuel information"
@@ -633,16 +608,16 @@ msgstr[1] "${ amountAndToken } tilgængelig\n"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
-#.  show loading modal
+#. show loading modal
 #: src/screens/SendConfirmScreen.js:103
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
-#: src/sagas/wallet.js:105 src/screens/SendConfirmScreen.js:117
+#: src/sagas/wallet.js:110 src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
-#: src/sagas/wallet.js:106 src/screens/SendConfirmScreen.js:118
+#: src/sagas/wallet.js:111 src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -676,31 +651,31 @@ msgstr "Du har ikke den anmodede token [${ tokenLabel }]"
 msgid "Scan the QR code"
 msgstr "Scan QR-koden"
 
-#: src/screens/Settings.js:88
+#: src/screens/Settings.js:90
 msgid "You are connected to"
 msgstr "Du er tilsluttet til"
 
-#: src/screens/Settings.js:100
+#: src/screens/Settings.js:102
 msgid "Connected to"
 msgstr "Forbundet til"
 
-#: src/screens/Settings.js:113
+#: src/screens/Settings.js:115
 msgid "Security"
 msgstr "Sikkerhed"
 
-#: src/screens/Settings.js:119
+#: src/screens/Settings.js:121
 msgid "Create a new token"
 msgstr "Opret en ny token"
 
-#: src/screens/Settings.js:127
+#: src/screens/Settings.js:129
 msgid "Register a token"
 msgstr "Registrer en token"
 
-#: src/screens/Settings.js:137
+#: src/screens/Settings.js:139
 msgid "About"
 msgstr "Om"
 
-#: src/screens/Settings.js:144
+#: src/screens/Settings.js:146
 msgid "Unique app identifier"
 msgstr ""
 
@@ -734,11 +709,11 @@ msgstr "Jeg vil afregistrere token **${ tokenLabel }**"
 msgid "Unregister token"
 msgstr "Afregistrer token"
 
-#: src/components/CopyClipboard.js:37
+#: src/components/CopyClipboard.js:47
 msgid "Copied to clipboard!"
 msgstr "Kopieret til udklipsholder!"
 
-#: src/components/ErrorModal.js:27
+#: src/components/GlobalErrorModal.js:49
 msgid ""
 "Thanks for reporting the error to the team. We will investigate it to "
 "prevent from happening again."
@@ -746,13 +721,58 @@ msgstr ""
 "Tak for at rapportere fejlen til teamet. Vi vil undersøge det, for at "
 "forhindre at det sker igen."
 
-#: src/components/ErrorModal.js:39
+#: src/components/GlobalErrorModal.js:79
 msgid "Unexpected error"
 msgstr "Uventet fejl"
 
-#: src/components/ErrorModal.js:43
+#: src/components/GlobalErrorModal.js:83
 msgid "Please restart your app to continue using the wallet."
 msgstr "Genstart venligst app'en for at kunne bruge din wallet igen."
+
+#: src/components/GlobalErrorModal.js:104
+msgid ""
+"Unfortunately an unhandled error happened and you will need to restart your "
+"app.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+"Desværre opstod der en uventet fejl.\n"
+"\n"
+"Vi vil værdsætte det, hvis du rapporterer denne fejl til Hathor teamet, ved "
+"at trykke på knappen herunder.\n"
+"\n"
+"Ingen følsomme data vil blive delt."
+
+#: src/components/GlobalErrorModal.js:107
+msgid ""
+"Unfortunately an unhandled error happened.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+"Desværre opstod der en uventet fejl.\n"
+"\n"
+"Vi vil værdsætte det, hvis du rapporterer denne fejl til Hathor teamet, ved "
+"at trykke på knappen herunder.\n"
+"\n"
+"Ingen følsomme data vil blive delt."
+
+#: src/components/GlobalErrorModal.js:114
+msgid "Unexpected error occurred"
+msgstr "En uventet fejl opstod"
+
+#: src/components/GlobalErrorModal.js:117
+msgid "Report error"
+msgstr "Rapporter fejl"
+
+#: src/components/GlobalErrorModal.js:122
+msgid "Close"
+msgstr "Luk"
 
 #: src/components/NewPaymentRequest.js:180
 msgid "Create payment request"
@@ -766,16 +786,16 @@ msgstr "Ingen internetforbindelse"
 msgid "Opening camera"
 msgstr "Åbner kamera"
 
-#: src/components/ReceiveMyAddress.js:56
+#: src/components/ReceiveMyAddress.js:33
 #, javascript-format
-msgid "Here is my address: ${ _this.state.address }"
-msgstr "Her er min adresse: ${ _this.state.address }"
+msgid "Here is my address: ${ lastSharedAddress }"
+msgstr "Her er min adresse: ${ lastSharedAddress }"
 
-#: src/components/ReceiveMyAddress.js:93
+#: src/components/ReceiveMyAddress.js:71
 msgid "New address"
 msgstr "Ny adresse"
 
-#: src/components/ReceiveMyAddress.js:99 src/components/TokenDetails.js:58
+#: src/components/ReceiveMyAddress.js:77 src/components/TokenDetails.js:58
 msgid "Share"
 msgstr "Del"
 
@@ -790,19 +810,19 @@ msgid ""
 msgstr ""
 "Her er konfigurationsstrengen for token ${ tokenLabel }: ${ configString }"
 
-#: src/components/TxDetailsModal.js:53
+#: src/components/TxDetailsModal.js:61
 msgid "Description"
 msgstr "Beskrivelse"
 
-#: src/components/TxDetailsModal.js:54
+#: src/components/TxDetailsModal.js:62
 msgid "Date & Time"
 msgstr "Dato & Tid"
 
-#: src/components/TxDetailsModal.js:55
+#: src/components/TxDetailsModal.js:63
 msgid "ID"
 msgstr "ID"
 
-#: src/components/TxDetailsModal.js:56
+#: src/components/TxDetailsModal.js:64
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
