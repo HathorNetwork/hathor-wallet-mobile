@@ -122,7 +122,6 @@ const initialState = {
      */
     enabledAt: 0,
   },
-  walletStartState: WALLET_STATUS.NOT_STARTED,
 };
 
 const reducer = (state = initialState, action) => {
