@@ -13,7 +13,9 @@ export default function AskForPushNotification(props) {
     dispatch(pushDismissOptInQuestion());
   };
 
-  if (!showOptIn) return null;
+  if (!showOptIn) {
+    return null;
+  }
   return (
     <ActionModal
       title={t`Do you want to enable push notifications for this wallet?`}
