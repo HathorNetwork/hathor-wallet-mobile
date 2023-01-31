@@ -65,6 +65,9 @@ import { PUSH_API_STATUS } from './sagas/pushNotification';
  *   isFatal {boolean} Indicates if the error is fatal
  *   error {Error} Error object with the stacktrace, to be sent to Sentry
  * }
+ *
+ * lastSharedAddress {string} The current address to use
+ * lastSharedIndex {int} The current address index to use
  */
 const initialState = {
   tokensHistory: {},
@@ -99,7 +102,6 @@ const initialState = {
   // screen
   tempPin: null,
   isShowingPinScreen: false,
-  walletStartState: WALLET_STATUS.LOADING,
   pushNotification: {
     /**
      * showOptInQuestion {boolean}
@@ -133,6 +135,8 @@ const initialState = {
     enabledAt: 0,
   },
   walletStartState: WALLET_STATUS.NOT_STARTED,
+  lastSharedAddress: null,
+  lastSharedIndex: null,
 };
 
 const reducer = (state = initialState, action) => {
@@ -239,6 +243,10 @@ const reducer = (state = initialState, action) => {
       return onPushApiFailed(state);
     case types.EXCEPTION_CAPTURED:
       return onExceptionCaptured(state, action);
+    case types.WALLET_RELOADING:
+      return onWalletReloading(state);
+    case types.SHARED_ADDRESS_UPDATE:
+      return onSharedAddressUpdate(state, action);
     default:
       return state;
   }
@@ -397,17 +405,10 @@ const onSetTempPin = (state, action) => ({
   tempPin: action.payload,
 });
 
-const onSetWallet = (state, action) => {
-  if (state.wallet && state.wallet.state !== hathorLib.HathorWallet.CLOSED) {
-    // Wallet was not closed
-    state.wallet.stop();
-  }
-
-  return {
-    ...state,
-    wallet: action.payload
-  };
-};
+const onSetWallet = (state, action) => ({
+  ...state,
+  wallet: action.payload,
+});
 
 const onSetUniqueDeviceId = (state, action) => ({
   ...state,
@@ -810,6 +811,21 @@ export const onExceptionCaptured = (state, { payload }) => {
     },
   };
 };
+
+const onWalletReloading = (state) => ({
+  ...state,
+  walletStartState: WALLET_STATUS.LOADING,
+});
+
+/**
+ * @param {string} action.payload.lastSharedAddress The current address to use
+ * @param {int} action.payload.lastSharedIndex The current address index to use
+ */
+const onSharedAddressUpdate = (state, action) => ({
+  ...state,
+  lastSharedAddress: action.payload.lastSharedAddress,
+  lastSharedIndex: action.payload.lastSharedIndex,
+});
 
 const saga = createSagaMiddleware();
 const middlewares = [
