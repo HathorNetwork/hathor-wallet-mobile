@@ -12,36 +12,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 "X-Generator: Poedit 3.2\n"
 
-#: src/errorHandler.js:51
-msgid "Unexpected error occurred"
-msgstr "Um erro inesperado ocorreu"
-
-#: src/errorHandler.js:52
-msgid ""
-"Unfortunately an unhandled error happened and you will need to restart your "
-"app.\n"
-"\n"
-"We kindly ask you to report this error to the Hathor team clicking on the "
-"button below.\n"
-"\n"
-"No sensitive data will be shared."
-msgstr ""
-"Infelizmente um erro não tratado ocorreu e você precisa reiniciar o "
-"aplicativo.\n"
-"\n"
-"Nós pedimos que você envie esse erro para o time da Hathor clicando no botão "
-"abaixo.\n"
-"\n"
-"Nenhum dado sensível será compartilhado."
-
-#: src/errorHandler.js:55
-msgid "Report error"
-msgstr "Reportar erro"
-
-#: src/errorHandler.js:61
-msgid "Close"
-msgstr "Fechar"
-
 #.  This should never happen!
 #: src/models.js:24
 msgid "Unknown"
@@ -173,27 +143,27 @@ msgstr "Novo PIN salvo"
 msgid "CHANGE PIN"
 msgstr "MUDAR PIN"
 
-#: src/screens/ChoosePinScreen.js:136
+#: src/screens/ChoosePinScreen.js:135
 msgid "Enter your new PIN code"
 msgstr "Digite seu novo PIN"
 
-#: src/screens/ChoosePinScreen.js:148
+#: src/screens/ChoosePinScreen.js:147
 msgid "Enter your new PIN code again"
 msgstr "Digite seu novo PIN novamente"
 
-#: src/screens/ChoosePinScreen.js:72
+#: src/screens/ChoosePinScreen.js:71
 msgid "Create a new PIN code,"
 msgstr "Criar um novo PIN,"
 
-#: src/screens/ChoosePinScreen.js:75
+#: src/screens/ChoosePinScreen.js:74
 msgid "To confirm the PIN,"
 msgstr "Para confirmar o PIN,"
 
-#: src/screens/ChoosePinScreen.js:162
+#: src/screens/ChoosePinScreen.js:161
 msgid "PIN codes don't match. Try again."
 msgstr "Os PINs estão diferentes. Tente novamente."
 
-#: src/screens/ChoosePinScreen.js:185
+#: src/screens/ChoosePinScreen.js:184
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
@@ -491,44 +461,44 @@ msgstr "Recebido"
 msgid "Waiting confirmation"
 msgstr "Aguardando confirmação"
 
-#: src/screens/PinScreen.js:235
+#: src/screens/PinScreen.js:231
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
-#: src/screens/PinScreen.js:72
+#: src/screens/PinScreen.js:70
 msgid "Enter your PIN Code "
 msgstr "Digite seu PIN "
 
-#: src/screens/PinScreen.js:73
+#: src/screens/PinScreen.js:71
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
-#: src/screens/PinScreen.js:247
+#: src/screens/PinScreen.js:243
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:108
-#: src/screens/Settings.js:137
+#: src/screens/PinScreen.js:246 src/screens/RecoverPin.js:108
+#: src/screens/Settings.js:139
 msgid "Reset wallet"
 msgstr "Resetar a wallet"
 
-#: src/screens/PushNotification.js:44 src/screens/Settings.js:117
+#: src/screens/PushNotification.js:46 src/screens/Settings.js:119
 msgid "Push Notification"
 msgstr "Notificação"
 
-#: src/screens/PushNotification.js:45
+#: src/screens/PushNotification.js:47
 msgid "Enable Push Notification"
 msgstr "Habilitar Notificação"
 
-#: src/screens/PushNotification.js:46
+#: src/screens/PushNotification.js:48
 msgid "Show amounts on notification"
 msgstr "Mostrar valores na notificação"
 
-#: src/screens/PushNotification.js:47
+#: src/screens/PushNotification.js:49
 msgid "Updating push notification..."
 msgstr "Atualizando configurações de notificação..."
 
-#: src/screens/PushNotification.js:48
+#: src/screens/PushNotification.js:50
 msgid "There was an error enabling push notification. Please try again later."
 msgstr ""
 "Ocorreu um erro ao atualizar as configurações de notificação. Por favor, "
@@ -712,31 +682,31 @@ msgstr "Você não tem o token requisitado [${ tokenLabel }]"
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
-#: src/screens/Settings.js:88
+#: src/screens/Settings.js:90
 msgid "You are connected to"
 msgstr "Você está conectado à"
 
-#: src/screens/Settings.js:100
+#: src/screens/Settings.js:102
 msgid "Connected to"
 msgstr "Conectado ao servidor"
 
-#: src/screens/Settings.js:113
+#: src/screens/Settings.js:115
 msgid "Security"
 msgstr "Segurança"
 
-#: src/screens/Settings.js:123
+#: src/screens/Settings.js:125
 msgid "Create a new token"
 msgstr "Criar um novo token"
 
-#: src/screens/Settings.js:131
+#: src/screens/Settings.js:133
 msgid "Register a token"
 msgstr "Registrar um token"
 
-#: src/screens/Settings.js:141
+#: src/screens/Settings.js:143
 msgid "About"
 msgstr "Sobre"
 
-#: src/screens/Settings.js:148
+#: src/screens/Settings.js:150
 msgid "Unique app identifier"
 msgstr "Identificador único do aplicativo"
 
@@ -776,7 +746,11 @@ msgstr "Desregistrar token"
 msgid "Transaction"
 msgstr "Transação"
 
-#: src\sagas\pushNotification.js:117
+#. *
+#.          * @example
+#.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
+#.          
+#: src/sagas/pushNotification.js:106
 #, javascript-format
 msgid ""
 "You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
@@ -785,16 +759,22 @@ msgid_plural ""
 "You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
 "other tokens on a new transaction."
 msgstr[0] ""
-"Você recebeu ${ firstToken }, ${ secondToken } e ${ otherCount } outro "
-"token na nova transação."
+"Você recebeu ${ firstToken }, ${ secondToken } e ${ otherCount } outro token "
+"na nova transação."
 msgstr[1] ""
 "Você recebeu ${ firstToken }, ${ secondToken } e ${ otherCount } outros "
 "tokens na nova transação."
 
-#: src\sagas\pushNotification.js:120
+#. *
+#.          * @example
+#.          * You have received 10 T2 and 5 T1 on a new transaction.
+#.          
+#: src/sagas/pushNotification.js:117
 #, javascript-format
-msgid "You have received ${ _firstToken } and ${ _secondToken }."
-msgstr "Você recebeu ${ _firstToken } e ${ _secondToken }."
+msgid ""
+"You have received ${ _firstToken } and ${ _secondToken } on a new "
+"transaction."
+msgstr "Você recebeu ${ _firstToken } e ${ _secondToken } na nova transação."
 
 #: src\sagas\pushNotification.js:123
 msgid "You have received ${ _firstToken2 }."
@@ -825,7 +805,7 @@ msgstr "Sim, habilitar"
 msgid "Copied to clipboard!"
 msgstr "Copiado!"
 
-#: src/components/ErrorModal.js:27
+#: src/components/GlobalErrorModal.js:49
 msgid ""
 "Thanks for reporting the error to the team. We will investigate it to "
 "prevent from happening again."
@@ -833,13 +813,59 @@ msgstr ""
 "Obrigado por enviar o erro para o time. Nós vamos investigá-lo para que não "
 "aconteça mais."
 
-#: src/components/ErrorModal.js:39
+#: src/components/GlobalErrorModal.js:79
 msgid "Unexpected error"
 msgstr "Erro inesperado"
 
-#: src/components/ErrorModal.js:43
+#: src/components/GlobalErrorModal.js:83
 msgid "Please restart your app to continue using the wallet."
 msgstr "Por favor reinicie seu aplicativo para continuar usando a wallet."
+
+#: src/components/GlobalErrorModal.js:104
+msgid ""
+"Unfortunately an unhandled error happened and you will need to restart your "
+"app.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+"Infelizmente um erro não tratado ocorreu e você precisa reiniciar o "
+"aplicativo.\n"
+"\n"
+"Nós pedimos que você envie esse erro para o time da Hathor clicando no botão "
+"abaixo.\n"
+"\n"
+"Nenhum dado sensível será compartilhado."
+
+#: src/components/GlobalErrorModal.js:107
+msgid ""
+"Unfortunately an unhandled error happened.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+"Infelizmente um erro não tratado ocorreu.\n"
+"\n"
+"Nós pedimos que você envie esse erro para o time da Hathor clicando no botão "
+"abaixo.\n"
+"\n"
+"Nenhum dado sensível será compartilhado."
+
+#: src/components/GlobalErrorModal.js:114
+msgid "Unexpected error occurred"
+msgstr "Um erro inesperado ocorreu"
+
+#: src/components/GlobalErrorModal.js:117
+msgid "Report error"
+msgstr "Reportar erro"
+
+#: src/components/GlobalErrorModal.js:122
+msgid "Close"
+msgstr "Fechar"
 
 #: src/components/NewPaymentRequest.js:180
 msgid "Create payment request"
@@ -853,16 +879,16 @@ msgstr "Sem conexão com a internet"
 msgid "Opening camera"
 msgstr "Abrindo a câmera"
 
-#: src/components/ReceiveMyAddress.js:56
+#: src/components/ReceiveMyAddress.js:33
 #, javascript-format
-msgid "Here is my address: ${ _this.state.address }"
-msgstr "Esse é o meu endereço: ${ _this.state.address }"
+msgid "Here is my address: ${ lastSharedAddress }"
+msgstr "Esse é o meu endereço: ${ lastSharedAddress }"
 
-#: src/components/ReceiveMyAddress.js:93
+#: src/components/ReceiveMyAddress.js:71
 msgid "New address"
 msgstr "Novo endereço"
 
-#: src/components/ReceiveMyAddress.js:99 src/components/TokenDetails.js:58
+#: src/components/ReceiveMyAddress.js:77 src/components/TokenDetails.js:58
 msgid "Share"
 msgstr "Compartilhar"
 
