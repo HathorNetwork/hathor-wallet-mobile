@@ -20,7 +20,7 @@ import {
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
-import { Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
 import { t } from 'ttag';
 import {
   types,
@@ -290,10 +290,36 @@ export function* loadWallet() {
 }
 
 /**
+ * Checks if the device has authorization to receive push notifications.
+ * @returns {boolean} true if has authorization to receive push notifications, false otherwise.
+ */
+const hasPostNotificationAuthorization = async () => {
+  const status = await messaging().hasPermission();
+  return status === messaging.AuthorizationStatus.AUTHORIZED
+      || status === messaging.AuthorizationStatus.PROVISIONAL;
+};
+
+/**
+ * Opens the app settings screen where the user can enable the notification settings.
+ */
+const openAppSettings = async () => {
+  if (Platform.OS === 'android') {
+    Linking.openSettings();
+  }
+};
+
+/**
  * This function is responsible for registering the device on the wallet-service in the event
  * of renewing the registration.
  */
 export function* registration({ payload: { enabled, showAmountEnabled, deviceId } }) {
+  const hasAuthorization = yield call(hasPostNotificationAuthorization);
+  if (!hasAuthorization) {
+    yield call(openAppSettings);
+    yield put(pushRegisterFailed());
+    return;
+  }
+
   yield put(pushLoadWalletRequested());
 
   // wait for the wallet to be loaded
