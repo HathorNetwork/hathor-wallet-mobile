@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import {
   HathorWalletServiceWallet,
   PushNotification as pushLib,
@@ -21,15 +20,13 @@ import {
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
+import { Linking, Platform } from 'react-native';
 import { t } from 'ttag';
-import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   types,
   pushRegisterSuccess,
   pushRegisterFailed,
-  pushUpdateSuccess,
-  pushUpdateFailed,
   pushUpdateDeviceId,
   pushRegistrationRequested,
   pushLoadWalletRequested,
@@ -40,6 +37,7 @@ import {
   pushReset,
   pushLoadTxDetails,
   initPushNotification,
+  onExceptionCaptured,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -47,32 +45,67 @@ import {
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
   WALLET_SERVICE_MAINNET_BASE_URL,
   NETWORK,
+  PUSH_CHANNEL_TRANSACTION,
   NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED,
   NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED,
   NEW_TRANSACTION_RECEIVED_TITLE,
-  TRANSACTION_CHANNEL_ID,
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
 import { showPinScreenForResult } from './helpers';
-import { name as appName } from '../../app.json';
-
-export const PUSH_API_STATUS = {
-  READY: 'ready',
-  FAILED: 'failed',
-  LOADING: 'loading',
-};
-
-export const PUSH_TRANSACTION_ID = {
-  NEW_TRANSACTION: 'new-transaction',
-};
+import { messageHandler } from '../pushNotificationHandler';
 
 const TRANSACTION_CHANNEL_NAME = t`Transaction`;
 
 /**
- * This function gets the device id registered in the FCM.
- * @returns {Promise<string>} the device id
+ * Creates the channel for the push notification on Android.
+ * The channel gives the user a fine grained control over notification in the app.
+ * @returns {boolean} true if the channel was created or already exists, false otherwise
  */
-const getDeviceId = async () => {
+function* createChannelIfNotExists() {
+  // We only create the channel on Android
+  if (Platform.OS !== 'android') {
+    return true;
+  }
+
+  try {
+    const hasTransactionChannel = yield call(notifee.isChannelCreated, PUSH_CHANNEL_TRANSACTION);
+    if (!hasTransactionChannel) {
+      yield call(notifee.createChannel, {
+        id: PUSH_CHANNEL_TRANSACTION,
+        name: TRANSACTION_CHANNEL_NAME,
+      });
+    }
+    return true;
+  } catch (error) {
+    console.error('Error creating channel for push notification.', error);
+    yield put(onExceptionCaptured(error));
+    return false;
+  }
+}
+
+/**
+ * Register the device to receive remote messages from FCM.
+ * @returns {boolean} true if the device is registered on the FCM, false otherwise
+ */
+function* confirmDeviceRegistrationOnFirebase() {
+  try {
+    // Make sure deviceId is registered on the FCM
+    if (!messaging().isDeviceRegisteredForRemoteMessages) {
+      yield call(messaging().registerDeviceForRemoteMessages);
+    }
+    return true;
+  } catch (error) {
+    console.error('Error confirming the device is registered on firebase.', error);
+    yield put(onExceptionCaptured(error));
+    return false;
+  }
+}
+
+/**
+ * Gets the device id registered in the FCM.
+ * @returns {string} the device id
+ */
+async function getDeviceId() {
   try {
     const deviceId = await messaging().getToken();
     return deviceId;
@@ -80,7 +113,7 @@ const getDeviceId = async () => {
     console.error('Error getting deviceId from firebase.', error);
     return null;
   }
-};
+}
 
 /**
  * localization utils to map the message key to the correct message to localize
@@ -143,120 +176,51 @@ const localization = {
   }
 };
 
-const onForegroundMessage = async (message) => {
-  await messageHandler(message, true);
-};
-
 /**
- * Handle the message received when application is in foreground and background (not closed) state
- * @param {{ data: Object, from: string, messageId: string, sentTime: number, ttl: number }} message - Message received from wallet-service
- * @param {boolean?} isForeground - If the application is in foreground or not
- *
- * @example
- * {
- *   bodyLocArgs: '[\"10 T2\",\"5 T1\",\"2\"]',
- *   bodyLocKey: 'new_transaction_received_description_with_tokens',
- *   titleLocKey: 'new_transaction_received_title',
- *   txId: 'txId1',
- * }
- * @inner
- */
-export const messageHandler = async (message, isForeground) => {
-  const usePushNotification = await AsyncStorage.getItem(pushNotificationKey.use) === 'true';
-
-  if (!usePushNotification) {
-    console.debug('Push notification is disabled. Ignoring message.');
-    return;
-  }
-
-  const { data } = message;
-  if (!localization.hasKey(data.titleLocKey)) {
-    console.debug('unknown message titleLocKey', data.titleLocKey);
-    return;
-  }
-
-  if (!localization.hasKey(data.bodyLocKey)) {
-    console.debug('unknown message bodyLocKey', data.bodyLocKey);
-    return;
-  }
-
-  const bodyArgs = data.bodyLocArgs && JSON.parse(data.bodyLocArgs);
-  const title = localization.getMessage(data.titleLocKey);
-  const body = localization.getMessage(data.bodyLocKey, bodyArgs);
-  const { txId } = data;
-
-  try {
-    notifee.displayNotification({
-      id: txId,
-      title,
-      body,
-      android: {
-        channelId: TRANSACTION_CHANNEL_ID,
-        pressAction: {
-          id: PUSH_TRANSACTION_ID.NEW_TRANSACTION,
-          ...(!isForeground && { mainComponent: appName })
-        }
-      },
-      data: {
-        txId
-      }
-    });
-  } catch (error) {
-    console.error('Error displaying notification from notifee while handling message.', error);
-  }
-};
-
-const confirmDeviceRegistrationOnFirebase = async () => {
-  try {
-    const isDeviceRegistered = messaging().isDeviceRegisteredForRemoteMessages;
-    if (!isDeviceRegistered) {
-      await messaging().registerDeviceForRemoteMessages();
-    }
-  } catch (error) {
-    console.error('Error confirming the device is registered on firebase.', error);
-  }
-};
-
-function* handleMessage(message) {
-  yield call(messageHandler, message);
-}
-
-/**
- * This flag is used to avoid installing the listener more than once.
+ * This flag is used to install the listener only once.
  * It is effemeral and will be reset when the application is closed.
  */
 let isForegroundListenerInstalled = false;
 
 /**
- * Install the listener to handle push notifications when the application is in foreground.
+ * Install a message listener on firebase to handle
+ * push notifications when the application is in foreground.
+ * @returns {boolean}
  */
-const installForegroundListener = () => {
+function* installForegroundListener() {
   if (isForegroundListenerInstalled) {
-    return;
+    return true;
   }
+
+  let dispatch;
+  yield put((_dispatch) => {
+    dispatch = _dispatch;
+  });
+
+  /**
+   * Handle the message received from firebase when the application is in foreground.
+   * @param {Promise<void>} message - The message received from firebase
+   */
+  const onForegroundMessage = async (message) => {
+    console.log('onForegroundMessage', message);
+    try {
+      await messageHandler(message, true);
+    } catch (error) {
+      dispatch(onExceptionCaptured(error));
+    }
+  };
 
   try {
     // Add listeners for push notifications on foreground and background
     messaging().onMessage(onForegroundMessage);
     isForegroundListenerInstalled = true;
+    return true;
   } catch (error) {
-    console.error('Error installing foreground listener to push notification.', error);
+    console.error('Error setings firebase foreground message listener.', error);
+    yield put(onExceptionCaptured(error));
+    return false;
   }
-};
-
-const createChannelIfNotExists = async () => {
-  try {
-    const hasTransactionChannel = await notifee.isChannelCreated(TRANSACTION_CHANNEL_ID);
-    if (!hasTransactionChannel) {
-      await notifee.createChannel({
-        id: TRANSACTION_CHANNEL_ID,
-        name: TRANSACTION_CHANNEL_NAME,
-      });
-    }
-  } catch (error) {
-    console.error('Error creating channel for push notification.', error);
-  }
-};
+}
 
 /**
  * This function is called when the wallet is initialized with success.
@@ -265,16 +229,39 @@ export function* init() {
   // If push notification feature flag is disabled, we should not initialize it.
   const usePushNotification = yield select((state) => state.pushNotification.use);
   if (!usePushNotification) {
-    console.log('onAppInitialization: halting push notification initialization');
+    console.log('Halting push notification initialization because the feature flag is disabled.');
     return;
   }
 
-  const { enabled, showAmountEnabled } = STORE.getItem(pushNotificationKey.settings) || { enabled: false, showAmountEnabled: false };
-  const hasBeenEnabled = STORE.getItem(pushNotificationKey.hasBeenEnabled) || false;
-  const enabledAt = STORE.getItem(pushNotificationKey.enabledAt) || 0;
+  // If the channel is not created, we should not continue.
+  const isChannelCreated = yield call(createChannelIfNotExists);
+  if (!isChannelCreated) {
+    console.debug('Halting push notification initialization because the channel was not created.');
+    return;
+  }
+
+  // If the device is not registered on FCM, we should not continue.
+  const isDeviceRegistered = yield call(confirmDeviceRegistrationOnFirebase);
+  if (!isDeviceRegistered) {
+    console.debug('Halting push notification initialization because the device is not registered on FCM.');
+    return;
+  }
+
+  const deviceId = yield call(getDeviceId);
+  // const deviceId = yield call(getDeviceId);
+  if (!deviceId) {
+    console.debug('Halting push notification initialization because the device id is null.');
+    yield put(onExceptionCaptured(new Error('Device id is null')));
+    return;
+  }
+
+  const isForegroundListernerInstalled = yield call(installForegroundListener);
+  if (!isForegroundListernerInstalled) {
+    console.debug('Halting push notification initialization because the foreground listener was not installed.');
+    return;
+  }
 
   const persistedDeviceId = STORE.getItem(pushNotificationKey.deviceId);
-  const deviceId = yield call(getDeviceId);
   // If the deviceId is different from the persisted one, we should update it.
   // The first time the perisistedDeviceId will be null, and the deviceId will be
   // the one returned by getDeviceId, which gets the deviceId from FCM.
@@ -283,6 +270,20 @@ export function* init() {
     yield put(pushUpdateDeviceId({ deviceId }));
   }
 
+  const getSettingsOrFallback = () => {
+    const settings = STORE.getItem(pushNotificationKey.settings);
+    if (!settings) {
+      return { enabled: false, showAmountEnabled: false };
+    }
+    return settings;
+  };
+
+  const {
+    enabled,
+    showAmountEnabled
+  } = getSettingsOrFallback();
+  const enabledAt = STORE.getItem(pushNotificationKey.enabledAt);
+
   // Initialize the pushNotification state on the redux store
   yield put(pushInit({
     deviceId,
@@ -290,16 +291,11 @@ export function* init() {
       enabled,
       showAmountEnabled,
     },
-    hasBeenEnabled,
     enabledAt,
   }));
 
-  yield call(createChannelIfNotExists);
-  yield call(confirmDeviceRegistrationOnFirebase);
-  yield call(installForegroundListener);
-
   // Check if the last registration call was made more then a week ago
-  if (hasBeenEnabled) {
+  if (enabledAt) {
     const timeSinceLastRegistration = moment().diff(enabledAt, 'weeks');
     if (timeSinceLastRegistration > 1) {
       // Update the registration, as per Firebase's recommendation
@@ -320,9 +316,9 @@ export function* init() {
 }
 
 /**
- * It is responsible for persisting the usePushNotification value, so we can use it when the app in any state.
- * By using STORE we couln't use it on quit state.
- * @param {{ payload: boolean }} action - The action that contains the value of the usePushNotification
+ * It is responsible for persisting the usePushNotification value,
+ * so we can use it when the app is in any state.
+ * @param {{ payload: boolean }} action - contains the value of the use(PushNotification)
  */
 export function* setUsePushNotification(action) {
   const use = action.payload;
@@ -355,7 +351,6 @@ export function* loadWallet() {
 
     const pin = yield call(showPinScreenForResult, dispatch);
     walletService = new HathorWalletServiceWallet({
-      requestPassword: pin,
       seed: walletUtil.getWalletWords(pin),
       network,
       enableWs: false,
@@ -377,53 +372,36 @@ export function* loadWallet() {
 }
 
 /**
- * This function is the actual opt-in of a user to the Push Notifications feature.
- * It should be called when the push notifications are not loaded and/or registered.
- * This should load the wallet on the wallet-service and register it with the deviceId.
- * @param {{ payload: { deviceId: string } }} action
+ * Checks if the device has authorization to receive push notifications.
+ * @returns {boolean} true if has authorization to receive push notifications, false otherwise.
  */
-export function* firstTimeRegistration({ payload: { deviceId } }) {
-  yield put(pushLoadWalletRequested());
+const hasPostNotificationAuthorization = async () => {
+  const status = await messaging().hasPermission();
+  return status === messaging.AuthorizationStatus.AUTHORIZED
+      || status === messaging.AuthorizationStatus.PROVISIONAL;
+};
 
-  // wait for the wallet to be loaded
-  const [loadWalletSuccess, loadWalletFail] = yield race([
-    take(types.PUSH_WALLET_LOAD_SUCCESS),
-    take(types.PUSH_WALLET_LOAD_FAILED)
-  ]);
-
-  if (loadWalletFail) {
-    yield put(pushRegisterFailed());
-    return;
+/**
+ * Opens the app settings screen where the user can enable the notification settings.
+ */
+const openAppSettings = async () => {
+  if (Platform.OS === 'android') {
+    Linking.openSettings();
   }
-
-  const { walletService } = loadWalletSuccess.payload;
-  try {
-    const { success } = yield call(pushLib.PushNotification.registerDevice, walletService, {
-      pushProvider: Platform.OS,
-      deviceId,
-      enablePush: true,
-    });
-
-    if (success) {
-      const enabledAt = Date.now();
-      STORE.setItem(pushNotificationKey.enabledAt, enabledAt);
-      STORE.setItem(pushNotificationKey.hasBeenEnabled, true);
-      yield put(pushRegisterSuccess({ enabled: true, hasBeenEnabled: true, enabledAt }));
-    } else {
-      // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
-      yield put(pushRegisterFailed());
-    }
-  } catch (error) {
-    console.error('Error registering device in wallet-service for the first time.', error);
-    yield put(pushRegisterFailed());
-  }
-}
+};
 
 /**
  * This function is responsible for registering the device on the wallet-service in the event
  * of renewing the registration.
  */
 export function* registration({ payload: { enabled, showAmountEnabled, deviceId } }) {
+  const hasAuthorization = yield call(hasPostNotificationAuthorization);
+  if (!hasAuthorization) {
+    yield call(openAppSettings);
+    yield put(pushRegisterFailed());
+    return;
+  }
+
   yield put(pushLoadWalletRequested());
 
   // wait for the wallet to be loaded
@@ -442,15 +420,23 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
     const { success } = yield call(pushLib.PushNotification.registerDevice, walletService, {
       pushProvider: Platform.OS,
       deviceId,
-      enablePush: true,
+      enablePush: !!enabled,
+      enableShowAmounts: !!showAmountEnabled,
     });
 
     if (success) {
       const enabledAt = Date.now();
       STORE.setItem(pushNotificationKey.enabledAt, enabledAt);
-      yield put(pushRegisterSuccess({ enablePush: enabled, enableShowAmounts: showAmountEnabled, hasBeenEnabled: true, enabledAt }));
+
+      const payload = {
+        enabled: !!enabled,
+        showAmountEnabled: !!showAmountEnabled,
+        enabledAt,
+      };
+      yield put(pushRegisterSuccess(payload));
     } else {
-      // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
+      // NOTE: theoretically, this should never happen
+      // because when the client call fails, it throws an error
       yield put(pushRegisterFailed());
     }
   } catch (error) {
@@ -460,48 +446,12 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
 }
 
 /**
- * This function is responsible for updating the registration of the device on the wallet-service
- * in the event of changing the settings of the push notifications.
- * @param {{ payload: { enabled: boolean, showAmountEnabled: boolean, deviceId: string } }} action
- */
-export function* updateRegistration({ payload: { enabled, showAmountEnabled, deviceId } }) {
-  yield put(pushLoadWalletRequested());
-
-  // wait for the wallet to be loaded
-  const [loadWalletSuccess, loadWalletFail] = yield race([
-    take(types.PUSH_WALLET_LOAD_SUCCESS),
-    take(types.PUSH_WALLET_LOAD_FAILED)
-  ]);
-
-  if (loadWalletFail) {
-    yield put(pushRegisterFailed());
-    return;
-  }
-
-  const { walletService } = loadWalletSuccess.payload;
-  try {
-    const { success } = yield call(pushLib.PushNotification.updateDevice, walletService, {
-      deviceId,
-      enablePush: enabled,
-      enableShowAmounts: showAmountEnabled,
-    });
-    if (success) {
-      yield put(pushUpdateSuccess({ enabled, showAmountEnabled }));
-    } else {
-      // NOTE: theoretically, this should never happen because when the client call fails, it throws an error
-      yield put(pushUpdateFailed());
-    }
-  } catch (error) {
-    console.error('Error updating device in wallet-service.', error);
-    yield put(pushUpdateFailed());
-  }
-}
-
-/**
  * This function is responsible for updating the store with the new push notification settings.
  */
 export function* updateStore() {
-  const { enabled, showAmountEnabled } = yield select((state) => getPushNotificationSettings(state.pushNotification));
+  const { enabled, showAmountEnabled } = yield select(
+    (state) => getPushNotificationSettings(state.pushNotification),
+  );
   STORE.setItem(pushNotificationKey.settings, { enabled, showAmountEnabled });
 }
 
@@ -557,15 +507,18 @@ export const getTxDetails = async (wallet, txId) => {
   return txDetails;
 };
 
-export function setInitialNotificationData(notification) {
-  STORE.setItem(pushNotificationKey.notificationData, notification.data);
-}
-
 /**
- * This function is responsible for checking if the app was opened by a push notification
- * and if so, it will load the tx and token data to show the tx detail modal.
+ * Check if the app was opened by a push notification on press action.
+ * If so, it will load the tx detail modal.
  */
 export function* checkOpenPushNotification() {
+  const notificationError = STORE.getItem(pushNotificationKey.notificationError);
+  if (notificationError) {
+    STORE.removeItem(pushNotificationKey.notificationError);
+    yield put(onExceptionCaptured(new Error(notificationError)));
+    return;
+  }
+
   try {
     const notificationData = STORE.getItem(pushNotificationKey.notificationData);
     // Check if the app was opened by a push notification on press action
@@ -580,9 +533,15 @@ export function* checkOpenPushNotification() {
     }
   } catch (error) {
     console.error('Error checking if app was opened by a push notification', error);
+    yield put(onExceptionCaptured(error));
   }
 }
 
+/**
+ * Unregister the device from firebase and delete the token.
+ * This clean up invalidates the token that is being used
+ * and the device will not receive any push notification.
+ */
 const cleanToken = async () => {
   await messaging().unregisterDeviceForRemoteMessages();
   await messaging().deleteToken();
@@ -592,8 +551,14 @@ const cleanToken = async () => {
  * This function is responsible for reset the push notification.
  */
 export function* resetPushNotification() {
-  // Unregister the device from FCM
-  yield call(cleanToken);
+  try {
+    // Unregister the device from FCM
+    yield call(cleanToken);
+  } catch (error) {
+    console.error('Error clening token from firebase.', error);
+    yield put(onExceptionCaptured(error));
+  }
+
   // Clean the store
   yield STORE.removeItem(pushNotificationKey.enabledAt);
   yield STORE.removeItem(pushNotificationKey.settings);
@@ -611,13 +576,10 @@ export function* saga() {
     debounce(500, [[types.START_WALLET_SUCCESS, types.INIT_PUSH_NOTIFICATION]], init),
     takeLatest(types.SET_USE_PUSH_NOTIFICATION, setUsePushNotification),
     takeEvery(types.PUSH_WALLET_LOAD_REQUESTED, loadWallet),
-    takeEvery(types.PUSH_FIRST_REGISTRATION_REQUESTED, firstTimeRegistration),
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
-    takeEvery(types.PUSH_UPDATE_REQUESTED, updateRegistration),
-    takeEvery([types.PUSH_REGISTER_SUCCESS, types.PUSH_UPDATE_SUCCESS], updateStore),
+    takeEvery(types.RESET_WALLET, resetPushNotification),
     takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion),
-    takeEvery(types.PUSH_HANDLE_MESSAGE, handleMessage),
-    takeEvery(types.SET_INIT_WALLET, checkOpenPushNotification),
-    takeEvery(types.RESET_WALLET, resetPushNotification)
+    takeEvery(types.START_WALLET_REQUESTED, checkOpenPushNotification),
+    takeEvery(types.PUSH_REGISTER_SUCCESS, updateStore),
   ]);
 }

@@ -30,7 +30,7 @@ hathorLib.storage.setStore(STORE);
 /**
  * This is the environment stage that will be used to load the unleash feature flags.
  */
-export const STAGE = 'dev-testnet';
+export const STAGE = 'mainnet';
 
 /**
  * this is the network name that will be used to load the wallet on the wallet-service,
@@ -114,6 +114,7 @@ export const pushNotificationKey = {
   optInDismissed: 'pushNotification:optInDismissed',
   notificationData: 'pushNotification:notificationData',
   use: 'pushNotification:use',
+  notificationError: 'pushNotification:notificationError',
 };
 /**
  * this is the message key for localization of new transaction when show amount is enabled
@@ -130,4 +131,18 @@ export const NEW_TRANSACTION_RECEIVED_TITLE = 'new_transaction_received_title';
 /**
  * this is the channel id for the transaction notification
  */
-export const TRANSACTION_CHANNEL_ID = 'transaction';
+export const PUSH_CHANNEL_TRANSACTION = 'transaction';
+/**
+ * this is the channel id for the transaction notification
+ */
+export const PUSH_API_STATUS = {
+  READY: 'ready',
+  FAILED: 'failed',
+  LOADING: 'loading',
+};
+/**
+ * this is the transaction id for the transaction notification
+ */
+export const PUSH_ACTION = {
+  NEW_TRANSACTION: 'new-transaction',
+};

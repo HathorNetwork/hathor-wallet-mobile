@@ -1,13 +1,14 @@
 import React from 'react';
-import { Image, Linking, Text, StyleSheet, View } from 'react-native';
+import { Text, StyleSheet, View, Touchable, TouchableHighlight } from 'react-native';
 import Modal from 'react-native-modal';
 import { t } from 'ttag';
-
-import { getShortHash } from '../utils';
+import { useDispatch, useSelector } from 'react-redux';
+import { getShortHash, isTokenNFT } from '../utils';
 import { ListButton, ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
-import icShareActive from '../assets/icons/icShareActive.png';
 import { TxHistory } from '../models';
+import { PublicExplorerListButton } from './PublicExplorerListButton';
+import { updateSelectedToken } from '../actions';
 
 const style = StyleSheet.create({
   modal: {
@@ -29,15 +30,28 @@ const getTimestampFormat = (tx) => {
 };
 
 const getTokenTitle = (token) => `${token.symbol} - ${token.name}`;
-const getTokenBalance = (token) => (token.balance / 100).toFixed(2);
+const getTokenBalance = (token, isNFT) => {
+  const dividend = isNFT ? 1 : 100;
+  const decimal = isNFT ? 0 : 2;
+  return (token.balance / dividend).toFixed(decimal);
+};
 
 export default function PushTxDetailsModal(props) {
   const { tx, tokens } = props;
+  const tokenMetadata = useSelector((state) => state.tokenMetadata);
+  const dispatch = useDispatch();
 
   const idStr = getShortHash(tx.txId, 12);
   const timestampStr = getTimestampFormat(tx);
-  const explorerIcon = <Image source={icShareActive} width={24} height={24} />;
-  const explorerLink = `https://explorer.hathor.network/transaction/${tx.txId}`;
+  const navigateToTokenDetailPage = (token) => {
+    if (!token.isRegistered) {
+      return;
+    }
+
+    props.onRequestClose();
+    dispatch(updateSelectedToken(token));
+    props.navigation.navigate('MainScreen');
+  };
 
   return (
     <Modal
@@ -54,10 +68,20 @@ export default function PushTxDetailsModal(props) {
           <SlideIndicatorBar />
           <NewTransactionTitle />
           <View>
-            {tokens.map((token) => (<ListItem titleStyle={token.isRegistered && style.registeredToken} key={token.uid} title={getTokenTitle(token)} text={getTokenBalance(token)} />))}
+            {tokens.map((token) => (
+              <ListButton
+                key={token.uid}
+                onPress={() => navigateToTokenDetailPage(token)}
+                title={getTokenTitle(token)}
+                titleStyle={token.isRegistered && style.registeredToken}
+                button={(
+                  <Text>{getTokenBalance(token, isTokenNFT(token.uid, tokenMetadata))}</Text>
+                )}
+              />
+            ))}
             <ListItem title={t`Date & Time`} text={timestampStr} />
             <ListItem title={t`ID`} text={idStr} />
-            <ListButton title={t`Public Explorer`} button={explorerIcon} onPress={() => { Linking.openURL(explorerLink); }} titleStyle={{ color: 'rgba(0, 0, 0, 0.5)' }} isLast />
+            <PublicExplorerListButton txId={tx.txId} />
           </View>
         </View>
       </View>
@@ -78,6 +102,7 @@ const styleModalTitle = StyleSheet.create({
     paddingTop: 8,
   },
 });
+
 function NewTransactionTitle() {
   return (
     <View style={styleModalTitle.view}>

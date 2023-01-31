@@ -48,12 +48,13 @@ import {
 import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
+  walletRefreshSharedAddress,
   tokenInvalidateHistory,
   reloadWalletRequested,
   setIsShowingPinScreen,
   tokenMetadataUpdated,
+  sharedAddressUpdate,
   setUseWalletService,
-  onStartWalletLock,
   startWalletSuccess,
   startWalletFailed,
   setUniqueDeviceId,
@@ -74,6 +75,7 @@ import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
 export const WALLET_STATUS = {
+  NOT_STARTED: 'not_started',
   READY: 'ready',
   FAILED: 'failed',
   LOADING: 'loading',
@@ -82,6 +84,7 @@ export const WALLET_STATUS = {
 export function* startWallet(action) {
   const { words, pin } = action.payload;
 
+  NavigationService.navigate('LoadHistoryScreen');
   const uniqueDeviceId = getUniqueId();
   const featureFlags = new FeatureFlags(uniqueDeviceId, NETWORK);
   yield call(featureFlags.start.bind(featureFlags));
@@ -207,6 +210,8 @@ export function* startWallet(action) {
     return;
   }
 
+  yield put(walletRefreshSharedAddress());
+
   yield put(startWalletSuccess());
 
   // The way the redux-saga fork model works is that if a saga has `forked`
@@ -217,7 +222,10 @@ export function* startWallet(action) {
   // is dispatched, we need to cleanup all attached forks (that will cause the event
   // listeners to be cleaned).
   const { reload } = yield race({
-    start: take(types.START_WALLET_REQUESTED),
+    start: take([
+      types.START_WALLET_REQUESTED,
+      types.RESET_WALLET,
+    ]),
     reload: take(types.RELOAD_WALLET_REQUESTED),
   });
 
@@ -502,6 +510,9 @@ export function* handleTx(action) {
   if (action.type === 'WALLET_NEW_TX') {
     yield put(newTx(tx));
   }
+
+  // We should sync the last shared address on our redux store with the facade's internal state
+  yield put(walletRefreshSharedAddress());
 }
 
 export function* setupWalletListeners(wallet) {
@@ -587,16 +598,19 @@ export function* onWalletConnStateUpdate({ payload }) {
 }
 
 export function* onWalletReloadData() {
-  yield put(onStartWalletLock());
-
+  const useWalletService = yield select((state) => state.useWalletService);
   const wallet = yield select((state) => state.wallet);
 
-  // Since we close the channel after a walletReady event is received,
-  // we must fork this saga again so we setup listeners again.
-  yield fork(listenForWalletReady, wallet);
+  // If we are using the wallet-service, we don't need to wait until the addresses
+  // are reloaded since they are stored on the wallet-service itself.
+  if (!useWalletService) {
+    // Since we close the channel after a walletReady event is received,
+    // we must fork this saga again so we setup listeners again.
+    yield fork(listenForWalletReady, wallet);
 
-  // Wait until the wallet is ready
-  yield take(types.WALLET_STATE_READY);
+    // Wait until the wallet is ready
+    yield take(types.WALLET_STATE_READY);
+  }
 
   try {
     const registeredTokens = yield call(loadTokens);
@@ -615,10 +629,70 @@ export function* onWalletReloadData() {
 
       yield put(tokenInvalidateHistory(tokenUid));
     }
+
+    // If we are on the wallet-service, we also need to refresh the
+    // facade instance internal addresses
+    if (useWalletService) {
+      yield call(wallet.getNewAddresses.bind(wallet));
+    }
+
+    // dispatch the refreshSharedAddress so our redux store is potentially
+    // updated with the new addresses that we missed during the disconnection
+    // time
+    yield put(walletRefreshSharedAddress());
+
+
+    // Finally, set the wallet to READY by dispatching startWalletSuccess
     yield put(startWalletSuccess());
   } catch (e) {
     yield put(startWalletFailed());
   }
+}
+
+export function* onResetWallet() {
+  const wallet = yield select((state) => state.wallet);
+
+  if (wallet) {
+    // wallet.stop() will remove all event listeners and call
+    // hathorLib.wallet.cleanWallet
+    wallet.stop({ cleanStorage: true });
+
+    return;
+  }
+
+  // Wallet was not initialized yet, this might happen if resetWallet
+  // is called from the PinScreen. There is no event listeners to cleanup
+  // so we can call the cleanLoadedData method directly.
+  walletUtil.cleanLoadedData({ cleanAccessData: true });
+}
+
+export function* onStartWalletFailed() {
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet) {
+    return;
+  }
+
+  // Wallet is an instance of EventEmitter, so we can call removeAllListeners
+  // to properly prevent events from leaking when an error gets thrown
+  wallet.removeAllListeners();
+
+  if (wallet.conn) {
+    // Same with wallet.conn
+    wallet.conn.removeAllListeners();
+  }
+
+  // Remove the wallet from redux so we can retry the
+  // startWallet on the next PIN unlock
+  yield put(setWallet(null));
+}
+
+export function* refreshSharedAddress() {
+  const wallet = yield select((state) => state.wallet);
+
+  const { address, index } = wallet.getCurrentAddress();
+
+  yield put(sharedAddressUpdate(address, index));
 }
 
 export function* saga() {
@@ -626,9 +700,12 @@ export function* saga() {
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeLatest('WALLET_RELOADING', onWalletReloadData),
+    takeLatest('RESET_WALLET', onResetWallet),
+    takeLatest('START_WALLET_FAILED', onStartWalletFailed),
     takeEvery('WALLET_NEW_TX', handleTx),
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
+    takeEvery(types.WALLET_REFRESH_SHARED_ADDRESS, refreshSharedAddress),
   ]);
 }
