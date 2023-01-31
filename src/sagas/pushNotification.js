@@ -443,8 +443,14 @@ const cleanToken = async () => {
  * This function is responsible for reset the push notification.
  */
 export function* resetPushNotification() {
-  // Unregister the device from FCM
-  yield call(cleanToken);
+  try {
+    // Unregister the device from FCM
+    yield call(cleanToken);
+  } catch (error) {
+    console.error('Error clening token from firebase.', error);
+    yield put(onExceptionCaptured(error));
+  }
+
   // Clean the store
   yield STORE.removeItem(pushNotificationKey.enabledAt);
   yield STORE.removeItem(pushNotificationKey.settings);
