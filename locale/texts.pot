@@ -3,29 +3,6 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
-#: src/errorHandler.js:51
-msgid "Unexpected error occurred"
-msgstr ""
-
-#: src/errorHandler.js:52
-msgid ""
-"Unfortunately an unhandled error happened and you will need to restart your "
-"app.\n"
-"\n"
-"We kindly ask you to report this error to the Hathor team clicking on the "
-"button below.\n"
-"\n"
-"No sensitive data will be shared."
-msgstr ""
-
-#: src/errorHandler.js:55
-msgid "Report error"
-msgstr ""
-
-#: src/errorHandler.js:61
-msgid "Close"
-msgstr ""
-
 #: src/models.js:24
 #.  This should never happen!
 msgid "Unknown"
@@ -153,27 +130,27 @@ msgstr ""
 msgid "CHANGE PIN"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:136
+#: src/screens/ChoosePinScreen.js:135
 msgid "Enter your new PIN code"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:148
+#: src/screens/ChoosePinScreen.js:147
 msgid "Enter your new PIN code again"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:72
+#: src/screens/ChoosePinScreen.js:71
 msgid "Create a new PIN code,"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:75
+#: src/screens/ChoosePinScreen.js:74
 msgid "To confirm the PIN,"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:162
+#: src/screens/ChoosePinScreen.js:161
 msgid "PIN codes don't match. Try again."
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:185
+#: src/screens/ChoosePinScreen.js:184
 msgid "Start the Wallet"
 msgstr ""
 
@@ -467,23 +444,23 @@ msgstr ""
 msgid "Waiting confirmation"
 msgstr ""
 
-#: src/screens/PinScreen.js:235
+#: src/screens/PinScreen.js:231
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
-#: src/screens/PinScreen.js:72
+#: src/screens/PinScreen.js:70
 msgid "Enter your PIN Code "
 msgstr ""
 
-#: src/screens/PinScreen.js:73
+#: src/screens/PinScreen.js:71
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
-#: src/screens/PinScreen.js:247
+#: src/screens/PinScreen.js:243
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:250
+#: src/screens/PinScreen.js:246
 #: src/screens/RecoverPin.js:108
 #: src/screens/Settings.js:137
 msgid "Reset wallet"
@@ -689,15 +666,15 @@ msgstr ""
 msgid "Scan the QR code"
 msgstr ""
 
-#: src/screens/Settings.js:88
+#: src/screens/Settings.js:90
 msgid "You are connected to"
 msgstr ""
 
-#: src/screens/Settings.js:100
+#: src/screens/Settings.js:102
 msgid "Connected to"
 msgstr ""
 
-#: src/screens/Settings.js:113
+#: src/screens/Settings.js:115
 msgid "Security"
 msgstr ""
 
@@ -796,18 +773,51 @@ msgstr ""
 msgid "Copied to clipboard!"
 msgstr ""
 
-#: src/components/ErrorModal.js:27
+#: src/components/GlobalErrorModal.js:49
 msgid ""
 "Thanks for reporting the error to the team. We will investigate it to "
 "prevent from happening again."
 msgstr ""
 
-#: src/components/ErrorModal.js:39
+#: src/components/GlobalErrorModal.js:79
 msgid "Unexpected error"
 msgstr ""
 
-#: src/components/ErrorModal.js:43
+#: src/components/GlobalErrorModal.js:83
 msgid "Please restart your app to continue using the wallet."
+msgstr ""
+
+#: src/components/GlobalErrorModal.js:104
+msgid ""
+"Unfortunately an unhandled error happened and you will need to restart your "
+"app.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+
+#: src/components/GlobalErrorModal.js:107
+msgid ""
+"Unfortunately an unhandled error happened.\n"
+"\n"
+"We kindly ask you to report this error to the Hathor team clicking on the "
+"button below.\n"
+"\n"
+"No sensitive data will be shared."
+msgstr ""
+
+#: src/components/GlobalErrorModal.js:114
+msgid "Unexpected error occurred"
+msgstr ""
+
+#: src/components/GlobalErrorModal.js:117
+msgid "Report error"
+msgstr ""
+
+#: src/components/GlobalErrorModal.js:122
+msgid "Close"
 msgstr ""
 
 #: src/components/NewPaymentRequest.js:180
@@ -822,16 +832,16 @@ msgstr ""
 msgid "Opening camera"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:56
+#: src/components/ReceiveMyAddress.js:33
 #, javascript-format
-msgid "Here is my address: ${ _this.state.address }"
+msgid "Here is my address: ${ lastSharedAddress }"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:93
+#: src/components/ReceiveMyAddress.js:71
 msgid "New address"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:99
+#: src/components/ReceiveMyAddress.js:77
 #: src/components/TokenDetails.js:58
 msgid "Share"
 msgstr ""
