@@ -31,20 +31,24 @@ const ActionModal = (props) => (
 );
 
 ActionModal.propTypes = {
-  // Text displayed on the modal
-  title: PropTypes.string,
+  // Title of the modal
+  title: PropTypes.string.isRequired,
 
-  // Text displayed on the modal
+  // Text to display in the body of the modal
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
 
-  // Function to execute on dismissing the modal
-  onDismiss: PropTypes.func,
+  // Props to be passed to the text component as an object
+  // eslint-disable-next-line react/forbid-prop-types
+  textProps: PropTypes.object,
 
-  // Text displayed on the button
-  button: PropTypes.string,
+  // Function to execute on dismissing the modal
+  onDismiss: PropTypes.func.isRequired,
+
+  // Text to display on the button
+  button: PropTypes.string.isRequired,
 
   // Function to execute on pressing the button
-  onAction: PropTypes.func,
+  onAction: PropTypes.func.isRequired,
 };
 
 export default ActionModal;

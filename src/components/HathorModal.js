@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {
-  StyleSheet, Text, View,
+  StyleSheet, View,
 } from 'react-native';
 import PropTypes from 'prop-types';
 import Modal from 'react-native-modal';
@@ -46,6 +46,9 @@ const styles = StyleSheet.create({
 HathorModal.propTypes = {
   // Function to execute on dismissing the modal
   onDismiss: PropTypes.func,
+  // Children to be rendered inside the modal
+  // It can be any renderable type
+  children: PropTypes.node.isRequired,
 };
 
 export default HathorModal;
