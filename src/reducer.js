@@ -122,7 +122,7 @@ const initialState = {
      * enabledAt {number} timestamp of when push notification was enabled
      */
     enabledAt: 0,
-  }
+  },
 };
 
 const reducer = (state = initialState, action) => {
