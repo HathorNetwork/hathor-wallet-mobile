@@ -34,8 +34,9 @@ import {
   pushInit,
   pushAskOptInQuestion,
   pushReset,
-  pushLoadTxDetails,
   onExceptionCaptured,
+  pushTxDetailsRequested,
+  pushTxDetailsSuccess,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -381,51 +382,6 @@ export function* dismissOptInQuestion() {
 }
 
 /**
- * This function retrieves the tx details from the wallet history.
- * @param {Object} wallet the current wallet
- * @param {string} txId the tx id
- * @returns {Promise<{
- *  tx: { txId: string, timestamp: number, voided: boolean },
- *  tokens: { uid: string, name: string, symbol: string, balance: number, isRegistered: boolean }[]
- * }>} the tx details
- * @example
- * {
- *   tx: {
- *     txId: '000021e7addbb94a8e43d7f1237d556d47efc4d34800c5923ed3a75bf5a2886e',
- *     timestamp: 1673039453,
- *     voided: false,
- *   },
- *   tokens: [
- *     {
- *       uid: '00',
- *       name: 'Hathor',
- *       symbol: 'HTR',
- *       balance: 500,
- *       isRegistered: true,
- *     }
- *   ],
- */
-export const getTxDetails = async (wallet, txId) => {
-  const txTokensBalance = await wallet.getTxById(txId);
-  const [tx] = txTokensBalance;
-  const txDetails = {
-    tx: {
-      txId: tx.txId,
-      timestamp: tx.timestamp,
-      voided: tx.voided,
-    },
-    tokens: txTokensBalance.map((each) => ({
-      uid: each.tokenId,
-      name: each.tokenName,
-      symbol: each.tokenSymbol,
-      balance: each.balance,
-      isRegistered: !!tokens.tokenExists(each.tokenId),
-    })),
-  };
-  return txDetails;
-};
-
-/**
  * Check if the app was opened by a push notification on press action.
  * If so, it will load the tx detail modal.
  */
@@ -444,13 +400,83 @@ export function* checkOpenPushNotification() {
       STORE.removeItem(pushNotificationKey.notificationData);
       // Wait for the wallet to be loaded
       yield take(types.START_WALLET_SUCCESS);
-
-      const wallet = yield select((state) => state.wallet);
-      const txDetails = yield call(getTxDetails, wallet, notificationData.txId);
-      yield put(pushLoadTxDetails(txDetails));
+      yield put(pushTxDetailsRequested({ txId: notificationData.txId }));
     }
   } catch (error) {
-    console.error('Error checking if app was opened by a push notification', error);
+    console.error('Error checking if app was opened by a push notification.', error);
+    yield put(onExceptionCaptured(error));
+  }
+}
+
+/**
+ * This function retrieves the tx details from the wallet history.
+ * @param {Object} wallet the current wallet
+ * @param {string} txId the tx id
+ * @returns {Promise<{
+ *  isTxFound: boolean,
+ *  txId: string,
+ *  tx: { txId: string, timestamp: number, voided: boolean },
+ *  tokens: { uid: string, name: string, symbol: string, balance: number, isRegistered: boolean }[]
+ * }>} the tx details
+ * @example
+ * {
+ *   isTxFound: true,
+ *   txId: '000021e7addbb94a8e43d7f1237d556d47efc4d34800c5923ed3a75bf5a2886e',
+ *   tx: {
+ *     txId: '000021e7addbb94a8e43d7f1237d556d47efc4d34800c5923ed3a75bf5a2886e',
+ *     timestamp: 1673039453,
+ *     voided: false,
+ *   },
+ *   tokens: [
+ *     {
+ *       uid: '00',
+ *       name: 'Hathor',
+ *       symbol: 'HTR',
+ *       balance: 500,
+ *       isRegistered: true,
+ *     }
+ *   ],
+ */
+export const getTxDetails = async (wallet, txId) => {
+  try {
+    const txTokensBalance = await wallet.getTxById(txId);
+    const [tx] = txTokensBalance;
+    const txDetails = {
+      isTxFound: true,
+      txId,
+      tx: {
+        txId: tx.txId,
+        timestamp: tx.timestamp,
+        voided: tx.voided,
+      },
+      tokens: txTokensBalance.map((each) => ({
+        uid: each.tokenId,
+        name: each.tokenName,
+        symbol: each.tokenSymbol,
+        balance: each.balance,
+        isRegistered: !!tokens.tokenExists(each.tokenId),
+      })),
+    };
+    return txDetails;
+  } catch (error) {
+    if (error.message === `Transaction ${txId} not found`) {
+      return { isTxFound: false, txId };
+    }
+    throw error;
+  }
+};
+
+/**
+ * @param {{ payload: { txId: string }}} action
+ */
+export function* loadTxDetails(action) {
+  const { txId } = action.payload;
+  try {
+    const wallet = yield select((state) => state.wallet);
+    const txDetails = yield call(getTxDetails, wallet, txId);
+    yield put(pushTxDetailsSuccess(txDetails));
+  } catch (error) {
+    console.error('Error loading transaction details.', error);
     yield put(onExceptionCaptured(error));
   }
 }
@@ -495,5 +521,6 @@ export function* saga() {
     takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion),
     takeEvery(types.START_WALLET_REQUESTED, checkOpenPushNotification),
     takeEvery(types.PUSH_REGISTER_SUCCESS, updateStore),
+    takeEvery(types.PUSH_TX_DETAILS_REQUESTED, loadTxDetails),
   ]);
 }
