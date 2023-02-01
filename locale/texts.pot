@@ -52,6 +52,48 @@ msgstr ""
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
+#: src/pushNotificationHandler.js:73
+#. *
+#.          * @example
+#.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
+#.          
+#, javascript-format
+msgid ""
+"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
+"other token on a new transaction."
+msgid_plural ""
+"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
+"other tokens on a new transaction."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/pushNotificationHandler.js:84
+#. *
+#.          * @example
+#.          * You have received 10 T2 and 5 T1 on a new transaction.
+#.          
+#, javascript-format
+msgid ""
+"You have received ${ _firstToken } and ${ _secondToken } on a new "
+"transaction."
+msgstr ""
+
+#: src/pushNotificationHandler.js:91
+#. *
+#.          * @example
+#.          * You have received 10 T2 on a new transaction.
+#.          
+msgid "You have received ${ _firstToken2 } on a new transaction."
+msgstr ""
+
+#: src/pushNotificationHandler.js:94
+msgid "There is a new transaction in your wallet."
+msgstr ""
+
+#: src/pushNotificationHandler.js:96
+msgid "New transaction received"
+msgstr ""
+
 #: src/utils.js:144
 msgid "Invalid address"
 msgstr ""
@@ -282,12 +324,12 @@ msgstr ""
 msgid "E.g. HTR"
 msgstr ""
 
-#: src/screens/Dashboard.js:65
+#: src/screens/Dashboard.js:67
 #: src/screens/RegisterTokenManual.js:150
 msgid "Register token"
 msgstr ""
 
-#: src/screens/Dashboard.js:72
+#: src/screens/Dashboard.js:74
 msgid "TOKENS"
 msgstr ""
 
@@ -417,12 +459,12 @@ msgstr ""
 msgid "PAYMENT REQUEST"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:60
+#: src/components/TxDetailsModal.js:58
 #: src/screens/PaymentRequestDetail.js:108
 msgid "Token"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:107
+#: src/components/TxDetailsModal.js:105
 #: src/screens/PaymentRequestDetail.js:112
 msgid "Amount"
 msgstr ""
@@ -466,24 +508,24 @@ msgstr ""
 msgid "Reset wallet"
 msgstr ""
 
-#: src/screens/PushNotification.js:46
+#: src/screens/PushNotification.js:57
 #: src/screens/Settings.js:119
 msgid "Push Notification"
 msgstr ""
 
-#: src/screens/PushNotification.js:47
+#: src/screens/PushNotification.js:58
 msgid "Enable Push Notification"
 msgstr ""
 
-#: src/screens/PushNotification.js:48
+#: src/screens/PushNotification.js:59
 msgid "Show amounts on notification"
 msgstr ""
 
-#: src/screens/PushNotification.js:49
+#: src/screens/PushNotification.js:60
 msgid "Updating push notification..."
 msgstr ""
 
-#: src/screens/PushNotification.js:50
+#: src/screens/PushNotification.js:61
 msgid "There was an error enabling push notification. Please try again later."
 msgstr ""
 
@@ -723,50 +765,20 @@ msgstr ""
 msgid "Unregister token"
 msgstr ""
 
-#: src/sagas/pushNotification.js:54
+#: src/sagas/pushNotification.js:53
 msgid "Transaction"
 msgstr ""
 
-#: src/sagas/pushNotification.js:106
-#. *
-#.          * @example
-#.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
-#.          
-#, javascript-format
-msgid ""
-"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
-"other token on a new transaction."
-msgid_plural ""
-"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
-"other tokens on a new transaction."
-msgstr[0] ""
-msgstr[1] ""
-
-#: src/sagas/pushNotification.js:117
-#. *
-#.          * @example
-#.          * You have received 10 T2 and 5 T1 on a new transaction.
-#.          
-#, javascript-format
-msgid ""
-"You have received ${ _firstToken } and ${ _secondToken } on a new "
-"transaction."
+#: src/components/AskForPushNotification.js:21
+msgid "Do you want to enable push notifications for this wallet?"
 msgstr ""
 
-#: src/sagas/pushNotification.js:124
-#. *
-#.          * @example
-#.          * You have received 10 T2 on a new transaction.
-#.          
-msgid "You have received ${ _firstToken2 } on a new transaction."
+#: src/components/AskForPushNotification.js:22
+msgid "You can always change this later in the settings menu"
 msgstr ""
 
-#: src/sagas/pushNotification.js:127
-msgid "There is a new transaction in your wallet."
-msgstr ""
-
-#: src/sagas/pushNotification.js:129
-msgid "New transaction received"
+#: src/components/AskForPushNotification.js:23
+msgid "Yes, enable"
 msgstr ""
 
 #: src/components/CopyClipboard.js:47
@@ -828,6 +840,24 @@ msgstr ""
 msgid "No internet connection"
 msgstr ""
 
+#: src/components/PublicExplorerListButton.js:13
+msgid "Public Explorer"
+msgstr ""
+
+#: src/components/PushTxDetailsModal.js:82
+#: src/components/TxDetailsModal.js:60
+msgid "Date & Time"
+msgstr ""
+
+#: src/components/PushTxDetailsModal.js:83
+#: src/components/TxDetailsModal.js:61
+msgid "ID"
+msgstr ""
+
+#: src/components/PushTxDetailsModal.js:109
+msgid "New Transaction"
+msgstr ""
+
 #: src/components/QRCodeReader.js:157
 msgid "Opening camera"
 msgstr ""
@@ -850,23 +880,23 @@ msgstr ""
 msgid "Propagating transaction to the network."
 msgstr ""
 
+#: src/components/ShowPushNotificationTxDetails.js:8
+msgid "Transation not found"
+msgstr ""
+
+#: src/components/ShowPushNotificationTxDetails.js:9
+msgid "The transaction has not arrived yet in your wallet. Do you want to retry?"
+msgstr ""
+
+#: src/components/ShowPushNotificationTxDetails.js:10
+msgid "Retry"
+msgstr ""
+
 #: src/components/TokenDetails.js:31
 #, javascript-format
 msgid "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:61
+#: src/components/TxDetailsModal.js:59
 msgid "Description"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:62
-msgid "Date & Time"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:63
-msgid "ID"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:64
-msgid "Public Explorer"
 msgstr ""
