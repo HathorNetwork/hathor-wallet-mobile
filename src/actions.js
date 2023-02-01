@@ -86,7 +86,8 @@ export const types = {
   PUSH_REGISTRATION_REQUESTED: 'PUSH_REGISTRATION_REQUESTED',
   PUSH_REGISTER_SUCCESS: 'PUSH_REGISTER_SUCCESS',
   PUSH_REGISTER_FAILED: 'PUSH_REGISTER_FAILED',
-  PUSH_LOAD_TX_DETAILS: 'PUSH_LOAD_TX_DETAILS',
+  PUSH_TX_DETAILS_REQUESTED: 'PUSH_TX_DETAILS_REQUESTED',
+  PUSH_TX_DETAILS_SUCCESS: 'PUSH_TX_DETAILS_SUCCESS',
   PUSH_CLEAN_TX_DETAILS: 'PUSH_ENRICH_TX_FAILED',
   PUSH_RESET: 'PUSH_RESET',
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
@@ -625,11 +626,40 @@ export const onExceptionCaptured = (error, isFatal) => ({
   },
 });
 
-export const pushLoadTxDetails = (payload) => ({
-  type: types.PUSH_LOAD_TX_DETAILS,
+/**
+ * @param {{ txId: string }} payload
+ */
+export const pushTxDetailsRequested = (payload) => ({
+  type: types.PUSH_TX_DETAILS_REQUESTED,
   payload,
 });
 
+/**
+ * @param {{ payload: {
+ *   isTxFound: boolean,
+ *   txId: string,
+ *   tx: {
+ *     txId: string,
+ *     timestamp: number,
+ *     voided: boolean
+ *   },
+ *   tokens: {
+ *     uid: string,
+ *     name: string,
+ *     symbol: string,
+ *     balance: number,
+ *     isRegistered: boolean
+ *   }[],
+ * }}} action
+ */
+export const pushTxDetailsSuccess = (payload) => ({
+  type: types.PUSH_TX_DETAILS_SUCCESS,
+  payload,
+});
+
+/**
+ * Clean the txDetails state dismissing the tx details modal.
+ */
 export const pushCleanTxDetails = () => ({
   type: types.PUSH_CLEAN_TX_DETAILS,
 });

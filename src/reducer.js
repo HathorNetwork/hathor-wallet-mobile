@@ -291,8 +291,8 @@ const reducer = (state = initialState, action) => {
       return onPushRegisterSuccess(state, action);
     case types.PUSH_REGISTER_FAILED:
       return onPushApiFailed(state);
-    case types.PUSH_LOAD_TX_DETAILS:
-      return onPushLoadTxDetails(state, action);
+    case types.PUSH_TX_DETAILS_SUCCESS:
+      return onTxDetailsSuccess(state, action);
     case types.PUSH_CLEAN_TX_DETAILS:
       return onPushCleanTxDetails(state);
     case types.PUSH_RESET:
@@ -854,6 +854,8 @@ export const onPushApiFailed = (state) => ({
 /**
  * @param {Object} state
  * @param {{ payload: {
+ *   isTxFound: boolean,
+ *   txId: string,
  *   tx: {
  *     txId: string,
  *     timestamp: number,
@@ -868,7 +870,7 @@ export const onPushApiFailed = (state) => ({
  *   }[],
  * }}} action
  */
-export const onPushLoadTxDetails = (state, action) => {
+export const onTxDetailsSuccess = (state, action) => {
   const txDetails = action.payload;
   return {
     ...state,
