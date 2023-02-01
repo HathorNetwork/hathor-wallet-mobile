@@ -27,7 +27,9 @@ import {
   resetData,
   lockScreen,
   setTokens,
-  pushLoadTxDetails,
+  pushTxDetailsSuccess,
+  pushTxDetailsRequested,
+  onExceptionCaptured,
 } from './actions';
 import { store } from './reducer';
 import { GlobalErrorHandler } from './components/GlobalErrorModal';
@@ -246,7 +248,8 @@ const mapDispatchToProps = (dispatch) => ({
   setTokens: (tokens) => dispatch(setTokens(tokens)),
   lockScreen: () => dispatch(lockScreen()),
   resetData: () => dispatch(resetData()),
-  loadTxDetails: (txDetails) => dispatch(pushLoadTxDetails(txDetails)),
+  loadTxDetails: (txId) => dispatch(pushTxDetailsRequested(txId)),
+  captureError: (error) => dispatch(onExceptionCaptured(error)),
 });
 
 class _AppStackWrapper extends React.Component {
@@ -282,11 +285,11 @@ class _AppStackWrapper extends React.Component {
             try {
               if (detail.pressAction?.id === PUSH_ACTION.NEW_TRANSACTION) {
                 const { txId } = detail.notification.data;
-                const txDetails = await getTxDetails(this.props.wallet, txId);
-                this.props.loadTxDetails(txDetails);
+                this.props.loadTxDetails({ txId });
               }
             } catch (error) {
               console.error('Error processing notification press event.', error);
+              this.props.captureError(error);
             }
             break;
           default:
