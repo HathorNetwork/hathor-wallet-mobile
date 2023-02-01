@@ -467,6 +467,7 @@ export const getTxDetails = async (wallet, txId) => {
 };
 
 /**
+ * This function is responsible for load the tx details.
  * @param {{ payload: { txId: string }}} action
  */
 export function* loadTxDetails(action) {

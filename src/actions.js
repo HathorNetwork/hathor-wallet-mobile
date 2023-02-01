@@ -524,15 +524,22 @@ export const onWalletReload = () => ({
 
 // Push notification actions
 
+/**
+ * Ask user if he wants to opt-in push notifications
+ */
 export const pushAskOptInQuestion = () => ({
   type: types.PUSH_ASK_OPT_IN_QUESTION,
 });
 
+/**
+ * User will no longer be asked to opt-in push notifications
+ */
 export const pushDismissOptInQuestion = () => ({
   type: types.PUSH_DISMISS_OPT_IN_QUESTION,
 });
 
 /**
+ * Initialize push notification state
  * @param {{deviceId: string, settings: { enabled, showAmountEnabled }, enabledAt: number}} payload
  */
 export const pushInit = (payload) => ({
@@ -541,22 +548,30 @@ export const pushInit = (payload) => ({
 });
 
 /**
+ * Update the firebase device id
  * @param {{deviceId: string}} payload
  */
 export const pushUpdateDeviceId = (payload) => ({
   type: types.PUSH_UPDATE_DEVICE_ID,
-  payload
+  payload,
 });
 
+/**
+ * Push notification API is ready to be used
+ */
 export const pushApiReady = () => ({
   type: types.PUSH_API_READY,
 });
 
+/**
+ * Request to load wallet in order to register push notification
+ */
 export const pushLoadWalletRequested = () => ({
   type: types.PUSH_WALLET_LOAD_REQUESTED,
 });
 
 /**
+ * The wallet was loaded with success
  * @param {{ walletService: HathorWalletServiceWallet }} payload
  */
 export const pushLoadWalletSuccess = (payload) => ({
@@ -565,6 +580,7 @@ export const pushLoadWalletSuccess = (payload) => ({
 });
 
 /**
+ * The wallet failed to load
  * @param {{ error }} payload
  */
 export const pushLoadWalletFailed = (payload) => ({
@@ -573,6 +589,7 @@ export const pushLoadWalletFailed = (payload) => ({
 });
 
 /**
+ * Request to register push notification device
  * @param {{enabled: boolean, showAmountEnabled: boolean, deviceId: string}} payload
  */
 export const pushRegistrationRequested = (payload) => ({
@@ -581,6 +598,7 @@ export const pushRegistrationRequested = (payload) => ({
 });
 
 /**
+ * Register push notification device succeeded
  * @param {{ enabled: boolean }} data
  */
 export const pushRegisterSuccess = (data) => ({
@@ -588,6 +606,9 @@ export const pushRegisterSuccess = (data) => ({
   data,
 });
 
+/**
+ * Register push notification device failed
+ */
 export const pushRegisterFailed = () => ({
   type: types.PUSH_REGISTER_FAILED,
 });
@@ -627,6 +648,7 @@ export const onExceptionCaptured = (error, isFatal) => ({
 });
 
 /**
+ * Request to get the tx details
  * @param {{ txId: string }} payload
  */
 export const pushTxDetailsRequested = (payload) => ({
@@ -635,6 +657,7 @@ export const pushTxDetailsRequested = (payload) => ({
 });
 
 /**
+ * Get the tx details succeeded
  * @param {{ payload: {
  *   isTxFound: boolean,
  *   txId: string,
@@ -664,6 +687,9 @@ export const pushCleanTxDetails = () => ({
   type: types.PUSH_CLEAN_TX_DETAILS,
 });
 
+/**
+ * Reset the push notification state
+ */
 export const pushReset = () => ({
   type: types.PUSH_RESET,
 });
