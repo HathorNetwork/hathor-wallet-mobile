@@ -241,6 +241,8 @@ const reducer = (state = initialState, action) => {
       return onPushRegisterSuccess(state, action);
     case types.PUSH_REGISTER_FAILED:
       return onPushApiFailed(state);
+    case types.PUSH_RESET:
+      return onPushReset(state);
     case types.EXCEPTION_CAPTURED:
       return onExceptionCaptured(state, action);
     case types.WALLET_RELOADING:
@@ -791,6 +793,11 @@ export const onPushApiFailed = (state) => ({
     ...state.pushNotification,
     apiStatus: PUSH_API_STATUS.FAILED,
   },
+});
+
+export const onPushReset = (state) => ({
+  ...state,
+  pushNotification: initialState.pushNotification,
 });
 
 /**

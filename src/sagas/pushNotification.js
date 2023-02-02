@@ -32,6 +32,7 @@ import {
   pushLoadWalletFailed,
   pushInit,
   pushAskOptInQuestion,
+  pushReset,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -296,8 +297,8 @@ export function* onAppInitialization() {
 
   // If the user has not been asked yet, we should ask him if he wants to enable push notifications
   // We should appear only once, so we should save the fact that the user has dismissed the question
-  const askOptIn = !STORE.getItem(pushNotificationKey.optInDismissed);
-  if (askOptIn) {
+  const optInDismissed = STORE.getItem(pushNotificationKey.optInDismissed);
+  if (optInDismissed === null || !optInDismissed) {
     yield put(pushAskOptInQuestion());
   }
 }
@@ -412,11 +413,32 @@ export function* dismissOptInQuestion() {
   yield STORE.setItem(pushNotificationKey.optInDismissed, true);
 }
 
+const cleanToken = async () => {
+  await messaging().unregisterDeviceForRemoteMessages();
+  await messaging().deleteToken();
+};
+
+/**
+ * This function is responsible for reset the push notification.
+ */
+export function* resetPushNotification() {
+  // Unregister the device from FCM
+  yield call(cleanToken);
+  // Clean the store
+  yield STORE.removeItem(pushNotificationKey.enabledAt);
+  yield STORE.removeItem(pushNotificationKey.settings);
+  yield STORE.removeItem(pushNotificationKey.deviceId);
+  // Reset the state
+  yield put(pushReset());
+}
+
 export function* saga() {
   yield all([
     fork(onAppInitialization),
     takeEvery(types.PUSH_WALLET_LOAD_REQUESTED, loadWallet),
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
+    takeEvery(types.RESET_WALLET, resetPushNotification),
+    takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion),
     takeEvery(types.PUSH_REGISTER_SUCCESS, updateStore),
     takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion)
   ]);

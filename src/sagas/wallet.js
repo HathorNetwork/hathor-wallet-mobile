@@ -83,7 +83,6 @@ export function* startWallet(action) {
   const { words, pin } = action.payload;
 
   NavigationService.navigate('LoadHistoryScreen');
-
   const uniqueDeviceId = getUniqueId();
   const featureFlags = new FeatureFlags(uniqueDeviceId, NETWORK);
   const useWalletService = yield call(() => featureFlags.shouldUseWalletService());
