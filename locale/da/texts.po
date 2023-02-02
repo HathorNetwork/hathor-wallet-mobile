@@ -12,11 +12,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.2.2\n"
 
-<<<<<<< HEAD
 #.  This should never happen!
-=======
-#. This should never happen!
->>>>>>> dev
 #: src/models.js:24
 msgid "Unknown"
 msgstr "Ukendt"
@@ -35,32 +31,32 @@ msgstr "Sendt ${ symbol }"
 msgid "You sent ${ symbol } to yourself"
 msgstr "Du sendte ${ symbol } til dig selv"
 
-#. See https://momentjs.com/docs/#/displaying/calendar-time/
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:41
 msgid "[Today •] HH:mm"
 msgstr "[I dag •] HH: mm"
 
-#. See https://momentjs.com/docs/#/displaying/calendar-time/
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:42
 msgid "[Tomorrow •] HH:mm"
 msgstr "[I morgen •] HH: mm"
 
-#. See https://momentjs.com/docs/#/displaying/calendar-time/
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:43
 msgid "dddd [•] HH:mm"
 msgstr "dddd [•] HH: mm"
 
-#. See https://momentjs.com/docs/#/displaying/calendar-time/
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:44
 msgid "[Yesterday •] HH:mm"
 msgstr "[I går •] HH: mm"
 
-#. See https://momentjs.com/docs/#/displaying/calendar-time/
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:45
 msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH: mm"
 
-#. See https://momentjs.com/docs/#/displaying/calendar-time/
+#.  See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:46
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH: mm"
@@ -97,13 +93,8 @@ msgid ""
 "Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-<<<<<<< HEAD
 #.  Success
 #.  eslint-disable-next-line react/jsx-indent
-=======
-#. Success
-#. eslint-disable-next-line react/jsx-indent
->>>>>>> dev
 #: src/screens/BackupWords.js:148
 msgid "Words saved correctly"
 msgstr "Ord gemt korrekt"
@@ -124,7 +115,7 @@ msgstr "Forkert PIN-kode."
 msgid "PIN codes don't match."
 msgstr "PIN-koder stemmer ikke overens."
 
-#. Should never get here because we've done all the validations before
+#.  Should never get here because we've done all the validations before
 #: src/screens/ChangePin.js:174
 msgid "Error while changing PIN"
 msgstr "Fejl under ændring af pinkode"
@@ -200,7 +191,7 @@ msgstr "Du har ${ amountAvailableText } HTR tilgængelig"
 msgid "Next"
 msgstr "Næste"
 
-#. show loading modal
+#.  show loading modal
 #: src/screens/CreateTokenConfirm.js:98
 msgid "Creating token"
 msgstr "Opretter token"
@@ -213,7 +204,7 @@ msgstr "Indtast din 6-cifrede pin for at oprette din token"
 msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
-#. eslint-disable-next-line react/jsx-indent
+#.  eslint-disable-next-line react/jsx-indent
 #: src/screens/CreateTokenConfirm.js:180
 #, javascript-format
 msgid "**${ this.name }** created successfully"
@@ -298,11 +289,11 @@ msgstr "Symbolet er en kortere version af token-navnet"
 msgid "E.g. HTR"
 msgstr "F.eks. HTR"
 
-#: src/screens/Dashboard.js:65 src/screens/RegisterTokenManual.js:150
+#: src/screens/Dashboard.js:66 src/screens/RegisterTokenManual.js:150
 msgid "Register token"
 msgstr "Registrer token"
 
-#: src/screens/Dashboard.js:72
+#: src/screens/Dashboard.js:73
 msgid "TOKENS"
 msgstr "TOKENS"
 
@@ -504,10 +495,10 @@ msgid "There was an error enabling push notification. Please try again later."
 msgstr ""
 
 #. *
-#. * index {number} Selected index of the tab bar
-#.
-#. eslint thinks routes is not used, but TabView uses it
-#. eslint-disable-next-line react/no-unused-state
+#.      * index {number} Selected index of the tab bar
+#.      
+#.  eslint thinks routes is not used, but TabView uses it
+#.  eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:30
 msgid "Payment Request"
 msgstr "Betalingsanmodning"
@@ -528,8 +519,8 @@ msgstr ""
 msgid "Upgrading your wallet, please hang on."
 msgstr ""
 
-#. translator: Used when the QR Code Scanner is opened, and user will manually
-#. enter the information.
+#.  translator: Used when the QR Code Scanner is opened, and user will manually
+#.  enter the information.
 #: src/screens/RegisterToken.js:33 src/screens/SendScanQRCode.js:69
 msgid "Manual info"
 msgstr "Manuel information"
@@ -637,7 +628,7 @@ msgstr[1] "${ amountAndToken } tilgængelig\n"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
-#. show loading modal
+#.  show loading modal
 #: src/screens/SendConfirmScreen.js:103
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
@@ -738,7 +729,7 @@ msgstr "Jeg vil afregistrere token **${ tokenLabel }**"
 msgid "Unregister token"
 msgstr "Afregistrer token"
 
-#: src/sagas/pushNotification.js:54
+#: src/sagas/pushNotification.js:56
 msgid "Transaction"
 msgstr "Ingen transaktioner"
 
@@ -746,7 +737,7 @@ msgstr "Ingen transaktioner"
 #.          * @example
 #.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
 #.          
-#: src/sagas/pushNotification.js:106
+#: src/sagas/pushNotification.js:108
 #, javascript-format
 msgid ""
 "You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
@@ -761,7 +752,7 @@ msgstr[1] ""
 #.          * @example
 #.          * You have received 10 T2 and 5 T1 on a new transaction.
 #.          
-#: src/sagas/pushNotification.js:117
+#: src/sagas/pushNotification.js:119
 #, javascript-format
 msgid ""
 "You have received ${ _firstToken } and ${ _secondToken } on a new "
@@ -772,17 +763,29 @@ msgstr ""
 #.          * @example
 #.          * You have received 10 T2 on a new transaction.
 #.          
-#: src/sagas/pushNotification.js:124
+#: src/sagas/pushNotification.js:126
 msgid "You have received ${ _firstToken2 } on a new transaction."
 msgstr ""
 
-#: src/sagas/pushNotification.js:127
+#: src/sagas/pushNotification.js:129
 msgid "There is a new transaction in your wallet."
 msgstr ""
 
-#: src/sagas/pushNotification.js:129
+#: src/sagas/pushNotification.js:131
 msgid "New transaction received"
 msgstr "Ingen transaktioner"
+
+#: src/components/AskForPushNotification.js:21
+msgid "Do you want to enable push notifications for this wallet?"
+msgstr ""
+
+#: src/components/AskForPushNotification.js:22
+msgid "You can always change this later in the settings menu"
+msgstr ""
+
+#: src/components/AskForPushNotification.js:23
+msgid "Yes, enable"
+msgstr ""
 
 #: src/components/CopyClipboard.js:47
 msgid "Copied to clipboard!"
