@@ -9,6 +9,7 @@ import {
   Connection,
   HathorWallet,
   HathorWalletServiceWallet,
+  FakeHathorWallet,
   Network,
   wallet as walletUtil,
   tokens as tokensUtils,
@@ -118,18 +119,20 @@ export function* startWallet(action) {
   });
 
   let wallet;
-  if (useWalletService) {
+  if (true) {
     const network = new Network(networkName);
 
     // Set urls for wallet service
     config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
     config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
 
-    wallet = new HathorWalletServiceWallet({
+    wallet = new FakeHathorWallet();
+
+    /* wallet = new HathorWalletServiceWallet({
       requestPassword: showPinScreenForResult,
       seed: words,
       network
-    });
+    }); */
   } else {
     const connection = new Connection({
       network: networkName, // app currently connects only to mainnet

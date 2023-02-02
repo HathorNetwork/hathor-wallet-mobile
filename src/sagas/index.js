@@ -9,8 +9,10 @@ import { all, fork } from 'redux-saga/effects';
 import { saga as walletSagas } from './wallet';
 import { saga as tokensSagas } from './tokens';
 import { saga as errorHandlerSagas } from './errorHandler';
+import { saga as appSagas } from './app';
 
 const sagas = [
+  appSagas,
   walletSagas,
   tokensSagas,
   errorHandlerSagas,
