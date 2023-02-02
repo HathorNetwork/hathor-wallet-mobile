@@ -32,7 +32,7 @@ msgstr "Отправлено ${ symbol }"
 msgid "You sent ${ symbol } to yourself"
 msgstr "Вы отправили себе ${ symbol }"
 
-#.  See https://momentjs.com/docs/#/displaying/calendar-time/
+#. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:41
 msgid "[Today •] HH:mm"
 msgstr "[Сегодня •] HH:mm"
@@ -62,7 +62,7 @@ msgstr "[Последний] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src\utils.js:145
+#: src/utils.js:144
 msgid "Invalid address"
 msgstr "Неправильный адрес"
 
@@ -95,15 +95,15 @@ msgstr ""
 
 #.  Success
 #.  eslint-disable-next-line react/jsx-indent
-#: src\screens\BackupWords.js:148
+#: src/screens/BackupWords.js:148
 msgid "Words saved correctly"
 msgstr "Seed-фраза введена верно"
 
-#: src\screens\BackupWords.js:226
+#: src/screens/BackupWords.js:226
 msgid "To make sure you saved,"
 msgstr "Чтобы убедиться в том, что вы сохранили,"
 
-#: src\screens\BackupWords.js:228
+#: src/screens/BackupWords.js:228
 msgid "Please select the word that corresponds to the number below:"
 msgstr "Пожалуйста, выберите слово, которое соответствует номеру ниже:"
 
@@ -115,7 +115,7 @@ msgstr "Неверный PIN-код."
 msgid "PIN codes don't match."
 msgstr "PIN-коды не совпадают."
 
-#.  Should never get here because we've done all the validations before
+#. Should never get here because we've done all the validations before
 #: src/screens/ChangePin.js:174
 msgid "Error while changing PIN"
 msgstr "Ошибка при смене PIN-кода"
@@ -191,7 +191,7 @@ msgstr "У вас ${ amountAvailableText } HTR"
 msgid "Next"
 msgstr "Далее"
 
-#.  show loading modal
+#. show loading modal
 #: src/screens/CreateTokenConfirm.js:98
 msgid "Creating token"
 msgstr "Создать токен"
@@ -204,7 +204,7 @@ msgstr "Введите 6-значный PIN-код для создания то�
 msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
-#.  eslint-disable-next-line react/jsx-indent
+#. eslint-disable-next-line react/jsx-indent
 #: src/screens/CreateTokenConfirm.js:180
 #, javascript-format
 msgid "**${ this.name }** created successfully"
@@ -289,11 +289,11 @@ msgstr "Символ является сокращенной версией им
 msgid "E.g. HTR"
 msgstr "Например, HTR"
 
-#: src\screens\Dashboard.js:66 src\screens\RegisterTokenManual.js:150
+#: src/screens/Dashboard.js:65 src/screens/RegisterTokenManual.js:150
 msgid "Register token"
 msgstr "Зарегистрировать токен"
 
-#: src\screens\Dashboard.js:73
+#: src/screens/Dashboard.js:72
 msgid "TOKENS"
 msgstr "ТОКЕНЫ"
 
@@ -470,8 +470,8 @@ msgstr "Разблокировать Hathor Wallet"
 msgid "Cancel"
 msgstr "Отмена"
 
-#: src/screens/PinScreen.js:246 src/screens/RecoverPin.js:108
-#: src/screens/Settings.js:139
+#: src/screens/PinScreen.js:235 src/screens/RecoverPin.js:108
+#: src/screens/Settings.js:137
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
 
@@ -496,10 +496,10 @@ msgid "There was an error enabling push notification. Please try again later."
 msgstr ""
 
 #. *
-#.      * index {number} Selected index of the tab bar
-#.      
-#.  eslint thinks routes is not used, but TabView uses it
-#.  eslint-disable-next-line react/no-unused-state
+#. * index {number} Selected index of the tab bar
+#.
+#. eslint thinks routes is not used, but TabView uses it
+#. eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:30
 msgid "Payment Request"
 msgstr "Запрос Средств"
@@ -520,8 +520,8 @@ msgstr ""
 msgid "Upgrading your wallet, please hang on."
 msgstr ""
 
-#.  translator: Used when the QR Code Scanner is opened, and user will manually
-#.  enter the information.
+#. translator: Used when the QR Code Scanner is opened, and user will manually
+#. enter the information.
 #: src/screens/RegisterToken.js:33 src/screens/SendScanQRCode.js:69
 msgid "Manual info"
 msgstr "Ручной ввод"
@@ -629,7 +629,7 @@ msgstr[2] "${ amountAndToken } доступно"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
-#.  show loading modal
+#. show loading modal
 #: src/screens/SendConfirmScreen.js:103
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
@@ -684,7 +684,7 @@ msgstr "Подключены к"
 msgid "Security"
 msgstr "Безопасность"
 
-#: src/screens/Settings.js:125
+#: src/screens/Settings.js:123
 msgid "Create a new token"
 msgstr "Создать новый токен"
 
@@ -696,9 +696,21 @@ msgstr "Зарегистрировать токен"
 msgid "About"
 msgstr "О нас"
 
-#: src/screens/Settings.js:150
+#: src/screens/Settings.js:148
 msgid "Unique app identifier"
 msgstr ""
+
+#: src/screens/Settings.js:121
+msgid "Create a new token"
+msgstr "Создать новый токен"
+
+#: src/screens/Settings.js:133
+msgid "Register a token"
+msgstr "Зарегистрировать токен"
+
+#: src/screens/Settings.js:143
+msgid "About"
+msgstr "О нас"
 
 #: src/screens/TokenDetail.js:38
 msgid "Unregister"
@@ -732,7 +744,7 @@ msgstr "Я хочу отменить регистрацию токена **${ to
 msgid "Unregister token"
 msgstr "Отменить регистрацию токена"
 
-#: src\sagas\pushNotification.js:75
+#: src/sagas/pushNotification.js:54
 msgid "Transaction"
 msgstr "Нет транзакций"
 
@@ -752,38 +764,34 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src\sagas\pushNotification.js:120
+#. *
+#.          * @example
+#.          * You have received 10 T2 and 5 T1 on a new transaction.
+#.          
+#: src/sagas/pushNotification.js:117
 #, javascript-format
 msgid ""
 "You have received ${ _firstToken } and ${ _secondToken } on a new "
 "transaction."
 msgstr ""
 
-#: src\sagas\pushNotification.js:123
-msgid "You have received ${ _firstToken2 }."
+#. *
+#.          * @example
+#.          * You have received 10 T2 on a new transaction.
+#.          
+#: src/sagas/pushNotification.js:124
+msgid "You have received ${ _firstToken2 } on a new transaction."
 msgstr ""
 
-#: src\sagas\pushNotification.js:126
+#: src/sagas/pushNotification.js:127
 msgid "There is a new transaction in your wallet."
 msgstr ""
 
-#: src\sagas\pushNotification.js:128
+#: src/sagas/pushNotification.js:129
 msgid "New transaction received"
 msgstr "Нет транзакций"
 
-#: src\components\AskForPushNotification.js:19
-msgid "Do you want to enable push notifications for this wallet?"
-msgstr ""
-
-#: src\components\AskForPushNotification.js:20
-msgid "You can always change this later in the settings menu"
-msgstr ""
-
-#: src\components\AskForPushNotification.js:21
-msgid "Yes, enable"
-msgstr ""
-
-#: src\components\CopyClipboard.js:47
+#: src/components/CopyClipboard.js:47
 msgid "Copied to clipboard!"
 msgstr "Скопировано в буфер обмена!"
 

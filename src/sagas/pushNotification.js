@@ -32,7 +32,6 @@ import {
   pushLoadWalletFailed,
   pushInit,
   pushAskOptInQuestion,
-  pushReset,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -297,8 +296,8 @@ export function* onAppInitialization() {
 
   // If the user has not been asked yet, we should ask him if he wants to enable push notifications
   // We should appear only once, so we should save the fact that the user has dismissed the question
-  const optInDismissed = STORE.getItem(pushNotificationKey.optInDismissed);
-  if (optInDismissed === null || !optInDismissed) {
+  const askOptIn = !STORE.getItem(pushNotificationKey.optInDismissed);
+  if (askOptIn) {
     yield put(pushAskOptInQuestion());
   }
 }
@@ -376,7 +375,7 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
     });
 
     if (success) {
-      const enabledAt = Date.now();
+      const enabledAt = !!enabled ? Date.now() : 0;
       STORE.setItem(pushNotificationKey.enabledAt, enabledAt);
 
       const payload = {
@@ -428,8 +427,6 @@ export function* resetPushNotification() {
   yield STORE.removeItem(pushNotificationKey.enabledAt);
   yield STORE.removeItem(pushNotificationKey.settings);
   yield STORE.removeItem(pushNotificationKey.deviceId);
-  // Reset the state
-  yield put(pushReset());
 }
 
 export function* saga() {
@@ -437,9 +434,7 @@ export function* saga() {
     fork(onAppInitialization),
     takeEvery(types.PUSH_WALLET_LOAD_REQUESTED, loadWallet),
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
-    takeEvery(types.PUSH_UPDATE_REQUESTED, updateRegistration),
-    takeEvery([types.PUSH_REGISTER_SUCCESS, types.PUSH_UPDATE_SUCCESS], updateStore),
-    takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion),
-    takeEvery(types.RESET_WALLET, resetPushNotification)
+    takeEvery(types.PUSH_REGISTER_SUCCESS, updateStore),
+    takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion)
   ]);
 }

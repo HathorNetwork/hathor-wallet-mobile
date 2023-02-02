@@ -52,7 +52,7 @@ msgstr ""
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src\utils.js:145
+#: src/utils.js:144
 msgid "Invalid address"
 msgstr ""
 
@@ -83,17 +83,17 @@ msgid ""
 "|link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-#: src\screens\BackupWords.js:148
+#: src/screens/BackupWords.js:148
 #.  Success
 #.  eslint-disable-next-line react/jsx-indent
 msgid "Words saved correctly"
 msgstr ""
 
-#: src\screens\BackupWords.js:226
+#: src/screens/BackupWords.js:226
 msgid "To make sure you saved,"
 msgstr ""
 
-#: src\screens\BackupWords.js:228
+#: src/screens/BackupWords.js:228
 msgid "Please select the word that corresponds to the number below:"
 msgstr ""
 
@@ -282,12 +282,12 @@ msgstr ""
 msgid "E.g. HTR"
 msgstr ""
 
-#: src\screens\Dashboard.js:66
-#: src\screens\RegisterTokenManual.js:150
+#: src/screens/Dashboard.js:65
+#: src/screens/RegisterTokenManual.js:150
 msgid "Register token"
 msgstr ""
 
-#: src\screens\Dashboard.js:73
+#: src/screens/Dashboard.js:72
 msgid "TOKENS"
 msgstr ""
 
@@ -723,11 +723,15 @@ msgstr ""
 msgid "Unregister token"
 msgstr ""
 
-#: src\sagas\pushNotification.js:75
+#: src/sagas/pushNotification.js:54
 msgid "Transaction"
 msgstr ""
 
-#: src\sagas\pushNotification.js:117
+#: src/sagas/pushNotification.js:106
+#. *
+#.          * @example
+#.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
+#.          
 #, javascript-format
 msgid ""
 "You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
@@ -738,38 +742,34 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: src\sagas\pushNotification.js:120
+#: src/sagas/pushNotification.js:117
+#. *
+#.          * @example
+#.          * You have received 10 T2 and 5 T1 on a new transaction.
+#.          
 #, javascript-format
 msgid ""
 "You have received ${ _firstToken } and ${ _secondToken } on a new "
 "transaction."
 msgstr ""
 
-#: src\sagas\pushNotification.js:123
-msgid "You have received ${ _firstToken2 }."
+#: src/sagas/pushNotification.js:124
+#. *
+#.          * @example
+#.          * You have received 10 T2 on a new transaction.
+#.          
+msgid "You have received ${ _firstToken2 } on a new transaction."
 msgstr ""
 
-#: src\sagas\pushNotification.js:126
+#: src/sagas/pushNotification.js:127
 msgid "There is a new transaction in your wallet."
 msgstr ""
 
-#: src\sagas\pushNotification.js:128
+#: src/sagas/pushNotification.js:129
 msgid "New transaction received"
 msgstr ""
 
-#: src\components\AskForPushNotification.js:19
-msgid "Do you want to enable push notifications for this wallet?"
-msgstr ""
-
-#: src\components\AskForPushNotification.js:20
-msgid "You can always change this later in the settings menu"
-msgstr ""
-
-#: src\components\AskForPushNotification.js:21
-msgid "Yes, enable"
-msgstr ""
-
-#: src\components\CopyClipboard.js:47
+#: src/components/CopyClipboard.js:47
 msgid "Copied to clipboard!"
 msgstr ""
 

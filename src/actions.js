@@ -621,7 +621,3 @@ export const onExceptionCaptured = (error, isFatal) => ({
     isFatal,
   },
 });
-
-export const pushReset = () => ({
-  type: types.PUSH_RESET,
-});

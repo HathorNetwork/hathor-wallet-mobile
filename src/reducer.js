@@ -102,7 +102,6 @@ const initialState = {
   // screen
   tempPin: null,
   isShowingPinScreen: false,
-  walletStartState: WALLET_STATUS.NOT_STARTED,
   pushNotification: {
     /**
      * showOptInQuestion {boolean}
@@ -135,6 +134,7 @@ const initialState = {
      */
     enabledAt: 0,
   },
+  walletStartState: WALLET_STATUS.NOT_STARTED,
   lastSharedAddress: null,
   lastSharedIndex: null,
 };
@@ -241,12 +241,6 @@ const reducer = (state = initialState, action) => {
       return onPushRegisterSuccess(state, action);
     case types.PUSH_REGISTER_FAILED:
       return onPushApiFailed(state);
-    case types.PUSH_UPDATE_SUCCESS:
-      return onPushUpdateSuccess(state, action);
-    case types.PUSH_UPDATE_FAILED:
-      return onPushApiFailed(state);
-    case types.PUSH_RESET:
-      return onPushReset(state);
     case types.EXCEPTION_CAPTURED:
       return onExceptionCaptured(state, action);
     case types.WALLET_RELOADING:
@@ -797,11 +791,6 @@ export const onPushApiFailed = (state) => ({
     ...state.pushNotification,
     apiStatus: PUSH_API_STATUS.FAILED,
   },
-});
-
-export const onPushReset = (state) => ({
-  ...state,
-  pushNotification: initialState.pushNotification,
 });
 
 /**
