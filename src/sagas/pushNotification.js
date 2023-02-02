@@ -376,7 +376,7 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
     });
 
     if (success) {
-      const enabledAt = Date.now();
+      const enabledAt = !!enabled ? Date.now() : 0;
       STORE.setItem(pushNotificationKey.enabledAt, enabledAt);
 
       const payload = {
@@ -440,5 +440,6 @@ export function* saga() {
     takeEvery(types.RESET_WALLET, resetPushNotification),
     takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion),
     takeEvery(types.PUSH_REGISTER_SUCCESS, updateStore),
+    takeLatest(types.PUSH_DISMISS_OPT_IN_QUESTION, dismissOptInQuestion)
   ]);
 }
