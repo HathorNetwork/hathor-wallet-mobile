@@ -541,7 +541,8 @@ export const getTxDetails = async (wallet, txId) => {
     };
     return txDetails;
   } catch (error) {
-    if (error.message === `Transaction ${txId} not found`) {
+    if (error.message === `Transaction ${txId} not found`
+        || error.message === `Transaction ${txId} does not have any balance for this wallet`) {
       return { isTxFound: false, txId };
     }
     throw error;
