@@ -203,7 +203,6 @@ function* installForegroundListener() {
    * @param {Promise<void>} message - The message received from firebase
    */
   const onForegroundMessage = async (message) => {
-    console.log('onForegroundMessage', message);
     try {
       await messageHandler(message, true);
     } catch (error) {
@@ -230,7 +229,7 @@ export function* init() {
   // If push notification feature flag is disabled, we should not initialize it.
   const usePushNotification = yield select((state) => state.pushNotification.use);
   if (!usePushNotification) {
-    console.log('Halting push notification initialization because the feature flag is disabled.');
+    console.debug('Halting push notification initialization because the feature flag is disabled.');
     return;
   }
 
