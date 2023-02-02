@@ -158,7 +158,7 @@ export const messageHandler = async (message, isForeground) => {
       }
     });
   } catch (error) {
-    console.log('Error while handling push notification message to be displayed.', error);
+    console.error('Error while handling push notification message to be displayed.', error);
     throw new Error(`Error while handling push notification message to be displayed. ErrorMessage: ${error.message}`, error);
   }
 };
