@@ -412,6 +412,23 @@ export function* dismissOptInQuestion() {
   yield STORE.setItem(pushNotificationKey.optInDismissed, true);
 }
 
+const cleanToken = async () => {
+  await messaging().unregisterDeviceForRemoteMessages();
+  await messaging().deleteToken();
+};
+
+/**
+ * This function is responsible for reset the push notification.
+ */
+export function* resetPushNotification() {
+  // Unregister the device from FCM
+  yield call(cleanToken);
+  // Clean the store
+  yield STORE.removeItem(pushNotificationKey.enabledAt);
+  yield STORE.removeItem(pushNotificationKey.settings);
+  yield STORE.removeItem(pushNotificationKey.deviceId);
+}
+
 export function* saga() {
   yield all([
     fork(onAppInitialization),
