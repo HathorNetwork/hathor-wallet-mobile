@@ -123,3 +123,92 @@
     1. Run `make check_po_strict`.
     1. We should never have any problems with pt-br translation. We should have all texts translated.
     1. Check if all untranslated texts are known.
+
+# Push Notification
+
+1. **Initialize a new wallet**
+1. Go to the settings page
+1. Get the `deviceId` and add it in the `UserIDs` for the stage and platform mobile in the unleash **`push-notification.rollout`** feature toggle.
+1. Wait until the push notification shows up in the Settings page
+1. Go to the Push Notification page
+1. Turn on the `Enable Push Notification`
+1. Turn on the `Show amounts on notification`
+1. Turn off the `Enabled Push Notification`
+1. Try to turn on the `Show amounts on notification`, it should not be enabled
+1. Turn on the `Enabled Push Notification`
+1. Turn off the `Show amounts on notification`
+1. Turn off the `Enabled Push Notification`
+1. **Go to the Settings page**
+1. Remove your `deviceId` from the unleash **`push-notification.rollout`** feature toggle
+1. Wait until the Push Notification item disappears from the Settings page
+1. Send HTR to this new wallet, wait 3-5 min
+    1. You should not receive any notification
+1. **Go to the Settings page**
+1. Repeat the steps from (3) to (4)
+1. Go to the Push Notification page
+1. Turn on `Enable Push Notification`
+1. Send HTR to this new wallet, wait 3-5 min
+    1. You should receive a notification without values in the message’s body
+1. Click on the notification
+1. Wait until the modal with tx details open
+    1. The `HTR - HATHOR` name should be in the primary color (purple)
+1. Click on the `HTR - HATHOR` item
+    1. The Hathor Balance page should open
+1. **Go to the Settings page**
+1. Go to the Push Notification page
+1. Turn on the `Show amounts on notification`
+1. Send HTR to this new wallet, wait 3-5 min
+    1. You should receive a notification with values in the message’s body
+1. Repeat steps from (22) to (24)
+1. **Go to Settings page**
+1. Go to the Push Notification page
+1. Turn off the `Show amounts on notification`
+1. Close the application
+1. Send HTR to this new wallet, wait 3-5 min
+    1. You should receive a notification without values in the message’s body
+1. Repeat steps from (22) to (24)
+1. **Go to the Settings page**
+1. Go to the Push Notification page
+1. Turn on the `Show amounts on notification`
+1. Close the application
+1. Send HTR to this new wallet, wait 3-5 min
+    1. You should receive a notification with values in the message’s body
+1. Repeat steps from (22) to (24)
+1. **Go to the Settings page**
+1. Repeat steps from (14) to (15)
+1. Send HTR to this new wallet, wait 3-5 min
+    1. You should not receive any notification
+1. **Go to the Settings page**
+1. Repeat steps from (3) to (4)
+1. Send HTR to this new wallet, wait 3-5 min
+    1. You should receive a notification with values in the message’s body
+1. Repeat steps from (22) to (24)
+1. **Send HTR and an NFT to this new wallet, wait 3-5 min**
+    1. You should receive a notification
+1. Repeat steps from (22) to (23)
+    1. The NFT should be in gray color
+    1. The NFT amount should be in decimal representation
+1. Click on the NFT item, nothing should happen
+1. Repeat step (24)
+1. **Go to the Settings page**
+1. Register the NFT token
+1. Send HTR and an NFT to this new wallet, wait 3-5 min
+    1. You should receive a notification
+1. Repeat steps from (22) to (23)
+    1. The NFT should be in primary color (purple)
+    1. The NFT amount should be in integer representation
+1. Click on the NFT item
+    1. The NFT Balance page should open
+1. **Go to the Settings page**
+1. Reset the wallet
+1. Import the wallet
+1. Go to the Settings page
+1. Go to Push Notification page
+    1. `Enable Push Notification` should be disabled
+    1. `Show amounts on notification` should be disabled
+1. Send HTR to this new wallet, wait 3-5 min
+    1. You should not receive any notification
+1. **Turn on the `Enable Push Notification`**
+1. Send HTR to this new wallet, wait 3-5 min
+    1. You should receive a notification without values in the message’s body
+1. Repeat steps from (22) to (24)
