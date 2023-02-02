@@ -794,15 +794,15 @@ msgstr "Nova transação recebida"
 
 #: src/components/AskForPushNotification.js:21
 msgid "Do you want to enable push notifications for this wallet?"
-msgstr ""
+msgstr "Você deseja habilitar as notificações para esta wallet?"
 
 #: src/components/AskForPushNotification.js:22
 msgid "You can always change this later in the settings menu"
-msgstr ""
+msgstr "Você sempre pode alterar as configurações depois no menu"
 
 #: src/components/AskForPushNotification.js:23
 msgid "Yes, enable"
-msgstr ""
+msgstr "Sim, habilitar"
 
 #: src/components/CopyClipboard.js:47
 msgid "Copied to clipboard!"
