@@ -382,6 +382,7 @@ export function* listenForPushNotificationFeatureFlag(featureFlags) {
       const oldUsePushNotification = yield select((state) => state.pushNotification.use);
 
       if (oldUsePushNotification !== newUsePushNotification) {
+        STORE.setItem(pushNotificationKey.use, newUsePushNotification);
         yield put(setUsePushNotification(newUsePushNotification));
       }
     }

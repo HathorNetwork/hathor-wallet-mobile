@@ -130,6 +130,12 @@ export const messageHandler = async (message, isForeground) => {
     throw new Error(`Error while handling push notification message. Unknown message bodyLocKey ${data.bodyLocKey}.`);
   }
 
+  const usePushNotification = STORE.getItem(pushNotificationKey.use);
+  if (!usePushNotification) {
+    console.warn('Push notification is disabled. Ignoring message.');
+    return;
+  }
+
   try {
     const bodyArgs = data.bodyLocArgs && JSON.parse(data.bodyLocArgs);
     const title = localization.getMessage(data.titleLocKey);
