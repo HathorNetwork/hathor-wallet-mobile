@@ -6,6 +6,7 @@ import {
   UNLEASH_URL,
   UNLEASH_CLIENT_KEY,
   UNLEASH_POLLING_INTERVAL,
+  STAGE,
 } from './constants';
 
 export const Events = {
@@ -18,13 +19,13 @@ export class FeatureFlags extends events.EventEmitter {
 
     this.userId = userId;
     this.network = network;
-    this.walletServiceFlag = `wallet-service-mobile-${Platform.OS}-${this.network}.rollout`;
+    this.walletServiceFlag = 'wallet-service-mobile.rollout';
     this.walletServiceEnabled = null;
     this.client = new UnleashClient({
       url: UNLEASH_URL,
       clientKey: UNLEASH_CLIENT_KEY,
       refreshInterval: UNLEASH_POLLING_INTERVAL,
-      appName: `wallet-service-mobile-${Platform.OS}`,
+      appName: `wallet-service-mobile`,
     });
 
     this.client.on('update', () => {
@@ -57,7 +58,14 @@ export class FeatureFlags extends events.EventEmitter {
       if (shouldIgnore) {
         return false;
       }
-      this.client.updateContext({ userId: this.userId });
+      const options = {
+        userId: this.userId,
+        properties: {
+          platform: Platform.OS,
+          stage: STAGE,
+        },
+      };
+      this.client.updateContext(options);
 
       // Start polling for feature flag updates
       await this.client.start();
