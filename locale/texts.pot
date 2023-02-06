@@ -324,12 +324,12 @@ msgstr ""
 msgid "E.g. HTR"
 msgstr ""
 
-#: src/screens/Dashboard.js:67
+#: src/screens/Dashboard.js:66
 #: src/screens/RegisterTokenManual.js:150
 msgid "Register token"
 msgstr ""
 
-#: src/screens/Dashboard.js:74
+#: src/screens/Dashboard.js:73
 msgid "TOKENS"
 msgstr ""
 
@@ -765,8 +765,50 @@ msgstr ""
 msgid "Unregister token"
 msgstr ""
 
-#: src/sagas/pushNotification.js:53
+#: src/sagas/pushNotification.js:56
 msgid "Transaction"
+msgstr ""
+
+#: src/sagas/pushNotification.js:108
+#. *
+#.          * @example
+#.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
+#.          
+#, javascript-format
+msgid ""
+"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
+"other token on a new transaction."
+msgid_plural ""
+"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
+"other tokens on a new transaction."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/sagas/pushNotification.js:119
+#. *
+#.          * @example
+#.          * You have received 10 T2 and 5 T1 on a new transaction.
+#.          
+#, javascript-format
+msgid ""
+"You have received ${ _firstToken } and ${ _secondToken } on a new "
+"transaction."
+msgstr ""
+
+#: src/sagas/pushNotification.js:126
+#. *
+#.          * @example
+#.          * You have received 10 T2 on a new transaction.
+#.          
+msgid "You have received ${ _firstToken2 } on a new transaction."
+msgstr ""
+
+#: src/sagas/pushNotification.js:129
+msgid "There is a new transaction in your wallet."
+msgstr ""
+
+#: src/sagas/pushNotification.js:131
+msgid "New transaction received"
 msgstr ""
 
 #: src/components/AskForPushNotification.js:21
