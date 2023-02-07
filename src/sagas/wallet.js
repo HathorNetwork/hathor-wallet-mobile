@@ -33,6 +33,7 @@ import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
 import { t } from 'ttag';
 import { get } from 'lodash';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   STORE,
   DEFAULT_TOKEN,
@@ -382,7 +383,7 @@ export function* listenForPushNotificationFeatureFlag(featureFlags) {
       const oldUsePushNotification = yield select((state) => state.pushNotification.use);
 
       if (oldUsePushNotification !== newUsePushNotification) {
-        STORE.setItem(pushNotificationKey.use, newUsePushNotification);
+        yield call(AsyncStorage.setItem, pushNotificationKey.use, newUsePushNotification.toString());
         yield put(setUsePushNotification(newUsePushNotification));
       }
     }

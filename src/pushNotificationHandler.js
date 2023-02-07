@@ -7,6 +7,7 @@
 
 import notifee from '@notifee/react-native';
 import { msgid, ngettext, t } from 'ttag';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED,
   NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED,
@@ -130,7 +131,7 @@ export const messageHandler = async (message, isForeground) => {
     throw new Error(`Error while handling push notification message. Unknown message bodyLocKey ${data.bodyLocKey}.`);
   }
 
-  const usePushNotification = STORE.getItem(pushNotificationKey.use);
+  const usePushNotification = (await AsyncStorage.getItem(pushNotificationKey.use)) === 'true';
   if (!usePushNotification) {
     console.warn('Push notification is disabled. Ignoring message.');
     return;
