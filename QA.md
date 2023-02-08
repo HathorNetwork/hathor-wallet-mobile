@@ -160,6 +160,7 @@ It's a second custom NFT token to test.
     1. **Go to the Settings page**
     1. Remove your `deviceId` from the unleash **`push-notification.rollout`** feature toggle
     1. Wait until the Push Notification item disappears from the Settings page
+1. TODO: Test the opt-in message
 1. **Test push notification settings on/off**
     1. Turn on the `push-notification` feature toggle
     1. Go to the **Push Notification** page
@@ -190,6 +191,7 @@ It's a second custom NFT token to test.
     1. Send HTR to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction without show amounts
+    1. Dismiss the notification
 1. **Send a token after turn on `Show amounts on notification` option**
     1. Turn on the `push-notification` feature toggle
     1. Go to the **Push Notification** page
@@ -198,6 +200,7 @@ It's a second custom NFT token to test.
     1. Send HTR to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction showing amounts in the message
+    1. Dismiss the notification
 1. **View the details of the transaction (foreground)**
     1. Send a token after turn on `Enable Push Notification` option
     1. **Keep the application open**
@@ -233,6 +236,7 @@ It's a second custom NFT token to test.
     1. Send HTR and TTT to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction showing 2 amounts in the message
+        1. TODO: Verify the message 
     1. Click on the notification
     1. Wait until the modal with tx details open
         1. The `HTR - HATHOR` name should be in the primary color (purple)
@@ -249,6 +253,7 @@ It's a second custom NFT token to test.
     1. Send HTR, TTT and TN1 to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction showing 2 amounts in the message
+        1. TODO: Verify the message 
     1. Click on the notification
     1. Wait until the modal with tx details open
         1. The `HTR - HATHOR` name should be in the primary color (purple)
@@ -268,6 +273,7 @@ It's a second custom NFT token to test.
     1. Send HTR, TTT, TN1 and TNT to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction showing 2 amounts in the message
+        1. TODO: Verify the message 
     1. Click on the notification
     1. Wait until the modal with tx details open
         1. The `HTR - HATHOR` name should be in the primary color (purple)
@@ -291,6 +297,7 @@ It's a second custom NFT token to test.
     1. Send HTR and TTT to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction showing 2 amounts in the message
+        1. TODO: Verify the message 
     1. Click on the notification
     1. Wait until the modal with tx details open
         1. The `HTR - HATHOR` name should be in the primary color (purple)
@@ -306,6 +313,7 @@ It's a second custom NFT token to test.
     1. Send HTR and TN1 to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction showing 2 amounts in the message
+        1. TODO: Verify the message 
     1. Click on the notification
     1. Wait until the modal with tx details open
         1. The `HTR - HATHOR` name should be in the primary color (purple)
@@ -313,6 +321,14 @@ It's a second custom NFT token to test.
         1. The `TN1 - Test Nft` amount should be integer
     1. Click on the `TN1 - Test Nft` item
         1. The **Balance** page for `TN1` token should open
+1. TODO: Send token to self
+1. TODO: Register TNT
+1. TODO: Send back all the tokens
+1. TODO: Disable push notification
+1. TODO: Turn off push notification
+1. TODO: Unregister the tokens
+1. TODO: Reset the wallet
+1. TODO: Close the app
 
 ### Turn on the `wallet-service` feature toggle
 
