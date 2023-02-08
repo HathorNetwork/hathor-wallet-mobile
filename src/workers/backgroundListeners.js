@@ -7,8 +7,8 @@
 
 import messaging from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
-import { store } from './reducer';
-import { onExceptionCaptured } from './actions';
+import { store } from '../reducer';
+import { onExceptionCaptured } from '../actions';
 import {
   messageHandler,
   setInitialNotificationData,
