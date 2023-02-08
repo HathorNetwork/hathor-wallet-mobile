@@ -218,6 +218,7 @@ function* installForegroundListener() {
   } catch (error) {
     console.error('Error setings firebase foreground message listener.', error);
     yield put(onExceptionCaptured(error));
+    isForegroundListenerInstalled = false;
     return false;
   }
 }
@@ -254,8 +255,8 @@ export function* init() {
     return;
   }
 
-  const isForegroundListernerInstalled = yield call(installForegroundListener);
-  if (!isForegroundListernerInstalled) {
+  const isListenerInstalled = yield call(installForegroundListener);
+  if (!isListenerInstalled) {
     console.debug('Halting push notification initialization because the foreground listener was not installed.');
     return;
   }
