@@ -137,7 +137,6 @@ function* installForegroundListener() {
    * @param {Promise<void>} message - The message received from firebase
    */
   const onForegroundMessage = async (message) => {
-    console.log('onForegroundMessage', message);
     try {
       await messageHandler(message, true);
     } catch (error) {
@@ -146,7 +145,7 @@ function* installForegroundListener() {
   };
 
   try {
-    // Add listeners for push notifications on foreground and background
+    // Add listeners for push notifications on foreground
     messaging().onMessage(onForegroundMessage);
     isForegroundListenerInstalled = true;
     return true;
@@ -178,7 +177,6 @@ export function* onAppInitialization() {
   }
 
   const deviceId = yield call(getDeviceId);
-  // const deviceId = yield call(getDeviceId);
   if (!deviceId) {
     console.debug('Halting push notification initialization because the device id is null.');
     yield put(onExceptionCaptured(new Error('Device id is null')));
