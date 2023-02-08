@@ -27,7 +27,6 @@ import {
   resetData,
   lockScreen,
   setTokens,
-  pushTxDetailsSuccess,
   pushTxDetailsRequested,
   onExceptionCaptured,
 } from './actions';
@@ -70,7 +69,6 @@ import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
 import { WALLET_STATUS } from './sagas/wallet';
-import { getTxDetails } from './sagas/pushNotification';
 
 
 const InitStack = createStackNavigator(
@@ -241,7 +239,6 @@ const mapStateToProps = (state) => ({
   isScreenLocked: state.lockScreen,
   isRecoveringPin: state.recoveringPin,
   walletStartState: state.walletStartState,
-  wallet: state.wallet,
 });
 
 const mapDispatchToProps = (dispatch) => ({
