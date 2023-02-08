@@ -1,9 +1,9 @@
 import React from 'react';
-import { Text, StyleSheet, View, Touchable, TouchableHighlight } from 'react-native';
+import { Text, StyleSheet, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { t } from 'ttag';
 import { useDispatch, useSelector } from 'react-redux';
-import { getShortHash, isTokenNFT } from '../utils';
+import { getShortHash, isTokenNFT, renderValue } from '../utils';
 import { ListButton, ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 import { TxHistory } from '../models';
@@ -30,11 +30,7 @@ const getTimestampFormat = (tx) => {
 };
 
 const getTokenTitle = (token) => `${token.symbol} - ${token.name}`;
-const getTokenBalance = (token, isNFT) => {
-  const dividend = isNFT ? 1 : 100;
-  const decimal = isNFT ? 0 : 2;
-  return (token.balance / dividend).toFixed(decimal);
-};
+const getTokenBalance = (token, isNFT) => renderValue(token.balance, isNFT);
 
 export default function PushTxDetailsModal(props) {
   const { tx, tokens } = props;
