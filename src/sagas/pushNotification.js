@@ -53,7 +53,7 @@ import {
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
 import { showPinScreenForResult } from './helpers';
-import { messageHandler } from '../pushNotificationHandler';
+import { messageHandler } from '../workers/pushNotificationHandler';
 
 const TRANSACTION_CHANNEL_NAME = t`Transaction`;
 

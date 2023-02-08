@@ -15,8 +15,8 @@ import {
   STORE,
   PUSH_ACTION,
   PUSH_CHANNEL_TRANSACTION,
-} from './constants';
-import { name as appName } from '../app.json';
+} from '../constants';
+import { name as appName } from '../../app.json';
 
 /**
  * Persists the notification data from firebase message to be used when the app is opened.

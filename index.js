@@ -14,7 +14,7 @@ import { errorHandler } from './src/errorHandler';
 import {
   setBackgroundMessageListener,
   setNotifeeBackgroundListener,
-} from './src/backgroundListeners';
+} from './src/workers/backgroundListeners';
 
 // Set the background listeners for push notifications
 setNotifeeBackgroundListener();
