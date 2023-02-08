@@ -1,6 +1,5 @@
 import React from 'react';
 import { Text, StyleSheet, View } from 'react-native';
-import Modal from 'react-native-modal';
 import { t } from 'ttag';
 import { useDispatch, useSelector } from 'react-redux';
 import { getShortHash, isTokenNFT, renderValue } from '../utils';
@@ -9,6 +8,7 @@ import SlideIndicatorBar from './SlideIndicatorBar';
 import { TxHistory } from '../models';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { updateSelectedToken } from '../actions';
+import HathorModal from './HathorModal';
 
 const style = StyleSheet.create({
   modal: {
@@ -17,7 +17,7 @@ const style = StyleSheet.create({
   registeredToken: {
     color: '#8C46FF',
   },
-  inner: {
+  wrapperView: {
     backgroundColor: '#fff',
     borderRadius: 8,
   },
@@ -50,38 +50,26 @@ export default function PushTxDetailsModal(props) {
   };
 
   return (
-    <Modal
-      isVisible
-      animationIn='slideInUp'
-      swipeDirection={['down']}
-      onSwipeComplete={props.onRequestClose}
-      onBackButtonPress={props.onRequestClose}
-      onBackdropPress={props.onRequestClose}
-      style={style.modal}
-    >
+    <HathorModal onDismiss={props.onRequestClose} viewStyle={style.wrapperView}>
+      <SlideIndicatorBar />
+      <NewTransactionTitle />
       <View>
-        <View style={style.inner}>
-          <SlideIndicatorBar />
-          <NewTransactionTitle />
-          <View>
-            {tokens.map((token) => (
-              <ListButton
-                key={token.uid}
-                onPress={() => navigateToTokenDetailPage(token)}
-                title={getTokenTitle(token)}
-                titleStyle={token.isRegistered && style.registeredToken}
-                button={(
-                  <Text>{getTokenBalance(token, isTokenNFT(token.uid, tokenMetadata))}</Text>
-                )}
-              />
-            ))}
-            <ListItem title={t`Date & Time`} text={timestampStr} />
-            <ListItem title={t`ID`} text={idStr} />
-            <PublicExplorerListButton txId={tx.txId} />
-          </View>
-        </View>
+        {tokens.map((token) => (
+          <ListButton
+            key={token.uid}
+            onPress={() => navigateToTokenDetailPage(token)}
+            title={getTokenTitle(token)}
+            titleStyle={token.isRegistered && style.registeredToken}
+            button={(
+              <Text>{getTokenBalance(token, isTokenNFT(token.uid, tokenMetadata))}</Text>
+            )}
+          />
+        ))}
+        <ListItem title={t`Date & Time`} text={timestampStr} />
+        <ListItem title={t`ID`} text={idStr} />
+        <PublicExplorerListButton txId={tx.txId} />
       </View>
-    </Modal>
+    </HathorModal>
   );
 }
 

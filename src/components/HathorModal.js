@@ -22,7 +22,7 @@ const HathorModal = (props) => (
     onBackdropPress={props.onDismiss}
     style={styles.modal}
   >
-    <View style={styles.innerModal}>
+    <View style={props.viewStyle || styles.view}>
       {props.children}
     </View>
   </Modal>
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   modal: {
     justifyContent: 'flex-end',
   },
-  innerModal: {
+  view: {
     backgroundColor: '#fff',
     borderRadius: 8,
     alignItems: 'center',
@@ -49,6 +49,9 @@ HathorModal.propTypes = {
   // Children to be rendered inside the modal
   // It can be any renderable type
   children: PropTypes.node.isRequired,
+  // The inner view style
+  // eslint-disable-next-line react/forbid-prop-types
+  viewStyle: PropTypes.object,
 };
 
 export default HathorModal;
