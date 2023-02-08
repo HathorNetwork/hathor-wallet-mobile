@@ -296,6 +296,7 @@ class _AppStackWrapper extends React.Component {
       notifee.onForegroundEvent(onForegroundMessage);
     } catch (error) {
       console.error('Error setting notifee foreground event listener.', error);
+      this.props.captureError(error);
     }
   }
 
