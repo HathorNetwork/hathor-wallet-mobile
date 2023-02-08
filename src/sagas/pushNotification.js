@@ -211,7 +211,7 @@ function* installForegroundListener() {
   };
 
   try {
-    // Add listeners for push notifications on foreground and background
+    // Add listeners for push notifications on foreground
     messaging().onMessage(onForegroundMessage);
     isForegroundListenerInstalled = true;
     return true;
@@ -248,7 +248,6 @@ export function* init() {
   }
 
   const deviceId = yield call(getDeviceId);
-  // const deviceId = yield call(getDeviceId);
   if (!deviceId) {
     console.debug('Halting push notification initialization because the device id is null.');
     yield put(onExceptionCaptured(new Error('Device id is null')));
