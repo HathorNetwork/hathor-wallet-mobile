@@ -85,7 +85,7 @@ export function* startWallet(action) {
 
   const networkName = 'mainnet';
   const uniqueDeviceId = getUniqueId();
-  const featureFlags = new FeatureFlags(uniqueDeviceId, networkName);
+  const featureFlags = new FeatureFlags(uniqueDeviceId);
   const useWalletService = yield call(() => featureFlags.shouldUseWalletService());
 
   yield put(setUseWalletService(useWalletService));

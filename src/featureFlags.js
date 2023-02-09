@@ -14,11 +14,10 @@ export const Events = {
 };
 
 export class FeatureFlags extends events.EventEmitter {
-  constructor(userId, network) {
+  constructor(userId) {
     super();
 
     this.userId = userId;
-    this.network = network;
     this.walletServiceFlag = 'wallet-service-mobile.rollout';
     this.walletServiceEnabled = null;
     this.client = new UnleashClient({
@@ -47,9 +46,6 @@ export class FeatureFlags extends events.EventEmitter {
   * Uses the Hathor Unleash Server and Proxy to determine if the
   * wallet should use the WalletService facade or the old facade
   *
-  * @params {string} userId An user identifier (e.g. the firstAddress)
-  * @params {string} network The network name ('mainnet' or 'testnet')
-  *
   * @return {boolean} The result from the unleash feature flag
   */
   async shouldUseWalletService() {
@@ -62,7 +58,6 @@ export class FeatureFlags extends events.EventEmitter {
         userId: this.userId,
         properties: {
           platform: Platform.OS,
-          network: this.network,
           stage: STAGE,
         },
       };
