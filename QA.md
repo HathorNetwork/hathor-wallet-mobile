@@ -142,7 +142,7 @@ It's a custom NFT token to test.
 [TestNft:TN1:0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4:c59a30f8]
 ```
 
-### Test NFT Test
+### Test NFT Test (TNT)
 It's a second custom NFT token to test.
 
 ```text
@@ -151,16 +151,24 @@ It's a second custom NFT token to test.
 
 ## Suggested test sequence
 
+1. **Preparation**
+    1. Clear the application storage
+    1. Make sure the deviceId is not registered in the unleash **`push-notification.rollout`** feature toggle
 1. **Initialize a new wallet**
+    1. You should **not** see a modal to opt-in the push notification yet
+    1. Go to the **Settings** page
+        1. You should **not** see the **Push Notification** item yet
 1. **Turn on the `push-notification` feature toggle**
     1. Go to the settings page
     1. Get the `deviceId` and add it in the `UserIDs` for the stage and platform mobile in the unleash **`push-notification.rollout`** feature toggle.
-    1. Wait until the push notification shows up in the Settings page
+    1. Wait until the **Push Notification** item shows up in the Settings page
+    1. You should see a modal to opt-in the push notification
+    1. Click on **Yes, enable**
+        1. You should be redirected to **Push Notification** page
 1. **Turn off the `push-notification` feature toggle**
     1. **Go to the Settings page**
     1. Remove your `deviceId` from the unleash **`push-notification.rollout`** feature toggle
     1. Wait until the Push Notification item disappears from the Settings page
-1. TODO: Test the opt-in message
 1. **Test push notification settings on/off**
     1. Turn on the `push-notification` feature toggle
     1. Go to the **Push Notification** page
@@ -168,8 +176,9 @@ It's a second custom NFT token to test.
     1. Turn on the `Show amounts on notification`
     1. Turn off the `Enabled Push Notification`
     1. Try to turn on the `Show amounts on notification`
-        1. it should not be enabled
+        1. it should not be possible
     1. Turn on the `Enabled Push Notification`
+        1. `Show amounts on notification` should be on
     1. Turn off the `Show amounts on notification`
     1. Turn off the `Enabled Push Notification`
 1. **Try to send a notification with `push-notification` feature toggle turned off**
@@ -177,13 +186,13 @@ It's a second custom NFT token to test.
     1. Turn **off** the `push-notifiation` feature toggle
     1. Send HTR to this wallet
         1. Wait 3-5 min
-        1. You should not receive any notification
+        1. You should **not** receive any notification
 1. **Try to send a notification with `push-notification` feature toggle turned on**
     1. Go to the **Settings** page
     1. Turn **on** the `push-notifiation` feature toggle
     1. Send HTR to this wallet
         1. Wait 3-5 min
-        1. You should not receive any notification (because the settings `Enable Push Notification` is disabled)
+        1. You should **not** receive any notification (because the settings `Enable Push Notification` is disabled)
 1. **Send a token after turn on `Enable Push Notification` option**
     1. Turn on the `push-notification` feature toggle
     1. Go to the **Push Notification** page
@@ -191,6 +200,7 @@ It's a second custom NFT token to test.
     1. Send HTR to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction without show amounts
+            > There is a new transaction in your wallet.
     1. Dismiss the notification
 1. **Send a token after turn on `Show amounts on notification` option**
     1. Turn on the `push-notification` feature toggle
@@ -200,6 +210,7 @@ It's a second custom NFT token to test.
     1. Send HTR to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction showing amounts in the message
+            > You have received 0.04 HTR on a new transaction.
     1. Dismiss the notification
 1. **View the details of the transaction (foreground)**
     1. Send a token after turn on `Enable Push Notification` option
@@ -217,6 +228,7 @@ It's a second custom NFT token to test.
     1. Send HTR to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction without show amounts
+            > There is a new transaction in your wallet.
     1. Click on the notification
     1. Wait until the modal with tx details open
         1. The `HTR - HATHOR` name should be in the primary color (purple)
@@ -227,7 +239,15 @@ It's a second custom NFT token to test.
     1. Send HTR to this wallet
         1. Wait 3-5 min
         1. You should **not** receive a notification
+    1. Import the wallet
+    1. Send HTR to this wallet
+        1. Wait 3-5 min
+        1. You should **not** receive a notification
     1. Send a token after turn on `Enable Push Notification` option
+        1. Wait 3-5 min
+        1. You should receive a notification of new transaction without show amounts
+            > There is a new transaction in your wallet.
+        1. Dismiss the notification
 1. **Send 2 tokens after turn on `Show amounts on notification` option**
     1. Turn on the `push-notification` feature toggle
     1. Go to the **Push Notification** page
@@ -236,7 +256,7 @@ It's a second custom NFT token to test.
     1. Send HTR and TTT to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction showing 2 amounts in the message
-        1. TODO: Verify the message 
+            > You have received 0.09 HTR and 0.01 TTT on a new transaction.
     1. Click on the notification
     1. Wait until the modal with tx details open
         1. The `HTR - HATHOR` name should be in the primary color (purple)
@@ -253,7 +273,7 @@ It's a second custom NFT token to test.
     1. Send HTR, TTT and TN1 to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction showing 2 amounts in the message
-        1. TODO: Verify the message 
+            > You have received 0.05 TN1, 0.03 TTT and 1 other token on a new transaction.
     1. Click on the notification
     1. Wait until the modal with tx details open
         1. The `HTR - HATHOR` name should be in the primary color (purple)
@@ -273,7 +293,7 @@ It's a second custom NFT token to test.
     1. Send HTR, TTT, TN1 and TNT to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction showing 2 amounts in the message
-        1. TODO: Verify the message 
+            > You have received 0.08 TNT, 0.05 TN1 and 2 other tokens on a new transaction.
     1. Click on the notification
     1. Wait until the modal with tx details open
         1. The `HTR - HATHOR` name should be in the primary color (purple)
@@ -297,7 +317,7 @@ It's a second custom NFT token to test.
     1. Send HTR and TTT to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction showing 2 amounts in the message
-        1. TODO: Verify the message 
+            > You have received 0.02 TTT and 0.01 HTR on a new transaction.
     1. Click on the notification
     1. Wait until the modal with tx details open
         1. The `HTR - HATHOR` name should be in the primary color (purple)
@@ -313,7 +333,7 @@ It's a second custom NFT token to test.
     1. Send HTR and TN1 to this wallet
         1. Wait 3-5 min
         1. You should receive a notification of new transaction showing 2 amounts in the message
-        1. TODO: Verify the message 
+            > You have received 0.03 TN1 and 0.02 HTR on a new transaction.
     1. Click on the notification
     1. Wait until the modal with tx details open
         1. The `HTR - HATHOR` name should be in the primary color (purple)
@@ -321,16 +341,41 @@ It's a second custom NFT token to test.
         1. The `TN1 - Test Nft` amount should be integer
     1. Click on the `TN1 - Test Nft` item
         1. The **Balance** page for `TN1` token should open
-1. TODO: Send token to self
-1. TODO: Register TNT
-1. TODO: Send back all the tokens
-1. TODO: Disable push notification
-1. TODO: Turn off push notification
-1. TODO: Unregister the tokens
-1. TODO: Reset the wallet
-1. TODO: Close the app
+1. **Send token to self**
+    1. Wait 3-5 min
+    1. You should **not** receive a notification of new transaction
+1. Test open the wallet 2 weeks later
+    1. Open the file `src/sagas/pushNotification.js` and search for the following assignment:
+        ```jsx
+        const timeSinceLastRegistration = moment().diff(enabledAt, 'weeks');
+        ```
+    1. Assign the value `2` to `timeSinceLastRegistration` and save
+        ```jsx
+        const timeSinceLastRegistration = 2;
+        ```
+    1. Reload the wallet
+    1. You should see a modal asking for a registration refresh
+        > This modal only shows up when the user is using the fullnode wallet.
+    1. Click on **Refresh**
+    1. Enter your pin
+    1. Done! You will continue to receive the push notification.
+    1. Reassign `timeSinceLastRegistration` with its previous expression:
+        ```jsx
+        const timeSinceLastRegistration = moment().diff(enabledAt, 'weeks');
+        ```
+1. **Close test**
+    1. Register TNT token
+    1. Send back all the tokens to the source wallet
+    1. Disable push notification settings
+    1. Turn off push notification feature toggle
+    1. Unregister the tokens
+    1. Reset the wallet
+    1. Close the app
+    1. Clear the application storage
 
 ### Turn on the `wallet-service` feature toggle
+1. Get the `deviceId` and add it in the `UserIDs` strategy in the unleash **`wallet-service-mobile-android-testnet.rollout`** feature toggle
+1. Turn the feature toggle on
 
 Run all the tests above with the wallet-service turned on. But as a quick test you can run the following test:
 
