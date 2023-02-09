@@ -32,7 +32,7 @@ import {
   pushLoadWalletRequested,
   pushLoadWalletSuccess,
   pushLoadWalletFailed,
-  pushInit,
+  pushSetState,
   pushAskOptInQuestion,
   pushReset,
   initPushNotification,
@@ -286,7 +286,7 @@ export function* init() {
   const enabledAt = STORE.getItem(pushNotificationKey.enabledAt);
 
   // Initialize the pushNotification state on the redux store
-  yield put(pushInit({
+  yield put(pushSetState({
     deviceId,
     settings: {
       enabled,

@@ -81,7 +81,7 @@ export const types = {
   PUSH_DISMISS_OPT_IN_QUESTION: 'PUSH_DISMISS_OPT_IN_QUESTION',
   PUSH_ASK_REGISTRATION_REFRESH_QUESTION: 'PUSH_ASK_REGISTRATION_REFRESH_QUESTION',
   PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION: 'PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION',
-  PUSH_INIT: 'PUSH_INIT',
+  PUSH_SET_STATE: 'PUSH_SET_STATE',
   PUSH_UPDATE_DEVICE_ID: 'PUSH_UPDATE_DEVICE_ID',
   PUSH_API_READY: 'PUSH_API_READY',
   PUSH_WALLET_LOAD_REQUESTED: 'PUSH_WALLET_LOAD_REQUESTED',
@@ -564,11 +564,11 @@ export const pushDismissRegistrationRefreshQuestion = () => ({
 });
 
 /**
- * Initialize push notification state
+ * Set push notification state
  * @param {{deviceId: string, settings: { enabled, showAmountEnabled }, enabledAt: number}} payload
  */
-export const pushInit = (payload) => ({
-  type: types.PUSH_INIT,
+export const pushSetState = (payload) => ({
+  type: types.PUSH_SET_STATE,
   payload,
 });
 
