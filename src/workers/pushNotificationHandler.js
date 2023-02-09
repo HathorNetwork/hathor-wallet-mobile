@@ -7,6 +7,7 @@
 
 import notifee from '@notifee/react-native';
 import { msgid, ngettext, t } from 'ttag';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED,
   NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED,
@@ -17,7 +18,6 @@ import {
   PUSH_CHANNEL_TRANSACTION,
 } from '../constants';
 import { name as appName } from '../../app.json';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * Persists the notification data from firebase message to be used when the app is opened.
