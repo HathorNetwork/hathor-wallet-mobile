@@ -77,6 +77,8 @@ export const types = {
   // Push Notification actions
   PUSH_ASK_OPT_IN_QUESTION: 'PUSH_ASK_OPT_IN_QUESTION',
   PUSH_DISMISS_OPT_IN_QUESTION: 'PUSH_DISMISS_OPT_IN_QUESTION',
+  PUSH_ASK_REGISTRATION_REFRESH_QUESTION: 'PUSH_ASK_REGISTRATION_REFRESH_QUESTION',
+  PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION: 'PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION',
   PUSH_INIT: 'PUSH_INIT',
   PUSH_UPDATE_DEVICE_ID: 'PUSH_UPDATE_DEVICE_ID',
   PUSH_API_READY: 'PUSH_API_READY',
@@ -536,6 +538,14 @@ export const pushAskOptInQuestion = () => ({
  */
 export const pushDismissOptInQuestion = () => ({
   type: types.PUSH_DISMISS_OPT_IN_QUESTION,
+});
+
+export const pushAskRegistrationRefreshQuestion = () => ({
+  type: types.PUSH_ASK_REGISTRATION_REFRESH_QUESTION,
+});
+
+export const pushDismissRegistrationRefreshQuestion = () => ({
+  type: types.PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION,
 });
 
 /**

@@ -122,6 +122,12 @@ const initialState = {
      */
     showOptInQuestion: false,
     /**
+     * showRegistrationRefreshQuestion {boolean}
+     * this is used to show the action modal to ask the user to refresh
+     * the push notification registration to keep receiving notifications.
+     */
+    showRegistrationRefreshQuestion: false,
+    /**
      * deviceId {string} device id for push notification
      */
     deviceId: '',
@@ -277,6 +283,10 @@ const reducer = (state = initialState, action) => {
       return onPushAskOptInQuestion(state);
     case types.PUSH_DISMISS_OPT_IN_QUESTION:
       return onPushDismissOptInQuestion(state);
+    case types.PUSH_ASK_REGISTRATION_REFRESH_QUESTION:
+      return onPushAskRegistrationRefreshQuestion(state);
+    case types.PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION:
+      return onPushDismissRegistrationRefreshQuestion(state);
     case types.PUSH_INIT:
       return onPushInit(state, action);
     case types.PUSH_UPDATE_DEVICE_ID:
@@ -766,6 +776,22 @@ export const onPushDismissOptInQuestion = (state) => ({
   pushNotification: {
     ...state.pushNotification,
     showOptInQuestion: false,
+  }
+});
+
+export const onPushAskRegistrationRefreshQuestion = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    showRegistrationRefreshQuestion: true,
+  }
+});
+
+export const onPushDismissRegistrationRefreshQuestion = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    showRegistrationRefreshQuestion: false,
   }
 });
 
