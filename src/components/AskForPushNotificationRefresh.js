@@ -20,7 +20,6 @@ export default function AskForPushNotificationRefresh() {
     dispatch(pushRegistrationRequested({ enabled, showAmountEnabled, deviceId }));
   };
 
-  console.log('showUpdateRequest', showRegistrationRefreshQuestion);
   if (!showRegistrationRefreshQuestion) {
     return null;
   }
