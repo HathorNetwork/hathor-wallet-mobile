@@ -1,3 +1,7 @@
+# Preparing credentials to use Firebase
+
+Add the `google-service.json` file for the `mainnet` environment in the folder `/android/app/`. It will result in `/android/app/google-services.json`. After add the file rebuild the project.
+
 
 # Bumping up the version
 
