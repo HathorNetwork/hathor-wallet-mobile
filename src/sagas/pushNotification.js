@@ -32,13 +32,14 @@ import {
   pushLoadWalletRequested,
   pushLoadWalletSuccess,
   pushLoadWalletFailed,
-  pushInit,
+  pushSetState,
   pushAskOptInQuestion,
   pushReset,
   initPushNotification,
   onExceptionCaptured,
   pushTxDetailsRequested,
   pushTxDetailsSuccess,
+  pushAskRegistrationRefreshQuestion,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -47,13 +48,10 @@ import {
   WALLET_SERVICE_MAINNET_BASE_URL,
   NETWORK,
   PUSH_CHANNEL_TRANSACTION,
-  NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED,
-  NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED,
-  NEW_TRANSACTION_RECEIVED_TITLE,
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
 import { showPinScreenForResult } from './helpers';
-import { messageHandler } from '../pushNotificationHandler';
+import { messageHandler } from '../workers/pushNotificationHandler';
 
 const TRANSACTION_CHANNEL_NAME = t`Transaction`;
 
@@ -117,67 +115,6 @@ async function getDeviceId() {
 }
 
 /**
- * localization utils to map the message key to the correct message to localize
- */
-const localization = {
-  keys: new Set([
-    NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED,
-    NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED,
-    NEW_TRANSACTION_RECEIVED_TITLE
-  ]),
-  hasKey: (key) => localization.keys.has(key),
-  getMessage: (key, args) => {
-    if (!localization.hasKey(key)) {
-      console.debug('Unknown localization key for push notification message.', key);
-      return '';
-    }
-
-    let message = '';
-    if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED) {
-      if (!args) {
-        console.debug(`The args for push notification message key ${NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED} cannot be null or undefined.`, key);
-        return '';
-      }
-      /**
-       * We have 3 cases:
-       * - 3 or more tokens: You have received 10 T2, 5 T1 and 2 other token on a new transaction.
-       * - 2 tokens: You have received 10 T2 and 5 T1 on a new transaction.
-       * - 1 token: You have received 10 T2 on a new transaction.
-      */
-      const countArgs = args.length;
-      if (countArgs === 3) {
-        const [firstToken, secondToken, other] = args;
-        const otherCount = parseInt(other, 10);
-        /**
-         * @example
-         * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
-         */
-        message = t`You have received ${firstToken}, ${secondToken} and ${otherCount} other token on a new transaction.`;
-      } else if (countArgs === 2) {
-        const [firstToken, secondToken] = args;
-        /**
-         * @example
-         * You have received 10 T2 and 5 T1 on a new transaction.
-         */
-        message = t`You have received ${firstToken} and ${secondToken}.`;
-      } else if (countArgs === 1) {
-        const [firstToken] = args;
-        /**
-         * @example
-         * You have received 10 T2 on a new transaction.
-         */
-        message = t`You have received ${firstToken}.`;
-      }
-    } else if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED) {
-      message = t`There is a new transaction in your wallet.`;
-    } else if (key === NEW_TRANSACTION_RECEIVED_TITLE) {
-      message = t`New transaction received`;
-    }
-    return message;
-  }
-};
-
-/**
  * This flag is used to install the listener only once.
  * It is effemeral and will be reset when the application is closed.
  */
@@ -211,13 +148,14 @@ function* installForegroundListener() {
   };
 
   try {
-    // Add listeners for push notifications on foreground and background
+    // Add listeners for push notifications on foreground
     messaging().onMessage(onForegroundMessage);
     isForegroundListenerInstalled = true;
     return true;
   } catch (error) {
     console.error('Error setings firebase foreground message listener.', error);
     yield put(onExceptionCaptured(error));
+    isForegroundListenerInstalled = false;
     return false;
   }
 }
@@ -227,8 +165,8 @@ function* installForegroundListener() {
  */
 export function* init() {
   // If push notification feature flag is disabled, we should not initialize it.
-  const usePushNotification = yield select((state) => state.pushNotification.use);
-  if (!usePushNotification) {
+  const isPushNotificationAvailable = yield select((state) => state.pushNotification.available);
+  if (!isPushNotificationAvailable) {
     console.debug('Halting push notification initialization because the feature flag is disabled.');
     return;
   }
@@ -248,15 +186,14 @@ export function* init() {
   }
 
   const deviceId = yield call(getDeviceId);
-  // const deviceId = yield call(getDeviceId);
   if (!deviceId) {
     console.debug('Halting push notification initialization because the device id is null.');
     yield put(onExceptionCaptured(new Error('Device id is null')));
     return;
   }
 
-  const isForegroundListernerInstalled = yield call(installForegroundListener);
-  if (!isForegroundListernerInstalled) {
+  const isListenerInstalled = yield call(installForegroundListener);
+  if (!isListenerInstalled) {
     console.debug('Halting push notification initialization because the foreground listener was not installed.');
     return;
   }
@@ -285,7 +222,7 @@ export function* init() {
   const enabledAt = STORE.getItem(pushNotificationKey.enabledAt);
 
   // Initialize the pushNotification state on the redux store
-  yield put(pushInit({
+  yield put(pushSetState({
     deviceId,
     settings: {
       enabled,
@@ -295,15 +232,21 @@ export function* init() {
   }));
 
   // Check if the last registration call was made more then a week ago
-  if (enabledAt) {
+  if (enabled && enabledAt) {
     const timeSinceLastRegistration = moment().diff(enabledAt, 'weeks');
+    // Update the registration, as per Firebase's recommendation
     if (timeSinceLastRegistration > 1) {
-      // Update the registration, as per Firebase's recommendation
-      yield put(pushRegistrationRequested({
-        enabled,
-        showAmountEnabled,
-        deviceId,
-      }));
+      // If the user is using the wallet service, we can skip asking for refresh
+      const useWalletService = yield select((state) => state.useWalletService);
+      if (useWalletService) {
+        yield put(pushRegistrationRequested({
+          enabled,
+          showAmountEnabled,
+          deviceId,
+        }));
+      } else {
+        yield put(pushAskRegistrationRefreshQuestion());
+      }
     }
   }
 
@@ -316,13 +259,13 @@ export function* init() {
 }
 
 /**
- * It is responsible for persisting the usePushNotification value,
+ * It is responsible for persisting the PushNotification.available value,
  * so we can use it when the app is in any state.
  * @param {{ payload: boolean }} action - contains the value of the use(PushNotification)
  */
-export function* setUsePushNotification(action) {
-  const use = action.payload;
-  yield call(AsyncStorage.setItem, pushNotificationKey.use, use.toString());
+export function* setAvailablePushNotification(action) {
+  const available = action.payload;
+  yield call(AsyncStorage.setItem, pushNotificationKey.available, available.toString());
   yield put(initPushNotification());
 }
 
@@ -519,30 +462,38 @@ export function* checkOpenPushNotification() {
  *   ],
  */
 export const getTxDetails = async (wallet, txId) => {
+  // Tx not found triggers the retry modal for tx details
+  const buildTxDetailsNotFound = () => ({ isTxFound: false, txId });
+  const buildTxDetailsFound = (tx, txTokens) => ({
+    isTxFound: true,
+    txId,
+    tx: {
+      txId: tx.txId,
+      timestamp: tx.timestamp,
+      voided: tx.voided,
+    },
+    tokens: txTokens.map((each) => ({
+      uid: each.tokenId,
+      name: each.tokenName,
+      symbol: each.tokenSymbol,
+      balance: each.balance,
+      isRegistered: !!tokens.tokenExists(each.tokenId),
+    })),
+  });
+
   try {
-    const txTokensBalance = await wallet.getTxById(txId);
-    const [tx] = txTokensBalance;
-    const txDetails = {
-      isTxFound: true,
-      txId,
-      tx: {
-        txId: tx.txId,
-        timestamp: tx.timestamp,
-        voided: tx.voided,
-      },
-      tokens: txTokensBalance.map((each) => ({
-        uid: each.tokenId,
-        name: each.tokenName,
-        symbol: each.tokenSymbol,
-        balance: each.balance,
-        isRegistered: !!tokens.tokenExists(each.tokenId),
-      })),
-    };
-    return txDetails;
+    const result = await wallet.getTxById(txId);
+    // Success false is very unlikely to happen,
+    // therefore making the user retry is ok
+    if (!result.success) {
+      return buildTxDetailsNotFound();
+    }
+    const [tx] = result.txTokens;
+    return buildTxDetailsFound(tx, result.txTokens);
   } catch (error) {
     if (error.message === `Transaction ${txId} not found`
         || error.message === `Transaction ${txId} does not have any balance for this wallet`) {
-      return { isTxFound: false, txId };
+      return buildTxDetailsNotFound();
     }
     throw error;
   }
@@ -599,7 +550,7 @@ export function* resetPushNotification() {
 export function* saga() {
   yield all([
     debounce(500, [[types.START_WALLET_SUCCESS, types.INIT_PUSH_NOTIFICATION]], init),
-    takeLatest(types.SET_USE_PUSH_NOTIFICATION, setUsePushNotification),
+    takeLatest(types.SET_AVAILABLE_PUSH_NOTIFICATION, setAvailablePushNotification),
     takeEvery(types.PUSH_WALLET_LOAD_REQUESTED, loadWallet),
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
     takeEvery(types.RESET_WALLET, resetPushNotification),

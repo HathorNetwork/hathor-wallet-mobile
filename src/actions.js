@@ -76,10 +76,12 @@ export const types = {
   WALLET_RELOADING: 'WALLET_RELOADING',
   // Push Notification actions
   INIT_PUSH_NOTIFICATION: 'INIT_PUSH_NOTIFICATION',
-  SET_USE_PUSH_NOTIFICATION: 'SET_USE_PUSH_NOTIFICATION',
+  SET_AVAILABLE_PUSH_NOTIFICATION: 'SET_AVAILABLE_PUSH_NOTIFICATION',
   PUSH_ASK_OPT_IN_QUESTION: 'PUSH_ASK_OPT_IN_QUESTION',
   PUSH_DISMISS_OPT_IN_QUESTION: 'PUSH_DISMISS_OPT_IN_QUESTION',
-  PUSH_INIT: 'PUSH_INIT',
+  PUSH_ASK_REGISTRATION_REFRESH_QUESTION: 'PUSH_ASK_REGISTRATION_REFRESH_QUESTION',
+  PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION: 'PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION',
+  PUSH_SET_STATE: 'PUSH_SET_STATE',
   PUSH_UPDATE_DEVICE_ID: 'PUSH_UPDATE_DEVICE_ID',
   PUSH_API_READY: 'PUSH_API_READY',
   PUSH_WALLET_LOAD_REQUESTED: 'PUSH_WALLET_LOAD_REQUESTED',
@@ -90,7 +92,7 @@ export const types = {
   PUSH_REGISTER_FAILED: 'PUSH_REGISTER_FAILED',
   PUSH_TX_DETAILS_REQUESTED: 'PUSH_TX_DETAILS_REQUESTED',
   PUSH_TX_DETAILS_SUCCESS: 'PUSH_TX_DETAILS_SUCCESS',
-  PUSH_CLEAN_TX_DETAILS: 'PUSH_ENRICH_TX_FAILED',
+  PUSH_CLEAN_TX_DETAILS: 'PUSH_CLEAN_TX_DETAILS',
   PUSH_RESET: 'PUSH_RESET',
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
@@ -533,8 +535,8 @@ export const initPushNotification = () => ({
 /**
  * @param {boolean} payload - true if unleash enables the push notification feature
  */
-export const setUsePushNotification = (payload) => ({
-  type: types.SET_USE_PUSH_NOTIFICATION,
+export const setAvailablePushNotification = (payload) => ({
+  type: types.SET_AVAILABLE_PUSH_NOTIFICATION,
   payload,
 });
 
@@ -553,12 +555,20 @@ export const pushDismissOptInQuestion = () => ({
   type: types.PUSH_DISMISS_OPT_IN_QUESTION,
 });
 
+export const pushAskRegistrationRefreshQuestion = () => ({
+  type: types.PUSH_ASK_REGISTRATION_REFRESH_QUESTION,
+});
+
+export const pushDismissRegistrationRefreshQuestion = () => ({
+  type: types.PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION,
+});
+
 /**
- * Initialize push notification state
+ * Set push notification state
  * @param {{deviceId: string, settings: { enabled, showAmountEnabled }, enabledAt: number}} payload
  */
-export const pushInit = (payload) => ({
-  type: types.PUSH_INIT,
+export const pushSetState = (payload) => ({
+  type: types.PUSH_SET_STATE,
   payload,
 });
 

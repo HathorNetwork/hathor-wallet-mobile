@@ -113,9 +113,9 @@ const initialState = {
   isShowingPinScreen: false,
   pushNotification: {
     /**
-     * use {boolean} if should use push notification based on unleash feature flag
+     * available {boolean} if push notification is available based on unleash feature flag
      */
-    use: null,
+    available: null,
     /**
      * showOptInQuestion {boolean}
      * this is used to show the modal only the first time user opens the app
@@ -125,6 +125,12 @@ const initialState = {
      * enabled push notification)
      */
     showOptInQuestion: false,
+    /**
+     * showRegistrationRefreshQuestion {boolean}
+     * this is used to show the action modal to ask the user to refresh
+     * the push notification registration to keep receiving notifications.
+     */
+    showRegistrationRefreshQuestion: false,
     /**
      * deviceId {string} device id for push notification
      */
@@ -277,14 +283,18 @@ const reducer = (state = initialState, action) => {
       return onStartWalletNotStarted(state);
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
-    case types.SET_USE_PUSH_NOTIFICATION:
-      return onSetUsePushNotification(state, action);
+    case types.SET_AVAILABLE_PUSH_NOTIFICATION:
+      return onSetAvailablePushNotification(state, action);
     case types.PUSH_ASK_OPT_IN_QUESTION:
       return onPushAskOptInQuestion(state);
     case types.PUSH_DISMISS_OPT_IN_QUESTION:
       return onPushDismissOptInQuestion(state);
-    case types.PUSH_INIT:
-      return onPushInit(state, action);
+    case types.PUSH_ASK_REGISTRATION_REFRESH_QUESTION:
+      return onPushAskRegistrationRefreshQuestion(state);
+    case types.PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION:
+      return onPushDismissRegistrationRefreshQuestion(state);
+    case types.PUSH_SET_STATE:
+      return onPushSetState(state, action);
     case types.PUSH_UPDATE_DEVICE_ID:
       return onPushUpdateDeviceId(state, action);
     case types.PUSH_REGISTRATION_REQUESTED:
@@ -762,11 +772,11 @@ export const onWalletBestBlockUpdate = (state, action) => {
 /**
  * @param {boolean} action - true if unleash enables the push notification feature
  */
-export const onSetUsePushNotification = (state, action) => ({
+export const onSetAvailablePushNotification = (state, action) => ({
   ...state,
   pushNotification: {
     ...state.pushNotification,
-    use: action.payload,
+    available: action.payload,
   }
 });
 
@@ -786,10 +796,26 @@ export const onPushDismissOptInQuestion = (state) => ({
   }
 });
 
+export const onPushAskRegistrationRefreshQuestion = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    showRegistrationRefreshQuestion: true,
+  }
+});
+
+export const onPushDismissRegistrationRefreshQuestion = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    showRegistrationRefreshQuestion: false,
+  }
+});
+
 /**
  * @param {{ deviceId: string, settings: { enabled, showAmountEnabled }, enabledAt: number }} action
  */
-export const onPushInit = (state, action) => {
+export const onPushSetState = (state, action) => {
   const { deviceId, settings, enabledAt } = action.payload;
   return ({
     ...state,

@@ -40,7 +40,6 @@ import {
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
   WALLET_SERVICE_MAINNET_BASE_URL,
   NETWORK,
-  pushNotificationKey,
 } from '../constants';
 import {
   Events as FeatureFlagEvents,
@@ -68,7 +67,7 @@ import {
   setWallet,
   newTx,
   types,
-  setUsePushNotification,
+  setAvailablePushNotification,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import { specificTypeAndPayload, errorHandler, showPinScreenForResult } from './helpers';
@@ -93,7 +92,7 @@ export function* startWallet(action) {
   const usePushNotification = yield call(() => featureFlags.shouldUsePushNotification());
 
   yield put(setUseWalletService(useWalletService));
-  yield put(setUsePushNotification(usePushNotification));
+  yield put(setAvailablePushNotification(usePushNotification));
 
   // We don't want to clean access data since as if something goes
   // wrong here, the stored words would be lost forever.
@@ -383,8 +382,7 @@ export function* listenForPushNotificationFeatureFlag(featureFlags) {
       const oldUsePushNotification = yield select((state) => state.pushNotification.use);
 
       if (oldUsePushNotification !== newUsePushNotification) {
-        yield call(AsyncStorage.setItem, pushNotificationKey.use, newUsePushNotification.toString());
-        yield put(setUsePushNotification(newUsePushNotification));
+        yield put(setAvailablePushNotification(newUsePushNotification));
       }
     }
   } finally {

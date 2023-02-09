@@ -16,8 +16,9 @@ import {
   STORE,
   PUSH_ACTION,
   PUSH_CHANNEL_TRANSACTION,
-} from './constants';
-import { name as appName } from '../app.json';
+} from '../constants';
+import { name as appName } from '../../app.json';
+import { renderValue } from '../utils';
 
 /**
  * Persists the notification data from firebase message to be used when the app is opened.
@@ -34,6 +35,20 @@ export function setInitialNotificationData(notification) {
 export function setNotificationError(error) {
   STORE.setItem(pushNotificationKey.notificationError, error.message);
 }
+
+/**
+ * Render the balance value in decimal format.
+ * @param {string} tokenBalance
+ * @returns {string} - the rendered balance value with the token symbol.
+ * @example
+ * renderBalanceValue('10 HTR');
+ * // => '0.10 HTR'
+ */
+const renderBalanceValue = (tokenBalance) => {
+  const [value, token] = tokenBalance.split(' ');
+  const balanceValue = renderValue(value, false);
+  return `${balanceValue} ${token}`;
+};
 
 /**
  * localization utils to map the message key to the correct message to localize
@@ -65,7 +80,10 @@ const localization = {
       */
       const countArgs = args.length;
       if (countArgs === 3) {
-        const [firstToken, secondToken, other] = args;
+        // eslint-disable-next-line prefer-const
+        let [firstToken, secondToken, other] = args;
+        firstToken = renderBalanceValue(firstToken);
+        secondToken = renderBalanceValue(secondToken);
         const otherCount = parseInt(other, 10);
         /**
          * @example
@@ -77,14 +95,17 @@ const localization = {
           otherCount
         );
       } else if (countArgs === 2) {
-        const [firstToken, secondToken] = args;
+        let [firstToken, secondToken] = args;
+        firstToken = renderBalanceValue(firstToken);
+        secondToken = renderBalanceValue(secondToken);
         /**
          * @example
          * You have received 10 T2 and 5 T1 on a new transaction.
          */
         message = t`You have received ${firstToken} and ${secondToken} on a new transaction.`;
       } else if (countArgs === 1) {
-        const [firstToken] = args;
+        let [firstToken] = args;
+        firstToken = renderBalanceValue(firstToken);
         /**
          * @example
          * You have received 10 T2 on a new transaction.
@@ -131,8 +152,8 @@ export const messageHandler = async (message, isForeground) => {
     throw new Error(`Error while handling push notification message. Unknown message bodyLocKey ${data.bodyLocKey}.`);
   }
 
-  const usePushNotification = (await AsyncStorage.getItem(pushNotificationKey.use)) === 'true';
-  if (!usePushNotification) {
+  const isPushNotificationAvailable = await AsyncStorage.getItem(pushNotificationKey.available);
+  if (!isPushNotificationAvailable) {
     console.warn('Push notification is disabled. Ignoring message.');
     return;
   }
