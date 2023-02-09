@@ -39,7 +39,6 @@ import {
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
   WALLET_SERVICE_MAINNET_BASE_URL,
   NETWORK,
-  pushNotificationKey,
 } from '../constants';
 import {
   Events as FeatureFlagEvents,
@@ -382,7 +381,6 @@ export function* listenForPushNotificationFeatureFlag(featureFlags) {
       const oldUsePushNotification = yield select((state) => state.pushNotification.use);
 
       if (oldUsePushNotification !== newUsePushNotification) {
-        STORE.setItem(pushNotificationKey.use, newUsePushNotification);
         yield put(setAvailablePushNotification(newUsePushNotification));
       }
     }
