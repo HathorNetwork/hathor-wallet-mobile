@@ -17,6 +17,7 @@ import {
   PUSH_CHANNEL_TRANSACTION,
 } from '../constants';
 import { name as appName } from '../../app.json';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * Persists the notification data from firebase message to be used when the app is opened.
@@ -130,8 +131,8 @@ export const messageHandler = async (message, isForeground) => {
     throw new Error(`Error while handling push notification message. Unknown message bodyLocKey ${data.bodyLocKey}.`);
   }
 
-  const availablePushNotification = STORE.getItem(pushNotificationKey.available);
-  if (!availablePushNotification) {
+  const isPushNotificationAvailable = await AsyncStorage.getItem(pushNotificationKey.available);
+  if (!isPushNotificationAvailable) {
     console.warn('Push notification is disabled. Ignoring message.');
     return;
   }
