@@ -39,6 +39,7 @@ import {
   onExceptionCaptured,
   pushTxDetailsRequested,
   pushTxDetailsSuccess,
+  pushAskRegistrationRefreshQuestion,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -295,15 +296,21 @@ export function* init() {
   }));
 
   // Check if the last registration call was made more then a week ago
-  if (enabledAt) {
+  if (enabled && enabledAt) {
     const timeSinceLastRegistration = moment().diff(enabledAt, 'weeks');
+    // Update the registration, as per Firebase's recommendation
     if (timeSinceLastRegistration > 1) {
-      // Update the registration, as per Firebase's recommendation
-      yield put(pushRegistrationRequested({
-        enabled,
-        showAmountEnabled,
-        deviceId,
-      }));
+      // If the user is using the wallet service, we can skip asking for refresh
+      const useWalletService = yield select((state) => state.useWalletService);
+      if (useWalletService) {
+        yield put(pushRegistrationRequested({
+          enabled,
+          showAmountEnabled,
+          deviceId,
+        }));
+      } else {
+        yield put(pushAskRegistrationRefreshQuestion());
+      }
     }
   }
 
