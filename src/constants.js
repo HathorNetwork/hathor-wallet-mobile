@@ -113,7 +113,7 @@ export const pushNotificationKey = {
   enabledAt: 'pushNotification:enabledAt',
   optInDismissed: 'pushNotification:optInDismissed',
   notificationData: 'pushNotification:notificationData',
-  use: 'pushNotification:use',
+  available: 'pushNotification:available',
   notificationError: 'pushNotification:notificationError',
 };
 /**

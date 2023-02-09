@@ -113,9 +113,9 @@ const initialState = {
   isShowingPinScreen: false,
   pushNotification: {
     /**
-     * use {boolean} if should use push notification based on unleash feature flag
+     * available {boolean} if push notification is available based on unleash feature flag
      */
-    use: null,
+    available: null,
     /**
      * showOptInQuestion {boolean}
      * this is used to show the modal only the first time user opens the app
@@ -283,8 +283,8 @@ const reducer = (state = initialState, action) => {
       return onStartWalletNotStarted(state);
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
-    case types.SET_USE_PUSH_NOTIFICATION:
-      return onSetUsePushNotification(state, action);
+    case types.SET_AVAILABLE_PUSH_NOTIFICATION:
+      return onSetAvailablePushNotification(state, action);
     case types.PUSH_ASK_OPT_IN_QUESTION:
       return onPushAskOptInQuestion(state);
     case types.PUSH_DISMISS_OPT_IN_QUESTION:
@@ -772,11 +772,11 @@ export const onWalletBestBlockUpdate = (state, action) => {
 /**
  * @param {boolean} action - true if unleash enables the push notification feature
  */
-export const onSetUsePushNotification = (state, action) => ({
+export const onSetAvailablePushNotification = (state, action) => ({
   ...state,
   pushNotification: {
     ...state.pushNotification,
-    use: action.payload,
+    available: action.payload,
   }
 });
 

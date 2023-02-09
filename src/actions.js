@@ -76,7 +76,7 @@ export const types = {
   WALLET_RELOADING: 'WALLET_RELOADING',
   // Push Notification actions
   INIT_PUSH_NOTIFICATION: 'INIT_PUSH_NOTIFICATION',
-  SET_USE_PUSH_NOTIFICATION: 'SET_USE_PUSH_NOTIFICATION',
+  SET_AVAILABLE_PUSH_NOTIFICATION: 'SET_AVAILABLE_PUSH_NOTIFICATION',
   PUSH_ASK_OPT_IN_QUESTION: 'PUSH_ASK_OPT_IN_QUESTION',
   PUSH_DISMISS_OPT_IN_QUESTION: 'PUSH_DISMISS_OPT_IN_QUESTION',
   PUSH_ASK_REGISTRATION_REFRESH_QUESTION: 'PUSH_ASK_REGISTRATION_REFRESH_QUESTION',
@@ -535,8 +535,8 @@ export const initPushNotification = () => ({
 /**
  * @param {boolean} payload - true if unleash enables the push notification feature
  */
-export const setUsePushNotification = (payload) => ({
-  type: types.SET_USE_PUSH_NOTIFICATION,
+export const setAvailablePushNotification = (payload) => ({
+  type: types.SET_AVAILABLE_PUSH_NOTIFICATION,
   payload,
 });
 

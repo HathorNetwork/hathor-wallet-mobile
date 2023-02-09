@@ -229,8 +229,8 @@ function* installForegroundListener() {
  */
 export function* init() {
   // If push notification feature flag is disabled, we should not initialize it.
-  const usePushNotification = yield select((state) => state.pushNotification.use);
-  if (!usePushNotification) {
+  const isPushNotificationAvailable = yield select((state) => state.pushNotification.available);
+  if (!isPushNotificationAvailable) {
     console.debug('Halting push notification initialization because the feature flag is disabled.');
     return;
   }
@@ -323,13 +323,13 @@ export function* init() {
 }
 
 /**
- * It is responsible for persisting the usePushNotification value,
+ * It is responsible for persisting the PushNotification.available value,
  * so we can use it when the app is in any state.
  * @param {{ payload: boolean }} action - contains the value of the use(PushNotification)
  */
-export function* setUsePushNotification(action) {
-  const use = action.payload;
-  yield call(AsyncStorage.setItem, pushNotificationKey.use, use.toString());
+export function* setAvailablePushNotification(action) {
+  const available = action.payload;
+  yield call(AsyncStorage.setItem, pushNotificationKey.available, available.toString());
   yield put(initPushNotification());
 }
 
@@ -614,7 +614,7 @@ export function* resetPushNotification() {
 export function* saga() {
   yield all([
     debounce(500, [[types.START_WALLET_SUCCESS, types.INIT_PUSH_NOTIFICATION]], init),
-    takeLatest(types.SET_USE_PUSH_NOTIFICATION, setUsePushNotification),
+    takeLatest(types.SET_AVAILABLE_PUSH_NOTIFICATION, setAvailablePushNotification),
     takeEvery(types.PUSH_WALLET_LOAD_REQUESTED, loadWallet),
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
     takeEvery(types.RESET_WALLET, resetPushNotification),

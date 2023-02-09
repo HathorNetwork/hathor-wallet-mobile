@@ -67,7 +67,7 @@ import {
   setWallet,
   newTx,
   types,
-  setUsePushNotification,
+  setAvailablePushNotification,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import { specificTypeAndPayload, errorHandler, showPinScreenForResult } from './helpers';
@@ -92,7 +92,7 @@ export function* startWallet(action) {
   const usePushNotification = yield call(() => featureFlags.shouldUsePushNotification());
 
   yield put(setUseWalletService(useWalletService));
-  yield put(setUsePushNotification(usePushNotification));
+  yield put(setAvailablePushNotification(usePushNotification));
 
   // We don't want to clean access data since as if something goes
   // wrong here, the stored words would be lost forever.
@@ -383,7 +383,7 @@ export function* listenForPushNotificationFeatureFlag(featureFlags) {
 
       if (oldUsePushNotification !== newUsePushNotification) {
         STORE.setItem(pushNotificationKey.use, newUsePushNotification);
-        yield put(setUsePushNotification(newUsePushNotification));
+        yield put(setAvailablePushNotification(newUsePushNotification));
       }
     }
   } finally {
