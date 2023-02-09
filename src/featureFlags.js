@@ -62,6 +62,7 @@ export class FeatureFlags extends events.EventEmitter {
         userId: this.userId,
         properties: {
           platform: Platform.OS,
+          network: this.network,
           stage: STAGE,
         },
       };
