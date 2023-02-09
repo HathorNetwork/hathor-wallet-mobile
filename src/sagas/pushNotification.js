@@ -48,9 +48,6 @@ import {
   WALLET_SERVICE_MAINNET_BASE_URL,
   NETWORK,
   PUSH_CHANNEL_TRANSACTION,
-  NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED,
-  NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED,
-  NEW_TRANSACTION_RECEIVED_TITLE,
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
 import { showPinScreenForResult } from './helpers';
@@ -116,67 +113,6 @@ async function getDeviceId() {
     return null;
   }
 }
-
-/**
- * localization utils to map the message key to the correct message to localize
- */
-const localization = {
-  keys: new Set([
-    NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED,
-    NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED,
-    NEW_TRANSACTION_RECEIVED_TITLE
-  ]),
-  hasKey: (key) => localization.keys.has(key),
-  getMessage: (key, args) => {
-    if (!localization.hasKey(key)) {
-      console.debug('Unknown localization key for push notification message.', key);
-      return '';
-    }
-
-    let message = '';
-    if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED) {
-      if (!args) {
-        console.debug(`The args for push notification message key ${NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED} cannot be null or undefined.`, key);
-        return '';
-      }
-      /**
-       * We have 3 cases:
-       * - 3 or more tokens: You have received 10 T2, 5 T1 and 2 other token on a new transaction.
-       * - 2 tokens: You have received 10 T2 and 5 T1 on a new transaction.
-       * - 1 token: You have received 10 T2 on a new transaction.
-      */
-      const countArgs = args.length;
-      if (countArgs === 3) {
-        const [firstToken, secondToken, other] = args;
-        const otherCount = parseInt(other, 10);
-        /**
-         * @example
-         * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
-         */
-        message = t`You have received ${firstToken}, ${secondToken} and ${otherCount} other token on a new transaction.`;
-      } else if (countArgs === 2) {
-        const [firstToken, secondToken] = args;
-        /**
-         * @example
-         * You have received 10 T2 and 5 T1 on a new transaction.
-         */
-        message = t`You have received ${firstToken} and ${secondToken}.`;
-      } else if (countArgs === 1) {
-        const [firstToken] = args;
-        /**
-         * @example
-         * You have received 10 T2 on a new transaction.
-         */
-        message = t`You have received ${firstToken}.`;
-      }
-    } else if (key === NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED) {
-      message = t`There is a new transaction in your wallet.`;
-    } else if (key === NEW_TRANSACTION_RECEIVED_TITLE) {
-      message = t`New transaction received`;
-    }
-    return message;
-  }
-};
 
 /**
  * This flag is used to install the listener only once.
