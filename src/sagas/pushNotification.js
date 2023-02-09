@@ -519,30 +519,38 @@ export function* checkOpenPushNotification() {
  *   ],
  */
 export const getTxDetails = async (wallet, txId) => {
+  // Tx not found triggers the retry modal for tx details
+  const buildTxDetailsNotFound = () => ({ isTxFound: false, txId });
+  const buildTxDetailsFound = (tx, txTokens) => ({
+    isTxFound: true,
+    txId,
+    tx: {
+      txId: tx.txId,
+      timestamp: tx.timestamp,
+      voided: tx.voided,
+    },
+    tokens: txTokens.map((each) => ({
+      uid: each.tokenId,
+      name: each.tokenName,
+      symbol: each.tokenSymbol,
+      balance: each.balance,
+      isRegistered: !!tokens.tokenExists(each.tokenId),
+    })),
+  });
+
   try {
-    const txTokensBalance = await wallet.getTxById(txId);
-    const [tx] = txTokensBalance;
-    const txDetails = {
-      isTxFound: true,
-      txId,
-      tx: {
-        txId: tx.txId,
-        timestamp: tx.timestamp,
-        voided: tx.voided,
-      },
-      tokens: txTokensBalance.map((each) => ({
-        uid: each.tokenId,
-        name: each.tokenName,
-        symbol: each.tokenSymbol,
-        balance: each.balance,
-        isRegistered: !!tokens.tokenExists(each.tokenId),
-      })),
-    };
-    return txDetails;
+    const result = await wallet.getTxById(txId);
+    // Success false is very unlikely to happen,
+    // therefore making the user retry is ok
+    if (!result.success) {
+      return buildTxDetailsNotFound();
+    }
+    const [tx] = result.txTokens;
+    return buildTxDetailsFound(tx, result.txTokens);
   } catch (error) {
     if (error.message === `Transaction ${txId} not found`
         || error.message === `Transaction ${txId} does not have any balance for this wallet`) {
-      return { isTxFound: false, txId };
+      return buildTxDetailsNotFound();
     }
     throw error;
   }
