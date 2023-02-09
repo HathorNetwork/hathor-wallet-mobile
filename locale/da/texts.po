@@ -775,48 +775,6 @@ msgstr "Afregistrer token"
 msgid "Transaction"
 msgstr "Ingen transaktioner"
 
-#. *
-#.          * @example
-#.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
-#.          
-#: src/sagas/pushNotification.js:108
-#, javascript-format
-msgid ""
-"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
-"other token on a new transaction."
-msgid_plural ""
-"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
-"other tokens on a new transaction."
-msgstr[0] ""
-msgstr[1] ""
-
-#. *
-#.          * @example
-#.          * You have received 10 T2 and 5 T1 on a new transaction.
-#.          
-#: src/sagas/pushNotification.js:119
-#, javascript-format
-msgid ""
-"You have received ${ _firstToken } and ${ _secondToken } on a new "
-"transaction."
-msgstr ""
-
-#. *
-#.          * @example
-#.          * You have received 10 T2 on a new transaction.
-#.          
-#: src/sagas/pushNotification.js:126
-msgid "You have received ${ _firstToken2 } on a new transaction."
-msgstr ""
-
-#: src/sagas/pushNotification.js:129
-msgid "There is a new transaction in your wallet."
-msgstr ""
-
-#: src/sagas/pushNotification.js:131
-msgid "New transaction received"
-msgstr "Ingen transaktioner"
-
 #: src/components/AskForPushNotification.js:21
 msgid "Do you want to enable push notifications for this wallet?"
 msgstr ""
