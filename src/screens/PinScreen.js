@@ -45,10 +45,7 @@ const mapDispatchToProps = (dispatch) => ({
   setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),
   setTempPin: (pin) => dispatch(setTempPin(pin)),
   onStartWalletLock: () => dispatch(onStartWalletLock()),
-  startWalletRequested: (words, pin) => dispatch(startWalletRequested({
-    words,
-    pin
-  })),
+  startWalletRequested: (payload) => dispatch(startWalletRequested(payload)),
 });
 
 class PinScreen extends React.Component {
@@ -146,10 +143,12 @@ class PinScreen extends React.Component {
       // method an change redux state. No need to execute callback or go back on navigation
       this.handleDataMigration(pin);
       if (!this.props.wallet) {
-        // We are saving HathorWallet object in redux, so if the app has lost redux information
-        // and is in locked screen we must start the HathorWallet object again
-        const words = getWalletWords(pin);
-        this.props.startWalletRequested(words, pin);
+        // If we are here, the wallet has already been initialized in the past, so
+        // we should load from xpriv
+        this.props.startWalletRequested({
+          pin,
+          fromXpriv: true,
+        });
       }
       this.props.unlockScreen();
     } else {
