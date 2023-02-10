@@ -154,6 +154,7 @@ It's a second custom NFT token to test.
 1. **Preparation**
     1. Clear the application storage
     1. Make sure the deviceId is not registered in the unleash **`push-notification.rollout`** feature toggle
+    1. If testing the fullnode wallet, make sure the unleash wallet-service feature toggle is disabled
 1. **Initialize a new wallet**
     1. You should **not** see a modal to opt-in the push notification yet
     1. Go to the **Settings** page
@@ -221,6 +222,7 @@ It's a second custom NFT token to test.
     1. Click on the `HTR - HATHOR` item
         1. The **Balance** page should open
 1. **View the details of the transaction (quit)**
+    > INFO: Notifee v5.7.0 with Android API 32 has a [known issue regarding onBackgroundEvent](https://github.com/invertase/notifee/issues/404).
     1. Turn on the `push-notification` feature toggle
     1. Go to the **Push Notification** page
     1. Turn **on** the `Enable Push Notification` option
@@ -309,6 +311,8 @@ It's a second custom NFT token to test.
     1. Click on the `HTR - HATHOR` item
         1. The **Balance** page should open
 1. **Register `TTT` token and send 2 tokens after turn on `Show amounts on notification` option**
+    > WARNING: Not possible using `wallet-service` due to a validation that consults the fullnode.
+    > Jump to **Test open the wallet 2 weeks later** (19)
     1. Register `TTT` token in the wallet
     1. Turn on the `push-notification` feature toggle
     1. Go to the **Push Notification** page
