@@ -52,6 +52,7 @@ import {
 import { getPushNotificationSettings } from '../utils';
 import { showPinScreenForResult } from './helpers';
 import { messageHandler } from '../workers/pushNotificationHandler';
+import { WALLET_STATUS } from './wallet';
 
 const TRANSACTION_CHANNEL_NAME = t`Transaction`;
 
@@ -239,6 +240,11 @@ export function* init() {
       // If the user is using the wallet service, we can skip asking for refresh
       const useWalletService = yield select((state) => state.useWalletService);
       if (useWalletService) {
+        // If wallet not ready, wait
+        const walletStartState = yield select((state) => state.walletStartState);
+        if (walletStartState !== WALLET_STATUS.READY) {
+          yield take(types.WALLET_STATE_READY);
+        }
         yield put(pushRegistrationRequested({
           enabled,
           showAmountEnabled,
