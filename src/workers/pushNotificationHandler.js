@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import notifee from '@notifee/react-native';
+import notifee, { AndroidStyle } from '@notifee/react-native';
 import { msgid, ngettext, t } from 'ttag';
 import {
   NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED,
@@ -166,7 +166,8 @@ export const messageHandler = async (message, isForeground) => {
         pressAction: {
           id: PUSH_ACTION.NEW_TRANSACTION,
           ...(!isForeground && { mainComponent: appName })
-        }
+        },
+        style: { type: AndroidStyle.BIGTEXT, text: body },
       },
       data: {
         txId
