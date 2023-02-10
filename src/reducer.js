@@ -293,8 +293,6 @@ const reducer = (state = initialState, action) => {
       return onPushUpdateDeviceId(state, action);
     case types.PUSH_REGISTRATION_REQUESTED:
       return onPushApiLoading(state);
-    case types.PUSH_UPDATE_REQUESTED:
-      return onPushApiLoading(state);
     case types.PUSH_API_READY:
       return onPushApiReady(state);
     case types.PUSH_REGISTER_SUCCESS:
