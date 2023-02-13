@@ -153,6 +153,7 @@ export function* startWallet(action) {
 
     const walletConfig = {
       seed: words,
+      xpriv,
       store: STORE,
       connection,
       beforeReloadCallback: () => {
