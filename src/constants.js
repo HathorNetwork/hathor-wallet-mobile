@@ -93,3 +93,8 @@ export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.wallet-service.hatho
  * This is the environment stage that will be used to load the unleash feature flags.
  */
 export const STAGE = 'mainnet';
+
+/**
+ * The feature toggle configured in Unleash
+ */
+export const WALLET_SERVICE_FEATURE_TOGGLE = 'wallet-service-mobile.rollout';

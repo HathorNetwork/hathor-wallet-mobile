@@ -6,6 +6,7 @@ import {
   UNLEASH_URL,
   UNLEASH_CLIENT_KEY,
   UNLEASH_POLLING_INTERVAL,
+  WALLET_SERVICE_FEATURE_TOGGLE,
   STAGE,
 } from './constants';
 
@@ -18,13 +19,13 @@ export class FeatureFlags extends events.EventEmitter {
     super();
 
     this.userId = userId;
-    this.walletServiceFlag = 'wallet-service-mobile.rollout';
+    this.walletServiceFlag = WALLET_SERVICE_FEATURE_TOGGLE;
     this.walletServiceEnabled = null;
     this.client = new UnleashClient({
       url: UNLEASH_URL,
       clientKey: UNLEASH_CLIENT_KEY,
       refreshInterval: UNLEASH_POLLING_INTERVAL,
-      appName: `wallet-service-mobile`,
+      appName: 'wallet-service-mobile',
     });
 
     this.client.on('update', () => {
