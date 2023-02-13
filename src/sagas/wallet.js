@@ -206,7 +206,10 @@ export function* startWallet(action) {
   }
 
   walletUtil.storePasswordHash(pin);
-  walletUtil.storeEncryptedWords(words, pin);
+  if (!fromXpriv) {
+    walletUtil.storeEncryptedWords(words, pin);
+  }
+
   setKeychainPin(pin);
 
   yield put(setServerInfo({
