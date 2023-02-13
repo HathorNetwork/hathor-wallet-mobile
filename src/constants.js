@@ -88,3 +88,13 @@ export const METADATA_CONCURRENT_DOWNLOAD = 5;
 // Wallet service URLs
 export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://wallet-service.hathor.network/';
 export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.wallet-service.hathor.network/';
+
+/**
+ * This is the environment stage that will be used to load the unleash feature flags.
+ */
+export const STAGE = 'mainnet';
+
+/**
+ * The feature toggle configured in Unleash
+ */
+export const WALLET_SERVICE_FEATURE_TOGGLE = 'wallet-service-mobile.rollout';
