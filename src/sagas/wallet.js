@@ -33,7 +33,6 @@ import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
 import { t } from 'ttag';
 import { get } from 'lodash';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   STORE,
   DEFAULT_TOKEN,
