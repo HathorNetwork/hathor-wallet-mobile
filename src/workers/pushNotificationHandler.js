@@ -165,13 +165,13 @@ export const messageHandler = async (message, isForeground) => {
         channelId: PUSH_CHANNEL_TRANSACTION,
         pressAction: {
           id: PUSH_ACTION.NEW_TRANSACTION,
-          ...(!isForeground && { mainComponent: appName })
+          ...(!isForeground && { mainComponent: appName }),
         },
         style: { type: AndroidStyle.BIGTEXT, text: body },
       },
       data: {
-        txId
-      }
+        txId,
+      },
     });
   } catch (error) {
     console.log('Error while handling push notification message to be displayed.', error);
