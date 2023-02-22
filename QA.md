@@ -186,20 +186,18 @@ It's a second custom NFT token to test.
     1. Go to the **Settings** page
     1. Turn **off** the `push-notifiation` feature toggle
     1. Send HTR to this wallet
-        1. Wait 3-5 min
-        1. You should **not** receive any notification
+        1. Wait some minutes to guarantee you won't receive any notifications for this tx
 1. **Try to send a notification with `push-notification` feature toggle turned on**
     1. Go to the **Settings** page
     1. Turn **on** the `push-notifiation` feature toggle
     1. Send HTR to this wallet
-        1. Wait 3-5 min
-        1. You should **not** receive any notification (because the settings `Enable Push Notification` is disabled)
+        1. Wait some minutes to guarantee you won't receive any notifications for this tx (because the settings `Enable Push Notification` is disabled)
 1. **Send a token after turn on `Enable Push Notification` option**
     1. Turn on the `push-notification` feature toggle
     1. Go to the **Push Notification** page
     1. Turn **on** the `Enable Push Notification` option
     1. Send HTR to this wallet
-        1. Wait 3-5 min
+        1. Wait until the notification arrives
         1. You should receive a notification of new transaction without show amounts
             > There is a new transaction in your wallet.
     1. Dismiss the notification
@@ -209,7 +207,7 @@ It's a second custom NFT token to test.
     1. Turn **on** the `Enable Push Notification` option
     1. Turn **on** the `Show amounts on notification` option
     1. Send HTR to this wallet
-        1. Wait 3-5 min
+        1. Wait until the notification arrives
         1. You should receive a notification of new transaction showing amounts in the message
             > You have received 0.04 HTR on a new transaction.
     1. Dismiss the notification
@@ -228,7 +226,7 @@ It's a second custom NFT token to test.
     1. Turn **on** the `Enable Push Notification` option
     1. **Close the application**
     1. Send HTR to this wallet
-        1. Wait 3-5 min
+        1. Wait until the notification arrives
         1. You should receive a notification of new transaction without show amounts
             > There is a new transaction in your wallet.
     1. Click on the notification
@@ -239,14 +237,14 @@ It's a second custom NFT token to test.
 1. **Reset wallet and send a token**
     1. Reset the wallet
     1. Send HTR to this wallet
-        1. Wait 3-5 min
+        1. Wait until the notification arrives
         1. You should **not** receive a notification
     1. Import the wallet
     1. Send HTR to this wallet
-        1. Wait 3-5 min
+        1. Wait until the notification arrives
         1. You should **not** receive a notification
     1. Send a token after turn on `Enable Push Notification` option
-        1. Wait 3-5 min
+        1. Wait until the notification arrives
         1. You should receive a notification of new transaction without show amounts
             > There is a new transaction in your wallet.
         1. Dismiss the notification
@@ -256,7 +254,7 @@ It's a second custom NFT token to test.
     1. Turn **on** the `Enable Push Notification` option
     1. Turn **on** the `Show amounts on notification` option
     1. Send HTR and TTT to this wallet
-        1. Wait 3-5 min
+        1. Wait until the notification arrives
         1. You should receive a notification of new transaction showing 2 amounts in the message
             > You have received 0.09 HTR and 0.01 TTT on a new transaction.
     1. Click on the notification
@@ -273,7 +271,7 @@ It's a second custom NFT token to test.
     1. Turn **on** the `Enable Push Notification` option
     1. Turn **on** the `Show amounts on notification` option
     1. Send HTR, TTT and TN1 to this wallet
-        1. Wait 3-5 min
+        1. Wait until the notification arrives
         1. You should receive a notification of new transaction showing 2 amounts in the message
             > You have received 0.05 TN1, 0.03 TTT and 1 other token on a new transaction.
     1. Click on the notification
@@ -293,7 +291,7 @@ It's a second custom NFT token to test.
     1. Turn **on** the `Enable Push Notification` option
     1. Turn **on** the `Show amounts on notification` option
     1. Send HTR, TTT, TN1 and TNT to this wallet
-        1. Wait 3-5 min
+        1. Wait until the notification arrives
         1. You should receive a notification of new transaction showing 2 amounts in the message
             > You have received 0.08 TNT, 0.05 TN1 and 2 other tokens on a new transaction.
     1. Click on the notification
@@ -319,7 +317,7 @@ It's a second custom NFT token to test.
     1. Turn **on** the `Enable Push Notification` option
     1. Turn **on** the `Show amounts on notification` option
     1. Send HTR and TTT to this wallet
-        1. Wait 3-5 min
+        1. Wait until the notification arrives
         1. You should receive a notification of new transaction showing 2 amounts in the message
             > You have received 0.02 TTT and 0.01 HTR on a new transaction.
     1. Click on the notification
@@ -335,7 +333,7 @@ It's a second custom NFT token to test.
     1. Turn **on** the `Enable Push Notification` option
     1. Turn **on** the `Show amounts on notification` option
     1. Send HTR and TN1 to this wallet
-        1. Wait 3-5 min
+        1. Wait until the notification arrives
         1. You should receive a notification of new transaction showing 2 amounts in the message
             > You have received 0.03 TN1 and 0.02 HTR on a new transaction.
     1. Click on the notification
@@ -346,9 +344,9 @@ It's a second custom NFT token to test.
     1. Click on the `TN1 - Test Nft` item
         1. The **Balance** page for `TN1` token should open
 1. **Send token to self**
-    1. Wait 3-5 min
-    1. You should **not** receive a notification of new transaction
+    1. Wait some minutes to guarantee you won't receive any notifications for this tx
 1. Test open the wallet 2 weeks later
+    > WARNING: Skip if running the wallet from store.
     1. Open the file `src/sagas/pushNotification.js` and search for the following assignment:
         ```jsx
         const timeSinceLastRegistration = moment().diff(enabledAt, 'weeks');
