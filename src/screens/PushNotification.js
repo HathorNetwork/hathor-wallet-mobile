@@ -12,14 +12,25 @@ import { HathorList, ListItem } from '../components/HathorList';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { pushApiReady, pushRegistrationRequested } from '../actions';
-import { PUSH_API_STATUS } from '../sagas/pushNotification';
 import Spinner from '../components/Spinner';
+import { PUSH_API_STATUS } from '../constants';
 
+/**
+ * Check if the api status is loading and if the pin screen is not showing.
+ * @param {store} state - redux store
+ * @returns {boolean} - true if the api status is loading and the pin screen is not showing,
+ * false otherwise
+ */
 const isApiStatusLoading = (state) => {
   const isApiLoading = state.pushNotification.apiStatus === PUSH_API_STATUS.LOADING;
   return !state.isShowingPinScreen && isApiLoading;
 };
 
+/**
+ * Check if the api status is failed
+ * @param {object} pushNotification - pushNotification object from redux store
+ * @returns {boolean} - true if the api status is failed, false otherwise
+ */
 const hasApiStatusFailed = (pushNotification) => {
   const hasApiFailed = pushNotification.apiStatus === PUSH_API_STATUS.FAILED;
   return hasApiFailed;
@@ -49,6 +60,11 @@ const showAmountsOnNotificationText = t`Show amounts on notification`;
 const apiRequestLoadingText = t`Updating push notification...`;
 const apiRequestFailedText = t`There was an error enabling push notification. Please try again later.`;
 
+/**
+ * Component that shows the push notification settings as a page.
+ * @param {Object} props.navigation - navigation object from react-navigation
+ * @returns {React.Component} - React component with the push notification settings
+ */
 export default function PushNotification(props) {
   const {
     enabled,

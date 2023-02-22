@@ -111,7 +111,9 @@ export const pushNotificationKey = {
   settings: 'pushNotification:settings',
   hasBeenEnabled: 'pushNotification:hasBeenEnabled',
   enabledAt: 'pushNotification:enabledAt',
-  optInDismissed: 'pushNotification:optInDismissed'
+  optInDismissed: 'pushNotification:optInDismissed',
+  notificationData: 'pushNotification:notificationData',
+  notificationError: 'pushNotification:notificationError',
 };
 /**
  * this is the message key for localization of new transaction when show amount is enabled
@@ -128,4 +130,22 @@ export const NEW_TRANSACTION_RECEIVED_TITLE = 'new_transaction_received_title';
 /**
  * this is the channel id for the transaction notification
  */
-export const TRANSACTION_CHANNEL_ID = 'transaction';
+export const PUSH_CHANNEL_TRANSACTION = 'transaction';
+/**
+ * All possible states for the push notification API.
+ * It is used to show the loading screen while the API is loading,
+ * or to show the error screen if the API fails,
+ * or to show the push notification settings options if the API is ready.
+ */
+export const PUSH_API_STATUS = {
+  READY: 'ready',
+  FAILED: 'failed',
+  LOADING: 'loading',
+};
+/**
+ * Holds the push notification action ids available in for notification interaction.
+ */
+export const PUSH_ACTION = {
+  /** Represents a click in the new-transaction notification. */
+  NEW_TRANSACTION: 'new-transaction',
+};

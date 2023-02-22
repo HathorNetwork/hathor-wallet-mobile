@@ -11,6 +11,14 @@ import { setJSExceptionHandler } from 'react-native-exception-handler';
 import App from './src/App';
 import { name as appName } from './app.json';
 import { errorHandler } from './src/errorHandler';
+import {
+  setBackgroundMessageListener,
+  setNotifeeBackgroundListener,
+} from './src/workers/backgroundListeners';
+
+// Set the background listeners for push notifications
+setNotifeeBackgroundListener();
+setBackgroundMessageListener();
 
 // - errorHandler is the callback
 // - second parameter is an optional boolean and defines the error handler behavior

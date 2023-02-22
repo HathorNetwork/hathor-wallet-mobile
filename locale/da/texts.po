@@ -61,6 +61,48 @@ msgstr "[Sidste] dddd [•] HH: mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH: mm"
 
+#. *
+#.          * @example
+#.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
+#.          
+#: src/pushNotificationHandler.js:73
+#, javascript-format
+msgid ""
+"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
+"other token on a new transaction."
+msgid_plural ""
+"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
+"other tokens on a new transaction."
+msgstr[0] ""
+msgstr[1] ""
+
+#. *
+#.          * @example
+#.          * You have received 10 T2 and 5 T1 on a new transaction.
+#.          
+#: src/pushNotificationHandler.js:84
+#, javascript-format
+msgid ""
+"You have received ${ _firstToken } and ${ _secondToken } on a new "
+"transaction."
+msgstr ""
+
+#. *
+#.          * @example
+#.          * You have received 10 T2 on a new transaction.
+#.          
+#: src/pushNotificationHandler.js:91
+msgid "You have received ${ _firstToken2 } on a new transaction."
+msgstr ""
+
+#: src/pushNotificationHandler.js:94
+msgid "There is a new transaction in your wallet."
+msgstr ""
+
+#: src/pushNotificationHandler.js:96
+msgid "New transaction received"
+msgstr "Ingen transaktioner"
+
 #: src/utils.js:144
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
@@ -429,11 +471,11 @@ msgstr "Du har lige modtaget **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "BETALINGSANMODNING"
 
-#: src/components/TxDetailsModal.js:60 src/screens/PaymentRequestDetail.js:108
+#: src/components/TxDetailsModal.js:58 src/screens/PaymentRequestDetail.js:108
 msgid "Token"
 msgstr "Token"
 
-#: src/components/TxDetailsModal.js:107 src/screens/PaymentRequestDetail.js:112
+#: src/components/TxDetailsModal.js:105 src/screens/PaymentRequestDetail.js:112
 msgid "Amount"
 msgstr "Antal"
 
@@ -474,23 +516,23 @@ msgstr "Annuller"
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
-#: src/screens/PushNotification.js:46 src/screens/Settings.js:119
+#: src/screens/PushNotification.js:57 src/screens/Settings.js:119
 msgid "Push Notification"
 msgstr ""
 
-#: src/screens/PushNotification.js:47
+#: src/screens/PushNotification.js:58
 msgid "Enable Push Notification"
 msgstr ""
 
-#: src/screens/PushNotification.js:48
+#: src/screens/PushNotification.js:59
 msgid "Show amounts on notification"
 msgstr ""
 
-#: src/screens/PushNotification.js:49
+#: src/screens/PushNotification.js:60
 msgid "Updating push notification..."
 msgstr ""
 
-#: src/screens/PushNotification.js:50
+#: src/screens/PushNotification.js:61
 msgid "There was an error enabling push notification. Please try again later."
 msgstr ""
 
@@ -733,48 +775,6 @@ msgstr "Afregistrer token"
 msgid "Transaction"
 msgstr "Ingen transaktioner"
 
-#. *
-#.          * @example
-#.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
-#.          
-#: src/sagas/pushNotification.js:108
-#, javascript-format
-msgid ""
-"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
-"other token on a new transaction."
-msgid_plural ""
-"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
-"other tokens on a new transaction."
-msgstr[0] ""
-msgstr[1] ""
-
-#. *
-#.          * @example
-#.          * You have received 10 T2 and 5 T1 on a new transaction.
-#.          
-#: src/sagas/pushNotification.js:119
-#, javascript-format
-msgid ""
-"You have received ${ _firstToken } and ${ _secondToken } on a new "
-"transaction."
-msgstr ""
-
-#. *
-#.          * @example
-#.          * You have received 10 T2 on a new transaction.
-#.          
-#: src/sagas/pushNotification.js:126
-msgid "You have received ${ _firstToken2 } on a new transaction."
-msgstr ""
-
-#: src/sagas/pushNotification.js:129
-msgid "There is a new transaction in your wallet."
-msgstr ""
-
-#: src/sagas/pushNotification.js:131
-msgid "New transaction received"
-msgstr "Ingen transaktioner"
-
 #: src/components/AskForPushNotification.js:21
 msgid "Do you want to enable push notifications for this wallet?"
 msgstr ""
@@ -860,6 +860,22 @@ msgstr "Opret betalingsanmodning"
 msgid "No internet connection"
 msgstr "Ingen internetforbindelse"
 
+#: src/components/PublicExplorerListButton.js:13
+msgid "Public Explorer"
+msgstr "Public Explorer"
+
+#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:60
+msgid "Date & Time"
+msgstr "Dato & Tid"
+
+#: src/components/PushTxDetailsModal.js:83 src/components/TxDetailsModal.js:61
+msgid "ID"
+msgstr "ID"
+
+#: src/components/PushTxDetailsModal.js:109
+msgid "New Transaction"
+msgstr "Ingen transaktioner"
+
 #: src/components/QRCodeReader.js:157
 msgid "Opening camera"
 msgstr "Åbner kamera"
@@ -881,6 +897,19 @@ msgstr "Del"
 msgid "Propagating transaction to the network."
 msgstr ""
 
+#: src/components/ShowPushNotificationTxDetails.js:8
+msgid "Transation not found"
+msgstr "Ingen transaktioner"
+
+#: src/components/ShowPushNotificationTxDetails.js:9
+msgid ""
+"The transaction has not arrived yet in your wallet. Do you want to retry?"
+msgstr ""
+
+#: src/components/ShowPushNotificationTxDetails.js:10
+msgid "Retry"
+msgstr ""
+
 #: src/components/TokenDetails.js:31
 #, javascript-format
 msgid ""
@@ -888,21 +917,9 @@ msgid ""
 msgstr ""
 "Her er konfigurationsstrengen for token ${ tokenLabel }: ${ configString }"
 
-#: src/components/TxDetailsModal.js:61
+#: src/components/TxDetailsModal.js:59
 msgid "Description"
 msgstr "Beskrivelse"
-
-#: src/components/TxDetailsModal.js:62
-msgid "Date & Time"
-msgstr "Dato & Tid"
-
-#: src/components/TxDetailsModal.js:63
-msgid "ID"
-msgstr "ID"
-
-#: src/components/TxDetailsModal.js:64
-msgid "Public Explorer"
-msgstr "Public Explorer"
 
 #~ msgid "I understand the risks of using a mobile wallet"
 #~ msgstr "Jeg forstår risikoen ved at bruge en mobil wallet"

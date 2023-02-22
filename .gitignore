@@ -66,3 +66,6 @@ buck-out/
 # Sentry properties
 android/sentry.properties
 ios/sentry.properties
+
+# Google Services
+/android/app/google-services.json
