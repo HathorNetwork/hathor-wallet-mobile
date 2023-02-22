@@ -6,6 +6,7 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
+    "start:clean": "react-native start --reset-cache",
     "lint": "eslint .",
     "test": "jest",
     "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/",

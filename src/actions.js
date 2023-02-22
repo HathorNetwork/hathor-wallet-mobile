@@ -77,6 +77,8 @@ export const types = {
   // Push Notification actions
   PUSH_ASK_OPT_IN_QUESTION: 'PUSH_ASK_OPT_IN_QUESTION',
   PUSH_DISMISS_OPT_IN_QUESTION: 'PUSH_DISMISS_OPT_IN_QUESTION',
+  PUSH_ASK_REGISTRATION_REFRESH_QUESTION: 'PUSH_ASK_REGISTRATION_REFRESH_QUESTION',
+  PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION: 'PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION',
   PUSH_INIT: 'PUSH_INIT',
   PUSH_UPDATE_DEVICE_ID: 'PUSH_UPDATE_DEVICE_ID',
   PUSH_API_READY: 'PUSH_API_READY',
@@ -86,6 +88,10 @@ export const types = {
   PUSH_REGISTRATION_REQUESTED: 'PUSH_REGISTRATION_REQUESTED',
   PUSH_REGISTER_SUCCESS: 'PUSH_REGISTER_SUCCESS',
   PUSH_REGISTER_FAILED: 'PUSH_REGISTER_FAILED',
+  PUSH_TX_DETAILS_REQUESTED: 'PUSH_TX_DETAILS_REQUESTED',
+  PUSH_TX_DETAILS_SUCCESS: 'PUSH_TX_DETAILS_SUCCESS',
+  PUSH_CLEAN_TX_DETAILS: 'PUSH_CLEAN_TX_DETAILS',
+  PUSH_RESET: 'PUSH_RESET',
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
@@ -520,15 +526,36 @@ export const onWalletReload = () => ({
 
 // Push notification actions
 
+/**
+ * Ask user if he wants to opt-in push notifications
+ */
 export const pushAskOptInQuestion = () => ({
   type: types.PUSH_ASK_OPT_IN_QUESTION,
 });
 
+/**
+ * User will no longer be asked to opt-in push notifications
+ */
 export const pushDismissOptInQuestion = () => ({
   type: types.PUSH_DISMISS_OPT_IN_QUESTION,
 });
 
 /**
+ * Ask user to refresh the push notification settings
+ */
+export const pushAskRegistrationRefreshQuestion = () => ({
+  type: types.PUSH_ASK_REGISTRATION_REFRESH_QUESTION,
+});
+
+/**
+ * Dismiss the modal to refresh the push notification settings
+ */
+export const pushDismissRegistrationRefreshQuestion = () => ({
+  type: types.PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION,
+});
+
+/**
+ * Initialize push notification state
  * @param {{deviceId: string, settings: { enabled, showAmountEnabled }, enabledAt: number}} payload
  */
 export const pushInit = (payload) => ({
@@ -537,22 +564,30 @@ export const pushInit = (payload) => ({
 });
 
 /**
+ * Update the firebase device id
  * @param {{deviceId: string}} payload
  */
 export const pushUpdateDeviceId = (payload) => ({
   type: types.PUSH_UPDATE_DEVICE_ID,
-  payload
+  payload,
 });
 
+/**
+ * Push notification API is ready to be used
+ */
 export const pushApiReady = () => ({
   type: types.PUSH_API_READY,
 });
 
+/**
+ * Request to load wallet in order to register push notification
+ */
 export const pushLoadWalletRequested = () => ({
   type: types.PUSH_WALLET_LOAD_REQUESTED,
 });
 
 /**
+ * The wallet was loaded with success
  * @param {{ walletService: HathorWalletServiceWallet }} payload
  */
 export const pushLoadWalletSuccess = (payload) => ({
@@ -561,6 +596,7 @@ export const pushLoadWalletSuccess = (payload) => ({
 });
 
 /**
+ * The wallet failed to load
  * @param {{ error }} payload
  */
 export const pushLoadWalletFailed = (payload) => ({
@@ -569,6 +605,7 @@ export const pushLoadWalletFailed = (payload) => ({
 });
 
 /**
+ * Request to register push notification device
  * @param {{enabled: boolean, showAmountEnabled: boolean, deviceId: string}} payload
  */
 export const pushRegistrationRequested = (payload) => ({
@@ -577,6 +614,7 @@ export const pushRegistrationRequested = (payload) => ({
 });
 
 /**
+ * Register push notification device succeeded
  * @param {{ enabled: boolean }} data
  */
 export const pushRegisterSuccess = (data) => ({
@@ -584,6 +622,9 @@ export const pushRegisterSuccess = (data) => ({
   data,
 });
 
+/**
+ * Register push notification device failed
+ */
 export const pushRegisterFailed = () => ({
   type: types.PUSH_REGISTER_FAILED,
 });
@@ -620,4 +661,51 @@ export const onExceptionCaptured = (error, isFatal) => ({
     error,
     isFatal,
   },
+});
+
+/**
+ * Request to get the tx details
+ * @param {{ txId: string }} payload
+ */
+export const pushTxDetailsRequested = (payload) => ({
+  type: types.PUSH_TX_DETAILS_REQUESTED,
+  payload,
+});
+
+/**
+ * Get the tx details succeeded
+ * @param {{ payload: {
+ *   isTxFound: boolean,
+ *   txId: string,
+ *   tx: {
+ *     txId: string,
+ *     timestamp: number,
+ *     voided: boolean
+ *   },
+ *   tokens: {
+ *     uid: string,
+ *     name: string,
+ *     symbol: string,
+ *     balance: number,
+ *     isRegistered: boolean
+ *   }[],
+ * }}} action
+ */
+export const pushTxDetailsSuccess = (payload) => ({
+  type: types.PUSH_TX_DETAILS_SUCCESS,
+  payload,
+});
+
+/**
+ * Clean the txDetails state dismissing the tx details modal.
+ */
+export const pushCleanTxDetails = () => ({
+  type: types.PUSH_CLEAN_TX_DETAILS,
+});
+
+/**
+ * Reset the push notification state
+ */
+export const pushReset = () => ({
+  type: types.PUSH_RESET,
 });

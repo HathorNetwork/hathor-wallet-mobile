@@ -17,6 +17,8 @@ import TokenSelect from '../components/TokenSelect';
 import SimpleButton from '../components/SimpleButton';
 import OfflineBar from '../components/OfflineBar';
 import { tokenFetchBalanceRequested, updateSelectedToken } from '../actions';
+import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
+import AskForPushNotificationRefresh from '../components/AskForPushNotificationRefresh';
 
 
 /**
@@ -77,7 +79,9 @@ class Dashboard extends React.Component {
 
     return (
       <View style={{ flex: 1 }}>
+        <ShowPushNotificationTxDetails navigation={this.props.navigation} />
         <AskForPushNotification navigation={this.props.navigation} />
+        <AskForPushNotificationRefresh />
         <TokenSelect
           header={<Header />}
           renderArrow
