@@ -311,7 +311,7 @@ It's a second custom NFT token to test.
     1. Click on the `HTR - HATHOR` item
         1. The **Balance** page should open
 1. **Register `TTT` token and send 2 tokens after turn on `Show amounts on notification` option**
-    > WARNING: Not possible using `wallet-service` due to a validation that consults the fullnode.
+    > WARNING: Not possible using `wallet-service` in `testnet` due to a validation that consults the fullnode.
     > Jump to **Test open the wallet 2 weeks later** (19)
     1. Register `TTT` token in the wallet
     1. Turn on the `push-notification` feature toggle
