@@ -34,32 +34,32 @@ msgstr "Du sendte ${ symbol } til dig selv"
 #. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:41
 msgid "[Today •] HH:mm"
-msgstr "[I dag •] HH: mm"
+msgstr "[I dag •] HH:mm"
 
 #. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:42
 msgid "[Tomorrow •] HH:mm"
-msgstr "[I morgen •] HH: mm"
+msgstr "[I morgen •] HH:mm"
 
 #. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:43
 msgid "dddd [•] HH:mm"
-msgstr "dddd [•] HH: mm"
+msgstr "dddd [•] HH:mm"
 
 #. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:44
 msgid "[Yesterday •] HH:mm"
-msgstr "[I går •] HH: mm"
+msgstr "[I går •] HH:mm"
 
 #. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:45
 msgid "[Last] dddd [•] HH:mm"
-msgstr "[Sidste] dddd [•] HH: mm"
+msgstr "[Sidste] dddd [•] HH:mm"
 
 #. See https://momentjs.com/docs/#/displaying/calendar-time/
 #: src/models.js:46
 msgid "DD MMM YYYY [•] HH:mm"
-msgstr "DD MMM YYYY [•] HH: mm"
+msgstr "DD MMM YYYY [•] HH:mm"
 
 #: src/utils.js:144
 msgid "Invalid address"

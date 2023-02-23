@@ -6,6 +6,8 @@ import {
   UNLEASH_URL,
   UNLEASH_CLIENT_KEY,
   UNLEASH_POLLING_INTERVAL,
+  WALLET_SERVICE_FEATURE_TOGGLE,
+  STAGE,
 } from './constants';
 
 export const Events = {
@@ -13,18 +15,17 @@ export const Events = {
 };
 
 export class FeatureFlags extends events.EventEmitter {
-  constructor(userId, network) {
+  constructor(userId) {
     super();
 
     this.userId = userId;
-    this.network = network;
-    this.walletServiceFlag = `wallet-service-mobile-${Platform.OS}-${this.network}.rollout`;
+    this.walletServiceFlag = WALLET_SERVICE_FEATURE_TOGGLE;
     this.walletServiceEnabled = null;
     this.client = new UnleashClient({
       url: UNLEASH_URL,
       clientKey: UNLEASH_CLIENT_KEY,
       refreshInterval: UNLEASH_POLLING_INTERVAL,
-      appName: `wallet-service-mobile-${Platform.OS}`,
+      appName: 'wallet-service-mobile',
     });
 
     this.client.on('update', () => {
@@ -46,9 +47,6 @@ export class FeatureFlags extends events.EventEmitter {
   * Uses the Hathor Unleash Server and Proxy to determine if the
   * wallet should use the WalletService facade or the old facade
   *
-  * @params {string} userId An user identifier (e.g. the firstAddress)
-  * @params {string} network The network name ('mainnet' or 'testnet')
-  *
   * @return {boolean} The result from the unleash feature flag
   */
   async shouldUseWalletService() {
@@ -57,7 +55,14 @@ export class FeatureFlags extends events.EventEmitter {
       if (shouldIgnore) {
         return false;
       }
-      this.client.updateContext({ userId: this.userId });
+      const options = {
+        userId: this.userId,
+        properties: {
+          platform: Platform.OS,
+          stage: STAGE,
+        },
+      };
+      this.client.updateContext(options);
 
       // Start polling for feature flag updates
       await this.client.start();

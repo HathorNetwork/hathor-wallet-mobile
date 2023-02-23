@@ -79,13 +79,17 @@ export const WALLET_STATUS = {
 };
 
 export function* startWallet(action) {
-  const { words, pin } = action.payload;
+  const {
+    words,
+    pin,
+    fromXpriv,
+  } = action.payload;
 
   NavigationService.navigate('LoadHistoryScreen');
 
   const networkName = 'mainnet';
   const uniqueDeviceId = getUniqueId();
-  const featureFlags = new FeatureFlags(uniqueDeviceId, networkName);
+  const featureFlags = new FeatureFlags(uniqueDeviceId);
   const useWalletService = yield call(() => featureFlags.shouldUseWalletService());
 
   yield put(setUseWalletService(useWalletService));
@@ -125,12 +129,23 @@ export function* startWallet(action) {
     config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
     config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
 
+    let xpriv;
+    if (fromXpriv) {
+      xpriv = walletUtil.getAcctPathXprivKey(pin);
+    }
+
     wallet = new HathorWalletServiceWallet({
       requestPassword: showPinScreenForResult,
       seed: words,
-      network
+      network,
+      xpriv,
     });
   } else {
+    let xpriv;
+    if (fromXpriv) {
+      xpriv = walletUtil.getXprivKey(pin);
+    }
+
     const connection = new Connection({
       network: networkName, // app currently connects only to mainnet
       servers: ['https://mobile.wallet.hathor.network/v1a/'],
@@ -138,6 +153,7 @@ export function* startWallet(action) {
 
     const walletConfig = {
       seed: words,
+      xpriv,
       store: STORE,
       connection,
       beforeReloadCallback: () => {
@@ -190,7 +206,10 @@ export function* startWallet(action) {
   }
 
   walletUtil.storePasswordHash(pin);
-  walletUtil.storeEncryptedWords(words, pin);
+  if (!fromXpriv) {
+    walletUtil.storeEncryptedWords(words, pin);
+  }
+
   setKeychainPin(pin);
 
   yield put(setServerInfo({
