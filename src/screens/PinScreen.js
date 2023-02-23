@@ -45,10 +45,7 @@ const mapDispatchToProps = (dispatch) => ({
   setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),
   setTempPin: (pin) => dispatch(setTempPin(pin)),
   onStartWalletLock: () => dispatch(onStartWalletLock()),
-  startWalletRequested: (words, pin) => dispatch(startWalletRequested({
-    words,
-    pin
-  })),
+  startWalletRequested: (payload) => dispatch(startWalletRequested(payload)),
 });
 
 class PinScreen extends React.Component {
@@ -146,10 +143,26 @@ class PinScreen extends React.Component {
       // method an change redux state. No need to execute callback or go back on navigation
       this.handleDataMigration(pin);
       if (!this.props.wallet) {
-        // We are saving HathorWallet object in redux, so if the app has lost redux information
-        // and is in locked screen we must start the HathorWallet object again
-        const words = getWalletWords(pin);
-        this.props.startWalletRequested(words, pin);
+        // Here we need to check if the user has the `acctPathMainKey` stored on his accessData
+        // because he won't have it if he's migrating from any version before v0.18.0 directly into
+        // version > v0.21.1. We only use it on the wallet-service facade, but dispatching
+        // `startWalletRequested` once with the words instead of xpriv will update his storage to
+        // contain it so if he ever switches to the wallet-service, it will load properly from it.
+        const xpriv = hathorLib.wallet.getAcctPathXprivKey(pin);
+        if (!xpriv) {
+          const words = getWalletWords(pin);
+          this.props.startWalletRequested({
+            pin,
+            words,
+          });
+        } else {
+          // If we are here, the wallet has already been initialized in the past, so
+          // we should load from xpriv
+          this.props.startWalletRequested({
+            pin,
+            fromXpriv: true,
+          });
+        }
       }
       this.props.unlockScreen();
     } else {

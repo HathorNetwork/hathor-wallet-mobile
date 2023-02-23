@@ -150,3 +150,8 @@ export const PUSH_ACTION = {
   /** Represents a click in the new-transaction notification. */
   NEW_TRANSACTION: 'new-transaction',
 };
+
+/**
+ * The feature toggle configured in Unleash
+ */
+export const WALLET_SERVICE_FEATURE_TOGGLE = 'wallet-service-mobile.rollout';
