@@ -555,10 +555,16 @@ export const pushDismissOptInQuestion = () => ({
   type: types.PUSH_DISMISS_OPT_IN_QUESTION,
 });
 
+/**
+ * Ask user to refresh the push notification settings
+ */
 export const pushAskRegistrationRefreshQuestion = () => ({
   type: types.PUSH_ASK_REGISTRATION_REFRESH_QUESTION,
 });
 
+/**
+ * Dismiss the modal to refresh the push notification settings
+ */
 export const pushDismissRegistrationRefreshQuestion = () => ({
   type: types.PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION,
 });
