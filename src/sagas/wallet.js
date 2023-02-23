@@ -154,7 +154,7 @@ export function* startWallet(action) {
     walletListenerThread,
     walletReadyThread,
     featureFlagWalletServiceThread,
-    featureFlagPushNotificationThread
+    featureFlagPushNotificationThread,
   ];
 
   // Store the unique device id on redux
@@ -378,7 +378,7 @@ export function* listenForPushNotificationFeatureFlag(featureFlags) {
   try {
     while (true) {
       const newUsePushNotification = yield take(channel);
-      const oldUsePushNotification = yield select((state) => state.pushNotification.use);
+      const oldUsePushNotification = yield select((state) => state.pushNotification.available);
 
       if (oldUsePushNotification !== newUsePushNotification) {
         yield put(setAvailablePushNotification(newUsePushNotification));
