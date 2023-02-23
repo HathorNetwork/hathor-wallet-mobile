@@ -113,6 +113,10 @@ const initialState = {
   isShowingPinScreen: false,
   pushNotification: {
     /**
+     * available {boolean} if push notification is available based on unleash feature flag
+     */
+    available: null,
+    /**
      * showOptInQuestion {boolean}
      * this is used to show the modal only the first time user opens the app
      * after the modal is dismissed, it will not be shown again
@@ -279,6 +283,8 @@ const reducer = (state = initialState, action) => {
       return onStartWalletNotStarted(state);
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
+    case types.SET_AVAILABLE_PUSH_NOTIFICATION:
+      return onSetAvailablePushNotification(state, action);
     case types.PUSH_ASK_OPT_IN_QUESTION:
       return onPushAskOptInQuestion(state);
     case types.PUSH_DISMISS_OPT_IN_QUESTION:
@@ -287,8 +293,8 @@ const reducer = (state = initialState, action) => {
       return onPushAskRegistrationRefreshQuestion(state);
     case types.PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION:
       return onPushDismissRegistrationRefreshQuestion(state);
-    case types.PUSH_INIT:
-      return onPushInit(state, action);
+    case types.PUSH_SET_STATE:
+      return onPushSetState(state, action);
     case types.PUSH_UPDATE_DEVICE_ID:
       return onPushUpdateDeviceId(state, action);
     case types.PUSH_REGISTRATION_REQUESTED:
@@ -761,6 +767,17 @@ export const onWalletBestBlockUpdate = (state, action) => {
 
 // Push notification
 
+/**
+ * @param {boolean} action - true if unleash enables the push notification feature
+ */
+export const onSetAvailablePushNotification = (state, action) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    available: action.payload,
+  }
+});
+
 export const onPushAskOptInQuestion = (state) => ({
   ...state,
   pushNotification: {
@@ -796,7 +813,7 @@ export const onPushDismissRegistrationRefreshQuestion = (state) => ({
 /**
  * @param {{ deviceId: string, settings: { enabled, showAmountEnabled }, enabledAt: number }} action
  */
-export const onPushInit = (state, action) => {
+export const onPushSetState = (state, action) => {
   const { deviceId, settings, enabledAt } = action.payload;
   return ({
     ...state,

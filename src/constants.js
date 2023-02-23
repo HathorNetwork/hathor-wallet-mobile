@@ -104,7 +104,7 @@ export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://wallet-service.hathor.ne
 export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.wallet-service.hathor.network/';
 
 /**
- * Push notification constants
+ * Push notification storage keys.
  */
 export const pushNotificationKey = {
   deviceId: 'pushNotification:deviceId',
@@ -113,6 +113,7 @@ export const pushNotificationKey = {
   enabledAt: 'pushNotification:enabledAt',
   optInDismissed: 'pushNotification:optInDismissed',
   notificationData: 'pushNotification:notificationData',
+  available: 'pushNotification:available',
   notificationError: 'pushNotification:notificationError',
 };
 /**
