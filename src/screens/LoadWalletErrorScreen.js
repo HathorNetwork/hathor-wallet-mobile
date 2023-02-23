@@ -10,7 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { onStartWalletLock, lockScreen } from '../actions';
 import SimpleButton from '../components/SimpleButton';
 

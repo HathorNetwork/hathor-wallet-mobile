@@ -6,6 +6,7 @@ import {
   UNLEASH_URL,
   UNLEASH_CLIENT_KEY,
   UNLEASH_POLLING_INTERVAL,
+  WALLET_SERVICE_FEATURE_TOGGLE,
   STAGE,
 } from './constants';
 
@@ -19,12 +20,11 @@ const UnleashEvent = {
 };
 
 export class FeatureFlags extends events.EventEmitter {
-  constructor(userId, network) {
+  constructor(userId) {
     super();
 
     this.userId = userId;
-    this.network = network;
-    this.walletServiceFlag = `wallet-service-mobile-${Platform.OS}-${this.network}.rollout`;
+    this.walletServiceFlag = WALLET_SERVICE_FEATURE_TOGGLE;
     this.walletServiceEnabled = null;
     this.pushNotificationFlag = 'push-notification.rollout';
     this.pushNotificationEnabled = null;
@@ -32,7 +32,7 @@ export class FeatureFlags extends events.EventEmitter {
       url: UNLEASH_URL,
       clientKey: UNLEASH_CLIENT_KEY,
       refreshInterval: UNLEASH_POLLING_INTERVAL,
-      appName: `wallet-service-mobile-${Platform.OS}`,
+      appName: 'wallet-service-mobile',
     });
 
     this.onUpdateWalletServiceFn = () => this.onUpdateWalletService.bind(this)();
