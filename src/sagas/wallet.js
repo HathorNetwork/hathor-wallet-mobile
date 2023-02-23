@@ -66,6 +66,7 @@ import {
   setWallet,
   newTx,
   types,
+  setAvailablePushNotification,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import { specificTypeAndPayload, errorHandler, showPinScreenForResult } from './helpers';
@@ -86,9 +87,12 @@ export function* startWallet(action) {
 
   const uniqueDeviceId = getUniqueId();
   const featureFlags = new FeatureFlags(uniqueDeviceId, NETWORK);
+  yield call(featureFlags.start.bind(featureFlags));
   const useWalletService = yield call(() => featureFlags.shouldUseWalletService());
+  const usePushNotification = yield call(() => featureFlags.shouldUsePushNotification());
 
   yield put(setUseWalletService(useWalletService));
+  yield put(setAvailablePushNotification(usePushNotification));
 
   // We don't want to clean access data since as if something goes
   // wrong here, the stored words would be lost forever.
@@ -140,12 +144,18 @@ export function* startWallet(action) {
   const walletReadyThread = yield fork(listenForWalletReady, wallet);
 
   // Thread to listen for feature flags from Unleash
-  const featureFlagsThread = yield fork(listenForFeatureFlags, featureFlags);
+  const featureFlagWalletServiceThread = yield fork(
+    listenForWalletServiceFeatureFlag, featureFlags
+  );
+  const featureFlagPushNotificationThread = yield fork(
+    listenForPushNotificationFeatureFlag, featureFlags
+  );
 
   const threads = [
     walletListenerThread,
     walletReadyThread,
-    featureFlagsThread
+    featureFlagWalletServiceThread,
+    featureFlagPushNotificationThread,
   ];
 
   // Store the unique device id on redux
@@ -223,6 +233,7 @@ export function* startWallet(action) {
 
   // We need to cancel threads on both reload and start
   yield cancel(threads);
+  yield call(featureFlags.stop.bind(featureFlags));
 
   if (reload) {
     // Yield the same action again to reload the wallet
@@ -320,7 +331,7 @@ export function* fetchTokensMetadata(tokens) {
 }
 
 // This will create a channel to listen for featureFlag updates
-export function* listenForFeatureFlags(featureFlags) {
+export function* listenForWalletServiceFeatureFlag(featureFlags) {
   const channel = eventChannel((emitter) => {
     const listener = (state) => emitter(state);
     featureFlags.on(FeatureFlagEvents.WALLET_SERVICE_ENABLED, (state) => {
@@ -330,6 +341,7 @@ export function* listenForFeatureFlags(featureFlags) {
     // Cleanup when the channel is closed
     return () => {
       featureFlags.removeListener(FeatureFlagEvents.WALLET_SERVICE_ENABLED, listener);
+      featureFlags.offUpdateWalletService();
     };
   });
 
@@ -340,6 +352,37 @@ export function* listenForFeatureFlags(featureFlags) {
 
       if (oldUseWalletService !== newUseWalletService) {
         yield put(reloadWalletRequested());
+      }
+    }
+  } finally {
+    if (yield cancelled()) {
+      // When we close the channel, it will remove the event listener
+      channel.close();
+    }
+  }
+}
+
+export function* listenForPushNotificationFeatureFlag(featureFlags) {
+  const channel = eventChannel((emitter) => {
+    const listener = (state) => emitter(state);
+    featureFlags.on(FeatureFlagEvents.PUSH_NOTIFICATION_ENABLED, (state) => {
+      emitter(state);
+    });
+
+    // Cleanup when the channel is closed
+    return () => {
+      featureFlags.removeListener(FeatureFlagEvents.PUSH_NOTIFICATION_ENABLED, listener);
+      featureFlags.offUpdatePushNotification();
+    };
+  });
+
+  try {
+    while (true) {
+      const newUsePushNotification = yield take(channel);
+      const oldUsePushNotification = yield select((state) => state.pushNotification.available);
+
+      if (oldUsePushNotification !== newUsePushNotification) {
+        yield put(setAvailablePushNotification(newUsePushNotification));
       }
     }
   } finally {

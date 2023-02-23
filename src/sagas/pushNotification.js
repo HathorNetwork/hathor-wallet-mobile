@@ -16,12 +16,13 @@ import {
   race,
   take,
   takeLatest,
-  fork,
+  debounce,
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
 import { Linking, Platform } from 'react-native';
 import { t } from 'ttag';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   types,
   pushRegisterSuccess,
@@ -31,9 +32,9 @@ import {
   pushLoadWalletRequested,
   pushLoadWalletSuccess,
   pushLoadWalletFailed,
-  pushInit,
+  pushSetState,
   pushAskOptInQuestion,
-  pushReset,
+  initPushNotification,
   onExceptionCaptured,
   pushTxDetailsRequested,
   pushTxDetailsSuccess,
@@ -162,8 +163,13 @@ function* installForegroundListener() {
 /**
  * This function is called when the wallet is initialized with success.
  */
-export function* onAppInitialization() {
-  yield take(types.START_WALLET_SUCCESS);
+export function* init() {
+  // If push notification feature flag is disabled, we should not initialize it.
+  const isPushNotificationAvailable = yield select((state) => state.pushNotification.available);
+  if (!isPushNotificationAvailable) {
+    console.debug('Halting push notification initialization because the feature flag is disabled.');
+    return;
+  }
 
   // If the channel is not created, we should not continue.
   const isChannelCreated = yield call(createChannelIfNotExists);
@@ -216,7 +222,7 @@ export function* onAppInitialization() {
   const enabledAt = STORE.getItem(pushNotificationKey.enabledAt);
 
   // Initialize the pushNotification state on the redux store
-  yield put(pushInit({
+  yield put(pushSetState({
     deviceId,
     settings: {
       enabled,
@@ -255,6 +261,17 @@ export function* onAppInitialization() {
   if (askOptIn) {
     yield put(pushAskOptInQuestion());
   }
+}
+
+/**
+ * It is responsible for persisting the PushNotification.available value,
+ * so we can use it when the app is in any state.
+ * @param {{ payload: boolean }} action - contains the value of the use(PushNotification)
+ */
+export function* setAvailablePushNotification(action) {
+  const available = action.payload;
+  yield call(AsyncStorage.setItem, pushNotificationKey.available, available.toString());
+  yield put(initPushNotification());
 }
 
 /**
@@ -529,11 +546,15 @@ export function* resetPushNotification() {
   yield STORE.removeItem(pushNotificationKey.enabledAt);
   yield STORE.removeItem(pushNotificationKey.settings);
   yield STORE.removeItem(pushNotificationKey.deviceId);
+  // Reset the state
+  yield put(initPushNotification());
+  console.log('Push notification reset successfully');
 }
 
 export function* saga() {
   yield all([
-    fork(onAppInitialization),
+    debounce(500, [[types.START_WALLET_SUCCESS, types.INIT_PUSH_NOTIFICATION]], init),
+    takeLatest(types.SET_AVAILABLE_PUSH_NOTIFICATION, setAvailablePushNotification),
     takeEvery(types.PUSH_WALLET_LOAD_REQUESTED, loadWallet),
     takeEvery(types.PUSH_REGISTRATION_REQUESTED, registration),
     takeEvery(types.RESET_WALLET, resetPushNotification),

@@ -75,11 +75,13 @@ export const types = {
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
   // Push Notification actions
+  INIT_PUSH_NOTIFICATION: 'INIT_PUSH_NOTIFICATION',
+  SET_AVAILABLE_PUSH_NOTIFICATION: 'SET_AVAILABLE_PUSH_NOTIFICATION',
   PUSH_ASK_OPT_IN_QUESTION: 'PUSH_ASK_OPT_IN_QUESTION',
   PUSH_DISMISS_OPT_IN_QUESTION: 'PUSH_DISMISS_OPT_IN_QUESTION',
   PUSH_ASK_REGISTRATION_REFRESH_QUESTION: 'PUSH_ASK_REGISTRATION_REFRESH_QUESTION',
   PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION: 'PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION',
-  PUSH_INIT: 'PUSH_INIT',
+  PUSH_SET_STATE: 'PUSH_SET_STATE',
   PUSH_UPDATE_DEVICE_ID: 'PUSH_UPDATE_DEVICE_ID',
   PUSH_API_READY: 'PUSH_API_READY',
   PUSH_WALLET_LOAD_REQUESTED: 'PUSH_WALLET_LOAD_REQUESTED',
@@ -526,6 +528,19 @@ export const onWalletReload = () => ({
 
 // Push notification actions
 
+export const initPushNotification = () => ({
+  type: types.INIT_PUSH_NOTIFICATION,
+});
+
+/**
+ * @param {boolean} payload - true if unleash enables the push notification feature
+ */
+export const setAvailablePushNotification = (payload) => ({
+  type: types.SET_AVAILABLE_PUSH_NOTIFICATION,
+  payload,
+});
+
+
 /**
  * Ask user if he wants to opt-in push notifications
  */
@@ -555,11 +570,11 @@ export const pushDismissRegistrationRefreshQuestion = () => ({
 });
 
 /**
- * Initialize push notification state
+ * Set push notification state
  * @param {{deviceId: string, settings: { enabled, showAmountEnabled }, enabledAt: number}} payload
  */
-export const pushInit = (payload) => ({
-  type: types.PUSH_INIT,
+export const pushSetState = (payload) => ({
+  type: types.PUSH_SET_STATE,
   payload,
 });
 

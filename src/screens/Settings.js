@@ -38,6 +38,7 @@ const mapStateToProps = (state) => {
     network: state.serverInfo.network,
     uniqueDeviceId: state.uniqueDeviceId,
     server,
+    isPushNotificationAvailable: state.pushNotification.available,
   };
 };
 
@@ -115,10 +116,14 @@ export class Settings extends React.Component {
               title={t`Security`}
               onPress={() => this.props.navigation.navigate('Security')}
             />
-            <ListMenu
-              title={t`Push Notification`}
-              onPress={() => this.props.navigation.navigate('PushNotification')}
-            />
+            {this.props.isPushNotificationAvailable
+              && (
+              <ListMenu
+                title={t`Push Notification`}
+                onPress={() => this.props.navigation.navigate('PushNotification')}
+              />
+              )
+            }
             {IS_MULTI_TOKEN
               && (
                 <ListMenu

@@ -7,6 +7,7 @@
 
 import notifee, { AndroidStyle } from '@notifee/react-native';
 import { msgid, ngettext, t } from 'ttag';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED,
   NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED,
@@ -151,6 +152,12 @@ export const messageHandler = async (message, isForeground) => {
     throw new Error(`Error while handling push notification message. Unknown message bodyLocKey ${data.bodyLocKey}.`);
   }
 
+  const isPushNotificationAvailable = await AsyncStorage.getItem(pushNotificationKey.available);
+  if (!isPushNotificationAvailable) {
+    console.warn('Push notification is disabled. Ignoring message.');
+    return;
+  }
+
   try {
     const bodyArgs = data.bodyLocArgs && JSON.parse(data.bodyLocArgs);
     const title = localization.getMessage(data.titleLocKey);
@@ -165,16 +172,16 @@ export const messageHandler = async (message, isForeground) => {
         channelId: PUSH_CHANNEL_TRANSACTION,
         pressAction: {
           id: PUSH_ACTION.NEW_TRANSACTION,
-          ...(!isForeground && { mainComponent: appName }),
+          ...(!isForeground && { mainComponent: appName })
         },
         style: { type: AndroidStyle.BIGTEXT, text: body },
       },
       data: {
-        txId,
-      },
+        txId
+      }
     });
   } catch (error) {
-    console.log('Error while handling push notification message to be displayed.', error);
+    console.error('Error while handling push notification message to be displayed.', error);
     throw new Error(`Error while handling push notification message to be displayed. ErrorMessage: ${error.message}`, error);
   }
 };
