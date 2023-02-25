@@ -69,7 +69,7 @@ msgstr "Endereço inválido"
 #.          * @example
 #.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
 #.          
-#: src/workers/pushNotificationHandler.js:91
+#: src/workers/pushNotificationHandler.js:92
 #, javascript-format
 msgid ""
 "You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
@@ -88,26 +88,27 @@ msgstr[1] ""
 #.          * @example
 #.          * You have received 10 T2 and 5 T1 on a new transaction.
 #.          
-#: src/workers/pushNotificationHandler.js:104
+#: src/workers/pushNotificationHandler.js:105
 #, javascript-format
 msgid ""
 "You have received ${ _firstToken } and ${ _secondToken } on a new "
 "transaction."
-msgstr "Você recebeu ${ _firstToken } e ${ _secondToken } em uma nova transação."
+msgstr ""
+"Você recebeu ${ _firstToken } e ${ _secondToken } em uma nova transação."
 
 #. *
 #.          * @example
 #.          * You have received 10 T2 on a new transaction.
 #.          
-#: src/workers/pushNotificationHandler.js:112
+#: src/workers/pushNotificationHandler.js:113
 msgid "You have received ${ _firstToken2 } on a new transaction."
 msgstr "Você recebeu ${ _firstToken2 } em uma nova transação."
 
-#: src/workers/pushNotificationHandler.js:115
+#: src/workers/pushNotificationHandler.js:116
 msgid "There is a new transaction in your wallet."
 msgstr "Há uma nova transação na sua carteira."
 
-#: src/workers/pushNotificationHandler.js:117
+#: src/workers/pushNotificationHandler.js:118
 msgid "New transaction received"
 msgstr "Nova transação recebida"
 
@@ -507,28 +508,28 @@ msgstr "Recebido"
 msgid "Waiting confirmation"
 msgstr "Aguardando confirmação"
 
-#: src/screens/PinScreen.js:231
+#: src/screens/PinScreen.js:244
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
-#: src/screens/PinScreen.js:70
+#: src/screens/PinScreen.js:67
 msgid "Enter your PIN Code "
 msgstr "Digite seu PIN "
 
-#: src/screens/PinScreen.js:71
+#: src/screens/PinScreen.js:68
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
-#: src/screens/PinScreen.js:243
+#: src/screens/PinScreen.js:256
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:246 src/screens/RecoverPin.js:108
-#: src/screens/Settings.js:139
+#: src/screens/PinScreen.js:259 src/screens/RecoverPin.js:108
+#: src/screens/Settings.js:144
 msgid "Reset wallet"
 msgstr "Resetar a wallet"
 
-#: src/screens/PushNotification.js:57 src/screens/Settings.js:119
+#: src/screens/PushNotification.js:57 src/screens/Settings.js:122
 msgid "Push Notification"
 msgstr "Notificação"
 
@@ -728,31 +729,31 @@ msgstr "Você não tem o token requisitado [${ tokenLabel }]"
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
-#: src/screens/Settings.js:90
+#: src/screens/Settings.js:91
 msgid "You are connected to"
 msgstr "Você está conectado à"
 
-#: src/screens/Settings.js:102
+#: src/screens/Settings.js:103
 msgid "Connected to"
 msgstr "Conectado ao servidor"
 
-#: src/screens/Settings.js:115
+#: src/screens/Settings.js:116
 msgid "Security"
 msgstr "Segurança"
 
-#: src/screens/Settings.js:125
+#: src/screens/Settings.js:130
 msgid "Create a new token"
 msgstr "Criar um novo token"
 
-#: src/screens/Settings.js:133
+#: src/screens/Settings.js:138
 msgid "Register a token"
 msgstr "Registrar um token"
 
-#: src/screens/Settings.js:143
+#: src/screens/Settings.js:148
 msgid "About"
 msgstr "Sobre"
 
-#: src/screens/Settings.js:150
+#: src/screens/Settings.js:155
 msgid "Unique app identifier"
 msgstr "Identificador único do aplicativo"
 
@@ -788,7 +789,7 @@ msgstr "Eu quero desregistrar o token **${ tokenLabel }**"
 msgid "Unregister token"
 msgstr "Desregistrar token"
 
-#: src/sagas/pushNotification.js:54
+#: src/sagas/pushNotification.js:57
 msgid "Transaction"
 msgstr "Transação"
 
@@ -812,7 +813,9 @@ msgstr "Atualize sua configuração de notificação"
 msgid ""
 "In order to keep receiving push notifications, you need to refresh your "
 "registration. Do you want to do it now?"
-msgstr "Para continuar recebendo notificações, é necessário atualizar sua configuração de notificação. Deseja atualizar agora?"
+msgstr ""
+"Para continuar recebendo notificações, é necessário atualizar sua "
+"configuração de notificação. Deseja atualizar agora?"
 
 #: src/components/AskForPushNotificationRefresh.js:30
 msgid "Refresh"
