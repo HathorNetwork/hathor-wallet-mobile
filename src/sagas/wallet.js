@@ -88,9 +88,9 @@ export function* startWallet(action) {
   } = action.payload;
 
   NavigationService.navigate('LoadHistoryScreen');
-
   const uniqueDeviceId = getUniqueId();
   const featureFlags = new FeatureFlags(uniqueDeviceId);
+  yield call(featureFlags.start.bind(featureFlags));
   const useWalletService = yield call(() => featureFlags.shouldUseWalletService());
   const usePushNotification = yield call(() => featureFlags.shouldUsePushNotification());
 
