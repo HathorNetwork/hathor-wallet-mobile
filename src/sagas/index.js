@@ -9,11 +9,13 @@ import { all, fork } from 'redux-saga/effects';
 import { saga as walletSagas } from './wallet';
 import { saga as tokensSagas } from './tokens';
 import { saga as pushNotificationSaga } from './pushNotification';
+import { saga as errorHandlerSagas } from './errorHandler';
 
 const sagas = [
   walletSagas,
   tokensSagas,
   pushNotificationSaga,
+  errorHandlerSagas,
 ];
 
 function* defaultSaga() {
