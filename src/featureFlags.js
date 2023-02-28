@@ -139,17 +139,6 @@ export class FeatureFlags extends events.EventEmitter {
         this.offUpdateWalletService();
         return false;
       }
-      const options = {
-        userId: this.userId,
-        properties: {
-          platform: Platform.OS,
-          stage: STAGE,
-        },
-      };
-      this.client.updateContext(options);
-
-      // Start polling for feature flag updates
-      await this.client.start();
 
       // start() method will have already called the fetchToggles, so the flag should be enabled
       const isWalletServiceEnabled = this.client.isEnabled(this.walletServiceFlag);

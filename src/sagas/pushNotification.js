@@ -34,6 +34,7 @@ import {
   pushLoadWalletFailed,
   pushSetState,
   pushAskOptInQuestion,
+  pushReset,
   initPushNotification,
   onExceptionCaptured,
   pushTxDetailsRequested,
@@ -257,8 +258,8 @@ export function* init() {
 
   // If the user has not been asked yet, we should ask him if he wants to enable push notifications
   // We should appear only once, so we should save the fact that the user has dismissed the question
-  const askOptIn = !STORE.getItem(pushNotificationKey.optInDismissed);
-  if (askOptIn) {
+  const optInDismissed = STORE.getItem(pushNotificationKey.optInDismissed);
+  if (optInDismissed === null || !optInDismissed) {
     yield put(pushAskOptInQuestion());
   }
 }
@@ -547,6 +548,7 @@ export function* resetPushNotification() {
   yield STORE.removeItem(pushNotificationKey.settings);
   yield STORE.removeItem(pushNotificationKey.deviceId);
   // Reset the state
+  yield put(pushReset());
   yield put(initPushNotification());
   console.log('Push notification reset successfully');
 }

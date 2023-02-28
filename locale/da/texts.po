@@ -61,11 +61,15 @@ msgstr "[Sidste] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
+#: src/utils.js:144
+msgid "Invalid address"
+msgstr "Ugyldig adresse"
+
 #. *
 #.          * @example
 #.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
 #.          
-#: src/pushNotificationHandler.js:73
+#: src/workers/pushNotificationHandler.js:92
 #, javascript-format
 msgid ""
 "You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
@@ -80,7 +84,7 @@ msgstr[1] ""
 #.          * @example
 #.          * You have received 10 T2 and 5 T1 on a new transaction.
 #.          
-#: src/pushNotificationHandler.js:84
+#: src/workers/pushNotificationHandler.js:105
 #, javascript-format
 msgid ""
 "You have received ${ _firstToken } and ${ _secondToken } on a new "
@@ -91,21 +95,17 @@ msgstr ""
 #.          * @example
 #.          * You have received 10 T2 on a new transaction.
 #.          
-#: src/pushNotificationHandler.js:91
+#: src/workers/pushNotificationHandler.js:113
 msgid "You have received ${ _firstToken2 } on a new transaction."
 msgstr ""
 
-#: src/pushNotificationHandler.js:94
+#: src/workers/pushNotificationHandler.js:116
 msgid "There is a new transaction in your wallet."
 msgstr ""
 
-#: src/pushNotificationHandler.js:96
+#: src/workers/pushNotificationHandler.js:118
 msgid "New transaction received"
 msgstr "Ingen transaktioner"
-
-#: src/utils.js:144
-msgid "Invalid address"
-msgstr "Ugyldig adresse"
 
 #: src/screens/About.js:56
 msgid "ABOUT"
@@ -331,11 +331,11 @@ msgstr "Symbolet er en kortere version af token-navnet"
 msgid "E.g. HTR"
 msgstr "F.eks. HTR"
 
-#: src/screens/Dashboard.js:66 src/screens/RegisterTokenManual.js:150
+#: src/screens/Dashboard.js:68 src/screens/RegisterTokenManual.js:150
 msgid "Register token"
 msgstr "Registrer token"
 
-#: src/screens/Dashboard.js:73
+#: src/screens/Dashboard.js:75
 msgid "TOKENS"
 msgstr "TOKENS"
 
@@ -495,28 +495,28 @@ msgstr "Modtaget"
 msgid "Waiting confirmation"
 msgstr "Venter på bekræftelse"
 
-#: src/screens/PinScreen.js:231
+#: src/screens/PinScreen.js:244
 msgid "Incorrect PIN Code. Try again."
 msgstr "Forkert PIN-kode. Prøv igen."
 
-#: src/screens/PinScreen.js:70
+#: src/screens/PinScreen.js:67
 msgid "Enter your PIN Code "
 msgstr "Indtast din pinkode "
 
-#: src/screens/PinScreen.js:71
+#: src/screens/PinScreen.js:68
 msgid "Unlock Hathor Wallet"
 msgstr "Lås Hathor-wallet op"
 
-#: src/screens/PinScreen.js:243
+#: src/screens/PinScreen.js:256
 msgid "Cancel"
 msgstr "Annuller"
 
-#: src/screens/PinScreen.js:246 src/screens/RecoverPin.js:108
-#: src/screens/Settings.js:139
+#: src/screens/PinScreen.js:259 src/screens/RecoverPin.js:108
+#: src/screens/Settings.js:144
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
-#: src/screens/PushNotification.js:57 src/screens/Settings.js:119
+#: src/screens/PushNotification.js:57 src/screens/Settings.js:122
 msgid "Push Notification"
 msgstr ""
 
@@ -713,31 +713,31 @@ msgstr "Du har ikke den anmodede token [${ tokenLabel }]"
 msgid "Scan the QR code"
 msgstr "Scan QR-koden"
 
-#: src/screens/Settings.js:90
+#: src/screens/Settings.js:91
 msgid "You are connected to"
 msgstr "Du er tilsluttet til"
 
-#: src/screens/Settings.js:102
+#: src/screens/Settings.js:103
 msgid "Connected to"
 msgstr "Forbundet til"
 
-#: src/screens/Settings.js:115
+#: src/screens/Settings.js:116
 msgid "Security"
 msgstr "Sikkerhed"
 
-#: src/screens/Settings.js:125
+#: src/screens/Settings.js:130
 msgid "Create a new token"
 msgstr "Opret en ny token"
 
-#: src/screens/Settings.js:133
+#: src/screens/Settings.js:138
 msgid "Register a token"
 msgstr "Registrer en token"
 
-#: src/screens/Settings.js:143
+#: src/screens/Settings.js:148
 msgid "About"
 msgstr "Om"
 
-#: src/screens/Settings.js:150
+#: src/screens/Settings.js:155
 msgid "Unique app identifier"
 msgstr ""
 
@@ -771,7 +771,7 @@ msgstr "Jeg vil afregistrere token **${ tokenLabel }**"
 msgid "Unregister token"
 msgstr "Afregistrer token"
 
-#: src/sagas/pushNotification.js:56
+#: src/sagas/pushNotification.js:57
 msgid "Transaction"
 msgstr "Ingen transaktioner"
 
@@ -785,6 +785,20 @@ msgstr ""
 
 #: src/components/AskForPushNotification.js:23
 msgid "Yes, enable"
+msgstr ""
+
+#: src/components/AskForPushNotificationRefresh.js:28
+msgid "Refresh your push notification registration"
+msgstr ""
+
+#: src/components/AskForPushNotificationRefresh.js:29
+msgid ""
+"In order to keep receiving push notifications, you need to refresh your "
+"registration. Do you want to do it now?"
+msgstr ""
+
+#: src/components/AskForPushNotificationRefresh.js:30
+msgid "Refresh"
 msgstr ""
 
 #: src/components/CopyClipboard.js:47
@@ -864,15 +878,15 @@ msgstr "Ingen internetforbindelse"
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
-#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:60
+#: src/components/PushTxDetailsModal.js:68 src/components/TxDetailsModal.js:60
 msgid "Date & Time"
 msgstr "Dato & Tid"
 
-#: src/components/PushTxDetailsModal.js:83 src/components/TxDetailsModal.js:61
+#: src/components/PushTxDetailsModal.js:69 src/components/TxDetailsModal.js:61
 msgid "ID"
 msgstr "ID"
 
-#: src/components/PushTxDetailsModal.js:109
+#: src/components/PushTxDetailsModal.js:93
 msgid "New Transaction"
 msgstr "Ingen transaktioner"
 
