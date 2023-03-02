@@ -10,7 +10,7 @@ import createSagaMiddleware from 'redux-saga';
 import thunk from 'redux-thunk';
 import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
-import { INITIAL_TOKENS, DEFAULT_TOKEN } from './constants';
+import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS } from './constants';
 import { types } from './actions';
 import rootSagas from './sagas';
 import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
@@ -65,6 +65,16 @@ import { WALLET_STATUS } from './sagas/wallet';
  *   error {Error} Error object with the stacktrace, to be sent to Sentry
  * }
  *
+ * pushNotification {Object} Information on the push notification {
+ *  showOptInQuestion {boolean} Indicates if we need to show the modal to ask the user
+ *    if he wants to enable push notification
+ *  deviceId {string} device id for push notification
+ *  apiStatus {string} status of the push notification api
+ *  enabled {boolean} if user has enabled push notification
+ *  enabledAt {number} timestamp of when push notification was enabled
+ *  showAmountEnabled {boolean} if user has enabled the option to show amount in push notification
+ *  txDetails {Object} tx info to show on tx details modal
+ * }
  * lastSharedAddress {string} The current address to use
  * lastSharedIndex {int} The current address index to use
  */
@@ -101,6 +111,89 @@ const initialState = {
   // screen
   tempPin: null,
   isShowingPinScreen: false,
+  pushNotification: {
+    /**
+     * available {boolean} if push notification is available based on unleash feature flag
+     */
+    available: null,
+    /**
+     * showOptInQuestion {boolean}
+     * this is used to show the modal only the first time user opens the app
+     * after the modal is dismissed, it will not be shown again
+     * until the user clears the app data
+     * (this is done to avoid showing the modal to users that have already
+     * enabled push notification)
+     */
+    showOptInQuestion: false,
+    /**
+     * showRegistrationRefreshQuestion {boolean}
+     * this is used to show the action modal to ask the user to refresh
+     * the push notification registration to keep receiving notifications.
+     */
+    showRegistrationRefreshQuestion: false,
+    /**
+     * deviceId {string} device id for push notification
+     */
+    deviceId: '',
+    /**
+     * apiStatus {string} status of the push notification api request
+     */
+    apiStatus: PUSH_API_STATUS.READY,
+    /**
+     * enabled {boolean} if user has enabled push notification
+     */
+    enabled: false,
+    /**
+     * showAmountEnabled {boolean} if user has enabled the option to show amount
+     * of token balance on the push notification
+     */
+    showAmountEnabled: false,
+    /**
+     * enabledAt {number} timestamp of when push notification was enabled
+     */
+    enabledAt: 0,
+    /**
+     * txDetails {{
+     *  tx: {
+     *    txId: string,
+     *    timestamp: number,
+     *    voided: boolean
+     *  },
+     *  tokens: {
+     *    uid: string,
+     *    name: string,
+     *    symbol: string,
+     *    balance: number,
+     *    isRegistered: boolean
+     *   }[]
+     * }} tx info to show on tx details modal
+     * @example
+     * {
+     *   tx: {
+     *     txId: '00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185',
+     *     timestamp: 1673039453,
+     *     voided: false,
+     *   },
+     *   tokens: [
+     *     {
+     *       uid: '00',
+     *       name: 'Hathor',
+     *       symbol: 'HTR',
+     *       balance: 200,
+     *       isRegistered: true,
+     *     },
+     *     {
+     *       uid: '0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4',
+     *       name: 'TestNft',
+     *       symbol: 'TN1',
+     *       balance: 2,
+     *       isRegistered: false,
+     *     },
+     *   ],
+     * }
+     */
+    txDetails: null,
+  },
   walletStartState: WALLET_STATUS.NOT_STARTED,
   lastSharedAddress: null,
   lastSharedIndex: null,
@@ -190,6 +283,34 @@ const reducer = (state = initialState, action) => {
       return onStartWalletNotStarted(state);
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
+    case types.SET_AVAILABLE_PUSH_NOTIFICATION:
+      return onSetAvailablePushNotification(state, action);
+    case types.PUSH_ASK_OPT_IN_QUESTION:
+      return onPushAskOptInQuestion(state);
+    case types.PUSH_DISMISS_OPT_IN_QUESTION:
+      return onPushDismissOptInQuestion(state);
+    case types.PUSH_ASK_REGISTRATION_REFRESH_QUESTION:
+      return onPushAskRegistrationRefreshQuestion(state);
+    case types.PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION:
+      return onPushDismissRegistrationRefreshQuestion(state);
+    case types.PUSH_SET_STATE:
+      return onPushSetState(state, action);
+    case types.PUSH_UPDATE_DEVICE_ID:
+      return onPushUpdateDeviceId(state, action);
+    case types.PUSH_REGISTRATION_REQUESTED:
+      return onPushApiLoading(state);
+    case types.PUSH_API_READY:
+      return onPushApiReady(state);
+    case types.PUSH_REGISTER_SUCCESS:
+      return onPushRegisterSuccess(state, action);
+    case types.PUSH_REGISTER_FAILED:
+      return onPushApiFailed(state);
+    case types.PUSH_TX_DETAILS_SUCCESS:
+      return onTxDetailsSuccess(state, action);
+    case types.PUSH_CLEAN_TX_DETAILS:
+      return onPushCleanTxDetails(state);
+    case types.PUSH_RESET:
+      return onPushReset(state);
     case types.EXCEPTION_CAPTURED:
       return onExceptionCaptured(state, action);
     case types.WALLET_RELOADING:
@@ -643,6 +764,176 @@ export const onWalletBestBlockUpdate = (state, action) => {
     height: data,
   };
 };
+
+// Push notification
+
+/**
+ * @param {boolean} action - true if unleash enables the push notification feature
+ */
+export const onSetAvailablePushNotification = (state, action) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    available: action.payload,
+  }
+});
+
+export const onPushAskOptInQuestion = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    showOptInQuestion: true,
+  }
+});
+
+export const onPushDismissOptInQuestion = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    showOptInQuestion: false,
+  }
+});
+
+export const onPushAskRegistrationRefreshQuestion = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    showRegistrationRefreshQuestion: true,
+  }
+});
+
+export const onPushDismissRegistrationRefreshQuestion = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    showRegistrationRefreshQuestion: false,
+  }
+});
+
+/**
+ * @param {{ deviceId: string, settings: { enabled, showAmountEnabled }, enabledAt: number }} action
+ */
+export const onPushSetState = (state, action) => {
+  const { deviceId, settings, enabledAt } = action.payload;
+  return ({
+    ...state,
+    pushNotification: {
+      ...state.pushNotification,
+      ...settings,
+      deviceId,
+      enabledAt,
+    },
+  });
+};
+
+export const onPushUpdateDeviceId = (state, action) => {
+  const { deviceId } = action.payload;
+  return ({
+    ...state,
+    pushNotification: {
+      ...state.pushNotification,
+      deviceId,
+    },
+  });
+};
+
+export const onPushApiLoading = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    apiStatus: PUSH_API_STATUS.LOADING,
+  },
+});
+
+export const onPushApiReady = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    apiStatus: PUSH_API_STATUS.READY,
+  },
+});
+
+/**
+ * @param {{enabled: boolean, showAmountEnabled: boolean, enabledAt: number }} action
+ */
+export const onPushRegisterSuccess = (state, action) => {
+  const { enabled, showAmountEnabled, enabledAt } = action.data;
+  return ({
+    ...state,
+    pushNotification: {
+      ...state.pushNotification,
+      apiStatus: PUSH_API_STATUS.READY,
+      enabled,
+      showAmountEnabled,
+      enabledAt,
+    },
+  });
+};
+
+/**
+ * @param {Object} state
+ * @param {{payload: {enabled: boolean, showAmountEnabled: boolean}}} action
+ */
+export const onPushUpdateSuccess = (state, { payload: { enabled, showAmountEnabled } }) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    apiStatus: PUSH_API_STATUS.READY,
+    enabled,
+    showAmountEnabled,
+  },
+});
+
+export const onPushApiFailed = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    apiStatus: PUSH_API_STATUS.FAILED,
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{ payload: {
+ *   isTxFound: boolean,
+ *   txId: string,
+ *   tx: {
+ *     txId: string,
+ *     timestamp: number,
+ *     voided: boolean
+ *   },
+ *   tokens: {
+ *     uid: string,
+ *     name: string,
+ *     symbol: string,
+ *     balance: number,
+ *     isRegistered: boolean
+ *   }[],
+ * }}} action
+ */
+export const onTxDetailsSuccess = (state, action) => {
+  const txDetails = action.payload;
+  return {
+    ...state,
+    pushNotification: {
+      ...state.pushNotification,
+      txDetails,
+    },
+  };
+};
+
+export const onPushCleanTxDetails = (state) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    txDetails: null,
+  },
+});
+
+export const onPushReset = (state) => ({
+  ...state,
+  pushNotification: initialState.pushNotification,
+});
 
 /**
  * @param {Boolean} action.payload.error The captured Error object

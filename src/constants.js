@@ -28,6 +28,17 @@ export const STORE = new AsyncStorageStore();
 hathorLib.storage.setStore(STORE);
 
 /**
+ * This is the environment stage that will be used to load the unleash feature flags.
+ */
+export const STAGE = 'mainnet';
+
+/**
+ * this is the network name that will be used to load the wallet on the wallet-service,
+ * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
+ */
+export const NETWORK = 'mainnet';
+
+/**
  * Default tokens for the wallet (to start on redux)
  */
 export const INITIAL_TOKENS = [DEFAULT_TOKEN];
@@ -78,6 +89,9 @@ export const PIN_SIZE = 6;
 export const UNLEASH_URL = 'https://unleash-proxy.b7e6a7f52ee9fefaf0c53e300cfcb014.hathor.network/proxy';
 export const UNLEASH_CLIENT_KEY = 'wKNhpEXKa39aTRgIjcNsO4Im618bRGTq';
 export const UNLEASH_POLLING_INTERVAL = 15; // seconds
+export const unleashStorageKey = {
+  ignoreWalletServiceFlag: 'featureFlags:ignoreWalletServiceFlag',
+};
 
 /**
  * Quantity of token metadata to download concurrently
@@ -90,9 +104,52 @@ export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://wallet-service.hathor.ne
 export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.wallet-service.hathor.network/';
 
 /**
- * This is the environment stage that will be used to load the unleash feature flags.
+ * Push notification storage keys.
  */
-export const STAGE = 'mainnet';
+export const pushNotificationKey = {
+  deviceId: 'pushNotification:deviceId',
+  settings: 'pushNotification:settings',
+  hasBeenEnabled: 'pushNotification:hasBeenEnabled',
+  enabledAt: 'pushNotification:enabledAt',
+  optInDismissed: 'pushNotification:optInDismissed',
+  notificationData: 'pushNotification:notificationData',
+  available: 'pushNotification:available',
+  notificationError: 'pushNotification:notificationError',
+};
+/**
+ * this is the message key for localization of new transaction when show amount is enabled
+ */
+export const NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED = 'new_transaction_received_description_with_tokens';
+/**
+ * this is the message key for localization of new transaction when show amount is disabled
+ */
+export const NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED = 'new_transaction_received_description_without_tokens';
+/**
+ * this is the message key for localization of new transaction title
+ */
+export const NEW_TRANSACTION_RECEIVED_TITLE = 'new_transaction_received_title';
+/**
+ * this is the channel id for the transaction notification
+ */
+export const PUSH_CHANNEL_TRANSACTION = 'transaction';
+/**
+ * All possible states for the push notification API.
+ * It is used to show the loading screen while the API is loading,
+ * or to show the error screen if the API fails,
+ * or to show the push notification settings options if the API is ready.
+ */
+export const PUSH_API_STATUS = {
+  READY: 'ready',
+  FAILED: 'failed',
+  LOADING: 'loading',
+};
+/**
+ * Holds the push notification action ids available in for notification interaction.
+ */
+export const PUSH_ACTION = {
+  /** Represents a click in the new-transaction notification. */
+  NEW_TRANSACTION: 'new-transaction',
+};
 
 /**
  * The feature toggle configured in Unleash

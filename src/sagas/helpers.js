@@ -7,6 +7,11 @@
 
 import { get } from 'lodash';
 import { put, race, take, call } from 'redux-saga/effects';
+import { t } from 'ttag';
+import NavigationService from '../NavigationService';
+import {
+  setIsShowingPinScreen,
+} from '../actions';
 
 /**
  * Helper method to be used on take saga effect, will wait until an action
@@ -73,3 +78,27 @@ export function errorHandler(saga, failureAction) {
     }
   };
 }
+
+/**
+ * Opens the pin screen and waits for the user to enter the pin.
+ * This method is used while processing some action on saga
+ * and we need to wait for the user to enter the pin to continue.
+ * @param {Function} dispatch - dispatch function from redux
+ * @returns {Promise<string>} - Promise that resolves with the pin entered by the user
+ */
+export const showPinScreenForResult = async (dispatch) => new Promise((resolve) => {
+  const params = {
+    cb: (_pin) => {
+      dispatch(setIsShowingPinScreen(false));
+      resolve(_pin);
+    },
+    canCancel: false,
+    screenText: t`Enter your 6-digit pin to authorize operation`,
+    biometryText: t`Authorize operation`,
+  };
+
+  NavigationService.navigate('PinScreen', params);
+
+  // We should set the global isShowingPinScreen
+  dispatch(setIsShowingPinScreen(true));
+});
