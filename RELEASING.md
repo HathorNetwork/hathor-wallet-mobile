@@ -15,9 +15,9 @@ In the `package.json` and `package-lock.json`:
 - Update the `version` field accordingly with the bump version
 
 In the `android/app/build.gradle`:
-- Increasse the field `versionCode` and `versionName`
+- Increase the field `versionCode` and `versionName`
 
-  > The `versionCode` must always be increased because Google Play uses it to uniquelly identify the release.
+  > The `versionCode` must always be increased because Google Play uses it to uniquely identify the release.
 
 In the `ios/HathorMobile.xcodeproj/project.pbxproj`:
 - Increase the field `MARKETING_VERSION` 
