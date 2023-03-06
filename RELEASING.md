@@ -5,15 +5,26 @@ Add the `google-service.json` file for the `mainnet` environment in the folder `
 
 # Bumping up the version
 
-The following files must be updated: `android/app/build.gradle`, `ios/HathorMobile.xcodeproj/project.pbxproj`, and `package.json`.
+The following files must be updated:
+- `android/app/build.gradle`
+- `ios/HathorMobile.xcodeproj/project.pbxproj`
+- `package.json`
+- `package-lock.json`
 
-In the `package.json`, the field `version` must be updated.
+In the `package.json` and `package-lock.json`:
+- Update the `version` field accordingly with the bump version
 
-In the `android/app/build.gradle`, the fields `versionCode` and `versionName` must be updated. The `versionCode` must always be increased because Google Play uses it to uniquelly identify the release.
+In the `android/app/build.gradle`:
+- Increase the field `versionCode` and `versionName`
 
-In the `ios/HathorMobile.xcodeproj/project.pbxproj`, the fields `CURRENT_PROJECT_VERSION` and `MARKETING_VERSION` must be updated. Usually the `CURRENT_PROJECT_VERSION` is always `1`, while the `MARKETING_VERSION` is updated with the new version. Notice that there are two places to update the `MARKETING_VERSION` field, one for debug and another for release.
+  > The `versionCode` must always be increased because Google Play uses it to uniquely identify the release.
 
-App Store uses the pair `(CFBundleShortVersionString, CFBundleVersion)` to identify a release. They are both from `ios/HathorMobile/Info.plist`.
+In the `ios/HathorMobile.xcodeproj/project.pbxproj`:
+- Increase the field `MARKETING_VERSION` 
+
+  > Notice that there are two places to update the `MARKETING_VERSION` field, one for debug and another for release.
+
+  > App Store uses the pair `(CFBundleShortVersionString, CFBundleVersion)` to identify a release. They are both from `ios/HathorMobile/Info.plist`.
 
 Create a git tag and a new release on GitHub.
 
