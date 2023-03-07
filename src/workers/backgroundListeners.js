@@ -15,10 +15,27 @@ import {
   setNotificationError,
 } from './pushNotificationHandler';
 
+const isRegisteredOnFirebase = () => {
+  try {
+    // Make sure deviceId is registered on the FCM
+    if (!messaging().isDeviceRegisteredForRemoteMessages) {
+      console.debug('The device is not registered on the firebase yet.');
+      return false
+    }
+  } catch (error) {
+    console.error('Error confirming the device is registered on firebase while loading the background message listener.', error);
+    return false
+  }
+
+  return true
+}
+
 /**
  * Install the listener to handle push notifications when the application is in background or quit.
  */
 export const setBackgroundMessageListener = () => {
+  if (!isRegisteredOnFirebase()) return
+
   const onBackgroundMessage = async (message) => {
     try {
       await messageHandler(message);
@@ -46,6 +63,8 @@ export const setBackgroundMessageListener = () => {
  * from firebase and show the notification to the user.
  */
 export const setNotifeeBackgroundListener = () => {
+  if (!isRegisteredOnFirebase()) return
+
   try {
     notifee.onBackgroundEvent(async ({ type, detail }) => {
       const { notification } = detail;
