@@ -40,6 +40,7 @@ import {
   pushTxDetailsRequested,
   pushTxDetailsSuccess,
   pushAskRegistrationRefreshQuestion,
+  isUnlockScreen,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -511,6 +512,11 @@ export const getTxDetails = async (wallet, txId) => {
  */
 export function* loadTxDetails(action) {
   const { txId } = action.payload;
+  const isLocked = select((state) => state.lockScreen);
+  if (isLocked) {
+    yield take(isUnlockScreen);
+  }
+
   try {
     const wallet = yield select((state) => state.wallet);
     const txDetails = yield call(getTxDetails, wallet, txId);

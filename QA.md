@@ -234,6 +234,18 @@ It's a second custom NFT token to test.
         1. The `HTR - HATHOR` name should be in the primary color (purple)
     1. Click on the `HTR - HATHOR` item
         1. The **Balance** page should open
+1. **View the details of the transaction while in foreground starting from lock screen**
+    1. Send a token after turn on `Enable Push Notification` option
+    1. **Keep the application open**
+    1. Go to the Settings screen.
+    1. Go to Security
+    1. Click on Lock Wallet.
+    1. Click on the notification
+    1. Unlock the screen
+    1. Wait until the modal with tx details open
+        1. The `HTR - HATHOR` name should be in the primary color (purple)
+    1. Click on the `HTR - HATHOR` item
+        1. The **Balance** page should open
 1. **Reset wallet and send a token**
     1. Reset the wallet
     1. Send HTR to this wallet

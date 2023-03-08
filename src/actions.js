@@ -190,8 +190,23 @@ export const setUniqueDeviceId = (uniqueId) => ({
   payload: uniqueId,
 });
 
+/**
+ * Action to set the screen unlocked.
+ * @returns action
+ */
 export const unlockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: false });
 
+/**
+ * Check if the action is about to set screen to unlocked state.
+ * @param {{ type: string, payload: boolean }} action
+ * @returns {boolean} true if unlocked and false otherwise.
+ */
+export const isUnlockScreen = (action) => action.type === types.SET_LOCK_SCREEN && action.payload === false;
+
+/**
+ * Action to set the screen locked.
+ * @returns action
+ */
 export const lockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: true });
 
 /**
