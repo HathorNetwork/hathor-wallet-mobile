@@ -28,7 +28,7 @@ const isRegisteredOnFirebase = () => {
     }
   } catch (error) {
     console.error('Error confirming the device is registered on firebase while'
-      + ' loading the background message listener. May auto initialization of firebase'
+      + ' loading the background message listener. Maybe the auto initialization of firebase'
       + ' is disabled.', error);
     return false;
   }
