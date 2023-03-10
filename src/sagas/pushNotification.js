@@ -514,7 +514,14 @@ export function* loadTxDetails(action) {
   const { txId } = action.payload;
   const isLocked = select((state) => state.lockScreen);
   if (isLocked) {
-    yield take(isUnlockScreen);
+    const { resetWallet } = yield race({
+      unlockWallet: take(isUnlockScreen),
+      resetWallet: take(types.RESET_WALLET)
+    });
+    if (resetWallet) {
+      console.debug('Halting loadTxDetails');
+      return;
+    }
   }
 
   try {
