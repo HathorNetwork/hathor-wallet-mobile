@@ -237,6 +237,7 @@ const AppStack = createStackNavigator({
 const mapStateToProps = (state) => ({
   loadHistory: state.loadHistoryStatus.active,
   isScreenLocked: state.lockScreen,
+  isResetOnScreenLocked: state.resetOnLockScreen,
   isRecoveringPin: state.recoveringPin,
   walletStartState: state.walletStartState,
 });
@@ -400,7 +401,24 @@ class _AppStackWrapper extends React.Component {
 
       if (!this.props.isRecoveringPin) {
         if (this.props.isScreenLocked) {
-          screen = <PinScreen isLockScreen navigation={this.props.navigation} />;
+          /**
+           * NOTE:
+           * This approach shows the ResetWallet screen as an auxiliar view,
+           * replacing the PinScreen and setting the back button to drop the view,
+           * letting the PinScreen be re-rendered.
+           *
+           * This approach also keeps the navigation stack unchanged,
+           * therefore increasing the convinience for the user.
+           *
+           * The previous approach unlocks the wallet and navigates to ResetWallet
+           * screen with a back button pointing to StartWalletLockScreen,
+           * this interfering in the stack navigation.
+           */
+          if (this.props.isResetOnScreenLocked) {
+            screen = <ResetWallet navigation={this.props.navigation} />;
+          } else {
+            screen = <PinScreen isLockScreen navigation={this.props.navigation} />;
+          }
         } else {
           screen = <LoadHistoryScreen />;
         }

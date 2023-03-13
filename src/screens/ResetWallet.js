@@ -23,10 +23,18 @@ import NewHathorButton from '../components/NewHathorButton';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { PRIMARY_COLOR } from '../constants';
-import { resetWallet } from '../actions';
+import { dropResetOnLockScreen, resetWallet } from '../actions';
+
+/**
+ * isScreenLocked {bool} check if is in lock screen state
+ */
+const mapStateToProps = (state) => ({
+  isScreenLocked: state.lockScreen,
+});
 
 const mapDispatchToProps = (dispatch) => ({
   resetWallet: () => dispatch(resetWallet()),
+  dropResetOnLockScreen: () => dispatch(dropResetOnLockScreen()),
 });
 
 
@@ -53,8 +61,16 @@ class ResetWallet extends React.Component {
 
   constructor(props) {
     super(props);
-    this.onBackPress = this.props.navigation.getParam('onBackPress', this.props.navigation.goBack);
-    this.hideBackButton = this.props.navigation.getParam('hideBackButton', false);
+    if (this.props.isScreenLocked) {
+      this.onBackPress = this.props.dropResetOnLockScreen;
+    } else {
+      this.onBackPress = this.props.navigation.getParam('onBackPress', this.props.navigation.goBack);
+    }
+
+    this.hideBackButton = false;
+    if (this.props.navigation) {
+      this.hideBackButton = this.props.navigation.getParam('hideBackButton', false);
+    }
   }
 
   toggleSwitch = (value) => {
@@ -107,4 +123,4 @@ class ResetWallet extends React.Component {
   }
 }
 
-export default connect(null, mapDispatchToProps)(ResetWallet);
+export default connect(mapStateToProps, mapDispatchToProps)(ResetWallet);

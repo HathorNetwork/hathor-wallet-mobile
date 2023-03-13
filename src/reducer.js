@@ -89,6 +89,7 @@ const initialState = {
   isOnline: false,
   serverInfo: { version: '', network: '' },
   lockScreen: true,
+  resetOnLockScreen: false,
   height: 0,
   errorHandler: {
     showAlert: false,
@@ -225,6 +226,8 @@ const reducer = (state = initialState, action) => {
       return onSetServerInfo(state, action);
     case types.SET_LOCK_SCREEN:
       return onSetLockScreen(state, action);
+    case types.SET_RESET_ON_LOCK_SCREEN:
+      return onSetResetOnLockScreen(state, action);
     case types.SHOW_ERROR_MODAL:
       return onShowErrorModal(state, action);
     case types.HIDE_ERROR_MODAL:
@@ -461,6 +464,11 @@ const onSetLoadHistoryStatus = (state, action) => ({
 const onSetLockScreen = (state, action) => ({
   ...state,
   lockScreen: action.payload,
+});
+
+const onSetResetOnLockScreen = (state, action) => ({
+  ...state,
+  resetOnLockScreen: action.payload,
 });
 
 const onSetRecoveringPin = (state, action) => ({

@@ -512,7 +512,7 @@ export const getTxDetails = async (wallet, txId) => {
  */
 export function* loadTxDetails(action) {
   const { txId } = action.payload;
-  const isLocked = select((state) => state.lockScreen);
+  const isLocked = yield select((state) => state.lockScreen);
   if (isLocked) {
     const { resetWallet } = yield race({
       unlockWallet: take(isUnlockScreen),
