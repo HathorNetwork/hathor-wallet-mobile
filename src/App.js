@@ -409,10 +409,6 @@ class _AppStackWrapper extends React.Component {
            *
            * This approach also keeps the navigation stack unchanged,
            * therefore increasing the convinience for the user.
-           *
-           * The previous approach unlocks the wallet and navigates to ResetWallet
-           * screen with a back button pointing to StartWalletLockScreen,
-           * this interfering in the stack navigation.
            */
           if (this.props.isResetOnScreenLocked) {
             screen = <ResetWallet navigation={this.props.navigation} />;
