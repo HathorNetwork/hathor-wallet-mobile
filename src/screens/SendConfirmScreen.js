@@ -164,12 +164,20 @@ class SendConfirmScreen extends React.Component {
               containerStyle={{ marginTop: 48 }}
             />
           </View>
-          <NewHathorButton
-            title={t`Send`}
-            onPress={this.onSendPress}
-            // disable while modal is visible
-            disabled={this.state.modal !== null}
-          />
+          <View style={{ justifyContent: 'space-between'}}>
+            <NewHathorButton
+              title={t`Approve Send`}
+              onPress={this.onSendPress}
+              // disable while modal is visible
+              disabled={this.state.modal !== null} />
+            <View style={{ height: 8 }} />
+            <NewHathorButton
+              title={t`Reject`}
+              style={{ backgroundColor: '#F44336'}}
+              onPress={this.onSendPress}
+              // disable while modal is visible
+              disabled={this.state.modal !== null} />
+          </View>
         </View>
         <OfflineBar />
       </View>

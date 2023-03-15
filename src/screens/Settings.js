@@ -138,6 +138,10 @@ export class Settings extends React.Component {
                 />
               )}
             <ListMenu
+              title='Wallet Connect'
+              onPress={() => this.props.navigation.navigate('WalletConnectList')}
+            />
+            <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}
             />

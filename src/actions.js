@@ -104,6 +104,8 @@ export const types = {
   SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
   FEATURE_TOGGLE_INITIALIZED: 'FEATURE_TOGGLE_INITIALIZED',
   SET_WALLET_CONNECT: 'SET_WALLET_CONNECT',
+  SET_WALLET_CONNECT_MODAL: 'SET_WALLET_CONNECT_MODAL',
+  SET_WALLET_CONNECT_SESSIONS: 'SET_WALLET_CONNECT_SESSIONS',
   WC_QRCODE_READ: 'WC_QRCODE_READ',
 };
 
@@ -126,6 +128,16 @@ export const setFeatureToggles = (toggles) => ({
 export const setUnleashClient = (unleashClient) => ({
   type: types.SET_UNLEASH_CLIENT,
   payload: unleashClient,
+});
+
+export const setWalletConnectSessions = (sessions) => ({
+  type: types.SET_WALLET_CONNECT_SESSIONS,
+  payload: sessions,
+});
+
+export const setWalletConnectModal = (modal) => ({
+  type: types.SET_WALLET_CONNECT_MODAL,
+  payload: modal,
 });
 
 /**

@@ -203,6 +203,8 @@ const initialState = {
     ...FEATURE_TOGGLE_DEFAULTS,
   },
   walletConnect: null,
+  walletConnectModal: { show: false },
+  walletConnectSessions: {},
 };
 
 const reducer = (state = initialState, action) => {
@@ -333,6 +335,10 @@ const reducer = (state = initialState, action) => {
       return onFeatureToggleInitialized(state);
     case types.SET_WALLET_CONNECT:
       return onSetWalletConnect(state, action);
+    case types.SET_WALLET_CONNECT_MODAL:
+      return onSetWalletConnectModal(state, action);
+    case types.SET_WALLET_CONNECT_SESSIONS:
+      return onSetWalletConnectSessions(state, action);
     default:
       return state;
   }
@@ -1026,6 +1032,24 @@ export const onSetWalletConnect = (state, { payload }) => ({
   ...state,
   walletConnect: payload,
 });
+
+export const onSetWalletConnectModal = (state, { payload }) => {
+  console.log('Will set: ', payload);
+  return {
+    ...state,
+    walletConnectModal: {
+      ...state.walletConnectModal,
+      ...payload,
+    },
+  };
+};
+
+export const onSetWalletConnectSessions = (state, { payload }) => {
+  return {
+    ...state,
+    walletConnectSessions: payload,
+  };
+};
 
 const saga = createSagaMiddleware();
 const middlewares = [

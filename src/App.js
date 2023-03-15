@@ -78,8 +78,8 @@ import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
+import WalletConnectScan from './screens/WalletConnect/WalletConnectScan';
 import baseStyle from './styles/init';
-import WalletConnectScan from './screens/WalletConnectScan';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -738,3 +738,4 @@ const createRequestInstance = (resolve, timeout) => {
 hathorLib.axios.registerNewCreateRequestInstance(createRequestInstance);
 
 export default App;
+
