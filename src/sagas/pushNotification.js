@@ -40,7 +40,6 @@ import {
   pushTxDetailsRequested,
   pushTxDetailsSuccess,
   pushAskRegistrationRefreshQuestion,
-  isUnlockScreen,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -51,7 +50,7 @@ import {
   PUSH_CHANNEL_TRANSACTION,
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
-import { showPinScreenForResult } from './helpers';
+import { isUnlockScreen, showPinScreenForResult } from './helpers';
 import { messageHandler } from '../workers/pushNotificationHandler';
 import { WALLET_STATUS } from './wallet';
 
