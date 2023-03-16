@@ -40,6 +40,7 @@ export const types = {
   SET_SERVER_INFO: 'SET_SERVER_INFO',
   ACTIVATE_FETCH_HISTORY: 'ACTIVATE_FETCH_HISTORY',
   SET_LOCK_SCREEN: 'SET_LOCK_SCREEN',
+  SET_RESET_ON_LOCK_SCREEN: 'SET_RESET_ON_LOCK_SCREEN',
   SET_INIT_WALLET: 'SET_INIT_WALLET',
   UPDATE_HEIGHT: 'UPDATE_HEIGHT',
   SHOW_ERROR_MODAL: 'SHOW_ERROR_MODAL',
@@ -190,9 +191,29 @@ export const setUniqueDeviceId = (uniqueId) => ({
   payload: uniqueId,
 });
 
+/**
+ * Action to set the screen unlocked.
+ * @returns action
+ */
 export const unlockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: false });
 
+/**
+ * Action to set the screen locked.
+ * @returns action
+ */
 export const lockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: true });
+
+/**
+ * Action to set the reset on screen locked.
+ * @returns action
+ */
+export const resetOnLockScreen = () => ({ type: types.SET_RESET_ON_LOCK_SCREEN, payload: true });
+
+/**
+ * Action to drop the reset on screen locked.
+ * @returns action
+ */
+export const dropResetOnLockScreen = () => ({ type: types.SET_RESET_ON_LOCK_SCREEN, payload: false });
 
 /**
  * height {number} new height of the network

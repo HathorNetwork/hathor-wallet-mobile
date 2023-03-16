@@ -50,7 +50,7 @@ import {
   PUSH_CHANNEL_TRANSACTION,
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
-import { showPinScreenForResult } from './helpers';
+import { isUnlockScreen, showPinScreenForResult } from './helpers';
 import { messageHandler } from '../workers/pushNotificationHandler';
 import { WALLET_STATUS } from './wallet';
 
@@ -511,6 +511,18 @@ export const getTxDetails = async (wallet, txId) => {
  */
 export function* loadTxDetails(action) {
   const { txId } = action.payload;
+  const isLocked = yield select((state) => state.lockScreen);
+  if (isLocked) {
+    const { resetWallet } = yield race({
+      unlockWallet: take(isUnlockScreen),
+      resetWallet: take(types.RESET_WALLET)
+    });
+    if (resetWallet) {
+      console.debug('Halting loadTxDetails');
+      return;
+    }
+  }
+
   try {
     const wallet = yield select((state) => state.wallet);
     const txDetails = yield call(getTxDetails, wallet, txId);

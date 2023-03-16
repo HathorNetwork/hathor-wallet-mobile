@@ -10,7 +10,7 @@ import { put, race, take, call } from 'redux-saga/effects';
 import { t } from 'ttag';
 import NavigationService from '../NavigationService';
 import {
-  setIsShowingPinScreen,
+  setIsShowingPinScreen, types,
 } from '../actions';
 
 /**
@@ -102,3 +102,13 @@ export const showPinScreenForResult = async (dispatch) => new Promise((resolve) 
   // We should set the global isShowingPinScreen
   dispatch(setIsShowingPinScreen(true));
 });
+
+/**
+ * Check if the action is about to set screen to unlocked state.
+ * @param {{ type: string, payload: boolean }} action
+ * @returns {boolean} true if unlocked and false otherwise.
+ */
+export function isUnlockScreen(action) {
+  return action.type === types.SET_LOCK_SCREEN
+    && action.payload === false;
+}
