@@ -26,6 +26,7 @@ import {
   setTempPin,
   onStartWalletLock,
   startWalletRequested,
+  resetOnLockScreen,
 } from '../actions';
 import { PIN_SIZE } from '../constants';
 
@@ -42,6 +43,7 @@ const mapDispatchToProps = (dispatch) => ({
   setRecoveringPin: (state) => dispatch(setRecoveringPin(state)),
   unlockScreen: () => dispatch(unlockScreen()),
   lockScreen: () => dispatch(lockScreen()),
+  resetOnLockScreen: () => dispatch(resetOnLockScreen()),
   setLoadHistoryStatus: (active, error) => dispatch(setLoadHistoryStatus(active, error)),
   setTempPin: (pin) => dispatch(setTempPin(pin)),
   onStartWalletLock: () => dispatch(onStartWalletLock()),
@@ -212,18 +214,7 @@ class PinScreen extends React.Component {
   }
 
   goToReset = () => {
-    // navigate to reset screen
-    this.props.navigation.navigate('ResetWallet', {
-      onBackPress: () => {
-        this.props.onStartWalletLock();
-        this.backFromReset();
-      },
-    });
-    // make sure we won't show loadHistory screen
-    this.props.setLoadHistoryStatus(false, false);
-
-    // unlock so we remove this lock screen
-    this.props.unlockScreen();
+    this.props.resetOnLockScreen();
   }
 
   /*

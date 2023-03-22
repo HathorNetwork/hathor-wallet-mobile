@@ -73,5 +73,7 @@
 	<false/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>FirebaseMessagingAutoInitEnabled</key>
+	<string>NO</string>
 </dict>
 </plist>

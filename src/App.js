@@ -15,16 +15,20 @@ import { createBottomTabNavigator } from 'react-navigation-tabs';
 import { Provider, connect } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
+import notifee, { EventType } from '@notifee/react-native';
+
 import hathorLib from '@hathor/wallet-lib';
 
 import IconTabBar from './icon-font';
 import NavigationService from './NavigationService';
-import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT } from './constants';
+import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT, PUSH_ACTION } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
   resetData,
   lockScreen,
   setTokens,
+  pushTxDetailsRequested,
+  onExceptionCaptured,
 } from './actions';
 import { store } from './reducer';
 import { GlobalErrorHandler } from './components/GlobalErrorModal';
@@ -52,6 +56,7 @@ import UnregisterToken from './screens/UnregisterToken';
 import PinScreen from './screens/PinScreen';
 import About from './screens/About';
 import Security from './screens/Security';
+import PushNotification from './screens/PushNotification';
 import ChangePin from './screens/ChangePin';
 import ResetWallet from './screens/ResetWallet';
 import Dashboard from './screens/Dashboard';
@@ -200,6 +205,7 @@ const AppStack = createStackNavigator({
   Main: TabNavigator,
   About,
   Security,
+  PushNotification,
   ChangePin,
   ResetWallet: {
     screen: ResetWallet,
@@ -231,6 +237,7 @@ const AppStack = createStackNavigator({
 const mapStateToProps = (state) => ({
   loadHistory: state.loadHistoryStatus.active,
   isScreenLocked: state.lockScreen,
+  isResetOnScreenLocked: state.resetOnLockScreen,
   isRecoveringPin: state.recoveringPin,
   walletStartState: state.walletStartState,
 });
@@ -239,6 +246,8 @@ const mapDispatchToProps = (dispatch) => ({
   setTokens: (tokens) => dispatch(setTokens(tokens)),
   lockScreen: () => dispatch(lockScreen()),
   resetData: () => dispatch(resetData()),
+  loadTxDetails: (txId) => dispatch(pushTxDetailsRequested(txId)),
+  captureError: (error) => dispatch(onExceptionCaptured(error)),
 });
 
 class _AppStackWrapper extends React.Component {
@@ -263,7 +272,36 @@ class _AppStackWrapper extends React.Component {
     },
   });
 
-  componentDidMount = () => {
+  /**
+   * This method set the listener for the notifee foreground event
+   */
+  setNotifeeForegroundListener = () => {
+    try {
+      const onForegroundMessage = async ({ type, detail }) => {
+        switch (type) {
+          case EventType.PRESS:
+            try {
+              if (detail.pressAction?.id === PUSH_ACTION.NEW_TRANSACTION) {
+                const { txId } = detail.notification.data;
+                this.props.loadTxDetails({ txId });
+              }
+            } catch (error) {
+              console.error('Error processing notification press event.', error);
+              this.props.captureError(error);
+            }
+            break;
+          default:
+            // to nothing
+        }
+      };
+      notifee.onForegroundEvent(onForegroundMessage);
+    } catch (error) {
+      console.error('Error setting notifee foreground event listener.', error);
+      this.props.captureError(error);
+    }
+  }
+
+  componentDidMount = async () => {
     this.getBiometry();
     this.appStateChangeEventSub = AppState.addEventListener('change', this._handleAppStateChange);
     this.updateReduxTokens();
@@ -273,6 +311,8 @@ class _AppStackWrapper extends React.Component {
     // We use this string to parse the version from user agent
     // in some of our services, so changing this might break another service
     hathorLib.config.setUserAgent(`Hathor Wallet Mobile / ${version}`);
+    // set notification foreground listener
+    this.setNotifeeForegroundListener();
   }
 
   componentWillUnmount = () => {
@@ -361,7 +401,20 @@ class _AppStackWrapper extends React.Component {
 
       if (!this.props.isRecoveringPin) {
         if (this.props.isScreenLocked) {
-          screen = <PinScreen isLockScreen navigation={this.props.navigation} />;
+          /**
+           * NOTE:
+           * This approach shows the ResetWallet screen as an auxiliar view,
+           * replacing the PinScreen and setting the back button to drop the view,
+           * letting the PinScreen be re-rendered.
+           *
+           * This approach also keeps the navigation stack unchanged,
+           * therefore increasing the convinience for the user.
+           */
+          if (this.props.isResetOnScreenLocked) {
+            screen = <ResetWallet navigation={this.props.navigation} />;
+          } else {
+            screen = <PinScreen isLockScreen navigation={this.props.navigation} />;
+          }
         } else {
           screen = <LoadHistoryScreen />;
         }

@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /**
  * Copyright (c) Hathor Labs and its affiliates.
  *
@@ -39,6 +40,7 @@ export const types = {
   SET_SERVER_INFO: 'SET_SERVER_INFO',
   ACTIVATE_FETCH_HISTORY: 'ACTIVATE_FETCH_HISTORY',
   SET_LOCK_SCREEN: 'SET_LOCK_SCREEN',
+  SET_RESET_ON_LOCK_SCREEN: 'SET_RESET_ON_LOCK_SCREEN',
   SET_INIT_WALLET: 'SET_INIT_WALLET',
   UPDATE_HEIGHT: 'UPDATE_HEIGHT',
   SHOW_ERROR_MODAL: 'SHOW_ERROR_MODAL',
@@ -73,6 +75,26 @@ export const types = {
   WALLET_STATE_READY: 'WALLET_STATE_READY',
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
+  // Push Notification actions
+  INIT_PUSH_NOTIFICATION: 'INIT_PUSH_NOTIFICATION',
+  SET_AVAILABLE_PUSH_NOTIFICATION: 'SET_AVAILABLE_PUSH_NOTIFICATION',
+  PUSH_ASK_OPT_IN_QUESTION: 'PUSH_ASK_OPT_IN_QUESTION',
+  PUSH_DISMISS_OPT_IN_QUESTION: 'PUSH_DISMISS_OPT_IN_QUESTION',
+  PUSH_ASK_REGISTRATION_REFRESH_QUESTION: 'PUSH_ASK_REGISTRATION_REFRESH_QUESTION',
+  PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION: 'PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION',
+  PUSH_SET_STATE: 'PUSH_SET_STATE',
+  PUSH_UPDATE_DEVICE_ID: 'PUSH_UPDATE_DEVICE_ID',
+  PUSH_API_READY: 'PUSH_API_READY',
+  PUSH_WALLET_LOAD_REQUESTED: 'PUSH_WALLET_LOAD_REQUESTED',
+  PUSH_WALLET_LOAD_SUCCESS: 'PUSH_WALLET_LOAD_SUCCESS',
+  PUSH_WALLET_LOAD_FAILED: 'PUSH_WALLET_LOAD_FAILED',
+  PUSH_REGISTRATION_REQUESTED: 'PUSH_REGISTRATION_REQUESTED',
+  PUSH_REGISTER_SUCCESS: 'PUSH_REGISTER_SUCCESS',
+  PUSH_REGISTER_FAILED: 'PUSH_REGISTER_FAILED',
+  PUSH_TX_DETAILS_REQUESTED: 'PUSH_TX_DETAILS_REQUESTED',
+  PUSH_TX_DETAILS_SUCCESS: 'PUSH_TX_DETAILS_SUCCESS',
+  PUSH_CLEAN_TX_DETAILS: 'PUSH_CLEAN_TX_DETAILS',
+  PUSH_RESET: 'PUSH_RESET',
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
@@ -169,9 +191,29 @@ export const setUniqueDeviceId = (uniqueId) => ({
   payload: uniqueId,
 });
 
+/**
+ * Action to set the screen unlocked.
+ * @returns action
+ */
 export const unlockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: false });
 
+/**
+ * Action to set the screen locked.
+ * @returns action
+ */
 export const lockScreen = () => ({ type: types.SET_LOCK_SCREEN, payload: true });
+
+/**
+ * Action to set the reset on screen locked.
+ * @returns action
+ */
+export const resetOnLockScreen = () => ({ type: types.SET_RESET_ON_LOCK_SCREEN, payload: true });
+
+/**
+ * Action to drop the reset on screen locked.
+ * @returns action
+ */
+export const dropResetOnLockScreen = () => ({ type: types.SET_RESET_ON_LOCK_SCREEN, payload: false });
 
 /**
  * height {number} new height of the network
@@ -505,6 +547,124 @@ export const onWalletReload = () => ({
   type: types.WALLET_RELOADING,
 });
 
+// Push notification actions
+
+export const initPushNotification = () => ({
+  type: types.INIT_PUSH_NOTIFICATION,
+});
+
+/**
+ * @param {boolean} payload - true if unleash enables the push notification feature
+ */
+export const setAvailablePushNotification = (payload) => ({
+  type: types.SET_AVAILABLE_PUSH_NOTIFICATION,
+  payload,
+});
+
+
+/**
+ * Ask user if he wants to opt-in push notifications
+ */
+export const pushAskOptInQuestion = () => ({
+  type: types.PUSH_ASK_OPT_IN_QUESTION,
+});
+
+/**
+ * User will no longer be asked to opt-in push notifications
+ */
+export const pushDismissOptInQuestion = () => ({
+  type: types.PUSH_DISMISS_OPT_IN_QUESTION,
+});
+
+/**
+ * Ask user to refresh the push notification settings
+ */
+export const pushAskRegistrationRefreshQuestion = () => ({
+  type: types.PUSH_ASK_REGISTRATION_REFRESH_QUESTION,
+});
+
+/**
+ * Dismiss the modal to refresh the push notification settings
+ */
+export const pushDismissRegistrationRefreshQuestion = () => ({
+  type: types.PUSH_DISMISS_REGISTRATION_REFRESH_QUESTION,
+});
+
+/**
+ * Set push notification state
+ * @param {{deviceId: string, settings: { enabled, showAmountEnabled }, enabledAt: number}} payload
+ */
+export const pushSetState = (payload) => ({
+  type: types.PUSH_SET_STATE,
+  payload,
+});
+
+/**
+ * Update the firebase device id
+ * @param {{deviceId: string}} payload
+ */
+export const pushUpdateDeviceId = (payload) => ({
+  type: types.PUSH_UPDATE_DEVICE_ID,
+  payload,
+});
+
+/**
+ * Push notification API is ready to be used
+ */
+export const pushApiReady = () => ({
+  type: types.PUSH_API_READY,
+});
+
+/**
+ * Request to load wallet in order to register push notification
+ */
+export const pushLoadWalletRequested = () => ({
+  type: types.PUSH_WALLET_LOAD_REQUESTED,
+});
+
+/**
+ * The wallet was loaded with success
+ * @param {{ walletService: HathorWalletServiceWallet }} payload
+ */
+export const pushLoadWalletSuccess = (payload) => ({
+  type: types.PUSH_WALLET_LOAD_SUCCESS,
+  payload,
+});
+
+/**
+ * The wallet failed to load
+ * @param {{ error }} payload
+ */
+export const pushLoadWalletFailed = (payload) => ({
+  type: types.PUSH_WALLET_LOAD_FAILED,
+  payload,
+});
+
+/**
+ * Request to register push notification device
+ * @param {{enabled: boolean, showAmountEnabled: boolean, deviceId: string}} payload
+ */
+export const pushRegistrationRequested = (payload) => ({
+  type: types.PUSH_REGISTRATION_REQUESTED,
+  payload,
+});
+
+/**
+ * Register push notification device succeeded
+ * @param {{ enabled: boolean }} data
+ */
+export const pushRegisterSuccess = (data) => ({
+  type: types.PUSH_REGISTER_SUCCESS,
+  data,
+});
+
+/**
+ * Register push notification device failed
+ */
+export const pushRegisterFailed = () => ({
+  type: types.PUSH_REGISTER_FAILED,
+});
+
 export const walletRefreshSharedAddress = () => ({
   type: types.WALLET_REFRESH_SHARED_ADDRESS,
 });
@@ -537,4 +697,51 @@ export const onExceptionCaptured = (error, isFatal) => ({
     error,
     isFatal,
   },
+});
+
+/**
+ * Request to get the tx details
+ * @param {{ txId: string }} payload
+ */
+export const pushTxDetailsRequested = (payload) => ({
+  type: types.PUSH_TX_DETAILS_REQUESTED,
+  payload,
+});
+
+/**
+ * Get the tx details succeeded
+ * @param {{ payload: {
+ *   isTxFound: boolean,
+ *   txId: string,
+ *   tx: {
+ *     txId: string,
+ *     timestamp: number,
+ *     voided: boolean
+ *   },
+ *   tokens: {
+ *     uid: string,
+ *     name: string,
+ *     symbol: string,
+ *     balance: number,
+ *     isRegistered: boolean
+ *   }[],
+ * }}} action
+ */
+export const pushTxDetailsSuccess = (payload) => ({
+  type: types.PUSH_TX_DETAILS_SUCCESS,
+  payload,
+});
+
+/**
+ * Clean the txDetails state dismissing the tx details modal.
+ */
+export const pushCleanTxDetails = () => ({
+  type: types.PUSH_CLEAN_TX_DETAILS,
+});
+
+/**
+ * Reset the push notification state
+ */
+export const pushReset = () => ({
+  type: types.PUSH_RESET,
 });

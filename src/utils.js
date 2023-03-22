@@ -445,3 +445,19 @@ export const mapTokenHistory = (element, token) => {
   };
   return new TxHistory(data);
 };
+
+/**
+ * Select the push notification settings from redux state
+ * @param {{
+ *  enabled: boolean,
+ *  showAmountEnabled: boolean
+ * }} pushNotification pushNotification object from redux
+ * @returns the push notification settings object
+ */
+export const getPushNotificationSettings = (pushNotification) => {
+  const { enabled, showAmountEnabled } = pushNotification;
+  return {
+    enabled,
+    showAmountEnabled
+  };
+};

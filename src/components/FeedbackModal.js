@@ -7,44 +7,20 @@
 
 import React from 'react';
 import {
-  StyleSheet, Text, View,
+  Text, View,
 } from 'react-native';
 import PropTypes from 'prop-types';
 import Modal from 'react-native-modal';
+import HathorModal from './HathorModal';
 
 const FeedbackModal = (props) => (
-  <Modal
-    isVisible
-    animationIn='slideInUp'
-    swipeDirection={['down']}
-    onSwipeComplete={props.onDismiss}
-    onBackButtonPress={props.onDismiss}
-    onBackdropPress={props.onDismiss}
-    style={styles.modal}
-  >
-    <View style={styles.innerModal}>
-      {props.icon}
-      <Text style={{ fontSize: 18, marginTop: 40, textAlign: 'center' }} {...props.textProps}>
-        {props.text}
-      </Text>
-    </View>
-  </Modal>
+  <HathorModal onDismiss={props.onDismiss}>
+    {props.icon}
+    <Text style={{ fontSize: 18, marginTop: 40, textAlign: 'center' }} {...props.textProps}>
+      {props.text}
+    </Text>
+  </HathorModal>
 );
-
-const styles = StyleSheet.create({
-  modal: {
-    justifyContent: 'flex-end',
-  },
-  innerModal: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 56,
-    paddingTop: 48,
-    height: 290,
-  },
-});
 
 FeedbackModal.propTypes = {
   // Icon used on this modal. Usually an image or the Spinner component

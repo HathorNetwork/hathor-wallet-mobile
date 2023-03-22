@@ -56,6 +56,48 @@ msgstr ""
 msgid "Invalid address"
 msgstr ""
 
+#: src/workers/pushNotificationHandler.js:92
+#. *
+#.          * @example
+#.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
+#.          
+#, javascript-format
+msgid ""
+"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
+"other token on a new transaction."
+msgid_plural ""
+"You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
+"other tokens on a new transaction."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/workers/pushNotificationHandler.js:105
+#. *
+#.          * @example
+#.          * You have received 10 T2 and 5 T1 on a new transaction.
+#.          
+#, javascript-format
+msgid ""
+"You have received ${ _firstToken } and ${ _secondToken } on a new "
+"transaction."
+msgstr ""
+
+#: src/workers/pushNotificationHandler.js:113
+#. *
+#.          * @example
+#.          * You have received 10 T2 on a new transaction.
+#.          
+msgid "You have received ${ _firstToken2 } on a new transaction."
+msgstr ""
+
+#: src/workers/pushNotificationHandler.js:116
+msgid "There is a new transaction in your wallet."
+msgstr ""
+
+#: src/workers/pushNotificationHandler.js:118
+msgid "New transaction received"
+msgstr ""
+
 #: src/screens/About.js:56
 msgid "ABOUT"
 msgstr ""
@@ -282,12 +324,12 @@ msgstr ""
 msgid "E.g. HTR"
 msgstr ""
 
-#: src/screens/Dashboard.js:65
+#: src/screens/Dashboard.js:68
 #: src/screens/RegisterTokenManual.js:150
 msgid "Register token"
 msgstr ""
 
-#: src/screens/Dashboard.js:72
+#: src/screens/Dashboard.js:75
 msgid "TOKENS"
 msgstr ""
 
@@ -417,12 +459,12 @@ msgstr ""
 msgid "PAYMENT REQUEST"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:60
+#: src/components/TxDetailsModal.js:58
 #: src/screens/PaymentRequestDetail.js:108
 msgid "Token"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:107
+#: src/components/TxDetailsModal.js:105
 #: src/screens/PaymentRequestDetail.js:112
 msgid "Amount"
 msgstr ""
@@ -444,26 +486,47 @@ msgstr ""
 msgid "Waiting confirmation"
 msgstr ""
 
-#: src/screens/PinScreen.js:231
+#: src/screens/PinScreen.js:244
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
-#: src/screens/PinScreen.js:70
+#: src/screens/PinScreen.js:67
 msgid "Enter your PIN Code "
 msgstr ""
 
-#: src/screens/PinScreen.js:71
+#: src/screens/PinScreen.js:68
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
-#: src/screens/PinScreen.js:243
+#: src/screens/PinScreen.js:256
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:246
+#: src/screens/PinScreen.js:259
 #: src/screens/RecoverPin.js:108
-#: src/screens/Settings.js:135
+#: src/screens/Settings.js:144
 msgid "Reset wallet"
+msgstr ""
+
+#: src/screens/PushNotification.js:57
+#: src/screens/Settings.js:122
+msgid "Push Notification"
+msgstr ""
+
+#: src/screens/PushNotification.js:58
+msgid "Enable Push Notification"
+msgstr ""
+
+#: src/screens/PushNotification.js:59
+msgid "Show amounts on notification"
+msgstr ""
+
+#: src/screens/PushNotification.js:60
+msgid "Updating push notification..."
+msgstr ""
+
+#: src/screens/PushNotification.js:61
+msgid "There was an error enabling push notification. Please try again later."
 msgstr ""
 
 #: src/screens/Receive.js:30
@@ -605,12 +668,12 @@ msgstr ""
 msgid "Your transfer is being processed"
 msgstr ""
 
-#: src/sagas/wallet.js:110
+#: src/sagas/helpers.js:96
 #: src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
-#: src/sagas/wallet.js:111
+#: src/sagas/helpers.js:97
 #: src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr ""
@@ -645,31 +708,31 @@ msgstr ""
 msgid "Scan the QR code"
 msgstr ""
 
-#: src/screens/Settings.js:90
+#: src/screens/Settings.js:91
 msgid "You are connected to"
 msgstr ""
 
-#: src/screens/Settings.js:102
+#: src/screens/Settings.js:103
 msgid "Connected to"
 msgstr ""
 
-#: src/screens/Settings.js:115
+#: src/screens/Settings.js:116
 msgid "Security"
 msgstr ""
 
-#: src/screens/Settings.js:121
+#: src/screens/Settings.js:130
 msgid "Create a new token"
 msgstr ""
 
-#: src/screens/Settings.js:129
+#: src/screens/Settings.js:138
 msgid "Register a token"
 msgstr ""
 
-#: src/screens/Settings.js:139
+#: src/screens/Settings.js:148
 msgid "About"
 msgstr ""
 
-#: src/screens/Settings.js:146
+#: src/screens/Settings.js:155
 msgid "Unique app identifier"
 msgstr ""
 
@@ -700,6 +763,36 @@ msgstr ""
 
 #: src/screens/UnregisterToken.js:118
 msgid "Unregister token"
+msgstr ""
+
+#: src/sagas/pushNotification.js:57
+msgid "Transaction"
+msgstr ""
+
+#: src/components/AskForPushNotification.js:21
+msgid "Do you want to enable push notifications for this wallet?"
+msgstr ""
+
+#: src/components/AskForPushNotification.js:22
+msgid "You can always change this later in the settings menu"
+msgstr ""
+
+#: src/components/AskForPushNotification.js:23
+msgid "Yes, enable"
+msgstr ""
+
+#: src/components/AskForPushNotificationRefresh.js:28
+msgid "Refresh your push notification registration"
+msgstr ""
+
+#: src/components/AskForPushNotificationRefresh.js:29
+msgid ""
+"In order to keep receiving push notifications, you need to refresh your "
+"registration. Do you want to do it now?"
+msgstr ""
+
+#: src/components/AskForPushNotificationRefresh.js:30
+msgid "Refresh"
 msgstr ""
 
 #: src/components/CopyClipboard.js:47
@@ -761,6 +854,24 @@ msgstr ""
 msgid "No internet connection"
 msgstr ""
 
+#: src/components/PublicExplorerListButton.js:13
+msgid "Public Explorer"
+msgstr ""
+
+#: src/components/PushTxDetailsModal.js:68
+#: src/components/TxDetailsModal.js:60
+msgid "Date & Time"
+msgstr ""
+
+#: src/components/PushTxDetailsModal.js:69
+#: src/components/TxDetailsModal.js:61
+msgid "ID"
+msgstr ""
+
+#: src/components/PushTxDetailsModal.js:93
+msgid "New Transaction"
+msgstr ""
+
 #: src/components/QRCodeReader.js:157
 msgid "Opening camera"
 msgstr ""
@@ -783,23 +894,23 @@ msgstr ""
 msgid "Propagating transaction to the network."
 msgstr ""
 
+#: src/components/ShowPushNotificationTxDetails.js:8
+msgid "Transation not found"
+msgstr ""
+
+#: src/components/ShowPushNotificationTxDetails.js:9
+msgid "The transaction has not arrived yet in your wallet. Do you want to retry?"
+msgstr ""
+
+#: src/components/ShowPushNotificationTxDetails.js:10
+msgid "Retry"
+msgstr ""
+
 #: src/components/TokenDetails.js:31
 #, javascript-format
 msgid "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:61
+#: src/components/TxDetailsModal.js:59
 msgid "Description"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:62
-msgid "Date & Time"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:63
-msgid "ID"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:64
-msgid "Public Explorer"
 msgstr ""
