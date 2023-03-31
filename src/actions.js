@@ -98,7 +98,24 @@ export const types = {
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
+  SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
+  SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
+  FEATURE_TOGGLE_INITIALIZED: 'FEATURE_TOGGLE_INITIALIZED',
 };
+
+export const featureToggleInitialized = () => ({
+  type: types.FEATURE_TOGGLE_INITIALIZED,
+});
+
+export const setFeatureToggles = (toggles) => ({
+  type: types.SET_FEATURE_TOGGLES,
+  payload: toggles,
+});
+
+export const setUnleashClient = (unleashClient) => ({
+  type: types.SET_UNLEASH_CLIENT,
+  payload: unleashClient,
+});
 
 /**
  * isShowingPinScreen {bool}

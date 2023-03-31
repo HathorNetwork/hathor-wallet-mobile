@@ -6,12 +6,28 @@
  */
 
 import { get } from 'lodash';
-import { put, race, take, call } from 'redux-saga/effects';
+import {
+  put,
+  race,
+  take,
+  call,
+  select,
+} from 'redux-saga/effects';
 import { t } from 'ttag';
 import NavigationService from '../NavigationService';
 import {
   setIsShowingPinScreen, types,
 } from '../actions';
+
+export function* waitForFeatureToggleInitialization() {
+  const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
+
+  if (!featureTogglesInitialized) {
+    // Wait until featureToggle saga completed initialization, which includes
+    // downloading the current toggle status for this client.
+    yield take(types.FEATURE_TOGGLE_INITIALIZED);
+  }
+}
 
 /**
  * Helper method to be used on take saga effect, will wait until an action

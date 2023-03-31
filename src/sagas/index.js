@@ -10,12 +10,14 @@ import { saga as walletSagas } from './wallet';
 import { saga as tokensSagas } from './tokens';
 import { saga as pushNotificationSaga } from './pushNotification';
 import { saga as errorHandlerSagas } from './errorHandler';
+import { saga as featureToggleSagas } from './featureToggle';
 
 const sagas = [
   walletSagas,
   tokensSagas,
   pushNotificationSaga,
   errorHandlerSagas,
+  featureToggleSagas,
 ];
 
 function* defaultSaga() {

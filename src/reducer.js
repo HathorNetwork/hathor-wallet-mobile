@@ -198,6 +198,9 @@ const initialState = {
   walletStartState: WALLET_STATUS.NOT_STARTED,
   lastSharedAddress: null,
   lastSharedIndex: null,
+  unleashClient: null,
+  featureTogglesInitialized: false,
+  featureToggles: {},
 };
 
 const reducer = (state = initialState, action) => {
@@ -320,10 +323,31 @@ const reducer = (state = initialState, action) => {
       return onWalletReloading(state);
     case types.SHARED_ADDRESS_UPDATE:
       return onSharedAddressUpdate(state, action);
+    case types.SET_UNLEASH_CLIENT:
+      return onSetUnleashClient(state, action);
+    case types.SET_FEATURE_TOGGLES:
+      return onSetFeatureToggles(state, action);
+    case types.FEATURE_TOGGLE_INITIALIZED:
+      return onFeatureToggleInitialized(state);
     default:
       return state;
   }
 };
+
+const onFeatureToggleInitialized = (state) => ({
+  ...state,
+  featureTogglesInitialized: true,
+});
+
+const onSetFeatureToggles = (state, { payload }) => ({
+  ...state,
+  featureToggles: payload,
+});
+
+const onSetUnleashClient = (state, { payload }) => ({
+  ...state,
+  unleashClient: payload,
+});
 
 const onSetServerInfo = (state, action) => ({
   ...state,

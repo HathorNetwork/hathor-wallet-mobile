@@ -39,6 +39,7 @@ import {
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
   WALLET_SERVICE_MAINNET_BASE_URL,
   NETWORK,
+  WALLET_SERVICE_FEATURE_TOGGLE,
 } from '../constants';
 import {
   Events as FeatureFlagEvents,
@@ -69,7 +70,7 @@ import {
   setAvailablePushNotification,
 } from '../actions';
 import { fetchTokenData } from './tokens';
-import { specificTypeAndPayload, errorHandler, showPinScreenForResult } from './helpers';
+import { specificTypeAndPayload, errorHandler, showPinScreenForResult, waitForFeatureToggleInitialization } from './helpers';
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
@@ -80,18 +81,25 @@ export const WALLET_STATUS = {
   LOADING: 'loading',
 };
 
+function* isWalletServiceEnabled() {
+  yield call(waitForFeatureToggleInitialization);
+
+  const featureToggles = yield select((state) => state.featureToggles);
+
+  return featureToggles[WALLET_SERVICE_FEATURE_TOGGLE];
+}
+
 export function* startWallet(action) {
   const {
     words,
     pin,
     fromXpriv,
   } = action.payload;
-
   NavigationService.navigate('LoadHistoryScreen');
   const uniqueDeviceId = getUniqueId();
   const featureFlags = new FeatureFlags(uniqueDeviceId);
   yield call(featureFlags.start.bind(featureFlags));
-  const useWalletService = yield call(() => featureFlags.shouldUseWalletService());
+  const useWalletService = yield call(isWalletServiceEnabled);
   const usePushNotification = yield call(() => featureFlags.shouldUsePushNotification());
 
   yield put(setUseWalletService(useWalletService));
