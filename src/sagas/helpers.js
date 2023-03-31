@@ -40,6 +40,16 @@ export function* checkForFeatureFlag(flag) {
   return get(featureToggles, flag, FEATURE_TOGGLE_DEFAULTS[flag] || false);
 }
 
+export function* waitForFeatureToggleInitialization() {
+  const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
+
+  if (!featureTogglesInitialized) {
+    // Wait until featureToggle saga completed initialization, which includes
+    // downloading the current toggle status for this client.
+    yield take(types.FEATURE_TOGGLE_INITIALIZED);
+  }
+}
+
 /**
  * Helper method to be used on take saga effect, will wait until an action
  * with type and payload matching the passed (type, payload)
