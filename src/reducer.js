@@ -205,6 +205,9 @@ const initialState = {
   walletConnect: null,
   walletConnectModal: { show: false },
   walletConnectSessions: {},
+  unleashClient: null,
+  featureTogglesInitialized: false,
+  featureToggles: {},
 };
 
 const reducer = (state = initialState, action) => {
@@ -339,6 +342,12 @@ const reducer = (state = initialState, action) => {
       return onSetWalletConnectModal(state, action);
     case types.SET_WALLET_CONNECT_SESSIONS:
       return onSetWalletConnectSessions(state, action);
+    case types.SET_UNLEASH_CLIENT:
+      return onSetUnleashClient(state, action);
+    case types.SET_FEATURE_TOGGLES:
+      return onSetFeatureToggles(state, action);
+    case types.FEATURE_TOGGLE_INITIALIZED:
+      return onFeatureToggleInitialized(state);
     default:
       return state;
   }
