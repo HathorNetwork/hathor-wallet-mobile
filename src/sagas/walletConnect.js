@@ -22,15 +22,34 @@ import {
 import { eventChannel } from 'redux-saga';
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 
-import { WALLET_CONNECT_PROJECT_ID } from '../constants';
+import {
+  WALLET_CONNECT_PROJECT_ID,
+  WALLET_CONNECT_FEATURE_TOGGLE,
+} from '../constants';
 import {
   types,
   setWalletConnect,
   setWalletConnectModal,
   setWalletConnectSessions,
 } from '../actions';
+import { waitForFeatureToggleInitialization } from './helpers';
+
+function* isWalletConnectEnabled() {
+  yield call(waitForFeatureToggleInitialization);
+
+  const featureToggles = yield select((state) => state.featureToggles);
+
+  return featureToggles[WALLET_CONNECT_FEATURE_TOGGLE];
+}
 
 function* init() {
+  const walletConnectEnabled = yield call(isWalletConnectEnabled);
+
+  if (!walletConnectEnabled) {
+    console.log('Wallet connect is not enabled for this client, skipping initialization.');
+    return;
+  }
+
   const core = new Core({
     projectId: WALLET_CONNECT_PROJECT_ID,
   });
@@ -307,7 +326,7 @@ export function* onQrCodeRead(action) {
 
 export function* saga() {
   yield all([
-    takeLatest(types.START_WALLET_SUCCESS, init),
+    fork(init),
     takeLatest('WS_SESSION_APPROVAL', onSessionApproval),
     takeLatest('WC_SESSION_REQUEST', onSessionRequest),
     takeLatest('WC_SESSION_PROPOSAL', onSessionProposal),
