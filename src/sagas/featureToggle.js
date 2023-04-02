@@ -10,14 +10,6 @@ import { UnleashClient, EVENTS as UnleashEvents } from 'unleash-proxy-client';
 import { get } from 'lodash';
 
 import {
-  UNLEASH_URL,
-  UNLEASH_CLIENT_KEY,
-  UNLEASH_POLLING_INTERVAL,
-  STAGE,
-} from '../constants';
-import { get } from 'lodash';
-
-import {
   takeEvery,
   all,
   call,

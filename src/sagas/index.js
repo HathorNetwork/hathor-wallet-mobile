@@ -13,7 +13,6 @@ import { saga as errorHandlerSagas } from './errorHandler';
 import { saga as featureToggleSagas } from './featureToggle';
 import { saga as permissionsSagas } from './permissions';
 import { saga as walletConnectSagas } from './walletConnect';
-import { saga as featureToggleSagas } from './featureToggle';
 
 const sagas = [
   walletSagas,
@@ -23,7 +22,6 @@ const sagas = [
   featureToggleSagas,
   permissionsSagas,
   walletConnectSagas,
-  featureToggleSagas,
 ];
 
 function* defaultSaga() {
