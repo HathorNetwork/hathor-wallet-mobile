@@ -121,7 +121,6 @@ export function* handleToggleUpdate() {
 export function* saga() {
   yield all([
     fork(monitorFeatureFlags),
-    // takeLatest('START_WALLET_SUCCESS', monitorFeatureFlags),
     takeEvery('FEATURE_TOGGLE_UPDATE', handleToggleUpdate),
   ]);
 }

@@ -413,11 +413,9 @@ export const setWallet = (wallet) => (
   { type: types.SET_WALLET, payload: wallet }
 );
 
-export const resetWallet = () => async (dispatch) => {
-  await FeatureFlags.clearIgnoreWalletServiceFlag();
-  // Dispatch the reset wallet action
-  dispatch({ type: types.RESET_WALLET });
-};
+export const resetWallet = () => ({
+  type: types.RESET_WALLET,
+});
 
 /**
  * Update metadata object with new data

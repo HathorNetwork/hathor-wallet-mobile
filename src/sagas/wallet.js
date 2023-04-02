@@ -15,6 +15,7 @@ import {
   constants as hathorLibConstants,
   config,
 } from '@hathor/wallet-lib';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   takeLatest,
   takeEvery,
@@ -31,7 +32,6 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
-import { t } from 'ttag';
 import { get } from 'lodash';
 import {
   STORE,
@@ -40,18 +40,14 @@ import {
   WALLET_SERVICE_MAINNET_BASE_URL,
   NETWORK,
   WALLET_SERVICE_FEATURE_TOGGLE,
+  PUSH_NOTIFICATION_FEATURE_TOGGLE,
 } from '../constants';
-import {
-  Events as FeatureFlagEvents,
-  FeatureFlags,
-} from '../featureFlags';
 import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
   walletRefreshSharedAddress,
   tokenInvalidateHistory,
   reloadWalletRequested,
-  setIsShowingPinScreen,
   tokenMetadataUpdated,
   sharedAddressUpdate,
   setUseWalletService,
@@ -70,7 +66,12 @@ import {
   setAvailablePushNotification,
 } from '../actions';
 import { fetchTokenData } from './tokens';
-import { specificTypeAndPayload, errorHandler, showPinScreenForResult, waitForFeatureToggleInitialization } from './helpers';
+import {
+  specificTypeAndPayload,
+  errorHandler,
+  showPinScreenForResult,
+  waitForFeatureToggleInitialization,
+} from './helpers';
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
@@ -81,12 +82,32 @@ export const WALLET_STATUS = {
   LOADING: 'loading',
 };
 
-function* isWalletServiceEnabled() {
+function* checkForFeatureFlag(flag) {
   yield call(waitForFeatureToggleInitialization);
 
   const featureToggles = yield select((state) => state.featureToggles);
 
-  return featureToggles[WALLET_SERVICE_FEATURE_TOGGLE];
+  return get(featureToggles, flag, false);
+}
+
+function* isPushNotificationEnabled() {
+  const pushEnabled = yield call(checkForFeatureFlag, PUSH_NOTIFICATION_FEATURE_TOGGLE);
+
+  return pushEnabled;
+}
+
+function* isWalletServiceEnabled() {
+  const shouldIgnoreFlag = yield call(() => AsyncStorage.getItem('featureFlags:ignoreWalletServiceFlag'));
+
+  // If we should ignore flag, it shouldn't matter what the featureToggle is, wallet service
+  // is definitely disabled.
+  if (shouldIgnoreFlag) {
+    return false;
+  }
+
+  const walletServiceEnabled = yield call(checkForFeatureFlag, WALLET_SERVICE_FEATURE_TOGGLE);
+
+  return walletServiceEnabled;
 }
 
 export function* startWallet(action) {
@@ -96,11 +117,10 @@ export function* startWallet(action) {
     fromXpriv,
   } = action.payload;
   NavigationService.navigate('LoadHistoryScreen');
+
   const uniqueDeviceId = getUniqueId();
-  const featureFlags = new FeatureFlags(uniqueDeviceId);
-  yield call(featureFlags.start.bind(featureFlags));
   const useWalletService = yield call(isWalletServiceEnabled);
-  const usePushNotification = yield call(() => featureFlags.shouldUsePushNotification());
+  const usePushNotification = yield call(isPushNotificationEnabled);
 
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
@@ -167,18 +187,14 @@ export function* startWallet(action) {
   const walletReadyThread = yield fork(listenForWalletReady, wallet);
 
   // Thread to listen for feature flags from Unleash
-  const featureFlagWalletServiceThread = yield fork(
-    listenForWalletServiceFeatureFlag, featureFlags
-  );
-  const featureFlagPushNotificationThread = yield fork(
-    listenForPushNotificationFeatureFlag, featureFlags
-  );
+  const featureToggleListener = yield fork(featureToggleUpdateListener);
 
   const threads = [
     walletListenerThread,
     walletReadyThread,
     featureFlagWalletServiceThread,
     featureFlagPushNotificationThread,
+    featureToggleListener,
   ];
 
   // Store the unique device id on redux
@@ -195,10 +211,7 @@ export function* startWallet(action) {
       // the service is 'error' or if the start wallet request failed.
       // We should fallback to the old facade by storing the flag to ignore
       // the feature flag
-      yield call(featureFlags.ignoreWalletServiceFlag.bind(featureFlags));
-
-      // Cleanup all listeners
-      yield cancel(threads);
+      yield call(() => AsyncStorage.setItem('featureFlags:ignoreWalletServiceFlag', 'true'));
 
       // Yield the same action so it will now load on the old facade
       yield put(action);
@@ -257,11 +270,8 @@ export function* startWallet(action) {
     reload: take(types.RELOAD_WALLET_REQUESTED),
   });
 
-  // We need to cancel threads on both reload and start
-  yield cancel(threads);
-  yield call(featureFlags.stop.bind(featureFlags));
-
   if (reload) {
+    console.log('Got reload, will dispatch same action', action);
     // Yield the same action again to reload the wallet
     yield put(action);
   }
@@ -356,65 +366,37 @@ export function* fetchTokensMetadata(tokens) {
   yield put(tokenMetadataUpdated(tokenMetadatas));
 }
 
-// This will create a channel to listen for featureFlag updates
-export function* listenForWalletServiceFeatureFlag(featureFlags) {
-  const channel = eventChannel((emitter) => {
-    const listener = (state) => emitter(state);
-    featureFlags.on(FeatureFlagEvents.WALLET_SERVICE_ENABLED, (state) => {
-      emitter(state);
-    });
-
-    // Cleanup when the channel is closed
-    return () => {
-      featureFlags.removeListener(FeatureFlagEvents.WALLET_SERVICE_ENABLED, listener);
-      featureFlags.offUpdateWalletService();
-    };
-  });
-
-  try {
-    while (true) {
-      const newUseWalletService = yield take(channel);
-      const oldUseWalletService = yield select((state) => state.useWalletService);
-
-      if (oldUseWalletService !== newUseWalletService) {
-        yield put(reloadWalletRequested());
-      }
-    }
-  } finally {
-    if (yield cancelled()) {
-      // When we close the channel, it will remove the event listener
-      channel.close();
-    }
-  }
+export function* onWalletServiceDisabled() {
+  console.debug('We are currently in the wallet-service and the feature-flag is disabled, reloading.');
+  yield put(reloadWalletRequested());
 }
 
-export function* listenForPushNotificationFeatureFlag(featureFlags) {
-  const channel = eventChannel((emitter) => {
-    const listener = (state) => emitter(state);
-    featureFlags.on(FeatureFlagEvents.PUSH_NOTIFICATION_ENABLED, (state) => {
-      emitter(state);
-    });
+export function* onPushNotificationDisabled() {
+  yield put(setAvailablePushNotification(newUsePushNotification));
+}
 
-    // Cleanup when the channel is closed
-    return () => {
-      featureFlags.removeListener(FeatureFlagEvents.PUSH_NOTIFICATION_ENABLED, listener);
-      featureFlags.offUpdatePushNotification();
-    };
-  });
+/**
+ * This saga will wait for feature toggle updates and react when a toggle state
+ * transition is done
+ */
+export function* featureToggleUpdateListener() {
+  while (true) {
+    yield take('FEATURE_TOGGLE_UPDATED');
 
-  try {
-    while (true) {
-      const newUsePushNotification = yield take(channel);
-      const oldUsePushNotification = yield select((state) => state.pushNotification.available);
+    const oldWalletServiceToggle = yield select(({ useWalletService }) => useWalletService);
+    const newWalletServiceToggle = yield call(isWalletServiceEnabled);
 
-      if (oldUsePushNotification !== newUsePushNotification) {
-        yield put(setAvailablePushNotification(newUsePushNotification));
-      }
+    const oldPushNotificationToggle = yield select((state) => state.pushNotification.available);
+    const newPushNotificationToggle = yield call(isPushNotificationEnabled);
+
+    // WalletService is currently ON and the featureToggle is now OFF
+    if (!newWalletServiceToggle && oldWalletServiceToggle) {
+      yield call(onWalletServiceDisabled);
     }
-  } finally {
-    if (yield cancelled()) {
-      // When we close the channel, it will remove the event listener
-      channel.close();
+
+    // PushNotification is currently ON and the featureToggle is now OFF
+    if (!newPushNotificationToggle && oldPushNotificationToggle) {
+      yield call(onPushNotificationDisabled);
     }
   }
 }
@@ -679,6 +661,10 @@ export function* onWalletReloadData() {
 
 export function* onResetWallet() {
   const wallet = yield select((state) => state.wallet);
+
+  // We need to clear the ignore flag so that new wallet starts can load in the
+  // wallet-service after a start error:
+  yield call(() => AsyncStorage.removeItem('featureFlags:ignoreWalletServiceFlag'));
 
   if (wallet) {
     // wallet.stop() will remove all event listeners and call
