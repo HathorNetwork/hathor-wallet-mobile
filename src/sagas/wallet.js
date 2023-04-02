@@ -180,22 +180,14 @@ export function* startWallet(action) {
   yield put(setWallet(wallet));
 
   // Setup listeners before starting the wallet so we don't lose messages
-  const walletListenerThread = yield fork(setupWalletListeners, wallet);
+  yield fork(setupWalletListeners, wallet);
 
   // Create a channel to listen for the ready state and
   // wait until the wallet is ready
-  const walletReadyThread = yield fork(listenForWalletReady, wallet);
+  yield fork(listenForWalletReady, wallet);
 
   // Thread to listen for feature flags from Unleash
-  const featureToggleListener = yield fork(featureToggleUpdateListener);
-
-  const threads = [
-    walletListenerThread,
-    walletReadyThread,
-    featureFlagWalletServiceThread,
-    featureFlagPushNotificationThread,
-    featureToggleListener,
-  ];
+  yield fork(featureToggleUpdateListener);
 
   // Store the unique device id on redux
   yield put(setUniqueDeviceId(uniqueDeviceId));
