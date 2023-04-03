@@ -14,7 +14,6 @@ import {
   METADATA_CONCURRENT_DOWNLOAD,
 } from './constants';
 import { mapTokenHistory } from './utils';
-import { FeatureFlags } from './featureFlags';
 
 export const types = {
   PARTIALLY_UPDATE_HISTORY_AND_BALANCE: 'PARTIALLY_UPDATE_HISTORY_AND_BALANCE',

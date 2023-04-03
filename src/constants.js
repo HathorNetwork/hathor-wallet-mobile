@@ -155,3 +155,4 @@ export const PUSH_ACTION = {
  * The feature toggle configured in Unleash
  */
 export const WALLET_SERVICE_FEATURE_TOGGLE = 'wallet-service-mobile.rollout';
+export const PUSH_NOTIFICATION_FEATURE_TOGGLE = 'push-notification.rollout';

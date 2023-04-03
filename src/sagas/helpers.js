@@ -16,7 +16,8 @@ import {
 import { t } from 'ttag';
 import NavigationService from '../NavigationService';
 import {
-  setIsShowingPinScreen, types,
+  setIsShowingPinScreen,
+  types,
 } from '../actions';
 
 export function* waitForFeatureToggleInitialization() {
@@ -45,13 +46,13 @@ export function* checkForFeatureFlag(flag) {
  * @param {Object} payload - Object with the keys and values to compare
  */
 export const specificTypeAndPayload = (_types, payload) => (action) => {
-  let types = _types;
+  let actionTypes = _types;
 
   if (!Array.isArray(_types)) {
-    types = [_types];
+    actionTypes = [_types];
   }
 
-  if (types.indexOf(action.type) === -1) {
+  if (actionTypes.indexOf(action.type) === -1) {
     return false;
   }
 

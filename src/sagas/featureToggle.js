@@ -7,12 +7,6 @@
 
 import { Platform } from 'react-native';
 import { UnleashClient } from 'unleash-proxy-client';
-import {
-  UNLEASH_URL,
-  UNLEASH_CLIENT_KEY,
-  UNLEASH_POLLING_INTERVAL,
-  STAGE,
-} from '../constants';
 import { get } from 'lodash';
 
 import {
@@ -32,6 +26,12 @@ import {
   setFeatureToggles,
   featureToggleInitialized,
 } from '../actions';
+import {
+  UNLEASH_URL,
+  UNLEASH_CLIENT_KEY,
+  UNLEASH_POLLING_INTERVAL,
+  STAGE,
+} from '../constants';
 
 export function* monitorFeatureFlags() {
   const unleashClient = new UnleashClient({
@@ -103,7 +103,7 @@ function mapFeatureToggles(toggles) {
 }
 
 export function* handleToggleUpdate() {
-  const unleashClient = yield select(({ unleashClient }) => unleashClient);
+  const unleashClient = yield select((state) => state.unleashClient);
 
   if (!unleashClient) {
     return;

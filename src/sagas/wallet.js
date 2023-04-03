@@ -82,7 +82,7 @@ export const WALLET_STATUS = {
   LOADING: 'loading',
 };
 
-export const IGNORE_WS_TOGGLE_FLAG  = 'featureFlags:ignoreWalletServiceFlag';
+export const IGNORE_WS_TOGGLE_FLAG = 'featureFlags:ignoreWalletServiceFlag';
 
 export function* isPushNotificationEnabled() {
   const pushEnabled = yield call(checkForFeatureFlag, PUSH_NOTIFICATION_FEATURE_TOGGLE);
@@ -357,7 +357,7 @@ export function* onWalletServiceDisabled() {
 }
 
 export function* onPushNotificationDisabled() {
-  yield put(setAvailablePushNotification(newUsePushNotification));
+  yield put(setAvailablePushNotification(false));
 }
 
 /**
