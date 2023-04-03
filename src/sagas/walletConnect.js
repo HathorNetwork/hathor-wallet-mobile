@@ -94,7 +94,6 @@ export function* refreshActiveSessions() {
 export function* setupListeners(web3wallet) {
   const channel = eventChannel((emitter) => {
     const listener = (state) => emitter(state);
-    console.log('Setting up listeners!', web3wallet);
 
     // sign
     web3wallet.on('session_approval', (proposal) => {
@@ -147,7 +146,6 @@ export function* clearSessions() {
 
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
   for (const key of Object.keys(activeSessions)) {
-    console.log('active session', activeSessions[key]);
     yield call(() => web3wallet.disconnectSession({
       topic: activeSessions[key].topic, 
       reason: {
@@ -158,6 +156,108 @@ export function* clearSessions() {
   }
 
   yield call(refreshActiveSessions);
+}
+
+export function onSessionApproval(action) {
+  const { payload } = action;
+}
+
+export function* onSessionRequest(action) {
+  const { payload } = action;
+  const { params } = payload;
+
+  const { web3wallet } = yield select((state) => state.walletConnect);
+  const activeSessions = yield call(() => web3wallet.getActiveSessions());
+  const requestSession = activeSessions[payload.topic];
+  if (!requestSession) {
+    console.error('Could not identify the request session, ignoring request..');
+    return;
+  }
+
+  const data = {
+    icon: get(requestSession.peer, 'metadata.icons[0]', null),
+    proposer: get(requestSession.peer, 'metadata.name', ''),
+    url: get(requestSession.peer, 'metadata.url', ''),
+    description: get(requestSession.peer, 'metadata.description', ''),
+  };
+
+  switch(params.request.method) {
+    case 'hathor_signMessage':
+      yield put({
+        type: 'SIGN_MESSAGE_REQUEST',
+        payload: {
+          ...data,
+          requestId: payload.id,
+          topic: payload.topic,
+          message: get(params, 'request.params.message'),
+        }
+      });
+    break;
+  }
+}
+
+export function* onSignMessageRequest(action) {
+  const data = action.payload;
+  const { web3wallet } = yield select((state) => state.walletConnect);
+
+  const onAcceptAction = { type: 'WALLET_CONNECT_ACCEPT' };
+  const onRejectAction = { type: 'WALLET_CONNECT_REJECT' };
+
+  yield put(setWalletConnectModal({
+    show: true,
+    type: WalletConnectModalTypes.SIGN_MESSAGE,
+    data,
+    onAcceptAction,
+    onRejectAction,
+  }));
+
+  const { accept } = yield race({
+    accept: take(onAcceptAction.type),
+    reject: take(onRejectAction.type),
+  });
+
+  try {
+    if (!accept) {
+      yield call(() => web3wallet.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          error: {
+            code: -3200,
+            message: 'Rejected by the user',
+          },
+        },
+      }));
+      return;
+    }
+
+    const response = {
+      id: data.requestId,
+      jsonrpc: '2.0',
+      result: 'signed-data-in-base64',
+    };
+
+    yield call(() => web3wallet.respondSessionRequest({
+      topic: data.topic,
+      response,
+    }));
+  } catch(e) {
+    console.log('Captured error: ', e);
+  }
+}
+
+export function* onWalletReset() {
+  const { web3wallet } = yield select((state) => state.walletConnect);
+  if (!web3wallet) {
+    // Do nothing, wallet connect might not have been initialized yet
+    return;
+  }
+
+  /* yield call(walletConnect.disconnectSession.bind(walletConnect), {
+    topic,
+    reason: getSdkError('USER_DISCONNECTED'),
+  }); */
 }
 
 export function* onSessionProposal(action) {
@@ -202,7 +302,7 @@ export function* onSessionProposal(action) {
   }
 
   try {
-    const sessionApproved = yield call(() => web3wallet.approveSession({
+    yield call(() => web3wallet.approveSession({
       id,
       relayProtocol: params.relays[0].protocol,
       namespaces: {
@@ -221,96 +321,6 @@ export function* onSessionProposal(action) {
   }
 }
 
-export function onSessionApproval(action) {
-  const { payload } = action;
-
-  console.log('Captured session approval proposal', payload);
-}
-
-export function* onSessionRequest(action) {
-  const { payload } = action;
-  const { params } = payload;
-
-  const chainId = params.chainId;
-  // const [chain, network] = chainId.split(':');
-
-  switch(params.request.method) {
-    case 'hathor_signMessage':
-      yield put({
-        type: 'SIGN_MESSAGE_REQUEST',
-        payload: action.payload,
-      });
-    break;
-  }
-}
-
-export function* onWalletReset() {
-  const { web3wallet } = yield select((state) => state.walletConnect);
-  if (!web3wallet) {
-    // Do nothing, wallet connect might not have been initialized yet
-  }
-
-  /* yield call(walletConnect.disconnectSession.bind(walletConnect), {
-    topic,
-    reason: getSdkError('USER_DISCONNECTED'),
-  }); */
-}
-
-export function* onSignMessageRequest(action) {
-  const { payload } = action;
-
-  const { web3wallet } = yield select((state) => state.walletConnect);
-
-  const onAcceptAction = { type: 'WALLET_CONNECT_ACCEPT' };
-  const onRejectAction = { type: 'WALLET_CONNECT_REJECT' };
-
-  yield put(setWalletConnectModal({
-    show: true,
-    text: `
-WalletConnect wants to sign the following message:
-
-      ${payload.params.request.params.message}
-
-With the following address private key:
-
-      ${payload.params.request.params.address}
-    `,
-    onAcceptAction,
-    onRejectAction,
-  }));
-
-  const { accept } = yield race({
-    accept: take(onAcceptAction.type),
-    reject: take(onRejectAction.type),
-  });
-
-  if (!accept) {
-    yield call(() => web3wallet.respondSessionRequest({
-      topic: payload.topic,
-      response: {
-        id: payload.id,
-        jsonrpc: '2.0',
-        error: {
-          code: -3200,
-          message: 'Rejected by the user',
-        },
-      },
-    }));
-    return;
-  }
-
-  const response = {
-    id: payload.id,
-    jsonrpc: '2.0',
-    result: 'signed-data-in-base64',
-  };
-
-  yield call(() => web3wallet.respondSessionRequest({
-    topic: payload.topic,
-    response,
-  }));
-}
-
 export function* onQrCodeRead(action) {
   const { web3wallet, core } = yield select((state) => state.walletConnect);
 
@@ -322,7 +332,6 @@ export function* onQrCodeRead(action) {
 
   try {
     yield call(() => core.pairing.pair({ uri: payload }));
-    console.log('Pairing..');
   } catch(e) {
     console.error('Error pairing with QrCode: ', e); 
   }
