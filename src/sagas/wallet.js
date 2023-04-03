@@ -82,6 +82,8 @@ export const WALLET_STATUS = {
   LOADING: 'loading',
 };
 
+export const IGNORE_WS_TOGGLE_FLAG  = 'featureFlags:ignoreWalletServiceFlag';
+
 export function* isPushNotificationEnabled() {
   const pushEnabled = yield call(checkForFeatureFlag, PUSH_NOTIFICATION_FEATURE_TOGGLE);
 
@@ -89,7 +91,7 @@ export function* isPushNotificationEnabled() {
 }
 
 export function* isWalletServiceEnabled() {
-  const shouldIgnoreFlag = yield call(() => AsyncStorage.getItem('featureFlags:ignoreWalletServiceFlag'));
+  const shouldIgnoreFlag = yield call(() => AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG));
 
   // If we should ignore flag, it shouldn't matter what the featureToggle is, wallet service
   // is definitely disabled.
@@ -195,7 +197,7 @@ export function* startWallet(action) {
       // the service is 'error' or if the start wallet request failed.
       // We should fallback to the old facade by storing the flag to ignore
       // the feature flag
-      yield call(() => AsyncStorage.setItem('featureFlags:ignoreWalletServiceFlag', 'true'));
+      yield call(() => AsyncStorage.setItem(IGNORE_WS_TOGGLE_FLAG, 'true'));
 
       // Yield the same action so it will now load on the old facade
       yield put(action);
@@ -255,7 +257,6 @@ export function* startWallet(action) {
   });
 
   if (reload) {
-    console.log('Got reload, will dispatch same action', action);
     // Yield the same action again to reload the wallet
     yield put(action);
   }
@@ -648,7 +649,7 @@ export function* onResetWallet() {
 
   // We need to clear the ignore flag so that new wallet starts can load in the
   // wallet-service after a start error:
-  yield call(() => AsyncStorage.removeItem('featureFlags:ignoreWalletServiceFlag'));
+  yield call(() => AsyncStorage.removeItem(IGNORE_WS_TOGGLE_FLAG));
 
   if (wallet) {
     // wallet.stop() will remove all event listeners and call

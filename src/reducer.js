@@ -339,11 +339,17 @@ const onFeatureToggleInitialized = (state) => ({
   featureTogglesInitialized: true,
 });
 
+/**
+ * @param {Object} action.payload The key->value object with feature toggles
+ */
 const onSetFeatureToggles = (state, { payload }) => ({
   ...state,
   featureToggles: payload,
 });
 
+/**
+ * @param {Object} action.payload The unleash client to store
+ */
 const onSetUnleashClient = (state, { payload }) => ({
   ...state,
   unleashClient: payload,

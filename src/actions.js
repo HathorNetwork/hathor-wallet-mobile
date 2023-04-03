@@ -107,11 +107,18 @@ export const featureToggleInitialized = () => ({
   type: types.FEATURE_TOGGLE_INITIALIZED,
 });
 
+/**
+ * toggles {Object} Key value object where the key is the feature toggle name and the value
+ * indicates whether it is on (true) or off (false)
+ */
 export const setFeatureToggles = (toggles) => ({
   type: types.SET_FEATURE_TOGGLES,
   payload: toggles,
 });
 
+/**
+ * unleashClient {UnleashClient} The unleash client to store
+ */
 export const setUnleashClient = (unleashClient) => ({
   type: types.SET_UNLEASH_CLIENT,
   payload: unleashClient,
