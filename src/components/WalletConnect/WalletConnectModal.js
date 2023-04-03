@@ -23,6 +23,62 @@ const Button = ({ onPress, title, highlight }) => {
   );
 };
 
+export const SignMessageModal = ({
+  onAcceptAction,
+  onRejectAction,
+  onDismiss,
+  data,
+}) => {
+  const dispatch = useDispatch();
+  const {
+    icon,
+    proposer,
+    url,
+    message,
+  } = data;
+
+  console.log('onAcceptAction: ', onAcceptAction);
+
+  const onAccept = () => {
+    onDismiss();
+    dispatch(onAcceptAction);
+  };
+
+  const onReject = () => {
+    onDismiss();
+    dispatch(onRejectAction);
+  };
+
+  return (
+    <Modal animationType="fade" transparent={true} visible={true}>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalBox}>
+          <Image style={styles.modalImage} source={{ uri: icon }} />
+          <Text style={styles.modalUrl}>
+            {url}
+          </Text>
+          <Text style={styles.modalProposer}>
+            {proposer}
+          </Text>
+          <Text style={styles.modalHeader}>
+            { t`Sign this message?` }
+          </Text>
+          <Text style={styles.signMessageText}>
+            { message }
+          </Text>
+          <Text style={styles.modalText}>
+            { t`By clicking approve, you will sign the requested message using the first address derived from your root key on the ... derivation path.` }
+          </Text>
+          <View style={styles.buttonContainer}>
+            <Button title='Reject' onPress={onReject} />
+            <Button highlight title='Approve' onPress={onAccept} />
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 export const ConnectModal = ({
   onAcceptAction,
   onRejectAction,
@@ -34,7 +90,6 @@ export const ConnectModal = ({
     icon,
     proposer,
     url,
-    requiredNamespaces,
   } = data;
 
   const onAccept = () => {
@@ -77,7 +132,6 @@ export const ConnectModal = ({
 export default () => {
   const dispatch = useDispatch();
   const walletConnectModal = useSelector((state) => state.walletConnectModal);
-  console.log('Got modal: ', walletConnectModal);
 
   if (!walletConnectModal.show) {
     return null;
@@ -91,6 +145,8 @@ export default () => {
     switch(type) {
       case WalletConnectModalTypes.CONNECT:
         return <ConnectModal { ...walletConnectModal } onDismiss={onDismiss} />
+      case WalletConnectModalTypes.SIGN_MESSAGE:
+        return <SignMessageModal { ...walletConnectModal } onDismiss={onDismiss} />
       default:
         return null;
     }
@@ -166,8 +222,18 @@ const styles = StyleSheet.create({
   buttonTextHighlight: {
     color: '#FFF',
   },
+  signMessageText: {
+    backgroundColor: 'rgba(0, 0, 0, 0.12)',
+    width: '100%',
+    height: 100,
+    borderRadius: 15,
+    padding: 8,
+    marginBottom: 12,
+    marginTop: 12,
+  },
 });
 
 export const WalletConnectModalTypes = {
   CONNECT: 'CONNECT',
+  SIGN_MESSAGE: 'SIGN_MESSAGE',
 };

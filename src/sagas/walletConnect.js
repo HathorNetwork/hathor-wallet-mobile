@@ -159,7 +159,6 @@ export function* clearSessions() {
 }
 
 export function onSessionApproval(action) {
-  const { payload } = action;
 }
 
 export function* onSessionRequest(action) {
@@ -232,10 +231,19 @@ export function* onSignMessageRequest(action) {
       return;
     }
 
+    const wallet = yield select((state) => state.wallet);
+
+    if (!wallet.isReady()) {
+      console.error('Got a session request but wallet is not ready, ignoring..');
+      return;
+    }
+
+    const signedMessage = yield call(() => wallet.signArbitraryMessage(data.message));
+
     const response = {
       id: data.requestId,
       jsonrpc: '2.0',
-      result: 'signed-data-in-base64',
+      result: signedMessage,
     };
 
     yield call(() => web3wallet.respondSessionRequest({

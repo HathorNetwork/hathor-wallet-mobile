@@ -147,7 +147,7 @@ export function* startWallet(action) {
     config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
 
     wallet = new HathorWalletServiceWallet({
-      requestPassword: showPinScreenForResult,
+      requestPassword: () => showPinScreenForResult(dispatch),
       seed: words,
       network,
       storage,
