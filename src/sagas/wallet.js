@@ -253,7 +253,6 @@ export function* startWallet(action) {
   });
 
   if (reload) {
-    console.log('Got reload, will dispatch same action', action);
     // Yield the same action again to reload the wallet
     yield put(action);
   }
