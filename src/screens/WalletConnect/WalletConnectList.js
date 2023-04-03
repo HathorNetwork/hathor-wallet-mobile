@@ -6,116 +6,163 @@
  */
 
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { t } from 'ttag';
+import { get } from 'lodash';
 import {
-  ScrollView,
   StyleSheet,
   SafeAreaView,
   Text,
   View,
+  Image,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 
-import OfflineBar from '../../components/OfflineBar';
-import { HathorList, ListMenu } from '../../components/HathorList';
-import { PRIMARY_COLOR } from '../../constants';
-import { getLightBackground } from '../../utils';
+import HathorHeader from '../../components/HathorHeader';
+import SimpleButton from '../../components/SimpleButton';
+import { HathorList } from '../../components/HathorList';
+import { walletConnectCancelSession } from '../../actions';
 
 
 const style = StyleSheet.create({
-  scrollView: {
-    flexGrow: 1,
+  componentWrapper: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f7f7f7',
+    alignSelf: 'stretch',
   },
-  networkContainerView: {
-    marginTop: 24,
-    marginBottom: 24,
+  safeAreaView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'stretch',
   },
-  networkView: {
-    backgroundColor: getLightBackground(0.1),
+  buttonWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#cecece',
+    paddingBottom: 16,
+  },
+  image: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginTop: 16,
+    marginLeft: 16,
+  },
+  dataWrapper: {
+    flexDirection: 'column', 
+    marginLeft: 16,
+    marginRight: 16,
+    marginTop: 16,
+  },
+  sessionName: {
+    marginBottom: 8,
+    color: 'rgba(0, 0, 0, 0.87)',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  sessionData: {
+    marginBottom: 8,
+    color: 'rgba(0, 0, 0, 0.57)',
+    fontSize: 12,
+  },
+  sessionListWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     margin: 8,
-    padding: 8,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  networkText: {
-    color: PRIMARY_COLOR,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  logoView: {
-    height: 22,
-    width: 100,
-    marginTop: 16,
-    marginBottom: 16,
-  },
-  logo: {
-    height: 22,
-    width: 100,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 16,
-  },
-});
-
-const scanStyles = StyleSheet.create({
-  button: {
-    position: 'absolute',
-    bottom: 32,
-    backgroundColor: '#2196F3',
+    alignSelf: 'stretch',
     borderRadius: 30,
-    paddingHorizontal: 30,
-    paddingVertical: 10,
-    elevation: 5, // for Android
-    shadowColor: '#000', // for iOS
-    shadowOffset: { width: 0, height: 2 }, // for iOS
-    shadowOpacity: 0.25, // for iOS
-    shadowRadius: 3.84, // for iOS
-  },
-  text: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  }
 });
-
-const ScanButton = ({ onPress }) => {
-  return (
-    <TouchableOpacity onPress={onPress} style={scanStyles.button}>
-      <Text style={scanStyles.text}>New Session</Text>
-    </TouchableOpacity>
-  );
-};
 
 export default function WalletConnectList({ navigation }) {
+  const dispatch = useDispatch();
   const connectedSessions = useSelector((state) => state.walletConnectSessions);
+  console.log(connectedSessions);
+
+  const mappedSessions = Object.keys(connectedSessions).reduce((acc, sessionKey) => {
+    const session = connectedSessions[sessionKey];
+    console.log('session', session);
+
+    return [...acc, {
+      sessionKey,
+      description: get(session, 'peer.metadata.description'),
+      icon: get(session, 'peer.metadata.icons[0]'),
+      url: get(session, 'peer.metadata.url'),
+      name: get(session, 'peer.metadata.name'),
+    }];
+  }, []);
+
+  const renderHeaderRightElement = () => (
+    <SimpleButton
+      // translator: Used when the QR Code Scanner is opened, and user will manually
+      // enter the information.
+      title={t`Add`}
+      onPress={() => navigation.navigate('WalletConnectScan')}
+    />
+  );
+
+  const onLongPress = (sessionKey) => {
+    console.log('longe press:', sessionKey);
+    Alert.alert(t`End session`, t`This will disconnect the session.`, [
+      {
+        text: t`End`,
+        onPress: () => {
+          dispatch(walletConnectCancelSession(sessionKey));
+        },
+      },
+      {
+        text: t`Cancel`,
+        onPress: () => {
+        },
+        style: 'cancel',
+      }
+    ]);
+  };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
-      <ScrollView contentContainerStyle={style.scrollView}>
-        <Text style={style.title}>Connected Wallets</Text>
-        <HathorList infinity>
-          {Object.keys(connectedSessions).map((key) => (
-            <ListMenu
-              title={(
-                <View style={{ flex: 1 }}>
-                  <Text style={{ marginBottom: 8, color: 'rgba(0, 0, 0, 0.5)', fontSize: 12 }}>
-                    {connectedSessions[key].peer.metadata.name}
-                  </Text>
-
-                  <Text numberOfLines={1}>{connectedSessions[key].namespaces.hathor.accounts[0]}</Text>
+    <View style={style.componentWrapper}>
+      <SafeAreaView style={style.safeAreaView}>
+        <HathorHeader
+          title={t`WalletConnect Sessions`}
+          onBackPress={() => navigation.pop()}
+          rightElement={renderHeaderRightElement()}
+        />
+        <View style={style.sessionListWrapper}
+        >
+          <HathorList infinity>
+            {mappedSessions.map(({
+              sessionKey,
+              icon,
+              name,
+              description,
+              url,
+            }) => (
+              <TouchableOpacity onLongPress={() => onLongPress(sessionKey)}>
+                <View style={style.buttonWrapper}>
+                  <Image style={style.image} source={{ uri: icon }} />
+                  <View style={style.dataWrapper}>
+                    <Text style={style.sessionName}>
+                      {name}
+                    </Text>
+                    <Text style={style.sessionData}>
+                      {url}
+                    </Text>
+                    <Text style={style.sessionData}>
+                      {description}
+                    </Text>
+                  </View>
                 </View>
-              )}
-              onPress={() => navigation.navigate('About')}
-            />
-          ))}
-        </HathorList>
-        <ScanButton onPress={() => navigation.navigate('WalletConnectScan')} />
-      </ScrollView>
-      <OfflineBar />
-    </SafeAreaView>
+              </TouchableOpacity>
+            ))}
+          </HathorList>
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }

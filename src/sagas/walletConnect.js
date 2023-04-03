@@ -17,11 +17,13 @@ import {
   cancel,
   cancelled,
   takeLatest,
+  takeEvery,
   select,
   race,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
+import { get } from 'lodash';
 
 import {
   WALLET_CONNECT_PROJECT_ID,
@@ -54,8 +56,8 @@ function* init() {
   });
 
   const metadata = {
-    name: 'Hathor WalletConnect PoC',
-    description: 'Proof-of-concept using WalletConnect to connect to a Hathor dApp',
+    name: 'Hathor',
+    description: 'Hathor Mobile Wallet',
     url: 'https://hathor.network/',
     icons: ['hathor_logo.png'],
   };
@@ -155,18 +157,23 @@ export function* clearSessions() {
     }));
   }
 
-  // yield call(refreshActiveSessions);
+  yield call(refreshActiveSessions);
 }
 
 export function* onSessionProposal(action) {
-  console.log('On Session proposal', action.payload);
   const { id, params } = action.payload;
   const { web3wallet } = yield select((state) => state.walletConnect);
 
   const wallet = yield select((state) => state.wallet);
   const addresses = wallet.newAddresses;
 
-  console.log(action.payload);
+  const data = {
+    icon: get(params, 'proposer.metadata.icons[0]', null),
+    proposer: get(params, 'proposer.metadata.name', ''),
+    url: get(params, 'proposer.metadata.url', ''),
+    description: get(params, 'proposer.metadata.description', ''),
+    requiredNamespaces: get(params, 'requiredNamespaces', []),
+  };
 
   const onAcceptAction = { type: 'WALLET_CONNECT_ACCEPT' };
   const onRejectAction = { type: 'WALLET_CONNECT_REJECT' };
@@ -174,11 +181,7 @@ export function* onSessionProposal(action) {
   yield put(setWalletConnectModal({
     show: true,
     type: WalletConnectModalTypes.CONNECT,
-    data: {
-      proposer: params.proposer.metadata.name,
-      description: params.proposer.metadata.description,
-      requiredNamespaces: params.requiredNamespaces,
-    },
+    data,
     onAcceptAction,
     onRejectAction,
   }));
@@ -213,7 +216,6 @@ export function* onSessionProposal(action) {
     }));
 
     yield call(refreshActiveSessions);
-    console.log('sessionapproved', sessionApproved)
   } catch(e) {
     console.log('ERROR: ', e);
   }
@@ -228,8 +230,6 @@ export function onSessionApproval(action) {
 export function* onSessionRequest(action) {
   const { payload } = action;
   const { params } = payload;
-
-  console.log('onSessionRequest', action);
 
   const chainId = params.chainId;
   // const [chain, network] = chainId.split(':');
@@ -340,6 +340,26 @@ export function* featureToggleUpdateListener() {
   }
 }
 
+export function* onCancelSession(action) {
+  const { web3wallet } = yield select((state) => state.walletConnect);
+
+  const activeSessions = yield call(() => web3wallet.getActiveSessions());
+
+  if (!activeSessions[action.payload]) {
+    return;
+  }
+
+  yield call(() => web3wallet.disconnectSession({
+    topic: activeSessions[action.payload].topic, 
+    reason: {
+      code: -1,
+      message: 'User cancelled the session',
+    },
+  }));
+
+  yield call(refreshActiveSessions);
+}
+
 export function* saga() {
   yield all([
     fork(init),
@@ -349,5 +369,6 @@ export function* saga() {
     takeLatest('SIGN_MESSAGE_REQUEST', onSignMessageRequest),
     takeLatest(types.RESET_WALLET, onWalletReset),
     takeLatest(types.WC_QRCODE_READ, onQrCodeRead),
+    takeEvery('WC_CANCEL_SESSION', onCancelSession),
   ]);
 }

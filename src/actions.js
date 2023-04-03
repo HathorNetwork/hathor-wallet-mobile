@@ -106,10 +106,11 @@ export const types = {
   SET_WALLET_CONNECT: 'SET_WALLET_CONNECT',
   SET_WALLET_CONNECT_MODAL: 'SET_WALLET_CONNECT_MODAL',
   SET_WALLET_CONNECT_SESSIONS: 'SET_WALLET_CONNECT_SESSIONS',
-  WC_QRCODE_READ: 'WC_QRCODE_READ',
   SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
   SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
   FEATURE_TOGGLE_INITIALIZED: 'FEATURE_TOGGLE_INITIALIZED',
+  WC_QRCODE_READ: 'WC_QRCODE_READ',
+  WC_CANCEL_SESSION: 'WC_CANCEL_SESSION',
 };
 
 export const featureToggleInitialized = () => ({
@@ -141,6 +142,16 @@ export const setWalletConnectSessions = (sessions) => ({
 export const setWalletConnectModal = (modal) => ({
   type: types.SET_WALLET_CONNECT_MODAL,
   payload: modal,
+});
+
+export const hideWalletConnectModal = () => ({
+  type: types.SET_WALLET_CONNECT_MODAL,
+  payload: { show: false },
+});
+
+export const walletConnectCancelSession = (sessionKey) => ({
+  type: types.WC_CANCEL_SESSION,
+  payload: sessionKey,
 });
 
 /**

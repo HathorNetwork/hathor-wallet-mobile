@@ -17,7 +17,11 @@ import {
 import OfflineBar from '../components/OfflineBar';
 import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
-import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
+import {
+  IS_MULTI_TOKEN,
+  PRIMARY_COLOR,
+  WALLET_CONNECT_FEATURE_TOGGLE,
+} from '../constants';
 import { getLightBackground } from '../utils';
 import CopyClipboard from '../components/CopyClipboard';
 import baseStyle from '../styles/init';
@@ -38,6 +42,7 @@ const mapStateToProps = (state) => {
     uniqueDeviceId: state.uniqueDeviceId,
     server,
     isPushNotificationAvailable: state.pushNotification.available,
+    walletConnectEnabled: state.featureToggles[WALLET_CONNECT_FEATURE_TOGGLE],
   };
 };
 
@@ -136,11 +141,16 @@ export class Settings extends React.Component {
                   title={t`Register a token`}
                   onPress={() => this.props.navigation.navigate('RegisterToken')}
                 />
-              )}
-            <ListMenu
-              title='Wallet Connect'
-              onPress={() => this.props.navigation.navigate('WalletConnectList')}
-            />
+              )
+            }
+            {this.props.walletConnectEnabled
+              && (
+                <ListMenu
+                  title='Wallet Connect'
+                  onPress={() => this.props.navigation.navigate('WalletConnectList')}
+                />
+              )
+            }
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}

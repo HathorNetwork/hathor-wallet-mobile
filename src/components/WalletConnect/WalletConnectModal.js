@@ -7,8 +7,21 @@
 
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
-import { setWalletConnectModal } from '../../actions';
+import { t } from 'ttag';
+import { Image, View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
+import { PRIMARY_COLOR } from '../../constants';
+import { hideWalletConnectModal } from '../../actions';
+
+const Button = ({ onPress, title, highlight }) => {
+  return (
+    <TouchableOpacity onPress={onPress} style={[
+      styles.button,
+      highlight ? styles.buttonHighlight : null,
+    ]}>
+      <Text style={[styles.buttonText, highlight ? styles.buttonTextHighlight : null ]}>{title}</Text>
+    </TouchableOpacity>
+  );
+};
 
 export const ConnectModal = ({
   onAcceptAction,
@@ -17,10 +30,14 @@ export const ConnectModal = ({
   data,
 }) => {
   const dispatch = useDispatch();
-  const { proposer, description, requiredNamespaces } = data;
+  const {
+    icon,
+    proposer,
+    url,
+    requiredNamespaces,
+  } = data;
 
   const onAccept = () => {
-    console.log('WILL ACCEPT');
     onDismiss();
     dispatch(onAcceptAction);
   };
@@ -31,27 +48,25 @@ export const ConnectModal = ({
   };
 
   return (
-    <Modal animationType="fade" transparent={true} visible={show}>
+    <Modal animationType="fade" transparent={true} visible={true}>
       <View style={styles.modalContainer}>
         <View style={styles.modalBox}>
-          <Text style={styles.modalMessage}>
-            {proposer} wants to connect.
+          <Image style={styles.modalImage} source={{ uri: icon }} />
+          <Text style={styles.modalUrl}>
+            {url}
           </Text>
-          <Text style={styles.modalMessage}>
-            {description}
+          <Text style={styles.modalProposer}>
+            {proposer}
+          </Text>
+          <Text style={styles.modalHeader}>
+            { t`Connect to this dApp?` }
+          </Text>
+          <Text style={styles.modalText}>
+            { t`By clicking connect, you allow this dapp to receive your wallet's public address. Please validate the URL and the dApp name, this is an important security step to protect your data from potential phishing risks.` }
           </Text>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={onReject} style={[styles.button, styles.rejectButton]}>
-              <Text style={styles.buttonText}>
-                Reject
-              </Text>
-            </TouchableOpacity>
-            <View style={styles.buttonSpace} />
-            <TouchableOpacity onPress={onAccept} style={[styles.button, styles.acceptButton]}>
-              <Text style={styles.buttonText}>
-                Accept
-              </Text>
-            </TouchableOpacity>
+            <Button title='Reject' onPress={onReject} />
+            <Button highlight title='Approve' onPress={onAccept} />
           </View>
         </View>
       </View>
@@ -60,15 +75,17 @@ export const ConnectModal = ({
 }
 
 export default () => {
-  console.log('Will render.');
   const dispatch = useDispatch();
   const walletConnectModal = useSelector((state) => state.walletConnectModal);
-  const onDismiss = () => {
-    console.log('Dismiss!');
-    dispatch(setWalletConnectModal({ show: false }));
-  };
+  console.log('Got modal: ', walletConnectModal);
 
-  console.log('Modal: ', walletConnectModal);
+  if (!walletConnectModal.show) {
+    return null;
+  }
+
+  const onDismiss = () => {
+    dispatch(hideWalletConnectModal());
+  };
 
   const getModal = (type) => {
     switch(type) {
@@ -96,44 +113,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 300,
   },
-  modalMessage: {
-    fontSize: 16,
+  modalImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginBottom: 10,
+  },
+  modalUrl: {
+    fontSize: 12,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 4,
+  },
+  modalProposer: {
+    fontSize: 12,
+    marginBottom: 16,
+  },
+  modalHeader: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  modalText: {
+    fontSize: 12,
+    marginBottom: 14,
+    textAlign: 'center',
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonSpace: {
-    width: 10,
-  },
   button: {
-    borderRadius: 4,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    alignItems: 'center',
+    width: 130,
+    height: 40,
+    borderRadius: 30,
     justifyContent: 'center',
-    elevation: 2,
+    alignItems: 'center',
+    marginLeft: 12,
+    borderWidth: 2,
+    borderColor: '#cecece',
   },
-  acceptButton: {
-    backgroundColor: '#1E88E5',
-  },
-  acceptButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  rejectButton: {
-    backgroundColor: '#EF5350',
-  },
-  rejectButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  buttonHighlight: {
+    backgroundColor: PRIMARY_COLOR,
+    borderWidth: null,
+    borderColor: null,
   },
   buttonText: {
-    fontSize: 16,
+    color: '#808080',
+    fontSize: 12,
     fontWeight: 'bold',
+  },
+  buttonTextHighlight: {
+    color: '#FFF',
   },
 });
 

@@ -5,14 +5,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, {useEffect} from 'react';
-import { SafeAreaView, View, Button } from 'react-native';
+import React from 'react';
+import { SafeAreaView, View } from 'react-native';
 import { t } from 'ttag';
 import { useDispatch } from 'react-redux';
 
 import QRCodeReader from '../../components/QRCodeReader';
 import OfflineBar from '../../components/OfflineBar';
 import HathorHeader from '../../components/HathorHeader';
+import SimpleButton from '../../components/SimpleButton';
 import { walletConnectQRCodeRead } from '../../actions';
 
 export default function WalletConnectScan({ navigation }) {
@@ -31,9 +32,12 @@ export default function WalletConnectScan({ navigation }) {
       <HathorHeader
         title={t`Connect`}
         wrapperStyle={{ borderBottomWidth: 0 }}
+        onBackPress={() => navigation.pop()}
         rightElement={(
-          <Button
-            title="Manual"
+          <SimpleButton
+            // translator: Used when the QR Code Scanner is opened, and user will manually
+            // enter the information.
+            title={t`Manual`}
             onPress={() => navigation.navigate('WalletConnectManual')}
           />
         )}
