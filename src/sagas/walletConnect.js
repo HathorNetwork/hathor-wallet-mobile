@@ -14,6 +14,7 @@ import {
   take,
   all,
   put,
+  cancel,
   cancelled,
   takeLatest,
   select,
@@ -32,14 +33,12 @@ import {
   setWalletConnectModal,
   setWalletConnectSessions,
 } from '../actions';
-import { waitForFeatureToggleInitialization } from './helpers';
+import { checkForFeatureFlag } from './helpers';
 
 function* isWalletConnectEnabled() {
-  yield call(waitForFeatureToggleInitialization);
+  const walletConnectEnabled = checkForFeatureFlag(WALLET_CONNECT_FEATURE_TOGGLE);
 
-  const featureToggles = yield select((state) => state.featureToggles);
-
-  return featureToggles[WALLET_CONNECT_FEATURE_TOGGLE];
+  return walletConnectEnabled;
 }
 
 function* init() {
@@ -75,7 +74,12 @@ function* init() {
 
   yield call(refreshActiveSessions);
 
+  // The init saga will run until WC_SHUTDOWN action is dispatched
+  yield take('WC_SHUTDOWN');
+
+  // Gracefully shutdown sessions
   yield call(clearSessions);
+  yield cancel();
 }
 
 export function* refreshActiveSessions() {
@@ -321,6 +325,18 @@ export function* onQrCodeRead(action) {
     console.log('Pairing..');
   } catch(e) {
     console.error('Error pairing with QrCode: ', e); 
+  }
+}
+
+export function* featureToggleUpdateListener() {
+  while (true) {
+    const oldWalletConnectEnabled = yield call(isWalletConnectEnabled);
+    yield take('FEATURE_TOGGLE_UPDATED');
+    const newWalletConnectEnabled = yield call(isWalletConnectEnabled);
+
+    if (oldWalletConnectEnabled && !newWalletConnectEnabled) {
+      yield put({ type: 'WC_SHUTDOWN' });
+    }
   }
 }
 
