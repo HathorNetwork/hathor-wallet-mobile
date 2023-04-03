@@ -70,7 +70,7 @@ import {
   specificTypeAndPayload,
   errorHandler,
   showPinScreenForResult,
-  waitForFeatureToggleInitialization,
+  checkForFeatureFlag,
 } from './helpers';
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
@@ -82,21 +82,13 @@ export const WALLET_STATUS = {
   LOADING: 'loading',
 };
 
-function* checkForFeatureFlag(flag) {
-  yield call(waitForFeatureToggleInitialization);
-
-  const featureToggles = yield select((state) => state.featureToggles);
-
-  return get(featureToggles, flag, false);
-}
-
-function* isPushNotificationEnabled() {
+export function* isPushNotificationEnabled() {
   const pushEnabled = yield call(checkForFeatureFlag, PUSH_NOTIFICATION_FEATURE_TOGGLE);
 
   return pushEnabled;
 }
 
-function* isWalletServiceEnabled() {
+export function* isWalletServiceEnabled() {
   const shouldIgnoreFlag = yield call(() => AsyncStorage.getItem('featureFlags:ignoreWalletServiceFlag'));
 
   // If we should ignore flag, it shouldn't matter what the featureToggle is, wallet service
