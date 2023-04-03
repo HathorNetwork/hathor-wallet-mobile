@@ -50,6 +50,14 @@ export function* waitForFeatureToggleInitialization() {
   }
 }
 
+export function* checkForFeatureFlag(flag) {
+  yield call(waitForFeatureToggleInitialization);
+
+  const featureToggles = yield select((state) => state.featureToggles);
+
+  return get(featureToggles, flag, false);
+}
+
 /**
  * Helper method to be used on take saga effect, will wait until an action
  * with type and payload matching the passed (type, payload)
