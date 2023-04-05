@@ -19,6 +19,7 @@ import {
   setIsShowingPinScreen,
   types,
 } from '../actions';
+import {FEATURE_TOGGLE_DEFAULTS} from '../constants';
 
 export function* waitForFeatureToggleInitialization() {
   const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
@@ -35,7 +36,7 @@ export function* checkForFeatureFlag(flag) {
 
   const featureToggles = yield select((state) => state.featureToggles);
 
-  return get(featureToggles, flag, false);
+  return get(featureToggles, flag, FEATURE_TOGGLE_DEFAULTS[flag] || false);
 }
 
 /**

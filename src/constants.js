@@ -156,3 +156,8 @@ export const PUSH_ACTION = {
  */
 export const WALLET_SERVICE_FEATURE_TOGGLE = 'wallet-service-mobile.rollout';
 export const PUSH_NOTIFICATION_FEATURE_TOGGLE = 'push-notification.rollout';
+
+export const FEATURE_TOGGLE_DEFAULTS = {
+  [WALLET_SERVICE_FEATURE_TOGGLE]: false,
+  [PUSH_NOTIFICATION_FEATURE_TOGGLE]: false,
+};

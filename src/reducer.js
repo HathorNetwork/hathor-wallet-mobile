@@ -10,7 +10,7 @@ import createSagaMiddleware from 'redux-saga';
 import thunk from 'redux-thunk';
 import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
-import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS } from './constants';
+import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS } from './constants';
 import { types } from './actions';
 import rootSagas from './sagas';
 import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
@@ -200,7 +200,9 @@ const initialState = {
   lastSharedIndex: null,
   unleashClient: null,
   featureTogglesInitialized: false,
-  featureToggles: {},
+  featureToggles: {
+    ...FEATURE_TOGGLE_DEFAULTS,
+  },
 };
 
 const reducer = (state = initialState, action) => {

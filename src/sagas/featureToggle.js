@@ -31,6 +31,7 @@ import {
   UNLEASH_CLIENT_KEY,
   UNLEASH_POLLING_INTERVAL,
   STAGE,
+  FEATURE_TOGGLE_DEFAULTS,
 } from '../constants';
 
 const UnleashEvent = {
@@ -100,7 +101,7 @@ export function* setupUnleashListeners(unleashClient) {
 
 function mapFeatureToggles(toggles) {
   return toggles.reduce((acc, toggle) => {
-    acc[toggle.name] = get(toggle, 'enabled', false);
+    acc[toggle.name] = get(toggle, 'enabled', FEATURE_TOGGLE_DEFAULTS[toggle.name] || false);
 
     return acc;
   }, {});
