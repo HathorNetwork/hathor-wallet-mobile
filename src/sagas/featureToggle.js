@@ -33,6 +33,10 @@ import {
   STAGE,
 } from '../constants';
 
+const UnleashEvent = {
+  UPDATE: 'update',
+};
+
 export function* monitorFeatureFlags() {
   const unleashClient = new UnleashClient({
     url: UNLEASH_URL,
@@ -68,7 +72,7 @@ export function* setupUnleashListeners(unleashClient) {
   const channel = eventChannel((emitter) => {
     const listener = (state) => emitter(state);
 
-    unleashClient.on('update', () => emitter({
+    unleashClient.on(UnleashEvent.UPDATE, () => emitter({
       type: 'FEATURE_TOGGLE_UPDATE',
     }));
 
@@ -111,8 +115,6 @@ export function* handleToggleUpdate() {
 
   const { toggles } = unleashClient;
   const featureToggles = mapFeatureToggles(toggles);
-
-  console.log('Setting feature toggles', featureToggles);
 
   yield put(setFeatureToggles(featureToggles));
   yield put({ type: 'FEATURE_TOGGLE_UPDATED' });
