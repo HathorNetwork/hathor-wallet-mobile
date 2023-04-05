@@ -55,7 +55,7 @@ export function* checkForFeatureFlag(flag) {
 
   const featureToggles = yield select((state) => state.featureToggles);
 
-  return get(featureToggles, flag, false);
+  return get(featureToggles, flag, FEATURE_TOGGLE_DEFAULTS[flag] || false);
 }
 
 /**
