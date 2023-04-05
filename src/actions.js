@@ -136,6 +136,13 @@ export const setWalletConnectSessions = (sessions) => ({
   payload: sessions,
 });
 
+/**
+ * modal {Object} Modal information to display
+ * modal.show {boolean} Show or hide the modal
+ * modal.type {WalletConnectModalTypes} One of (CONNECT, SIGN_MESSAGE_REQUEST)
+ * modal.onAcceptAction {Object} Action to be dispatched on accept
+ * modal.onRejectAction {Object} Action to be dispatched on reject
+ */
 export const setWalletConnectModal = (modal) => ({
   type: types.SET_WALLET_CONNECT_MODAL,
   payload: modal,
