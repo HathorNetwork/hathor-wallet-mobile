@@ -19,7 +19,7 @@ import {
   setIsShowingPinScreen,
   types,
 } from '../actions';
-import {FEATURE_TOGGLE_DEFAULTS} from '../constants';
+import { FEATURE_TOGGLE_DEFAULTS } from '../constants';
 
 export function* waitForFeatureToggleInitialization() {
   const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);

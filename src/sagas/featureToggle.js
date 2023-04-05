@@ -67,6 +67,10 @@ export function* monitorFeatureFlags() {
 
   yield put(setFeatureToggles(featureToggles));
   yield put(featureToggleInitialized());
+
+  if (yield cancelled()) {
+    yield call(() => unleashClient.stop());
+  }
 }
 
 export function* setupUnleashListeners(unleashClient) {
