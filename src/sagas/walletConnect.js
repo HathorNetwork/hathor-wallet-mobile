@@ -47,7 +47,6 @@ function* init() {
   const walletConnectEnabled = yield call(isWalletConnectEnabled);
 
   if (!walletConnectEnabled) {
-    console.log('Wallet connect is not enabled for this client, skipping initialization.');
     return;
   }
 
@@ -95,14 +94,6 @@ export function* setupListeners(web3wallet) {
   const channel = eventChannel((emitter) => {
     const listener = (state) => emitter(state);
 
-    // sign
-    web3wallet.on('session_approval', (proposal) => {
-      emitter({
-        type: 'WC_SESSION_APPROVAL',
-        data: proposal,
-      });
-    });
-
     web3wallet.on('session_request', (event) => {
       emitter({
         type: 'WC_SESSION_REQUEST',
@@ -118,7 +109,6 @@ export function* setupListeners(web3wallet) {
     });
 
     return () => {
-      web3wallet.removeListener('session_approval', listener);
       web3wallet.removeListener('session_request', listener);
       web3wallet.removeListener('session_proposal', listener);
     };
@@ -156,9 +146,6 @@ export function* clearSessions() {
   }
 
   yield call(refreshActiveSessions);
-}
-
-export function onSessionApproval(action) {
 }
 
 export function* onSessionRequest(action) {
@@ -380,7 +367,6 @@ export function* onCancelSession(action) {
 export function* saga() {
   yield all([
     fork(init),
-    takeLatest('WS_SESSION_APPROVAL', onSessionApproval),
     takeLatest('WC_SESSION_REQUEST', onSessionRequest),
     takeLatest('WC_SESSION_PROPOSAL', onSessionProposal),
     takeLatest('SIGN_MESSAGE_REQUEST', onSignMessageRequest),
