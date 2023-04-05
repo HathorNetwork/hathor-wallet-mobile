@@ -12,16 +12,21 @@ import { Image, View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-na
 import { PRIMARY_COLOR } from '../../constants';
 import { hideWalletConnectModal } from '../../actions';
 
-const Button = ({ onPress, title, highlight }) => {
-  return (
-    <TouchableOpacity onPress={onPress} style={[
+const Button = ({ onPress, title, highlight }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={[
       styles.button,
       highlight ? styles.buttonHighlight : null,
     ]}>
-      <Text style={[styles.buttonText, highlight ? styles.buttonTextHighlight : null ]}>{title}</Text>
-    </TouchableOpacity>
-  );
-};
+    <Text style={[
+      styles.buttonText,
+      highlight ? styles.buttonTextHighlight : null,
+    ]}>
+      {title}
+    </Text>
+  </TouchableOpacity>
+);
 
 export const SignMessageModal = ({
   onAcceptAction,
@@ -36,8 +41,6 @@ export const SignMessageModal = ({
     url,
     message,
   } = data;
-
-  console.log('onAcceptAction: ', onAcceptAction);
 
   const onAccept = () => {
     onDismiss();
@@ -103,7 +106,7 @@ export const ConnectModal = ({
   };
 
   return (
-    <Modal animationType="fade" transparent={true} visible={true}>
+    <Modal animationType='fade' transparent visible>
       <View style={styles.modalContainer}>
         <View style={styles.modalBox}>
           <Image style={styles.modalImage} source={{ uri: icon }} />
@@ -127,7 +130,7 @@ export const ConnectModal = ({
       </View>
     </Modal>
   );
-}
+};
 
 export default () => {
   const dispatch = useDispatch();
