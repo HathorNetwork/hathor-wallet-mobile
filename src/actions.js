@@ -733,11 +733,21 @@ export const sharedAddressUpdate = (lastSharedAddress, lastSharedIndex) => ({
   },
 });
 
+/**
+ * Stores the walletConnect instance on the redux store
+ *
+ * walletConnect {WalletConnect} The WalletConnect instance
+ */
 export const setWalletConnect = (walletConnect) => ({
   type: types.SET_WALLET_CONNECT,
   payload: walletConnect,
 });
 
+/**
+ * Dispatched with data when a WalletConnect QRCode is read
+ *
+ * data {string} The WalletConnect v2 URI
+ */
 export const walletConnectQRCodeRead = (data) => ({
   type: types.WC_QRCODE_READ,
   payload: data,
