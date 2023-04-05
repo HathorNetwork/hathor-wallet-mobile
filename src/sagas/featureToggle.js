@@ -85,7 +85,6 @@ export function* monitorFeatureFlags(currentRetry = 0) {
     disableRefresh: true, // Disable it, we will handle it ourselves
     appName: `wallet-mobile-${Platform.OS}`,
   });
-
   const options = {
     userId: getUniqueId(),
     properties: {
