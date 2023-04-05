@@ -1042,6 +1042,9 @@ export const onSetWalletConnect = (state, { payload }) => ({
   walletConnect: payload,
 });
 
+/**
+ * @param {Object} action.payload The wallet connect modal options
+ */
 export const onSetWalletConnectModal = (state, { payload }) => {
   console.log('Will set: ', payload);
   return {
