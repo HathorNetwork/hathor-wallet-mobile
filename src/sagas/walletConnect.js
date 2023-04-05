@@ -22,9 +22,9 @@ import {
   race,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
-import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import { get } from 'lodash';
 
+import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
   WALLET_CONNECT_PROJECT_ID,
   WALLET_CONNECT_FEATURE_TOGGLE,
@@ -58,7 +58,6 @@ function* init() {
     name: 'Hathor',
     description: 'Hathor Mobile Wallet',
     url: 'https://hathor.network/',
-    icons: ['hathor_logo.png'],
   };
 
   const web3wallet = yield call(Web3Wallet.init, {
@@ -108,6 +107,13 @@ export function* setupListeners(web3wallet) {
       });
     });
 
+    web3wallet.on('session_delete', async (session) => {
+      emitter({
+        type: 'WC_SESSION_DELETE',
+        data: session,
+      });
+    });
+
     return () => {
       web3wallet.removeListener('session_request', listener);
       web3wallet.removeListener('session_proposal', listener);
@@ -139,7 +145,7 @@ export function* clearSessions() {
     yield call(() => web3wallet.disconnectSession({
       topic: activeSessions[key].topic, 
       reason: {
-        code: -1,
+        code: 6000,
         message: 'User rejected the session',
       },
     }));
@@ -356,7 +362,7 @@ export function* onCancelSession(action) {
   yield call(() => web3wallet.disconnectSession({
     topic: activeSessions[action.payload].topic, 
     reason: {
-      code: -1,
+      code: 6000,
       message: 'User cancelled the session',
     },
   }));
@@ -364,11 +370,24 @@ export function* onCancelSession(action) {
   yield call(refreshActiveSessions);
 }
 
+/**
+ * This event can be triggered by either the wallet or dapp, indicating the
+ * termination of a session. Emitted only after the session has been
+ * successfully deleted.
+ */
+export function* onSessionDelete() {
+  // TODO: Maybe display a bottom sheet with a message indicating that the 
+  // session X got deleted?
+  // Just refresh the session list for now.
+  yield call(refreshActiveSessions);
+}
+
 export function* saga() {
   yield all([
     fork(init),
-    takeLatest('WC_SESSION_REQUEST', onSessionRequest),
-    takeLatest('WC_SESSION_PROPOSAL', onSessionProposal),
+    takeEvery('WC_SESSION_REQUEST', onSessionRequest),
+    takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
+    takeEvery('WC_SESSION_DELETE', onSessionDelete),
     takeLatest('SIGN_MESSAGE_REQUEST', onSignMessageRequest),
     takeLatest(types.RESET_WALLET, onWalletReset),
     takeLatest(types.WC_QRCODE_READ, onQrCodeRead),
