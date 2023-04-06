@@ -6,18 +6,21 @@
  */
 
 import { Platform } from 'react-native';
-import { UnleashClient } from 'unleash-proxy-client';
+import { UnleashClient, EVENTS as UnleashEvents } from 'unleash-proxy-client';
 import { get } from 'lodash';
 
 import {
   takeEvery,
   all,
   call,
+  delay,
   put,
   cancelled,
   select,
+  race,
   take,
   fork,
+  spawn,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
@@ -34,15 +37,52 @@ import {
   FEATURE_TOGGLE_DEFAULTS,
 } from '../constants';
 
-const UnleashEvent = {
-  UPDATE: 'update',
-};
+const CONNECT_TIMEOUT = 10000;
+const MAX_RETRIES = 5;
 
-export function* monitorFeatureFlags() {
+export function* handleInitFailed(currentRetry) {
+  if (currentRetry >= MAX_RETRIES) {
+    console.error('Max retries reached while trying to create the unleash-proxy client.');
+    const unleashClient = yield select((state) => state.unleashClient);
+
+    if (unleashClient) {
+      unleashClient.close();
+      yield put(setUnleashClient(null));
+    }
+
+    // Even if unleash failed, we should allow the app to continue as it
+    // has defaults set for all feature toggles. Emit featureToggleInitialized
+    // so sagas waiting for it will resume.
+    yield put(featureToggleInitialized());
+    return;
+  }
+
+  yield spawn(monitorFeatureFlags, currentRetry + 1);
+}
+
+export function* fetchTogglesRoutine() {
+  while (true) {
+    // Wait first so we don't double-check on initialization
+    yield delay(UNLEASH_POLLING_INTERVAL);
+
+    const unleashClient = yield select((state) => state.unleashClient);
+
+    try {
+      yield call(() => unleashClient.fetchToggles());
+    } catch (e) {
+      // No need to do anything here as it will try again automatically in
+      // UNLEASH_POLLING_INTERVAL. Just prevent it from crashing the saga.
+      console.error('Erroed fetching feature toggles');
+    }
+  }
+}
+
+export function* monitorFeatureFlags(currentRetry = 0) {
   const unleashClient = new UnleashClient({
     url: UNLEASH_URL,
     clientKey: UNLEASH_CLIENT_KEY,
-    refreshInterval: UNLEASH_POLLING_INTERVAL,
+    refreshInterval: -1,
+    disableRefresh: true, // Disable it, we will handle it ourselves
     appName: `wallet-mobile-${Platform.OS}`,
   });
 
@@ -54,22 +94,51 @@ export function* monitorFeatureFlags() {
     },
   };
 
-  unleashClient.updateContext(options);
+  try {
+    yield call(() => unleashClient.updateContext(options));
+    yield put(setUnleashClient(unleashClient));
 
-  yield put(setUnleashClient(unleashClient));
+    // Listeners should be set before unleashClient.start so we don't miss
+    // updates
+    yield fork(setupUnleashListeners, unleashClient);
 
-  // Listeners should be set before unleashClient.start so we don't miss
-  // updates
-  yield fork(setupUnleashListeners, unleashClient);
-  yield call(() => unleashClient.start());
+    // Start without awaiting it so we can listen for the
+    // READY event
+    unleashClient.start();
 
-  const featureToggles = mapFeatureToggles(unleashClient.toggles);
+    const { error, timeout } = yield race({
+      error: take('FEATURE_TOGGLE_ERROR'),
+      success: take('FEATURE_TOGGLE_READY'),
+      timeout: delay(CONNECT_TIMEOUT),
+    });
 
-  yield put(setFeatureToggles(featureToggles));
-  yield put(featureToggleInitialized());
+    if (error || timeout) {
+      throw new Error('Error or timeout while connecting to unleash proxy.');
+    }
 
-  if (yield cancelled()) {
-    yield call(() => unleashClient.stop());
+    // Fork the routine to download toggles.
+    yield fork(fetchTogglesRoutine);
+
+    // At this point, unleashClient.start() already fetched the toggles
+    const featureToggles = mapFeatureToggles(unleashClient.toggles);
+
+    yield put(setFeatureToggles(featureToggles));
+    yield put(featureToggleInitialized());
+
+    if (yield cancelled()) {
+      yield call(() => unleashClient.stop());
+    }
+  } catch (e) {
+    console.error('Error initializing unleash');
+    unleashClient.stop();
+
+    yield put(setUnleashClient(null));
+
+    // Wait 500ms before retrying
+    yield delay(500);
+
+    // Spawn so it's detached from the current thread
+    yield spawn(handleInitFailed, currentRetry);
   }
 }
 
@@ -77,12 +146,23 @@ export function* setupUnleashListeners(unleashClient) {
   const channel = eventChannel((emitter) => {
     const listener = (state) => emitter(state);
 
-    unleashClient.on(UnleashEvent.UPDATE, () => emitter({
+    unleashClient.on(UnleashEvents.UPDATE, () => emitter({
       type: 'FEATURE_TOGGLE_UPDATE',
     }));
 
+    unleashClient.on(UnleashEvents.READY, () => emitter({
+      type: 'FEATURE_TOGGLE_READY',
+    }));
+
+    unleashClient.on(UnleashEvents.ERROR, (err) => emitter({
+      type: 'FEATURE_TOGGLE_ERROR',
+      payload: err,
+    }));
+
     return () => {
-      unleashClient.removeListener('update', listener);
+      unleashClient.removeListener(UnleashEvents.UPDATE, listener);
+      unleashClient.removeListener(UnleashEvents.READY, listener);
+      unleashClient.removeListener(UnleashEvents.ERROR, listener);
     };
   });
 
@@ -105,7 +185,11 @@ export function* setupUnleashListeners(unleashClient) {
 
 function mapFeatureToggles(toggles) {
   return toggles.reduce((acc, toggle) => {
-    acc[toggle.name] = get(toggle, 'enabled', FEATURE_TOGGLE_DEFAULTS[toggle.name] || false);
+    acc[toggle.name] = get(
+      toggle,
+      'enabled',
+      FEATURE_TOGGLE_DEFAULTS[toggle.name] || false,
+    );
 
     return acc;
   }, {});
@@ -113,8 +197,9 @@ function mapFeatureToggles(toggles) {
 
 export function* handleToggleUpdate() {
   const unleashClient = yield select((state) => state.unleashClient);
+  const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
 
-  if (!unleashClient) {
+  if (!unleashClient || !featureTogglesInitialized) {
     return;
   }
 
