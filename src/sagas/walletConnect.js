@@ -43,42 +43,44 @@ function* isWalletConnectEnabled() {
 }
 
 function* init() {
-  const walletConnectEnabled = yield call(isWalletConnectEnabled);
+  try {
+    const walletConnectEnabled = yield call(isWalletConnectEnabled);
 
-  if (!walletConnectEnabled) {
-    return;
+    if (!walletConnectEnabled) {
+      return;
+    }
+
+    const core = new Core({
+      projectId: WALLET_CONNECT_PROJECT_ID,
+    });
+
+    const metadata = {
+      name: 'Hathor',
+      description: 'Hathor Mobile Wallet',
+      url: 'https://hathor.network/',
+    };
+
+    const web3wallet = yield call(Web3Wallet.init, {
+      core,
+      metadata,
+    });
+
+    yield put(setWalletConnect({
+      web3wallet,
+      core,
+    }));
+
+    yield fork(setupListeners, web3wallet);
+
+    yield call(refreshActiveSessions);
+
+    // If the wallet is reset, we should cancel all listeners
+    yield take(types.RESET_WALLET);
+
+    yield cancel();
+  } catch(e) {
+    console.error('Error loading wallet connect', e);
   }
-
-  const core = new Core({
-    projectId: WALLET_CONNECT_PROJECT_ID,
-  });
-
-  const metadata = {
-    name: 'Hathor',
-    description: 'Hathor Mobile Wallet',
-    url: 'https://hathor.network/',
-  };
-
-  const web3wallet = yield call(Web3Wallet.init, {
-    core,
-    metadata,
-  });
-
-  yield put(setWalletConnect({
-    web3wallet,
-    core,
-  }));
-
-  yield fork(setupListeners, web3wallet);
-
-  yield call(refreshActiveSessions);
-
-  // The init saga will run until WC_SHUTDOWN action is dispatched
-  yield take('WC_SHUTDOWN');
-
-  // Gracefully shutdown sessions
-  yield call(clearSessions);
-  yield cancel();
 }
 
 export function* refreshActiveSessions() {
@@ -254,10 +256,7 @@ export function* onWalletReset() {
     return;
   }
 
-  /* yield call(walletConnect.disconnectSession.bind(walletConnect), {
-    topic,
-    reason: getSdkError('USER_DISCONNECTED'),
-  }); */
+  yield call(clearSessions);
 }
 
 export function* onSessionProposal(action) {
@@ -374,22 +373,19 @@ export function* onCancelSession(action) {
  * termination of a session. Emitted only after the session has been
  * successfully deleted.
  */
-export function* onSessionDelete() {
-  // TODO: Maybe display a bottom sheet with a message indicating that the 
-  // session X got deleted?
-  // Just refresh the session list for now.
-  yield call(refreshActiveSessions);
+export function* onSessionDelete(action) {
+  yield call(onCancelSession, action);
 }
 
 export function* saga() {
   yield all([
-    fork(init),
+    takeLatest(types.START_WALLET_SUCCESS, init),
     takeEvery('WC_SESSION_REQUEST', onSessionRequest),
     takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('WC_SESSION_DELETE', onSessionDelete),
     takeEvery('WC_CANCEL_SESSION', onCancelSession),
+    takeEvery(types.RESET_WALLET, onWalletReset),
     takeLatest('SIGN_MESSAGE_REQUEST', onSignMessageRequest),
-    // takeLatest(types.RESET_WALLET, onWalletReset),
     takeLatest(types.WC_QRCODE_READ, onQrCodeRead),
   ]);
 }
