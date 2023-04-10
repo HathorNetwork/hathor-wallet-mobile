@@ -70,7 +70,7 @@ export const SignMessageModal = ({
             { message }
           </Text>
           <Text style={styles.modalText}>
-            { t`By clicking approve, you will sign the requested message using the first address derived from your root key on the ... derivation path.` }
+            { t`By clicking approve, you will sign the requested message using the first address derived from your root key on the m/44'/280'/0'/0/0 derivation path.` }
           </Text>
           <View style={styles.buttonContainer}>
             <Button title='Reject' onPress={onReject} />
