@@ -197,17 +197,14 @@ const initialState = {
   walletStartState: WALLET_STATUS.NOT_STARTED,
   lastSharedAddress: null,
   lastSharedIndex: null,
-  unleashClient: null,
-  featureTogglesInitialized: false,
-  featureToggles: {
-    ...FEATURE_TOGGLE_DEFAULTS,
-  },
   walletConnect: null,
   walletConnectModal: { show: false },
   walletConnectSessions: {},
   unleashClient: null,
   featureTogglesInitialized: false,
-  featureToggles: {},
+  featureToggles: {
+    ...FEATURE_TOGGLE_DEFAULTS,
+  },
 };
 
 const reducer = (state = initialState, action) => {
@@ -567,7 +564,7 @@ const onShowErrorModal = (state, action) => ({
   },
 });
 
-const onResetLoadedData = (state, action) => ({
+const onResetLoadedData = (state) => ({
   ...state,
   loadedData: { transactions: 0, addresses: 0 },
 });

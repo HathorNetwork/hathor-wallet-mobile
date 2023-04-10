@@ -7,7 +7,6 @@
 import { Core } from '@walletconnect/core';
 import { Web3Wallet } from '@walletconnect/web3wallet';
 
-
 import {
   call,
   fork,
@@ -38,7 +37,7 @@ import {
 import { checkForFeatureFlag } from './helpers';
 
 function* isWalletConnectEnabled() {
-  const walletConnectEnabled = checkForFeatureFlag(WALLET_CONNECT_FEATURE_TOGGLE);
+  const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
 
   return walletConnectEnabled;
 }
@@ -296,7 +295,7 @@ export function* onSessionProposal(action) {
     yield call(() => web3wallet.rejectSession({
       id: params.id,
       reason: {
-        code: -1,
+        code: 6000,
         message: 'User rejected the session',
       },
     }));
@@ -388,9 +387,9 @@ export function* saga() {
     takeEvery('WC_SESSION_REQUEST', onSessionRequest),
     takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('WC_SESSION_DELETE', onSessionDelete),
-    takeLatest('SIGN_MESSAGE_REQUEST', onSignMessageRequest),
-    takeLatest(types.RESET_WALLET, onWalletReset),
-    takeLatest(types.WC_QRCODE_READ, onQrCodeRead),
     takeEvery('WC_CANCEL_SESSION', onCancelSession),
+    takeLatest('SIGN_MESSAGE_REQUEST', onSignMessageRequest),
+    // takeLatest(types.RESET_WALLET, onWalletReset),
+    takeLatest(types.WC_QRCODE_READ, onQrCodeRead),
   ]);
 }
