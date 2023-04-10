@@ -320,7 +320,6 @@ class _AppStackWrapper extends React.Component {
       this.appStateChangeEventSub.remove();
       this.appStateChangeEventSub = null;
     }
-    this.props.resetData();
   }
 
   componentDidUpdate(prevProps) {

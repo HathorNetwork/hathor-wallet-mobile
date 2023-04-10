@@ -64,6 +64,7 @@ import {
   newTx,
   types,
   setAvailablePushNotification,
+  resetWalletSuccess,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -663,6 +664,8 @@ export function* onResetWallet() {
   // is called from the PinScreen. There is no event listeners to cleanup
   // so we can call the cleanLoadedData method directly.
   walletUtil.cleanLoadedData({ cleanAccessData: true });
+
+  yield put(resetWalletSuccess());
 }
 
 export function* onStartWalletFailed() {
@@ -699,8 +702,8 @@ export function* saga() {
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
     takeLatest('WALLET_CONN_STATE_UPDATE', onWalletConnStateUpdate),
     takeLatest('WALLET_RELOADING', onWalletReloadData),
-    takeLatest('RESET_WALLET', onResetWallet),
     takeLatest('START_WALLET_FAILED', onStartWalletFailed),
+    takeLatest('RESET_WALLET', onResetWallet),
     takeEvery('WALLET_NEW_TX', handleTx),
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),

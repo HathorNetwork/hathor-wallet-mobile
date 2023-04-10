@@ -241,6 +241,8 @@ const reducer = (state = initialState, action) => {
       return onSetWallet(state, action);
     case types.RESET_WALLET:
       return onResetWallet(state, action);
+    case types.RESET_WALLET_SUCCESS:
+      return onResetWalletSuccess(state);
     case types.RESET_LOADED_DATA:
       return onResetLoadedData(state, action);
     case types.UPDATE_LOADED_DATA:
@@ -534,6 +536,14 @@ const onResetWallet = (state) => ({
   ...state,
   wallet: null,
 });
+
+const onResetWalletSuccess = (state) => {
+  const oldUnleashClient = state.unleashClient;
+  return {
+    ...initialState,
+    unleashClient: oldUnleashClient,
+  };
+};
 
 const onHideErrorModal = (state) => ({
   ...state,

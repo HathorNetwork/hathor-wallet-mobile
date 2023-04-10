@@ -46,6 +46,7 @@ export const types = {
   HIDE_ERROR_MODAL: 'HIDE_ERROR_MODAL',
   SET_WALLET: 'SET_WALLET',
   RESET_WALLET: 'RESET_WALLET',
+  RESET_WALLET_SUCCESS: 'RESET_WALLET_SUCCESS',
   RESET_LOADED_DATA: 'RESET_LOADED_DATA',
   UPDATE_LOADED_DATA: 'UPDATE_LOADED_DATA',
   SET_USE_WALLET_SERVICE: 'SET_USE_WALLET_SERVICE',
@@ -421,6 +422,10 @@ export const setWallet = (wallet) => (
 
 export const resetWallet = () => ({
   type: types.RESET_WALLET,
+});
+
+export const resetWalletSuccess = () => ({
+  type: types.RESET_WALLET_SUCCESS,
 });
 
 /**
