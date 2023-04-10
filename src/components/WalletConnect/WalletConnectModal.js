@@ -73,8 +73,8 @@ export const SignMessageModal = ({
             { t`By clicking approve, you will sign the requested message using the first address derived from your root key on the m/44'/280'/0'/0/0 derivation path.` }
           </Text>
           <View style={styles.buttonContainer}>
-            <Button title='Reject' onPress={onReject} />
-            <Button highlight title='Approve' onPress={onAccept} />
+            <Button title={t`Reject`} onPress={onReject} />
+            <Button highlight title={t`Approve`} onPress={onAccept} />
           </View>
         </View>
       </View>
@@ -123,8 +123,8 @@ export const ConnectModal = ({
             { t`By clicking connect, you allow this dapp to receive your wallet's public address. Please validate the URL and the dApp name, this is an important security step to protect your data from potential phishing risks.` }
           </Text>
           <View style={styles.buttonContainer}>
-            <Button title='Reject' onPress={onReject} />
-            <Button highlight title='Approve' onPress={onAccept} />
+            <Button title={t`Reject`} onPress={onReject} />
+            <Button highlight title={t`Approve`} onPress={onAccept} />
           </View>
         </View>
       </View>
