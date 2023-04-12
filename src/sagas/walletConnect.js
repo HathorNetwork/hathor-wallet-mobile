@@ -27,6 +27,7 @@ import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConne
 import {
   WALLET_CONNECT_PROJECT_ID,
   WALLET_CONNECT_FEATURE_TOGGLE,
+  NETWORK,
 } from '../constants';
 import {
   types,
@@ -35,6 +36,9 @@ import {
   setWalletConnectSessions,
 } from '../actions';
 import { checkForFeatureFlag } from './helpers';
+
+const AVAILABLE_METHODS = ['hathor_signMessage'];
+const AVAILABLE_EVENTS = [];
 
 function* isWalletConnectEnabled() {
   const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
@@ -265,6 +269,7 @@ export function* onSessionProposal(action) {
 
   const wallet = yield select((state) => state.wallet);
   const addresses = wallet.newAddresses;
+  const firstAddress = addresses[0].address;
 
   const data = {
     icon: get(params, 'proposer.metadata.icons[0]', null),
@@ -306,17 +311,18 @@ export function* onSessionProposal(action) {
       relayProtocol: params.relays[0].protocol,
       namespaces: {
         hathor: {
-          accounts: [`hathor:mainnet:${addresses[0].address}`],
-          chains: ['hathor:mainnet'],
-          events: [],
-          methods: ['hathor_signMessage'],
+          accounts: [`hathor:${NETWORK}:${firstAddress}`],
+          chains: [`hathor:${NETWORK}`],
+          events: AVAILABLE_EVENTS,
+          methods: AVAILABLE_METHODS,
         },
       },
     }));
 
     yield call(refreshActiveSessions);
-  } catch(e) {
-    console.log('ERROR: ', e);
+  } catch(error) {
+    console.error('Error on sessionProposal: ', error);
+    yield put(onExceptionCaptured(error));
   }
 }
 
@@ -331,8 +337,9 @@ export function* onQrCodeRead(action) {
 
   try {
     yield call(() => core.pairing.pair({ uri: payload }));
-  } catch(e) {
-    console.error('Error pairing with QrCode: ', e); 
+  } catch(error) {
+    console.error('Error pairing with QrCode: ', error); 
+    yield put(onExceptionCaptured(error));
   }
 }
 
