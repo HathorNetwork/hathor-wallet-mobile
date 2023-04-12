@@ -40,6 +40,17 @@ import { checkForFeatureFlag } from './helpers';
 const AVAILABLE_METHODS = ['hathor_signMessage'];
 const AVAILABLE_EVENTS = [];
 
+/**
+ * Those are the only ones we are currently using, extracted from
+ * https://docs.walletconnect.com/2.0/specs/clients/sign/error-codes
+ */
+const ERROR_CODES = {
+  UNAUTHORIZED_METHODS: 3001,
+  USER_DISCONNECTED: 6000,
+  USER_REJECTED: 5000,
+  USER_REJECTED_METHOD: 5002,
+};
+
 function* isWalletConnectEnabled() {
   const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
 
@@ -82,8 +93,9 @@ function* init() {
     yield take(types.RESET_WALLET);
 
     yield cancel();
-  } catch(e) {
-    console.error('Error loading wallet connect', e);
+  } catch(error) {
+    console.error('Error loading wallet connect', error);
+    yield put(onExceptionCaptured(error));
   }
 }
 
@@ -150,8 +162,8 @@ export function* clearSessions() {
     yield call(() => web3wallet.disconnectSession({
       topic: activeSessions[key].topic, 
       reason: {
-        code: 6000,
-        message: 'User rejected the session',
+        code: USER_DISCONNECTED,
+        message: '',
       },
     }));
   }
@@ -190,6 +202,19 @@ export function* onSessionRequest(action) {
         }
       });
     break;
+    default:
+      yield call(() => web3wallet.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          error: {
+            code: USER_REJECTED_METHOD,
+            message: 'Rejected by the user',
+          },
+        },
+      }));
+    break;
   }
 }
 
@@ -221,7 +246,7 @@ export function* onSignMessageRequest(action) {
           id: payload.id,
           jsonrpc: '2.0',
           error: {
-            code: -3200,
+            code: USER_REJECTED,
             message: 'Rejected by the user',
           },
         },
@@ -248,8 +273,9 @@ export function* onSignMessageRequest(action) {
       topic: data.topic,
       response,
     }));
-  } catch(e) {
-    console.log('Captured error: ', e);
+  } catch(error) {
+    console.log('Captured error on signMessage: ', error);
+    yield put(onExceptionCaptured(error));
   }
 }
 
@@ -299,7 +325,7 @@ export function* onSessionProposal(action) {
     yield call(() => web3wallet.rejectSession({
       id: params.id,
       reason: {
-        code: 6000,
+        code: USER_REJECTED,
         message: 'User rejected the session',
       },
     }));
@@ -367,7 +393,7 @@ export function* onCancelSession(action) {
   yield call(() => web3wallet.disconnectSession({
     topic: activeSessions[action.payload].topic, 
     reason: {
-      code: 6000,
+      code: USER_DISCONNECTED,
       message: 'User cancelled the session',
     },
   }));
