@@ -15,6 +15,7 @@ import {
   call,
   delay,
   put,
+  cancel,
   cancelled,
   select,
   race,
@@ -124,10 +125,6 @@ export function* monitorFeatureFlags(currentRetry = 0) {
 
     yield put(setFeatureToggles(featureToggles));
     yield put(featureToggleInitialized());
-
-    if (yield cancelled()) {
-      yield call(() => unleashClient.stop());
-    }
   } catch (e) {
     console.error('Error initializing unleash');
     unleashClient.stop();
@@ -139,6 +136,10 @@ export function* monitorFeatureFlags(currentRetry = 0) {
 
     // Spawn so it's detached from the current thread
     yield spawn(handleInitFailed, currentRetry);
+  } finally {
+    if (yield cancelled()) {
+      yield call(() => unleashClient.stop());
+    }
   }
 }
 

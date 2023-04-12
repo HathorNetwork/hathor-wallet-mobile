@@ -88,7 +88,7 @@ export const PIN_SIZE = 6;
  */
 export const UNLEASH_URL = 'https://unleash-proxy.b7e6a7f52ee9fefaf0c53e300cfcb014.hathor.network/proxy';
 export const UNLEASH_CLIENT_KEY = 'wKNhpEXKa39aTRgIjcNsO4Im618bRGTq';
-export const UNLEASH_POLLING_INTERVAL = 15; // seconds
+export const UNLEASH_POLLING_INTERVAL = 15 * 1000; // 15s
 export const unleashStorageKey = {
   ignoreWalletServiceFlag: 'featureFlags:ignoreWalletServiceFlag',
 };
