@@ -42,13 +42,44 @@ auth.token=YOUR-SENTRY-TOKEN
 
 First start the Metro bundler:
 
-`npm start`
+`npm start` or `npm run start:clean` to invalidate the cache before run.
 
 Then build the app for iOS:
 
-`npm run ios` to open on iOS simulator, or `npm run ios -- --simulator "iPhone 11"`
+`npm run ios` to open on iOS simulator, or `npm run ios -- --simulator "iPhone 11"` to run it by name.
 
 To list all available simulators, use `xcrun simctl list devices`.
+
+#### Physical device
+
+If you want to run in your physical device, you should first get its UDID by running the list of all possible devices:
+
+```bash
+xcrun xctrace list devices
+```
+
+You should see an output like this:
+```text
+== Devices ==
+Alex’s ... (490613AE-...)
+Alex’s ... (16.3.1) (3198...)
+
+== Simulators ==
+...
+```
+
+The code inside the last parenteses is your UDID. Then, deploy the app to your device with:
+
+```bash
+npm run ios -- --udid=3198...
+```
+
+> INFO: To be able to deploy to your physical device you need to install the command `ios-deploy` first:
+> `brew install ios-deploy; zsh; ios-deploy --version`
+
+#### Required resource
+
+The Firebase package uses the credentials of `GoogleService-Info.plist` to initialize the device in the FCM automatically. You should generate and install this resource in your Xcode environment. Read [Generating iOS credentials](https://rnfirebase.io/#generating-ios-credentials).
 
 ### Android
 
@@ -63,6 +94,10 @@ Then build the app for Android. Make sure you have a device ready, be it on Andr
 If you need to open the Dev Menu on Android Studio Emulator, use `Ctrl + M` or run `adb shell input keyevent 82` in a terminal.
 
 Obs: To run on your device some configuration may need to be done (see [running on device](https://reactnative.dev/docs/running-on-device))
+
+#### Required resource
+
+The Firebase package uses the credentials of `google-services.json` to initialize the device in the FCM automatically. You should generate and install this resource in your Android Studio environment. Read [Generating Android credentials](https://rnfirebase.io/#generating-android-credentials).
 
 ### Run linter
 

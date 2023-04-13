@@ -57,6 +57,8 @@
 	<string>Hathor Wallet does not use it.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Hathor Wallet does not use it.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Hathor Wallet can use it to send notifications for new transactions.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>tabbar.ttf</string>
