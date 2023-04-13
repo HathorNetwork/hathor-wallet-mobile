@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
 
-import { onExceptionCaptured, resetData } from '../actions';
+import { onExceptionCaptured } from '../actions';
 
 /**
  * Only used for deciding which stack (App or Init) to display, so nothing is rendered.
@@ -18,7 +18,6 @@ export function DecideStackScreen({ navigation }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(resetData());
     hathorLib
       .storage
       .store
