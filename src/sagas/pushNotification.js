@@ -91,6 +91,7 @@ function* confirmDeviceRegistrationOnFirebase() {
   try {
     // Make sure deviceId is registered on the FCM
     if (!messaging().isDeviceRegisteredForRemoteMessages) {
+      console.debug('Device not registered on FCM. Registering device on FCM...')
       yield call(messaging().registerDeviceForRemoteMessages);
     }
     return true;
@@ -108,6 +109,7 @@ function* confirmDeviceRegistrationOnFirebase() {
 async function getDeviceId() {
   try {
     const deviceId = await messaging().getToken();
+    console.debug('DeviceID on FCM: ', deviceId);
     return deviceId;
   } catch (error) {
     console.error('Error getting deviceId from firebase.', error);
@@ -325,7 +327,18 @@ export function* loadWallet() {
  * @returns {boolean} true if has authorization to receive push notifications, false otherwise.
  */
 const hasPostNotificationAuthorization = async () => {
-  const status = await messaging().hasPermission();
+  let status = await messaging().hasPermission();
+  if (status === messaging.AuthorizationStatus.BLOCKED) {
+    console.debug('Device not authorized to send push notification and blocked to ask permission.');
+    return false;
+  }
+
+  if (status === messaging.AuthorizationStatus.NOT_DETERMINED) {
+    console.debug('Device clean. Asking for permission to send push notification.');
+    status = await messaging().requestPermission();
+  }
+
+  console.debug('Device permission status: ', status);
   return status === messaging.AuthorizationStatus.AUTHORIZED
       || status === messaging.AuthorizationStatus.PROVISIONAL;
 };
@@ -334,7 +347,8 @@ const hasPostNotificationAuthorization = async () => {
  * Opens the app settings screen where the user can enable the notification settings.
  */
 const openAppSettings = async () => {
-  if (Platform.OS === 'android') {
+  if (Platform.OS === 'android'
+      || Platform.OS === 'ios') {
     Linking.openSettings();
   }
 };
@@ -346,6 +360,8 @@ const openAppSettings = async () => {
 export function* registration({ payload: { enabled, showAmountEnabled, deviceId } }) {
   const hasAuthorization = yield call(hasPostNotificationAuthorization);
   if (!hasAuthorization) {
+    console.debug('Application is not authorized to send push notification. Asking for permission or opening settings...');
+
     yield call(openAppSettings);
     yield put(pushRegisterFailed());
     return;

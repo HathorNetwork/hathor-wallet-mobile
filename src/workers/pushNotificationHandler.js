@@ -139,6 +139,7 @@ const localization = {
  * }
  */
 export const messageHandler = async (message, isForeground) => {
+  console.debug('Push notification received on background listener.');
   const { data } = message;
   if (!data) {
     throw new Error('Error while handling push notification message. Message data is null or undefined.');
