@@ -91,7 +91,7 @@ function* confirmDeviceRegistrationOnFirebase() {
   try {
     // Make sure deviceId is registered on the FCM
     if (!messaging().isDeviceRegisteredForRemoteMessages) {
-      console.debug('Device not registered on FCM. Registering device on FCM...')
+      console.debug('Device not registered on FCM. Registering device on FCM...');
       yield call(messaging().registerDeviceForRemoteMessages);
     }
     return true;
