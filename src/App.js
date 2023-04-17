@@ -278,10 +278,15 @@ class _AppStackWrapper extends React.Component {
   setNotifeeForegroundListener = () => {
     try {
       const onForegroundMessage = async ({ type, detail }) => {
-        switch (type) {
-          case EventType.PRESS:
+        console.debug('Notification event on foreground: ', '<add the notification details here>');
+        const isPressAction = (pressType) => (
+          pressType === EventType.ACTION_PRESS || pressType === EventType.PRESS);
+        switch (true) {
+          case isPressAction(type):
             try {
-              if (detail.pressAction?.id === PUSH_ACTION.NEW_TRANSACTION) {
+              if (detail.pressAction?.id === PUSH_ACTION.NEW_TRANSACTION
+                  || detail.pressAction?.id === 'default') {
+                console.debug('Notification pressed or action pressed on foreground.');
                 const { txId } = detail.notification.data;
                 this.props.loadTxDetails({ txId });
               }

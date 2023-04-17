@@ -48,6 +48,7 @@ import {
   WALLET_SERVICE_MAINNET_BASE_URL,
   NETWORK,
   PUSH_CHANNEL_TRANSACTION,
+  PUSH_ACTION,
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
 import { isUnlockScreen, showPinScreenForResult } from './helpers';
@@ -55,6 +56,42 @@ import { messageHandler } from '../workers/pushNotificationHandler';
 import { WALLET_STATUS } from './wallet';
 
 const TRANSACTION_CHANNEL_NAME = t`Transaction`;
+const PUSH_ACTION_TITLE = t`Open`;
+
+/**
+ * Creates the categories for the push notification on iOS.
+ * The categories are used to define the actions that the user can take
+ * when receiving a notification.
+ * @returns {boolean} true if the category was created, false otherwise
+ */
+function* createCategoryIfNotExists() {
+  if (Platform.OS !== 'ios') {
+    return true;
+  }
+
+  try {
+    yield call(notifee.setNotificationCategories, [
+      {
+        id: PUSH_CHANNEL_TRANSACTION,
+        actions: [
+          {
+            id: PUSH_ACTION.NEW_TRANSACTION,
+            title: PUSH_ACTION_TITLE,
+            // It requires unlocking the device to open the app
+            authenticationRequired: true,
+            // It causes the the app to open in the foreground
+            foreground: true,
+          },
+        ],
+      }
+    ]);
+    return true;
+  } catch (error) {
+    console.error('Error creating categories for push notification on iOS.', error);
+    yield put(onExceptionCaptured(error));
+    return false;
+  }
+}
 
 /**
  * Creates the channel for the push notification on Android.
@@ -77,7 +114,7 @@ function* createChannelIfNotExists() {
     }
     return true;
   } catch (error) {
-    console.error('Error creating channel for push notification.', error);
+    console.error('Error creating channel for push notification on Android.', error);
     yield put(onExceptionCaptured(error));
     return false;
   }
@@ -109,7 +146,7 @@ function* confirmDeviceRegistrationOnFirebase() {
 async function getDeviceId() {
   try {
     const deviceId = await messaging().getToken();
-    console.debug('DeviceID on FCM: ', deviceId);
+    console.debug('DeviceID on FCM: ', '<add the deviceId here>');
     return deviceId;
   } catch (error) {
     console.error('Error getting deviceId from firebase.', error);
@@ -175,9 +212,18 @@ export function* init() {
   }
 
   // If the channel is not created, we should not continue.
+  // We also continue if the OS is iOS because we don't need to create the channel.
   const isChannelCreated = yield call(createChannelIfNotExists);
   if (!isChannelCreated) {
-    console.debug('Halting push notification initialization because the channel was not created.');
+    console.debug('Halting push notification initialization because the channel was not created on Android.');
+    return;
+  }
+
+  // If the category is not created, we should not continue.
+  // We also continue if the OS is Android because we don't need to create the category.
+  const isCategoryCreated = yield call(createCategoryIfNotExists);
+  if (!isCategoryCreated) {
+    console.debug('Halting push notification initialization because the category was not created on iOS.');
     return;
   }
 
@@ -434,6 +480,7 @@ export function* dismissOptInQuestion() {
 export function* checkOpenPushNotification() {
   const notificationError = STORE.getItem(pushNotificationKey.notificationError);
   if (notificationError) {
+    console.debug('Error while handling push notification on background: ', notificationError);
     STORE.removeItem(pushNotificationKey.notificationError);
     yield put(onExceptionCaptured(new Error(notificationError)));
     return;
@@ -443,6 +490,7 @@ export function* checkOpenPushNotification() {
     const notificationData = STORE.getItem(pushNotificationKey.notificationData);
     // Check if the app was opened by a push notification on press action
     if (notificationData) {
+      console.debug('App opened by push notification on press action.');
       STORE.removeItem(pushNotificationKey.notificationData);
       // Wait for the wallet to be loaded
       yield take(types.START_WALLET_SUCCESS);
@@ -534,9 +582,10 @@ export function* loadTxDetails(action) {
       resetWallet: take(types.RESET_WALLET)
     });
     if (resetWallet) {
-      console.debug('Halting loadTxDetails');
+      console.debug('Halting loadTxDetails.');
       return;
     }
+    console.debug('Continuing loadTxDetails after unlock screen.');
   }
 
   try {

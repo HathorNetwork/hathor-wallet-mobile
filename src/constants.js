@@ -129,7 +129,7 @@ export const NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED = 'new_t
  */
 export const NEW_TRANSACTION_RECEIVED_TITLE = 'new_transaction_received_title';
 /**
- * this is the channel id for the transaction notification
+ * this is the channel/category id for the transaction notification
  */
 export const PUSH_CHANNEL_TRANSACTION = 'transaction';
 /**

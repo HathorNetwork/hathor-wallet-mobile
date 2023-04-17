@@ -166,9 +166,11 @@ export const messageHandler = async (message, isForeground) => {
     const { txId } = data;
 
     notifee.displayNotification({
+      // Unique ID for the notification, allowing you to update or remove it later
       id: txId,
       title,
       body,
+      // Android only
       android: {
         channelId: PUSH_CHANNEL_TRANSACTION,
         pressAction: {
@@ -176,6 +178,14 @@ export const messageHandler = async (message, isForeground) => {
           ...(!isForeground && { mainComponent: appName })
         },
         style: { type: AndroidStyle.BIGTEXT, text: body },
+      },
+      // iOS only
+      ios: {
+        // Category for the notification, required for actionable notifications
+        // The actions will be displayed as defined in the `setNotificationCategories` method
+        categoryId: PUSH_CHANNEL_TRANSACTION,
+        // Visualy group notifications together
+        threadId: txId,
       },
       data: {
         txId
