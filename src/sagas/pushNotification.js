@@ -578,7 +578,8 @@ export function* loadTxDetails(action) {
   const isLocked = yield select((state) => state.lockScreen);
   if (isLocked) {
     const { resetWallet } = yield race({
-      unlockWallet: take(isUnlockScreen),
+      // Wait for the unlock screen to be dismissed, and wallet to be loaded
+      unlockWallet: all([take(isUnlockScreen), take(types.START_WALLET_SUCCESS)]),
       resetWallet: take(types.RESET_WALLET)
     });
     if (resetWallet) {
