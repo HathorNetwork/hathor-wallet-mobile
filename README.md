@@ -74,8 +74,8 @@ The code inside the last parenteses is your UDID. Then, deploy the app to your d
 npm run ios -- --udid=3198...
 ```
 
-> INFO: To be able to deploy to your physical device you need to install the command `ios-deploy` first:
-> `brew install ios-deploy; zsh; ios-deploy --version`
+> INFO: To be able to deploy to your physical device you can use `ios-deploy`, it can be downloaded from https://github.com/ios-control/ios-deploy:
+> `ios-deploy --version`
 
 #### Required resource
 
