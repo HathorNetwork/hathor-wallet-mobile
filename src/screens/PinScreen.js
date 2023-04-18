@@ -22,7 +22,6 @@ import {
   lockScreen,
   unlockScreen,
   setLoadHistoryStatus,
-  setRecoveringPin,
   setTempPin,
   onStartWalletLock,
   startWalletRequested,
@@ -40,7 +39,6 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setRecoveringPin: (state) => dispatch(setRecoveringPin(state)),
   unlockScreen: () => dispatch(unlockScreen()),
   lockScreen: () => dispatch(lockScreen()),
   resetOnLockScreen: () => dispatch(resetOnLockScreen()),
@@ -191,26 +189,33 @@ class PinScreen extends React.Component {
   }
 
   validatePin = (pin) => {
+    const pinCorrect = hathorLib.wallet.isPinCorrect(pin);
+
+    if (!pinCorrect) {
+      this.removeOneChar();
+      return;
+    }
+
     try {
-      if (hathorLib.wallet.isPinCorrect(pin)) {
-        // also validate if we are able to decrypt the seed using this PIN
-        // this will throw if the words are not able to be decoded with this
-        // pin.
-        hathorLib.wallet.getWalletWords(pin);
+      // Validate if we are able to decrypt the seed using this PIN
+      // this will throw if the words are not able to be decoded with this
+      // pin.
+      hathorLib.wallet.getWalletWords(pin);
 
-        if (!hathorLib.wallet.wordsValid(pin)) {
-          throw new Error('Words decrypted with pin are invalid');
-        }
-
-        this.dismiss(pin);
-      } else {
-        this.removeOneChar();
+      if (!hathorLib.wallet.wordsValid(pin)) {
+        throw new Error('Words not valid.');
       }
     } catch (e) {
-      this.props.unlockScreen();
-      this.props.setRecoveringPin(true);
-      this.props.setTempPin(pin);
+      this.props.onExceptionCaptured(
+        new Error('User inserted a valid PIN but the app wasn\'t able to decrypt the words'),
+        true, // Fatal since we can't start the wallet
+      );
+
+      return;
     }
+
+    // Inserted PIN was able to decrypt the words successfully
+    this.dismiss(pin);
   }
 
   goToReset = () => {

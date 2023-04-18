@@ -454,15 +454,6 @@ export const tokenMetadataRemoved = (data) => (
 );
 
 /**
- * Set if we are trying to recover the user PIN
- *
- * data {boolean} If we are trying or not
- */
-export const setRecoveringPin = (data) => (
-  { type: types.SET_RECOVERING_PIN, payload: data }
-);
-
-/**
  * Sets or unsets the user PIN
  *
  * data {string} The user PIN or null
