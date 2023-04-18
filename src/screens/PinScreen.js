@@ -104,12 +104,25 @@ class PinScreen extends React.Component {
 
   handleBackButton = () => true
 
-  askBiometricId = () => {
-    Keychain.getGenericPassword({ authenticationPrompt: this.biometryText }).then((credentials) => {
-      this.dismiss(credentials.password);
-    }, (error) => {
-      // no need to do anything as user can enter pin
-    });
+  askBiometricId = async () => {
+    try {
+      /* getGenericPassword will return either `false` or UserCredentials:
+       *
+       * interface UserCredentials extends Result {
+       *   username: string;
+       *   password: string;
+       * }
+       */
+      const credentials = await Keychain.getGenericPassword({
+        authenticationPrompt: this.biometryText,
+      });
+
+      if (credentials !== false) {
+        this.dismiss(credentials.password);
+      }
+    } catch (e) {
+      // No need to do anything here as the user can type his PIN
+    }
   }
 
   /**
