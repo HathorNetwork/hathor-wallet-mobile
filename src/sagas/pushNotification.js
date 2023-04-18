@@ -146,7 +146,6 @@ function* confirmDeviceRegistrationOnFirebase() {
 async function getDeviceId() {
   try {
     const deviceId = await messaging().getToken();
-    console.debug('DeviceID on FCM: ', '<add the deviceId here>');
     return deviceId;
   } catch (error) {
     console.error('Error getting deviceId from firebase.', error);

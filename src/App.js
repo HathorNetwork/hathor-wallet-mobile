@@ -278,7 +278,6 @@ class _AppStackWrapper extends React.Component {
   setNotifeeForegroundListener = () => {
     try {
       const onForegroundMessage = async ({ type, detail }) => {
-        console.debug('Notification event on foreground: ', '<add the notification details here>');
         const isPressAction = (pressType) => (
           pressType === EventType.ACTION_PRESS || pressType === EventType.PRESS);
         switch (true) {
