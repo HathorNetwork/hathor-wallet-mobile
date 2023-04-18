@@ -7,7 +7,6 @@
 
 import hathorLib from '@hathor/wallet-lib';
 import * as Keychain from 'react-native-keychain';
-import CryptoJS from 'crypto-js';
 import React from 'react';
 import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
@@ -298,105 +297,6 @@ export const renderValue = (amount, isInteger) => {
 export const isTokenNFT = (uid, metadatas) => (
   uid in metadatas && metadatas[uid].nft
 );
-
-/**
- * @params {string} data - Encrypted data to decrypt
- * @params {number} begin - Start of sequence to guess
- * @params {number} end - End of sequence to guess
- */
-const guessPartial = (data, begin, end) => {
-  const decrypt = (_data, pin) => CryptoJS
-    .AES
-    .decrypt(_data, pin)
-    .toString(CryptoJS.enc.Utf8);
-
-  let pinFound = -1;
-  for (let i = begin; i <= end; i += 1) {
-    const pin = `${i}`.padStart(6, '0');
-
-    try {
-      // decrypted is a string with a space-delimited list of words
-      const decrypted = decrypt(data, pin);
-
-      // the biggest word on the BIP39 word list in english has 8 characters
-      // so the max possible length for the word list is (8 * 24 + 23)
-      if (decrypted.length > 215) continue;
-      // the smallest word has 3 characters
-      if (decrypted.length < 95) continue;
-
-      if (hathorLib.wallet.wordsValid(decrypted)) {
-        pinFound = pin;
-        break;
-      }
-    } catch (e) {
-      // decrypt failed, ignoring
-    }
-  }
-
-  if (pinFound !== -1) {
-    return [true, pinFound];
-  }
-
-  return [false, ''];
-};
-
-/**
- * @params {string} data - Encrypted data to decrypt
- * @params {number} begin - Start of sequence to guess
- * @params {number} step - Step size to schedule `guessPin`
- * @params {Function} progressCb - Callback called on progress
- * @params {Function} successCb - Callback called on success
- * @params {Function} errorCb - Callback called on failure
- */
-function guessScheduler(data, begin, step, progressCb, successCb, errorCb) {
-  const LIMIT = 999999;
-  let end = begin + step;
-  if (end > LIMIT) {
-    end = LIMIT;
-  }
-
-  const [success, pin] = guessPartial(data, begin, end);
-
-  if (!success) {
-    const newBegin = end + 1;
-
-    if (newBegin > LIMIT) {
-      return errorCb('Reached limit');
-    }
-
-    // update progress
-    progressCb(Math.floor((newBegin / LIMIT) * 100));
-
-    return setTimeout(() => guessScheduler(
-      data,
-      newBegin,
-      step,
-      progressCb,
-      successCb,
-      errorCb,
-    ), 0);
-  }
-
-  return successCb(pin);
-}
-
-/**
- * @return {[boolean, string]} Tuple <success:boolean, pin:string> with the result
- *
- * @params {Object} accessData - The encrypted data from storage
- * @params {Function} progressCb - A callback that will be called on progress
- */
-export const guessPin = async (accessData, progressCb) => {
-  const data = accessData.words;
-
-  return new Promise((resolve, reject) => {
-    guessScheduler(data, 0, 1000, progressCb, (pin) => {
-      resolve([true, pin]);
-    }, (error) => {
-      resolve([false, '']);
-    });
-  });
-};
 
 /**
  * Set the pin on the keychain so the user can use biometry
