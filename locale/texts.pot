@@ -325,7 +325,7 @@ msgid "E.g. HTR"
 msgstr ""
 
 #: src/screens/Dashboard.js:68
-#: src/screens/RegisterTokenManual.js:150
+#: src/screens/RegisterTokenManual.js:214
 msgid "Register token"
 msgstr ""
 
@@ -486,23 +486,23 @@ msgstr ""
 msgid "Waiting confirmation"
 msgstr ""
 
-#: src/screens/PinScreen.js:244
+#: src/screens/PinScreen.js:235
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
-#: src/screens/PinScreen.js:67
+#: src/screens/PinScreen.js:69
 msgid "Enter your PIN Code "
 msgstr ""
 
-#: src/screens/PinScreen.js:68
+#: src/screens/PinScreen.js:70
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
-#: src/screens/PinScreen.js:256
+#: src/screens/PinScreen.js:247
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:259
+#: src/screens/PinScreen.js:250
 #: src/screens/RecoverPin.js:108
 #: src/screens/Settings.js:144
 msgid "Reset wallet"
@@ -562,7 +562,7 @@ msgid "Manual info"
 msgstr ""
 
 #: src/screens/RegisterToken.js:48
-#: src/screens/RegisterTokenManual.js:129
+#: src/screens/RegisterTokenManual.js:193
 msgid "REGISTER TOKEN"
 msgstr ""
 
@@ -570,49 +570,49 @@ msgstr ""
 msgid "Scan the token QR code"
 msgstr ""
 
-#: src/screens/RegisterTokenManual.js:105
+#: src/screens/RegisterTokenManual.js:169
 msgid "You're going to register the following token:"
 msgstr ""
 
-#: src/screens/RegisterTokenManual.js:107
+#: src/screens/RegisterTokenManual.js:171
 msgid "Name: "
 msgstr ""
 
-#: src/screens/RegisterTokenManual.js:111
+#: src/screens/RegisterTokenManual.js:175
 msgid "Symbol: "
 msgstr ""
 
-#: src/screens/RegisterTokenManual.js:135
+#: src/screens/RegisterTokenManual.js:199
 msgid "Configuration string"
 msgstr ""
 
-#: src/screens/ResetWallet.js:74
+#: src/screens/ResetWallet.js:90
 msgid "RESET WALLET"
 msgstr ""
 
-#: src/screens/ResetWallet.js:78
+#: src/screens/ResetWallet.js:94
 msgid "Are you sure?"
 msgstr ""
 
-#: src/screens/ResetWallet.js:81
+#: src/screens/ResetWallet.js:97
 msgid ""
 "If you reset your wallet, **all data will be deleted**, and you will **lose "
 "access to your tokens**."
 msgstr ""
 
-#: src/screens/ResetWallet.js:83
+#: src/screens/ResetWallet.js:99
 msgid ""
 "To recover access to your tokens, you will need to import your seed words "
 "again."
 msgstr ""
 
-#: src/screens/ResetWallet.js:92
+#: src/screens/ResetWallet.js:108
 msgid ""
 "I want to reset my wallet, and I acknowledge that **all data will be wiped "
 "out**."
 msgstr ""
 
-#: src/screens/ResetWallet.js:101
+#: src/screens/ResetWallet.js:117
 msgid "Reset Wallet"
 msgstr ""
 
@@ -765,8 +765,12 @@ msgstr ""
 msgid "Unregister token"
 msgstr ""
 
-#: src/sagas/pushNotification.js:57
+#: src/sagas/pushNotification.js:58
 msgid "Transaction"
+msgstr ""
+
+#: src/sagas/pushNotification.js:59
+msgid "Open"
 msgstr ""
 
 #: src/components/AskForPushNotification.js:21
