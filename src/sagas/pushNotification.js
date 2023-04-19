@@ -392,10 +392,7 @@ const hasPostNotificationAuthorization = async () => {
  * Opens the app settings screen where the user can enable the notification settings.
  */
 const openAppSettings = async () => {
-  if (Platform.OS === 'android'
-      || Platform.OS === 'ios') {
-    Linking.openSettings();
-  }
+  Linking.openSettings();
 };
 
 /**
