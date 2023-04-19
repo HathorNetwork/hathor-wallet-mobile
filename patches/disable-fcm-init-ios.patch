@@ -1,0 +1,13 @@
+diff --git a/ios/HathorMobile/Info.plist b/ios/HathorMobile/Info.plist
+index 388c99e..5996963 100644
+--- a/ios/HathorMobile/Info.plist
++++ b/ios/HathorMobile/Info.plist
+@@ -23,7 +23,7 @@
+ 	<key>CFBundleVersion</key>
+ 	<string>$(CURRENT_PROJECT_VERSION)</string>
+ 	<key>FirebaseMessagingAutoInitEnabled</key>
+-	<string>YES</string>
++	<string>NO</string>
+ 	<key>ITSAppUsesNonExemptEncryption</key>
+ 	<false/>
+ 	<key>LSRequiresIPhoneOS</key>

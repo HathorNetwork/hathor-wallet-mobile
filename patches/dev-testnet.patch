@@ -1,0 +1,53 @@
+diff --git a/src/constants.js b/src/constants.js
+index 8235548..9f5bdbd 100644
+--- a/src/constants.js
++++ b/src/constants.js
+@@ -30,13 +30,13 @@ hathorLib.storage.setStore(STORE);
+ /**
+  * This is the environment stage that will be used to load the unleash feature flags.
+  */
+-export const STAGE = 'mainnet';
++export const STAGE = 'dev-testnet';
+ 
+ /**
+  * this is the network name that will be used to load the wallet on the wallet-service,
+  * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
+  */
+-export const NETWORK = 'mainnet';
++export const NETWORK = 'testnet';
+ 
+ /**
+  * Default tokens for the wallet (to start on redux)
+@@ -100,9 +100,8 @@ export const METADATA_CONCURRENT_DOWNLOAD = 5;
+ 
+ 
+ // Wallet service URLs
+-export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://wallet-service.hathor.network/';
+-export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.wallet-service.hathor.network/';
+-
++export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://dev.wallet-service.testnet.hathor.network/';
++export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.dev.wallet-service.testnet.hathor.network/';
+ /**
+  * Push notification storage keys.
+  */
+diff --git a/src/sagas/wallet.js b/src/sagas/wallet.js
+index 47e57d4..2435754 100644
+--- a/src/sagas/wallet.js
++++ b/src/sagas/wallet.js
+@@ -132,9 +132,15 @@ export function* startWallet(action) {
+       xpriv = walletUtil.getXprivKey(pin);
+     }
+ 
++    /**
++     * for `servers` you can use the following options:
++     * @example
++     * 'https://wallet-service.private-nodes.testnet.hathor.network/v1a/'
++     * 'https://node1.testnet.hathor.network/v1a/'
++     */
+     const connection = new Connection({
+       network: NETWORK, // app currently connects only to mainnet
+-      servers: ['https://mobile.wallet.hathor.network/v1a/'],
++      servers: ['https://node1.testnet.hathor.network/v1a/'],
+     });
+ 
+     const walletConfig = {

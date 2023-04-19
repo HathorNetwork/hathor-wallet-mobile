@@ -1,0 +1,37 @@
+diff --git a/src/App.js b/src/App.js
+index e210d8f..8674bf0 100644
+--- a/src/App.js
++++ b/src/App.js
+@@ -278,6 +278,7 @@ class _AppStackWrapper extends React.Component {
+   setNotifeeForegroundListener = () => {
+     try {
+       const onForegroundMessage = async ({ type, detail }) => {
++        console.debug('Notification event on foreground: ', { type, detail });
+         const isPressAction = (pressType) => (
+           pressType === EventType.ACTION_PRESS || pressType === EventType.PRESS);
+         switch (true) {
+diff --git a/src/sagas/pushNotification.js b/src/sagas/pushNotification.js
+index 61364cd..8f0349b 100644
+--- a/src/sagas/pushNotification.js
++++ b/src/sagas/pushNotification.js
+@@ -146,6 +146,7 @@ function* confirmDeviceRegistrationOnFirebase() {
+ async function getDeviceId() {
+   try {
+     const deviceId = await messaging().getToken();
++    console.debug('DeviceID on FCM: ', deviceId);
+     return deviceId;
+   } catch (error) {
+     console.error('Error getting deviceId from firebase.', error);
+diff --git a/src/workers/backgroundListeners.js b/src/workers/backgroundListeners.js
+index 7c25c17..d9dc959 100644
+--- a/src/workers/backgroundListeners.js
++++ b/src/workers/backgroundListeners.js
+@@ -80,6 +80,8 @@ export const setNotifeeBackgroundListener = () => {
+   try {
+     notifee.onBackgroundEvent(async ({ type, detail }) => {
+       const { notification } = detail;
++      console.debug('Notification event on background: ', { type, detail });
++
+       if (type === EventType.DISMISSED) {
+         await notifee.cancelNotification(notification.id);
+         return;
