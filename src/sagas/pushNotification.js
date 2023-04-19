@@ -596,12 +596,12 @@ export function* loadTxDetails(action) {
 }
 
 /**
- * Unregister the device from firebase and delete the token.
- * This clean up invalidates the token that is being used
- * and the device will not receive any push notification.
+ * Deletes the token in the FCM, and invalidates any notification sent to it.
+ *
+ * This is a strong enforcement that a notification will not be delivered
+ * after a reset, even if the device is registered in the FCM or in the APNS.
  */
 const cleanToken = async () => {
-  await messaging().unregisterDeviceForRemoteMessages();
   await messaging().deleteToken();
 };
 
