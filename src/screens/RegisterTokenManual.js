@@ -65,7 +65,12 @@ class RegisterTokenManual extends React.Component {
     });
   }
 
-  tokenExists = (uid) => {
+  /**
+   * Get token if there is a token with the same uid.
+   * @param {string} uid token unique identifier
+   * @returns a token object if there is a token with the same uid, null otherwise
+   */
+  getToken = (uid) => {
     const { tokens } = this.props;
     for (const token of tokens) {
       if (token.uid === uid) {
@@ -75,7 +80,13 @@ class RegisterTokenManual extends React.Component {
     return null;
   }
 
-  tokenInfoExists = (name, symbol) => {
+  /**
+   * Get token info if there is a token with the same name or symbol.
+   * @param {string} name
+   * @param {string} symbol
+   * @returns a token info object if there is a token with the same name or symbol, null otherwise
+   */
+  getTokenInfo = (name, symbol) => {
     const { tokens } = this.props;
     for (const token of tokens) {
       const tokenName = hathorLib.helpers.cleanupString(token.name);
@@ -108,7 +119,7 @@ class RegisterTokenManual extends React.Component {
 
       const { uid, name, symbol } = tokenData;
 
-      const token = this.tokenExists(uid);
+      const token = this.getToken(uid);
       if (token) {
         this.setState({
           errorMessage: `You already have this token: ${uid} (${token.name})`,
@@ -117,7 +128,7 @@ class RegisterTokenManual extends React.Component {
         return;
       }
 
-      const tokenInfo = this.tokenInfoExists(name, symbol);
+      const tokenInfo = this.getTokenInfo(name, symbol);
       if (tokenInfo) {
         this.setState({
           errorMessage: `You already have a token with this ${tokenInfo.key}: ${tokenInfo.token.uid} - ${tokenInfo.token.name} (${tokenInfo.token.symbol})`,
