@@ -52,7 +52,7 @@ msgstr ""
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src/utils.js:144
+#: src/utils.js:143
 msgid "Invalid address"
 msgstr ""
 
@@ -486,7 +486,7 @@ msgstr ""
 msgid "Waiting confirmation"
 msgstr ""
 
-#: src/screens/PinScreen.js:244
+#: src/screens/PinScreen.js:253
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
@@ -498,12 +498,11 @@ msgstr ""
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
-#: src/screens/PinScreen.js:256
+#: src/screens/PinScreen.js:265
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:259
-#: src/screens/RecoverPin.js:108
+#: src/screens/PinScreen.js:268
 #: src/screens/Settings.js:144
 msgid "Reset wallet"
 msgstr ""
@@ -542,18 +541,6 @@ msgstr ""
 msgid "RECEIVE"
 msgstr ""
 
-#: src/screens/RecoverPin.js:92
-msgid "There has been an error upgrading your wallet."
-msgstr ""
-
-#: src/screens/RecoverPin.js:102
-msgid "Please reset it and restore it with your seed."
-msgstr ""
-
-#: src/screens/RecoverPin.js:125
-msgid "Upgrading your wallet, please hang on."
-msgstr ""
-
 #: src/screens/RegisterToken.js:33
 #: src/screens/SendScanQRCode.js:69
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
@@ -586,33 +573,33 @@ msgstr ""
 msgid "Configuration string"
 msgstr ""
 
-#: src/screens/ResetWallet.js:74
+#: src/screens/ResetWallet.js:90
 msgid "RESET WALLET"
 msgstr ""
 
-#: src/screens/ResetWallet.js:78
+#: src/screens/ResetWallet.js:94
 msgid "Are you sure?"
 msgstr ""
 
-#: src/screens/ResetWallet.js:81
+#: src/screens/ResetWallet.js:97
 msgid ""
 "If you reset your wallet, **all data will be deleted**, and you will **lose "
 "access to your tokens**."
 msgstr ""
 
-#: src/screens/ResetWallet.js:83
+#: src/screens/ResetWallet.js:99
 msgid ""
 "To recover access to your tokens, you will need to import your seed words "
 "again."
 msgstr ""
 
-#: src/screens/ResetWallet.js:92
+#: src/screens/ResetWallet.js:108
 msgid ""
 "I want to reset my wallet, and I acknowledge that **all data will be wiped "
 "out**."
 msgstr ""
 
-#: src/screens/ResetWallet.js:101
+#: src/screens/ResetWallet.js:117
 msgid "Reset Wallet"
 msgstr ""
 
@@ -668,12 +655,12 @@ msgstr ""
 msgid "Your transfer is being processed"
 msgstr ""
 
-#: src/sagas/helpers.js:96
+#: src/sagas/helpers.js:122
 #: src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
-#: src/sagas/helpers.js:97
+#: src/sagas/helpers.js:123
 #: src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr ""

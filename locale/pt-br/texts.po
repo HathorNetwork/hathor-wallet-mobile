@@ -61,7 +61,7 @@ msgstr "[Última] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:144
+#: src/utils.js:143
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
@@ -508,7 +508,7 @@ msgstr "Recebido"
 msgid "Waiting confirmation"
 msgstr "Aguardando confirmação"
 
-#: src/screens/PinScreen.js:244
+#: src/screens/PinScreen.js:253
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
@@ -520,12 +520,11 @@ msgstr "Digite seu PIN "
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
-#: src/screens/PinScreen.js:256
+#: src/screens/PinScreen.js:265
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:259 src/screens/RecoverPin.js:108
-#: src/screens/Settings.js:144
+#: src/screens/PinScreen.js:268 src/screens/Settings.js:144
 msgid "Reset wallet"
 msgstr "Resetar a wallet"
 
@@ -564,18 +563,6 @@ msgstr "Requisição de Pagamento"
 msgid "RECEIVE"
 msgstr "RECEBER"
 
-#: src/screens/RecoverPin.js:92
-msgid "There has been an error upgrading your wallet."
-msgstr "Ocorreu um erro ao atualizar sua wallet."
-
-#: src/screens/RecoverPin.js:102
-msgid "Please reset it and restore it with your seed."
-msgstr "Por favor resete sua wallet e restaure utilizando sua seed."
-
-#: src/screens/RecoverPin.js:125
-msgid "Upgrading your wallet, please hang on."
-msgstr "Atualizando sua wallet, por favor aguarde."
-
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/RegisterToken.js:33 src/screens/SendScanQRCode.js:69
@@ -606,15 +593,15 @@ msgstr "Símbolo: "
 msgid "Configuration string"
 msgstr "Configuração"
 
-#: src/screens/ResetWallet.js:74
+#: src/screens/ResetWallet.js:90
 msgid "RESET WALLET"
 msgstr "RESETAR WALLET"
 
-#: src/screens/ResetWallet.js:78
+#: src/screens/ResetWallet.js:94
 msgid "Are you sure?"
 msgstr "Você tem certeza?"
 
-#: src/screens/ResetWallet.js:81
+#: src/screens/ResetWallet.js:97
 msgid ""
 "If you reset your wallet, **all data will be deleted**, and you will **lose "
 "access to your tokens**."
@@ -622,7 +609,7 @@ msgstr ""
 "Se você resetar sua wallet, **todos os seus dados serão apagados**, e você "
 "irá **perder acesso aos seus tokens**."
 
-#: src/screens/ResetWallet.js:83
+#: src/screens/ResetWallet.js:99
 msgid ""
 "To recover access to your tokens, you will need to import your seed words "
 "again."
@@ -630,7 +617,7 @@ msgstr ""
 "Para recuperar acesso aos seus tokens, você irá precisar importar suas "
 "palavras novamente."
 
-#: src/screens/ResetWallet.js:92
+#: src/screens/ResetWallet.js:108
 msgid ""
 "I want to reset my wallet, and I acknowledge that **all data will be wiped "
 "out**."
@@ -638,7 +625,7 @@ msgstr ""
 "Eu quero resetar minha wallet, e eu entendo que **todos os dados serão "
 "deletados**."
 
-#: src/screens/ResetWallet.js:101
+#: src/screens/ResetWallet.js:117
 msgid "Reset Wallet"
 msgstr "Resetar Wallet"
 
@@ -691,11 +678,11 @@ msgstr "ENVIAR ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/sagas/helpers.js:96 src/screens/SendConfirmScreen.js:117
+#: src/sagas/helpers.js:122 src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
-#: src/sagas/helpers.js:97 src/screens/SendConfirmScreen.js:118
+#: src/sagas/helpers.js:123 src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -954,6 +941,15 @@ msgstr "Essa é a configuração do seu token ${ tokenLabel }: ${ configString }
 #: src/components/TxDetailsModal.js:59
 msgid "Description"
 msgstr "Descrição"
+
+#~ msgid "There has been an error upgrading your wallet."
+#~ msgstr "Ocorreu um erro ao atualizar sua wallet."
+
+#~ msgid "Please reset it and restore it with your seed."
+#~ msgstr "Por favor resete sua wallet e restaure utilizando sua seed."
+
+#~ msgid "Upgrading your wallet, please hang on."
+#~ msgstr "Atualizando sua wallet, por favor aguarde."
 
 #~ msgid "I understand the risks of using a mobile wallet"
 #~ msgstr "Eu entendo os riscos de usar uma wallet de celular"
