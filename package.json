@@ -1,6 +1,6 @@
 {
   "name": "HathorMobile",
-  "version": "0.24.2",
+  "version": "0.24.3",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
