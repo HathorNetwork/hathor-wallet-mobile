@@ -51,7 +51,6 @@ import RegisterToken from './screens/RegisterToken';
 import RegisterTokenManual from './screens/RegisterTokenManual';
 import Settings from './screens/Settings';
 import TokenDetail from './screens/TokenDetail';
-import RecoverPin from './screens/RecoverPin';
 import UnregisterToken from './screens/UnregisterToken';
 import PinScreen from './screens/PinScreen';
 import About from './screens/About';
@@ -238,7 +237,6 @@ const mapStateToProps = (state) => ({
   loadHistory: state.loadHistoryStatus.active,
   isScreenLocked: state.lockScreen,
   isResetOnScreenLocked: state.resetOnLockScreen,
-  isRecoveringPin: state.recoveringPin,
   walletStartState: state.walletStartState,
 });
 
@@ -324,7 +322,6 @@ class _AppStackWrapper extends React.Component {
       this.appStateChangeEventSub.remove();
       this.appStateChangeEventSub = null;
     }
-    this.props.resetData();
   }
 
   componentDidUpdate(prevProps) {
@@ -403,27 +400,23 @@ class _AppStackWrapper extends React.Component {
       // on Android: https://github.com/facebook/react-native/issues/14555
       let screen = null;
 
-      if (!this.props.isRecoveringPin) {
-        if (this.props.isScreenLocked) {
-          /**
-           * NOTE:
-           * This approach shows the ResetWallet screen as an auxiliar view,
-           * replacing the PinScreen and setting the back button to drop the view,
-           * letting the PinScreen be re-rendered.
-           *
-           * This approach also keeps the navigation stack unchanged,
-           * therefore increasing the convinience for the user.
-           */
-          if (this.props.isResetOnScreenLocked) {
-            screen = <ResetWallet navigation={this.props.navigation} />;
-          } else {
-            screen = <PinScreen isLockScreen navigation={this.props.navigation} />;
-          }
+      if (this.props.isScreenLocked) {
+        /**
+         * NOTE:
+         * This approach shows the ResetWallet screen as an auxiliar view,
+         * replacing the PinScreen and setting the back button to drop the view,
+         * letting the PinScreen be re-rendered.
+         *
+         * This approach also keeps the navigation stack unchanged,
+         * therefore increasing the convinience for the user.
+         */
+        if (this.props.isResetOnScreenLocked) {
+          screen = <ResetWallet navigation={this.props.navigation} />;
         } else {
-          screen = <LoadHistoryScreen />;
+          screen = <PinScreen isLockScreen navigation={this.props.navigation} />;
         }
       } else {
-        screen = <RecoverPin navigation={this.props.navigation} />;
+        screen = <LoadHistoryScreen />;
       }
 
       if (this.props.walletStartState === WALLET_STATUS.LOADING || this.props.isScreenLocked) {

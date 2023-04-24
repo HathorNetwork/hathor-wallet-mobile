@@ -40,16 +40,10 @@ class AsyncStorageStore {
     delete this.hathorMemoryStorage[key];
   }
 
-  clear() {
-    const allKeys = Object.keys(this.hathorMemoryStorage);
-    AsyncStorage.multiRemove(allKeys);
-    this.hathorMemoryStorage = {};
-  }
-
   async preStart() {
     // Old wallet storage had wallet:data saved, which was causing crash in some phones
     // We've fixed it, so we don't save it on storage anymore but we still need to clean it
-    AsyncStorage.removeItem('wallet:data');
+    await AsyncStorage.removeItem('wallet:data');
 
     const keys = await AsyncStorage.getAllKeys() || [];
 
@@ -57,6 +51,7 @@ class AsyncStorageStore {
     for (const arr of allValues) {
       const key = arr[0];
       const value = JSON.parse(arr[1]);
+
       this.hathorMemoryStorage[key] = value;
     }
   }

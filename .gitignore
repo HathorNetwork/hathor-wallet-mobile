@@ -70,9 +70,8 @@ ios/sentry.properties
 # Google Services
 /android/app/google-services.json
 
-# Auxiliary
-notifications/
-certificates/
-
 # Cocoapods
 ios/HathorMobile.xcodeproj/project.xcworkspace/
+
+.direnv/
+

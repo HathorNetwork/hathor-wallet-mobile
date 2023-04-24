@@ -14,7 +14,6 @@ import {
   METADATA_CONCURRENT_DOWNLOAD,
 } from './constants';
 import { mapTokenHistory } from './utils';
-import { FeatureFlags } from './featureFlags';
 
 export const types = {
   PARTIALLY_UPDATE_HISTORY_AND_BALANCE: 'PARTIALLY_UPDATE_HISTORY_AND_BALANCE',
@@ -47,6 +46,7 @@ export const types = {
   HIDE_ERROR_MODAL: 'HIDE_ERROR_MODAL',
   SET_WALLET: 'SET_WALLET',
   RESET_WALLET: 'RESET_WALLET',
+  RESET_WALLET_SUCCESS: 'RESET_WALLET_SUCCESS',
   RESET_LOADED_DATA: 'RESET_LOADED_DATA',
   UPDATE_LOADED_DATA: 'UPDATE_LOADED_DATA',
   SET_USE_WALLET_SERVICE: 'SET_USE_WALLET_SERVICE',
@@ -98,7 +98,31 @@ export const types = {
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
+  SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
+  SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
+  FEATURE_TOGGLE_INITIALIZED: 'FEATURE_TOGGLE_INITIALIZED',
 };
+
+export const featureToggleInitialized = () => ({
+  type: types.FEATURE_TOGGLE_INITIALIZED,
+});
+
+/**
+ * toggles {Object} Key value object where the key is the feature toggle name and the value
+ * indicates whether it is on (true) or off (false)
+ */
+export const setFeatureToggles = (toggles) => ({
+  type: types.SET_FEATURE_TOGGLES,
+  payload: toggles,
+});
+
+/**
+ * unleashClient {UnleashClient} The unleash client to store
+ */
+export const setUnleashClient = (unleashClient) => ({
+  type: types.SET_UNLEASH_CLIENT,
+  payload: unleashClient,
+});
 
 /**
  * isShowingPinScreen {bool}
@@ -396,11 +420,13 @@ export const setWallet = (wallet) => (
   { type: types.SET_WALLET, payload: wallet }
 );
 
-export const resetWallet = () => async (dispatch) => {
-  await FeatureFlags.clearIgnoreWalletServiceFlag();
-  // Dispatch the reset wallet action
-  dispatch({ type: types.RESET_WALLET });
-};
+export const resetWallet = () => ({
+  type: types.RESET_WALLET,
+});
+
+export const resetWalletSuccess = () => ({
+  type: types.RESET_WALLET_SUCCESS,
+});
 
 /**
  * Update metadata object with new data
@@ -425,15 +451,6 @@ export const tokenMetadataLoaded = (data) => ({ type: types.TOKEN_METADATA_LOADE
  */
 export const tokenMetadataRemoved = (data) => (
   { type: types.TOKEN_METADATA_REMOVED, payload: data }
-);
-
-/**
- * Set if we are trying to recover the user PIN
- *
- * data {boolean} If we are trying or not
- */
-export const setRecoveringPin = (data) => (
-  { type: types.SET_RECOVERING_PIN, payload: data }
 );
 
 /**

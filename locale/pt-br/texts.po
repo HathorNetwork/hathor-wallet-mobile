@@ -61,7 +61,7 @@ msgstr "[Última] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:144
+#: src/utils.js:143
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
@@ -564,18 +564,6 @@ msgstr "Requisição de Pagamento"
 msgid "RECEIVE"
 msgstr "RECEBER"
 
-#: src/screens/RecoverPin.js:92
-msgid "There has been an error upgrading your wallet."
-msgstr "Ocorreu um erro ao atualizar sua wallet."
-
-#: src/screens/RecoverPin.js:102
-msgid "Please reset it and restore it with your seed."
-msgstr "Por favor resete sua wallet e restaure utilizando sua seed."
-
-#: src/screens/RecoverPin.js:125
-msgid "Upgrading your wallet, please hang on."
-msgstr "Atualizando sua wallet, por favor aguarde."
-
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/RegisterToken.js:33 src/screens/SendScanQRCode.js:69
@@ -691,11 +679,11 @@ msgstr "ENVIAR ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/sagas/helpers.js:96 src/screens/SendConfirmScreen.js:117
+#: src/sagas/helpers.js:122 src/screens/SendConfirmScreen.js:117
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
-#: src/sagas/helpers.js:97 src/screens/SendConfirmScreen.js:118
+#: src/sagas/helpers.js:123 src/screens/SendConfirmScreen.js:118
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -958,6 +946,15 @@ msgstr "Essa é a configuração do seu token ${ tokenLabel }: ${ configString }
 #: src/components/TxDetailsModal.js:59
 msgid "Description"
 msgstr "Descrição"
+
+#~ msgid "There has been an error upgrading your wallet."
+#~ msgstr "Ocorreu um erro ao atualizar sua wallet."
+
+#~ msgid "Please reset it and restore it with your seed."
+#~ msgstr "Por favor resete sua wallet e restaure utilizando sua seed."
+
+#~ msgid "Upgrading your wallet, please hang on."
+#~ msgstr "Atualizando sua wallet, por favor aguarde."
 
 #~ msgid "I understand the risks of using a mobile wallet"
 #~ msgstr "Eu entendo os riscos de usar uma wallet de celular"
