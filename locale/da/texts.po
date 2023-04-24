@@ -331,7 +331,7 @@ msgstr "Symbolet er en kortere version af token-navnet"
 msgid "E.g. HTR"
 msgstr "F.eks. HTR"
 
-#: src/screens/Dashboard.js:68 src/screens/RegisterTokenManual.js:150
+#: src/screens/Dashboard.js:68 src/screens/RegisterTokenManual.js:214
 msgid "Register token"
 msgstr "Registrer token"
 
@@ -495,23 +495,24 @@ msgstr "Modtaget"
 msgid "Waiting confirmation"
 msgstr "Venter på bekræftelse"
 
-#: src/screens/PinScreen.js:253
+#: src/screens/PinScreen.js:235
 msgid "Incorrect PIN Code. Try again."
 msgstr "Forkert PIN-kode. Prøv igen."
 
-#: src/screens/PinScreen.js:67
+#: src/screens/PinScreen.js:69
 msgid "Enter your PIN Code "
 msgstr "Indtast din pinkode "
 
-#: src/screens/PinScreen.js:68
+#: src/screens/PinScreen.js:70
 msgid "Unlock Hathor Wallet"
 msgstr "Lås Hathor-wallet op"
 
-#: src/screens/PinScreen.js:265
+#: src/screens/PinScreen.js:247
 msgid "Cancel"
 msgstr "Annuller"
 
-#: src/screens/PinScreen.js:268 src/screens/Settings.js:144
+#: src/screens/PinScreen.js:250 src/screens/RecoverPin.js:108
+#: src/screens/Settings.js:144
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
@@ -554,7 +555,7 @@ msgstr "MODTAG"
 msgid "Manual info"
 msgstr "Manuel information"
 
-#: src/screens/RegisterToken.js:48 src/screens/RegisterTokenManual.js:129
+#: src/screens/RegisterToken.js:48 src/screens/RegisterTokenManual.js:193
 msgid "REGISTER TOKEN"
 msgstr "REGISTRER TOKEN"
 
@@ -562,19 +563,19 @@ msgstr "REGISTRER TOKEN"
 msgid "Scan the token QR code"
 msgstr "Scan QR-koden til token"
 
-#: src/screens/RegisterTokenManual.js:105
+#: src/screens/RegisterTokenManual.js:169
 msgid "You're going to register the following token:"
 msgstr "Du registrerer følgende token:"
 
-#: src/screens/RegisterTokenManual.js:107
+#: src/screens/RegisterTokenManual.js:171
 msgid "Name: "
 msgstr "Navn: "
 
-#: src/screens/RegisterTokenManual.js:111
+#: src/screens/RegisterTokenManual.js:175
 msgid "Symbol: "
 msgstr "Symbol: "
 
-#: src/screens/RegisterTokenManual.js:135
+#: src/screens/RegisterTokenManual.js:199
 msgid "Configuration string"
 msgstr "Konfigurationsstreng"
 
@@ -758,9 +759,13 @@ msgstr "Jeg vil afregistrere token **${ tokenLabel }**"
 msgid "Unregister token"
 msgstr "Afregistrer token"
 
-#: src/sagas/pushNotification.js:57
+#: src/sagas/pushNotification.js:58
 msgid "Transaction"
 msgstr "Ingen transaktioner"
+
+#: src/sagas/pushNotification.js:59
+msgid "Open"
+msgstr "Åben"
 
 #: src/components/AskForPushNotification.js:21
 msgid "Do you want to enable push notifications for this wallet?"

@@ -48,6 +48,7 @@ import {
   WALLET_SERVICE_MAINNET_BASE_URL,
   NETWORK,
   PUSH_CHANNEL_TRANSACTION,
+  PUSH_ACTION,
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
 import { isUnlockScreen, showPinScreenForResult } from './helpers';
@@ -55,6 +56,42 @@ import { messageHandler } from '../workers/pushNotificationHandler';
 import { WALLET_STATUS } from './wallet';
 
 const TRANSACTION_CHANNEL_NAME = t`Transaction`;
+const PUSH_ACTION_TITLE = t`Open`;
+
+/**
+ * Creates the categories for the push notification on iOS.
+ * The categories are used to define the actions that the user can take
+ * when receiving a notification.
+ * @returns {boolean} true if the category was created, false otherwise
+ */
+function* createCategoryIfNotExists() {
+  if (Platform.OS !== 'ios') {
+    return true;
+  }
+
+  try {
+    yield call(notifee.setNotificationCategories, [
+      {
+        id: PUSH_CHANNEL_TRANSACTION,
+        actions: [
+          {
+            id: PUSH_ACTION.NEW_TRANSACTION,
+            title: PUSH_ACTION_TITLE,
+            // It requires unlocking the device to open the app
+            authenticationRequired: true,
+            // It causes the the app to open in the foreground
+            foreground: true,
+          },
+        ],
+      }
+    ]);
+    return true;
+  } catch (error) {
+    console.error('Error creating categories for push notification on iOS.', error);
+    yield put(onExceptionCaptured(error));
+    return false;
+  }
+}
 
 /**
  * Creates the channel for the push notification on Android.
@@ -77,7 +114,7 @@ function* createChannelIfNotExists() {
     }
     return true;
   } catch (error) {
-    console.error('Error creating channel for push notification.', error);
+    console.error('Error creating channel for push notification on Android.', error);
     yield put(onExceptionCaptured(error));
     return false;
   }
@@ -91,6 +128,7 @@ function* confirmDeviceRegistrationOnFirebase() {
   try {
     // Make sure deviceId is registered on the FCM
     if (!messaging().isDeviceRegisteredForRemoteMessages) {
+      console.debug('Device not registered on FCM. Registering device on FCM...');
       yield call(messaging().registerDeviceForRemoteMessages);
     }
     return true;
@@ -173,9 +211,18 @@ export function* init() {
   }
 
   // If the channel is not created, we should not continue.
+  // We also continue if the OS is iOS because we don't need to create the channel.
   const isChannelCreated = yield call(createChannelIfNotExists);
   if (!isChannelCreated) {
-    console.debug('Halting push notification initialization because the channel was not created.');
+    console.debug('Halting push notification initialization because the channel was not created on Android.');
+    return;
+  }
+
+  // If the category is not created, we should not continue.
+  // We also continue if the OS is Android because we don't need to create the category.
+  const isCategoryCreated = yield call(createCategoryIfNotExists);
+  if (!isCategoryCreated) {
+    console.debug('Halting push notification initialization because the category was not created on iOS.');
     return;
   }
 
@@ -325,7 +372,18 @@ export function* loadWallet() {
  * @returns {boolean} true if has authorization to receive push notifications, false otherwise.
  */
 const hasPostNotificationAuthorization = async () => {
-  const status = await messaging().hasPermission();
+  let status = await messaging().hasPermission();
+  if (status === messaging.AuthorizationStatus.BLOCKED) {
+    console.debug('Device not authorized to send push notification and blocked to ask permission.');
+    return false;
+  }
+
+  if (status === messaging.AuthorizationStatus.NOT_DETERMINED) {
+    console.debug('Device clean. Asking for permission to send push notification.');
+    status = await messaging().requestPermission();
+  }
+
+  console.debug('Device permission status: ', status);
   return status === messaging.AuthorizationStatus.AUTHORIZED
       || status === messaging.AuthorizationStatus.PROVISIONAL;
 };
@@ -334,9 +392,7 @@ const hasPostNotificationAuthorization = async () => {
  * Opens the app settings screen where the user can enable the notification settings.
  */
 const openAppSettings = async () => {
-  if (Platform.OS === 'android') {
-    Linking.openSettings();
-  }
+  Linking.openSettings();
 };
 
 /**
@@ -346,6 +402,8 @@ const openAppSettings = async () => {
 export function* registration({ payload: { enabled, showAmountEnabled, deviceId } }) {
   const hasAuthorization = yield call(hasPostNotificationAuthorization);
   if (!hasAuthorization) {
+    console.debug('Application is not authorized to send push notification. Asking for permission or opening settings...');
+
     yield call(openAppSettings);
     yield put(pushRegisterFailed());
     return;
@@ -418,6 +476,7 @@ export function* dismissOptInQuestion() {
 export function* checkOpenPushNotification() {
   const notificationError = STORE.getItem(pushNotificationKey.notificationError);
   if (notificationError) {
+    console.debug('Error while handling push notification on background: ', notificationError);
     STORE.removeItem(pushNotificationKey.notificationError);
     yield put(onExceptionCaptured(new Error(notificationError)));
     return;
@@ -427,6 +486,7 @@ export function* checkOpenPushNotification() {
     const notificationData = STORE.getItem(pushNotificationKey.notificationData);
     // Check if the app was opened by a push notification on press action
     if (notificationData) {
+      console.debug('App opened by push notification on press action.');
       STORE.removeItem(pushNotificationKey.notificationData);
       // Wait for the wallet to be loaded
       yield take(types.START_WALLET_SUCCESS);
@@ -514,13 +574,15 @@ export function* loadTxDetails(action) {
   const isLocked = yield select((state) => state.lockScreen);
   if (isLocked) {
     const { resetWallet } = yield race({
-      unlockWallet: take(isUnlockScreen),
+      // Wait for the unlock screen to be dismissed, and wallet to be loaded
+      unlockWallet: all([take(isUnlockScreen), take(types.START_WALLET_SUCCESS)]),
       resetWallet: take(types.RESET_WALLET)
     });
     if (resetWallet) {
-      console.debug('Halting loadTxDetails');
+      console.debug('Halting loadTxDetails.');
       return;
     }
+    console.debug('Continuing loadTxDetails after unlock screen.');
   }
 
   try {
@@ -534,12 +596,12 @@ export function* loadTxDetails(action) {
 }
 
 /**
- * Unregister the device from firebase and delete the token.
- * This clean up invalidates the token that is being used
- * and the device will not receive any push notification.
+ * Deletes the token in the FCM, and invalidates any notification sent to it.
+ *
+ * This is a strong enforcement that a notification will not be delivered
+ * after a reset, even if the device is registered in the FCM or in the APNS.
  */
 const cleanToken = async () => {
-  await messaging().unregisterDeviceForRemoteMessages();
   await messaging().deleteToken();
 };
 
