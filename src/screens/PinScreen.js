@@ -8,16 +8,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
+import CryptoJS from 'crypto-js';
 
 import {
   BackHandler, SafeAreaView, Text, View,
 } from 'react-native';
 import * as Keychain from 'react-native-keychain';
-import hathorLib from '@hathor/wallet-lib';
+import { walletUtils, cryptoUtils } from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
 import PinInput from '../components/PinInput';
 import Logo from '../components/Logo';
-import { isBiometryEnabled, getSupportedBiometry, getWalletWords } from '../utils';
+import { isBiometryEnabled, getSupportedBiometry } from '../utils';
 import {
   lockScreen,
   unlockScreen,
@@ -27,7 +28,7 @@ import {
   startWalletRequested,
   resetOnLockScreen,
 } from '../actions';
-import { PIN_SIZE } from '../constants';
+import { NETWORK, PIN_SIZE, STORE } from '../constants';
 
 
 /**
@@ -133,20 +134,21 @@ class PinScreen extends React.Component {
    * @param {String} pin Unlock PIN written by the user
    */
   handleDataMigration = (pin) => {
-    const accessData = hathorLib.wallet.getWalletAccessData();
-
-    if (accessData !== null && accessData.xpubkey === undefined && accessData.mainKey) {
-      // Two situations are handled here:
-      // 1. From v0.12.0 to v0.13.0 of the lib, xpubkey has changed from wallet:data
-      // to wallet:accessData. So if the user is still in an app version before v0.13.0,
-      // we can't use xpubkey directly from accessData
-      //
-      // 2. When the user updated the app to the newest version directly from a version before we've
-      // executed the xpubkey migration. In that case we have deleted the user walletData before
-      // migrating the xpubkey to the accessData
-      const xpubkey = hathorLib.wallet.getXPubKeyFromXPrivKey(pin);
-      accessData.xpubkey = xpubkey;
-      hathorLib.wallet.setWalletAccessData(accessData);
+    const accessData = STORE.getAccessData();
+    const storageVersion = STORE.getItem('wallet:version');
+    if (storageVersion === null && accessData !== null && accessData.mainKey) {
+      // We are migrating from an version of wallet-lib prior to 1.0.0
+      const words = STORE.getWalletWords(pin);
+      if (!words) {
+        throw new Error('Could not load the wallet seed.');
+      }
+      const decryptedWords = CryptoJS.AES.decrypt(accessData.words, pin).toString(CryptoJS.enc.Utf8);
+      // This will generate the encrypted keys and other metadata
+      // The encrypted data will be different from whats used by the wallet due to using different salts.
+      // This newAccessData will be used to "unwrap" the words
+      const newAccessData = walletUtils.generateAccessDataFromSeed(decryptedWords, { pin, password: pin, networkName: NETWORK });
+      // Will also populate wallet:version
+      STORE.saveAccessData(newAccessData);
     }
   }
 
@@ -156,26 +158,16 @@ class PinScreen extends React.Component {
       // method an change redux state. No need to execute callback or go back on navigation
       this.handleDataMigration(pin);
       if (!this.props.wallet) {
-        // Here we need to check if the user has the `acctPathMainKey` stored on his accessData
-        // because he won't have it if he's migrating from any version before v0.18.0 directly into
-        // version > v0.21.1. We only use it on the wallet-service facade, but dispatching
-        // `startWalletRequested` once with the words instead of xpriv will update his storage to
-        // contain it so if he ever switches to the wallet-service, it will load properly from it.
-        const xpriv = hathorLib.wallet.getAcctPathXprivKey(pin);
-        if (!xpriv) {
-          const words = getWalletWords(pin);
-          this.props.startWalletRequested({
-            pin,
-            words,
-          });
-        } else {
-          // If we are here, the wallet has already been initialized in the past, so
-          // we should load from xpriv
-          this.props.startWalletRequested({
-            pin,
-            fromXpriv: true,
-          });
-        }
+        // handleDataMigration should ensure we have migrated the access data to the most recent version
+        // This means we can just request to start the wallet-lib since we will always havethe
+        // required properties.
+        //
+        // We start with the account path private key since we can skip the derivation
+        // from the seed, this makes an empty wallet startup process 40 times faster
+        this.props.startWalletRequested({
+          pin,
+          fromXpriv: true,
+        });
       }
       this.props.unlockScreen();
     } else {
@@ -202,22 +194,20 @@ class PinScreen extends React.Component {
   }
 
   validatePin = (pin) => {
-    const pinCorrect = hathorLib.wallet.isPinCorrect(pin);
-
-    if (!pinCorrect) {
-      this.removeOneChar();
-      return;
-    }
-
     try {
       // Validate if we are able to decrypt the seed using this PIN
       // this will throw if the words are not able to be decoded with this
       // pin.
-      hathorLib.wallet.getWalletWords(pin);
-
-      if (!hathorLib.wallet.wordsValid(pin)) {
-        throw new Error('Words not valid.');
+      const accessData = STORE.getAccessData();
+      const pinCorrect = cryptoUtils.checkPassword(accessData.words, pin);
+      if (!pinCorrect) {
+        this.removeOneChar();
+        return;
       }
+
+      const words = cryptoUtils.decryptData(accessData.words, pin);
+      // Will throw InvalidWords if the seed is invalid
+      walletUtils.wordsValid(words);
     } catch (e) {
       this.props.onExceptionCaptured(
         new Error('User inserted a valid PIN but the app wasn\'t able to decrypt the words'),

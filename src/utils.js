@@ -14,6 +14,8 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
 import { PRIMARY_COLOR, KEYCHAIN_USER } from './constants';
 import { TxHistory } from './models';
+import { STORE, networkObj } from './constants';
+
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
@@ -71,16 +73,16 @@ export const getAmountParsed = (text) => {
 export const getTokenLabel = (token) => `${token.name} (${token.symbol})`;
 
 export const setSupportedBiometry = (type) => {
-  hathorLib.storage.setItem('mobile:supportedBiometry', type);
+  STORE.setItem('mobile:supportedBiometry', type);
 };
 
-export const getSupportedBiometry = () => hathorLib.storage.getItem('mobile:supportedBiometry');
+export const getSupportedBiometry = () => STORE.getItem('mobile:supportedBiometry');
 
 export const setBiometryEnabled = (value) => {
-  hathorLib.storage.setItem('mobile:isBiometryEnabled', value);
+  STORE.setItem('mobile:isBiometryEnabled', value);
 };
 
-export const isBiometryEnabled = () => hathorLib.storage.getItem('mobile:isBiometryEnabled') || false;
+export const isBiometryEnabled = () => STORE.getItem('mobile:isBiometryEnabled') || false;
 
 /**
  * Convert a string into a JSX. It receives a text and a map of functions. The text
@@ -133,8 +135,8 @@ export const str2jsx = (text, fnMap) => {
    */
 export const validateAddress = (address) => {
   try {
-    const addressBytes = hathorLib.transaction.decodeAddress(address);
-    hathorLib.transaction.validateAddress(address, addressBytes);
+    const addressObj = hathorLib.Address(address, { network: networkObj })
+    addressObj.validateAddress();
     return { isValid: true };
   } catch (e) {
     if (e instanceof TypeError) {
@@ -260,17 +262,6 @@ export const getLightBackground = (alpha) => {
 };
 
 /**
- * Get the words saved in storage from the user PIN
- *
- * @params {string} pin User PIN to get encrypted words
- *
- * @return {string} Wallet seed
- */
-export const getWalletWords = (pin) => (
-  hathorLib.wallet.getWalletWords(pin)
-);
-
-/**
  * Render value to integer or decimal
  *
  * @params {number} amount Amount to render
@@ -280,10 +271,10 @@ export const getWalletWords = (pin) => (
  */
 export const renderValue = (amount, isInteger) => {
   if (isInteger) {
-    return hathorLib.helpersUtils.prettyIntegerValue(amount);
+    return hathorLib.numbersUtils.prettyIntegerValue(amount);
   }
 
-  return hathorLib.helpersUtils.prettyValue(amount);
+  return hathorLib.numbersUtils.prettyValue(amount);
 };
 
 /**
@@ -310,21 +301,46 @@ export const setKeychainPin = (pin) => {
 };
 
 /**
- * @params {string} oldPin
- * @params {string} newPin
+ * @param {HathorWallet} wallet
+ * @param {string} oldPin
+ * @param {string} newPin
  *
  * @return {boolean} Wether the change password was successful
  */
-export const changePin = (oldPin, newPin) => {
-  const success = hathorLib.wallet.changePinAndPassword({
-    oldPin,
-    newPin,
-    oldPassword: oldPin,
-    newPassword: newPin,
-  });
-  if (success) {
-    setKeychainPin(newPin);
+export const changePin = async (wallet, oldPin, newPin) => {
+  // We have 2 sets of access data to mutate
+  // The first one is the AsyncStorage access data which is used to start the loaded wallet
+  // The second one is the current loaded wallet so the user can continue to use the app
+  // without needing to restart or close and open.
+
+  const isValidPinWallet = await wallet.checkPin(oldPin);
+  const isValidPinStore = await STORE.checkPinAndPasswordOnStore(oldPin);
+  if (!(isValidPinWallet && isValidPinStore)) {
+    return false;
   }
+
+  try {
+    // All of these are checked above so it should not fail
+    await wallet.storage.changePin(oldPin, newPin);
+    let accessData = STORE.getAccessData();
+    accessData = hathorLib.walletUtils.changeEncryptionPin(accessData, oldPin, newPin);
+    accessData = hathorLib.walletUtils.changeEncryptionPassword(accessData, oldPin, newPin);
+    STORE.saveAccessData(accessData);
+  } catch(err) {
+    return false;
+  }
+
+  try {
+    // Will throw if the access data does not have the seed.
+    await wallet.storage.changePassword(oldPin, newPin);
+  } catch(err) {
+    // Some started wallets are started with the xpriv so they won't have the seed loaded.
+    // This is not a problem since we already changed the password on the STORE.
+    // If the words are not loaded on the wallet, it should not be used and will be
+    // load the seed encrypted with the new pin on the next wallet startup.
+  }
+
+  setKeychainPin(newPin);
   return success;
 };
 

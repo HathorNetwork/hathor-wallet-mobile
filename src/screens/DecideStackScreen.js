@@ -7,7 +7,8 @@
 
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import hathorLib from '@hathor/wallet-lib';
+import { STORE } from '../constants';
+
 
 import { onExceptionCaptured } from '../actions';
 
@@ -18,12 +19,10 @@ export function DecideStackScreen({ navigation }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    hathorLib
-      .storage
-      .store
+    STORE
       .preStart()
       .then(() => {
-        if (hathorLib.wallet.loaded()) {
+        if (STORE.walletIsLoaded()) {
           navigation.navigate('App');
         } else {
           navigation.navigate('Init');

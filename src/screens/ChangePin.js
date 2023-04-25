@@ -6,13 +6,13 @@
  */
 
 import React from 'react';
+import { connect } from 'react-redux';
 import {
   Image,
   SafeAreaView,
   View,
   StyleSheet,
 } from 'react-native';
-import hathorLib from '@hathor/wallet-lib';
 import { t } from 'ttag';
 
 import HathorHeader from '../components/HathorHeader';
@@ -26,6 +26,9 @@ import {
   changePin,
 } from '../utils';
 
+const mapStateToProps = (state) => ({
+  wallet: state.wallet,
+});
 
 class ChangePin extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
@@ -104,11 +107,13 @@ class ChangePin extends React.Component {
   }
 
   validatePin1 = (text) => {
-    if (hathorLib.wallet.isPinCorrect(text)) {
-      this.nextStep();
-    } else {
-      this.removeOneChar('pin1', 'pin1Color', t`Incorrect PIN code.`);
-    }
+    this.props.wallet.checkPinAndPassword(text, text).then(success => {
+      if (success) {
+        this.nextStep();
+      } else {
+        this.removeOneChar('pin1', 'pin1Color', t`Incorrect PIN code.`);
+      }
+    });
   }
 
   nextStep = () => {
@@ -162,17 +167,18 @@ class ChangePin extends React.Component {
   }
 
   executeChangePin = () => {
-    const success = changePin(
+    changePin(
+      this.props.wallet,
       this.state.pin1,
       this.state.pin2,
-    );
-
-    if (success) {
-      this.setState({ done: true });
-    } else {
-      // Should never get here because we've done all the validations before
-      this.removeOneChar('pin3', 'pin3Color', t`Error while changing PIN`);
-    }
+    ).then(success => {
+      if (success) {
+        this.setState({ done: true });
+      } else {
+        // Should never get here because we've done all the validations before
+        this.removeOneChar('pin3', 'pin3Color', t`Error while changing PIN`);
+      }
+    });
   }
 
   getPin1View = () => (
@@ -240,4 +246,4 @@ class ChangePin extends React.Component {
   }
 }
 
-export default ChangePin;
+export default connect(mapStateToProps)(ChangePin);
