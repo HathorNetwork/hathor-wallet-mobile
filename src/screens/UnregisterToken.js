@@ -30,6 +30,7 @@ import { PRIMARY_COLOR } from '../constants';
  * selectedToken {Object} Select token config {name, symbol, uid}
  */
 const mapStateToProps = (state) => ({
+  storage: state.wallet.storage,
   selectedToken: state.selectedToken,
 });
 
@@ -73,7 +74,15 @@ class UnregisterToken extends React.Component {
       return;
     }
 
-    const promise = hathorLib.tokens.unregisterToken(tokenUnregister);
+    // XXX: maybe we should create a new action `removeToken`
+    // so we dont need to get all registered tokens to call setTokens
+    const promise = this.props.storage.unregisterToken(tokenUnregister).then(async () => {
+      const newTokens = [];
+      for await (const token of this.props.storage.getRegisteredTokens()) {
+        newTokens.push(token);
+      }
+      return newTokens;
+    });
     promise.then((tokens) => {
       this.props.dispatch(tokenMetadataRemoved(tokenUnregister));
       this.props.dispatch(setTokens(tokens));

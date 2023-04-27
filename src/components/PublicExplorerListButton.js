@@ -7,6 +7,7 @@ import { ListButton } from './HathorList';
 export function PublicExplorerListButton(props) {
   const { txId } = props;
   const explorerIcon = <Image source={icShareActive} width={24} height={24} />;
+  // XXX: maybe we should have this on the constants or utils to check the network
   const explorerLink = `https://explorer.hathor.network/transaction/${txId}`;
 
   return (

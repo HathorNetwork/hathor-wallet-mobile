@@ -15,7 +15,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import hathorLib from '@hathor/wallet-lib';
 import OfflineBar from '../components/OfflineBar';
 import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
@@ -29,8 +28,8 @@ import CopyClipboard from '../components/CopyClipboard';
  */
 const mapStateToProps = (state) => {
   const server = state.useWalletService
-    ? hathorLib.config.getWalletServiceBaseUrl()
-    : hathorLib.config.getServerUrl();
+    ? state.wallet.storage.config.getWalletServiceBaseUrl()
+    : state.wallet.storage.config.getServerUrl();
 
   return {
     selectedToken: state.selectedToken,

@@ -184,6 +184,10 @@ SendTransactionFeedbackModal.propTypes = {
     PropTypes.instanceOf(hathorLib.SendTransaction),
     PropTypes.instanceOf(hathorLib.SendTransactionWalletService)
   ]).isRequired,
+  // promise that is mining the transaction using the sendTransaction instance above.
+  promise: PropTypes.shape({
+    then: PropTypes.func.isRequired,
+  }).isRequired,
   // optional method to be executed when the tx is mined and propagated with success
   onTxSuccess: PropTypes.func,
   // optional method to be executed when an error happens while sending the tx
