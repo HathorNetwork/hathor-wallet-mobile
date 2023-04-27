@@ -149,7 +149,7 @@ class RegisterTokenManual extends React.Component {
         });
       } catch (e) {
         this.setState({
-          errorMessage: e.message,
+          errorMessage: 'Error fetching token details.',
           validating: false,
         });
       }
