@@ -10,9 +10,7 @@ import { connect } from 'react-redux';
 import { t } from 'ttag';
 import CryptoJS from 'crypto-js';
 
-import {
-  BackHandler, SafeAreaView, Text, View,
-} from 'react-native';
+import { BackHandler, SafeAreaView, Text, View } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import { walletUtils, cryptoUtils } from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
@@ -29,7 +27,6 @@ import {
   resetOnLockScreen,
 } from '../actions';
 import { NETWORK, PIN_SIZE, STORE } from '../constants';
-
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
@@ -69,8 +66,14 @@ class PinScreen extends React.Component {
     this.biometryText = t`Unlock Hathor Wallet`;
     if (!this.props.isLockScreen) {
       this.canCancel = props.navigation.getParam('canCancel', this.canCancel);
-      this.screenText = props.navigation.getParam('screenText', this.screenText);
-      this.biometryText = props.navigation.getParam('biometryText', this.biometryText);
+      this.screenText = props.navigation.getParam(
+        'screenText',
+        this.screenText,
+      );
+      this.biometryText = props.navigation.getParam(
+        'biometryText',
+        this.biometryText,
+      );
     }
 
     this.willFocusEvent = null;
@@ -96,14 +99,17 @@ class PinScreen extends React.Component {
   componentWillUnmount() {
     if (!this.canCancel) {
       // Removing event listener
-      BackHandler.removeEventListener('hardwareBackPress', this.handleBackButton);
+      BackHandler.removeEventListener(
+        'hardwareBackPress',
+        this.handleBackButton,
+      );
     }
 
     // Removing focus event
     this.willFocusEvent.remove();
   }
 
-  handleBackButton = () => true
+  handleBackButton = () => true;
 
   askBiometricId = async () => {
     try {
@@ -124,7 +130,7 @@ class PinScreen extends React.Component {
     } catch (e) {
       // No need to do anything here as the user can type his PIN
     }
-  }
+  };
 
   /**
    * Handle data migration on unlock screen
@@ -142,15 +148,22 @@ class PinScreen extends React.Component {
       if (!words) {
         throw new Error('Could not load the wallet seed.');
       }
-      const decryptedWords = CryptoJS.AES.decrypt(accessData.words, pin).toString(CryptoJS.enc.Utf8);
+      const decryptedWords = CryptoJS.AES.decrypt(
+        accessData.words,
+        pin,
+      ).toString(CryptoJS.enc.Utf8);
       // This will generate the encrypted keys and other metadata
-      // The encrypted data will be different from whats used by the wallet due to using different salts.
+      // The encrypted data will be different from whats used by the wallet due
+      // to using different salts.
       // This newAccessData will be used to "unwrap" the words
-      const newAccessData = walletUtils.generateAccessDataFromSeed(decryptedWords, { pin, password: pin, networkName: NETWORK });
+      const newAccessData = walletUtils.generateAccessDataFromSeed(
+        decryptedWords,
+        { pin, password: pin, networkName: NETWORK },
+      );
       // Will also populate wallet:version
       STORE.saveAccessData(newAccessData);
     }
-  }
+  };
 
   dismiss = (pin) => {
     if (this.props.isLockScreen) {
@@ -158,7 +171,8 @@ class PinScreen extends React.Component {
       // method an change redux state. No need to execute callback or go back on navigation
       this.handleDataMigration(pin);
       if (!this.props.wallet) {
-        // handleDataMigration should ensure we have migrated the access data to the most recent version
+        // handleDataMigration should ensure we have migrated the access data
+        // to the most recent version
         // This means we can just request to start the wallet-lib since we will always havethe
         // required properties.
         //
@@ -180,7 +194,7 @@ class PinScreen extends React.Component {
         cb(pin);
       }
     }
-  }
+  };
 
   onChangeText = (text) => {
     if (text.length > PIN_SIZE) {
@@ -191,7 +205,7 @@ class PinScreen extends React.Component {
       setTimeout(() => this.validatePin(text), 300);
     }
     this.setState({ pin: text, pinColor: 'black', error: null });
-  }
+  };
 
   validatePin = (pin) => {
     try {
@@ -210,7 +224,9 @@ class PinScreen extends React.Component {
       walletUtils.wordsValid(words);
     } catch (e) {
       this.props.onExceptionCaptured(
-        new Error('User inserted a valid PIN but the app wasn\'t able to decrypt the words'),
+        new Error(
+          "User inserted a valid PIN but the app wasn't able to decrypt the words",
+        ),
         true, // Fatal since we can't start the wallet
       );
 
@@ -219,11 +235,11 @@ class PinScreen extends React.Component {
 
     // Inserted PIN was able to decrypt the words successfully
     this.dismiss(pin);
-  }
+  };
 
   goToReset = () => {
     this.props.resetOnLockScreen();
-  }
+  };
 
   /*
    * This function is used when coming back to lock screen from reset screen
@@ -235,7 +251,7 @@ class PinScreen extends React.Component {
     this.props.lockScreen();
     // navigate to dashboard (will be hidden under lock screen)
     this.props.navigation.navigate('Dashboard');
-  }
+  };
 
   removeOneChar = () => {
     const pin = this.state.pin.slice(0, -1);
@@ -245,7 +261,7 @@ class PinScreen extends React.Component {
       this.setState({ pin, pinColor: '#DE3535' });
       setTimeout(() => this.removeOneChar(), 25);
     }
-  }
+  };
 
   render() {
     const renderButton = () => {
@@ -263,7 +279,10 @@ class PinScreen extends React.Component {
           onPress={onPress}
           title={title}
           textStyle={{
-            textTransform: 'uppercase', color: 'rgba(0, 0, 0, 0.5)', letterSpacing: 1, padding: 4,
+            textTransform: 'uppercase',
+            color: 'rgba(0, 0, 0, 0.5)',
+            letterSpacing: 1,
+            padding: 4,
           }}
           containerStyle={{ marginTop: 16, marginBottom: 8 }}
         />
@@ -271,11 +290,18 @@ class PinScreen extends React.Component {
     };
 
     return (
-      <SafeAreaView style={{ flex: 1, alignItems: 'center', marginHorizontal: 16 }}>
-        <View style={{ marginVertical: 16, alignItems: 'center', height: 21, width: 120 }}>
-          <Logo
-            style={{ height: 21, width: 120 }}
-          />
+      <SafeAreaView
+        style={{ flex: 1, alignItems: 'center', marginHorizontal: 16 }}
+      >
+        <View
+          style={{
+            marginVertical: 16,
+            alignItems: 'center',
+            height: 21,
+            width: 120,
+          }}
+        >
+          <Logo style={{ height: 21, width: 120 }} />
         </View>
         <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
         <PinInput

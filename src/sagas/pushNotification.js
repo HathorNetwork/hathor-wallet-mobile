@@ -430,7 +430,7 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
     });
 
     if (success) {
-      const enabledAt = !!enabled ? Date.now() : 0;
+      const enabledAt = enabled ? Date.now() : 0;
       STORE.setItem(pushNotificationKey.enabledAt, enabledAt);
 
       const payload = {

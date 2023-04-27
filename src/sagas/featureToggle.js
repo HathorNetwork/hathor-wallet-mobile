@@ -15,7 +15,6 @@ import {
   call,
   delay,
   put,
-  cancel,
   cancelled,
   select,
   race,

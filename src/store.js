@@ -10,9 +10,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { cryptoUtils } from '@hathor/wallet-lib';
 
 /**
- * We use AsyncStorage to persist access data when our app is closed since the wallet-lib
- * does not have a way to choose the persisted wallet as a loaded wallet we use this external storage
- * as a temporary solution to persist access data so we can start the wallet.
+ * We use AsyncStorage to persist access data when our app is closed since the
+ * wallet-lib does not have a way to choose the persisted wallet as a loaded
+ * wallet we use this external storage as a temporary solution to persist access
+ * data so we can start the wallet.
  *
  * While we can use the wallet-lib for this we would still need to use this storage
  * if we want to migrate from previous versions of the wallet-lib since the access data
@@ -40,15 +41,19 @@ class AsyncStorageStore {
 
   async clearItems(onlyWalletKeys = false) {
     const keys = await AsyncStorage.getAllKeys() || [];
-    for (let index = 0; index < keys.length; index++) {
+    const ps = [];
+    this.hathorMemoryStorage = {};
+    for (let index = 0; index < keys.length; index += 1) {
       const key = keys[index];
       if (onlyWalletKeys && !key.startsWith('wallet')) {
         // Skip keys not starting with wallet prefix
         // since we want to delete only wallet keys
         continue;
       }
-      await AsyncStorage.removeItem(key);
+      ps.push(AsyncStorage.removeItem(key));
     }
+
+    await Promise.all(ps);
   }
 
   /**
@@ -167,7 +172,7 @@ class AsyncStorageStore {
    */
   checkPinAndPasswordOnStore(pin) {
     const accessData = this.getAccessData();
-    const isPasswordOk = cryptoUtils.checkPassword(accessData.words, password);
+    const isPasswordOk = cryptoUtils.checkPassword(accessData.words, pin);
     const isPinOk = cryptoUtils.checkPassword(accessData.mainKey, pin);
     return isPinOk && isPasswordOk;
   }

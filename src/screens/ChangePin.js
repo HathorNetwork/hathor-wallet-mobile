@@ -107,7 +107,7 @@ class ChangePin extends React.Component {
   }
 
   validatePin1 = (text) => {
-    this.props.wallet.checkPinAndPassword(text, text).then(success => {
+    this.props.wallet.checkPinAndPassword(text, text).then((success) => {
       if (success) {
         this.nextStep();
       } else {
@@ -171,7 +171,7 @@ class ChangePin extends React.Component {
       this.props.wallet,
       this.state.pin1,
       this.state.pin2,
-    ).then(success => {
+    ).then((success) => {
       if (success) {
         this.setState({ done: true });
       } else {

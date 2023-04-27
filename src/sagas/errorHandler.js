@@ -8,6 +8,7 @@
 import * as Sentry from '@sentry/react-native';
 import VersionNumber from 'react-native-version-number';
 import {
+  select,
   takeLatest,
   all,
   call,
@@ -22,7 +23,7 @@ import { showErrorModal } from '../actions';
  * Send error to Sentry
  */
 export const sentryReportError = (error, loadedAccessData) => {
-  const removePersonalData = accessData => {
+  const removePersonalData = (accessData) => {
     const data = [];
     if (accessData) {
       for (const [key, value] of Object.entries(accessData)) {

@@ -12,9 +12,8 @@ import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
-import { PRIMARY_COLOR, KEYCHAIN_USER } from './constants';
+import { PRIMARY_COLOR, KEYCHAIN_USER, STORE, networkObj } from './constants';
 import { TxHistory } from './models';
-import { STORE, networkObj } from './constants';
 
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
@@ -135,7 +134,7 @@ export const str2jsx = (text, fnMap) => {
    */
 export const validateAddress = (address) => {
   try {
-    const addressObj = hathorLib.Address(address, { network: networkObj })
+    const addressObj = hathorLib.Address(address, { network: networkObj });
     addressObj.validateAddress();
     return { isValid: true };
   } catch (e) {
@@ -325,14 +324,14 @@ export const changePin = async (wallet, oldPin, newPin) => {
     accessData = hathorLib.walletUtils.changeEncryptionPin(accessData, oldPin, newPin);
     accessData = hathorLib.walletUtils.changeEncryptionPassword(accessData, oldPin, newPin);
     STORE.saveAccessData(accessData);
-  } catch(err) {
+  } catch (err) {
     return false;
   }
 
   try {
     // Will throw if the access data does not have the seed.
     await wallet.storage.changePassword(oldPin, newPin);
-  } catch(err) {
+  } catch (err) {
     // Some started wallets are started with the xpriv so they won't have the seed loaded.
     // This is not a problem since we already changed the password on the STORE.
     // If the words are not loaded on the wallet, it should not be used and will be
@@ -340,7 +339,7 @@ export const changePin = async (wallet, oldPin, newPin) => {
   }
 
   setKeychainPin(newPin);
-  return success;
+  return true;
 };
 
 /**
