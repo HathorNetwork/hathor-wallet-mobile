@@ -253,17 +253,6 @@ export const updateTokenHistory = (token, newHistory) => (
 );
 
 /**
- * wallet {HathorWallet} Wallet object from redux
- * amount {int} amount to be sent
- * address {String} destination address
- * token {Object} token being sent
- * pin {String} User PIN
- */
-export const sendTx = (wallet, amount, address, token, pin) => () => (
-  wallet.sendTransactionEvents(address, amount, token, { pinCode: pin })
-);
-
-/**
  * Get all tokens that this wallet has any transaction and fetch balance/history for each of them
  * We could do a lazy history load only when the user selects to see the token
  * but this would change the behaviour of the wallet and was not the goal of this moment

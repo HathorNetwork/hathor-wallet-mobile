@@ -13,13 +13,17 @@ import {
   View,
 } from 'react-native';
 import { t } from 'ttag';
+import { connect } from 'react-redux';
 
-import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import { Link, str2jsx } from '../utils';
 import { TOKEN_DEPOSIT_URL } from '../constants';
+
+const mapStateToProps = (state) => ({
+  wallet: state.wallet,
+});
 
 class CreateTokenDepositNotice extends React.Component {
   style = Object.assign({}, baseStyle, StyleSheet.create({
@@ -31,7 +35,7 @@ class CreateTokenDepositNotice extends React.Component {
   }));
 
   render() {
-    const depositPercentage = hathorLib.tokens.getDepositPercentage() * 100;
+    const depositPercentage = this.props.wallet.storage.getTokenDepositPercentage() * 100;
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
@@ -65,4 +69,4 @@ class CreateTokenDepositNotice extends React.Component {
   }
 }
 
-export default CreateTokenDepositNotice;
+export default connect(mapStateToProps)(CreateTokenDepositNotice);

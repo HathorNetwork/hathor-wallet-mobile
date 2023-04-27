@@ -1,10 +1,8 @@
 import {
   HathorWalletServiceWallet,
   PushNotification as pushLib,
-  wallet as walletUtil,
   Network,
   config,
-  tokens,
 } from '@hathor/wallet-lib';
 import moment from 'moment';
 import {
@@ -347,7 +345,7 @@ export function* loadWallet() {
 
     const pin = yield call(showPinScreenForResult, dispatch);
     walletService = new HathorWalletServiceWallet({
-      seed: walletUtil.getWalletWords(pin),
+      seed: STORE.getWalletWords(pin),
       network,
       enableWs: false,
     });
@@ -543,7 +541,7 @@ export const getTxDetails = async (wallet, txId) => {
       name: each.tokenName,
       symbol: each.tokenSymbol,
       balance: each.balance,
-      isRegistered: !!tokens.tokenExists(each.tokenId),
+      // isRegistered: !!tokens.tokenExists(each.tokenId),
     })),
   });
 

@@ -74,7 +74,7 @@ class CreateTokenConfirm extends React.Component {
       await this.props.wallet.validateAndRenewAuthToken(pin);
     }
 
-    const { address } = this.props.wallet.getCurrentAddress({ markAsUsed: true });
+    const { address } = await this.props.wallet.getCurrentAddress({ markAsUsed: true });
     this.props.wallet.prepareCreateNewToken(
       this.name, this.symbol, this.amount, { address, pinCode: pin }
     ).then((tx) => {
@@ -85,7 +85,7 @@ class CreateTokenConfirm extends React.Component {
         );
       } else {
         sendTransaction = new hathorLib.SendTransaction(
-          { transaction: tx, pin }
+          { storage: this.props.wallet.storage, transaction: tx, pin }
         );
       }
 
@@ -127,7 +127,7 @@ class CreateTokenConfirm extends React.Component {
     const token = { uid: tx.hash, name: this.name, symbol: this.symbol };
     this.props.newToken(token);
     this.props.updateSelectedToken(token);
-    hathorLib.tokens.addToken(token.uid, token.name, token.symbol);
+    this.props.wallet.storage.registerToken(token);
   }
 
   /**
@@ -194,7 +194,7 @@ class CreateTokenConfirm extends React.Component {
               </InputLabel>
               <AmountTextInput
                 editable={false}
-                value={hathorLib.helpers.prettyValue(this.amount)}
+                value={hathorLib.numberUtils.prettyValue(this.amount)}
               />
             </View>
             <SimpleInput
@@ -212,7 +212,7 @@ class CreateTokenConfirm extends React.Component {
             <SimpleInput
               label={t`Deposit`}
               editable={false}
-              value={`${hathorLib.helpers.prettyValue(hathorLib.tokens.getDepositAmount(this.amount))} HTR`}
+              value={`${hathorLib.numberUtils.prettyValue(hathorLib.tokensUtils.getDepositAmount(this.amount))} HTR`}
               containerStyle={{ marginTop: 32 }}
             />
           </View>

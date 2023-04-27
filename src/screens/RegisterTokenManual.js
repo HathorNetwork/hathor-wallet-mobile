@@ -107,70 +107,30 @@ class RegisterTokenManual extends React.Component {
       return;
     }
 
-    this.setState({ validating: true }, async () => {
-      const tokenData = hathorLib.tokens.getTokenFromConfigurationString(this.state.configString);
-      if (!tokenData) {
-        this.setState({
-          errorMessage: 'Invalid configuration string',
-          validating: false,
-        });
-        return;
-      }
-
-      const { uid, name, symbol } = tokenData;
-
-      const token = this.getToken(uid);
-      if (token) {
-        this.setState({
-          errorMessage: `You already have this token: ${uid} (${token.name})`,
-          validating: false,
-        });
-        return;
-      }
-
-      const tokenInfo = this.getTokenInfo(name, symbol);
-      if (tokenInfo) {
-        this.setState({
-          errorMessage: `You already have a token with this ${tokenInfo.key}: ${tokenInfo.token.uid} - ${tokenInfo.token.name} (${tokenInfo.token.symbol})`,
-          validating: false,
-        });
-        return;
-      }
-
-      try {
-        const tokenDetails = await this.props.wallet.getTokenDetails(uid);
-        this.setState({
-          token: {
-            uid,
-            ...tokenDetails.tokenInfo,
-          },
-          errorMessage: '',
-          validating: false,
-        });
-      } catch (e) {
-        this.setState({
-          errorMessage: 'Error fetching token details.',
-          validating: false,
-        });
-      }
+    this.setState({ validating: true }, () => {
+      const promise = hathorLib.tokensUtils.validateTokenToAddByConfigurationString(
+        this.props.wallet.storage,
+        this.state.configString
+      );
+      promise.then((tokenData) => {
+        this.setState({ token: tokenData, errorMessage: '', validating: false });
+      }, (e) => {
+        this.setState({ errorMessage: e.message, validating: false });
+      });
     });
   }
 
   onButtonPress = () => {
     const { token } = this.state;
-    hathorLib.tokens.addToken(token.uid, token.name, token.symbol);
-    this.props.dispatch(newToken(token));
-    this.props.dispatch(updateSelectedToken(token));
-    let networkName;
-    if (this.props.useWalletService) {
-      networkName = this.props.wallet.network.name;
-    } else {
-      networkName = this.props.wallet.conn.network;
-    }
-    fetchTokensMetadata([token.uid], networkName).then((metadatas) => {
-      this.props.dispatch(tokenMetadataUpdated(metadatas));
+    this.props.wallet.storage.registerToken(token).then(() => {
+      this.props.dispatch(newToken(token));
+      this.props.dispatch(updateSelectedToken(token));
+      const networkName = this.props.wallet.getNetworkObject().name;
+      fetchTokensMetadata([token.uid], networkName).then((metadatas) => {
+        this.props.dispatch(tokenMetadataUpdated(metadatas));
+      });
+      this.props.navigation.dismiss();
     });
-    this.props.navigation.dismiss();
   }
 
   render() {

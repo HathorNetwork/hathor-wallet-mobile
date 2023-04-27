@@ -178,8 +178,7 @@ export const parseQRCode = (data) => {
     };
   }
   // complete qr code
-  const { token } = qrcode;
-  const { amount } = qrcode;
+  const { token, amount } = qrcode;
   if (token && !amount) {
     return {
       isValid: false,
@@ -314,7 +313,7 @@ export const changePin = async (wallet, oldPin, newPin) => {
   // without needing to restart or close and open.
 
   const isValidPinWallet = await wallet.checkPin(oldPin);
-  const isValidPinStore = await STORE.checkPinAndPasswordOnStore(oldPin);
+  const isValidPinStore = STORE.checkPinAndPasswordOnStore(oldPin);
   if (!(isValidPinWallet && isValidPinStore)) {
     return false;
   }

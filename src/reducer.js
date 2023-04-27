@@ -380,7 +380,7 @@ const onNewTx = (state, action) => {
   if (state.latestInvoice && state.latestInvoice.amount) {
     for (const txout of tx.outputs) {
       // Don't consider authority outputs
-      if (hathorLib.wallet.isAuthorityOutput(txout)) {
+      if (hathorLib.transactionUtils.isAuthorityOutput(txout)) {
         continue;
       }
 

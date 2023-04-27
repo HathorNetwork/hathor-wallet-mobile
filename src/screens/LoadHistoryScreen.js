@@ -14,7 +14,6 @@ import { t } from 'ttag';
 
 import {
   onWalletReload,
-  startWalletRequested,
   resetLoadedData,
 } from '../actions';
 import SimpleButton from '../components/SimpleButton';
@@ -31,17 +30,10 @@ import TextFmt from '../components/TextFmt';
 const mapStateToProps = (state) => ({
   loadHistoryStatus: state.loadHistoryStatus,
   loadedData: state.loadedData,
-  useWalletService: state.useWalletService,
-  wallet: state.wallet,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  startWallet:
-    (words, pin) => {
-      dispatch(startWalletRequested({ words, pin }));
-    },
-  reloadHistory:
-    () => dispatch(onWalletReload()),
+  reloadHistory: () => dispatch(onWalletReload()),
   resetLoadedData: () => dispatch(resetLoadedData()),
 });
 
@@ -62,7 +54,7 @@ class LoadHistoryScreen extends React.Component {
         <SimpleButton
           containerStyle={{ marginTop: 12 }}
           textStyle={{ fontSize: 18 }}
-          onPress={() => this.props.reloadHistory(this.props.wallet)}
+          onPress={() => this.props.reloadHistory()}
           title='Try again'
         />
       </View>
