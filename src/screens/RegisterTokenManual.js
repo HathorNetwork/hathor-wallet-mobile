@@ -28,6 +28,7 @@ import { newToken, updateSelectedToken, fetchTokensMetadata, tokenMetadataUpdate
  */
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
+  tokens: state.tokens,
   useWalletService: state.useWalletService,
 });
 
@@ -64,20 +65,94 @@ class RegisterTokenManual extends React.Component {
     });
   }
 
+  /**
+   * Get token if there is a token with the same uid.
+   * @param {string} uid token unique identifier
+   * @returns a token object if there is a token with the same uid, null otherwise
+   */
+  getToken = (uid) => {
+    const { tokens } = this.props;
+    for (const token of tokens) {
+      if (token.uid === uid) {
+        return token;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get token info if there is a token with the same name or symbol.
+   * @param {string} name
+   * @param {string} symbol
+   * @returns a token info object if there is a token with the same name or symbol, null otherwise
+   */
+  getTokenInfo = (name, symbol) => {
+    const { tokens } = this.props;
+    for (const token of tokens) {
+      const tokenName = hathorLib.helpers.cleanupString(token.name);
+      if (tokenName === hathorLib.helpers.cleanupString(name)) {
+        return { token, key: 'name' };
+      }
+
+      const tokenSymbol = hathorLib.helpers.cleanupString(token.symbol);
+      if (tokenSymbol === hathorLib.helpers.cleanupString(symbol)) {
+        return { token, key: 'symbol' };
+      }
+    }
+    return null;
+  }
+
   validateConfigurationString = () => {
     if (this.state.configString === '') {
       return;
     }
 
-    this.setState({ validating: true }, () => {
-      const promise = hathorLib.tokens.validateTokenToAddByConfigurationString(
-        this.state.configString
-      );
-      promise.then((tokenData) => {
-        this.setState({ token: tokenData, errorMessage: '', validating: false });
-      }, (e) => {
-        this.setState({ errorMessage: e.message, validating: false });
-      });
+    this.setState({ validating: true }, async () => {
+      const tokenData = hathorLib.tokens.getTokenFromConfigurationString(this.state.configString);
+      if (!tokenData) {
+        this.setState({
+          errorMessage: 'Invalid configuration string',
+          validating: false,
+        });
+        return;
+      }
+
+      const { uid, name, symbol } = tokenData;
+
+      const token = this.getToken(uid);
+      if (token) {
+        this.setState({
+          errorMessage: `You already have this token: ${uid} (${token.name})`,
+          validating: false,
+        });
+        return;
+      }
+
+      const tokenInfo = this.getTokenInfo(name, symbol);
+      if (tokenInfo) {
+        this.setState({
+          errorMessage: `You already have a token with this ${tokenInfo.key}: ${tokenInfo.token.uid} - ${tokenInfo.token.name} (${tokenInfo.token.symbol})`,
+          validating: false,
+        });
+        return;
+      }
+
+      try {
+        const tokenDetails = await this.props.wallet.getTokenDetails(uid);
+        this.setState({
+          token: {
+            uid,
+            ...tokenDetails.tokenInfo,
+          },
+          errorMessage: '',
+          validating: false,
+        });
+      } catch (e) {
+        this.setState({
+          errorMessage: 'Error fetching token details.',
+          validating: false,
+        });
+      }
     });
   }
 
