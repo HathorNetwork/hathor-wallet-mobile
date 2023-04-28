@@ -109,8 +109,8 @@ class RegisterTokenManual extends React.Component {
 
     this.setState({ validating: true }, () => {
       const promise = hathorLib.tokensUtils.validateTokenToAddByConfigurationString(
+        this.state.configString,
         this.props.wallet.storage,
-        this.state.configString
       );
       promise.then((tokenData) => {
         this.setState({ token: tokenData, errorMessage: '', validating: false });
