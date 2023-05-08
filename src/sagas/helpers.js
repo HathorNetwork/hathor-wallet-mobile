@@ -6,12 +6,38 @@
  */
 
 import { get } from 'lodash';
-import { put, race, take, call } from 'redux-saga/effects';
+import {
+  put,
+  race,
+  take,
+  call,
+  select,
+} from 'redux-saga/effects';
 import { t } from 'ttag';
 import NavigationService from '../NavigationService';
 import {
-  setIsShowingPinScreen, types,
+  setIsShowingPinScreen,
+  types,
 } from '../actions';
+import { FEATURE_TOGGLE_DEFAULTS } from '../constants';
+
+export function* waitForFeatureToggleInitialization() {
+  const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
+
+  if (!featureTogglesInitialized) {
+    // Wait until featureToggle saga completed initialization, which includes
+    // downloading the current toggle status for this client.
+    yield take(types.FEATURE_TOGGLE_INITIALIZED);
+  }
+}
+
+export function* checkForFeatureFlag(flag) {
+  yield call(waitForFeatureToggleInitialization);
+
+  const featureToggles = yield select((state) => state.featureToggles);
+
+  return get(featureToggles, flag, FEATURE_TOGGLE_DEFAULTS[flag] || false);
+}
 
 /**
  * Helper method to be used on take saga effect, will wait until an action
@@ -21,13 +47,13 @@ import {
  * @param {Object} payload - Object with the keys and values to compare
  */
 export const specificTypeAndPayload = (_types, payload) => (action) => {
-  let types = _types;
+  let actionTypes = _types;
 
   if (!Array.isArray(_types)) {
-    types = [_types];
+    actionTypes = [_types];
   }
 
-  if (types.indexOf(action.type) === -1) {
+  if (actionTypes.indexOf(action.type) === -1) {
     return false;
   }
 

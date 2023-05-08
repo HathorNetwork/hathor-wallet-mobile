@@ -71,16 +71,25 @@ export default function PushNotification(props) {
     showAmountEnabled,
     deviceId,
   } = useSelector((state) => state.pushNotification);
+
   const isPushApiLoading = useSelector((state) => isApiStatusLoading(state));
   const hasPushApiFailed = useSelector((state) => hasApiStatusFailed(state.pushNotification));
   const dispatch = useDispatch();
 
-  const onEnableSwitchChange = (enabled) => {
-    dispatch(pushRegistrationRequested({ enabled, showAmountEnabled, deviceId }));
+  const onEnableSwitchChange = (_enabled) => {
+    dispatch(pushRegistrationRequested({
+      enabled: _enabled,
+      showAmountEnabled,
+      deviceId,
+    }));
   };
 
-  const onShowAmountSwitchChange = (showAmountEnabled) => {
-    dispatch(pushRegistrationRequested({ enabled, showAmountEnabled, deviceId }));
+  const onShowAmountSwitchChange = (_showAmountEnabled) => {
+    dispatch(pushRegistrationRequested({
+      enabled,
+      showAmountEnabled: _showAmountEnabled,
+      deviceId,
+    }));
   };
 
   return (

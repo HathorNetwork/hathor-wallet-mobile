@@ -6,11 +6,8 @@
  */
 
 import React from 'react';
-import {
-  Text, View,
-} from 'react-native';
+import { Text } from 'react-native';
 import PropTypes from 'prop-types';
-import Modal from 'react-native-modal';
 import HathorModal from './HathorModal';
 
 const FeedbackModal = (props) => (

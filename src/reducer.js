@@ -10,7 +10,7 @@ import createSagaMiddleware from 'redux-saga';
 import thunk from 'redux-thunk';
 import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
-import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS } from './constants';
+import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS } from './constants';
 import { types } from './actions';
 import rootSagas from './sagas';
 import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
@@ -104,13 +104,6 @@ const initialState = {
   tokenMetadata: {},
   metadataLoaded: false,
   uniqueDeviceId: null,
-  // If recoveringPin is set, the app will display
-  // the RecoverPin screen instead of the default navigator
-  recoveringPin: false,
-  // tempPin is used to hold the user PIN when recovering the
-  // PIN that encrypted the data on accessData on the RecoverPin
-  // screen
-  tempPin: null,
   isShowingPinScreen: false,
   pushNotification: {
     /**
@@ -198,6 +191,11 @@ const initialState = {
   walletStartState: WALLET_STATUS.NOT_STARTED,
   lastSharedAddress: null,
   lastSharedIndex: null,
+  unleashClient: null,
+  featureTogglesInitialized: false,
+  featureToggles: {
+    ...FEATURE_TOGGLE_DEFAULTS,
+  },
 };
 
 const reducer = (state = initialState, action) => {
@@ -236,6 +234,8 @@ const reducer = (state = initialState, action) => {
       return onSetWallet(state, action);
     case types.RESET_WALLET:
       return onResetWallet(state, action);
+    case types.RESET_WALLET_SUCCESS:
+      return onResetWalletSuccess(state);
     case types.RESET_LOADED_DATA:
       return onResetLoadedData(state, action);
     case types.UPDATE_LOADED_DATA:
@@ -250,8 +250,6 @@ const reducer = (state = initialState, action) => {
       return onTokenMetadataLoaded(state, action);
     case types.SET_UNIQUE_DEVICE_ID:
       return onSetUniqueDeviceId(state, action);
-    case types.SET_RECOVERING_PIN:
-      return onSetRecoveringPin(state, action);
     case types.SET_TEMP_PIN:
       return onSetTempPin(state, action);
     case types.PARTIALLY_UPDATE_HISTORY_AND_BALANCE:
@@ -320,10 +318,37 @@ const reducer = (state = initialState, action) => {
       return onWalletReloading(state);
     case types.SHARED_ADDRESS_UPDATE:
       return onSharedAddressUpdate(state, action);
+    case types.SET_UNLEASH_CLIENT:
+      return onSetUnleashClient(state, action);
+    case types.SET_FEATURE_TOGGLES:
+      return onSetFeatureToggles(state, action);
+    case types.FEATURE_TOGGLE_INITIALIZED:
+      return onFeatureToggleInitialized(state);
     default:
       return state;
   }
 };
+
+const onFeatureToggleInitialized = (state) => ({
+  ...state,
+  featureTogglesInitialized: true,
+});
+
+/**
+ * @param {Object} action.payload The key->value object with feature toggles
+ */
+const onSetFeatureToggles = (state, { payload }) => ({
+  ...state,
+  featureToggles: payload,
+});
+
+/**
+ * @param {Object} action.payload The unleash client to store
+ */
+const onSetUnleashClient = (state, { payload }) => ({
+  ...state,
+  unleashClient: payload,
+});
 
 const onSetServerInfo = (state, action) => ({
   ...state,
@@ -471,13 +496,6 @@ const onSetResetOnLockScreen = (state, action) => ({
   resetOnLockScreen: action.payload,
 });
 
-const onSetRecoveringPin = (state, action) => ({
-  ...state,
-  recoveringPin: action.payload,
-  // Reset temp pin if recovering pin is set to false
-  tempPin: !action.payload ? null : state.tempPin,
-});
-
 const onSetTempPin = (state, action) => ({
   ...state,
   tempPin: action.payload,
@@ -502,6 +520,14 @@ const onResetWallet = (state) => ({
   ...state,
   wallet: null,
 });
+
+const onResetWalletSuccess = (state) => {
+  const oldUnleashClient = state.unleashClient;
+  return {
+    ...initialState,
+    unleashClient: oldUnleashClient,
+  };
+};
 
 const onHideErrorModal = (state) => ({
   ...state,

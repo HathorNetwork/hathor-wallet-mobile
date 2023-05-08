@@ -80,13 +80,13 @@ export const setNotifeeBackgroundListener = () => {
   try {
     notifee.onBackgroundEvent(async ({ type, detail }) => {
       const { notification } = detail;
-
       if (type === EventType.DISMISSED) {
         await notifee.cancelNotification(notification.id);
         return;
       }
 
       if (type === EventType.PRESS || type === EventType.ACTION_PRESS) {
+        console.debug('Notification pressed or action pressed on background.');
         setInitialNotificationData(notification);
         await notifee.cancelNotification(notification.id);
       }
