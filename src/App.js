@@ -307,8 +307,6 @@ class _AppStackWrapper extends React.Component {
   componentDidMount = async () => {
     this.getBiometry();
     this.appStateChangeEventSub = AppState.addEventListener('change', this._handleAppStateChange);
-    // XXX: updateReduxTokens is now async
-    // maybe componentDidMount should be async so we can await this
     this.updateReduxTokens();
     // We need the version of the app in the user agent to get some stats from the logs
     // this method getVersion returns a string in the format <major>.<minor>.<patch>

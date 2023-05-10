@@ -306,36 +306,18 @@ export const setKeychainPin = (pin) => {
  * @return {boolean} Wether the change password was successful
  */
 export const changePin = async (wallet, oldPin, newPin) => {
-  // We have 2 sets of access data to mutate
-  // The first one is the AsyncStorage access data which is used to start the loaded wallet
-  // The second one is the current loaded wallet so the user can continue to use the app
-  // without needing to restart or close and open.
-
-  const isValidPinWallet = await wallet.checkPin(oldPin);
-  const isValidPinStore = STORE.checkPinAndPasswordOnStore(oldPin);
-  if (!(isValidPinWallet && isValidPinStore)) {
+  const isPinValid = await wallet.checkPinAndPassword(oldPin, oldPin);
+  if (!isPinValid) {
     return false;
   }
 
   try {
     // All of these are checked above so it should not fail
     await wallet.storage.changePin(oldPin, newPin);
-    let accessData = STORE.getAccessData();
-    accessData = hathorLib.walletUtils.changeEncryptionPin(accessData, oldPin, newPin);
-    accessData = hathorLib.walletUtils.changeEncryptionPassword(accessData, oldPin, newPin);
-    STORE.saveAccessData(accessData);
-  } catch (err) {
-    return false;
-  }
-
-  try {
     // Will throw if the access data does not have the seed.
     await wallet.storage.changePassword(oldPin, newPin);
   } catch (err) {
-    // Some started wallets are started with the xpriv so they won't have the seed loaded.
-    // This is not a problem since we already changed the password on the STORE.
-    // If the words are not loaded on the wallet, it should not be used and will be
-    // load the seed encrypted with the new pin on the next wallet startup.
+    return false;
   }
 
   setKeychainPin(newPin);

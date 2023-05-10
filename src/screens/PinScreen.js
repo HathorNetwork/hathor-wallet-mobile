@@ -139,7 +139,7 @@ class PinScreen extends React.Component {
    *
    * @param {String} pin Unlock PIN written by the user
    */
-  handleDataMigration = (pin) => {
+  handleDataMigration = async (pin) => {
     const accessData = STORE.getAccessData();
     const storageVersion = STORE.getItem('wallet:version');
     if (storageVersion === null && accessData !== null && accessData.mainKey) {
@@ -165,11 +165,11 @@ class PinScreen extends React.Component {
     }
   };
 
-  dismiss = (pin) => {
+  dismiss = async (pin) => {
     if (this.props.isLockScreen) {
       // in case it's the lock screen, we just have to execute the data migration
       // method an change redux state. No need to execute callback or go back on navigation
-      this.handleDataMigration(pin);
+      await this.handleDataMigration(pin);
       if (!this.props.wallet) {
         // handleDataMigration should ensure we have migrated the access data
         // to the most recent version
