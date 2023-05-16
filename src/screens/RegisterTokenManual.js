@@ -28,7 +28,6 @@ import { newToken, updateSelectedToken, fetchTokensMetadata, tokenMetadataUpdate
  */
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
-  tokens: state.tokens,
   useWalletService: state.useWalletService,
 });
 
@@ -63,43 +62,6 @@ class RegisterTokenManual extends React.Component {
     this.setState({ configString: text.trim(), errorMessage: '', token: null }, () => {
       this.validateConfigurationString();
     });
-  }
-
-  /**
-   * Get token if there is a token with the same uid.
-   * @param {string} uid token unique identifier
-   * @returns a token object if there is a token with the same uid, null otherwise
-   */
-  getToken = (uid) => {
-    const { tokens } = this.props;
-    for (const token of tokens) {
-      if (token.uid === uid) {
-        return token;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Get token info if there is a token with the same name or symbol.
-   * @param {string} name
-   * @param {string} symbol
-   * @returns a token info object if there is a token with the same name or symbol, null otherwise
-   */
-  getTokenInfo = (name, symbol) => {
-    const { tokens } = this.props;
-    for (const token of tokens) {
-      const tokenName = hathorLib.helpers.cleanupString(token.name);
-      if (tokenName === hathorLib.helpers.cleanupString(name)) {
-        return { token, key: 'name' };
-      }
-
-      const tokenSymbol = hathorLib.helpers.cleanupString(token.symbol);
-      if (tokenSymbol === hathorLib.helpers.cleanupString(symbol)) {
-        return { token, key: 'symbol' };
-      }
-    }
-    return null;
   }
 
   validateConfigurationString = () => {
