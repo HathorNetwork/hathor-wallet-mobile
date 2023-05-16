@@ -21,9 +21,8 @@ export function DecideStackScreen({ navigation }) {
   useEffect(() => {
     STORE
       .preStart()
-      .then(() => {
-        return STORE.walletIsLoaded();
-      }).then(isLoaded => {
+      .then(() => STORE.walletIsLoaded())
+      .then((isLoaded) => {
         if (isLoaded) {
           navigation.navigate('App');
         } else {

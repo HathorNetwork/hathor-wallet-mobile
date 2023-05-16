@@ -6,9 +6,8 @@
  */
 
 import CryptoJS from 'crypto-js';
-import { crypto } from 'bitcore-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LevelDBStore, Storage, cryptoUtils, errors } from '@hathor/wallet-lib';
+import { LevelDBStore, Storage, cryptoUtils, errors, walletUtils } from '@hathor/wallet-lib';
 
 /**
  * We use AsyncStorage to persist access data when our app is closed since the
@@ -22,7 +21,9 @@ import { LevelDBStore, Storage, cryptoUtils, errors } from '@hathor/wallet-lib';
  */
 class AsyncStorageStore {
   _storage = null;
+
   _accessData = null;
+
   version = 1;
 
   constructor() {
@@ -77,7 +78,7 @@ class AsyncStorageStore {
    */
   saveWalletId(accessData) {
     // Wallet id is the sha256d of the change path xpubkey
-    const walletId = crypto.Hash.sha256sha256(Buffer.from(accessData.xpubkey)).toString('hex');
+    const walletId = walletUtils.getWalletIdFromXPub(accessData.xpubkey);
     this.setItem('asyncstorage:walletid', walletId);
   }
 
@@ -244,7 +245,8 @@ class AsyncStorageStore {
   }
 
   async preStart() {
-    // XXX: this is probably not necessary anymore since we delete all wallet keys, but we'll keep it for now
+    // XXX: this is probably not necessary anymore since we delete all wallet keys,
+    // but we'll keep it for now
     // Old wallet storage had wallet:data saved, which was causing crash in some phones
     // We've fixed it, so we don't save it on storage anymore but we still need to clean it
     await AsyncStorage.removeItem('wallet:data');
