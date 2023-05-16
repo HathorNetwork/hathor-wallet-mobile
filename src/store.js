@@ -52,19 +52,12 @@ class AsyncStorageStore {
    */
   async clearItems(onlyWalletKeys = false) {
     const keys = await AsyncStorage.getAllKeys() || [];
-    const ps = [];
     this.hathorMemoryStorage = {};
-    for (let index = 0; index < keys.length; index += 1) {
-      const key = keys[index];
-      if (onlyWalletKeys && !key.startsWith('wallet')) {
-        // Skip keys not starting with wallet prefix
-        // since we want to delete only wallet keys
-        continue;
-      }
-      ps.push(AsyncStorage.removeItem(key));
+    if (onlyWalletKeys) {
+      await AsyncStorage.multiRemove(keys.filter((key) => key.startsWith('wallet')));
+    } else {
+      await AsyncStorage.multiRemove(keys);
     }
-
-    await Promise.all(ps);
   }
 
   /**
@@ -160,6 +153,7 @@ class AsyncStorageStore {
 
   /**
    * Get the seed of the loaded wallet.
+   * @throws {Error} If the words cannot be decrypted.
    * @param {string} pin
    * @returns {string} Seed of the loaded wallet.
    */
@@ -178,6 +172,7 @@ class AsyncStorageStore {
    * The encryption method is not the same but uses the same lib (CryptoJS) so we can
    * decrypt without another dependency or utility.
    *
+   * @throws {Error} If the words cannot be decrypted.
    * @param {string} pin
    * @return {string|null}
    */
