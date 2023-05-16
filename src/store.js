@@ -6,8 +6,9 @@
  */
 
 import CryptoJS from 'crypto-js';
+import { crypto } from 'bitcore-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { cryptoUtils } from '@hathor/wallet-lib';
+import { LevelDBStore, Storage, cryptoUtils, errors } from '@hathor/wallet-lib';
 
 /**
  * We use AsyncStorage to persist access data when our app is closed since the
@@ -20,6 +21,8 @@ import { cryptoUtils } from '@hathor/wallet-lib';
  * was stored in the AsyncStorage.
  */
 class AsyncStorageStore {
+  _storage = null;
+  _accessData = null;
   version = 1;
 
   constructor() {
@@ -39,6 +42,14 @@ class AsyncStorageStore {
     AsyncStorage.setItem(key, JSON.stringify(value));
   }
 
+  /**
+   * Clear all items from AsyncStorage.
+   * Optionally we can erase only the wallet keys.
+   * This will keep biometry keys and notification keys for example.
+   *
+   * @param {boolean} [onlyWalletKeys=false] If true, will delete only keys starting with 'wallet'
+   * @returns {Promise<void>}
+   */
   async clearItems(onlyWalletKeys = false) {
     const keys = await AsyncStorage.getAllKeys() || [];
     const ps = [];
@@ -62,15 +73,44 @@ class AsyncStorageStore {
    *
    * @returns {boolean} Whether we have a loaded wallet on the storage.
    */
-  walletIsLoaded() {
-    // This will also work on wallets loaded on previous versions
-    // The migration method to load with the new storage scheme will begin
-    // after the user inputs the pin on the PinScreen.
-    // Another key for wallet:version will be added marking that the wallet:accessData
-    // was already loaded for the current storage.
-    //
-    // This is why we can return true if the wallet is loaded with either version of the storage.
-    return !!this.getAccessData();
+  async walletIsLoaded() {
+    const accessData = await this.getAccessData();
+    return !!accessData;
+  }
+
+  /**
+   * Save the wallet id to AsyncStorage given the access data.
+   * @param {IWalletAccessData} accessData
+   */
+  saveWalletId(accessData) {
+    // Wallet id is the sha256d of the change path xpubkey
+    const walletId = crypto.Hash.sha256sha256(Buffer.from(accessData.xpubkey)).toString('hex');
+    this.setItem('asyncstorage:walletid', walletId);
+  }
+
+  /**
+   * Get the loaded wallet id from AsyncStorage.
+   * @returns {string|null} Wallet id if it exists on AsyncStorage.
+   */
+  getWalletId() {
+    return this.getItem('asyncstorage:walletid');
+  }
+
+  /**
+   * Get a Storage instance for the loaded wallet.
+   * @returns {Storage|null} Storage instance if the wallet is loaded.
+   */
+  getStorage() {
+    if (!this._storage) {
+      const walletId = this.getWalletId();
+      if (!walletId) {
+        return null;
+      }
+
+      const store = new LevelDBStore(walletId);
+      this._storage = new Storage(store);
+    }
+    return this._storage;
   }
 
   /**
@@ -78,33 +118,61 @@ class AsyncStorageStore {
    *
    * @returns {IWalletAccessData|null}
    */
-  getAccessData() {
-    const accessData = this.hathorMemoryStorage['wallet:accessData'];
-    if (accessData === undefined) {
+  async getAccessData() {
+    const storage = this.getStorage();
+    if (!storage) {
       return null;
     }
-    return accessData;
+
+    try {
+      return await storage.getAccessData();
+    } catch (err) {
+      if (err instanceof errors.UninitializedWalletError) {
+        // If the storage exists but has not yet been initialized with an access data
+        return null;
+      }
+      throw err;
+    }
   }
 
   /**
-   * Save the current access data and storage version.
+   * Will attempt to load the access data from either the old or new storage.
+   * This will return the access data as it was found, so the format will be different.
+   * To check which format was received, use the storage version that is returned.
    *
-   * The storage version is meant to be used as a migration index since we arecurrently
-   * handling all migration cases in the same method
-   * see `src/screens/PinScreen:handleMigration`
-   * We should have atomic migrations and a way to identify which migrations are
-   * required to have the storage work with the current wallet version.
-   *
-   * @param { IWalletAccessData } accessData
+   * @returns {{
+   *   accessData: IWalletAccessData|null,
+   *   version: number
+   * }} The access data and the storage version.
    */
-  saveAccessData(accessData) {
-    this.setItem('wallet:accessData', accessData);
-    // Saves the current storage version to make migrations easier in the future
-    this.setItem('wallet:version', this.version);
+  async getAvailableAccessData() {
+    // First we try to fetch the old access data (if we haven't migrated yet)
+    let accessData = this.getItem('wallet:accessData');
+    if (!accessData) {
+      // If we don't have the old access data, we try to fetch the new one
+      accessData = await this.getAccessData();
+    }
+
+    // Since each access data has a different interface, we also send the version
+    // so the caller can know which one to use
+    return { accessData, version: this.getStorageVersion() };
   }
 
   /**
-   * Get wallet words if the wallet is loaded.
+   * Get the seed of the loaded wallet.
+   * @param {string} pin
+   * @returns {string} Seed of the loaded wallet.
+   */
+  async getWalletWords(pin) {
+    const accessData = await this.getAccessData();
+    if (!accessData) {
+      return null;
+    }
+    return cryptoUtils.decryptData(accessData.words, pin);
+  }
+
+  /**
+   * Get old wallet words if possible.
    *
    * Will attempt to decrypt wallet words encrypted with previous versions of the lib.
    * The encryption method is not the same but uses the same lib (CryptoJS) so we can
@@ -113,25 +181,18 @@ class AsyncStorageStore {
    * @param {string} pin
    * @return {string|null}
    */
-  getWalletWords(pin) {
-    const accessData = this.getAccessData();
+  getOldWalletWords(pin) {
+    // XXX: this will attempt to fetch the access data in the old format
+    const accessData = this.getItem('wallet:accessData');
     if (!accessData) {
       return null;
     }
 
-    const storageVersion = this.hathorMemoryStorage['wallet:version'];
-    if (!storageVersion) {
-      // decrypt words with the old method so we can load the wallet
-      // when first starting after a version update
-      // This should only happen when migrating from wallet-lib v0.* to v1.*
-      const decryptedWords = CryptoJS.AES.decrypt(accessData.words, pin);
-      return decryptedWords.toString(CryptoJS.enc.Utf8);
-    }
-
-    // The access data was already loaded with lib version 1.0.0
-    // To decrypt the words we can use the decryptData util
-    // This may throw an exception but this is expected
-    return cryptoUtils.decryptData(accessData.words, pin);
+    // decrypt words with the old method so we can load the wallet
+    // when first starting after a version update
+    // This should only be necessary when migrating from wallet-lib v0.* to v1.*
+    const decryptedWords = CryptoJS.AES.decrypt(accessData.words, pin);
+    return decryptedWords.toString(CryptoJS.enc.Utf8);
   }
 
   /**
@@ -139,8 +200,8 @@ class AsyncStorageStore {
    * @param {string} pin Pin to decrypt data.
    * @returns {string}
    */
-  getAccountPathKey(pin) {
-    const accessData = this.getAccessData();
+  async getAccountPathKey(pin) {
+    const accessData = await this.getAccessData();
     if (!(accessData && accessData.acctPathKey)) {
       return null;
     }
@@ -154,8 +215,8 @@ class AsyncStorageStore {
    * @param {string} pin Pin to decrypt data.
    * @returns {string}
    */
-  getMainKey(pin) {
-    const accessData = this.getAccessData();
+  async getMainKey(pin) {
+    const accessData = await this.getAccessData();
     if (!(accessData && accessData.mainKey)) {
       return null;
     }
@@ -164,25 +225,31 @@ class AsyncStorageStore {
   }
 
   /**
-   * Since pin and password are the same in this wallet we can check both pin and password
-   * with the same method, the words and mainKey should always be present.
-   *
-   * @param {string} pin
-   * @returns {boolean} If the pin was used to encrypt the data on the store.
+   * Get the storage version.
+   * @returns {number|null} Storage version if it exists on AsyncStorage.
    */
-  checkPinAndPasswordOnStore(pin) {
-    const accessData = this.getAccessData();
-    const isPasswordOk = cryptoUtils.checkPassword(accessData.words, pin);
-    const isPinOk = cryptoUtils.checkPassword(accessData.mainKey, pin);
-    return isPinOk && isPasswordOk;
+  getStorageVersion() {
+    return this.getItem('asyncstorage:version');
   }
 
+  /**
+   * Update the storage version to the most recent one.
+   */
+  updateStorageVersion() {
+    this.setItem('asyncstorage:version', this.version);
+  }
+
+  /**
+   * Remove a key from AsyncStorage and from memory.
+   * @param {string} key Item to remove.
+   */
   removeItem(key) {
     AsyncStorage.removeItem(key);
     delete this.hathorMemoryStorage[key];
   }
 
   async preStart() {
+    // XXX: this is probably not necessary anymore since we delete all wallet keys, but we'll keep it for now
     // Old wallet storage had wallet:data saved, which was causing crash in some phones
     // We've fixed it, so we don't save it on storage anymore but we still need to clean it
     await AsyncStorage.removeItem('wallet:data');

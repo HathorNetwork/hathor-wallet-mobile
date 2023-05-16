@@ -126,7 +126,12 @@ export function* startWallet(action) {
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
 
-  // XXX: We can pre-start a clean wallet storage here if needed
+  // clean storage and metadata before starting the wallet
+  // this should be cleaned when stopping the wallet,
+  // but the wallet may be closed unexpectedly
+  const storage = STORE.getStorage();
+  yield storage.store.cleanMetadata();
+  yield storage.cleanStorage(true);
 
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
@@ -144,19 +149,20 @@ export function* startWallet(action) {
 
     let xpriv;
     if (fromXpriv) {
-      xpriv = STORE.getAccountPathKey(pin);
+      xpriv = yield STORE.getAccountPathKey(pin);
     }
 
     wallet = new HathorWalletServiceWallet({
       requestPassword: showPinScreenForResult,
       seed: words,
-      network,
       xpriv,
+      network,
+      storage,
     });
   } else {
     let xpriv;
     if (fromXpriv) {
-      xpriv = STORE.getMainKey(pin);
+      xpriv = yield STORE.getMainKey(pin);
     }
 
     const connection = new Connection({
@@ -170,6 +176,7 @@ export function* startWallet(action) {
     const walletConfig = {
       seed: words,
       xpriv,
+      storage,
       connection,
       beforeReloadCallback: () => {
         dispatch(onWalletReload());

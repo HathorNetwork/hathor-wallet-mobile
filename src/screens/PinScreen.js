@@ -140,28 +140,26 @@ class PinScreen extends React.Component {
    * @param {String} pin Unlock PIN written by the user
    */
   handleDataMigration = async (pin) => {
-    const accessData = STORE.getAccessData();
-    const storageVersion = STORE.getItem('wallet:version');
-    if (storageVersion === null && accessData !== null && accessData.mainKey) {
+    const storageVersion = STORE.getStorageVersion();
+    const oldWords = STORE.getOldWalletWords(pin);
+    if (storageVersion === null && oldWords !== null) {
       // We are migrating from an version of wallet-lib prior to 1.0.0
-      const words = STORE.getWalletWords(pin);
-      if (!words) {
-        throw new Error('Could not load the wallet seed.');
-      }
-      const decryptedWords = CryptoJS.AES.decrypt(
-        accessData.words,
-        pin,
-      ).toString(CryptoJS.enc.Utf8);
       // This will generate the encrypted keys and other metadata
-      // The encrypted data will be different from whats used by the wallet due
-      // to using different salts.
-      // This newAccessData will be used to "unwrap" the words
       const newAccessData = walletUtils.generateAccessDataFromSeed(
-        decryptedWords,
+        oldWords,
         { pin, password: pin, networkName: NETWORK },
       );
-      // Will also populate wallet:version
-      STORE.saveAccessData(newAccessData);
+      STORE.saveWalletId(newAccessData);
+      // This will return a storage using a persistent LevelDBStore
+      const storage = STORE.getStorage();
+      await storage.saveAccessData(newAccessData);
+
+      // The access data is saved on the new storage, we can delete the old data.
+      // This will only delete keys with the wallet prefix, so we don't delete the biometry keys and new data.
+      await STORE.clearItems(true);
+
+      // We have finished the migration so we can set the storage version to the most recent one.
+      STORE.updateStorageVersion();
     }
   };
 
@@ -173,15 +171,12 @@ class PinScreen extends React.Component {
       if (!this.props.wallet) {
         // handleDataMigration should ensure we have migrated the access data
         // to the most recent version
-        // This means we can just request to start the wallet-lib since we will always havethe
+        // This means we can just request to start the wallet-lib since we will always have the
         // required properties.
         //
         // We start with the account path private key since we can skip the derivation
         // from the seed, this makes an empty wallet startup process 40 times faster
-        this.props.startWalletRequested({
-          pin,
-          fromXpriv: true,
-        });
+        this.props.startWalletRequested({ pin, fromXpriv: true });
       }
       this.props.unlockScreen();
     } else {
@@ -207,12 +202,29 @@ class PinScreen extends React.Component {
     this.setState({ pin: text, pinColor: 'black', error: null });
   };
 
-  validatePin = (pin) => {
+  validatePin = async (pin) => {
     try {
       // Validate if we are able to decrypt the seed using this PIN
       // this will throw if the words are not able to be decoded with this
       // pin.
-      const accessData = STORE.getAccessData();
+
+      // This will return either the old or the new access data.
+      // We can ignore which one it is since we will only use the words which is present on both.
+      const { accessData } = await STORE.getAvailableAccessData();
+
+      if (!accessData) {
+        // The wallet does not have an access data, we can't unlock it
+        // This should not happen since we check if the wallet is initialized
+        // before showing the unlock screen, but we will handle it anyway
+        this.props.onExceptionCaptured(
+          new Error(
+            "Attempted to unlock wallet but it wasn't initialized.",
+          ),
+          true, // Fatal since we can't start the wallet
+        );
+        return;
+      }
+
       const pinCorrect = cryptoUtils.checkPassword(accessData.words, pin);
       if (!pinCorrect) {
         this.removeOneChar();

@@ -344,8 +344,9 @@ export function* loadWallet() {
     const network = new Network(NETWORK);
 
     const pin = yield call(showPinScreenForResult, dispatch);
+    const seed = yield STORE.getWalletWords(pin);
     walletService = new HathorWalletServiceWallet({
-      seed: STORE.getWalletWords(pin),
+      seed,
       network,
       enableWs: false,
     });
@@ -528,7 +529,7 @@ export function* checkOpenPushNotification() {
 export const getTxDetails = async (wallet, txId) => {
   // Tx not found triggers the retry modal for tx details
   const buildTxDetailsNotFound = () => ({ isTxFound: false, txId });
-  const buildTxDetailsFound = (tx, txTokens) => ({
+  const buildTxDetailsFound = async (tx, txTokens) => ({
     isTxFound: true,
     txId,
     tx: {
@@ -536,13 +537,13 @@ export const getTxDetails = async (wallet, txId) => {
       timestamp: tx.timestamp,
       voided: tx.voided,
     },
-    tokens: txTokens.map((each) => ({
+    tokens: await Promise.all(txTokens.map(async (each) => ({
       uid: each.tokenId,
       name: each.tokenName,
       symbol: each.tokenSymbol,
       balance: each.balance,
-      // isRegistered: !!tokens.tokenExists(each.tokenId),
-    })),
+      isRegistered: await wallet.storage.isTokenRegistered(each.tokenId),
+    }))),
   });
 
   try {

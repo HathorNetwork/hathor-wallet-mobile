@@ -22,7 +22,9 @@ export function DecideStackScreen({ navigation }) {
     STORE
       .preStart()
       .then(() => {
-        if (STORE.walletIsLoaded()) {
+        return STORE.walletIsLoaded();
+      }).then(isLoaded => {
+        if (isLoaded) {
           navigation.navigate('App');
         } else {
           navigation.navigate('Init');
