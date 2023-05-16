@@ -67,7 +67,7 @@ class AsyncStorageStore {
    * @returns {boolean} Whether we have a loaded wallet on the storage.
    */
   async walletIsLoaded() {
-    const accessData = await this.getAccessData();
+    const { accessData } = await this.getAvailableAccessData();
     return !!accessData;
   }
 
