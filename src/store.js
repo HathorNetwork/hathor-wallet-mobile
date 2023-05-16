@@ -155,7 +155,7 @@ class AsyncStorageStore {
    * Get the seed of the loaded wallet.
    * @throws {Error} If the words cannot be decrypted.
    * @param {string} pin
-   * @returns {string} Seed of the loaded wallet.
+   * @returns {Promise<string|null>} Seed of the loaded wallet.
    */
   async getWalletWords(pin) {
     const accessData = await this.getAccessData();

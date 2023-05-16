@@ -8,7 +8,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
-import CryptoJS from 'crypto-js';
 
 import { BackHandler, SafeAreaView, Text, View } from 'react-native';
 import * as Keychain from 'react-native-keychain';
@@ -174,8 +173,10 @@ class PinScreen extends React.Component {
         // This means we can just request to start the wallet-lib since we will always have the
         // required properties.
         //
-        // We start with the account path private key since we can skip the derivation
-        // from the seed, this makes an empty wallet startup process 40 times faster
+        // The wallet-service still uses the xpriv to derive some information
+        // even if the access data is present.
+        // We will keep the fromXpriv argument for now but we should refactor the startup process
+        // to use only the access data from storage since it does not require aditional derivation
         this.props.startWalletRequested({ pin, fromXpriv: true });
       }
       this.props.unlockScreen();
