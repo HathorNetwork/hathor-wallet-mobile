@@ -126,12 +126,11 @@ export default function WalletConnectList({ navigation }) {
     <View style={style.componentWrapper}>
       <SafeAreaView style={style.safeAreaView}>
         <HathorHeader
-          title={t`WalletConnect Sessions`}
+          title={t`Wallet Connect Sessions`}
           onBackPress={() => navigation.pop()}
           rightElement={renderHeaderRightElement()}
         />
-        <View style={style.sessionListWrapper}
-        >
+        <View style={style.sessionListWrapper}>
           <HathorList infinity>
             {mappedSessions.map(({
               sessionKey,
