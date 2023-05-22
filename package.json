@@ -26,6 +26,7 @@
     "@react-navigation/native": "6.1.7",
     "@react-navigation/stack": "6.3.17",
     "@sentry/react-native": "^5.6.0",
+    "@walletconnect/core": "^2.7.6",
     "@walletconnect/web3wallet": "^1.4.0",
     "assert": "^2.0.0",
     "buffer": "^4.9.2",
