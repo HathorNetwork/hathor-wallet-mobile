@@ -449,11 +449,13 @@ export function* onSessionDelete(action) {
 
 export function* saga() {
   yield all([
+    fork(featureToggleUpdateListener),
     takeLatest(types.START_WALLET_SUCCESS, init),
     takeEvery('WC_SESSION_REQUEST', onSessionRequest),
     takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('WC_SESSION_DELETE', onSessionDelete),
     takeEvery('WC_CANCEL_SESSION', onCancelSession),
+    takeEvery('WC_SHUTDOWN', clearSessions),
     takeEvery(types.RESET_WALLET, onWalletReset),
     takeLatest('SIGN_MESSAGE_REQUEST', onSignMessageRequest),
     takeLatest(types.WC_URI_INPUTTED, onUriInputted),
