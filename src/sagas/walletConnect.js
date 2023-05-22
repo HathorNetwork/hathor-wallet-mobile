@@ -88,6 +88,7 @@ function* init() {
 
     yield fork(setupListeners, web3wallet);
 
+    // Refresh redux with the active sessions, loaded from storage
     yield call(refreshActiveSessions);
 
     // If the wallet is reset, we should cancel all listeners
