@@ -82,7 +82,7 @@ const style = StyleSheet.create({
 
 export default function WalletConnectList({ navigation }) {
   const dispatch = useDispatch();
-  const connectedSessions = useSelector((state) => state.walletConnectSessions);
+  const connectedSessions = useSelector((state) => state.walletConnect.sessions);
 
   const mappedSessions = Object.keys(connectedSessions).reduce((acc, sessionKey) => {
     const session = connectedSessions[sessionKey];

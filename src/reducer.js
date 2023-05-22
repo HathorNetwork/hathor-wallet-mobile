@@ -197,9 +197,13 @@ const initialState = {
   walletStartState: WALLET_STATUS.NOT_STARTED,
   lastSharedAddress: null,
   lastSharedIndex: null,
-  walletConnect: null,
-  walletConnectModal: { show: false },
-  walletConnectSessions: {},
+  walletConnect: {
+    client: null,
+    modal: {
+      show: false,
+    },
+    sessions: {},
+  },
   unleashClient: null,
   featureTogglesInitialized: false,
   featureToggles: {
@@ -1030,7 +1034,10 @@ const onSharedAddressUpdate = (state, action) => ({
  */
 export const onSetWalletConnect = (state, { payload }) => ({
   ...state,
-  walletConnect: payload,
+  walletConnect: {
+    ...state.walletConnect,
+    client: payload,
+  }
 });
 
 /**
@@ -1038,9 +1045,12 @@ export const onSetWalletConnect = (state, { payload }) => ({
  */
 export const onSetWalletConnectModal = (state, { payload }) => ({
   ...state,
-  walletConnectModal: {
-    ...state.walletConnectModal,
-    ...payload,
+  walletConnect: {
+    ...state.walletConnect,
+    modal: {
+      ...state.walletConnect.modal,
+      ...payload,
+    }
   },
 });
 
@@ -1049,7 +1059,10 @@ export const onSetWalletConnectModal = (state, { payload }) => ({
  */
 export const onSetWalletConnectSessions = (state, { payload }) => ({
   ...state,
-  walletConnectSessions: payload,
+  walletConnect: {
+    ...state.walletConnect,
+    sessions: payload,
+  },
 });
 
 const saga = createSagaMiddleware();

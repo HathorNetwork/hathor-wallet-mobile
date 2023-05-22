@@ -14,7 +14,7 @@ import ConnectModal from './ConnectModal';
 
 export default () => {
   const dispatch = useDispatch();
-  const walletConnectModal = useSelector((state) => state.walletConnectModal);
+  const walletConnectModal = useSelector((state) => state.walletConnect.modal);
 
   if (!walletConnectModal.show) {
     return null;

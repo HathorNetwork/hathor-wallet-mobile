@@ -102,7 +102,7 @@ function* init() {
 }
 
 export function* refreshActiveSessions() {
-  const { web3wallet } = yield select((state) => state.walletConnect);
+  const { web3wallet } = yield select((state) => state.walletConnect.client);
 
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
   yield put(setWalletConnectSessions(activeSessions));
@@ -165,7 +165,7 @@ export function* setupListeners(web3wallet) {
  * the current client.
  */
 export function* clearSessions() {
-  const { web3wallet } = yield select((state) => state.walletConnect);
+  const { web3wallet } = yield select((state) => state.walletConnect.client);
 
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
   for (const key of Object.keys(activeSessions)) {
@@ -189,7 +189,7 @@ export function* onSessionRequest(action) {
   const { payload } = action;
   const { params } = payload;
 
-  const { web3wallet } = yield select((state) => state.walletConnect);
+  const { web3wallet } = yield select((state) => state.walletConnect.client);
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
   const requestSession = activeSessions[payload.topic];
   if (!requestSession) {
@@ -238,7 +238,7 @@ export function* onSessionRequest(action) {
  */
 export function* onSignMessageRequest(action) {
   const data = action.payload;
-  const { web3wallet } = yield select((state) => state.walletConnect);
+  const { web3wallet } = yield select((state) => state.walletConnect.client);
 
   const onAcceptAction = { type: 'WALLET_CONNECT_ACCEPT' };
   const onRejectAction = { type: 'WALLET_CONNECT_REJECT' };
@@ -302,7 +302,7 @@ export function* onSignMessageRequest(action) {
  * can clear all current sessions.
  */
 export function* onWalletReset() {
-  const { web3wallet } = yield select((state) => state.walletConnect);
+  const { web3wallet } = yield select((state) => state.walletConnect.client);
   if (!web3wallet) {
     // Do nothing, wallet connect might not have been initialized yet
     return;
@@ -318,7 +318,7 @@ export function* onWalletReset() {
  */
 export function* onSessionProposal(action) {
   const { id, params } = action.payload;
-  const { web3wallet } = yield select((state) => state.walletConnect);
+  const { web3wallet } = yield select((state) => state.walletConnect.client);
 
   const wallet = yield select((state) => state.wallet);
   const firstAddress = wallet.getAddressAtIndex(0);
@@ -383,7 +383,7 @@ export function* onSessionProposal(action) {
  * a QR Code
  */
 export function* onUriInputted(action) {
-  const { web3wallet, core } = yield select((state) => state.walletConnect);
+  const { web3wallet, core } = yield select((state) => state.walletConnect.client);
 
   if (!web3wallet) {
     throw new Error('Wallet connect instance is new and QRCode was read');
@@ -419,7 +419,7 @@ export function* featureToggleUpdateListener() {
  * Sends a disconnect session RPC message to the connected cloud server
  */
 export function* onCancelSession(action) {
-  const { web3wallet } = yield select((state) => state.walletConnect);
+  const { web3wallet } = yield select((state) => state.walletConnect.client);
 
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
 
