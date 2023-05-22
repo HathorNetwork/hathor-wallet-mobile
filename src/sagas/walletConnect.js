@@ -321,8 +321,7 @@ export function* onSessionProposal(action) {
   const { web3wallet } = yield select((state) => state.walletConnect);
 
   const wallet = yield select((state) => state.wallet);
-  const addresses = wallet.newAddresses;
-  const firstAddress = addresses[0].address;
+  const firstAddress = wallet.getAddressAtIndex(0);
 
   const data = {
     icon: get(params, 'proposer.metadata.icons[0]', null),
