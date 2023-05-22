@@ -339,12 +339,6 @@ const reducer = (state = initialState, action) => {
       return onSetWalletConnectModal(state, action);
     case types.SET_WALLET_CONNECT_SESSIONS:
       return onSetWalletConnectSessions(state, action);
-    case types.SET_UNLEASH_CLIENT:
-      return onSetUnleashClient(state, action);
-    case types.SET_FEATURE_TOGGLES:
-      return onSetFeatureToggles(state, action);
-    case types.FEATURE_TOGGLE_INITIALIZED:
-      return onFeatureToggleInitialized(state);
     default:
       return state;
   }
@@ -1042,23 +1036,21 @@ export const onSetWalletConnect = (state, { payload }) => ({
 /**
  * @param {Object} action.payload The wallet connect modal options
  */
-export const onSetWalletConnectModal = (state, { payload }) => {
-  console.log('Will set: ', payload);
-  return {
-    ...state,
-    walletConnectModal: {
-      ...state.walletConnectModal,
-      ...payload,
-    },
-  };
-};
+export const onSetWalletConnectModal = (state, { payload }) => ({
+  ...state,
+  walletConnectModal: {
+    ...state.walletConnectModal,
+    ...payload,
+  },
+});
 
-export const onSetWalletConnectSessions = (state, { payload }) => {
-  return {
-    ...state,
-    walletConnectSessions: payload,
-  };
-};
+/**
+ * @param {Object} action.payload The wallet connect sessions to store
+ */
+export const onSetWalletConnectSessions = (state, { payload }) => ({
+  ...state,
+  walletConnectSessions: payload,
+});
 
 const saga = createSagaMiddleware();
 const middlewares = [

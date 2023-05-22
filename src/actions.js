@@ -153,6 +153,9 @@ export const hideWalletConnectModal = () => ({
   payload: { show: false },
 });
 
+/*
+ * sessionKey {string} The symKey of the connected Session
+ */
 export const walletConnectCancelSession = (sessionKey) => ({
   type: types.WC_CANCEL_SESSION,
   payload: sessionKey,
