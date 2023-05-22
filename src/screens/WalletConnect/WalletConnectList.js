@@ -54,7 +54,7 @@ const style = StyleSheet.create({
     marginLeft: 16,
   },
   dataWrapper: {
-    flexDirection: 'column', 
+    flexDirection: 'column',
     marginLeft: 16,
     marginRight: 16,
     marginTop: 16,
@@ -106,7 +106,6 @@ export default function WalletConnectList({ navigation }) {
   );
 
   const onLongPress = (sessionKey) => {
-    console.log('longe press:', sessionKey);
     Alert.alert(t`End session`, t`This will disconnect the session.`, [
       {
         text: t`End`,
