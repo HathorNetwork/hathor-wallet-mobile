@@ -5,9 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import {
+  Keyboard,
   KeyboardAvoidingView,
   SafeAreaView,
   View,
@@ -19,15 +20,12 @@ import SimpleInput from '../../components/SimpleInput';
 import NewHathorButton from '../../components/NewHathorButton';
 import { walletConnectQRCodeRead } from '../../actions';
 import { getKeyboardAvoidingViewTopDistance } from '../../utils';
-import { useState } from 'react';
 
 export default function WalletConnectList({ navigation }) {
-  const [errorMessage, setErrorMessage] = useState('');
   const [configString, setConfigString] = useState('');
 
   const dispatch = useDispatch();
 
-  const onConfigStringChange = () => {};
   const onButtonPress = () => {
     dispatch(walletConnectQRCodeRead(configString));
     navigation.navigate('WalletConnectList');
@@ -48,7 +46,6 @@ export default function WalletConnectList({ navigation }) {
               autoFocus
               multiline
               onChangeText={setConfigString}
-              error={errorMessage}
               value={configString}
               returnKeyType='done'
               enablesReturnKeyAutomatically
@@ -58,7 +55,7 @@ export default function WalletConnectList({ navigation }) {
           </View>
           <NewHathorButton
             title={t`Connect`}
-            disabled={configString === '' || errorMessage !== ''}
+            disabled={configString === ''}
             onPress={onButtonPress}
           />
         </View>
