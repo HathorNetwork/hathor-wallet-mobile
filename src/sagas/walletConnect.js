@@ -139,6 +139,7 @@ export function* setupListeners(web3wallet) {
     return () => {
       web3wallet.removeListener('session_request', listener);
       web3wallet.removeListener('session_proposal', listener);
+      web3wallet.removeListener('session_delete', listener);
     };
   });
 
