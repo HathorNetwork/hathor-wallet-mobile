@@ -34,6 +34,7 @@ import {
   setWalletConnect,
   setWalletConnectModal,
   setWalletConnectSessions,
+  onExceptionCaptured,
 } from '../actions';
 import { checkForFeatureFlag } from './helpers';
 
@@ -93,7 +94,7 @@ function* init() {
     yield take(types.RESET_WALLET);
 
     yield cancel();
-  } catch(error) {
+  } catch (error) {
     console.error('Error loading wallet connect', error);
     yield put(onExceptionCaptured(error));
   }
@@ -160,9 +161,9 @@ export function* clearSessions() {
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
   for (const key of Object.keys(activeSessions)) {
     yield call(() => web3wallet.disconnectSession({
-      topic: activeSessions[key].topic, 
+      topic: activeSessions[key].topic,
       reason: {
-        code: USER_DISCONNECTED,
+        code: ERROR_CODES.USER_DISCONNECTED,
         message: '',
       },
     }));
@@ -190,7 +191,7 @@ export function* onSessionRequest(action) {
     description: get(requestSession.peer, 'metadata.description', ''),
   };
 
-  switch(params.request.method) {
+  switch (params.request.method) {
     case 'hathor_signMessage':
       yield put({
         type: 'SIGN_MESSAGE_REQUEST',
@@ -201,7 +202,7 @@ export function* onSessionRequest(action) {
           message: get(params, 'request.params.message'),
         }
       });
-    break;
+      break;
     default:
       yield call(() => web3wallet.respondSessionRequest({
         topic: payload.topic,
@@ -209,12 +210,12 @@ export function* onSessionRequest(action) {
           id: payload.id,
           jsonrpc: '2.0',
           error: {
-            code: USER_REJECTED_METHOD,
+            code: ERROR_CODES.USER_REJECTED_METHOD,
             message: 'Rejected by the user',
           },
         },
       }));
-    break;
+      break;
   }
 }
 
@@ -241,12 +242,12 @@ export function* onSignMessageRequest(action) {
   try {
     if (!accept) {
       yield call(() => web3wallet.respondSessionRequest({
-        topic: payload.topic,
+        topic: data.topic,
         response: {
-          id: payload.id,
+          id: data.id,
           jsonrpc: '2.0',
           error: {
-            code: USER_REJECTED,
+            code: ERROR_CODES.USER_REJECTED,
             message: 'Rejected by the user',
           },
         },
@@ -273,7 +274,7 @@ export function* onSignMessageRequest(action) {
       topic: data.topic,
       response,
     }));
-  } catch(error) {
+  } catch (error) {
     console.log('Captured error on signMessage: ', error);
     yield put(onExceptionCaptured(error));
   }
@@ -325,7 +326,7 @@ export function* onSessionProposal(action) {
     yield call(() => web3wallet.rejectSession({
       id: params.id,
       reason: {
-        code: USER_REJECTED,
+        code: ERROR_CODES.USER_REJECTED,
         message: 'User rejected the session',
       },
     }));
@@ -346,7 +347,7 @@ export function* onSessionProposal(action) {
     }));
 
     yield call(refreshActiveSessions);
-  } catch(error) {
+  } catch (error) {
     console.error('Error on sessionProposal: ', error);
     yield put(onExceptionCaptured(error));
   }
@@ -363,8 +364,8 @@ export function* onQrCodeRead(action) {
 
   try {
     yield call(() => core.pairing.pair({ uri: payload }));
-  } catch(error) {
-    console.error('Error pairing with QrCode: ', error); 
+  } catch (error) {
+    console.error('Error pairing with QrCode: ', error);
     yield put(onExceptionCaptured(error));
   }
 }
@@ -391,9 +392,9 @@ export function* onCancelSession(action) {
   }
 
   yield call(() => web3wallet.disconnectSession({
-    topic: activeSessions[action.payload].topic, 
+    topic: activeSessions[action.payload].topic,
     reason: {
-      code: USER_DISCONNECTED,
+      code: ERROR_CODES.USER_DISCONNECTED,
       message: 'User cancelled the session',
     },
   }));

@@ -18,11 +18,13 @@ const Button = ({ onPress, title, highlight }) => (
     style={[
       styles.button,
       highlight ? styles.buttonHighlight : null,
-    ]}>
+    ]}
+  >
     <Text style={[
       styles.buttonText,
       highlight ? styles.buttonTextHighlight : null,
-    ]}>
+    ]}
+    >
       {title}
     </Text>
   </TouchableOpacity>
@@ -53,7 +55,7 @@ export const SignMessageModal = ({
   };
 
   return (
-    <Modal animationType="fade" transparent={true} visible={true}>
+    <Modal animationType='fade' transparent visible>
       <View style={styles.modalContainer}>
         <View style={styles.modalBox}>
           <Image style={styles.modalImage} source={{ uri: icon }} />
@@ -80,7 +82,7 @@ export const SignMessageModal = ({
       </View>
     </Modal>
   );
-}
+};
 
 export const ConnectModal = ({
   onAcceptAction,
@@ -145,18 +147,18 @@ export default () => {
   };
 
   const getModal = (type) => {
-    switch(type) {
+    switch (type) {
       case WalletConnectModalTypes.CONNECT:
-        return <ConnectModal { ...walletConnectModal } onDismiss={onDismiss} />
+        return <ConnectModal {...walletConnectModal} onDismiss={onDismiss} />;
       case WalletConnectModalTypes.SIGN_MESSAGE:
-        return <SignMessageModal { ...walletConnectModal } onDismiss={onDismiss} />
+        return <SignMessageModal {...walletConnectModal} onDismiss={onDismiss} />;
       default:
         return null;
     }
-  }
+  };
 
   return getModal(walletConnectModal.type);
-}
+};
 
 const styles = StyleSheet.create({
   modalContainer: {
