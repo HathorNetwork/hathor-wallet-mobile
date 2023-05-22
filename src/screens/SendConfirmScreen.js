@@ -166,7 +166,7 @@ class SendConfirmScreen extends React.Component {
           </View>
           <View style={{ justifyContent: 'space-between'}}>
             <NewHathorButton
-              title={t`Approve Send`}
+              title={t`Send`}
               onPress={this.onSendPress}
               // disable while modal is visible
               disabled={this.state.modal !== null} />
