@@ -18,7 +18,7 @@ import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
 import SimpleInput from '../../components/SimpleInput';
 import NewHathorButton from '../../components/NewHathorButton';
-import { walletConnectQRCodeRead } from '../../actions';
+import { walletConnectUriInputted } from '../../actions';
 import { getKeyboardAvoidingViewTopDistance } from '../../utils';
 
 export default function WalletConnectList({ navigation }) {
@@ -27,7 +27,7 @@ export default function WalletConnectList({ navigation }) {
   const dispatch = useDispatch();
 
   const onButtonPress = () => {
-    dispatch(walletConnectQRCodeRead(configString));
+    dispatch(walletConnectUriInputted(configString));
     navigation.navigate('WalletConnectList');
   };
 

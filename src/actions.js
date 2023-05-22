@@ -106,7 +106,7 @@ export const types = {
   SET_WALLET_CONNECT_MODAL: 'SET_WALLET_CONNECT_MODAL',
   SET_WALLET_CONNECT_SESSIONS: 'SET_WALLET_CONNECT_SESSIONS',
   SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
-  WC_QRCODE_READ: 'WC_QRCODE_READ',
+  WC_URI_INPUTTED: 'WC_URI_INPUTTED',
   WC_CANCEL_SESSION: 'WC_CANCEL_SESSION',
 };
 
@@ -751,8 +751,8 @@ export const setWalletConnect = (walletConnect) => ({
  *
  * data {string} The WalletConnect v2 URI
  */
-export const walletConnectQRCodeRead = (data) => ({
-  type: types.WC_QRCODE_READ,
+export const walletConnectUriInputted = (data) => ({
+  type: types.WC_URI_INPUTTED,
   payload: data,
 });
 

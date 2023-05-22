@@ -14,13 +14,13 @@ import QRCodeReader from '../../components/QRCodeReader';
 import OfflineBar from '../../components/OfflineBar';
 import HathorHeader from '../../components/HathorHeader';
 import SimpleButton from '../../components/SimpleButton';
-import { walletConnectQRCodeRead } from '../../actions';
+import { walletConnectUriInputted } from '../../actions';
 
 export default function WalletConnectScan({ navigation }) {
   const dispatch = useDispatch();
 
   const onSuccess = (e) => {
-    dispatch(walletConnectQRCodeRead(e.data));
+    dispatch(walletConnectUriInputted(e.data));
 
     navigation.navigate('WalletConnectList');
 

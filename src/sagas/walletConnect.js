@@ -108,6 +108,9 @@ export function* refreshActiveSessions() {
   yield put(setWalletConnectSessions(activeSessions));
 }
 
+/**
+ * @param {Web3Wallet} web3wallet The WalletConnect web3wallet instance
+ */
 export function* setupListeners(web3wallet) {
   const channel = eventChannel((emitter) => {
     const listener = (state) => emitter(state);
@@ -156,6 +159,10 @@ export function* setupListeners(web3wallet) {
   }
 }
 
+/**
+ * This saga will publish on the cloud server a RPC message disconnecting
+ * the current client.
+ */
 export function* clearSessions() {
   const { web3wallet } = yield select((state) => state.walletConnect);
 
@@ -173,6 +180,10 @@ export function* clearSessions() {
   yield call(refreshActiveSessions);
 }
 
+/**
+ * This saga will be called (dispatched from the event listener) when a session
+ * is requested from a dApp
+ */
 export function* onSessionRequest(action) {
   const { payload } = action;
   const { params } = payload;
@@ -220,6 +231,10 @@ export function* onSessionRequest(action) {
   }
 }
 
+/**
+ * This saga will be called (dispatched from the event listener) when a sign
+ * message RPC is published from a dApp
+ */
 export function* onSignMessageRequest(action) {
   const data = action.payload;
   const { web3wallet } = yield select((state) => state.walletConnect);
@@ -281,6 +296,10 @@ export function* onSignMessageRequest(action) {
   }
 }
 
+/**
+ * Listens for the wallet reset action, dispatched from the wallet sagas so we
+ * can clear all current sessions.
+ */
 export function* onWalletReset() {
   const { web3wallet } = yield select((state) => state.walletConnect);
   if (!web3wallet) {
@@ -291,6 +310,11 @@ export function* onWalletReset() {
   yield call(clearSessions);
 }
 
+/**
+ * This saga will be called (dispatched from the event listener) when a session
+ * proposal RPC is sent from a dApp. This happens after the client scans a wallet
+ * connect URI
+ */
 export function* onSessionProposal(action) {
   const { id, params } = action.payload;
   const { web3wallet } = yield select((state) => state.walletConnect);
@@ -354,7 +378,11 @@ export function* onSessionProposal(action) {
   }
 }
 
-export function* onQrCodeRead(action) {
+/**
+ * This saga is fired when a URI is inputted either manually or by scanning
+ * a QR Code
+ */
+export function* onUriInputted(action) {
   const { web3wallet, core } = yield select((state) => state.walletConnect);
 
   if (!web3wallet) {
@@ -371,6 +399,10 @@ export function* onQrCodeRead(action) {
   }
 }
 
+/**
+ * This saga listens for the feature toggles provider and disables walletconnect
+ * if it was enabled and is now disabled
+ */
 export function* featureToggleUpdateListener() {
   while (true) {
     const oldWalletConnectEnabled = yield call(isWalletConnectEnabled);
@@ -383,6 +415,9 @@ export function* featureToggleUpdateListener() {
   }
 }
 
+/**
+ * Sends a disconnect session RPC message to the connected cloud server
+ */
 export function* onCancelSession(action) {
   const { web3wallet } = yield select((state) => state.walletConnect);
 
@@ -421,6 +456,6 @@ export function* saga() {
     takeEvery('WC_CANCEL_SESSION', onCancelSession),
     takeEvery(types.RESET_WALLET, onWalletReset),
     takeLatest('SIGN_MESSAGE_REQUEST', onSignMessageRequest),
-    takeLatest(types.WC_QRCODE_READ, onQrCodeRead),
+    takeLatest(types.WC_URI_INPUTTED, onUriInputted),
   ]);
 }
