@@ -45,16 +45,16 @@ class SendScanQRCode extends React.Component {
       this.showAlertError(qrcode.error);
     } else if (qrcode.token && qrcode.amount) {
       if (await this.props.wallet.storage.isTokenRegistered(qrcode.token.uid)) {
-        // Wallet does not have the selected token
-        const tokenLabel = getTokenLabel(qrcode.token);
-        this.showAlertError(t`You don't have the requested token [${tokenLabel}]`);
-      } else {
         const params = {
           address: qrcode.address,
           token: qrcode.token,
           amount: qrcode.amount,
         };
         this.props.navigation.navigate('SendConfirmScreen', params);
+      } else {
+        // Wallet does not have the selected token
+        const tokenLabel = getTokenLabel(qrcode.token);
+        this.showAlertError(t`You don't have the requested token [${tokenLabel}]`);
       }
     } else {
       const params = {

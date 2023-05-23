@@ -79,7 +79,11 @@ class UnregisterToken extends React.Component {
     const promise = this.props.storage.unregisterToken(tokenUnregister).then(async () => {
       const newTokens = [];
       for await (const token of this.props.storage.getRegisteredTokens()) {
-        newTokens.push(token);
+        newTokens.push({
+          uid: token.uid,
+          symbol: token.symbol,
+          name: token.name,
+        });
       }
       return newTokens;
     });

@@ -45,8 +45,7 @@ export const sentryReportError = (error, loadedAccessData) => {
   });
   Sentry.withScope((scope) => {
     scope.setExtra('App version', JSON.stringify(VersionNumber));
-    scope.setExtra('Access information', removePersonalData(STORE.getAccessData()));
-    scope.setExtra('Loaded access information', removePersonalData(loadedAccessData));
+    scope.setExtra('Access information', removePersonalData(loadedAccessData));
     Sentry.captureException(error);
   });
 };

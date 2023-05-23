@@ -55,7 +55,7 @@ class AsyncStorageStore {
     const keys = await AsyncStorage.getAllKeys() || [];
     this.hathorMemoryStorage = {};
     if (onlyWalletKeys) {
-      await AsyncStorage.multiRemove(keys.filter((key) => key.startsWith('wallet')));
+      await AsyncStorage.multiRemove(keys.filter((key) => key.startsWith('wallet:')));
     } else {
       await AsyncStorage.multiRemove(keys);
     }
