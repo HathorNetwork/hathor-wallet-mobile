@@ -157,7 +157,6 @@ class PinScreen extends React.Component {
       // This will only delete keys with the wallet prefix, so we don't delete
       // the biometry keys and new data.
       await STORE.clearItems(true);
-
     }
     // We have finished the migration so we can set the storage version to the most recent one.
     STORE.updateStorageVersion();

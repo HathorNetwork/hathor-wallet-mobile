@@ -16,7 +16,7 @@ import {
   race,
   take,
 } from 'redux-saga/effects';
-import { SENTRY_DSN, STORE } from '../constants';
+import { SENTRY_DSN } from '../constants';
 import { showErrorModal } from '../actions';
 
 /**
