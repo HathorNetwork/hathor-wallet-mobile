@@ -1,10 +1,8 @@
 import {
   HathorWalletServiceWallet,
   PushNotification as pushLib,
-  wallet as walletUtil,
   Network,
   config,
-  tokens,
 } from '@hathor/wallet-lib';
 import moment from 'moment';
 import {
@@ -346,8 +344,9 @@ export function* loadWallet() {
     const network = new Network(NETWORK);
 
     const pin = yield call(showPinScreenForResult, dispatch);
+    const seed = yield STORE.getWalletWords(pin);
     walletService = new HathorWalletServiceWallet({
-      seed: walletUtil.getWalletWords(pin),
+      seed,
       network,
       enableWs: false,
     });
@@ -432,7 +431,7 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
     });
 
     if (success) {
-      const enabledAt = !!enabled ? Date.now() : 0;
+      const enabledAt = enabled ? Date.now() : 0;
       STORE.setItem(pushNotificationKey.enabledAt, enabledAt);
 
       const payload = {
@@ -530,7 +529,7 @@ export function* checkOpenPushNotification() {
 export const getTxDetails = async (wallet, txId) => {
   // Tx not found triggers the retry modal for tx details
   const buildTxDetailsNotFound = () => ({ isTxFound: false, txId });
-  const buildTxDetailsFound = (tx, txTokens) => ({
+  const buildTxDetailsFound = async (tx, txTokens) => ({
     isTxFound: true,
     txId,
     tx: {
@@ -538,13 +537,13 @@ export const getTxDetails = async (wallet, txId) => {
       timestamp: tx.timestamp,
       voided: tx.voided,
     },
-    tokens: txTokens.map((each) => ({
+    tokens: await Promise.all(txTokens.map(async (each) => ({
       uid: each.tokenId,
       name: each.tokenName,
       symbol: each.tokenSymbol,
       balance: each.balance,
-      isRegistered: !!tokens.tokenExists(each.tokenId),
-    })),
+      isRegistered: await wallet.storage.isTokenRegistered(each.tokenId),
+    }))),
   });
 
   try {

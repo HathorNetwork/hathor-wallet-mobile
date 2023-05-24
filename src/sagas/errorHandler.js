@@ -5,12 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import hathorLib from '@hathor/wallet-lib';
 import * as Sentry from '@sentry/react-native';
 import VersionNumber from 'react-native-version-number';
 import {
+  select,
   takeLatest,
   all,
+  call,
   put,
   race,
   take,
@@ -21,15 +22,9 @@ import { showErrorModal } from '../actions';
 /**
  * Send error to Sentry
  */
-export const sentryReportError = (error) => {
-  Sentry.init({
-    dsn: SENTRY_DSN,
-  });
-  Sentry.withScope((scope) => {
-    scope.setExtra('App version', JSON.stringify(VersionNumber));
+export const sentryReportError = (error, loadedAccessData) => {
+  const removePersonalData = (accessData) => {
     const data = [];
-    const accessData = hathorLib.wallet.getWalletAccessData();
-
     if (accessData) {
       for (const [key, value] of Object.entries(accessData)) {
         const obj = {
@@ -42,8 +37,15 @@ export const sentryReportError = (error) => {
         data.push(obj);
       }
     }
+    return data;
+  };
 
-    scope.setExtra('Access information', data);
+  Sentry.init({
+    dsn: SENTRY_DSN,
+  });
+  Sentry.withScope((scope) => {
+    scope.setExtra('App version', JSON.stringify(VersionNumber));
+    scope.setExtra('Access information', removePersonalData(loadedAccessData));
     Sentry.captureException(error);
   });
 };
@@ -57,7 +59,9 @@ export function* errorModalHandler(action) {
   const { isFatal, error } = action.payload;
 
   if (reportError) {
-    sentryReportError(error);
+    const wallet = yield select((state) => state.wallet);
+    const accessData = yield call(() => wallet.getAccessData().catch(() => null));
+    sentryReportError(error, accessData);
   }
 
   if (isFatal) {

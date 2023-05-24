@@ -9,9 +9,7 @@
 import 'intl';
 import 'intl/locale-data/jsonp/en';
 
-// This workaround was in App.js before
-// however this redux file is loaded before and we need the hathorLib here
-import hathorLib from '@hathor/wallet-lib';
+import { Network } from '@hathor/wallet-lib';
 import AsyncStorageStore from './store';
 import {
   _IS_MULTI_TOKEN as IS_MULTI_TOKEN,
@@ -21,11 +19,6 @@ import {
 } from './config';
 
 export const STORE = new AsyncStorageStore();
-// The storage is needed in the whole wallet, not only when we have a wallet object.
-// Because of that we need to have a global store in the lib
-// (we have some keys that are used in the wallet, e.g. 'loaded').
-// We should do a refactor later to remove this dependency
-hathorLib.storage.setStore(STORE);
 
 /**
  * This is the environment stage that will be used to load the unleash feature flags.
@@ -37,6 +30,14 @@ export const STAGE = 'mainnet';
  * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
  */
 export const NETWORK = 'mainnet';
+
+/**
+ * This is the hathor-lib network instance for NETWORK_NAME.
+ * This is meant to be easier to use with methods that expect a network object
+ * instead of a network name.
+ * @type {Network}
+ */
+export const networkObj = new Network(NETWORK);
 
 /**
  * Default tokens for the wallet (to start on redux)

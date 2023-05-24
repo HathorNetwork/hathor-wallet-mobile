@@ -89,8 +89,8 @@ class NewPaymentRequest extends React.Component {
     get(this.state, 'token.uid')
   )
 
-  createPaymentRequest = () => {
-    const { address } = this.props.wallet.getCurrentAddress();
+  createPaymentRequest = async () => {
+    const { address } = await this.props.wallet.getCurrentAddress();
     let amount;
     if (isTokenNFT(this.getTokenUID(), this.props.tokenMetadata)) {
       amount = parseInt(this.state.amount, 10);

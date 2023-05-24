@@ -45,9 +45,9 @@ class PaymentRequestDetail extends React.Component {
     this.modalConfirmation = React.createRef();
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     // When we create a new payment request we update the address for a new one
-    this.props.wallet.getNextAddress();
+    await this.props.wallet.getNextAddress();
   }
 
   componentDidUpdate(prevProps) {

@@ -12,8 +12,9 @@ import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
-import { PRIMARY_COLOR, KEYCHAIN_USER } from './constants';
+import { PRIMARY_COLOR, KEYCHAIN_USER, STORE, networkObj } from './constants';
 import { TxHistory } from './models';
+
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
@@ -71,16 +72,16 @@ export const getAmountParsed = (text) => {
 export const getTokenLabel = (token) => `${token.name} (${token.symbol})`;
 
 export const setSupportedBiometry = (type) => {
-  hathorLib.storage.setItem('mobile:supportedBiometry', type);
+  STORE.setItem('mobile:supportedBiometry', type);
 };
 
-export const getSupportedBiometry = () => hathorLib.storage.getItem('mobile:supportedBiometry');
+export const getSupportedBiometry = () => STORE.getItem('mobile:supportedBiometry');
 
 export const setBiometryEnabled = (value) => {
-  hathorLib.storage.setItem('mobile:isBiometryEnabled', value);
+  STORE.setItem('mobile:isBiometryEnabled', value);
 };
 
-export const isBiometryEnabled = () => hathorLib.storage.getItem('mobile:isBiometryEnabled') || false;
+export const isBiometryEnabled = () => STORE.getItem('mobile:isBiometryEnabled') || false;
 
 /**
  * Convert a string into a JSX. It receives a text and a map of functions. The text
@@ -133,8 +134,8 @@ export const str2jsx = (text, fnMap) => {
    */
 export const validateAddress = (address) => {
   try {
-    const addressBytes = hathorLib.transaction.decodeAddress(address);
-    hathorLib.transaction.validateAddress(address, addressBytes);
+    const addressObj = hathorLib.Address(address, { network: networkObj });
+    addressObj.validateAddress();
     return { isValid: true };
   } catch (e) {
     if (e instanceof TypeError) {
@@ -176,8 +177,7 @@ export const parseQRCode = (data) => {
     };
   }
   // complete qr code
-  const { token } = qrcode;
-  const { amount } = qrcode;
+  const { token, amount } = qrcode;
   if (token && !amount) {
     return {
       isValid: false,
@@ -260,17 +260,6 @@ export const getLightBackground = (alpha) => {
 };
 
 /**
- * Get the words saved in storage from the user PIN
- *
- * @params {string} pin User PIN to get encrypted words
- *
- * @return {string} Wallet seed
- */
-export const getWalletWords = (pin) => (
-  hathorLib.wallet.getWalletWords(pin)
-);
-
-/**
  * Render value to integer or decimal
  *
  * @params {number} amount Amount to render
@@ -280,10 +269,10 @@ export const getWalletWords = (pin) => (
  */
 export const renderValue = (amount, isInteger) => {
   if (isInteger) {
-    return hathorLib.helpersUtils.prettyIntegerValue(amount);
+    return hathorLib.numbersUtils.prettyIntegerValue(amount);
   }
 
-  return hathorLib.helpersUtils.prettyValue(amount);
+  return hathorLib.numbersUtils.prettyValue(amount);
 };
 
 /**
@@ -310,22 +299,29 @@ export const setKeychainPin = (pin) => {
 };
 
 /**
- * @params {string} oldPin
- * @params {string} newPin
+ * @param {HathorWallet} wallet
+ * @param {string} oldPin
+ * @param {string} newPin
  *
  * @return {boolean} Wether the change password was successful
  */
-export const changePin = (oldPin, newPin) => {
-  const success = hathorLib.wallet.changePinAndPassword({
-    oldPin,
-    newPin,
-    oldPassword: oldPin,
-    newPassword: newPin,
-  });
-  if (success) {
-    setKeychainPin(newPin);
+export const changePin = async (wallet, oldPin, newPin) => {
+  const isPinValid = await wallet.checkPinAndPassword(oldPin, oldPin);
+  if (!isPinValid) {
+    return false;
   }
-  return success;
+
+  try {
+    // All of these are checked above so it should not fail
+    await wallet.storage.changePin(oldPin, newPin);
+    // Will throw if the access data does not have the seed.
+    await wallet.storage.changePassword(oldPin, newPin);
+  } catch (err) {
+    return false;
+  }
+
+  setKeychainPin(newPin);
+  return true;
 };
 
 /**

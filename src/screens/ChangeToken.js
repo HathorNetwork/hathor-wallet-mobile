@@ -23,6 +23,10 @@ const mapStateToProps = (state) => ({
   tokenMetadata: state.tokenMetadata,
 });
 
+/**
+ * @class
+ * @classdesc A component to select a token from the list of the wallet tokens with balance
+ */
 class ChangeToken extends React.Component {
   constructor(props) {
     super(props);

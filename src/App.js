@@ -238,6 +238,7 @@ const mapStateToProps = (state) => ({
   isScreenLocked: state.lockScreen,
   isResetOnScreenLocked: state.resetOnLockScreen,
   walletStartState: state.walletStartState,
+  wallet: state.wallet,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -312,7 +313,7 @@ class _AppStackWrapper extends React.Component {
     const version = DeviceInfo.getVersion();
     // We use this string to parse the version from user agent
     // in some of our services, so changing this might break another service
-    hathorLib.config.setUserAgent(`Hathor Wallet Mobile / ${version}`);
+    this.props.wallet.storage.config.setUserAgent(`Hathor Wallet Mobile / ${version}`);
     // set notification foreground listener
     this.setNotifeeForegroundListener();
   }
@@ -349,9 +350,19 @@ class _AppStackWrapper extends React.Component {
 
   /**
    * Update tokens on redux with data from storage, so user doesn't need to add the tokens again
+   * These tokens are known as 'registered' tokens
    */
-  updateReduxTokens = () => {
-    this.props.setTokens(hathorLib.tokens.getTokens());
+  updateReduxTokens = async () => {
+    const tokens = [];
+    for await (const tokenData of this.props.wallet.storage.getRegisteredTokens()) {
+      // We need to filter the token data to remove the metadata from this list (e.g. balance)
+      tokens.push({
+        uid: tokenData.uid,
+        symbol: tokenData.symbol,
+        name: tokenData.name,
+      });
+    }
+    this.props.setTokens(tokens);
   }
 
   /**

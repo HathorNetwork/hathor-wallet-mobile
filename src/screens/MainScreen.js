@@ -22,7 +22,7 @@ import { t } from 'ttag';
 import { get } from 'lodash';
 
 import moment from 'moment';
-import hathorLib from '@hathor/wallet-lib';
+import { constants as hathorConstants } from '@hathor/wallet-lib';
 import IconTabBar from '../icon-font';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
@@ -111,7 +111,7 @@ class MainScreen extends React.Component {
   }
 
   tokenInfo = () => {
-    if (this.props.selectedToken.uid !== hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
+    if (this.props.selectedToken.uid !== hathorConstants.HATHOR_TOKEN_CONFIG.uid) {
       this.props.navigation.navigate('TokenDetail');
     }
   }
@@ -200,7 +200,7 @@ class MainScreen extends React.Component {
     };
 
     const renderRightElement = () => {
-      if (this.props.selectedToken.uid !== hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
+      if (this.props.selectedToken.uid !== hathorConstants.HATHOR_TOKEN_CONFIG.uid) {
         return (
           <SimpleButton
             icon={infoIcon}

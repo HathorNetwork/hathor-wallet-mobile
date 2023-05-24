@@ -10,8 +10,6 @@ import {
   HathorWallet,
   HathorWalletServiceWallet,
   Network,
-  wallet as walletUtil,
-  tokens as tokensUtils,
   constants as hathorLibConstants,
   config,
 } from '@hathor/wallet-lib';
@@ -85,12 +83,20 @@ export const WALLET_STATUS = {
 
 export const IGNORE_WS_TOGGLE_FLAG = 'featureFlags:ignoreWalletServiceFlag';
 
+/**
+ * Returns the value of the PUSH_NOTIFICATION_FEATURE_TOGGLE feature flag
+ * @returns {Generator<unknown, boolean>}
+ */
 export function* isPushNotificationEnabled() {
   const pushEnabled = yield call(checkForFeatureFlag, PUSH_NOTIFICATION_FEATURE_TOGGLE);
 
   return pushEnabled;
 }
 
+/**
+ * Returns a boolean indicating if we should use the wallet-service
+ * @returns {Generator<unknown, boolean>}
+ */
 export function* isWalletServiceEnabled() {
   const shouldIgnoreFlag = yield call(() => AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG));
 
@@ -120,9 +126,12 @@ export function* startWallet(action) {
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
 
-  // We don't want to clean access data since as if something goes
-  // wrong here, the stored words would be lost forever.
-  walletUtil.cleanLoadedData({ cleanAccessData: false });
+  // clean storage and metadata before starting the wallet
+  // this should be cleaned when stopping the wallet,
+  // but the wallet may be closed unexpectedly
+  const storage = STORE.getStorage();
+  yield storage.store.cleanMetadata();
+  yield storage.cleanStorage(true);
 
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
@@ -140,19 +149,20 @@ export function* startWallet(action) {
 
     let xpriv;
     if (fromXpriv) {
-      xpriv = walletUtil.getAcctPathXprivKey(pin);
+      xpriv = yield STORE.getAccountPathKey(pin);
     }
 
     wallet = new HathorWalletServiceWallet({
       requestPassword: showPinScreenForResult,
       seed: words,
-      network,
       xpriv,
+      network,
+      storage,
     });
   } else {
     let xpriv;
     if (fromXpriv) {
-      xpriv = walletUtil.getXprivKey(pin);
+      xpriv = yield STORE.getMainKey(pin);
     }
 
     const connection = new Connection({
@@ -160,10 +170,13 @@ export function* startWallet(action) {
       servers: ['https://mobile.wallet.hathor.network/v1a/'],
     });
 
+    // The default configuration will use a memory store
+    // We will save the access data on the persistent async storage
+    // To allow starting the wallet again
     const walletConfig = {
       seed: words,
       xpriv,
-      store: STORE,
+      storage,
       connection,
       beforeReloadCallback: () => {
         dispatch(onWalletReload());
@@ -203,11 +216,6 @@ export function* startWallet(action) {
       // Yield the same action so it will now load on the old facade
       yield put(action);
     }
-  }
-
-  walletUtil.storePasswordHash(pin);
-  if (!fromXpriv) {
-    walletUtil.storeEncryptedWords(words, pin);
   }
 
   setKeychainPin(pin);
@@ -281,16 +289,18 @@ export function* loadTokens() {
     yield call(fetchTokenData, customTokenUid);
   }
 
-  const registeredTokens = tokensUtils
-    .getTokens()
-    .reduce((acc, token) => {
-      // remove htr since we will always download the HTR token
-      if (token.uid === htrUid) {
-        return acc;
-      }
+  const wallet = yield select((state) => state.wallet);
 
-      return [...acc, token.uid];
-    }, []);
+  const registeredTokens = call(async () => {
+    const tokens = [];
+    for await (const token of wallet.storage.getRegisteredTokens()) {
+      // remove htr since we will always download the HTR token
+      if (token.uid === htrUid) continue;
+
+      tokens.push(token.uid);
+    }
+    return tokens;
+  });
 
   // We don't need to wait for the metadatas response, so we can just
   // spawn a new "thread" to handle it.
@@ -392,7 +402,7 @@ export function* featureToggleUpdateListener() {
 export function* listenForWalletReady(wallet) {
   const channel = eventChannel((emitter) => {
     const listener = (state) => emitter(state);
-    wallet.on('state', (state) => emitter(state));
+    wallet.on('state', listener);
 
     // Cleanup when the channel is closed
     return () => {
@@ -537,6 +547,8 @@ export function* setupWalletListeners(wallet) {
     }));
 
     return () => {
+      // XXX: Is this cleanup working?
+      // We do not use listener as the event handler
       wallet.conn.removeListener('best-block-update', listener);
       wallet.conn.removeListener('wallet-load-partial-update', listener);
       wallet.conn.removeListener('state', listener);
@@ -564,7 +576,7 @@ export function* setupWalletListeners(wallet) {
 }
 
 export function* loadPartialUpdate({ payload }) {
-  const transactions = Object.keys(payload.historyTransactions).length;
+  const transactions = payload.historyLength;
   const addresses = payload.addressesFound;
   yield put(updateLoadedData({ transactions, addresses }));
 }
@@ -653,17 +665,13 @@ export function* onResetWallet() {
   yield call(() => AsyncStorage.removeItem(IGNORE_WS_TOGGLE_FLAG));
 
   if (wallet) {
-    // wallet.stop() will remove all event listeners and call
-    // hathorLib.wallet.cleanWallet
-    wallet.stop({ cleanStorage: true });
-
+    yield call(() => wallet.stop({ cleanStorage: true, cleanAddresses: true }));
     return;
   }
 
   // Wallet was not initialized yet, this might happen if resetWallet
   // is called from the PinScreen. There is no event listeners to cleanup
-  // so we can call the cleanLoadedData method directly.
-  walletUtil.cleanLoadedData({ cleanAccessData: true });
+  yield call(() => STORE.clearItems(true));
 
   yield put(resetWalletSuccess());
 }
@@ -692,7 +700,7 @@ export function* onStartWalletFailed() {
 export function* refreshSharedAddress() {
   const wallet = yield select((state) => state.wallet);
 
-  const { address, index } = wallet.getCurrentAddress();
+  const { address, index } = yield call(() => wallet.getCurrentAddress());
 
   yield put(sharedAddressUpdate(address, index));
 }
