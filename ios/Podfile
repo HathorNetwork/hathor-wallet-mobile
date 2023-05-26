@@ -2,10 +2,14 @@ require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
 platform :ios, '11.0'
+install! 'cocoapods', :deterministic_uuids => false
 
 target 'HathorMobile' do
   # Don't change the order of any declaration!
   config = use_native_modules!
+
+  # Flags change depending on the env values.
+  flags = get_default_flags()
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -13,15 +17,18 @@ target 'HathorMobile' do
     # Hermes is the new javascript engine used by RN.
     # RN 0.68.0 has a better integration with hermes.
     # We should use it after the upgrade of RN.
-    :hermes_enabled => false
+    :hermes_enabled => flags[:hermes_enabled],
+    :fabric_enabled => flags[:fabric_enabled],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
-  
+
   # Firebase requires the usage of frameworks linked statically.
   # This means the firebase code will be compiled into the app binary.
   # A reason for this is to avoid compatibility issues with a 3rd paty dependency.
   # A consequence of it is a better performance.
   use_frameworks! :linkage => :static
-  
+
   # react-native-permissions uses dynamic frameworks by default.
   # However, we need the permissions right when the application initializes.
   # To match this constraint we need the frameworks linked statically,
@@ -64,13 +71,13 @@ target 'HathorMobile' do
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
   pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
-  
+
   # Firebase required dependency.
   # It contains native code to integrate with Google Services.
   # When the modular header feature is enabled, only used modules
   # are compiled within the app binary.
   pod 'GoogleUtilities', :modular_headers => true
-  
+
   post_install do |installer|
     react_native_post_install(installer)
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
