@@ -1,4 +1,4 @@
-package com.rndiffapp.newarchitecture;
+package com.hathormobile.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -19,9 +19,9 @@ import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.EmptyReactNativeConfig;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.rndiffapp.BuildConfig;
-import com.rndiffapp.newarchitecture.components.MainComponentsRegistry;
-import com.rndiffapp.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.hathormobile.BuildConfig;
+import com.hathormobile.newarchitecture.components.MainComponentsRegistry;
+import com.hathormobile.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 
