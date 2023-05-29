@@ -70,9 +70,10 @@ import {
   errorHandler,
   showPinScreenForResult,
   checkForFeatureFlag,
+  getRegisteredTokens,
 } from './helpers';
 import NavigationService from '../NavigationService';
-import { setKeychainPin, getRegisteredTokens } from '../utils';
+import { setKeychainPin } from '../utils';
 
 export const WALLET_STATUS = {
   NOT_STARTED: 'not_started',
@@ -153,7 +154,6 @@ export function* startWallet(action) {
       storage,
     });
   } else {
-
     const connection = new Connection({
       network: NETWORK, // app currently connects only to mainnet
       servers: ['https://mobile.wallet.hathor.network/v1a/'],

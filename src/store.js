@@ -14,6 +14,7 @@ import { NETWORK } from './constants';
 const ACCESS_DATA_KEY = 'asyncstorage:access';
 const STORE_VERSION_KEY = 'asyncstorage:version';
 
+/* eslint-disable class-methods-use-this */
 class HybridStore extends MemoryStore {
   /**
    * Save access data on our AsyncStorageStore.
@@ -34,6 +35,7 @@ class HybridStore extends MemoryStore {
     return STORE.getItem(ACCESS_DATA_KEY);
   }
 }
+/* eslint-enable class-methods-use-this */
 
 /**
  * We use AsyncStorage to persist access data when our app is closed since the
@@ -135,7 +137,7 @@ class AsyncStorageStore {
    */
   async _getAccessData() {
     const storage = this.getStorage();
-    return await storage.getAccessData();
+    return storage.getAccessData();
   }
 
   /**

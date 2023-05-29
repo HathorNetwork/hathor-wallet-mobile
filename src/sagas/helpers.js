@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
 import {
   put,
@@ -137,4 +138,31 @@ export const showPinScreenForResult = async (dispatch) => new Promise((resolve) 
 export function isUnlockScreen(action) {
   return action.type === types.SET_LOCK_SCREEN
     && action.payload === false;
+}
+
+/**
+ * Get registered tokens from the wallet instance.
+ * @param {HathorWallet} wallet
+ * @param {boolean} excludeHTR If we should exclude the HTR token.
+ * @returns {string[]}
+ */
+export async function getRegisteredTokens(wallet, excludeHTR = false) {
+  const htrUid = hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
+  const tokens = [];
+
+  // redux-saga generator magic does not work well with the "for await..of" syntax
+  // The asyncGenerator is not recognized as an iterable and it throws an exception
+  // So we must iterate manually, awaiting each "next" call
+  const iterator = wallet.storage.getRegisteredTokens();
+  let next = await iterator.next();
+  while (!next.done) {
+    const token = next.value;
+    if ((!excludeHTR) || token.uid !== htrUid) {
+      tokens.push(token.uid);
+    }
+    // eslint-disable-next-line no-await-in-loop
+    next = await iterator.next();
+  }
+
+  return tokens;
 }

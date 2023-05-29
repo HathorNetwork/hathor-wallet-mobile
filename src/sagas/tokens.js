@@ -127,7 +127,7 @@ function* fetchTokenHistory(action) {
     }
 
     const response = yield call(wallet.getTxHistory.bind(wallet), { token_id: tokenId });
-    const data = response.map(item => mapTokenHistory(item, tokenId));
+    const data = response.map((item) => mapTokenHistory(item, tokenId));
 
     yield put(tokenFetchHistorySuccess(tokenId, data));
   } catch (e) {
