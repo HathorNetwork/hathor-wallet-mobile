@@ -127,17 +127,7 @@ function* fetchTokenHistory(action) {
     }
 
     const response = yield call(wallet.getTxHistory.bind(wallet), { token_id: tokenId });
-    const data = [];
-    for (item of response) {
-      if (!item.balance) {
-        const tx = yield wallet.getTx(item.txId);
-        const balance = yield wallet.getTxBalance(tx);
-        item.balance = balance[tokenId];
-        data.push(mapTokenHistory({ ...item, balance: balance[tokenId] }, tokenId));
-      } else {
-        data.push(mapTokenHistory(item, tokenId));
-      }
-    }
+    const data = response.map(item => mapTokenHistory(item, tokenId));
 
     yield put(tokenFetchHistorySuccess(tokenId, data));
   } catch (e) {
