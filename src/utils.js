@@ -336,7 +336,7 @@ export const mapTokenHistory = (element, token) => {
     timestamp: element.timestamp,
     balance: element.balance,
     // in wallet service this comes as 0/1 and in the full node comes with true/false
-    voided: Boolean(element.voided),
+    isVoided: Boolean(element.voided),
     tokenUid: token
   };
   return new TxHistory(data);
