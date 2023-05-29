@@ -13,12 +13,12 @@ import {
   NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_DISABLED,
   NEW_TRANSACTION_RECEIVED_TITLE,
   pushNotificationKey,
-  STORE,
   PUSH_ACTION,
   PUSH_CHANNEL_TRANSACTION,
 } from '../constants';
 import { name as appName } from '../../app.json';
 import { renderValue } from '../utils';
+import { STORE } from '../store';
 
 /**
  * Persists the notification data from firebase message to be used when the app is opened.

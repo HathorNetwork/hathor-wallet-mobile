@@ -12,7 +12,8 @@ import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
-import { PRIMARY_COLOR, KEYCHAIN_USER, STORE, networkObj } from './constants';
+import { PRIMARY_COLOR, KEYCHAIN_USER, networkObj } from './constants';
+import { STORE } from './store';
 import { TxHistory } from './models';
 
 

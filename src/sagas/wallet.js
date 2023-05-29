@@ -32,7 +32,6 @@ import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
 import { get } from 'lodash';
 import {
-  STORE,
   DEFAULT_TOKEN,
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
   WALLET_SERVICE_MAINNET_BASE_URL,
@@ -40,6 +39,7 @@ import {
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
 } from '../constants';
+import { STORE } from '../store';
 import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,

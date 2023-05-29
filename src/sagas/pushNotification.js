@@ -41,7 +41,6 @@ import {
 } from '../actions';
 import {
   pushNotificationKey,
-  STORE,
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
   WALLET_SERVICE_MAINNET_BASE_URL,
   NETWORK,
@@ -49,6 +48,7 @@ import {
   PUSH_ACTION,
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
+import { STORE } from '../store';
 import { isUnlockScreen, showPinScreenForResult } from './helpers';
 import { messageHandler } from '../workers/pushNotificationHandler';
 import { WALLET_STATUS } from './wallet';

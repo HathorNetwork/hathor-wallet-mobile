@@ -25,7 +25,8 @@ import {
   startWalletRequested,
   resetOnLockScreen,
 } from '../actions';
-import { PIN_SIZE, STORE } from '../constants';
+import { PIN_SIZE } from '../constants';
+import { STORE } from '../store';
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
