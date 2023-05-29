@@ -134,7 +134,7 @@ export const str2jsx = (text, fnMap) => {
    */
 export const validateAddress = (address) => {
   try {
-    const addressObj = hathorLib.Address(address, { network: networkObj });
+    const addressObj = new hathorLib.Address(address, { network: networkObj });
     addressObj.validateAddress();
     return { isValid: true };
   } catch (e) {
@@ -269,10 +269,10 @@ export const getLightBackground = (alpha) => {
  */
 export const renderValue = (amount, isInteger) => {
   if (isInteger) {
-    return hathorLib.numbersUtils.prettyIntegerValue(amount);
+    return hathorLib.numberUtils.prettyIntegerValue(amount);
   }
 
-  return hathorLib.numbersUtils.prettyValue(amount);
+  return hathorLib.numberUtils.prettyValue(amount);
 };
 
 /**
@@ -357,3 +357,29 @@ export const getPushNotificationSettings = (pushNotification) => {
     showAmountEnabled
   };
 };
+
+/**
+ * Get registered tokens from the wallet instance.
+ * @param {HathorWallet} wallet
+ * @param {boolean} excludeHTR If we should exclude the HTR token.
+ * @returns {string[]}
+ */
+export async function getRegisteredTokens(wallet, excludeHTR = false) {
+  const htrUid = hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
+  const tokens = [];
+
+  // redux-saga generator magic does not work well with the "for await..of" syntax
+  // The asyncGenerator is not recognized as an iterable and it throws an exception
+  // So we must iterate manually, awaiting each "next" call
+  const iterator = wallet.storage.getRegisteredTokens();
+  let next = await iterator.next();
+  while(!next.done) {
+    const token = next.value;
+    if ((!excludeHTR) || token.uid !== htrUid) {
+      tokens.push(token.uid);
+    }
+    next = await iterator.next();
+  }
+
+  return tokens;
+}

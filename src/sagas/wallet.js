@@ -72,7 +72,7 @@ import {
   checkForFeatureFlag,
 } from './helpers';
 import NavigationService from '../NavigationService';
-import { setKeychainPin } from '../utils';
+import { setKeychainPin, getRegisteredTokens } from '../utils';
 
 export const WALLET_STATUS = {
   NOT_STARTED: 'not_started',
@@ -115,7 +115,6 @@ export function* startWallet(action) {
   const {
     words,
     pin,
-    fromXpriv,
   } = action.payload;
   NavigationService.navigate('LoadHistoryScreen');
 
@@ -147,23 +146,13 @@ export function* startWallet(action) {
     config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
     config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
 
-    let xpriv;
-    if (fromXpriv) {
-      xpriv = yield STORE.getAccountPathKey(pin);
-    }
-
     wallet = new HathorWalletServiceWallet({
       requestPassword: showPinScreenForResult,
       seed: words,
-      xpriv,
       network,
       storage,
     });
   } else {
-    let xpriv;
-    if (fromXpriv) {
-      xpriv = yield STORE.getMainKey(pin);
-    }
 
     const connection = new Connection({
       network: NETWORK, // app currently connects only to mainnet
@@ -175,7 +164,6 @@ export function* startWallet(action) {
     // To allow starting the wallet again
     const walletConfig = {
       seed: words,
-      xpriv,
       storage,
       connection,
       beforeReloadCallback: () => {
@@ -291,16 +279,7 @@ export function* loadTokens() {
 
   const wallet = yield select((state) => state.wallet);
 
-  const registeredTokens = call(async () => {
-    const tokens = [];
-    for await (const token of wallet.storage.getRegisteredTokens()) {
-      // remove htr since we will always download the HTR token
-      if (token.uid === htrUid) continue;
-
-      tokens.push(token.uid);
-    }
-    return tokens;
-  });
+  const registeredTokens = yield getRegisteredTokens(wallet, true);
 
   // We don't need to wait for the metadatas response, so we can just
   // spawn a new "thread" to handle it.

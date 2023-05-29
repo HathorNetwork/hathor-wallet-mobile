@@ -7,7 +7,33 @@
 
 import CryptoJS from 'crypto-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LevelDBStore, Storage, cryptoUtils, errors, walletUtils } from '@hathor/wallet-lib';
+import { MemoryStore, Storage, cryptoUtils, walletUtils } from '@hathor/wallet-lib';
+import { NETWORK } from './constants';
+
+
+const ACCESS_DATA_KEY = 'asyncstorage:access';
+const STORE_VERSION_KEY = 'asyncstorage:version';
+
+class HybridStore extends MemoryStore {
+  /**
+   * Save access data on our AsyncStorageStore.
+   * @param {IWalletAccessData} data Access data to save
+   * @async
+   * @returns {Promise<void>}
+   */
+  async saveAccessData(data) {
+    STORE.setItem(ACCESS_DATA_KEY, data);
+  }
+
+  /**
+   * Fetch wallet access data on storage if present.
+   * @async
+   * @returns {Promise<IWalletAccessData | null>} A promise with the wallet access data.
+   */
+  async getAccessData() {
+    return STORE.getItem(ACCESS_DATA_KEY);
+  }
+}
 
 /**
  * We use AsyncStorage to persist access data when our app is closed since the
@@ -21,8 +47,6 @@ import { LevelDBStore, Storage, cryptoUtils, errors, walletUtils } from '@hathor
  */
 class AsyncStorageStore {
   _storage = null;
-
-  _accessData = null;
 
   version = 1;
 
@@ -73,35 +97,32 @@ class AsyncStorageStore {
   }
 
   /**
-   * Save the wallet id to AsyncStorage given the access data.
-   * @param {IWalletAccessData} accessData
+   * Generate accessData, save walletId and prepare storage.
+   * @param {string} seed - Words used to generate wallet
+   * @param {string} pin - Will be used as pin and password
    */
-  saveWalletId(accessData) {
-    // Wallet id is the sha256d of the change path xpubkey
-    const walletId = walletUtils.getWalletIdFromXPub(accessData.xpubkey);
-    this.setItem('asyncstorage:walletid', walletId);
-  }
-
-  /**
-   * Get the loaded wallet id from AsyncStorage.
-   * @returns {string|null} Wallet id if it exists on AsyncStorage.
-   */
-  getWalletId() {
-    return this.getItem('asyncstorage:walletid');
+  async initStorage(seed, pin) {
+    // Remove old storage if it exists
+    this._storage = null;
+    const accessData = walletUtils.generateAccessDataFromSeed(
+      seed,
+      {
+        pin,
+        password: pin,
+        networkName: NETWORK,
+      },
+    );
+    const storage = this.getStorage();
+    await storage.saveAccessData(accessData);
   }
 
   /**
    * Get a Storage instance for the loaded wallet.
-   * @returns {Storage|null} Storage instance if the wallet is loaded.
+   * @returns {Storage} Storage instance if the wallet is loaded.
    */
   getStorage() {
     if (!this._storage) {
-      const walletId = this.getWalletId();
-      if (!walletId) {
-        return null;
-      }
-
-      const store = new LevelDBStore(walletId);
+      const store = new HybridStore();
       this._storage = new Storage(store);
     }
     return this._storage;
@@ -112,21 +133,9 @@ class AsyncStorageStore {
    *
    * @returns {IWalletAccessData|null}
    */
-  async getAccessData() {
+  async _getAccessData() {
     const storage = this.getStorage();
-    if (!storage) {
-      return null;
-    }
-
-    try {
-      return await storage.getAccessData();
-    } catch (err) {
-      if (err instanceof errors.UninitializedWalletError) {
-        // If the storage exists but has not yet been initialized with an access data
-        return null;
-      }
-      throw err;
-    }
+    return await storage.getAccessData();
   }
 
   /**
@@ -134,17 +143,17 @@ class AsyncStorageStore {
    * This will return the access data as it was found, so the format will be different.
    * To check which format was received, use the storage version that is returned.
    *
-   * @returns {{
+   * @returns {Promise<{
    *   accessData: IWalletAccessData|null,
    *   version: number
-   * }} The access data and the storage version.
+   * }>} The access data and the storage version.
    */
   async getAvailableAccessData() {
     // First we try to fetch the old access data (if we haven't migrated yet)
     let accessData = this.getItem('wallet:accessData');
     if (!accessData) {
       // If we don't have the old access data, we try to fetch the new one
-      accessData = await this.getAccessData();
+      accessData = await this._getAccessData();
     }
 
     // Since each access data has a different interface, we also send the version
@@ -159,7 +168,7 @@ class AsyncStorageStore {
    * @returns {Promise<string|null>} Seed of the loaded wallet.
    */
   async getWalletWords(pin) {
-    const accessData = await this.getAccessData();
+    const accessData = await this._getAccessData();
     if (!accessData) {
       return null;
     }
@@ -178,7 +187,7 @@ class AsyncStorageStore {
    * @return {string|null}
    */
   getOldWalletWords(pin) {
-    // XXX: this will attempt to fetch the access data in the old format
+    // This will attempt to fetch the access data in the old format
     const accessData = this.getItem('wallet:accessData');
     if (!accessData) {
       return null;
@@ -197,7 +206,7 @@ class AsyncStorageStore {
    * @returns {string}
    */
   async getAccountPathKey(pin) {
-    const accessData = await this.getAccessData();
+    const accessData = await this._getAccessData();
     if (!(accessData && accessData.acctPathKey)) {
       return null;
     }
@@ -212,7 +221,7 @@ class AsyncStorageStore {
    * @returns {string}
    */
   async getMainKey(pin) {
-    const accessData = await this.getAccessData();
+    const accessData = await this._getAccessData();
     if (!(accessData && accessData.mainKey)) {
       return null;
     }
@@ -225,14 +234,14 @@ class AsyncStorageStore {
    * @returns {number|null} Storage version if it exists on AsyncStorage.
    */
   getStorageVersion() {
-    return this.getItem('asyncstorage:version');
+    return this.getItem(STORE_VERSION_KEY);
   }
 
   /**
    * Update the storage version to the most recent one.
    */
   updateStorageVersion() {
-    this.setItem('asyncstorage:version', this.version);
+    this.setItem(STORE_VERSION_KEY, this.version);
   }
 
   /**
@@ -263,4 +272,5 @@ class AsyncStorageStore {
   }
 }
 
+export const STORE = new AsyncStorageStore();
 export default AsyncStorageStore;

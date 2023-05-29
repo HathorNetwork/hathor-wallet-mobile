@@ -10,7 +10,7 @@ import 'intl';
 import 'intl/locale-data/jsonp/en';
 
 import { Network } from '@hathor/wallet-lib';
-import AsyncStorageStore from './store';
+import { STORE } from './store';
 import {
   _IS_MULTI_TOKEN as IS_MULTI_TOKEN,
   _DEFAULT_TOKEN as DEFAULT_TOKEN,
@@ -18,7 +18,8 @@ import {
   _SENTRY_DSN as SENTRY_DSN,
 } from './config';
 
-export const STORE = new AsyncStorageStore();
+// Re-export store object.
+export { STORE };
 
 /**
  * This is the environment stage that will be used to load the unleash feature flags.
