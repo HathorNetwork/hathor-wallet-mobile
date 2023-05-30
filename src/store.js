@@ -11,9 +11,9 @@ import { MemoryStore, Storage, cryptoUtils, walletUtils } from '@hathor/wallet-l
 import { NETWORK } from './constants';
 
 
-const ACCESS_DATA_KEY = 'asyncstorage:access';
-const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
-const STORE_VERSION_KEY = 'asyncstorage:version';
+export const ACCESS_DATA_KEY = 'asyncstorage:access';
+export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
+export const STORE_VERSION_KEY = 'asyncstorage:version';
 
 /* eslint-disable class-methods-use-this */
 class HybridStore extends MemoryStore {

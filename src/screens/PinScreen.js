@@ -26,7 +26,7 @@ import {
   resetOnLockScreen,
 } from '../actions';
 import { PIN_SIZE } from '../constants';
-import { STORE } from '../store';
+import { REGISTERED_TOKENS_KEY, STORE } from '../store';
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
@@ -146,6 +146,18 @@ class PinScreen extends React.Component {
       // We are migrating from an version of wallet-lib prior to 1.0.0
       // This will generate the encrypted keys and other metadata
       await STORE.initStorage(oldWords, pin);
+
+      // Migrate registered tokens from the old storage
+      // where its held as an array of token data to the current storage
+      // as an object with uid as key and token data as value.
+      const oldTokens = STORE.getItem('wallet:tokens');
+      const newTokens = {};
+      for (const token of oldTokens) {
+        newTokens[token.uid] = token;
+      }
+      // Our hybrid store will use the registered tokens saved on this key
+      // So this will enable the tokens to be saved as registered in the new storage
+      STORE.setItem(REGISTERED_TOKENS_KEY, newTokens);
 
       // The access data is saved on the new storage, we can delete the old data.
       // This will only delete keys with the wallet prefix, so we don't delete
