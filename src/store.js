@@ -42,7 +42,7 @@ class HybridStore extends MemoryStore {
    * @async
    * @returns {AsyncGenerator<ITokenData & Partial<ITokenMetadata>>}
    */
-  async *registeredTokenIter() {
+  async* registeredTokenIter() {
     const registeredTokens = STORE.getItem(REGISTERED_TOKENS_KEY) || {};
     for (const tokenConfig of Object.values(registeredTokens)) {
       const tokenMeta = this.tokensMetadata.get(tokenConfig.uid);
@@ -52,8 +52,6 @@ class HybridStore extends MemoryStore {
 
   /**
    * Register a token.
-   *
-   * Obs: we require the token data because the token being registered may not be on our storage yet.
    *
    * @param token Token config to register
    * @async
