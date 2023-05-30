@@ -16,6 +16,17 @@ export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
 export const STORE_VERSION_KEY = 'asyncstorage:version';
 
 /* eslint-disable class-methods-use-this */
+/**
+ * The hybrid store will use the mobile native AsyncStorage to persist data and
+ * the memory store to hold the ephemeral data.
+ *
+ * For now we only persist the access data and the registered tokens since we
+ * can use the access data to fetch/generate the other data and the registered
+ * tokens cannot be generated since they are the tokens the user has trusted.
+ *
+ * @class
+ * @classdesc Hybrid store of data merging AsyncStorage and MemoryStore
+ */
 class HybridStore extends MemoryStore {
   /**
    * Save access data on our AsyncStorageStore.
@@ -84,7 +95,7 @@ class HybridStore extends MemoryStore {
    * @param {string} tokenUid - Token id
    * @returns {Promise<boolean>}
    */
-  isTokenRegistered(tokenUid) {
+  async isTokenRegistered(tokenUid) {
     const registeredTokens = STORE.getItem(REGISTERED_TOKENS_KEY) || {};
     return tokenUid in registeredTokens;
   }
