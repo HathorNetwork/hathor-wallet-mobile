@@ -26,7 +26,7 @@ import {
   resetOnLockScreen,
 } from '../actions';
 import { PIN_SIZE } from '../constants';
-import { REGISTERED_TOKENS_KEY, STORE } from '../store';
+import { STORE } from '../store';
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
