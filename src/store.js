@@ -326,6 +326,48 @@ class AsyncStorageStore {
       this.hathorMemoryStorage[key] = value;
     }
   }
+
+  /**
+   * Migrate registered tokens from the old storage into the new storage
+   * The old storage holds an array of token data and the new storage expects
+   * an object with the key as uid and value as token data.
+   *
+   * @async
+   */
+  async handleMigrationOldRegisteredTokens() {
+    const oldTokens = this.getItem('wallet:tokens');
+    const newTokens = {};
+    for (const token of oldTokens) {
+      newTokens[token.uid] = token;
+    }
+    // Our hybrid store will use the registered tokens saved on this key
+    // So this will enable the tokens to be saved as registered in the new storage
+    this.setItem(REGISTERED_TOKENS_KEY, newTokens);
+  }
+
+  /**
+   * Handle data migration from old versions of the wallet to the most recent and usable
+   *
+   * @param {String} pin Unlock PIN written by the user
+   * @async
+   */
+  async handleDataMigration(pin) {
+    const storageVersion = this.getStorageVersion();
+    const oldWords = this.getOldWalletWords(pin);
+    if (storageVersion === null && oldWords !== null) {
+      // We are migrating from an version of wallet-lib prior to 1.0.0
+      // This will generate the encrypted keys and other metadata
+      await this.initStorage(oldWords, pin);
+      await this.handleMigrationOldRegisteredTokens();
+
+      // The access data is saved on the new storage, we can delete the old data.
+      // This will only delete keys with the wallet prefix, so we don't delete
+      // the biometry keys and new data.
+      await this.clearItems(true);
+    }
+    // We have finished the migration so we can set the storage version to the most recent one.
+    this.updateStorageVersion();
+  }
 }
 
 export const STORE = new AsyncStorageStore();
