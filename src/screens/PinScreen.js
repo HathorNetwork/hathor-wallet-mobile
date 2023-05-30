@@ -25,7 +25,8 @@ import {
   startWalletRequested,
   resetOnLockScreen,
 } from '../actions';
-import { NETWORK, PIN_SIZE, STORE } from '../constants';
+import { PIN_SIZE } from '../constants';
+import { STORE } from '../store';
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
@@ -131,53 +132,18 @@ class PinScreen extends React.Component {
     }
   };
 
-  /**
-   * Handle data migration on unlock screen
-   * This method is executed when the wallet is unlocked, so we can check
-   * if we need to change anything on the app data after an update
-   *
-   * @param {String} pin Unlock PIN written by the user
-   */
-  handleDataMigration = async (pin) => {
-    const storageVersion = STORE.getStorageVersion();
-    const oldWords = STORE.getOldWalletWords(pin);
-    if (storageVersion === null && oldWords !== null) {
-      // We are migrating from an version of wallet-lib prior to 1.0.0
-      // This will generate the encrypted keys and other metadata
-      const newAccessData = walletUtils.generateAccessDataFromSeed(
-        oldWords,
-        { pin, password: pin, networkName: NETWORK },
-      );
-      STORE.saveWalletId(newAccessData);
-      // This will return a storage using a persistent LevelDBStore
-      const storage = STORE.getStorage();
-      await storage.saveAccessData(newAccessData);
-
-      // The access data is saved on the new storage, we can delete the old data.
-      // This will only delete keys with the wallet prefix, so we don't delete
-      // the biometry keys and new data.
-      await STORE.clearItems(true);
-    }
-    // We have finished the migration so we can set the storage version to the most recent one.
-    STORE.updateStorageVersion();
-  };
-
   dismiss = async (pin) => {
     if (this.props.isLockScreen) {
       // in case it's the lock screen, we just have to execute the data migration
       // method an change redux state. No need to execute callback or go back on navigation
-      await this.handleDataMigration(pin);
+      await STORE.handleDataMigration(pin);
       if (!this.props.wallet) {
-        // handleDataMigration should ensure we have migrated the access data
-        // to the most recent version
-        // This means we can just request to start the wallet-lib since we will always have the
-        // required properties.
-        //
-        // The wallet-service still uses the xpriv to derive some information
-        // even if the access data is present.
-        // We will keep the fromXpriv argument for now but we should refactor the startup process
-        // to use only the access data from storage since it does not require aditional derivation
-        this.props.startWalletRequested({ pin, fromXpriv: true });
+        // We have already made sure we have an available accessData
+        // The handleDataMigration method ensures we have already migrated if necessary
+        // This means the wallet is loaded and the access data is ready to be used.
+
+        const words = await STORE.getWalletWords(pin);
+        this.props.startWalletRequested({ words, pin });
       }
       this.props.unlockScreen();
     } else {

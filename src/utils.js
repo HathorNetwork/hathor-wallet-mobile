@@ -12,7 +12,8 @@ import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
-import { PRIMARY_COLOR, KEYCHAIN_USER, STORE, networkObj } from './constants';
+import { PRIMARY_COLOR, KEYCHAIN_USER, networkObj } from './constants';
+import { STORE } from './store';
 import { TxHistory } from './models';
 
 
@@ -134,7 +135,7 @@ export const str2jsx = (text, fnMap) => {
    */
 export const validateAddress = (address) => {
   try {
-    const addressObj = hathorLib.Address(address, { network: networkObj });
+    const addressObj = new hathorLib.Address(address, { network: networkObj });
     addressObj.validateAddress();
     return { isValid: true };
   } catch (e) {
@@ -269,10 +270,10 @@ export const getLightBackground = (alpha) => {
  */
 export const renderValue = (amount, isInteger) => {
   if (isInteger) {
-    return hathorLib.numbersUtils.prettyIntegerValue(amount);
+    return hathorLib.numberUtils.prettyIntegerValue(amount);
   }
 
-  return hathorLib.numbersUtils.prettyValue(amount);
+  return hathorLib.numberUtils.prettyValue(amount);
 };
 
 /**
@@ -336,7 +337,7 @@ export const mapTokenHistory = (element, token) => {
     timestamp: element.timestamp,
     balance: element.balance,
     // in wallet service this comes as 0/1 and in the full node comes with true/false
-    voided: Boolean(element.voided),
+    isVoided: Boolean(element.voided),
     tokenUid: token
   };
   return new TxHistory(data);

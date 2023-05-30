@@ -32,7 +32,6 @@ import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
 import { get } from 'lodash';
 import {
-  STORE,
   DEFAULT_TOKEN,
   WALLET_SERVICE_MAINNET_BASE_WS_URL,
   WALLET_SERVICE_MAINNET_BASE_URL,
@@ -40,6 +39,7 @@ import {
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
 } from '../constants';
+import { STORE } from '../store';
 import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
@@ -70,6 +70,7 @@ import {
   errorHandler,
   showPinScreenForResult,
   checkForFeatureFlag,
+  getRegisteredTokens,
 } from './helpers';
 import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
@@ -115,7 +116,6 @@ export function* startWallet(action) {
   const {
     words,
     pin,
-    fromXpriv,
   } = action.payload;
   NavigationService.navigate('LoadHistoryScreen');
 
@@ -147,24 +147,13 @@ export function* startWallet(action) {
     config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
     config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
 
-    let xpriv;
-    if (fromXpriv) {
-      xpriv = yield STORE.getAccountPathKey(pin);
-    }
-
     wallet = new HathorWalletServiceWallet({
       requestPassword: showPinScreenForResult,
       seed: words,
-      xpriv,
       network,
       storage,
     });
   } else {
-    let xpriv;
-    if (fromXpriv) {
-      xpriv = yield STORE.getMainKey(pin);
-    }
-
     const connection = new Connection({
       network: NETWORK, // app currently connects only to mainnet
       servers: ['https://mobile.wallet.hathor.network/v1a/'],
@@ -175,7 +164,6 @@ export function* startWallet(action) {
     // To allow starting the wallet again
     const walletConfig = {
       seed: words,
-      xpriv,
       storage,
       connection,
       beforeReloadCallback: () => {
@@ -291,16 +279,7 @@ export function* loadTokens() {
 
   const wallet = yield select((state) => state.wallet);
 
-  const registeredTokens = call(async () => {
-    const tokens = [];
-    for await (const token of wallet.storage.getRegisteredTokens()) {
-      // remove htr since we will always download the HTR token
-      if (token.uid === htrUid) continue;
-
-      tokens.push(token.uid);
-    }
-    return tokens;
-  });
+  const registeredTokens = yield getRegisteredTokens(wallet, true);
 
   // We don't need to wait for the metadatas response, so we can just
   // spawn a new "thread" to handle it.
