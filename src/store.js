@@ -12,6 +12,7 @@ import { NETWORK } from './constants';
 
 
 const ACCESS_DATA_KEY = 'asyncstorage:access';
+const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
 const STORE_VERSION_KEY = 'asyncstorage:version';
 
 /* eslint-disable class-methods-use-this */
@@ -33,6 +34,61 @@ class HybridStore extends MemoryStore {
    */
   async getAccessData() {
     return STORE.getItem(ACCESS_DATA_KEY);
+  }
+
+  /**
+   * Iterate on registered tokens.
+   *
+   * @async
+   * @returns {AsyncGenerator<ITokenData & Partial<ITokenMetadata>>}
+   */
+  async *registeredTokenIter() {
+    const registeredTokens = STORE.getItem(REGISTERED_TOKENS_KEY) || {};
+    for (const tokenConfig of Object.values(registeredTokens)) {
+      const tokenMeta = this.tokensMetadata.get(tokenConfig.uid);
+      yield { ...tokenConfig, ...tokenMeta };
+    }
+  }
+
+  /**
+   * Register a token.
+   *
+   * Obs: we require the token data because the token being registered may not be on our storage yet.
+   *
+   * @param token Token config to register
+   * @async
+   * @returns {Promise<void>}
+   */
+  async registerToken(token) {
+    const registeredTokens = STORE.getItem(REGISTERED_TOKENS_KEY) || {};
+    registeredTokens[token.uid] = token;
+    STORE.setItem(REGISTERED_TOKENS_KEY, registeredTokens);
+  }
+
+  /**
+   * Unregister a token.
+   *
+   * @param {string} tokenUid Token id
+   * @async
+   * @returns {Promise<void>}
+   */
+  async unregisterToken(tokenUid) {
+    const registeredTokens = STORE.getItem(REGISTERED_TOKENS_KEY) || {};
+    if (tokenUid in registeredTokens) {
+      delete registeredTokens[tokenUid];
+    }
+    STORE.setItem(REGISTERED_TOKENS_KEY, registeredTokens);
+  }
+
+  /**
+   * Return if a token uid is registered or not.
+   *
+   * @param {string} tokenUid - Token id
+   * @returns {Promise<boolean>}
+   */
+  isTokenRegistered(tokenUid) {
+    const registeredTokens = STORE.getItem(REGISTERED_TOKENS_KEY) || {};
+    return tokenUid in registeredTokens;
   }
 }
 /* eslint-enable class-methods-use-this */
