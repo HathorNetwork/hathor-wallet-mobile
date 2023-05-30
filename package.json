@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "test": "jest",
     "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/",
-    "postinstall": "rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack"
+    "postinstall": "patch-package && rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
@@ -27,6 +27,7 @@
     "buffer": "^4.9.2",
     "console-browserify": "^1.2.0",
     "crypto-js": "^4.1.1",
+    "deprecated-react-native-prop-types": "^2.2.0",
     "events": "^1.1.1",
     "intl": "^1.2.5",
     "lodash": "^4.17.21",
@@ -41,7 +42,7 @@
     "react-native-crypto": "^2.2.0",
     "react-native-device-info": "^8.7.0",
     "react-native-exception-handler": "^2.10.10",
-    "react-native-gesture-handler": "^2.5.0",
+    "react-native-gesture-handler": "2.8.0",
     "react-native-keychain": "^8.0.0",
     "react-native-localize": "^2.2.1",
     "react-native-modal": "^13.0.1",
