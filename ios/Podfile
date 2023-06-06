@@ -1,27 +1,39 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-platform :ios, '11.0'
+platform :ios, '12.4'
+install! 'cocoapods', :deterministic_uuids => false
 
 target 'HathorMobile' do
   # Don't change the order of any declaration!
   config = use_native_modules!
 
+  # Flags change depending on the env values.
+  flags = get_default_flags()
+
   use_react_native!(
     :path => config[:reactNativePath],
-    # To enable hermes on iOS, change `false` to `true` and then install pods.
-    # Hermes is the new javascript engine used by RN.
-    # RN 0.68.0 has a better integration with hermes.
-    # We should use it after the upgrade of RN.
-    :hermes_enabled => false
+
+    # Hermes is now enabled by default. Disable by setting this flag to false.
+    # Upcoming versions of React Native may rely on get_default_flags(), but
+    # we make it explicit here to aid in the React Native upgrade process.
+    :hermes_enabled => true,
+    :fabric_enabled => flags[:fabric_enabled],
+    # Enables Flipper.
+    #
+    # Note that if you have use_frameworks! enabled, Flipper will not work and
+    # you should disable the next line.
+    :flipper_configuration => FlipperConfiguration.enabled,
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
-  
+
   # Firebase requires the usage of frameworks linked statically.
   # This means the firebase code will be compiled into the app binary.
   # A reason for this is to avoid compatibility issues with a 3rd paty dependency.
   # A consequence of it is a better performance.
   use_frameworks! :linkage => :static
-  
+
   # react-native-permissions uses dynamic frameworks by default.
   # However, we need the permissions right when the application initializes.
   # To match this constraint we need the frameworks linked statically,
@@ -45,18 +57,6 @@ target 'HathorMobile' do
     # Pods for testing
   end
 
-  # Enables Flipper.
-  #
-  # Note that if you have use_frameworks! enabled, Flipper will not work and
-  # you should disable the next line.
-  #
-  # OBS1: Disabled by default as this conflicts with use_frameworks!,
-  # which is required by Firebase. Besides that, it is used only for development.
-  #
-  # OBS2: There is a fix for this in RN 0.69.1
-  #
-  # use_flipper!()
-
   # The react-native-qrcode-scanner requires installing react-native-permissions now
   # https://github.com/moaazsidat/react-native-qrcode-scanner#react-native-permissions
   # The two lines below are required by the installation of react-native-permissions
@@ -64,15 +64,20 @@ target 'HathorMobile' do
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
   pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
-  
+
   # Firebase required dependency.
   # It contains native code to integrate with Google Services.
   # When the modular header feature is enabled, only used modules
   # are compiled within the app binary.
   pod 'GoogleUtilities', :modular_headers => true
-  
+
   post_install do |installer|
-    react_native_post_install(installer)
+    react_native_post_install(
+      installer,
+      # Set `mac_catalyst_enabled` to `true` in order to apply patches
+      # necessary for Mac Catalyst builds
+      :mac_catalyst_enabled => false
+    )
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
   end
 end
