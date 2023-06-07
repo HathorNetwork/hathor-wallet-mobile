@@ -21,7 +21,7 @@ import hathorLib from '@hathor/wallet-lib';
 
 import IconTabBar from './icon-font';
 import NavigationService from './NavigationService';
-import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT, PUSH_ACTION } from './constants';
+import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
   resetData,
@@ -313,7 +313,9 @@ class _AppStackWrapper extends React.Component {
     const version = DeviceInfo.getVersion();
     // We use this string to parse the version from user agent
     // in some of our services, so changing this might break another service
-    this.props.wallet.storage.config.setUserAgent(`Hathor Wallet Mobile / ${version}`);
+    if (this.props.wallet && this.props.wallet.storage) {
+      this.props.wallet.storage.config.setUserAgent(`Hathor Wallet Mobile / ${version}`);
+    }
     // set notification foreground listener
     this.setNotifeeForegroundListener();
   }
@@ -353,14 +355,24 @@ class _AppStackWrapper extends React.Component {
    * These tokens are known as 'registered' tokens
    */
   updateReduxTokens = async () => {
-    const tokens = [];
-    for await (const tokenData of this.props.wallet.storage.getRegisteredTokens()) {
+    if ((!this.props.wallet) || (!this.props.wallet.storage)) {
+      return;
+    }
+    const tokens = [...INITIAL_TOKENS];
+    const iterator = this.props.wallet.storage.getRegisteredTokens();
+    let next = await iterator.next();
+    // XXX: The "for await" syntax wouldbe better but this is failing due to
+    // redux-saga messing with the for operator runtime
+    while (!next.done) {
+      const token = next.value;
       // We need to filter the token data to remove the metadata from this list (e.g. balance)
       tokens.push({
-        uid: tokenData.uid,
-        symbol: tokenData.symbol,
-        name: tokenData.name,
+        uid: token.uid,
+        symbol: token.symbol,
+        name: token.name,
       });
+      // eslint-disable-next-line no-await-in-loop
+      next = await iterator.next();
     }
     this.props.setTokens(tokens);
   }

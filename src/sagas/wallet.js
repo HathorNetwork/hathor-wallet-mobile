@@ -645,12 +645,12 @@ export function* onResetWallet() {
 
   if (wallet) {
     yield call(() => wallet.stop({ cleanStorage: true, cleanAddresses: true }));
+    yield setWallet(null);
+    yield call(() => STORE.resetWallet());
     return;
   }
 
-  // Wallet was not initialized yet, this might happen if resetWallet
-  // is called from the PinScreen. There is no event listeners to cleanup
-  yield call(() => STORE.clearItems(true));
+  yield call(() => STORE.resetWallet());
 
   yield put(resetWalletSuccess());
 }
