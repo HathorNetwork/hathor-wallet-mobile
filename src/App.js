@@ -521,7 +521,11 @@ class _AppStackWrapper extends React.Component {
    * These tokens are known as 'registered' tokens
    */
   updateReduxTokens = async () => {
+<<<<<<< HEAD
     if (!this.props.wallet?.storage) {
+=======
+    if ((!this.props.wallet) || (!this.props.wallet.storage)) {
+>>>>>>> 3cddf12 (fix: do not reset entire redux when resetting from pin screen)
       return;
     }
     const tokens = [...INITIAL_TOKENS];

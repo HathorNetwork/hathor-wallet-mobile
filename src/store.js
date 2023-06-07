@@ -187,6 +187,7 @@ class AsyncStorageStore {
    * @param {string} pin - Will be used as pin and password
    */
   async initStorage(seed, pin) {
+    // Remove old storage if it exists
     const accessData = walletUtils.generateAccessDataFromSeed(
       seed,
       {
@@ -197,6 +198,11 @@ class AsyncStorageStore {
     );
     const storage = this.getStorage();
     await storage.saveAccessData(accessData);
+  }
+
+  getNewStorage() {
+    const store = new HybridStore();
+    return new Storage(store);
   }
 
   /**
