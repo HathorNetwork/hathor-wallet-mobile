@@ -195,11 +195,6 @@ class AsyncStorageStore {
     await storage.saveAccessData(accessData);
   }
 
-  getNewStorage() {
-    const store = new HybridStore();
-    return new Storage(store);
-  }
-
   /**
    * Get a Storage instance for the loaded wallet.
    * @returns {Storage} Storage instance if the wallet is loaded.
