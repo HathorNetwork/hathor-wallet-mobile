@@ -646,8 +646,6 @@ export function* onResetWallet() {
   if (wallet) {
     yield call(() => wallet.stop({ cleanStorage: true, cleanAddresses: true }));
     yield setWallet(null);
-    yield call(() => STORE.resetWallet());
-    return;
   }
 
   yield call(() => STORE.resetWallet());

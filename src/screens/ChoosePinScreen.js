@@ -22,6 +22,7 @@ import { startWalletRequested, unlockScreen } from '../actions';
 import { PIN_SIZE } from '../constants';
 
 import baseStyle from '../styles/init';
+import { STORE } from '../store';
 
 const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
@@ -78,10 +79,12 @@ class ChoosePinScreen extends React.Component {
   }
 
   goToNextScreen = () => {
-    // we are just initializing the wallet, so make sure it's not locked when going to AppStack
-    this.props.unlockScreen();
-    this.props.startWalletRequested(this.words, this.state.pin1);
-    this.props.navigation.navigate('Home');
+    STORE.initStorage(this.words, this.state.pin1).then(() => {
+      // we are just initializing the wallet, so make sure it's not locked when going to AppStack
+      this.props.unlockScreen();
+      this.props.startWalletRequested(this.words, this.state.pin1);
+      this.props.navigation.navigate('Home');
+    });
   }
 
   startPinAgain = () => {
