@@ -200,11 +200,6 @@ class AsyncStorageStore {
     await storage.saveAccessData(accessData);
   }
 
-  getNewStorage() {
-    const store = new HybridStore();
-    return new Storage(store);
-  }
-
   /**
    * Get access data of loaded wallet from async storage.
    *
