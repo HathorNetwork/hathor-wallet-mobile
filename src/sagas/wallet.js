@@ -39,7 +39,7 @@ import {
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
 } from '../constants';
-import { STORE } from '../store';
+import { STORE, generateStorage } from '../store';
 import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
@@ -128,7 +128,7 @@ export function* startWallet(action) {
   // clean storage and metadata before starting the wallet
   // this should be cleaned when stopping the wallet,
   // but the wallet may be closed unexpectedly
-  const storage = STORE.getStorage();
+  const storage = generateStorage()
   yield storage.store.cleanMetadata();
   yield storage.cleanStorage(true);
 
