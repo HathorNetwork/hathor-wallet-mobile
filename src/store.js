@@ -195,6 +195,7 @@ class AsyncStorageStore {
     await storage.saveAccessData(accessData);
   }
 
+  /* eslint-disable class-methods-use-this */
   /**
    * Get a Storage instance for the loaded wallet.
    * @returns {Storage} Storage instance if the wallet is loaded.
@@ -203,6 +204,7 @@ class AsyncStorageStore {
     const store = new HybridStore();
     return new Storage(store);
   }
+  /* eslint-enable class-methods-use-this */
 
   /**
    * Get access data of loaded wallet from async storage.
