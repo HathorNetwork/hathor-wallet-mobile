@@ -107,6 +107,11 @@ class HybridStore extends MemoryStore {
 }
 /* eslint-enable class-methods-use-this */
 
+export function generateStorage() {
+  const store = new HybridStore();
+  return new Storage(store);
+}
+
 /**
  * We use AsyncStorage to persist access data when our app is closed since the
  * wallet-lib does not have a way to choose the persisted wallet as a loaded
@@ -182,7 +187,6 @@ class AsyncStorageStore {
    * @param {string} pin - Will be used as pin and password
    */
   async initStorage(seed, pin) {
-    // Remove old storage if it exists
     const accessData = walletUtils.generateAccessDataFromSeed(
       seed,
       {
@@ -191,20 +195,9 @@ class AsyncStorageStore {
         networkName: NETWORK,
       },
     );
-    const storage = this.getStorage();
+    const storage = generateStorage();
     await storage.saveAccessData(accessData);
   }
-
-  /* eslint-disable class-methods-use-this */
-  /**
-   * Get a Storage instance for the loaded wallet.
-   * @returns {Storage} Storage instance if the wallet is loaded.
-   */
-  getStorage() {
-    const store = new HybridStore();
-    return new Storage(store);
-  }
-  /* eslint-enable class-methods-use-this */
 
   /**
    * Get access data of loaded wallet from async storage.
@@ -212,7 +205,7 @@ class AsyncStorageStore {
    * @returns {IWalletAccessData|null}
    */
   async _getAccessData() {
-    const storage = this.getStorage();
+    const storage = generateStorage();
     return storage.getAccessData();
   }
 

@@ -313,7 +313,7 @@ class _AppStackWrapper extends React.Component {
     const version = DeviceInfo.getVersion();
     // We use this string to parse the version from user agent
     // in some of our services, so changing this might break another service
-    if (this.props.wallet && this.props.wallet.storage) {
+    if (this.props.wallet?.storage) {
       this.props.wallet.storage.config.setUserAgent(`Hathor Wallet Mobile / ${version}`);
     }
     // set notification foreground listener
