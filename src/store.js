@@ -200,6 +200,7 @@ class AsyncStorageStore {
     await storage.saveAccessData(accessData);
   }
 
+  /* eslint-disable class-methods-use-this */
   /**
    * Get access data of loaded wallet from async storage.
    *
