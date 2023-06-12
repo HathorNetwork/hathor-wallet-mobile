@@ -15,7 +15,6 @@ import {
   call,
   delay,
   put,
-  cancel,
   cancelled,
   select,
   race,
@@ -145,25 +144,19 @@ export function* monitorFeatureFlags(currentRetry = 0) {
 
 export function* setupUnleashListeners(unleashClient) {
   const channel = eventChannel((emitter) => {
-    const listener = (state) => emitter(state);
+    const l1 = () => emitter({ type: 'FEATURE_TOGGLE_UPDATE' });
+    const l2 = () => emitter({ type: 'FEATURE_TOGGLE_READY' });
+    const l3 = (err) => emitter({ type: 'FEATURE_TOGGLE_ERROR', data: err });
 
-    unleashClient.on(UnleashEvents.UPDATE, () => emitter({
-      type: 'FEATURE_TOGGLE_UPDATE',
-    }));
-
-    unleashClient.on(UnleashEvents.READY, () => emitter({
-      type: 'FEATURE_TOGGLE_READY',
-    }));
-
-    unleashClient.on(UnleashEvents.ERROR, (err) => emitter({
-      type: 'FEATURE_TOGGLE_ERROR',
-      data: err,
-    }));
+    unleashClient.on(UnleashEvents.UPDATE, l1);
+    unleashClient.on(UnleashEvents.READY, l2);
+    unleashClient.on(UnleashEvents.ERROR, l3);
 
     return () => {
-      unleashClient.removeListener(UnleashEvents.UPDATE, listener);
-      unleashClient.removeListener(UnleashEvents.READY, listener);
-      unleashClient.removeListener(UnleashEvents.ERROR, listener);
+      // XXX: This should be a cleanup but removeListener does not exist
+      // This will throw an error and it will interfere with other sagas
+      // Since it works without the cleanup i will leave this method empty
+      // until have determined the best cleanup approach
     };
   });
 

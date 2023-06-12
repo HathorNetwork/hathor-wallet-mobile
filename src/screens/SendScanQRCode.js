@@ -7,15 +7,19 @@
 
 import React from 'react';
 import { Alert, SafeAreaView, View } from 'react-native';
+import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import hathorLib from '@hathor/wallet-lib';
 import QRCodeReader from '../components/QRCodeReader';
 import OfflineBar from '../components/OfflineBar';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
 import { getTokenLabel, parseQRCode } from '../utils';
 
+
+const mapStateToProps = (state) => ({
+  wallet: state.wallet,
+});
 
 class SendScanQRCode extends React.Component {
   constructor(props) {
@@ -35,22 +39,22 @@ class SendScanQRCode extends React.Component {
     );
   }
 
-  onSuccess = (e) => {
+  onSuccess = async (e) => {
     const qrcode = parseQRCode(e.data);
     if (!qrcode.isValid) {
       this.showAlertError(qrcode.error);
     } else if (qrcode.token && qrcode.amount) {
-      if (hathorLib.tokens.tokenExists(qrcode.token.uid) === null) {
-        // Wallet does not have the selected token
-        const tokenLabel = getTokenLabel(qrcode.token);
-        this.showAlertError(t`You don't have the requested token [${tokenLabel}]`);
-      } else {
+      if (await this.props.wallet.storage.isTokenRegistered(qrcode.token.uid)) {
         const params = {
           address: qrcode.address,
           token: qrcode.token,
           amount: qrcode.amount,
         };
         this.props.navigation.navigate('SendConfirmScreen', params);
+      } else {
+        // Wallet does not have the selected token
+        const tokenLabel = getTokenLabel(qrcode.token);
+        this.showAlertError(t`You don't have the requested token [${tokenLabel}]`);
       }
     } else {
       const params = {
@@ -92,4 +96,4 @@ class SendScanQRCode extends React.Component {
   }
 }
 
-export default SendScanQRCode;
+export default connect(mapStateToProps)(SendScanQRCode);

@@ -22,7 +22,7 @@ import CopyClipboard from './CopyClipboard';
 const TokenDetails = (props) => {
   const tokenLabel = getTokenLabel(props.token);
 
-  const configString = hathorLib.tokens.getConfigurationString(
+  const configString = hathorLib.tokensUtils.getConfigurationString(
     props.token.uid, props.token.name, props.token.symbol
   );
 

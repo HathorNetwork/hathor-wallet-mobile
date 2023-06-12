@@ -9,15 +9,13 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import {
-  BackHandler, SafeAreaView, Text, View,
-} from 'react-native';
+import { BackHandler, SafeAreaView, Text, View } from 'react-native';
 import * as Keychain from 'react-native-keychain';
-import hathorLib from '@hathor/wallet-lib';
+import { walletUtils, cryptoUtils } from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
 import PinInput from '../components/PinInput';
 import Logo from '../components/Logo';
-import { isBiometryEnabled, getSupportedBiometry, getWalletWords } from '../utils';
+import { isBiometryEnabled, getSupportedBiometry } from '../utils';
 import {
   lockScreen,
   unlockScreen,
@@ -28,7 +26,7 @@ import {
   resetOnLockScreen,
 } from '../actions';
 import { PIN_SIZE } from '../constants';
-
+import { STORE } from '../store';
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
@@ -68,8 +66,14 @@ class PinScreen extends React.Component {
     this.biometryText = t`Unlock Hathor Wallet`;
     if (!this.props.isLockScreen) {
       this.canCancel = props.navigation.getParam('canCancel', this.canCancel);
-      this.screenText = props.navigation.getParam('screenText', this.screenText);
-      this.biometryText = props.navigation.getParam('biometryText', this.biometryText);
+      this.screenText = props.navigation.getParam(
+        'screenText',
+        this.screenText,
+      );
+      this.biometryText = props.navigation.getParam(
+        'biometryText',
+        this.biometryText,
+      );
     }
 
     this.willFocusEvent = null;
@@ -95,14 +99,17 @@ class PinScreen extends React.Component {
   componentWillUnmount() {
     if (!this.canCancel) {
       // Removing event listener
-      BackHandler.removeEventListener('hardwareBackPress', this.handleBackButton);
+      BackHandler.removeEventListener(
+        'hardwareBackPress',
+        this.handleBackButton,
+      );
     }
 
     // Removing focus event
     this.willFocusEvent.remove();
   }
 
-  handleBackButton = () => true
+  handleBackButton = () => true;
 
   askBiometricId = async () => {
     try {
@@ -123,59 +130,20 @@ class PinScreen extends React.Component {
     } catch (e) {
       // No need to do anything here as the user can type his PIN
     }
-  }
+  };
 
-  /**
-   * Handle data migration on unlock screen
-   * This method is executed when the wallet is unlocked, so we can check
-   * if we need to change anything on the app data after an update
-   *
-   * @param {String} pin Unlock PIN written by the user
-   */
-  handleDataMigration = (pin) => {
-    const accessData = hathorLib.wallet.getWalletAccessData();
-
-    if (accessData !== null && accessData.xpubkey === undefined && accessData.mainKey) {
-      // Two situations are handled here:
-      // 1. From v0.12.0 to v0.13.0 of the lib, xpubkey has changed from wallet:data
-      // to wallet:accessData. So if the user is still in an app version before v0.13.0,
-      // we can't use xpubkey directly from accessData
-      //
-      // 2. When the user updated the app to the newest version directly from a version before we've
-      // executed the xpubkey migration. In that case we have deleted the user walletData before
-      // migrating the xpubkey to the accessData
-      const xpubkey = hathorLib.wallet.getXPubKeyFromXPrivKey(pin);
-      accessData.xpubkey = xpubkey;
-      hathorLib.wallet.setWalletAccessData(accessData);
-    }
-  }
-
-  dismiss = (pin) => {
+  dismiss = async (pin) => {
     if (this.props.isLockScreen) {
       // in case it's the lock screen, we just have to execute the data migration
       // method an change redux state. No need to execute callback or go back on navigation
-      this.handleDataMigration(pin);
+      await STORE.handleDataMigration(pin);
       if (!this.props.wallet) {
-        // Here we need to check if the user has the `acctPathMainKey` stored on his accessData
-        // because he won't have it if he's migrating from any version before v0.18.0 directly into
-        // version > v0.21.1. We only use it on the wallet-service facade, but dispatching
-        // `startWalletRequested` once with the words instead of xpriv will update his storage to
-        // contain it so if he ever switches to the wallet-service, it will load properly from it.
-        const xpriv = hathorLib.wallet.getAcctPathXprivKey(pin);
-        if (!xpriv) {
-          const words = getWalletWords(pin);
-          this.props.startWalletRequested({
-            pin,
-            words,
-          });
-        } else {
-          // If we are here, the wallet has already been initialized in the past, so
-          // we should load from xpriv
-          this.props.startWalletRequested({
-            pin,
-            fromXpriv: true,
-          });
-        }
+        // We have already made sure we have an available accessData
+        // The handleDataMigration method ensures we have already migrated if necessary
+        // This means the wallet is loaded and the access data is ready to be used.
+
+        const words = await STORE.getWalletWords(pin);
+        this.props.startWalletRequested({ words, pin });
       }
       this.props.unlockScreen();
     } else {
@@ -188,7 +156,7 @@ class PinScreen extends React.Component {
         cb(pin);
       }
     }
-  }
+  };
 
   onChangeText = (text) => {
     if (text.length > PIN_SIZE) {
@@ -199,28 +167,45 @@ class PinScreen extends React.Component {
       setTimeout(() => this.validatePin(text), 300);
     }
     this.setState({ pin: text, pinColor: 'black', error: null });
-  }
+  };
 
-  validatePin = (pin) => {
-    const pinCorrect = hathorLib.wallet.isPinCorrect(pin);
-
-    if (!pinCorrect) {
-      this.removeOneChar();
-      return;
-    }
-
+  validatePin = async (pin) => {
     try {
       // Validate if we are able to decrypt the seed using this PIN
       // this will throw if the words are not able to be decoded with this
       // pin.
-      hathorLib.wallet.getWalletWords(pin);
 
-      if (!hathorLib.wallet.wordsValid(pin)) {
-        throw new Error('Words not valid.');
+      // This will return either the old or the new access data.
+      // We can ignore which one it is since we will only use the words which is present on both.
+      const { accessData } = await STORE.getAvailableAccessData();
+
+      if (!accessData) {
+        // The wallet does not have an access data, we can't unlock it
+        // This should not happen since we check if the wallet is initialized
+        // before showing the unlock screen, but we will handle it anyway
+        this.props.onExceptionCaptured(
+          new Error(
+            "Attempted to unlock wallet but it wasn't initialized.",
+          ),
+          true, // Fatal since we can't start the wallet
+        );
+        return;
       }
+
+      const pinCorrect = cryptoUtils.checkPassword(accessData.words, pin);
+      if (!pinCorrect) {
+        this.removeOneChar();
+        return;
+      }
+
+      const words = cryptoUtils.decryptData(accessData.words, pin);
+      // Will throw InvalidWords if the seed is invalid
+      walletUtils.wordsValid(words);
     } catch (e) {
       this.props.onExceptionCaptured(
-        new Error('User inserted a valid PIN but the app wasn\'t able to decrypt the words'),
+        new Error(
+          "User inserted a valid PIN but the app wasn't able to decrypt the words",
+        ),
         true, // Fatal since we can't start the wallet
       );
 
@@ -229,11 +214,11 @@ class PinScreen extends React.Component {
 
     // Inserted PIN was able to decrypt the words successfully
     this.dismiss(pin);
-  }
+  };
 
   goToReset = () => {
     this.props.resetOnLockScreen();
-  }
+  };
 
   /*
    * This function is used when coming back to lock screen from reset screen
@@ -245,7 +230,7 @@ class PinScreen extends React.Component {
     this.props.lockScreen();
     // navigate to dashboard (will be hidden under lock screen)
     this.props.navigation.navigate('Dashboard');
-  }
+  };
 
   removeOneChar = () => {
     const pin = this.state.pin.slice(0, -1);
@@ -255,7 +240,7 @@ class PinScreen extends React.Component {
       this.setState({ pin, pinColor: '#DE3535' });
       setTimeout(() => this.removeOneChar(), 25);
     }
-  }
+  };
 
   render() {
     const renderButton = () => {
@@ -273,7 +258,10 @@ class PinScreen extends React.Component {
           onPress={onPress}
           title={title}
           textStyle={{
-            textTransform: 'uppercase', color: 'rgba(0, 0, 0, 0.5)', letterSpacing: 1, padding: 4,
+            textTransform: 'uppercase',
+            color: 'rgba(0, 0, 0, 0.5)',
+            letterSpacing: 1,
+            padding: 4,
           }}
           containerStyle={{ marginTop: 16, marginBottom: 8 }}
         />
@@ -281,11 +269,18 @@ class PinScreen extends React.Component {
     };
 
     return (
-      <SafeAreaView style={{ flex: 1, alignItems: 'center', marginHorizontal: 16 }}>
-        <View style={{ marginVertical: 16, alignItems: 'center', height: 21, width: 120 }}>
-          <Logo
-            style={{ height: 21, width: 120 }}
-          />
+      <SafeAreaView
+        style={{ flex: 1, alignItems: 'center', marginHorizontal: 16 }}
+      >
+        <View
+          style={{
+            marginVertical: 16,
+            alignItems: 'center',
+            height: 21,
+            width: 120,
+          }}
+        >
+          <Logo style={{ height: 21, width: 120 }} />
         </View>
         <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
         <PinInput

@@ -232,8 +232,6 @@ const reducer = (state = initialState, action) => {
       return onHideErrorModal(state);
     case types.SET_WALLET:
       return onSetWallet(state, action);
-    case types.RESET_WALLET:
-      return onResetWallet(state, action);
     case types.RESET_WALLET_SUCCESS:
       return onResetWalletSuccess(state);
     case types.RESET_LOADED_DATA:
@@ -380,7 +378,7 @@ const onNewTx = (state, action) => {
   if (state.latestInvoice && state.latestInvoice.amount) {
     for (const txout of tx.outputs) {
       // Don't consider authority outputs
-      if (hathorLib.wallet.isAuthorityOutput(txout)) {
+      if (hathorLib.transactionUtils.isAuthorityOutput(txout)) {
         continue;
       }
 
@@ -516,16 +514,15 @@ const onSetUseWalletService = (state, action) => ({
   useWalletService: action.payload,
 });
 
-const onResetWallet = (state) => ({
-  ...state,
-  wallet: null,
-});
-
 const onResetWalletSuccess = (state) => {
   const oldUnleashClient = state.unleashClient;
+  const oldFeatureTogglesInitialized = state.featureTogglesInitialized;
+  const oldFeatureToggles = state.featureToggles;
   return {
     ...initialState,
     unleashClient: oldUnleashClient,
+    featureTogglesInitialized: oldFeatureTogglesInitialized,
+    featureToggles: oldFeatureToggles,
   };
 };
 

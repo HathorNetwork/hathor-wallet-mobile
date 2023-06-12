@@ -73,7 +73,7 @@ class CreateTokenAmount extends React.Component {
 
   onAmountChange = (text) => {
     const amount = getIntegerAmount(text);
-    const deposit = (amount ? hathorLib.tokens.getDepositAmount(amount) : 0);
+    const deposit = (amount ? hathorLib.tokensUtils.getDepositAmount(amount) : 0);
     this.setState({ amount: text, deposit });
   }
 
@@ -103,7 +103,7 @@ class CreateTokenAmount extends React.Component {
     const amountStyle = (this.state.deposit > this.props.balance.available ? { color: 'red' } : {});
     const amountAvailableText = (
       <Strong style={amountStyle}>
-        {hathorLib.helpers.prettyValue(this.props.balance.available)} HTR
+        {hathorLib.numberUtils.prettyValue(this.props.balance.available)} HTR
       </Strong>
     );
 
@@ -131,7 +131,7 @@ class CreateTokenAmount extends React.Component {
               <InfoBox
                 items={[
                   <Text>{t`Deposit:`} <Strong style={amountStyle}>
-                    {hathorLib.helpers.prettyValue(this.state.deposit)} HTR
+                    {hathorLib.numberUtils.prettyValue(this.state.deposit)} HTR
                   </Strong></Text>,
                   <Text>
                     {jt`You have ${amountAvailableText} HTR available`}

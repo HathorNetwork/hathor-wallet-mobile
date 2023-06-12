@@ -19,7 +19,6 @@ import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
-import { sendTx } from '../actions';
 import { renderValue, isTokenNFT } from '../utils';
 
 
@@ -34,18 +33,6 @@ const mapStateToProps = (state) => ({
   useWalletService: state.useWalletService,
   tokenMetadata: state.tokenMetadata,
   isShowingPinScreen: state.isShowingPinScreen,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  sendTx: (
-    wallet,
-    amount,
-    address,
-    token,
-    pin,
-  ) => dispatch(
-    sendTx(wallet, amount, address, token, pin),
-  ),
 });
 
 class SendConfirmScreen extends React.Component {
@@ -91,7 +78,7 @@ class SendConfirmScreen extends React.Component {
       });
     } else {
       sendTransaction = new hathorLib.SendTransaction(
-        { outputs, pin, network: this.props.wallet.getNetworkObject() }
+        { storage: this.props.wallet.storage, outputs, pin }
       );
     }
 
@@ -190,4 +177,4 @@ class SendConfirmScreen extends React.Component {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SendConfirmScreen);
+export default connect(mapStateToProps)(SendConfirmScreen);

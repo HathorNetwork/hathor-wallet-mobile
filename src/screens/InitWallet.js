@@ -5,7 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import hathorLib from '@hathor/wallet-lib';
+import {
+  walletUtils,
+  errors as hathorErrors,
+  constants as hathorConstants,
+} from '@hathor/wallet-lib';
 
 import React from 'react';
 import {
@@ -136,7 +140,7 @@ class InitialScreen extends React.Component {
 
 class NewWordsScreen extends React.Component {
   state = {
-    words: hathorLib.wallet.generateWalletWords(hathorLib.constants.HD_WALLET_ENTROPY),
+    words: walletUtils.generateWalletWords(hathorConstants.HD_WALLET_ENTROPY),
   };
 
   style = Object.assign({}, baseStyle, StyleSheet.create({
@@ -254,10 +258,10 @@ class LoadWordsScreen extends React.Component {
     let isValid = false;
     if (words) {
       try {
-        hathorLib.walletUtils.wordsValid(words);
+        walletUtils.wordsValid(words);
         isValid = true;
       } catch (e) {
-        if (e instanceof hathorLib.errors.InvalidWords) {
+        if (e instanceof hathorErrors.InvalidWords) {
           errorMessage = e.message;
           if (e.invalidWords && e.invalidWords.length > 0) {
             errorMessage = `${errorMessage} List of invalid words: ${e.invalidWords.join(', ')}.`;
@@ -282,7 +286,7 @@ class LoadWordsScreen extends React.Component {
     Keyboard.dismiss();
     const words = this.state.words.join(' ');
     this.setState({ errorMessage: '' });
-    const result = hathorLib.wallet.wordsValid(words);
+    const result = walletUtils.wordsValid(words);
     if (result.valid) {
       this.props.navigation.navigate('ChoosePinScreen', { words });
     } else {
