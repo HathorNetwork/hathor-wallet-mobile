@@ -91,17 +91,17 @@ export default function WalletConnectList({ navigation }) {
   const connectionFailed = useSelector((state) => state.walletConnect.connectionFailed);
   const connectedSessions = useSelector((state) => state.walletConnect.sessions);
 
-  const mappedSessions = Object.keys(connectedSessions).reduce((acc, sessionKey) => {
+  const mappedSessions = Object.keys(connectedSessions).map((sessionKey) => {
     const session = connectedSessions[sessionKey];
 
-    return [...acc, {
+    return {
       sessionKey,
       description: get(session, 'peer.metadata.description'),
       icon: get(session, 'peer.metadata.icons[0]'),
       url: get(session, 'peer.metadata.url'),
       name: get(session, 'peer.metadata.name'),
-    }];
-  }, []);
+    };
+  });
 
   const renderHeaderRightElement = () => (
     <SimpleButton
@@ -146,7 +146,7 @@ export default function WalletConnectList({ navigation }) {
               description,
               url,
             }) => (
-              <TouchableOpacity onLongPress={() => onLongPress(sessionKey)}>
+              <TouchableOpacity onLongPress={() => onLongPress(sessionKey)} key={sessionKey}>
                 <View style={style.buttonWrapper}>
                   <Image style={style.image} source={{ uri: icon }} />
                   <View style={style.dataWrapper}>
