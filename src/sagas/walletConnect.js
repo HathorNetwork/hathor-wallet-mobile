@@ -21,7 +21,7 @@ import {
   race,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
-import { get } from 'lodash';
+import { get, values } from 'lodash';
 import { store } from '../reducer';
 
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
@@ -40,7 +40,9 @@ import {
 } from '../actions';
 import { checkForFeatureFlag, showPinScreenForResult } from './helpers';
 
-const AVAILABLE_METHODS = ['hathor_signMessage'];
+const AVAILABLE_METHODS = {
+  HATHOR_SIGN_MESSAGE: 'hathor_signMessage',
+};
 const AVAILABLE_EVENTS = [];
 
 /**
@@ -208,7 +210,7 @@ export function* onSessionRequest(action) {
   };
 
   switch (params.request.method) {
-    case 'hathor_signMessage':
+    case AVAILABLE_METHODS.HATHOR_SIGN_MESSAGE:
       yield put({
         type: 'SIGN_MESSAGE_REQUEST',
         payload: {
@@ -254,13 +256,13 @@ export function* onSignMessageRequest(action) {
     onRejectAction,
   }));
 
-  const { accept } = yield race({
+  const { reject } = yield race({
     accept: take(onAcceptAction.type),
     reject: take(onRejectAction.type),
   });
 
   try {
-    if (!accept) {
+    if (reject) {
       yield call(() => web3wallet.respondSessionRequest({
         topic: data.topic,
         response: {
@@ -368,12 +370,12 @@ export function* onSessionProposal(action) {
     onRejectAction,
   }));
 
-  const { accept } = yield race({
+  const { reject } = yield race({
     accept: take(onAcceptAction.type),
     reject: take(onRejectAction.type),
   });
 
-  if (!accept) {
+  if (reject) {
     yield call(() => web3wallet.rejectSession({
       id: params.id,
       reason: {
@@ -392,7 +394,7 @@ export function* onSessionProposal(action) {
           accounts: [`hathor:${NETWORK}:${firstAddress}`],
           chains: [`hathor:${NETWORK}`],
           events: AVAILABLE_EVENTS,
-          methods: AVAILABLE_METHODS,
+          methods: values(AVAILABLE_METHODS),
         },
       },
     }));
