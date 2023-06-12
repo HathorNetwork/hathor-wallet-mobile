@@ -355,7 +355,7 @@ class _AppStackWrapper extends React.Component {
    * These tokens are known as 'registered' tokens
    */
   updateReduxTokens = async () => {
-    if ((!this.props.wallet) || (!this.props.wallet.storage)) {
+    if (!this.props.wallet?.storage) {
       return;
     }
     const tokens = [...INITIAL_TOKENS];
