@@ -18,12 +18,18 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import FeedbackModal from '../../components/FeedbackModal';
+import errorIcon from '../../assets/images/icErrorBig.png';
 
 import HathorHeader from '../../components/HathorHeader';
 import SimpleButton from '../../components/SimpleButton';
 import { HathorList } from '../../components/HathorList';
-import { walletConnectCancelSession } from '../../actions';
+import {
+  walletConnectCancelSession,
+  setWCConnectionFailed,
+} from '../../actions';
 
+const connectFailedText = t`There was an error connecting. Please try again later.`;
 
 const style = StyleSheet.create({
   componentWrapper: {
@@ -82,6 +88,7 @@ const style = StyleSheet.create({
 
 export default function WalletConnectList({ navigation }) {
   const dispatch = useDispatch();
+  const connectionFailed = useSelector((state) => state.walletConnect.connectionFailed);
   const connectedSessions = useSelector((state) => state.walletConnect.sessions);
 
   const mappedSessions = Object.keys(connectedSessions).reduce((acc, sessionKey) => {
@@ -158,6 +165,13 @@ export default function WalletConnectList({ navigation }) {
             ))}
           </HathorList>
         </View>
+        {connectionFailed && (
+          <FeedbackModal
+            icon={(<Image source={errorIcon} resizeMode='contain' />)}
+            text={connectFailedText}
+            onDismiss={() => dispatch(setWCConnectionFailed(false))}
+          />
+        )}
       </SafeAreaView>
     </View>
   );

@@ -202,6 +202,7 @@ const initialState = {
     modal: {
       show: false,
     },
+    connectionFailed: false,
     sessions: {},
   },
   unleashClient: null,
@@ -343,6 +344,8 @@ const reducer = (state = initialState, action) => {
       return onSetWalletConnectModal(state, action);
     case types.SET_WALLET_CONNECT_SESSIONS:
       return onSetWalletConnectSessions(state, action);
+    case types.WC_SET_CONNECTION_FAILED:
+      return onSetWCConnectionFailed(state, action);
     default:
       return state;
   }
@@ -1062,6 +1065,14 @@ export const onSetWalletConnectSessions = (state, { payload }) => ({
   walletConnect: {
     ...state.walletConnect,
     sessions: payload,
+  },
+});
+
+export const onSetWCConnectionFailed = (state, { payload }) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    connectionFailed: payload,
   },
 });
 

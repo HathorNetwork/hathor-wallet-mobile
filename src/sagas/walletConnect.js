@@ -36,6 +36,7 @@ import {
   setWalletConnectModal,
   setWalletConnectSessions,
   onExceptionCaptured,
+  setWCConnectionFailed,
 } from '../actions';
 import { checkForFeatureFlag, showPinScreenForResult } from './helpers';
 
@@ -417,10 +418,9 @@ export function* onUriInputted(action) {
   const { payload } = action;
 
   try {
-    yield call(() => core.pairing.pair({ uri: payload }));
+    yield call(core.pairing.pair, { uri: payload });
   } catch (error) {
-    console.error('Error pairing with QrCode: ', error);
-    yield put(onExceptionCaptured(error));
+    yield put(setWCConnectionFailed(true));
   }
 }
 

@@ -108,6 +108,7 @@ export const types = {
   SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
   WC_URI_INPUTTED: 'WC_URI_INPUTTED',
   WC_CANCEL_SESSION: 'WC_CANCEL_SESSION',
+  WC_SET_CONNECTION_FAILED: 'WC_SET_CONNECTION_FAILED',
 };
 
 export const featureToggleInitialized = () => ({
@@ -817,4 +818,9 @@ export const pushCleanTxDetails = () => ({
  */
 export const pushReset = () => ({
   type: types.PUSH_RESET,
+});
+
+export const setWCConnectionFailed = (failed) => ({
+  type: types.WC_SET_CONNECTION_FAILED,
+  payload: failed,
 });
