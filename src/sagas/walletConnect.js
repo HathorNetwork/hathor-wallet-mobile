@@ -22,6 +22,7 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get } from 'lodash';
+import { store } from '../reducer';
 
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
@@ -36,7 +37,7 @@ import {
   setWalletConnectSessions,
   onExceptionCaptured,
 } from '../actions';
-import { checkForFeatureFlag } from './helpers';
+import { checkForFeatureFlag, showPinScreenForResult } from './helpers';
 
 const AVAILABLE_METHODS = ['hathor_signMessage'];
 const AVAILABLE_EVENTS = [];
@@ -50,6 +51,7 @@ const ERROR_CODES = {
   USER_DISCONNECTED: 6000,
   USER_REJECTED: 5000,
   USER_REJECTED_METHOD: 5002,
+  INVALID_PAYLOAD: 5003,
 };
 
 function* isWalletConnectEnabled() {
@@ -279,7 +281,30 @@ export function* onSignMessageRequest(action) {
       return;
     }
 
-    const signedMessage = yield call(() => wallet.signArbitraryMessage(data.message));
+    if (!data.message) {
+      yield call(() => web3wallet.respondSessionRequest({
+        topic: data.topic,
+        response: {
+          id: data.id,
+          jsonrpc: '2.0',
+          error: {
+            code: ERROR_CODES.INVALID_PAYLOAD,
+            message: 'Missing message to sign',
+          },
+        },
+      }));
+
+      return;
+    }
+
+    const { message } = data;
+
+    const pinCode = yield call(() => showPinScreenForResult(store.dispatch));
+    const signedMessage = yield call(() => wallet.signMessageWithAddress(
+      message,
+      0, // First address
+      pinCode,
+    ));
 
     const response = {
       id: data.requestId,
@@ -321,7 +346,7 @@ export function* onSessionProposal(action) {
   const { web3wallet } = yield select((state) => state.walletConnect.client);
 
   const wallet = yield select((state) => state.wallet);
-  const firstAddress = wallet.getAddressAtIndex(0);
+  const firstAddress = yield call(() => wallet.getAddressAtIndex(0));
 
   const data = {
     icon: get(params, 'proposer.metadata.icons[0]', null),
