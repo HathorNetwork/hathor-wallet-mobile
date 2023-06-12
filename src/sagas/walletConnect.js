@@ -168,8 +168,8 @@ export function* setupListeners(web3wallet) {
  */
 export function* clearSessions() {
   const { web3wallet } = yield select((state) => state.walletConnect.client);
-
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
+
   for (const key of Object.keys(activeSessions)) {
     yield call(() => web3wallet.disconnectSession({
       topic: activeSessions[key].topic,
@@ -327,8 +327,8 @@ export function* onSignMessageRequest(action) {
  * can clear all current sessions.
  */
 export function* onWalletReset() {
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
-  if (!web3wallet) {
+  const walletConnect = yield select((state) => state.walletConnect);
+  if (!walletConnect || !walletConnect.client) {
     // Do nothing, wallet connect might not have been initialized yet
     return;
   }
