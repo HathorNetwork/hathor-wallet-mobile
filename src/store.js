@@ -15,6 +15,11 @@ export const ACCESS_DATA_KEY = 'asyncstorage:access';
 export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
 export const STORE_VERSION_KEY = 'asyncstorage:version';
 
+export const walletKeys = [
+  ACCESS_DATA_KEY,
+  REGISTERED_TOKENS_KEY,
+];
+
 /* eslint-disable class-methods-use-this */
 /**
  * The hybrid store will use the mobile native AsyncStorage to persist data and
@@ -113,8 +118,6 @@ class HybridStore extends MemoryStore {
  * was stored in the AsyncStorage.
  */
 class AsyncStorageStore {
-  _storage = null;
-
   version = 1;
 
   constructor() {
@@ -153,6 +156,16 @@ class AsyncStorageStore {
   }
 
   /**
+   * Reset the persisted wallet data
+   */
+  async resetWallet() {
+    // This should delete the access data and registered tokens, the only persisted data
+    await AsyncStorage.multiRemove(walletKeys);
+    // This will delete any wallet data of the legacy storage
+    await this.clearItems(true);
+  }
+
+  /**
    * Check if the wallet is loaded.
    * Only works after preload is called and hathorMemoryStorage is populated.
    *
@@ -169,8 +182,6 @@ class AsyncStorageStore {
    * @param {string} pin - Will be used as pin and password
    */
   async initStorage(seed, pin) {
-    // Remove old storage if it exists
-    this._storage = null;
     const accessData = walletUtils.generateAccessDataFromSeed(
       seed,
       {
@@ -184,18 +195,6 @@ class AsyncStorageStore {
   }
 
   /**
-   * Get a Storage instance for the loaded wallet.
-   * @returns {Storage} Storage instance if the wallet is loaded.
-   */
-  getStorage() {
-    if (!this._storage) {
-      const store = new HybridStore();
-      this._storage = new Storage(store);
-    }
-    return this._storage;
-  }
-
-  /**
    * Get access data of loaded wallet from async storage.
    *
    * @returns {IWalletAccessData|null}
@@ -204,6 +203,17 @@ class AsyncStorageStore {
     const storage = this.getStorage();
     return storage.getAccessData();
   }
+
+  /* eslint-disable class-methods-use-this */
+  /**
+   * Build a new storage instance using the HybridStore
+   * @returns {Storage}
+   */
+  getStorage() {
+    const store = new HybridStore();
+    return new Storage(store);
+  }
+  /* eslint-enable class-methods-use-this */
 
   /**
    * Will attempt to load the access data from either the old or new storage.
