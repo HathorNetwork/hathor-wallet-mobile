@@ -22,7 +22,6 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
-import { store } from '../reducer';
 
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
@@ -302,7 +301,12 @@ export function* onSignMessageRequest(action) {
 
     const { message } = data;
 
-    const pinCode = yield call(() => showPinScreenForResult(store.dispatch));
+    let dispatch;
+    yield put((_dispatch) => {
+      dispatch = _dispatch;
+    });
+
+    const pinCode = yield call(() => showPinScreenForResult(dispatch));
     const signedMessage = yield call(() => wallet.signMessageWithAddress(
       message,
       0, // First address
