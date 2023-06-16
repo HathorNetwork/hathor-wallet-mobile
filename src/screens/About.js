@@ -45,22 +45,21 @@ export class About extends React.Component {
     if (Platform.OS === 'android') {
       // Android
       return (<Text style={this.style.text}>{`v${VersionNumber.appVersion} (build ${VersionNumber.buildVersion})`}</Text>);
-    } else if (Platform.OS === 'ios') {
+    }
+    if (Platform.OS === 'ios') {
       // iOS
       const build = VersionNumber.buildVersion.split('.');
       if (build.length !== 3) {
         throw new Error('IOS build version is not in the correct format.');
       }
-      if (build[0] == '0') {
+      if (build[0] === '0') {
         // This is a release candidate build
         return (<Text style={this.style.text}>{`v${VersionNumber.appVersion}-rc${build[1]} (build ${build[2]})`}</Text>);
-      } else {
-        // This is an official release build
-        return (<Text style={this.style.text}>{`v${VersionNumber.appVersion} (build ${build[2]})`}</Text>);
       }
-    } else {
-      throw new Error('Unsupported platform.');
+      // This is an official release build
+      return (<Text style={this.style.text}>{`v${VersionNumber.appVersion} (build ${build[2]})`}</Text>);
     }
+    throw new Error('Unsupported platform.');
   }
 
   render() {
