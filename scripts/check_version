@@ -3,21 +3,18 @@
 PACKAGE_VERSION=`grep '"version":' ./package.json | cut -d '"' -f4`
 ANDROID_GRADLE_VERSION=`grep "versionName " ./android/app/build.gradle | cut -d '"' -f2`
 TEMP_IOS_VAR=`perl -n -e '/MARKETING_VERSION = (.*);/ && print "$1\n"' ./ios/HathorMobile.xcodeproj/project.pbxproj`
-IOS_PROJECT_VERSION_1=`echo $TEMP_IOS_VAR | awk '{print $1}'`
-IOS_PROJECT_VERSION_2=`echo $TEMP_IOS_VAR | awk '{print $2}'`
+IOS_MARKETING_VERSION_1=`echo $TEMP_IOS_VAR | awk '{print $1}'`
+IOS_MARKETING_VERSION_2=`echo $TEMP_IOS_VAR | awk '{print $2}'`
 
 # This will read everything of the string up to the first dash.
-IFS='-'
-read -ra ADDR <<< "$PACKAGE_VERSION"
-STRIPPED_PACKAGE_VERSION="${ADDR[0]}";
-IFS=' '
+STRIPPED_PACKAGE_VERSION=$(echo $PACKAGE_VERSION| cut -d- -f1);
 
 # For debugging:
 # echo package: x${PACKAGE_VERSION}x
 # echo stripped: x${STRIPPED_PACKAGE_VERSION}x
 # echo android: x${ANDROID_GRADLE_VERSION}x
-# echo ios pv1: x${IOS_PROJECT_VERSION_1}x
-# echo ios pv2: x${IOS_PROJECT_VERSION_2}x
+# echo ios pv1: x${IOS_MARKETING_VERSION_1}x
+# echo ios pv2: x${IOS_MARKETING_VERSION_2}x
 
 EXITCODE=0
 
@@ -26,13 +23,13 @@ if [[ x${PACKAGE_VERSION}x != x${ANDROID_GRADLE_VERSION}x ]]; then
 	EXITCODE=-1
 fi
 
-if [[ x${STRIPPED_PACKAGE_VERSION}x != x${IOS_PROJECT_VERSION_1}x ]]; then
-  echo Version different in package.json \($PACKAGE_VERSION\) and first MARKETING_VERSION \($IOS_PROJECT_VERSION_1\) on ios/HathorMobile.xcodeproj/project.pbxproj
+if [[ x${STRIPPED_PACKAGE_VERSION}x != x${IOS_MARKETING_VERSION_1}x ]]; then
+  echo Version different in package.json \($PACKAGE_VERSION\) and first MARKETING_VERSION \($IOS_MARKETING_VERSION_1\) on ios/HathorMobile.xcodeproj/project.pbxproj
 	EXITCODE=-1
 fi
 
-if [[ x${STRIPPED_PACKAGE_VERSION}x != x${IOS_PROJECT_VERSION_2}x ]]; then
-	echo Version different in package.json \($PACKAGE_VERSION\) and second MARKETING_VERSION \($IOS_PROJECT_VERSION_1\) on ios/HathorMobile.xcodeproj/project.pbxproj
+if [[ x${STRIPPED_PACKAGE_VERSION}x != x${IOS_MARKETING_VERSION_2}x ]]; then
+	echo Version different in package.json \($PACKAGE_VERSION\) and second MARKETING_VERSION \($IOS_MARKETING_VERSION_2\) on ios/HathorMobile.xcodeproj/project.pbxproj
 	EXITCODE=-1
 fi
 

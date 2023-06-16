@@ -26,6 +26,12 @@ In the `ios/HathorMobile.xcodeproj/project.pbxproj`:
 
   > App Store uses the pair `(CFBundleShortVersionString, CFBundleVersion)` to identify a release. They are both from `ios/HathorMobile/Info.plist`.
 
+- Set the `CURRENT_PROJECT_VERSION` to a valid build version
+
+  > If the version is the first release candidate, the `CURRENT_PROJECT_VERSION` should be `0.1.0` and we should increate the minor version for each new release candidate, i.e. v1.0.0-rc5 would give us `CURRENT_PROJECT_VERSION = 0.5.0`.
+  > The major version should be 0 for release candidates and 1 for releases.
+  > The patch (last digit) of the `CURRENT_PROJECT_VERSION` should be always `0` unless we are re-launching the version.
+
 Create a git tag and a new release on GitHub.
 
 # Publishing the new App
