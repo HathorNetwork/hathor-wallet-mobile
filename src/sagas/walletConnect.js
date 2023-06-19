@@ -117,34 +117,27 @@ export function* refreshActiveSessions() {
  */
 export function* setupListeners(web3wallet) {
   const channel = eventChannel((emitter) => {
-    const listener = (state) => emitter(state);
+    const listenerMap = new Map();
+    const addListener = (eventName) => {
+      const listener = async (data) => {
+        emitter({
+          type: `WC_${eventName.toUpperCase()}`,
+          data,
+        });
+      };
 
-    web3wallet.on('session_request', (event) => {
-      emitter({
-        type: 'WC_SESSION_REQUEST',
-        data: event,
-      });
-    });
-
-    web3wallet.on('session_proposal', async (proposal) => {
-      emitter({
-        type: 'WC_SESSION_PROPOSAL',
-        data: proposal,
-      });
-    });
-
-    web3wallet.on('session_delete', async (session) => {
-      emitter({
-        type: 'WC_SESSION_DELETE',
-        data: session,
-      });
-    });
-
-    return () => {
-      web3wallet.removeListener('session_request', listener);
-      web3wallet.removeListener('session_proposal', listener);
-      web3wallet.removeListener('session_delete', listener);
+      web3wallet.on(eventName, listener);
+      listenerMap.set(eventName, listener);
     };
+
+    addListener('session_request');
+    addListener('session_proposal');
+    addListener('session_delete');
+
+    return () => listenerMap.forEach((
+      listener,
+      eventName,
+    ) => web3wallet.removeListener(eventName, listener));
   });
 
   try {
