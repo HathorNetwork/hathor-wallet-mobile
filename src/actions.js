@@ -132,6 +132,9 @@ export const setUnleashClient = (unleashClient) => ({
   payload: unleashClient,
 });
 
+/**
+ * sessions {Array} List of sessions to store
+ */
 export const setWalletConnectSessions = (sessions) => ({
   type: types.SET_WALLET_CONNECT_SESSIONS,
   payload: sessions,
@@ -820,6 +823,9 @@ export const pushReset = () => ({
   type: types.PUSH_RESET,
 });
 
+/**
+ * failed {Boolean} Flag indicating whether WC failed or not.
+ */
 export const setWCConnectionFailed = (failed) => ({
   type: types.WC_SET_CONNECTION_FAILED,
   payload: failed,
