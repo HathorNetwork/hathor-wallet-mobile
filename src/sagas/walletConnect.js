@@ -16,6 +16,7 @@ import {
   cancel,
   cancelled,
   takeLatest,
+  takeLeading,
   takeEvery,
   select,
   race,
@@ -203,14 +204,11 @@ export function* onSessionRequest(action) {
 
   switch (params.request.method) {
     case AVAILABLE_METHODS.HATHOR_SIGN_MESSAGE:
-      yield put({
-        type: 'SIGN_MESSAGE_REQUEST',
-        payload: {
-          ...data,
-          requestId: payload.id,
-          topic: payload.topic,
-          message: get(params, 'request.params.message'),
-        }
+      yield call(onSignMessageRequest, {
+        ...data,
+        requestId: payload.id,
+        topic: payload.topic,
+        message: get(params, 'request.params.message'),
       });
       break;
     default:
@@ -233,8 +231,7 @@ export function* onSessionRequest(action) {
  * This saga will be called (dispatched from the event listener) when a sign
  * message RPC is published from a dApp
  */
-export function* onSignMessageRequest(action) {
-  const data = action.payload;
+export function* onSignMessageRequest(data) {
   const { web3wallet } = yield select((state) => state.walletConnect.client);
 
   const onAcceptAction = { type: 'WALLET_CONNECT_ACCEPT' };
@@ -258,7 +255,7 @@ export function* onSignMessageRequest(action) {
       yield call(() => web3wallet.respondSessionRequest({
         topic: data.topic,
         response: {
-          id: data.id,
+          id: data.requestId,
           jsonrpc: '2.0',
           error: {
             code: ERROR_CODES.USER_REJECTED,
@@ -475,13 +472,12 @@ export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
     takeLatest(types.START_WALLET_SUCCESS, init),
-    takeEvery('WC_SESSION_REQUEST', onSessionRequest),
+    takeLeading('WC_SESSION_REQUEST', onSessionRequest),
     takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('WC_SESSION_DELETE', onSessionDelete),
     takeEvery('WC_CANCEL_SESSION', onCancelSession),
     takeEvery('WC_SHUTDOWN', clearSessions),
     takeEvery(types.RESET_WALLET, onWalletReset),
-    takeLatest('SIGN_MESSAGE_REQUEST', onSignMessageRequest),
     takeLatest(types.WC_URI_INPUTTED, onUriInputted),
   ]);
 }
