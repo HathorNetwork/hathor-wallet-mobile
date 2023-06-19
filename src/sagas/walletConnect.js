@@ -237,6 +237,13 @@ export function* onSignMessageRequest(data) {
   const onAcceptAction = { type: 'WALLET_CONNECT_ACCEPT' };
   const onRejectAction = { type: 'WALLET_CONNECT_REJECT' };
 
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet.isReady()) {
+    console.error('Got a session request but wallet is not ready, ignoring..');
+    return;
+  }
+
   yield put(setWalletConnectModal({
     show: true,
     type: WalletConnectModalTypes.SIGN_MESSAGE,
@@ -263,13 +270,6 @@ export function* onSignMessageRequest(data) {
           },
         },
       }));
-      return;
-    }
-
-    const wallet = yield select((state) => state.wallet);
-
-    if (!wallet.isReady()) {
-      console.error('Got a session request but wallet is not ready, ignoring..');
       return;
     }
 
