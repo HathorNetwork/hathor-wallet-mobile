@@ -48,7 +48,7 @@ export class About extends React.Component {
   renderBuildVersion() {
     if (Platform.OS === 'android') {
       // Android
-      return this.renderVersionText(`v${VersionNumber.appVersion}`, VersionNumber.buildVersion);
+      return this.renderVersionText(VersionNumber.appVersion, VersionNumber.buildVersion);
     }
     if (Platform.OS === 'ios') {
       // iOS
@@ -58,10 +58,10 @@ export class About extends React.Component {
       }
       if (build[0] === '0') {
         // This is a release candidate build
-        return this.renderVersionText(`v${VersionNumber.appVersion}-rc${build[1]}`, build[2]);
+        return this.renderVersionText(`${VersionNumber.appVersion}-rc${build[1]}`, build[2]);
       }
       // This is an official release build
-      return this.renderVersionText(`v${VersionNumber.appVersion}`, build[2]);
+      return this.renderVersionText(VersionNumber.appVersion, build[2]);
     }
     throw new Error('Unsupported platform.');
   }
