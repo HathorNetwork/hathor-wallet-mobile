@@ -1050,10 +1050,7 @@ export const onSetWalletConnectModal = (state, { payload }) => ({
   ...state,
   walletConnect: {
     ...state.walletConnect,
-    modal: {
-      ...state.walletConnect.modal,
-      ...payload,
-    }
+    modal: payload,
   },
 });
 
