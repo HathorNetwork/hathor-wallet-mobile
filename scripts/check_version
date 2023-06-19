@@ -3,8 +3,11 @@
 PACKAGE_VERSION=`grep '"version":' ./package.json | cut -d '"' -f4`
 ANDROID_GRADLE_VERSION=`grep "versionName " ./android/app/build.gradle | cut -d '"' -f2`
 TEMP_IOS_VAR=`perl -n -e '/MARKETING_VERSION = (.*);/ && print "$1\n"' ./ios/HathorMobile.xcodeproj/project.pbxproj`
+TEMP_IOS_PROJECT_VERSION=`perl -n -e '/CURRENT_PROJECT_VERSION = (.*);/ && print "$1\n"' ./ios/HathorMobile.xcodeproj/project.pbxproj`
 IOS_MARKETING_VERSION_1=`echo $TEMP_IOS_VAR | awk '{print $1}'`
 IOS_MARKETING_VERSION_2=`echo $TEMP_IOS_VAR | awk '{print $2}'`
+IOS_PROJECT_VERSION_1=`echo $TEMP_IOS_PROJECT_VERSION | awk '{print $1}'`
+IOS_PROJECT_VERSION_2=`echo $TEMP_IOS_PROJECT_VERSION | awk '{print $2}'`
 
 # This will read everything of the string up to the first dash.
 STRIPPED_PACKAGE_VERSION=$(echo $PACKAGE_VERSION| cut -d- -f1);
@@ -31,6 +34,15 @@ fi
 if [[ x${STRIPPED_PACKAGE_VERSION}x != x${IOS_MARKETING_VERSION_2}x ]]; then
 	echo Version different in package.json \($PACKAGE_VERSION\) and second MARKETING_VERSION \($IOS_MARKETING_VERSION_2\) on ios/HathorMobile.xcodeproj/project.pbxproj
 	EXITCODE=-1
+fi
+
+# This will check the format of IOS' CURRENT_PROJECT_VERSION
+if [[ ! "$IOS_PROJECT_VERSION_1" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+    echo "Invalid format (expected X.X.X) for first CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_1}) on ios/HathorMobile.xcodeproj/project.pbxproj"
+fi
+
+if [[ ! "$IOS_PROJECT_VERSION_2" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+    echo "Invalid format (expected X.X.X) for second CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_2}) on ios/HathorMobile.xcodeproj/project.pbxproj"
 fi
 
 exit $EXITCODE
