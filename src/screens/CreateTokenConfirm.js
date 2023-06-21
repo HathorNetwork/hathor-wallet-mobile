@@ -58,9 +58,9 @@ class CreateTokenConfirm extends React.Component {
 
   constructor(props) {
     super(props);
-    this.amount = this.props.navigation.getParam('amount');
-    this.name = this.props.navigation.getParam('name');
-    this.symbol = this.props.navigation.getParam('symbol');
+    this.amount = this.props.route.params.amount;
+    this.name = this.props.route.params.name;
+    this.symbol = this.props.route.params.symbol;
   }
 
   /**

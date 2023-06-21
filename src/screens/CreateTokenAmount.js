@@ -51,8 +51,8 @@ class CreateTokenAmount extends React.Component {
     super(props);
     this.inputRef = React.createRef();
     this.willFocusEvent = null;
-    this.name = this.props.navigation.getParam('name');
-    this.symbol = this.props.navigation.getParam('symbol');
+    this.name = this.props.route.params.name;
+    this.symbol = this.props.route.params.symbol;
   }
 
   componentDidMount() {

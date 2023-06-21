@@ -46,7 +46,7 @@ class RegisterTokenManual extends React.Component {
      * validating {boolean} If is running validation method for configuration string
      */
     this.state = {
-      configString: this.props.navigation.getParam('configurationString', ''),
+      configString: this.props.route.params.configurationString ?? '',
       errorMessage: '',
       token: null,
       validating: false,

@@ -109,7 +109,7 @@ class SendAmountInput extends React.Component {
       this.setState({ error: t`Insufficient funds` });
     } else {
       // forward the address we got from the last screen to the next one
-      const address = this.props.navigation.getParam('address');
+      const { address } = this.props.route.params;
       this.props.navigation.navigate('SendConfirmScreen', { address, amount, token: this.state.token });
     }
   }

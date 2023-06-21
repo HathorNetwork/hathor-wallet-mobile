@@ -32,10 +32,10 @@ class ChangeToken extends React.Component {
     super(props);
 
     // Selected token
-    this.token = props.navigation.getParam('token', null);
+    this.token = props.route.params.token ?? null;
 
     // Callback on token press
-    this.onPressCallback = props.navigation.getParam('onItemPress', null);
+    this.onPressCallback = props.route.params.onItemPress ?? null;
   }
 
   onItemPress = (item) => {

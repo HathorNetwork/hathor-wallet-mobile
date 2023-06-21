@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { NavigationActions } from 'react-navigation';
+import { CommonActions } from '@react-navigation/native';
 
 let _navigator;
 
@@ -21,10 +21,13 @@ function setTopLevelNavigator(navigatorRef) {
  * Uses the initialized navigator (from setTopLevelNavigator) to navigate to a
  * route.
  */
-function navigate(routeName, params) {
-  _navigator.dispatch(
-    NavigationActions.navigate({
-      routeName,
+function navigate(name, params) {
+  if (!_navigator.current) { // XXX: Maybe this validation is not necessary
+    throw new Error('Navigator is not in a consistent state to be manipulated');
+  }
+  _navigator.current.dispatch(
+    CommonActions.navigate({
+      name,
       params,
     })
   );

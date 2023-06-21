@@ -36,7 +36,7 @@ class CreateTokenSymbol extends React.Component {
   }
 
   onButtonPress = () => {
-    const name = this.props.navigation.getParam('name');
+    const { name } = this.props.route.params;
     this.props.navigation.navigate('CreateTokenAmount', { name, symbol: this.state.symbol });
   }
 
