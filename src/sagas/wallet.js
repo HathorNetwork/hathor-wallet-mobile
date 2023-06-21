@@ -117,7 +117,6 @@ export function* startWallet(action) {
     words,
     pin,
   } = action.payload;
-  NavigationService.navigate('LoadHistoryScreen');
 
   const uniqueDeviceId = getUniqueId();
   const useWalletService = yield call(isWalletServiceEnabled);

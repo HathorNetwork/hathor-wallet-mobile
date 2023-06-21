@@ -22,7 +22,6 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
-import NavigationService from './NavigationService';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
@@ -523,7 +522,6 @@ const RootStack = () => {
   }, []);
 
   const Stack = createStackNavigator();
-  console.log(`isLoaded: ${isLoaded}`);
 
   return (
     <Stack.Navigator
