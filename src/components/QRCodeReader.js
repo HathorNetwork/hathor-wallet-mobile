@@ -75,7 +75,8 @@ class QRCodeReader extends React.Component {
    */
   _handleAppStateChangeEventSubRemove() {
     if (this.appStateChangeEventSub) {
-      this.appStateChangeEventSub();
+      this.appStateChangeEventSub.remove();
+      this.appStateChangeEventSub = null;
     }
   }
 
