@@ -270,6 +270,10 @@ export function* onSessionRequest(action) {
 /**
  * This saga will be called (dispatched from the event listener) when a sign
  * message RPC is published from a dApp
+ *
+ * @param {String} data.requestId Unique identifier of the request
+ * @param {String} data.topic Unique identifier of the connected session
+ * @param {String} data.message Message the dApp requested a signature for
  */
 export function* onSignMessageRequest(data) {
   const { web3wallet } = yield select((state) => state.walletConnect.client);
