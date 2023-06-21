@@ -179,8 +179,6 @@ const TabNavigator = () => {
   return (
     <Tab.Navigator
       tabBarOptions={{
-        activeTintColor: PRIMARY_COLOR,
-        inactiveTintColor: 'rgba(0, 0, 0, 0.5)',
         style: {
           paddingTop: 12,
           paddingBottom: 12,
@@ -191,20 +189,17 @@ const TabNavigator = () => {
         showIcon: true,
         showLabel: false,
       }}
-      options={({ navigation }) => ({
-        tabBarIcon: (params) => { // FIXME: This is not the correct way to implement the icon
-          console.log(`tabBarIcon params: `, params);
-          const { tintColor } = params;
-          const { routeName } = navigation.state;
-          const iconName = tabBarIconMap[routeName];
-          return (<IconTabBar name={iconName} size={24} color={tintColor} />);
-        }
-      })
-      }
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused }) => {
+          const { name } = route;
+          const iconName = tabBarIconMap[name];
+          const colorName = focused ? PRIMARY_COLOR : 'rgba(0, 0, 0, 0.5)';
+          return (<IconTabBar name={iconName} size={24} color={colorName} />);
+        },
+      })}
     >
       <Tab.Screen
         name='Home'
-        initialParams={{ hName: (IS_MULTI_TOKEN ? 'DashboardStack' : 'MainScreen') }}
         component={IS_MULTI_TOKEN ? DashboardStack : MainScreen}
       />
       <Tab.Screen name='Send' component={SendStack} />
