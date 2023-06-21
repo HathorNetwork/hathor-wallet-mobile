@@ -52,16 +52,16 @@ class SendAmountInput extends React.Component {
 
   inputRef = React.createRef();
 
-  willFocusEvent = null;
+  focusEvent = null;
 
   componentDidMount() {
-    this.willFocusEvent = this.props.navigation.addListener('willFocus', () => {
+    this.focusEvent = this.props.navigation.addListener('focus', () => {
       this.focusInput();
     });
   }
 
   componentWillUnmount() {
-    this.willFocusEvent.remove();
+    this.focusEvent();
   }
 
   focusInput = () => {

@@ -70,7 +70,7 @@ class PinScreen extends React.Component {
       this.biometryText = props.route.params.biometryText ?? this.biometryText;
     }
 
-    this.willFocusEvent = null;
+    this.focusEvent = null;
   }
 
   componentDidMount() {
@@ -85,7 +85,7 @@ class PinScreen extends React.Component {
       BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
     }
 
-    this.willFocusEvent = this.props.navigation.addListener('willFocus', () => {
+    this.focusEvent = this.props.navigation.addListener('focus', () => {
       this.setState({ pin: '', pinColor: 'black', error: null });
     });
   }
@@ -100,7 +100,7 @@ class PinScreen extends React.Component {
     }
 
     // Removing focus event
-    this.willFocusEvent.removeListener();
+    this.focusEvent();
   }
 
   handleBackButton = () => true;

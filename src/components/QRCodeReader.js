@@ -25,9 +25,9 @@ class QRCodeReader extends React.Component {
     // Ref for the qrcode scanner element
     this.QRCodeElement = null;
     // Will focus event (used to remove event listener on unmount)
-    this.willFocusEvent = null;
+    this.focusEvent = null;
     // Will blur event (used to remove event listener on unmount)
-    this.willBlurEvent = null;
+    this.blurEvent = null;
     // Event subscription for app state change
     this.appStateChangeEventSub = null;
 
@@ -52,20 +52,20 @@ class QRCodeReader extends React.Component {
     // When the app stops being in the active state, we set to false
     // When the app starts being in the active state, we set to true
     const { navigation } = this.props;
-    this.willFocusEvent = navigation.addListener('willFocus', () => {
+    this.focusEvent = navigation.addListener('focus', () => {
       this.reactivateQrCodeScanner();
       this.setState({ focusedScreen: true, appState: AppState.currentState });
       this.appStateChangeEventSub = AppState.addEventListener('change', this._handleAppStateChange);
     });
-    this.willBlurEvent = navigation.addListener('willBlur', () => {
+    this.blurEvent = navigation.addListener('blur', () => {
       this._handleAppStateChangeEventSubRemove();
       this.setState({ focusedScreen: false });
     });
   }
 
   componentWillUnmount() {
-    this.willFocusEvent.remove();
-    this.willBlurEvent.remove();
+    this.focusEvent();
+    this.blurEvent();
     this._handleAppStateChangeEventSubRemove();
   }
 
@@ -75,8 +75,7 @@ class QRCodeReader extends React.Component {
    */
   _handleAppStateChangeEventSubRemove() {
     if (this.appStateChangeEventSub) {
-      this.appStateChangeEventSub.remove();
-      this.appStateChangeEventSub = null;
+      this.appStateChangeEventSub();
     }
   }
 
