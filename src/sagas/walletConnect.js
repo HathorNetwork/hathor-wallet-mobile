@@ -4,6 +4,46 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+
+/**
+ *  ┌──────────────────────┐     ┌────────┐     ┌───────────┐
+ *  │                      │     │        │     │   SETUP   │
+ *  │ START_WALLET_SUCCESS ├─────►  INIT  ├─────►           │
+ *  │                      │     │        │     │ LISTENERS │
+ *  └──────────────────────┘     └────────┘     └───────────┘
+ *
+ *  ┌──────────────┐    ┌─────────────────┐
+ *  │              │    │                 │
+ *  │ DAPP REQUEST ├────► SESSION_REQUEST │
+ *  │              │    │                 │
+ *  └──────────────┘    └─────────────────┘
+ *
+ *  ┌──────────────┐     ┌────────────────┐
+ *  │              │     │                │
+ *  │ RESET_WALLET ├─────► CLEAR_SESSIONS │
+ *  │              │     │                │
+ *  └──────────────┘     └────────────────┘
+ *
+ *  ┌──────────────┐   ┌──────────────────┐
+ *  │              │   │                  │
+ *  │ URI_INPUTTED ├─┬─► SESSION_PROPOSAL │
+ *  │              │ │ │                  │
+ *  └──────────────┘ │ └──────────────────┘
+ *                   │
+ *  ┌────────────┐   │
+ *  │            │   │
+ *  │ QR_SCANNED ├───┘
+ *  │            │
+ *  └────────────┘
+ *
+ * SESSION_REQUEST: Handles new messages published on the cloud message queue
+ * for the current session by the dApp.
+ * SESSION_PROPOSAL: Handles a new dApp connection, initialized by the pair method
+ * on web3wallet
+ * RESET_WALLET: This action is dispatched when the user resets his wallet.
+ * START_WALLET_SUCCESS: This action is dispatched when the wallet is successfully
+ * loaded.
+ */
 import { Core } from '@walletconnect/core';
 import { Web3Wallet } from '@walletconnect/web3wallet';
 
