@@ -113,7 +113,7 @@ class SendConfirmScreen extends React.Component {
   exitScreen = () => {
     this.setState({ modal: null });
     this.props.navigation.popToTop();
-    this.props.navigation.dismiss();
+    this.props.navigation.pop();
   }
 
   render() {

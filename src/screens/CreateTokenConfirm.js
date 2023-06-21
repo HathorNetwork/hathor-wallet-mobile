@@ -160,7 +160,7 @@ class CreateTokenConfirm extends React.Component {
         <HathorHeader
           title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
-          onCancel={() => this.props.navigation.dismiss()}
+          onCancel={() => this.props.navigation.pop()}
         />
 
         { this.state.modal && (

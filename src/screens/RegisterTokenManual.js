@@ -91,7 +91,7 @@ class RegisterTokenManual extends React.Component {
       fetchTokensMetadata([token.uid], networkName).then((metadatas) => {
         this.props.dispatch(tokenMetadataUpdated(metadatas));
       });
-      this.props.navigation.dismiss();
+      this.props.navigation.pop();
     });
   }
 
