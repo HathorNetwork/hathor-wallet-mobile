@@ -64,7 +64,7 @@ import RegisterTokenManual from './screens/RegisterTokenManual';
 import CreateTokenName from './screens/CreateTokenName';
 import CreateTokenSymbol from './screens/CreateTokenSymbol';
 import About from './screens/About';
-import { Security } from './screens/Security';
+import Security from './screens/Security';
 import PushNotification from './screens/PushNotification';
 import ChangePin from './screens/ChangePin';
 import PaymentRequestDetail from './screens/PaymentRequestDetail';
@@ -72,7 +72,7 @@ import ChangeToken from './screens/ChangeToken';
 import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
 import ReceiveScreen from './screens/Receive';
-import { Settings } from './screens/Settings';
+import Settings from './screens/Settings';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -488,6 +488,8 @@ class _AppStackWrapper extends React.Component {
 
 const AppStackWrapper = connect(mapStateToProps, mapDispatchToProps)(_AppStackWrapper);
 
+const BlankScreen = () => null;
+
 const RootStack = () => {
   const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -516,16 +518,36 @@ const RootStack = () => {
       });
   }, []);
 
+  useEffect(() => {
+    if (isLoaded) {
+      // If the wallet is loaded, navigate to the main screen with no option to return to init
+      if (isLoaded) {
+        navigationRef.current.reset({
+          index: 0,
+          routes: [
+            { name: 'App', params: { screen: 'Main', params: { screen: 'Home' } } },
+          ]
+        });
+      } else {
+        navigationRef.current.reset({
+          index: 0,
+          routes: [{ name: 'Init' }],
+        });
+      }
+    }
+  }, [isLoaded]);
+
   const Stack = createStackNavigator();
 
   return (
     <Stack.Navigator
-      initialRouteName={isLoaded ? 'App' : 'Init'}
+      initialRouteName='Decide'
       screenOptions={{
         headerShown: false,
         gestureEnabled: false,
       }}
     >
+      <Stack.Screen name='Decide' component={BlankScreen} />
       <Stack.Screen name='App' component={AppStackWrapper} />
       <Stack.Screen name='Init' component={InitStack} />
     </Stack.Navigator>

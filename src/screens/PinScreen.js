@@ -100,7 +100,7 @@ class PinScreen extends React.Component {
     }
 
     // Removing focus event
-    this.willFocusEvent.remove();
+    this.willFocusEvent.removeListener();
   }
 
   handleBackButton = () => true;
