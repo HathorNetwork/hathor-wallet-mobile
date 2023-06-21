@@ -317,7 +317,7 @@ export function* onSignMessageRequest(data) {
       yield call(() => web3wallet.respondSessionRequest({
         topic: data.topic,
         response: {
-          id: data.id,
+          id: data.requestId,
           jsonrpc: '2.0',
           error: {
             code: ERROR_CODES.INVALID_PAYLOAD,
