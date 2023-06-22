@@ -75,7 +75,7 @@ class BackupWords extends React.Component {
   constructor(props) {
     super(props);
 
-    const paramWords = this.props.route.params.words?.split(' ') ?? [];
+    const paramWords = this.props.route.params.words.split(' ') ?? [];
 
     this.words = paramWords.map((word, id) => ({ word, id }));
   }

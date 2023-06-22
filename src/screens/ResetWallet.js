@@ -64,12 +64,12 @@ class ResetWallet extends React.Component {
     if (this.props.isScreenLocked) {
       this.onBackPress = this.props.dropResetOnLockScreen;
     } else {
-      this.onBackPress = this.props.route.params.onBackPress ?? this.props.navigation.goBack;
+      this.onBackPress = this.props.route.params?.onBackPress ?? this.props.navigation.goBack;
     }
 
     this.hideBackButton = false;
     if (this.props.navigation) {
-      this.hideBackButton = this.props.route.params.hideBackButton ?? false;
+      this.hideBackButton = this.props.route.params?.hideBackButton ?? false;
     }
   }
 
