@@ -494,13 +494,9 @@ const RootStack = () => {
   const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const initialNavigationDecider = async () => {
-    await STORE.preStart(); // TODO: Maybe refactor this elsewhere, since it deletes the wallet data
-    return STORE.walletIsLoaded();
-  };
-
   useEffect(() => {
-    initialNavigationDecider()
+    STORE.preStart()
+      .then(() => STORE.walletIsLoaded())
       .then((_isLoaded) => {
         setIsLoaded(_isLoaded);
       })
