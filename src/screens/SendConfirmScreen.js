@@ -112,8 +112,13 @@ class SendConfirmScreen extends React.Component {
    */
   exitScreen = () => {
     this.setState({ modal: null });
-    this.props.navigation.popToTop();
-    this.props.navigation.pop();
+    // Return to the dashboard, clean all navigtation history
+    this.props.navigation.reset({
+      index: 0,
+      routes: [
+        { name: 'App', params: { screen: 'Main', params: { screen: 'Home' } } },
+      ]
+    });
   }
 
   render() {
