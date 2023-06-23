@@ -23,7 +23,6 @@
     "@react-native-firebase/app": "^16.5.0",
     "@react-native-firebase/messaging": "^16.5.0",
     "@react-navigation/bottom-tabs": "^5.11.15",
-    "@react-navigation/material-top-tabs": "^5.3.19",
     "@react-navigation/native": "^5.9.8",
     "@react-navigation/stack": "^5.14.9",
     "@sentry/react-native": "^3.4.1",
