@@ -113,7 +113,7 @@ class SendConfirmScreen extends React.Component {
    */
   exitScreen = () => {
     this.setState({ modal: null });
-    // Return to the dashboard, clean all navigtation history
+    // Return to the dashboard, clean all navigation history
     NavigationService.resetToMain();
   }
 
