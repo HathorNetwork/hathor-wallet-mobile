@@ -517,12 +517,7 @@ const RootStack = () => {
   useEffect(() => {
     // If the wallet is loaded, navigate to the main screen with no option to return to init
     if (isLoaded) {
-      navigationRef.current.reset({
-        index: 0,
-        routes: [
-          { name: 'App', params: { screen: 'Main', params: { screen: 'Home' } } },
-        ]
-      });
+      NavigationService.resetToMain();
     } else {
       navigationRef.current.reset({
         index: 0,

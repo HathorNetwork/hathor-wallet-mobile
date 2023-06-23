@@ -24,6 +24,7 @@ import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { getTokenLabel } from '../utils';
 import { PRIMARY_COLOR } from '../constants';
+import NavigationService from '../NavigationService';
 
 
 /**
@@ -90,7 +91,7 @@ class UnregisterToken extends React.Component {
     promise.then((tokens) => {
       this.props.dispatch(tokenMetadataRemoved(tokenUnregister));
       this.props.dispatch(setTokens(tokens));
-      this.props.navigation.navigate('Dashboard');
+      NavigationService.resetToMain();
     }, (e) => {
       this.setState({ errorMessage: e.message });
     });

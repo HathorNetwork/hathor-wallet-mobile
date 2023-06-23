@@ -33,7 +33,25 @@ function navigate(name, params) {
   );
 }
 
+/**
+ * Clears the whole navigation history and navigates to the home screen of the logged user.
+ * Useful when an operation has been successfully executed in a screen deep within nested navigators
+ * @returns <void>
+ */
+function resetToMain() {
+  if (!_navigator.current) { // XXX: Maybe this validation is not necessary
+    throw new Error('Navigator is not in a consistent state to be manipulated');
+  }
+  _navigator.current.reset({
+    index: 0,
+    routes: [
+      { name: 'App', params: { screen: 'Main', params: { screen: 'Home' } } },
+    ]
+  });
+}
+
 export default {
   navigate,
   setTopLevelNavigator,
+  resetToMain,
 };

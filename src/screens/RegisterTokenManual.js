@@ -22,6 +22,7 @@ import Spinner from '../components/Spinner';
 import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 
 import { newToken, updateSelectedToken, fetchTokensMetadata, tokenMetadataUpdated } from '../actions';
+import NavigationService from '../NavigationService';
 
 /**
  * wallet {HathorWallet} HathorWallet lib object
@@ -91,7 +92,7 @@ class RegisterTokenManual extends React.Component {
       fetchTokensMetadata([token.uid], networkName).then((metadatas) => {
         this.props.dispatch(tokenMetadataUpdated(metadatas));
       });
-      this.props.navigation.pop();
+      NavigationService.resetToMain();
     });
   }
 

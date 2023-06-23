@@ -20,6 +20,7 @@ import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import { renderValue, isTokenNFT } from '../utils';
+import NavigationService from '../NavigationService';
 
 
 /**
@@ -113,12 +114,7 @@ class SendConfirmScreen extends React.Component {
   exitScreen = () => {
     this.setState({ modal: null });
     // Return to the dashboard, clean all navigtation history
-    this.props.navigation.reset({
-      index: 0,
-      routes: [
-        { name: 'App', params: { screen: 'Main', params: { screen: 'Home' } } },
-      ]
-    });
+    NavigationService.resetToMain();
   }
 
   render() {
