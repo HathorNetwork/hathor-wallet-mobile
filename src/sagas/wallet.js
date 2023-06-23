@@ -72,7 +72,6 @@ import {
   checkForFeatureFlag,
   getRegisteredTokens,
 } from './helpers';
-import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
 export const WALLET_STATUS = {
