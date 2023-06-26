@@ -7,11 +7,13 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import QRCodeScanner from 'react-native-qrcode-scanner';
+// import QRCodeScanner from 'react-native-qrcode-scanner';
 import {
   ActivityIndicator, AppState, StyleSheet, Text, View,
 } from 'react-native';
 import { t } from 'ttag';
+
+class QRCodeScanner {}
 
 class QRCodeReader extends React.Component {
   static defaultProps = {
