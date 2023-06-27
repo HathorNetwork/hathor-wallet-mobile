@@ -158,7 +158,11 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
   while (!next.done) {
     const token = next.value;
     if ((!excludeHTR) || token.uid !== htrUid) {
-      tokens.push(token.uid);
+      tokens.push({
+        uid: token.uid,
+        symbol: token.symbol,
+        name: token.name,
+      });
     }
     // eslint-disable-next-line no-await-in-loop
     next = await iterator.next();

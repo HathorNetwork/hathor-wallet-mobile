@@ -78,12 +78,21 @@ class UnregisterToken extends React.Component {
     // so we dont need to get all registered tokens to call setTokens
     const promise = this.props.storage.unregisterToken(tokenUnregister).then(async () => {
       const newTokens = [];
-      for await (const token of this.props.storage.getRegisteredTokens()) {
+
+      const iterator = this.props.storage.getRegisteredTokens();
+      let next = await iterator.next();
+      // XXX: The "for await" syntax wouldbe better but this is failing due to
+      // redux-saga messing with the for operator runtime
+      while (!next.done) {
+        const token = next.value;
+        // We need to filter the token data to remove the metadata from this list (e.g. balance)
         newTokens.push({
           uid: token.uid,
           symbol: token.symbol,
           name: token.name,
         });
+        // eslint-disable-next-line no-await-in-loop
+        next = await iterator.next();
       }
       return newTokens;
     });

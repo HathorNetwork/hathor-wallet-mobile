@@ -63,6 +63,7 @@ import {
   types,
   setAvailablePushNotification,
   resetWalletSuccess,
+  setTokens,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -279,22 +280,26 @@ export function* loadTokens() {
 
   const wallet = yield select((state) => state.wallet);
 
-  const registeredTokens = yield getRegisteredTokens(wallet, true);
+  const registeredTokens = yield getRegisteredTokens(wallet);
+
+  yield put(setTokens(registeredTokens));
+
+  const registeredUids = registeredTokens.map(t => t.uid);
 
   // We don't need to wait for the metadatas response, so we can just
   // spawn a new "thread" to handle it.
   //
   // `spawn` is similar to `fork`, but it creates a `detached` fork
-  yield spawn(fetchTokensMetadata, registeredTokens);
+  yield spawn(fetchTokensMetadata, registeredUids);
 
   // Since we already know here what tokens are registered, we can dispatch actions
   // to asynchronously load the balances of each one. The `put` effect will just dispatch
   // and continue, loading the tokens asynchronously
-  for (const token of registeredTokens) {
+  for (const token of registeredUids) {
     yield put(tokenFetchBalanceRequested(token));
   }
 
-  return registeredTokens;
+  return registeredUids;
 }
 
 /**
