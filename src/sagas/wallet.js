@@ -284,7 +284,7 @@ export function* loadTokens() {
 
   yield put(setTokens(registeredTokens));
 
-  const registeredUids = registeredTokens.map(t => t.uid);
+  const registeredUids = registeredTokens.map((t) => t.uid);
 
   // We don't need to wait for the metadatas response, so we can just
   // spawn a new "thread" to handle it.

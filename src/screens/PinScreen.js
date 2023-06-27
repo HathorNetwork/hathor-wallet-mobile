@@ -192,7 +192,7 @@ class PinScreen extends React.Component {
         return;
       }
 
-      let wordsEncryptedData = accessData.words
+      let wordsEncryptedData = accessData.words;
       if (!accessData.words.data) {
         // This is from a previous version
         // We need aditional data to check pin
