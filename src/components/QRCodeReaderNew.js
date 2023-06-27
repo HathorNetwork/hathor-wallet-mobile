@@ -53,11 +53,15 @@ export default function QRCodeReaderNew({ navigation, onSuccess }) {
       setIsFocusedScreen(false);
     });
 
+    // After all the listeners are in place, allow the Camera component to be rendered
+    setIsFocusedScreen(true);
+
     return () => {
       willFocusEvent.remove();
       willBlurEvent.remove();
       if (appStateEvent) { // This listener may have never been initialized
         appStateEvent.remove();
+        appStateEvent = null;
       }
     };
   }, []);
@@ -70,7 +74,6 @@ export default function QRCodeReaderNew({ navigation, onSuccess }) {
 
     // Return only the first QRCode found
     setIsFocusedScreen(false); // Stop reading, since the focus will change soon
-    console.log(`Found: ${JSON.stringify(barcodes, null, 2)}`);
     onSuccess(barcodes[0].content);
   }, [barcodes]);
 
