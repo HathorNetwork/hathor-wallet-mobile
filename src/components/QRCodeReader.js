@@ -15,14 +15,18 @@ export default function QRCodeReader({
   focusWidth = 250,
   bottomText = '',
 }) {
+  // States related to Camera rendering logic
   const [currentAppState, setCurrentAppState] = React.useState(AppState.currentState);
   const [isFocusedScreen, setIsFocusedScreen] = React.useState(false);
   const [hasPermission, setHasPermission] = React.useState(false);
+
+  // States related to the custom marker
   const [canvasHeight, setCanvasHeight] = React.useState(0);
   const [canvasWidth, setCanvasWidth] = React.useState(0);
+
+  // States related to capturing camera data and reading QRCodes
   const devices = useCameraDevices();
   const device = devices.back;
-
   const [frameProcessor, barcodes] = useScanBarcodes([BarcodeFormat.QR_CODE], {
     checkInverted: true,
   });
@@ -88,12 +92,19 @@ export default function QRCodeReader({
     onSuccess(barcodes[0].content);
   }, [barcodes]);
 
+  /**
+   * Fetches screen data from the `onLayout` event
+   * @param {LayoutEvent} e
+   */
   const onViewLayoutHandler = (e) => {
     const { width, height } = e.nativeEvent.layout;
     setCanvasHeight(height);
     setCanvasWidth(width);
   };
 
+  /**
+   * Draws a helper margin to focus user attention in the center of the camera reading area.
+   */
   const CustomMarker = () => {
     const borderHeight = (canvasHeight - focusHeight) / 2;
     const borderWidth = (canvasWidth - focusWidth) / 2;
@@ -123,6 +134,9 @@ export default function QRCodeReader({
     );
   };
 
+  /**
+   * Renders custom bottom text
+   */
   const BottomText = () => (
     <View style={{ position: 'absolute', bottom: 32 }}>
       <Text style={{
@@ -134,6 +148,9 @@ export default function QRCodeReader({
     </View>
   );
 
+  /**
+   * Draws the camera loader
+   */
   const WaitingForCameraLoader = () => (
     <View style={{
       position: 'absolute', flex: 1, alignItems: 'center', justifyContent: 'center',
@@ -144,6 +161,9 @@ export default function QRCodeReader({
     </View>
   );
 
+  /**
+   * Decides if the camera should be rendered, or if the screen should remain on the Loader view
+   */
   const shouldRenderCamera = device !== null
     && hasPermission
     && isFocusedScreen;
