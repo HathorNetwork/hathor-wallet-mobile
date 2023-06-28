@@ -54,10 +54,9 @@ class RegisterToken extends React.Component {
           }}
           >
             <QRCodeReader
-              ref={(el) => { this.QRCodeReader = el; }}
+              navigation={this.props.navigation}
               onSuccess={this.onSuccess}
               bottomText={t`Scan the token QR code`}
-              {...this.props}
             />
           </View>
         </SafeAreaView>

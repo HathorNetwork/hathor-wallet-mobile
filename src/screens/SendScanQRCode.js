@@ -85,7 +85,6 @@ class SendScanQRCode extends React.Component {
             navigation={this.props.navigation}
             onSuccess={this.onSuccess}
             bottomText={t`Scan the QR code`}
-            {...this.props}
           />
         </View>
         <OfflineBar />
