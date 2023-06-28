@@ -15,12 +15,6 @@ import SimpleButton from '../components/SimpleButton';
 
 
 class RegisterToken extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.QRCodeReader = null;
-  }
-
   onSuccess = (e) => {
     this.props.navigation.navigate('RegisterTokenManual', { configurationString: e.data });
   }
