@@ -22,9 +22,6 @@ function setTopLevelNavigator(navigatorRef) {
  * route.
  */
 function navigate(name, params) {
-  if (!_navigator.current) { // XXX: Maybe this validation is not necessary
-    throw new Error('Navigator is not in a consistent state to be manipulated');
-  }
   _navigator.current.dispatch(
     CommonActions.navigate({
       name,
@@ -39,9 +36,6 @@ function navigate(name, params) {
  * @returns <void>
  */
 function resetToMain() {
-  if (!_navigator.current) { // XXX: Maybe this validation is not necessary
-    throw new Error('Navigator is not in a consistent state to be manipulated');
-  }
   _navigator.current.reset({
     index: 0,
     routes: [
