@@ -1,16 +1,23 @@
 import * as React from 'react';
 
-import { AppState, StyleSheet, Text } from 'react-native';
+import { AppState, StyleSheet, Text, View } from 'react-native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
 import { BarcodeFormat, useScanBarcodes } from 'vision-camera-code-scanner';
 import { useEffect } from 'react';
 
 const APP_ACTIVE_STATE = 'active';
 
-export default function QRCodeReaderNew({ navigation, onSuccess }) {
+export default function QRCodeReaderNew({
+  navigation,
+  onSuccess,
+  focusHeight = 250,
+  focusWidth = 250,
+}) {
   const [currentAppState, setCurrentAppState] = React.useState(AppState.currentState);
   const [isFocusedScreen, setIsFocusedScreen] = React.useState(false);
   const [hasPermission, setHasPermission] = React.useState(false);
+  const [canvasHeight, setCanvasHeight] = React.useState(0);
+  const [canvasWidth, setCanvasWidth] = React.useState(0);
   const devices = useCameraDevices();
   const device = devices.back;
 
@@ -18,6 +25,7 @@ export default function QRCodeReaderNew({ navigation, onSuccess }) {
     checkInverted: true,
   });
 
+  // Initialization and event listeners
   React.useEffect(() => {
     // Ensure the app has permission to use the camera
     Camera.requestCameraPermission()
@@ -66,6 +74,7 @@ export default function QRCodeReaderNew({ navigation, onSuccess }) {
     };
   }, []);
 
+  // Captured barcodes monitoring
   useEffect(() => {
     // Ignore this effect if there is no successful QRCode read
     if (!barcodes.length) {
@@ -77,11 +86,51 @@ export default function QRCodeReaderNew({ navigation, onSuccess }) {
     onSuccess(barcodes[0].content);
   }, [barcodes]);
 
+  const onViewLayoutHandler = (e) => {
+    const { width, height } = e.nativeEvent.layout;
+    setCanvasHeight(height);
+    setCanvasWidth(width);
+  };
+
+  const CustomMarker = () => {
+    const borderHeight = (canvasHeight - focusHeight) / 2;
+    const borderWidth = (canvasWidth - focusWidth) / 2;
+
+    const styles = StyleSheet.create({
+      wrapper: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        alignSelf: 'stretch',
+      },
+      rectangle: {
+        height: canvasHeight,
+        width: canvasWidth,
+        borderTopWidth: borderHeight,
+        borderBottomWidth: borderHeight,
+        borderLeftWidth: borderWidth,
+        borderRightWidth: borderWidth,
+        backgroundColor: 'transparent',
+        borderColor: 'rgba(0, 0, 0, 0.7)',
+      },
+    });
+    return (
+      <View style={styles.wrapper}>
+        <View style={styles.rectangle} />
+      </View>
+    );
+  };
+
   return (
     device != null
     && hasPermission
     && isFocusedScreen && (
-      <>
+      <View
+        style={{
+          flex: 1, alignItems: 'center', justifyContent: 'center', alignSelf: 'stretch',
+        }}
+        onLayout={onViewLayoutHandler}
+      >
         <Camera
           style={StyleSheet.absoluteFill}
           device={device}
@@ -89,21 +138,8 @@ export default function QRCodeReaderNew({ navigation, onSuccess }) {
           frameProcessor={frameProcessor}
           frameProcessorFps={5}
         />
-        {barcodes.map((barcode, idx) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <Text key={idx} style={styles.barcodeTextURL}>
-            {barcode.displayValue}
-          </Text>
-        ))}
-      </>
+        <CustomMarker />
+      </View>
     )
   );
 }
-
-const styles = StyleSheet.create({
-  barcodeTextURL: {
-    fontSize: 20,
-    color: 'white',
-    fontWeight: 'bold',
-  },
-});
