@@ -12,6 +12,7 @@ export default function QRCodeReaderNew({
   onSuccess,
   focusHeight = 250,
   focusWidth = 250,
+  bottomText = '',
 }) {
   const [currentAppState, setCurrentAppState] = React.useState(AppState.currentState);
   const [isFocusedScreen, setIsFocusedScreen] = React.useState(false);
@@ -121,6 +122,17 @@ export default function QRCodeReaderNew({
     );
   };
 
+  const BottomText = () => (
+    <View style={{ position: 'absolute', bottom: 32 }}>
+      <Text style={{
+        fontSize: 16, fontWeight: 'bold', lineHeight: 19, color: 'white',
+      }}
+      >
+        {bottomText}
+      </Text>
+    </View>
+  );
+
   return (
     device != null
     && hasPermission
@@ -139,6 +151,7 @@ export default function QRCodeReaderNew({
           frameProcessorFps={5}
         />
         <CustomMarker />
+        { bottomText && <BottomText /> }
       </View>
     )
   );
