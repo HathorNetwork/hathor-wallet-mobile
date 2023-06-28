@@ -10,7 +10,7 @@ import { Alert, SafeAreaView, View } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import QRCodeReader from '../components/QRCodeReaderNew';
+import QRCodeReader from '../components/QRCodeReader';
 import OfflineBar from '../components/OfflineBar';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
@@ -29,7 +29,8 @@ class SendScanQRCode extends React.Component {
       [
         { text: t`OK`,
           onPress: () => {
-            console.log(`Should reactivate but doesnt`);
+            // To avoid being stuck on an invalid QR code loop, navigate back.
+            this.props.navigation.goBack();
           } },
       ],
       { cancelable: false },
