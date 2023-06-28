@@ -1,9 +1,10 @@
 import * as React from 'react';
 
-import { AppState, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, StyleSheet, Text, View } from 'react-native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
 import { BarcodeFormat, useScanBarcodes } from 'vision-camera-code-scanner';
 import { useEffect } from 'react';
+import { t } from 'ttag';
 
 const APP_ACTIVE_STATE = 'active';
 
@@ -133,26 +134,41 @@ export default function QRCodeReaderNew({
     </View>
   );
 
-  return (
-    device != null
+  const WaitingForCameraLoader = () => (
+    <View style={{
+      position: 'absolute', flex: 1, alignItems: 'center', justifyContent: 'center',
+    }}
+    >
+      <Text>{t`Opening camera`}</Text>
+      <ActivityIndicator style={{ marginTop: 16 }} size='small' animating />
+    </View>
+  );
+
+  const shouldRenderCamera = device !== null
     && hasPermission
-    && isFocusedScreen && (
-      <View
-        style={{
-          flex: 1, alignItems: 'center', justifyContent: 'center', alignSelf: 'stretch',
-        }}
-        onLayout={onViewLayoutHandler}
-      >
-        <Camera
-          style={StyleSheet.absoluteFill}
-          device={device}
-          isActive
-          frameProcessor={frameProcessor}
-          frameProcessorFps={5}
-        />
-        <CustomMarker />
-        { bottomText && <BottomText /> }
-      </View>
-    )
+    && isFocusedScreen;
+
+  return (
+    <View
+      style={{
+        flex: 1, alignItems: 'center', justifyContent: 'center', alignSelf: 'stretch',
+      }}
+      onLayout={onViewLayoutHandler}
+    >
+      { !shouldRenderCamera && <WaitingForCameraLoader /> }
+      { shouldRenderCamera && (
+        <>
+          <Camera
+            style={StyleSheet.absoluteFill}
+            device={device}
+            isActive
+            frameProcessor={frameProcessor}
+            frameProcessorFps={5}
+          />
+          <CustomMarker />
+          {bottomText && <BottomText />}
+        </>
+      )}
+    </View>
   );
 }
