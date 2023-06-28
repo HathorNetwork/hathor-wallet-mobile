@@ -75,7 +75,6 @@ const TokenSelect = (props) => {
     );
   };
 
-  // Can't use SafeAreaView because the list view must go until the end of the screen
   return (
     <SafeAreaView style={styles.wrapper}>
       {props.header}

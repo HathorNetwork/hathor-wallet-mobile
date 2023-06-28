@@ -96,6 +96,10 @@ const InitStack = () => {
   );
 };
 
+/**
+ * The Dashboard navigator contains the Token Select screen ( if the wallet has multiple tokens )
+ * and the Token Details screen.
+ */
 const DashboardStack = () => {
   const Stack = createStackNavigator();
 
@@ -112,6 +116,9 @@ const DashboardStack = () => {
   );
 };
 
+/**
+ * Stack of screens dedicated to the token sending process
+ */
 const SendStack = () => {
   const Stack = createStackNavigator();
 
@@ -130,6 +137,9 @@ const SendStack = () => {
   );
 };
 
+/**
+ * Stack of screens dedicated to the token creation process
+ */
 const CreateTokenStack = () => {
   const Stack = createStackNavigator();
 
@@ -150,6 +160,9 @@ const CreateTokenStack = () => {
   );
 };
 
+/**
+ * Stack of screens dedicated to the token registration process
+ */
 const RegisterTokenStack = () => {
   const Stack = createStackNavigator();
 
@@ -173,6 +186,13 @@ const tabBarIconMap = {
   Settings: 'icSettings',
 };
 
+/**
+ * Visible navigator to the user, with a bottom tab selector containing:
+ * - Dashboard
+ * - Send Tokens
+ * - Receive Tokens
+ * - Settings
+ */
 const TabNavigator = () => {
   const Tab = createBottomTabNavigator();
 
@@ -209,6 +229,9 @@ const TabNavigator = () => {
   );
 };
 
+/**
+ * Navigator containing all screens for the loaded wallet
+ */
 const AppStack = () => {
   const Stack = createStackNavigator();
 
@@ -490,6 +513,10 @@ const AppStackWrapper = connect(mapStateToProps, mapDispatchToProps)(_AppStackWr
 
 const BlankScreen = () => null;
 
+/**
+ * This is the main Navigator, evaluating if the wallet is already loaded and navigating to the
+ * relevant screen.
+ */
 const RootStack = () => {
   const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
