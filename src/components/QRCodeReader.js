@@ -44,6 +44,7 @@ export default function QRCodeReader({
     Camera.requestCameraPermission()
       .then((status) => {
         setHasPermission(status === 'authorized');
+        setIsFocusedScreen(true); // Coming back from the authorization screen
       });
 
     /*
