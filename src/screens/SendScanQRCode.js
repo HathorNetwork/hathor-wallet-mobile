@@ -22,18 +22,16 @@ const mapStateToProps = (state) => ({
 });
 
 class SendScanQRCode extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.QRCodeReader = null;
-  }
-
   showAlertError = (message) => {
     Alert.alert(
       t`Invalid QR code`,
       message,
       [
-        { text: t`OK`, onPress: this.QRCodeReader.reactivateQrCodeScanner },
+        { text: t`OK`,
+          onPress: () => {
+            // To avoid being stuck on an invalid QR code loop, navigate back.
+            this.props.navigation.goBack();
+          } },
       ],
       { cancelable: false },
     );
@@ -84,10 +82,9 @@ class SendScanQRCode extends React.Component {
         />
         <View style={{ flex: 1, margin: 16, alignSelf: 'stretch' }}>
           <QRCodeReader
-            ref={(el) => { this.QRCodeReader = el; }}
+            navigation={this.props.navigation}
             onSuccess={this.onSuccess}
             bottomText={t`Scan the QR code`}
-            {...this.props}
           />
         </View>
         <OfflineBar />
