@@ -186,13 +186,26 @@ class PinScreen extends React.Component {
         return;
       }
 
-      const pinCorrect = cryptoUtils.checkPassword(accessData.words, pin);
+      let wordsEncryptedData = accessData.words;
+      if (!accessData.words.data) {
+        // This is from a previous version
+        // We need aditional data to check pin
+        wordsEncryptedData = {
+          data: accessData.words,
+          hash: accessData.hashPasswd,
+          salt: accessData.saltPasswd,
+          iterations: accessData.hashIterations,
+          pbkdf2Hasher: accessData.pbkdf2Hasher,
+        };
+      }
+      const pinCorrect = cryptoUtils.checkPassword(wordsEncryptedData, pin);
+
       if (!pinCorrect) {
         this.removeOneChar();
         return;
       }
 
-      const words = cryptoUtils.decryptData(accessData.words, pin);
+      const words = cryptoUtils.decryptData(wordsEncryptedData, pin);
       // Will throw InvalidWords if the seed is invalid
       walletUtils.wordsValid(words);
     } catch (e) {
