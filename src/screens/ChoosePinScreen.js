@@ -47,7 +47,7 @@ class ChoosePinScreen extends React.Component {
 
   constructor(props) {
     super(props);
-    this.words = this.props.route.params.words;
+    this.words = this.props.route.params?.words; // Mandatory parameter
 
     /**
      * pin1 {string} Input value for pin

@@ -52,10 +52,10 @@ class SendConfirmScreen extends React.Component {
    */
   constructor(props) {
     super(props);
-    // we receive these 3 values from previous screens
-    this.amount = this.props.route.params.amount;
-    this.address = this.props.route.params.address;
-    this.token = this.props.route.params.token;
+    // we receive these 3 mandatory parameters from previous screens
+    this.amount = this.props.route.params?.amount;
+    this.address = this.props.route.params?.address;
+    this.token = this.props.route.params?.token;
     this.isNFT = isTokenNFT(this.token.uid, this.props.tokenMetadata);
     this.amountAndToken = `${renderValue(this.amount, this.isNFT)} ${this.token.symbol}`;
   }
