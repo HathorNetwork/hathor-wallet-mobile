@@ -72,7 +72,6 @@ import {
   checkForFeatureFlag,
   getRegisteredTokens,
 } from './helpers';
-import NavigationService from '../NavigationService';
 import { setKeychainPin } from '../utils';
 
 export const WALLET_STATUS = {
@@ -117,7 +116,6 @@ export function* startWallet(action) {
     words,
     pin,
   } = action.payload;
-  NavigationService.navigate('LoadHistoryScreen');
 
   const uniqueDeviceId = getUniqueId();
   const useWalletService = yield call(isWalletServiceEnabled);

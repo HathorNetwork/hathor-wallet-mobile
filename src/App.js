@@ -5,135 +5,179 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import 'react-native-gesture-handler';
 import '../shim';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppState, StyleSheet, View } from 'react-native';
-import { createSwitchNavigator, createAppContainer, } from 'react-navigation';
-import { createStackNavigator } from 'react-navigation-stack';
-import { createBottomTabNavigator } from 'react-navigation-tabs';
-import { Provider, connect } from 'react-redux';
+import { connect, Provider, useDispatch } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
 import notifee, { EventType } from '@notifee/react-native';
 
 import hathorLib from '@hathor/wallet-lib';
 
+import { createStackNavigator } from '@react-navigation/stack';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
-import NavigationService from './NavigationService';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
-  resetData,
   lockScreen,
-  setTokens,
-  pushTxDetailsRequested,
   onExceptionCaptured,
+  pushTxDetailsRequested,
+  resetData,
+  setTokens,
 } from './actions';
 import { store } from './reducer';
 import { GlobalErrorHandler } from './components/GlobalErrorModal';
-
-import DecideStackScreen from './screens/DecideStackScreen';
 import {
-  WelcomeScreen, InitialScreen, NewWordsScreen, LoadWordsScreen,
+  InitialScreen,
+  LoadWordsScreen,
+  NewWordsScreen,
+  WelcomeScreen,
 } from './screens/InitWallet';
 import ChoosePinScreen from './screens/ChoosePinScreen';
 import BackupWords from './screens/BackupWords';
+import PinScreen from './screens/PinScreen';
+import ResetWallet from './screens/ResetWallet';
+import LoadHistoryScreen from './screens/LoadHistoryScreen';
+import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
+import { WALLET_STATUS } from './sagas/wallet';
+
+import { STORE } from './store';
+import NavigationService from './NavigationService';
 import MainScreen from './screens/MainScreen';
 import SendScanQRCode from './screens/SendScanQRCode';
 import SendAddressInput from './screens/SendAddressInput';
 import SendAmountInput from './screens/SendAmountInput';
 import SendConfirmScreen from './screens/SendConfirmScreen';
-import ChangeToken from './screens/ChangeToken';
-import ReceiveScreen from './screens/Receive';
-import PaymentRequestDetail from './screens/PaymentRequestDetail';
+import Dashboard from './screens/Dashboard';
 import RegisterToken from './screens/RegisterToken';
+import CreateTokenDepositNotice from './screens/CreateTokenDepositNotice';
+import CreateTokenAmount from './screens/CreateTokenAmount';
+import CreateTokenConfirm from './screens/CreateTokenConfirm';
+import CreateTokenDetail from './screens/CreateTokenDetail';
 import RegisterTokenManual from './screens/RegisterTokenManual';
-import Settings from './screens/Settings';
-import TokenDetail from './screens/TokenDetail';
-import UnregisterToken from './screens/UnregisterToken';
-import PinScreen from './screens/PinScreen';
+import CreateTokenName from './screens/CreateTokenName';
+import CreateTokenSymbol from './screens/CreateTokenSymbol';
 import About from './screens/About';
 import Security from './screens/Security';
 import PushNotification from './screens/PushNotification';
 import ChangePin from './screens/ChangePin';
-import ResetWallet from './screens/ResetWallet';
-import Dashboard from './screens/Dashboard';
-import LoadHistoryScreen from './screens/LoadHistoryScreen';
-import CreateTokenDepositNotice from './screens/CreateTokenDepositNotice';
-import CreateTokenName from './screens/CreateTokenName';
-import CreateTokenSymbol from './screens/CreateTokenSymbol';
-import CreateTokenAmount from './screens/CreateTokenAmount';
-import CreateTokenConfirm from './screens/CreateTokenConfirm';
-import CreateTokenDetail from './screens/CreateTokenDetail';
-import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
-import { WALLET_STATUS } from './sagas/wallet';
+import PaymentRequestDetail from './screens/PaymentRequestDetail';
+import ChangeToken from './screens/ChangeToken';
+import TokenDetail from './screens/TokenDetail';
+import UnregisterToken from './screens/UnregisterToken';
+import ReceiveScreen from './screens/Receive';
+import Settings from './screens/Settings';
 
+/**
+ * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
+ */
+const InitStack = () => {
+  const Stack = createStackNavigator();
+  return (
+    <Stack.Navigator
+      initialRouteName='Welcome'
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name='WelcomeScreen' component={WelcomeScreen} />
+      <Stack.Screen name='InitialScreen' component={InitialScreen} />
+      <Stack.Screen name='NewWordsScreen' component={NewWordsScreen} />
+      <Stack.Screen name='LoadWordsScreen' component={LoadWordsScreen} />
+      <Stack.Screen name='BackupWords' component={BackupWords} />
+      <Stack.Screen name='ChoosePinScreen' component={ChoosePinScreen} />
+    </Stack.Navigator>
+  );
+};
 
-const InitStack = createStackNavigator(
-  {
-    WelcomeScreen,
-    InitialScreen,
-    NewWordsScreen,
-    LoadWordsScreen,
-    BackupWords,
-    ChoosePinScreen,
-  },
-  {
-    initialRouteName: 'WelcomeScreen',
-    headerMode: 'none',
-  }
-);
+/**
+ * The Dashboard navigator contains the Token Select screen ( if the wallet has multiple tokens )
+ * and the Token Details screen.
+ */
+const DashboardStack = () => {
+  const Stack = createStackNavigator();
 
-const DashboardStack = createStackNavigator(
-  {
-    Dashboard,
-    MainScreen,
-  },
-  {
-    initialRouteName: 'Dashboard',
-    headerMode: 'none',
-  },
-);
+  return (
+    <Stack.Navigator
+      initialRouteName='Dashboard'
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name='Dashboard' component={Dashboard} />
+      <Stack.Screen name='MainScreen' component={MainScreen} />
+    </Stack.Navigator>
+  );
+};
 
-const SendStack = createStackNavigator(
-  {
-    SendScanQRCode,
-    SendAddressInput,
-    SendAmountInput,
-    SendConfirmScreen,
-  },
-  {
-    initialRouteName: 'SendScanQRCode',
-    headerMode: 'none',
-  },
-);
+/**
+ * Stack of screens dedicated to the token sending process
+ */
+const SendStack = () => {
+  const Stack = createStackNavigator();
 
-const CreateTokenStack = createStackNavigator(
-  {
-    CreateTokenDepositNotice,
-    CreateTokenName,
-    CreateTokenSymbol,
-    CreateTokenAmount,
-    CreateTokenConfirm,
-    CreateTokenDetail,
-  },
-  {
-    initialRouteName: 'CreateTokenDepositNotice',
-    headerMode: 'none',
-  }
-);
+  return (
+    <Stack.Navigator
+      initialRouteName='SendScanQRCode'
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name='SendScanQRCode' component={SendScanQRCode} />
+      <Stack.Screen name='SendAddressInput' component={SendAddressInput} />
+      <Stack.Screen name='SendAmountInput' component={SendAmountInput} />
+      <Stack.Screen name='SendConfirmScreen' component={SendConfirmScreen} />
+    </Stack.Navigator>
+  );
+};
 
-const RegisterTokenStack = createStackNavigator(
-  {
-    RegisterToken,
-    RegisterTokenManual,
-  },
-  {
-    initialRouteName: 'RegisterToken',
-    headerMode: 'none',
-  },
-);
+/**
+ * Stack of screens dedicated to the token creation process
+ */
+const CreateTokenStack = () => {
+  const Stack = createStackNavigator();
+
+  return (
+    <Stack.Navigator
+      initialRouteName='CreateTokenDepositNotice'
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name='CreateTokenDepositNotice' component={CreateTokenDepositNotice} />
+      <Stack.Screen name='CreateTokenName' component={CreateTokenName} />
+      <Stack.Screen name='CreateTokenSymbol' component={CreateTokenSymbol} />
+      <Stack.Screen name='CreateTokenAmount' component={CreateTokenAmount} />
+      <Stack.Screen name='CreateTokenConfirm' component={CreateTokenConfirm} />
+      <Stack.Screen name='CreateTokenDetail' component={CreateTokenDetail} />
+    </Stack.Navigator>
+  );
+};
+
+/**
+ * Stack of screens dedicated to the token registration process
+ */
+const RegisterTokenStack = () => {
+  const Stack = createStackNavigator();
+
+  return (
+    <Stack.Navigator
+      initialRouteName='RegisterToken'
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name='RegisterToken' component={RegisterToken} />
+      <Stack.Screen name='RegisterTokenManual' component={RegisterTokenManual} />
+    </Stack.Navigator>
+  );
+};
 
 const tabBarIconMap = {
   Home: 'icDashboard',
@@ -143,90 +187,87 @@ const tabBarIconMap = {
 };
 
 /**
- * This workaround is similar to the one in TokenSelect.js
- *
- * It should be removed after we upgrade react-navigation to
- * to use the latest version of SafeAreaView
+ * Visible navigator to the user, with a bottom tab selector containing:
+ * - Dashboard
+ * - Send Tokens
+ * - Receive Tokens
+ * - Settings
  */
-const tabNavigatorMarginWorkaround = () => {
-  const deviceId = DeviceInfo.getDeviceId();
-  const workaroundDeviceIds = [
-    'iPhone13,2', // iPhone 12
-    'iPhone13,3', // iPhone 12 Pro
-    'iPhone13,4', // iPhone 12 Pro Max
-    'iPhone14,5', // iPhone 13
-    'iPhone14,2', // iPhone 13 Pro
-    'iPhone14,3', // iPhone 13 Pro Max
-    'iPhone14,7', // iPhone 14
-    'iPhone14,8', // iPhone 14 Plus
-    'iPhone15,2', // iPhone 14 Pro
-    'iPhone15,3', // iPhone 14 Pro Max
-  ];
+const TabNavigator = () => {
+  const Tab = createBottomTabNavigator();
 
-  return workaroundDeviceIds.includes(deviceId);
+  return (
+    <Tab.Navigator
+      tabBarOptions={{
+        style: {
+          paddingTop: 12,
+          paddingBottom: 12,
+        },
+        tabStyle: {
+          justifyContent: 'center',
+        },
+        showIcon: true,
+        showLabel: false,
+      }}
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused }) => {
+          const { name } = route;
+          const iconName = tabBarIconMap[name];
+          const colorName = focused ? PRIMARY_COLOR : 'rgba(0, 0, 0, 0.5)';
+          return (<IconTabBar name={iconName} size={24} color={colorName} />);
+        },
+      })}
+    >
+      <Tab.Screen
+        name='Home'
+        component={IS_MULTI_TOKEN ? DashboardStack : MainScreen}
+      />
+      <Tab.Screen name='Send' component={SendStack} />
+      <Tab.Screen name='Receive' component={ReceiveScreen} />
+      <Tab.Screen name='Settings' component={Settings} />
+    </Tab.Navigator>
+  );
 };
 
-const TabNavigator = createBottomTabNavigator({
-  Home: (IS_MULTI_TOKEN ? DashboardStack : MainScreen),
-  Send: SendStack,
-  Receive: ReceiveScreen,
-  Settings,
-}, {
-  initialRoute: 'Home',
-  tabBarOptions: {
-    activeTintColor: PRIMARY_COLOR,
-    inactiveTintColor: 'rgba(0, 0, 0, 0.5)',
-    style: {
-      paddingTop: 12,
-      paddingBottom: 12,
-      ...(tabNavigatorMarginWorkaround() ? { marginBottom: 34 } : {})
-    },
-    tabStyle: {
-      justifyContent: 'center',
-    },
-    showIcon: true,
-    showLabel: false,
-  },
-  defaultNavigationOptions: ({ navigation }) => ({
-    tabBarIcon: ({ tintColor }) => {
-      const { routeName } = navigation.state;
-      const iconName = tabBarIconMap[routeName];
-      return <IconTabBar name={iconName} size={24} color={tintColor} />;
-    },
-  }),
-});
+/**
+ * Navigator containing all screens for the loaded wallet
+ */
+const AppStack = () => {
+  const Stack = createStackNavigator();
 
-const disableSwipeDown = () => ({
-  gesturesEnabled: false,
-});
-
-const AppStack = createStackNavigator({
-  Main: TabNavigator,
-  About,
-  Security,
-  PushNotification,
-  ChangePin,
-  ResetWallet: {
-    screen: ResetWallet,
-    // Dismissing the screen on ResetWallet would lead to a
-    // MainScreen with broken state if started from the PinScreen,
-    // so just disable the swipeDown animation
-    navigationOptions: disableSwipeDown,
-  },
-  PaymentRequestDetail,
-  RegisterToken: RegisterTokenStack,
-  ChangeToken,
-  PinScreen: {
-    screen: PinScreen,
-    navigationOptions: disableSwipeDown,
-  },
-  CreateTokenStack,
-  TokenDetail,
-  UnregisterToken,
-}, {
-  mode: 'modal',
-  headerMode: 'none',
-});
+  return (
+    <Stack.Navigator
+      mode='modal'
+      headerMode='none'
+    >
+      <Stack.Screen
+        name='Main'
+        initialParams={{ hName: 'Main' }}
+        component={TabNavigator}
+      />
+      <Stack.Screen name='About' component={About} />
+      <Stack.Screen name='Security' component={Security} />
+      <Stack.Screen name='PushNotification' component={PushNotification} />
+      <Stack.Screen name='ChangePin' component={ChangePin} />
+      <Stack.Screen
+        name='ResetWallet'
+        component={ResetWallet}
+        options={{ gesturesEnabled: false }}
+      />
+      <Stack.Screen name='PaymentRequestDetail' component={PaymentRequestDetail} />
+      <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
+      <Stack.Screen name='ChangeToken' component={ChangeToken} />
+      <Stack.Screen
+        name='PinScreen'
+        component={PinScreen}
+        options={{ gesturesEnabled: false }}
+      />
+      <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
+      <Stack.Screen name='TokenDetail' component={TokenDetail} />
+      <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
+    </Stack.Navigator>
+  );
+};
 
 
 /**
@@ -470,23 +511,81 @@ class _AppStackWrapper extends React.Component {
 
 const AppStackWrapper = connect(mapStateToProps, mapDispatchToProps)(_AppStackWrapper);
 
-const SwitchNavigator = createSwitchNavigator({
-  Decide: DecideStackScreen,
-  App: AppStackWrapper,
-  Init: InitStack,
-}, {
-  initialRouteName: 'Decide',
-});
+const BlankScreen = () => null;
 
-const NavigationContainer = createAppContainer(SwitchNavigator);
+/**
+ * This is the main Navigator, evaluating if the wallet is already loaded and navigating to the
+ * relevant screen.
+ */
+const RootStack = () => {
+  const dispatch = useDispatch();
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    STORE.preStart()
+      .then(() => STORE.walletIsLoaded())
+      .then((_isLoaded) => {
+        setIsLoaded(_isLoaded);
+      })
+      .catch((e) => {
+        // The promise here is swallowing the error,
+        // so we need to explicitly catch here.
+        //
+        // If we have a fail here, the wallet will
+        // show up as if it was the first time it was
+        // opened, so we need to capture and display
+        // an error to give a chance for the user
+        // to recover his loaded wallet.
+        console.error(e);
+        dispatch(onExceptionCaptured(e, true));
+      });
+  }, []);
+
+  useEffect(() => {
+    // If the wallet is loaded, navigate to the main screen with no option to return to init
+    if (isLoaded) {
+      NavigationService.resetToMain();
+    } else {
+      navigationRef.current.reset({
+        index: 0,
+        routes: [{ name: 'Init' }],
+      });
+    }
+  }, [isLoaded]);
+
+  const Stack = createStackNavigator();
+
+  return (
+    <Stack.Navigator
+      initialRouteName='Decide'
+      screenOptions={{
+        headerShown: false,
+        gestureEnabled: false,
+      }}
+    >
+      <Stack.Screen name='Decide' component={BlankScreen} />
+      <Stack.Screen name='App' component={AppStackWrapper} />
+      <Stack.Screen name='Init' component={InitStack} />
+    </Stack.Navigator>
+  );
+};
+
+const navigationRef = React.createRef();
+NavigationService.setTopLevelNavigator(navigationRef);
 
 const App = () => (
-  <Provider store={store}>
-    <NavigationContainer
-      ref={(navigatorRef) => NavigationService.setTopLevelNavigator(navigatorRef)}
-    />
-    <GlobalErrorHandler />
-  </Provider>
+  <SafeAreaProvider>
+    <Provider store={store}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <NavigationContainer
+          ref={navigationRef}
+        >
+          <RootStack />
+        </NavigationContainer>
+        <GlobalErrorHandler />
+      </SafeAreaView>
+    </Provider>
+  </SafeAreaProvider>
 );
 
 // custom interceptor for axios

@@ -40,7 +40,7 @@ class CreateTokenDepositNotice extends React.Component {
       <SafeAreaView style={{ flex: 1 }}>
         <HathorHeader
           title={t`CREATE TOKEN`}
-          onBackPress={() => this.props.navigation.dismiss()}
+          onBackPress={() => this.props.navigation.pop()}
         />
         <View style={this.style.container}>
           <View>

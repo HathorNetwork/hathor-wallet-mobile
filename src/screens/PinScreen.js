@@ -65,18 +65,12 @@ class PinScreen extends React.Component {
     this.screenText = t`Enter your PIN Code `;
     this.biometryText = t`Unlock Hathor Wallet`;
     if (!this.props.isLockScreen) {
-      this.canCancel = props.navigation.getParam('canCancel', this.canCancel);
-      this.screenText = props.navigation.getParam(
-        'screenText',
-        this.screenText,
-      );
-      this.biometryText = props.navigation.getParam(
-        'biometryText',
-        this.biometryText,
-      );
+      this.canCancel = props.route.params.canCancel ?? this.canCancel;
+      this.screenText = props.route.params.screenText ?? this.screenText;
+      this.biometryText = props.route.params.biometryText ?? this.biometryText;
     }
 
-    this.willFocusEvent = null;
+    this.focusEvent = null;
   }
 
   componentDidMount() {
@@ -91,7 +85,7 @@ class PinScreen extends React.Component {
       BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
     }
 
-    this.willFocusEvent = this.props.navigation.addListener('willFocus', () => {
+    this.focusEvent = this.props.navigation.addListener('focus', () => {
       this.setState({ pin: '', pinColor: 'black', error: null });
     });
   }
@@ -106,7 +100,7 @@ class PinScreen extends React.Component {
     }
 
     // Removing focus event
-    this.willFocusEvent.remove();
+    this.focusEvent();
   }
 
   handleBackButton = () => true;
@@ -151,7 +145,7 @@ class PinScreen extends React.Component {
       // end up dismissing the wrong screen
       this.props.navigation.goBack();
       // execute the callback passing the pin, if any cb was given
-      const cb = this.props.navigation.getParam('cb', null);
+      const cb = this.props.route.params.cb ?? null;
       if (cb) {
         cb(pin);
       }
