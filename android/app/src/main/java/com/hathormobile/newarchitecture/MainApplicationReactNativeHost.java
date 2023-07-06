@@ -1,4 +1,4 @@
-package com.hathormobile.newarchitecture;
+package network.hathor.wallet.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -19,9 +19,9 @@ import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.fabric.ReactNativeConfig;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.hathormobile.BuildConfig;
-import com.hathormobile.newarchitecture.components.MainComponentsRegistry;
-import com.hathormobile.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import network.hathor.wallet.BuildConfig;
+import network.hathor.wallet.newarchitecture.components.MainComponentsRegistry;
+import network.hathor.wallet.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 

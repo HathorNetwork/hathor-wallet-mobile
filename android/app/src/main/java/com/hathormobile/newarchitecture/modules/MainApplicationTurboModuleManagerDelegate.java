@@ -1,4 +1,4 @@
-package com.hathormobile.newarchitecture.modules;
+package network.hathor.wallet.newarchitecture.modules;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.ReactPackage;
