@@ -5,194 +5,198 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
-import PropTypes from 'prop-types';
-import QRCodeScanner from 'react-native-qrcode-scanner';
-import {
-  ActivityIndicator, AppState, StyleSheet, Text, View,
-} from 'react-native';
+import * as React from 'react';
+
+import { ActivityIndicator, AppState, StyleSheet, Text, View } from 'react-native';
+import { Camera, useCameraDevices } from 'react-native-vision-camera';
+import { BarcodeFormat, useScanBarcodes } from 'vision-camera-code-scanner';
+import { useEffect } from 'react';
 import { t } from 'ttag';
 
-class QRCodeReader extends React.Component {
-  static defaultProps = {
-    height: 250,
-    width: 250,
-  };
+const APP_ACTIVE_STATE = 'active';
 
-  constructor(props) {
-    super(props);
+export default function QRCodeReader({
+  navigation,
+  onSuccess,
+  focusHeight = 250,
+  focusWidth = 250,
+  bottomText = '',
+}) {
+  // States related to Camera rendering logic
+  const [currentAppState, setCurrentAppState] = React.useState(AppState.currentState);
+  const [isFocusedScreen, setIsFocusedScreen] = React.useState(false);
+  const [hasPermission, setHasPermission] = React.useState(false);
 
-    // Ref for the qrcode scanner element
-    this.QRCodeElement = null;
-    // Will focus event (used to remove event listener on unmount)
-    this.willFocusEvent = null;
-    // Will blur event (used to remove event listener on unmount)
-    this.willBlurEvent = null;
-    // Event subscription for app state change
-    this.appStateChangeEventSub = null;
+  // States related to the custom marker
+  const [canvasHeight, setCanvasHeight] = React.useState(0);
+  const [canvasWidth, setCanvasWidth] = React.useState(0);
 
-    /**
-     * focusedScree {boolean} if this screen is being shown
-     * appState {string} state of the app
-     * height {number} Height of the view that wraps the qrcode reader
-     * width {number} Width of the view that wraps the qrcode reader
+  // States related to capturing camera data and reading QRCodes
+  const devices = useCameraDevices();
+  const device = devices.back;
+  const [frameProcessor, barcodes] = useScanBarcodes([BarcodeFormat.QR_CODE], {
+    checkInverted: true,
+  });
+
+  // Initialization and event listeners
+  React.useEffect(() => {
+    // Ensure the app has permission to use the camera
+    Camera.requestCameraPermission()
+      .then((status) => {
+        setHasPermission(status === 'authorized');
+        setIsFocusedScreen(true); // Coming back from the authorization screen
+      });
+
+    /*
+     * We need to focus/unfocus the QRCode scanner, so that it doesn't freeze
+     * - When the navigation focuses this screen or app becomes active, we set it to `true`
+     * - When the navigation moves away or app becomes inactive, we set it to `false`
      */
-    this.state = {
-      focusedScreen: false,
-      appState: AppState.currentState,
-      height: 0,
-      width: 0,
+    let appStateEvent;
+    const focusEvent = navigation.addListener('focus', () => {
+      setIsFocusedScreen(true);
+      appStateEvent = AppState.addEventListener('change', (nextAppState) => {
+        if (
+          currentAppState === APP_ACTIVE_STATE
+          && nextAppState !== APP_ACTIVE_STATE) {
+          // It's changing and won't be active anymore
+          setIsFocusedScreen(false);
+        } else if (
+          nextAppState === APP_ACTIVE_STATE
+          && currentAppState !== APP_ACTIVE_STATE) {
+          // Will become active now
+          setIsFocusedScreen(true);
+        }
+
+        setCurrentAppState(nextAppState);
+      });
+    });
+    const blurEvent = navigation.addListener('blur', () => {
+      setIsFocusedScreen(false);
+    });
+
+    // After all the listeners are in place, allow the Camera component to be rendered
+    setIsFocusedScreen(true);
+
+    return () => {
+      focusEvent.remove();
+      blurEvent.remove();
+      if (appStateEvent) { // This listener may have never been initialized
+        appStateEvent.remove();
+        appStateEvent = null;
+      }
     };
-  }
+  }, []);
 
-  componentDidMount() {
-    // We need to focus/unfocus the qrcode scanner, so it does not freezes
-    // When the navigation focus on this screen, we set to true
-    // When the navigation stops focusing on this screen, we set to false
-    // When the app stops being in the active state, we set to false
-    // When the app starts being in the active state, we set to true
-    const { navigation } = this.props;
-    this.willFocusEvent = navigation.addListener('willFocus', () => {
-      this.reactivateQrCodeScanner();
-      this.setState({ focusedScreen: true, appState: AppState.currentState });
-      this.appStateChangeEventSub = AppState.addEventListener('change', this._handleAppStateChange);
-    });
-    this.willBlurEvent = navigation.addListener('willBlur', () => {
-      this._handleAppStateChangeEventSubRemove();
-      this.setState({ focusedScreen: false });
-    });
-  }
+  // Captured barcodes monitoring
+  useEffect(() => {
+    // Ignore this effect if there is no successful QRCode read
+    if (!barcodes.length) {
+      return;
+    }
 
-  componentWillUnmount() {
-    this.willFocusEvent.remove();
-    this.willBlurEvent.remove();
-    this._handleAppStateChangeEventSubRemove();
-  }
+    // Return only the first QRCode found
+    setIsFocusedScreen(false); // Stop reading, since the focus will change soon
+    onSuccess(barcodes[0].content);
+  }, [barcodes]);
 
   /**
-   * Remove event listener for app state change event
-   * and remove the reference to the event subscription
+   * Fetches screen data from the `onLayout` event
+   * @param {LayoutEvent} e
    */
-  _handleAppStateChangeEventSubRemove() {
-    if (this.appStateChangeEventSub) {
-      this.appStateChangeEventSub.remove();
-      this.appStateChangeEventSub = null;
-    }
-  }
-
-  _handleAppStateChange = (nextAppState) => {
-    if (this.state.appState === 'active' && nextAppState !== 'active') {
-      // It's changing and wont be active anymore
-      this.setState({ focusedScreen: false });
-    } else if (nextAppState === 'active' && this.state.appState !== 'active') {
-      this.setState({ focusedScreen: true });
-    }
-
-    this.setState({ appState: nextAppState });
-  }
-
-  reactivateQrCodeScanner = () => {
-    if (this.QRCodeElement) {
-      this.QRCodeElement.reactivate();
-    }
-  }
-
-  onViewLayout = (e) => {
+  const onViewLayoutHandler = (e) => {
     const { width, height } = e.nativeEvent.layout;
-    this.setState({ height, width });
-  }
+    setCanvasHeight(height);
+    setCanvasWidth(width);
+  };
 
-  render() {
-    if (!this.state.focusedScreen) {
-      return null;
-    }
+  /**
+   * Draws a helper margin to focus user attention in the center of the camera reading area.
+   */
+  const CustomMarker = () => {
+    const borderHeight = (canvasHeight - focusHeight) / 2;
+    const borderWidth = (canvasWidth - focusWidth) / 2;
 
-    const renderMarker = () => {
-      // Workaround to make the center square transparent with the backdrop around
-      // We create a view with background transparent with a big border with the backdrop color
-      const height = (this.state.height - this.props.height) / 2;
-      const width = (this.state.width - this.props.width) / 2;
-
-      const styles = StyleSheet.create({
-        wrapper: {
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          alignSelf: 'stretch',
-        },
-        rectangle: {
-          height: this.state.height,
-          width: this.state.width,
-          borderTopWidth: height,
-          borderBottomWidth: height,
-          borderLeftWidth: width,
-          borderRightWidth: width,
-          backgroundColor: 'transparent',
-          borderColor: 'rgba(0, 0, 0, 0.7)',
-        },
-      });
-      return (
-        <View style={styles.wrapper}>
-          <View style={styles.rectangle} />
-        </View>
-      );
-    };
-
-    const renderBottomText = () => (
-      <View style={{ position: 'absolute', bottom: 32 }}>
-        <Text style={{
-          fontSize: 16, fontWeight: 'bold', lineHeight: 19, color: 'white',
-        }}
-        >
-          {this.props.bottomText}
-        </Text>
+    const styles = StyleSheet.create({
+      wrapper: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        alignSelf: 'stretch',
+      },
+      rectangle: {
+        height: canvasHeight,
+        width: canvasWidth,
+        borderTopWidth: borderHeight,
+        borderBottomWidth: borderHeight,
+        borderLeftWidth: borderWidth,
+        borderRightWidth: borderWidth,
+        backgroundColor: 'transparent',
+        borderColor: 'rgba(0, 0, 0, 0.7)',
+      },
+    });
+    return (
+      <View style={styles.wrapper}>
+        <View style={styles.rectangle} />
       </View>
     );
+  };
 
-    const renderCameraPlaceholder = () => (
-      <View style={{
-        position: 'absolute', flex: 1, alignItems: 'center', justifyContent: 'center',
+  /**
+   * Renders custom bottom text
+   */
+  const BottomText = () => (
+    <View style={{ position: 'absolute', bottom: 32 }}>
+      <Text style={{
+        fontSize: 16, fontWeight: 'bold', lineHeight: 19, color: 'white',
       }}
       >
-        <Text>{t`Opening camera`}</Text>
-        <ActivityIndicator style={{ marginTop: 16 }} size='small' animating />
-      </View>
-    );
+        {bottomText}
+      </Text>
+    </View>
+  );
 
-    // I have to set the cameraStyle to overflow: hidden to fix a bug on android
-    // where the camera was streching along the whole height of the component
-    // https://github.com/moaazsidat/react-native-qrcode-scanner/issues/182#issuecomment-494338330
-    return (
-      <View
-        style={{
-          flex: 1, alignItems: 'center', justifyContent: 'center', alignSelf: 'stretch',
-        }}
-        onLayout={this.onViewLayout}
-      >
-        {renderCameraPlaceholder()}
-        <QRCodeScanner
-          ref={(node) => { this.QRCodeElement = node; }}
-          onRead={this.props.onSuccess}
-          customMarker={renderMarker()}
-          showMarker
-          topViewStyle={{ display: 'none' }}
-          bottomViewStyle={{ display: 'none' }}
-          cameraStyle={{
-            overflow: 'hidden', borderRadius: 16, width: this.state.width, height: this.state.height,
-          }}
-        />
-        {this.props.bottomText && renderBottomText()}
-      </View>
-    );
-  }
+  /**
+   * Draws the camera loader
+   */
+  const WaitingForCameraLoader = () => (
+    <View style={{
+      position: 'absolute', flex: 1, alignItems: 'center', justifyContent: 'center',
+    }}
+    >
+      <Text>{t`Opening camera`}</Text>
+      <ActivityIndicator style={{ marginTop: 16 }} size='small' animating />
+    </View>
+  );
+
+  /**
+   * Decides if the camera should be rendered, or if the screen should remain on the Loader view
+   */
+  const shouldRenderCamera = device !== null
+    && hasPermission
+    && isFocusedScreen;
+
+  return (
+    <View
+      style={{
+        flex: 1, alignItems: 'center', justifyContent: 'center', alignSelf: 'stretch',
+      }}
+      onLayout={onViewLayoutHandler}
+    >
+      { !shouldRenderCamera && <WaitingForCameraLoader /> }
+      { shouldRenderCamera && (
+        <>
+          <Camera
+            style={StyleSheet.absoluteFill}
+            device={device}
+            isActive
+            frameProcessor={frameProcessor}
+            frameProcessorFps={5}
+          />
+          <CustomMarker />
+          {bottomText && <BottomText />}
+        </>
+      )}
+    </View>
+  );
 }
-
-QRCodeReader.propTypes = {
-  // Optional (default 250). The height of the transparent rectangle
-  height: PropTypes.number,
-
-  // Optional (default 250). The width of the transparent rectangle
-  width: PropTypes.number,
-};
-
-export default QRCodeReader;

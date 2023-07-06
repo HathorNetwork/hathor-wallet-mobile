@@ -15,12 +15,6 @@ import SimpleButton from '../components/SimpleButton';
 
 
 class RegisterToken extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.QRCodeReader = null;
-  }
-
   onSuccess = (e) => {
     this.props.navigation.navigate('RegisterTokenManual', { configurationString: e.data });
   }
@@ -54,10 +48,9 @@ class RegisterToken extends React.Component {
           }}
           >
             <QRCodeReader
-              ref={(el) => { this.QRCodeReader = el; }}
+              navigation={this.props.navigation}
               onSuccess={this.onSuccess}
               bottomText={t`Scan the token QR code`}
-              {...this.props}
             />
           </View>
         </SafeAreaView>

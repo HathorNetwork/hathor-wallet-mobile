@@ -48,13 +48,13 @@ class NewPaymentRequest extends React.Component {
 
     // If the payment request detail modal was opened
     this.modalOpened = false;
-    this.willFocusEvent = null;
+    this.focusEvent = null;
     this.inputRef = React.createRef();
   }
 
   componentDidMount() {
     const { navigation } = this.props;
-    this.willFocusEvent = navigation.addListener('willFocus', () => {
+    this.focusEvent = navigation.addListener('focus', () => {
       if (this.modalOpened) {
         // It's coming back
         this.modalOpened = false;
@@ -67,7 +67,7 @@ class NewPaymentRequest extends React.Component {
   }
 
   componentWillUnmount() {
-    this.willFocusEvent.remove();
+    this.focusEvent();
   }
 
   focus = () => {

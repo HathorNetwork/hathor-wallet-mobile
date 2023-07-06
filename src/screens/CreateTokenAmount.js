@@ -50,19 +50,19 @@ class CreateTokenAmount extends React.Component {
   constructor(props) {
     super(props);
     this.inputRef = React.createRef();
-    this.willFocusEvent = null;
-    this.name = this.props.navigation.getParam('name');
-    this.symbol = this.props.navigation.getParam('symbol');
+    this.focusEvent = null;
+    this.name = this.props.route.params.name;
+    this.symbol = this.props.route.params.symbol;
   }
 
   componentDidMount() {
-    this.willFocusEvent = this.props.navigation.addListener('willFocus', () => {
+    this.focusEvent = this.props.navigation.addListener('focus', () => {
       this.focusInput();
     });
   }
 
   componentWillUnmount() {
-    this.willFocusEvent.remove();
+    this.focusEvent();
   }
 
   focusInput = () => {
@@ -112,7 +112,7 @@ class CreateTokenAmount extends React.Component {
         <HathorHeader
           title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
-          onCancel={() => this.props.navigation.dismiss()}
+          onCancel={() => this.props.navigation.pop()}
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>

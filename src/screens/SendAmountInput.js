@@ -52,16 +52,16 @@ class SendAmountInput extends React.Component {
 
   inputRef = React.createRef();
 
-  willFocusEvent = null;
+  focusEvent = null;
 
   componentDidMount() {
-    this.willFocusEvent = this.props.navigation.addListener('willFocus', () => {
+    this.focusEvent = this.props.navigation.addListener('focus', () => {
       this.focusInput();
     });
   }
 
   componentWillUnmount() {
-    this.willFocusEvent.remove();
+    this.focusEvent();
   }
 
   focusInput = () => {
@@ -109,7 +109,7 @@ class SendAmountInput extends React.Component {
       this.setState({ error: t`Insufficient funds` });
     } else {
       // forward the address we got from the last screen to the next one
-      const address = this.props.navigation.getParam('address');
+      const { address } = this.props.route.params;
       this.props.navigation.navigate('SendConfirmScreen', { address, amount, token: this.state.token });
     }
   }

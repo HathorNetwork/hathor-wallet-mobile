@@ -23,6 +23,7 @@ import { PIN_SIZE } from '../constants';
 
 import baseStyle from '../styles/init';
 import { STORE } from '../store';
+import NavigationService from '../NavigationService';
 
 const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
@@ -46,7 +47,7 @@ class ChoosePinScreen extends React.Component {
 
   constructor(props) {
     super(props);
-    this.words = this.props.navigation.getParam('words');
+    this.words = this.props.route.params?.words; // Mandatory parameter
 
     /**
      * pin1 {string} Input value for pin
@@ -83,7 +84,7 @@ class ChoosePinScreen extends React.Component {
       // we are just initializing the wallet, so make sure it's not locked when going to AppStack
       this.props.unlockScreen();
       this.props.startWalletRequested(this.words, this.state.pin1);
-      this.props.navigation.navigate('Home');
+      NavigationService.resetToMain();
     });
   }
 

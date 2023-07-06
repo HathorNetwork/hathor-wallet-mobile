@@ -51,6 +51,8 @@ class ResetWallet extends React.Component {
     },
   }));
 
+  willReset: false;
+
   /**
    * switchValue {bool}
    *   Indicates whether user wants to reset his/her wallet. It enables the Reset Wallet button.
@@ -64,12 +66,12 @@ class ResetWallet extends React.Component {
     if (this.props.isScreenLocked) {
       this.onBackPress = this.props.dropResetOnLockScreen;
     } else {
-      this.onBackPress = this.props.navigation.getParam('onBackPress', this.props.navigation.goBack);
+      this.onBackPress = this.props.route.params?.onBackPress ?? this.props.navigation.goBack;
     }
 
     this.hideBackButton = false;
     if (this.props.navigation) {
-      this.hideBackButton = this.props.navigation.getParam('hideBackButton', false);
+      this.hideBackButton = this.props.route.params?.hideBackButton ?? false;
     }
   }
 
@@ -78,9 +80,22 @@ class ResetWallet extends React.Component {
   }
 
   onPressResetWallet = async () => {
-    this.props.resetWallet();
-    await Keychain.resetGenericPassword();
-    this.props.navigation.navigate('Init');
+    // Setting the flag for the actions that will be performed on unmounting
+    this.willReset = true;
+    this.props.navigation.reset({
+      index: 0,
+      routes: [{ name: 'Init' }],
+    });
+  }
+
+  componentWillUnmount() {
+    // The following commands will destroy local storage information that would break the
+    // expectations of the screens that are still mounted on the navigation history stack.
+    // Executing them only after all the stack is already reset on `onPressResetWallet`
+    if (this.willReset) {
+      this.props.resetWallet();
+      Keychain.resetGenericPassword();
+    }
   }
 
   render() {

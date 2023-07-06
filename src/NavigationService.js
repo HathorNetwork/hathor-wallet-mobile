@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { NavigationActions } from 'react-navigation';
+import { CommonActions } from '@react-navigation/native';
 
 let _navigator;
 
@@ -21,16 +21,31 @@ function setTopLevelNavigator(navigatorRef) {
  * Uses the initialized navigator (from setTopLevelNavigator) to navigate to a
  * route.
  */
-function navigate(routeName, params) {
-  _navigator.dispatch(
-    NavigationActions.navigate({
-      routeName,
+function navigate(name, params) {
+  _navigator.current.dispatch(
+    CommonActions.navigate({
+      name,
       params,
     })
   );
 }
 
+/**
+ * Clears the whole navigation history and navigates to the home screen of the logged user.
+ * Useful when an operation has been successfully executed in a screen deep within nested navigators
+ * @returns <void>
+ */
+function resetToMain() {
+  _navigator.current.reset({
+    index: 0,
+    routes: [
+      { name: 'App', params: { screen: 'Main', params: { screen: 'Home' } } },
+    ]
+  });
+}
+
 export default {
   navigate,
   setTopLevelNavigator,
+  resetToMain,
 };

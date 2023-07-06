@@ -26,7 +26,7 @@ class SendAddressInput extends React.Component {
     this.state = {
       // we can optionally receive a string to fill out the address
       // input (for eg, user scanned QR code)
-      address: this.props.navigation.getParam('address', null),
+      address: this.props.route.params?.address ?? null,
       // TODO this is probably temporary. We don't have the UI for error message yet.
       error: null,
     };

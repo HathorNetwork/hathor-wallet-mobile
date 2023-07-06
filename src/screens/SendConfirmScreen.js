@@ -20,6 +20,7 @@ import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import { renderValue, isTokenNFT } from '../utils';
+import NavigationService from '../NavigationService';
 
 
 /**
@@ -51,10 +52,10 @@ class SendConfirmScreen extends React.Component {
    */
   constructor(props) {
     super(props);
-    // we receive these 3 values from previous screens
-    this.amount = this.props.navigation.getParam('amount');
-    this.address = this.props.navigation.getParam('address');
-    this.token = this.props.navigation.getParam('token');
+    // we receive these 3 mandatory parameters from previous screens
+    this.amount = this.props.route.params?.amount;
+    this.address = this.props.route.params?.address;
+    this.token = this.props.route.params?.token;
     this.isNFT = isTokenNFT(this.token.uid, this.props.tokenMetadata);
     this.amountAndToken = `${renderValue(this.amount, this.isNFT)} ${this.token.symbol}`;
   }
@@ -112,8 +113,8 @@ class SendConfirmScreen extends React.Component {
    */
   exitScreen = () => {
     this.setState({ modal: null });
-    this.props.navigation.popToTop();
-    this.props.navigation.dismiss();
+    // Return to the dashboard, clean all navigation history
+    NavigationService.resetToMain();
   }
 
   render() {
