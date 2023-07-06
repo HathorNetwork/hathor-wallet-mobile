@@ -7,11 +7,12 @@
 
 import React from 'react';
 import {
-  Share, StyleSheet, Text, View, ViewPropTypes,
+  Share, StyleSheet, Text, View,
 } from 'react-native';
 import { t } from 'ttag';
 import QRCode from 'react-native-qrcode-svg';
 import PropTypes from 'prop-types';
+import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
 import hathorLib from '@hathor/wallet-lib';
 import { getTokenLabel } from '../utils';
