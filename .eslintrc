@@ -15,6 +15,11 @@
     "react/jsx-one-expression-per-line": 0,
     "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }],
     "react/jsx-closing-tag-location": 0,
+    "react/jsx-no-bind": 0, // Obsolete
+    "react/function-component-definition": [1, {
+      "namedComponents": "arrow-function",
+      "unnamedComponents": "arrow-function"
+    }],
     "react/react-in-jsx-scope": "off", // Not necessary since React v17
     "react/sort-comp": 0,
     "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
