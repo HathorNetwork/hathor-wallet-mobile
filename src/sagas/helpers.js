@@ -20,7 +20,7 @@ import {
   setIsShowingPinScreen,
   types,
 } from '../actions';
-import { FEATURE_TOGGLE_DEFAULTS } from '../constants';
+import { FEATURE_TOGGLE_DEFAULTS, INITIAL_TOKENS } from '../constants';
 
 export function* waitForFeatureToggleInitialization() {
   const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
@@ -166,6 +166,11 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
     }
     // eslint-disable-next-line no-await-in-loop
     next = await iterator.next();
+  }
+
+  // XXX: This will add any default tokens configured, not only HTR
+  if (!excludeHTR) {
+    tokens.unshift(...INITIAL_TOKENS);
   }
 
   return tokens;
