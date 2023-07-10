@@ -44,8 +44,6 @@
  * START_WALLET_SUCCESS: This action is dispatched when the wallet is successfully
  * loaded.
  */
-import { Core } from '@walletconnect/core';
-import { Web3Wallet } from '@walletconnect/web3wallet';
 
 import {
   call,
@@ -96,6 +94,9 @@ const ERROR_CODES = {
   USER_REJECTED_METHOD: 5002,
   INVALID_PAYLOAD: 5003,
 };
+
+const Core = class {};
+const Web3Wallet = class {};
 
 function* isWalletConnectEnabled() {
   const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
