@@ -78,6 +78,8 @@ import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
+import WalletConnectList from './screens/WalletConnect/WalletConnectList';
+import WalletConnectManual from './screens/WalletConnect/WalletConnectManual';
 import WalletConnectScan from './screens/WalletConnect/WalletConnectScan';
 import baseStyle from './styles/init';
 
@@ -373,6 +375,9 @@ const AppStack = () => {
         />
         <Stack.Screen name='About' component={About} />
         <Stack.Screen name='Security' component={Security} />
+        <Stack.Screen name='WalletConnectList' component={WalletConnectList} />
+        <Stack.Screen name='WalletConnectManual' component={WalletConnectManual} />
+        <Stack.Screen name='WalletConnectScan' component={WalletConnectScan} />
         <Stack.Screen name='PushNotification' component={PushNotification} />
         <Stack.Screen name='ChangePin' component={ChangePin} />
         <Stack.Screen
