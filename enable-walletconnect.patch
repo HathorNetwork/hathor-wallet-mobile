@@ -1,0 +1,23 @@
+diff --git a/src/sagas/walletConnect.js b/src/sagas/walletConnect.js
+index 53671d7..7b87665 100644
+--- a/src/sagas/walletConnect.js
++++ b/src/sagas/walletConnect.js
+@@ -44,6 +44,8 @@
+  * START_WALLET_SUCCESS: This action is dispatched when the wallet is successfully
+  * loaded.
+  */
++import { Core } from '@walletconnect/core';
++import { Web3Wallet } from '@walletconnect/web3wallet';
+ 
+ import {
+   call,
+@@ -95,9 +97,6 @@ const ERROR_CODES = {
+   INVALID_PAYLOAD: 5003,
+ };
+ 
+-const Core = class {};
+-const Web3Wallet = class {};
+-
+ function* isWalletConnectEnabled() {
+   const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
+ 
