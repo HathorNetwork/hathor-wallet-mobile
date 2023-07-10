@@ -1,8 +1,7 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-platform :ios, '12.4'
-install! 'cocoapods', :deterministic_uuids => false
+platform :ios, '13.0'
 
 target 'HathorMobile' do
   # Don't change the order of any declaration!
@@ -44,6 +43,12 @@ target 'HathorMobile' do
       if pod.name.eql?('RNPermissions') || pod.name.start_with?('Permission-')
         def pod.build_type;
             Pod::BuildType.static_library
+        end
+      end
+
+      if pod.name.eql?('vision-camera-code-scanner') || pod.name.eql?('VisionCamera')
+        def pod.build_type
+          Pod::BuildType.static_library
         end
       end
     end
