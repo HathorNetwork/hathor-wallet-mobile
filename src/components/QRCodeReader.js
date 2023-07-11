@@ -9,42 +9,60 @@ import * as React from 'react';
 
 import { ActivityIndicator, AppState, Platform, StyleSheet, Text, View } from 'react-native';
 import { Camera, CameraType } from 'react-native-camera-kit';
+import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { useEffect, useState, useRef } from 'react';
 import { t } from 'ttag';
 
 const APP_ACTIVE_STATE = 'active';
 
-export default function QRCodeReader({
+export default ({
   navigation,
   onSuccess,
   focusHeight = 250,
   focusWidth = 250,
   bottomText = '',
-}) {
+}) => {
+  const cameraRef = useRef();
   // States related to Camera rendering logic
   const [currentAppState, setCurrentAppState] = useState(AppState.currentState);
   const [isFocusedScreen, setIsFocusedScreen] = useState(false);
-  const [hasPermission, setHasPermission] = useState(false);
 
   // States related to the custom marker
   const [canvasHeight, setCanvasHeight] = useState(0);
   const [canvasWidth, setCanvasWidth] = useState(0);
 
-  // Initialization and event listeners
   useEffect(() => {
     if (Platform.OS === 'ios') {
-      // Ensure the app has permission to use the camera
-      Camera.requestDeviceCameraAuthorization()
-        .then((isAuthorized) => {
-          setHasPermission(isAuthorized);
-          setIsFocusedScreen(true); // Coming back from the authorization screen
+      console.log('Will check');
+      check(PERMISSIONS.IOS.CAMERA)
+        .then((result) => {
+          console.log('RESULT: ', result);
+          switch (result) {
+            case RESULTS.GRANTED:
+              console.log('Granted');
+              // Do nothing
+              break;
+            case RESULTS.DENIED:
+              // We should request again
+              request(PERMISSIONS.IOS.CAMERA)
+                .then((tata) => {
+                  console.log('Requested', tata);
+                });
+              break;
+            case RESULTS.BLOCKED:
+              console.log('Blocked');
+              // Can't do anything here
+              break;
+            default:
+              console.log('teta');
+              break;
+          }
         });
-    } else {
-      // Always show the Camera element for Android, since it will be responsible
-      // for making the permission request.
-      setHasPermission(true);
     }
+  }, []);
 
+  // Initialization and event listeners
+  useEffect(() => {
     /*
      * We need to focus/unfocus the QRCode scanner, so that it doesn't freeze
      * - When the navigation focuses this screen or app becomes active, we set it to `true`
@@ -176,8 +194,6 @@ export default function QRCodeReader({
   /**
    * Decides if the camera should be rendered, or if the screen should remain on the Loader view
    */
-  const shouldRenderCamera = hasPermission && isFocusedScreen;
-
   return (
     <View
       style={{
@@ -185,20 +201,18 @@ export default function QRCodeReader({
       }}
       onLayout={onViewLayoutHandler}
     >
-      { !shouldRenderCamera && <WaitingForCameraLoader /> }
-      { shouldRenderCamera && (
-        <>
-          <Camera
-            cameraType={CameraType.Back}
-            flashMode='off'
-            scanBarcode
-            onReadCode={onCodeRead}
-            style={StyleSheet.absoluteFill}
-          />
-          <CustomMarker />
-          {bottomText && <BottomText />}
-        </>
-      )}
+      <>
+        <Camera
+          ref={cameraRef}
+          cameraType={CameraType.Back}
+          flashMode='off'
+          scanBarcode
+          onReadCode={onCodeRead}
+          style={StyleSheet.absoluteFill}
+        />
+        <CustomMarker />
+        {bottomText && <BottomText />}
+      </>
     </View>
   );
-}
+};
