@@ -170,13 +170,15 @@ export default ({
       onLayout={onViewLayoutHandler}
     >
       <>
-        <Camera
-          cameraType={CameraType.Back}
-          flashMode='off'
-          scanBarcode
-          onReadCode={onCodeRead}
-          style={StyleSheet.absoluteFill}
-        />
+        {isFocusedScreen && (
+          <Camera
+            cameraType={CameraType.Back}
+            flashMode='off'
+            scanBarcode
+            onReadCode={onCodeRead}
+            style={StyleSheet.absoluteFill}
+          />
+        )}
         <CustomMarker />
         {bottomText && <BottomText />}
       </>
