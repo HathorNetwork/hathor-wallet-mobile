@@ -247,7 +247,6 @@ export const updateHeight = (height, htrBalance) => (
   { type: types.UPDATE_HEIGHT, payload: { height, htrBalance } }
 );
 
-
 export const updateTokenHistory = (token, newHistory) => (
   { type: types.UPDATE_TOKEN_HISTORY, payload: { token, newHistory } }
 );
@@ -566,7 +565,6 @@ export const setAvailablePushNotification = (payload) => ({
   type: types.SET_AVAILABLE_PUSH_NOTIFICATION,
   payload,
 });
-
 
 /**
  * Ask user if he wants to opt-in push notifications

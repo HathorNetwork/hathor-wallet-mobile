@@ -24,7 +24,6 @@ import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 
-
 /**
  * tokens {Object} array with all added tokens on this wallet
  * selectedToken {Object} token currently selected by the user
@@ -172,8 +171,7 @@ class SendAmountInput extends React.Component {
                 />
                 {IS_MULTI_TOKEN
                   ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />
-                  : renderGhostElement()
-                }
+                  : renderGhostElement()}
               </View>
               <InputLabel style={{ textAlign: 'center', marginTop: 8 }}>
                 {getAvailableString()}

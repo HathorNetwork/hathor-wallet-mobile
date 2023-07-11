@@ -13,7 +13,6 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faSortDown } from '@fortawesome/free-solid-svg-icons';
 
-
 const TokenBox = (props) => (
   <TouchableWithoutFeedback onPress={props.onPress}>
     <View style={styles.wrapper}>
@@ -41,6 +40,5 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
 });
-
 
 export default TokenBox;

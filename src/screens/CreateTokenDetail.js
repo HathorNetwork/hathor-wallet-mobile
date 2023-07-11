@@ -15,7 +15,6 @@ import TokenDetails from '../components/TokenDetails';
 import SimpleButton from '../components/SimpleButton';
 import closeIcon from '../assets/icons/icCloseActive.png';
 
-
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  */

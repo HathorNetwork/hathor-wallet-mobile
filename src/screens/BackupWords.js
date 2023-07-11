@@ -26,7 +26,6 @@ import baseStyle from '../styles/init';
 import { PRIMARY_COLOR } from '../constants';
 import { Strong } from '../utils';
 
-
 class BackupWords extends React.Component {
   /**
    * step {number} Which validation step user is
@@ -41,30 +40,31 @@ class BackupWords extends React.Component {
     modal: null,
   };
 
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    footerView: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      marginRight: 8,
-    },
-    past: {
-      backgroundColor: '#000',
-    },
-    current: {
-      backgroundColor: PRIMARY_COLOR,
-    },
-    future: {
-      backgroundColor: '#000',
-      opacity: 0.3,
-    },
-    lastView: {
-      marginRight: 0,
-    },
-    button: {
-      marginBottom: 16,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      footerView: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        marginRight: 8,
+      },
+      past: {
+        backgroundColor: '#000',
+      },
+      current: {
+        backgroundColor: PRIMARY_COLOR,
+      },
+      future: {
+        backgroundColor: '#000',
+        opacity: 0.3,
+      },
+      lastView: {
+        marginRight: 0,
+      },
+      button: {
+        marginBottom: 16,
+      },
+    }) });
 
   // Array of words shown on the previous screen
   words = null;

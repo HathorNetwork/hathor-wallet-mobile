@@ -38,7 +38,6 @@ import { fetchMoreHistory, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 
-
 /**
  * txList {Array} array with transactions of the selected token
  * balance {Object} object with token balance {'available', 'locked'}
@@ -273,7 +272,9 @@ class TxHistoryView extends React.Component {
 
     this.setState({ loading: true });
     const newHistory = await fetchMoreHistory(
-      this.props.wallet, this.props.token.uid, this.props.txList
+      this.props.wallet,
+      this.props.token.uid,
+      this.props.txList
     );
 
     if (newHistory.length) {
@@ -357,29 +358,31 @@ class TxListItem extends React.Component {
     },
   });
 
-  styleVoided = Object.assign({}, this.style, StyleSheet.create({
-    description: {
-      ...this.style.description,
-      color: 'rgba(0, 0, 0, 0.3)',
-    },
-    timestamp: {
-      ...this.style.timestamp,
-      color: 'rgba(0, 0, 0, 0.3)',
-    },
-    balance: {
-      ...this.style.balance,
-      color: 'rgba(0, 0, 0, 0.3)',
-      textDecorationLine: 'line-through',
-    },
-  }));
+  styleVoided = ({ ...this.style,
+    ...StyleSheet.create({
+      description: {
+        ...this.style.description,
+        color: 'rgba(0, 0, 0, 0.3)',
+      },
+      timestamp: {
+        ...this.style.timestamp,
+        color: 'rgba(0, 0, 0, 0.3)',
+      },
+      balance: {
+        ...this.style.balance,
+        color: 'rgba(0, 0, 0, 0.3)',
+        textDecorationLine: 'line-through',
+      },
+    }) });
 
-  stylePositive = Object.assign({}, this.style, StyleSheet.create({
-    balance: {
-      ...this.style.balance,
-      color: '#0DA0A0',
-      fontWeight: 'bold',
-    },
-  }));
+  stylePositive = ({ ...this.style,
+    ...StyleSheet.create({
+      balance: {
+        ...this.style.balance,
+        color: '#0DA0A0',
+        fontWeight: 'bold',
+      },
+    }) });
 
   componentDidMount() {
     this.updateTimestamp();
@@ -599,13 +602,11 @@ class BalanceView extends React.Component {
         <View style={style.view}>
           {!this.state.isExpanded
             ? this.renderSimple()
-            : this.renderExpanded()
-          }
+            : this.renderExpanded()}
         </View>
       </TouchableWithoutFeedback>
     );
   }
 }
-
 
 export default connect(mapStateToProps, mapDispatchToProps)(MainScreen);

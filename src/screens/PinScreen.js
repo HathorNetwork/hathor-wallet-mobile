@@ -283,7 +283,7 @@ class PinScreen extends React.Component {
           alignItems: 'center',
           marginHorizontal: 16,
           backgroundColor: baseStyle.container.backgroundColor,
-      }}
+        }}
       >
         <View
           style={{

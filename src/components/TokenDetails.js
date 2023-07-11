@@ -19,12 +19,13 @@ import { getTokenLabel } from '../utils';
 import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
 
-
 const TokenDetails = (props) => {
   const tokenLabel = getTokenLabel(props.token);
 
   const configString = hathorLib.tokensUtils.getConfigurationString(
-    props.token.uid, props.token.name, props.token.symbol
+    props.token.uid,
+    props.token.name,
+    props.token.symbol
   );
 
   const shareClicked = () => {

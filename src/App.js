@@ -269,7 +269,6 @@ const AppStack = () => {
   );
 };
 
-
 /**
  * loadHistory {bool} Indicates we're loading the tx history
  * lockScreen {bool} Indicates screen is locked

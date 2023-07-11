@@ -11,7 +11,6 @@ import { connect } from 'react-redux';
 import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
 
-
 /**
  * tokens {Array} Array of token configs registered on this wallet
  * tokensBalance {Object} Object with the balance of each token {uid: {available, locked}}

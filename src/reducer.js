@@ -564,7 +564,7 @@ const onTokenMetadataLoaded = (state, action) => ({
  */
 const onTokenMetadataUpdated = (state, action) => {
   const { data } = action.payload;
-  const newMeta = Object.assign({}, state.tokenMetadata, data);
+  const newMeta = { ...state.tokenMetadata, ...data };
 
   return {
     ...state,
@@ -579,7 +579,7 @@ const onTokenMetadataUpdated = (state, action) => {
 const onTokenMetadataRemoved = (state, action) => {
   const uid = action.payload;
 
-  const newMeta = Object.assign({}, state.tokenMetadata);
+  const newMeta = { ...state.tokenMetadata };
   if (uid in newMeta) {
     delete newMeta[uid];
   }

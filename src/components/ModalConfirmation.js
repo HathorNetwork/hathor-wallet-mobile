@@ -82,5 +82,4 @@ class ModalConfirmation extends React.Component {
   }
 }
 
-
 export default ModalConfirmation;

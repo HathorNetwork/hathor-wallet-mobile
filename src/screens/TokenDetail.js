@@ -17,7 +17,6 @@ import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
 import TokenDetails from '../components/TokenDetails';
 
-
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  * tokenMetadata {Object} metadata of tokens
@@ -58,6 +57,5 @@ class TokenDetail extends React.Component {
     );
   }
 }
-
 
 export default connect(mapStateToProps)(TokenDetail);
