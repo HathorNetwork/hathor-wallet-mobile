@@ -1,4 +1,4 @@
-package com.hathormobile;
+package network.hathor.wallet;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
