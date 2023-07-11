@@ -21,6 +21,7 @@ import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
 import { getLightBackground } from '../utils';
 import CopyClipboard from '../components/CopyClipboard';
+import baseStyle from '../styles/init';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -68,6 +69,7 @@ export class Settings extends React.Component {
       width: 100,
       marginTop: 16,
       marginBottom: 16,
+      backgroundColor: baseStyle.title.backgroundColor,
     },
     logo: {
       height: 22,
@@ -77,7 +79,7 @@ export class Settings extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}>
         <ScrollView contentContainerStyle={this.style.scrollView}>
           <View style={this.style.logoView}>
             <Logo
@@ -121,24 +123,21 @@ export class Settings extends React.Component {
                 title={t`Push Notification`}
                 onPress={() => this.props.navigation.navigate('PushNotification')}
               />
-              )
-            }
+              )}
             {IS_MULTI_TOKEN
               && (
                 <ListMenu
                   title={t`Create a new token`}
                   onPress={() => this.props.navigation.navigate('CreateTokenStack')}
                 />
-              )
-            }
+              )}
             {IS_MULTI_TOKEN
               && (
                 <ListMenu
                   title={t`Register a token`}
                   onPress={() => this.props.navigation.navigate('RegisterToken')}
                 />
-              )
-            }
+              )}
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}

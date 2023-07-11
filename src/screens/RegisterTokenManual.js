@@ -32,7 +32,6 @@ const mapStateToProps = (state) => ({
   useWalletService: state.useWalletService,
 });
 
-
 class RegisterTokenManual extends React.Component {
   /**
    * This screen expect the following parameters on the navigation:

@@ -7,23 +7,25 @@
 
 import React from 'react';
 import {
-  Share, StyleSheet, Text, View, ViewPropTypes,
+  Share, StyleSheet, Text, View,
 } from 'react-native';
 import { t } from 'ttag';
 import QRCode from 'react-native-qrcode-svg';
 import PropTypes from 'prop-types';
+import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
 import hathorLib from '@hathor/wallet-lib';
 import { getTokenLabel } from '../utils';
 import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
 
-
 const TokenDetails = (props) => {
   const tokenLabel = getTokenLabel(props.token);
 
   const configString = hathorLib.tokensUtils.getConfigurationString(
-    props.token.uid, props.token.name, props.token.symbol
+    props.token.uid,
+    props.token.name,
+    props.token.symbol
   );
 
   const shareClicked = () => {

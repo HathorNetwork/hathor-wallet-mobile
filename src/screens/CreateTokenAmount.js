@@ -20,16 +20,18 @@ import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
 import { getIntegerAmount, getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 
-
 /**
  * balance {Object} object with token balance {'available', 'locked'}
  */
 const mapStateToProps = (state) => ({
-  balance: get(state.tokensBalance,
-    `[${hathorLib.constants.HATHOR_TOKEN_CONFIG.uid}].data`, {
+  balance: get(
+    state.tokensBalance,
+    `[${hathorLib.constants.HATHOR_TOKEN_CONFIG.uid}].data`,
+    {
       available: 0,
       locked: 0,
-    }),
+    }
+  ),
 });
 
 /**

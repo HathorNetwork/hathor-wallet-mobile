@@ -17,7 +17,6 @@ import SimpleInput from '../components/SimpleInput';
 import TextFmt from '../components/TextFmt';
 import { getKeyboardAvoidingViewTopDistance, Italic } from '../utils';
 
-
 class CreateTokenName extends React.Component {
   /**
    * name {string} token name

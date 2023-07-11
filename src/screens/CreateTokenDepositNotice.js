@@ -26,13 +26,14 @@ const mapStateToProps = (state) => ({
 });
 
 class CreateTokenDepositNotice extends React.Component {
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    container: {
-      flex: 1,
-      justifyContent: 'space-between',
-      padding: 16,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      container: {
+        flex: 1,
+        justifyContent: 'space-between',
+        padding: 16,
+      },
+    }) });
 
   render() {
     const depositPercentage = this.props.wallet.storage.getTokenDepositPercentage() * 100;

@@ -22,7 +22,6 @@ import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackM
 import { renderValue, isTokenNFT } from '../utils';
 import NavigationService from '../NavigationService';
 
-
 /**
  * tokensBalance {Object} dict with balance for each token
  * wallet {HathorWallet} HathorWallet lib object

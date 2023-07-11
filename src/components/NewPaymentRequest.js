@@ -22,7 +22,6 @@ import { newInvoice } from '../actions';
 import { getIntegerAmount, isTokenNFT } from '../utils';
 import OfflineBar from './OfflineBar';
 
-
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  * tokenMetadata {Object} metadata of tokens
@@ -171,8 +170,7 @@ class NewPaymentRequest extends React.Component {
             />
             {IS_MULTI_TOKEN
               ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />
-              : renderGhostElement()
-            }
+              : renderGhostElement()}
           </View>
           <View style={buttonWrapperStyle.style}>
             <NewHathorButton

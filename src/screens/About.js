@@ -19,17 +19,18 @@ import { str2jsx } from '../utils';
 import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '../constants';
 
 export class About extends React.Component {
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    view: {
-      padding: 16,
-      justifyContent: 'space-between',
-      flexGrow: 1,
-    },
-    logoView: {
-      marginTop: 16,
-      marginBottom: 16,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      view: {
+        padding: 16,
+        justifyContent: 'space-between',
+        flexGrow: 1,
+      },
+      logoView: {
+        marginTop: 16,
+        marginBottom: 16,
+      },
+    }) });
 
   touchCount = 0;
 
@@ -77,7 +78,7 @@ export class About extends React.Component {
     );
 
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}>
         <HathorHeader
           title={t`ABOUT`}
           onBackPress={() => this.props.navigation.goBack()}

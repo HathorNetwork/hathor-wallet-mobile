@@ -13,7 +13,6 @@ import PropTypes from 'prop-types';
 
 import backspace from '../assets/icons/backspace.png';
 
-
 const keysLayout = [
   [[1, ''], [2, 'ABC'], [3, 'DEF']],
   [[4, 'GHI'], [5, 'JKL'], [6, 'MNO']],

@@ -26,7 +26,6 @@ import { getTokenLabel } from '../utils';
 import { PRIMARY_COLOR } from '../constants';
 import NavigationService from '../NavigationService';
 
-
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  */
@@ -35,25 +34,25 @@ const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
 });
 
-
 class UnregisterToken extends React.Component {
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    switchView: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    switchText: {
-      paddingRight: 16,
-      fontSize: 18,
-      lineHeight: 28,
-      flex: 1,
-    },
-    textError: {
-      marginTop: 32,
-      marginBottom: 32,
-      color: '#dc3545',
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      switchView: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      switchText: {
+        paddingRight: 16,
+        fontSize: 18,
+        lineHeight: 28,
+        flex: 1,
+      },
+      textError: {
+        marginTop: 32,
+        marginBottom: 32,
+        color: '#dc3545',
+      },
+    }) });
 
   /**
    * switchValue {bool} If user confirms that want to unregister the token

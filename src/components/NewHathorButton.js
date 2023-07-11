@@ -8,8 +8,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-  StyleSheet, Text, TouchableOpacity, View, ViewPropTypes,
+  StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
+import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
 const NewHathorButton = (props) => {
   const wrapperViewStyle = [style.wrapper];
