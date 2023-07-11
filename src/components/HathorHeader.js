@@ -14,6 +14,7 @@ import SimpleButton from './SimpleButton';
 import Logo from './Logo';
 import chevronLeft from '../assets/icons/chevron-left.png';
 import closeIcon from '../assets/icons/icCloseActive.png';
+import baseStyle from '../styles/init';
 
 const HathorHeader = (props) => {
   const renderBackButton = () => {
@@ -79,6 +80,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     borderColor: '#eee',
     paddingHorizontal: 16,
+    backgroundColor: baseStyle.title.backgroundColor,
   },
   innerWrapper: {
     flex: 1,

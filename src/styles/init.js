@@ -8,10 +8,13 @@
 import { StyleSheet } from 'react-native';
 import { PRIMARY_COLOR } from '../constants';
 
+const defaultBackgroundColor = '#fafafa';
+
 const baseStyle = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: defaultBackgroundColor,
   },
   buttonView: {
     flex: 1,
@@ -22,6 +25,7 @@ const baseStyle = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 20,
     marginBottom: 16,
+    backgroundColor: defaultBackgroundColor,
   },
   text: {
     fontSize: 16,

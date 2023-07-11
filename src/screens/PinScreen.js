@@ -27,6 +27,7 @@ import {
 } from '../actions';
 import { PIN_SIZE } from '../constants';
 import { STORE } from '../store';
+import baseStyle from '../styles/init';
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
@@ -277,7 +278,12 @@ class PinScreen extends React.Component {
 
     return (
       <SafeAreaView
-        style={{ flex: 1, alignItems: 'center', marginHorizontal: 16 }}
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          marginHorizontal: 16,
+          backgroundColor: baseStyle.container.backgroundColor,
+      }}
       >
         <View
           style={{
