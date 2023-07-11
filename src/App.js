@@ -562,11 +562,6 @@ const RootStack = () => {
         headerShown: false,
         gestureEnabled: false,
       }}
-      theme={{
-        colors: {
-          background: 'red'
-        }
-      }}
     >
       <Stack.Screen name='Decide' component={BlankScreen} />
       <Stack.Screen name='App' component={AppStackWrapper} />
