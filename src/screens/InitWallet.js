@@ -36,17 +36,18 @@ import { PRIMARY_COLOR, TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '../cons
 class WelcomeScreen extends React.Component {
   state = { switchValue: false };
 
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    switchView: {
-      flexDirection: 'row',
-    },
-    switchText: {
-      paddingLeft: 16,
-      fontSize: 14,
-      lineHeight: 18,
-      flex: 1,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      switchView: {
+        flexDirection: 'row',
+      },
+      switchText: {
+        paddingLeft: 16,
+        fontSize: 14,
+        lineHeight: 18,
+        flex: 1,
+      },
+    }) });
 
   toggleSwitch = (value) => {
     this.setState({ switchValue: value });
@@ -103,7 +104,7 @@ class WelcomeScreen extends React.Component {
 }
 
 class InitialScreen extends React.Component {
-  style = Object.assign({}, baseStyle);
+  style = ({ ...baseStyle });
 
   render() {
     return (
@@ -143,22 +144,23 @@ class NewWordsScreen extends React.Component {
     words: walletUtils.generateWalletWords(hathorConstants.HD_WALLET_ENTROPY),
   };
 
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    row: {
-      flexDirection: 'row',
-      flex: 0.5,
-    },
-    item: {
-      flex: 1,
-    },
-    itemNumber: {
-      fontSize: 14,
-    },
-    itemText: {
-      color: '#000',
-      fontSize: 18,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      row: {
+        flexDirection: 'row',
+        flex: 0.5,
+      },
+      item: {
+        flex: 1,
+      },
+      itemNumber: {
+        fontSize: 14,
+      },
+      itemText: {
+        color: '#000',
+        fontSize: 18,
+      },
+    }) });
 
   render() {
     const wordsArr = this.state.words ? this.state.words.split(' ') : [];
@@ -233,24 +235,25 @@ class LoadWordsScreen extends React.Component {
 
   numberOfWords = 24;
 
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    inputView: {
-      marginTop: 16,
-      marginBottom: 16,
-    },
-    label: {
-      fontSize: 12,
-      color: 'rgba(0, 0, 0, 0.5)',
-      marginTop: 8,
-      marginBottom: 8,
-    },
-    input: {
-      fontSize: 16,
-      lineHeight: 24,
-      borderColor: '#EEEEEE',
-      borderBottomWidth: 1,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      inputView: {
+        marginTop: 16,
+        marginBottom: 16,
+      },
+      label: {
+        fontSize: 12,
+        color: 'rgba(0, 0, 0, 0.5)',
+        marginTop: 8,
+        marginBottom: 8,
+      },
+      input: {
+        fontSize: 16,
+        lineHeight: 24,
+        borderColor: '#EEEEEE',
+        borderBottomWidth: 1,
+      },
+    }) });
 
   onChangeText = (text) => {
     const words = text.trim(/\s+/);

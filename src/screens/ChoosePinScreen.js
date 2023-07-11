@@ -34,16 +34,17 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 class ChoosePinScreen extends React.Component {
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    pinView: {
-      flex: 1,
-      alignItems: 'center',
-    },
-    pinText: {
-      marginTop: 16,
-      marginBottom: 16,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      pinView: {
+        flex: 1,
+        alignItems: 'center',
+      },
+      pinText: {
+        marginTop: 16,
+        marginBottom: 16,
+      },
+    }) });
 
   constructor(props) {
     super(props);

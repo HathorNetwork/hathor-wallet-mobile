@@ -36,7 +36,6 @@ const mapStateToProps = (state) => ({
   isShowingPinScreen: state.isShowingPinScreen,
 });
 
-
 const mapDispatchToProps = (dispatch) => ({
   newToken: (token) => dispatch(newToken(token)),
   updateSelectedToken: (token) => dispatch(updateSelectedToken(token)),
@@ -76,12 +75,16 @@ class CreateTokenConfirm extends React.Component {
 
     const { address } = await this.props.wallet.getCurrentAddress({ markAsUsed: true });
     this.props.wallet.prepareCreateNewToken(
-      this.name, this.symbol, this.amount, { address, pinCode: pin }
+      this.name,
+      this.symbol,
+      this.amount,
+      { address, pinCode: pin }
     ).then((tx) => {
       let sendTransaction;
       if (this.props.useWalletService) {
         sendTransaction = new hathorLib.SendTransactionWalletService(
-          this.props.wallet, { transaction: tx }
+          this.props.wallet,
+          { transaction: tx }
         );
       } else {
         sendTransaction = new hathorLib.SendTransaction(

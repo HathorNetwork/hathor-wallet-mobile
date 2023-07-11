@@ -22,26 +22,26 @@ import {
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen } from '../actions';
 
-
 const mapDispatchToProps = (dispatch) => ({
   lockScreen: () => dispatch(lockScreen()),
 });
 
 export class Security extends React.Component {
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    view: {
-      padding: 16,
-      justifyContent: 'space-between',
-    },
-    logo: {
-      height: 30,
-      width: 170,
-    },
-    logoView: {
-      marginTop: 16,
-      marginBottom: 16,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      view: {
+        padding: 16,
+        justifyContent: 'space-between',
+      },
+      logo: {
+        height: 30,
+        width: 170,
+      },
+      logoView: {
+        marginTop: 16,
+        marginBottom: 16,
+      },
+    }) });
 
   constructor(props) {
     super(props);
@@ -66,7 +66,6 @@ export class Security extends React.Component {
   onLockWallet = () => {
     this.props.lockScreen();
   }
-
 
   render() {
     const switchDisabled = !this.supportedBiometry;

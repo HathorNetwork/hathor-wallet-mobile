@@ -13,7 +13,6 @@ import HathorHeader from '../components/HathorHeader';
 import QRCodeReader from '../components/QRCodeReader';
 import SimpleButton from '../components/SimpleButton';
 
-
 class RegisterToken extends React.Component {
   onSuccess = (e) => {
     this.props.navigation.navigate('RegisterTokenManual', { configurationString: e.data });

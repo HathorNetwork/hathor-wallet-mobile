@@ -37,19 +37,19 @@ const mapDispatchToProps = (dispatch) => ({
   dropResetOnLockScreen: () => dispatch(dropResetOnLockScreen()),
 });
 
-
 class ResetWallet extends React.Component {
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    switchView: {
-      flexDirection: 'row',
-    },
-    switchText: {
-      paddingLeft: 16,
-      fontSize: 14,
-      lineHeight: 18,
-      flex: 1,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      switchView: {
+        flexDirection: 'row',
+      },
+      switchText: {
+        paddingLeft: 16,
+        fontSize: 14,
+        lineHeight: 18,
+        flex: 1,
+      },
+    }) });
 
   willReset: false;
 

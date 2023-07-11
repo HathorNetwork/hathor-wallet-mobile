@@ -16,7 +16,6 @@ import { PRIMARY_COLOR, KEYCHAIN_USER, networkObj } from './constants';
 import { STORE } from './store';
 import { TxHistory } from './models';
 
-
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
 export const Italic = (props) => <Text style={[{ fontStyle: 'italic' }, props.style]}>{props.children}</Text>;

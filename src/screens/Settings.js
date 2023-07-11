@@ -123,24 +123,21 @@ export class Settings extends React.Component {
                 title={t`Push Notification`}
                 onPress={() => this.props.navigation.navigate('PushNotification')}
               />
-              )
-            }
+              )}
             {IS_MULTI_TOKEN
               && (
                 <ListMenu
                   title={t`Create a new token`}
                   onPress={() => this.props.navigation.navigate('CreateTokenStack')}
                 />
-              )
-            }
+              )}
             {IS_MULTI_TOKEN
               && (
                 <ListMenu
                   title={t`Register a token`}
                   onPress={() => this.props.navigation.navigate('RegisterToken')}
                 />
-              )
-            }
+              )}
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}

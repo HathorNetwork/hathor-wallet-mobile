@@ -436,29 +436,27 @@ export function* handleTx(action) {
 
   // tokenAddressesMap should be an object { [tokenUid]: Set(addresses) }
   // txAddresses should be a Set with all addresses involved in the tx
-  const [tokenAddressesMap, txAddresses] = data.reduce(
-    (acc, io) => {
-      if (!io.decoded || !io.decoded.address) {
-        return acc;
-      }
-
-      const { token, decoded: { address } } = io;
-
-      // We are only interested in registered tokens
-      if (registeredTokens.indexOf(token) === -1) {
-        return acc;
-      }
-
-      if (!acc[0][token]) {
-        acc[0][token] = new Set([]);
-      }
-
-      acc[0][token].add(address);
-      acc[1].add(address);
-
+  const [tokenAddressesMap, txAddresses] = data.reduce((acc, io) => {
+    if (!io.decoded || !io.decoded.address) {
       return acc;
-    }, [{}, new Set([])],
-  );
+    }
+
+    const { token, decoded: { address } } = io;
+
+    // We are only interested in registered tokens
+    if (registeredTokens.indexOf(token) === -1) {
+      return acc;
+    }
+
+    if (!acc[0][token]) {
+      acc[0][token] = new Set([]);
+    }
+
+    acc[0][token].add(address);
+    acc[1].add(address);
+
+    return acc;
+  }, [{}, new Set([])],);
 
   const txWalletAddresses = yield call(wallet.checkAddressesMine.bind(wallet), [...txAddresses]);
   const tokensToDownload = [];
@@ -630,7 +628,6 @@ export function* onWalletReloadData() {
     // updated with the new addresses that we missed during the disconnection
     // time
     yield put(walletRefreshSharedAddress());
-
 
     // Finally, set the wallet to READY by dispatching startWalletSuccess
     yield put(startWalletSuccess());

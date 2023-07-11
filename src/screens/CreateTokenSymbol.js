@@ -16,7 +16,6 @@ import OfflineBar from '../components/OfflineBar';
 import SimpleInput from '../components/SimpleInput';
 import { getKeyboardAvoidingViewTopDistance, Italic } from '../utils';
 
-
 /**
  * This screen expect the following parameters on the navigation:
  * name {string} token name

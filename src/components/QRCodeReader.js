@@ -7,10 +7,9 @@
 
 import * as React from 'react';
 
-import { ActivityIndicator, AppState, Platform, StyleSheet, Text, View } from 'react-native';
+import { AppState, StyleSheet, Text, View } from 'react-native';
 import { Camera, CameraType } from 'react-native-camera-kit';
 import { useEffect, useState } from 'react';
-import { t } from 'ttag';
 
 const APP_ACTIVE_STATE = 'active';
 
@@ -140,22 +139,6 @@ export default ({
       >
         {bottomText}
       </Text>
-    </View>
-  );
-
-  /**
-   * Draws the camera loader
-   */
-  const WaitingForCameraLoader = () => (
-    <View style={{
-      position: 'absolute',
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-    >
-      <Text>{t`Opening camera`}</Text>
-      <ActivityIndicator style={{ marginTop: 16 }} size='small' animating />
     </View>
   );
 

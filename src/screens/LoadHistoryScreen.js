@@ -20,7 +20,6 @@ import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';
 
-
 /**
  * loadHistoryStatus {Object} progress on loading tx history {
  *   active {boolean} indicates we're loading the tx history

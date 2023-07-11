@@ -148,14 +148,14 @@ function* routeTokenChange(action) {
   }
 
   switch (action.type) {
-    default:
+    case 'NEW_TOKEN':
+      yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: action.payload.uid });
+      break;
     case 'SET_TOKENS':
+    default:
       for (const token of action.payload) {
         yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: token.uid });
       }
-      break;
-    case 'NEW_TOKEN':
-      yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: action.payload.uid });
       break;
   }
 }

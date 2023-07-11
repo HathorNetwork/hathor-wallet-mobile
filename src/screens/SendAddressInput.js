@@ -15,7 +15,6 @@ import HathorHeader from '../components/HathorHeader';
 import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
 
-
 class SendAddressInput extends React.Component {
   /**
    * address {string} send tokens to this address

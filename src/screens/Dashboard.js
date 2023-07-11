@@ -20,7 +20,6 @@ import { tokenFetchBalanceRequested, updateSelectedToken } from '../actions';
 import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
 import AskForPushNotificationRefresh from '../components/AskForPushNotificationRefresh';
 
-
 /**
  * tokens {Array} array with all added tokens on this wallet
  * tokensBalance {Object} dict with balance for each token
