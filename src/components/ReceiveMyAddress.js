@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
     borderColor: '#e5e5ea',
     borderRadius: 8,
     marginBottom: 32,
+    backgroundColor: 'white', // Ensures maximum contrast for the code readers
   },
   qrcodeWrapper: {
     padding: 24,

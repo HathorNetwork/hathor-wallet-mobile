@@ -77,7 +77,7 @@ export class About extends React.Component {
     );
 
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}>
         <HathorHeader
           title={t`ABOUT`}
           onBackPress={() => this.props.navigation.goBack()}
