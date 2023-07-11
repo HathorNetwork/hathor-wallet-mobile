@@ -9,8 +9,7 @@ import * as React from 'react';
 
 import { ActivityIndicator, AppState, Platform, StyleSheet, Text, View } from 'react-native';
 import { Camera, CameraType } from 'react-native-camera-kit';
-import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { t } from 'ttag';
 
 const APP_ACTIVE_STATE = 'active';
@@ -22,7 +21,6 @@ export default ({
   focusWidth = 250,
   bottomText = '',
 }) => {
-  const cameraRef = useRef();
   // States related to Camera rendering logic
   const [currentAppState, setCurrentAppState] = useState(AppState.currentState);
   const [isFocusedScreen, setIsFocusedScreen] = useState(false);
@@ -30,36 +28,6 @@ export default ({
   // States related to the custom marker
   const [canvasHeight, setCanvasHeight] = useState(0);
   const [canvasWidth, setCanvasWidth] = useState(0);
-
-  useEffect(() => {
-    if (Platform.OS === 'ios') {
-      console.log('Will check');
-      check(PERMISSIONS.IOS.CAMERA)
-        .then((result) => {
-          console.log('RESULT: ', result);
-          switch (result) {
-            case RESULTS.GRANTED:
-              console.log('Granted');
-              // Do nothing
-              break;
-            case RESULTS.DENIED:
-              // We should request again
-              request(PERMISSIONS.IOS.CAMERA)
-                .then((tata) => {
-                  console.log('Requested', tata);
-                });
-              break;
-            case RESULTS.BLOCKED:
-              console.log('Blocked');
-              // Can't do anything here
-              break;
-            default:
-              console.log('teta');
-              break;
-          }
-        });
-    }
-  }, []);
 
   // Initialization and event listeners
   useEffect(() => {
@@ -203,7 +171,6 @@ export default ({
     >
       <>
         <Camera
-          ref={cameraRef}
           cameraType={CameraType.Back}
           flashMode='off'
           scanBarcode

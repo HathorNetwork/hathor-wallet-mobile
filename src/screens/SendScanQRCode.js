@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { Alert, SafeAreaView, View } from 'react-native';
+import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
@@ -20,6 +21,26 @@ import { getTokenLabel, parseQRCode } from '../utils';
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
 });
+
+async function requestCameraPermissions() {
+  const checkStatus = async (status) => {
+    switch (status) {
+      case RESULTS.UNAVAILABLE:
+        return false;
+      case RESULTS.GRANTED:
+        return true;
+      case RESULTS.DENIED:
+        return checkStatus(await request(PERMISSIONS.IOS.CAMERA));
+      case RESULTS.BLOCKED:
+        return false;
+      default:
+        return false;
+    }
+  };
+
+  const currentStatus = await check(PERMISSIONS.IOS.CAMERA);
+  return checkStatus(currentStatus);
+}
 
 class SendScanQRCode extends React.Component {
   showAlertError = (message) => {
@@ -59,6 +80,14 @@ class SendScanQRCode extends React.Component {
         address: qrcode.address,
       };
       this.props.navigation.navigate('SendAddressInput', params);
+    }
+  }
+
+  async componentDidMount() {
+    const cameraPermissions = await requestCameraPermissions();
+
+    if (!cameraPermissions) {
+      this.props.navigation.replace('SendAddressInput');
     }
   }
 
