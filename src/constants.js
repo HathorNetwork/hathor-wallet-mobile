@@ -77,6 +77,11 @@ export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR, SENTRY_DSN };
 export const LIGHT_BG_COLOR = '#f7f7f7';
 
 /**
+ * A background color that indicates an error
+ */
+export const ERROR_BG_COLOR = '#DE3535';
+
+/**
  * Minimum job estimation to show to the user in seconds when mining a tx
  */
 export const MIN_JOB_ESTIMATION = 1;

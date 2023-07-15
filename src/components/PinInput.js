@@ -9,6 +9,7 @@ import React from 'react';
 import { Text, StyleSheet, View } from 'react-native';
 
 import NumPad from './NumPad';
+import { ERROR_BG_COLOR } from '../constants';
 
 class PinInput extends React.Component {
   static defaultProps = {
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
     margin: 8,
   },
   error: {
-    color: '#DE3535',
+    color: ERROR_BG_COLOR,
     marginTop: 8,
     height: 18,
   },
