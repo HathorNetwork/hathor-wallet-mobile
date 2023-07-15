@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { SafeAreaView } from 'react-native';
+import { View } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
@@ -42,7 +42,7 @@ class TokenDetail extends React.Component {
     const isNFT = isTokenNFT(get(this.props, 'selectedToken.uid'), this.props.tokenMetadata);
 
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
+      <View style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
         <HathorHeader
           title={t`TOKEN DETAILS`}
           onBackPress={() => this.props.navigation.goBack()}
@@ -53,7 +53,7 @@ class TokenDetail extends React.Component {
           contentStyle={{ marginHorizontal: 16, marginTop: 16 }}
           isNFT={isNFT}
         />
-      </SafeAreaView>
+      </View>
     );
   }
 }

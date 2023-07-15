@@ -8,7 +8,6 @@
 import React from 'react';
 import {
   StyleSheet,
-  SafeAreaView,
   Text,
   View,
   Switch,
@@ -108,7 +107,7 @@ class UnregisterToken extends React.Component {
   render() {
     const tokenLabel = getTokenLabel(this.props.selectedToken);
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           title={t`UNREGISTER TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
@@ -141,7 +140,7 @@ class UnregisterToken extends React.Component {
             />
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 }

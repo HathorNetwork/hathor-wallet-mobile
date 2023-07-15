@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { KeyboardAvoidingView, SafeAreaView, View } from 'react-native';
+import { KeyboardAvoidingView, View } from 'react-native';
 import { t } from 'ttag';
 
 import NewHathorButton from '../components/NewHathorButton';
@@ -46,7 +46,7 @@ class SendAddressInput extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           withBorder
           title={t`SEND`}
@@ -69,7 +69,7 @@ class SendAddressInput extends React.Component {
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
-      </SafeAreaView>
+      </View>
     );
   }
 }

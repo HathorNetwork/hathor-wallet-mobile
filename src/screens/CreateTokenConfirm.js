@@ -8,7 +8,6 @@
 import React from 'react';
 import {
   Image,
-  SafeAreaView,
   View,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -159,7 +158,7 @@ class CreateTokenConfirm extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
@@ -227,7 +226,7 @@ class CreateTokenConfirm extends React.Component {
           />
         </View>
         <OfflineBar />
-      </SafeAreaView>
+      </View>
     );
   }
 }

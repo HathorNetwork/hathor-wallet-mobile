@@ -8,7 +8,6 @@
 import React from 'react';
 import {
   StyleSheet,
-  SafeAreaView,
   Text,
   View,
   Switch,
@@ -100,7 +99,7 @@ class ResetWallet extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           title={t`RESET WALLET`}
           onBackPress={this.hideBackButton ? null : () => this.onBackPress()}
@@ -133,7 +132,7 @@ class ResetWallet extends React.Component {
             />
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 }

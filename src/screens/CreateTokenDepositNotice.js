@@ -7,7 +7,6 @@
 
 import React from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -38,7 +37,7 @@ class CreateTokenDepositNotice extends React.Component {
   render() {
     const depositPercentage = this.props.wallet.storage.getTokenDepositPercentage() * 100;
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.pop()}
@@ -65,7 +64,7 @@ class CreateTokenDepositNotice extends React.Component {
             />
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 }

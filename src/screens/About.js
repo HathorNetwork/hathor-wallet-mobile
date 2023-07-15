@@ -3,7 +3,6 @@ import {
   Linking,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
   Text,
   TouchableWithoutFeedback,
   View,
@@ -78,7 +77,7 @@ export class About extends React.Component {
     );
 
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}>
+      <View style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}>
         <HathorHeader
           title={t`ABOUT`}
           onBackPress={() => this.props.navigation.goBack()}
@@ -136,7 +135,7 @@ export class About extends React.Component {
             {' '}WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           </Text>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     );
   }
 }

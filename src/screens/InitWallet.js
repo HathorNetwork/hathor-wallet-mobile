@@ -15,7 +15,6 @@ import React from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
-  SafeAreaView,
   StyleSheet,
   Switch,
   Text,
@@ -55,7 +54,7 @@ class WelcomeScreen extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader withLogo />
         <View style={this.style.container}>
           <Text style={this.style.title}>{t`Welcome to Hathor Wallet!`}</Text>
@@ -98,7 +97,7 @@ class WelcomeScreen extends React.Component {
             />
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 }
@@ -108,7 +107,7 @@ class InitialScreen extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader withLogo />
         <View style={this.style.container}>
           <Text style={this.style.title}>{t`To start,`}</Text>
@@ -134,7 +133,7 @@ class InitialScreen extends React.Component {
             />
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 }
@@ -201,7 +200,7 @@ class NewWordsScreen extends React.Component {
     };
 
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           withLogo
           onBackPress={() => this.props.navigation.goBack()}
@@ -221,7 +220,7 @@ class NewWordsScreen extends React.Component {
             />
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 }
@@ -300,7 +299,7 @@ class LoadWordsScreen extends React.Component {
   render() {
     return (
       <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
-        <SafeAreaView style={{ flex: 1 }}>
+        <View style={{ flex: 1 }}>
           <HathorHeader
             withLogo
             onBackPress={() => this.props.navigation.goBack()}
@@ -344,7 +343,7 @@ class LoadWordsScreen extends React.Component {
               </View>
             </View>
           </TouchableWithoutFeedback>
-        </SafeAreaView>
+        </View>
       </KeyboardAvoidingView>
     );
   }

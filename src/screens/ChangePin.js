@@ -9,7 +9,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import {
   Image,
-  SafeAreaView,
   View,
   StyleSheet,
 } from 'react-native';
@@ -232,7 +231,7 @@ class ChangePin extends React.Component {
 
     const step = this.steps[this.state.stepIndex];
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           withBorder
           title={t`CHANGE PIN`}
@@ -242,7 +241,7 @@ class ChangePin extends React.Component {
           {step.render()}
         </View>
         {this.state.done && renderSuccessModal()}
-      </SafeAreaView>
+      </View>
     );
   }
 }

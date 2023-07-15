@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Alert, Platform, SafeAreaView, View } from 'react-native';
+import { Alert, Platform, View } from 'react-native';
 import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
@@ -115,7 +115,7 @@ class SendScanQRCode extends React.Component {
     );
 
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+      <View style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
         <HathorHeader
           title={t`SEND`}
           rightElement={<ManualInfoButton />}
@@ -131,7 +131,7 @@ class SendScanQRCode extends React.Component {
           )}
         </View>
         <OfflineBar />
-      </SafeAreaView>
+      </View>
     );
   }
 }

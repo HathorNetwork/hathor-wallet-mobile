@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { SafeAreaView, View } from 'react-native';
+import { View } from 'react-native';
 import { t } from 'ttag';
 
 import HathorHeader from '../components/HathorHeader';
@@ -33,7 +33,7 @@ class RegisterToken extends React.Component {
         flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f7f7f7', alignSelf: 'stretch',
       }}
       >
-        <SafeAreaView style={{
+        <View style={{
           flex: 1, justifyContent: 'center', alignItems: 'center', alignSelf: 'stretch',
         }}
         >
@@ -52,7 +52,7 @@ class RegisterToken extends React.Component {
               bottomText={t`Scan the token QR code`}
             />
           </View>
-        </SafeAreaView>
+        </View>
       </View>
     );
   }

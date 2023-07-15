@@ -7,7 +7,6 @@
 
 import React from 'react';
 import {
-  SafeAreaView,
   Text,
   View,
   StyleSheet,
@@ -173,7 +172,7 @@ class ChoosePinScreen extends React.Component {
   render() {
     const step = this.steps[this.state.stepIndex];
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           withLogo
           onBackPress={() => this.props.navigation.goBack()}
@@ -190,7 +189,7 @@ class ChoosePinScreen extends React.Component {
             style={{ marginTop: 16 }}
           />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 }

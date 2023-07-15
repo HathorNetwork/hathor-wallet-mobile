@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {
-  Keyboard, KeyboardAvoidingView, SafeAreaView, Text, View,
+  Keyboard, KeyboardAvoidingView, Text, View,
 } from 'react-native';
 import { t } from 'ttag';
 
@@ -119,7 +119,7 @@ class RegisterTokenManual extends React.Component {
     );
 
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <HathorHeader
             withBorder
@@ -150,7 +150,7 @@ class RegisterTokenManual extends React.Component {
             />
           </View>
         </KeyboardAvoidingView>
-      </SafeAreaView>
+      </View>
     );
   }
 }

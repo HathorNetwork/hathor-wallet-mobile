@@ -11,7 +11,6 @@ import { t } from 'ttag';
 import {
   ScrollView,
   StyleSheet,
-  SafeAreaView,
   Text,
   View,
 } from 'react-native';
@@ -79,7 +78,7 @@ export class Settings extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}>
+      <View style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}>
         <ScrollView contentContainerStyle={this.style.scrollView}>
           <View style={this.style.logoView}>
             <Logo
@@ -163,7 +162,7 @@ export class Settings extends React.Component {
           </HathorList>
         </ScrollView>
         <OfflineBar />
-      </SafeAreaView>
+      </View>
     );
   }
 }
