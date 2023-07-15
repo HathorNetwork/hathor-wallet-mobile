@@ -21,6 +21,7 @@ import {
 } from '../utils';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen } from '../actions';
+import { LIGHT_BG_COLOR } from '../constants';
 
 const mapDispatchToProps = (dispatch) => ({
   lockScreen: () => dispatch(lockScreen()),
@@ -71,7 +72,7 @@ export class Security extends React.Component {
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? t`No biometry supported` : t`Use ${this.supportedBiometry}`);
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_BG_COLOR }}>
         <HathorHeader
           title={t`SECURITY`}
           onBackPress={() => this.props.navigation.goBack()}

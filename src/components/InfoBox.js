@@ -8,6 +8,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import PropTypes from 'prop-types';
+import { LIGHT_BG_COLOR } from '../constants';
 
 const InfoBox = (props) => {
   /* eslint-disable react/no-array-index-key */
@@ -36,7 +37,7 @@ const styles = StyleSheet.create({
   wrapper: {
     marginVertical: 16,
     padding: 16,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: LIGHT_BG_COLOR,
     borderRadius: 8,
   },
 });
