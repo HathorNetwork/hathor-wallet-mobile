@@ -21,14 +21,6 @@ const mapStateToProps = (state) => ({
 });
 
 class SendScanQRCode extends React.Component {
-  constructor() {
-    super();
-
-    this.state = {
-      renderCodeReader: false,
-    };
-  }
-
   showAlertError = (message) => {
     Alert.alert(
       t`Invalid QR code`,
@@ -69,10 +61,6 @@ class SendScanQRCode extends React.Component {
     }
   }
 
-  async componentDidMount() {
-    this.setState({ renderCodeReader: true });
-  }
-
   render() {
     const ManualInfoButton = () => (
       <SimpleButton
@@ -92,13 +80,11 @@ class SendScanQRCode extends React.Component {
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
         <View style={{ flex: 1, margin: 16, alignSelf: 'stretch' }}>
-          {this.state.renderCodeReader && (
-            <QRCodeReader
-              navigation={this.props.navigation}
-              onSuccess={this.onSuccess}
-              bottomText={t`Scan the QR code`}
-            />
-          )}
+          <QRCodeReader
+            navigation={this.props.navigation}
+            onSuccess={this.onSuccess}
+            bottomText={t`Scan the QR code`}
+          />
         </View>
         <OfflineBar />
       </SafeAreaView>
