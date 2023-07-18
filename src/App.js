@@ -605,13 +605,13 @@ const BlankScreen = () => null;
  */
 const RootStack = () => {
   const dispatch = useDispatch();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [appStatus, setAppStatus] = useState('initializing');
 
   useEffect(() => {
     STORE.preStart()
       .then(() => STORE.walletIsLoaded())
       .then((_isLoaded) => {
-        setIsLoaded(_isLoaded);
+        setAppStatus(_isLoaded ? 'isLoaded' : 'notLoaded');
       })
       .catch((e) => {
         // The promise here is swallowing the error,
@@ -629,15 +629,20 @@ const RootStack = () => {
 
   useEffect(() => {
     // If the wallet is loaded, navigate to the main screen with no option to return to init
-    if (isLoaded) {
-      NavigationService.resetToMain();
-    } else {
-      navigationRef.current.reset({
-        index: 0,
-        routes: [{ name: 'Init' }],
-      });
+    switch (appStatus) {
+      case 'isLoaded':
+        NavigationService.resetToMain();
+        break;
+      case 'notLoaded':
+        navigationRef.current.reset({
+          index: 0,
+          routes: [{ name: 'Init' }],
+        });
+        break;
+      default:
+        // Do not navigate anywhere if the storage has not returned the isLoaded data
     }
-  }, [isLoaded]);
+  }, [appStatus]);
 
   const Stack = createStackNavigator();
 
