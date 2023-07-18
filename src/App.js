@@ -10,7 +10,7 @@ import '../shim';
 
 import React, { useEffect, useState } from 'react';
 import { AppState, StyleSheet, View } from 'react-native';
-import { connect, Provider, useDispatch } from 'react-redux';
+import { connect, Provider, useDispatch, useSelector } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
 import notifee, { EventType } from '@notifee/react-native';
@@ -28,6 +28,7 @@ import {
   lockScreen,
   onExceptionCaptured,
   pushTxDetailsRequested,
+  requestCameraPermission,
   resetData,
   setTokens,
 } from './actions';
@@ -117,18 +118,54 @@ const DashboardStack = () => {
 };
 
 /**
+ * This blank screen serves as a way to request the user permission to use the camera without
+ * rendering anything on the main interface for a potentially very short time.
+ * A listener should be set to the `isCameraAvailable` state variable to decide what to render after
+ * the permission is defined.
+ */
+const CameraPermissionScreen = () => null;
+
+/**
  * Stack of screens dedicated to the token sending process
  */
-const SendStack = () => {
+const SendStack = ({ navigation }) => {
   const Stack = createStackNavigator();
+  const [initialRoute, setInitialRoute] = useState('CameraPermissionScreen');
+  const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
+  const dispatch = useDispatch();
+
+  /*
+   * Request camera permission on initialization
+   */
+  useEffect(() => {
+    dispatch(requestCameraPermission());
+  }, []);
+
+  // Listen to camera permission changes from user input and navigate to the relevant screen
+  useEffect(() => {
+    let initScreenName;
+    switch (isCameraAvailable) {
+      case true:
+        initScreenName = 'SendScanQRCode';
+        break;
+      case false:
+        initScreenName = 'SendAddressInput';
+        break;
+      default:
+        initScreenName = 'CameraPermissionScreen';
+    }
+    setInitialRoute(initScreenName);
+    navigation.replace(initScreenName);
+  }, [isCameraAvailable]);
 
   return (
     <Stack.Navigator
-      initialRouteName='SendScanQRCode'
+      initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
       }}
     >
+      <Stack.Screen name='CameraPermissionScreen' component={CameraPermissionScreen} />
       <Stack.Screen name='SendScanQRCode' component={SendScanQRCode} />
       <Stack.Screen name='SendAddressInput' component={SendAddressInput} />
       <Stack.Screen name='SendAmountInput' component={SendAmountInput} />

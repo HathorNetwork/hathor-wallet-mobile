@@ -75,6 +75,8 @@ export const types = {
   WALLET_STATE_READY: 'WALLET_STATE_READY',
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
+  CAMERA_PERMISSION_REQUESTED: 'CAMERA_PERMISSION_REQUESTED',
+  SET_CAMERA_AVAILABLE: 'SET_CAMERA_AVAILABLE',
   // Push Notification actions
   INIT_PUSH_NOTIFICATION: 'INIT_PUSH_NOTIFICATION',
   SET_AVAILABLE_PUSH_NOTIFICATION: 'SET_AVAILABLE_PUSH_NOTIFICATION',
@@ -550,6 +552,18 @@ export const walletStateReady = () => ({
 
 export const onWalletReload = () => ({
   type: types.WALLET_RELOADING,
+});
+
+export const requestCameraPermission = () => ({
+  type: types.CAMERA_PERMISSION_REQUESTED,
+});
+
+/**
+ * @param {boolean} isAvailable True if the camera should be skipped
+ */
+export const setCameraAvailable = (isAvailable) => ({
+  type: types.SET_CAMERA_AVAILABLE,
+  payload: isAvailable,
 });
 
 // Push notification actions
