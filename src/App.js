@@ -135,10 +135,12 @@ const SendStack = ({ navigation }) => {
   const dispatch = useDispatch();
 
   /*
-   * Request camera permission on initialization
+   * Request camera permission on initialization, if permission is not already set
    */
   useEffect(() => {
-    dispatch(requestCameraPermission());
+    if (isCameraAvailable === null) {
+      dispatch(requestCameraPermission());
+    }
   }, []);
 
   // Listen to camera permission changes from user input and navigate to the relevant screen
@@ -200,16 +202,63 @@ const CreateTokenStack = () => {
 /**
  * Stack of screens dedicated to the token registration process
  */
-const RegisterTokenStack = () => {
+const RegisterTokenStack = ({ navigation }) => {
   const Stack = createStackNavigator();
+  const dispatch = useDispatch();
+  const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
+
+  /**
+   * Defines which screen will be the initial one, according to app camera permissions
+   * @param {null|boolean} cameraStatus
+   * @returns {string} Route name
+   */
+  const decideRouteByCameraAvailablity = (cameraStatus) => {
+    switch (isCameraAvailable) {
+      case true:
+        return 'RegisterToken';
+      case false:
+        return 'RegisterTokenManual';
+      default:
+        return 'RegisterCameraPermissionScreen';
+    }
+  };
+
+  // Initial screen set on component initial rendering
+  const [initialRoute, setInitialRoute] = useState(
+    decideRouteByCameraAvailablity(isCameraAvailable)
+  );
+
+  /*
+   * Request camera permission on initialization only if permission is not already set
+   */
+  useEffect(() => {
+    if (isCameraAvailable === null) {
+      dispatch(requestCameraPermission());
+    }
+  }, []);
+
+  // Listen to camera permission changes from user input and navigate to the relevant screen
+  useEffect(() => {
+    const newScreenName = decideRouteByCameraAvailablity(isCameraAvailable);
+
+    // Navigator screen already correct: no further action.
+    if (initialRoute === newScreenName) {
+      return;
+    }
+
+    // Set initial route and navigate there according to new permission set
+    setInitialRoute(newScreenName);
+    navigation.replace(newScreenName);
+  }, [isCameraAvailable]);
 
   return (
     <Stack.Navigator
-      initialRouteName='RegisterToken'
+      initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
       }}
     >
+      <Stack.Screen name='RegisterCameraPermissionScreen' component={CameraPermissionScreen} />
       <Stack.Screen name='RegisterToken' component={RegisterToken} />
       <Stack.Screen name='RegisterTokenManual' component={RegisterTokenManual} />
     </Stack.Navigator>

@@ -3,6 +3,7 @@ import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 import {
   all,
   put,
+  select,
   takeLatest,
 } from 'redux-saga/effects';
 import { setCameraAvailable, types } from '../actions';
@@ -26,6 +27,13 @@ export function* requestCameraPermissions() {
         return false;
     }
   };
+
+  // Checking redux to see if the permission was already requested before
+  const isCameraAlreadyAvailable = yield select((state) => state.isCameraAvailable);
+  if (isCameraAlreadyAvailable !== null) {
+    // The permission was already defined, no further processing or request necessary
+    return;
+  }
 
   const platformCameraPermission = Platform.OS === 'android'
     ? PERMISSIONS.ANDROID.CAMERA
