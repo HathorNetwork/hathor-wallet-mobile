@@ -72,6 +72,15 @@ export const PRIVACY_POLICY_URL = 'https://hathor.network/privacy-policy/';
 export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR, SENTRY_DSN };
 
 /**
+ * Background color for iOS devices
+ */
+export const IOS_BG_COLOR = '#fff';
+/**
+ * Background color for Android devices
+ */
+export const ANDROID_BG_COLOR = '#fafafa';
+
+/**
  * A light background color used to create a discreet color change from a white background
  */
 export const LIGHT_BG_COLOR = '#f7f7f7';
