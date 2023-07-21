@@ -646,6 +646,10 @@ const RootStack = () => {
 
   const Stack = createStackNavigator();
 
+  /*
+   * XXX: Screens within the Root Stack have no transition animation, as they are processed before
+   * any user interface.
+   */
   return (
     <Stack.Navigator
       initialRouteName='Decide'
@@ -654,9 +658,27 @@ const RootStack = () => {
         gestureEnabled: false,
       }}
     >
-      <Stack.Screen name='Decide' component={BlankScreen} />
-      <Stack.Screen name='App' component={AppStackWrapper} />
-      <Stack.Screen name='Init' component={InitStack} />
+      <Stack.Screen
+        name='Decide'
+        component={BlankScreen}
+        options={{
+          animationEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name='App'
+        component={AppStackWrapper}
+        options={{
+          animationEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name='Init'
+        component={InitStack}
+        options={{
+          animationEnabled: false,
+        }}
+      />
     </Stack.Navigator>
   );
 };
