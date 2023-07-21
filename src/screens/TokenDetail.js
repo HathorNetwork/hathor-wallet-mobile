@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
 
-import { IS_MULTI_TOKEN } from '../constants';
+import { IS_MULTI_TOKEN, LIGHT_BG_COLOR } from '../constants';
 import { isTokenNFT } from '../utils';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
@@ -42,7 +42,7 @@ class TokenDetail extends React.Component {
     const isNFT = isTokenNFT(get(this.props, 'selectedToken.uid'), this.props.tokenMetadata);
 
     return (
-      <View style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
+      <View style={{ flex: 1, backgroundColor: LIGHT_BG_COLOR }}>
         <HathorHeader
           title={t`TOKEN DETAILS`}
           onBackPress={() => this.props.navigation.goBack()}

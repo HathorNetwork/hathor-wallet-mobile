@@ -18,7 +18,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
 import { startWalletRequested, unlockScreen } from '../actions';
-import { PIN_SIZE } from '../constants';
+import { ERROR_BG_COLOR, PIN_SIZE } from '../constants';
 
 import baseStyle from '../styles/init';
 import { STORE } from '../store';
@@ -164,7 +164,7 @@ class ChoosePinScreen extends React.Component {
     if (pin2.length === 0) {
       this.setState({ pin2: '', error: t`PIN codes don't match. Try again.` });
     } else {
-      this.setState({ pin2, pin2Color: '#DE3535' });
+      this.setState({ pin2, pin2Color: ERROR_BG_COLOR });
       setTimeout(() => this.removeOneChar(), 25);
     }
   }

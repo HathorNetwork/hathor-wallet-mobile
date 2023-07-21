@@ -25,7 +25,7 @@ import {
   startWalletRequested,
   resetOnLockScreen,
 } from '../actions';
-import { PIN_SIZE } from '../constants';
+import { ERROR_BG_COLOR, PIN_SIZE } from '../constants';
 import { STORE } from '../store';
 import baseStyle from '../styles/init';
 
@@ -245,7 +245,7 @@ class PinScreen extends React.Component {
     if (pin.length === 0) {
       this.setState({ pin: '', error: t`Incorrect PIN Code. Try again.` });
     } else {
-      this.setState({ pin, pinColor: '#DE3535' });
+      this.setState({ pin, pinColor: ERROR_BG_COLOR });
       setTimeout(() => this.removeOneChar(), 25);
     }
   };

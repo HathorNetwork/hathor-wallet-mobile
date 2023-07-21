@@ -32,7 +32,7 @@ import { Strong, str2jsx, getLightBackground, renderValue, isTokenNFT } from '..
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import infoIcon from '../assets/icons/info-circle.png';
-import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
+import { IS_MULTI_TOKEN, LIGHT_BG_COLOR, PRIMARY_COLOR } from '../constants';
 import { fetchMoreHistory, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -212,7 +212,7 @@ class MainScreen extends React.Component {
 
     return (
       <View style={{
-        flex: 1, backgroundColor: '#F7F7F7', justifyContent: 'center', alignItems: 'center',
+        flex: 1, backgroundColor: LIGHT_BG_COLOR, justifyContent: 'center', alignItems: 'center',
       }}
       >
         {this.state.modal}

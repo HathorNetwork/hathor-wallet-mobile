@@ -62,8 +62,8 @@ export default ({
     setIsFocusedScreen(true);
 
     return () => {
-      focusEvent.remove();
-      blurEvent.remove();
+      focusEvent();
+      blurEvent();
       if (appStateEvent) { // This listener may have never been initialized
         appStateEvent.remove();
         appStateEvent = null;

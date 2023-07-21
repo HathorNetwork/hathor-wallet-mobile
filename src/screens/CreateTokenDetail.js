@@ -14,6 +14,7 @@ import HathorHeader from '../components/HathorHeader';
 import TokenDetails from '../components/TokenDetails';
 import SimpleButton from '../components/SimpleButton';
 import closeIcon from '../assets/icons/icCloseActive.png';
+import { LIGHT_BG_COLOR } from '../constants';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -36,7 +37,7 @@ class CreateTokenDetail extends React.Component {
     );
 
     return (
-      <View style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
+      <View style={{ flex: 1, backgroundColor: LIGHT_BG_COLOR }}>
         <HathorHeader
           title={t`TOKEN DETAILS`}
           wrapperStyle={{ borderBottomWidth: 0 }}

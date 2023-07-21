@@ -10,7 +10,7 @@ import '../shim';
 
 import React, { useEffect, useState } from 'react';
 import { AppState, StyleSheet, View } from 'react-native';
-import { connect, Provider, useDispatch } from 'react-redux';
+import { connect, Provider, useDispatch, useSelector } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
 import notifee, { EventType } from '@notifee/react-native';
@@ -28,6 +28,7 @@ import {
   lockScreen,
   onExceptionCaptured,
   pushTxDetailsRequested,
+  requestCameraPermission,
   resetData,
   setTokens,
 } from './actions';
@@ -73,6 +74,7 @@ import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
+import baseStyle from './styles/init';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -117,18 +119,56 @@ const DashboardStack = () => {
 };
 
 /**
+ * This blank screen serves as a way to request the user permission to use the camera without
+ * rendering anything on the main interface for a potentially very short time.
+ * A listener should be set to the `isCameraAvailable` state variable to decide what to render after
+ * the permission is defined.
+ */
+const CameraPermissionScreen = () => null;
+
+/**
  * Stack of screens dedicated to the token sending process
  */
-const SendStack = () => {
+const SendStack = ({ navigation }) => {
   const Stack = createStackNavigator();
+  const [initialRoute, setInitialRoute] = useState('CameraPermissionScreen');
+  const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
+  const dispatch = useDispatch();
+
+  /*
+   * Request camera permission on initialization, if permission is not already set
+   */
+  useEffect(() => {
+    if (isCameraAvailable === null) {
+      dispatch(requestCameraPermission());
+    }
+  }, []);
+
+  // Listen to camera permission changes from user input and navigate to the relevant screen
+  useEffect(() => {
+    let initScreenName;
+    switch (isCameraAvailable) {
+      case true:
+        initScreenName = 'SendScanQRCode';
+        break;
+      case false:
+        initScreenName = 'SendAddressInput';
+        break;
+      default:
+        initScreenName = 'CameraPermissionScreen';
+    }
+    setInitialRoute(initScreenName);
+    navigation.replace(initScreenName);
+  }, [isCameraAvailable]);
 
   return (
     <Stack.Navigator
-      initialRouteName='SendScanQRCode'
+      initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
       }}
     >
+      <Stack.Screen name='CameraPermissionScreen' component={CameraPermissionScreen} />
       <Stack.Screen name='SendScanQRCode' component={SendScanQRCode} />
       <Stack.Screen name='SendAddressInput' component={SendAddressInput} />
       <Stack.Screen name='SendAmountInput' component={SendAmountInput} />
@@ -163,16 +203,63 @@ const CreateTokenStack = () => {
 /**
  * Stack of screens dedicated to the token registration process
  */
-const RegisterTokenStack = () => {
+const RegisterTokenStack = ({ navigation }) => {
   const Stack = createStackNavigator();
+  const dispatch = useDispatch();
+  const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
+
+  /**
+   * Defines which screen will be the initial one, according to app camera permissions
+   * @param {null|boolean} cameraStatus
+   * @returns {string} Route name
+   */
+  const decideRouteByCameraAvailablity = (cameraStatus) => {
+    switch (isCameraAvailable) {
+      case true:
+        return 'RegisterToken';
+      case false:
+        return 'RegisterTokenManual';
+      default:
+        return 'RegisterCameraPermissionScreen';
+    }
+  };
+
+  // Initial screen set on component initial rendering
+  const [initialRoute, setInitialRoute] = useState(
+    decideRouteByCameraAvailablity(isCameraAvailable)
+  );
+
+  /*
+   * Request camera permission on initialization only if permission is not already set
+   */
+  useEffect(() => {
+    if (isCameraAvailable === null) {
+      dispatch(requestCameraPermission());
+    }
+  }, []);
+
+  // Listen to camera permission changes from user input and navigate to the relevant screen
+  useEffect(() => {
+    const newScreenName = decideRouteByCameraAvailablity(isCameraAvailable);
+
+    // Navigator screen already correct: no further action.
+    if (initialRoute === newScreenName) {
+      return;
+    }
+
+    // Set initial route and navigate there according to new permission set
+    setInitialRoute(newScreenName);
+    navigation.replace(newScreenName);
+  }, [isCameraAvailable]);
 
   return (
     <Stack.Navigator
-      initialRouteName='RegisterToken'
+      initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
       }}
     >
+      <Stack.Screen name='RegisterCameraPermissionScreen' component={CameraPermissionScreen} />
       <Stack.Screen name='RegisterToken' component={RegisterToken} />
       <Stack.Screen name='RegisterTokenManual' component={RegisterTokenManual} />
     </Stack.Navigator>
@@ -301,7 +388,7 @@ class _AppStackWrapper extends React.Component {
 
   style = StyleSheet.create({
     auxView: {
-      backgroundColor: 'white',
+      backgroundColor: baseStyle.container.backgroundColor,
       position: 'absolute',
       top: 0,
       bottom: 0,

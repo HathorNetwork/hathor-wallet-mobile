@@ -5,10 +5,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { StyleSheet } from 'react-native';
-import { PRIMARY_COLOR } from '../constants';
+import { Platform, StyleSheet } from 'react-native';
+import { ANDROID_BG_COLOR, IOS_BG_COLOR, PRIMARY_COLOR } from '../constants';
 
-const defaultBackgroundColor = '#fafafa';
+/**
+ * TODO: Obtain color from the OS scheme
+ * @see: https://reactnavigation.org/docs/5.x/themes/#using-the-operating-system-preferences
+ * @type {string}
+ */
+const defaultBackgroundColor = (Platform.OS === 'ios') ? IOS_BG_COLOR : ANDROID_BG_COLOR;
 
 const baseStyle = StyleSheet.create({
   container: {

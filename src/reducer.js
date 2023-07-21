@@ -105,6 +105,12 @@ const initialState = {
   metadataLoaded: false,
   uniqueDeviceId: null,
   isShowingPinScreen: false,
+  /**
+   * Indicates if the camera for this app is available and granted permission to be used.
+   * Will be false either if the device has no camera or the user has blocked its permission.
+   * @type {null|boolean} null if uninitialized, boolean after user decision
+   */
+  isCameraAvailable: null,
   pushNotification: {
     /**
      * available {boolean} if push notification is available based on unleash feature flag
@@ -280,6 +286,8 @@ const reducer = (state = initialState, action) => {
       return onStartWalletFailed(state);
     case types.START_WALLET_NOT_STARTED:
       return onStartWalletNotStarted(state);
+    case types.SET_CAMERA_AVAILABLE:
+      return onSetCameraAvailable(state, action);
     case types.WALLET_BEST_BLOCK_UPDATE:
       return onWalletBestBlockUpdate(state, action);
     case types.SET_AVAILABLE_PUSH_NOTIFICATION:
@@ -795,6 +803,14 @@ export const onWalletBestBlockUpdate = (state, action) => {
     height: data,
   };
 };
+
+/**
+ * @param {boolean} action.payload True if the app has permission to use the camera
+ */
+export const onSetCameraAvailable = (state, action) => ({
+  ...state,
+  isCameraAvailable: action.payload,
+});
 
 // Push notification
 

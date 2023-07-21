@@ -11,6 +11,7 @@ import { saga as tokensSagas } from './tokens';
 import { saga as pushNotificationSaga } from './pushNotification';
 import { saga as errorHandlerSagas } from './errorHandler';
 import { saga as featureToggleSagas } from './featureToggle';
+import { saga as permissionsSagas } from './permissions';
 
 const sagas = [
   walletSagas,
@@ -18,6 +19,7 @@ const sagas = [
   pushNotificationSaga,
   errorHandlerSagas,
   featureToggleSagas,
+  permissionsSagas,
 ];
 
 function* defaultSaga() {
