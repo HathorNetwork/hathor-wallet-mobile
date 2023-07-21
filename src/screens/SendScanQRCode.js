@@ -6,8 +6,7 @@
  */
 
 import React from 'react';
-import { Alert, Platform, SafeAreaView, View } from 'react-native';
-import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import { Alert, SafeAreaView, View } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
@@ -22,38 +21,7 @@ const mapStateToProps = (state) => ({
   wallet: state.wallet,
 });
 
-async function requestCameraPermissions() {
-  const checkStatus = async (status) => {
-    switch (status) {
-      case RESULTS.UNAVAILABLE:
-        return false;
-      case RESULTS.GRANTED:
-        return true;
-      case RESULTS.DENIED:
-        return checkStatus(await request(platformPermission));
-      case RESULTS.BLOCKED:
-        return false;
-      default:
-        return false;
-    }
-  };
-
-  const platformPermission = Platform.OS === 'android'
-    ? PERMISSIONS.ANDROID.CAMERA
-    : PERMISSIONS.IOS.CAMERA;
-  const currentStatus = await check(platformPermission);
-  return checkStatus(currentStatus);
-}
-
 class SendScanQRCode extends React.Component {
-  constructor() {
-    super();
-
-    this.state = {
-      renderCodeReader: false,
-    };
-  }
-
   showAlertError = (message) => {
     Alert.alert(
       t`Invalid QR code`,
@@ -94,16 +62,6 @@ class SendScanQRCode extends React.Component {
     }
   }
 
-  async componentDidMount() {
-    const cameraPermissions = await requestCameraPermissions();
-
-    if (!cameraPermissions) {
-      this.props.navigation.replace('SendAddressInput');
-    } else {
-      this.setState({ renderCodeReader: true });
-    }
-  }
-
   render() {
     const ManualInfoButton = () => (
       <SimpleButton
@@ -123,13 +81,11 @@ class SendScanQRCode extends React.Component {
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
         <View style={{ flex: 1, margin: 16, alignSelf: 'stretch' }}>
-          {this.state.renderCodeReader && (
-            <QRCodeReader
-              navigation={this.props.navigation}
-              onSuccess={this.onSuccess}
-              bottomText={t`Scan the QR code`}
-            />
-          )}
+          <QRCodeReader
+            navigation={this.props.navigation}
+            onSuccess={this.onSuccess}
+            bottomText={t`Scan the QR code`}
+          />
         </View>
         <OfflineBar />
       </SafeAreaView>
