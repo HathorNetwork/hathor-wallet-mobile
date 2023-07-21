@@ -9,7 +9,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import { BackHandler, SafeAreaView, Text, View } from 'react-native';
+import { BackHandler, Text, View } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import { walletUtils, cryptoUtils } from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
@@ -277,7 +277,7 @@ class PinScreen extends React.Component {
     };
 
     return (
-      <SafeAreaView
+      <View
         style={{
           flex: 1,
           alignItems: 'center',
@@ -304,7 +304,7 @@ class PinScreen extends React.Component {
           error={this.state.error}
         />
         {renderButton()}
-      </SafeAreaView>
+      </View>
     );
   }
 }

@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {
-  SafeAreaView, StyleSheet, Text, View,
+  StyleSheet, Text, View,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
@@ -83,7 +83,7 @@ class PaymentRequestDetail extends React.Component {
     );
 
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         {renderPaymentConfirm()}
         <HathorHeader
           withBorder
@@ -127,7 +127,7 @@ class PaymentRequestDetail extends React.Component {
           </View>
           <OfflineBar />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 }

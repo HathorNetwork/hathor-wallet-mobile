@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   wrapper: {
     height: 56,
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     borderColor: '#eee',
     paddingHorizontal: 16,
     backgroundColor: baseStyle.title.backgroundColor,

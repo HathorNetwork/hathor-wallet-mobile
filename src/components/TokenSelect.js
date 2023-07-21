@@ -12,7 +12,6 @@ import {
 import { get } from 'lodash';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import chevronRight from '../assets/icons/chevron-right.png';
 import Spinner from './Spinner';
@@ -76,7 +75,7 @@ const TokenSelect = (props) => {
   };
 
   return (
-    <SafeAreaView style={styles.wrapper}>
+    <View style={styles.wrapper}>
       {props.header}
       <View style={styles.listWrapper}>
         <FlatList
@@ -87,7 +86,7 @@ const TokenSelect = (props) => {
           keyExtractor={(item, index) => item.uid}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {
-  KeyboardAvoidingView, SafeAreaView, StyleSheet, Text, View,
+  KeyboardAvoidingView, StyleSheet, Text, View,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
@@ -145,7 +145,7 @@ class SendAmountInput extends React.Component {
 
     const tokenNameUpperCase = this.state.token.name.toUpperCase();
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           withBorder
           title={t`SEND ${tokenNameUpperCase}`}
@@ -186,7 +186,7 @@ class SendAmountInput extends React.Component {
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
-      </SafeAreaView>
+      </View>
     );
   }
 }

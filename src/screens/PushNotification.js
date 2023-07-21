@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   StyleSheet,
-  SafeAreaView,
+  View,
   Switch,
   Image,
 } from 'react-native';
@@ -93,7 +93,7 @@ export default function PushNotification(props) {
   };
 
   return (
-    <SafeAreaView style={styles.view}>
+    <View style={styles.view}>
       <HathorHeader
         title={pageTitleText}
         onBackPress={() => props.navigation.goBack()}
@@ -139,6 +139,6 @@ export default function PushNotification(props) {
           isLast
         />
       </HathorList>
-    </SafeAreaView>
+    </View>
   );
 }

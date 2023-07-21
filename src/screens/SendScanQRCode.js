@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Alert, SafeAreaView, View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
@@ -74,7 +74,7 @@ class SendScanQRCode extends React.Component {
     );
 
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_BG_COLOR }}>
+      <View style={{ flex: 1, backgroundColor: LIGHT_BG_COLOR }}>
         <HathorHeader
           title={t`SEND`}
           rightElement={<ManualInfoButton />}
@@ -88,7 +88,7 @@ class SendScanQRCode extends React.Component {
           />
         </View>
         <OfflineBar />
-      </SafeAreaView>
+      </View>
     );
   }
 }

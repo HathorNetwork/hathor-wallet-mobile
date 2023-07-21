@@ -662,7 +662,10 @@ NavigationService.setTopLevelNavigator(navigationRef);
 const App = () => (
   <SafeAreaProvider>
     <Provider store={store}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView
+        edges={['top', 'right', 'left']}
+        style={{ flex: 1 }}
+      >
         <NavigationContainer
           ref={navigationRef}
         >

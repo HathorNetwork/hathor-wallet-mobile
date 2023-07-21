@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Dimensions, Keyboard, SafeAreaView } from 'react-native';
+import { Dimensions, Keyboard, View } from 'react-native';
 import { t } from 'ttag';
 
 import { TabBar, TabView } from 'react-native-tab-view';
@@ -100,7 +100,7 @@ class ReceiveScreen extends React.Component {
     );
 
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           title={t`RECEIVE`}
           withBorder
@@ -113,7 +113,7 @@ class ReceiveScreen extends React.Component {
           initialLayout={{ width: Dimensions.get('window').width }}
         />
         <OfflineBar />
-      </SafeAreaView>
+      </View>
     );
   }
 }

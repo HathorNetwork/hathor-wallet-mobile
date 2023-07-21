@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { KeyboardAvoidingView, SafeAreaView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Text, View } from 'react-native';
 import { get } from 'lodash';
 import { connect } from 'react-redux';
 import { t, jt } from 'ttag';
@@ -110,7 +110,7 @@ class CreateTokenAmount extends React.Component {
     );
 
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
@@ -149,7 +149,7 @@ class CreateTokenAmount extends React.Component {
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
-      </SafeAreaView>
+      </View>
     );
   }
 }

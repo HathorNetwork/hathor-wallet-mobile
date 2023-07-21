@@ -8,7 +8,7 @@
 import React from 'react';
 import {
   StyleSheet,
-  SafeAreaView,
+  View,
   Switch,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -72,7 +72,7 @@ export class Security extends React.Component {
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? t`No biometry supported` : t`Use ${this.supportedBiometry}`);
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_BG_COLOR }}>
+      <View style={{ flex: 1, backgroundColor: LIGHT_BG_COLOR }}>
         <HathorHeader
           title={t`SECURITY`}
           onBackPress={() => this.props.navigation.goBack()}
@@ -102,7 +102,7 @@ export class Security extends React.Component {
             isLast
           />
         </HathorList>
-      </SafeAreaView>
+      </View>
     );
   }
 }

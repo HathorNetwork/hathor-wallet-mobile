@@ -9,7 +9,6 @@ import React from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -212,7 +211,7 @@ class MainScreen extends React.Component {
     };
 
     return (
-      <SafeAreaView style={{
+      <View style={{
         flex: 1, backgroundColor: LIGHT_BG_COLOR, justifyContent: 'center', alignItems: 'center',
       }}
       >
@@ -232,7 +231,7 @@ class MainScreen extends React.Component {
           {renderTxHistory()}
         </View>
         <OfflineBar />
-      </SafeAreaView>
+      </View>
     );
   }
 }

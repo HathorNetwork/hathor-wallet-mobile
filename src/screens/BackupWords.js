@@ -10,7 +10,6 @@ import { t } from 'ttag';
 import _ from 'lodash';
 import {
   Image,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -216,7 +215,7 @@ class BackupWords extends React.Component {
     };
 
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           onBackPress={() => this.props.navigation.goBack()}
         />
@@ -236,7 +235,7 @@ class BackupWords extends React.Component {
           </View>
           {renderFooter()}
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 }
