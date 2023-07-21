@@ -23,7 +23,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { getTokenLabel } from '../utils';
-import { PRIMARY_COLOR } from '../constants';
+import { ERROR_BG_COLOR, PRIMARY_COLOR } from '../constants';
 import NavigationService from '../NavigationService';
 
 /**
@@ -50,7 +50,7 @@ class UnregisterToken extends React.Component {
       textError: {
         marginTop: 32,
         marginBottom: 32,
-        color: '#dc3545',
+        color: ERROR_BG_COLOR,
       },
     }) });
 

@@ -73,6 +73,7 @@ import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
+import baseStyle from './styles/init';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -301,7 +302,7 @@ class _AppStackWrapper extends React.Component {
 
   style = StyleSheet.create({
     auxView: {
-      backgroundColor: 'white',
+      backgroundColor: baseStyle.container.backgroundColor,
       position: 'absolute',
       top: 0,
       bottom: 0,

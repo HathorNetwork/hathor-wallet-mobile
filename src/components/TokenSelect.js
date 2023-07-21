@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import chevronRight from '../assets/icons/chevron-right.png';
 import Spinner from './Spinner';
-import { PRIMARY_COLOR } from '../constants';
+import { LIGHT_BG_COLOR, PRIMARY_COLOR } from '../constants';
 import { getLightBackground, renderValue, isTokenNFT } from '../utils';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f7f7f7',
+    backgroundColor: LIGHT_BG_COLOR,
   },
   listWrapper: {
     alignSelf: 'stretch',
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   },
   symbolWrapper: {
     padding: 4,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: LIGHT_BG_COLOR,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,

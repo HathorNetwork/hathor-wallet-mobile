@@ -12,6 +12,7 @@ import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
 import QRCodeReader from '../components/QRCodeReader';
 import SimpleButton from '../components/SimpleButton';
+import { LIGHT_BG_COLOR } from '../constants';
 
 class RegisterToken extends React.Component {
   onSuccess = (e) => {
@@ -30,7 +31,7 @@ class RegisterToken extends React.Component {
 
     return (
       <View style={{
-        flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f7f7f7', alignSelf: 'stretch',
+        flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: LIGHT_BG_COLOR, alignSelf: 'stretch',
       }}
       >
         <SafeAreaView style={{

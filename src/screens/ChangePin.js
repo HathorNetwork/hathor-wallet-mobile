@@ -21,7 +21,7 @@ import FeedbackModal from '../components/FeedbackModal';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import checkIcon from '../assets/images/icCheckBig.png';
-import { PIN_SIZE } from '../constants';
+import { ERROR_BG_COLOR, PIN_SIZE } from '../constants';
 import {
   changePin,
 } from '../utils';
@@ -161,7 +161,7 @@ class ChangePin extends React.Component {
     } else {
       const newState = {};
       newState[stateKey] = pin;
-      newState[stateColorKey] = '#DE3535';
+      newState[stateColorKey] = ERROR_BG_COLOR;
       this.setState(newState);
       setTimeout(() => this.removeOneChar(stateKey, stateColorKey, error), 25);
     }
