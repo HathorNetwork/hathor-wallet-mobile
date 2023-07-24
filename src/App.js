@@ -598,6 +598,9 @@ class _AppStackWrapper extends React.Component {
 const AppStackWrapper = connect(mapStateToProps, mapDispatchToProps)(_AppStackWrapper);
 
 const BlankScreen = () => null;
+const unanimatedScreenOptions = {
+  animationEnabled: false,
+};
 
 /**
  * This is the main Navigator, evaluating if the wallet is already loaded and navigating to the
@@ -661,23 +664,17 @@ const RootStack = () => {
       <Stack.Screen
         name='Decide'
         component={BlankScreen}
-        options={{
-          animationEnabled: false,
-        }}
+        options={unanimatedScreenOptions}
       />
       <Stack.Screen
         name='App'
         component={AppStackWrapper}
-        options={{
-          animationEnabled: false,
-        }}
+        options={unanimatedScreenOptions}
       />
       <Stack.Screen
         name='Init'
         component={InitStack}
-        options={{
-          animationEnabled: false,
-        }}
+        options={unanimatedScreenOptions}
       />
     </Stack.Navigator>
   );
