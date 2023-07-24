@@ -141,16 +141,14 @@ export class Settings extends React.Component {
                   title={t`Register a token`}
                   onPress={() => this.props.navigation.navigate('RegisterToken')}
                 />
-              )
-            }
+              )}
             {this.props.walletConnectEnabled
               && (
                 <ListMenu
                   title='Wallet Connect'
                   onPress={() => this.props.navigation.navigate('WalletConnectList')}
                 />
-              )
-            }
+              )}
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}

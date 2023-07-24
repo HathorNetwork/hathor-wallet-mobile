@@ -743,4 +743,3 @@ const createRequestInstance = (resolve, timeout) => {
 hathorLib.axios.registerNewCreateRequestInstance(createRequestInstance);
 
 export default App;
-

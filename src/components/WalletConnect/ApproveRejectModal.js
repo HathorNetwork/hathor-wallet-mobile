@@ -57,9 +57,7 @@ export default ({
           <Text style={styles.modalHeader}>
             { headerText }
           </Text>
-          <>
-            { body }
-          </>
+          { body }
           <View style={styles.buttonContainer}>
             <ModalButton title={t`Reject`} onPress={onReject} />
             <ModalButton highlight title={t`Approve`} onPress={onAccept} />
