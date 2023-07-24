@@ -598,6 +598,9 @@ class _AppStackWrapper extends React.Component {
 const AppStackWrapper = connect(mapStateToProps, mapDispatchToProps)(_AppStackWrapper);
 
 const BlankScreen = () => null;
+const unanimatedScreenOptions = {
+  animationEnabled: false,
+};
 
 /**
  * This is the main Navigator, evaluating if the wallet is already loaded and navigating to the
@@ -605,13 +608,13 @@ const BlankScreen = () => null;
  */
 const RootStack = () => {
   const dispatch = useDispatch();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [appStatus, setAppStatus] = useState('initializing');
 
   useEffect(() => {
     STORE.preStart()
       .then(() => STORE.walletIsLoaded())
       .then((_isLoaded) => {
-        setIsLoaded(_isLoaded);
+        setAppStatus(_isLoaded ? 'isLoaded' : 'notLoaded');
       })
       .catch((e) => {
         // The promise here is swallowing the error,
@@ -629,18 +632,27 @@ const RootStack = () => {
 
   useEffect(() => {
     // If the wallet is loaded, navigate to the main screen with no option to return to init
-    if (isLoaded) {
-      NavigationService.resetToMain();
-    } else {
-      navigationRef.current.reset({
-        index: 0,
-        routes: [{ name: 'Init' }],
-      });
+    switch (appStatus) {
+      case 'isLoaded':
+        NavigationService.resetToMain();
+        break;
+      case 'notLoaded':
+        navigationRef.current.reset({
+          index: 0,
+          routes: [{ name: 'Init' }],
+        });
+        break;
+      default:
+        // Do not navigate anywhere if the storage has not returned the isLoaded data
     }
-  }, [isLoaded]);
+  }, [appStatus]);
 
   const Stack = createStackNavigator();
 
+  /*
+   * XXX: Screens within the Root Stack have no transition animation, as they are processed before
+   * any user interface.
+   */
   return (
     <Stack.Navigator
       initialRouteName='Decide'
@@ -649,9 +661,21 @@ const RootStack = () => {
         gestureEnabled: false,
       }}
     >
-      <Stack.Screen name='Decide' component={BlankScreen} />
-      <Stack.Screen name='App' component={AppStackWrapper} />
-      <Stack.Screen name='Init' component={InitStack} />
+      <Stack.Screen
+        name='Decide'
+        component={BlankScreen}
+        options={unanimatedScreenOptions}
+      />
+      <Stack.Screen
+        name='App'
+        component={AppStackWrapper}
+        options={unanimatedScreenOptions}
+      />
+      <Stack.Screen
+        name='Init'
+        component={InitStack}
+        options={unanimatedScreenOptions}
+      />
     </Stack.Navigator>
   );
 };
