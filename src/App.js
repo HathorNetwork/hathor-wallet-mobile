@@ -82,19 +82,24 @@ import baseStyle from './styles/init';
 const InitStack = () => {
   const Stack = createStackNavigator();
   return (
-    <Stack.Navigator
-      initialRouteName='Welcome'
-      screenOptions={{
-        headerShown: false,
-      }}
+    <SafeAreaView
+      edges={['bottom']}
+      style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
     >
-      <Stack.Screen name='WelcomeScreen' component={WelcomeScreen} />
-      <Stack.Screen name='InitialScreen' component={InitialScreen} />
-      <Stack.Screen name='NewWordsScreen' component={NewWordsScreen} />
-      <Stack.Screen name='LoadWordsScreen' component={LoadWordsScreen} />
-      <Stack.Screen name='BackupWords' component={BackupWords} />
-      <Stack.Screen name='ChoosePinScreen' component={ChoosePinScreen} />
-    </Stack.Navigator>
+      <Stack.Navigator
+        initialRouteName='Welcome'
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name='WelcomeScreen' component={WelcomeScreen} />
+        <Stack.Screen name='InitialScreen' component={InitialScreen} />
+        <Stack.Screen name='NewWordsScreen' component={NewWordsScreen} />
+        <Stack.Screen name='LoadWordsScreen' component={LoadWordsScreen} />
+        <Stack.Screen name='BackupWords' component={BackupWords} />
+        <Stack.Screen name='ChoosePinScreen' component={ChoosePinScreen} />
+      </Stack.Navigator>
+    </SafeAreaView>
   );
 };
 
@@ -688,7 +693,7 @@ const App = () => (
     <Provider store={store}>
       <SafeAreaView
         edges={['top', 'right', 'left']}
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
       >
         <NavigationContainer
           ref={navigationRef}
