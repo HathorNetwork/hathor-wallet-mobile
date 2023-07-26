@@ -335,8 +335,9 @@ const AppStack = () => {
 
   /*
    * On iOS there are some screens that are not displayed within the "BottomTabBar" context AND have
-   * an interaction element on the bottom of the screens. When these two conditions happen, it is
-   * more visually comfortable to add a bottom safe area, using the `SafeAreaView` inset parameters.
+   * an interaction element on the bottom of the visible area. When these two conditions happen, it
+   * is more visually comfortable to add a bottom safe area, using the `SafeAreaView` inset
+   * parameters.
    */
   useEffect(() => {
     const lastRouteName = getFocusedRouteNameFromRoute(route);
