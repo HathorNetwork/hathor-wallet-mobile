@@ -19,7 +19,11 @@ import hathorLib from '@hathor/wallet-lib';
 
 import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  getFocusedRouteNameFromRoute,
+  NavigationContainer,
+  useRoute
+} from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
@@ -326,38 +330,67 @@ const TabNavigator = () => {
  */
 const AppStack = () => {
   const Stack = createStackNavigator();
+  const [edges, setEdges] = useState([]);
+  const route = useRoute();
+
+  /*
+   * On iOS there are some screens that are not displayed within the "BottomTabBar" context AND have
+   * an interaction element on the bottom of the screens. When these two conditions happen, it is
+   * more visually comfortable to add a bottom safe area, using the `SafeAreaView` inset parameters.
+   */
+  useEffect(() => {
+    const lastRouteName = getFocusedRouteNameFromRoute(route);
+    let newEdges;
+    switch (lastRouteName) {
+      case 'RegisterToken':
+      case 'PaymentRequestDetail':
+      case 'CreateTokenStack':
+      case 'About':
+      case 'ResetWallet':
+        newEdges = ['bottom'];
+        break;
+      default:
+        newEdges = [];
+    }
+    setEdges(newEdges);
+  }, [route]);
 
   return (
-    <Stack.Navigator
-      mode='modal'
-      headerMode='none'
+    <SafeAreaView
+      edges={edges}
+      style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
     >
-      <Stack.Screen
-        name='Main'
-        initialParams={{ hName: 'Main' }}
-        component={TabNavigator}
-      />
-      <Stack.Screen name='About' component={About} />
-      <Stack.Screen name='Security' component={Security} />
-      <Stack.Screen name='PushNotification' component={PushNotification} />
-      <Stack.Screen name='ChangePin' component={ChangePin} />
-      <Stack.Screen
-        name='ResetWallet'
-        component={ResetWallet}
-        options={{ gesturesEnabled: false }}
-      />
-      <Stack.Screen name='PaymentRequestDetail' component={PaymentRequestDetail} />
-      <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
-      <Stack.Screen name='ChangeToken' component={ChangeToken} />
-      <Stack.Screen
-        name='PinScreen'
-        component={PinScreen}
-        options={{ gesturesEnabled: false }}
-      />
-      <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
-      <Stack.Screen name='TokenDetail' component={TokenDetail} />
-      <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
-    </Stack.Navigator>
+      <Stack.Navigator
+        mode='modal'
+        headerMode='none'
+      >
+        <Stack.Screen
+          name='Main'
+          initialParams={{ hName: 'Main' }}
+          component={TabNavigator}
+        />
+        <Stack.Screen name='About' component={About} />
+        <Stack.Screen name='Security' component={Security} />
+        <Stack.Screen name='PushNotification' component={PushNotification} />
+        <Stack.Screen name='ChangePin' component={ChangePin} />
+        <Stack.Screen
+          name='ResetWallet'
+          component={ResetWallet}
+          options={{ gesturesEnabled: false }}
+        />
+        <Stack.Screen name='PaymentRequestDetail' component={PaymentRequestDetail} />
+        <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
+        <Stack.Screen name='ChangeToken' component={ChangeToken} />
+        <Stack.Screen
+          name='PinScreen'
+          component={PinScreen}
+          options={{ gesturesEnabled: false }}
+        />
+        <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
+        <Stack.Screen name='TokenDetail' component={TokenDetail} />
+        <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
+      </Stack.Navigator>
+    </SafeAreaView>
   );
 };
 
