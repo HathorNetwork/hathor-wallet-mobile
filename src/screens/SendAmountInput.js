@@ -63,6 +63,13 @@ class SendAmountInput extends React.Component {
     this.focusEvent();
   }
 
+  componentDidUpdate(prevProps) {
+    // Sync local state with the updated selected token, if it has changed
+    if (prevProps.selectedToken !== this.props.selectedToken) {
+      this.setState({ token: this.props.selectedToken });
+    }
+  }
+
   focusInput = () => {
     if (this.inputRef.current) {
       this.inputRef.current.focus();
@@ -73,20 +80,9 @@ class SendAmountInput extends React.Component {
     this.setState({ amount: text, error: null });
   }
 
-  onTokenChange = (token) => {
-    this.setState({ token });
-  }
-
   onTokenBoxPress = () => {
-    this.props.navigation.navigate(
-      'ChangeToken',
-      {
-        token: this.state.token,
-        onItemPress: (item) => {
-          this.onTokenChange(item);
-        },
-      },
-    );
+    // We will be informed of any token change by the redux `selectedToken` state
+    this.props.navigation.navigate('ChangeToken', { token: this.state.token });
   }
 
   onButtonPress = () => {
