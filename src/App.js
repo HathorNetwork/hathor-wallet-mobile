@@ -294,17 +294,6 @@ const TabNavigator = () => {
 
   return (
     <Tab.Navigator
-      tabBarOptions={{
-        style: {
-          paddingTop: 12,
-          paddingBottom: 12,
-        },
-        tabStyle: {
-          justifyContent: 'center',
-        },
-        showIcon: true,
-        showLabel: false,
-      }}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused }) => {
           const { name } = route;
@@ -312,6 +301,15 @@ const TabNavigator = () => {
           const colorName = focused ? PRIMARY_COLOR : 'rgba(0, 0, 0, 0.5)';
           return (<IconTabBar name={iconName} size={24} color={colorName} />);
         },
+        tabBarStyle: {
+          paddingTop: 12,
+          paddingBottom: 12,
+        },
+        tabBarItemStyle: {
+          justifyContent: 'center',
+        },
+        tabBarShowLabel: false,
+        headerShown: false,
       })}
     >
       <Tab.Screen
@@ -362,8 +360,10 @@ const AppStack = () => {
       style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
     >
       <Stack.Navigator
-        mode='modal'
-        headerMode='none'
+        screenOptions={{
+          presentation: 'modal',
+          headerShown: false,
+        }}
       >
         <Stack.Screen
           name='Main'
