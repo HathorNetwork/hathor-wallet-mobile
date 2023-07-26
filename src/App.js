@@ -225,7 +225,7 @@ const RegisterTokenStack = ({ navigation }) => {
   const decideRouteByCameraAvailablity = (cameraStatus) => {
     switch (isCameraAvailable) {
       case true:
-        return 'RegisterToken';
+        return 'RegisterTokenScreen';
       case false:
         return 'RegisterTokenManual';
       default:
@@ -269,7 +269,7 @@ const RegisterTokenStack = ({ navigation }) => {
       }}
     >
       <Stack.Screen name='RegisterCameraPermissionScreen' component={CameraPermissionScreen} />
-      <Stack.Screen name='RegisterToken' component={RegisterToken} />
+      <Stack.Screen name='RegisterTokenScreen' component={RegisterToken} />
       <Stack.Screen name='RegisterTokenManual' component={RegisterTokenManual} />
     </Stack.Navigator>
   );
