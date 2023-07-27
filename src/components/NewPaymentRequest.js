@@ -69,6 +69,13 @@ class NewPaymentRequest extends React.Component {
     this.focusEvent();
   }
 
+  componentDidUpdate(prevProps) {
+    // Sync local state with the updated selected token, if it has changed
+    if (prevProps.selectedToken !== this.props.selectedToken) {
+      this.setState({ token: this.props.selectedToken });
+    }
+  }
+
   focus = () => {
     this.setState({ amount: '', token: this.props.selectedToken });
     this.focusInput();
@@ -78,10 +85,6 @@ class NewPaymentRequest extends React.Component {
     if (this.inputRef.current) {
       this.inputRef.current.focus();
     }
-  }
-
-  onTokenChange = (token) => {
-    this.setState({ token });
   }
 
   getTokenUID = () => (
@@ -115,15 +118,8 @@ class NewPaymentRequest extends React.Component {
 
   onTokenBoxPress = () => {
     this.modalOpened = true;
-    this.props.navigation.navigate(
-      'ChangeToken',
-      {
-        token: this.state.token,
-        onItemPress: (item) => {
-          this.onTokenChange(item);
-        },
-      },
-    );
+    // We will be informed of any token change by the redux `selectedToken` state
+    this.props.navigation.navigate('ChangeToken', { token: this.state.token });
   }
 
   render() {
