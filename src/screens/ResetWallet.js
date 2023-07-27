@@ -69,7 +69,7 @@ class ResetWallet extends React.Component {
     }
 
     this.hideBackButton = false;
-    if (this.props.navigation) {
+    if (this.props.route) {
       this.hideBackButton = this.props.route.params?.hideBackButton ?? false;
     }
   }

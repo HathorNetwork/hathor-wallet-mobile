@@ -19,7 +19,11 @@ import hathorLib from '@hathor/wallet-lib';
 
 import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  getFocusedRouteNameFromRoute,
+  NavigationContainer,
+  useRoute
+} from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
@@ -82,19 +86,24 @@ import baseStyle from './styles/init';
 const InitStack = () => {
   const Stack = createStackNavigator();
   return (
-    <Stack.Navigator
-      initialRouteName='Welcome'
-      screenOptions={{
-        headerShown: false,
-      }}
+    <SafeAreaView
+      edges={['bottom']}
+      style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
     >
-      <Stack.Screen name='WelcomeScreen' component={WelcomeScreen} />
-      <Stack.Screen name='InitialScreen' component={InitialScreen} />
-      <Stack.Screen name='NewWordsScreen' component={NewWordsScreen} />
-      <Stack.Screen name='LoadWordsScreen' component={LoadWordsScreen} />
-      <Stack.Screen name='BackupWords' component={BackupWords} />
-      <Stack.Screen name='ChoosePinScreen' component={ChoosePinScreen} />
-    </Stack.Navigator>
+      <Stack.Navigator
+        initialRouteName='Welcome'
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name='WelcomeScreen' component={WelcomeScreen} />
+        <Stack.Screen name='InitialScreen' component={InitialScreen} />
+        <Stack.Screen name='NewWordsScreen' component={NewWordsScreen} />
+        <Stack.Screen name='LoadWordsScreen' component={LoadWordsScreen} />
+        <Stack.Screen name='BackupWords' component={BackupWords} />
+        <Stack.Screen name='ChoosePinScreen' component={ChoosePinScreen} />
+      </Stack.Navigator>
+    </SafeAreaView>
   );
 };
 
@@ -321,38 +330,68 @@ const TabNavigator = () => {
  */
 const AppStack = () => {
   const Stack = createStackNavigator();
+  const [edges, setEdges] = useState([]);
+  const route = useRoute();
+
+  /*
+   * On iOS there are some screens that are not displayed within the "BottomTabBar" context AND have
+   * an interaction element on the bottom of the visible area. When these two conditions happen, it
+   * is more visually comfortable to add a bottom safe area, using the `SafeAreaView` inset
+   * parameters.
+   */
+  useEffect(() => {
+    const lastRouteName = getFocusedRouteNameFromRoute(route);
+    let newEdges;
+    switch (lastRouteName) {
+      case 'RegisterToken':
+      case 'PaymentRequestDetail':
+      case 'CreateTokenStack':
+      case 'About':
+      case 'ResetWallet':
+        newEdges = ['bottom'];
+        break;
+      default:
+        newEdges = [];
+    }
+    setEdges(newEdges);
+  }, [route]);
 
   return (
-    <Stack.Navigator
-      mode='modal'
-      headerMode='none'
+    <SafeAreaView
+      edges={edges}
+      style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
     >
-      <Stack.Screen
-        name='Main'
-        initialParams={{ hName: 'Main' }}
-        component={TabNavigator}
-      />
-      <Stack.Screen name='About' component={About} />
-      <Stack.Screen name='Security' component={Security} />
-      <Stack.Screen name='PushNotification' component={PushNotification} />
-      <Stack.Screen name='ChangePin' component={ChangePin} />
-      <Stack.Screen
-        name='ResetWallet'
-        component={ResetWallet}
-        options={{ gesturesEnabled: false }}
-      />
-      <Stack.Screen name='PaymentRequestDetail' component={PaymentRequestDetail} />
-      <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
-      <Stack.Screen name='ChangeToken' component={ChangeToken} />
-      <Stack.Screen
-        name='PinScreen'
-        component={PinScreen}
-        options={{ gesturesEnabled: false }}
-      />
-      <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
-      <Stack.Screen name='TokenDetail' component={TokenDetail} />
-      <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
-    </Stack.Navigator>
+      <Stack.Navigator
+        mode='modal'
+        headerMode='none'
+      >
+        <Stack.Screen
+          name='Main'
+          initialParams={{ hName: 'Main' }}
+          component={TabNavigator}
+        />
+        <Stack.Screen name='About' component={About} />
+        <Stack.Screen name='Security' component={Security} />
+        <Stack.Screen name='PushNotification' component={PushNotification} />
+        <Stack.Screen name='ChangePin' component={ChangePin} />
+        <Stack.Screen
+          name='ResetWallet'
+          component={ResetWallet}
+          options={{ gesturesEnabled: false }}
+        />
+        <Stack.Screen name='PaymentRequestDetail' component={PaymentRequestDetail} />
+        <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
+        <Stack.Screen name='ChangeToken' component={ChangeToken} />
+        <Stack.Screen
+          name='PinScreen'
+          component={PinScreen}
+          options={{ gesturesEnabled: false }}
+        />
+        <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
+        <Stack.Screen name='TokenDetail' component={TokenDetail} />
+        <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
+      </Stack.Navigator>
+    </SafeAreaView>
   );
 };
 
@@ -598,9 +637,6 @@ class _AppStackWrapper extends React.Component {
 const AppStackWrapper = connect(mapStateToProps, mapDispatchToProps)(_AppStackWrapper);
 
 const BlankScreen = () => null;
-const unanimatedScreenOptions = {
-  animationEnabled: false,
-};
 
 /**
  * This is the main Navigator, evaluating if the wallet is already loaded and navigating to the
@@ -659,23 +695,12 @@ const RootStack = () => {
       screenOptions={{
         headerShown: false,
         gestureEnabled: false,
+        animationEnabled: false,
       }}
     >
-      <Stack.Screen
-        name='Decide'
-        component={BlankScreen}
-        options={unanimatedScreenOptions}
-      />
-      <Stack.Screen
-        name='App'
-        component={AppStackWrapper}
-        options={unanimatedScreenOptions}
-      />
-      <Stack.Screen
-        name='Init'
-        component={InitStack}
-        options={unanimatedScreenOptions}
-      />
+      <Stack.Screen name='Decide' component={BlankScreen} />
+      <Stack.Screen name='App' component={AppStackWrapper} />
+      <Stack.Screen name='Init' component={InitStack} />
     </Stack.Navigator>
   );
 };
@@ -688,7 +713,7 @@ const App = () => (
     <Provider store={store}>
       <SafeAreaView
         edges={['top', 'right', 'left']}
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
       >
         <NavigationContainer
           ref={navigationRef}
