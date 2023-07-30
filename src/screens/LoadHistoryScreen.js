@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {
-  SafeAreaView, StyleSheet, Text, View,
+  StyleSheet, Text, View,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
@@ -19,7 +19,6 @@ import {
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';
-
 
 /**
  * loadHistoryStatus {Object} progress on loading tx history {
@@ -76,9 +75,9 @@ class LoadHistoryScreen extends React.Component {
     );
 
     return (
-      <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         {this.props.loadHistoryStatus.error ? renderError() : renderLoading()}
-      </SafeAreaView>
+      </View>
     );
   }
 }

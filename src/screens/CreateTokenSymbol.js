@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { KeyboardAvoidingView, SafeAreaView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Text, View } from 'react-native';
 import { t } from 'ttag';
 
 import HathorHeader from '../components/HathorHeader';
@@ -15,7 +15,6 @@ import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
 import SimpleInput from '../components/SimpleInput';
 import { getKeyboardAvoidingViewTopDistance, Italic } from '../utils';
-
 
 /**
  * This screen expect the following parameters on the navigation:
@@ -58,7 +57,7 @@ class CreateTokenSymbol extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
@@ -90,7 +89,7 @@ class CreateTokenSymbol extends React.Component {
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
-      </SafeAreaView>
+      </View>
     );
   }
 }

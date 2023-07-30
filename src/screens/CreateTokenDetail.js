@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { SafeAreaView } from 'react-native';
+import { View } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
@@ -14,7 +14,7 @@ import HathorHeader from '../components/HathorHeader';
 import TokenDetails from '../components/TokenDetails';
 import SimpleButton from '../components/SimpleButton';
 import closeIcon from '../assets/icons/icCloseActive.png';
-
+import { LIGHT_BG_COLOR } from '../constants';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -37,7 +37,7 @@ class CreateTokenDetail extends React.Component {
     );
 
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
+      <View style={{ flex: 1, backgroundColor: LIGHT_BG_COLOR }}>
         <HathorHeader
           title={t`TOKEN DETAILS`}
           wrapperStyle={{ borderBottomWidth: 0 }}
@@ -47,7 +47,7 @@ class CreateTokenDetail extends React.Component {
           token={this.props.selectedToken}
           contentStyle={{ marginHorizontal: 16, marginTop: 16 }}
         />
-      </SafeAreaView>
+      </View>
     );
   }
 }

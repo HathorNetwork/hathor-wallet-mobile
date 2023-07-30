@@ -8,7 +8,6 @@
 import React from 'react';
 import {
   StyleSheet,
-  SafeAreaView,
   Text,
   View,
   Switch,
@@ -37,19 +36,19 @@ const mapDispatchToProps = (dispatch) => ({
   dropResetOnLockScreen: () => dispatch(dropResetOnLockScreen()),
 });
 
-
 class ResetWallet extends React.Component {
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    switchView: {
-      flexDirection: 'row',
-    },
-    switchText: {
-      paddingLeft: 16,
-      fontSize: 14,
-      lineHeight: 18,
-      flex: 1,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      switchView: {
+        flexDirection: 'row',
+      },
+      switchText: {
+        paddingLeft: 16,
+        fontSize: 14,
+        lineHeight: 18,
+        flex: 1,
+      },
+    }) });
 
   willReset: false;
 
@@ -70,7 +69,7 @@ class ResetWallet extends React.Component {
     }
 
     this.hideBackButton = false;
-    if (this.props.navigation) {
+    if (this.props.route) {
       this.hideBackButton = this.props.route.params?.hideBackButton ?? false;
     }
   }
@@ -100,7 +99,7 @@ class ResetWallet extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           title={t`RESET WALLET`}
           onBackPress={this.hideBackButton ? null : () => this.onBackPress()}
@@ -133,7 +132,7 @@ class ResetWallet extends React.Component {
             />
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 }

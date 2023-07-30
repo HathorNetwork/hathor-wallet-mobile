@@ -7,7 +7,6 @@
 
 import React from 'react';
 import {
-  SafeAreaView,
   Text,
   View,
   StyleSheet,
@@ -19,7 +18,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
 import { startWalletRequested, unlockScreen } from '../actions';
-import { PIN_SIZE } from '../constants';
+import { ERROR_BG_COLOR, PIN_SIZE } from '../constants';
 
 import baseStyle from '../styles/init';
 import { STORE } from '../store';
@@ -34,16 +33,17 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 class ChoosePinScreen extends React.Component {
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    pinView: {
-      flex: 1,
-      alignItems: 'center',
-    },
-    pinText: {
-      marginTop: 16,
-      marginBottom: 16,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      pinView: {
+        flex: 1,
+        alignItems: 'center',
+      },
+      pinText: {
+        marginTop: 16,
+        marginBottom: 16,
+      },
+    }) });
 
   constructor(props) {
     super(props);
@@ -164,7 +164,7 @@ class ChoosePinScreen extends React.Component {
     if (pin2.length === 0) {
       this.setState({ pin2: '', error: t`PIN codes don't match. Try again.` });
     } else {
-      this.setState({ pin2, pin2Color: '#DE3535' });
+      this.setState({ pin2, pin2Color: ERROR_BG_COLOR });
       setTimeout(() => this.removeOneChar(), 25);
     }
   }
@@ -172,7 +172,7 @@ class ChoosePinScreen extends React.Component {
   render() {
     const step = this.steps[this.state.stepIndex];
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           withLogo
           onBackPress={() => this.props.navigation.goBack()}
@@ -189,7 +189,7 @@ class ChoosePinScreen extends React.Component {
             style={{ marginTop: 16 }}
           />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 }

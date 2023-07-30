@@ -10,7 +10,7 @@ import '../shim';
 
 import React, { useEffect, useState } from 'react';
 import { AppState, StyleSheet, View } from 'react-native';
-import { connect, Provider, useDispatch } from 'react-redux';
+import { connect, Provider, useDispatch, useSelector } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
 import notifee, { EventType } from '@notifee/react-native';
@@ -19,7 +19,11 @@ import hathorLib from '@hathor/wallet-lib';
 
 import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  getFocusedRouteNameFromRoute,
+  NavigationContainer,
+  useRoute
+} from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
 import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
@@ -28,6 +32,7 @@ import {
   lockScreen,
   onExceptionCaptured,
   pushTxDetailsRequested,
+  requestCameraPermission,
   resetData,
   setTokens,
 } from './actions';
@@ -73,6 +78,7 @@ import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
+import baseStyle from './styles/init';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -80,19 +86,24 @@ import Settings from './screens/Settings';
 const InitStack = () => {
   const Stack = createStackNavigator();
   return (
-    <Stack.Navigator
-      initialRouteName='Welcome'
-      screenOptions={{
-        headerShown: false,
-      }}
+    <SafeAreaView
+      edges={['bottom']}
+      style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
     >
-      <Stack.Screen name='WelcomeScreen' component={WelcomeScreen} />
-      <Stack.Screen name='InitialScreen' component={InitialScreen} />
-      <Stack.Screen name='NewWordsScreen' component={NewWordsScreen} />
-      <Stack.Screen name='LoadWordsScreen' component={LoadWordsScreen} />
-      <Stack.Screen name='BackupWords' component={BackupWords} />
-      <Stack.Screen name='ChoosePinScreen' component={ChoosePinScreen} />
-    </Stack.Navigator>
+      <Stack.Navigator
+        initialRouteName='Welcome'
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name='WelcomeScreen' component={WelcomeScreen} />
+        <Stack.Screen name='InitialScreen' component={InitialScreen} />
+        <Stack.Screen name='NewWordsScreen' component={NewWordsScreen} />
+        <Stack.Screen name='LoadWordsScreen' component={LoadWordsScreen} />
+        <Stack.Screen name='BackupWords' component={BackupWords} />
+        <Stack.Screen name='ChoosePinScreen' component={ChoosePinScreen} />
+      </Stack.Navigator>
+    </SafeAreaView>
   );
 };
 
@@ -117,18 +128,56 @@ const DashboardStack = () => {
 };
 
 /**
+ * This blank screen serves as a way to request the user permission to use the camera without
+ * rendering anything on the main interface for a potentially very short time.
+ * A listener should be set to the `isCameraAvailable` state variable to decide what to render after
+ * the permission is defined.
+ */
+const CameraPermissionScreen = () => null;
+
+/**
  * Stack of screens dedicated to the token sending process
  */
-const SendStack = () => {
+const SendStack = ({ navigation }) => {
   const Stack = createStackNavigator();
+  const [initialRoute, setInitialRoute] = useState('CameraPermissionScreen');
+  const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
+  const dispatch = useDispatch();
+
+  /*
+   * Request camera permission on initialization, if permission is not already set
+   */
+  useEffect(() => {
+    if (isCameraAvailable === null) {
+      dispatch(requestCameraPermission());
+    }
+  }, []);
+
+  // Listen to camera permission changes from user input and navigate to the relevant screen
+  useEffect(() => {
+    let initScreenName;
+    switch (isCameraAvailable) {
+      case true:
+        initScreenName = 'SendScanQRCode';
+        break;
+      case false:
+        initScreenName = 'SendAddressInput';
+        break;
+      default:
+        initScreenName = 'CameraPermissionScreen';
+    }
+    setInitialRoute(initScreenName);
+    navigation.replace(initScreenName);
+  }, [isCameraAvailable]);
 
   return (
     <Stack.Navigator
-      initialRouteName='SendScanQRCode'
+      initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
       }}
     >
+      <Stack.Screen name='CameraPermissionScreen' component={CameraPermissionScreen} />
       <Stack.Screen name='SendScanQRCode' component={SendScanQRCode} />
       <Stack.Screen name='SendAddressInput' component={SendAddressInput} />
       <Stack.Screen name='SendAmountInput' component={SendAmountInput} />
@@ -163,16 +212,63 @@ const CreateTokenStack = () => {
 /**
  * Stack of screens dedicated to the token registration process
  */
-const RegisterTokenStack = () => {
+const RegisterTokenStack = ({ navigation }) => {
   const Stack = createStackNavigator();
+  const dispatch = useDispatch();
+  const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
+
+  /**
+   * Defines which screen will be the initial one, according to app camera permissions
+   * @param {null|boolean} cameraStatus
+   * @returns {string} Route name
+   */
+  const decideRouteByCameraAvailablity = (cameraStatus) => {
+    switch (isCameraAvailable) {
+      case true:
+        return 'RegisterToken';
+      case false:
+        return 'RegisterTokenManual';
+      default:
+        return 'RegisterCameraPermissionScreen';
+    }
+  };
+
+  // Initial screen set on component initial rendering
+  const [initialRoute, setInitialRoute] = useState(
+    decideRouteByCameraAvailablity(isCameraAvailable)
+  );
+
+  /*
+   * Request camera permission on initialization only if permission is not already set
+   */
+  useEffect(() => {
+    if (isCameraAvailable === null) {
+      dispatch(requestCameraPermission());
+    }
+  }, []);
+
+  // Listen to camera permission changes from user input and navigate to the relevant screen
+  useEffect(() => {
+    const newScreenName = decideRouteByCameraAvailablity(isCameraAvailable);
+
+    // Navigator screen already correct: no further action.
+    if (initialRoute === newScreenName) {
+      return;
+    }
+
+    // Set initial route and navigate there according to new permission set
+    setInitialRoute(newScreenName);
+    navigation.replace(newScreenName);
+  }, [isCameraAvailable]);
 
   return (
     <Stack.Navigator
-      initialRouteName='RegisterToken'
+      initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
       }}
     >
+      <Stack.Screen name='RegisterCameraPermissionScreen' component={CameraPermissionScreen} />
       <Stack.Screen name='RegisterToken' component={RegisterToken} />
       <Stack.Screen name='RegisterTokenManual' component={RegisterTokenManual} />
     </Stack.Navigator>
@@ -234,41 +330,70 @@ const TabNavigator = () => {
  */
 const AppStack = () => {
   const Stack = createStackNavigator();
+  const [edges, setEdges] = useState([]);
+  const route = useRoute();
+
+  /*
+   * On iOS there are some screens that are not displayed within the "BottomTabBar" context AND have
+   * an interaction element on the bottom of the visible area. When these two conditions happen, it
+   * is more visually comfortable to add a bottom safe area, using the `SafeAreaView` inset
+   * parameters.
+   */
+  useEffect(() => {
+    const lastRouteName = getFocusedRouteNameFromRoute(route);
+    let newEdges;
+    switch (lastRouteName) {
+      case 'RegisterToken':
+      case 'PaymentRequestDetail':
+      case 'CreateTokenStack':
+      case 'About':
+      case 'ResetWallet':
+        newEdges = ['bottom'];
+        break;
+      default:
+        newEdges = [];
+    }
+    setEdges(newEdges);
+  }, [route]);
 
   return (
-    <Stack.Navigator
-      mode='modal'
-      headerMode='none'
+    <SafeAreaView
+      edges={edges}
+      style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
     >
-      <Stack.Screen
-        name='Main'
-        initialParams={{ hName: 'Main' }}
-        component={TabNavigator}
-      />
-      <Stack.Screen name='About' component={About} />
-      <Stack.Screen name='Security' component={Security} />
-      <Stack.Screen name='PushNotification' component={PushNotification} />
-      <Stack.Screen name='ChangePin' component={ChangePin} />
-      <Stack.Screen
-        name='ResetWallet'
-        component={ResetWallet}
-        options={{ gesturesEnabled: false }}
-      />
-      <Stack.Screen name='PaymentRequestDetail' component={PaymentRequestDetail} />
-      <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
-      <Stack.Screen name='ChangeToken' component={ChangeToken} />
-      <Stack.Screen
-        name='PinScreen'
-        component={PinScreen}
-        options={{ gesturesEnabled: false }}
-      />
-      <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
-      <Stack.Screen name='TokenDetail' component={TokenDetail} />
-      <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
-    </Stack.Navigator>
+      <Stack.Navigator
+        mode='modal'
+        headerMode='none'
+      >
+        <Stack.Screen
+          name='Main'
+          initialParams={{ hName: 'Main' }}
+          component={TabNavigator}
+        />
+        <Stack.Screen name='About' component={About} />
+        <Stack.Screen name='Security' component={Security} />
+        <Stack.Screen name='PushNotification' component={PushNotification} />
+        <Stack.Screen name='ChangePin' component={ChangePin} />
+        <Stack.Screen
+          name='ResetWallet'
+          component={ResetWallet}
+          options={{ gesturesEnabled: false }}
+        />
+        <Stack.Screen name='PaymentRequestDetail' component={PaymentRequestDetail} />
+        <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
+        <Stack.Screen name='ChangeToken' component={ChangeToken} />
+        <Stack.Screen
+          name='PinScreen'
+          component={PinScreen}
+          options={{ gesturesEnabled: false }}
+        />
+        <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
+        <Stack.Screen name='TokenDetail' component={TokenDetail} />
+        <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
+      </Stack.Navigator>
+    </SafeAreaView>
   );
 };
-
 
 /**
  * loadHistory {bool} Indicates we're loading the tx history
@@ -302,7 +427,7 @@ class _AppStackWrapper extends React.Component {
 
   style = StyleSheet.create({
     auxView: {
-      backgroundColor: 'white',
+      backgroundColor: baseStyle.container.backgroundColor,
       position: 'absolute',
       top: 0,
       bottom: 0,
@@ -519,13 +644,13 @@ const BlankScreen = () => null;
  */
 const RootStack = () => {
   const dispatch = useDispatch();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [appStatus, setAppStatus] = useState('initializing');
 
   useEffect(() => {
     STORE.preStart()
       .then(() => STORE.walletIsLoaded())
       .then((_isLoaded) => {
-        setIsLoaded(_isLoaded);
+        setAppStatus(_isLoaded ? 'isLoaded' : 'notLoaded');
       })
       .catch((e) => {
         // The promise here is swallowing the error,
@@ -543,24 +668,34 @@ const RootStack = () => {
 
   useEffect(() => {
     // If the wallet is loaded, navigate to the main screen with no option to return to init
-    if (isLoaded) {
-      NavigationService.resetToMain();
-    } else {
-      navigationRef.current.reset({
-        index: 0,
-        routes: [{ name: 'Init' }],
-      });
+    switch (appStatus) {
+      case 'isLoaded':
+        NavigationService.resetToMain();
+        break;
+      case 'notLoaded':
+        navigationRef.current.reset({
+          index: 0,
+          routes: [{ name: 'Init' }],
+        });
+        break;
+      default:
+        // Do not navigate anywhere if the storage has not returned the isLoaded data
     }
-  }, [isLoaded]);
+  }, [appStatus]);
 
   const Stack = createStackNavigator();
 
+  /*
+   * XXX: Screens within the Root Stack have no transition animation, as they are processed before
+   * any user interface.
+   */
   return (
     <Stack.Navigator
       initialRouteName='Decide'
       screenOptions={{
         headerShown: false,
         gestureEnabled: false,
+        animationEnabled: false,
       }}
     >
       <Stack.Screen name='Decide' component={BlankScreen} />
@@ -576,7 +711,10 @@ NavigationService.setTopLevelNavigator(navigationRef);
 const App = () => (
   <SafeAreaProvider>
     <Provider store={store}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView
+        edges={['top', 'right', 'left']}
+        style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
+      >
         <NavigationContainer
           ref={navigationRef}
         >

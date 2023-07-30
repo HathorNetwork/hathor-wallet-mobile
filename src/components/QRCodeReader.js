@@ -7,46 +7,29 @@
 
 import * as React from 'react';
 
-import { ActivityIndicator, AppState, StyleSheet, Text, View } from 'react-native';
-import { Camera, useCameraDevices } from 'react-native-vision-camera';
-import { BarcodeFormat, useScanBarcodes } from 'vision-camera-code-scanner';
-import { useEffect } from 'react';
-import { t } from 'ttag';
+import { AppState, StyleSheet, Text, View } from 'react-native';
+import { Camera, CameraType } from 'react-native-camera-kit';
+import { useEffect, useState } from 'react';
 
 const APP_ACTIVE_STATE = 'active';
 
-export default function QRCodeReader({
+export default ({
   navigation,
   onSuccess,
   focusHeight = 250,
   focusWidth = 250,
   bottomText = '',
-}) {
+}) => {
   // States related to Camera rendering logic
-  const [currentAppState, setCurrentAppState] = React.useState(AppState.currentState);
-  const [isFocusedScreen, setIsFocusedScreen] = React.useState(false);
-  const [hasPermission, setHasPermission] = React.useState(false);
+  const [currentAppState, setCurrentAppState] = useState(AppState.currentState);
+  const [isFocusedScreen, setIsFocusedScreen] = useState(false);
 
   // States related to the custom marker
-  const [canvasHeight, setCanvasHeight] = React.useState(0);
-  const [canvasWidth, setCanvasWidth] = React.useState(0);
-
-  // States related to capturing camera data and reading QRCodes
-  const devices = useCameraDevices();
-  const device = devices.back;
-  const [frameProcessor, barcodes] = useScanBarcodes([BarcodeFormat.QR_CODE], {
-    checkInverted: true,
-  });
+  const [canvasHeight, setCanvasHeight] = useState(0);
+  const [canvasWidth, setCanvasWidth] = useState(0);
 
   // Initialization and event listeners
-  React.useEffect(() => {
-    // Ensure the app has permission to use the camera
-    Camera.requestCameraPermission()
-      .then((status) => {
-        setHasPermission(status === 'authorized');
-        setIsFocusedScreen(true); // Coming back from the authorization screen
-      });
-
+  useEffect(() => {
     /*
      * We need to focus/unfocus the QRCode scanner, so that it doesn't freeze
      * - When the navigation focuses this screen or app becomes active, we set it to `true`
@@ -79,8 +62,8 @@ export default function QRCodeReader({
     setIsFocusedScreen(true);
 
     return () => {
-      focusEvent.remove();
-      blurEvent.remove();
+      focusEvent();
+      blurEvent();
       if (appStateEvent) { // This listener may have never been initialized
         appStateEvent.remove();
         appStateEvent = null;
@@ -88,17 +71,13 @@ export default function QRCodeReader({
     };
   }, []);
 
-  // Captured barcodes monitoring
-  useEffect(() => {
-    // Ignore this effect if there is no successful QRCode read
-    if (!barcodes.length) {
-      return;
-    }
-
-    // Return only the first QRCode found
-    setIsFocusedScreen(false); // Stop reading, since the focus will change soon
-    onSuccess(barcodes[0].content);
-  }, [barcodes]);
+  /**
+   * Triggers the callback function with the QR Code string value
+   * @param {{ nativeEvent: { codeStringValue: string }}} event
+   */
+  function onCodeRead(event) {
+    onSuccess({ data: event.nativeEvent.codeStringValue });
+  }
 
   /**
    * Fetches screen data from the `onLayout` event
@@ -146,9 +125,16 @@ export default function QRCodeReader({
    * Renders custom bottom text
    */
   const BottomText = () => (
-    <View style={{ position: 'absolute', bottom: 32 }}>
+    <View style={{
+      position: 'absolute',
+      bottom: 32
+    }}
+    >
       <Text style={{
-        fontSize: 16, fontWeight: 'bold', lineHeight: 19, color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+        lineHeight: 19,
+        color: 'white',
       }}
       >
         {bottomText}
@@ -157,25 +143,8 @@ export default function QRCodeReader({
   );
 
   /**
-   * Draws the camera loader
-   */
-  const WaitingForCameraLoader = () => (
-    <View style={{
-      position: 'absolute', flex: 1, alignItems: 'center', justifyContent: 'center',
-    }}
-    >
-      <Text>{t`Opening camera`}</Text>
-      <ActivityIndicator style={{ marginTop: 16 }} size='small' animating />
-    </View>
-  );
-
-  /**
    * Decides if the camera should be rendered, or if the screen should remain on the Loader view
    */
-  const shouldRenderCamera = device !== null
-    && hasPermission
-    && isFocusedScreen;
-
   return (
     <View
       style={{
@@ -183,20 +152,19 @@ export default function QRCodeReader({
       }}
       onLayout={onViewLayoutHandler}
     >
-      { !shouldRenderCamera && <WaitingForCameraLoader /> }
-      { shouldRenderCamera && (
-        <>
+      <>
+        {isFocusedScreen && (
           <Camera
+            cameraType={CameraType.Back}
+            flashMode='off'
+            scanBarcode
+            onReadCode={onCodeRead}
             style={StyleSheet.absoluteFill}
-            device={device}
-            isActive
-            frameProcessor={frameProcessor}
-            frameProcessorFps={5}
           />
-          <CustomMarker />
-          {bottomText && <BottomText />}
-        </>
-      )}
+        )}
+        <CustomMarker />
+        {bottomText && <BottomText />}
+      </>
     </View>
   );
-}
+};

@@ -16,7 +16,6 @@ import {
 
 import chevronRight from '../assets/icons/chevron-right.png';
 
-
 const defaultRadius = 16;
 
 export class HathorList extends Component {

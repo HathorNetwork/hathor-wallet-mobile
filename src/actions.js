@@ -75,6 +75,8 @@ export const types = {
   WALLET_STATE_READY: 'WALLET_STATE_READY',
   WALLET_STATE_ERROR: 'WALLET_STATE_ERROR',
   WALLET_RELOADING: 'WALLET_RELOADING',
+  CAMERA_PERMISSION_REQUESTED: 'CAMERA_PERMISSION_REQUESTED',
+  SET_CAMERA_AVAILABLE: 'SET_CAMERA_AVAILABLE',
   // Push Notification actions
   INIT_PUSH_NOTIFICATION: 'INIT_PUSH_NOTIFICATION',
   SET_AVAILABLE_PUSH_NOTIFICATION: 'SET_AVAILABLE_PUSH_NOTIFICATION',
@@ -246,7 +248,6 @@ export const dropResetOnLockScreen = () => ({ type: types.SET_RESET_ON_LOCK_SCRE
 export const updateHeight = (height, htrBalance) => (
   { type: types.UPDATE_HEIGHT, payload: { height, htrBalance } }
 );
-
 
 export const updateTokenHistory = (token, newHistory) => (
   { type: types.UPDATE_TOKEN_HISTORY, payload: { token, newHistory } }
@@ -553,6 +554,18 @@ export const onWalletReload = () => ({
   type: types.WALLET_RELOADING,
 });
 
+export const requestCameraPermission = () => ({
+  type: types.CAMERA_PERMISSION_REQUESTED,
+});
+
+/**
+ * @param {boolean} isAvailable True if the camera should be skipped
+ */
+export const setCameraAvailable = (isAvailable) => ({
+  type: types.SET_CAMERA_AVAILABLE,
+  payload: isAvailable,
+});
+
 // Push notification actions
 
 export const initPushNotification = () => ({
@@ -566,7 +579,6 @@ export const setAvailablePushNotification = (payload) => ({
   type: types.SET_AVAILABLE_PUSH_NOTIFICATION,
   payload,
 });
-
 
 /**
  * Ask user if he wants to opt-in push notifications

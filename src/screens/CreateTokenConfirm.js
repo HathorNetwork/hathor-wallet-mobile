@@ -8,7 +8,6 @@
 import React from 'react';
 import {
   Image,
-  SafeAreaView,
   View,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -35,7 +34,6 @@ const mapStateToProps = (state) => ({
   useWalletService: state.useWalletService,
   isShowingPinScreen: state.isShowingPinScreen,
 });
-
 
 const mapDispatchToProps = (dispatch) => ({
   newToken: (token) => dispatch(newToken(token)),
@@ -76,12 +74,16 @@ class CreateTokenConfirm extends React.Component {
 
     const { address } = await this.props.wallet.getCurrentAddress({ markAsUsed: true });
     this.props.wallet.prepareCreateNewToken(
-      this.name, this.symbol, this.amount, { address, pinCode: pin }
+      this.name,
+      this.symbol,
+      this.amount,
+      { address, pinCode: pin }
     ).then((tx) => {
       let sendTransaction;
       if (this.props.useWalletService) {
         sendTransaction = new hathorLib.SendTransactionWalletService(
-          this.props.wallet, { transaction: tx }
+          this.props.wallet,
+          { transaction: tx }
         );
       } else {
         sendTransaction = new hathorLib.SendTransaction(
@@ -156,7 +158,7 @@ class CreateTokenConfirm extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
@@ -224,7 +226,7 @@ class CreateTokenConfirm extends React.Component {
           />
         </View>
         <OfflineBar />
-      </SafeAreaView>
+      </View>
     );
   }
 }

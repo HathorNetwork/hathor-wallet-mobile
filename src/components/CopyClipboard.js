@@ -11,6 +11,7 @@ import {
   Clipboard, StyleSheet, Text,
 } from 'react-native';
 import { t } from 'ttag';
+import { TextPropTypes } from 'deprecated-react-native-prop-types';
 import { PRIMARY_COLOR } from '../constants';
 
 class CopyClipboard extends React.Component {
@@ -37,7 +38,12 @@ class CopyClipboard extends React.Component {
     Clipboard.setString(this.props.copyText || this.props.text);
     this.setState({ copying: true }, () => {
       this.timeoutRef = setTimeout(
-        () => this.setState({ copying: false }), this.props.copiedTimeout
+        () => this.setState(
+          {
+            copying: false
+          }
+        ),
+        this.props.copiedTimeout
       );
     });
   }
@@ -66,7 +72,7 @@ CopyClipboard.propTypes = {
   copyText: PropTypes.string,
 
   // Style of the text component
-  textStyle: Text.propTypes.style,
+  textStyle: TextPropTypes.style,
 
   // Timeout in milliseconds that copied message is shown (default is 1500)
   copiedTimeout: PropTypes.number,

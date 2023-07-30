@@ -9,7 +9,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import {
   Image,
-  SafeAreaView,
   View,
   StyleSheet,
 } from 'react-native';
@@ -21,7 +20,7 @@ import FeedbackModal from '../components/FeedbackModal';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import checkIcon from '../assets/images/icCheckBig.png';
-import { PIN_SIZE } from '../constants';
+import { ERROR_BG_COLOR, PIN_SIZE } from '../constants';
 import {
   changePin,
 } from '../utils';
@@ -31,16 +30,17 @@ const mapStateToProps = (state) => ({
 });
 
 class ChangePin extends React.Component {
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    pinView: {
-      flex: 1,
-      alignItems: 'center',
-    },
-    pinText: {
-      marginTop: 80,
-      marginBottom: 16,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      pinView: {
+        flex: 1,
+        alignItems: 'center',
+      },
+      pinText: {
+        marginTop: 80,
+        marginBottom: 16,
+      },
+    }) });
 
   constructor(props) {
     super(props);
@@ -160,7 +160,7 @@ class ChangePin extends React.Component {
     } else {
       const newState = {};
       newState[stateKey] = pin;
-      newState[stateColorKey] = '#DE3535';
+      newState[stateColorKey] = ERROR_BG_COLOR;
       this.setState(newState);
       setTimeout(() => this.removeOneChar(stateKey, stateColorKey, error), 25);
     }
@@ -231,7 +231,7 @@ class ChangePin extends React.Component {
 
     const step = this.steps[this.state.stepIndex];
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           withBorder
           title={t`CHANGE PIN`}
@@ -241,7 +241,7 @@ class ChangePin extends React.Component {
           {step.render()}
         </View>
         {this.state.done && renderSuccessModal()}
-      </SafeAreaView>
+      </View>
     );
   }
 }

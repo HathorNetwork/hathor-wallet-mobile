@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { SafeAreaView, View } from 'react-native';
+import { View } from 'react-native';
 import { connect } from 'react-redux';
 import { t, ngettext, msgid } from 'ttag';
 
@@ -21,7 +21,6 @@ import TextFmt from '../components/TextFmt';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import { renderValue, isTokenNFT } from '../utils';
 import NavigationService from '../NavigationService';
-
 
 /**
  * tokensBalance {Object} dict with balance for each token
@@ -128,7 +127,7 @@ class SendConfirmScreen extends React.Component {
 
     const tokenNameUpperCase = this.token.name.toUpperCase();
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <HathorHeader
           withBorder
           title={t`SEND ${tokenNameUpperCase}`}
@@ -173,7 +172,7 @@ class SendConfirmScreen extends React.Component {
           />
         </View>
         <OfflineBar />
-      </SafeAreaView>
+      </View>
     );
   }
 }

@@ -56,8 +56,7 @@ const SimpleInput = (props) => {
         <InputLabel style={[styles.label, props.inputStyle]}>
           {props.label}
         </InputLabel>
-        )
-      }
+        )}
       {/* If input is not editable, render only Text so we can select
         * it. If we used TextInput with editable=false, we would not
         * be able to select the text

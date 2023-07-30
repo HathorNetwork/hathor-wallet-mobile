@@ -15,6 +15,8 @@
     "react/jsx-one-expression-per-line": 0,
     "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }],
     "react/jsx-closing-tag-location": 0,
+    "react/jsx-no-bind": 0, // Obsolete
+    "react/function-component-definition": 0, // Will be reactivated in future refactors
     "react/react-in-jsx-scope": "off", // Not necessary since React v17
     "react/sort-comp": 0,
     "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
@@ -43,6 +45,19 @@
     "no-unused-vars": [1, {"vars": "all", "args": "none"}],
     "no-underscore-dangle": 0,
     "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
-    "no-console": 0
+    "no-console": 0,
+
+    // Rules that can be reactivated in future improvement refactors
+    "react/no-unstable-nested-components": 0,
+    "react/jsx-props-no-spreading": 0,
+    "default-param-last": 0,
+    "react/no-this-in-sfc": 0,
+
+    // Rules that will require refactor on class components
+    "react/no-arrow-function-lifecycle": 0,
+    "react/static-property-placement": 0,
+    "react/state-in-constructor": 0,
+    "max-classes-per-file": 0,
+    "react/no-unused-class-component-methods": 0,
   }
 }

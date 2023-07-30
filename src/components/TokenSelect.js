@@ -12,11 +12,10 @@ import {
 import { get } from 'lodash';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import chevronRight from '../assets/icons/chevron-right.png';
 import Spinner from './Spinner';
-import { PRIMARY_COLOR } from '../constants';
+import { LIGHT_BG_COLOR, PRIMARY_COLOR } from '../constants';
 import { getLightBackground, renderValue, isTokenNFT } from '../utils';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 
@@ -76,7 +75,7 @@ const TokenSelect = (props) => {
   };
 
   return (
-    <SafeAreaView style={styles.wrapper}>
+    <View style={styles.wrapper}>
       {props.header}
       <View style={styles.listWrapper}>
         <FlatList
@@ -87,7 +86,7 @@ const TokenSelect = (props) => {
           keyExtractor={(item, index) => item.uid}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -96,7 +95,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f7f7f7',
+    backgroundColor: LIGHT_BG_COLOR,
   },
   listWrapper: {
     alignSelf: 'stretch',
@@ -131,7 +130,7 @@ const styles = StyleSheet.create({
   },
   symbolWrapper: {
     padding: 4,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: LIGHT_BG_COLOR,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
@@ -156,6 +155,5 @@ const styles = StyleSheet.create({
     backgroundColor: PRIMARY_COLOR,
   },
 });
-
 
 export default TokenSelect;

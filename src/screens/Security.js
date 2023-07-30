@@ -8,7 +8,7 @@
 import React from 'react';
 import {
   StyleSheet,
-  SafeAreaView,
+  View,
   Switch,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -21,27 +21,28 @@ import {
 } from '../utils';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen } from '../actions';
-
+import { LIGHT_BG_COLOR } from '../constants';
 
 const mapDispatchToProps = (dispatch) => ({
   lockScreen: () => dispatch(lockScreen()),
 });
 
 export class Security extends React.Component {
-  style = Object.assign({}, baseStyle, StyleSheet.create({
-    view: {
-      padding: 16,
-      justifyContent: 'space-between',
-    },
-    logo: {
-      height: 30,
-      width: 170,
-    },
-    logoView: {
-      marginTop: 16,
-      marginBottom: 16,
-    },
-  }));
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      view: {
+        padding: 16,
+        justifyContent: 'space-between',
+      },
+      logo: {
+        height: 30,
+        width: 170,
+      },
+      logoView: {
+        marginTop: 16,
+        marginBottom: 16,
+      },
+    }) });
 
   constructor(props) {
     super(props);
@@ -67,12 +68,11 @@ export class Security extends React.Component {
     this.props.lockScreen();
   }
 
-
   render() {
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? t`No biometry supported` : t`Use ${this.supportedBiometry}`);
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
+      <View style={{ flex: 1, backgroundColor: LIGHT_BG_COLOR }}>
         <HathorHeader
           title={t`SECURITY`}
           onBackPress={() => this.props.navigation.goBack()}
@@ -102,7 +102,7 @@ export class Security extends React.Component {
             isLast
           />
         </HathorList>
-      </SafeAreaView>
+      </View>
     );
   }
 }

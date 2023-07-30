@@ -9,7 +9,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import { BackHandler, SafeAreaView, Text, View } from 'react-native';
+import { BackHandler, Text, View } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import { walletUtils, cryptoUtils } from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
@@ -25,8 +25,9 @@ import {
   startWalletRequested,
   resetOnLockScreen,
 } from '../actions';
-import { PIN_SIZE } from '../constants';
+import { ERROR_BG_COLOR, PIN_SIZE } from '../constants';
 import { STORE } from '../store';
+import baseStyle from '../styles/init';
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
@@ -244,7 +245,7 @@ class PinScreen extends React.Component {
     if (pin.length === 0) {
       this.setState({ pin: '', error: t`Incorrect PIN Code. Try again.` });
     } else {
-      this.setState({ pin, pinColor: '#DE3535' });
+      this.setState({ pin, pinColor: ERROR_BG_COLOR });
       setTimeout(() => this.removeOneChar(), 25);
     }
   };
@@ -276,8 +277,13 @@ class PinScreen extends React.Component {
     };
 
     return (
-      <SafeAreaView
-        style={{ flex: 1, alignItems: 'center', marginHorizontal: 16 }}
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          marginHorizontal: 16,
+          backgroundColor: baseStyle.container.backgroundColor,
+        }}
       >
         <View
           style={{
@@ -298,7 +304,7 @@ class PinScreen extends React.Component {
           error={this.state.error}
         />
         {renderButton()}
-      </SafeAreaView>
+      </View>
     );
   }
 }
