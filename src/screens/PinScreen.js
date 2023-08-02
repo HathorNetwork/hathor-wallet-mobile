@@ -281,7 +281,7 @@ class PinScreen extends React.Component {
         style={{
           flex: 1,
           alignItems: 'center',
-          marginHorizontal: 16,
+          paddingHorizontal: 16, // Padding ensures a homogeneous background color
           backgroundColor: baseStyle.container.backgroundColor,
         }}
       >
