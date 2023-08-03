@@ -10,6 +10,11 @@ import { connect } from 'react-redux';
 
 import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
+import { updateSelectedToken } from '../actions';
+
+const mapDispatchToProps = (dispatch) => ({
+  updateSelectedToken: (token) => dispatch(updateSelectedToken(token)),
+});
 
 /**
  * tokens {Array} Array of token configs registered on this wallet
@@ -32,16 +37,11 @@ class ChangeToken extends React.Component {
 
     // Selected token
     this.token = props.route.params.token ?? null;
-
-    // Callback on token press
-    this.onPressCallback = props.route.params.onItemPress ?? null;
   }
 
   onItemPress = (item) => {
-    if (this.onPressCallback) {
-      this.onPressCallback(item);
-    }
-
+    // Update the global selected token and navigate back to the caller screen
+    this.props.updateSelectedToken(item);
     this.props.navigation.goBack();
   }
 
@@ -55,7 +55,7 @@ class ChangeToken extends React.Component {
 
     return (
       <TokenSelect
-        header=<Header />
+        header={<Header />}
         onItemPress={this.onItemPress}
         selectedToken={this.token}
         tokens={this.props.tokens}
@@ -66,4 +66,4 @@ class ChangeToken extends React.Component {
   }
 }
 
-export default connect(mapStateToProps)(ChangeToken);
+export default connect(mapStateToProps, mapDispatchToProps)(ChangeToken);
