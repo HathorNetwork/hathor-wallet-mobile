@@ -119,7 +119,7 @@ class PinScreen extends React.Component {
        * }
        */
       const credentials = await Keychain.getGenericPassword({
-        authenticationPrompt: this.biometryText,
+        authenticationPrompt: { title: this.biometryText },
       });
       this.setState({ waitingForBiometry: false });
 
