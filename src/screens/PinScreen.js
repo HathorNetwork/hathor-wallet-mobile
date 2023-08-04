@@ -60,6 +60,7 @@ class PinScreen extends React.Component {
       pin: '',
       pinColor: 'black',
       error: null,
+      waitingForBiometry: false,
     };
 
     this.canCancel = false;
@@ -107,6 +108,8 @@ class PinScreen extends React.Component {
   handleBackButton = () => true;
 
   askBiometricId = async () => {
+    // Displaying an empty screen while waiting for the OS biometry response
+    this.setState({ waitingForBiometry: true });
     try {
       /* getGenericPassword will return either `false` or UserCredentials:
        *
@@ -116,13 +119,15 @@ class PinScreen extends React.Component {
        * }
        */
       const credentials = await Keychain.getGenericPassword({
-        authenticationPrompt: this.biometryText,
+        authenticationPrompt: { title: this.biometryText },
       });
+      this.setState({ waitingForBiometry: false });
 
       if (credentials !== false) {
         this.dismiss(credentials.password);
       }
     } catch (e) {
+      this.setState({ waitingForBiometry: false });
       // No need to do anything here as the user can type his PIN
     }
   };
@@ -276,15 +281,8 @@ class PinScreen extends React.Component {
       );
     };
 
-    return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          marginHorizontal: 16,
-          backgroundColor: baseStyle.container.backgroundColor,
-        }}
-      >
+    const renderPinDigits = () => (
+      <View>
         <View
           style={{
             marginVertical: 16,
@@ -304,6 +302,28 @@ class PinScreen extends React.Component {
           error={this.state.error}
         />
         {renderButton()}
+      </View>
+    );
+
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          paddingHorizontal: 16, // Padding ensures a homogeneous background color
+          backgroundColor: baseStyle.container.backgroundColor,
+        }}
+      >
+        { this.state.waitingForBiometry && (
+        <View
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            backgroundColor: baseStyle.container.backgroundColor,
+          }}
+        />
+        )}
+        { !this.state.waitingForBiometry && renderPinDigits()}
       </View>
     );
   }
