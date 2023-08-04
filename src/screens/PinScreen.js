@@ -282,7 +282,12 @@ class PinScreen extends React.Component {
     };
 
     const renderPinDigits = () => (
-      <View>
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+        }}
+      >
         <View
           style={{
             marginVertical: 16,
