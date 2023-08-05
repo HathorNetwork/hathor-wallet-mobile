@@ -19,6 +19,22 @@ import { LIGHT_BG_COLOR, PRIMARY_COLOR } from '../constants';
 import { getLightBackground, renderValue, isTokenNFT } from '../utils';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 
+/**
+ * @typedef TokenBalance
+ * @property {number} data.available
+ * @property {string} status
+ */
+
+/**
+ * @param {Object} props
+ * @param {Record<string,TokenBalance>} props.tokensBalance
+ * @param {{ uid: string }} props.selectedToken
+ * @param {unknown} props.tokenMetadata
+ * @param {unknown} props.tokens
+ * @param {unknown} props.header
+ * @param {boolean} props.renderArrow
+ * @param {function} props.onItemPress
+ */
 const TokenSelect = (props) => {
   const renderItem = ({ item, index }) => {
     const symbolWrapperStyle = [styles.symbolWrapper];
