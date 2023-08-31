@@ -966,7 +966,7 @@ msgstr ""
 "Ao clicar conectar, você permite que esse dApp receba o endereço público "
 "da sua wallet. Por favor valide a URL e o nome do dApp, essa é uma etapa "
 "importante de segurança para proteger seus dados de potenciais riscos de "
-"pishing."
+"phishing."
 
 #: src/components/WalletConnect/SignMessageModal.js:49
 msgid "Sign this message?"
@@ -976,7 +976,8 @@ msgstr "Assinar essa mensagem?"
 msgid ""
 "By clicking approve, you will sign the requested message using the first "
 "address derived from your root key on the m/44'/280'/0'/0/0 derivation path."
-msgstr ""
+msgstr "Ao clicar em aprovar, você assinará a mensagem solicitada usando o primeiro "
+"endereço derivado da sua chave raiz no caminho de derivação m/44'/280'/0'/0/0."
 
 #~ msgid "There has been an error upgrading your wallet."
 #~ msgstr "Ocorreu um erro ao atualizar sua wallet."
