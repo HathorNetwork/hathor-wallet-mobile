@@ -45,12 +45,6 @@ target 'HathorMobile' do
             Pod::BuildType.static_library
         end
       end
-
-      if pod.name.eql?('vision-camera-code-scanner') || pod.name.eql?('VisionCamera')
-        def pod.build_type
-          Pod::BuildType.static_library
-        end
-      end
     end
   end
 
