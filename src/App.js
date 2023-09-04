@@ -82,6 +82,7 @@ import WalletConnectList from './screens/WalletConnect/WalletConnectList';
 import WalletConnectManual from './screens/WalletConnect/WalletConnectManual';
 import WalletConnectScan from './screens/WalletConnect/WalletConnectScan';
 import baseStyle from './styles/init';
+import WalletConnectModal from './components/WalletConnect/WalletConnectModal';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -396,7 +397,6 @@ const AppStack = () => {
         <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
         <Stack.Screen name='TokenDetail' component={TokenDetail} />
         <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
-        <Stack.Screen name='WalletConnectScan' component={WalletConnectScan} />
       </Stack.Navigator>
     </SafeAreaView>
   );
@@ -727,6 +727,7 @@ const App = () => (
         >
           <RootStack />
         </NavigationContainer>
+        <WalletConnectModal />
         <GlobalErrorHandler />
       </SafeAreaView>
     </Provider>
