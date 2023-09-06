@@ -46,8 +46,9 @@ class PaymentRequestDetail extends React.Component {
   }
 
   async componentDidMount() {
-    // When we create a new payment request we update the address for a new one
-    await this.props.wallet.getNextAddress();
+    // When we create a new payment request, we don't update the address for a new one
+    // This will only happen when it receives a transaction and becomes a used address
+    await this.props.wallet.getCurrentAddress();
   }
 
   componentDidUpdate(prevProps) {

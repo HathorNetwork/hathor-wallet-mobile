@@ -23,7 +23,8 @@ export default function ReceiveMyAddress() {
   const lastSharedAddress = useSelector((state) => state.lastSharedAddress);
 
   const getNextAddress = async () => {
-    const { address, index } = await wallet.getNextAddress();
+    // Fetch the address but do not mark it as used yet.
+    const { address, index } = await wallet.getCurrentAddress();
 
     dispatch(sharedAddressUpdate(address, index));
   };
