@@ -614,17 +614,14 @@ const cleanToken = async () => {
 export function* resetPushNotification() {
   // If we don't have the device registered in the FCM, we shouldn't reset push notification
   const isDeviceRegistered = yield call(confirmDeviceRegistrationOnFirebase, false);
-  if (!isDeviceRegistered) {
-    console.log('Reset wallet but device is not registered on FCM.');
-    return;
-  }
-
-  try {
-    // Unregister the device from FCM
-    yield call(cleanToken);
-  } catch (error) {
-    console.error('Error clening token from firebase.', error);
-    yield put(onExceptionCaptured(error));
+  if (isDeviceRegistered) {
+    try {
+      // Unregister the device from FCM
+      yield call(cleanToken);
+    } catch (error) {
+      console.error('Error clening token from firebase.', error);
+      yield put(onExceptionCaptured(error));
+    }
   }
 
   // Clean the store
