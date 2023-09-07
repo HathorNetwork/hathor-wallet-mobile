@@ -17,7 +17,13 @@ class AmountTextInput extends React.Component {
   }
 
   focus = () => {
-    this.inputRef.current.focus();
+    /* After the focus method is called, the screen is still re-rendered at least once more.
+     * Requesting a delay before the focus command ensures it is executed on the final rendering
+     * of the component.
+     */
+    setTimeout(() => {
+      this.inputRef.current.focus();
+    }, 50);
   }
 
   onChangeText = (text) => {
