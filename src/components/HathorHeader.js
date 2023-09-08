@@ -15,6 +15,7 @@ import Logo from './Logo';
 import chevronLeft from '../assets/icons/chevron-left.png';
 import closeIcon from '../assets/icons/icCloseActive.png';
 import baseStyle from '../styles/init';
+import { HEADER_HEIGHT } from '../constants';
 
 const HathorHeader = (props) => {
   const renderBackButton = () => {
@@ -75,7 +76,7 @@ const HathorHeader = (props) => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    height: 56,
+    height: HEADER_HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
     borderColor: '#eee',
@@ -95,5 +96,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-
 export default HathorHeader;

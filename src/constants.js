@@ -101,6 +101,12 @@ export const MIN_JOB_ESTIMATION = 1;
 export const PIN_SIZE = 6;
 
 /**
+ * Default Hathor Header height, used for recalculating layout offsets.
+ * @type {number}
+ */
+export const HEADER_HEIGHT = 56;
+
+/**
  * Unleash constants
  */
 export const UNLEASH_URL = 'https://unleash-proxy.b7e6a7f52ee9fefaf0c53e300cfcb014.hathor.network/proxy';
