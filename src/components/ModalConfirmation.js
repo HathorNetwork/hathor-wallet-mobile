@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import checkLogo from '../assets/images/icCheckBig.png';
+import { getKeyboardAvoidingViewTopDistance } from '../utils';
 
 class ModalConfirmation extends React.Component {
   /**
@@ -43,8 +44,10 @@ class ModalConfirmation extends React.Component {
 
     const { height, width } = Dimensions.get('window');
 
-    // Prevent the bottom message to be covered by some android phones
-    const marginBottom = Platform.OS === 'android' ? 40 : 16;
+    // Prevents the bottom message from being covered
+    const marginBottom = Platform.OS === 'ios'
+      ? getKeyboardAvoidingViewTopDistance() + 30
+      : 40;
 
     const styles = StyleSheet.create({
       modal: {
