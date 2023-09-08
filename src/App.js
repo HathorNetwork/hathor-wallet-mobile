@@ -361,7 +361,6 @@ const AppStack = () => {
     >
       <Stack.Navigator
         screenOptions={{
-          presentation: 'modal',
           headerShown: false,
         }}
       >
