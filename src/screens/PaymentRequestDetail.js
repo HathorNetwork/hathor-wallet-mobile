@@ -21,6 +21,7 @@ import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
 import { clearInvoice } from '../actions';
 import { getTokenLabel, renderValue, isTokenNFT } from '../utils';
+import NavigationService from '../NavigationService';
 
 /**
  * address {string} Invoice destination address
@@ -42,6 +43,10 @@ class PaymentRequestDetail extends React.Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      paymentIsConfirmed: false,
+    };
+
     this.modalConfirmation = React.createRef();
   }
 
@@ -53,6 +58,7 @@ class PaymentRequestDetail extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.payment === null && this.props.payment !== null) {
+      this.setState({ paymentIsConfirmed: true });
       if (this.modalConfirmation.current) {
         this.modalConfirmation.current.show();
       }
@@ -61,6 +67,18 @@ class PaymentRequestDetail extends React.Component {
 
   componentWillUnmount() {
     this.props.dispatch(clearInvoice());
+  }
+
+  /**
+   * If the payment was not yet received, the user goes back to the "Select Amount" screen.
+   * Otherwise, goes directly to the Home screen to see the updated wallet.
+   */
+  onBackClick() {
+    if (this.state.paymentIsConfirmed) {
+      NavigationService.resetToMain();
+    } else {
+      this.props.navigation.goBack();
+    }
   }
 
   render() {
@@ -89,7 +107,7 @@ class PaymentRequestDetail extends React.Component {
         <HathorHeader
           withBorder
           title={t`PAYMENT REQUEST`}
-          onBackPress={() => this.props.navigation.goBack()}
+          onBackPress={() => this.onBackClick()}
         />
         <View style={{
           flex: 1, justifyContent: 'space-between', alignItems: 'center', width: '100%',
