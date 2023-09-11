@@ -9,7 +9,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import { BackHandler, Text, View } from 'react-native';
+import { BackHandler, Keyboard, Text, View } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import { walletUtils, cryptoUtils } from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
@@ -76,6 +76,9 @@ class PinScreen extends React.Component {
   }
 
   componentDidMount() {
+    // If the keyboard is being shown, hide it. This screen's keyboard is built differently
+    Keyboard.dismiss();
+
     const supportedBiometry = getSupportedBiometry();
     const biometryEnabled = isBiometryEnabled();
     if (supportedBiometry && biometryEnabled) {
