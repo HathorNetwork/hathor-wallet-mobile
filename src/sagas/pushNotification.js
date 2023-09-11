@@ -120,9 +120,11 @@ function* createChannelIfNotExists() {
 
 /**
  * Register the device to receive remote messages from FCM.
+ * @param {boolean} showErrorModal if should show error modal in case the device is not registered
+ *
  * @returns {boolean} true if the device is registered on the FCM, false otherwise
  */
-function* confirmDeviceRegistrationOnFirebase() {
+function* confirmDeviceRegistrationOnFirebase(showErrorModal = true) {
   try {
     // Make sure deviceId is registered on the FCM
     if (!messaging().isDeviceRegisteredForRemoteMessages) {
@@ -132,7 +134,9 @@ function* confirmDeviceRegistrationOnFirebase() {
     return true;
   } catch (error) {
     console.error('Error confirming the device is registered on firebase.', error);
-    yield put(onExceptionCaptured(error));
+    if (showErrorModal) {
+      yield put(onExceptionCaptured(error));
+    }
     return false;
   }
 }
@@ -608,12 +612,16 @@ const cleanToken = async () => {
  * This function is responsible for reset the push notification.
  */
 export function* resetPushNotification() {
-  try {
-    // Unregister the device from FCM
-    yield call(cleanToken);
-  } catch (error) {
-    console.error('Error clening token from firebase.', error);
-    yield put(onExceptionCaptured(error));
+  // If we don't have the device registered in the FCM, we shouldn't reset push notification
+  const isDeviceRegistered = yield call(confirmDeviceRegistrationOnFirebase, false);
+  if (isDeviceRegistered) {
+    try {
+      // Unregister the device from FCM
+      yield call(cleanToken);
+    } catch (error) {
+      console.error('Error cleaning token from firebase.', error);
+      yield put(onExceptionCaptured(error));
+    }
   }
 
   // Clean the store
