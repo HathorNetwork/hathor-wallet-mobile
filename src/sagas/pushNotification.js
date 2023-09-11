@@ -619,7 +619,7 @@ export function* resetPushNotification() {
       // Unregister the device from FCM
       yield call(cleanToken);
     } catch (error) {
-      console.error('Error clening token from firebase.', error);
+      console.error('Error cleaning token from firebase.', error);
       yield put(onExceptionCaptured(error));
     }
   }
