@@ -7,9 +7,9 @@
 
 import hathorLib from '@hathor/wallet-lib';
 import * as Keychain from 'react-native-keychain';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { t } from 'ttag';
-import { KeyboardAvoidingView, Linking, Platform, Text } from 'react-native';
+import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
 import { PRIMARY_COLOR, HEADER_HEIGHT, KEYCHAIN_USER, networkObj } from './constants';
