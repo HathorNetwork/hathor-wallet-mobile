@@ -765,6 +765,51 @@ msgstr "Я хочу отменить регистрацию токена **${ to
 msgid "Unregister token"
 msgstr "Отменить регистрацию токена"
 
+#: src/screens/WalletConnect/WalletConnectList.js:32
+msgid "There was an error connecting. Please try again later."
+msgstr ""
+
+#.  translator: Used when the QR Code Scanner is opened, and user will manually
+#.  enter the information.
+#: src/screens/WalletConnect/WalletConnectList.js:110
+msgid "Add"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectList.js:116
+msgid "End session"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectList.js:116
+msgid "This will disconnect the session."
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectList.js:118
+msgid "End"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectList.js:136
+msgid "Wallet Connect Sessions"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectManual.js:39
+msgid "Manual Connection"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectManual.js:45
+msgid "Wallet Connect URI"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectManual.js:57
+#: src/screens/WalletConnect/WalletConnectScan.js:33
+msgid "Connect"
+msgstr ""
+
+#.  translator: Used when the QR Code Scanner is opened, and user will manually
+#.  enter the information.
+#: src/screens/WalletConnect/WalletConnectScan.js:40
+msgid "Manual"
+msgstr ""
+
 #: src/sagas/pushNotification.js:56
 msgid "Transaction"
 msgstr "Нет транзакций"
@@ -914,8 +959,34 @@ msgstr "Это конфигурация вашего токена ${ tokenLabel 
 msgid "Description"
 msgstr "Описание"
 
-#~ msgid "Opening camera"
-#~ msgstr "Камера открывается"
+#: src/components/WalletConnect/ApproveRejectModal.js:64
+msgid "Reject"
+msgstr ""
+
+#: src/components/WalletConnect/ApproveRejectModal.js:65
+msgid "Approve"
+msgstr ""
+
+#: src/components/WalletConnect/ConnectModal.js:39
+msgid "Connect to this dApp?"
+msgstr ""
+
+#: src/components/WalletConnect/ConnectModal.js:42
+msgid ""
+"By clicking connect, you allow this dapp to receive your wallet's public "
+"address. Please validate the URL and the dApp name, this is an important "
+"security step to protect your data from potential phishing risks."
+msgstr ""
+
+#: src/components/WalletConnect/SignMessageModal.js:49
+msgid "Sign this message?"
+msgstr ""
+
+#: src/components/WalletConnect/SignMessageModal.js:56
+msgid ""
+"By clicking approve, you will sign the requested message using the first "
+"address derived from your root key on the m/44'/280'/0'/0/0 derivation path."
+msgstr ""
 
 #~ msgid "I understand the risks of using a mobile wallet"
 #~ msgstr "Я осознаю риски использования мобильного кошелька"

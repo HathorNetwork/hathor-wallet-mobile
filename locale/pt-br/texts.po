@@ -945,8 +945,39 @@ msgstr "Essa é a configuração do seu token ${ tokenLabel }: ${ configString }
 msgid "Description"
 msgstr "Descrição"
 
-#~ msgid "Opening camera"
-#~ msgstr "Abrindo a câmera"
+#: src/components/WalletConnect/ApproveRejectModal.js:64
+msgid "Reject"
+msgstr "Rejeitar"
+
+#: src/components/WalletConnect/ApproveRejectModal.js:65
+msgid "Approve"
+msgstr "Aprovar"
+
+#: src/components/WalletConnect/ConnectModal.js:39
+msgid "Connect to this dApp?"
+msgstr "Conectar à esse dApp?"
+
+#: src/components/WalletConnect/ConnectModal.js:42
+msgid ""
+"By clicking connect, you allow this dapp to receive your wallet's public "
+"address. Please validate the URL and the dApp name, this is an important "
+"security step to protect your data from potential phishing risks."
+msgstr ""
+"Ao clicar conectar, você permite que esse dApp receba o endereço público "
+"da sua wallet. Por favor valide a URL e o nome do dApp, essa é uma etapa "
+"importante de segurança para proteger seus dados de potenciais riscos de "
+"phishing."
+
+#: src/components/WalletConnect/SignMessageModal.js:49
+msgid "Sign this message?"
+msgstr "Assinar essa mensagem?"
+
+#: src/components/WalletConnect/SignMessageModal.js:56
+msgid ""
+"By clicking approve, you will sign the requested message using the first "
+"address derived from your root key on the m/44'/280'/0'/0/0 derivation path."
+msgstr "Ao clicar em aprovar, você assinará a mensagem solicitada usando o primeiro "
+"endereço derivado da sua chave raiz no caminho de derivação m/44'/280'/0'/0/0."
 
 #~ msgid "There has been an error upgrading your wallet."
 #~ msgstr "Ocorreu um erro ao atualizar sua wallet."

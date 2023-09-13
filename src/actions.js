@@ -100,9 +100,15 @@ export const types = {
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
-  SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
   SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
   FEATURE_TOGGLE_INITIALIZED: 'FEATURE_TOGGLE_INITIALIZED',
+  SET_WALLET_CONNECT: 'SET_WALLET_CONNECT',
+  SET_WALLET_CONNECT_MODAL: 'SET_WALLET_CONNECT_MODAL',
+  SET_WALLET_CONNECT_SESSIONS: 'SET_WALLET_CONNECT_SESSIONS',
+  SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
+  WC_URI_INPUTTED: 'WC_URI_INPUTTED',
+  WC_CANCEL_SESSION: 'WC_CANCEL_SESSION',
+  WC_SET_CONNECTION_FAILED: 'WC_SET_CONNECTION_FAILED',
 };
 
 export const featureToggleInitialized = () => ({
@@ -124,6 +130,39 @@ export const setFeatureToggles = (toggles) => ({
 export const setUnleashClient = (unleashClient) => ({
   type: types.SET_UNLEASH_CLIENT,
   payload: unleashClient,
+});
+
+/**
+ * sessions {Array} List of sessions to store
+ */
+export const setWalletConnectSessions = (sessions) => ({
+  type: types.SET_WALLET_CONNECT_SESSIONS,
+  payload: sessions,
+});
+
+/**
+ * modal {Object} Modal information to display
+ * modal.show {boolean} Show or hide the modal
+ * modal.type {WalletConnectModalTypes} One of (CONNECT, SIGN_MESSAGE_REQUEST)
+ * modal.onAcceptAction {Object} Action to be dispatched on accept
+ * modal.onRejectAction {Object} Action to be dispatched on reject
+ */
+export const setWalletConnectModal = (modal) => ({
+  type: types.SET_WALLET_CONNECT_MODAL,
+  payload: modal,
+});
+
+export const hideWalletConnectModal = () => ({
+  type: types.SET_WALLET_CONNECT_MODAL,
+  payload: { show: false },
+});
+
+/*
+ * sessionKey {string} The symKey of the connected Session
+ */
+export const walletConnectCancelSession = (sessionKey) => ({
+  type: types.WC_CANCEL_SESSION,
+  payload: sessionKey,
 });
 
 /**
@@ -702,6 +741,26 @@ export const sharedAddressUpdate = (lastSharedAddress, lastSharedIndex) => ({
 });
 
 /**
+ * Stores the walletConnect instance on the redux store
+ *
+ * walletConnect {WalletConnect} The WalletConnect instance
+ */
+export const setWalletConnect = (walletConnect) => ({
+  type: types.SET_WALLET_CONNECT,
+  payload: walletConnect,
+});
+
+/**
+ * Dispatched with data when a WalletConnect QRCode is read
+ *
+ * data {string} The WalletConnect v2 URI
+ */
+export const walletConnectUriInputted = (data) => ({
+  type: types.WC_URI_INPUTTED,
+  payload: data,
+});
+
+/**
  * Exception captured, will update the store with the Error
  * instance and whether it should force the user to restart
  * the wallet or not.
@@ -762,4 +821,12 @@ export const pushCleanTxDetails = () => ({
  */
 export const pushReset = () => ({
   type: types.PUSH_RESET,
+});
+
+/**
+ * failed {Boolean} Flag indicating whether WC failed or not.
+ */
+export const setWCConnectionFailed = (failed) => ({
+  type: types.WC_SET_CONNECTION_FAILED,
+  payload: failed,
 });

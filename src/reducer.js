@@ -197,6 +197,14 @@ const initialState = {
   walletStartState: WALLET_STATUS.NOT_STARTED,
   lastSharedAddress: null,
   lastSharedIndex: null,
+  walletConnect: {
+    client: null,
+    modal: {
+      show: false,
+    },
+    connectionFailed: false,
+    sessions: {},
+  },
   unleashClient: null,
   featureTogglesInitialized: false,
   featureToggles: {
@@ -330,6 +338,14 @@ const reducer = (state = initialState, action) => {
       return onSetFeatureToggles(state, action);
     case types.FEATURE_TOGGLE_INITIALIZED:
       return onFeatureToggleInitialized(state);
+    case types.SET_WALLET_CONNECT:
+      return onSetWalletConnect(state, action);
+    case types.SET_WALLET_CONNECT_MODAL:
+      return onSetWalletConnectModal(state, action);
+    case types.SET_WALLET_CONNECT_SESSIONS:
+      return onSetWalletConnectSessions(state, action);
+    case types.WC_SET_CONNECTION_FAILED:
+      return onSetWCConnectionFailed(state, action);
     default:
       return state;
   }
@@ -549,7 +565,7 @@ const onShowErrorModal = (state, action) => ({
   },
 });
 
-const onResetLoadedData = (state, action) => ({
+const onResetLoadedData = (state) => ({
   ...state,
   loadedData: { transactions: 0, addresses: 0 },
 });
@@ -1014,6 +1030,47 @@ const onSharedAddressUpdate = (state, action) => ({
   ...state,
   lastSharedAddress: action.payload.lastSharedAddress,
   lastSharedIndex: action.payload.lastSharedIndex,
+});
+
+/**
+ * @param {WalletConnect} action.payload The wallet connect instance
+ */
+export const onSetWalletConnect = (state, { payload }) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    client: payload,
+  }
+});
+
+/**
+ * @param {Object} action.payload The wallet connect modal options
+ */
+export const onSetWalletConnectModal = (state, { payload }) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    modal: payload,
+  },
+});
+
+/**
+ * @param {Object} action.payload The wallet connect sessions to store
+ */
+export const onSetWalletConnectSessions = (state, { payload }) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    sessions: payload,
+  },
+});
+
+export const onSetWCConnectionFailed = (state, { payload }) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    connectionFailed: payload,
+  },
 });
 
 const saga = createSagaMiddleware();

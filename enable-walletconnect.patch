@@ -1,0 +1,39 @@
+diff --git a/package.json b/package.json
+index 49d746d..9c12068 100644
+--- a/package.json
++++ b/package.json
+@@ -26,6 +26,8 @@
+     "@react-navigation/native": "6.1.7",
+     "@react-navigation/stack": "6.3.17",
+     "@sentry/react-native": "^5.6.0",
++    "@walletconnect/core": "^2.7.6",
++    "@walletconnect/web3wallet": "^1.4.0",
+     "assert": "^2.0.0",
+     "buffer": "^4.9.2",
+     "console-browserify": "^1.2.0",
+diff --git a/src/sagas/walletConnect.js b/src/sagas/walletConnect.js
+index 5e954de..39ff15b 100644
+--- a/src/sagas/walletConnect.js
++++ b/src/sagas/walletConnect.js
+@@ -61,6 +61,8 @@ import {
+ } from 'redux-saga/effects';
+ import { eventChannel } from 'redux-saga';
+ import { get, values } from 'lodash';
++import { Core } from '@walletconnect/core';
++import { Web3Wallet } from '@walletconnect/web3wallet';
+ 
+ import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
+ import {
+@@ -95,12 +97,6 @@ const ERROR_CODES = {
+   INVALID_PAYLOAD: 5003,
+ };
+ 
+-// We're mocking it here because we don't want to add the walletconnect
+-// libraries in our production build. If you really want to add it, just run the
+-// src/walletconnect.sh script
+-const Core = class {};
+-const Web3Wallet = class {};
+-
+ function* isWalletConnectEnabled() {
+   const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
+ 
