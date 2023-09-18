@@ -43,10 +43,6 @@ class PaymentRequestDetail extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      paymentIsConfirmed: false,
-    };
-
     this.modalConfirmation = React.createRef();
   }
 
@@ -58,7 +54,6 @@ class PaymentRequestDetail extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.payment === null && this.props.payment !== null) {
-      this.setState({ paymentIsConfirmed: true });
       if (this.modalConfirmation.current) {
         this.modalConfirmation.current.show();
       }
@@ -74,7 +69,7 @@ class PaymentRequestDetail extends React.Component {
    * Otherwise, goes directly to the Home screen to see the updated wallet.
    */
   onBackClick() {
-    if (this.state.paymentIsConfirmed) {
+    if (this.props.payment !== null) {
       NavigationService.resetToMain();
     } else {
       this.props.navigation.goBack();
