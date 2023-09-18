@@ -7,11 +7,10 @@
 
 import React from 'react';
 import {
-  Dimensions, Image, Platform, StyleSheet, TouchableWithoutFeedback, View,
+  Dimensions, Image, StyleSheet, TouchableWithoutFeedback, View,
 } from 'react-native';
 
 import checkLogo from '../assets/images/icCheckBig.png';
-import { getKeyboardAvoidingViewTopDistance } from '../utils';
 
 class ModalConfirmation extends React.Component {
   /**
@@ -42,13 +41,9 @@ class ModalConfirmation extends React.Component {
       return null;
     }
 
-    const { height, width } = Dimensions.get('window');
+    const { width } = Dimensions.get('window');
 
     // Prevents the bottom message from being covered
-    const marginBottom = Platform.OS === 'ios'
-      ? getKeyboardAvoidingViewTopDistance() + 30
-      : 40;
-
     const styles = StyleSheet.create({
       modal: {
         position: 'absolute',
@@ -58,11 +53,11 @@ class ModalConfirmation extends React.Component {
         justifyContent: 'flex-end',
         alignItems: 'center',
         zIndex: 3,
-        height,
-        width,
+        height: '100%',
+        width: '100%',
       },
       innerModal: {
-        marginBottom,
+        marginBottom: 32,
         height: 270,
         backgroundColor: 'white',
         alignItems: 'center',
