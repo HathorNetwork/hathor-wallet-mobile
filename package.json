@@ -87,9 +87,6 @@
     "rn-nodeify": "^10.3.0",
     "ttag-cli": "^1.7.27"
   },
-  "jest": {
-    "preset": "react-native"
-  },
   "react-native": {
     "path": "path-browserify",
     "console": "console-browserify",
