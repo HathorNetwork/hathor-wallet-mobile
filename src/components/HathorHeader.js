@@ -16,6 +16,7 @@ import chevronLeft from '../assets/icons/chevron-left.png';
 import closeIcon from '../assets/icons/icCloseActive.png';
 import baseStyle from '../styles/init';
 import { HEADER_HEIGHT } from '../constants';
+import { COLORS, STYLE } from '../styles/themes';
 
 const HathorHeader = (props) => {
   const renderBackButton = () => {
@@ -60,7 +61,7 @@ const HathorHeader = (props) => {
 
   let extraStyle = {};
   if (props.withBorder) {
-    extraStyle = { borderBottomWidth: 1 };
+    extraStyle = { borderBottomWidth: STYLE.borderWidth };
   }
 
   return (
@@ -76,12 +77,11 @@ const HathorHeader = (props) => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    height: HEADER_HEIGHT,
+    height: STYLE.headerHeight,
     flexDirection: 'row',
-    alignItems: 'center',
-    borderColor: '#eee',
+    alignItems: 'flex-end',
+    borderColor: COLORS.borderColor,
     paddingHorizontal: 16,
-    backgroundColor: baseStyle.title.backgroundColor,
   },
   innerWrapper: {
     flex: 1,
