@@ -61,7 +61,7 @@ class CreateTokenSymbol extends React.Component {
         <HathorHeader
           title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
-          onCancel={() => this.props.navigation.pop()}
+          onCancel={() => this.props.navigation.getParent().goBack()}
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>

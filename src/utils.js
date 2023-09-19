@@ -12,7 +12,7 @@ import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
-import { PRIMARY_COLOR, KEYCHAIN_USER, networkObj } from './constants';
+import { PRIMARY_COLOR, HEADER_HEIGHT, KEYCHAIN_USER, networkObj } from './constants';
 import { STORE } from './store';
 import { TxHistory } from './models';
 
@@ -243,10 +243,12 @@ function extractAddress(plainText) {
  * @return {number} The top distance
  */
 export const getKeyboardAvoidingViewTopDistance = () => {
-  if (Platform.OS === 'android') {
-    return getStatusBarHeight();
-  }
-  return 0;
+  const statusBarHeight = getStatusBarHeight();
+  const calculatedHeight = (Platform.OS === 'ios')
+    ? statusBarHeight + HEADER_HEIGHT
+    : statusBarHeight;
+
+  return calculatedHeight;
 };
 
 /**
