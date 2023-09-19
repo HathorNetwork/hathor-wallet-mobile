@@ -1,4 +1,4 @@
-import {jest} from '@jest/globals';
+import { jest } from '@jest/globals';
 import 'react-native-gesture-handler/jestSetup';
 
 jest.mock('@react-navigation/stack');
@@ -7,7 +7,7 @@ jest.mock('@react-navigation/stack');
 // the way to call NativeEventEmitter after a refactoring in react-native.
 // Therefore, without it, test may complain with the following message:
 // > Invariant Violation: new NativeEventEmitter() requires a non-null argument.
-// 
+//
 // See the react-native PR that introduce this problem:
 // https://github.com/facebook/react-native/commit/114be1d2170bae2d29da749c07b45acf931e51e2
 //
@@ -27,7 +27,7 @@ jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
 //     })
 //   }
 // }));
-jest.mock('react-native-device-info', () => require('react-native-device-info/jest/react-native-device-info-mock'));
+jest.mock('react-native-device-info', () => jest.requireActual('react-native-device-info/jest/react-native-device-info-mock'));
 
 // jest-babel transformer ignores the node_module. Threfore,
 // we should either mock the module or configure to add it
@@ -52,11 +52,11 @@ jest.mock('react-native-keychain');
 // This solution was elaboreated by many contributors in this issue:
 // https://github.com/software-mansion/react-native-gesture-handler/issues/344
 
-jest.mock('@notifee/react-native', () => require('@notifee/react-native/jest-mock'));
+jest.mock('@notifee/react-native', () => jest.requireActual('@notifee/react-native/jest-mock'));
 
 jest.mock('react-native-status-bar-height');
 
-jest.mock('@react-native-async-storage/async-storage', () => require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
+jest.mock('@react-native-async-storage/async-storage', () => jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 
 jest.mock('@react-native-firebase/messaging');
 
@@ -66,7 +66,6 @@ jest.mock('react-native-version-number');
 
 jest.mock('unleash-proxy-client', () => ({
   UnleashClient: jest.fn(() => ({
-    stop: () => {},
     getAllToggles: () => ({}),
     isEnabled: () => false,
     getVariant: () => ({}),
