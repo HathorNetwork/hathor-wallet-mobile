@@ -15,10 +15,11 @@ import {
   StyleSheet,
 } from 'react-native';
 import ModalButton from './ModalButton';
+import { COLORS } from '../../styles/themes';
 
 const modalStyle = StyleSheet.create({
   signMessageText: {
-    backgroundColor: 'rgba(0, 0, 0, 0.12)',
+    backgroundColor: COLORS.textColorShadowLighter,
     width: '100%',
     height: 100,
     borderRadius: 15,

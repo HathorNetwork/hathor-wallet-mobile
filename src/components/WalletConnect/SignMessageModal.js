@@ -10,10 +10,11 @@ import { useDispatch } from 'react-redux';
 import { t } from 'ttag';
 import { StyleSheet, Text } from 'react-native';
 import ApproveRejectModal from './ApproveRejectModal';
+import { COLORS } from '../../styles/themes';
 
 const modalStyle = StyleSheet.create({
   signMessageText: {
-    backgroundColor: 'rgba(0, 0, 0, 0.12)',
+    backgroundColor: COLORS.textColorShadowLighter,
     width: '100%',
     height: 100,
     borderRadius: 15,

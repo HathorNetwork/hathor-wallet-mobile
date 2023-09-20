@@ -50,6 +50,7 @@ export const COLORS = {
   borderColor: '#eee',
   textColor: '#000',
   textColorShadow: 'rgba(0, 0, 0, 0.5)',
+  textColorShadowLighter: 'rgba(0, 0, 0, 0.1)',
   textColorShadowLight: 'rgba(0, 0, 0, 0.3)',
   textColorShadowDark: 'rgba(0, 0, 0, 0.8)',
   tabBarBackground: '#333',

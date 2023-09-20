@@ -12,6 +12,7 @@ import {
 import PropTypes from 'prop-types';
 
 import backspace from '../assets/icons/backspace.png';
+import { COLORS } from '../styles/themes';
 
 const keysLayout = [
   [[1, ''], [2, 'ABC'], [3, 'DEF']],
@@ -77,7 +78,7 @@ NumPad.propTypes = {
 
 const NumPadButton = (props) => {
   // left bottom button is invisible, so should not have any background when clicked
-  const underlayColor = (props.number !== null ? 'rgba(0, 0, 0, 0.1)' : 'transparent');
+  const underlayColor = (props.number !== null ? COLORS.textColorShadowLighter : 'transparent');
   return (
     <TouchableHighlight
       style={style.buttonStyle}
