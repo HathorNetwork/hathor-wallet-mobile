@@ -1,6 +1,6 @@
 /* eslint-disable */
 import 'react-native';
-import {it, jest} from '@jest/globals';
+import { it, jest } from '@jest/globals';
 
 import React from 'react';
 import App from '../src/App';
