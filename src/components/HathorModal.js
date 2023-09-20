@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 import Modal from 'react-native-modal';
+import { COLORS } from '../styles/themes';
 
 const HathorModal = (props) => (
   <Modal
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   view: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.backgroundColor,
     borderRadius: 8,
     alignItems: 'center',
     paddingHorizontal: 16,

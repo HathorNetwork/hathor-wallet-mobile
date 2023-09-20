@@ -7,12 +7,17 @@
 
 import React from 'react';
 import { TextInput } from 'react-native';
+import { COLORS, STYLE } from '../styles/themes';
 
 const HathorTextInput = (props) => (
   <TextInput
     {...props}
     style={[{
-      width: 100, padding: 8, borderRadius: 4, borderColor: 'gainsboro', borderWidth: 1,
+      width: 100,
+      padding: 8,
+      borderRadius: 4,
+      borderColor: COLORS.borderColor,
+      borderWidth: STYLE.borderWidth,
     }, props.style]}
     keyboardAppearance='dark'
   />

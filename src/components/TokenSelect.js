@@ -15,9 +15,9 @@ import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 
 import chevronRight from '../assets/icons/chevron-right.png';
 import Spinner from './Spinner';
-import { LIGHT_BG_COLOR, PRIMARY_COLOR } from '../constants';
-import { getLightBackground, renderValue, isTokenNFT } from '../utils';
+import { renderValue, isTokenNFT } from '../utils';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
+import { COLORS } from '../styles/themes';
 
 /**
  * @typedef TokenBalance
@@ -51,7 +51,7 @@ const TokenSelect = (props) => {
       <TouchableHighlight
         style={index === 0 ? styles.firstItemWrapper : null}
         onPress={() => { props.onItemPress(item); }}
-        underlayColor={getLightBackground(0.3)}
+        underlayColor={COLORS.primaryOpacity30}
       >
         <View style={styles.itemWrapper}>
           <View style={styles.itemLeftWrapper}>
@@ -69,7 +69,7 @@ const TokenSelect = (props) => {
               {tokenState === TOKEN_DOWNLOAD_STATUS.FAILED && (
                 <FontAwesomeIcon
                   icon={faCircleExclamation}
-                  color='rgba(255, 0, 0, 0.7)'
+                  color={COLORS.errorTextShadow}
                   style={{ fontSize: 14 }}
                 />
               )}
@@ -111,19 +111,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: LIGHT_BG_COLOR,
+    backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
   },
   listWrapper: {
     alignSelf: 'stretch',
     flex: 1,
     marginTop: 16,
-    backgroundColor: 'white',
+    backgroundColor: COLORS.backgroundColor,
     marginHorizontal: 16,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     shadowOffset: { height: 2, width: 0 },
     shadowRadius: 4,
-    shadowColor: 'black',
+    shadowColor: COLORS.textColor,
     shadowOpacity: 0.08,
   },
   itemWrapper: {
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderColor: COLORS.borderColor,
   },
   firstItemWrapper: {
     borderTopLeftRadius: 16,
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   symbolWrapper: {
     padding: 4,
-    backgroundColor: LIGHT_BG_COLOR,
+    backgroundColor: COLORS.lowContrastDetail,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
@@ -165,10 +165,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   symbolTextSelected: {
-    color: 'white',
+    color: COLORS.backgroundColor,
   },
   symbolWrapperSelected: {
-    backgroundColor: PRIMARY_COLOR,
+    backgroundColor: COLORS.primary,
   },
 });
 

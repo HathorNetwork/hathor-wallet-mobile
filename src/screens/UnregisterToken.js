@@ -22,7 +22,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { getTokenLabel } from '../utils';
-import { ERROR_BG_COLOR, PRIMARY_COLOR } from '../constants';
+import { COLORS } from '../styles/themes';
 import NavigationService from '../NavigationService';
 
 /**
@@ -49,7 +49,7 @@ class UnregisterToken extends React.Component {
       textError: {
         marginTop: 32,
         marginBottom: 32,
-        color: ERROR_BG_COLOR,
+        color: COLORS.errorBgColor,
       },
     }) });
 
@@ -125,7 +125,7 @@ class UnregisterToken extends React.Component {
             </TextFmt>
             <Switch
               onValueChange={this.toggleSwitch}
-              trackColor={{ true: PRIMARY_COLOR }}
+              trackColor={{ true: COLORS.primary }}
               value={this.state.switchValue}
             />
           </View>
@@ -133,7 +133,7 @@ class UnregisterToken extends React.Component {
           <View style={this.style.buttonView}>
             <NewHathorButton
               secondary
-              color={PRIMARY_COLOR}
+              color={COLORS.primary}
               disabled={!this.state.switchValue}
               onPress={this.unregisterConfirmed}
               title={t`Unregister token`}

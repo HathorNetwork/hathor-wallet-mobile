@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
 import { sharedAddressUpdate } from '../actions';
+import { COLORS } from '../styles/themes';
 
 export default function ReceiveMyAddress() {
   const dispatch = useDispatch();
@@ -23,7 +24,8 @@ export default function ReceiveMyAddress() {
   const lastSharedAddress = useSelector((state) => state.lastSharedAddress);
 
   const getNextAddress = async () => {
-    const { address, index } = await wallet.getNextAddress();
+    // Fetch the address but do not mark it as used yet.
+    const { address, index } = await wallet.getCurrentAddress();
 
     dispatch(sharedAddressUpdate(address, index));
   };
@@ -47,7 +49,7 @@ export default function ReceiveMyAddress() {
       padding: 16,
       borderBottomWidth: 1.5,
       borderTopWidth: 1.5,
-      borderColor: '#e5e5ea',
+      borderColor: COLORS.borderColor,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -75,7 +77,7 @@ export default function ReceiveMyAddress() {
         <SimpleButton
           onPress={shareAddress}
           title={t`Share`}
-          color='#000'
+          color={COLORS.textColor}
           containerStyle={styles.buttonContainer}
         />
       </View>
@@ -90,10 +92,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 32,
     borderWidth: 1.5,
-    borderColor: '#e5e5ea',
+    borderColor: COLORS.borderColor,
     borderRadius: 8,
     marginBottom: 32,
-    backgroundColor: 'white', // Ensures maximum contrast for the code readers
+    backgroundColor: COLORS.backgroundColor, // Ensures maximum contrast for the code readers
   },
   qrcodeWrapper: {
     padding: 24,
@@ -107,6 +109,6 @@ const styles = StyleSheet.create({
   },
   leftButtonBorder: {
     borderRightWidth: 1.5,
-    borderColor: '#eee',
+    borderColor: COLORS.borderColor,
   },
 });

@@ -18,7 +18,8 @@ import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
 import { startWalletRequested, unlockScreen } from '../actions';
-import { ERROR_BG_COLOR, PIN_SIZE } from '../constants';
+import { PIN_SIZE } from '../constants';
+import { COLORS } from '../styles/themes';
 
 import baseStyle from '../styles/init';
 import { STORE } from '../store';
@@ -62,7 +63,7 @@ class ChoosePinScreen extends React.Component {
     this.state = {
       pin1: '',
       pin2: '',
-      pin2Color: 'black',
+      pin2Color: COLORS.textColor,
       error: null,
       done: false,
       stepIndex: 0,
@@ -92,7 +93,7 @@ class ChoosePinScreen extends React.Component {
     this.setState({
       pin1: '',
       pin2: '',
-      pin2Color: 'black',
+      pin2Color: COLORS.textColor,
       error: null,
       stepIndex: 0,
     });
@@ -120,7 +121,7 @@ class ChoosePinScreen extends React.Component {
       return;
     }
 
-    this.setState({ pin2: text, pin2Color: 'black', error: null });
+    this.setState({ pin2: text, pin2Color: COLORS.textColor, error: null });
     if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin(text), 300);
     }
@@ -128,7 +129,7 @@ class ChoosePinScreen extends React.Component {
 
   validatePin = (text) => {
     if (this.state.pin1 === text) {
-      this.setState({ pin2Color: '#0DA0A0', done: true });
+      this.setState({ pin2Color: COLORS.positiveBalanceColor, done: true });
     } else {
       this.removeOneChar();
     }
@@ -140,7 +141,7 @@ class ChoosePinScreen extends React.Component {
       <PinInput
         maxLength={PIN_SIZE}
         onChangeText={this.onChangePin1}
-        color={(this.state.pin1.length < PIN_SIZE ? 'black' : '#0DA0A0')}
+        color={(this.state.pin1.length < PIN_SIZE ? COLORS.textColor : COLORS.positiveBalanceColor)}
         value={this.state.pin1}
       />
     </View>
@@ -164,7 +165,7 @@ class ChoosePinScreen extends React.Component {
     if (pin2.length === 0) {
       this.setState({ pin2: '', error: t`PIN codes don't match. Try again.` });
     } else {
-      this.setState({ pin2, pin2Color: ERROR_BG_COLOR });
+      this.setState({ pin2, pin2Color: COLORS.errorBgColor });
       setTimeout(() => this.removeOneChar(), 25);
     }
   }

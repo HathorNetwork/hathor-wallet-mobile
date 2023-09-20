@@ -25,7 +25,8 @@ import {
   startWalletRequested,
   resetOnLockScreen,
 } from '../actions';
-import { ERROR_BG_COLOR, PIN_SIZE } from '../constants';
+import { PIN_SIZE } from '../constants';
+import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import baseStyle from '../styles/init';
 
@@ -58,7 +59,7 @@ class PinScreen extends React.Component {
      */
     this.state = {
       pin: '',
-      pinColor: 'black',
+      pinColor: COLORS.textColor,
       error: null,
       waitingForBiometry: false,
     };
@@ -91,7 +92,7 @@ class PinScreen extends React.Component {
     }
 
     this.focusEvent = this.props.navigation.addListener('focus', () => {
-      this.setState({ pin: '', pinColor: 'black', error: null });
+      this.setState({ pin: '', pinColor: COLORS.textColor, error: null });
     });
   }
 
@@ -169,7 +170,7 @@ class PinScreen extends React.Component {
     if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin(text), 300);
     }
-    this.setState({ pin: text, pinColor: 'black', error: null });
+    this.setState({ pin: text, pinColor: COLORS.textColor, error: null });
   };
 
   validatePin = async (pin) => {
@@ -253,7 +254,7 @@ class PinScreen extends React.Component {
     if (pin.length === 0) {
       this.setState({ pin: '', error: t`Incorrect PIN Code. Try again.` });
     } else {
-      this.setState({ pin, pinColor: ERROR_BG_COLOR });
+      this.setState({ pin, pinColor: COLORS.errorBgColor });
       setTimeout(() => this.removeOneChar(), 25);
     }
   };
@@ -275,7 +276,7 @@ class PinScreen extends React.Component {
           title={title}
           textStyle={{
             textTransform: 'uppercase',
-            color: 'rgba(0, 0, 0, 0.5)',
+            color: COLORS.textColorShadow,
             letterSpacing: 1,
             padding: 4,
           }}

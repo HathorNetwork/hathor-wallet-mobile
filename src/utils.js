@@ -12,9 +12,10 @@ import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
-import { PRIMARY_COLOR, HEADER_HEIGHT, KEYCHAIN_USER, networkObj } from './constants';
+import { KEYCHAIN_USER, networkObj } from './constants';
 import { STORE } from './store';
 import { TxHistory } from './models';
+import { COLORS, STYLE } from './styles/themes';
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
@@ -245,7 +246,7 @@ function extractAddress(plainText) {
 export const getKeyboardAvoidingViewTopDistance = () => {
   const statusBarHeight = getStatusBarHeight();
   const calculatedHeight = (Platform.OS === 'ios')
-    ? statusBarHeight + HEADER_HEIGHT
+    ? statusBarHeight + STYLE.headerHeight
     : statusBarHeight;
 
   return calculatedHeight;
@@ -258,7 +259,7 @@ export const getKeyboardAvoidingViewTopDistance = () => {
  */
 export const getLightBackground = (alpha) => {
   const hex = `0${Math.round(255 * alpha).toString(16).toUpperCase()}`.substr(-2);
-  return `${PRIMARY_COLOR}${hex}`;
+  return `${COLORS.primary}${hex}`;
 };
 
 /**

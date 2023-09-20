@@ -72,25 +72,6 @@ export const PRIVACY_POLICY_URL = 'https://hathor.network/privacy-policy/';
 export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR, SENTRY_DSN };
 
 /**
- * Background color for iOS devices
- */
-export const IOS_BG_COLOR = '#fff';
-/**
- * Background color for Android devices
- */
-export const ANDROID_BG_COLOR = '#fafafa';
-
-/**
- * A light background color used to create a discreet color change from a white background
- */
-export const LIGHT_BG_COLOR = '#f7f7f7';
-
-/**
- * A background color that indicates an error
- */
-export const ERROR_BG_COLOR = '#DE3535';
-
-/**
  * Minimum job estimation to show to the user in seconds when mining a tx
  */
 export const MIN_JOB_ESTIMATION = 1;
@@ -99,12 +80,6 @@ export const MIN_JOB_ESTIMATION = 1;
  * Size of the PIN
  */
 export const PIN_SIZE = 6;
-
-/**
- * Default Hathor Header height, used for recalculating layout offsets.
- * @type {number}
- */
-export const HEADER_HEIGHT = 56;
 
 /**
  * Unleash constants

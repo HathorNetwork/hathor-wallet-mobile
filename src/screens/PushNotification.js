@@ -13,7 +13,8 @@ import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { pushApiReady, pushRegistrationRequested } from '../actions';
 import Spinner from '../components/Spinner';
-import { LIGHT_BG_COLOR, PUSH_API_STATUS } from '../constants';
+import { PUSH_API_STATUS } from '../constants';
+import { COLORS } from '../styles/themes';
 
 /**
  * Check if the api status is loading and if the pin screen is not showing.
@@ -39,7 +40,7 @@ const hasApiStatusFailed = (pushNotification) => {
 const styles = StyleSheet.create({
   view: {
     flex: 1,
-    backgroundColor: LIGHT_BG_COLOR,
+    backgroundColor: COLORS.lowContrastDetail,
   },
   feedbackModalIcon: {
     height: 105,
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   switchEnabled: {
-    color: 'black',
+    color: COLORS.textColor,
   },
 });
 

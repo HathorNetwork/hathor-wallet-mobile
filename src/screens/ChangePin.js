@@ -20,10 +20,9 @@ import FeedbackModal from '../components/FeedbackModal';
 import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import checkIcon from '../assets/images/icCheckBig.png';
-import { ERROR_BG_COLOR, PIN_SIZE } from '../constants';
-import {
-  changePin,
-} from '../utils';
+import { PIN_SIZE } from '../constants';
+import { changePin } from '../utils';
+import { COLORS } from '../styles/themes';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
@@ -61,8 +60,8 @@ class ChangePin extends React.Component {
       pin1: '',
       pin2: '',
       pin3: '',
-      pin1Color: 'black',
-      pin3Color: 'black',
+      pin1Color: COLORS.textColor,
+      pin3Color: COLORS.textColor,
       done: false,
       error: '',
       stepIndex: 0,
@@ -88,8 +87,8 @@ class ChangePin extends React.Component {
       pin1: '',
       pin2: '',
       pin3: '',
-      pin1Color: 'black',
-      pin3Color: 'black',
+      pin1Color: COLORS.textColor,
+      pin3Color: COLORS.textColor,
       error: null,
       stepIndex: 0,
     });
@@ -100,7 +99,7 @@ class ChangePin extends React.Component {
       return;
     }
 
-    this.setState({ pin1: text, pin1Color: 'black', error: null });
+    this.setState({ pin1: text, pin1Color: COLORS.textColor, error: null });
     if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin1(text), 300);
     }
@@ -136,7 +135,7 @@ class ChangePin extends React.Component {
       return;
     }
 
-    this.setState({ pin3: text, pin3Color: 'black', error: null });
+    this.setState({ pin3: text, pin3Color: COLORS.textColor, error: null });
     if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin3(text), 300);
     }
@@ -144,7 +143,7 @@ class ChangePin extends React.Component {
 
   validatePin3 = (text) => {
     if (this.state.pin2 === text) {
-      this.setState({ pin3Color: '#0DA0A0' });
+      this.setState({ pin3Color: COLORS.positiveBalanceColor });
       this.executeChangePin();
     } else {
       this.removeOneChar('pin3', 'pin3Color', t`PIN codes don't match.`);
@@ -160,7 +159,7 @@ class ChangePin extends React.Component {
     } else {
       const newState = {};
       newState[stateKey] = pin;
-      newState[stateColorKey] = ERROR_BG_COLOR;
+      newState[stateColorKey] = COLORS.errorBgColor;
       this.setState(newState);
       setTimeout(() => this.removeOneChar(stateKey, stateColorKey, error), 25);
     }
@@ -200,7 +199,7 @@ class ChangePin extends React.Component {
       <PinInput
         maxLength={PIN_SIZE}
         onChangeText={this.onChangePin2}
-        color={(this.state.pin2.length < PIN_SIZE ? 'black' : '#0DA0A0')}
+        color={(this.state.pin2.length < PIN_SIZE ? COLORS.textColor : COLORS.positiveBalanceColor)}
         value={this.state.pin2}
         error={this.state.error}
       />

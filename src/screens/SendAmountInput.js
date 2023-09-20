@@ -23,6 +23,7 @@ import TokenBox from '../components/TokenBox';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
+import { COLORS } from '../styles/themes';
 
 /**
  * tokens {Object} array with all added tokens on this wallet
@@ -192,8 +193,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 12,
     textAlign: 'center',
-    // TODO define better color. Maybe also change underline color to red?
-    color: 'red',
+    // TODO Maybe also change underline color to red?
+    color: COLORS.errorTextColor,
   },
 });
 

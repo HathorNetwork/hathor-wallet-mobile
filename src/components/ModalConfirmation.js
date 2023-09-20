@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 
 import checkLogo from '../assets/images/icCheckBig.png';
+import { getKeyboardAvoidingViewTopDistance } from '../utils';
+import { COLORS } from '../styles/themes';
 
 class ModalConfirmation extends React.Component {
   /**
@@ -59,7 +61,7 @@ class ModalConfirmation extends React.Component {
       innerModal: {
         marginBottom: 32,
         height: 270,
-        backgroundColor: 'white',
+        backgroundColor: COLORS.backgroundColor,
         alignItems: 'center',
         justifyContent: 'space-around',
         borderRadius: 8,
