@@ -18,7 +18,11 @@ const TokenBox = (props) => (
   <TouchableWithoutFeedback onPress={props.onPress}>
     <View style={styles.wrapper}>
       <Text style={styles.label}>{props.label}</Text>
-      <FontAwesomeIcon icon={faSortDown} color={COLORS.textColorShadowDark} style={{ marginBottom: 5 }} />
+      <FontAwesomeIcon
+        icon={faSortDown}
+        color={COLORS.textColorShadowDark}
+        style={{ marginBottom: 5 }}
+      />
     </View>
   </TouchableWithoutFeedback>
 );

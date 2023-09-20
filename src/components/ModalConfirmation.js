@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 
 import checkLogo from '../assets/images/icCheckBig.png';
-import { getKeyboardAvoidingViewTopDistance } from '../utils';
 import { COLORS } from '../styles/themes';
 
 class ModalConfirmation extends React.Component {
