@@ -135,7 +135,7 @@ export default ({
         fontSize: 16,
         fontWeight: 'bold',
         lineHeight: 19,
-        color: 'white',
+        color: COLORS.backgroundColor,
       }}
       >
         {bottomText}
