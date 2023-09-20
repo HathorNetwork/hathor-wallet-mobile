@@ -6,7 +6,6 @@
  */
 
 import { DefaultTheme } from '@react-navigation/native';
-import { Platform } from 'react-native';
 
 import { _PRIMARY_COLOR as PRIMARY_COLOR } from '../config';
 
@@ -68,7 +67,7 @@ export const COLORS = {
  * @property {number} headerHeight Defines the height of the screen title, for calculation purposes
  */
 export const STYLE = {
-  borderWidth: Platform.OS === 'ios' ? 1.5 : 1, // 1 is barely visible on iOS
+  borderWidth: 1,
   headerHeight: 56,
 };
 
