@@ -10,6 +10,7 @@ import * as React from 'react';
 import { AppState, StyleSheet, Text, View } from 'react-native';
 import { Camera, CameraType } from 'react-native-camera-kit';
 import { useEffect, useState } from 'react';
+import { COLORS } from '../styles/themes';
 
 const APP_ACTIVE_STATE = 'active';
 
@@ -111,7 +112,7 @@ export default ({
         borderLeftWidth: borderWidth,
         borderRightWidth: borderWidth,
         backgroundColor: 'transparent',
-        borderColor: 'rgba(0, 0, 0, 0.7)',
+        borderColor: COLORS.textColorShadowDark,
       },
     });
     return (
