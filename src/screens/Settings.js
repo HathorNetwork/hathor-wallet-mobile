@@ -19,12 +19,10 @@ import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import {
   IS_MULTI_TOKEN,
-  PRIMARY_COLOR,
   WALLET_CONNECT_FEATURE_TOGGLE,
 } from '../constants';
-import { getLightBackground } from '../utils';
 import CopyClipboard from '../components/CopyClipboard';
-import baseStyle from '../styles/init';
+import { COLORS } from '../styles/themes';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -57,14 +55,14 @@ export class Settings extends React.Component {
       marginBottom: 24,
     },
     networkView: {
-      backgroundColor: getLightBackground(0.1),
+      backgroundColor: COLORS.primaryOpacity10,
       margin: 8,
       padding: 8,
       borderRadius: 8,
       alignItems: 'center',
     },
     networkText: {
-      color: PRIMARY_COLOR,
+      color: COLORS.primary,
       fontSize: 16,
       fontWeight: 'bold',
     },
@@ -73,7 +71,6 @@ export class Settings extends React.Component {
       width: 100,
       marginTop: 16,
       marginBottom: 16,
-      backgroundColor: baseStyle.title.backgroundColor,
     },
     logo: {
       height: 22,
@@ -83,7 +80,7 @@ export class Settings extends React.Component {
 
   render() {
     return (
-      <View style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}>
+      <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <ScrollView contentContainerStyle={this.style.scrollView}>
           <View style={this.style.logoView}>
             <Logo
@@ -105,7 +102,7 @@ export class Settings extends React.Component {
             <ListItem
               text={(
                 <View style={{ flex: 1 }}>
-                  <Text style={{ marginBottom: 8, color: 'rgba(0, 0, 0, 0.5)', fontSize: 12 }}>{t`Connected to`}</Text>
+                  <Text style={{ marginBottom: 8, color: COLORS.textColorShadow, fontSize: 12 }}>{t`Connected to`}</Text>
                   <Text
                     style={{ fontSize: 12 }}
                     adjustsFontSizeToFit
@@ -160,7 +157,7 @@ export class Settings extends React.Component {
             <ListItem
               text={(
                 <View style={{ flex: 1 }}>
-                  <Text style={{ marginBottom: 8, color: 'rgba(0, 0, 0, 0.5)', fontSize: 12 }}>
+                  <Text style={{ marginBottom: 8, color: COLORS.textColorShadow, fontSize: 12 }}>
                     {t`Unique app identifier`}
                   </Text>
 

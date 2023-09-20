@@ -26,7 +26,7 @@ import {
 } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
-import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
+import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
   lockScreen,
@@ -83,6 +83,7 @@ import WalletConnectManual from './screens/WalletConnect/WalletConnectManual';
 import WalletConnectScan from './screens/WalletConnect/WalletConnectScan';
 import baseStyle from './styles/init';
 import WalletConnectModal from './components/WalletConnect/WalletConnectModal';
+import { COLORS, HathorTheme } from './styles/themes';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -302,7 +303,7 @@ const TabNavigator = () => {
         tabBarIcon: ({ focused }) => {
           const { name } = route;
           const iconName = tabBarIconMap[name];
-          const colorName = focused ? PRIMARY_COLOR : 'rgba(0, 0, 0, 0.5)';
+          const colorName = focused ? COLORS.primary : COLORS.textColorShadow;
           return (<IconTabBar name={iconName} size={24} color={colorName} />);
         },
         tabBarStyle: {
@@ -719,9 +720,10 @@ const App = () => (
     <Provider store={store}>
       <SafeAreaView
         edges={['top', 'right', 'left']}
-        style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
+        style={{ flex: 1, backgroundColor: COLORS.backgroundColor }}
       >
         <NavigationContainer
+          theme={HathorTheme}
           ref={navigationRef}
         >
           <RootStack />

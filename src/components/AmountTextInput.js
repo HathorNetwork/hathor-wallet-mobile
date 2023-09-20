@@ -8,6 +8,7 @@
 import React from 'react';
 import { StyleSheet, TextInput } from 'react-native';
 import { getAmountParsed, getIntegerAmount } from '../utils';
+import { COLORS } from '../styles/themes';
 
 class AmountTextInput extends React.Component {
   constructor(props) {
@@ -64,6 +65,7 @@ class AmountTextInput extends React.Component {
         keyboardAppearance='dark'
         keyboardType='numeric'
         placeholder={placeholder}
+        placeholderTextColor={COLORS.midContrastDetail}
         {...props}
       />
     );
@@ -77,7 +79,7 @@ const style = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     paddingVertical: 0,
-    color: 'black',
+    color: COLORS.textColor,
   },
 });
 
