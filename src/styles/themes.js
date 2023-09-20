@@ -51,6 +51,7 @@ export const COLORS = {
   textColor: '#000',
   textColorShadow: 'rgba(0, 0, 0, 0.5)',
   textColorShadowLight: 'rgba(0, 0, 0, 0.3)',
+  textColorShadowDark: 'rgba(0, 0, 0, 0.8)',
   tabBarBackground: '#333',
   positiveBalanceColor: '#0DA0A0',
   errorBgColor: '#DE3535',

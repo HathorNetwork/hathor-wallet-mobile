@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { PRIMARY_COLOR } from '../../constants';
+import { COLORS } from '../../styles/themes';
 
 const styles = StyleSheet.create({
   button: {
@@ -11,20 +11,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 12,
     borderWidth: 2,
-    borderColor: '#cecece',
+    borderColor: COLORS.borderColor,
   },
   buttonHighlight: {
-    backgroundColor: PRIMARY_COLOR,
+    backgroundColor: COLORS.primary,
     borderWidth: null,
     borderColor: null,
   },
   buttonText: {
-    color: '#808080',
+    color: COLORS.midContrastDetail,
     fontSize: 12,
     fontWeight: 'bold',
   },
   buttonTextHighlight: {
-    color: '#FFF',
+    color: COLORS.backgroundColor,
   },
 });
 

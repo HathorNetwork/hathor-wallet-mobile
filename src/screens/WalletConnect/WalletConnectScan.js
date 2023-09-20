@@ -15,6 +15,7 @@ import OfflineBar from '../../components/OfflineBar';
 import HathorHeader from '../../components/HathorHeader';
 import SimpleButton from '../../components/SimpleButton';
 import { walletConnectUriInputted } from '../../actions';
+import { COLORS } from '../../styles/themes';
 
 export default function WalletConnectScan({ navigation }) {
   const dispatch = useDispatch();
@@ -28,7 +29,7 @@ export default function WalletConnectScan({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
       <HathorHeader
         title={t`Connect`}
         wrapperStyle={{ borderBottomWidth: 0 }}
