@@ -48,7 +48,7 @@ class BackupWords extends React.Component {
         marginRight: 8,
       },
       past: {
-        backgroundColor: COLORS.backgroundColor,
+        backgroundColor: COLORS.textColor,
       },
       current: {
         backgroundColor: COLORS.primary,
