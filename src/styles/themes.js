@@ -64,12 +64,10 @@ export const COLORS = {
 };
 
 /**
- * @type {{borderWidth: (number), headerHeight: number}}
- * @property {number} borderWidth Defines border visibility throughout the app
+ * @type {{ headerHeight: number }}
  * @property {number} headerHeight Defines the height of the screen title, for calculation purposes
  */
 export const STYLE = {
-  borderWidth: 1,
   headerHeight: 56,
 };
 

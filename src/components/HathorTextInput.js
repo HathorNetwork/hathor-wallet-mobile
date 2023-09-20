@@ -17,7 +17,7 @@ const HathorTextInput = (props) => (
       padding: 8,
       borderRadius: 4,
       borderColor: COLORS.borderColor,
-      borderWidth: STYLE.borderWidth,
+      borderWidth: 1,
     }, props.style]}
     keyboardAppearance='dark'
   />

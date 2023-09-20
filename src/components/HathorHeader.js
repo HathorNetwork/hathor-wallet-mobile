@@ -59,7 +59,7 @@ const HathorHeader = (props) => {
 
   let extraStyle = {};
   if (props.withBorder) {
-    extraStyle = { borderBottomWidth: STYLE.borderWidth };
+    extraStyle = { borderBottomWidth: 1 };
   }
 
   return (

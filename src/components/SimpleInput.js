@@ -70,7 +70,7 @@ const SimpleInput = (props) => {
 
 const styles = StyleSheet.create({
   inputContainer: {
-    borderBottomWidth: STYLE.borderWidth,
+    borderBottomWidth: 1,
     borderColor: COLORS.borderColor,
     paddingBottom: 8,
   },
