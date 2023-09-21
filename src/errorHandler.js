@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { store } from './reducer';
 import { onExceptionCaptured } from './actions';
+import { store } from './reducer.init';
 
 /**
  * Capture all JS exceptions that might happen and show an alert to the user

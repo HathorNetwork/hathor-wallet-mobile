@@ -36,7 +36,7 @@ import {
   resetData,
   setTokens,
 } from './actions';
-import { store } from './reducer';
+import { store } from './reducer.init';
 import { GlobalErrorHandler } from './components/GlobalErrorModal';
 import {
   InitialScreen,
