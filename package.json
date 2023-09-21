@@ -76,6 +76,7 @@
     "@babel/runtime": "^7.12.5",
     "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.5",
+    "@types/lodash": "^4.14.198",
     "@types/react": "^18.0.24",
     "@types/react-test-renderer": "^18.0.1",
     "babel-eslint": "^10.1.0",
