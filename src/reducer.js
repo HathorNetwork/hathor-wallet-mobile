@@ -5,14 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createStore, applyMiddleware } from 'redux';
-import createSagaMiddleware from 'redux-saga';
-import thunk from 'redux-thunk';
 import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
-import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS } from './constants';
+import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS, PRE_SETTINGS_MAINNET } from './constants';
 import { types } from './actions';
-import rootSagas from './sagas';
 import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
 import { WALLET_STATUS } from './sagas/wallet';
 
@@ -1072,13 +1068,3 @@ export const onSetWCConnectionFailed = (state, { payload }) => ({
     connectionFailed: payload,
   },
 });
-
-const saga = createSagaMiddleware();
-const middlewares = [
-  saga,
-  thunk,
-];
-
-export const store = createStore(reducer, applyMiddleware(...middlewares));
-
-saga.run(rootSagas);
