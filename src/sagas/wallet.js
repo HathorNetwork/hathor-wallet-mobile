@@ -359,7 +359,7 @@ export function* onPushNotificationDisabled() {
  */
 export function* featureToggleUpdateListener() {
   while (true) {
-    yield take('FEATURE_TOGGLE_UPDATED');
+    yield take(types.FEATURE_TOGGLE_UPDATED);
 
     const oldWalletServiceToggle = yield select(({ useWalletService }) => useWalletService);
     const newWalletServiceToggle = yield call(isWalletServiceEnabled);
