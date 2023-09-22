@@ -210,4 +210,3 @@ export const WALLET_SERVICE_REQUEST_TIMEOUT = 3000;
  * Timeout in miliseconds to call a general http request.
  */
 export const HTTP_REQUEST_TIMEOUT = 3000;
-
