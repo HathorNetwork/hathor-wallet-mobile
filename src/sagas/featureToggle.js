@@ -28,6 +28,7 @@ import {
   setUnleashClient,
   setFeatureToggles,
   featureToggleInitialized,
+  types,
 } from '../actions';
 import {
   UNLEASH_URL,
@@ -68,6 +69,8 @@ export function* fetchTogglesRoutine() {
     const unleashClient = yield select((state) => state.unleashClient);
 
     try {
+      // This call always make unleash to emit the event 'UPDATE',
+      // which by its turn triggers the action 'FEATURE_TOGGLE_UPDATE'
       yield call(() => unleashClient.fetchToggles());
     } catch (e) {
       // No need to do anything here as it will try again automatically in
@@ -106,8 +109,8 @@ export function* monitorFeatureFlags(currentRetry = 0) {
     unleashClient.start();
 
     const { error, timeout } = yield race({
-      error: take('FEATURE_TOGGLE_ERROR'),
-      success: take('FEATURE_TOGGLE_READY'),
+      error: take(types.FEATURE_TOGGLE_ERROR),
+      success: take(types.FEATURE_TOGGLE_READY),
       timeout: delay(CONNECT_TIMEOUT),
     });
 
@@ -143,9 +146,9 @@ export function* monitorFeatureFlags(currentRetry = 0) {
 
 export function* setupUnleashListeners(unleashClient) {
   const channel = eventChannel((emitter) => {
-    const l1 = () => emitter({ type: 'FEATURE_TOGGLE_UPDATE' });
-    const l2 = () => emitter({ type: 'FEATURE_TOGGLE_READY' });
-    const l3 = (err) => emitter({ type: 'FEATURE_TOGGLE_ERROR', data: err });
+    const l1 = () => emitter({ type: types.FEATURE_TOGGLE_UPDATE });
+    const l2 = () => emitter({ type: types.FEATURE_TOGGLE_READY });
+    const l3 = (err) => emitter({ type: types.FEATURE_TOGGLE_ERROR, data: err });
 
     unleashClient.on(UnleashEvents.UPDATE, l1);
     unleashClient.on(UnleashEvents.READY, l2);
@@ -200,12 +203,12 @@ export function* handleToggleUpdate() {
   const featureToggles = mapFeatureToggles(toggles);
 
   yield put(setFeatureToggles(featureToggles));
-  yield put({ type: 'FEATURE_TOGGLE_UPDATED' });
+  yield put({ type: types.FEATURE_TOGGLE_UPDATED });
 }
 
 export function* saga() {
   yield all([
     fork(monitorFeatureFlags),
-    takeEvery('FEATURE_TOGGLE_UPDATE', handleToggleUpdate),
+    takeEvery(types.FEATURE_TOGGLE_UPDATE, handleToggleUpdate),
   ]);
 }
