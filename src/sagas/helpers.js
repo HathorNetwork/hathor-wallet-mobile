@@ -204,3 +204,19 @@ export async function getWalletServiceNetwork() {
     throw new Error('Error getting wallet-service version data.');
   }
 }
+
+export function isWalletServiceUnavailable(networkSettings) {
+  return networkSettings.walletServiceUrl == null;
+}
+
+export function disableFeaturesIfNeeded(networkSettings, currentFeatureToggles) {
+  let featureToggles = { ...currentFeatureToggles };
+  if (isWalletServiceUnavailable(networkSettings)) {
+    featureToggles = {
+      ...featureToggles,
+      [WALLET_SERVICE_FEATURE_TOGGLE]: false,
+      [PUSH_NOTIFICATION_FEATURE_TOGGLE]: false
+    };
+  }
+  return { ...featureToggles };
+}

@@ -37,6 +37,7 @@ import {
   STAGE,
   FEATURE_TOGGLE_DEFAULTS,
 } from '../constants';
+import { disableFeaturesIfNeeded, isWalletServiceUnavailable } from './helpers';
 
 const CONNECT_TIMEOUT = 10000;
 const MAX_RETRIES = 5;
@@ -194,13 +195,14 @@ function mapFeatureToggles(toggles) {
 export function* handleToggleUpdate() {
   const unleashClient = yield select((state) => state.unleashClient);
   const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
+  const networkSettings = yield select((state) => state.networkSettings);
 
   if (!unleashClient || !featureTogglesInitialized) {
     return;
   }
 
   const { toggles } = unleashClient;
-  const featureToggles = mapFeatureToggles(toggles);
+  const featureToggles = disableFeaturesIfNeeded(networkSettings, mapFeatureToggles(toggles));
 
   yield put(setFeatureToggles(featureToggles));
   yield put({ type: types.FEATURE_TOGGLE_UPDATED });
