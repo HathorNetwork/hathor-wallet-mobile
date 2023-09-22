@@ -206,9 +206,10 @@ const initialState = {
   featureToggles: {
     ...FEATURE_TOGGLE_DEFAULTS,
   },
+  networkSettings: PRE_SETTINGS_MAINNET,
 };
 
-const reducer = (state = initialState, action) => {
+export const reducer = (state = initialState, action) => {
   switch (action.type) {
     case types.NEW_TX:
       return onNewTx(state, action);
