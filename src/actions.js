@@ -114,6 +114,10 @@ export const types = {
   WC_URI_INPUTTED: 'WC_URI_INPUTTED',
   WC_CANCEL_SESSION: 'WC_CANCEL_SESSION',
   WC_SET_CONNECTION_FAILED: 'WC_SET_CONNECTION_FAILED',
+  // Network Settings actions
+  NETWORKSETTINGS_UPDATE: 'NETWORK_SETTINGS_UPDATE',
+  NETWORKSETTINGS_UPDATE_SUCCESS: 'NETWORK_SETTINGS_UPDATE_SUCCESS',
+  NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
 };
 
 export const featureToggleInitialized = () => ({
@@ -838,4 +842,42 @@ export const pushReset = () => ({
 export const setWCConnectionFailed = (failed) => ({
   type: types.WC_SET_CONNECTION_FAILED,
   payload: failed,
+});
+
+/**
+ * Request the custom network settings input to be processed.
+ * @param {{
+ *   explorerUrl: string,
+ *   nodeUrl: string,
+ *   walletServiceUrl?: string
+ * }} customNetworkRequest Request input
+ */
+export const networkSettingsUpdate = (customNetworkRequest) => ({
+  type: types.NETWORKSETTINGS_UPDATE,
+  payload: customNetworkRequest,
+});
+
+/**
+ * Emits the custom network settings to be stored and persisted.
+ * @param {{
+ *   stage: string,
+ *   network: string,
+ *   explorerUrl: string,
+ *   nodeUrl: string,
+ *   walletServiceUrl?: string
+ *   walletServiceWsUrl?: string
+ * }} customNetwork Settings to persist
+ */
+export const networkSettingsUpdateSuccess = (customNetwork) => ({
+  type: types.NETWORKSETTINGS_UPDATE_SUCCESS,
+  payload: customNetwork,
+});
+
+/**
+ * Emits the failure signal for custom network settings request.
+ * It means the request couldn't be processed either by ivalid input,
+ * or by internal error.
+ */
+export const networkSettingsUpdateFailure = () => ({
+  type: types.NETWORKSETTINGS_UPDATE_FAILURE,
 });

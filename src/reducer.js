@@ -343,6 +343,8 @@ export const reducer = (state = initialState, action) => {
       return onSetWalletConnectSessions(state, action);
     case types.WC_SET_CONNECTION_FAILED:
       return onSetWCConnectionFailed(state, action);
+    case types.NETWORKSETTINGS_UPDATE_SUCCESS:
+      return onNetworkSettingsUpdateSucess(state, action);
     default:
       return state;
   }
@@ -1068,4 +1070,13 @@ export const onSetWCConnectionFailed = (state, { payload }) => ({
     ...state.walletConnect,
     connectionFailed: payload,
   },
+});
+
+/**
+ * @param {Object} action.payload The network settings emitted in saga
+ * @see updateNetworkSettings
+ */
+export const onNetworkSettingsUpdateSucess = (state, { payload }) => ({
+  ...state,
+  networkSettings: payload
 });
