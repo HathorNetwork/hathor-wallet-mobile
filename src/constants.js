@@ -192,3 +192,22 @@ export const PRE_SETTINGS_MAINNET = {
   nodeUrl: NODE_SERVER_MAINNET_URL,
   explorerUrl: EXPLORER_MAINNET_URL,
 };
+
+/**
+ * Network settings key collection to be used with the app
+ * storage.
+ */
+export const networkSettingsKey = {
+  networkSettings: 'networkSettings:networkSettings'
+};
+
+/**
+ * Timeout in miliseconds to call wallet-service.
+ */
+export const WALLET_SERVICE_REQUEST_TIMEOUT = 3000;
+
+/**
+ * Timeout in miliseconds to call a general http request.
+ */
+export const HTTP_REQUEST_TIMEOUT = 3000;
+
