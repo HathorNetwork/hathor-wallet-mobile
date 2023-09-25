@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import InputLabel from './InputLabel';
-import { COLORS, STYLE } from '../styles/themes';
+import { COLORS } from '../styles/themes';
 
 const SimpleInput = (props) => {
   const getInputField = () => (

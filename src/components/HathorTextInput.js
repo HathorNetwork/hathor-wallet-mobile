@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { TextInput } from 'react-native';
-import { COLORS, STYLE } from '../styles/themes';
+import { COLORS } from '../styles/themes';
 
 const HathorTextInput = (props) => (
   <TextInput
