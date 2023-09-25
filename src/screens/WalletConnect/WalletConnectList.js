@@ -68,13 +68,13 @@ const style = StyleSheet.create({
   },
   sessionName: {
     marginBottom: 8,
-    color: COLORS.textColorShadowDark,
+    color: COLORS.textColorShadowOpacity09,
     fontSize: 12,
     fontWeight: 'bold',
   },
   sessionData: {
     marginBottom: 8,
-    color: COLORS.textColorShadow,
+    color: COLORS.textColorShadowOpacity06,
     fontSize: 12,
   },
   sessionListWrapper: {

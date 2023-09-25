@@ -112,7 +112,7 @@ export default ({
         borderLeftWidth: borderWidth,
         borderRightWidth: borderWidth,
         backgroundColor: 'transparent',
-        borderColor: COLORS.textColorShadowDark,
+        borderColor: COLORS.textColorShadowOpacity07,
       },
     });
     return (

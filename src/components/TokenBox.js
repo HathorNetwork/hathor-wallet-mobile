@@ -20,7 +20,7 @@ const TokenBox = (props) => (
       <Text style={styles.label}>{props.label}</Text>
       <FontAwesomeIcon
         icon={faSortDown}
-        color={COLORS.textColorShadowDark}
+        color={COLORS.textColorShadowOpacity07}
         style={{ marginBottom: 5 }}
       />
     </View>

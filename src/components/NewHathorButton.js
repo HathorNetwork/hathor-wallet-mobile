@@ -69,7 +69,7 @@ const style = StyleSheet.create({
     alignSelf: 'stretch',
   },
   wrapperDisabled: {
-    backgroundColor: COLORS.textColorShadowLighter,
+    backgroundColor: COLORS.textColorShadowOpacity005,
   },
   wrapperSecondary: {
     backgroundColor: COLORS.backgroundColor,

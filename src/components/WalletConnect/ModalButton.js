@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
     borderColor: null,
   },
   buttonText: {
-    color: COLORS.midContrastDetail,
+    color: COLORS.darkContrastDetail,
     fontSize: 12,
     fontWeight: 'bold',
   },
