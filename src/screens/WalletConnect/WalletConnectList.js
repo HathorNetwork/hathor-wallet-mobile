@@ -50,7 +50,7 @@ const style = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderColor,
+    borderBottomColor: COLORS.borderColorDark,
     paddingBottom: 16,
   },
   image: {

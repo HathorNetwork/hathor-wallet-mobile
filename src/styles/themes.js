@@ -49,6 +49,8 @@ export const COLORS = {
   midContrastDetail: '#9e9e9e',
   darkContrastDetail: '#808080',
   borderColor: '#eee',
+  borderColorMid: '#dcdcdc',
+  borderColorDark: '#cecece',
   textColor: '#000',
   textColorShadow: 'rgba(0, 0, 0, 0.5)',
   textColorShadowOpacity005: 'rgba(0, 0, 0, 0.05)',

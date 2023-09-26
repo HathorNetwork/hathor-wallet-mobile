@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 12,
     borderWidth: 2,
-    borderColor: COLORS.borderColor,
+    borderColor: COLORS.borderColorDark,
   },
   buttonHighlight: {
     backgroundColor: COLORS.primary,
