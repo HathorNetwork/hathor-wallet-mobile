@@ -14,8 +14,6 @@ import SimpleButton from './SimpleButton';
 import Logo from './Logo';
 import chevronLeft from '../assets/icons/chevron-left.png';
 import closeIcon from '../assets/icons/icCloseActive.png';
-import baseStyle from '../styles/init';
-import { HEADER_HEIGHT } from '../constants';
 import { COLORS, STYLE } from '../styles/themes';
 
 const HathorHeader = (props) => {
@@ -61,7 +59,7 @@ const HathorHeader = (props) => {
 
   let extraStyle = {};
   if (props.withBorder) {
-    extraStyle = { borderBottomWidth: STYLE.borderWidth };
+    extraStyle = { borderBottomWidth: 1 };
   }
 
   return (

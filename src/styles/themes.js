@@ -47,10 +47,19 @@ export const COLORS = {
   backgroundColor: '#fff',
   lowContrastDetail: '#f7f7f7',
   midContrastDetail: '#9e9e9e',
+  darkContrastDetail: '#808080',
   borderColor: '#eee',
+  borderColorMid: '#dcdcdc',
+  borderColorDark: '#cecece',
   textColor: '#000',
   textColorShadow: 'rgba(0, 0, 0, 0.5)',
+  textColorShadowOpacity005: 'rgba(0, 0, 0, 0.05)',
+  textColorShadowLighter: 'rgba(0, 0, 0, 0.1)',
   textColorShadowLight: 'rgba(0, 0, 0, 0.3)',
+  textColorShadowOpacity06: 'rgba(0, 0, 0, 0.6)',
+  textColorShadowOpacity07: 'rgba(0, 0, 0, 0.7)',
+  textColorShadowDark: 'rgba(0, 0, 0, 0.8)',
+  textColorShadowOpacity09: 'rgba(0, 0, 0, 0.9)',
   tabBarBackground: '#333',
   positiveBalanceColor: '#0DA0A0',
   errorBgColor: '#DE3535',
@@ -62,12 +71,10 @@ export const COLORS = {
 };
 
 /**
- * @type {{borderWidth: (number), headerHeight: number}}
- * @property {number} borderWidth Defines border visibility throughout the app
+ * @type {{ headerHeight: number }}
  * @property {number} headerHeight Defines the height of the screen title, for calculation purposes
  */
 export const STYLE = {
-  borderWidth: 1,
   headerHeight: 56,
 };
 

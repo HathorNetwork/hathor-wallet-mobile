@@ -10,6 +10,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { COLORS } from '../styles/themes';
 
 export default class SlideIndicatorBar extends Component {
   style = StyleSheet.create({
@@ -17,7 +18,7 @@ export default class SlideIndicatorBar extends Component {
       height: 4,
       width: 48,
       position: 'absolute',
-      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      backgroundColor: COLORS.textColorShadowLight,
       borderRadius: 2,
       top: 8,
       alignSelf: 'center',

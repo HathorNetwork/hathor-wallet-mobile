@@ -22,6 +22,7 @@ import TextFmt from '../components/TextFmt';
 import { clearInvoice } from '../actions';
 import { getTokenLabel, renderValue, isTokenNFT } from '../utils';
 import NavigationService from '../NavigationService';
+import { COLORS } from '../styles/themes';
 
 /**
  * address {string} Invoice destination address
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderColor: COLORS.borderColor,
     height: 64,
     width: '100%',
   },

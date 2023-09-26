@@ -12,12 +12,17 @@ import {
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faSortDown } from '@fortawesome/free-solid-svg-icons';
+import { COLORS } from '../styles/themes';
 
 const TokenBox = (props) => (
   <TouchableWithoutFeedback onPress={props.onPress}>
     <View style={styles.wrapper}>
       <Text style={styles.label}>{props.label}</Text>
-      <FontAwesomeIcon icon={faSortDown} color='rgba(0, 0, 0, 0.7)' style={{ marginBottom: 5 }} />
+      <FontAwesomeIcon
+        icon={faSortDown}
+        color={COLORS.textColorShadowOpacity07}
+        style={{ marginBottom: 5 }}
+      />
     </View>
   </TouchableWithoutFeedback>
 );
@@ -28,7 +33,7 @@ const styles = StyleSheet.create({
     height: 40,
     width: 80,
     borderWidth: 1,
-    borderColor: '#000',
+    borderColor: COLORS.textColor,
     borderRadius: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',

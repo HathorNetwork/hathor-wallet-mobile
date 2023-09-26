@@ -28,14 +28,15 @@ import SimpleButton from '../components/SimpleButton';
 import TxDetailsModal from '../components/TxDetailsModal';
 import OfflineBar from '../components/OfflineBar';
 import { HathorList } from '../components/HathorList';
-import { Strong, str2jsx, getLightBackground, renderValue, isTokenNFT } from '../utils';
+import { Strong, str2jsx, renderValue, isTokenNFT } from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import infoIcon from '../assets/icons/info-circle.png';
-import { IS_MULTI_TOKEN, LIGHT_BG_COLOR, PRIMARY_COLOR } from '../constants';
+import { IS_MULTI_TOKEN } from '../constants';
 import { fetchMoreHistory, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
+import { COLORS } from '../styles/themes';
 
 /**
  * txList {Array} array with transactions of the selected token
@@ -130,7 +131,7 @@ class MainScreen extends React.Component {
                 <Text
                   key={i}
                   onPress={() => this.props.navigation.navigate('Receive')}
-                  style={{ color: PRIMARY_COLOR, fontWeight: 'bold' }}
+                  style={{ color: COLORS.primary, fontWeight: 'bold' }}
                 >{x}</Text>
               ) }
             )}
@@ -160,7 +161,7 @@ class MainScreen extends React.Component {
                   <Text
                     key={i}
                     onPress={() => this.retryTxHistory()}
-                    style={{ color: PRIMARY_COLOR, fontWeight: 'bold' }}
+                    style={{ color: COLORS.primary, fontWeight: 'bold' }}
                   > {x} </Text>
                 )
               }
@@ -212,7 +213,7 @@ class MainScreen extends React.Component {
 
     return (
       <View style={{
-        flex: 1, backgroundColor: LIGHT_BG_COLOR, justifyContent: 'center', alignItems: 'center',
+        flex: 1, backgroundColor: COLORS.lowContrastDetail, justifyContent: 'center', alignItems: 'center',
       }}
       >
         {this.state.modal}
@@ -308,17 +309,17 @@ class TxListItem extends React.Component {
       marginLeft: 16,
       marginRight: 16,
       marginTop: 0,
-      borderColor: '#eee',
+      borderColor: COLORS.borderColor,
       borderBottomWidth: 1,
       shadowOffset: { height: 2, width: 0 },
       shadowRadius: 4,
-      shadowColor: 'black',
+      shadowColor: COLORS.textColor,
       shadowOpacity: 0.08,
     },
     view: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: 'white',
+      backgroundColor: COLORS.backgroundColor,
       height: 80,
     },
     firstItemBorder: {
@@ -353,7 +354,7 @@ class TxListItem extends React.Component {
     timestamp: {
       fontSize: 12,
       lineHeight: 20,
-      color: 'rgba(0, 0, 0, 0.5)',
+      color: COLORS.textColorShadow,
     },
   });
 
@@ -361,15 +362,15 @@ class TxListItem extends React.Component {
     ...StyleSheet.create({
       description: {
         ...this.style.description,
-        color: 'rgba(0, 0, 0, 0.3)',
+        color: COLORS.textColorShadowLight,
       },
       timestamp: {
         ...this.style.timestamp,
-        color: 'rgba(0, 0, 0, 0.3)',
+        color: COLORS.textColorShadowLight,
       },
       balance: {
         ...this.style.balance,
-        color: 'rgba(0, 0, 0, 0.3)',
+        color: COLORS.textColorShadowLight,
         textDecorationLine: 'line-through',
       },
     }) });
@@ -378,7 +379,7 @@ class TxListItem extends React.Component {
     ...StyleSheet.create({
       balance: {
         ...this.style.balance,
-        color: '#0DA0A0',
+        color: COLORS.positiveBalanceColor,
         fontWeight: 'bold',
       },
     }) });
@@ -406,17 +407,17 @@ class TxListItem extends React.Component {
     const style = [this.style.icon];
     if (item.balance > 0) {
       name = 'icReceive';
-      color = '#0DA0A0';
+      color = COLORS.positiveBalanceColor;
     } else if (item.balance < 0) {
       name = 'icSend';
-      color = 'black';
+      color = COLORS.textColor;
     } else {
       throw new Error('should not happen');
     }
 
     if (item.isVoided) {
       style.push(this.style.iconDisabled);
-      color = 'rgba(0, 0, 0, 0.3)';
+      color = COLORS.textColorShadowLight;
     }
 
     return <IconTabBar style={style} color={color} size={24} name={name} />;
@@ -518,20 +519,20 @@ class BalanceView extends React.Component {
       paddingTop: 8,
       fontSize: 12,
       fontWeight: 'bold',
-      color: 'rgba(0, 0, 0, 0.5)',
+      color: COLORS.textColorShadow,
     },
     expandButton: {
       marginTop: 24,
       marginBottom: 24,
     },
     networkView: {
-      backgroundColor: getLightBackground(0.1),
+      backgroundColor: COLORS.primaryOpacity10,
       padding: 8,
       marginTop: 32,
       borderRadius: 8,
     },
     networkText: {
-      color: PRIMARY_COLOR,
+      color: COLORS.primary,
       fontSize: 16,
       fontWeight: 'bold',
     },

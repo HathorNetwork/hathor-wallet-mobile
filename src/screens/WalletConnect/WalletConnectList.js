@@ -28,6 +28,7 @@ import {
   walletConnectCancelSession,
   setWCConnectionFailed,
 } from '../../actions';
+import { COLORS } from '../../styles/themes';
 
 const connectFailedText = t`There was an error connecting. Please try again later.`;
 
@@ -36,7 +37,7 @@ const style = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f7f7f7',
+    backgroundColor: COLORS.lowContrastDetail,
     alignSelf: 'stretch',
   },
   safeAreaView: {
@@ -49,7 +50,7 @@ const style = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#cecece',
+    borderBottomColor: COLORS.borderColorDark,
     paddingBottom: 16,
   },
   image: {
@@ -67,13 +68,13 @@ const style = StyleSheet.create({
   },
   sessionName: {
     marginBottom: 8,
-    color: 'rgba(0, 0, 0, 0.87)',
+    color: COLORS.textColorShadowOpacity09,
     fontSize: 12,
     fontWeight: 'bold',
   },
   sessionData: {
     marginBottom: 8,
-    color: 'rgba(0, 0, 0, 0.57)',
+    color: COLORS.textColorShadowOpacity06,
     fontSize: 12,
   },
   sessionListWrapper: {

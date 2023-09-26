@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import checkLogo from '../assets/images/icCheckBig.png';
+import { COLORS } from '../styles/themes';
 
 class ModalConfirmation extends React.Component {
   /**
@@ -49,7 +50,7 @@ class ModalConfirmation extends React.Component {
         position: 'absolute',
         top: 0,
         left: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: COLORS.textColorShadowDark,
         justifyContent: 'flex-end',
         alignItems: 'center',
         zIndex: 3,
@@ -59,7 +60,7 @@ class ModalConfirmation extends React.Component {
       innerModal: {
         marginBottom: 32,
         height: 270,
-        backgroundColor: 'white',
+        backgroundColor: COLORS.backgroundColor,
         alignItems: 'center',
         justifyContent: 'space-around',
         borderRadius: 8,

@@ -15,7 +15,7 @@ import OfflineBar from '../components/OfflineBar';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
 import { getTokenLabel, parseQRCode } from '../utils';
-import { LIGHT_BG_COLOR } from '../constants';
+import { COLORS } from '../styles/themes';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
@@ -74,7 +74,7 @@ class SendScanQRCode extends React.Component {
     );
 
     return (
-      <View style={{ flex: 1, backgroundColor: LIGHT_BG_COLOR }}>
+      <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <HathorHeader
           title={t`SEND`}
           rightElement={<ManualInfoButton />}

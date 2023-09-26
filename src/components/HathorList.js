@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 
 import chevronRight from '../assets/icons/chevron-right.png';
+import { COLORS } from '../styles/themes';
 
 const defaultRadius = 16;
 
@@ -22,12 +23,12 @@ export class HathorList extends Component {
   style = StyleSheet.create({
     view: {
       alignSelf: 'stretch',
-      backgroundColor: 'white',
+      backgroundColor: COLORS.backgroundColor,
       borderRadius: defaultRadius,
       margin: 16,
       shadowOffset: { height: 2, width: 0 },
       shadowRadius: 4,
-      shadowColor: 'black',
+      shadowColor: COLORS.textColor,
       shadowOpacity: 0.08,
     },
     infinityView: {
@@ -62,7 +63,7 @@ class BaseItem extends Component {
 
   style = StyleSheet.create({
     container: {
-      borderColor: '#eee',
+      borderColor: COLORS.borderColor,
       borderBottomWidth: 1,
     },
     lastItemContainer: {
@@ -78,7 +79,7 @@ class BaseItem extends Component {
     },
     view: {
       flexDirection: 'row',
-      backgroundColor: 'white',
+      backgroundColor: COLORS.backgroundColor,
       alignItems: 'center',
       height: 64,
       paddingLeft: 16,
@@ -121,7 +122,7 @@ export class ListItem extends BaseItem {
   style = Object.assign(this.style, StyleSheet.create({
     title: {
       ...this.style.title,
-      color: 'rgba(0, 0, 0, 0.5)',
+      color: COLORS.textColorShadow,
     },
   }));
 

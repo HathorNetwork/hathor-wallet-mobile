@@ -30,7 +30,8 @@ import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { Link, str2jsx } from '../utils';
 
-import { PRIMARY_COLOR, TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '../constants';
+import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '../constants';
+import { COLORS } from '../styles/themes';
 
 class WelcomeScreen extends React.Component {
   state = { switchValue: false };
@@ -76,7 +77,7 @@ class WelcomeScreen extends React.Component {
           <View style={this.style.switchView}>
             <Switch
               onValueChange={this.toggleSwitch}
-              trackColor={{ true: PRIMARY_COLOR }}
+              trackColor={{ true: COLORS.primary }}
               value={this.state.switchValue}
             />
             <Text style={this.style.switchText}>
@@ -156,7 +157,7 @@ class NewWordsScreen extends React.Component {
         fontSize: 14,
       },
       itemText: {
-        color: '#000',
+        color: COLORS.textColor,
         fontSize: 18,
       },
     }) });
@@ -242,14 +243,14 @@ class LoadWordsScreen extends React.Component {
       },
       label: {
         fontSize: 12,
-        color: 'rgba(0, 0, 0, 0.5)',
+        color: COLORS.textColorShadow,
         marginTop: 8,
         marginBottom: 8,
       },
       input: {
         fontSize: 16,
         lineHeight: 24,
-        borderColor: '#EEEEEE',
+        borderColor: COLORS.borderColor,
         borderBottomWidth: 1,
       },
     }) });
@@ -331,7 +332,7 @@ class LoadWordsScreen extends React.Component {
                   /
                   {this.numberOfWords}
                 </Text>
-                <Text style={{ color: 'red' }}>{this.state.errorMessage}</Text>
+                <Text style={{ color: COLORS.errorTextColor }}>{this.state.errorMessage}</Text>
               </View>
               <View style={this.style.buttonView}>
                 <NewHathorButton

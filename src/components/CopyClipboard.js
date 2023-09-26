@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { t } from 'ttag';
 import { TextPropTypes } from 'deprecated-react-native-prop-types';
-import { PRIMARY_COLOR } from '../constants';
+import { COLORS } from '../styles/themes';
 
 class CopyClipboard extends React.Component {
   static defaultProps = {
@@ -83,7 +83,7 @@ const style = StyleSheet.create({
     fontSize: 13,
   },
   copied: {
-    color: PRIMARY_COLOR,
+    color: COLORS.primary,
   },
 });
 

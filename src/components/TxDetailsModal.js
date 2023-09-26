@@ -15,6 +15,7 @@ import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 import CopyClipboard from './CopyClipboard';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
+import { COLORS } from '../styles/themes';
 
 class TxDetailsModal extends Component {
   style = StyleSheet.create({
@@ -22,7 +23,7 @@ class TxDetailsModal extends Component {
       justifyContent: 'flex-end',
     },
     inner: {
-      backgroundColor: '#fff',
+      backgroundColor: COLORS.backgroundColor,
       borderRadius: 8,
     },
   });
@@ -85,7 +86,7 @@ class BalanceView extends Component {
       paddingTop: 8,
       fontSize: 12,
       fontWeight: 'bold',
-      color: 'rgba(0, 0, 0, 0.5)',
+      color: COLORS.textColorShadow,
     },
   });
 

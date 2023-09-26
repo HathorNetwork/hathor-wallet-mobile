@@ -19,6 +19,7 @@ import InputLabel from '../components/InputLabel';
 import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
 import { getIntegerAmount, getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
+import { COLORS } from '../styles/themes';
 
 /**
  * balance {Object} object with token balance {'available', 'locked'}
@@ -102,7 +103,10 @@ class CreateTokenAmount extends React.Component {
   }
 
   render() {
-    const amountStyle = (this.state.deposit > this.props.balance.available ? { color: 'red' } : {});
+    const amountStyle = (this.state.deposit > this.props.balance.available
+      ? { color: COLORS.errorTextColor }
+      : {}
+    );
     const amountAvailableText = (
       <Strong style={amountStyle}>
         {hathorLib.numberUtils.prettyValue(this.props.balance.available)} HTR

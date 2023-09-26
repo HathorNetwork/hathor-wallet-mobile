@@ -11,6 +11,7 @@ import { StyleSheet } from 'react-native';
 import { hideWalletConnectModal } from '../../actions';
 import SignMessageModal from './SignMessageModal';
 import ConnectModal from './ConnectModal';
+import { COLORS } from '../../styles/themes';
 
 export default () => {
   const dispatch = useDispatch();
@@ -53,12 +54,12 @@ export default () => {
 const baseStyles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: COLORS.textColorShadow,
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalBox: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.backgroundColor,
     borderRadius: 8,
     padding: 20,
     alignItems: 'center',

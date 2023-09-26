@@ -22,8 +22,8 @@ import errorIcon from '../assets/images/icErrorBig.png';
 
 import baseStyle from '../styles/init';
 
-import { PRIMARY_COLOR } from '../constants';
 import { Strong } from '../utils';
+import { COLORS } from '../styles/themes';
 
 class BackupWords extends React.Component {
   /**
@@ -48,13 +48,13 @@ class BackupWords extends React.Component {
         marginRight: 8,
       },
       past: {
-        backgroundColor: '#000',
+        backgroundColor: COLORS.textColor,
       },
       current: {
-        backgroundColor: PRIMARY_COLOR,
+        backgroundColor: COLORS.primary,
       },
       future: {
-        backgroundColor: '#000',
+        backgroundColor: COLORS.textColor,
         opacity: 0.3,
       },
       lastView: {
