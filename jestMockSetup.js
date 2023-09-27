@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals';
+import { jest } from '@jest/globals'; // eslint-disable-line import/no-extraneous-dependencies
 import 'react-native-gesture-handler/jestSetup';
 
 jest.mock('@react-navigation/stack');
