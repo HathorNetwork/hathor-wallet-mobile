@@ -850,6 +850,7 @@ export const setWCConnectionFailed = (failed) => ({
  *   explorerUrl: string,
  *   nodeUrl: string,
  *   walletServiceUrl?: string
+ *   walletServiceWsUrl?: string
  * }} customNetworkRequest Request input
  */
 export const networkSettingsUpdate = (customNetworkRequest) => ({

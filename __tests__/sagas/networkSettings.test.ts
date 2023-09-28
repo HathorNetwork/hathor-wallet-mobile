@@ -78,10 +78,17 @@ describe('updateNetworkSettings', () => {
                 nodeUrl:'invalid.url.com',
                 walletServiceUrl: 'http://localhost:8081/'
             })))
+            .then(() => store.dispatch(networkSettingsUpdate({
+                explorerUrl: 'http://localhost:8081/',
+                nodeUrl: 'http://localhost:3000/',
+                walletServiceUrl: 'http://localhost:8081/',
+                walletServiceWsUrl: 'invalid.url.com'
+            })))
             .then(() => store.dispatch(END))
 
         await task.toPromise()
         expect(actual).toEqual([
+            'failed',
             'failed',
             'failed',
             'failed',
@@ -135,19 +142,30 @@ describe('updateNetworkSettings', () => {
             .mockImplementationOnce(() => Promise.reject(new Error('invalid request')));
 
         Promise.resolve()
+            // calls getFullnodeNetwork 
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
                 nodeUrl: 'http://localhost:3000/',
             })))
+            // calls getWalletServiceNetwork 
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
                 nodeUrl: 'http://localhost:3000/',
                 walletServiceUrl: 'http://localhost:8080/'
             })))
+            // calls getWalletServiceNetwork 
+            .then(() => store.dispatch(networkSettingsUpdate({
+                explorerUrl: 'http://localhost:8081/',
+                nodeUrl: 'http://localhost:3000/',
+                walletServiceUrl: 'http://localhost:8080/',
+                walletServiceWsUrl: 'ws://ws.localhost:4040/'
+            })))
+            // calls getFullnodeNetwork 
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
                 nodeUrl: 'http://localhost:3000/',
             })))
+            // calls getFullnodeNetwork 
             // here the getFullnodeNetwork rejects throwing an error
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
@@ -172,6 +190,14 @@ describe('updateNetworkSettings', () => {
                 nodeUrl: 'http://localhost:3000/',
                 walletServiceUrl: 'http://localhost:8080/',
                 walletServiceWsUrl: 'ws://ws.localhost:8080/'
+            },
+            {
+                stage: 'mainnet',
+                network: 'mainnet',
+                explorerUrl: 'http://localhost:8081/',
+                nodeUrl: 'http://localhost:3000/',
+                walletServiceUrl: 'http://localhost:8080/',
+                walletServiceWsUrl: 'ws://ws.localhost:4040/'
             },
             {
                 stage: 'dev-privnet',

@@ -13,6 +13,7 @@ export function* updateNetworkSettings(action) {
     explorerUrl,
     walletServiceUrl,
   } = action.payload || {};
+  let walletServiceWsUrl = action.payload?.walletServiceWsUrl;
 
   // validates input emptyness
   if (isEmpty(action.payload)) {
@@ -44,6 +45,14 @@ export function* updateNetworkSettings(action) {
     return;
   }
 
+  // validates walletServiceWsUrl
+  // - optional
+  // - should have a valid URL, if given
+  if (walletServiceWsUrl && invalidUrl(walletServiceWsUrl)) {
+    yield put(networkSettingsUpdateFailure());
+    return;
+  }
+
   // NOTE: Should we allow that all the URLs be equals?
   // In practice they will never be equals.
 
@@ -58,12 +67,12 @@ export function* updateNetworkSettings(action) {
   // - walletServiceUrl has precedence
   // - nodeUrl as fallback
   let network;
-  let walletServiceWsUrl;
   if (walletServiceUrl) {
     const _url = new URL(walletServiceUrl);
-    if (_url.protocol.includes('https')) {
+
+    if (!walletServiceWsUrl && _url.protocol.includes('https')) {
       walletServiceWsUrl = `wss://ws.${_url.host}${_url.pathname}`;
-    } else {
+    } else if (!walletServiceWsUrl) {
       walletServiceWsUrl = `ws://ws.${_url.host}${_url.pathname}`;
     }
 
@@ -125,7 +134,7 @@ export function* updateNetworkSettings(action) {
 }
 
 function invalidUrl(value) {
-  const allowedProtocols = ['http:', 'https:'];
+  const allowedProtocols = ['http:', 'https:', 'ws:', 'wss:'];
   try {
     const tryUrl = new URL(value);
     if (isEmpty(tryUrl.protocol) || !(allowedProtocols.includes(tryUrl.protocol))) {
