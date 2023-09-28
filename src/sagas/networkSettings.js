@@ -55,10 +55,8 @@ export function* updateNetworkSettings(action) {
   config.setExplorerServiceBaseUrl(explorerUrl);
   config.setServerUrl(nodeUrl);
 
-  // TODO: get network as the best effort
   // - walletServiceUrl has precedence
   // - nodeUrl as fallback
-
   let network;
   let walletServiceWsUrl;
   if (walletServiceUrl) {
