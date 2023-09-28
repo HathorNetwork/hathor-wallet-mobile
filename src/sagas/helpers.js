@@ -201,13 +201,26 @@ export async function getWalletServiceNetwork() {
   }
 }
 
-export function isWalletServiceUnavailable(networkSettings) {
-  return networkSettings.walletServiceUrl == null;
+/**
+ * Check if the new custom network settings has a wallet service URL.
+ * @param {object} customNetworkSettings the new network settings
+ * @return {boolean} true if the new network settings hasn't defined
+ *   the wallet service URL, false otherwise.
+ */
+export function isWalletServiceUnavailable(customNetworkSettings) {
+  return customNetworkSettings.walletServiceUrl == null;
 }
 
-export function disableFeaturesIfNeeded(networkSettings, currentFeatureToggles) {
+/**
+ * Force disabling features if the custom network settings
+ * didn't support them.
+ * @param {object} customNetworkSettings the new network settings
+ * @param {object} currentFeatureToggles feature toggles current applied
+ * @return {object} an object containing the feature toggles to be applied
+ */
+export function disableFeaturesIfNeeded(customNetworkSettings, currentFeatureToggles) {
   let featureToggles = { ...currentFeatureToggles };
-  if (isWalletServiceUnavailable(networkSettings)) {
+  if (isWalletServiceUnavailable(customNetworkSettings)) {
     featureToggles = {
       ...featureToggles,
       [WALLET_SERVICE_FEATURE_TOGGLE]: false,
