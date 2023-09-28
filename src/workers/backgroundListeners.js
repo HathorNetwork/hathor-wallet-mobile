@@ -13,7 +13,7 @@ import {
   setInitialNotificationData,
   setNotificationError,
 } from './pushNotificationHandler';
-import { store } from '../reducer.init';
+import { store } from '../reducers/reducer.init';
 
 /**
 * This function verifies if the device is registered on firebase,

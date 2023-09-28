@@ -3,7 +3,7 @@ import * as sagaHelpers from '../../src/sagas/helpers';
 import { all, effectTypes, fork } from 'redux-saga/effects';
 import createSagaMiddleware, { END, runSaga } from 'redux-saga';
 import { applyMiddleware, createStore } from 'redux';
-import { reducer } from '../../src/reducer';
+import { reducer } from '../../src/reducers/reducer';
 import { networkSettingsUpdate, networkSettingsUpdateSuccess, reloadWalletRequested, types } from '../../src/actions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { networkSettingsKey } from '../../src/constants';
