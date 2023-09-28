@@ -178,8 +178,6 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
 }
 
 export async function getFullnodeNetwork() {
-  // NOTE: Should we change the user-agent?
-  // config.setUserAgent('wallet-mobile');
   try {
     const versionData = await new Promise((resolve) => {
       hathorLib.versionApi.getVersion(resolve);
@@ -192,8 +190,6 @@ export async function getFullnodeNetwork() {
 }
 
 export async function getWalletServiceNetwork() {
-  // NOTE: Should we change the user-agent?
-  // config.setUserAgent('wallet-mobile');
   try {
     const timeout = WALLET_SERVICE_REQUEST_TIMEOUT;
     // eslint-disable-next-line max-len
