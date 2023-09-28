@@ -7,10 +7,10 @@
 
 import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
-import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS, PRE_SETTINGS_MAINNET } from './constants';
-import { types } from './actions';
-import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
-import { WALLET_STATUS } from './sagas/wallet';
+import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS, PRE_SETTINGS_MAINNET } from '../constants';
+import { types } from '../actions';
+import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
+import { WALLET_STATUS } from '../sagas/wallet';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {

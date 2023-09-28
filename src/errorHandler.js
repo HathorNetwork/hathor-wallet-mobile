@@ -6,7 +6,7 @@
  */
 
 import { onExceptionCaptured } from './actions';
-import { store } from './reducer.init';
+import { store } from './reducers/reducer.init';
 
 /**
  * Capture all JS exceptions that might happen and show an alert to the user
