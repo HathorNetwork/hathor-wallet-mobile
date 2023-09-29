@@ -72,7 +72,7 @@ export function* updateNetworkSettings(action) {
 
     if (!walletServiceWsUrl && _url.protocol.includes('https')) {
       walletServiceWsUrl = `wss://ws.${_url.host}${_url.pathname}`;
-    } else if (!walletServiceWsUrl) {
+    } else if (!walletServiceWsUrl && _url.protocol.includes('http')) {
       walletServiceWsUrl = `ws://ws.${_url.host}${_url.pathname}`;
     }
 
