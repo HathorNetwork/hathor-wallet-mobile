@@ -7,6 +7,14 @@ import { HTTP_REQUEST_TIMEOUT, NETWORK, networkSettingsKey, NETWORK_TESTNET, STA
 import { getFullnodeNetwork, getWalletServiceNetwork } from './helpers';
 import { STORE } from '../store';
 
+/**
+ * Takes the network settings input to be processed, passing
+ * through a validation process that will either yield a
+ * failure or a success effect.
+ *
+ * @param {object} action contains the payload with the new
+ * network settings requested by the user to be processd. 
+ */
 export function* updateNetworkSettings(action) {
   const {
     nodeUrl,
@@ -129,6 +137,12 @@ export function* updateNetworkSettings(action) {
   yield put(networkSettingsUpdateSuccess(customNetwork));
 }
 
+/**
+ * Check if the value is an invalid URL.
+ *
+ * @param {string} value to be checked.
+ * @returns {boolean} true if invalid, false otherwise.
+ */
 function invalidUrl(value) {
   const allowedProtocols = ['http:', 'https:', 'ws:', 'wss:'];
   try {
@@ -147,6 +161,11 @@ function invalidUrl(value) {
   return false;
 }
 
+/**
+ * Saves the network custom settings in the application storage.
+ * @param {object} action contains the payload with the network settings
+ * already saved in the redux store.
+ */
 export function* persistNetworkSettings(action) {
   // persists after reducer being updated
   const networkSettings = action.payload;
@@ -168,11 +187,17 @@ export function* persistNetworkSettings(action) {
   }
 }
 
+/**
+ * Deletes the network settings from the application storage.
+ */
 export function* cleanNetworkSettings() {
   STORE.removeItem(networkSettingsKey.networkSettings);
   yield 0;
 }
 
+/**
+ * Maps the side effects to the action types.
+ */
 export function* saga() {
   yield all([
     takeEvery(types.NETWORKSETTINGS_UPDATE, updateNetworkSettings),
