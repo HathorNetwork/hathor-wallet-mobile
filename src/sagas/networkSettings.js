@@ -56,12 +56,10 @@ export function* updateNetworkSettings(action) {
   // NOTE: Should we allow that all the URLs be equals?
   // In practice they will never be equals.
 
-  const oldExplorerUrl = config.getExplorerServiceBaseUrl();
   const oldNodeUrl = config.getServerUrl();
   const oldWalletServiceUrl = config.getWalletServiceBaseUrl();
   const oldWalletServiceWsUrl = config.getWalletServiceBaseWsUrl();
 
-  config.setExplorerServiceBaseUrl(explorerUrl);
   config.setServerUrl(nodeUrl);
 
   // - walletServiceUrl has precedence
@@ -83,7 +81,6 @@ export function* updateNetworkSettings(action) {
       network = yield call(getWalletServiceNetwork);
     } catch (err) {
       // rollback config
-      config.setExplorerServiceBaseUrl(oldExplorerUrl);
       config.setServerUrl(oldNodeUrl);
       config.setWalletServiceBaseUrl(oldWalletServiceUrl);
       config.setWalletServiceBaseWsUrl(oldWalletServiceWsUrl);
@@ -97,7 +94,6 @@ export function* updateNetworkSettings(action) {
       network = yield call(getFullnodeNetwork);
     } catch (err) {
       // rollback config
-      config.setExplorerServiceBaseUrl(oldExplorerUrl);
       config.setServerUrl(oldNodeUrl);
       config.setWalletServiceBaseUrl(oldWalletServiceUrl);
       config.setWalletServiceBaseWsUrl(oldWalletServiceWsUrl);

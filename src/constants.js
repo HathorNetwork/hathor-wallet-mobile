@@ -170,7 +170,7 @@ export const NETWORK_TESTNET = 'testnet';
 export const WALLET_SERVICE_TESTNET_BASE_URL = 'https://dev.wallet-service.testnet.hathor.network/';
 export const WALLET_SERVICE_TESTNET_BASE_WS_URL = 'wss://ws.dev.wallet-service.testnet.hathor.network/';
 export const NODE_SERVER_TESTNET_URL = 'https://node1.testnet.hathor.network/v1a/';
-export const EXPLORER_SERVER_TESTNET_URL = 'https://explorer.testnet.hathor.network/';
+export const EXPLORER_TESTNET_URL = 'https://explorer.testnet.hathor.network/';
 
 export const PRE_SETTINGS_TESTNET = {
   stage: STAGE_TESTNET,
@@ -178,7 +178,7 @@ export const PRE_SETTINGS_TESTNET = {
   walletServiceUrl: WALLET_SERVICE_TESTNET_BASE_URL,
   walletServiceWsUrl: WALLET_SERVICE_TESTNET_BASE_WS_URL,
   nodeUrl: NODE_SERVER_TESTNET_URL,
-  explorerUrl: EXPLORER_SERVER_TESTNET_URL,
+  explorerUrl: EXPLORER_TESTNET_URL,
 };
 
 export const NODE_SERVER_MAINNET_URL = 'https://mobile.wallet.hathor.network/v1a/';
