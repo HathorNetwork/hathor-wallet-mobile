@@ -138,9 +138,6 @@ export function* startWallet(action) {
     dispatch = _dispatch;
   });
 
-  // Configure a custom user-agent in the axios calls
-  config.setUserAgent('wallet-mobile');
-
   let wallet;
   if (useWalletService) {
     const network = new Network(NETWORK);
