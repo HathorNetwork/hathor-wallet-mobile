@@ -66,7 +66,6 @@ import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConne
 import {
   WALLET_CONNECT_PROJECT_ID,
   WALLET_CONNECT_FEATURE_TOGGLE,
-  NETWORK,
 } from '../constants';
 import {
   types,
@@ -76,7 +75,7 @@ import {
   onExceptionCaptured,
   setWCConnectionFailed,
 } from '../actions';
-import { checkForFeatureFlag, showPinScreenForResult } from './helpers';
+import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'hathor_signMessage',
@@ -427,14 +426,15 @@ export function* onSessionProposal(action) {
     }));
   }
 
+  let networkSettings = yield select(getNetworkSettings);
   try {
     yield call(() => web3wallet.approveSession({
       id,
       relayProtocol: params.relays[0].protocol,
       namespaces: {
         hathor: {
-          accounts: [`hathor:${NETWORK}:${firstAddress}`],
-          chains: [`hathor:${NETWORK}`],
+          accounts: [`hathor:${networkSettings.network}:${firstAddress}`],
+          chains: [`hathor:${networkSettings.network}`],
           events: AVAILABLE_EVENTS,
           methods: values(AVAILABLE_METHODS),
         },

@@ -41,15 +41,12 @@ import {
 } from '../actions';
 import {
   pushNotificationKey,
-  WALLET_SERVICE_MAINNET_BASE_WS_URL,
-  WALLET_SERVICE_MAINNET_BASE_URL,
-  NETWORK,
   PUSH_CHANNEL_TRANSACTION,
   PUSH_ACTION,
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
 import { STORE } from '../store';
-import { isUnlockScreen, showPinScreenForResult } from './helpers';
+import { getNetworkSettings, isUnlockScreen, showPinScreenForResult } from './helpers';
 import { messageHandler } from '../workers/pushNotificationHandler';
 import { WALLET_STATUS } from './wallet';
 
@@ -337,15 +334,16 @@ export function* loadWallet() {
   });
 
   const useWalletService = yield select((state) => state.useWalletService);
+  const networkSettings = yield select(getNetworkSettings);
 
   // If the user is not using the wallet-service,
   // we need to initialize the wallet on the wallet-service first
   let walletService;
   if (!useWalletService) {
     // Set urls for wallet service
-    config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
-    config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
-    const network = new Network(NETWORK);
+    config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl)
+    config.setWalletServiceBaseWsUrl(networkSettings.walletServiceWsUrl);
+    const network = new Network(networkSettings.network);
 
     const pin = yield call(showPinScreenForResult, dispatch);
     const seed = yield STORE.getWalletWords(pin);
