@@ -79,3 +79,5 @@ ios/HathorMobile.xcodeproj/project.xcworkspace/
 
 .direnv/
 
+# Jest
+.jest/
