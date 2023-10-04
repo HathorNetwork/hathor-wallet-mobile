@@ -98,7 +98,7 @@ export class Settings extends React.Component {
             )
           )}
 
-          <HathorList infinity>
+          <HathorList title={t`General Settings`}>
             <ListItem
               text={(
                 <View style={{ flex: 1 }}>
@@ -169,6 +169,7 @@ export class Settings extends React.Component {
               )}
             />
           </HathorList>
+
         </ScrollView>
         <OfflineBar />
       </View>
