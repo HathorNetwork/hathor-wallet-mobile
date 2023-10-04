@@ -17,10 +17,10 @@
     "postinstall": "rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/fontawesome-svg-core": "^6.4.2",
     "@fortawesome/free-regular-svg-icons": "^6.4.2",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
-    "@fortawesome/react-native-fontawesome": "^0.2.7",
+    "@fortawesome/react-native-fontawesome": "^0.3.0",
     "@hathor/wallet-lib": "^1.0.2",
     "@notifee/react-native": "^5.7.0",
     "@react-native-async-storage/async-storage": "^1.19.3",
@@ -73,7 +73,7 @@
     "stream-browserify": "^1.0.0",
     "ttag": "^1.7.25",
     "unleash-proxy-client": "^1.11.0",
-    "url": "^0.11.0"
+    "url": "^0.11.3"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",
