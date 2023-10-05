@@ -13,7 +13,7 @@ import { STORE } from '../store';
  * failure or a success effect.
  *
  * @param {object} action contains the payload with the new
- * network settings requested by the user to be processd. 
+ * network settings requested by the user to be processd.
  */
 export function* updateNetworkSettings(action) {
   const {
