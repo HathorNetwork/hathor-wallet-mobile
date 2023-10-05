@@ -852,8 +852,9 @@ export const setWCConnectionFailed = (failed) => ({
 /**
  * Request the custom network settings input to be processed.
  * @param {{
- *   explorerUrl: string,
  *   nodeUrl: string,
+ *   explorerUrl: string,
+ *   explorerServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string
  * }} customNetworkRequest Request input
@@ -868,8 +869,9 @@ export const networkSettingsUpdate = (customNetworkRequest) => ({
  * @param {{
  *   stage: string,
  *   network: string,
- *   explorerUrl: string,
  *   nodeUrl: string,
+ *   explorerUrl: string,
+ *   explorerServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string
  * }} customNetwork Settings to persist

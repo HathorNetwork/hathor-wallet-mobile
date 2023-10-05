@@ -56,38 +56,66 @@ describe('updateNetworkSettings', () => {
             .then(() => store.dispatch(networkSettingsUpdate({ explorerUrl: 'invalid.url.com' })))
             // explorerUrl is valid, however it must have at least nodeUrl
             .then(() => store.dispatch(networkSettingsUpdate({ explorerUrl: 'http://localhost:8081/' })))
-            // explorerUrl is valid, but nodeUrl is empty
+            // explorerUrl is valid, but explorerServiceUrl is empty
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: '',
+            })))
+            // explorerUrl is valid, but explorerServiceUrl is invalid 
+            .then(() => store.dispatch(networkSettingsUpdate({
+                explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'invalid.url.com',
+            })))
+            // explorer urls are valid, but nodeUrl is empty
+            .then(() => store.dispatch(networkSettingsUpdate({
+                explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: '',
             })))
-            // explorerUrl is valid, but nodeUrl is invalid 
+            // explorer urls are valid, but nodeUrl is invalid 
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'invalid.url.com'
             })))
-            // both explorerUrl and nodeUrl are valid, but waletService is invalid
+            // explorer and node urls are valid, but waletServiceUrl is invalid
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
                 walletServiceUrl: 'invalid.url.com'
             })))
-            // both explorerUrl and walletService are valid, however the required nodeUrl is invalid
+            // explorer, node, and wallet service urls are valid, but walletServiceWsUrl is empty
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
-                nodeUrl:'invalid.url.com',
-                walletServiceUrl: 'http://localhost:8081/'
-            })))
-            .then(() => store.dispatch(networkSettingsUpdate({
-                explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
-                walletServiceUrl: 'http://localhost:8081/',
+                walletServiceUrl: 'http://localhost:8083/',
+                walletServiceWsUrl: ''
+            })))
+            // explorer, node, and wallet service urls are valid, but walletServiceWsUrl is invalid 
+            .then(() => store.dispatch(networkSettingsUpdate({
+                explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
+                nodeUrl: 'http://localhost:3000/',
+                walletServiceUrl: 'http://localhost:8083/',
                 walletServiceWsUrl: 'invalid.url.com'
+            })))
+            // all urls are valid, except nodeUrl
+            .then(() => store.dispatch(networkSettingsUpdate({
+                explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
+                nodeUrl: 'invalid.url.com',
+                walletServiceUrl: 'http://localhost:8083/',
+                walletServiceWsUrl: 'ws://localhost:8084/'
             })))
             .then(() => store.dispatch(END))
 
         await task.toPromise()
         expect(actual).toEqual([
+            'failed',
+            'failed',
+            'failed',
             'failed',
             'failed',
             'failed',
@@ -145,17 +173,21 @@ describe('updateNetworkSettings', () => {
             // calls getFullnodeNetwork 
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
             })))
             // calls getWalletServiceNetwork 
+            // it will fail because is lacking the walletServiceWsUrl
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
                 walletServiceUrl: 'http://localhost:8080/'
             })))
             // calls getWalletServiceNetwork 
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
                 walletServiceUrl: 'http://localhost:8080/',
                 walletServiceWsUrl: 'ws://ws.localhost:4040/'
@@ -163,12 +195,14 @@ describe('updateNetworkSettings', () => {
             // calls getFullnodeNetwork 
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
             })))
             // calls getFullnodeNetwork 
             // here the getFullnodeNetwork rejects throwing an error
             .then(() => store.dispatch(networkSettingsUpdate({
                 explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
             })))
             .then(() => store.dispatch(END))
@@ -178,32 +212,28 @@ describe('updateNetworkSettings', () => {
             {
                 stage: 'testnet',
                 network: 'testnet',
-                explorerUrl: 'http://localhost:8081/',
                 nodeUrl: 'http://localhost:3000/',
+                explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
                 walletServiceUrl: undefined,
                 walletServiceWsUrl: undefined
             },
+            'failed',
             {
                 stage: 'mainnet',
                 network: 'mainnet',
-                explorerUrl: 'http://localhost:8081/',
                 nodeUrl: 'http://localhost:3000/',
-                walletServiceUrl: 'http://localhost:8080/',
-                walletServiceWsUrl: 'ws://ws.localhost:8080/'
-            },
-            {
-                stage: 'mainnet',
-                network: 'mainnet',
                 explorerUrl: 'http://localhost:8081/',
-                nodeUrl: 'http://localhost:3000/',
+                explorerServiceUrl: 'http://localhost:8082/',
                 walletServiceUrl: 'http://localhost:8080/',
                 walletServiceWsUrl: 'ws://ws.localhost:4040/'
             },
             {
                 stage: 'dev-privnet',
                 network: 'privnet',
-                explorerUrl: 'http://localhost:8081/',
                 nodeUrl: 'http://localhost:3000/',
+                explorerUrl: 'http://localhost:8081/',
+                explorerServiceUrl: 'http://localhost:8082/',
                 walletServiceUrl: undefined,
                 walletServiceWsUrl: undefined
             },
