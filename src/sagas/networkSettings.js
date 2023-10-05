@@ -12,16 +12,27 @@ import { STORE } from '../store';
  * through a validation process that will either yield a
  * failure or a success effect.
  *
- * @param {object} action contains the payload with the new
+ * @param {{
+ *    payload: {
+ *      stage: string,
+ *      network: string,
+ *      nodeUrl: string,
+ *      explorerUrl: string,
+ *      explorerServiceUrl: string,
+ *      walletServiceUrl?: string
+ *      walletServiceWsUrl?: string
+ *    }
+ * }} action contains the payload with the new
  * network settings requested by the user to be processd.
  */
 export function* updateNetworkSettings(action) {
   const {
     nodeUrl,
     explorerUrl,
+    explorerServiceUrl,
     walletServiceUrl,
+    walletServiceWsUrl,
   } = action.payload || {};
-  let walletServiceWsUrl = action.payload?.walletServiceWsUrl;
 
   // validates input emptyness
   if (isEmpty(action.payload)) {
@@ -33,6 +44,14 @@ export function* updateNetworkSettings(action) {
   // - required
   // - should have a valid URL
   if (isEmpty(explorerUrl) || invalidUrl(explorerUrl)) {
+    yield put(networkSettingsUpdateFailure());
+    return;
+  }
+
+  // validates explorerServiceUrl
+  // - required
+  // - should have a valid URL
+  if (isEmpty(explorerServiceUrl) || invalidUrl(explorerServiceUrl)) {
     yield put(networkSettingsUpdateFailure());
     return;
   }
@@ -54,9 +73,9 @@ export function* updateNetworkSettings(action) {
   }
 
   // validates walletServiceWsUrl
-  // - optional
-  // - should have a valid URL, if given
-  if (walletServiceWsUrl && invalidUrl(walletServiceWsUrl)) {
+  // - conditionally required
+  // - should have a valid URL, if walletServiceUrl is given
+  if (walletServiceUrl && invalidUrl(walletServiceWsUrl)) {
     yield put(networkSettingsUpdateFailure());
     return;
   }
@@ -64,34 +83,27 @@ export function* updateNetworkSettings(action) {
   // NOTE: Should we allow that all the URLs be equals?
   // In practice they will never be equals.
 
-  const oldNodeUrl = config.getServerUrl();
-  const oldWalletServiceUrl = config.getWalletServiceBaseUrl();
-  const oldWalletServiceWsUrl = config.getWalletServiceBaseWsUrl();
+  const backupUrl = {
+    nodeUrl: config.getServerUrl(),
+    explorerServiceUrl: config.getExplorerServiceBaseUrl(),
+    walletServiceUrl: config.getWalletServiceBaseUrl(),
+    walletServiceWsUrl: config.getWalletServiceBaseWsUrl(),
+  };
 
   config.setServerUrl(nodeUrl);
+  config.setExplorerServiceBaseUrl(explorerServiceUrl);
 
   // - walletServiceUrl has precedence
   // - nodeUrl as fallback
   let network;
   if (walletServiceUrl) {
-    const _url = new URL(walletServiceUrl);
-
-    if (!walletServiceWsUrl && _url.protocol.includes('https')) {
-      walletServiceWsUrl = `wss://ws.${_url.host}${_url.pathname}`;
-    } else if (!walletServiceWsUrl && _url.protocol.includes('http')) {
-      walletServiceWsUrl = `ws://ws.${_url.host}${_url.pathname}`;
-    }
-
     config.setWalletServiceBaseUrl(walletServiceUrl);
     config.setWalletServiceBaseWsUrl(walletServiceWsUrl);
 
     try {
       network = yield call(getWalletServiceNetwork);
     } catch (err) {
-      // rollback config
-      config.setServerUrl(oldNodeUrl);
-      config.setWalletServiceBaseUrl(oldWalletServiceUrl);
-      config.setWalletServiceBaseWsUrl(oldWalletServiceWsUrl);
+      rollbackConfigUrls(backupUrl);
       yield put(networkSettingsUpdateFailure());
       return;
     }
@@ -101,10 +113,7 @@ export function* updateNetworkSettings(action) {
     try {
       network = yield call(getFullnodeNetwork);
     } catch (err) {
-      // rollback config
-      config.setServerUrl(oldNodeUrl);
-      config.setWalletServiceBaseUrl(oldWalletServiceUrl);
-      config.setWalletServiceBaseWsUrl(oldWalletServiceWsUrl);
+      rollbackConfigUrls(backupUrl);
       yield put(networkSettingsUpdateFailure());
       return;
     }
@@ -128,13 +137,30 @@ export function* updateNetworkSettings(action) {
   const customNetwork = {
     stage,
     network,
-    walletServiceUrl,
-    walletServiceWsUrl,
     nodeUrl,
     explorerUrl,
+    explorerServiceUrl,
+    walletServiceUrl,
+    walletServiceWsUrl,
   };
 
   yield put(networkSettingsUpdateSuccess(customNetwork));
+}
+
+/**
+ * Rollback the URLs configured in the wallet by using the backupUrl object.
+ * @param {{
+ *   nodeUrl: string;
+ *   explorerServiceUrl: string;
+ *   walletServiceUrl: string;
+ *   walletServiceWsUrl: string;
+ * }} backupUrl An object containing the previous configuration for wallet URLs.
+ */
+function rollbackConfigUrls(backupUrl) {
+  config.setServerUrl(backupUrl.nodeUrl);
+  config.setExplorerServiceBaseUrl(backupUrl.explorerServiceUrl);
+  config.setWalletServiceBaseUrl(backupUrl.walletServiceUrl);
+  config.setWalletServiceBaseWsUrl(backupUrl.walletServiceWsUrl);
 }
 
 /**
