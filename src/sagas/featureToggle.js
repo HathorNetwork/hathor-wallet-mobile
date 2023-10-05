@@ -37,7 +37,7 @@ import {
   STAGE,
   FEATURE_TOGGLE_DEFAULTS,
 } from '../constants';
-import { disableFeaturesIfNeeded, isWalletServiceUnavailable } from './helpers';
+import { disableFeaturesIfNeeded } from './helpers';
 
 const CONNECT_TIMEOUT = 10000;
 const MAX_RETRIES = 5;
