@@ -22,6 +22,7 @@ import {
   types,
 } from '../actions';
 import { FEATURE_TOGGLE_DEFAULTS, INITIAL_TOKENS, networkSettingsKey, PUSH_NOTIFICATION_FEATURE_TOGGLE, WALLET_SERVICE_FEATURE_TOGGLE, WALLET_SERVICE_REQUEST_TIMEOUT } from '../constants';
+import { STORE } from '../store';
 
 export function* waitForFeatureToggleInitialization() {
   const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
