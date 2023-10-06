@@ -6,7 +6,7 @@
  */
 
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
-const blacklist = require('@react-native/metro-config/src/defaults/exclusionList');
+const blacklist = require('metro-config/src/defaults/exclusionList');
 
 /**
  * Metro configuration
