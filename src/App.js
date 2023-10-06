@@ -81,6 +81,7 @@ import Settings from './screens/Settings';
 import WalletConnectList from './screens/WalletConnect/WalletConnectList';
 import WalletConnectManual from './screens/WalletConnect/WalletConnectManual';
 import WalletConnectScan from './screens/WalletConnect/WalletConnectScan';
+import NetworkSettings from './screens/NetworkSettings';
 import baseStyle from './styles/init';
 import WalletConnectModal from './components/WalletConnect/WalletConnectModal';
 import { COLORS, HathorTheme } from './styles/themes';
@@ -380,6 +381,7 @@ const AppStack = () => {
         <Stack.Screen name='WalletConnectManual' component={WalletConnectManual} />
         <Stack.Screen name='WalletConnectScan' component={WalletConnectScan} />
         <Stack.Screen name='PushNotification' component={PushNotification} />
+        <Stack.Screen name='NetworkSettings' component={NetworkSettings} />
         <Stack.Screen name='ChangePin' component={ChangePin} />
         <Stack.Screen
           name='ResetWallet'

@@ -170,6 +170,13 @@ export class Settings extends React.Component {
             />
           </HathorList>
 
+          <HathorList title={t`Developer Settings`}>
+              <ListMenu
+                title={t`Network Settings`}
+                onPress={() => this.props.navigation.navigate('NetworkSettings')}
+              />
+          </HathorList>
+
         </ScrollView>
         <OfflineBar />
       </View>
