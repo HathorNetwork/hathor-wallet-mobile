@@ -5,6 +5,7 @@
  * @format
  */
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const blacklist = require('metro-config/src/defaults/exclusionList');
 
