@@ -540,11 +540,11 @@ PODS:
     - React-Core
   - RNPermissions (3.8.3):
     - React-Core
-  - RNReanimated (2.17.0):
+  - RNReanimated (3.5.4):
     - DoubleConversion
     - FBLazyVector
-    - FBReactNativeSpec
     - glog
+    - hermes-engine
     - RCT-Folly
     - RCTRequired
     - RCTTypeSafety
@@ -554,11 +554,13 @@ PODS:
     - React-Core/RCTWebSocket
     - React-CoreModules
     - React-cxxreact
+    - React-hermes
     - React-jsi
     - React-jsiexecutor
     - React-jsinspector
     - React-RCTActionSheet
     - React-RCTAnimation
+    - React-RCTAppDelegate
     - React-RCTBlob
     - React-RCTImage
     - React-RCTLinking
@@ -818,11 +820,11 @@ SPEC CHECKSUMS:
   RCTTypeSafety: 4636e4a36c7c2df332bda6d59b19b41c443d4287
   React: e0cc5197a804031a6c53fb38483c3485fcb9d6f3
   React-callinvoker: 1a635856fe0c3d8b13fccd4ed7e76283b99b0868
-  React-Codegen: 78d61f981cccc68a771a598f71621cb7db14b04c
-  React-Core: 252f8e9ca5a4e91af9b9be58670846d662b1c49f
-  React-CoreModules: f8b9e91fac7bd5d18729ce961a4978c70b5031cc
+  React-Codegen: 8169df63a7d5731337aad8f3c911a349a55932d3
+  React-Core: cb6fb2637b5828a0944d4afc1c8678ffff570dcc
+  React-CoreModules: c39f9ef5cf812b2b266c63364a8969b29d30ba2a
   React-cxxreact: 70284b32dcd367439d7dae84d9f72660544181b5
-  React-debug: ee33d7ba43766d9b10b32561527b57ccfbcb6bd1
+  React-debug: 93d183299eb4bd7b0bf8cb6e376f608e2a95b64f
   React-hermes: 91f97ea2669dc5847e1f26c243aaad913319c570
   React-jsi: bd68b7779746014f01ea72d1b738809e132d7f1e
   React-jsiexecutor: ff70a72027dea5cc7d71cfcc6fad7f599f63987a
@@ -832,23 +834,23 @@ SPEC CHECKSUMS:
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-safe-area-context: 68b07eabfb0d14547d36f6929c0e98d818064f02
   react-native-version-number: b415bbec6a13f2df62bf978e85bc0d699462f37f
-  React-NativeModulesApple: 797bc6078d566eef3fb3f74127e6e1d2e945a15f
+  React-NativeModulesApple: 54adc761c7a6fa5f183ca62ad0cb94f4f1cdce4a
   React-perflogger: cd8886513f68e1c135a1e79d20575c6489641597
   React-RCTActionSheet: 726d2615ca62a77ce3e2c13d87f65379cdc73498
-  React-RCTAnimation: 8f2716b881c37c64858e4ecee0f58bfa57ff9afd
-  React-RCTAppDelegate: d4a213f29e81682f6b9c7d22f62a2ccab6d125ae
-  React-RCTBlob: dfaa933231c3497915bbcc9d98fcff7b6b60582c
-  React-RCTImage: 747e3d7b656a67470f9c234baedb8d41bbc4e745
-  React-RCTLinking: 148332b5b0396b280b05534f7d168e560a3bbd5f
-  React-RCTNetwork: 1d818121a8e678f064de663a6db7aaefc099e53c
-  React-RCTSettings: 4b95d26ebc88bfd3b6535b2d7904914ff88dbfc2
+  React-RCTAnimation: 0dcffbaab5acd05334d1d3b157f9275291e3a15b
+  React-RCTAppDelegate: 48df00f9da9e3019fa0759d1ca900e9f586ef1b1
+  React-RCTBlob: 5ccfb7a8353fad6edaf9a2456e184ceca8c77150
+  React-RCTImage: a80cc7170c7cd07b7b109353c605930b24d14bcf
+  React-RCTLinking: fb1add50b83dc4f3d39526d4ff5127f171cdad86
+  React-RCTNetwork: 6acdb13f8df6cff487f87ac799a3839ce1d45dac
+  React-RCTSettings: 0b8b7c2ebb78c540f7b0c0bbe46ab5481023f8a8
   React-RCTText: ce4499e4f2d8f85dc4b93ff0559313a016c4f3e2
-  React-RCTVibration: 45372e61b35e96d16893540958d156675afbeb63
-  React-rncore: a79d1cb3d6c01b358a8aa0b31ccc04ab5f0dbebc
+  React-RCTVibration: abb9c73984f4f0052cf50efe0ae6d6f877a74843
+  React-rncore: 3775c85216adc845837e5420c823a689aeaae630
   React-runtimeexecutor: 7e31e2bc6d0ecc83d4ba05eadc98401007abc10c
-  React-runtimescheduler: cc32add98c45c5df18436a6a52a7e1f6edec102c
-  React-utils: 7a9918a1ffdd39aba67835d42386f592ea3f8e76
-  ReactCommon: 91ece8350ebb3dd2be9cef662abd78b6948233c0
+  React-runtimescheduler: f248b96bdf61c5e078d3fa689adce6894c900659
+  React-utils: 40cdd9acee23230df5b78bf78a64ce8a2084c2d0
+  ReactCommon: 4ec7cc40d091eed0a510755619940b6a03cb507b
   ReactNativeCameraKit: 9d46a5d7dd544ca64aa9c03c150d2348faf437eb
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   RNCAsyncStorage: c913ede1fa163a71cea118ed4670bbaaa4b511bb
@@ -860,7 +862,7 @@ SPEC CHECKSUMS:
   RNLocalize: d4b8af4e442d4bcca54e68fc687a2129b4d71a81
   RNNotifee: 5155e0a5e0a97d0c839030d8192783cd63053999
   RNPermissions: d9db16f082ce2e09908e58c925189e2637d2786b
-  RNReanimated: 4ae06d380da4ea218da7b8be36746f2cc93021b0
+  RNReanimated: ab2e96c6d5591c3dfbb38a464f54c8d17fb34a87
   RNScreens: 50ffe2fa2342eabb2d0afbe19f7c1af286bc7fb3
   RNSentry: 9f0447b3ce13806f544903748de423259ead8552
   RNSVG: 80584470ff1ffc7994923ea135a3e5ad825546b9
@@ -870,6 +872,6 @@ SPEC CHECKSUMS:
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 86fed2e4d425ee4c6eab3813ba1791101ee153c6
 
-PODFILE CHECKSUM: 10e4f5a90aa7cf2c90cedea42907a8a959b49776
+PODFILE CHECKSUM: c422aedd0c3b236578801088c8afef28030c3c83
 
 COCOAPODS: 1.13.0
