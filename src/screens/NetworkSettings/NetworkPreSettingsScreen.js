@@ -3,66 +3,28 @@ import {
   StyleSheet,
   View,
   Text,
+  TouchableHighlight,
 } from 'react-native';
 import { t } from 'ttag';
+import { useDispatch } from 'react-redux';
 import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
+import { networkSettingsUpdateSuccess } from '../../actions';
+import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
 
 const riskDisclaimerTitleText = t`Network Pre-Settings`.toUpperCase();
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   content: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     padding: 16,
     paddingBottom: 48,
   },
   centeredText: {
     fontSize: 16,
-  },
-  buttonContainer: {
-    alignSelf: 'stretch',
-  },
-});
-
-export const NetworkPreSettingsNav = Symbol('NetworkPreSettings').toString();
-
-export function NetworkPreSettingsScreen({ navigation }) {
-  return (
-    <View style={style.container}>
-      <HathorHeader
-        title={riskDisclaimerTitleText}
-        onBackPress={() => navigation.goBack()}
-      />
-      <View style={styles.container}>
-        <Card title="Mainnet" url="https://example.com/url1" />
-        <Card title="Testnet" url="https://example.com/url2" />
-        <View style={style.buttonContainer}>
-          <NewHathorButton
-            onPress={() => navigation.navigate('Settings') }
-            title={t`Customize`} />
-        </View>
-      </View>
-    </View>
-  );
-}
-
-const Card = ({ title, url }) => (
-  <View style={styles.card}>
-    <Text style={styles.cardTitle}>{title}</Text>
-    <Text style={styles.cardBody}>{url}</Text>
-  </View>
-);
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
   },
   card: {
     backgroundColor: 'white',
@@ -79,11 +41,64 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   cardTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   cardBody: {
     marginTop: 10,
-    color: 'blue',
+    // Gray
+    color: 'hsl(0, 0%, 55%)',
+  },
+  buttonContainer: {
+    alignSelf: 'stretch',
+    marginTop: 'auto'
   },
 });
+
+export const NetworkPreSettingsNav = Symbol('NetworkPreSettings').toString();
+
+export function NetworkPreSettingsScreen({ navigation }) {
+  const dispatch = useDispatch();
+  const setMainnetNetwork = () => {
+    dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_MAINNET))
+  };
+  const setTestnetNetwork = () => {
+    dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_TESTNET))
+  };
+  const setCustomNetwork = () => {
+    // do nothing
+  };
+
+  return (
+    <View style={styles.container}>
+      <HathorHeader
+        title={riskDisclaimerTitleText}
+        onBackPress={() => navigation.goBack()}
+      />
+      <View style={styles.content}>
+        <CustomNetwork title="Mainnet" url="https://example.com/url1" onPress={setMainnetNetwork} />
+        <CustomNetwork title="Testnet" url="https://example.com/url2" onPress={setTestnetNetwork} />
+        <View style={styles.buttonContainer}>
+          <NewHathorButton
+            onPress={setCustomNetwork}
+            title={t`Customize`} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const CustomNetwork = ({ title, url, onPress}) => {
+  return (
+    <TouchableHighlight
+      onPress={onPress}
+      underlayColor='hsl(0, 0%, 98%)'
+      style={styles.card}
+    >
+      <View>
+        <Text style={styles.cardTitle}>{title}</Text>
+        <Text style={styles.cardBody}>{url}</Text>
+      </View>
+    </TouchableHighlight>
+  );
+};
