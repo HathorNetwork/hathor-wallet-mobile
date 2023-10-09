@@ -44,9 +44,9 @@ First start the Metro bundler:
 
 `npm start` or `npm run start:clean` to invalidate the cache before run.
 
-Then build the app for iOS:
+Then press `i` to select the `run on iOS` option: this will build the app for iOS.
 
-`npm run ios` to open on iOS simulator, or `npm run ios -- --simulator "iPhone 11"` to run it by name.
+Alternatively, `npm run ios` to open on iOS simulator, or `npm run ios -- --simulator "iPhone 11"` to run it by name.
 
 To list all available simulators, use `xcrun simctl list devices`.
 
@@ -87,7 +87,7 @@ First start the Metro bundler:
 
 `npm start`
 
-Then press `a` to select the `run on Android` option: this will build the app for Android. If a physical device is connected, the application will start on it. Else, the latest Android Studio's Emulator will be the run target.
+Then press `a` to select the `run on Android` option: this will build the app for Android. If a physical device is connected, the application will start on it. Else, the latest Android Studio's Emulator will be the run target. Alternatively, use `npm run android` after having the Metro bundler started.
 
 If you need to open the Dev Menu on Android Studio Emulator, use `Ctrl + M` or run `adb shell input keyevent 82` in a terminal.
 
