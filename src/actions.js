@@ -885,7 +885,16 @@ export const networkSettingsUpdateSuccess = (customNetwork) => ({
  * Emits the failure signal for custom network settings request.
  * It means the request couldn't be processed either by ivalid input,
  * or by internal error.
+ * @param {{
+ *   message: string,
+ *   nodeUrl: string,
+ *   explorerUrl: string,
+ *   explorerServiceUrl: string,
+ *   walletServiceUrl?: string
+ *   walletServiceWsUrl?: string
+ * }} errors The validation errors from custom network settings form
  */
-export const networkSettingsUpdateFailure = () => ({
+export const networkSettingsUpdateFailure = (errors) => ({
   type: types.NETWORKSETTINGS_UPDATE_FAILURE,
+  payload: errors,
 });

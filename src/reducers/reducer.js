@@ -207,6 +207,7 @@ const initialState = {
     ...FEATURE_TOGGLE_DEFAULTS,
   },
   networkSettings: PRE_SETTINGS_MAINNET,
+  networkSettingsErrors: {},
 };
 
 export const reducer = (state = initialState, action) => {
@@ -345,6 +346,8 @@ export const reducer = (state = initialState, action) => {
       return onSetWCConnectionFailed(state, action);
     case types.NETWORKSETTINGS_UPDATE_SUCCESS:
       return onNetworkSettingsUpdateSucess(state, action);
+    case types.NETWORKSETTINGS_UPDATE_FAILURE:
+      return onNetworkSettingsUpdateFailure(state, action);
     default:
       return state;
   }
@@ -1080,3 +1083,12 @@ export const onNetworkSettingsUpdateSucess = (state, { payload }) => ({
   ...state,
   networkSettings: payload
 });
+
+/**
+ * @param {Object} action.payload The errors from network settings input validation 
+ * @see updateNetworkSettings
+ */
+export const onNetworkSettingsUpdateFailure = (state, { payload }) => ({
+  ...state,
+  networkSettingsErrors: payload
+}); 
