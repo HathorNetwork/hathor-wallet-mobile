@@ -8,6 +8,8 @@ import NewHathorButton from '../../components/NewHathorButton';
 import SimpleInput from '../../components/SimpleInput';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
+const warningText = t`Any change to the network settings cannot be validated by Hathor. Only change if you know what you are doing.`;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -16,6 +18,16 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     paddingBottom: 48,
+  },
+  warningContainer: {
+    borderRadius: 8,
+    backgroundColor: 'hsl(47, 100%, 62%)', // warning yellow
+    marginBottom: 16,
+  },
+  warningMessage: {
+    fontSize: 14,
+    color: 'black',
+    padding: 12,
   },
   input: {
     marginBottom: 24,
@@ -102,6 +114,9 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
         onBackPress={() => navigation.goBack()}
       />
       <View style={styles.content}>
+        <View style={styles.warningContainer}>
+          <Text style={styles.warningMessage}>{warningText}</Text>
+        </View>
         <SimpleInput
           containerStyle={styles.input}
           label={t`Node URL`}
