@@ -194,9 +194,14 @@ export async function getWalletServiceNetwork() {
   try {
     const timeout = WALLET_SERVICE_REQUEST_TIMEOUT;
     // eslint-disable-next-line max-len
-    const instance = axiosWrapperCreateRequestInstance(config.getWalletServiceBaseUrl, null, timeout);
-    const response = await instance.get(`version`);
-    return response.data.network;
+    const instance = axiosWrapperCreateRequestInstance(config.getWalletServiceBaseUrl(), null, timeout);
+    const response = await instance.get(`version`, {
+      validateStatus: function (status) {
+        return status === 200; // Only 200 status is valid
+      }
+    });
+    // the first 'data' is from axios, the second is from payload
+    return response.data.data.network;
   } catch {
     throw new Error('Error getting wallet-service version data.');
   }
