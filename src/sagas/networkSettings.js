@@ -1,7 +1,8 @@
-import { all, takeEvery, put, call, race, take, delay } from 'redux-saga/effects';
+import { all, takeEvery, put, call, race, take, delay, select } from 'redux-saga/effects';
 import { config } from '@hathor/wallet-lib';
 import { isEmpty } from 'lodash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { t } from 'ttag';
 import { featureToggleUpdate, networkSettingsUpdateFailure, networkSettingsUpdateSuccess, reloadWalletRequested, types } from '../actions';
 import { HTTP_REQUEST_TIMEOUT, NETWORK, networkSettingsKey, NETWORK_TESTNET, STAGE, STAGE_DEV_PRIVNET, STAGE_TESTNET } from '../constants';
 import { getFullnodeNetwork, getWalletServiceNetwork } from './helpers';
@@ -34,64 +35,69 @@ export function* updateNetworkSettings(action) {
     walletServiceWsUrl,
   } = action.payload || {};
 
+  const errors = {};
+
   // validates input emptyness
   if (isEmpty(action.payload)) {
-    yield put(networkSettingsUpdateFailure());
-    return;
+    errors.message = t`Custom Network Settings cannot be empty.`;
   }
 
   // validates explorerUrl
   // - required
   // - should have a valid URL
   if (isEmpty(explorerUrl) || invalidUrl(explorerUrl)) {
-    yield put(networkSettingsUpdateFailure());
-    return;
+    errors.explorerUrl = t`explorerUrl should be a valid URL.`;
   }
 
   // validates explorerServiceUrl
   // - required
   // - should have a valid URL
   if (isEmpty(explorerServiceUrl) || invalidUrl(explorerServiceUrl)) {
-    yield put(networkSettingsUpdateFailure());
-    return;
+    errors.explorerServiceUrl = t`explorerServiceUrl should be a valid URL.`;
   }
 
   // validates nodeUrl
   // - required
   // - should have a valid URl
   if (isEmpty(nodeUrl) || invalidUrl(nodeUrl)) {
-    yield put(networkSettingsUpdateFailure());
-    return;
+    errors.nodeUrl = t`nodeUrl should be a valid URL.`;
   }
 
   // validates walletServiceUrl
   // - optional
   // - should have a valid URL, if given
   if (walletServiceUrl && invalidUrl(walletServiceUrl)) {
-    yield put(networkSettingsUpdateFailure());
-    return;
+    errors.walletServiceUrl = t`walletServiceUrl should be a valid URL.`;
   }
 
   // validates walletServiceWsUrl
   // - conditionally required
   // - should have a valid URL, if walletServiceUrl is given
   if (walletServiceUrl && invalidUrl(walletServiceWsUrl)) {
-    yield put(networkSettingsUpdateFailure());
+    errors.walletServiceWsUrl = t`walletServiceWsUrl should be a valid URL.`;
+  }
+
+  // TODO: Refactor by segregating Failure from Errors
+  // - create networkSettingsUpdateErrors
+  // - implement reaction to networkSettingsUpdateFailure
+  yield put(networkSettingsUpdateFailure(errors));
+  if (Object.keys(errors).length > 0) {
     return;
   }
 
   // NOTE: Should we allow that all the URLs be equals?
   // In practice they will never be equals.
 
+  const networkSettings = yield select((state) => state.networkSettings);
   const backupUrl = {
-    nodeUrl: config.getServerUrl(),
-    explorerServiceUrl: config.getExplorerServiceBaseUrl(),
-    walletServiceUrl: config.getWalletServiceBaseUrl(),
-    walletServiceWsUrl: config.getWalletServiceBaseWsUrl(),
+    nodeUrl: networkSettings.nodeUrl,
+    explorerServiceUrl: networkSettings.explorerServiceUrl,
+    walletServiceUrl: networkSettings.walletServiceUrl,
+    walletServiceWsUrl: networkSettings.walletServiceWsUrl,
   };
 
-  config.setServerUrl(nodeUrl);
   config.setExplorerServiceBaseUrl(explorerServiceUrl);
+  config.setServerUrl(nodeUrl);
 
   // - walletServiceUrl has precedence
   // - nodeUrl as fallback
@@ -101,11 +107,21 @@ export function* updateNetworkSettings(action) {
     config.setWalletServiceBaseWsUrl(walletServiceWsUrl);
 
     try {
-      network = yield call(getWalletServiceNetwork);
+      // continue if timeout
+      const { response } = yield race({
+        // TODO: Debug the wallet-service call to discover why it is failing...
+        // The wallet-service lambdas are down?
+        response: call(getWalletServiceNetwork),
+        timeout: delay(HTTP_REQUEST_TIMEOUT),
+      });
+
+      if (response) {
+        network = response;
+      }
     } catch (err) {
+      // NOTE: Keep the console?
+      console.error('error calling the wallet-service', err);
       rollbackConfigUrls(backupUrl);
-      yield put(networkSettingsUpdateFailure());
-      return;
     }
   }
 
@@ -113,6 +129,8 @@ export function* updateNetworkSettings(action) {
     try {
       network = yield call(getFullnodeNetwork);
     } catch (err) {
+      // NOTE: Keep the console?
+      console.error('error calling the fullnode', err);
       rollbackConfigUrls(backupUrl);
       yield put(networkSettingsUpdateFailure());
       return;
@@ -166,18 +184,13 @@ function rollbackConfigUrls(backupUrl) {
 /**
  * Check if the value is an invalid URL.
  *
- * @param {string} value to be checked.
+ * @param {string} tryUrl to be checked.
  * @returns {boolean} true if invalid, false otherwise.
  */
-function invalidUrl(value) {
-  const allowedProtocols = ['http:', 'https:', 'ws:', 'wss:'];
+function invalidUrl(tryUrl) {
+  const urlTestPattern = /^(https?|wss?):\/\/[^\s/$.?#].[^\s]*$/;
   try {
-    const tryUrl = new URL(value);
-    if (isEmpty(tryUrl.protocol) || !(allowedProtocols.includes(tryUrl.protocol))) {
-      return true;
-    }
-
-    if (isEmpty(tryUrl.host)) {
+    if (!urlTestPattern.test(tryUrl)) {
       return true;
     }
   } catch {

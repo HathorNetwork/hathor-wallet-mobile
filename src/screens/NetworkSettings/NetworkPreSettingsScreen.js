@@ -11,6 +11,7 @@ import NewHathorButton from '@components/NewHathorButton';
 import { useDispatch } from 'react-redux';
 import { networkSettingsUpdateSuccess } from '../../actions';
 import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
+import { CustomNetworkSettingsNav } from './CustomNetworkSettingsScreen';
 
 const riskDisclaimerTitleText = t`Network Pre-Settings`.toUpperCase();
 const styles = StyleSheet.create({
@@ -66,7 +67,7 @@ export function NetworkPreSettingsScreen({ navigation }) {
     dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_TESTNET))
   };
   const setCustomNetwork = () => {
-    // do nothing
+    navigation.push(CustomNetworkSettingsNav);
   };
 
   return (
