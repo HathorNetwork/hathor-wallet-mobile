@@ -205,6 +205,12 @@ export const networkSettingsKey = {
   networkSettings: 'networkSettings:networkSettings'
 };
 
+export const NETWORKSETTINGS_STATUS = {
+  READY: 'ready',
+  FAILED: 'failed',
+  LOADING: 'loading',
+};
+
 /**
  * Timeout in miliseconds to call wallet-service.
  */

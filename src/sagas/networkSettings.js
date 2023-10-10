@@ -3,8 +3,8 @@ import { config } from '@hathor/wallet-lib';
 import { isEmpty } from 'lodash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { t } from 'ttag';
-import { featureToggleUpdate, networkSettingsUpdateFailure, networkSettingsUpdateSuccess, reloadWalletRequested, types } from '../actions';
-import { HTTP_REQUEST_TIMEOUT, NETWORK, networkSettingsKey, NETWORK_TESTNET, STAGE, STAGE_DEV_PRIVNET, STAGE_TESTNET } from '../constants';
+import { featureToggleUpdate, networkSettingsUpdateErrors, networkSettingsUpdateFailure, networkSettingsUpdateReady, networkSettingsUpdateSuccess, reloadWalletRequested, types } from '../actions';
+import { HTTP_REQUEST_TIMEOUT, NETWORK, networkSettingsKey, NETWORK_TESTNET, STAGE, STAGE_DEV_PRIVNET, STAGE_TESTNET, WALLET_SERVICE_REQUEST_TIMEOUT } from '../constants';
 import { getFullnodeNetwork, getWalletServiceNetwork } from './helpers';
 import { STORE } from '../store';
 
@@ -80,7 +80,7 @@ export function* updateNetworkSettings(action) {
   // TODO: Refactor by segregating Failure from Errors
   // - create networkSettingsUpdateErrors
   // - implement reaction to networkSettingsUpdateFailure
-  yield put(networkSettingsUpdateFailure(errors));
+  yield put(networkSettingsUpdateErrors(errors));
   if (Object.keys(errors).length > 0) {
     return;
   }
@@ -109,10 +109,8 @@ export function* updateNetworkSettings(action) {
     try {
       // continue if timeout
       const { response } = yield race({
-        // TODO: Debug the wallet-service call to discover why it is failing...
-        // The wallet-service lambdas are down?
         response: call(getWalletServiceNetwork),
-        timeout: delay(HTTP_REQUEST_TIMEOUT),
+        timeout: delay(WALLET_SERVICE_REQUEST_TIMEOUT),
       });
 
       if (response) {
@@ -224,6 +222,8 @@ export function* persistNetworkSettings(action) {
   if (timeout) {
     yield put(reloadWalletRequested());
   }
+
+  yield put(networkSettingsUpdateReady());
 }
 
 /**

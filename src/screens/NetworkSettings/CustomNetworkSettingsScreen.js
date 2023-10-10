@@ -2,13 +2,37 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
-import { networkSettingsUpdate } from '../../actions';
+import { networkSettingsUpdate, networkSettingsUpdateReady } from '../../actions';
+import FeedbackModal from '../../components/FeedbackModal';
 import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
 import SimpleInput from '../../components/SimpleInput';
+import { NETWORKSETTINGS_STATUS } from '../../constants';
+import errorIcon from '../../assets/images/icErrorBig.png';
+import Spinner from '../../components/Spinner';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
 const warningText = t`Any change to the network settings cannot be validated by Hathor. Only change if you know what you are doing.`;
+const feedbackLoadingText = t`Updating custom network settings...`;
+const feedbackFailedText = t`There was an error while customizing network settings. Please try again later.`;
+
+/**
+ * Check if the network settings status is failed.
+ * @param {object} networkSettingsStatus - status from redux store
+ * @returns {boolean} - true if the status is failed, false otherwise
+ */
+const hasFailed = (networkSettingsStatus) => {
+  return networkSettingsStatus === NETWORKSETTINGS_STATUS.FAILED;
+};
+
+/**
+ * Check if the network settings status is loading.
+ * @param {object} networkSettingsStatus - status from redux store
+ * @returns {boolean} - true if the status is loading, false otherwise
+ */
+const isLoading = (networkSettingsStatus) => {
+  return networkSettingsStatus === NETWORKSETTINGS_STATUS.LOADING;
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -18,6 +42,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     paddingBottom: 48,
+  },
+  feedbackModalIcon: {
+    height: 105,
+    width: 105
   },
   warningContainer: {
     borderRadius: 8,
@@ -44,6 +72,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const networkSettings = useSelector((state) => state.networkSettings);
   const networkSettingsErrors = useSelector((state) => state.networkSettingsErrors);
+  const networkSettingsStatus = useSelector((state) => state.networkSettingsStatus);
 
   const [formData, setFormData] = useState({
     nodeUrl: networkSettings.nodeUrl,
@@ -71,6 +100,10 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
         [name]: value,
       });
     };
+  };
+
+  const handleFeedbackModalDismiss = () => {
+    dispatch(networkSettingsUpdateReady());
   };
 
   const handleSubmit = () => {
@@ -113,6 +146,22 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
         title={customNetworkSettingsTitleText}
         onBackPress={() => navigation.goBack()}
       />
+
+      {isLoading(networkSettingsStatus) && (
+        <FeedbackModal
+          icon={<Spinner />}
+          text={feedbackLoadingText}
+        />
+      )}
+
+      {hasFailed(networkSettingsStatus) && (
+        <FeedbackModal
+          icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+          text={feedbackFailedText}
+          onDismiss={handleFeedbackModalDismiss}
+        />
+      )}
+
       <View style={styles.content}>
         <View style={styles.warningContainer}>
           <Text style={styles.warningMessage}>{warningText}</Text>
