@@ -12,12 +12,15 @@ import {
   TouchableHighlight,
 } from 'react-native';
 import { t } from 'ttag';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
+import Spinner from '../../components/Spinner';
+import FeedbackModal from '../../components/FeedbackModal';
 import { networkSettingsUpdateSuccess } from '../../actions';
 import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
 import { CustomNetworkSettingsNav } from './CustomNetworkSettingsScreen';
+import { feedbackFailedText, feedbackLoadingText, hasFailed, isLoading } from './helper';
 
 const presettingsTitleText = t`Network Pre-Settings`.toUpperCase();
 const styles = StyleSheet.create({
@@ -29,6 +32,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     padding: 16,
     paddingBottom: 48,
+  },
+  feedbackModalIcon: {
+    height: 105,
+    width: 105
   },
   centeredText: {
     fontSize: 16,
@@ -66,6 +73,7 @@ export const NetworkPreSettingsNav = Symbol('NetworkPreSettings').toString();
 
 export function NetworkPreSettingsScreen({ navigation }) {
   const dispatch = useDispatch();
+  const networkSettingsStatus = useSelector((state) => state.networkSettingsStatus);
   const setMainnetNetwork = () => dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_MAINNET));
   const setTestnetNetwork = () => dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_TESTNET));
   const setCustomNetwork = () => {
@@ -78,6 +86,22 @@ export function NetworkPreSettingsScreen({ navigation }) {
         title={presettingsTitleText}
         onBackPress={() => navigation.goBack()}
       />
+
+      {isLoading(networkSettingsStatus) && (
+        <FeedbackModal
+          icon={<Spinner />}
+          text={feedbackLoadingText}
+        />
+      )}
+
+      {hasFailed(networkSettingsStatus) && (
+        <FeedbackModal
+          icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+          text={feedbackFailedText}
+          onDismiss={handleFeedbackModalDismiss}
+        />
+      )}
+
       <View style={styles.content}>
         <CustomNetwork title='Mainnet' url={PRE_SETTINGS_MAINNET.nodeUrl} onPress={setMainnetNetwork} />
         <CustomNetwork title='Testnet' url={PRE_SETTINGS_TESTNET.nodeUrl} onPress={setTestnetNetwork} />
