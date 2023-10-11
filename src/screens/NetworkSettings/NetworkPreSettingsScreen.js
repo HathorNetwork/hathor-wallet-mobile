@@ -9,8 +9,8 @@ import { t } from 'ttag';
 import HathorHeader from '@components/HathorHeader';
 import NewHathorButton from '@components/NewHathorButton';
 import { useDispatch } from 'react-redux';
-import { networkSettingsUpdateSuccess } from '../../actions';
-import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
+import { networkSettingsUpdateSuccess } from '@src/actions';
+import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '@src/constants';
 import { CustomNetworkSettingsNav } from './CustomNetworkSettingsScreen';
 
 const riskDisclaimerTitleText = t`Network Pre-Settings`.toUpperCase();

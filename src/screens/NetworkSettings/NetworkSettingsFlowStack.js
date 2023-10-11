@@ -1,7 +1,7 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSelector } from 'react-redux';
 import { eq } from 'lodash';
-import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
+import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '@src/constants';
 import { CustomNetworkSettingsNav, CustomNetworkSettingsScreen } from './CustomNetworkSettingsScreen';
 import { NetworkPreSettingsNav, NetworkPreSettingsScreen } from './NetworkPreSettingsScreen';
 import { NetworkSettingsDislaimerNav, NetworkSettingsDislaimerScreen } from './NetworkSettingsDisclaimerScreen';
