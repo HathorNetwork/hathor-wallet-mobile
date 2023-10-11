@@ -61,7 +61,6 @@ class PinScreen extends React.Component {
       pin: '',
       pinColor: COLORS.textColor,
       error: null,
-      waitingForBiometry: false,
     };
 
     this.canCancel = false;
@@ -112,8 +111,6 @@ class PinScreen extends React.Component {
   handleBackButton = () => true;
 
   askBiometricId = async () => {
-    // Displaying an empty screen while waiting for the OS biometry response
-    this.setState({ waitingForBiometry: true });
     try {
       /* getGenericPassword will return either `false` or UserCredentials:
        *
@@ -125,13 +122,11 @@ class PinScreen extends React.Component {
       const credentials = await Keychain.getGenericPassword({
         authenticationPrompt: { title: this.biometryText },
       });
-      this.setState({ waitingForBiometry: false });
 
       if (credentials !== false) {
         this.dismiss(credentials.password);
       }
     } catch (e) {
-      this.setState({ waitingForBiometry: false });
       // No need to do anything here as the user can type his PIN
     }
   };
@@ -323,16 +318,7 @@ class PinScreen extends React.Component {
           backgroundColor: baseStyle.container.backgroundColor,
         }}
       >
-        { this.state.waitingForBiometry && (
-        <View
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            backgroundColor: baseStyle.container.backgroundColor,
-          }}
-        />
-        )}
-        { !this.state.waitingForBiometry && renderPinDigits()}
+        {renderPinDigits()}
       </View>
     );
   }
