@@ -7,6 +7,7 @@ import {
 import { t } from 'ttag';
 import HathorHeader from '@components/HathorHeader';
 import NewHathorButton from '@components/NewHathorButton';
+import { NetworkPreSettingsNav } from './NetworkPreSettingsScreen';
 
 const riskDisclaimerTitleText = t`Risk Disclaimer`.toUpperCase();
 const style = StyleSheet.create({
@@ -30,6 +31,10 @@ const style = StyleSheet.create({
 export const NetworkSettingsDislaimerNav = Symbol('NetworkSettingsDislaimer').toString();
 
 export function NetworkSettingsDislaimerScreen({ navigation }) {
+  const handleNavigation = () => {
+    navigation.push(NetworkPreSettingsNav);
+  };
+
   return (
     <View style={style.container}>
       <HathorHeader
@@ -44,7 +49,7 @@ export function NetworkSettingsDislaimerScreen({ navigation }) {
         </View>
         <View style={style.buttonContainer}>
           <NewHathorButton
-            onPress={() => navigation.navigate('Settings') }
+            onPress={handleNavigation}
             title={t`I understand`} />
         </View>
       </View>
