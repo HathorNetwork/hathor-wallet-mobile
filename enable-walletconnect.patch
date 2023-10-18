@@ -20,16 +20,13 @@ index b5a16f3..8c13347 100644
      "unleash-proxy-client": "^1.11.0",
      "url": "^0.11.0"
 diff --git a/shim.js b/shim.js
-index 73c130d..5cc0f58 100644
+index 73c130d..10d894b 100644
 --- a/shim.js
 +++ b/shim.js
-@@ -23,6 +23,8 @@ if (typeof localStorage !== 'undefined') {
-   localStorage.debug = isDev ? '*' : ''
- }
- 
--// If using the crypto shim, uncomment the following line to ensure
--// crypto is loaded first, so it can populate global.crypto
--require('crypto')
+@@ -26,3 +26,8 @@ if (typeof localStorage !== 'undefined') {
+ // If using the crypto shim, uncomment the following line to ensure
+ // crypto is loaded first, so it can populate global.crypto
+ require('crypto')
 +const TextEncoder = require('text-encoding').TextEncoder;
 +const TextDecoder = require('text-encoding').TextDecoder;
 +
