@@ -8,6 +8,18 @@ import { getFullnodeNetwork, getWalletServiceNetwork } from './helpers';
 import { STORE } from '../store';
 
 /**
+ * Initialize network settings saga.
+ *
+ * It looks up a stored network settings to upddate the redux state.
+ */
+export function* initNetworkSettings() {
+  const networkSettings = STORE.getItem(networkSettingsKeyMap.networkSettings);
+  if (networkSettings) {
+    yield put(networkSettingsUpdateSuccess(customNetwork));
+  }
+}
+
+/**
  * Takes the network settings input to be processed, passing
  * through a validation process that will either yield a
  * failure or a success effect.
@@ -226,6 +238,7 @@ export function* cleanNetworkSettings() {
  */
 export function* saga() {
   yield all([
+    takeEvery(types.START_WALLET_SUCCESS, initNetworkSettings),
     takeEvery(types.NETWORKSETTINGS_UPDATE, updateNetworkSettings),
     takeEvery(types.NETWORKSETTINGS_UPDATE_SUCCESS, persistNetworkSettings),
     takeEvery(types.RESET_WALLET, cleanNetworkSettings),
