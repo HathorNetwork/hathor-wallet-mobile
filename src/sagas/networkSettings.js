@@ -3,7 +3,7 @@ import { config } from '@hathor/wallet-lib';
 import { isEmpty } from 'lodash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { featureToggleUpdate, networkSettingsUpdateFailure, networkSettingsUpdateSuccess, reloadWalletRequested, types } from '../actions';
-import { HTTP_REQUEST_TIMEOUT, NETWORK, networkSettingsKey, NETWORK_TESTNET, STAGE, STAGE_DEV_PRIVNET, STAGE_TESTNET } from '../constants';
+import { HTTP_REQUEST_TIMEOUT, NETWORK, networkSettingsKeyMap, NETWORK_TESTNET, STAGE, STAGE_DEV_PRIVNET, STAGE_TESTNET } from '../constants';
 import { getFullnodeNetwork, getWalletServiceNetwork } from './helpers';
 import { STORE } from '../store';
 
@@ -196,7 +196,7 @@ export function* persistNetworkSettings(action) {
   // persists after reducer being updated
   const networkSettings = action.payload;
   const strNetworkSettings = JSON.stringify(networkSettings);
-  yield call(AsyncStorage.setItem, networkSettingsKey.networkSettings, strNetworkSettings);
+  yield call(AsyncStorage.setItem, networkSettingsKeyMap.networkSettings, strNetworkSettings);
 
   // trigger toggle update to be managed by featureToggle saga
   yield put(featureToggleUpdate());
@@ -217,7 +217,7 @@ export function* persistNetworkSettings(action) {
  * Deletes the network settings from the application storage.
  */
 export function* cleanNetworkSettings() {
-  STORE.removeItem(networkSettingsKey.networkSettings);
+  STORE.removeItem(networkSettingsKeyMap.networkSettings);
   yield 0;
 }
 

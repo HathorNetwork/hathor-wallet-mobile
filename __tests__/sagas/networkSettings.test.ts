@@ -6,7 +6,7 @@ import { applyMiddleware, createStore } from 'redux';
 import { reducer } from '../../src/reducers/reducer';
 import { networkSettingsUpdate, networkSettingsUpdateSuccess, reloadWalletRequested, types } from '../../src/actions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { networkSettingsKey } from '../../src/constants';
+import { networkSettingsKeyMap } from '../../src/constants';
 import { STORE } from '../../src/store';
 import { config } from '@hathor/wallet-lib';
 
@@ -287,7 +287,7 @@ describe('persistNetworkSettings', () => {
 
         const expectedStoredValue = JSON.stringify(networkSettingsPayload);
         expect(spyStorage).toBeCalledTimes(1);
-        expect(spyStorage).toBeCalledWith(networkSettingsKey.networkSettings, expectedStoredValue);
+        expect(spyStorage).toBeCalledWith(networkSettingsKeyMap.networkSettings, expectedStoredValue);
 
         const expectedState = {
             networkSettings: networkSettingsPayload
