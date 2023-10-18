@@ -29,6 +29,7 @@ import {
   WALLET_SERVICE_REQUEST_TIMEOUT,
   networkSettingsKeyMap,
 } from '../constants';
+import { STORE } from '../store';
 
 export function* waitForFeatureToggleInitialization() {
   const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
