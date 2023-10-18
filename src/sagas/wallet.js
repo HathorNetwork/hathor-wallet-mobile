@@ -154,7 +154,7 @@ export function* startWallet(action) {
     });
   } else {
     const connection = new Connection({
-      network: networkSettings.network, // app currently connects only to mainnet
+      network: networkSettings.network,
       servers: [networkSettings.nodeUrl],
     });
 
