@@ -136,7 +136,7 @@ export function* startWallet(action) {
     dispatch = _dispatch;
   });
 
-  let networkSettings = yield select(getNetworkSettings); 
+  const networkSettings = yield select(getNetworkSettings); 
 
   let wallet;
   if (useWalletService) {

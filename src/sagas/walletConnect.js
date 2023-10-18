@@ -426,7 +426,7 @@ export function* onSessionProposal(action) {
     }));
   }
 
-  let networkSettings = yield select(getNetworkSettings);
+  const networkSettings = yield select(getNetworkSettings);
   try {
     yield call(() => web3wallet.approveSession({
       id,
