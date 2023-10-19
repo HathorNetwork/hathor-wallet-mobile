@@ -6,7 +6,7 @@ export const NetworkSettingsFlowStack = ({ navigation }) => {
   const FlowStack = createStackNavigator();
   return (
     <FlowStack.Navigator
-      initialRouteName='NetworkSetitngsDisclaimer'
+      initialRouteName='NetworkSettingsDisclaimer'
       screenOptions={{
         headerShown: false,
       }}
