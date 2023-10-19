@@ -1120,5 +1120,6 @@ export const onNetworkSettingsUpdateFailure = (state) => ({
 
 export const onNetworkSettingsUpdateErrors = (state, { payload }) => ({
   ...state,
-  networkSettingsErrors: payload
+  networkSettingsErrors: payload,
+  networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
 }); 
