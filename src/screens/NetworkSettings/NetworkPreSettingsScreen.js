@@ -65,12 +65,8 @@ export const NetworkPreSettingsNav = Symbol('NetworkPreSettings').toString();
 
 export function NetworkPreSettingsScreen({ navigation }) {
   const dispatch = useDispatch();
-  const setMainnetNetwork = () => {
-    dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_MAINNET))
-  };
-  const setTestnetNetwork = () => {
-    dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_TESTNET))
-  };
+  const setMainnetNetwork = () => dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_MAINNET));
+  const setTestnetNetwork = () => dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_TESTNET));
   const setCustomNetwork = () => {
     // do nothing
   };
