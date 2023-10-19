@@ -78,8 +78,8 @@ export function NetworkPreSettingsScreen({ navigation }) {
         onBackPress={() => navigation.goBack()}
       />
       <View style={styles.content}>
-        <CustomNetwork title="Mainnet" url="https://example.com/url1" onPress={setMainnetNetwork} />
-        <CustomNetwork title="Testnet" url="https://example.com/url2" onPress={setTestnetNetwork} />
+        <CustomNetwork title="Mainnet" url={PRE_SETTINGS_MAINNET.nodeUrl} onPress={setMainnetNetwork} />
+        <CustomNetwork title="Testnet" url={PRE_SETTINGS_TESTNET.nodeUrl} onPress={setTestnetNetwork} />
         <View style={styles.buttonContainer}>
           <NewHathorButton
             onPress={setCustomNetwork}
