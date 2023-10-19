@@ -129,8 +129,7 @@ export function* updateNetworkSettings(action) {
         network = response;
       }
     } catch (err) {
-      // NOTE: Keep the console?
-      console.error('error calling the wallet-service', err);
+      console.error('Error calling the wallet-service while trying to get network details in updateNetworkSettings effect.', err);
       rollbackConfigUrls(backupUrl);
     }
   }
@@ -140,7 +139,7 @@ export function* updateNetworkSettings(action) {
       network = yield call(getFullnodeNetwork);
     } catch (err) {
       // NOTE: Keep the console?
-      console.error('error calling the fullnode', err);
+      console.error('Error calling the fullnode while trying to get network details in updateNetworkSettings effect..', err);
       rollbackConfigUrls(backupUrl);
       yield put(networkSettingsUpdateFailure());
       return;
