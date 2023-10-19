@@ -1098,6 +1098,7 @@ export const onNetworkSettingsUpdate = (state) => ({
 export const onNetworkSettingsUpdateSucess = (state, { payload }) => ({
   ...state,
   networkSettings: payload,
+  networkSettingsStatus: NETWORKSETTINGS_STATUS.LOADING,
 });
 
 /**
