@@ -54,9 +54,9 @@ const style = StyleSheet.create({
   },
 });
 
-export const NetworkSettingsDislaimerNav = Symbol('NetworkSettingsDislaimer').toString();
+export const NetworkSettingsDisclaimerNav = Symbol('NetworkSettingsDisclaimer').toString();
 
-export function NetworkSettingsDislaimerScreen({ navigation }) {
+export function NetworkSettingsDisclaimerScreen({ navigation }) {
   return (
     <View style={style.container}>
       <HathorHeader
