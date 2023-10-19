@@ -57,10 +57,8 @@ const style = StyleSheet.create({
 
 export const NetworkSettingsDisclaimerNav = Symbol('NetworkSettingsDisclaimer').toString();
 
-export function NetworkSettingsDisclaimerScreen({ navigation }) {
-  const handleNavigation = () => {
-    navigation.push(NetworkPreSettingsNav);
-  };
+export function NetworkSettingsDislaimerScreen({ navigation }) {
+  const handleNavigation = () => navigation.push(NetworkPreSettingsNav);
 
   return (
     <View style={style.container}>
