@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
+import { isEmpty } from 'lodash';
 import { networkSettingsUpdate, networkSettingsUpdateReady } from '../../actions';
 import FeedbackModal from '../../components/FeedbackModal';
 import HathorHeader from '../../components/HathorHeader';
@@ -33,6 +34,38 @@ const hasFailed = (networkSettingsStatus) => {
 const isLoading = (networkSettingsStatus) => {
   return networkSettingsStatus === NETWORKSETTINGS_STATUS.LOADING;
 };
+
+/**
+ * Verifies if the errorModel of the form has an error message. 
+ */
+function hasError(errorModel) {
+  return Object
+    .values({ ...errorModel })
+    .reduce((hasError, currValue) => hasError || !isEmpty(currValue), false);
+};
+
+/**
+ * Validates the formModel, returning the errorModel.
+ * If there is no error in the formModel, the errorModel is returned empty.
+ */
+function validate(formModel) {
+  const errorModel = {};
+
+  if (!formModel.nodeUrl) {
+    errorModel.nodeUrl = t`nodeUrl is required.`;
+  }
+
+  if (!formModel.explorerUrl) {
+    errorModel.explorerUrl = t`explorerUrl is required.`;
+  }
+
+  if (!formModel.explorerServiceUrl) {
+    errorModel.explorerServiceUrl = t`explorerServiceUrl is required.`;
+  }
+
+  return errorModel;
+}
+
 
 const styles = StyleSheet.create({
   container: {
@@ -76,7 +109,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
   const networkSettingsErrors = useSelector((state) => state.networkSettingsErrors);
   const networkSettingsStatus = useSelector((state) => state.networkSettingsStatus);
 
-  const [formData, setFormData] = useState({
+  const [formModel, setFormModel] = useState({
     nodeUrl: networkSettings.nodeUrl,
     explorerUrl: networkSettings.explorerUrl,
     explorerServiceUrl: networkSettings.explorerServiceUrl,
@@ -84,7 +117,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     walletServiceWsUrl: networkSettings.walletServiceWsUrl || '',
   });
 
-  const [errorMessages, setErrorMessages] = useState({
+  const [errorModel, setErrorModel] = useState({
     nodeUrl: networkSettingsErrors?.nodeUrl || '',
     explorerUrl: networkSettingsErrors?.explorerUrl || '',
     explorerServiceUrl: networkSettingsErrors?.explorerServiceUrl || '',
@@ -97,10 +130,20 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
    */
   const handleInputChange = (name) => {
     return (value) => {
-      setFormData({
-        ...formData,
+      // update error model
+      const errors = { ...errorModel };
+      delete errors[name];
+      setErrorModel(errors);
+
+      // update form model
+      const form = {
+        ...formModel,
         [name]: value,
-      });
+      } 
+      setFormModel(form);
+
+      // validate form model and update error model
+      setErrorModel(validate(form));
     };
   };
 
@@ -109,31 +152,17 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
   };
 
   const handleSubmit = () => {
-    // Validation logic
-    const errors = {};
-
-    if (!formData.nodeUrl) {
-      errors.nodeUrl = t`nodeUrl is required.`;
-    }
-
-    if (!formData.explorerUrl) {
-      errors.explorerUrl = t`explorerUrl is required.`;
-    }
-
-    if (!formData.explorerServiceUrl) {
-      errors.explorerServiceUrl = t`explorerServiceUrl is required.`;
-    }
-
-    setErrorMessages(errors);
-    if (Object.keys(errors).length > 0) {
+    const errors = validate(formModel);
+    if (hasError(errors)) {
+      setErrorModel(errors);
       return;
     }
 
-    dispatch(networkSettingsUpdate(formData));
+    dispatch(networkSettingsUpdate(formModel));
   };
 
   useEffect(() => {
-    setErrorMessages({
+    setErrorModel({
       nodeUrl: networkSettingsErrors?.nodeUrl || '',
       explorerUrl: networkSettingsErrors?.explorerUrl || '',
       explorerServiceUrl: networkSettingsErrors?.explorerServiceUrl || '',
@@ -173,8 +202,8 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           label={t`Node URL`}
           autoFocus
           onChangeText={handleInputChange('nodeUrl')}
-          error={errorMessages.nodeUrl}
-          value={formData.nodeUrl}
+          error={errorModel.nodeUrl}
+          value={formModel.nodeUrl}
         />
 
         <SimpleInput
@@ -182,8 +211,8 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           label={t`Explorer URL`}
           autoFocus
           onChangeText={handleInputChange('explorerUrl')}
-          error={errorMessages.explorerUrl}
-          value={formData.explorerUrl}
+          error={errorModel.explorerUrl}
+          value={formModel.explorerUrl}
         />
 
         <SimpleInput
@@ -191,8 +220,8 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           label={t`Explorer Service URL`}
           autoFocus
           onChangeText={handleInputChange('explorerServiceUrl')}
-          error={errorMessages.explorerServiceUrl}
-          value={formData.explorerServiceUrl}
+          error={errorModel.explorerServiceUrl}
+          value={formModel.explorerServiceUrl}
         />
 
         <SimpleInput
@@ -200,8 +229,8 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           label={t`Wallet Service URL (optional)`}
           autoFocus
           onChangeText={handleInputChange('walletServiceUrl')}
-          error={errorMessages.walletServiceUrl}
-          value={formData.walletServiceUrl}
+          error={errorModel.walletServiceUrl}
+          value={formModel.walletServiceUrl}
         />
 
         <SimpleInput
@@ -209,12 +238,13 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           label={t`Wallet Service WS URL (optional)`}
           autoFocus
           onChangeText={handleInputChange('walletServiceWsUrl')}
-          error={errorMessages.walletServiceWsUrl}
-          value={formData.walletServiceWsUrl}
+          error={errorModel.walletServiceWsUrl}
+          value={formModel.walletServiceWsUrl}
         />
 
         <View style={styles.buttonContainer}>
           <NewHathorButton
+            disabled={hasError(errorModel)}
             onPress={handleSubmit}
             title={t`Send`} />
         </View>
