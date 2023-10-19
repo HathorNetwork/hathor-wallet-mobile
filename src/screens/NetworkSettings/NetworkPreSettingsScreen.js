@@ -18,7 +18,7 @@ import NewHathorButton from '../../components/NewHathorButton';
 import { networkSettingsUpdateSuccess } from '../../actions';
 import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
 
-const riskDisclaimerTitleText = t`Network Pre-Settings`.toUpperCase();
+const presettingsTitleText = t`Network Pre-Settings`.toUpperCase();
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -74,7 +74,7 @@ export function NetworkPreSettingsScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <HathorHeader
-        title={riskDisclaimerTitleText}
+        title={presettingsTitleText}
         onBackPress={() => navigation.goBack()}
       />
       <View style={styles.content}>
