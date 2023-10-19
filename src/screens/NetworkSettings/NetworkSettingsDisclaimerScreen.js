@@ -16,6 +16,8 @@ import NewHathorButton from '../../components/NewHathorButton';
 import { COLORS } from '../../styles/themes';
 
 const riskDisclaimerTitleText = t`Risk Disclaimer`.toUpperCase();
+const riskDisclaimerContentText = t`Do not change this unless you know what your are doing, and under no circustance change this settings based on someone else suggestion, as this can potentially make you susceptible to fraudulent schemes.`;
+
 const style = StyleSheet.create({
   container: {
     flex: 1,
@@ -62,10 +64,8 @@ export function NetworkSettingsDislaimerScreen({ navigation }) {
         onBackPress={() => navigation.goBack()}
       />
       <View style={style.content}>
-        <View>
-          <Text style={style.centeredText}>
-            {t`Do not change this unless you know what your are doing, and under no circustance change this settings based on someone else suggestion, as this can potentially make you susceptible to fraudulent schemes.`}
-          </Text>
+        <View style={style.warningContainer}>
+          <Text style={style.warningMessage}>{riskDisclaimerContentText}</Text>
         </View>
         <View style={style.buttonContainer}>
           <NewHathorButton
