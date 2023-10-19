@@ -49,12 +49,14 @@ const styles = StyleSheet.create({
   },
   warningContainer: {
     borderRadius: 8,
-    backgroundColor: 'hsl(47, 100%, 62%)', // warning yellow
-    marginBottom: 16,
+    backgroundColor: 'hsl(47, 100%, 86%)', // warning yellow
+    marginBottom: 32,
+    borderWidth: 1,
+    borderColor: 'hsl(47, 100%, 70%)', // warning yellow - 16% light
   },
   warningMessage: {
     fontSize: 14,
-    color: 'black',
+    color: 'hsl(47, 100%, 22%)', // warning yellow - 64% light
     padding: 12,
   },
   input: {
