@@ -10,7 +10,7 @@ import { STORE } from '../store';
 /**
  * Initialize network settings saga.
  *
- * It looks up a stored network settings to upddate the redux state.
+ * It looks up a stored network settings to update the redux state.
  */
 export function* initNetworkSettings() {
   const customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
