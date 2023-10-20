@@ -13,7 +13,7 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 import Spinner from '../../components/Spinner';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
-const warningText = t`Any change to the network settings cannot be validated by Hathor. Only change if you know what you are doing.`;
+const warningText = t`Any token outside mainnet network bear no value. Only change if you know what you are doing.`;
 const feedbackLoadingText = t`Updating custom network settings...`;
 const feedbackFailedText = t`There was an error while customizing network settings. Please try again later.`;
 
