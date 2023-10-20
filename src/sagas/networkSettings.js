@@ -13,8 +13,8 @@ import { STORE } from '../store';
  * It looks up a stored network settings to upddate the redux state.
  */
 export function* initNetworkSettings() {
-  const networkSettings = STORE.getItem(networkSettingsKeyMap.networkSettings);
-  if (networkSettings) {
+  const customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
+  if (customNetwork) {
     yield put(networkSettingsUpdateSuccess(customNetwork));
   }
 }
