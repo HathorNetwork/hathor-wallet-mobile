@@ -138,7 +138,6 @@ export function* updateNetworkSettings(action) {
     try {
       network = yield call(getFullnodeNetwork);
     } catch (err) {
-      // NOTE: Keep the console?
       console.error('Error calling the fullnode while trying to get network details in updateNetworkSettings effect..', err);
       rollbackConfigUrls(backupUrl);
       yield put(networkSettingsUpdateFailure());
