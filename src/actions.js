@@ -130,9 +130,10 @@ export const types = {
   NETWORKSETTINGS_UPDATE_WAITING: 'NETWORKSETTINGS_UPDATE_WAITING',
   /* It indicates the update is complete after wallet reloads. */
   NETWORKSETTINGS_UPDATE_SUCCESS: 'NETWORK_SETTINGS_UPDATE_SUCCESS',
+  /* It indicates the update request has invalid inputs. */
+  NETWORKSETTINGS_UPDATE_INVALID: 'NETWORKSETTINGS_UPDATE_INVALID',
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
-  NETWORKSETTINGS_UPDATE_ERRORS: 'NETWORK_SETTINGS_UPDATE_ERRORS',
 };
 
 export const featureToggleInitialized = () => ({
@@ -934,8 +935,8 @@ export const networkSettingsUpdateFailure = () => ({
 });
 
 /**
- * Emits errors signal for custom network settings form representing
- * invalid inputs.
+ * Emits invalid signal for custom network settings request inputs.
+ * It means the form should present the invalid message on the corresponding inputs.
  * @param {{
  *   message: string,
  *   nodeUrl: string,
@@ -945,8 +946,8 @@ export const networkSettingsUpdateFailure = () => ({
  *   walletServiceWsUrl?: string
  * }} errors The validation errors from custom network settings form
  */
-export const networkSettingsUpdateErrors = (errors) => ({
-  type: types.NETWORKSETTINGS_UPDATE_ERRORS,
+export const networkSettingsUpdateInvalid = (errors) => ({
+  type: types.NETWORKSETTINGS_UPDATE_INVALID,
   payload: errors,
 });
 

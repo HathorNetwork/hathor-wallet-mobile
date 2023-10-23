@@ -6,7 +6,7 @@ import { t } from 'ttag';
 import {
   featureToggleUpdate,
   networkSettingsPersistStore,
-  networkSettingsUpdateErrors,
+  networkSettingsUpdateInvalid,
   networkSettingsUpdateFailure,
   networkSettingsUpdateReady,
   networkSettingsUpdateState,
@@ -61,53 +61,50 @@ export function* updateNetworkSettings(action) {
     walletServiceWsUrl,
   } = action.payload || {};
 
-  const errors = {};
+  const invalidPayload = {};
 
   // validates input emptyness
   if (isEmpty(action.payload)) {
-    errors.message = t`Custom Network Settings cannot be empty.`;
+    invalidPayload.message = t`Custom Network Settings cannot be empty.`;
   }
 
   // validates explorerUrl
   // - required
   // - should have a valid URL
   if (isEmpty(explorerUrl) || invalidUrl(explorerUrl)) {
-    errors.explorerUrl = t`explorerUrl should be a valid URL.`;
+    invalidPayload.explorerUrl = t`explorerUrl should be a valid URL.`;
   }
 
   // validates explorerServiceUrl
   // - required
   // - should have a valid URL
   if (isEmpty(explorerServiceUrl) || invalidUrl(explorerServiceUrl)) {
-    errors.explorerServiceUrl = t`explorerServiceUrl should be a valid URL.`;
+    invalidPayload.explorerServiceUrl = t`explorerServiceUrl should be a valid URL.`;
   }
 
   // validates nodeUrl
   // - required
   // - should have a valid URl
   if (isEmpty(nodeUrl) || invalidUrl(nodeUrl)) {
-    errors.nodeUrl = t`nodeUrl should be a valid URL.`;
+    invalidPayload.nodeUrl = t`nodeUrl should be a valid URL.`;
   }
 
   // validates walletServiceUrl
   // - optional
   // - should have a valid URL, if given
   if (walletServiceUrl && invalidUrl(walletServiceUrl)) {
-    errors.walletServiceUrl = t`walletServiceUrl should be a valid URL.`;
+    invalidPayload.walletServiceUrl = t`walletServiceUrl should be a valid URL.`;
   }
 
   // validates walletServiceWsUrl
   // - conditionally required
   // - should have a valid URL, if walletServiceUrl is given
   if (walletServiceUrl && invalidUrl(walletServiceWsUrl)) {
-    errors.walletServiceWsUrl = t`walletServiceWsUrl should be a valid URL.`;
+    invalidPayload.walletServiceWsUrl = t`walletServiceWsUrl should be a valid URL.`;
   }
 
-  // TODO: Refactor by segregating Failure from Errors
-  // - create networkSettingsUpdateErrors
-  // - implement reaction to networkSettingsUpdateFailure
-  yield put(networkSettingsUpdateErrors(errors));
-  if (Object.keys(errors).length > 0) {
+  yield put(networkSettingsUpdateInvalid(invalidPayload));
+  if (Object.keys(invalidPayload).length > 0) {
     return;
   }
 

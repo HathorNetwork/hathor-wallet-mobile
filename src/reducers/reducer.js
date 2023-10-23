@@ -207,7 +207,7 @@ const initialState = {
     ...FEATURE_TOGGLE_DEFAULTS,
   },
   networkSettings: PRE_SETTINGS_MAINNET,
-  networkSettingsErrors: {},
+  networkSettingsInvalid: {},
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
 };
 
@@ -359,8 +359,8 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateReady(state);
     case types.NETWORKSETTINGS_UPDATE_FAILURE:
       return onNetworkSettingsUpdateFailure(state);
-    case types.NETWORKSETTINGS_UPDATE_ERRORS:
-      return onNetworkSettingsUpdateErrors(state, action);
+    case types.NETWORKSETTINGS_UPDATE_INVALID:
+      return onNetworkSettingsUpdateInvalid(state, action);
     default:
       return state;
   }
@@ -1150,8 +1150,12 @@ export const onNetworkSettingsUpdateFailure = (state) => ({
   networkSettingsStatus: NETWORKSETTINGS_STATUS.FAILED
 });
 
-export const onNetworkSettingsUpdateErrors = (state, { payload }) => ({
+/**
+ * @param {Object} action.payload The errors from network settings input validation
+ * @see networkSettingsUpdateInvalid errors
+ */
+export const onNetworkSettingsUpdateInvalid = (state, { payload }) => ({
   ...state,
-  networkSettingsErrors: payload,
+  networkSettingsInvalid: payload,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
 });
