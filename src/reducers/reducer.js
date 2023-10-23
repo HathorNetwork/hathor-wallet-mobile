@@ -349,6 +349,8 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateRequest(state);
     case types.NETWORKSETTINGS_UPDATE_STATE:
       return onNetworkSettingsUpdateState(state, action);
+    case types.NETWORKSETTINGS_PERSIST_STORE:
+      return onNetworkSettingsPersistStore(state, action);
     case types.NETWORKSETTINGS_UPDATE_SUCCESS:
       return onNetworkSettingsUpdateSucess(state, action);
     case types.NETWORKSETTINGS_UPDATE_READY:
@@ -1101,6 +1103,17 @@ export const onNetworkSettingsUpdateState = (state, { payload }) => ({
   ...state,
   networkSettings: payload,
 });
+
+/**
+ * @param {Object} action.payload The network settings emitted in saga
+ * @see networkSettingsPersistStore customNetwork
+ */
+export const onNetworkSettingsPersistStore = (state, { payload }) => ({
+  ...state,
+  networkSettings: payload,
+  networkSettingsStatus: NETWORKSETTINGS_STATUS.LOADING,
+});
+
 
 /**
  * @param {Object} action.payload The network settings emitted in saga

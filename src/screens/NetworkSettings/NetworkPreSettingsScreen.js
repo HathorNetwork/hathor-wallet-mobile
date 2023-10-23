@@ -18,7 +18,7 @@ import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
 import Spinner from '../../components/Spinner';
 import FeedbackModal from '../../components/FeedbackModal';
-import { networkSettingsUpdateReady, networkSettingsUpdateSuccess } from '../../actions';
+import { networkSettingsPersistStore, networkSettingsUpdateReady } from '../../actions';
 import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
 import { CustomNetworkSettingsNav } from './CustomNetworkSettingsScreen';
 import { feedbackFailedText, feedbackLoadingText, hasFailed, isLoading } from './helper';
@@ -76,8 +76,8 @@ export const NetworkPreSettingsNav = Symbol('NetworkPreSettings').toString();
 export function NetworkPreSettingsScreen({ navigation }) {
   const dispatch = useDispatch();
   const networkSettingsStatus = useSelector((state) => state.networkSettingsStatus);
-  const setMainnetNetwork = () => dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_MAINNET));
-  const setTestnetNetwork = () => dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_TESTNET));
+  const setMainnetNetwork = () => dispatch(networkSettingsPersistStore(PRE_SETTINGS_MAINNET));
+  const setTestnetNetwork = () => dispatch(networkSettingsPersistStore(PRE_SETTINGS_TESTNET));
   const setCustomNetwork = () => {
     navigation.push(CustomNetworkSettingsNav);
   };

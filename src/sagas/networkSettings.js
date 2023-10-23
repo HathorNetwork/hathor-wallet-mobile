@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { t } from 'ttag';
 import {
   featureToggleUpdate,
+  networkSettingsPersistStore,
   networkSettingsUpdateErrors,
   networkSettingsUpdateFailure,
   networkSettingsUpdateReady,
@@ -179,7 +180,7 @@ export function* updateNetworkSettings(action) {
     walletServiceWsUrl,
   };
 
-  yield put(networkSettingsUpdateSuccess(customNetwork));
+  yield put(networkSettingsPersistStore(customNetwork));
 }
 
 /**
@@ -225,8 +226,13 @@ function invalidUrl(tryUrl) {
 export function* persistNetworkSettings(action) {
   // persists after reducer being updated
   const networkSettings = action.payload;
-  const strNetworkSettings = JSON.stringify(networkSettings);
-  yield call(AsyncStorage.setItem, networkSettingsKeyMap.networkSettings, strNetworkSettings);
+  try {
+    STORE.setItem(networkSettingsKeyMap.networkSettings, networkSettings);
+  } catch (err) {
+    console.error('Error while persisting the custom network settings.', err);
+    yield put(networkSettingsUpdateFailure());
+    return;
+  }
 
   // trigger toggle update to be managed by featureToggle saga
   yield put(featureToggleUpdate());
@@ -260,7 +266,7 @@ export function* saga() {
   yield all([
     takeEvery(types.START_WALLET_SUCCESS, initNetworkSettings),
     takeEvery(types.NETWORKSETTINGS_UPDATE_REQUEST, updateNetworkSettings),
-    takeEvery(types.NETWORKSETTINGS_UPDATE_SUCCESS, persistNetworkSettings),
+    takeEvery(types.NETWORKSETTINGS_PERSIST_STORE, persistNetworkSettings),
     takeEvery(types.RESET_WALLET, cleanNetworkSettings),
   ]);
 }

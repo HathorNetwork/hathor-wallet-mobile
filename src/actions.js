@@ -124,6 +124,8 @@ export const types = {
   NETWORKSETTINGS_UPDATE_REQUEST: 'NETWORK_SETTINGS_UPDATE_REQUEST',
   /* It updates the redux state */
   NETWORKSETTINGS_UPDATE_STATE: 'NETWORKSETTINGS_UPDATE_STATE',
+  /* It persists the complete structure of network settings in the app storage and updates the redux store. */
+  NETWORKSETTINGS_PERSIST_STORE: 'NETWORKSETTINGS_PERSIST_STORE',
   NETWORKSETTINGS_UPDATE_SUCCESS: 'NETWORK_SETTINGS_UPDATE_SUCCESS',
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
@@ -883,6 +885,23 @@ export const networkSettingsUpdateRequest = (customNetworkRequest) => ({
  */
 export const networkSettingsUpdateState = (customNetwork) => ({
   type: types.NETWORKSETTINGS_UPDATE_STATE,
+  payload: customNetwork,
+});
+
+/**
+ * Emits the custom network settings to persist in the app storage and update the redux store.
+ * @param {{
+ *   stage: string,
+ *   network: string,
+ *   nodeUrl: string,
+ *   explorerUrl: string,
+ *   explorerServiceUrl: string,
+ *   walletServiceUrl?: string
+ *   walletServiceWsUrl?: string
+ * }} customNetwork Settings to persist
+ */
+export const networkSettingsPersistStore = (customNetwork) => ({
+  type: types.NETWORKSETTINGS_PERSIST_STORE,
   payload: customNetwork,
 });
 
