@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { isEmpty } from 'lodash';
-import { networkSettingsUpdate, networkSettingsUpdateErrors, networkSettingsUpdateReady } from '../../actions';
+import { networkSettingsUpdateRequest, networkSettingsUpdateErrors, networkSettingsUpdateReady } from '../../actions';
 import FeedbackModal from '../../components/FeedbackModal';
 import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
@@ -152,7 +152,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
       return;
     }
 
-    dispatch(networkSettingsUpdate(formModel));
+    dispatch(networkSettingsUpdateRequest(formModel));
   };
 
   useEffect(() => {

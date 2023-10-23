@@ -345,8 +345,8 @@ export const reducer = (state = initialState, action) => {
       return onSetWalletConnectSessions(state, action);
     case types.WC_SET_CONNECTION_FAILED:
       return onSetWCConnectionFailed(state, action);
-    case types.NETWORKSETTINGS_UPDATE:
-      return onNetworkSettingsUpdate(state);
+    case types.NETWORKSETTINGS_UPDATE_REQUEST:
+      return onNetworkSettingsUpdateRequest(state);
     case types.NETWORKSETTINGS_UPDATE_SUCCESS:
       return onNetworkSettingsUpdateSucess(state, action);
     case types.NETWORKSETTINGS_UPDATE_READY:
@@ -1086,7 +1086,7 @@ export const onSetWCConnectionFailed = (state, { payload }) => ({
  * @param {Object} action.payload The network settings emitted in saga
  * @see updateNetworkSettings
  */
-export const onNetworkSettingsUpdate = (state) => ({
+export const onNetworkSettingsUpdateRequest = (state) => ({
   ...state,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.LOADING,
 });

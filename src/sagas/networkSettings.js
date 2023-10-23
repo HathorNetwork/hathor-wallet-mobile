@@ -3,7 +3,15 @@ import { config } from '@hathor/wallet-lib';
 import { isEmpty } from 'lodash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { t } from 'ttag';
-import { featureToggleUpdate, networkSettingsUpdateErrors, networkSettingsUpdateFailure, networkSettingsUpdateReady, networkSettingsUpdateSuccess, reloadWalletRequested, types } from '../actions';
+import {
+  featureToggleUpdate,
+  networkSettingsUpdateErrors,
+  networkSettingsUpdateFailure,
+  networkSettingsUpdateReady,
+  networkSettingsUpdateSuccess,
+  reloadWalletRequested,
+  types
+} from '../actions';
 import { HTTP_REQUEST_TIMEOUT, NETWORK, networkSettingsKeyMap, NETWORK_TESTNET, STAGE, STAGE_DEV_PRIVNET, STAGE_TESTNET, WALLET_SERVICE_REQUEST_TIMEOUT } from '../constants';
 import { getFullnodeNetwork, getWalletServiceNetwork } from './helpers';
 import { STORE } from '../store';
@@ -250,7 +258,7 @@ export function* cleanNetworkSettings() {
 export function* saga() {
   yield all([
     takeEvery(types.START_WALLET_SUCCESS, initNetworkSettings),
-    takeEvery(types.NETWORKSETTINGS_UPDATE, updateNetworkSettings),
+    takeEvery(types.NETWORKSETTINGS_UPDATE_REQUEST, updateNetworkSettings),
     takeEvery(types.NETWORKSETTINGS_UPDATE_SUCCESS, persistNetworkSettings),
     takeEvery(types.RESET_WALLET, cleanNetworkSettings),
   ]);

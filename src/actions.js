@@ -120,7 +120,8 @@ export const types = {
   // NOTE: These actions follows a taxonomy that should be applied
   // to all other actions.
   // See: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/334
-  NETWORKSETTINGS_UPDATE: 'NETWORK_SETTINGS_UPDATE',
+  /* It delivers the user's network settings input from the form. */
+  NETWORKSETTINGS_UPDATE_REQUEST: 'NETWORK_SETTINGS_UPDATE_REQUEST',
   NETWORKSETTINGS_UPDATE_SUCCESS: 'NETWORK_SETTINGS_UPDATE_SUCCESS',
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
@@ -861,8 +862,8 @@ export const setWCConnectionFailed = (failed) => ({
  *   walletServiceWsUrl?: string
  * }} customNetworkRequest Request input
  */
-export const networkSettingsUpdate = (customNetworkRequest) => ({
-  type: types.NETWORKSETTINGS_UPDATE,
+export const networkSettingsUpdateRequest = (customNetworkRequest) => ({
+  type: types.NETWORKSETTINGS_UPDATE_REQUEST,
   payload: customNetworkRequest,
 });
 

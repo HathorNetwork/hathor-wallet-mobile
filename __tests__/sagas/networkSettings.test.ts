@@ -4,7 +4,7 @@ import { all, effectTypes, fork } from 'redux-saga/effects';
 import createSagaMiddleware, { END, runSaga } from 'redux-saga';
 import { applyMiddleware, createStore } from 'redux';
 import { reducer } from '../../src/reducers/reducer';
-import { networkSettingsUpdate, networkSettingsUpdateSuccess, reloadWalletRequested, types } from '../../src/actions';
+import { networkSettingsUpdateRequest, networkSettingsUpdateSuccess, reloadWalletRequested, types } from '../../src/actions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { networkSettingsKeyMap } from '../../src/constants';
 import { STORE } from '../../src/store';
@@ -46,47 +46,47 @@ describe('updateNetworkSettings', () => {
         const task = middleware.run(defaultSaga);
 
         Promise.resolve()
-            .then(() => store.dispatch(networkSettingsUpdate(null)))
-            .then(() => store.dispatch(networkSettingsUpdate(undefined)))
-            .then(() => store.dispatch(networkSettingsUpdate({})))
-            .then(() => store.dispatch(networkSettingsUpdate({ explorerUrl: undefined })))
-            .then(() => store.dispatch(networkSettingsUpdate({ explorerUrl: null })))
-            .then(() => store.dispatch(networkSettingsUpdate({ explorerUrl: '' })))
-            .then(() => store.dispatch(networkSettingsUpdate({ explorerUrl: 1 })))
-            .then(() => store.dispatch(networkSettingsUpdate({ explorerUrl: 'invalid.url.com' })))
+            .then(() => store.dispatch(networkSettingsUpdateRequest(null)))
+            .then(() => store.dispatch(networkSettingsUpdateRequest(undefined)))
+            .then(() => store.dispatch(networkSettingsUpdateRequest({})))
+            .then(() => store.dispatch(networkSettingsUpdateRequest({ explorerUrl: undefined })))
+            .then(() => store.dispatch(networkSettingsUpdateRequest({ explorerUrl: null })))
+            .then(() => store.dispatch(networkSettingsUpdateRequest({ explorerUrl: '' })))
+            .then(() => store.dispatch(networkSettingsUpdateRequest({ explorerUrl: 1 })))
+            .then(() => store.dispatch(networkSettingsUpdateRequest({ explorerUrl: 'invalid.url.com' })))
             // explorerUrl is valid, however it must have at least nodeUrl
-            .then(() => store.dispatch(networkSettingsUpdate({ explorerUrl: 'http://localhost:8081/' })))
+            .then(() => store.dispatch(networkSettingsUpdateRequest({ explorerUrl: 'http://localhost:8081/' })))
             // explorerUrl is valid, but explorerServiceUrl is empty
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: '',
             })))
             // explorerUrl is valid, but explorerServiceUrl is invalid 
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: 'invalid.url.com',
             })))
             // explorer urls are valid, but nodeUrl is empty
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: '',
             })))
             // explorer urls are valid, but nodeUrl is invalid 
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'invalid.url.com'
             })))
             // explorer and node urls are valid, but waletServiceUrl is invalid
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
                 walletServiceUrl: 'invalid.url.com'
             })))
             // explorer, node, and wallet service urls are valid, but walletServiceWsUrl is empty
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
@@ -94,7 +94,7 @@ describe('updateNetworkSettings', () => {
                 walletServiceWsUrl: ''
             })))
             // explorer, node, and wallet service urls are valid, but walletServiceWsUrl is invalid 
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
@@ -102,7 +102,7 @@ describe('updateNetworkSettings', () => {
                 walletServiceWsUrl: 'invalid.url.com'
             })))
             // all urls are valid, except nodeUrl
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'invalid.url.com',
@@ -171,21 +171,21 @@ describe('updateNetworkSettings', () => {
 
         Promise.resolve()
             // calls getFullnodeNetwork 
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
             })))
             // calls getWalletServiceNetwork 
             // it will fail because is lacking the walletServiceWsUrl
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
                 walletServiceUrl: 'http://localhost:8080/'
             })))
             // calls getWalletServiceNetwork 
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
@@ -193,14 +193,14 @@ describe('updateNetworkSettings', () => {
                 walletServiceWsUrl: 'ws://ws.localhost:4040/'
             })))
             // calls getFullnodeNetwork 
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
             })))
             // calls getFullnodeNetwork 
             // here the getFullnodeNetwork rejects throwing an error
-            .then(() => store.dispatch(networkSettingsUpdate({
+            .then(() => store.dispatch(networkSettingsUpdateRequest({
                 explorerUrl: 'http://localhost:8081/',
                 explorerServiceUrl: 'http://localhost:8082/',
                 nodeUrl: 'http://localhost:3000/',
