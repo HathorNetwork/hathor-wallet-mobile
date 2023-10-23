@@ -8,6 +8,7 @@ import {
   networkSettingsUpdateErrors,
   networkSettingsUpdateFailure,
   networkSettingsUpdateReady,
+  networkSettingsUpdateState,
   networkSettingsUpdateSuccess,
   reloadWalletRequested,
   types
@@ -24,7 +25,7 @@ import { STORE } from '../store';
 export function* initNetworkSettings() {
   const customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
   if (customNetwork) {
-    yield put(networkSettingsUpdateSuccess(customNetwork));
+    yield put(networkSettingsUpdateState(customNetwork));
   }
 }
 

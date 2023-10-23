@@ -347,6 +347,8 @@ export const reducer = (state = initialState, action) => {
       return onSetWCConnectionFailed(state, action);
     case types.NETWORKSETTINGS_UPDATE_REQUEST:
       return onNetworkSettingsUpdateRequest(state);
+    case types.NETWORKSETTINGS_UPDATE_STATE:
+      return onNetworkSettingsUpdateState(state, action);
     case types.NETWORKSETTINGS_UPDATE_SUCCESS:
       return onNetworkSettingsUpdateSucess(state, action);
     case types.NETWORKSETTINGS_UPDATE_READY:
@@ -1089,6 +1091,15 @@ export const onSetWCConnectionFailed = (state, { payload }) => ({
 export const onNetworkSettingsUpdateRequest = (state) => ({
   ...state,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.LOADING,
+});
+
+/**
+ * @param {Object} action.payload The network settings emitted in saga
+ * @see networkSettingsUpdateState customNetwork
+ */
+export const onNetworkSettingsUpdateState = (state, { payload }) => ({
+  ...state,
+  networkSettings: payload,
 });
 
 /**
