@@ -351,6 +351,8 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateState(state, action);
     case types.NETWORKSETTINGS_PERSIST_STORE:
       return onNetworkSettingsPersistStore(state, action);
+    case types.NETWORKSETTINGS_UPDATE_WAITING:
+      return onNetworkSettingsUpdateWaiting(state);
     case types.NETWORKSETTINGS_UPDATE_SUCCESS:
       return onNetworkSettingsUpdateSucess(state, action);
     case types.NETWORKSETTINGS_UPDATE_READY:
@@ -1114,6 +1116,13 @@ export const onNetworkSettingsPersistStore = (state, { payload }) => ({
   networkSettingsStatus: NETWORKSETTINGS_STATUS.LOADING,
 });
 
+/**
+ * Set `WAITING` state on network settings status.
+ */
+export const onNetworkSettingsUpdateWaiting = (state) => ({
+  ...state,
+  networkSettingsStatus: NETWORKSETTINGS_STATUS.WAITING,
+});
 
 /**
  * @param {Object} action.payload The network settings emitted in saga

@@ -11,6 +11,7 @@ import {
   networkSettingsUpdateReady,
   networkSettingsUpdateState,
   networkSettingsUpdateSuccess,
+  networkSettingsUpdateWaiting,
   reloadWalletRequested,
   types
 } from '../actions';
@@ -248,7 +249,7 @@ export function* persistNetworkSettings(action) {
     yield put(reloadWalletRequested());
   }
 
-  yield put(networkSettingsUpdateReady());
+  yield put(networkSettingsUpdateWaiting());
 }
 
 /**

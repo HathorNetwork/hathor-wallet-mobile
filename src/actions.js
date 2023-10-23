@@ -126,6 +126,8 @@ export const types = {
   NETWORKSETTINGS_UPDATE_STATE: 'NETWORKSETTINGS_UPDATE_STATE',
   /* It persists the complete structure of network settings in the app storage and updates the redux store. */
   NETWORKSETTINGS_PERSIST_STORE: 'NETWORKSETTINGS_PERSIST_STORE',
+  /* It indicates the persistence is complete and the wallet will be reloaded. */
+  NETWORKSETTINGS_UPDATE_WAITING: 'NETWORKSETTINGS_UPDATE_WAITING',
   NETWORKSETTINGS_UPDATE_SUCCESS: 'NETWORK_SETTINGS_UPDATE_SUCCESS',
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
@@ -903,6 +905,15 @@ export const networkSettingsUpdateState = (customNetwork) => ({
 export const networkSettingsPersistStore = (customNetwork) => ({
   type: types.NETWORKSETTINGS_PERSIST_STORE,
   payload: customNetwork,
+});
+
+
+/**
+ * Emits the waiting signal after persist the custom network.
+ * It means the wallet will reload.
+ */
+export const networkSettingsUpdateWaiting = () => ({
+  type: types.NETWORKSETTINGS_UPDATE_WAITING,
 });
 
 /**
