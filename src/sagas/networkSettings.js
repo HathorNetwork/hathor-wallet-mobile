@@ -158,6 +158,7 @@ export function* updateNetworkSettings(action) {
 
   // Fail after try get network from fullnode
   if (!network) {
+    console.warn('The network could not be found.');
     yield put(networkSettingsUpdateFailure());
     return;
   }
@@ -256,7 +257,13 @@ export function* persistNetworkSettings(action) {
  * Deletes the network settings from the application storage.
  */
 export function* cleanNetworkSettings() {
-  STORE.removeItem(networkSettingsKeyMap.networkSettings);
+  try {
+    STORE.removeItem(networkSettingsKeyMap.networkSettings);
+  }
+  catch (err) {
+    console.error('Error while deleting the custom network settings from app storage.', err);
+    yield 1;
+  }
   yield 0;
 }
 

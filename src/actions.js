@@ -132,8 +132,9 @@ export const types = {
   NETWORKSETTINGS_UPDATE_SUCCESS: 'NETWORK_SETTINGS_UPDATE_SUCCESS',
   /* It indicates the update request has invalid inputs. */
   NETWORKSETTINGS_UPDATE_INVALID: 'NETWORKSETTINGS_UPDATE_INVALID',
-  NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
+  /* It indicates the update request has failed. */
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
+  NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
 };
 
 export const featureToggleInitialized = () => ({
@@ -929,6 +930,7 @@ export const networkSettingsUpdateSuccess = () => ({
 /**
  * Emits the failure signal for custom network settings request.
  * It means the request couldn't be processed due to internal error.
+ * It servers as hook for the frontend to provide feedback for the user.
  */
 export const networkSettingsUpdateFailure = () => ({
   type: types.NETWORKSETTINGS_UPDATE_FAILURE,

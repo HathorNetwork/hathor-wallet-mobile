@@ -1142,8 +1142,7 @@ export const onNetworkSettingsUpdateReady = (state) => ({
 });
 
 /**
- * @param {Object} action.payload The errors from network settings input validation
- * @see updateNetworkSettings
+ * Set `FAILED` state on network settings status.
  */
 export const onNetworkSettingsUpdateFailure = (state) => ({
   ...state,
