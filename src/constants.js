@@ -210,6 +210,7 @@ export const NETWORKSETTINGS_STATUS = {
   FAILED: 'failed',
   LOADING: 'loading',
   WAITING: 'waiting',
+  SUCCESSFUL: 'successful',
 };
 
 /**

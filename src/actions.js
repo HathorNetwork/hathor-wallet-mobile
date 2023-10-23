@@ -128,6 +128,7 @@ export const types = {
   NETWORKSETTINGS_PERSIST_STORE: 'NETWORKSETTINGS_PERSIST_STORE',
   /* It indicates the persistence is complete and the wallet will be reloaded. */
   NETWORKSETTINGS_UPDATE_WAITING: 'NETWORKSETTINGS_UPDATE_WAITING',
+  /* It indicates the update is complete after wallet reloads. */
   NETWORKSETTINGS_UPDATE_SUCCESS: 'NETWORK_SETTINGS_UPDATE_SUCCESS',
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
@@ -917,20 +918,11 @@ export const networkSettingsUpdateWaiting = () => ({
 });
 
 /**
- * Emits the custom network settings to be stored and persisted.
- * @param {{
- *   stage: string,
- *   network: string,
- *   nodeUrl: string,
- *   explorerUrl: string,
- *   explorerServiceUrl: string,
- *   walletServiceUrl?: string
- *   walletServiceWsUrl?: string
- * }} customNetwork Settings to persist
+ * Emits the success signal after wallet reloads.
+ * It servers as hook for the frontend to provide feedback for the user.
  */
-export const networkSettingsUpdateSuccess = (customNetwork) => ({
+export const networkSettingsUpdateSuccess = () => ({
   type: types.NETWORKSETTINGS_UPDATE_SUCCESS,
-  payload: customNetwork,
 });
 
 /**

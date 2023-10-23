@@ -15,19 +15,22 @@ import {
   reloadWalletRequested,
   types
 } from '../actions';
-import { HTTP_REQUEST_TIMEOUT, NETWORK, networkSettingsKeyMap, NETWORK_TESTNET, STAGE, STAGE_DEV_PRIVNET, STAGE_TESTNET, WALLET_SERVICE_REQUEST_TIMEOUT } from '../constants';
+import { HTTP_REQUEST_TIMEOUT, NETWORK, networkSettingsKeyMap, NETWORKSETTINGS_STATUS, NETWORK_TESTNET, STAGE, STAGE_DEV_PRIVNET, STAGE_TESTNET, WALLET_SERVICE_REQUEST_TIMEOUT } from '../constants';
 import { getFullnodeNetwork, getWalletServiceNetwork } from './helpers';
 import { STORE } from '../store';
 
 /**
- * Initialize network settings saga.
- *
- * It looks up a stored network settings to update the redux state.
+ * Initialize the network settings saga when the wallet starts successfully.
  */
 export function* initNetworkSettings() {
   const customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
   if (customNetwork) {
     yield put(networkSettingsUpdateState(customNetwork));
+  }
+
+  const status = yield select((state) => state.networkSettingsStatus);
+  if (status === NETWORKSETTINGS_STATUS.WAITING) {
+    yield put(networkSettingsUpdateSuccess());
   }
 }
 

@@ -10,12 +10,23 @@ import NewHathorButton from '../../components/NewHathorButton';
 import SimpleInput from '../../components/SimpleInput';
 import { NETWORKSETTINGS_STATUS } from '../../constants';
 import errorIcon from '../../assets/images/icErrorBig.png';
+import checkIcon from '../../assets/images/icCheckBig.png';
 import Spinner from '../../components/Spinner';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
 const warningText = t`Any token outside mainnet network bear no value. Only change if you know what you are doing.`;
 const feedbackLoadingText = t`Updating custom network settings...`;
+const feedbackSucceedText = t`Network settings customized with success.`;
 const feedbackFailedText = t`There was an error while customizing network settings. Please try again later.`;
+
+/**
+ * Check if the network settings status is successful.
+ * @param {object} networkSettingsStatus - status from redux store
+ * @returns {boolean} - true if the status is successful, false otherwise
+ */
+const hasSucceed = (networkSettingsStatus) => {
+  return networkSettingsStatus === NETWORKSETTINGS_STATUS.SUCCESSFUL;
+};
 
 /**
  * Check if the network settings status is failed.
@@ -180,6 +191,14 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
         <FeedbackModal
           icon={<Spinner />}
           text={feedbackLoadingText}
+        />
+      )}
+
+      {hasSucceed(networkSettingsStatus) && (
+        <FeedbackModal
+          icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+          text={feedbackSucceedText}
+          onDismiss={handleFeedbackModalDismiss}
         />
       )}
 

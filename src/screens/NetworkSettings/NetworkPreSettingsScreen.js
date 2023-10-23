@@ -21,10 +21,12 @@ import FeedbackModal from '../../components/FeedbackModal';
 import { networkSettingsPersistStore, networkSettingsUpdateReady } from '../../actions';
 import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
 import { CustomNetworkSettingsNav } from './CustomNetworkSettingsScreen';
-import { feedbackFailedText, feedbackLoadingText, hasFailed, isLoading } from './helper';
+import { feedbackSucceedText, feedbackFailedText, feedbackLoadingText, hasFailed, isLoading, hasSucceed } from './helper';
 import errorIcon from '../../assets/images/icErrorBig.png';
+import checkIcon from '../../assets/images/icCheckBig.png';
 
 const presettingsTitleText = t`Network Pre-Settings`.toUpperCase();
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -97,6 +99,14 @@ export function NetworkPreSettingsScreen({ navigation }) {
         <FeedbackModal
           icon={<Spinner />}
           text={feedbackLoadingText}
+        />
+      )}
+
+      {hasSucceed(networkSettingsStatus) && (
+        <FeedbackModal
+          icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+          text={feedbackSucceedText}
+          onDismiss={handleFeedbackModalDismiss}
         />
       )}
 
