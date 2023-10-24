@@ -327,6 +327,8 @@ export const reducer = (state = initialState, action) => {
       return onPushReset(state);
     case types.EXCEPTION_CAPTURED:
       return onExceptionCaptured(state, action);
+    case types.RELOAD_WALLET_REQUESTED:
+      return onReloadWalletRequested(state);
     case types.WALLET_RELOADING:
       return onWalletReloading(state);
     case types.SHARED_ADDRESS_UPDATE:
@@ -1031,6 +1033,16 @@ export const onExceptionCaptured = (state, { payload }) => {
     },
   };
 };
+
+/**
+ * On wallet reload, tokens data will be reloaded as well.
+ */
+export const onReloadWalletRequested = (state) => ({
+  ...state,
+  tokensHistory: initialState.tokensHistory,
+  tokensBalance: initialState.tokensBalance,
+  loadHistoryStatus: initialState.loadHistoryStatus,
+});
 
 const onWalletReloading = (state) => ({
   ...state,

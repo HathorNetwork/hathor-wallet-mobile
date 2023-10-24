@@ -1,21 +1,36 @@
-import { all, takeEvery, put, call, race, take, delay, select } from 'redux-saga/effects';
-import { config } from '@hathor/wallet-lib';
+import { all, takeEvery, put, call, race, delay, select } from 'redux-saga/effects';
+import { config, wallet as oldWalletUtil } from '@hathor/wallet-lib';
 import { isEmpty } from 'lodash';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { t } from 'ttag';
 import {
-  featureToggleUpdate,
   networkSettingsPersistStore,
   networkSettingsUpdateInvalid,
   networkSettingsUpdateFailure,
   networkSettingsUpdateState,
   networkSettingsUpdateSuccess,
   networkSettingsUpdateWaiting,
+  types,
+  startWalletRequested,
   reloadWalletRequested,
-  types
+  networkSettingsPersistComplete,
+  onExceptionCaptured
 } from '../actions';
-import { HTTP_REQUEST_TIMEOUT, NETWORK, networkSettingsKeyMap, NETWORKSETTINGS_STATUS, NETWORK_TESTNET, STAGE, STAGE_DEV_PRIVNET, STAGE_TESTNET, WALLET_SERVICE_REQUEST_TIMEOUT } from '../constants';
-import { getFullnodeNetwork, getWalletServiceNetwork } from './helpers';
+import {
+  HTTP_REQUEST_TIMEOUT,
+  NETWORK,
+  networkSettingsKeyMap,
+  NETWORKSETTINGS_STATUS,
+  NETWORK_TESTNET,
+  STAGE,
+  STAGE_DEV_PRIVNET,
+  STAGE_TESTNET,
+  WALLET_SERVICE_REQUEST_TIMEOUT
+} from '../constants';
+import {
+  getFullnodeNetwork,
+  getWalletServiceNetwork,
+  showPinScreenForResult
+} from './helpers';
 import { STORE } from '../store';
 
 /**
@@ -229,27 +244,27 @@ export function* persistNetworkSettings(action) {
   const networkSettings = action.payload;
   try {
     STORE.setItem(networkSettingsKeyMap.networkSettings, networkSettings);
+    yield put(networkSettingsUpdateWaiting());
   } catch (err) {
     console.error('Error while persisting the custom network settings.', err);
     yield put(networkSettingsUpdateFailure());
     return;
   }
 
-  // trigger toggle update to be managed by featureToggle saga
-  yield put(featureToggleUpdate());
-
-  // if wallet-service is being deactivated, it will trigger the reload,
-  // otherwise we should trigger by ourselves
-  const { timeout } = yield race({
-    reload: take(types.RELOAD_WALLET_REQUESTED),
-    timeout: delay(HTTP_REQUEST_TIMEOUT),
-  });
-
-  if (timeout) {
-    yield put(reloadWalletRequested());
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet) {
+    // If we fall into this situation, the app should be killed for custom new network settings take effect.
+    const errMsg = 'Wallet not found while trying to persist the custom network settings.';
+    console.warn(errMsg)
+    yield put(onExceptionCaptured(errMsg, /* isFatal */ true));
+    return;
   }
 
-  yield put(networkSettingsUpdateWaiting());
+  // Stop wallet and clean its storage without clean its access data.
+  wallet.stop({ cleanStorage: true, cleanAddresses: true });
+  // This action should clean the tokens history on redux.
+  // In addition, the reload also clean the inmemory storage.
+  yield put(reloadWalletRequested());
 }
 
 /**
