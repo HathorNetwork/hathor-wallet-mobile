@@ -8,7 +8,6 @@ import {
   networkSettingsPersistStore,
   networkSettingsUpdateInvalid,
   networkSettingsUpdateFailure,
-  networkSettingsUpdateReady,
   networkSettingsUpdateState,
   networkSettingsUpdateSuccess,
   networkSettingsUpdateWaiting,
