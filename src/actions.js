@@ -15,6 +15,8 @@ import {
 } from './constants';
 import { mapTokenHistory } from './utils';
 
+// TODO: We should apply the agreed taxonomy to all the actions.
+// See: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/334
 export const types = {
   PARTIALLY_UPDATE_HISTORY_AND_BALANCE: 'PARTIALLY_UPDATE_HISTORY_AND_BALANCE',
   SET_TEMP_PIN: 'SET_TEMP_PIN',
@@ -101,7 +103,12 @@ export const types = {
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
   SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
+  // Feature Toggle actions
   FEATURE_TOGGLE_INITIALIZED: 'FEATURE_TOGGLE_INITIALIZED',
+  FEATURE_TOGGLE_UPDATE: 'FEATURE_TOGGLE_UPDATE',
+  FEATURE_TOGGLE_UPDATED: 'FEATURE_TOGGLE_UPDATED',
+  FEATURE_TOGGLE_READY: 'FEATURE_TOGGLE_READY',
+  FEATURE_TOGGLE_ERROR: 'FEATURE_TOGGLE_ERROR',
   SET_WALLET_CONNECT: 'SET_WALLET_CONNECT',
   SET_WALLET_CONNECT_MODAL: 'SET_WALLET_CONNECT_MODAL',
   SET_WALLET_CONNECT_SESSIONS: 'SET_WALLET_CONNECT_SESSIONS',
@@ -109,10 +116,21 @@ export const types = {
   WC_URI_INPUTTED: 'WC_URI_INPUTTED',
   WC_CANCEL_SESSION: 'WC_CANCEL_SESSION',
   WC_SET_CONNECTION_FAILED: 'WC_SET_CONNECTION_FAILED',
+  // Network Settings actions
+  // NOTE: These actions follows a taxonomy that should be applied
+  // to all other actions.
+  // See: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/334
+  NETWORKSETTINGS_UPDATE: 'NETWORK_SETTINGS_UPDATE',
+  NETWORKSETTINGS_UPDATE_SUCCESS: 'NETWORK_SETTINGS_UPDATE_SUCCESS',
+  NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
 };
 
 export const featureToggleInitialized = () => ({
   type: types.FEATURE_TOGGLE_INITIALIZED,
+});
+
+export const featureToggleUpdate = () => ({
+  type: types.FEATURE_TOGGLE_UPDATE,
 });
 
 /**
@@ -829,4 +847,45 @@ export const pushReset = () => ({
 export const setWCConnectionFailed = (failed) => ({
   type: types.WC_SET_CONNECTION_FAILED,
   payload: failed,
+});
+
+/**
+ * Request the custom network settings input to be processed.
+ * @param {{
+ *   nodeUrl: string,
+ *   explorerUrl: string,
+ *   explorerServiceUrl: string,
+ *   walletServiceUrl?: string
+ *   walletServiceWsUrl?: string
+ * }} customNetworkRequest Request input
+ */
+export const networkSettingsUpdate = (customNetworkRequest) => ({
+  type: types.NETWORKSETTINGS_UPDATE,
+  payload: customNetworkRequest,
+});
+
+/**
+ * Emits the custom network settings to be stored and persisted.
+ * @param {{
+ *   stage: string,
+ *   network: string,
+ *   nodeUrl: string,
+ *   explorerUrl: string,
+ *   explorerServiceUrl: string,
+ *   walletServiceUrl?: string
+ *   walletServiceWsUrl?: string
+ * }} customNetwork Settings to persist
+ */
+export const networkSettingsUpdateSuccess = (customNetwork) => ({
+  type: types.NETWORKSETTINGS_UPDATE_SUCCESS,
+  payload: customNetwork,
+});
+
+/**
+ * Emits the failure signal for custom network settings request.
+ * It means the request couldn't be processed either by ivalid input,
+ * or by internal error.
+ */
+export const networkSettingsUpdateFailure = () => ({
+  type: types.NETWORKSETTINGS_UPDATE_FAILURE,
 });

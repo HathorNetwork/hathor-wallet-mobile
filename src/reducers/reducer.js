@@ -5,16 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createStore, applyMiddleware } from 'redux';
-import createSagaMiddleware from 'redux-saga';
-import thunk from 'redux-thunk';
 import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
-import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS } from './constants';
-import { types } from './actions';
-import rootSagas from './sagas';
-import { TOKEN_DOWNLOAD_STATUS } from './sagas/tokens';
-import { WALLET_STATUS } from './sagas/wallet';
+import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS, PRE_SETTINGS_MAINNET } from '../constants';
+import { types } from '../actions';
+import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
+import { WALLET_STATUS } from '../sagas/wallet';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
@@ -210,9 +206,10 @@ const initialState = {
   featureToggles: {
     ...FEATURE_TOGGLE_DEFAULTS,
   },
+  networkSettings: PRE_SETTINGS_MAINNET,
 };
 
-const reducer = (state = initialState, action) => {
+export const reducer = (state = initialState, action) => {
   switch (action.type) {
     case types.NEW_TX:
       return onNewTx(state, action);
@@ -346,6 +343,8 @@ const reducer = (state = initialState, action) => {
       return onSetWalletConnectSessions(state, action);
     case types.WC_SET_CONNECTION_FAILED:
       return onSetWCConnectionFailed(state, action);
+    case types.NETWORKSETTINGS_UPDATE_SUCCESS:
+      return onNetworkSettingsUpdateSucess(state, action);
     default:
       return state;
   }
@@ -1073,12 +1072,11 @@ export const onSetWCConnectionFailed = (state, { payload }) => ({
   },
 });
 
-const saga = createSagaMiddleware();
-const middlewares = [
-  saga,
-  thunk,
-];
-
-export const store = createStore(reducer, applyMiddleware(...middlewares));
-
-saga.run(rootSagas);
+/**
+ * @param {Object} action.payload The network settings emitted in saga
+ * @see updateNetworkSettings
+ */
+export const onNetworkSettingsUpdateSucess = (state, { payload }) => ({
+  ...state,
+  networkSettings: payload
+});

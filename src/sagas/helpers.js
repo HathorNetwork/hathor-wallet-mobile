@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import hathorLib from '@hathor/wallet-lib';
+import hathorLib, { config } from '@hathor/wallet-lib';
 import { get } from 'lodash';
 import {
   put,
@@ -15,12 +15,13 @@ import {
   select,
 } from 'redux-saga/effects';
 import { t } from 'ttag';
+import axiosWrapperCreateRequestInstance from '@hathor/wallet-lib/lib/api/axiosWrapper';
 import NavigationService from '../NavigationService';
 import {
   setIsShowingPinScreen,
   types,
 } from '../actions';
-import { FEATURE_TOGGLE_DEFAULTS, INITIAL_TOKENS } from '../constants';
+import { FEATURE_TOGGLE_DEFAULTS, INITIAL_TOKENS, PUSH_NOTIFICATION_FEATURE_TOGGLE, WALLET_SERVICE_FEATURE_TOGGLE, WALLET_SERVICE_REQUEST_TIMEOUT } from '../constants';
 
 export function* waitForFeatureToggleInitialization() {
   const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
@@ -174,4 +175,57 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
   }
 
   return tokens;
+}
+
+export async function getFullnodeNetwork() {
+  try {
+    const versionData = await new Promise((resolve) => {
+      hathorLib.versionApi.getVersion(resolve);
+    });
+
+    return versionData.network;
+  } catch {
+    throw new Error('Error getting fullnode version data.');
+  }
+}
+
+export async function getWalletServiceNetwork() {
+  try {
+    const timeout = WALLET_SERVICE_REQUEST_TIMEOUT;
+    // eslint-disable-next-line max-len
+    const instance = axiosWrapperCreateRequestInstance(config.getWalletServiceBaseUrl, null, timeout);
+    const response = await instance.get(`version`);
+    return response.data.network;
+  } catch {
+    throw new Error('Error getting wallet-service version data.');
+  }
+}
+
+/**
+ * Check if the new custom network settings has a wallet service URL.
+ * @param {object} customNetworkSettings the new network settings
+ * @return {boolean} true if the new network settings hasn't defined
+ *   the wallet service URL, false otherwise.
+ */
+export function isWalletServiceUnavailable(customNetworkSettings) {
+  return customNetworkSettings.walletServiceUrl == null;
+}
+
+/**
+ * Force disabling features if the custom network settings
+ * didn't support them.
+ * @param {object} customNetworkSettings the new network settings
+ * @param {object} currentFeatureToggles feature toggles current applied
+ * @return {object} an object containing the feature toggles to be applied
+ */
+export function disableFeaturesIfNeeded(customNetworkSettings, currentFeatureToggles) {
+  let featureToggles = { ...currentFeatureToggles };
+  if (isWalletServiceUnavailable(customNetworkSettings)) {
+    featureToggles = {
+      ...featureToggles,
+      [WALLET_SERVICE_FEATURE_TOGGLE]: false,
+      [PUSH_NOTIFICATION_FEATURE_TOGGLE]: false
+    };
+  }
+  return { ...featureToggles };
 }
