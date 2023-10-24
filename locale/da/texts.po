@@ -529,6 +529,10 @@ msgstr "Lås Hathor-wallet op"
 msgid "Cancel"
 msgstr "Annuller"
 
+#: src/screens/PinScreen.js:270 src/screens/Settings.js:151
+msgid "Reset wallet"
+msgstr "Nulstil wallet"
+
 #: src/screens/PushNotification.js:58 src/screens/Settings.js:125
 msgid "Push Notification"
 msgstr ""
@@ -676,11 +680,11 @@ msgstr "SEND ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
-#: src/sagas/helpers.js:132 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:125 src/screens/SendConfirmScreen.js:104
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
-#: src/sagas/helpers.js:133 src/screens/SendConfirmScreen.js:105
+#: src/sagas/helpers.js:126 src/screens/SendConfirmScreen.js:105
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -693,7 +697,7 @@ msgstr "Din overførsel af **${ _this.amountAndToken }** er bekræftet"
 msgid "Address"
 msgstr "Adresse"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:247
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:245
 #: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr "Send"
@@ -831,65 +835,70 @@ msgstr ""
 msgid "Manual"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:15
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
 msgid "Custom Network Settings"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:16
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:21
 msgid ""
 "Any token outside mainnet network bear no value. Only change if you know "
 "what you are doing."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:17
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:22
 #: src/screens/NetworkSettings/helper.js:4
 msgid "Updating custom network settings..."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:18
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:23
 #: src/screens/NetworkSettings/helper.js:5
+msgid "Network settings customized with success."
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:24
+#: src/screens/NetworkSettings/helper.js:6
 msgid ""
 "There was an error while customizing network settings. Please try again "
 "later."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:53
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:43
 msgid "nodeUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:57
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:47
 msgid "explorerUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:61
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:51
 msgid "explorerServiceUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:200
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:198
 msgid "Node URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:209
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:207
 msgid "Explorer URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:218
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:216
 msgid "Explorer Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:227
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:225
 msgid "Wallet Service URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:236
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:234
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:27
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:28
 msgid "Network Pre-Settings"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:117
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:127
 msgid "Customize"
 msgstr ""
 
@@ -904,27 +913,27 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
-#: src/sagas/networkSettings.js:54
+#: src/sagas/networkSettings.js:78
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:61
+#: src/sagas/networkSettings.js:85
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:68
+#: src/sagas/networkSettings.js:92
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:75
+#: src/sagas/networkSettings.js:99
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:82
+#: src/sagas/networkSettings.js:106
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:89
+#: src/sagas/networkSettings.js:113
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
@@ -1035,7 +1044,7 @@ msgstr "Opret betalingsanmodning"
 msgid "No internet connection"
 msgstr "Ingen internetforbindelse"
 
-#: src/components/PublicExplorerListButton.js:19
+#: src/components/PublicExplorerListButton.js:17
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
@@ -1119,6 +1128,10 @@ msgstr ""
 msgid ""
 "By clicking approve, you will sign the requested message using the first "
 "address derived from your root key on the m/44'/280'/0'/0/0 derivation path."
+msgstr ""
+
+#: src/components/NetworkSettings/NetworkStatusBar.js:14
+msgid "Custom network"
 msgstr ""
 
 #~ msgid "I understand the risks of using a mobile wallet"
