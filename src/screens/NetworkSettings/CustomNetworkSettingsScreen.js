@@ -24,9 +24,8 @@ const feedbackFailedText = t`There was an error while customizing network settin
  * @param {object} networkSettingsStatus - status from redux store
  * @returns {boolean} - true if the status is successful, false otherwise
  */
-const hasSucceed = (networkSettingsStatus) => {
-  return networkSettingsStatus === NETWORKSETTINGS_STATUS.SUCCESSFUL;
-};
+// eslint-disable-next-line max-len
+const hasSucceed = (networkSettingsStatus) => networkSettingsStatus === NETWORKSETTINGS_STATUS.SUCCESSFUL;
 
 /**
  * Check if the network settings status is failed.
@@ -45,13 +44,13 @@ const hasFailed = (networkSettingsStatus) => networkSettingsStatus === NETWORKSE
 const isLoading = (networkSettingsStatus) => networkSettingsStatus === NETWORKSETTINGS_STATUS.LOADING;
 
 /**
- * Verifies if the invalidModel of the form has an error message. 
+ * Verifies if the invalidModel of the form has an error message.
  */
 function hasError(invalidModel) {
   return Object
     .values({ ...invalidModel })
     .reduce((_hasError, currValue) => _hasError || !isEmpty(currValue), false);
-};
+}
 
 /**
  * Validates the formModel, returning the invalidModel.
@@ -135,23 +134,21 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
 
   // eslint-disable-next-line max-len
   /* @param {'nodeUrl' | 'explorerUrl' | 'explorerServiceUrl' | 'walletServiceUrl' | 'walletServiceWsUrl' } name */
-  const handleInputChange = (name) => {
-    return (value) => {
-      // update inalid model
-      const invalidModelCopy = { ...invalidModel };
-      delete invalidModelCopy[name];
-      setInvalidModel(invalidModelCopy);
+  const handleInputChange = (name) => (value) => {
+    // update inalid model
+    const invalidModelCopy = { ...invalidModel };
+    delete invalidModelCopy[name];
+    setInvalidModel(invalidModelCopy);
 
-      // update form model
-      const form = {
-        ...formModel,
-        [name]: value,
-      } 
-      setFormModel(form);
-
-      // validate form model and update invalid model
-      setInvalidModel(validate(form));
+    // update form model
+    const form = {
+      ...formModel,
+      [name]: value,
     };
+    setFormModel(form);
+
+    // validate form model and update invalid model
+    setInvalidModel(validate(form));
   };
 
   const handleFeedbackModalDismiss = () => {

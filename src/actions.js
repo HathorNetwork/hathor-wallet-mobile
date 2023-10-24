@@ -911,7 +911,6 @@ export const networkSettingsPersistStore = (customNetwork) => ({
   payload: customNetwork,
 });
 
-
 /**
  * Emits the waiting signal after persist the custom network.
  * It means the wallet will reload.

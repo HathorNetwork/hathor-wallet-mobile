@@ -1,5 +1,5 @@
 import { all, takeEvery, put, call, race, delay, select } from 'redux-saga/effects';
-import { config, wallet as oldWalletUtil } from '@hathor/wallet-lib';
+import { config } from '@hathor/wallet-lib';
 import { isEmpty } from 'lodash';
 import { t } from 'ttag';
 import {
@@ -10,13 +10,10 @@ import {
   networkSettingsUpdateSuccess,
   networkSettingsUpdateWaiting,
   types,
-  startWalletRequested,
   reloadWalletRequested,
-  networkSettingsPersistComplete,
   onExceptionCaptured
 } from '../actions';
 import {
-  HTTP_REQUEST_TIMEOUT,
   NETWORK,
   networkSettingsKeyMap,
   NETWORKSETTINGS_STATUS,
@@ -29,7 +26,6 @@ import {
 import {
   getFullnodeNetwork,
   getWalletServiceNetwork,
-  showPinScreenForResult
 } from './helpers';
 import { STORE } from '../store';
 
@@ -253,9 +249,10 @@ export function* persistNetworkSettings(action) {
 
   const wallet = yield select((state) => state.wallet);
   if (!wallet) {
-    // If we fall into this situation, the app should be killed for custom new network settings take effect.
+    // If we fall into this situation, the app should be killed
+    // for the custom new network settings take effect.
     const errMsg = 'Wallet not found while trying to persist the custom network settings.';
-    console.warn(errMsg)
+    console.warn(errMsg);
     yield put(onExceptionCaptured(errMsg, /* isFatal */ true));
     return;
   }
@@ -273,8 +270,7 @@ export function* persistNetworkSettings(action) {
 export function* cleanNetworkSettings() {
   try {
     STORE.removeItem(networkSettingsKeyMap.networkSettings);
-  }
-  catch (err) {
+  } catch (err) {
     console.error('Error while deleting the custom network settings from app storage.', err);
     yield 1;
   }
