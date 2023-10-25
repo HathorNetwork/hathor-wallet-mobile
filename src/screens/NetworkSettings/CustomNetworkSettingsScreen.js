@@ -22,27 +22,25 @@ const feedbackFailedText = t`There was an error while customizing network settin
  * @param {object} networkSettingsStatus - status from redux store
  * @returns {boolean} - true if the status is failed, false otherwise
  */
-const hasFailed = (networkSettingsStatus) => {
-  return networkSettingsStatus === NETWORKSETTINGS_STATUS.FAILED;
-};
+// eslint-disable-next-line max-len
+const hasFailed = (networkSettingsStatus) => networkSettingsStatus === NETWORKSETTINGS_STATUS.FAILED;
 
 /**
  * Check if the network settings status is loading.
  * @param {object} networkSettingsStatus - status from redux store
  * @returns {boolean} - true if the status is loading, false otherwise
  */
-const isLoading = (networkSettingsStatus) => {
-  return networkSettingsStatus === NETWORKSETTINGS_STATUS.LOADING;
-};
+// eslint-disable-next-line max-len
+const isLoading = (networkSettingsStatus) => networkSettingsStatus === NETWORKSETTINGS_STATUS.LOADING;
 
 /**
- * Verifies if the errorModel of the form has an error message. 
+ * Verifies if the errorModel of the form has an error message.
  */
 function hasError(errorModel) {
   return Object
     .values({ ...errorModel })
-    .reduce((hasError, currValue) => hasError || !isEmpty(currValue), false);
-};
+    .reduce((_hasError, currValue) => _hasError || !isEmpty(currValue), false);
+}
 
 /**
  * Validates the formModel, returning the errorModel.
@@ -65,7 +63,6 @@ function validate(formModel) {
 
   return errorModel;
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -125,26 +122,23 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     walletServiceWsUrl: networkSettingsErrors?.walletServiceWsUrl || '',
   });
 
-  /**
-   * @param {'nodeUrl' | 'explorerUrl' | 'explorerServiceUrl' | 'walletServiceUrl' | 'walletServiceWsUrl' } name
-   */
-  const handleInputChange = (name) => {
-    return (value) => {
-      // update error model
-      const errors = { ...errorModel };
-      delete errors[name];
-      setErrorModel(errors);
+  // eslint-disable-next-line max-len
+  /* @param {'nodeUrl' | 'explorerUrl' | 'explorerServiceUrl' | 'walletServiceUrl' | 'walletServiceWsUrl' } name */
+  const handleInputChange = (name) => (value) => {
+    // update error model
+    const errors = { ...errorModel };
+    delete errors[name];
+    setErrorModel(errors);
 
-      // update form model
-      const form = {
-        ...formModel,
-        [name]: value,
-      } 
-      setFormModel(form);
-
-      // validate form model and update error model
-      setErrorModel(validate(form));
+    // update form model
+    const form = {
+      ...formModel,
+      [name]: value,
     };
+    setFormModel(form);
+
+    // validate form model and update error model
+    setErrorModel(validate(form));
   };
 
   const handleFeedbackModalDismiss = () => {
@@ -171,10 +165,8 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     });
   }, [networkSettingsErrors]);
 
-  useEffect(() => {
-    return function cleanUp() {
-      dispatch(networkSettingsUpdateErrors({}));
-    };
+  useEffect(() => function cleanUp() {
+    dispatch(networkSettingsUpdateErrors({}));
   }, []);
 
   return (
@@ -252,7 +244,8 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           <NewHathorButton
             disabled={hasError(errorModel)}
             onPress={handleSubmit}
-            title={t`Send`} />
+            title={t`Send`}
+          />
         </View>
       </View>
     </View>

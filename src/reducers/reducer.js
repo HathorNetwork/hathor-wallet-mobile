@@ -1102,25 +1102,25 @@ export const onNetworkSettingsUpdateSucess = (state, { payload }) => ({
 });
 
 /**
- * @param {Object} action.payload The errors from network settings input validation 
+ * @param {Object} action.payload The errors from network settings input validation
  * @see updateNetworkSettings
  */
 export const onNetworkSettingsUpdateReady = (state) => ({
   ...state,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
-}); 
+});
 
 /**
- * @param {Object} action.payload The errors from network settings input validation 
+ * @param {Object} action.payload The errors from network settings input validation
  * @see updateNetworkSettings
  */
 export const onNetworkSettingsUpdateFailure = (state) => ({
   ...state,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.FAILED
-}); 
+});
 
 export const onNetworkSettingsUpdateErrors = (state, { payload }) => ({
   ...state,
   networkSettingsErrors: payload,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
-}); 
+});

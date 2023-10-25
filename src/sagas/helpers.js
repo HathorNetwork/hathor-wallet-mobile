@@ -191,7 +191,7 @@ export async function getFullnodeNetwork() {
       hathorLib.versionApi.getVersion(resolve).catch((error) => {
         reject(error);
       });
-    })
+    });
     return response.network;
   } catch {
     throw new Error('Error getting fullnode version data.');
