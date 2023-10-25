@@ -29,7 +29,7 @@
     "assert": "^2.0.0",
     "buffer": "^4.9.2",
     "console-browserify": "^1.2.0",
-    "crypto-js": "^4.1.1",
+    "crypto-js": "^4.2.0",
     "deprecated-react-native-prop-types": "^2.2.0",
     "events": "^1.1.1",
     "intl": "^1.2.5",
