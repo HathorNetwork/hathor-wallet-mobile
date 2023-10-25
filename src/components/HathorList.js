@@ -31,6 +31,16 @@ export class HathorList extends Component {
       shadowColor: COLORS.textColor,
       shadowOpacity: 0.08,
     },
+    title: {
+      alignSelf: 'flex-start',
+      paddingHorizontal: 32,
+      fontSize: 14,
+      // HSL is preferable than RGB because it allows an
+      // easier manipulation in arithmetic fashion.
+      // The following color is Black with 55% of light,
+      // which yields a tone of grey.
+      color: 'hsl(0, 0%, 55%)',
+    },
     infinityView: {
       flex: 1,
       marginBottom: 0,
@@ -48,9 +58,12 @@ export class HathorList extends Component {
     }
 
     return (
-      <View style={style}>
-        {this.props.children}
-      </View>
+      <>
+        {this.props.title && <Text style={[this.style.title]}>{this.props.title}</Text>}
+        <View style={style}>
+          {this.props.children}
+        </View>
+      </>
     );
   }
 }
