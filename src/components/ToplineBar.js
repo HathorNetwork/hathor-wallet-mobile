@@ -36,4 +36,4 @@ export const ToplineBar = ({ style, text }) => {
       <Text style={[styles.text, textStyle]}>{ text }</Text>
     </View>
   );
-}
+};
