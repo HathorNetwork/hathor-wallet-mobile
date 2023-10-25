@@ -203,7 +203,7 @@ export async function getWalletServiceNetwork() {
     // eslint-disable-next-line max-len
     const instance = axiosWrapperCreateRequestInstance(config.getWalletServiceBaseUrl(), null, timeout);
     const response = await instance.get(`version`, {
-      validateStatus: function (status) {
+      validateStatus(status) {
         return status === 200; // Only 200 status is valid
       }
     });
