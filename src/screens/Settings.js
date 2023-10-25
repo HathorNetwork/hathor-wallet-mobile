@@ -23,6 +23,7 @@ import {
 } from '../constants';
 import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
+import { NetworkSettingsFlowNav } from './NetworkSettings';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -167,6 +168,13 @@ export class Settings extends React.Component {
                   />
                 </View>
               )}
+            />
+          </HathorList>
+
+          <HathorList title={t`Developer Settings`}>
+            <ListMenu
+              title={t`Network Settings`}
+              onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
             />
           </HathorList>
 
