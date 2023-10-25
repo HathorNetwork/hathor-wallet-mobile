@@ -57,7 +57,7 @@ const style = StyleSheet.create({
 
 export const NetworkSettingsDisclaimerNav = Symbol('NetworkSettingsDisclaimer').toString();
 
-export function NetworkSettingsDislaimerScreen({ navigation }) {
+export function NetworkSettingsDisclaimerScreen({ navigation }) {
   const handleNavigation = () => navigation.push(NetworkPreSettingsNav);
 
   return (
@@ -73,7 +73,8 @@ export function NetworkSettingsDislaimerScreen({ navigation }) {
         <View style={style.buttonContainer}>
           <NewHathorButton
             onPress={handleNavigation}
-            title={t`I understand`} />
+            title={t`I understand`}
+          />
         </View>
       </View>
     </View>
