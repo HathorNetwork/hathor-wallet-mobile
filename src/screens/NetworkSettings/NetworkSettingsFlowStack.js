@@ -10,7 +10,6 @@ export const NetworkSettingsFlowStack = ({ navigation }) => {
       screenOptions={{
         headerShown: false,
       }}
-    >
-    </FlowStack.Navigator>
+    />
   );
-}
+};

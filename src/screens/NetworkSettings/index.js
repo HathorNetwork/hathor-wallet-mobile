@@ -5,9 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { NetworkSettingsFlowStack, NetworkSettingsFlowNav } from "./NetworkSettingsFlowStack";
+import { NetworkSettingsFlowStack, NetworkSettingsFlowNav } from './NetworkSettingsFlowStack';
 
 export {
   NetworkSettingsFlowStack,
   NetworkSettingsFlowNav
-}
+};
