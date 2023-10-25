@@ -10,6 +10,7 @@ import {
   View,
   Text,
   TouchableHighlight,
+  Image,
 } from 'react-native';
 import { t } from 'ttag';
 import { useDispatch, useSelector } from 'react-redux';
@@ -17,10 +18,11 @@ import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
 import Spinner from '../../components/Spinner';
 import FeedbackModal from '../../components/FeedbackModal';
-import { networkSettingsUpdateSuccess } from '../../actions';
+import { networkSettingsUpdateReady, networkSettingsUpdateSuccess } from '../../actions';
 import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
 import { CustomNetworkSettingsNav } from './CustomNetworkSettingsScreen';
 import { feedbackFailedText, feedbackLoadingText, hasFailed, isLoading } from './helper';
+import errorIcon from '../../assets/images/icErrorBig.png';
 
 const presettingsTitleText = t`Network Pre-Settings`.toUpperCase();
 const styles = StyleSheet.create({
@@ -78,6 +80,10 @@ export function NetworkPreSettingsScreen({ navigation }) {
   const setTestnetNetwork = () => dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_TESTNET));
   const setCustomNetwork = () => {
     navigation.push(CustomNetworkSettingsNav);
+  };
+
+  const handleFeedbackModalDismiss = () => {
+    dispatch(networkSettingsUpdateReady());
   };
 
   return (

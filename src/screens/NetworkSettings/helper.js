@@ -1,5 +1,5 @@
 import { t } from 'ttag';
-import { NETWORKSETTINGS_STATUS } from "../../constants";
+import { NETWORKSETTINGS_STATUS } from '../../constants';
 
 export const feedbackLoadingText = t`Updating custom network settings...`;
 export const feedbackFailedText = t`There was an error while customizing network settings. Please try again later.`;
@@ -9,16 +9,13 @@ export const feedbackFailedText = t`There was an error while customizing network
  * @param {object} networkSettingsStatus - status from redux store
  * @returns {boolean} - true if the status is failed, false otherwise
  */
-export const hasFailed = (networkSettingsStatus) => {
-  return networkSettingsStatus === NETWORKSETTINGS_STATUS.FAILED;
-};
+// eslint-disable-next-line max-len
+export const hasFailed = (networkSettingsStatus) => networkSettingsStatus === NETWORKSETTINGS_STATUS.FAILED;
 
 /**
  * Check if the network settings status is loading.
  * @param {object} networkSettingsStatus - status from redux store
  * @returns {boolean} - true if the status is loading, false otherwise
  */
-export const isLoading = (networkSettingsStatus) => {
-  return networkSettingsStatus === NETWORKSETTINGS_STATUS.LOADING;
-};
-
+// eslint-disable-next-line max-len
+export const isLoading = (networkSettingsStatus) => networkSettingsStatus === NETWORKSETTINGS_STATUS.LOADING;
