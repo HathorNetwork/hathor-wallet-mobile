@@ -196,6 +196,11 @@ class AsyncStorageStore {
       {
         pin,
         password: pin,
+        // NOTE:
+        // This NETWORK usage doesn't need to get the network
+        // from the networkSettings in the redux store,
+        // because this one is used in the context of wallet
+        // access data generation only.
         networkName: NETWORK,
       },
     );

@@ -197,7 +197,7 @@ export const PRE_SETTINGS_MAINNET = {
  * Network settings key collection to be used with the app
  * storage.
  */
-export const networkSettingsKey = {
+export const networkSettingsKeyMap = {
   networkSettings: 'networkSettings:networkSettings'
 };
 
