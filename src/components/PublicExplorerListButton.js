@@ -1,10 +1,10 @@
 import React from 'react';
 import { t } from 'ttag';
 import { Image, Linking } from 'react-native';
+import { useSelector } from 'react-redux';
 import icShareActive from '../assets/icons/icShareActive.png';
 import { ListButton } from './HathorList';
 import { COLORS } from '../styles/themes';
-import { useSelector } from 'react-redux';
 import { combineURLs } from '../utils';
 
 export function PublicExplorerListButton(props) {

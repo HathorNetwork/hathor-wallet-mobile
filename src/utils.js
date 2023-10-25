@@ -370,6 +370,6 @@ export const getPushNotificationSettings = (pushNotification) => {
  */
 export function combineURLs(baseURL, relativeURL) {
   return relativeURL
-    ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '')
+    ? `${baseURL.replace(/\/+$/, '')}/${relativeURL.replace(/^\/+/, '')}`
     : baseURL;
-};
+}
