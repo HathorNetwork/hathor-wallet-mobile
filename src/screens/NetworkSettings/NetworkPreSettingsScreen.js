@@ -78,29 +78,28 @@ export function NetworkPreSettingsScreen({ navigation }) {
         onBackPress={() => navigation.goBack()}
       />
       <View style={styles.content}>
-        <CustomNetwork title="Mainnet" url={PRE_SETTINGS_MAINNET.nodeUrl} onPress={setMainnetNetwork} />
-        <CustomNetwork title="Testnet" url={PRE_SETTINGS_TESTNET.nodeUrl} onPress={setTestnetNetwork} />
+        <CustomNetwork title='Mainnet' url={PRE_SETTINGS_MAINNET.nodeUrl} onPress={setMainnetNetwork} />
+        <CustomNetwork title='Testnet' url={PRE_SETTINGS_TESTNET.nodeUrl} onPress={setTestnetNetwork} />
         <View style={styles.buttonContainer}>
           <NewHathorButton
             onPress={setCustomNetwork}
-            title={t`Customize`} />
+            title={t`Customize`}
+          />
         </View>
       </View>
     </View>
   );
 }
 
-const CustomNetwork = ({ title, url, onPress}) => {
-  return (
-    <TouchableHighlight
-      onPress={onPress}
-      underlayColor='hsl(0, 0%, 98%)'
-      style={styles.card}
-    >
-      <View>
-        <Text style={styles.cardTitle}>{title}</Text>
-        <Text style={styles.cardBody}>{url}</Text>
-      </View>
-    </TouchableHighlight>
-  );
-};
+const CustomNetwork = ({ title, url, onPress }) => (
+  <TouchableHighlight
+    onPress={onPress}
+    underlayColor='hsl(0, 0%, 98%)'
+    style={styles.card}
+  >
+    <View>
+      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={styles.cardBody}>{url}</Text>
+    </View>
+  </TouchableHighlight>
+);
