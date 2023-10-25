@@ -187,11 +187,12 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
 
 export async function getFullnodeNetwork() {
   try {
-    const versionData = await new Promise((resolve) => {
-      hathorLib.versionApi.getVersion(resolve);
+    const response = await new Promise((resolve, reject) => {
+      hathorLib.versionApi.getVersion(resolve).catch((error) => {
+        reject(error);
+      });
     });
-
-    return versionData.network;
+    return response.network;
   } catch {
     throw new Error('Error getting fullnode version data.');
   }

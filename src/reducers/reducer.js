@@ -7,7 +7,7 @@
 
 import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
-import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS, PRE_SETTINGS_MAINNET } from '../constants';
+import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS, PRE_SETTINGS_MAINNET, NETWORKSETTINGS_STATUS } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
@@ -207,6 +207,8 @@ const initialState = {
     ...FEATURE_TOGGLE_DEFAULTS,
   },
   networkSettings: PRE_SETTINGS_MAINNET,
+  networkSettingsErrors: {},
+  networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
 };
 
 export const reducer = (state = initialState, action) => {
@@ -343,8 +345,16 @@ export const reducer = (state = initialState, action) => {
       return onSetWalletConnectSessions(state, action);
     case types.WC_SET_CONNECTION_FAILED:
       return onSetWCConnectionFailed(state, action);
+    case types.NETWORKSETTINGS_UPDATE:
+      return onNetworkSettingsUpdate(state);
     case types.NETWORKSETTINGS_UPDATE_SUCCESS:
       return onNetworkSettingsUpdateSucess(state, action);
+    case types.NETWORKSETTINGS_UPDATE_READY:
+      return onNetworkSettingsUpdateReady(state);
+    case types.NETWORKSETTINGS_UPDATE_FAILURE:
+      return onNetworkSettingsUpdateFailure(state);
+    case types.NETWORKSETTINGS_UPDATE_ERRORS:
+      return onNetworkSettingsUpdateErrors(state, action);
     default:
       return state;
   }
@@ -1076,7 +1086,41 @@ export const onSetWCConnectionFailed = (state, { payload }) => ({
  * @param {Object} action.payload The network settings emitted in saga
  * @see updateNetworkSettings
  */
+export const onNetworkSettingsUpdate = (state) => ({
+  ...state,
+  networkSettingsStatus: NETWORKSETTINGS_STATUS.LOADING,
+});
+
+/**
+ * @param {Object} action.payload The network settings emitted in saga
+ * @see updateNetworkSettings
+ */
 export const onNetworkSettingsUpdateSucess = (state, { payload }) => ({
   ...state,
-  networkSettings: payload
+  networkSettings: payload,
+  networkSettingsStatus: NETWORKSETTINGS_STATUS.LOADING,
+});
+
+/**
+ * @param {Object} action.payload The errors from network settings input validation
+ * @see updateNetworkSettings
+ */
+export const onNetworkSettingsUpdateReady = (state) => ({
+  ...state,
+  networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
+});
+
+/**
+ * @param {Object} action.payload The errors from network settings input validation
+ * @see updateNetworkSettings
+ */
+export const onNetworkSettingsUpdateFailure = (state) => ({
+  ...state,
+  networkSettingsStatus: NETWORKSETTINGS_STATUS.FAILED
+});
+
+export const onNetworkSettingsUpdateErrors = (state, { payload }) => ({
+  ...state,
+  networkSettingsErrors: payload,
+  networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
 });

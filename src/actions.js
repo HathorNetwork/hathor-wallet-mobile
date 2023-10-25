@@ -122,7 +122,9 @@ export const types = {
   // See: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/334
   NETWORKSETTINGS_UPDATE: 'NETWORK_SETTINGS_UPDATE',
   NETWORKSETTINGS_UPDATE_SUCCESS: 'NETWORK_SETTINGS_UPDATE_SUCCESS',
+  NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
+  NETWORKSETTINGS_UPDATE_ERRORS: 'NETWORK_SETTINGS_UPDATE_ERRORS',
 };
 
 export const featureToggleInitialized = () => ({
@@ -883,9 +885,32 @@ export const networkSettingsUpdateSuccess = (customNetwork) => ({
 
 /**
  * Emits the failure signal for custom network settings request.
- * It means the request couldn't be processed either by ivalid input,
- * or by internal error.
+ * It means the request couldn't be processed due to internal error.
  */
 export const networkSettingsUpdateFailure = () => ({
   type: types.NETWORKSETTINGS_UPDATE_FAILURE,
+});
+
+/**
+ * Emits errors signal for custom network settings form representing
+ * invalid inputs.
+ * @param {{
+ *   message: string,
+ *   nodeUrl: string,
+ *   explorerUrl: string,
+ *   explorerServiceUrl: string,
+ *   walletServiceUrl?: string
+ *   walletServiceWsUrl?: string
+ * }} errors The validation errors from custom network settings form
+ */
+export const networkSettingsUpdateErrors = (errors) => ({
+  type: types.NETWORKSETTINGS_UPDATE_ERRORS,
+  payload: errors,
+});
+
+/**
+ * Custom Network Settings form is ready to be used.
+ */
+export const networkSettingsUpdateReady = () => ({
+  type: types.NETWORKSETTINGS_UPDATE_READY,
 });

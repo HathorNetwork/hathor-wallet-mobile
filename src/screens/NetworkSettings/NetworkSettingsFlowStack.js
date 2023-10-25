@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 import { createStackNavigator } from '@react-navigation/stack';
+import { CustomNetworkSettingsNav, CustomNetworkSettingsScreen } from './CustomNetworkSettingsScreen';
 import { NetworkPreSettingsNav, NetworkPreSettingsScreen } from './NetworkPreSettingsScreen';
 import { NetworkSettingsDisclaimerNav, NetworkSettingsDisclaimerScreen } from './NetworkSettingsDisclaimerScreen';
 
@@ -14,7 +15,7 @@ export const NetworkSettingsFlowStack = ({ navigation }) => {
   const FlowStack = createStackNavigator();
   return (
     <FlowStack.Navigator
-      initialRouteName={NetworkPreSettingsNav}
+      initialRouteName={CustomNetworkSettingsNav}
       screenOptions={{
         headerShown: false,
       }}
@@ -24,6 +25,7 @@ export const NetworkSettingsFlowStack = ({ navigation }) => {
         component={NetworkSettingsDisclaimerScreen}
       />
       <FlowStack.Screen name={NetworkPreSettingsNav} component={NetworkPreSettingsScreen} />
+      <FlowStack.Screen name={CustomNetworkSettingsNav} component={CustomNetworkSettingsScreen} />
     </FlowStack.Navigator>
   );
 };

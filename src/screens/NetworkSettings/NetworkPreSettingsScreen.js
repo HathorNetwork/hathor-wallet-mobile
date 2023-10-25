@@ -17,6 +17,7 @@ import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
 import { networkSettingsUpdateSuccess } from '../../actions';
 import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
+import { CustomNetworkSettingsNav } from './CustomNetworkSettingsScreen';
 
 const presettingsTitleText = t`Network Pre-Settings`.toUpperCase();
 const styles = StyleSheet.create({
@@ -68,7 +69,7 @@ export function NetworkPreSettingsScreen({ navigation }) {
   const setMainnetNetwork = () => dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_MAINNET));
   const setTestnetNetwork = () => dispatch(networkSettingsUpdateSuccess(PRE_SETTINGS_TESTNET));
   const setCustomNetwork = () => {
-    // do nothing
+    navigation.push(CustomNetworkSettingsNav);
   };
 
   return (
