@@ -136,14 +136,14 @@ export function* startWallet(action) {
     dispatch = _dispatch;
   });
 
-  const networkSettings = yield select(getNetworkSettings); 
+  const networkSettings = yield select(getNetworkSettings);
 
   let wallet;
   if (useWalletService) {
     const network = new Network(networkSettings.network);
 
     // Set urls for wallet service
-    config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl)
+    config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl);
     config.setWalletServiceBaseWsUrl(networkSettings.walletServiceWsUrl);
 
     wallet = new HathorWalletServiceWallet({

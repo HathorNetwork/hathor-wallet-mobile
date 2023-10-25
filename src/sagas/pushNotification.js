@@ -341,7 +341,7 @@ export function* loadWallet() {
   let walletService;
   if (!useWalletService) {
     // Set urls for wallet service
-    config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl)
+    config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl);
     config.setWalletServiceBaseWsUrl(networkSettings.walletServiceWsUrl);
     const network = new Network(networkSettings.network);
 
