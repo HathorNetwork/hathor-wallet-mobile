@@ -12,7 +12,10 @@ export const NetworkSettingsFlowStack = ({ navigation }) => {
         headerShown: false,
       }}
     >
-      <FlowStack.Screen name={NetworkSettingsDisclaimerNav} component={NetworkSettingsDisclaimerScreen} />
+      <FlowStack.Screen
+        name={NetworkSettingsDisclaimerNav}
+        component={NetworkSettingsDisclaimerScreen}
+      />
     </FlowStack.Navigator>
   );
 };

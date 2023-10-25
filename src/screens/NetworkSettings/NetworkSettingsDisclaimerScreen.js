@@ -69,8 +69,9 @@ export function NetworkSettingsDisclaimerScreen({ navigation }) {
         </View>
         <View style={style.buttonContainer}>
           <NewHathorButton
-            onPress={() => navigation.navigate('Settings') }
-            title={t`I understand`} />
+            onPress={() => navigation.navigate('Settings')}
+            title={t`I understand`}
+          />
         </View>
       </View>
     </View>
