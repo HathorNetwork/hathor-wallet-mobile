@@ -14,6 +14,7 @@ import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
 import { COLORS } from '../../styles/themes';
+import { NetworkPreSettingsNav } from './NetworkPreSettingsScreen';
 
 const riskDisclaimerTitleText = t`Risk Disclaimer`.toUpperCase();
 const riskDisclaimerContentText = t`Do not change this unless you know what you are doing, and under no circumstances change these settings based on someone else suggestion, as this can potentially make you susceptible to fraudulent schemes.`;
@@ -57,6 +58,8 @@ const style = StyleSheet.create({
 export const NetworkSettingsDisclaimerNav = Symbol('NetworkSettingsDisclaimer').toString();
 
 export function NetworkSettingsDisclaimerScreen({ navigation }) {
+  const handleNavigation = () => navigation.push(NetworkPreSettingsNav);
+
   return (
     <View style={style.container}>
       <HathorHeader
@@ -69,7 +72,7 @@ export function NetworkSettingsDisclaimerScreen({ navigation }) {
         </View>
         <View style={style.buttonContainer}>
           <NewHathorButton
-            onPress={() => navigation.navigate('Settings')}
+            onPress={handleNavigation}
             title={t`I understand`}
           />
         </View>

@@ -11,11 +11,11 @@ import { NetworkSettingsDisclaimerNav, NetworkSettingsDisclaimerScreen } from '.
 
 export const NetworkSettingsFlowNav = Symbol('NetworkSettingsFlowStack').toString();
 
-export const NetworkSettingsFlowStack = ({ navigation }) => {
+export const NetworkSettingsFlowStack = () => {
   const FlowStack = createStackNavigator();
   return (
     <FlowStack.Navigator
-      initialRouteName={CustomNetworkSettingsNav}
+      initialRouteName={NetworkSettingsDisclaimerNav}
       screenOptions={{
         headerShown: false,
       }}
