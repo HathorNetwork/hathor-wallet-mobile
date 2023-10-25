@@ -59,11 +59,10 @@ export class HathorList extends Component {
 
     return (
       <>
-      {this.props.title
-        && <Text style={[this.style.title]}>{this.props.title}</Text>}
-      <View style={style}>
-        {this.props.children}
-      </View>
+        {this.props.title && <Text style={[this.style.title]}>{this.props.title}</Text>}
+        <View style={style}>
+          {this.props.children}
+        </View>
       </>
     );
   }
