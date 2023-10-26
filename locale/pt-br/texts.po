@@ -812,7 +812,7 @@ msgstr "Desregistrar token"
 #, fuzzy
 msgid "There was an error connecting. Please try again later."
 msgstr ""
-"Ocorreu um erro ao atualizar as configurações de notificação. Por favor, "
+"Ocorreu um erro durante a conexão. Por favor, "
 "tente novamente mais tarde."
 
 #. translator: Used when the QR Code Scanner is opened, and user will manually
@@ -820,7 +820,7 @@ msgstr ""
 #: src/screens/WalletConnect/WalletConnectList.js:111
 #, fuzzy
 msgid "Add"
-msgstr "Endereço"
+msgstr "Adicionar"
 
 #: src/screens/WalletConnect/WalletConnectList.js:117
 msgid "End session"
@@ -829,7 +829,7 @@ msgstr ""
 #: src/screens/WalletConnect/WalletConnectList.js:117
 #, fuzzy
 msgid "This will disconnect the session."
-msgstr "Esta wallet está conectada à **mainnet**."
+msgstr "Esta wallet está conectada na sessão."
 
 #: src/screens/WalletConnect/WalletConnectList.js:119
 msgid "End"
@@ -870,7 +870,7 @@ msgid ""
 "Any token outside mainnet network bear no value. Only change if you know "
 "what you are doing."
 msgstr ""
-"Nenhum token fora da rede mainnet possui valor. Apenas mude a rede ser você "
+"Nenhum token fora da rede mainnet possui valor. Apenas mude a rede se você "
 "souber o que está fazendo."
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:22
@@ -942,7 +942,7 @@ msgid ""
 "circumstances change these settings based on someone else suggestion, as "
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
-"Não altere a rede a menos que você saiba o que está fazendo, e sub nenhuma "
+"Não altere a rede a menos que você saiba o que está fazendo, e sob nenhuma "
 "circunstância altere a rede por sugestão de terceiros, uma vez que ao "
 "alterar a rede você pode ser vítima de fraude."
 
@@ -1174,7 +1174,7 @@ msgstr ""
 
 #: src/components/NetworkSettings/NetworkStatusBar.js:14
 msgid "Custom network"
-msgstr ""
+msgstr "Rede personalizada"
 
 #~ msgid "There has been an error upgrading your wallet."
 #~ msgstr "Ocorreu um erro ao atualizar sua wallet."
