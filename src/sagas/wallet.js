@@ -202,6 +202,13 @@ export function* startWallet(action) {
 
       // Yield the same action so it will now load on the old facade
       yield put(action);
+    } else {
+      // NOTE: perhaps we should provide a reset option to the user.
+      // A reset option would be nice to have because the user may
+      // have configured a custom network.
+      console.log('failed to start fullnode wallet');
+      yield put(startWalletFailed());
+      return;
     }
   }
 
