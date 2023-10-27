@@ -8,6 +8,7 @@
 import { DefaultTheme } from '@react-navigation/native';
 
 import { _PRIMARY_COLOR as PRIMARY_COLOR } from '../config';
+import { HslColor } from '../HslColor';
 
 /**
  * Light theme color scheme
@@ -102,4 +103,13 @@ export const HathorTheme = {
     text: COLORS.textColor,
     border: COLORS.borderColor,
   },
+};
+
+const alertBaseColor = new HslColor('hsl(47, 100%, 62%)');
+export const AlertUI = {
+  baseHslColor: alertBaseColor,
+  primaryColor: alertBaseColor.toString(),
+  light20Color: alertBaseColor.addLightness(20).toString(),
+  dark20Color: alertBaseColor.addLightness(-20).toString(),
+  dark40Color: alertBaseColor.addLightness(-40).toString(),
 };
