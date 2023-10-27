@@ -14,6 +14,7 @@ all:
 	@echo - check_po
 	@echo - check_pot
 	@echo - update_pot
+	@echo - check_missing_translations
 	@echo
 
 .PHONY: check_version
@@ -49,6 +50,10 @@ check_po_strict: _touch_pot $(src_files)
 .PHONY: check_pot
 check_pot:
 	./scripts/check_pot
+
+.PHONY: check_missing_translations
+check_missing_translations:
+	./scripts/check_missing_translations
 
 .PHONY: _touch_pot
 _touch_pot:

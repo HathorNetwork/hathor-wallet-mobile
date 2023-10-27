@@ -37,3 +37,5 @@ jobs:
       run: make check_pot
     - name: Po file
       run: make check_po
+    - name: Check for missing translations
+      run: make check_missing_translations

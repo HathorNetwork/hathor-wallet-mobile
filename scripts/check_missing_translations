@@ -1,0 +1,116 @@
+#!/bin/bash
+
+SRC_DIR="./src/"
+LOCALE_DIR=./locale/
+TMP_DIR=$(mktemp -d)
+# Temporary file to store the missing msgid entries along with line numbers
+MISSING_MSGIDS_FILE=$TMP_DIR/missing_msgids
+# Paths to the old and new .pot files
+OLD_POT_FILE="$LOCALE_DIR/texts.pot"
+NEW_POT_FILE="$TMP_DIR/new.pot"
+
+# Trap the exit signal to clean the temp folder
+trap 'rm -rf "$TMP_DIR"' EXIT
+
+# Generate the new .pot file
+npx ttag extract -o "$NEW_POT_FILE" "$SRC_DIR"
+
+# Here we will read both files, one after the other in a single awk script
+#
+# NR is the number of records, it increments for every line read
+# FNR is the current count of lines read for the open file, **so it will reset to 1 when new files are open**
+# 
+# If NR==FNR, we're in the first file, as NR and FNR will be incremented together
+# So, when processing the first file, the only thing we'll do is to add the msgid
+# to the msgid[] array.
+#
+# When processing the second file, the awk script will check if the msgid is not
+# present, and if it's not, it will print the line number (FNR) with the msgid text
+#
+# The result of this will be a file (MISSING_MSGIDS_FILE) with all the missing msgids
+# with one msgid and its line number per line, here is a result example:
+#
+# 229:Reject
+# 230:Approve
+# 231:Connect to this dApp?
+# 233:Sign this message?
+# 235:Custom network
+#
+# We will use this later on to print the missing translations.
+#
+# Here is a pseudocode to help understand what's happening here:
+#
+# if (NR == FNR) {
+#   msgid[$0] = 1; // Storing the line in the associative array msgid
+#   next();        // Skip to the next record
+# } else {
+#   if (!($0 in msgid)) {
+#     print FNR ":" $0; // Print the line number and the line itself
+#   }
+# }
+awk 'NR==FNR {msgid[$0]; next} !($0 in msgid) {print FNR ":" $0}' \
+  <(awk -F'"' '/msgid/ {print $2}' "$OLD_POT_FILE") \
+  <(awk -F'"' '/msgid/ {print $2}' "$NEW_POT_FILE") \
+  > "$MISSING_MSGIDS_FILE"
+
+# Function to extract msgstr for a given msgid from a .po file
+extract_msgstr() {
+  local msgid=$1
+  local po_file=$2
+  local msgstr=""
+  local in_msgid_block=false
+  while IFS= read -r line; do
+    if [[ "$line" == "msgid \"$msgid\"" ]]; then
+      in_msgid_block=true
+    elif $in_msgid_block && [[ "$line" == "msgstr "* ]]; then
+      msgstr=$(awk -F'"' '{print $2}' <<< "$line")
+      break
+    elif $in_msgid_block && [[ "$line" == "" ]]; then
+      in_msgid_block=false
+    fi
+  done < "$po_file"
+  echo "$msgstr"
+}
+
+# Function to extract source code line number for a given msgid from the .pot file
+extract_line_number() {
+  local msgid=$1
+  local pot_file=$2
+  local line_number=""
+  while IFS= read -r line; do
+    if [[ "$line" == "#: "* ]]; then
+      line_number=$(awk '{print $2}' <<< "$line")
+    elif [[ "$line" == "msgid \"$msgid\"" ]]; then
+      echo "$line_number"
+      break
+    fi
+  done < "$pot_file"
+}
+
+exit_code=0;
+
+echo "check_pot: Checking missing translations on pot file..."
+
+# Check each missing msgid in the .po files
+while IFS= read -r entry; do
+  msgid=$(cut -d':' -f2 <<< "$entry")
+  
+  code_line_number=$(extract_line_number "$msgid" "$NEW_POT_FILE")
+  
+  translation_found=false
+  
+  for po_file in $(find "locale/" -name "*.po" -type f); do
+    msgstr=$(extract_msgstr "$msgid" "$po_file")
+    if [ -n "$msgstr" ]; then
+      translation_found=true
+      break
+    fi
+  done
+  
+  if [ "$translation_found" = false ]; then
+    exit_code=1;
+    echo "Missing translation for msgid \"$msgid\" ($code_line_number)"
+  fi
+done < "$MISSING_MSGIDS_FILE"
+
+exit $exit_code
