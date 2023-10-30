@@ -674,12 +674,12 @@ msgstr ""
 msgid "Your transfer is being processed"
 msgstr ""
 
-#: src/sagas/helpers.js:125
+#: src/sagas/helpers.js:132
 #: src/screens/SendConfirmScreen.js:104
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
-#: src/sagas/helpers.js:126
+#: src/sagas/helpers.js:133
 #: src/screens/SendConfirmScreen.js:105
 msgid "Authorize operation"
 msgstr ""
@@ -693,7 +693,7 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:247
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:265
 #: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr ""
@@ -830,62 +830,62 @@ msgstr ""
 msgid "Manual"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:16
 msgid "Custom Network Settings"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:21
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:17
 msgid ""
 "Any token outside mainnet network bear no value. Only change if you know "
 "what you are doing."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:17
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:18
 #: src/screens/NetworkSettings/helper.js:4
 msgid "Updating custom network settings..."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:23
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:19
 #: src/screens/NetworkSettings/helper.js:5
-msgid "Network settings customized with success."
+msgid "Network settings successfully customized."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:24
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
 #: src/screens/NetworkSettings/helper.js:6
 msgid ""
 "There was an error while customizing network settings. Please try again "
 "later."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:43
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:63
 msgid "nodeUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:47
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:67
 msgid "explorerUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:51
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:71
 msgid "explorerServiceUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:198
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:218
 msgid "Node URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:207
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:227
 msgid "Explorer URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:216
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:236
 msgid "Explorer Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:225
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:245
 msgid "Wallet Service URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:234
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:254
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
@@ -1025,7 +1025,7 @@ msgstr ""
 msgid "No internet connection"
 msgstr ""
 
-#: src/components/PublicExplorerListButton.js:17
+#: src/components/PublicExplorerListButton.js:19
 msgid "Public Explorer"
 msgstr ""
 
