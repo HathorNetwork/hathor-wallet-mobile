@@ -824,20 +824,20 @@ msgstr "Adicionar"
 
 #: src/screens/WalletConnect/WalletConnectList.js:117
 msgid "End session"
-msgstr ""
+msgstr "Encerrar sessão"
 
 #: src/screens/WalletConnect/WalletConnectList.js:117
 #, fuzzy
 msgid "This will disconnect the session."
-msgstr "Esta wallet está conectada na sessão."
+msgstr "Isso irá desconectar a sessão."
 
 #: src/screens/WalletConnect/WalletConnectList.js:119
 msgid "End"
-msgstr ""
+msgstr "Encerrar"
 
 #: src/screens/WalletConnect/WalletConnectList.js:137
 msgid "Wallet Connect Sessions"
-msgstr ""
+msgstr "Sessões do Wallet Connect"
 
 #: src/screens/WalletConnect/WalletConnectManual.js:39
 #, fuzzy
@@ -852,7 +852,7 @@ msgstr ""
 #: src/screens/WalletConnect/WalletConnectScan.js:34
 #, fuzzy
 msgid "Connect"
-msgstr "Conectado ao servidor"
+msgstr "Conectar"
 
 #. translator: Used when the QR Code Scanner is opened, and user will manually
 #. enter the information.
