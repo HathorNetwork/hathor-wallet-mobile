@@ -2,7 +2,7 @@ import { t } from 'ttag';
 import { NETWORKSETTINGS_STATUS } from '../../constants';
 
 export const feedbackLoadingText = t`Updating custom network settings...`;
-export const feedbackSucceedText = t`Network settings customized with success.`;
+export const feedbackSucceedText = t`Network settings successfully customized.`;
 export const feedbackFailedText = t`There was an error while customizing network settings. Please try again later.`;
 
 /**
