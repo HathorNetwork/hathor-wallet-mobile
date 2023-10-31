@@ -91,6 +91,9 @@ class PinScreen extends React.Component {
     }
 
     this.focusEvent = this.props.navigation.addListener('focus', () => {
+      // Ensure the keyboard is hidden when the screen is focused, even if it was already mounted
+      Keyboard.dismiss();
+      // Clear the pin
       this.setState({ pin: '', pinColor: COLORS.textColor, error: null });
     });
   }
