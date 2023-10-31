@@ -939,29 +939,35 @@ msgstr ""
 "circunstância altere a rede por sugestão de terceiros, uma vez que ao "
 "alterar a rede você pode ser vítima de fraude."
 
-#: src/sagas/networkSettings.js:78
+#: src/sagas/networkSettings.js:81
 msgid "Custom Network Settings cannot be empty."
 msgstr "Configurações de Rede não pode estar vazia."
 
-#: src/sagas/networkSettings.js:85
+#: src/sagas/networkSettings.js:88
 msgid "explorerUrl should be a valid URL."
 msgstr "explorerUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:92
+#: src/sagas/networkSettings.js:95
 msgid "explorerServiceUrl should be a valid URL."
 msgstr "explorerServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:99
+#: src/sagas/networkSettings.js:102
 msgid "nodeUrl should be a valid URL."
 msgstr "nodeUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:106
+#: src/sagas/networkSettings.js:109
 msgid "walletServiceUrl should be a valid URL."
 msgstr "walletServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:113
+#: src/sagas/networkSettings.js:116
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr "walletServiceWsUrl deve ser uma URL válida."
+
+#.  If we fall into this situation, the app should be killed
+#.  for the custom new network settings take effect.
+#: src/sagas/networkSettings.js:257
+msgid "Wallet not found while trying to persist the custom network settings."
+msgstr "Wallet não encontrada ao persistir a configuração personalizada da rede."
 
 #: src/sagas/pushNotification.js:53
 msgid "Transaction"
