@@ -14,7 +14,21 @@ import { PRE_SETTINGS_MAINNET } from '../../constants';
 const customNetworkText = t`Custom network`;
 
 function notMainnet(networkSettings) {
-  return !isEqual(networkSettings, PRE_SETTINGS_MAINNET);
+  const currNetwork = {
+    stage: networkSettings.stage,
+    network: networkSettings.network,
+    nodeUrl: networkSettings.nodeUrl,
+    explorerUrl: networkSettings.explorerUrl,
+    explorerServiceUrl: networkSettings.explorerServiceUrl,
+  };
+  const mainnet = {
+    stage: PRE_SETTINGS_MAINNET.stage,
+    network: PRE_SETTINGS_MAINNET.network,
+    nodeUrl: PRE_SETTINGS_MAINNET.nodeUrl,
+    explorerUrl: PRE_SETTINGS_MAINNET.explorerUrl,
+    explorerServiceUrl: PRE_SETTINGS_MAINNET.explorerServiceUrl,
+  };
+  return !isEqual(currNetwork, mainnet);
 }
 
 const style = {
