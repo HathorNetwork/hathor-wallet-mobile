@@ -930,7 +930,7 @@ export const networkSettingsUpdateSuccess = () => ({
 /**
  * Emits the failure signal for custom network settings request.
  * It means the request couldn't be processed due to internal error.
- * It servers as hook for the frontend to provide feedback for the user.
+ * It serves as hook for the frontend to provide feedback for the user.
  */
 export const networkSettingsUpdateFailure = () => ({
   type: types.NETWORKSETTINGS_UPDATE_FAILURE,

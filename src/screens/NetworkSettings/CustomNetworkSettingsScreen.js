@@ -135,7 +135,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
   // eslint-disable-next-line max-len
   /* @param {'nodeUrl' | 'explorerUrl' | 'explorerServiceUrl' | 'walletServiceUrl' | 'walletServiceWsUrl' } name */
   const handleInputChange = (name) => (value) => {
-    // update inalid model
+    // update invalid model
     const invalidModelCopy = { ...invalidModel };
     delete invalidModelCopy[name];
     setInvalidModel(invalidModelCopy);
