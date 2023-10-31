@@ -7,12 +7,50 @@
 
 import React, { useCallback } from 'react';
 import {
+  StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { t } from 'ttag';
 import { useDispatch } from 'react-redux';
-import { onStartWalletLock, lockScreen } from '../actions';
+import { onStartWalletLock, resetOnLockScreen, lockScreen } from '../actions';
 import SimpleButton from '../components/SimpleButton';
+
+const errorText = t`There's been an error connecting to the server.`;
+const tryAgainText = t`Try again`;
+const resetWalletText = t`Reset wallet`;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+    justifyContent: 'center'
+  },
+  errorText: {
+    fontSize: 18,
+    lineHeight: 22,
+    width: 200,
+    textAlign: 'center'
+  },
+  tryAgainText: {
+    fontSize: 18,
+  },
+  tryAgainButton: {
+    alignItems: 'center',
+    marginTop: 12
+  },
+  resetContainer: {
+    alignItems: 'center',
+    paddingBottom: 48,
+  },
+  resetText: {
+    fontSize: 18
+  }
+});
 
 export default () => {
   const dispatch = useDispatch();
@@ -22,26 +60,31 @@ export default () => {
     // Display the PinScreen
     dispatch(lockScreen());
   }, [dispatch]);
+  const onReset = useCallback(() => {
+    // This will set resetOnLockScreen to true
+    dispatch(resetOnLockScreen());
+    dispatch(onStartWalletLock());
+    dispatch(lockScreen());
+  }, [dispatch]);
 
   return (
-    <View style={{
-      alignItems: 'center',
-      justifyContent: 'center',
-      flex: 1,
-    }}
-    >
-      <Text style={{
-        fontSize: 18, lineHeight: 22, width: 200, textAlign: 'center'
-      }}
-      >
-        There&apos;s been an error connecting to the server
-      </Text>
-      <SimpleButton
-        containerStyle={{ marginTop: 12 }}
-        textStyle={{ fontSize: 18 }}
-        onPress={onReload}
-        title='Try again'
-      />
+    <View style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.errorText}>{errorText}</Text>
+        <SimpleButton
+          containerStyle={styles.tryAgainButton}
+          textStyle={styles.tryAgainText}
+          onPress={onReload}
+          title={tryAgainText}
+        />
+      </View>
+      <View style={styles.resetContainer}>
+        <SimpleButton
+          textStyle={styles.resetText}
+          onPress={onReset}
+          title={resetWalletText}
+        />
+      </View>
     </View>
   );
 };
