@@ -63,7 +63,11 @@ export default () => {
   const onReset = useCallback(() => {
     // This will set resetOnLockScreen to true
     dispatch(resetOnLockScreen());
+    // This will set the walletState to LOADING
     dispatch(onStartWalletLock());
+    // This redirect the user to the lockScreen,
+    // however, it will display the resetScreen
+    // because resetOnLockScreen is true now.
     dispatch(lockScreen());
   }, [dispatch]);
 
