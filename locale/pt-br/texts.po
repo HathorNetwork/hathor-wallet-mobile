@@ -450,7 +450,6 @@ msgid "**${ _this.props.loadedData.addresses } addresses** found"
 msgstr "**${ _this.props.loadedData.addresses } endereços** encontrados"
 
 #: src/screens/LoadWalletErrorScreen.js:19
-#, fuzzy
 msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
@@ -806,14 +805,12 @@ msgid "Unregister token"
 msgstr "Desregistrar token"
 
 #: src/screens/WalletConnect/WalletConnectList.js:33
-#, fuzzy
 msgid "There was an error connecting. Please try again later."
 msgstr ""
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/WalletConnect/WalletConnectList.js:111
-#, fuzzy
 msgid "Add"
 msgstr ""
 
@@ -822,7 +819,6 @@ msgid "End session"
 msgstr ""
 
 #: src/screens/WalletConnect/WalletConnectList.js:117
-#, fuzzy
 msgid "This will disconnect the session."
 msgstr ""
 
@@ -835,7 +831,6 @@ msgid "Wallet Connect Sessions"
 msgstr ""
 
 #: src/screens/WalletConnect/WalletConnectManual.js:39
-#, fuzzy
 msgid "Manual Connection"
 msgstr ""
 
@@ -845,14 +840,12 @@ msgstr ""
 
 #: src/screens/WalletConnect/WalletConnectManual.js:57
 #: src/screens/WalletConnect/WalletConnectScan.js:34
-#, fuzzy
 msgid "Connect"
 msgstr ""
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/WalletConnect/WalletConnectScan.js:41
-#, fuzzy
 msgid "Manual"
 msgstr ""
 
@@ -868,13 +861,11 @@ msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:17
 #: src/screens/NetworkSettings/helper.js:4
-#, fuzzy
 msgid "Updating custom network settings..."
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:18
 #: src/screens/NetworkSettings/helper.js:5
-#, fuzzy
 msgid ""
 "There was an error while customizing network settings. Please try again "
 "later."
