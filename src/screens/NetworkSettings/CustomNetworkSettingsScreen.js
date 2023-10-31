@@ -8,40 +8,16 @@ import FeedbackModal from '../../components/FeedbackModal';
 import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
 import SimpleInput from '../../components/SimpleInput';
-import { NETWORKSETTINGS_STATUS } from '../../constants';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import Spinner from '../../components/Spinner';
+import { hasSucceed, hasFailed, isLoading } from './helper';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
 const warningText = t`Any token outside mainnet network bear no value. Only change if you know what you are doing.`;
 const feedbackLoadingText = t`Updating custom network settings...`;
 const feedbackSucceedText = t`Network settings successfully customized.`;
 const feedbackFailedText = t`There was an error while customizing network settings. Please try again later.`;
-
-/**
- * Check if the network settings status is successful.
- * @param {object} networkSettingsStatus - status from redux store
- * @returns {boolean} - true if the status is successful, false otherwise
- */
-// eslint-disable-next-line max-len
-const hasSucceed = (networkSettingsStatus) => networkSettingsStatus === NETWORKSETTINGS_STATUS.SUCCESSFUL;
-
-/**
- * Check if the network settings status is failed.
- * @param {object} networkSettingsStatus - status from redux store
- * @returns {boolean} - true if the status is failed, false otherwise
- */
-// eslint-disable-next-line max-len
-const hasFailed = (networkSettingsStatus) => networkSettingsStatus === NETWORKSETTINGS_STATUS.FAILED;
-
-/**
- * Check if the network settings status is loading.
- * @param {object} networkSettingsStatus - status from redux store
- * @returns {boolean} - true if the status is loading, false otherwise
- */
-// eslint-disable-next-line max-len
-const isLoading = (networkSettingsStatus) => networkSettingsStatus === NETWORKSETTINGS_STATUS.LOADING;
 
 /**
  * Verifies if the invalidModel of the form has an error message.
