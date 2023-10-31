@@ -105,9 +105,9 @@ export const HathorTheme = {
   },
 };
 
-const alertBaseColor = new HslColor('hsl(47, 100%, 62%)');
+const alertBaseColor = new HslColor('hsl(47, 100%, 66%)');
 export const AlertUI = {
   baseHslColor: alertBaseColor,
   lightColor: alertBaseColor.addLightness(20).toString(),
-  darkColor: alertBaseColor.addLightness(-70).toString(),
+  darkColor: alertBaseColor.addLightness(-44).toString(),
 };
