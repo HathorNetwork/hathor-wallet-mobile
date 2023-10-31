@@ -254,7 +254,7 @@ export function* persistNetworkSettings(action) {
   if (!wallet) {
     // If we fall into this situation, the app should be killed
     // for the custom new network settings take effect.
-    const errMsg = 'Wallet not found while trying to persist the custom network settings.';
+    const errMsg = t`Wallet not found while trying to persist the custom network settings.`;
     console.warn(errMsg);
     yield put(onExceptionCaptured(errMsg, /* isFatal */ true));
     return;
