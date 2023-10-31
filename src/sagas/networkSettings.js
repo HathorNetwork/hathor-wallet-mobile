@@ -11,7 +11,8 @@ import {
   networkSettingsUpdateWaiting,
   types,
   reloadWalletRequested,
-  onExceptionCaptured
+  onExceptionCaptured,
+  networkSettingsUpdateReady
 } from '../actions';
 import {
   NETWORK,
@@ -41,6 +42,8 @@ export function* initNetworkSettings() {
   const status = yield select((state) => state.networkSettingsStatus);
   if (status === NETWORKSETTINGS_STATUS.WAITING) {
     yield put(networkSettingsUpdateSuccess());
+  } else {
+    yield put(networkSettingsUpdateReady());
   }
 }
 
