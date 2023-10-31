@@ -713,7 +713,7 @@ msgstr "Sua transferência de **${ this.amountAndToken }** foi confirmada"
 msgid "Address"
 msgstr "Endereço"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:265
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:241
 #: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr "Enviar"
@@ -809,7 +809,6 @@ msgid "Unregister token"
 msgstr "Desregistrar token"
 
 #: src/screens/WalletConnect/WalletConnectList.js:33
-#, fuzzy
 msgid "There was an error connecting. Please try again later."
 msgstr ""
 "Ocorreu um erro durante a conexão. Por favor, tente novamente mais tarde."
@@ -817,7 +816,6 @@ msgstr ""
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/WalletConnect/WalletConnectList.js:111
-#, fuzzy
 msgid "Add"
 msgstr "Adicionar"
 
@@ -826,7 +824,6 @@ msgid "End session"
 msgstr "Encerrar sessão"
 
 #: src/screens/WalletConnect/WalletConnectList.js:117
-#, fuzzy
 msgid "This will disconnect the session."
 msgstr "Isso irá desconectar a sessão."
 
@@ -839,7 +836,6 @@ msgid "Wallet Connect Sessions"
 msgstr "Sessões do Wallet Connect"
 
 #: src/screens/WalletConnect/WalletConnectManual.js:39
-#, fuzzy
 msgid "Manual Connection"
 msgstr "Digitar"
 
@@ -849,14 +845,12 @@ msgstr ""
 
 #: src/screens/WalletConnect/WalletConnectManual.js:57
 #: src/screens/WalletConnect/WalletConnectScan.js:34
-#, fuzzy
 msgid "Connect"
 msgstr "Conectar"
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/WalletConnect/WalletConnectScan.js:41
-#, fuzzy
 msgid "Manual"
 msgstr "Digitar"
 
@@ -879,7 +873,6 @@ msgstr "Atualizando configurações de rede…"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:19
 #: src/screens/NetworkSettings/helper.js:5
-#, fuzzy
 msgid "Network settings successfully customized."
 msgstr "Configuração de rede atualizada com sucesso."
 
@@ -892,35 +885,35 @@ msgstr ""
 "Ocorreu um erro ao atualizar as configurações de rede. Por favor, tente "
 "novamente mais tarde."
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:63
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:39
 msgid "nodeUrl is required."
 msgstr "nodeUrl é obrigatório."
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:67
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:43
 msgid "explorerUrl is required."
 msgstr "explorerUrl é obrigatório."
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:71
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:47
 msgid "explorerServiceUrl is required."
 msgstr "explorerServiceUrl é obrigatório."
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:218
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:194
 msgid "Node URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:227
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:203
 msgid "Explorer URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:236
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:212
 msgid "Explorer Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:245
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:221
 msgid "Wallet Service URL (optional)"
 msgstr "Wallet Service URL (opcional)"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:254
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:230
 msgid "Wallet Service WS URL (optional)"
 msgstr "Wallet Service WS URL (opcional)"
 

@@ -700,7 +700,7 @@ msgstr "Ваш перевод **${ this.amountAndToken }** был подтвер
 msgid "Address"
 msgstr "Адрес"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:265
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:241
 #: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr "Отправить"
@@ -867,35 +867,35 @@ msgid ""
 "later."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:63
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:39
 msgid "nodeUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:67
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:43
 msgid "explorerUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:71
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:47
 msgid "explorerServiceUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:218
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:194
 msgid "Node URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:227
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:203
 msgid "Explorer URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:236
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:212
 msgid "Explorer Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:245
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:221
 msgid "Wallet Service URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:254
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:230
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
@@ -918,28 +918,34 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
-#: src/sagas/networkSettings.js:78
+#: src/sagas/networkSettings.js:81
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:85
+#: src/sagas/networkSettings.js:88
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:92
+#: src/sagas/networkSettings.js:95
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:99
+#: src/sagas/networkSettings.js:102
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:106
+#: src/sagas/networkSettings.js:109
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:113
+#: src/sagas/networkSettings.js:116
 msgid "walletServiceWsUrl should be a valid URL."
+msgstr ""
+
+#.  If we fall into this situation, the app should be killed
+#.  for the custom new network settings take effect.
+#: src/sagas/networkSettings.js:257
+msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 
 #: src/sagas/pushNotification.js:53
