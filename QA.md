@@ -124,3 +124,10 @@
     1. We should never have any problems with pt-br translation. We should have all texts translated.
     1. Check if all untranslated texts are known.
 
+# Push Notification
+
+Follow the [Push Notification QA](./QA_PUSH_NOTIFICATION.md) steps.
+
+# Custom Network
+
+Follow the [Custom Network QA](./QA_CUSTOM_NETWORK.md) steps.
