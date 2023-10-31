@@ -43,8 +43,8 @@ function notMainnet(networkSettings) {
 }
 
 const style = {
-  backgroundColor: AlertUI.primaryColor,
-  color: AlertUI.dark40Color,
+  backgroundColor: AlertUI.lightColor,
+  color: AlertUI.darkColor,
 };
 
 export const NetworkStatusBar = () => {
