@@ -37,7 +37,7 @@
 
 1. **Send an invalid Node URL**
     1. Emmpty the Node URL field
-    1. Check that an invalidation message appears under the field informng Node URL is required
+    1. Check that an invalidation message appears under the field informing Node URL is required
     1. Fill the field with an invalid URL "invalid"
     1. Check that an invalidation message appears under the field informing Node URL should be a valid URL
 
