@@ -120,7 +120,7 @@ export const types = {
   // NOTE: These actions follows a taxonomy that should be applied
   // to all other actions.
   // See: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/334
-  /* It delivers the user's network settings input from the form. */
+  /* It initiates an update of the network settings based on user input from a form. */
   NETWORKSETTINGS_UPDATE_REQUEST: 'NETWORK_SETTINGS_UPDATE_REQUEST',
   /* It updates the redux state */
   NETWORKSETTINGS_UPDATE_STATE: 'NETWORKSETTINGS_UPDATE_STATE',
@@ -128,7 +128,7 @@ export const types = {
   NETWORKSETTINGS_PERSIST_STORE: 'NETWORKSETTINGS_PERSIST_STORE',
   /* It indicates the persistence is complete and the wallet will be reloaded. */
   NETWORKSETTINGS_UPDATE_WAITING: 'NETWORKSETTINGS_UPDATE_WAITING',
-  /* It indicates the update is complete after wallet reloads. */
+  /* It indicates the update is complete after the wallet reloads. */
   NETWORKSETTINGS_UPDATE_SUCCESS: 'NETWORK_SETTINGS_UPDATE_SUCCESS',
   /* It indicates the update request has invalid inputs. */
   NETWORKSETTINGS_UPDATE_INVALID: 'NETWORKSETTINGS_UPDATE_INVALID',
@@ -912,32 +912,34 @@ export const networkSettingsPersistStore = (customNetwork) => ({
 });
 
 /**
- * Emits the waiting signal after persist the custom network.
- * It means the wallet will reload.
+ * Action indicating that the network settings update process
+ * is in a waiting state.
+ * This is used after persisting custom network configurations,
+ * resulting in a wallet reload.
  */
 export const networkSettingsUpdateWaiting = () => ({
   type: types.NETWORKSETTINGS_UPDATE_WAITING,
 });
 
 /**
- * Emits the success signal after wallet reloads.
- * It servers as hook for the frontend to provide feedback for the user.
+ * Action indicating that the network settings update was successful.
+ * This serves as a hook for the frontend to provide feedback to the user.
  */
 export const networkSettingsUpdateSuccess = () => ({
   type: types.NETWORKSETTINGS_UPDATE_SUCCESS,
 });
 
 /**
- * Emits the failure signal for custom network settings request.
+ * Action indicating a failure state for the custom network settings request.
  * It means the request couldn't be processed due to internal error.
- * It serves as hook for the frontend to provide feedback for the user.
+ * This serves as a hook for the frontend to provide feedback to the user.
  */
 export const networkSettingsUpdateFailure = () => ({
   type: types.NETWORKSETTINGS_UPDATE_FAILURE,
 });
 
 /**
- * Emits invalid signal for custom network settings request inputs.
+ * Action indicating an invalid state for the custom network settings request inputs.
  * It means the form should present the invalid message on the corresponding inputs.
  * @param {{
  *   message: string,
