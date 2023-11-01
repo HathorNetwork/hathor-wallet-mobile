@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Poedit 3.2\n"
+"X-Generator: Poedit 3.4\n"
 
 #.  This should never happen!
 #: src/models.js:24
@@ -709,7 +709,7 @@ msgstr "Sua transferência de **${ this.amountAndToken }** foi confirmada"
 msgid "Address"
 msgstr "Endereço"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:247
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:241
 #: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr "Enviar"
@@ -738,7 +738,7 @@ msgstr "Você está conectado à"
 
 #: src/screens/Settings.js:102
 msgid "General Settings"
-msgstr ""
+msgstr "Configurações Gerais"
 
 #: src/screens/Settings.js:106
 msgid "Connected to"
@@ -766,11 +766,11 @@ msgstr "Identificador único do aplicativo"
 
 #: src/screens/Settings.js:174
 msgid "Developer Settings"
-msgstr ""
+msgstr "Configurações do Desenvolvedor"
 
 #: src/screens/Settings.js:176
 msgid "Network Settings"
-msgstr ""
+msgstr "Configurações de Rede"
 
 #: src/screens/TokenDetail.js:38
 msgid "Unregister"
@@ -807,32 +807,33 @@ msgstr "Desregistrar token"
 #: src/screens/WalletConnect/WalletConnectList.js:33
 msgid "There was an error connecting. Please try again later."
 msgstr ""
+"Ocorreu um erro durante a conexão. Por favor, tente novamente mais tarde."
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/WalletConnect/WalletConnectList.js:111
 msgid "Add"
-msgstr ""
+msgstr "Adicionar"
 
 #: src/screens/WalletConnect/WalletConnectList.js:117
 msgid "End session"
-msgstr ""
+msgstr "Encerrar sessão"
 
 #: src/screens/WalletConnect/WalletConnectList.js:117
 msgid "This will disconnect the session."
-msgstr ""
+msgstr "Isso irá desconectar a sessão."
 
 #: src/screens/WalletConnect/WalletConnectList.js:119
 msgid "End"
-msgstr ""
+msgstr "Encerrar"
 
 #: src/screens/WalletConnect/WalletConnectList.js:137
 msgid "Wallet Connect Sessions"
-msgstr ""
+msgstr "Sessões do Wallet Connect"
 
 #: src/screens/WalletConnect/WalletConnectManual.js:39
 msgid "Manual Connection"
-msgstr ""
+msgstr "Digitar"
 
 #: src/screens/WalletConnect/WalletConnectManual.js:45
 msgid "Wallet Connect URI"
@@ -841,79 +842,88 @@ msgstr ""
 #: src/screens/WalletConnect/WalletConnectManual.js:57
 #: src/screens/WalletConnect/WalletConnectScan.js:34
 msgid "Connect"
-msgstr ""
+msgstr "Conectar"
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/WalletConnect/WalletConnectScan.js:41
 msgid "Manual"
-msgstr ""
-
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:15
-msgid "Custom Network Settings"
-msgstr ""
+msgstr "Digitar"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:16
+msgid "Custom Network Settings"
+msgstr "Configurações de Rede Personalizada"
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:17
 msgid ""
 "Any token outside mainnet network bear no value. Only change if you know "
 "what you are doing."
 msgstr ""
-
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:17
-#: src/screens/NetworkSettings/helper.js:4
-msgid "Updating custom network settings..."
-msgstr ""
+"Nenhum token fora da rede mainnet possui valor. Apenas mude a rede se você "
+"souber o que está fazendo."
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:18
+#: src/screens/NetworkSettings/helper.js:4
+msgid "Updating custom network settings..."
+msgstr "Atualizando configurações de rede..."
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:19
 #: src/screens/NetworkSettings/helper.js:5
+msgid "Network settings successfully customized."
+msgstr "Configuração de rede atualizada com sucesso."
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
+#: src/screens/NetworkSettings/helper.js:6
 msgid ""
 "There was an error while customizing network settings. Please try again "
 "later."
 msgstr ""
+"Ocorreu um erro ao atualizar as configurações de rede. Por favor, tente "
+"novamente mais tarde."
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:53
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:39
 msgid "nodeUrl is required."
-msgstr ""
+msgstr "nodeUrl é obrigatório."
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:57
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:43
 msgid "explorerUrl is required."
-msgstr ""
+msgstr "explorerUrl é obrigatório."
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:61
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:47
 msgid "explorerServiceUrl is required."
-msgstr ""
+msgstr "explorerServiceUrl é obrigatório."
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:200
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:194
 msgid "Node URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:209
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:203
 msgid "Explorer URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:218
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:212
 msgid "Explorer Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:227
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:221
 msgid "Wallet Service URL (optional)"
-msgstr ""
+msgstr "Wallet Service URL (opcional)"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:236
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:230
 msgid "Wallet Service WS URL (optional)"
-msgstr ""
+msgstr "Wallet Service WS URL (opcional)"
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:27
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:28
 msgid "Network Pre-Settings"
-msgstr ""
+msgstr "Pré-Configurações de Rede"
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:117
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:127
 msgid "Customize"
-msgstr ""
+msgstr "Personalizar"
 
 #: src/screens/NetworkSettings/NetworkSettingsDisclaimerScreen.js:19
 msgid "Risk Disclaimer"
-msgstr ""
+msgstr "Aviso de Risco"
 
 #: src/screens/NetworkSettings/NetworkSettingsDisclaimerScreen.js:20
 msgid ""
@@ -921,30 +931,39 @@ msgid ""
 "circumstances change these settings based on someone else suggestion, as "
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
+"Não altere a rede a menos que você saiba o que está fazendo, e sob nenhuma "
+"circunstância altere a rede por sugestão de terceiros, uma vez que ao "
+"alterar a rede você pode ser vítima de fraude."
 
-#: src/sagas/networkSettings.js:54
+#: src/sagas/networkSettings.js:81
 msgid "Custom Network Settings cannot be empty."
-msgstr ""
+msgstr "As Configurações de Rede não podem estar vazias."
 
-#: src/sagas/networkSettings.js:61
+#: src/sagas/networkSettings.js:88
 msgid "explorerUrl should be a valid URL."
-msgstr ""
+msgstr "explorerUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:68
+#: src/sagas/networkSettings.js:95
 msgid "explorerServiceUrl should be a valid URL."
-msgstr ""
+msgstr "explorerServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:75
+#: src/sagas/networkSettings.js:102
 msgid "nodeUrl should be a valid URL."
-msgstr ""
+msgstr "nodeUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:82
+#: src/sagas/networkSettings.js:109
 msgid "walletServiceUrl should be a valid URL."
-msgstr ""
+msgstr "walletServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:89
+#: src/sagas/networkSettings.js:116
 msgid "walletServiceWsUrl should be a valid URL."
-msgstr ""
+msgstr "walletServiceWsUrl deve ser uma URL válida."
+
+#.  If we fall into this situation, the app should be killed
+#.  for the custom new network settings take effect.
+#: src/sagas/networkSettings.js:257
+msgid "Wallet not found while trying to persist the custom network settings."
+msgstr "Wallet não encontrada ao persistir a configuração personalizada da rede."
 
 #: src/sagas/pushNotification.js:53
 msgid "Transaction"
@@ -1147,6 +1166,13 @@ msgstr ""
 "Ao clicar em aprovar, você assinará a mensagem solicitada usando o primeiro "
 "endereço derivado da sua chave raiz no caminho de derivação "
 "m/44'/280'/0'/0/0."
+
+#: src/components/NetworkSettings/NetworkStatusBar.js:14
+msgid "Custom network"
+msgstr "Rede personalizada"
+
+#~ msgid "There has been an error upgrading your wallet."
+#~ msgstr "Ocorreu um erro ao atualizar sua wallet."
 
 #~ msgid "Please reset it and restore it with your seed."
 #~ msgstr "Por favor resete sua wallet e restaure utilizando sua seed."
