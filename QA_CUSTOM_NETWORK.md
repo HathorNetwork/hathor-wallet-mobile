@@ -1,4 +1,4 @@
-# Dev Settings
+# Custom Network
 
 1. **Settings screen**
     1. Go to Settings
