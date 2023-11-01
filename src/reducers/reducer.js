@@ -207,7 +207,7 @@ const initialState = {
     ...FEATURE_TOGGLE_DEFAULTS,
   },
   networkSettings: PRE_SETTINGS_MAINNET,
-  networkSettingsErrors: {},
+  networkSettingsInvalid: {},
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
 };
 
@@ -327,6 +327,8 @@ export const reducer = (state = initialState, action) => {
       return onPushReset(state);
     case types.EXCEPTION_CAPTURED:
       return onExceptionCaptured(state, action);
+    case types.RELOAD_WALLET_REQUESTED:
+      return onReloadWalletRequested(state);
     case types.WALLET_RELOADING:
       return onWalletReloading(state);
     case types.SHARED_ADDRESS_UPDATE:
@@ -345,16 +347,22 @@ export const reducer = (state = initialState, action) => {
       return onSetWalletConnectSessions(state, action);
     case types.WC_SET_CONNECTION_FAILED:
       return onSetWCConnectionFailed(state, action);
-    case types.NETWORKSETTINGS_UPDATE:
-      return onNetworkSettingsUpdate(state);
+    case types.NETWORKSETTINGS_UPDATE_REQUEST:
+      return onNetworkSettingsUpdateRequest(state);
+    case types.NETWORKSETTINGS_UPDATE_STATE:
+      return onNetworkSettingsUpdateState(state, action);
+    case types.NETWORKSETTINGS_PERSIST_STORE:
+      return onNetworkSettingsPersistStore(state, action);
+    case types.NETWORKSETTINGS_UPDATE_WAITING:
+      return onNetworkSettingsUpdateWaiting(state);
     case types.NETWORKSETTINGS_UPDATE_SUCCESS:
-      return onNetworkSettingsUpdateSucess(state, action);
+      return onNetworkSettingsUpdateSuccess(state);
     case types.NETWORKSETTINGS_UPDATE_READY:
       return onNetworkSettingsUpdateReady(state);
     case types.NETWORKSETTINGS_UPDATE_FAILURE:
       return onNetworkSettingsUpdateFailure(state);
-    case types.NETWORKSETTINGS_UPDATE_ERRORS:
-      return onNetworkSettingsUpdateErrors(state, action);
+    case types.NETWORKSETTINGS_UPDATE_INVALID:
+      return onNetworkSettingsUpdateInvalid(state, action);
     default:
       return state;
   }
@@ -1026,6 +1034,16 @@ export const onExceptionCaptured = (state, { payload }) => {
   };
 };
 
+/**
+ * On wallet reload, tokens data will be reloaded as well.
+ */
+export const onReloadWalletRequested = (state) => ({
+  ...state,
+  tokensHistory: initialState.tokensHistory,
+  tokensBalance: initialState.tokensBalance,
+  loadHistoryStatus: initialState.loadHistoryStatus,
+});
+
 const onWalletReloading = (state) => ({
   ...state,
   walletStartState: WALLET_STATUS.LOADING,
@@ -1086,19 +1104,44 @@ export const onSetWCConnectionFailed = (state, { payload }) => ({
  * @param {Object} action.payload The network settings emitted in saga
  * @see updateNetworkSettings
  */
-export const onNetworkSettingsUpdate = (state) => ({
+export const onNetworkSettingsUpdateRequest = (state) => ({
   ...state,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.LOADING,
 });
 
 /**
  * @param {Object} action.payload The network settings emitted in saga
- * @see updateNetworkSettings
+ * @see networkSettingsUpdateState customNetwork
  */
-export const onNetworkSettingsUpdateSucess = (state, { payload }) => ({
+export const onNetworkSettingsUpdateState = (state, { payload }) => ({
+  ...state,
+  networkSettings: payload,
+});
+
+/**
+ * @param {Object} action.payload The network settings emitted in saga
+ * @see networkSettingsPersistStore customNetwork
+ */
+export const onNetworkSettingsPersistStore = (state, { payload }) => ({
   ...state,
   networkSettings: payload,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.LOADING,
+});
+
+/**
+ * Set `WAITING` state on network settings status.
+ */
+export const onNetworkSettingsUpdateWaiting = (state) => ({
+  ...state,
+  networkSettingsStatus: NETWORKSETTINGS_STATUS.WAITING,
+});
+
+/**
+ * Set `SUCCESSFUL` state on network settings status.
+ */
+export const onNetworkSettingsUpdateSuccess = (state) => ({
+  ...state,
+  networkSettingsStatus: NETWORKSETTINGS_STATUS.SUCCESSFUL,
 });
 
 /**
@@ -1111,16 +1154,19 @@ export const onNetworkSettingsUpdateReady = (state) => ({
 });
 
 /**
- * @param {Object} action.payload The errors from network settings input validation
- * @see updateNetworkSettings
+ * Set `FAILED` state on network settings status.
  */
 export const onNetworkSettingsUpdateFailure = (state) => ({
   ...state,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.FAILED
 });
 
-export const onNetworkSettingsUpdateErrors = (state, { payload }) => ({
+/**
+ * @param {Object} action.payload The errors from network settings input validation
+ * @see networkSettingsUpdateInvalid errors
+ */
+export const onNetworkSettingsUpdateInvalid = (state, { payload }) => ({
   ...state,
-  networkSettingsErrors: payload,
+  networkSettingsInvalid: payload,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
 });

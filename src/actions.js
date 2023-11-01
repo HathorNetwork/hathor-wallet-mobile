@@ -120,11 +120,22 @@ export const types = {
   // NOTE: These actions follows a taxonomy that should be applied
   // to all other actions.
   // See: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/334
-  NETWORKSETTINGS_UPDATE: 'NETWORK_SETTINGS_UPDATE',
+  /* It initiates an update of the network settings based on user input from a form. */
+  NETWORKSETTINGS_UPDATE_REQUEST: 'NETWORK_SETTINGS_UPDATE_REQUEST',
+  /* It updates the redux state */
+  NETWORKSETTINGS_UPDATE_STATE: 'NETWORKSETTINGS_UPDATE_STATE',
+  /* It persists the complete structure of network settings in the app storage and updates the redux store. */
+  NETWORKSETTINGS_PERSIST_STORE: 'NETWORKSETTINGS_PERSIST_STORE',
+  /* It indicates the persistence is complete and the wallet will be reloaded. */
+  NETWORKSETTINGS_UPDATE_WAITING: 'NETWORKSETTINGS_UPDATE_WAITING',
+  /* It indicates the update is complete after the wallet reloads. */
   NETWORKSETTINGS_UPDATE_SUCCESS: 'NETWORK_SETTINGS_UPDATE_SUCCESS',
-  NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
+  /* It indicates the update request has invalid inputs. */
+  NETWORKSETTINGS_UPDATE_INVALID: 'NETWORKSETTINGS_UPDATE_INVALID',
+  /* It indicates the update request has failed. */
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
-  NETWORKSETTINGS_UPDATE_ERRORS: 'NETWORK_SETTINGS_UPDATE_ERRORS',
+  /* It updates the redux state of network settings status */
+  NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
 };
 
 export const featureToggleInitialized = () => ({
@@ -861,13 +872,13 @@ export const setWCConnectionFailed = (failed) => ({
  *   walletServiceWsUrl?: string
  * }} customNetworkRequest Request input
  */
-export const networkSettingsUpdate = (customNetworkRequest) => ({
-  type: types.NETWORKSETTINGS_UPDATE,
+export const networkSettingsUpdateRequest = (customNetworkRequest) => ({
+  type: types.NETWORKSETTINGS_UPDATE_REQUEST,
   payload: customNetworkRequest,
 });
 
 /**
- * Emits the custom network settings to be stored and persisted.
+ * Emits the custom network settings to update the redux store.
  * @param {{
  *   stage: string,
  *   network: string,
@@ -878,22 +889,58 @@ export const networkSettingsUpdate = (customNetworkRequest) => ({
  *   walletServiceWsUrl?: string
  * }} customNetwork Settings to persist
  */
-export const networkSettingsUpdateSuccess = (customNetwork) => ({
-  type: types.NETWORKSETTINGS_UPDATE_SUCCESS,
+export const networkSettingsUpdateState = (customNetwork) => ({
+  type: types.NETWORKSETTINGS_UPDATE_STATE,
   payload: customNetwork,
 });
 
 /**
- * Emits the failure signal for custom network settings request.
+ * Emits the custom network settings to persist in the app storage and update the redux store.
+ * @param {{
+ *   stage: string,
+ *   network: string,
+ *   nodeUrl: string,
+ *   explorerUrl: string,
+ *   explorerServiceUrl: string,
+ *   walletServiceUrl?: string
+ *   walletServiceWsUrl?: string
+ * }} customNetwork Settings to persist
+ */
+export const networkSettingsPersistStore = (customNetwork) => ({
+  type: types.NETWORKSETTINGS_PERSIST_STORE,
+  payload: customNetwork,
+});
+
+/**
+ * Action indicating that the network settings update process
+ * is in a waiting state.
+ * This is used after persisting custom network configurations,
+ * resulting in a wallet reload.
+ */
+export const networkSettingsUpdateWaiting = () => ({
+  type: types.NETWORKSETTINGS_UPDATE_WAITING,
+});
+
+/**
+ * Action indicating that the network settings update was successful.
+ * This serves as a hook for the frontend to provide feedback to the user.
+ */
+export const networkSettingsUpdateSuccess = () => ({
+  type: types.NETWORKSETTINGS_UPDATE_SUCCESS,
+});
+
+/**
+ * Action indicating a failure state for the custom network settings request.
  * It means the request couldn't be processed due to internal error.
+ * This serves as a hook for the frontend to provide feedback to the user.
  */
 export const networkSettingsUpdateFailure = () => ({
   type: types.NETWORKSETTINGS_UPDATE_FAILURE,
 });
 
 /**
- * Emits errors signal for custom network settings form representing
- * invalid inputs.
+ * Action indicating an invalid state for the custom network settings request inputs.
+ * It means the form should present the invalid message on the corresponding inputs.
  * @param {{
  *   message: string,
  *   nodeUrl: string,
@@ -903,8 +950,8 @@ export const networkSettingsUpdateFailure = () => ({
  *   walletServiceWsUrl?: string
  * }} errors The validation errors from custom network settings form
  */
-export const networkSettingsUpdateErrors = (errors) => ({
-  type: types.NETWORKSETTINGS_UPDATE_ERRORS,
+export const networkSettingsUpdateInvalid = (errors) => ({
+  type: types.NETWORKSETTINGS_UPDATE_INVALID,
   payload: errors,
 });
 

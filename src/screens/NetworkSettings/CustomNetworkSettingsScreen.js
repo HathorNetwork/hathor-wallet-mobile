@@ -3,65 +3,51 @@ import { View, Text, StyleSheet, Image } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { isEmpty } from 'lodash';
-import { networkSettingsUpdate, networkSettingsUpdateErrors, networkSettingsUpdateReady } from '../../actions';
+import { networkSettingsUpdateRequest, networkSettingsUpdateInvalid, networkSettingsUpdateReady } from '../../actions';
 import FeedbackModal from '../../components/FeedbackModal';
 import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
 import SimpleInput from '../../components/SimpleInput';
-import { NETWORKSETTINGS_STATUS } from '../../constants';
 import errorIcon from '../../assets/images/icErrorBig.png';
+import checkIcon from '../../assets/images/icCheckBig.png';
 import Spinner from '../../components/Spinner';
+import { hasSucceed, hasFailed, isLoading } from './helper';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
 const warningText = t`Any token outside mainnet network bear no value. Only change if you know what you are doing.`;
 const feedbackLoadingText = t`Updating custom network settings...`;
+const feedbackSucceedText = t`Network settings successfully customized.`;
 const feedbackFailedText = t`There was an error while customizing network settings. Please try again later.`;
 
 /**
- * Check if the network settings status is failed.
- * @param {object} networkSettingsStatus - status from redux store
- * @returns {boolean} - true if the status is failed, false otherwise
+ * Verifies if the invalidModel of the form has an error message.
  */
-// eslint-disable-next-line max-len
-const hasFailed = (networkSettingsStatus) => networkSettingsStatus === NETWORKSETTINGS_STATUS.FAILED;
-
-/**
- * Check if the network settings status is loading.
- * @param {object} networkSettingsStatus - status from redux store
- * @returns {boolean} - true if the status is loading, false otherwise
- */
-// eslint-disable-next-line max-len
-const isLoading = (networkSettingsStatus) => networkSettingsStatus === NETWORKSETTINGS_STATUS.LOADING;
-
-/**
- * Verifies if the errorModel of the form has an error message.
- */
-function hasError(errorModel) {
+function hasError(invalidModel) {
   return Object
-    .values({ ...errorModel })
+    .values({ ...invalidModel })
     .reduce((_hasError, currValue) => _hasError || !isEmpty(currValue), false);
 }
 
 /**
- * Validates the formModel, returning the errorModel.
- * If there is no error in the formModel, the errorModel is returned empty.
+ * Validates the formModel, returning the invalidModel.
+ * If there is no error in the formModel, the invalidModel is returned empty.
  */
 function validate(formModel) {
-  const errorModel = {};
+  const invalidModel = {};
 
   if (!formModel.nodeUrl) {
-    errorModel.nodeUrl = t`nodeUrl is required.`;
+    invalidModel.nodeUrl = t`nodeUrl is required.`;
   }
 
   if (!formModel.explorerUrl) {
-    errorModel.explorerUrl = t`explorerUrl is required.`;
+    invalidModel.explorerUrl = t`explorerUrl is required.`;
   }
 
   if (!formModel.explorerServiceUrl) {
-    errorModel.explorerServiceUrl = t`explorerServiceUrl is required.`;
+    invalidModel.explorerServiceUrl = t`explorerServiceUrl is required.`;
   }
 
-  return errorModel;
+  return invalidModel;
 }
 
 const styles = StyleSheet.create({
@@ -103,7 +89,7 @@ export const CustomNetworkSettingsNav = Symbol('CustomNetworkSettings').toString
 export const CustomNetworkSettingsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const networkSettings = useSelector((state) => state.networkSettings);
-  const networkSettingsErrors = useSelector((state) => state.networkSettingsErrors);
+  const networkSettingsInvalid = useSelector((state) => state.networkSettingsInvalid);
   const networkSettingsStatus = useSelector((state) => state.networkSettingsStatus);
 
   const [formModel, setFormModel] = useState({
@@ -114,21 +100,21 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     walletServiceWsUrl: networkSettings.walletServiceWsUrl || '',
   });
 
-  const [errorModel, setErrorModel] = useState({
-    nodeUrl: networkSettingsErrors?.nodeUrl || '',
-    explorerUrl: networkSettingsErrors?.explorerUrl || '',
-    explorerServiceUrl: networkSettingsErrors?.explorerServiceUrl || '',
-    walletServiceUrl: networkSettingsErrors?.walletServiceUrl || '',
-    walletServiceWsUrl: networkSettingsErrors?.walletServiceWsUrl || '',
+  const [invalidModel, setInvalidModel] = useState({
+    nodeUrl: networkSettingsInvalid?.nodeUrl || '',
+    explorerUrl: networkSettingsInvalid?.explorerUrl || '',
+    explorerServiceUrl: networkSettingsInvalid?.explorerServiceUrl || '',
+    walletServiceUrl: networkSettingsInvalid?.walletServiceUrl || '',
+    walletServiceWsUrl: networkSettingsInvalid?.walletServiceWsUrl || '',
   });
 
   // eslint-disable-next-line max-len
   /* @param {'nodeUrl' | 'explorerUrl' | 'explorerServiceUrl' | 'walletServiceUrl' | 'walletServiceWsUrl' } name */
   const handleInputChange = (name) => (value) => {
-    // update error model
-    const errors = { ...errorModel };
-    delete errors[name];
-    setErrorModel(errors);
+    // update invalid model
+    const invalidModelCopy = { ...invalidModel };
+    delete invalidModelCopy[name];
+    setInvalidModel(invalidModelCopy);
 
     // update form model
     const form = {
@@ -137,8 +123,8 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     };
     setFormModel(form);
 
-    // validate form model and update error model
-    setErrorModel(validate(form));
+    // validate form model and update invalid model
+    setInvalidModel(validate(form));
   };
 
   const handleFeedbackModalDismiss = () => {
@@ -146,27 +132,27 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
   };
 
   const handleSubmit = () => {
-    const errors = validate(formModel);
-    if (hasError(errors)) {
-      setErrorModel(errors);
+    const newInvalidModel = validate(formModel);
+    if (hasError(newInvalidModel)) {
+      setInvalidModel(newInvalidModel);
       return;
     }
 
-    dispatch(networkSettingsUpdate(formModel));
+    dispatch(networkSettingsUpdateRequest(formModel));
   };
 
   useEffect(() => {
-    setErrorModel({
-      nodeUrl: networkSettingsErrors?.nodeUrl || '',
-      explorerUrl: networkSettingsErrors?.explorerUrl || '',
-      explorerServiceUrl: networkSettingsErrors?.explorerServiceUrl || '',
-      walletServiceUrl: networkSettingsErrors?.walletServiceUrl || '',
-      walletServiceWsUrl: networkSettingsErrors?.walletServiceWsUrl || '',
+    setInvalidModel({
+      nodeUrl: networkSettingsInvalid?.nodeUrl || '',
+      explorerUrl: networkSettingsInvalid?.explorerUrl || '',
+      explorerServiceUrl: networkSettingsInvalid?.explorerServiceUrl || '',
+      walletServiceUrl: networkSettingsInvalid?.walletServiceUrl || '',
+      walletServiceWsUrl: networkSettingsInvalid?.walletServiceWsUrl || '',
     });
-  }, [networkSettingsErrors]);
+  }, [networkSettingsInvalid]);
 
   useEffect(() => function cleanUp() {
-    dispatch(networkSettingsUpdateErrors({}));
+    dispatch(networkSettingsUpdateInvalid({}));
   }, []);
 
   return (
@@ -180,6 +166,14 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
         <FeedbackModal
           icon={<Spinner />}
           text={feedbackLoadingText}
+        />
+      )}
+
+      {hasSucceed(networkSettingsStatus) && (
+        <FeedbackModal
+          icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+          text={feedbackSucceedText}
+          onDismiss={handleFeedbackModalDismiss}
         />
       )}
 
@@ -200,7 +194,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           label={t`Node URL`}
           autoFocus
           onChangeText={handleInputChange('nodeUrl')}
-          error={errorModel.nodeUrl}
+          error={invalidModel.nodeUrl}
           value={formModel.nodeUrl}
         />
 
@@ -209,7 +203,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           label={t`Explorer URL`}
           autoFocus
           onChangeText={handleInputChange('explorerUrl')}
-          error={errorModel.explorerUrl}
+          error={invalidModel.explorerUrl}
           value={formModel.explorerUrl}
         />
 
@@ -218,7 +212,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           label={t`Explorer Service URL`}
           autoFocus
           onChangeText={handleInputChange('explorerServiceUrl')}
-          error={errorModel.explorerServiceUrl}
+          error={invalidModel.explorerServiceUrl}
           value={formModel.explorerServiceUrl}
         />
 
@@ -227,7 +221,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           label={t`Wallet Service URL (optional)`}
           autoFocus
           onChangeText={handleInputChange('walletServiceUrl')}
-          error={errorModel.walletServiceUrl}
+          error={invalidModel.walletServiceUrl}
           value={formModel.walletServiceUrl}
         />
 
@@ -236,13 +230,13 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           label={t`Wallet Service WS URL (optional)`}
           autoFocus
           onChangeText={handleInputChange('walletServiceWsUrl')}
-          error={errorModel.walletServiceWsUrl}
+          error={invalidModel.walletServiceWsUrl}
           value={formModel.walletServiceWsUrl}
         />
 
         <View style={styles.buttonContainer}>
           <NewHathorButton
-            disabled={hasError(errorModel)}
+            disabled={hasError(invalidModel)}
             onPress={handleSubmit}
             title={t`Send`}
           />

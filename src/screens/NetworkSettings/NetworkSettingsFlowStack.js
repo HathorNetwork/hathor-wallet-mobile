@@ -24,8 +24,14 @@ export const NetworkSettingsFlowStack = () => {
         name={NetworkSettingsDisclaimerNav}
         component={NetworkSettingsDisclaimerScreen}
       />
-      <FlowStack.Screen name={NetworkPreSettingsNav} component={NetworkPreSettingsScreen} />
-      <FlowStack.Screen name={CustomNetworkSettingsNav} component={CustomNetworkSettingsScreen} />
+      <FlowStack.Screen
+        name={NetworkPreSettingsNav}
+        component={NetworkPreSettingsScreen}
+      />
+      <FlowStack.Screen
+        name={CustomNetworkSettingsNav}
+        component={CustomNetworkSettingsScreen}
+      />
     </FlowStack.Navigator>
   );
 };

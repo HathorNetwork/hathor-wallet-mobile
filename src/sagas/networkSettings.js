@@ -1,22 +1,53 @@
-import { all, takeEvery, put, call, race, take, delay, select } from 'redux-saga/effects';
+import { all, takeEvery, put, call, race, delay, select } from 'redux-saga/effects';
 import { config } from '@hathor/wallet-lib';
 import { isEmpty } from 'lodash';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { t } from 'ttag';
-import { featureToggleUpdate, networkSettingsUpdateErrors, networkSettingsUpdateFailure, networkSettingsUpdateReady, networkSettingsUpdateSuccess, reloadWalletRequested, types } from '../actions';
-import { HTTP_REQUEST_TIMEOUT, NETWORK, networkSettingsKeyMap, NETWORK_TESTNET, STAGE, STAGE_DEV_PRIVNET, STAGE_TESTNET, WALLET_SERVICE_REQUEST_TIMEOUT } from '../constants';
-import { getFullnodeNetwork, getWalletServiceNetwork } from './helpers';
+import {
+  networkSettingsPersistStore,
+  networkSettingsUpdateInvalid,
+  networkSettingsUpdateFailure,
+  networkSettingsUpdateState,
+  networkSettingsUpdateSuccess,
+  networkSettingsUpdateWaiting,
+  types,
+  reloadWalletRequested,
+  onExceptionCaptured,
+  networkSettingsUpdateReady
+} from '../actions';
+import {
+  NETWORK,
+  networkSettingsKeyMap,
+  NETWORKSETTINGS_STATUS,
+  NETWORK_TESTNET,
+  STAGE,
+  STAGE_DEV_PRIVNET,
+  STAGE_TESTNET,
+  WALLET_SERVICE_REQUEST_TIMEOUT
+} from '../constants';
+import {
+  getFullnodeNetwork,
+  getWalletServiceNetwork,
+} from './helpers';
 import { STORE } from '../store';
 
 /**
- * Initialize network settings saga.
- *
- * It looks up a stored network settings to update the redux state.
+ * Initialize the network settings saga when the wallet starts successfully.
  */
 export function* initNetworkSettings() {
   const customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
   if (customNetwork) {
-    yield put(networkSettingsUpdateSuccess(customNetwork));
+    yield put(networkSettingsUpdateState(customNetwork));
+  }
+
+  const status = yield select((state) => state.networkSettingsStatus);
+  if (status === NETWORKSETTINGS_STATUS.WAITING) {
+    // This branch completes the network update by delivering
+    // a success feedback to the user.
+    yield put(networkSettingsUpdateSuccess());
+  } else {
+    // This branch is a fallback to set network status to READY
+    // after wallet initialization.
+    yield put(networkSettingsUpdateReady());
   }
 }
 
@@ -47,53 +78,50 @@ export function* updateNetworkSettings(action) {
     walletServiceWsUrl,
   } = action.payload || {};
 
-  const errors = {};
+  const invalidPayload = {};
 
   // validates input emptyness
   if (isEmpty(action.payload)) {
-    errors.message = t`Custom Network Settings cannot be empty.`;
+    invalidPayload.message = t`Custom Network Settings cannot be empty.`;
   }
 
   // validates explorerUrl
   // - required
   // - should have a valid URL
   if (isEmpty(explorerUrl) || invalidUrl(explorerUrl)) {
-    errors.explorerUrl = t`explorerUrl should be a valid URL.`;
+    invalidPayload.explorerUrl = t`explorerUrl should be a valid URL.`;
   }
 
   // validates explorerServiceUrl
   // - required
   // - should have a valid URL
   if (isEmpty(explorerServiceUrl) || invalidUrl(explorerServiceUrl)) {
-    errors.explorerServiceUrl = t`explorerServiceUrl should be a valid URL.`;
+    invalidPayload.explorerServiceUrl = t`explorerServiceUrl should be a valid URL.`;
   }
 
   // validates nodeUrl
   // - required
   // - should have a valid URl
   if (isEmpty(nodeUrl) || invalidUrl(nodeUrl)) {
-    errors.nodeUrl = t`nodeUrl should be a valid URL.`;
+    invalidPayload.nodeUrl = t`nodeUrl should be a valid URL.`;
   }
 
   // validates walletServiceUrl
   // - optional
   // - should have a valid URL, if given
   if (walletServiceUrl && invalidUrl(walletServiceUrl)) {
-    errors.walletServiceUrl = t`walletServiceUrl should be a valid URL.`;
+    invalidPayload.walletServiceUrl = t`walletServiceUrl should be a valid URL.`;
   }
 
   // validates walletServiceWsUrl
   // - conditionally required
   // - should have a valid URL, if walletServiceUrl is given
   if (walletServiceUrl && invalidUrl(walletServiceWsUrl)) {
-    errors.walletServiceWsUrl = t`walletServiceWsUrl should be a valid URL.`;
+    invalidPayload.walletServiceWsUrl = t`walletServiceWsUrl should be a valid URL.`;
   }
 
-  // TODO: Refactor by segregating Failure from Errors
-  // - create networkSettingsUpdateErrors
-  // - implement reaction to networkSettingsUpdateFailure
-  yield put(networkSettingsUpdateErrors(errors));
-  if (Object.keys(errors).length > 0) {
+  yield put(networkSettingsUpdateInvalid(invalidPayload));
+  if (Object.keys(invalidPayload).length > 0) {
     return;
   }
 
@@ -138,7 +166,6 @@ export function* updateNetworkSettings(action) {
     try {
       network = yield call(getFullnodeNetwork);
     } catch (err) {
-      // NOTE: Keep the console?
       console.error('Error calling the fullnode while trying to get network details in updateNetworkSettings effect..', err);
       rollbackConfigUrls(backupUrl);
       yield put(networkSettingsUpdateFailure());
@@ -148,6 +175,7 @@ export function* updateNetworkSettings(action) {
 
   // Fail after try get network from fullnode
   if (!network) {
+    console.warn('The network could not be found.');
     yield put(networkSettingsUpdateFailure());
     return;
   }
@@ -171,7 +199,7 @@ export function* updateNetworkSettings(action) {
     walletServiceWsUrl,
   };
 
-  yield put(networkSettingsUpdateSuccess(customNetwork));
+  yield put(networkSettingsPersistStore(customNetwork));
 }
 
 /**
@@ -217,31 +245,42 @@ function invalidUrl(tryUrl) {
 export function* persistNetworkSettings(action) {
   // persists after reducer being updated
   const networkSettings = action.payload;
-  const strNetworkSettings = JSON.stringify(networkSettings);
-  yield call(AsyncStorage.setItem, networkSettingsKeyMap.networkSettings, strNetworkSettings);
-
-  // trigger toggle update to be managed by featureToggle saga
-  yield put(featureToggleUpdate());
-
-  // if wallet-service is being deactivated, it will trigger the reload,
-  // otherwise we should trigger by ourselves
-  const { timeout } = yield race({
-    reload: take(types.RELOAD_WALLET_REQUESTED),
-    timeout: delay(HTTP_REQUEST_TIMEOUT),
-  });
-
-  if (timeout) {
-    yield put(reloadWalletRequested());
+  try {
+    STORE.setItem(networkSettingsKeyMap.networkSettings, networkSettings);
+    yield put(networkSettingsUpdateWaiting());
+  } catch (err) {
+    console.error('Error while persisting the custom network settings.', err);
+    yield put(networkSettingsUpdateFailure());
+    return;
   }
 
-  yield put(networkSettingsUpdateReady());
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet) {
+    // If we fall into this situation, the app should be killed
+    // for the custom new network settings take effect.
+    const errMsg = t`Wallet not found while trying to persist the custom network settings.`;
+    console.warn(errMsg);
+    yield put(onExceptionCaptured(errMsg, /* isFatal */ true));
+    return;
+  }
+
+  // Stop wallet and clean its storage without clean its access data.
+  wallet.stop({ cleanStorage: true, cleanAddresses: true });
+  // This action should clean the tokens history on redux.
+  // In addition, the reload also clean the inmemory storage.
+  yield put(reloadWalletRequested());
 }
 
 /**
  * Deletes the network settings from the application storage.
  */
 export function* cleanNetworkSettings() {
-  STORE.removeItem(networkSettingsKeyMap.networkSettings);
+  try {
+    STORE.removeItem(networkSettingsKeyMap.networkSettings);
+  } catch (err) {
+    console.error('Error while deleting the custom network settings from app storage.', err);
+    yield 1;
+  }
   yield 0;
 }
 
@@ -251,8 +290,8 @@ export function* cleanNetworkSettings() {
 export function* saga() {
   yield all([
     takeEvery(types.START_WALLET_SUCCESS, initNetworkSettings),
-    takeEvery(types.NETWORKSETTINGS_UPDATE, updateNetworkSettings),
-    takeEvery(types.NETWORKSETTINGS_UPDATE_SUCCESS, persistNetworkSettings),
+    takeEvery(types.NETWORKSETTINGS_UPDATE_REQUEST, updateNetworkSettings),
+    takeEvery(types.NETWORKSETTINGS_PERSIST_STORE, persistNetworkSettings),
     takeEvery(types.RESET_WALLET, cleanNetworkSettings),
   ]);
 }
