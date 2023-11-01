@@ -12,6 +12,7 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import Spinner from '../../components/Spinner';
 import { hasSucceed, hasFailed, isLoading } from './helper';
+import { AlertUI } from '../../styles/themes';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
 const warningText = t`Any token outside mainnet network bear no value. Only change if you know what you are doing.`;
@@ -65,14 +66,14 @@ const styles = StyleSheet.create({
   },
   warningContainer: {
     borderRadius: 8,
-    backgroundColor: 'hsl(47, 100%, 86%)', // warning yellow
+    backgroundColor: AlertUI.lightColor,
     marginBottom: 32,
     borderWidth: 1,
-    borderColor: 'hsl(47, 100%, 70%)', // warning yellow - 16% light
+    borderColor: AlertUI.baseHslColor.addLightness(4).toString(),
   },
   warningMessage: {
     fontSize: 14,
-    color: 'hsl(47, 100%, 22%)', // warning yellow - 64% light
+    color: AlertUI.darkColor,
     padding: 12,
   },
   input: {
