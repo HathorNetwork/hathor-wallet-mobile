@@ -14,10 +14,17 @@ import { PRE_SETTINGS_MAINNET } from '../../constants';
 const customNetworkText = t`Custom network`;
 
 function notMainnet(networkSettings) {
+  // If the networkSettings has a walletServiceUrl, then
+  // we should run a full check against the mainnet presettings.
+  // This is important because the wallet service has precedence
+  // over fullnode.
   if (networkSettings.walletServiceUrl) {
     return !isEqual(networkSettings, PRE_SETTINGS_MAINNET);
   }
 
+  // In the absence of walletServiceUrl we can remove wallet
+  // service URLs from the equality check against the mainnet
+  // presettings.
   const currNetwork = {
     stage: networkSettings.stage,
     network: networkSettings.network,
