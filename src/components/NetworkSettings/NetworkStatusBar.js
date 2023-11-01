@@ -14,6 +14,10 @@ import { PRE_SETTINGS_MAINNET } from '../../constants';
 const customNetworkText = t`Custom network`;
 
 function notMainnet(networkSettings) {
+  if (networkSettings.walletServiceUrl) {
+    return !isEqual(networkSettings, PRE_SETTINGS_MAINNET);
+  }
+
   const currNetwork = {
     stage: networkSettings.stage,
     network: networkSettings.network,
