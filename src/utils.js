@@ -12,7 +12,7 @@ import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
-import { KEYCHAIN_USER, networkObj } from './constants';
+import { KEYCHAIN_USER } from './constants';
 import { STORE } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
@@ -133,9 +133,9 @@ export const str2jsx = (text, fnMap) => {
    *
    * @return {Object} boolean indicating if address is valid and possibly an error message
    */
-export const validateAddress = (address) => {
+export const validateAddress = (address, network) => {
   try {
-    const addressObj = new hathorLib.Address(address, { network: networkObj });
+    const addressObj = new hathorLib.Address(address, { network });
     addressObj.validateAddress();
     return { isValid: true };
   } catch (e) {
