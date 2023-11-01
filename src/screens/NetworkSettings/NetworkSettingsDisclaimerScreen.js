@@ -13,7 +13,7 @@ import {
 import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
 import NewHathorButton from '../../components/NewHathorButton';
-import { COLORS } from '../../styles/themes';
+import { AlertUI, COLORS } from '../../styles/themes';
 import { NetworkPreSettingsNav } from './NetworkPreSettingsScreen';
 
 const riskDisclaimerTitleText = t`Risk Disclaimer`.toUpperCase();
@@ -31,10 +31,10 @@ const style = StyleSheet.create({
   },
   warningContainer: {
     borderRadius: 8,
-    backgroundColor: 'hsl(47, 100%, 86%)', // warning yellow
+    backgroundColor: AlertUI.lightColor,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'hsl(47, 100%, 70%)', // warning yellow - 16% light
+    borderColor: AlertUI.baseHslColor.addLightness(4).toString(),
     shadowColor: COLORS.textColor,
     shadowOffset: {
       width: 0,
@@ -46,7 +46,7 @@ const style = StyleSheet.create({
   },
   warningMessage: {
     fontSize: 16,
-    color: 'hsl(47, 100%, 22%)', // warning yellow - 64% light
+    color: AlertUI.darkColor,
     padding: 16,
     paddingBottom: 48,
   },
