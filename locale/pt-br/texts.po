@@ -542,10 +542,6 @@ msgstr "Desbloqueie sua Hathor Wallet"
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:270 src/screens/Settings.js:151
-msgid "Reset wallet"
-msgstr "Resetar a wallet"
-
 #: src/screens/PushNotification.js:58 src/screens/Settings.js:125
 msgid "Push Notification"
 msgstr "Notificação"
