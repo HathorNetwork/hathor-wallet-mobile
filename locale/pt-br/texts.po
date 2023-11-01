@@ -869,7 +869,7 @@ msgstr ""
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:18
 #: src/screens/NetworkSettings/helper.js:4
 msgid "Updating custom network settings..."
-msgstr "Atualizando configurações de rede…"
+msgstr "Atualizando configurações de rede..."
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:19
 #: src/screens/NetworkSettings/helper.js:5
@@ -941,7 +941,7 @@ msgstr ""
 
 #: src/sagas/networkSettings.js:81
 msgid "Custom Network Settings cannot be empty."
-msgstr "Configurações de Rede não pode estar vazia."
+msgstr "As Configurações de Rede não podem estar vazias."
 
 #: src/sagas/networkSettings.js:88
 msgid "explorerUrl should be a valid URL."
