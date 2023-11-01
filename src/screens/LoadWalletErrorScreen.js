@@ -65,9 +65,11 @@ export default () => {
     dispatch(resetOnLockScreen());
     // This will set the walletState to LOADING
     dispatch(onStartWalletLock());
-    // This redirect the user to the lockScreen,
-    // however, it will display the resetScreen
-    // because resetOnLockScreen is true now.
+    // This redirect the user to the lockScreen.
+    // However, it will display the resetScreen,
+    // which is an auxiliar view on top of it.
+    // This behavior happens because resetOnLockScreen
+    // was set to true.
     dispatch(lockScreen());
   }, [dispatch]);
 
