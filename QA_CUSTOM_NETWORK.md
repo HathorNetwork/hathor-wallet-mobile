@@ -44,7 +44,7 @@
 1. **Send a custom network**
     1. Navigate back to Network Pre-Settings screen
     1. Click on "CUSTOMIZE" again
-    1. Empty the fields "Wallet Service URL (optional)" and "Wallet Service WS URL (optional)"
+    1. Fill the "Node URL" field with the value "https://node1.mainnet.hathor.network/v1a/"
     1. Click on "SEND"
     1. Wait the wallet reload
     1. Check a success feedback modal has appeared
