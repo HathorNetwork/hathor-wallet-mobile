@@ -202,6 +202,10 @@ export function* startWallet(action) {
 
       // Yield the same action so it will now load on the old facade
       yield put(action);
+    } else {
+      console.log('failed to start fullnode wallet');
+      yield put(startWalletFailed());
+      return;
     }
   }
 

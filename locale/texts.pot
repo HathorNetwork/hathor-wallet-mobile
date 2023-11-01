@@ -52,7 +52,7 @@ msgstr ""
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src/utils.js:144
+#: src/utils.js:145
 msgid "Invalid address"
 msgstr ""
 
@@ -98,20 +98,20 @@ msgstr ""
 msgid "New transaction received"
 msgstr ""
 
-#: src/screens/About.js:83
+#: src/screens/About.js:82
 msgid "ABOUT"
 msgstr ""
 
-#: src/screens/About.js:95
+#: src/screens/About.js:94
 msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr ""
 
-#: src/screens/About.js:99
+#: src/screens/About.js:98
 #: src/screens/InitWallet.js:64
 msgid "This wallet is connected to the **mainnet**."
 msgstr ""
 
-#: src/screens/About.js:102
+#: src/screens/About.js:101
 #: src/screens/InitWallet.js:67
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
@@ -119,56 +119,56 @@ msgid ""
 "pocket money."
 msgstr ""
 
-#: src/screens/About.js:107
+#: src/screens/About.js:106
 msgid ""
 "For further information, check out the |link1:Terms of Service| and "
 "|link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-#: src/screens/BackupWords.js:148
+#: src/screens/BackupWords.js:147
 #.  Success
 #.  eslint-disable-next-line react/jsx-indent
 msgid "Words saved correctly"
 msgstr ""
 
-#: src/screens/BackupWords.js:226
+#: src/screens/BackupWords.js:225
 msgid "To make sure you saved,"
 msgstr ""
 
-#: src/screens/BackupWords.js:228
+#: src/screens/BackupWords.js:227
 msgid "Please select the word that corresponds to the number below:"
 msgstr ""
 
-#: src/screens/ChangePin.js:115
+#: src/screens/ChangePin.js:113
 msgid "Incorrect PIN code."
 msgstr ""
 
-#: src/screens/ChangePin.js:151
+#: src/screens/ChangePin.js:149
 msgid "PIN codes don't match."
 msgstr ""
 
-#: src/screens/ChangePin.js:180
+#: src/screens/ChangePin.js:178
 #.  Should never get here because we've done all the validations before
 msgid "Error while changing PIN"
 msgstr ""
 
-#: src/screens/ChangePin.js:187
+#: src/screens/ChangePin.js:185
 msgid "Please enter your **current PIN**"
 msgstr ""
 
-#: src/screens/ChangePin.js:200
+#: src/screens/ChangePin.js:198
 msgid "Please enter your **new PIN**"
 msgstr ""
 
-#: src/screens/ChangePin.js:213
+#: src/screens/ChangePin.js:211
 msgid "Please enter your **new PIN** again"
 msgstr ""
 
-#: src/screens/ChangePin.js:228
+#: src/screens/ChangePin.js:226
 msgid "New PIN recorded"
 msgstr ""
 
-#: src/screens/ChangePin.js:238
+#: src/screens/ChangePin.js:236
 msgid "CHANGE PIN"
 msgstr ""
 
@@ -196,79 +196,79 @@ msgstr ""
 msgid "Start the Wallet"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:115
-#: src/screens/CreateTokenConfirm.js:164
-#: src/screens/CreateTokenDepositNotice.js:43
+#: src/screens/CreateTokenAmount.js:119
+#: src/screens/CreateTokenConfirm.js:163
+#: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:123
+#: src/screens/CreateTokenAmount.js:127
 #, javascript-format
 msgid "Amount of ${ this.name } (${ this.symbol })"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:135
+#: src/screens/CreateTokenAmount.js:139
 msgid "Deposit:"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:139
+#: src/screens/CreateTokenAmount.js:143
 #, javascript-format
 msgid "You have ${ amountAvailableText } HTR available"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:144
+#: src/screens/CreateTokenAmount.js:148
 #: src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84
 #: src/screens/InitWallet.js:220
 #: src/screens/InitWallet.js:341
 #: src/screens/SendAddressInput.js:65
-#: src/screens/SendAmountInput.js:182
+#: src/screens/SendAmountInput.js:179
 msgid "Next"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:101
+#: src/screens/CreateTokenConfirm.js:100
 #.  show loading modal
 msgid "Creating token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:117
+#: src/screens/CreateTokenConfirm.js:116
 msgid "Enter your 6-digit pin to create your token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:118
+#: src/screens/CreateTokenConfirm.js:117
 msgid "Authorize token creation"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:183
+#: src/screens/CreateTokenConfirm.js:182
 #.  eslint-disable-next-line react/jsx-indent
 #, javascript-format
 msgid "**${ this.name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:196
+#: src/screens/CreateTokenConfirm.js:195
 msgid "Amount of ${ this.name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:204
+#: src/screens/CreateTokenConfirm.js:203
 msgid "Token name"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:210
+#: src/screens/CreateTokenConfirm.js:209
 #: src/screens/CreateTokenSymbol.js:69
 msgid "Token symbol"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:216
+#: src/screens/CreateTokenConfirm.js:215
 msgid "Deposit"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:223
+#: src/screens/CreateTokenConfirm.js:222
 msgid "Create token"
 msgstr ""
 
-#: src/screens/CreateTokenDepositNotice.js:50
+#: src/screens/CreateTokenDepositNotice.js:49
 #, javascript-format
 msgid ""
 "When creating new tokens, a |fn:deposit of ${ depositPercentage }%| in HTR "
@@ -276,18 +276,19 @@ msgid ""
 "deposit."
 msgstr ""
 
-#: src/screens/CreateTokenDepositNotice.js:56
+#: src/screens/CreateTokenDepositNotice.js:55
 msgid ""
 "If these tokens are later melted, the HTR deposit will be returned. Read "
 "more about it |link:here|."
 msgstr ""
 
-#: src/screens/CreateTokenDepositNotice.js:64
+#: src/screens/CreateTokenDepositNotice.js:63
+#: src/screens/NetworkSettings/NetworkSettingsDisclaimerScreen.js:76
 msgid "I understand"
 msgstr ""
 
-#: src/screens/CreateTokenDetail.js:41
-#: src/screens/TokenDetail.js:47
+#: src/screens/CreateTokenDetail.js:42
+#: src/screens/TokenDetail.js:48
 msgid "TOKEN DETAILS"
 msgstr ""
 
@@ -411,17 +412,31 @@ msgstr ""
 msgid "Enter your seed words separated by space"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:66
+#: src/screens/LoadHistoryScreen.js:67
 msgid "Loading your transactions"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:69
+#: src/screens/LoadHistoryScreen.js:70
 #, javascript-format
 msgid "**${ _this.props.loadedData.transactions } transactions** found"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:72
+#: src/screens/LoadHistoryScreen.js:73
 msgid "**${ _this.props.loadedData.addresses } addresses** found"
+msgstr ""
+
+#: src/screens/LoadWalletErrorScreen.js:19
+msgid "There's been an error connecting to the server."
+msgstr ""
+
+#: src/screens/LoadWalletErrorScreen.js:20
+msgid "Try again"
+msgstr ""
+
+#: src/screens/LoadWalletErrorScreen.js:21
+#: src/screens/PinScreen.js:270
+#: src/screens/Settings.js:151
+msgid "Reset wallet"
 msgstr ""
 
 #: src/screens/MainScreen.js:126
@@ -453,85 +468,81 @@ msgstr ""
 msgid "Locked"
 msgstr ""
 
-#: src/screens/PaymentRequestDetail.js:73
+#: src/screens/PaymentRequestDetail.js:88
 #, javascript-format
 msgid "You've just received **${ amount } ${ symbol }**"
 msgstr ""
 
-#: src/screens/PaymentRequestDetail.js:90
+#: src/screens/PaymentRequestDetail.js:105
 msgid "PAYMENT REQUEST"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:58
-#: src/screens/PaymentRequestDetail.js:108
+#: src/components/TxDetailsModal.js:59
+#: src/screens/PaymentRequestDetail.js:123
 msgid "Token"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:105
-#: src/screens/PaymentRequestDetail.js:112
+#: src/components/TxDetailsModal.js:106
+#: src/screens/PaymentRequestDetail.js:127
 msgid "Amount"
 msgstr ""
 
-#: src/screens/PaymentRequestDetail.js:120
-#: src/screens/Receive.js:29
+#: src/screens/PaymentRequestDetail.js:135
+#: src/screens/Receive.js:30
 msgid "My Address"
 msgstr ""
 
-#: src/screens/PaymentRequestDetail.js:124
+#: src/screens/PaymentRequestDetail.js:139
 msgid "Status"
 msgstr ""
 
-#: src/screens/PaymentRequestDetail.js:125
+#: src/screens/PaymentRequestDetail.js:140
 msgid "Received"
 msgstr ""
 
-#: src/screens/PaymentRequestDetail.js:125
+#: src/screens/PaymentRequestDetail.js:140
 msgid "Waiting confirmation"
 msgstr ""
 
-#: src/screens/PinScreen.js:246
+#: src/screens/PinScreen.js:255
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
-#: src/screens/PinScreen.js:66
+#: src/screens/PinScreen.js:68
 msgid "Enter your PIN Code "
 msgstr ""
 
-#: src/screens/PinScreen.js:67
+#: src/screens/PinScreen.js:69
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
-#: src/screens/PinScreen.js:258
+#: src/screens/PinScreen.js:267
+#: src/screens/WalletConnect/WalletConnectList.js:125
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:261
-#: src/screens/Settings.js:142
-msgid "Reset wallet"
-msgstr ""
-
-#: src/screens/PushNotification.js:57
-#: src/screens/Settings.js:123
+#: src/screens/PushNotification.js:58
+#: src/screens/Settings.js:125
 msgid "Push Notification"
 msgstr ""
 
-#: src/screens/PushNotification.js:58
+#: src/screens/PushNotification.js:59
 msgid "Enable Push Notification"
 msgstr ""
 
-#: src/screens/PushNotification.js:59
+#: src/screens/PushNotification.js:60
 msgid "Show amounts on notification"
 msgstr ""
 
-#: src/screens/PushNotification.js:60
+#: src/screens/PushNotification.js:61
 msgid "Updating push notification..."
 msgstr ""
 
-#: src/screens/PushNotification.js:61
+#: src/screens/PushNotification.js:62
 msgid "There was an error enabling push notification. Please try again later."
 msgstr ""
 
-#: src/screens/Receive.js:30
+#: src/screens/Receive.js:31
 #. *
 #.      * index {number} Selected index of the tab bar
 #.      
@@ -540,23 +551,23 @@ msgstr ""
 msgid "Payment Request"
 msgstr ""
 
-#: src/screens/Receive.js:105
+#: src/screens/Receive.js:106
 msgid "RECEIVE"
 msgstr ""
 
-#: src/screens/RegisterToken.js:26
-#: src/screens/SendScanQRCode.js:112
+#: src/screens/RegisterToken.js:27
+#: src/screens/SendScanQRCode.js:71
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 msgid "Manual info"
 msgstr ""
 
-#: src/screens/RegisterToken.js:41
+#: src/screens/RegisterToken.js:42
 #: src/screens/RegisterTokenManual.js:126
 msgid "REGISTER TOKEN"
 msgstr ""
 
-#: src/screens/RegisterToken.js:52
+#: src/screens/RegisterToken.js:53
 msgid "Scan the token QR code"
 msgstr ""
 
@@ -576,59 +587,59 @@ msgstr ""
 msgid "Configuration string"
 msgstr ""
 
-#: src/screens/ResetWallet.js:105
+#: src/screens/ResetWallet.js:104
 msgid "RESET WALLET"
 msgstr ""
 
-#: src/screens/ResetWallet.js:109
+#: src/screens/ResetWallet.js:108
 msgid "Are you sure?"
 msgstr ""
 
-#: src/screens/ResetWallet.js:112
+#: src/screens/ResetWallet.js:111
 msgid ""
 "If you reset your wallet, **all data will be deleted**, and you will **lose "
 "access to your tokens**."
 msgstr ""
 
-#: src/screens/ResetWallet.js:114
+#: src/screens/ResetWallet.js:113
 msgid ""
 "To recover access to your tokens, you will need to import your seed words "
 "again."
 msgstr ""
 
-#: src/screens/ResetWallet.js:123
+#: src/screens/ResetWallet.js:122
 msgid ""
 "I want to reset my wallet, and I acknowledge that **all data will be wiped "
 "out**."
 msgstr ""
 
-#: src/screens/ResetWallet.js:132
+#: src/screens/ResetWallet.js:131
 msgid "Reset Wallet"
 msgstr ""
 
-#: src/screens/Security.js:72
+#: src/screens/Security.js:73
 msgid "No biometry supported"
 msgstr ""
 
-#: src/screens/Security.js:72
+#: src/screens/Security.js:73
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr ""
 
-#: src/screens/Security.js:76
+#: src/screens/Security.js:77
 msgid "SECURITY"
 msgstr ""
 
-#: src/screens/Security.js:95
+#: src/screens/Security.js:96
 msgid "Change PIN"
 msgstr ""
 
-#: src/screens/Security.js:99
+#: src/screens/Security.js:100
 msgid "Lock wallet"
 msgstr ""
 
 #: src/screens/SendAddressInput.js:52
-#: src/screens/SendScanQRCode.js:120
+#: src/screens/SendScanQRCode.js:79
 msgid "SEND"
 msgstr ""
 
@@ -636,11 +647,11 @@ msgstr ""
 msgid "Address to send"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:108
+#: src/screens/SendAmountInput.js:105
 msgid "Insufficient funds"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:139
+#: src/screens/SendAmountInput.js:136
 #: src/screens/SendConfirmScreen.js:125
 #, javascript-format
 msgid "${ amountAndToken } available"
@@ -648,7 +659,7 @@ msgid_plural "${ amountAndToken } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:151
+#: src/screens/SendAmountInput.js:148
 #: src/screens/SendConfirmScreen.js:133
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
@@ -658,12 +669,12 @@ msgstr ""
 msgid "Your transfer is being processed"
 msgstr ""
 
-#: src/sagas/helpers.js:123
+#: src/sagas/helpers.js:132
 #: src/screens/SendConfirmScreen.js:104
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
-#: src/sagas/helpers.js:124
+#: src/sagas/helpers.js:133
 #: src/screens/SendConfirmScreen.js:105
 msgid "Authorize operation"
 msgstr ""
@@ -677,89 +688,245 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:247
 #: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr ""
 
-#: src/screens/SendScanQRCode.js:58
+#: src/screens/SendScanQRCode.js:27
 msgid "Invalid QR code"
 msgstr ""
 
-#: src/screens/SendScanQRCode.js:61
+#: src/screens/SendScanQRCode.js:30
 msgid "OK"
 msgstr ""
 
-#: src/screens/SendScanQRCode.js:86
+#: src/screens/SendScanQRCode.js:55
 #, javascript-format
 msgid "You don't have the requested token [${ tokenLabel }]"
 msgstr ""
 
-#: src/screens/SendScanQRCode.js:129
+#: src/screens/SendScanQRCode.js:87
+#: src/screens/WalletConnect/WalletConnectScan.js:49
 msgid "Scan the QR code"
 msgstr ""
 
-#: src/screens/Settings.js:92
+#: src/screens/Settings.js:94
 msgid "You are connected to"
 msgstr ""
 
-#: src/screens/Settings.js:104
+#: src/screens/Settings.js:102
+msgid "General Settings"
+msgstr ""
+
+#: src/screens/Settings.js:106
 msgid "Connected to"
 msgstr ""
 
-#: src/screens/Settings.js:117
+#: src/screens/Settings.js:119
 msgid "Security"
 msgstr ""
 
-#: src/screens/Settings.js:130
+#: src/screens/Settings.js:132
 msgid "Create a new token"
 msgstr ""
 
-#: src/screens/Settings.js:137
+#: src/screens/Settings.js:139
 msgid "Register a token"
 msgstr ""
 
-#: src/screens/Settings.js:146
+#: src/screens/Settings.js:155
 msgid "About"
 msgstr ""
 
-#: src/screens/Settings.js:153
+#: src/screens/Settings.js:162
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/TokenDetail.js:37
+#: src/screens/Settings.js:174
+msgid "Developer Settings"
+msgstr ""
+
+#: src/screens/Settings.js:176
+msgid "Network Settings"
+msgstr ""
+
+#: src/screens/TokenDetail.js:38
 msgid "Unregister"
 msgstr ""
 
-#: src/screens/UnregisterToken.js:113
+#: src/screens/UnregisterToken.js:112
 msgid "UNREGISTER TOKEN"
 msgstr ""
 
-#: src/screens/UnregisterToken.js:118
+#: src/screens/UnregisterToken.js:117
 msgid ""
 "If you unregister this token **you won't be able to execute operations with "
 "it**, unless you register it again."
 msgstr ""
 
-#: src/screens/UnregisterToken.js:121
+#: src/screens/UnregisterToken.js:120
 msgid ""
 "You won't lose your tokens, they will just not appear on this wallet "
 "anymore."
 msgstr ""
 
-#: src/screens/UnregisterToken.js:125
+#: src/screens/UnregisterToken.js:124
 #, javascript-format
 msgid "I want to unregister the token **${ tokenLabel }**"
 msgstr ""
 
-#: src/screens/UnregisterToken.js:140
+#: src/screens/UnregisterToken.js:139
 msgid "Unregister token"
 msgstr ""
 
-#: src/sagas/pushNotification.js:56
+#: src/screens/WalletConnect/WalletConnectList.js:33
+msgid "There was an error connecting. Please try again later."
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectList.js:111
+#.  translator: Used when the QR Code Scanner is opened, and user will manually
+#.  enter the information.
+msgid "Add"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectList.js:117
+msgid "End session"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectList.js:117
+msgid "This will disconnect the session."
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectList.js:119
+msgid "End"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectList.js:137
+msgid "Wallet Connect Sessions"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectManual.js:39
+msgid "Manual Connection"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectManual.js:45
+msgid "Wallet Connect URI"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectManual.js:57
+#: src/screens/WalletConnect/WalletConnectScan.js:34
+msgid "Connect"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectScan.js:41
+#.  translator: Used when the QR Code Scanner is opened, and user will manually
+#.  enter the information.
+msgid "Manual"
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:15
+msgid "Custom Network Settings"
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:16
+msgid ""
+"Any token outside mainnet network bear no value. Only change if you know "
+"what you are doing."
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:17
+#: src/screens/NetworkSettings/helper.js:4
+msgid "Updating custom network settings..."
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:18
+#: src/screens/NetworkSettings/helper.js:5
+msgid ""
+"There was an error while customizing network settings. Please try again "
+"later."
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:53
+msgid "nodeUrl is required."
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:57
+msgid "explorerUrl is required."
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:61
+msgid "explorerServiceUrl is required."
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:200
+msgid "Node URL"
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:209
+msgid "Explorer URL"
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:218
+msgid "Explorer Service URL"
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:227
+msgid "Wallet Service URL (optional)"
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:236
+msgid "Wallet Service WS URL (optional)"
+msgstr ""
+
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:27
+msgid "Network Pre-Settings"
+msgstr ""
+
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:117
+msgid "Customize"
+msgstr ""
+
+#: src/screens/NetworkSettings/NetworkSettingsDisclaimerScreen.js:19
+msgid "Risk Disclaimer"
+msgstr ""
+
+#: src/screens/NetworkSettings/NetworkSettingsDisclaimerScreen.js:20
+msgid ""
+"Do not change this unless you know what you are doing, and under no "
+"circumstances change these settings based on someone else suggestion, as "
+"this can potentially make you susceptible to fraudulent schemes."
+msgstr ""
+
+#: src/sagas/networkSettings.js:54
+msgid "Custom Network Settings cannot be empty."
+msgstr ""
+
+#: src/sagas/networkSettings.js:61
+msgid "explorerUrl should be a valid URL."
+msgstr ""
+
+#: src/sagas/networkSettings.js:68
+msgid "explorerServiceUrl should be a valid URL."
+msgstr ""
+
+#: src/sagas/networkSettings.js:75
+msgid "nodeUrl should be a valid URL."
+msgstr ""
+
+#: src/sagas/networkSettings.js:82
+msgid "walletServiceUrl should be a valid URL."
+msgstr ""
+
+#: src/sagas/networkSettings.js:89
+msgid "walletServiceWsUrl should be a valid URL."
+msgstr ""
+
+#: src/sagas/pushNotification.js:53
 msgid "Transaction"
 msgstr ""
 
-#: src/sagas/pushNotification.js:57
+#: src/sagas/pushNotification.js:54
 msgid "Open"
 msgstr ""
 
@@ -793,21 +960,21 @@ msgstr ""
 msgid "Copied to clipboard!"
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:49
+#: src/components/GlobalErrorModal.js:50
 msgid ""
 "Thanks for reporting the error to the team. We will investigate it to "
 "prevent from happening again."
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:79
+#: src/components/GlobalErrorModal.js:80
 msgid "Unexpected error"
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:83
+#: src/components/GlobalErrorModal.js:84
 msgid "Please restart your app to continue using the wallet."
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:104
+#: src/components/GlobalErrorModal.js:105
 msgid ""
 "Unfortunately an unhandled error happened and you will need to restart your "
 "app.\n"
@@ -818,7 +985,7 @@ msgid ""
 "No sensitive data will be shared."
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:107
+#: src/components/GlobalErrorModal.js:108
 msgid ""
 "Unfortunately an unhandled error happened.\n"
 "\n"
@@ -828,55 +995,55 @@ msgid ""
 "No sensitive data will be shared."
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:114
+#: src/components/GlobalErrorModal.js:115
 msgid "Unexpected error occurred"
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:117
+#: src/components/GlobalErrorModal.js:118
 msgid "Report error"
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:122
+#: src/components/GlobalErrorModal.js:123
 msgid "Close"
 msgstr ""
 
-#: src/components/NewPaymentRequest.js:178
+#: src/components/NewPaymentRequest.js:174
 msgid "Create payment request"
 msgstr ""
 
-#: src/components/OfflineBar.js:52
+#: src/components/OfflineBar.js:53
 msgid "No internet connection"
 msgstr ""
 
-#: src/components/PublicExplorerListButton.js:14
+#: src/components/PublicExplorerListButton.js:19
 msgid "Public Explorer"
-msgstr ""
-
-#: src/components/PushTxDetailsModal.js:68
-#: src/components/TxDetailsModal.js:60
-msgid "Date & Time"
 msgstr ""
 
 #: src/components/PushTxDetailsModal.js:69
 #: src/components/TxDetailsModal.js:61
+msgid "Date & Time"
+msgstr ""
+
+#: src/components/PushTxDetailsModal.js:70
+#: src/components/TxDetailsModal.js:62
 msgid "ID"
 msgstr ""
 
-#: src/components/PushTxDetailsModal.js:93
+#: src/components/PushTxDetailsModal.js:94
 msgid "New Transaction"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:33
+#: src/components/ReceiveMyAddress.js:34
 #, javascript-format
 msgid "Here is my address: ${ lastSharedAddress }"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:71
+#: src/components/ReceiveMyAddress.js:72
 msgid "New address"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:77
-#: src/components/TokenDetails.js:60
+#: src/components/ReceiveMyAddress.js:78
+#: src/components/TokenDetails.js:61
 msgid "Share"
 msgstr ""
 
@@ -896,11 +1063,40 @@ msgstr ""
 msgid "Retry"
 msgstr ""
 
-#: src/components/TokenDetails.js:33
+#: src/components/TokenDetails.js:34
 #, javascript-format
 msgid "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:59
+#: src/components/TxDetailsModal.js:60
 msgid "Description"
+msgstr ""
+
+#: src/components/WalletConnect/ApproveRejectModal.js:63
+msgid "Reject"
+msgstr ""
+
+#: src/components/WalletConnect/ApproveRejectModal.js:64
+msgid "Approve"
+msgstr ""
+
+#: src/components/WalletConnect/ConnectModal.js:38
+msgid "Connect to this dApp?"
+msgstr ""
+
+#: src/components/WalletConnect/ConnectModal.js:41
+msgid ""
+"By clicking connect, you allow this dapp to receive your wallet's public "
+"address. Please validate the URL and the dApp name, this is an important "
+"security step to protect your data from potential phishing risks."
+msgstr ""
+
+#: src/components/WalletConnect/SignMessageModal.js:50
+msgid "Sign this message?"
+msgstr ""
+
+#: src/components/WalletConnect/SignMessageModal.js:57
+msgid ""
+"By clicking approve, you will sign the requested message using the first "
+"address derived from your root key on the m/44'/280'/0'/0/0 derivation path."
 msgstr ""
