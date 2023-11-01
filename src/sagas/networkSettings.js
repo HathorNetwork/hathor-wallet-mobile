@@ -41,8 +41,12 @@ export function* initNetworkSettings() {
 
   const status = yield select((state) => state.networkSettingsStatus);
   if (status === NETWORKSETTINGS_STATUS.WAITING) {
+    // This branch completes the network update by delivering
+    // a success feedback to the user.
     yield put(networkSettingsUpdateSuccess());
   } else {
+    // This branch is a fallback to set network status to READY
+    // after wallet initialization.
     yield put(networkSettingsUpdateReady());
   }
 }
