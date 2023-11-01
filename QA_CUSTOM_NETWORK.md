@@ -36,9 +36,9 @@
     1. Dismiss the success feedback modal
 
 1. **Send an invalid Node URL**
-    1. Emmpty the Node URL field
+    1. Empty the Node URL field
     1. Check that an invalidation message appears under the field informing Node URL is required
-    1. Fill the field with an invalid URL "invalid"
+    1. Fill the field with an invalid URL, e.g. "invalid"
     1. Check that an invalidation message appears under the field informing Node URL should be a valid URL
 
 1. **Send a custom network**
@@ -47,14 +47,14 @@
     1. Fill the "Node URL" field with the value "https://node1.mainnet.hathor.network/v1a/"
     1. Click on "SEND"
     1. Wait the wallet reload
-    1. Check a success feedback modal has appeared
+    1. Check if a success feedback modal has appeared
     1. Dismiss the success feedback modal
-    1. Check you see a network status bar with yellow background has appeared on top containing the message "Custom network: mainnet"
+    1. Verify that a network status bar with a yellow background and the message "Custom network: mainnet" is visible at the top of the screen
 
 1. **Restoring to mainnet**
     1. Navigate back to Network Pre-Settings screen
     1. Click on "Mainnet" option
-    1. Wait the wallet reload
+    1. Wait for the wallet to reload
     1. Check a success feedback modal has appeared
     1. Dismiss the success feedback modal
     1. Ensure that the network status bar at the top of the screen has disappeared
