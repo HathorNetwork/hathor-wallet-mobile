@@ -16,8 +16,11 @@ import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
 import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
-export const SendAddressInput = ({ route, navigation }) => {
+export const SendAddressInput = () => {
+  const route = useRoute();
+  const navigation = useNavigation();
   /**
    * address {string} send tokens to this address
    * error {string} address validation error
