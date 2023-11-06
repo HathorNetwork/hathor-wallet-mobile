@@ -54,7 +54,7 @@ export class About extends React.Component {
       // iOS
       const build = VersionNumber.buildVersion.split('.');
       if (build.length !== 3) {
-        throw new Error('IOS build version is not in the correct format.');
+        return (<Text style={this.style.text}>{JSON.stringify(VersionNumber)} (parse error)</Text>)
       }
       if (build[0] === '0') {
         // This is a release candidate build
