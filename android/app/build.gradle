@@ -80,7 +80,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 59
-        versionName "0.26.0-rc7"
+        versionName "0.26.0-rc8"
         missingDimensionStrategy "react-native-camera", "general"
     }
     signingConfigs {
