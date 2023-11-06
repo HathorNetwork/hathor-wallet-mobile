@@ -371,6 +371,11 @@ class AsyncStorageStore {
    */
   async handleMigrationOldRegisteredTokens() {
     const oldTokens = this.getItem('wallet:tokens');
+    if (!oldTokens) {
+      // There were no registered custom tokens: skipping token migration.
+      return;
+    }
+
     const newTokens = {};
     for (const token of oldTokens) {
       newTokens[token.uid] = token;
