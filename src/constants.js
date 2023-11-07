@@ -25,7 +25,7 @@ export const STAGE = 'mainnet';
  * this is the network name that will be used to load the wallet on the wallet-service,
  * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
  */
-export const NETWORK = 'mainnet';
+export const NETWORK_MAINNET = 'mainnet';
 
 /**
  * Default tokens for the wallet (to start on redux)
@@ -180,7 +180,7 @@ export const EXPLORER_SERVICE_MAINNET_URL = 'https://explorer-service.hathor.net
 
 export const PRE_SETTINGS_MAINNET = {
   stage: STAGE,
-  network: NETWORK,
+  network: NETWORK_MAINNET,
   walletServiceUrl: WALLET_SERVICE_MAINNET_BASE_URL,
   walletServiceWsUrl: WALLET_SERVICE_MAINNET_BASE_WS_URL,
   nodeUrl: NODE_SERVER_MAINNET_URL,
