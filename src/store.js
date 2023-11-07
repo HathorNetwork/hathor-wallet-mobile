@@ -370,7 +370,8 @@ class AsyncStorageStore {
    * @async
    */
   async handleMigrationOldRegisteredTokens() {
-    const oldTokens = this.getItem('wallet:tokens');
+    const oldTokens = this.getItem('wallet:tokens') ?? [];
+
     const newTokens = {};
     for (const token of oldTokens) {
       newTokens[token.uid] = token;
