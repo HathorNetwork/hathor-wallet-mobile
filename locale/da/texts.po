@@ -61,7 +61,7 @@ msgstr "[Sidste] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:145
+#: src/utils.js:146
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 
@@ -228,7 +228,7 @@ msgstr "Du har ${ amountAvailableText } HTR tilgængelig"
 
 #: src/screens/CreateTokenAmount.js:148 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:220
-#: src/screens/InitWallet.js:341 src/screens/SendAddressInput.js:64
+#: src/screens/InitWallet.js:341 src/screens/SendAddressInput.js:67
 #: src/screens/SendAmountInput.js:179
 msgid "Next"
 msgstr "Næste"
@@ -649,11 +649,11 @@ msgstr "Skift pinkode"
 msgid "Lock wallet"
 msgstr "Lås wallet"
 
-#: src/screens/SendAddressInput.js:51 src/screens/SendScanQRCode.js:79
+#: src/screens/SendAddressInput.js:54 src/screens/SendScanQRCode.js:79
 msgid "SEND"
 msgstr "SEND"
 
-#: src/screens/SendAddressInput.js:57
+#: src/screens/SendAddressInput.js:60
 msgid "Address to send"
 msgstr "Adresse, der skal sendes til"
 
