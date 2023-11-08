@@ -1,5 +1,5 @@
 ### Acceptance Criteria
-- Include here all things that this PR should solve
+- Include links to all PRs that will be included in this version
 
 ### Checklist
 - [ ] Make sure you updated the `CURRENT_PROJECT_VERSION` with the appropriate release-candidate version in `ios/HathorMobile.xcodeproj/project.pbxproj`
