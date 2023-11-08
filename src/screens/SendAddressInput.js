@@ -10,13 +10,13 @@ import { KeyboardAvoidingView, View } from 'react-native';
 import { t } from 'ttag';
 import { Network } from '@hathor/wallet-lib';
 import { useSelector } from 'react-redux';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
 import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
-import { useNavigation, useRoute } from '@react-navigation/native';
 
 export const SendAddressInput = () => {
   const route = useRoute();
