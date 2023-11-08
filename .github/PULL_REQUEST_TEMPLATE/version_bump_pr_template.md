@@ -8,6 +8,3 @@
 - [ ] Make sure you updated the version attribute in `package-lock.json`
 - [ ] Make sure you incremented the `versionCode` attribute in `android/app/build.gradle`
 - [ ] Make sure you updated the `versionName` with the appropriate version, including the release candidate number in `android/app/build.gradle`
-
-### Security Checklist
-- [ ] Make sure you do not include new dependencies in the project unless strictly necessary and do not include dev-dependencies as production ones. More dependencies increase the possibility of one of them being hijacked and affecting us.
