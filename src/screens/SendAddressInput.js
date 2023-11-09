@@ -29,7 +29,6 @@ export const SendAddressInput = () => {
     // we can optionally receive a string to fill out the address
     // input (for eg, user scanned QR code)
     address: route.params?.address ?? null,
-    // TODO this is probably temporary. We don't have the UI for error message yet.
     error: null,
   });
   const network = useSelector((state) => new Network(state.networkSettings.network));
