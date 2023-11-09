@@ -8,7 +8,7 @@
 import CryptoJS from 'crypto-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MemoryStore, Storage, cryptoUtils, walletUtils } from '@hathor/wallet-lib';
-import { NETWORK } from './constants';
+import { NETWORK_MAINNET } from './constants';
 
 export const ACCESS_DATA_KEY = 'asyncstorage:access';
 export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
@@ -201,7 +201,7 @@ class AsyncStorageStore {
         // from the networkSettings in the redux store,
         // because this one is used in the context of wallet
         // access data generation only.
-        networkName: NETWORK,
+        networkName: NETWORK_MAINNET,
       },
     );
     const storage = this.getStorage();

@@ -9,7 +9,6 @@
 import 'intl';
 import 'intl/locale-data/jsonp/en';
 
-import { Network } from '@hathor/wallet-lib';
 import {
   _IS_MULTI_TOKEN as IS_MULTI_TOKEN,
   _DEFAULT_TOKEN as DEFAULT_TOKEN,
@@ -26,15 +25,7 @@ export const STAGE = 'mainnet';
  * this is the network name that will be used to load the wallet on the wallet-service,
  * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
  */
-export const NETWORK = 'mainnet';
-
-/**
- * This is the hathor-lib network instance for NETWORK_NAME.
- * This is meant to be easier to use with methods that expect a network object
- * instead of a network name.
- * @type {Network}
- */
-export const networkObj = new Network(NETWORK);
+export const NETWORK_MAINNET = 'mainnet';
 
 /**
  * Default tokens for the wallet (to start on redux)
@@ -189,7 +180,7 @@ export const EXPLORER_SERVICE_MAINNET_URL = 'https://explorer-service.hathor.net
 
 export const PRE_SETTINGS_MAINNET = {
   stage: STAGE,
-  network: NETWORK,
+  network: NETWORK_MAINNET,
   walletServiceUrl: WALLET_SERVICE_MAINNET_BASE_URL,
   walletServiceWsUrl: WALLET_SERVICE_MAINNET_BASE_WS_URL,
   nodeUrl: NODE_SERVER_MAINNET_URL,

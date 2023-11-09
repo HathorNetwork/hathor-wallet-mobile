@@ -62,7 +62,7 @@ msgstr "[Последний] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:145
+#: src/utils.js:146
 msgid "Invalid address"
 msgstr "Неправильный адрес"
 
@@ -229,7 +229,7 @@ msgstr "У вас ${ amountAvailableText } HTR"
 
 #: src/screens/CreateTokenAmount.js:148 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:220
-#: src/screens/InitWallet.js:341 src/screens/SendAddressInput.js:65
+#: src/screens/InitWallet.js:341 src/screens/SendAddressInput.js:67
 #: src/screens/SendAmountInput.js:179
 msgid "Next"
 msgstr "Далее"
@@ -436,6 +436,7 @@ msgid "**${ _this.props.loadedData.transactions } transactions** found"
 msgstr "**${ _this.props.loadedData.transactions } транзакций** найдено"
 
 #: src/screens/LoadHistoryScreen.js:73
+#, javascript-format
 msgid "**${ _this.props.loadedData.addresses } addresses** found"
 msgstr "**${ _this.props.loadedData.addresses } адресов** найдено"
 
@@ -447,7 +448,7 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
-#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:270
+#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:268
 #: src/screens/Settings.js:151
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
@@ -514,19 +515,19 @@ msgstr "Получено"
 msgid "Waiting confirmation"
 msgstr "Ожидание подтверждения"
 
-#: src/screens/PinScreen.js:255
+#: src/screens/PinScreen.js:253
 msgid "Incorrect PIN Code. Try again."
 msgstr "Неверный PIN-код. Попробуйте еще раз."
 
-#: src/screens/PinScreen.js:68
+#: src/screens/PinScreen.js:67
 msgid "Enter your PIN Code "
 msgstr "Введите свой PIN-код "
 
-#: src/screens/PinScreen.js:69
+#: src/screens/PinScreen.js:68
 msgid "Unlock Hathor Wallet"
 msgstr "Разблокировать Hathor Wallet"
 
-#: src/screens/PinScreen.js:267
+#: src/screens/PinScreen.js:265
 #: src/screens/WalletConnect/WalletConnectList.js:125
 msgid "Cancel"
 msgstr "Отмена"
@@ -649,11 +650,11 @@ msgstr "Изменить PIN-код"
 msgid "Lock wallet"
 msgstr "Заблокировать кошелек"
 
-#: src/screens/SendAddressInput.js:52 src/screens/SendScanQRCode.js:79
+#: src/screens/SendAddressInput.js:54 src/screens/SendScanQRCode.js:79
 msgid "SEND"
 msgstr "ОТПРАВИТЬ"
 
-#: src/screens/SendAddressInput.js:58
+#: src/screens/SendAddressInput.js:60
 msgid "Address to send"
 msgstr "Адрес отправки"
 
@@ -678,7 +679,6 @@ msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
-#: src/sagas/helpers.js:125 src/screens/SendConfirmScreen.js:104
 #: src/sagas/helpers.js:132 src/screens/SendConfirmScreen.js:104
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
@@ -688,7 +688,6 @@ msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
 #: src/screens/SendConfirmScreen.js:142
-#, javascript-format
 msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr "Ваш перевод **${ this.amountAndToken }** был подтвержден"
 
@@ -696,7 +695,7 @@ msgstr "Ваш перевод **${ this.amountAndToken }** был подтвер
 msgid "Address"
 msgstr "Адрес"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:241
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:242
 #: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr "Отправить"
@@ -836,62 +835,62 @@ msgstr ""
 msgid "Manual"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:16
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:17
 msgid "Custom Network Settings"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:17
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:18
 msgid ""
 "Any token outside mainnet network bear no value. Only change if you know "
 "what you are doing."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:18
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:19
 #: src/screens/NetworkSettings/helper.js:4
 msgid "Updating custom network settings..."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:19
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
 #: src/screens/NetworkSettings/helper.js:5
 msgid "Network settings successfully customized."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:21
 #: src/screens/NetworkSettings/helper.js:6
 msgid ""
 "There was an error while customizing network settings. Please try again "
 "later."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:39
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:40
 msgid "nodeUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:43
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:44
 msgid "explorerUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:47
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:48
 msgid "explorerServiceUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:194
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:195
 msgid "Node URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:203
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:204
 msgid "Explorer URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:212
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:213
 msgid "Explorer Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:221
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:222
 msgid "Wallet Service URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:230
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:231
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
@@ -914,33 +913,33 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
-#: src/sagas/networkSettings.js:81
+#: src/sagas/networkSettings.js:85
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:88
+#: src/sagas/networkSettings.js:92
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:95
+#: src/sagas/networkSettings.js:99
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:102
+#: src/sagas/networkSettings.js:106
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:109
+#: src/sagas/networkSettings.js:113
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:116
+#: src/sagas/networkSettings.js:120
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
 #.  If we fall into this situation, the app should be killed
 #.  for the custom new network settings take effect.
-#: src/sagas/networkSettings.js:257
+#: src/sagas/networkSettings.js:261
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 

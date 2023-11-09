@@ -15,7 +15,7 @@ import {
   networkSettingsUpdateReady
 } from '../actions';
 import {
-  NETWORK,
+  NETWORK_MAINNET,
   networkSettingsKeyMap,
   NETWORKSETTINGS_STATUS,
   NETWORK_TESTNET,
@@ -183,7 +183,7 @@ export function* updateNetworkSettings(action) {
   let stage;
   if (network === NETWORK_TESTNET) {
     stage = STAGE_TESTNET;
-  } else if (network === NETWORK) {
+  } else if (network === NETWORK_MAINNET) {
     stage = STAGE;
   } else {
     stage = STAGE_DEV_PRIVNET;
