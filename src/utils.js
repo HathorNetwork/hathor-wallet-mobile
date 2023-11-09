@@ -130,7 +130,7 @@ export const str2jsx = (text, fnMap) => {
    * Validates an address
    *
    * @param {string} address Address in base58
-   * @param {Object} instance of Network object from the wallet-lib
+   * @param {Object} network Instance of Network object from the wallet-lib
    *
    * @return {Object} boolean indicating if address is valid and possibly an error message
    */
