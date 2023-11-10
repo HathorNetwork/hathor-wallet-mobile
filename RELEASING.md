@@ -35,9 +35,9 @@ In the `ios/HathorMobile.xcodeproj/project.pbxproj`:
 ### Automated script
 To execute these steps automatically, run the makefile command:
 ```sh
-make bump updateType=patch
+make bump updateType=<updateType>
 ```
-Where `updateType` can be `major`, `minor`, `patch`, `rc` or `release`. Using `rc` will increment the release candidate count, while using `release` will reset it.
+Where `<updateType>` can be `major`, `minor`, `patch`, `rc` or `release`. Using `rc` will increment the release candidate count, while using `release` will reset it.
 
 Create a git tag and a new release on GitHub.
 
