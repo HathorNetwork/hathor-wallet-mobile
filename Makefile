@@ -61,3 +61,8 @@ _touch_pot:
 		msgcmp --use-untranslated $@ $<; \
 	fi
 	touch $@
+
+# Usage: make bump updateType=patch
+.PHONY: bump
+bump:
+	node scripts/bump-version.js $(updateType)
