@@ -18,13 +18,23 @@ function updateAndroidBuildVersion() {
   const currentVersionCode = parseInt(versionCodeMatch[1], 10);
   const updatedVersionCode = currentVersionCode + 1;
 
-  // Replace the version code on the file
+  // Replace the version code on the file contents
   const updatedGradleFile = gradleFile.replace(versionCodeRegex, `versionCode ${updatedVersionCode}`);
 
-  // Write the new file in disk on "testResults.txt"
+  // Replace the file on disk
   fs.writeFileSync(gradlePath, updatedGradleFile);
 }
 
+/**
+ * @typedef {'major'|'minor'|'patch'|'rc'|'release'} UpdateType
+ */
+
+/**
+ * Calculates the next version number based on the current version and the update type
+ * @param {UpdateType} _updateType
+ * @param {string} currentVersionString
+ * @returns {{rcVersion: number, updatedVersionString: string, mainVersionString: string}}
+ */
 function calculateNewVersion(_updateType, currentVersionString) {
   const versionNameRegex = /(\d+)\.(\d+)\.(\d+)(-rc)?(\d+)?/;
   const versionNameMatch = currentVersionString.match(versionNameRegex);
@@ -73,30 +83,41 @@ function calculateNewVersion(_updateType, currentVersionString) {
   }
 }
 
-function updateVersionPackageJson(_updateType) {
+/**
+ * Updates the version number on package.json and returns an object containing the updated values
+ * to be used on other file updates
+ * @param {UpdateType} _updateType
+ * @returns {{rcVersion: number, updatedVersionString: string, mainVersionString: string}}
+ */
+function updatePackageJson(_updateType) {
   const packageJsonPath = path.join(__dirname, '..', 'package.json');
   const packageJsonFile = fs.readFileSync(packageJsonPath, 'utf8');
 
-  // Look for the line containing "version", containing a "rc" tag or not
+  // Look for the line containing "version"
   const versionNameRegex = /"version": "(.+)"/;
   const versionNameMatch = packageJsonFile.match(versionNameRegex);
   const currentVersionString = versionNameMatch[1];
   const updatedVersionObj = calculateNewVersion(_updateType, currentVersionString);
 
-  // Replace the version code on the file
+  // Replace the version code on the file contents
   const updatedPackageJsonFile = packageJsonFile.replace(versionNameRegex, `"version": "${updatedVersionObj.updatedVersionString}"`);
 
-  // Write the new file in disk on "testResults.txt"
+  // Replace the file on disk
   fs.writeFileSync(packageJsonPath, updatedPackageJsonFile);
 
+  // Return the updated version numbers in an object
   return updatedVersionObj;
 }
 
-function updateVersionPackageLockJson(updatedVersionString) {
+function updatePackageLockJson(updatedVersionString) {
   const packageLockJsonPath = path.join(__dirname, '..', 'package-lock.json');
   const packageLockJsonFile = fs.readFileSync(packageLockJsonPath, 'utf8');
 
-  // Iterate over each line of this file
+  /*
+   * This file contains versions for many different dependencies, so a simple regex approach won't
+   * work. We'll have to parse the file line by line, identify the code blocks related to the
+   * mobile app and update only their version numbers.
+   */
   const lines = packageLockJsonFile.split('\n');
   let nextVersionLine = -1;
   let updatedLinesCount = 0;
@@ -112,14 +133,14 @@ function updateVersionPackageLockJson(updatedVersionString) {
       continue;
     }
     if (i === nextVersionLine) {
-      // Replace the release candidate version on this line
+      // Replace the app version on this line
       const versionNameRegex = /"version": ".+"/;
       lines[i] = line.replace(versionNameRegex, `"version": "${updatedVersionString}"`);
       updatedLinesCount += 1;
     }
   }
 
-  // Update the file
+  // Update the file contents
   fs.writeFileSync(packageLockJsonPath, lines.join('\n'));
 }
 
@@ -133,35 +154,35 @@ function updateVersionAndroid(updatedVersionString) {
   // Replace the version code on the file
   const updatedGradleFile = gradleFile.replace(versionNameRegex, `versionName "${updatedVersionString}"`);
 
-  // Write the new file in disk on "testResults.txt"
+  // Update the file contents
   fs.writeFileSync(gradlePath, updatedGradleFile);
 }
 
-function updateReleaseCandidateIos(updatedVersionString, rcVersion) {
+function updateVersionIos(updatedVersionString, rcVersion) {
   const projPath = path.join(__dirname, '..', 'ios', 'HathorMobile.xcodeproj', 'project.pbxproj');
   const projFile = fs.readFileSync(projPath, 'utf8');
 
   let updatedProjFile;
-  // Look for the line containing "MARKETING_VERSION = X.X.X"
+  // For the common version, look for the lines containing "MARKETING_VERSION = X.X.X"
   const versionCodeRegex = /MARKETING_VERSION = (.+)/g;
-  // Update the X value
+  // Update the version
   updatedProjFile = projFile.replace(
     versionCodeRegex,
     `MARKETING_VERSION = ${updatedVersionString};`
   );
 
   if (rcVersion) {
-    // Look for the multiple lines containing "CURRENT_PROJECT_VERSION = 0.X.0"
+    // For the rc version, look for the lines containing "CURRENT_PROJECT_VERSION = X.X.0"
     const rcCodeRegex = /CURRENT_PROJECT_VERSION = \d+.(\d+).0/g;
-    // Update the X value
+    // Update the version
     updatedProjFile = updatedProjFile.replace(
       rcCodeRegex,
       `CURRENT_PROJECT_VERSION = 0.${rcVersion}.0`
     );
   } else {
-    // Look for the multiple lines containing "CURRENT_PROJECT_VERSION = 0.X.0"
+    // To reset the rc version, look for the lines containing "CURRENT_PROJECT_VERSION = X.X.0"
     const rcCodeRegex = /CURRENT_PROJECT_VERSION = 0.(\d+).0/g;
-    // Update the X value
+    // Reset the rc version number
     updatedProjFile = updatedProjFile.replace(
       rcCodeRegex,
       `CURRENT_PROJECT_VERSION = 1.0.0`
@@ -187,8 +208,8 @@ const {
   updatedVersionString,
   mainVersionString,
   rcVersion
-} = updateVersionPackageJson(updateType);
-updateVersionPackageLockJson(updatedVersionString);
+} = updatePackageJson(updateType);
+updatePackageLockJson(updatedVersionString);
 updateAndroidBuildVersion();
 updateVersionAndroid(updatedVersionString);
-updateReleaseCandidateIos(mainVersionString, rcVersion);
+updateVersionIos(mainVersionString, rcVersion);
