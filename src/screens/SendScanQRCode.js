@@ -22,7 +22,15 @@ const mapStateToProps = (state) => ({
 });
 
 class SendScanQRCode extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      isWaitingForUserInput: false,
+    }
+  }
+
   showAlertError = (message) => {
+    this.setState({ isWaitingForUserInput: true });
     Alert.alert(
       t`Invalid QR code`,
       message,
@@ -31,6 +39,7 @@ class SendScanQRCode extends React.Component {
           onPress: () => {
             // To avoid being stuck on an invalid QR code loop, navigate back.
             this.props.navigation.goBack();
+            this.setState({ isWaitingForUserInput: false });
           } },
       ],
       { cancelable: false },
@@ -38,6 +47,11 @@ class SendScanQRCode extends React.Component {
   }
 
   onSuccess = async (e) => {
+    if (this.state.isWaitingForUserInput) {
+      // Avoid multiple calls to this function while waiting for user input
+      return;
+    }
+
     const qrcode = parseQRCode(e.data);
     if (!qrcode.isValid) {
       this.showAlertError(qrcode.error);
