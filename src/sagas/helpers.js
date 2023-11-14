@@ -153,7 +153,7 @@ export function isUnlockScreen(action) {
  * Get registered tokens from the wallet instance.
  * @param {HathorWallet} wallet
  * @param {boolean} excludeHTR If we should exclude the HTR token.
- * @returns {string[]}
+ * @returns {Promise<{ uid: string, symbol: string, name: string }[]>}
  */
 export async function getRegisteredTokens(wallet, excludeHTR = false) {
   const htrUid = hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
@@ -183,6 +183,17 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
   }
 
   return tokens;
+}
+
+/**
+ * Check if a token is registered in the context of the saga functions.
+ * @param {HathorWallet} wallet
+ * @param {string} tokenUid
+ * @returns {Promise<boolean>}
+ */
+export async function isTokenRegistered(wallet, tokenUid) {
+  const tokens = await getRegisteredTokens(wallet);
+  return tokens.some((token) => token.uid === tokenUid);
 }
 
 export async function getFullnodeNetwork() {

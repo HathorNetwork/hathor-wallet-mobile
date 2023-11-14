@@ -46,7 +46,7 @@ import {
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
 import { STORE } from '../store';
-import { getNetworkSettings, isUnlockScreen, showPinScreenForResult } from './helpers';
+import { getNetworkSettings, isUnlockScreen, showPinScreenForResult, isTokenRegistered } from './helpers';
 import { messageHandler } from '../workers/pushNotificationHandler';
 import { WALLET_STATUS } from './wallet';
 
@@ -544,7 +544,7 @@ export const getTxDetails = async (wallet, txId) => {
       name: each.tokenName,
       symbol: each.tokenSymbol,
       balance: each.balance,
-      isRegistered: await wallet.storage.isTokenRegistered(each.tokenId),
+      isRegistered: await isTokenRegistered(each.tokenId),
     }))),
   });
 
