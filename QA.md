@@ -83,6 +83,13 @@
     1. Generate a payment request of 2 TEST.
     1. Pay the Payment Request using your test wallet that has just received the TEST before and check the confirmation message.
 
+1. **Send HTR with QR Code**
+    1. Go to the Receive Screen and click on Payment Request.
+    1. Generate a payment request of 1 HTR
+    1. Take a screenshot of the QR Code and open that screenshot in another device
+    1. Use the Mobile Wallet QR code scanner to read this screenshot
+    1. Pay the Payment Request using the same wallet used to generate it
+
 1. **Register a token Tests**
     1. Go to the Dashboard Screen.
     1. Select the Test Token.
