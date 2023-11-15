@@ -213,3 +213,74 @@ export const WALLET_SERVICE_REQUEST_TIMEOUT = 3000;
  * Timeout in miliseconds to call a general http request.
  */
 export const HTTP_REQUEST_TIMEOUT = 3000;
+
+/**
+ * Id of Swap Blueprint for Nano Contract.
+ * One can get this value from a hathor-core config file,
+ * at BLUEPRINTS section.
+ */
+export const NC_BLUEPRINT_SWAP_ID = '494d0ac59a6918b771b122395206fef3f349f84f20dc430188a319d4ead24a3b';
+
+/**
+ * Swap Blueprint version info.
+ */
+export const NC_BLUEPRINT_SWAP_DETAILS_TESTNET = {
+  id: "494d0ac59a6918b771b122395206fef3f349f84f20dc430188a319d4ead24a3b",
+  name: "SwapDemo",
+  attributes: {
+    token_a: "bytes",
+    multiplier_a: "int",
+    token_b: "bytes",
+    multiplier_b: "int",
+    swaps_counter: "int"
+  },
+  public_methods: {
+    initialize: {
+      args: [
+        {
+          name: "token_a",
+          type: "bytes"
+        },
+        {
+          name: "token_b",
+          type: "bytes"
+        },
+        {
+          name: "multiplier_a",
+          type: "int"
+        },
+        {
+          name: "multiplier_b",
+          type: "int"
+        }
+      ],
+      return_type: "null"
+    },
+    swap: {
+      args: [],
+      return_type: "null"
+    }
+  },
+  private_methods: {
+    is_ratio_valid: {
+      args: [
+        {
+          name: "qty_a",
+          type: "int"
+        },
+        {
+          name: "qty_b",
+          type: "int"
+        }
+      ],
+      return_type: "bool"
+    }
+  }
+};
+
+/**
+ * Map Blueprint ID to its detailed version info.
+ */
+export const NC_BLUEPRINTS_MAP = {
+ [NC_BLUEPRINT_SWAP_ID]: NC_BLUEPRINT_SWAP_DETAILS_TESTNET,
+};
