@@ -86,6 +86,8 @@ import WalletConnectModal from './components/WalletConnect/WalletConnectModal';
 import { COLORS, HathorTheme } from './styles/themes';
 import { NetworkSettingsFlowNav, NetworkSettingsFlowStack } from './screens/NetworkSettings';
 import { NetworkStatusBar } from './components/NetworkSettings/NetworkStatusBar';
+import { NanoContractSelector } from './screens/NanoContract/NanoContractSelector';
+import { NanoContractBlueprint, NanoContractBlueprintNav } from './screens/NanoContract/NanoContractBlueprint';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -286,6 +288,7 @@ const tabBarIconMap = {
   Home: 'icDashboard',
   Send: 'icSend',
   Receive: 'icReceive',
+  NanoContract: 'icDashboard',
   Settings: 'icSettings',
 };
 
@@ -325,6 +328,7 @@ const TabNavigator = () => {
       />
       <Tab.Screen name='Send' component={SendStack} />
       <Tab.Screen name='Receive' component={ReceiveScreen} />
+      <Tab.Screen name='NanoContract' component={NanoContractSelector} />
       <Tab.Screen name='Settings' component={Settings} />
     </Tab.Navigator>
   );
@@ -392,6 +396,7 @@ const AppStack = () => {
         <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
         <Stack.Screen name='ChangeToken' component={ChangeToken} />
         <Stack.Screen name={NetworkSettingsFlowNav} component={NetworkSettingsFlowStack} />
+        <Stack.Screen name={NanoContractBlueprintNav} component={NanoContractBlueprint} />
         <Stack.Screen
           name='PinScreen'
           component={PinScreen}
