@@ -19,6 +19,7 @@ import { COLORS } from '../styles/themes';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
+  tokens: state.tokens,
 });
 
 class SendScanQRCode extends React.Component {
@@ -42,7 +43,10 @@ class SendScanQRCode extends React.Component {
     if (!qrcode.isValid) {
       this.showAlertError(qrcode.error);
     } else if (qrcode.token && qrcode.amount) {
-      if (await this.props.wallet.storage.isTokenRegistered(qrcode.token.uid)) {
+      const isTokenRegistered = this.props.tokens.some(
+        (stateToken) => stateToken.uid === qrcode.token.uid
+      );
+      if (isTokenRegistered) {
         const params = {
           address: qrcode.address,
           token: qrcode.token,
