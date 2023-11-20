@@ -3,6 +3,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import HathorHeader from '../../components/HathorHeader';
 import { NC_BLUEPRINTS_MAP } from '../../constants';
 import NewHathorButton from '../../components/NewHathorButton';
+import { NanoContractSwapInitializeNav } from './NanoContractInitialize';
 
 const styles = StyleSheet.create({
   container: {
@@ -84,7 +85,7 @@ export const NanoContractBlueprint = () => {
         </View>
         <View style={styles.buttonContainer}>
           <NewHathorButton
-            onPress={() => {}}
+            onPress={() => navigation.push(NanoContractSwapInitializeNav, { title: blueprintName, blueprintId })}
             title={'Init'}
           />
         </View>

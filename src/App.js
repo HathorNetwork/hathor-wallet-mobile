@@ -88,6 +88,7 @@ import { NetworkSettingsFlowNav, NetworkSettingsFlowStack } from './screens/Netw
 import { NetworkStatusBar } from './components/NetworkSettings/NetworkStatusBar';
 import { NanoContractSelector } from './screens/NanoContract/NanoContractSelector';
 import { NanoContractBlueprint, NanoContractBlueprintNav } from './screens/NanoContract/NanoContractBlueprint';
+import { NanoContractSwapInitialize, NanoContractSwapInitializeNav } from './screens/NanoContract/NanoContractInitialize';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -397,6 +398,7 @@ const AppStack = () => {
         <Stack.Screen name='ChangeToken' component={ChangeToken} />
         <Stack.Screen name={NetworkSettingsFlowNav} component={NetworkSettingsFlowStack} />
         <Stack.Screen name={NanoContractBlueprintNav} component={NanoContractBlueprint} />
+        <Stack.Screen name={NanoContractSwapInitializeNav} component={NanoContractSwapInitialize} />
         <Stack.Screen
           name='PinScreen'
           component={PinScreen}
