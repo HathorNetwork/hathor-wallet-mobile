@@ -48,6 +48,10 @@ function validate(formModel) {
     invalidModel.explorerServiceUrl = t`explorerServiceUrl is required.`;
   }
 
+  if (!formModel.txMiningServiceUrl) {
+    invalidModel.txMiningServiceUrl = t`txMiningServiceUrl is required.`;
+  }
+
   return invalidModel;
 }
 
@@ -99,6 +103,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     explorerServiceUrl: networkSettings.explorerServiceUrl,
     walletServiceUrl: networkSettings.walletServiceUrl || '',
     walletServiceWsUrl: networkSettings.walletServiceWsUrl || '',
+    txMiningServiceUrl: networkSettings.txMiningServiceUrl || '',
   });
 
   const [invalidModel, setInvalidModel] = useState({
@@ -107,6 +112,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     explorerServiceUrl: networkSettingsInvalid?.explorerServiceUrl || '',
     walletServiceUrl: networkSettingsInvalid?.walletServiceUrl || '',
     walletServiceWsUrl: networkSettingsInvalid?.walletServiceWsUrl || '',
+    txMiningServiceUrl: networkSettingsInvalid.txMiningServiceUrl || '',
   });
 
   // eslint-disable-next-line max-len
@@ -149,6 +155,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
       explorerServiceUrl: networkSettingsInvalid?.explorerServiceUrl || '',
       walletServiceUrl: networkSettingsInvalid?.walletServiceUrl || '',
       walletServiceWsUrl: networkSettingsInvalid?.walletServiceWsUrl || '',
+      txMiningServiceUrl: networkSettingsInvalid?.txMiningServiceUrl || '',
     });
   }, [networkSettingsInvalid]);
 
@@ -215,6 +222,15 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           onChangeText={handleInputChange('explorerServiceUrl')}
           error={invalidModel.explorerServiceUrl}
           value={formModel.explorerServiceUrl}
+        />
+
+        <SimpleInput
+          containerStyle={styles.input}
+          label={t`Tx Mining Service URL`}
+          autoFocus
+          onChangeText={handleInputChange('txMiningServiceUrl')}
+          error={invalidModel.txMiningServiceUrl}
+          value={formModel.txMiningServiceUrl}
         />
 
         <SimpleInput

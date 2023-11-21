@@ -868,6 +868,7 @@ export const setWCConnectionFailed = (failed) => ({
  *   nodeUrl: string,
  *   explorerUrl: string,
  *   explorerServiceUrl: string,
+ *   txMiningServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string
  * }} customNetworkRequest Request input
@@ -884,6 +885,7 @@ export const networkSettingsUpdateRequest = (customNetworkRequest) => ({
  *   network: string,
  *   nodeUrl: string,
  *   explorerUrl: string,
+ *   txMiningServiceUrl: string,
  *   explorerServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string
@@ -901,6 +903,7 @@ export const networkSettingsUpdateState = (customNetwork) => ({
  *   network: string,
  *   nodeUrl: string,
  *   explorerUrl: string,
+ *   txMiningServiceUrl: string,
  *   explorerServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string
@@ -945,6 +948,7 @@ export const networkSettingsUpdateFailure = () => ({
  *   message: string,
  *   nodeUrl: string,
  *   explorerUrl: string,
+ *   txMiningServiceUrl: string,
  *   explorerServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string

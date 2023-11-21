@@ -74,6 +74,7 @@ export function* updateNetworkSettings(action) {
     nodeUrl,
     explorerUrl,
     explorerServiceUrl,
+    txMiningServiceUrl,
     walletServiceUrl,
     walletServiceWsUrl,
   } = action.payload || {};
@@ -97,6 +98,13 @@ export function* updateNetworkSettings(action) {
   // - should have a valid URL
   if (isEmpty(explorerServiceUrl) || invalidUrl(explorerServiceUrl)) {
     invalidPayload.explorerServiceUrl = t`explorerServiceUrl should be a valid URL.`;
+  }
+
+  // validates txMiningServiceUrl
+  // - required
+  // - should have a valid URL
+  if (isEmpty(txMiningServiceUrl) || invalidUrl(txMiningServiceUrl)) {
+    invalidPayload.txMiningServiceUrl = t`txMiningServiceUrl should be a valid URL.`;
   }
 
   // validates nodeUrl
@@ -134,10 +142,12 @@ export function* updateNetworkSettings(action) {
     explorerServiceUrl: networkSettings.explorerServiceUrl,
     walletServiceUrl: networkSettings.walletServiceUrl,
     walletServiceWsUrl: networkSettings.walletServiceWsUrl,
+    txMiningServiceUrl: networkSettings.txMiningServiceUrl,
   };
 
   config.setExplorerServiceBaseUrl(explorerServiceUrl);
   config.setServerUrl(nodeUrl);
+  config.setTxMiningUrl(txMiningServiceUrl);
 
   // - walletServiceUrl has precedence
   // - nodeUrl as fallback
@@ -207,6 +217,7 @@ export function* updateNetworkSettings(action) {
  * @param {{
  *   nodeUrl: string;
  *   explorerServiceUrl: string;
+ *   txMiningServiceUrl: string;
  *   walletServiceUrl: string;
  *   walletServiceWsUrl: string;
  * }} backupUrl An object containing the previous configuration for wallet URLs.
@@ -214,6 +225,7 @@ export function* updateNetworkSettings(action) {
 function rollbackConfigUrls(backupUrl) {
   config.setServerUrl(backupUrl.nodeUrl);
   config.setExplorerServiceBaseUrl(backupUrl.explorerServiceUrl);
+  config.setTxMiningUrl(backupUrl.txMiningServiceUrl);
   config.setWalletServiceBaseUrl(backupUrl.walletServiceUrl);
   config.setWalletServiceBaseWsUrl(backupUrl.walletServiceWsUrl);
 }
