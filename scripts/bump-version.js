@@ -116,28 +116,31 @@ function updatePackageLockJson(updatedVersionString) {
   /*
    * This file contains versions for many different dependencies, so a simple regex approach won't
    * work. We'll have to parse the file line by line, identify the code blocks related to the
-   * mobile app and update only their version numbers.
+   * mobile app and map only their version numbers.
    */
   const lines = packageLockJsonFile.split('\n');
-  let nextVersionLine = -1;
-  let updatedLinesCount = 0;
+  const linesToUpdate = [];
   for (let i = 0; i < lines.length; i += 1) {
-    if (updatedLinesCount === 2) {
-      break; // No need to continue: all the needed versions were already updated
+    if (linesToUpdate.length === 2) {
+      break; // No need to continue: all the needed versions were already mapped
     }
 
     const line = lines[i];
     if (line.includes('"name": "HathorMobile"')) {
-      // Found a block related to this app, will update its version number
-      nextVersionLine = i + 1;
-      continue;
+      // Found a block related to this app, will map its "version" line
+      // The version number is always on the next line.
+      linesToUpdate.push(i + 1)
     }
-    if (i === nextVersionLine) {
-      // Replace the app version on this line
-      const versionNameRegex = /"version": ".+"/;
-      lines[i] = line.replace(versionNameRegex, `"version": "${updatedVersionString}"`);
-      updatedLinesCount += 1;
-    }
+  }
+
+  // Updates all mapped lines
+  for (const indexToUpdate of linesToUpdate) {
+    // Replace the app version on this line
+    const versionNameRegex = /"version": ".+"/;
+    lines[indexToUpdate] = lines[indexToUpdate].replace(
+      versionNameRegex,
+      `"version": "${updatedVersionString}"`
+    );
   }
 
   // Update the file contents
