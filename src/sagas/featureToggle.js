@@ -28,6 +28,7 @@ import {
   setUnleashClient,
   setFeatureToggles,
   featureToggleInitialized,
+  types,
 } from '../actions';
 import {
   UNLEASH_URL,
@@ -36,6 +37,7 @@ import {
   STAGE,
   FEATURE_TOGGLE_DEFAULTS,
 } from '../constants';
+import { disableFeaturesIfNeeded } from './helpers';
 
 const CONNECT_TIMEOUT = 10000;
 const MAX_RETRIES = 5;
@@ -68,6 +70,8 @@ export function* fetchTogglesRoutine() {
     const unleashClient = yield select((state) => state.unleashClient);
 
     try {
+      // This call always make unleash to emit the event 'UPDATE',
+      // which by its turn triggers the action 'FEATURE_TOGGLE_UPDATE'
       yield call(() => unleashClient.fetchToggles());
     } catch (e) {
       // No need to do anything here as it will try again automatically in
@@ -85,7 +89,6 @@ export function* monitorFeatureFlags(currentRetry = 0) {
     disableRefresh: true, // Disable it, we will handle it ourselves
     appName: `wallet-mobile-${Platform.OS}`,
   });
-
   const options = {
     userId: getUniqueId(),
     properties: {
@@ -107,8 +110,8 @@ export function* monitorFeatureFlags(currentRetry = 0) {
     unleashClient.start();
 
     const { error, timeout } = yield race({
-      error: take('FEATURE_TOGGLE_ERROR'),
-      success: take('FEATURE_TOGGLE_READY'),
+      error: take(types.FEATURE_TOGGLE_ERROR),
+      success: take(types.FEATURE_TOGGLE_READY),
       timeout: delay(CONNECT_TIMEOUT),
     });
 
@@ -144,9 +147,9 @@ export function* monitorFeatureFlags(currentRetry = 0) {
 
 export function* setupUnleashListeners(unleashClient) {
   const channel = eventChannel((emitter) => {
-    const l1 = () => emitter({ type: 'FEATURE_TOGGLE_UPDATE' });
-    const l2 = () => emitter({ type: 'FEATURE_TOGGLE_READY' });
-    const l3 = (err) => emitter({ type: 'FEATURE_TOGGLE_ERROR', data: err });
+    const l1 = () => emitter({ type: types.FEATURE_TOGGLE_UPDATE });
+    const l2 = () => emitter({ type: types.FEATURE_TOGGLE_READY });
+    const l3 = (err) => emitter({ type: types.FEATURE_TOGGLE_ERROR, data: err });
 
     unleashClient.on(UnleashEvents.UPDATE, l1);
     unleashClient.on(UnleashEvents.READY, l2);
@@ -192,21 +195,22 @@ function mapFeatureToggles(toggles) {
 export function* handleToggleUpdate() {
   const unleashClient = yield select((state) => state.unleashClient);
   const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
+  const networkSettings = yield select((state) => state.networkSettings);
 
   if (!unleashClient || !featureTogglesInitialized) {
     return;
   }
 
   const { toggles } = unleashClient;
-  const featureToggles = mapFeatureToggles(toggles);
+  const featureToggles = disableFeaturesIfNeeded(networkSettings, mapFeatureToggles(toggles));
 
   yield put(setFeatureToggles(featureToggles));
-  yield put({ type: 'FEATURE_TOGGLE_UPDATED' });
+  yield put({ type: types.FEATURE_TOGGLE_UPDATED });
 }
 
 export function* saga() {
   yield all([
     fork(monitorFeatureFlags),
-    takeEvery('FEATURE_TOGGLE_UPDATE', handleToggleUpdate),
+    takeEvery(types.FEATURE_TOGGLE_UPDATE, handleToggleUpdate),
   ]);
 }

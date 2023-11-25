@@ -18,6 +18,7 @@ import hathorLib from '@hathor/wallet-lib';
 import { getTokenLabel } from '../utils';
 import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
+import { COLORS } from '../styles/themes';
 
 const TokenDetails = (props) => {
   const tokenLabel = getTokenLabel(props.token);
@@ -52,14 +53,14 @@ const TokenDetails = (props) => {
       <View style={styles.configStringWrapper}>
         <CopyClipboard
           text={configString}
-          textStyle={{ fontSize: 14, color: 'rgba(0, 0, 0, 0.5)' }}
+          textStyle={{ fontSize: 14, color: COLORS.textColorShadow }}
         />
       </View>
       <View style={styles.buttonWrapper}>
         <SimpleButton
           title={t`Share`}
           onPress={shareClicked}
-          color='#000'
+          color={COLORS.textColor}
           containerStyle={styles.simpleButtonContainer}
         />
       </View>
@@ -81,13 +82,13 @@ TokenDetails.propTypes = {
 
 const styles = StyleSheet.create({
   contentWrapper: {
-    backgroundColor: 'white',
+    backgroundColor: COLORS.backgroundColor,
     alignItems: 'center',
     justifyContent: 'flex-start',
     borderRadius: 16,
     shadowOffset: { height: 2, width: 0 },
     shadowRadius: 4,
-    shadowColor: 'black',
+    shadowColor: COLORS.textColor,
     shadowOpacity: 0.08,
   },
   tokenWrapper: {
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderColor: COLORS.borderColor,
   },
   buttonWrapper: {
     borderRadius: 8,

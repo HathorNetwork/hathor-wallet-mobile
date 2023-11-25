@@ -11,6 +11,7 @@ import {
   StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import { COLORS } from '../styles/themes';
 
 const NewHathorButton = (props) => {
   const wrapperViewStyle = [style.wrapper];
@@ -64,19 +65,19 @@ const style = StyleSheet.create({
   wrapper: {
     height: 48,
     borderRadius: 8,
-    backgroundColor: '#000',
+    backgroundColor: COLORS.textColor,
     alignSelf: 'stretch',
   },
   wrapperDisabled: {
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    backgroundColor: COLORS.textColorShadowOpacity005,
   },
   wrapperSecondary: {
-    backgroundColor: '#fff',
-    borderColor: '#000',
+    backgroundColor: COLORS.backgroundColor,
+    borderColor: COLORS.textColor,
     borderWidth: 1.5,
   },
   wrapperSecondaryDisabled: {
-    borderColor: 'rgba(0, 0, 0, 0.5)',
+    borderColor: COLORS.textColorShadow,
   },
   touchable: {
     flex: 1,
@@ -88,17 +89,17 @@ const style = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
     textTransform: 'uppercase',
-    color: '#fff',
+    color: COLORS.backgroundColor,
     textAlign: 'center',
   },
   textSecondary: {
-    color: '#000',
+    color: COLORS.textColor,
   },
   textSecondaryDisabled: {
-    color: 'rgba(0, 0, 0, 0.5)',
+    color: COLORS.textColorShadow,
   },
   textDisabled: {
-    color: 'rgba(0,0,0,0.5)',
+    color: COLORS.textColorShadow,
   },
 });
 

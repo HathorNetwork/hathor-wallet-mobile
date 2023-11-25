@@ -8,7 +8,7 @@
 import CryptoJS from 'crypto-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MemoryStore, Storage, cryptoUtils, walletUtils } from '@hathor/wallet-lib';
-import { NETWORK } from './constants';
+import { NETWORK_MAINNET } from './constants';
 
 export const ACCESS_DATA_KEY = 'asyncstorage:access';
 export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
@@ -166,6 +166,10 @@ class AsyncStorageStore {
   async resetWallet() {
     // This should delete the access data and registered tokens, the only persisted data
     await AsyncStorage.multiRemove(walletKeys);
+    // Delete the same keys on the memory cache
+    for (const key of walletKeys) {
+      delete this.hathorMemoryStorage[key];
+    }
     // This will delete any wallet data of the legacy storage
     await this.clearItems(true);
   }
@@ -192,7 +196,12 @@ class AsyncStorageStore {
       {
         pin,
         password: pin,
-        networkName: NETWORK,
+        // NOTE:
+        // This NETWORK usage doesn't need to get the network
+        // from the networkSettings in the redux store,
+        // because this one is used in the context of wallet
+        // access data generation only.
+        networkName: NETWORK_MAINNET,
       },
     );
     const storage = this.getStorage();
@@ -361,7 +370,8 @@ class AsyncStorageStore {
    * @async
    */
   async handleMigrationOldRegisteredTokens() {
-    const oldTokens = this.getItem('wallet:tokens');
+    const oldTokens = this.getItem('wallet:tokens') ?? [];
+
     const newTokens = {};
     for (const token of oldTokens) {
       newTokens[token.uid] = token;

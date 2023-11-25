@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import InputLabel from './InputLabel';
+import { COLORS } from '../styles/themes';
 
 const SimpleInput = (props) => {
   const getInputField = () => (
@@ -70,7 +71,7 @@ const SimpleInput = (props) => {
 const styles = StyleSheet.create({
   inputContainer: {
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderColor: COLORS.borderColor,
     paddingBottom: 8,
   },
   input: {
@@ -79,7 +80,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   text: {
-    color: 'black',
+    color: COLORS.textColor,
     fontSize: 14,
   },
   label: {
@@ -88,11 +89,11 @@ const styles = StyleSheet.create({
   auxiliarText: {
     marginTop: 8,
     fontSize: 12,
-    color: 'rgba(0, 0, 0, 0.5)',
+    color: COLORS.textColorShadow,
   },
   error: {
-    // TODO define better color. Maybe also change underline color to red?
-    color: 'red',
+    // TODO Maybe also change underline color to red?
+    color: COLORS.errorTextColor,
   },
 });
 

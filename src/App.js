@@ -26,7 +26,7 @@ import {
 } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
-import { IS_MULTI_TOKEN, PRIMARY_COLOR, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
+import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
   lockScreen,
@@ -36,7 +36,7 @@ import {
   resetData,
   setTokens,
 } from './actions';
-import { store } from './reducer';
+import { store } from './reducers/reducer.init';
 import { GlobalErrorHandler } from './components/GlobalErrorModal';
 import {
   InitialScreen,
@@ -78,7 +78,14 @@ import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
+import WalletConnectList from './screens/WalletConnect/WalletConnectList';
+import WalletConnectManual from './screens/WalletConnect/WalletConnectManual';
+import WalletConnectScan from './screens/WalletConnect/WalletConnectScan';
 import baseStyle from './styles/init';
+import WalletConnectModal from './components/WalletConnect/WalletConnectModal';
+import { COLORS, HathorTheme } from './styles/themes';
+import { NetworkSettingsFlowNav, NetworkSettingsFlowStack } from './screens/NetworkSettings';
+import { NetworkStatusBar } from './components/NetworkSettings/NetworkStatusBar';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -298,7 +305,7 @@ const TabNavigator = () => {
         tabBarIcon: ({ focused }) => {
           const { name } = route;
           const iconName = tabBarIconMap[name];
-          const colorName = focused ? PRIMARY_COLOR : 'rgba(0, 0, 0, 0.5)';
+          const colorName = focused ? COLORS.primary : COLORS.textColorShadow;
           return (<IconTabBar name={iconName} size={24} color={colorName} />);
         },
         tabBarStyle: {
@@ -361,7 +368,6 @@ const AppStack = () => {
     >
       <Stack.Navigator
         screenOptions={{
-          presentation: 'modal',
           headerShown: false,
         }}
       >
@@ -372,6 +378,9 @@ const AppStack = () => {
         />
         <Stack.Screen name='About' component={About} />
         <Stack.Screen name='Security' component={Security} />
+        <Stack.Screen name='WalletConnectList' component={WalletConnectList} />
+        <Stack.Screen name='WalletConnectManual' component={WalletConnectManual} />
+        <Stack.Screen name='WalletConnectScan' component={WalletConnectScan} />
         <Stack.Screen name='PushNotification' component={PushNotification} />
         <Stack.Screen name='ChangePin' component={ChangePin} />
         <Stack.Screen
@@ -382,6 +391,7 @@ const AppStack = () => {
         <Stack.Screen name='PaymentRequestDetail' component={PaymentRequestDetail} />
         <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
         <Stack.Screen name='ChangeToken' component={ChangeToken} />
+        <Stack.Screen name={NetworkSettingsFlowNav} component={NetworkSettingsFlowStack} />
         <Stack.Screen
           name='PinScreen'
           component={PinScreen}
@@ -713,13 +723,16 @@ const App = () => (
     <Provider store={store}>
       <SafeAreaView
         edges={['top', 'right', 'left']}
-        style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
+        style={{ flex: 1, backgroundColor: COLORS.backgroundColor }}
       >
         <NavigationContainer
+          theme={HathorTheme}
           ref={navigationRef}
         >
+          <NetworkStatusBar />
           <RootStack />
         </NavigationContainer>
+        <WalletConnectModal />
         <GlobalErrorHandler />
       </SafeAreaView>
     </Provider>

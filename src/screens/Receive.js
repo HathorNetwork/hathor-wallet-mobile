@@ -14,6 +14,7 @@ import HathorHeader from '../components/HathorHeader';
 import ReceiveMyAddress from '../components/ReceiveMyAddress';
 import NewPaymentRequest from '../components/NewPaymentRequest';
 import OfflineBar from '../components/OfflineBar';
+import { COLORS } from '../styles/themes';
 
 class ReceiveScreen extends React.Component {
   constructor(props) {
@@ -92,9 +93,9 @@ class ReceiveScreen extends React.Component {
     const renderTabBar = (props) => (
       <TabBar
         {...props}
-        indicatorStyle={{ backgroundColor: '#333' }}
-        style={{ backgroundColor: '#fff' }}
-        labelStyle={{ color: '#333' }}
+        indicatorStyle={{ backgroundColor: COLORS.tabBarBackground }}
+        style={{ backgroundColor: COLORS.backgroundColor }}
+        labelStyle={{ color: COLORS.tabBarBackground }}
         getLabelText={this.getLabelText}
       />
     );

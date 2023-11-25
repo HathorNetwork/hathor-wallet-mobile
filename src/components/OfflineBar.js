@@ -10,7 +10,7 @@ import { StyleSheet, View, Text } from 'react-native';
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
-import { ERROR_BG_COLOR } from '../constants';
+import { COLORS } from '../styles/themes';
 
 /**
  * isOnline {bool} Indicates whether the wallet is connected.
@@ -22,7 +22,7 @@ const mapStateToProps = (state) => ({
 class OfflineBar extends React.Component {
   style = StyleSheet.create({
     view: {
-      backgroundColor: ERROR_BG_COLOR,
+      backgroundColor: COLORS.errorBgColor,
       position: 'absolute',
       left: 0,
       padding: 5,
@@ -34,7 +34,7 @@ class OfflineBar extends React.Component {
     text: {
       fontSize: 14,
       fontWeight: 'bold',
-      color: 'white',
+      color: COLORS.backgroundColor,
     },
   });
 

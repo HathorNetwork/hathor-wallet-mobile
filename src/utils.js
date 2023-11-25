@@ -12,9 +12,10 @@ import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
-import { PRIMARY_COLOR, KEYCHAIN_USER, networkObj } from './constants';
+import { KEYCHAIN_USER } from './constants';
 import { STORE } from './store';
 import { TxHistory } from './models';
+import { COLORS, STYLE } from './styles/themes';
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
@@ -129,12 +130,13 @@ export const str2jsx = (text, fnMap) => {
    * Validates an address
    *
    * @param {string} address Address in base58
+   * @param {Object} network Instance of Network object from the wallet-lib
    *
    * @return {Object} boolean indicating if address is valid and possibly an error message
    */
-export const validateAddress = (address) => {
+export const validateAddress = (address, network) => {
   try {
-    const addressObj = new hathorLib.Address(address, { network: networkObj });
+    const addressObj = new hathorLib.Address(address, { network });
     addressObj.validateAddress();
     return { isValid: true };
   } catch (e) {
@@ -243,10 +245,12 @@ function extractAddress(plainText) {
  * @return {number} The top distance
  */
 export const getKeyboardAvoidingViewTopDistance = () => {
-  if (Platform.OS === 'android') {
-    return getStatusBarHeight();
-  }
-  return 0;
+  const statusBarHeight = getStatusBarHeight();
+  const calculatedHeight = (Platform.OS === 'ios')
+    ? statusBarHeight + STYLE.headerHeight
+    : statusBarHeight;
+
+  return calculatedHeight;
 };
 
 /**
@@ -256,7 +260,7 @@ export const getKeyboardAvoidingViewTopDistance = () => {
  */
 export const getLightBackground = (alpha) => {
   const hex = `0${Math.round(255 * alpha).toString(16).toUpperCase()}`.substr(-2);
-  return `${PRIMARY_COLOR}${hex}`;
+  return `${COLORS.primary}${hex}`;
 };
 
 /**
@@ -357,3 +361,16 @@ export const getPushNotificationSettings = (pushNotification) => {
     showAmountEnabled
   };
 };
+
+/**
+ * Creates a new URL by combining the specified URLs
+ *
+ * @param {string} baseURL The base URL
+ * @param {string} relativeURL The relative URL
+ * @returns {string} The combined URL
+ */
+export function combineURLs(baseURL, relativeURL) {
+  return relativeURL
+    ? `${baseURL.replace(/\/+$/, '')}/${relativeURL.replace(/^\/+/, '')}`
+    : baseURL;
+}

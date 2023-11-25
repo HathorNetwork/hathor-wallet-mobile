@@ -9,7 +9,6 @@
 import 'intl';
 import 'intl/locale-data/jsonp/en';
 
-import { Network } from '@hathor/wallet-lib';
 import {
   _IS_MULTI_TOKEN as IS_MULTI_TOKEN,
   _DEFAULT_TOKEN as DEFAULT_TOKEN,
@@ -26,15 +25,7 @@ export const STAGE = 'mainnet';
  * this is the network name that will be used to load the wallet on the wallet-service,
  * it is first hardcoded in the `startWallet` saga function, @see src\sagas\wallet.js.
  */
-export const NETWORK = 'mainnet';
-
-/**
- * This is the hathor-lib network instance for NETWORK_NAME.
- * This is meant to be easier to use with methods that expect a network object
- * instead of a network name.
- * @type {Network}
- */
-export const networkObj = new Network(NETWORK);
+export const NETWORK_MAINNET = 'mainnet';
 
 /**
  * Default tokens for the wallet (to start on redux)
@@ -70,25 +61,6 @@ export const PRIVACY_POLICY_URL = 'https://hathor.network/privacy-policy/';
  * Re-export variables from config.js.
  */
 export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR, SENTRY_DSN };
-
-/**
- * Background color for iOS devices
- */
-export const IOS_BG_COLOR = '#fff';
-/**
- * Background color for Android devices
- */
-export const ANDROID_BG_COLOR = '#fafafa';
-
-/**
- * A light background color used to create a discreet color change from a white background
- */
-export const LIGHT_BG_COLOR = '#f7f7f7';
-
-/**
- * A background color that indicates an error
- */
-export const ERROR_BG_COLOR = '#DE3535';
 
 /**
  * Minimum job estimation to show to the user in seconds when mining a tx
@@ -172,8 +144,72 @@ export const PUSH_ACTION = {
  */
 export const WALLET_SERVICE_FEATURE_TOGGLE = 'wallet-service-mobile.rollout';
 export const PUSH_NOTIFICATION_FEATURE_TOGGLE = 'push-notification.rollout';
+export const WALLET_CONNECT_FEATURE_TOGGLE = 'wallet-connect-mobile.rollout';
 
 export const FEATURE_TOGGLE_DEFAULTS = {
   [WALLET_SERVICE_FEATURE_TOGGLE]: false,
   [PUSH_NOTIFICATION_FEATURE_TOGGLE]: false,
+  [WALLET_CONNECT_FEATURE_TOGGLE]: false,
 };
+
+// Project id configured in https://walletconnect.com
+export const WALLET_CONNECT_PROJECT_ID = '8264fff563181da658ce64ee80e80458';
+
+export const STAGE_DEV_PRIVNET = 'dev-privnet';
+export const STAGE_TESTNET = 'testnet';
+export const NETWORK_TESTNET = 'testnet';
+export const WALLET_SERVICE_TESTNET_BASE_URL = 'https://dev.wallet-service.testnet.hathor.network/';
+export const WALLET_SERVICE_TESTNET_BASE_WS_URL = 'wss://ws.dev.wallet-service.testnet.hathor.network/';
+export const NODE_SERVER_TESTNET_URL = 'https://node1.testnet.hathor.network/v1a/';
+export const EXPLORER_TESTNET_URL = 'https://explorer.testnet.hathor.network/';
+export const EXPLORER_SERVICE_TESTNET_URL = 'https://explorer-service.testnet.hathor.network/';
+
+export const PRE_SETTINGS_TESTNET = {
+  stage: STAGE_TESTNET,
+  network: NETWORK_TESTNET,
+  walletServiceUrl: WALLET_SERVICE_TESTNET_BASE_URL,
+  walletServiceWsUrl: WALLET_SERVICE_TESTNET_BASE_WS_URL,
+  nodeUrl: NODE_SERVER_TESTNET_URL,
+  explorerUrl: EXPLORER_TESTNET_URL,
+  explorerServiceUrl: EXPLORER_SERVICE_TESTNET_URL,
+};
+
+export const NODE_SERVER_MAINNET_URL = 'https://mobile.wallet.hathor.network/v1a/';
+export const EXPLORER_MAINNET_URL = 'https://explorer.hathor.network/';
+export const EXPLORER_SERVICE_MAINNET_URL = 'https://explorer-service.hathor.network';
+
+export const PRE_SETTINGS_MAINNET = {
+  stage: STAGE,
+  network: NETWORK_MAINNET,
+  walletServiceUrl: WALLET_SERVICE_MAINNET_BASE_URL,
+  walletServiceWsUrl: WALLET_SERVICE_MAINNET_BASE_WS_URL,
+  nodeUrl: NODE_SERVER_MAINNET_URL,
+  explorerUrl: EXPLORER_MAINNET_URL,
+  explorerServiceUrl: EXPLORER_SERVICE_MAINNET_URL,
+};
+
+/**
+ * Network settings key collection to be used with the app
+ * storage.
+ */
+export const networkSettingsKeyMap = {
+  networkSettings: 'networkSettings:networkSettings'
+};
+
+export const NETWORKSETTINGS_STATUS = {
+  READY: 'ready',
+  FAILED: 'failed',
+  LOADING: 'loading',
+  WAITING: 'waiting',
+  SUCCESSFUL: 'successful',
+};
+
+/**
+ * Timeout in miliseconds to call wallet-service.
+ */
+export const WALLET_SERVICE_REQUEST_TIMEOUT = 3000;
+
+/**
+ * Timeout in miliseconds to call a general http request.
+ */
+export const HTTP_REQUEST_TIMEOUT = 3000;

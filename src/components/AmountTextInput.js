@@ -8,6 +8,7 @@
 import React from 'react';
 import { StyleSheet, TextInput } from 'react-native';
 import { getAmountParsed, getIntegerAmount } from '../utils';
+import { COLORS } from '../styles/themes';
 
 class AmountTextInput extends React.Component {
   constructor(props) {
@@ -17,7 +18,13 @@ class AmountTextInput extends React.Component {
   }
 
   focus = () => {
-    this.inputRef.current.focus();
+    /* After the focus method is called, the screen is still re-rendered at least once more.
+     * Requesting a delay before the focus command ensures it is executed on the final rendering
+     * of the component.
+     */
+    setTimeout(() => {
+      this.inputRef.current.focus();
+    }, 50);
   }
 
   onChangeText = (text) => {
@@ -58,6 +65,7 @@ class AmountTextInput extends React.Component {
         keyboardAppearance='dark'
         keyboardType='numeric'
         placeholder={placeholder}
+        placeholderTextColor={COLORS.midContrastDetail}
         {...props}
       />
     );
@@ -71,7 +79,7 @@ const style = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     paddingVertical: 0,
-    color: 'black',
+    color: COLORS.textColor,
   },
 });
 

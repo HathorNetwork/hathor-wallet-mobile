@@ -19,6 +19,7 @@ import InputLabel from '../components/InputLabel';
 import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
 import { getIntegerAmount, getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
+import { COLORS } from '../styles/themes';
 
 /**
  * balance {Object} object with token balance {'available', 'locked'}
@@ -102,7 +103,10 @@ class CreateTokenAmount extends React.Component {
   }
 
   render() {
-    const amountStyle = (this.state.deposit > this.props.balance.available ? { color: 'red' } : {});
+    const amountStyle = (this.state.deposit > this.props.balance.available
+      ? { color: COLORS.errorTextColor }
+      : {}
+    );
     const amountAvailableText = (
       <Strong style={amountStyle}>
         {hathorLib.numberUtils.prettyValue(this.props.balance.available)} HTR
@@ -114,7 +118,7 @@ class CreateTokenAmount extends React.Component {
         <HathorHeader
           title={t`CREATE TOKEN`}
           onBackPress={() => this.props.navigation.goBack()}
-          onCancel={() => this.props.navigation.pop()}
+          onCancel={() => this.props.navigation.getParent().goBack()}
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>

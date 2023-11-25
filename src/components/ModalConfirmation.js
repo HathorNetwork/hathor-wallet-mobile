@@ -7,10 +7,11 @@
 
 import React from 'react';
 import {
-  Dimensions, Image, Platform, StyleSheet, TouchableWithoutFeedback, View,
+  Dimensions, Image, StyleSheet, TouchableWithoutFeedback, View,
 } from 'react-native';
 
 import checkLogo from '../assets/images/icCheckBig.png';
+import { COLORS } from '../styles/themes';
 
 class ModalConfirmation extends React.Component {
   /**
@@ -41,27 +42,25 @@ class ModalConfirmation extends React.Component {
       return null;
     }
 
-    const { height, width } = Dimensions.get('window');
+    const { width } = Dimensions.get('window');
 
-    // Prevent the bottom message to be covered by some android phones
-    const marginBottom = Platform.OS === 'android' ? 40 : 16;
-
+    // Prevents the bottom message from being covered
     const styles = StyleSheet.create({
       modal: {
         position: 'absolute',
         top: 0,
         left: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: COLORS.textColorShadowDark,
         justifyContent: 'flex-end',
         alignItems: 'center',
         zIndex: 3,
-        height,
-        width,
+        height: '100%',
+        width: '100%',
       },
       innerModal: {
-        marginBottom,
+        marginBottom: 32,
         height: 270,
-        backgroundColor: 'white',
+        backgroundColor: COLORS.backgroundColor,
         alignItems: 'center',
         justifyContent: 'space-around',
         borderRadius: 8,

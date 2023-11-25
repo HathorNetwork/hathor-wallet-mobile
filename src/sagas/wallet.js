@@ -33,9 +33,6 @@ import { getUniqueId } from 'react-native-device-info';
 import { get } from 'lodash';
 import {
   DEFAULT_TOKEN,
-  WALLET_SERVICE_MAINNET_BASE_WS_URL,
-  WALLET_SERVICE_MAINNET_BASE_URL,
-  NETWORK,
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
 } from '../constants';
@@ -72,6 +69,7 @@ import {
   showPinScreenForResult,
   checkForFeatureFlag,
   getRegisteredTokens,
+  getNetworkSettings,
 } from './helpers';
 import { setKeychainPin } from '../utils';
 
@@ -138,24 +136,26 @@ export function* startWallet(action) {
     dispatch = _dispatch;
   });
 
+  const networkSettings = yield select(getNetworkSettings);
+
   let wallet;
   if (useWalletService) {
-    const network = new Network(NETWORK);
+    const network = new Network(networkSettings.network);
 
     // Set urls for wallet service
-    config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
-    config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
+    config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl);
+    config.setWalletServiceBaseWsUrl(networkSettings.walletServiceWsUrl);
 
     wallet = new HathorWalletServiceWallet({
-      requestPassword: showPinScreenForResult,
+      requestPassword: () => showPinScreenForResult(dispatch),
       seed: words,
       network,
       storage,
     });
   } else {
     const connection = new Connection({
-      network: NETWORK, // app currently connects only to mainnet
-      servers: ['https://mobile.wallet.hathor.network/v1a/'],
+      network: networkSettings.network,
+      servers: [networkSettings.nodeUrl],
     });
 
     // The default configuration will use a memory store
@@ -202,6 +202,10 @@ export function* startWallet(action) {
 
       // Yield the same action so it will now load on the old facade
       yield put(action);
+    } else {
+      console.log('failed to start fullnode wallet');
+      yield put(startWalletFailed());
+      return;
     }
   }
 
@@ -209,7 +213,7 @@ export function* startWallet(action) {
 
   yield put(setServerInfo({
     version: null,
-    network: NETWORK,
+    network: networkSettings.network,
   }));
 
   // Wallet might be already ready at this point
@@ -359,7 +363,7 @@ export function* onPushNotificationDisabled() {
  */
 export function* featureToggleUpdateListener() {
   while (true) {
-    yield take('FEATURE_TOGGLE_UPDATED');
+    yield take(types.FEATURE_TOGGLE_UPDATED);
 
     const oldWalletServiceToggle = yield select(({ useWalletService }) => useWalletService);
     const newWalletServiceToggle = yield call(isWalletServiceEnabled);

@@ -19,6 +19,7 @@ import {
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';
+import { COLORS } from '../styles/themes';
 
 /**
  * loadHistoryStatus {Object} progress on loading tx history {
@@ -62,7 +63,7 @@ class LoadHistoryScreen extends React.Component {
     const renderLoading = () => (
       <View style={{ alignItems: 'center' }}>
         <Spinner size={48} animating />
-        <Text style={[styles.text, { marginTop: 32, color: 'rgba(0, 0, 0, 0.5)' }]}>
+        <Text style={[styles.text, { marginTop: 32, color: COLORS.textColorShadow }]}>
           {t`Loading your transactions`}
         </Text>
         <TextFmt style={[styles.text, { marginTop: 24 }]}>

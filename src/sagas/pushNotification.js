@@ -41,15 +41,12 @@ import {
 } from '../actions';
 import {
   pushNotificationKey,
-  WALLET_SERVICE_MAINNET_BASE_WS_URL,
-  WALLET_SERVICE_MAINNET_BASE_URL,
-  NETWORK,
   PUSH_CHANNEL_TRANSACTION,
   PUSH_ACTION,
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
 import { STORE } from '../store';
-import { isUnlockScreen, showPinScreenForResult } from './helpers';
+import { getNetworkSettings, isUnlockScreen, showPinScreenForResult, isTokenRegistered } from './helpers';
 import { messageHandler } from '../workers/pushNotificationHandler';
 import { WALLET_STATUS } from './wallet';
 
@@ -120,9 +117,11 @@ function* createChannelIfNotExists() {
 
 /**
  * Register the device to receive remote messages from FCM.
+ * @param {boolean} showErrorModal if should show error modal in case the device is not registered
+ *
  * @returns {boolean} true if the device is registered on the FCM, false otherwise
  */
-function* confirmDeviceRegistrationOnFirebase() {
+function* confirmDeviceRegistrationOnFirebase(showErrorModal = true) {
   try {
     // Make sure deviceId is registered on the FCM
     if (!messaging().isDeviceRegisteredForRemoteMessages) {
@@ -132,7 +131,9 @@ function* confirmDeviceRegistrationOnFirebase() {
     return true;
   } catch (error) {
     console.error('Error confirming the device is registered on firebase.', error);
-    yield put(onExceptionCaptured(error));
+    if (showErrorModal) {
+      yield put(onExceptionCaptured(error));
+    }
     return false;
   }
 }
@@ -333,15 +334,16 @@ export function* loadWallet() {
   });
 
   const useWalletService = yield select((state) => state.useWalletService);
+  const networkSettings = yield select(getNetworkSettings);
 
   // If the user is not using the wallet-service,
   // we need to initialize the wallet on the wallet-service first
   let walletService;
   if (!useWalletService) {
     // Set urls for wallet service
-    config.setWalletServiceBaseUrl(WALLET_SERVICE_MAINNET_BASE_URL);
-    config.setWalletServiceBaseWsUrl(WALLET_SERVICE_MAINNET_BASE_WS_URL);
-    const network = new Network(NETWORK);
+    config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl);
+    config.setWalletServiceBaseWsUrl(networkSettings.walletServiceWsUrl);
+    const network = new Network(networkSettings.network);
 
     const pin = yield call(showPinScreenForResult, dispatch);
     const seed = yield STORE.getWalletWords(pin);
@@ -542,7 +544,7 @@ export const getTxDetails = async (wallet, txId) => {
       name: each.tokenName,
       symbol: each.tokenSymbol,
       balance: each.balance,
-      isRegistered: await wallet.storage.isTokenRegistered(each.tokenId),
+      isRegistered: await isTokenRegistered(each.tokenId),
     }))),
   });
 
@@ -608,12 +610,16 @@ const cleanToken = async () => {
  * This function is responsible for reset the push notification.
  */
 export function* resetPushNotification() {
-  try {
-    // Unregister the device from FCM
-    yield call(cleanToken);
-  } catch (error) {
-    console.error('Error clening token from firebase.', error);
-    yield put(onExceptionCaptured(error));
+  // If we don't have the device registered in the FCM, we shouldn't reset push notification
+  const isDeviceRegistered = yield call(confirmDeviceRegistrationOnFirebase, false);
+  if (isDeviceRegistered) {
+    try {
+      // Unregister the device from FCM
+      yield call(cleanToken);
+    } catch (error) {
+      console.error('Error cleaning token from firebase.', error);
+      yield put(onExceptionCaptured(error));
+    }
   }
 
   // Clean the store

@@ -21,6 +21,8 @@ import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
 import { clearInvoice } from '../actions';
 import { getTokenLabel, renderValue, isTokenNFT } from '../utils';
+import NavigationService from '../NavigationService';
+import { COLORS } from '../styles/themes';
 
 /**
  * address {string} Invoice destination address
@@ -46,8 +48,9 @@ class PaymentRequestDetail extends React.Component {
   }
 
   async componentDidMount() {
-    // When we create a new payment request we update the address for a new one
-    await this.props.wallet.getNextAddress();
+    // When we create a new payment request, we don't update the address for a new one
+    // This will only happen when it receives a transaction and becomes a used address
+    await this.props.wallet.getCurrentAddress();
   }
 
   componentDidUpdate(prevProps) {
@@ -60,6 +63,18 @@ class PaymentRequestDetail extends React.Component {
 
   componentWillUnmount() {
     this.props.dispatch(clearInvoice());
+  }
+
+  /**
+   * If the payment was not yet received, the user goes back to the "Select Amount" screen.
+   * Otherwise, goes directly to the Home screen to see the updated wallet.
+   */
+  onBackClick() {
+    if (this.props.payment !== null) {
+      NavigationService.resetToMain();
+    } else {
+      this.props.navigation.goBack();
+    }
   }
 
   render() {
@@ -88,7 +103,7 @@ class PaymentRequestDetail extends React.Component {
         <HathorHeader
           withBorder
           title={t`PAYMENT REQUEST`}
-          onBackPress={() => this.props.navigation.goBack()}
+          onBackPress={() => this.onBackClick()}
         />
         <View style={{
           flex: 1, justifyContent: 'space-between', alignItems: 'center', width: '100%',
@@ -139,7 +154,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderColor: COLORS.borderColor,
     height: 64,
     width: '100%',
   },

@@ -44,9 +44,9 @@ First start the Metro bundler:
 
 `npm start` or `npm run start:clean` to invalidate the cache before run.
 
-Then build the app for iOS:
+Then press `i` to select the `run on iOS` option: this will build the app for iOS.
 
-`npm run ios` to open on iOS simulator, or `npm run ios -- --simulator "iPhone 11"` to run it by name.
+Alternatively, `npm run ios` to open on iOS simulator, or `npm run ios -- --simulator "iPhone 11"` to run it by name.
 
 To list all available simulators, use `xcrun simctl list devices`.
 
@@ -87,9 +87,7 @@ First start the Metro bundler:
 
 `npm start`
 
-Then build the app for Android. Make sure you have a device ready, be it on Android Studio's Emulator or a real device.
-
-`npm run android`
+Then press `a` to select the `run on Android` option: this will build the app for Android. If a physical device is connected, the application will start on it. Else, the latest Android Studio's Emulator will be the run target. Alternatively, use `npm run android` after having the Metro bundler started.
 
 If you need to open the Dev Menu on Android Studio Emulator, use `Ctrl + M` or run `adb shell input keyevent 82` in a terminal.
 
@@ -98,6 +96,13 @@ Obs: To run on your device some configuration may need to be done (see [running 
 #### Required resource
 
 The Firebase package uses the credentials of `google-services.json` to initialize the device in the FCM automatically. You should generate and install this resource in your Android Studio environment. Read [Generating Android credentials](https://rnfirebase.io/#generating-android-credentials).
+
+### Debugging
+The preferred way of debugging the Wallet Mobile is through the Flipper Desktop application, as the Chromium-based debugger has multiple conflics with the app's dependencies. It's also [being deprecated as of React Native v0.72](https://github.com/facebook/react-native/issues/38311#issuecomment-1731456182) due to incompatibilites with React Native's _New Architecture_.
+
+On MacOS environments Safari debugging will continue to be supported, and is a viable alternative.
+
+To install Flipper, [download it on the official website](https://fbflipper.com/docs/getting-started/#installation) and follow its instructions to run the executable. For Linux users, issue 1058 on Flipper's repository may [help with troubleshooting](https://github.com/facebook/flipper/issues/1058#issuecomment-786827372).
 
 ### Run linter
 

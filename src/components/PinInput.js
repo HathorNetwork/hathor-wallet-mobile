@@ -9,11 +9,11 @@ import React from 'react';
 import { Text, StyleSheet, View } from 'react-native';
 
 import NumPad from './NumPad';
-import { ERROR_BG_COLOR } from '../constants';
+import { COLORS } from '../styles/themes';
 
 class PinInput extends React.Component {
   static defaultProps = {
-    color: 'black',
+    color: COLORS.textColor,
   };
 
   getMarker = (index, isFilled) => {
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     margin: 8,
   },
   error: {
-    color: ERROR_BG_COLOR,
+    color: COLORS.errorBgColor,
     marginTop: 8,
     height: 18,
   },

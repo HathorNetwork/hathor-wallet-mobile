@@ -17,13 +17,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 
 import { hideErrorModal } from '../actions';
+import { COLORS } from '../styles/themes';
 
 const styles = StyleSheet.create({
   modal: {
     justifyContent: 'flex-end',
   },
   innerModal: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.backgroundColor,
     borderRadius: 8,
     alignItems: 'center',
     paddingHorizontal: 16,

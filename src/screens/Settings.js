@@ -17,10 +17,13 @@ import {
 import OfflineBar from '../components/OfflineBar';
 import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
-import { IS_MULTI_TOKEN, PRIMARY_COLOR } from '../constants';
-import { getLightBackground } from '../utils';
+import {
+  IS_MULTI_TOKEN,
+  WALLET_CONNECT_FEATURE_TOGGLE,
+} from '../constants';
 import CopyClipboard from '../components/CopyClipboard';
-import baseStyle from '../styles/init';
+import { COLORS } from '../styles/themes';
+import { NetworkSettingsFlowNav } from './NetworkSettings';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -38,6 +41,7 @@ const mapStateToProps = (state) => {
     uniqueDeviceId: state.uniqueDeviceId,
     server,
     isPushNotificationAvailable: state.pushNotification.available,
+    walletConnectEnabled: state.featureToggles[WALLET_CONNECT_FEATURE_TOGGLE],
   };
 };
 
@@ -52,14 +56,14 @@ export class Settings extends React.Component {
       marginBottom: 24,
     },
     networkView: {
-      backgroundColor: getLightBackground(0.1),
+      backgroundColor: COLORS.primaryOpacity10,
       margin: 8,
       padding: 8,
       borderRadius: 8,
       alignItems: 'center',
     },
     networkText: {
-      color: PRIMARY_COLOR,
+      color: COLORS.primary,
       fontSize: 16,
       fontWeight: 'bold',
     },
@@ -68,7 +72,6 @@ export class Settings extends React.Component {
       width: 100,
       marginTop: 16,
       marginBottom: 16,
-      backgroundColor: baseStyle.title.backgroundColor,
     },
     logo: {
       height: 22,
@@ -78,7 +81,7 @@ export class Settings extends React.Component {
 
   render() {
     return (
-      <View style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}>
+      <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <ScrollView contentContainerStyle={this.style.scrollView}>
           <View style={this.style.logoView}>
             <Logo
@@ -96,11 +99,11 @@ export class Settings extends React.Component {
             )
           )}
 
-          <HathorList infinity>
+          <HathorList title={t`General Settings`}>
             <ListItem
               text={(
                 <View style={{ flex: 1 }}>
-                  <Text style={{ marginBottom: 8, color: 'rgba(0, 0, 0, 0.5)', fontSize: 12 }}>{t`Connected to`}</Text>
+                  <Text style={{ marginBottom: 8, color: COLORS.textColorShadow, fontSize: 12 }}>{t`Connected to`}</Text>
                   <Text
                     style={{ fontSize: 12 }}
                     adjustsFontSizeToFit
@@ -137,6 +140,13 @@ export class Settings extends React.Component {
                   onPress={() => this.props.navigation.navigate('RegisterToken')}
                 />
               )}
+            {this.props.walletConnectEnabled
+              && (
+                <ListMenu
+                  title='Wallet Connect'
+                  onPress={() => this.props.navigation.navigate('WalletConnectList')}
+                />
+              )}
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}
@@ -148,7 +158,7 @@ export class Settings extends React.Component {
             <ListItem
               text={(
                 <View style={{ flex: 1 }}>
-                  <Text style={{ marginBottom: 8, color: 'rgba(0, 0, 0, 0.5)', fontSize: 12 }}>
+                  <Text style={{ marginBottom: 8, color: COLORS.textColorShadow, fontSize: 12 }}>
                     {t`Unique app identifier`}
                   </Text>
 
@@ -160,6 +170,14 @@ export class Settings extends React.Component {
               )}
             />
           </HathorList>
+
+          <HathorList title={t`Developer Settings`}>
+            <ListMenu
+              title={t`Network Settings`}
+              onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
+            />
+          </HathorList>
+
         </ScrollView>
         <OfflineBar />
       </View>

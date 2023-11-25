@@ -15,14 +15,23 @@ import OfflineBar from '../components/OfflineBar';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
 import { getTokenLabel, parseQRCode } from '../utils';
-import { LIGHT_BG_COLOR } from '../constants';
+import { COLORS } from '../styles/themes';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
+  tokens: state.tokens,
 });
 
 class SendScanQRCode extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      isWaitingForUserInput: false,
+    }
+  }
+
   showAlertError = (message) => {
+    this.setState({ isWaitingForUserInput: true });
     Alert.alert(
       t`Invalid QR code`,
       message,
@@ -31,6 +40,7 @@ class SendScanQRCode extends React.Component {
           onPress: () => {
             // To avoid being stuck on an invalid QR code loop, navigate back.
             this.props.navigation.goBack();
+            this.setState({ isWaitingForUserInput: false });
           } },
       ],
       { cancelable: false },
@@ -38,11 +48,19 @@ class SendScanQRCode extends React.Component {
   }
 
   onSuccess = async (e) => {
+    if (this.state.isWaitingForUserInput) {
+      // Avoid multiple calls to this function while waiting for user input
+      return;
+    }
+
     const qrcode = parseQRCode(e.data);
     if (!qrcode.isValid) {
       this.showAlertError(qrcode.error);
     } else if (qrcode.token && qrcode.amount) {
-      if (await this.props.wallet.storage.isTokenRegistered(qrcode.token.uid)) {
+      const isTokenRegistered = this.props.tokens.some(
+        (stateToken) => stateToken.uid === qrcode.token.uid
+      );
+      if (isTokenRegistered) {
         const params = {
           address: qrcode.address,
           token: qrcode.token,
@@ -74,7 +92,7 @@ class SendScanQRCode extends React.Component {
     );
 
     return (
-      <View style={{ flex: 1, backgroundColor: LIGHT_BG_COLOR }}>
+      <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <HathorHeader
           title={t`SEND`}
           rightElement={<ManualInfoButton />}

@@ -21,7 +21,7 @@ import {
 } from '../utils';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen } from '../actions';
-import { LIGHT_BG_COLOR } from '../constants';
+import { COLORS } from '../styles/themes';
 
 const mapDispatchToProps = (dispatch) => ({
   lockScreen: () => dispatch(lockScreen()),
@@ -72,7 +72,7 @@ export class Security extends React.Component {
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? t`No biometry supported` : t`Use ${this.supportedBiometry}`);
     return (
-      <View style={{ flex: 1, backgroundColor: LIGHT_BG_COLOR }}>
+      <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <HathorHeader
           title={t`SECURITY`}
           onBackPress={() => this.props.navigation.goBack()}
@@ -82,7 +82,7 @@ export class Security extends React.Component {
             title={biometryText}
             // if no biometry is supported, use default ListItem color (grey),
             // so it looks disabled. Else, color is black, as other items
-            titleStyle={!switchDisabled ? { color: 'black' } : null}
+            titleStyle={!switchDisabled ? { color: COLORS.textColor } : null}
             text={(
               <Switch
                 onValueChange={this.onBiometrySwitchChange}

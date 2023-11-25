@@ -9,7 +9,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import { BackHandler, Text, View } from 'react-native';
+import { BackHandler, Keyboard, Text, View } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import { walletUtils, cryptoUtils } from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
@@ -25,7 +25,8 @@ import {
   startWalletRequested,
   resetOnLockScreen,
 } from '../actions';
-import { ERROR_BG_COLOR, PIN_SIZE } from '../constants';
+import { PIN_SIZE } from '../constants';
+import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import baseStyle from '../styles/init';
 
@@ -58,9 +59,8 @@ class PinScreen extends React.Component {
      */
     this.state = {
       pin: '',
-      pinColor: 'black',
+      pinColor: COLORS.textColor,
       error: null,
-      waitingForBiometry: false,
     };
 
     this.canCancel = false;
@@ -76,6 +76,9 @@ class PinScreen extends React.Component {
   }
 
   componentDidMount() {
+    // If the keyboard is being shown, hide it. This screen's keyboard is built differently
+    Keyboard.dismiss();
+
     const supportedBiometry = getSupportedBiometry();
     const biometryEnabled = isBiometryEnabled();
     if (supportedBiometry && biometryEnabled) {
@@ -88,7 +91,10 @@ class PinScreen extends React.Component {
     }
 
     this.focusEvent = this.props.navigation.addListener('focus', () => {
-      this.setState({ pin: '', pinColor: 'black', error: null });
+      // Ensure the keyboard is hidden when the screen is focused, even if it was already mounted
+      Keyboard.dismiss();
+      // Clear the pin
+      this.setState({ pin: '', pinColor: COLORS.textColor, error: null });
     });
   }
 
@@ -108,8 +114,6 @@ class PinScreen extends React.Component {
   handleBackButton = () => true;
 
   askBiometricId = async () => {
-    // Displaying an empty screen while waiting for the OS biometry response
-    this.setState({ waitingForBiometry: true });
     try {
       /* getGenericPassword will return either `false` or UserCredentials:
        *
@@ -121,13 +125,11 @@ class PinScreen extends React.Component {
       const credentials = await Keychain.getGenericPassword({
         authenticationPrompt: { title: this.biometryText },
       });
-      this.setState({ waitingForBiometry: false });
 
       if (credentials !== false) {
         this.dismiss(credentials.password);
       }
     } catch (e) {
-      this.setState({ waitingForBiometry: false });
       // No need to do anything here as the user can type his PIN
     }
   };
@@ -166,7 +168,7 @@ class PinScreen extends React.Component {
     if (text.length === PIN_SIZE) {
       setTimeout(() => this.validatePin(text), 300);
     }
-    this.setState({ pin: text, pinColor: 'black', error: null });
+    this.setState({ pin: text, pinColor: COLORS.textColor, error: null });
   };
 
   validatePin = async (pin) => {
@@ -250,7 +252,7 @@ class PinScreen extends React.Component {
     if (pin.length === 0) {
       this.setState({ pin: '', error: t`Incorrect PIN Code. Try again.` });
     } else {
-      this.setState({ pin, pinColor: ERROR_BG_COLOR });
+      this.setState({ pin, pinColor: COLORS.errorBgColor });
       setTimeout(() => this.removeOneChar(), 25);
     }
   };
@@ -272,7 +274,7 @@ class PinScreen extends React.Component {
           title={title}
           textStyle={{
             textTransform: 'uppercase',
-            color: 'rgba(0, 0, 0, 0.5)',
+            color: COLORS.textColorShadow,
             letterSpacing: 1,
             padding: 4,
           }}
@@ -319,16 +321,7 @@ class PinScreen extends React.Component {
           backgroundColor: baseStyle.container.backgroundColor,
         }}
       >
-        { this.state.waitingForBiometry && (
-        <View
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            backgroundColor: baseStyle.container.backgroundColor,
-          }}
-        />
-        )}
-        { !this.state.waitingForBiometry && renderPinDigits()}
+        {renderPinDigits()}
       </View>
     );
   }

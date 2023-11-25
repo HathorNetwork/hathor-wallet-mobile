@@ -7,13 +7,13 @@
 
 import messaging from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
-import { store } from '../reducer';
 import { onExceptionCaptured } from '../actions';
 import {
   messageHandler,
   setInitialNotificationData,
   setNotificationError,
 } from './pushNotificationHandler';
+import { store } from '../reducers/reducer.init';
 
 /**
 * This function verifies if the device is registered on firebase,

@@ -9,16 +9,17 @@ import { TxHistory } from '../models';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { updateSelectedToken } from '../actions';
 import HathorModal from './HathorModal';
+import { COLORS } from '../styles/themes';
 
 const style = StyleSheet.create({
   modal: {
     justifyContent: 'flex-end',
   },
   registeredToken: {
-    color: '#8C46FF',
+    color: COLORS.primary,
   },
   wrapperView: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.backgroundColor,
     borderRadius: 8,
   },
 });

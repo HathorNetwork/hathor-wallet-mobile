@@ -15,6 +15,8 @@ import {
 } from './constants';
 import { mapTokenHistory } from './utils';
 
+// TODO: We should apply the agreed taxonomy to all the actions.
+// See: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/334
 export const types = {
   PARTIALLY_UPDATE_HISTORY_AND_BALANCE: 'PARTIALLY_UPDATE_HISTORY_AND_BALANCE',
   SET_TEMP_PIN: 'SET_TEMP_PIN',
@@ -100,13 +102,48 @@ export const types = {
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
-  SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
   SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
+  // Feature Toggle actions
   FEATURE_TOGGLE_INITIALIZED: 'FEATURE_TOGGLE_INITIALIZED',
+  FEATURE_TOGGLE_UPDATE: 'FEATURE_TOGGLE_UPDATE',
+  FEATURE_TOGGLE_UPDATED: 'FEATURE_TOGGLE_UPDATED',
+  FEATURE_TOGGLE_READY: 'FEATURE_TOGGLE_READY',
+  FEATURE_TOGGLE_ERROR: 'FEATURE_TOGGLE_ERROR',
+  SET_WALLET_CONNECT: 'SET_WALLET_CONNECT',
+  SET_WALLET_CONNECT_MODAL: 'SET_WALLET_CONNECT_MODAL',
+  SET_WALLET_CONNECT_SESSIONS: 'SET_WALLET_CONNECT_SESSIONS',
+  SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
+  WC_URI_INPUTTED: 'WC_URI_INPUTTED',
+  WC_CANCEL_SESSION: 'WC_CANCEL_SESSION',
+  WC_SET_CONNECTION_FAILED: 'WC_SET_CONNECTION_FAILED',
+  // Network Settings actions
+  // NOTE: These actions follows a taxonomy that should be applied
+  // to all other actions.
+  // See: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/334
+  /* It initiates an update of the network settings based on user input from a form. */
+  NETWORKSETTINGS_UPDATE_REQUEST: 'NETWORK_SETTINGS_UPDATE_REQUEST',
+  /* It updates the redux state */
+  NETWORKSETTINGS_UPDATE_STATE: 'NETWORKSETTINGS_UPDATE_STATE',
+  /* It persists the complete structure of network settings in the app storage and updates the redux store. */
+  NETWORKSETTINGS_PERSIST_STORE: 'NETWORKSETTINGS_PERSIST_STORE',
+  /* It indicates the persistence is complete and the wallet will be reloaded. */
+  NETWORKSETTINGS_UPDATE_WAITING: 'NETWORKSETTINGS_UPDATE_WAITING',
+  /* It indicates the update is complete after the wallet reloads. */
+  NETWORKSETTINGS_UPDATE_SUCCESS: 'NETWORK_SETTINGS_UPDATE_SUCCESS',
+  /* It indicates the update request has invalid inputs. */
+  NETWORKSETTINGS_UPDATE_INVALID: 'NETWORKSETTINGS_UPDATE_INVALID',
+  /* It indicates the update request has failed. */
+  NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
+  /* It updates the redux state of network settings status */
+  NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
 };
 
 export const featureToggleInitialized = () => ({
   type: types.FEATURE_TOGGLE_INITIALIZED,
+});
+
+export const featureToggleUpdate = () => ({
+  type: types.FEATURE_TOGGLE_UPDATE,
 });
 
 /**
@@ -124,6 +161,39 @@ export const setFeatureToggles = (toggles) => ({
 export const setUnleashClient = (unleashClient) => ({
   type: types.SET_UNLEASH_CLIENT,
   payload: unleashClient,
+});
+
+/**
+ * sessions {Array} List of sessions to store
+ */
+export const setWalletConnectSessions = (sessions) => ({
+  type: types.SET_WALLET_CONNECT_SESSIONS,
+  payload: sessions,
+});
+
+/**
+ * modal {Object} Modal information to display
+ * modal.show {boolean} Show or hide the modal
+ * modal.type {WalletConnectModalTypes} One of (CONNECT, SIGN_MESSAGE_REQUEST)
+ * modal.onAcceptAction {Object} Action to be dispatched on accept
+ * modal.onRejectAction {Object} Action to be dispatched on reject
+ */
+export const setWalletConnectModal = (modal) => ({
+  type: types.SET_WALLET_CONNECT_MODAL,
+  payload: modal,
+});
+
+export const hideWalletConnectModal = () => ({
+  type: types.SET_WALLET_CONNECT_MODAL,
+  payload: { show: false },
+});
+
+/*
+ * sessionKey {string} The symKey of the connected Session
+ */
+export const walletConnectCancelSession = (sessionKey) => ({
+  type: types.WC_CANCEL_SESSION,
+  payload: sessionKey,
 });
 
 /**
@@ -702,6 +772,26 @@ export const sharedAddressUpdate = (lastSharedAddress, lastSharedIndex) => ({
 });
 
 /**
+ * Stores the walletConnect instance on the redux store
+ *
+ * walletConnect {WalletConnect} The WalletConnect instance
+ */
+export const setWalletConnect = (walletConnect) => ({
+  type: types.SET_WALLET_CONNECT,
+  payload: walletConnect,
+});
+
+/**
+ * Dispatched with data when a WalletConnect QRCode is read
+ *
+ * data {string} The WalletConnect v2 URI
+ */
+export const walletConnectUriInputted = (data) => ({
+  type: types.WC_URI_INPUTTED,
+  payload: data,
+});
+
+/**
  * Exception captured, will update the store with the Error
  * instance and whether it should force the user to restart
  * the wallet or not.
@@ -762,4 +852,112 @@ export const pushCleanTxDetails = () => ({
  */
 export const pushReset = () => ({
   type: types.PUSH_RESET,
+});
+
+/**
+ * failed {Boolean} Flag indicating whether WC failed or not.
+ */
+export const setWCConnectionFailed = (failed) => ({
+  type: types.WC_SET_CONNECTION_FAILED,
+  payload: failed,
+});
+
+/**
+ * Request the custom network settings input to be processed.
+ * @param {{
+ *   nodeUrl: string,
+ *   explorerUrl: string,
+ *   explorerServiceUrl: string,
+ *   walletServiceUrl?: string
+ *   walletServiceWsUrl?: string
+ * }} customNetworkRequest Request input
+ */
+export const networkSettingsUpdateRequest = (customNetworkRequest) => ({
+  type: types.NETWORKSETTINGS_UPDATE_REQUEST,
+  payload: customNetworkRequest,
+});
+
+/**
+ * Emits the custom network settings to update the redux store.
+ * @param {{
+ *   stage: string,
+ *   network: string,
+ *   nodeUrl: string,
+ *   explorerUrl: string,
+ *   explorerServiceUrl: string,
+ *   walletServiceUrl?: string
+ *   walletServiceWsUrl?: string
+ * }} customNetwork Settings to persist
+ */
+export const networkSettingsUpdateState = (customNetwork) => ({
+  type: types.NETWORKSETTINGS_UPDATE_STATE,
+  payload: customNetwork,
+});
+
+/**
+ * Emits the custom network settings to persist in the app storage and update the redux store.
+ * @param {{
+ *   stage: string,
+ *   network: string,
+ *   nodeUrl: string,
+ *   explorerUrl: string,
+ *   explorerServiceUrl: string,
+ *   walletServiceUrl?: string
+ *   walletServiceWsUrl?: string
+ * }} customNetwork Settings to persist
+ */
+export const networkSettingsPersistStore = (customNetwork) => ({
+  type: types.NETWORKSETTINGS_PERSIST_STORE,
+  payload: customNetwork,
+});
+
+/**
+ * Action indicating that the network settings update process
+ * is in a waiting state.
+ * This is used after persisting custom network configurations,
+ * resulting in a wallet reload.
+ */
+export const networkSettingsUpdateWaiting = () => ({
+  type: types.NETWORKSETTINGS_UPDATE_WAITING,
+});
+
+/**
+ * Action indicating that the network settings update was successful.
+ * This serves as a hook for the frontend to provide feedback to the user.
+ */
+export const networkSettingsUpdateSuccess = () => ({
+  type: types.NETWORKSETTINGS_UPDATE_SUCCESS,
+});
+
+/**
+ * Action indicating a failure state for the custom network settings request.
+ * It means the request couldn't be processed due to internal error.
+ * This serves as a hook for the frontend to provide feedback to the user.
+ */
+export const networkSettingsUpdateFailure = () => ({
+  type: types.NETWORKSETTINGS_UPDATE_FAILURE,
+});
+
+/**
+ * Action indicating an invalid state for the custom network settings request inputs.
+ * It means the form should present the invalid message on the corresponding inputs.
+ * @param {{
+ *   message: string,
+ *   nodeUrl: string,
+ *   explorerUrl: string,
+ *   explorerServiceUrl: string,
+ *   walletServiceUrl?: string
+ *   walletServiceWsUrl?: string
+ * }} errors The validation errors from custom network settings form
+ */
+export const networkSettingsUpdateInvalid = (errors) => ({
+  type: types.NETWORKSETTINGS_UPDATE_INVALID,
+  payload: errors,
+});
+
+/**
+ * Custom Network Settings form is ready to be used.
+ */
+export const networkSettingsUpdateReady = () => ({
+  type: types.NETWORKSETTINGS_UPDATE_READY,
 });
