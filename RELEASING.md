@@ -32,6 +32,13 @@ In the `ios/HathorMobile.xcodeproj/project.pbxproj`:
   > The major version should be 0 for release candidates and 1 for releases.
   > The patch (last digit) of the `CURRENT_PROJECT_VERSION` will be used to number the builds of the same version starting from `0`.
 
+### Automated script
+To execute these steps automatically, run the makefile command:
+```sh
+make bump updateType=<updateType>
+```
+Where `<updateType>` can be `major`, `minor`, `patch`, `rc` or `release`. Using `rc` will increment the release candidate count, while using `release` will reset it.
+
 Create a git tag and a new release on GitHub.
 
 # Publishing the new App
