@@ -891,7 +891,7 @@ msgid "Explorer Service URL"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:229
-msgid "Tx Mining Service URL"
+msgid "Transaction Mining Service URL"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:238

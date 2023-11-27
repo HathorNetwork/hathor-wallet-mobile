@@ -226,7 +226,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
 
         <SimpleInput
           containerStyle={styles.input}
-          label={t`Tx Mining Service URL`}
+          label={t`Transaction Mining Service URL`}
           autoFocus
           onChangeText={handleInputChange('txMiningServiceUrl')}
           error={invalidModel.txMiningServiceUrl}
