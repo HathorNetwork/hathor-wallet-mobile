@@ -30,6 +30,7 @@ import {
   getWalletServiceNetwork,
 } from './helpers';
 import { STORE } from '../store';
+import { isWalletServiceEnabled } from './wallet';
 
 /**
  * Initialize the network settings saga when the wallet starts successfully.
@@ -138,6 +139,7 @@ export function* updateNetworkSettings(action) {
   // In practice they will never be equals.
 
   const networkSettings = yield select((state) => state.networkSettings);
+  const useWalletService = yield call(isWalletServiceEnabled);
   const backupUrl = {
     nodeUrl: networkSettings.nodeUrl,
     explorerServiceUrl: networkSettings.explorerServiceUrl,
@@ -154,7 +156,7 @@ export function* updateNetworkSettings(action) {
   // - nodeUrl as fallback
   let potentialNetwork;
   let network;
-  if (walletServiceUrl) {
+  if (walletServiceUrl && useWalletService) {
     config.setWalletServiceBaseUrl(walletServiceUrl);
     config.setWalletServiceBaseWsUrl(walletServiceWsUrl);
 
