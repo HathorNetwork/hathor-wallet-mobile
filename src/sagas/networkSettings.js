@@ -202,7 +202,7 @@ export function* updateNetworkSettings(action) {
   } else if (potentialNetwork.startsWith(NETWORK_PRIVATENET)) {
     network = NETWORK_PRIVATENET;
   } else {
-    console.warn('The network informed is not allowed. Make sure your network is either "mainnet", "testnet" or "privatenet", or start with "testnet" or "privatenet".');
+    console.warn('The network informed is not allowed. Make sure your network is either "mainnet", "testnet" or "privatenet", or starts with "testnet" or "privatenet".');
     yield put(networkSettingsUpdateFailure());
     return;
   }
