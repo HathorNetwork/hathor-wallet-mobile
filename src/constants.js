@@ -217,3 +217,8 @@ export const WALLET_SERVICE_REQUEST_TIMEOUT = 3000;
  * Timeout in miliseconds to call a general http request.
  */
 export const HTTP_REQUEST_TIMEOUT = 3000;
+
+/**
+ * Any network that is not mainnet or testnet should be a privatenet.
+ */
+export const NETWORK_PRIVATENET = 'privatenet';
