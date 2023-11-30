@@ -19,6 +19,7 @@ import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import {
   IS_MULTI_TOKEN,
+  NETWORK_SETTINGS_FEATURE_TOGGLE,
   WALLET_CONNECT_FEATURE_TOGGLE,
 } from '../constants';
 import CopyClipboard from '../components/CopyClipboard';
@@ -42,6 +43,7 @@ const mapStateToProps = (state) => {
     server,
     isPushNotificationAvailable: state.pushNotification.available,
     walletConnectEnabled: state.featureToggles[WALLET_CONNECT_FEATURE_TOGGLE],
+    networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
   };
 };
 
@@ -171,12 +173,15 @@ export class Settings extends React.Component {
             />
           </HathorList>
 
-          <HathorList title={t`Developer Settings`}>
-            <ListMenu
-              title={t`Network Settings`}
-              onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
-            />
-          </HathorList>
+          {this.props.networkSettingsEnabled
+            && (
+              <HathorList title={t`Developer Settings`}>
+                <ListMenu
+                  title={t`Network Settings`}
+                  onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
+                />
+              </HathorList>
+            )}
 
         </ScrollView>
         <OfflineBar />
