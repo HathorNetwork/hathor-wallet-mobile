@@ -13,6 +13,7 @@ import checkIcon from '../../assets/images/icCheckBig.png';
 import Spinner from '../../components/Spinner';
 import { hasSucceed, hasFailed, isLoading } from './helper';
 import { AlertUI } from '../../styles/themes';
+import { WALLET_SERVICE_FEATURE_TOGGLE } from '../../constants';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
 const warningText = t`Any token outside mainnet network bear no value. Only change if you know what you are doing.`;
@@ -96,6 +97,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
   const networkSettings = useSelector((state) => state.networkSettings);
   const networkSettingsInvalid = useSelector((state) => state.networkSettingsInvalid);
   const networkSettingsStatus = useSelector((state) => state.networkSettingsStatus);
+  const walletServiceEnabled = useSelector((state) => state.featureToggles[WALLET_SERVICE_FEATURE_TOGGLE]);
 
   const [formModel, setFormModel] = useState({
     nodeUrl: networkSettings.nodeUrl,
@@ -233,23 +235,26 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           value={formModel.txMiningServiceUrl}
         />
 
-        <SimpleInput
-          containerStyle={styles.input}
-          label={t`Wallet Service URL (optional)`}
-          autoFocus
-          onChangeText={handleInputChange('walletServiceUrl')}
-          error={invalidModel.walletServiceUrl}
-          value={formModel.walletServiceUrl}
-        />
-
-        <SimpleInput
-          containerStyle={styles.input}
-          label={t`Wallet Service WS URL (optional)`}
-          autoFocus
-          onChangeText={handleInputChange('walletServiceWsUrl')}
-          error={invalidModel.walletServiceWsUrl}
-          value={formModel.walletServiceWsUrl}
-        />
+        {walletServiceEnabled && (
+          <>
+            <SimpleInput
+              containerStyle={styles.input}
+              label={t`Wallet Service URL (optional)`}
+              autoFocus
+              onChangeText={handleInputChange('walletServiceUrl')}
+              error={invalidModel.walletServiceUrl}
+              value={formModel.walletServiceUrl}
+            />
+            <SimpleInput
+              containerStyle={styles.input}
+              label={t`Wallet Service WS URL (optional)`}
+              autoFocus
+              onChangeText={handleInputChange('walletServiceWsUrl')}
+              error={invalidModel.walletServiceWsUrl}
+              value={formModel.walletServiceWsUrl}
+            />
+          </>
+        )}
 
         <View style={styles.buttonContainer}>
           <NewHathorButton
