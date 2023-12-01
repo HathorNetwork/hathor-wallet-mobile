@@ -140,16 +140,30 @@ export const PUSH_ACTION = {
 };
 
 /**
- * The feature toggle configured in Unleash
+ * The feature toggle configured in Unleash.
+ *
+ * You should configure the new feature toggle default value
+ * at @see {@link FEATURE_TOGGLE_DEFAULTS}.
  */
+
 export const WALLET_SERVICE_FEATURE_TOGGLE = 'wallet-service-mobile.rollout';
 export const PUSH_NOTIFICATION_FEATURE_TOGGLE = 'push-notification.rollout';
 export const WALLET_CONNECT_FEATURE_TOGGLE = 'wallet-connect-mobile.rollout';
+export const NETWORK_SETTINGS_FEATURE_TOGGLE = 'network-settings.rollout';
 
+/**
+ * Default feature toggle values.
+ *
+ * This mapping constant is used in the featureToggle saga
+ * initialization.
+ *
+ * Configure here the default value of new feature toggle.
+ */
 export const FEATURE_TOGGLE_DEFAULTS = {
   [WALLET_SERVICE_FEATURE_TOGGLE]: false,
   [PUSH_NOTIFICATION_FEATURE_TOGGLE]: false,
   [WALLET_CONNECT_FEATURE_TOGGLE]: false,
+  [NETWORK_SETTINGS_FEATURE_TOGGLE]: false,
 };
 
 // Project id configured in https://walletconnect.com
