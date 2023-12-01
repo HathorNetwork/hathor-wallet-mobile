@@ -97,6 +97,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
   const networkSettings = useSelector((state) => state.networkSettings);
   const networkSettingsInvalid = useSelector((state) => state.networkSettingsInvalid);
   const networkSettingsStatus = useSelector((state) => state.networkSettingsStatus);
+  // eslint-disable-next-line max-len
   const walletServiceEnabled = useSelector((state) => state.featureToggles[WALLET_SERVICE_FEATURE_TOGGLE]);
 
   const [formModel, setFormModel] = useState({
