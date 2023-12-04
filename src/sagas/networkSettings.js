@@ -22,13 +22,15 @@ import {
   STAGE,
   STAGE_DEV_PRIVNET,
   STAGE_TESTNET,
-  WALLET_SERVICE_REQUEST_TIMEOUT
+  WALLET_SERVICE_REQUEST_TIMEOUT,
+  NETWORK_PRIVATENET
 } from '../constants';
 import {
   getFullnodeNetwork,
   getWalletServiceNetwork,
 } from './helpers';
 import { STORE } from '../store';
+import { isWalletServiceEnabled } from './wallet';
 
 /**
  * Initialize the network settings saga when the wallet starts successfully.
@@ -137,6 +139,7 @@ export function* updateNetworkSettings(action) {
   // In practice they will never be equals.
 
   const networkSettings = yield select((state) => state.networkSettings);
+  const useWalletService = yield call(isWalletServiceEnabled);
   const backupUrl = {
     nodeUrl: networkSettings.nodeUrl,
     explorerServiceUrl: networkSettings.explorerServiceUrl,
@@ -151,8 +154,9 @@ export function* updateNetworkSettings(action) {
 
   // - walletServiceUrl has precedence
   // - nodeUrl as fallback
+  let potentialNetwork;
   let network;
-  if (walletServiceUrl) {
+  if (walletServiceUrl && useWalletService) {
     config.setWalletServiceBaseUrl(walletServiceUrl);
     config.setWalletServiceBaseWsUrl(walletServiceWsUrl);
 
@@ -164,7 +168,7 @@ export function* updateNetworkSettings(action) {
       });
 
       if (response) {
-        network = response;
+        potentialNetwork = response;
       }
     } catch (err) {
       console.error('Error calling the wallet-service while trying to get network details in updateNetworkSettings effect.', err);
@@ -172,9 +176,9 @@ export function* updateNetworkSettings(action) {
     }
   }
 
-  if (!network) {
+  if (!potentialNetwork) {
     try {
-      network = yield call(getFullnodeNetwork);
+      potentialNetwork = yield call(getFullnodeNetwork);
     } catch (err) {
       console.error('Error calling the fullnode while trying to get network details in updateNetworkSettings effect..', err);
       rollbackConfigUrls(backupUrl);
@@ -184,17 +188,30 @@ export function* updateNetworkSettings(action) {
   }
 
   // Fail after try get network from fullnode
-  if (!network) {
+  if (!potentialNetwork) {
     console.warn('The network could not be found.');
     yield put(networkSettingsUpdateFailure());
     return;
   }
 
+  // Validates the potential network and set the network accordingly
+  if (potentialNetwork === NETWORK_MAINNET) {
+    network = NETWORK_MAINNET;
+  } else if (potentialNetwork.startsWith(NETWORK_TESTNET)) {
+    network = NETWORK_TESTNET;
+  } else if (potentialNetwork.startsWith(NETWORK_PRIVATENET)) {
+    network = NETWORK_PRIVATENET;
+  } else {
+    console.warn('The network informed is not allowed. Make sure your network is either "mainnet", "testnet" or "privatenet", or starts with "testnet" or "privatenet".');
+    yield put(networkSettingsUpdateFailure());
+    return;
+  }
+
   let stage;
-  if (network === NETWORK_TESTNET) {
-    stage = STAGE_TESTNET;
-  } else if (network === NETWORK_MAINNET) {
+  if (network === NETWORK_MAINNET) {
     stage = STAGE;
+  } else if (network === NETWORK_TESTNET) {
+    stage = STAGE_TESTNET;
   } else {
     stage = STAGE_DEV_PRIVNET;
   }
