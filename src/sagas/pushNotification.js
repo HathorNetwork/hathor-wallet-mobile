@@ -38,6 +38,7 @@ import {
   pushTxDetailsRequested,
   pushTxDetailsSuccess,
   pushAskRegistrationRefreshQuestion,
+  pushDeviceRegistered,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -120,6 +121,11 @@ function* createChannelIfNotExists() {
 
 /**
  * Register the device to receive remote messages from FCM.
+ *
+ * iOS:
+ * In order to register the device on FCM, first the device should be registered on APNS.
+ * This is a requirement introduced by Firebase to avoid generate useless device tokens.
+ * 
  * @param {boolean} showErrorModal if should show error modal in case the device is not registered
  *
  * @returns {boolean} true if the device is registered on the FCM, false otherwise
@@ -131,6 +137,7 @@ function* confirmDeviceRegistrationOnFirebase(showErrorModal = true) {
       log.debug('Device not registered on FCM. Registering device on FCM...');
       yield call(messaging().registerDeviceForRemoteMessages);
     }
+    yield put(pushDeviceRegistered(true));
     return true;
   } catch (error) {
     log.error('Error confirming the device is registered on FCM.'
@@ -138,6 +145,7 @@ function* confirmDeviceRegistrationOnFirebase(showErrorModal = true) {
     if (showErrorModal) {
       yield put(onExceptionCaptured(error));
     }
+    yield put(pushDeviceRegistered(false));
     return false;
   }
 }
@@ -213,6 +221,13 @@ export function* init() {
     return;
   }
 
+  // If the device is not registered on FCM, we should not continue.
+  const isDeviceRegistered = yield call(confirmDeviceRegistrationOnFirebase, false);
+  if (!isDeviceRegistered) {
+    log.debug('Halting push notification initialization because the device is not registered on FCM.');
+    return;
+  }
+
   // If the channel is not created, we should not continue.
   // We also continue if the OS is iOS because we don't need to create the channel.
   const isChannelCreated = yield call(createChannelIfNotExists);
@@ -225,13 +240,6 @@ export function* init() {
   // We also continue if the OS is Android because we don't need to create the category.
   const isCategoryCreated = yield call(createCategoryIfNotExists);
   if (!isCategoryCreated) {
-    console.debug('Halting push notification initialization because the category was not created on iOS.');
-    return;
-  }
-
-  // If the device is not registered on FCM, we should not continue.
-  const isDeviceRegistered = yield call(confirmDeviceRegistrationOnFirebase);
-  if (!isDeviceRegistered) {
     log.debug('Halting push notification initialization because the category was not created on iOS.');
     return;
   }
@@ -410,6 +418,13 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
     log.debug('Application is not authorized to send push notification. Asking for permission or opening settings...');
 
     yield call(openAppSettings);
+    yield put(pushRegisterFailed());
+    return;
+  }
+
+  // fail if device is not registered on FCM
+  const isntDeviceRegistered = yield select((state) => !state.pushNotification.deviceRegistered);
+  if (isntDeviceRegistered) {
     yield put(pushRegisterFailed());
     return;
   }
