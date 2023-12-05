@@ -49,6 +49,9 @@ import { STORE } from '../store';
 import { getNetworkSettings, isUnlockScreen, showPinScreenForResult, isTokenRegistered } from './helpers';
 import { messageHandler } from '../workers/pushNotificationHandler';
 import { WALLET_STATUS } from './wallet';
+import { logger } from '../logger';
+
+const log = logger('push-notification-saga');
 
 const TRANSACTION_CHANNEL_NAME = t`Transaction`;
 const PUSH_ACTION_TITLE = t`Open`;
@@ -82,7 +85,7 @@ function* createCategoryIfNotExists() {
     ]);
     return true;
   } catch (error) {
-    console.error('Error creating categories for push notification on iOS.', error);
+    log.error('Error creating categories for push notification on iOS.', error);
     yield put(onExceptionCaptured(error));
     return false;
   }
@@ -109,7 +112,7 @@ function* createChannelIfNotExists() {
     }
     return true;
   } catch (error) {
-    console.error('Error creating channel for push notification on Android.', error);
+    log.error('Error creating channel for push notification on Android.', error);
     yield put(onExceptionCaptured(error));
     return false;
   }
@@ -125,12 +128,13 @@ function* confirmDeviceRegistrationOnFirebase(showErrorModal = true) {
   try {
     // Make sure deviceId is registered on the FCM
     if (!messaging().isDeviceRegisteredForRemoteMessages) {
-      console.debug('Device not registered on FCM. Registering device on FCM...');
+      log.debug('Device not registered on FCM. Registering device on FCM...');
       yield call(messaging().registerDeviceForRemoteMessages);
     }
     return true;
   } catch (error) {
-    console.error('Error confirming the device is registered on firebase.', error);
+    log.error('Error confirming the device is registered on FCM.'
+      + ' If running on iOS, the device may not be registered on APNS.', error);
     if (showErrorModal) {
       yield put(onExceptionCaptured(error));
     }
@@ -147,7 +151,7 @@ async function getDeviceId() {
     const deviceId = await messaging().getToken();
     return deviceId;
   } catch (error) {
-    console.error('Error getting deviceId from firebase.', error);
+    log.error('Error getting deviceId from firebase.', error);
     return null;
   }
 }
@@ -191,7 +195,7 @@ function* installForegroundListener() {
     isForegroundListenerInstalled = true;
     return true;
   } catch (error) {
-    console.error('Error setings firebase foreground message listener.', error);
+    log.error('Error setings firebase foreground message listener.', error);
     yield put(onExceptionCaptured(error));
     isForegroundListenerInstalled = false;
     return false;
@@ -205,7 +209,7 @@ export function* init() {
   // If push notification feature flag is disabled, we should not initialize it.
   const isPushNotificationAvailable = yield select((state) => state.pushNotification.available);
   if (!isPushNotificationAvailable) {
-    console.debug('Halting push notification initialization because the feature flag is disabled.');
+    log.debug('Halting push notification initialization because the feature flag is disabled.');
     return;
   }
 
@@ -213,7 +217,7 @@ export function* init() {
   // We also continue if the OS is iOS because we don't need to create the channel.
   const isChannelCreated = yield call(createChannelIfNotExists);
   if (!isChannelCreated) {
-    console.debug('Halting push notification initialization because the channel was not created on Android.');
+    log.debug('Halting push notification initialization because the channel was not created on Android.');
     return;
   }
 
@@ -228,20 +232,20 @@ export function* init() {
   // If the device is not registered on FCM, we should not continue.
   const isDeviceRegistered = yield call(confirmDeviceRegistrationOnFirebase);
   if (!isDeviceRegistered) {
-    console.debug('Halting push notification initialization because the device is not registered on FCM.');
+    log.debug('Halting push notification initialization because the category was not created on iOS.');
     return;
   }
 
   const deviceId = yield call(getDeviceId);
   if (!deviceId) {
-    console.debug('Halting push notification initialization because the device id is null.');
+    log.debug('Halting push notification initialization because the device id is null.');
     yield put(onExceptionCaptured(new Error('Device id is null')));
     return;
   }
 
   const isListenerInstalled = yield call(installForegroundListener);
   if (!isListenerInstalled) {
-    console.debug('Halting push notification initialization because the foreground listener was not installed.');
+    log.debug('Halting push notification initialization because the foreground listener was not installed.');
     return;
   }
 
@@ -375,16 +379,16 @@ export function* loadWallet() {
 const hasPostNotificationAuthorization = async () => {
   let status = await messaging().hasPermission();
   if (status === messaging.AuthorizationStatus.BLOCKED) {
-    console.debug('Device not authorized to send push notification and blocked to ask permission.');
+    log.debug('Device not authorized to send push notification and blocked to ask permission.');
     return false;
   }
 
   if (status === messaging.AuthorizationStatus.NOT_DETERMINED) {
-    console.debug('Device clean. Asking for permission to send push notification.');
+    log.debug('Device clean. Asking for permission to send push notification.');
     status = await messaging().requestPermission();
   }
 
-  console.debug('Device permission status: ', status);
+  log.debug('Device permission status: ', status);
   return status === messaging.AuthorizationStatus.AUTHORIZED
       || status === messaging.AuthorizationStatus.PROVISIONAL;
 };
@@ -403,7 +407,7 @@ const openAppSettings = async () => {
 export function* registration({ payload: { enabled, showAmountEnabled, deviceId } }) {
   const hasAuthorization = yield call(hasPostNotificationAuthorization);
   if (!hasAuthorization) {
-    console.debug('Application is not authorized to send push notification. Asking for permission or opening settings...');
+    log.debug('Application is not authorized to send push notification. Asking for permission or opening settings...');
 
     yield call(openAppSettings);
     yield put(pushRegisterFailed());
@@ -448,7 +452,7 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
       yield put(pushRegisterFailed());
     }
   } catch (error) {
-    console.error('Error registering device in wallet-service.', error);
+    log.error('Error registering device in wallet-service.', error);
     yield put(pushRegisterFailed());
   }
 }
@@ -477,7 +481,7 @@ export function* dismissOptInQuestion() {
 export function* checkOpenPushNotification() {
   const notificationError = STORE.getItem(pushNotificationKey.notificationError);
   if (notificationError) {
-    console.debug('Error while handling push notification on background: ', notificationError);
+    log.debug('Error while handling push notification on background: ', notificationError);
     STORE.removeItem(pushNotificationKey.notificationError);
     yield put(onExceptionCaptured(new Error(notificationError)));
     return;
@@ -487,14 +491,14 @@ export function* checkOpenPushNotification() {
     const notificationData = STORE.getItem(pushNotificationKey.notificationData);
     // Check if the app was opened by a push notification on press action
     if (notificationData) {
-      console.debug('App opened by push notification on press action.');
+      log.debug('App opened by push notification on press action.');
       STORE.removeItem(pushNotificationKey.notificationData);
       // Wait for the wallet to be loaded
       yield take(types.START_WALLET_SUCCESS);
       yield put(pushTxDetailsRequested({ txId: notificationData.txId }));
     }
   } catch (error) {
-    console.error('Error checking if app was opened by a push notification.', error);
+    log.error('Error checking if app was opened by a push notification.', error);
     yield put(onExceptionCaptured(error));
   }
 }
@@ -580,10 +584,10 @@ export function* loadTxDetails(action) {
       resetWallet: take(types.RESET_WALLET)
     });
     if (resetWallet) {
-      console.debug('Halting loadTxDetails.');
+      log.debug('Halting loadTxDetails.');
       return;
     }
-    console.debug('Continuing loadTxDetails after unlock screen.');
+    log.debug('Continuing loadTxDetails after unlock screen.');
   }
 
   try {
@@ -591,7 +595,7 @@ export function* loadTxDetails(action) {
     const txDetails = yield call(getTxDetails, wallet, txId);
     yield put(pushTxDetailsSuccess(txDetails));
   } catch (error) {
-    console.error('Error loading transaction details.', error);
+    log.error('Error loading transaction details.', error);
     yield put(onExceptionCaptured(error));
   }
 }
@@ -617,7 +621,7 @@ export function* resetPushNotification() {
       // Unregister the device from FCM
       yield call(cleanToken);
     } catch (error) {
-      console.error('Error cleaning token from firebase.', error);
+      log.error('Error cleaning token from firebase.', error);
       yield put(onExceptionCaptured(error));
     }
   }
@@ -629,7 +633,7 @@ export function* resetPushNotification() {
   // Reset the state
   yield put(pushReset());
   yield put(initPushNotification());
-  console.log('Push notification reset successfully');
+  log.log('Push notification reset successfully');
 }
 
 export function* saga() {
