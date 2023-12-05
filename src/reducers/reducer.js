@@ -14,13 +14,13 @@ import { WALLET_STATUS } from '../sagas/wallet';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
-*    status: string,
-*    oldStatus: string,
-*    updatedAt: int,
-*    data: {
-*      available: int,
-*      locked: int
-*    }
+ *    status: string,
+ *    oldStatus: string,
+ *    updatedAt: int,
+ *    data: {
+ *      available: int,
+ *      locked: int
+ *    }
  * }])
  * tokensHistory {Object} stores the history for each token (Dict[tokenUid: str, {
  *  status: string,
