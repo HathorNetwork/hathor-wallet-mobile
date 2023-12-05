@@ -1022,7 +1022,6 @@ export const onPushReset = (state) => ({
   pushNotification: initialState.pushNotification,
 });
 
-
 /**
  * Updates deviceRegistered status to signal if the device is
  * registered on FCM.

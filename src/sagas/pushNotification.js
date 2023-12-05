@@ -125,7 +125,7 @@ function* createChannelIfNotExists() {
  * iOS:
  * In order to register the device on FCM, first the device should be registered on APNS.
  * This is a requirement introduced by Firebase to avoid generate useless device tokens.
- * 
+ *
  * @param {boolean} showErrorModal if should show error modal in case the device is not registered
  *
  * @returns {boolean} true if the device is registered on the FCM, false otherwise
