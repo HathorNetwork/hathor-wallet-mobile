@@ -99,6 +99,7 @@ export const types = {
   PUSH_TX_DETAILS_SUCCESS: 'PUSH_TX_DETAILS_SUCCESS',
   PUSH_CLEAN_TX_DETAILS: 'PUSH_CLEAN_TX_DETAILS',
   PUSH_RESET: 'PUSH_RESET',
+  PUSH_DEVICE_REGISTERED: 'PUSH_DEVICE_REGISTERED',
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
@@ -852,6 +853,15 @@ export const pushCleanTxDetails = () => ({
  */
 export const pushReset = () => ({
   type: types.PUSH_RESET,
+});
+
+/**
+ * Request to update the status of registered device.
+ * @param { boolean } isRegistered
+ */
+export const pushDeviceRegistered = (isRegistered) => ({
+  type: types.PUSH_DEVICE_REGISTERED,
+  payload: isRegistered
 });
 
 /**

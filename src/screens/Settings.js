@@ -25,6 +25,7 @@ import {
 import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
 import { NetworkSettingsFlowNav } from './NetworkSettings';
+import { isPushNotificationAvailableForUser } from '../utils';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -41,7 +42,7 @@ const mapStateToProps = (state) => {
     network: state.serverInfo.network,
     uniqueDeviceId: state.uniqueDeviceId,
     server,
-    isPushNotificationAvailable: state.pushNotification.available,
+    isPushNotificationAvailable: isPushNotificationAvailableForUser(state),
     walletConnectEnabled: state.featureToggles[WALLET_CONNECT_FEATURE_TOGGLE],
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
   };
