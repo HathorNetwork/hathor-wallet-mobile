@@ -140,16 +140,30 @@ export const PUSH_ACTION = {
 };
 
 /**
- * The feature toggle configured in Unleash
+ * The feature toggle configured in Unleash.
+ *
+ * You should configure the new feature toggle default value
+ * at @see {@link FEATURE_TOGGLE_DEFAULTS}.
  */
+
 export const WALLET_SERVICE_FEATURE_TOGGLE = 'wallet-service-mobile.rollout';
 export const PUSH_NOTIFICATION_FEATURE_TOGGLE = 'push-notification.rollout';
 export const WALLET_CONNECT_FEATURE_TOGGLE = 'wallet-connect-mobile.rollout';
+export const NETWORK_SETTINGS_FEATURE_TOGGLE = 'network-settings.rollout';
 
+/**
+ * Default feature toggle values.
+ *
+ * This mapping constant is used in the featureToggle saga
+ * initialization.
+ *
+ * Configure here the default value of new feature toggle.
+ */
 export const FEATURE_TOGGLE_DEFAULTS = {
   [WALLET_SERVICE_FEATURE_TOGGLE]: false,
   [PUSH_NOTIFICATION_FEATURE_TOGGLE]: false,
   [WALLET_CONNECT_FEATURE_TOGGLE]: false,
+  [NETWORK_SETTINGS_FEATURE_TOGGLE]: false,
 };
 
 // Project id configured in https://walletconnect.com
@@ -158,11 +172,12 @@ export const WALLET_CONNECT_PROJECT_ID = '8264fff563181da658ce64ee80e80458';
 export const STAGE_DEV_PRIVNET = 'dev-privnet';
 export const STAGE_TESTNET = 'testnet';
 export const NETWORK_TESTNET = 'testnet';
-export const WALLET_SERVICE_TESTNET_BASE_URL = 'https://dev.wallet-service.testnet.hathor.network/';
-export const WALLET_SERVICE_TESTNET_BASE_WS_URL = 'wss://ws.dev.wallet-service.testnet.hathor.network/';
+export const WALLET_SERVICE_TESTNET_BASE_URL = 'https://wallet-service.testnet.hathor.network/';
+export const WALLET_SERVICE_TESTNET_BASE_WS_URL = 'wss://ws.wallet-service.testnet.hathor.network/';
 export const NODE_SERVER_TESTNET_URL = 'https://node1.testnet.hathor.network/v1a/';
 export const EXPLORER_TESTNET_URL = 'https://explorer.testnet.hathor.network/';
 export const EXPLORER_SERVICE_TESTNET_URL = 'https://explorer-service.testnet.hathor.network/';
+export const TX_MINING_SERVICE_TESTNET_URL = 'https://txmining.testnet.hathor.network/';
 
 export const PRE_SETTINGS_TESTNET = {
   stage: STAGE_TESTNET,
@@ -172,11 +187,13 @@ export const PRE_SETTINGS_TESTNET = {
   nodeUrl: NODE_SERVER_TESTNET_URL,
   explorerUrl: EXPLORER_TESTNET_URL,
   explorerServiceUrl: EXPLORER_SERVICE_TESTNET_URL,
+  txMiningServiceUrl: TX_MINING_SERVICE_TESTNET_URL,
 };
 
 export const NODE_SERVER_MAINNET_URL = 'https://mobile.wallet.hathor.network/v1a/';
 export const EXPLORER_MAINNET_URL = 'https://explorer.hathor.network/';
 export const EXPLORER_SERVICE_MAINNET_URL = 'https://explorer-service.hathor.network';
+export const TX_MINING_SERVICE_MAINNET_URL = 'https://txmining.mainnet.hathor.network/';
 
 export const PRE_SETTINGS_MAINNET = {
   stage: STAGE,
@@ -186,6 +203,7 @@ export const PRE_SETTINGS_MAINNET = {
   nodeUrl: NODE_SERVER_MAINNET_URL,
   explorerUrl: EXPLORER_MAINNET_URL,
   explorerServiceUrl: EXPLORER_SERVICE_MAINNET_URL,
+  txMiningServiceUrl: TX_MINING_SERVICE_MAINNET_URL,
 };
 
 /**
@@ -213,3 +231,8 @@ export const WALLET_SERVICE_REQUEST_TIMEOUT = 3000;
  * Timeout in miliseconds to call a general http request.
  */
 export const HTTP_REQUEST_TIMEOUT = 3000;
+
+/**
+ * Any network that is not mainnet or testnet should be a privatenet.
+ */
+export const NETWORK_PRIVATENET = 'privatenet';

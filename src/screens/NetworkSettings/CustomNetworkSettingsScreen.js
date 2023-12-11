@@ -13,6 +13,7 @@ import checkIcon from '../../assets/images/icCheckBig.png';
 import Spinner from '../../components/Spinner';
 import { hasSucceed, hasFailed, isLoading } from './helper';
 import { AlertUI } from '../../styles/themes';
+import { WALLET_SERVICE_FEATURE_TOGGLE } from '../../constants';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
 const warningText = t`Any token outside mainnet network bear no value. Only change if you know what you are doing.`;
@@ -46,6 +47,10 @@ function validate(formModel) {
 
   if (!formModel.explorerServiceUrl) {
     invalidModel.explorerServiceUrl = t`explorerServiceUrl is required.`;
+  }
+
+  if (!formModel.txMiningServiceUrl) {
+    invalidModel.txMiningServiceUrl = t`txMiningServiceUrl is required.`;
   }
 
   return invalidModel;
@@ -92,6 +97,8 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
   const networkSettings = useSelector((state) => state.networkSettings);
   const networkSettingsInvalid = useSelector((state) => state.networkSettingsInvalid);
   const networkSettingsStatus = useSelector((state) => state.networkSettingsStatus);
+  // eslint-disable-next-line max-len
+  const walletServiceEnabled = useSelector((state) => state.featureToggles[WALLET_SERVICE_FEATURE_TOGGLE]);
 
   const [formModel, setFormModel] = useState({
     nodeUrl: networkSettings.nodeUrl,
@@ -99,6 +106,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     explorerServiceUrl: networkSettings.explorerServiceUrl,
     walletServiceUrl: networkSettings.walletServiceUrl || '',
     walletServiceWsUrl: networkSettings.walletServiceWsUrl || '',
+    txMiningServiceUrl: networkSettings.txMiningServiceUrl || '',
   });
 
   const [invalidModel, setInvalidModel] = useState({
@@ -107,6 +115,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     explorerServiceUrl: networkSettingsInvalid?.explorerServiceUrl || '',
     walletServiceUrl: networkSettingsInvalid?.walletServiceUrl || '',
     walletServiceWsUrl: networkSettingsInvalid?.walletServiceWsUrl || '',
+    txMiningServiceUrl: networkSettingsInvalid.txMiningServiceUrl || '',
   });
 
   // eslint-disable-next-line max-len
@@ -149,6 +158,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
       explorerServiceUrl: networkSettingsInvalid?.explorerServiceUrl || '',
       walletServiceUrl: networkSettingsInvalid?.walletServiceUrl || '',
       walletServiceWsUrl: networkSettingsInvalid?.walletServiceWsUrl || '',
+      txMiningServiceUrl: networkSettingsInvalid?.txMiningServiceUrl || '',
     });
   }, [networkSettingsInvalid]);
 
@@ -219,21 +229,33 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
 
         <SimpleInput
           containerStyle={styles.input}
-          label={t`Wallet Service URL (optional)`}
+          label={t`Transaction Mining Service URL`}
           autoFocus
-          onChangeText={handleInputChange('walletServiceUrl')}
-          error={invalidModel.walletServiceUrl}
-          value={formModel.walletServiceUrl}
+          onChangeText={handleInputChange('txMiningServiceUrl')}
+          error={invalidModel.txMiningServiceUrl}
+          value={formModel.txMiningServiceUrl}
         />
 
-        <SimpleInput
-          containerStyle={styles.input}
-          label={t`Wallet Service WS URL (optional)`}
-          autoFocus
-          onChangeText={handleInputChange('walletServiceWsUrl')}
-          error={invalidModel.walletServiceWsUrl}
-          value={formModel.walletServiceWsUrl}
-        />
+        {walletServiceEnabled && (
+          <>
+            <SimpleInput
+              containerStyle={styles.input}
+              label={t`Wallet Service URL (optional)`}
+              autoFocus
+              onChangeText={handleInputChange('walletServiceUrl')}
+              error={invalidModel.walletServiceUrl}
+              value={formModel.walletServiceUrl}
+            />
+            <SimpleInput
+              containerStyle={styles.input}
+              label={t`Wallet Service WS URL (optional)`}
+              autoFocus
+              onChangeText={handleInputChange('walletServiceWsUrl')}
+              error={invalidModel.walletServiceWsUrl}
+              value={formModel.walletServiceWsUrl}
+            />
+          </>
+        )}
 
         <View style={styles.buttonContainer}>
           <NewHathorButton

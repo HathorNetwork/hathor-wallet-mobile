@@ -14,13 +14,13 @@ import { WALLET_STATUS } from '../sagas/wallet';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
-*    status: string,
-*    oldStatus: string,
-*    updatedAt: int,
-*    data: {
-*      available: int,
-*      locked: int
-*    }
+ *    status: string,
+ *    oldStatus: string,
+ *    updatedAt: int,
+ *    data: {
+ *      available: int,
+ *      locked: int
+ *    }
  * }])
  * tokensHistory {Object} stores the history for each token (Dict[tokenUid: str, {
  *  status: string,
@@ -70,6 +70,7 @@ import { WALLET_STATUS } from '../sagas/wallet';
  *  enabledAt {number} timestamp of when push notification was enabled
  *  showAmountEnabled {boolean} if user has enabled the option to show amount in push notification
  *  txDetails {Object} tx info to show on tx details modal
+ *  deviceRegistered {boolean} if device is registered on FCM
  * }
  * lastSharedAddress {string} The current address to use
  * lastSharedIndex {int} The current address index to use
@@ -189,6 +190,10 @@ const initialState = {
      * }
      */
     txDetails: null,
+    /**
+     * deviceRegistered {boolean} if device is registered on FCM, and APNS when running on iOS.
+     */
+    deviceRegistered: false,
   },
   walletStartState: WALLET_STATUS.NOT_STARTED,
   lastSharedAddress: null,
@@ -325,6 +330,8 @@ export const reducer = (state = initialState, action) => {
       return onPushCleanTxDetails(state);
     case types.PUSH_RESET:
       return onPushReset(state);
+    case types.PUSH_DEVICE_REGISTERED:
+      return onPushDeviceRegistered(state, action);
     case types.EXCEPTION_CAPTURED:
       return onExceptionCaptured(state, action);
     case types.RELOAD_WALLET_REQUESTED:
@@ -1013,6 +1020,18 @@ export const onPushCleanTxDetails = (state) => ({
 export const onPushReset = (state) => ({
   ...state,
   pushNotification: initialState.pushNotification,
+});
+
+/**
+ * Updates deviceRegistered status to signal if the device is
+ * registered on FCM.
+ */
+export const onPushDeviceRegistered = (state, action) => ({
+  ...state,
+  pushNotification: {
+    ...state.pushNotification,
+    deviceRegistered: action.payload
+  },
 });
 
 /**

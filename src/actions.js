@@ -99,6 +99,7 @@ export const types = {
   PUSH_TX_DETAILS_SUCCESS: 'PUSH_TX_DETAILS_SUCCESS',
   PUSH_CLEAN_TX_DETAILS: 'PUSH_CLEAN_TX_DETAILS',
   PUSH_RESET: 'PUSH_RESET',
+  PUSH_DEVICE_REGISTERED: 'PUSH_DEVICE_REGISTERED',
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
@@ -855,6 +856,15 @@ export const pushReset = () => ({
 });
 
 /**
+ * Request to update the status of registered device.
+ * @param { boolean } isRegistered
+ */
+export const pushDeviceRegistered = (isRegistered) => ({
+  type: types.PUSH_DEVICE_REGISTERED,
+  payload: isRegistered
+});
+
+/**
  * failed {Boolean} Flag indicating whether WC failed or not.
  */
 export const setWCConnectionFailed = (failed) => ({
@@ -868,6 +878,7 @@ export const setWCConnectionFailed = (failed) => ({
  *   nodeUrl: string,
  *   explorerUrl: string,
  *   explorerServiceUrl: string,
+ *   txMiningServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string
  * }} customNetworkRequest Request input
@@ -884,6 +895,7 @@ export const networkSettingsUpdateRequest = (customNetworkRequest) => ({
  *   network: string,
  *   nodeUrl: string,
  *   explorerUrl: string,
+ *   txMiningServiceUrl: string,
  *   explorerServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string
@@ -901,6 +913,7 @@ export const networkSettingsUpdateState = (customNetwork) => ({
  *   network: string,
  *   nodeUrl: string,
  *   explorerUrl: string,
+ *   txMiningServiceUrl: string,
  *   explorerServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string
@@ -945,6 +958,7 @@ export const networkSettingsUpdateFailure = () => ({
  *   message: string,
  *   nodeUrl: string,
  *   explorerUrl: string,
+ *   txMiningServiceUrl: string,
  *   explorerServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string

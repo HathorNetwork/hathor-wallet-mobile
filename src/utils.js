@@ -374,3 +374,14 @@ export function combineURLs(baseURL, relativeURL) {
     ? `${baseURL.replace(/\/+$/, '')}/${relativeURL.replace(/^\/+/, '')}`
     : baseURL;
 }
+
+/**
+ * Determine if Push Notification feature can be shown to users.
+ *
+ * @param {Object} redux state
+ *
+ * @returns {Boolean} true if available, false otherwise.
+ */
+export const isPushNotificationAvailableForUser = (state) => (
+  state.pushNotification.available && state.pushNotification.deviceRegistered
+);

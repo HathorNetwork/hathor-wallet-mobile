@@ -229,7 +229,7 @@ msgstr "У вас ${ amountAvailableText } HTR"
 
 #: src/screens/CreateTokenAmount.js:148 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:220
-#: src/screens/InitWallet.js:341 src/screens/SendAddressInput.js:67
+#: src/screens/InitWallet.js:341 src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:179
 msgid "Next"
 msgstr "Далее"
@@ -567,7 +567,7 @@ msgstr "ПОЛУЧИТЬ"
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
-#: src/screens/RegisterToken.js:27 src/screens/SendScanQRCode.js:71
+#: src/screens/RegisterToken.js:27 src/screens/SendScanQRCode.js:89
 msgid "Manual info"
 msgstr "Ручной ввод"
 
@@ -650,11 +650,11 @@ msgstr "Изменить PIN-код"
 msgid "Lock wallet"
 msgstr "Заблокировать кошелек"
 
-#: src/screens/SendAddressInput.js:54 src/screens/SendScanQRCode.js:79
+#: src/screens/SendAddressInput.js:53 src/screens/SendScanQRCode.js:97
 msgid "SEND"
 msgstr "ОТПРАВИТЬ"
 
-#: src/screens/SendAddressInput.js:60
+#: src/screens/SendAddressInput.js:59
 msgid "Address to send"
 msgstr "Адрес отправки"
 
@@ -695,25 +695,25 @@ msgstr "Ваш перевод **${ this.amountAndToken }** был подтвер
 msgid "Address"
 msgstr "Адрес"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:242
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:258
 #: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr "Отправить"
 
-#: src/screens/SendScanQRCode.js:27
+#: src/screens/SendScanQRCode.js:36
 msgid "Invalid QR code"
 msgstr "Неверный QR-код"
 
-#: src/screens/SendScanQRCode.js:30
+#: src/screens/SendScanQRCode.js:39
 msgid "OK"
 msgstr "OK"
 
-#: src/screens/SendScanQRCode.js:55
+#: src/screens/SendScanQRCode.js:73
 #, javascript-format
 msgid "You don't have the requested token [${ tokenLabel }]"
 msgstr "У вас нет запрошенного токена [${ tokenLabel }]"
 
-#: src/screens/SendScanQRCode.js:87
+#: src/screens/SendScanQRCode.js:105
 #: src/screens/WalletConnect/WalletConnectScan.js:49
 msgid "Scan the QR code"
 msgstr "Сканировать QR-код"
@@ -874,23 +874,31 @@ msgstr ""
 msgid "explorerServiceUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:195
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:52
+msgid "txMiningServiceUrl is required."
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:202
 msgid "Node URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:204
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:211
 msgid "Explorer URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:213
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:220
 msgid "Explorer Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:222
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:229
+msgid "Transaction Mining Service URL"
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:238
 msgid "Wallet Service URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:231
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:247
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
@@ -913,33 +921,37 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
-#: src/sagas/networkSettings.js:85
+#: src/sagas/networkSettings.js:87
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:92
+#: src/sagas/networkSettings.js:94
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:99
+#: src/sagas/networkSettings.js:101
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:106
+#: src/sagas/networkSettings.js:108
+msgid "txMiningServiceUrl should be a valid URL."
+msgstr ""
+
+#: src/sagas/networkSettings.js:115
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:113
+#: src/sagas/networkSettings.js:122
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:120
+#: src/sagas/networkSettings.js:129
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
 #.  If we fall into this situation, the app should be killed
 #.  for the custom new network settings take effect.
-#: src/sagas/networkSettings.js:261
+#: src/sagas/networkSettings.js:288
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 

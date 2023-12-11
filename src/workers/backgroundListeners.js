@@ -14,6 +14,9 @@ import {
   setNotificationError,
 } from './pushNotificationHandler';
 import { store } from '../reducers/reducer.init';
+import { logger } from '../logger';
+
+const log = logger('push-notification-bg');
 
 /**
 * This function verifies if the device is registered on firebase,
@@ -23,11 +26,11 @@ const isRegisteredOnFirebase = () => {
   try {
     // Make sure deviceId is registered on the FCM
     if (!messaging().isDeviceRegisteredForRemoteMessages) {
-      console.debug('The device is not registered on the firebase yet.');
+      log.debug('The device is not registered on the firebase yet.');
       return false;
     }
   } catch (error) {
-    console.error('Error confirming the device is registered on firebase while'
+    log.error('Error confirming the device is registered on firebase while'
       + ' loading the background message listener. Maybe the auto initialization of firebase'
       + ' is disabled.', error);
     return false;
@@ -41,7 +44,7 @@ const isRegisteredOnFirebase = () => {
  */
 export const setBackgroundMessageListener = () => {
   if (!isRegisteredOnFirebase()) {
-    console.debug('Halting setBackgroundMessageListener.');
+    log.debug('Halting setBackgroundMessageListener.');
     return;
   }
 
@@ -56,7 +59,7 @@ export const setBackgroundMessageListener = () => {
   try {
     messaging().setBackgroundMessageHandler(onBackgroundMessage);
   } catch (error) {
-    console.error('Error setting firebase background message listener.', error);
+    log.error('Error setting firebase background message listener.', error);
     store.dispatch(onExceptionCaptured(error));
   }
 };
@@ -73,7 +76,7 @@ export const setBackgroundMessageListener = () => {
  */
 export const setNotifeeBackgroundListener = () => {
   if (!isRegisteredOnFirebase()) {
-    console.debug('Halting setNotifeeBackgroundListener.');
+    log.debug('Halting setNotifeeBackgroundListener.');
     return;
   }
 
@@ -86,13 +89,13 @@ export const setNotifeeBackgroundListener = () => {
       }
 
       if (type === EventType.PRESS || type === EventType.ACTION_PRESS) {
-        console.debug('Notification pressed or action pressed on background.');
+        log.debug('Notification pressed or action pressed on background.');
         setInitialNotificationData(notification);
         await notifee.cancelNotification(notification.id);
       }
     });
   } catch (error) {
-    console.error('Error setting notifee background message listener.', error);
+    log.error('Error setting notifee background message listener.', error);
     store.dispatch(onExceptionCaptured(error));
   }
 };

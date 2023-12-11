@@ -462,7 +462,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = HathorMobileTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -488,7 +488,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEVELOPMENT_TEAM = 55SHY647CG;
 				INFOPLIST_FILE = HathorMobileTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -516,11 +516,12 @@
 				DEVELOPMENT_TEAM = 55SHY647CG;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = HathorMobile/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.26.0;
+				MARKETING_VERSION = 0.26.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -544,11 +545,12 @@
 				CURRENT_PROJECT_VERSION = 1.0.0;
 				DEVELOPMENT_TEAM = 55SHY647CG;
 				INFOPLIST_FILE = HathorMobile/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.26.0;
+				MARKETING_VERSION = 0.26.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

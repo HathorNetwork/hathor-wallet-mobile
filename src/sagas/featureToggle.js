@@ -185,6 +185,7 @@ function mapFeatureToggles(toggles) {
     acc[toggle.name] = get(
       toggle,
       'enabled',
+      // Configure in this constant the feature toggle's default value.
       FEATURE_TOGGLE_DEFAULTS[toggle.name] || false,
     );
 

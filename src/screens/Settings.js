@@ -19,11 +19,13 @@ import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import {
   IS_MULTI_TOKEN,
+  NETWORK_SETTINGS_FEATURE_TOGGLE,
   WALLET_CONNECT_FEATURE_TOGGLE,
 } from '../constants';
 import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
 import { NetworkSettingsFlowNav } from './NetworkSettings';
+import { isPushNotificationAvailableForUser } from '../utils';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -40,8 +42,9 @@ const mapStateToProps = (state) => {
     network: state.serverInfo.network,
     uniqueDeviceId: state.uniqueDeviceId,
     server,
-    isPushNotificationAvailable: state.pushNotification.available,
+    isPushNotificationAvailable: isPushNotificationAvailableForUser(state),
     walletConnectEnabled: state.featureToggles[WALLET_CONNECT_FEATURE_TOGGLE],
+    networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
   };
 };
 
@@ -171,12 +174,15 @@ export class Settings extends React.Component {
             />
           </HathorList>
 
-          <HathorList title={t`Developer Settings`}>
-            <ListMenu
-              title={t`Network Settings`}
-              onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
-            />
-          </HathorList>
+          {this.props.networkSettingsEnabled
+            && (
+              <HathorList title={t`Developer Settings`}>
+                <ListMenu
+                  title={t`Network Settings`}
+                  onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
+                />
+              </HathorList>
+            )}
 
         </ScrollView>
         <OfflineBar />
