@@ -27,14 +27,14 @@ else
 fi
 
 # Variables for debugging
- echo package: x${PACKAGE_VERSION}x
- echo stripped: x${STRIPPED_PACKAGE_VERSION}x
- echo stripped rc: x${STRIPPED_PACKAGE_CANDIDATE}x
- echo android: x${ANDROID_GRADLE_VERSION}x
- echo ios mv1: x${IOS_MARKETING_VERSION_1}x
- echo ios mv2: x${IOS_MARKETING_VERSION_2}x
- echo ios pv1: x${IOS_PROJECT_VERSION_1}x
- echo ios pv2: x${IOS_PROJECT_VERSION_2}x
+# echo package: x${PACKAGE_VERSION}x
+# echo stripped: x${STRIPPED_PACKAGE_VERSION}x
+# echo stripped rc: x${STRIPPED_PACKAGE_CANDIDATE}x
+# echo android: x${ANDROID_GRADLE_VERSION}x
+# echo ios mv1: x${IOS_MARKETING_VERSION_1}x
+# echo ios mv2: x${IOS_MARKETING_VERSION_2}x
+# echo ios pv1: x${IOS_PROJECT_VERSION_1}x
+# echo ios pv2: x${IOS_PROJECT_VERSION_2}x
 
 # Initialize the error code with a success
 EXITCODE=0
@@ -71,7 +71,7 @@ if [ -z "$STRIPPED_PACKAGE_CANDIDATE" ]; then
   fi
 else
   RCVERSION=${STRIPPED_PACKAGE_CANDIDATE//[^0-9]/}
-  echo "RCVERSION: $RCVERSION"
+#  echo "RCVERSION: $RCVERSION"
   if [[ x${IOS_PROJECT_VERSION_1}x != x0.${RCVERSION}.0x ]]; then
       echo "Invalid format (expected 0.$RCVERSION.0) for first CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_1}) on ios/HathorMobile.xcodeproj/project.pbxproj"
       EXITCODE=-1
