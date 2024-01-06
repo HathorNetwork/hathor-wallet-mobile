@@ -44,8 +44,9 @@ if [[ x${STRIPPED_PACKAGE_VERSION}x != x${IOS_MARKETING_VERSION_2}x ]]; then
 	EXITCODE=-1
 fi
 
+# This will check the format of IOS' CURRENT_PROJECT_VERSION
 if [ -z "$STRIPPED_PACKAGE_CANDIDATE" ]; then
-  # This will check the format of IOS' CURRENT_PROJECT_VERSION
+  # If this is a release version, check that the CURRENT_PROJECT_VERSION is 1.0.0
   if [[ ! "$IOS_PROJECT_VERSION_1" =~ ^1\.0\.0$ ]]; then
       echo "Invalid format (expected 1.0.0) for first CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_1}) on ios/HathorMobile.xcodeproj/project.pbxproj"
   fi
@@ -54,13 +55,16 @@ if [ -z "$STRIPPED_PACKAGE_CANDIDATE" ]; then
       echo "Invalid format (expected 1.0.0) for second CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_2}) on ios/HathorMobile.xcodeproj/project.pbxproj"
   fi
 else
-  if [[ ! "$IOS_PROJECT_VERSION_1" =~ ^0\.[0-9]{1,3}\.0$ ]]; then
-      echo "Invalid format (expected 0.X.0) for first CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_1}) on ios/HathorMobile.xcodeproj/project.pbxproj"
+  # If this is a release candidate version, check that the CURRENT_PROJECT_VERSION is 0.rc.0
+  RCVERSION=${STRIPPED_PACKAGE_CANDIDATE//[^0-9]/}
+  echo "RCVERSION: $RCVERSION"
+  if [[ x${IOS_PROJECT_VERSION_1}x != x0.${RCVERSION}.0x ]]; then
+      echo "Invalid format (expected 0.$RCVERSION.0) for first CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_1}) on ios/HathorMobile.xcodeproj/project.pbxproj"
       EXITCODE=-1
   fi
 
-  if [[ ! "$IOS_PROJECT_VERSION_2" =~ ^0\.[0-9]{1,3}\.0$ ]]; then
-      echo "Invalid format (expected 0.X.0) for second CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_2}) on ios/HathorMobile.xcodeproj/project.pbxproj"
+  if [[ x${IOS_PROJECT_VERSION_2}x != x0.${RCVERSION}.0x ]]; then
+      echo "Invalid format (expected 0.$RCVERSION.0) for first CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_2}) on ios/HathorMobile.xcodeproj/project.pbxproj"
       EXITCODE=-1
   fi
 fi
