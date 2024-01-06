@@ -1,23 +1,32 @@
 #!/bin/bash
 
+# Read the official version number from package.json file
 PACKAGE_VERSION=`grep '"version":' ./package.json | cut -d '"' -f4`
+
+# Read the version number from the Android Gradle build file
 ANDROID_GRADLE_VERSION=`grep "versionName " ./android/app/build.gradle | cut -d '"' -f2`
+
+# Read the version number (MARKETING_VERSION and CURRENT_PROJECT_VERSION) from the iOS project file
 TEMP_IOS_VAR=`perl -n -e '/MARKETING_VERSION = (.*);/ && print "$1\n"' ./ios/HathorMobile.xcodeproj/project.pbxproj`
 TEMP_IOS_PROJECT_VERSION=`perl -n -e '/CURRENT_PROJECT_VERSION = (.*);/ && print "$1\n"' ./ios/HathorMobile.xcodeproj/project.pbxproj`
+
+# The iOS version number is repeated two times
 IOS_MARKETING_VERSION_1=`echo $TEMP_IOS_VAR | awk '{print $1}'`
 IOS_MARKETING_VERSION_2=`echo $TEMP_IOS_VAR | awk '{print $2}'`
 IOS_PROJECT_VERSION_1=`echo $TEMP_IOS_PROJECT_VERSION | awk '{print $1}'`
 IOS_PROJECT_VERSION_2=`echo $TEMP_IOS_PROJECT_VERSION | awk '{print $2}'`
 
-# This will read everything of the string up to the first dash.
+# The version number from the package.json file is split into two parts
 STRIPPED_PACKAGE_VERSION=$(echo $PACKAGE_VERSION| cut -d- -f1);
 if [[ "$PACKAGE_VERSION" == *-* ]]; then
+  # If the version contains a hyphen, extract the second part as the release candidate
   STRIPPED_PACKAGE_CANDIDATE=$(echo $PACKAGE_VERSION | cut -d- -f2)
 else
+  # Otherwise, the release candidate is empty
   STRIPPED_PACKAGE_CANDIDATE=""
 fi
 
-# For debugging:
+# Variables for debugging
  echo package: x${PACKAGE_VERSION}x
  echo stripped: x${STRIPPED_PACKAGE_VERSION}x
  echo stripped rc: x${STRIPPED_PACKAGE_CANDIDATE}x
@@ -27,13 +36,16 @@ fi
  echo ios pv1: x${IOS_PROJECT_VERSION_1}x
  echo ios pv2: x${IOS_PROJECT_VERSION_2}x
 
+# Initialize the error code with a success
 EXITCODE=0
 
+# Check if the version numbers from the package and Android are different
 if [[ x${PACKAGE_VERSION}x != x${ANDROID_GRADLE_VERSION}x ]]; then
 	echo Version different in package.json \($PACKAGE_VERSION\) and android/app/build.gradle
 	EXITCODE=-1
 fi
 
+# Check if the version numbers from the package and iOS MARKETING_VERSION are different
 if [[ x${STRIPPED_PACKAGE_VERSION}x != x${IOS_MARKETING_VERSION_1}x ]]; then
   echo Version different in package.json \($PACKAGE_VERSION\) and first MARKETING_VERSION \($IOS_MARKETING_VERSION_1\) on ios/HathorMobile.xcodeproj/project.pbxproj
 	EXITCODE=-1
@@ -44,18 +56,20 @@ if [[ x${STRIPPED_PACKAGE_VERSION}x != x${IOS_MARKETING_VERSION_2}x ]]; then
 	EXITCODE=-1
 fi
 
-# This will check the format of IOS' CURRENT_PROJECT_VERSION
+# Check the format of iOS' CURRENT_PROJECT_VERSION
+# If it's a release version (without hyphen in package version), it should be 1.0.0
+# If it's a release candidate version (with hyphen in package version), it should be 0.rc.0, where rc is taken from package version
 if [ -z "$STRIPPED_PACKAGE_CANDIDATE" ]; then
-  # If this is a release version, check that the CURRENT_PROJECT_VERSION is 1.0.0
   if [[ ! "$IOS_PROJECT_VERSION_1" =~ ^1\.0\.0$ ]]; then
       echo "Invalid format (expected 1.0.0) for first CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_1}) on ios/HathorMobile.xcodeproj/project.pbxproj"
+      EXITCODE=-1
   fi
 
   if [[ ! "$IOS_PROJECT_VERSION_2" =~ ^1\.0\.0$ ]]; then
       echo "Invalid format (expected 1.0.0) for second CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_2}) on ios/HathorMobile.xcodeproj/project.pbxproj"
+      EXITCODE=-1
   fi
 else
-  # If this is a release candidate version, check that the CURRENT_PROJECT_VERSION is 0.rc.0
   RCVERSION=${STRIPPED_PACKAGE_CANDIDATE//[^0-9]/}
   echo "RCVERSION: $RCVERSION"
   if [[ x${IOS_PROJECT_VERSION_1}x != x0.${RCVERSION}.0x ]]; then
@@ -69,4 +83,5 @@ else
   fi
 fi
 
+# Exit the script with the error code
 exit $EXITCODE
