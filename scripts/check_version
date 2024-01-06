@@ -60,12 +60,12 @@ fi
 # If it's a release version (without hyphen in package version), it should be 1.0.0
 # If it's a release candidate version (with hyphen in package version), it should be 0.rc.0, where rc is taken from package version
 if [ -z "$STRIPPED_PACKAGE_CANDIDATE" ]; then
-  if [[ ! "$IOS_PROJECT_VERSION_1" =~ ^1\.0\.0$ ]]; then
+  if [[ x${IOS_PROJECT_VERSION_1}x != x1.0.0x ]]; then
       echo "Invalid format (expected 1.0.0) for first CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_1}) on ios/HathorMobile.xcodeproj/project.pbxproj"
       EXITCODE=-1
   fi
 
-  if [[ ! "$IOS_PROJECT_VERSION_2" =~ ^1\.0\.0$ ]]; then
+  if [[ x${IOS_PROJECT_VERSION_2}x != x1.0.0x ]]; then
       echo "Invalid format (expected 1.0.0) for second CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_2}) on ios/HathorMobile.xcodeproj/project.pbxproj"
       EXITCODE=-1
   fi
