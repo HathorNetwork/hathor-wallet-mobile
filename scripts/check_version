@@ -11,13 +11,21 @@ IOS_PROJECT_VERSION_2=`echo $TEMP_IOS_PROJECT_VERSION | awk '{print $2}'`
 
 # This will read everything of the string up to the first dash.
 STRIPPED_PACKAGE_VERSION=$(echo $PACKAGE_VERSION| cut -d- -f1);
+if [[ "$PACKAGE_VERSION" == *-* ]]; then
+  STRIPPED_PACKAGE_CANDIDATE=$(echo $PACKAGE_VERSION | cut -d- -f2)
+else
+  STRIPPED_PACKAGE_CANDIDATE=""
+fi
 
 # For debugging:
-# echo package: x${PACKAGE_VERSION}x
-# echo stripped: x${STRIPPED_PACKAGE_VERSION}x
-# echo android: x${ANDROID_GRADLE_VERSION}x
-# echo ios pv1: x${IOS_MARKETING_VERSION_1}x
-# echo ios pv2: x${IOS_MARKETING_VERSION_2}x
+ echo package: x${PACKAGE_VERSION}x
+ echo stripped: x${STRIPPED_PACKAGE_VERSION}x
+ echo stripped rc: x${STRIPPED_PACKAGE_CANDIDATE}x
+ echo android: x${ANDROID_GRADLE_VERSION}x
+ echo ios mv1: x${IOS_MARKETING_VERSION_1}x
+ echo ios mv2: x${IOS_MARKETING_VERSION_2}x
+ echo ios pv1: x${IOS_PROJECT_VERSION_1}x
+ echo ios pv2: x${IOS_PROJECT_VERSION_2}x
 
 EXITCODE=0
 
@@ -36,13 +44,25 @@ if [[ x${STRIPPED_PACKAGE_VERSION}x != x${IOS_MARKETING_VERSION_2}x ]]; then
 	EXITCODE=-1
 fi
 
-# This will check the format of IOS' CURRENT_PROJECT_VERSION
-if [[ ! "$IOS_PROJECT_VERSION_1" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-    echo "Invalid format (expected X.X.X) for first CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_1}) on ios/HathorMobile.xcodeproj/project.pbxproj"
-fi
+if [ -z "$STRIPPED_PACKAGE_CANDIDATE" ]; then
+  # This will check the format of IOS' CURRENT_PROJECT_VERSION
+  if [[ ! "$IOS_PROJECT_VERSION_1" =~ ^1\.0\.0$ ]]; then
+      echo "Invalid format (expected 1.0.0) for first CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_1}) on ios/HathorMobile.xcodeproj/project.pbxproj"
+  fi
 
-if [[ ! "$IOS_PROJECT_VERSION_2" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-    echo "Invalid format (expected X.X.X) for second CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_2}) on ios/HathorMobile.xcodeproj/project.pbxproj"
+  if [[ ! "$IOS_PROJECT_VERSION_2" =~ ^1\.0\.0$ ]]; then
+      echo "Invalid format (expected 1.0.0) for second CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_2}) on ios/HathorMobile.xcodeproj/project.pbxproj"
+  fi
+else
+  if [[ ! "$IOS_PROJECT_VERSION_1" =~ ^0\.[0-9]{1,3}\.0$ ]]; then
+      echo "Invalid format (expected 0.X.0) for first CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_1}) on ios/HathorMobile.xcodeproj/project.pbxproj"
+      EXITCODE=-1
+  fi
+
+  if [[ ! "$IOS_PROJECT_VERSION_2" =~ ^0\.[0-9]{1,3}\.0$ ]]; then
+      echo "Invalid format (expected 0.X.0) for second CURRENT_PROJECT_VERSION (${IOS_PROJECT_VERSION_2}) on ios/HathorMobile.xcodeproj/project.pbxproj"
+      EXITCODE=-1
+  fi
 fi
 
 exit $EXITCODE
