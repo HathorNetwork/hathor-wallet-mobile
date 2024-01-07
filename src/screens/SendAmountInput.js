@@ -155,40 +155,40 @@ class SendAmountInput extends React.Component {
             onBackPress={() => this.props.navigation.goBack()}
           />
           <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
-          <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-            <View>
-              <View style={{
-                flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 40,
-              }}
-              >
-                {renderGhostElement()}
-                <AmountTextInput
-                  ref={this.inputRef}
-                  autoFocus
-                  onAmountUpdate={this.onAmountChange}
-                  value={this.state.amount}
-                  allowOnlyInteger={this.isNFT()}
-                  style={{ flex: 1 }} // we need this so the placeholder doesn't break in android
-                                      // devices after erasing the text
-                                      // https://github.com/facebook/react-native/issues/30666
-                />
-                {IS_MULTI_TOKEN
-                  ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />
-                  : renderGhostElement()}
+            <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
+              <View>
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 40,
+                }}
+                >
+                  {renderGhostElement()}
+                  <AmountTextInput
+                    ref={this.inputRef}
+                    autoFocus
+                    onAmountUpdate={this.onAmountChange}
+                    value={this.state.amount}
+                    allowOnlyInteger={this.isNFT()}
+                    style={{ flex: 1 }} // we need this so the placeholder doesn't break in android
+                                        // devices after erasing the text
+                                        // https://github.com/facebook/react-native/issues/30666
+                  />
+                  {IS_MULTI_TOKEN
+                    ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />
+                    : renderGhostElement()}
+                </View>
+                <InputLabel style={{ textAlign: 'center', marginTop: 8 }}>
+                  {getAvailableString()}
+                </InputLabel>
+                <Text style={styles.error}>{this.state.error}</Text>
               </View>
-              <InputLabel style={{ textAlign: 'center', marginTop: 8 }}>
-                {getAvailableString()}
-              </InputLabel>
-              <Text style={styles.error}>{this.state.error}</Text>
+              <NewHathorButton
+                title={t`Next`}
+                disabled={this.isButtonDisabled()}
+                onPress={this.onButtonPress}
+              />
             </View>
-            <NewHathorButton
-              title={t`Next`}
-              disabled={this.isButtonDisabled()}
-              onPress={this.onButtonPress}
-            />
-          </View>
-          <OfflineBar style={{ position: 'relative' }} />
-        </KeyboardAvoidingView>
+            <OfflineBar style={{ position: 'relative' }} />
+          </KeyboardAvoidingView>
         </Pressable>
       </View>
     );
