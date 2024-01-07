@@ -7,7 +7,12 @@
 
 import React from 'react';
 import {
-  KeyboardAvoidingView, StyleSheet, Text, View,
+  Keyboard,
+  KeyboardAvoidingView,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
@@ -143,12 +148,13 @@ class SendAmountInput extends React.Component {
     const tokenNameUpperCase = this.state.token.name.toUpperCase();
     return (
       <View style={{ flex: 1 }}>
-        <HathorHeader
-          withBorder
-          title={t`SEND ${tokenNameUpperCase}`}
-          onBackPress={() => this.props.navigation.goBack()}
-        />
-        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
+        <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
+          <HathorHeader
+            withBorder
+            title={t`SEND ${tokenNameUpperCase}`}
+            onBackPress={() => this.props.navigation.goBack()}
+          />
+          <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
               <View style={{
@@ -183,6 +189,7 @@ class SendAmountInput extends React.Component {
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
+        </Pressable>
       </View>
     );
   }
