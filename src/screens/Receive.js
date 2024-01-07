@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Dimensions, Keyboard, View } from 'react-native';
+import { Dimensions, Keyboard, Pressable, View } from 'react-native';
 import { t } from 'ttag';
 
 import { TabBar, TabView } from 'react-native-tab-view';
@@ -102,18 +102,20 @@ class ReceiveScreen extends React.Component {
 
     return (
       <View style={{ flex: 1 }}>
-        <HathorHeader
-          title={t`RECEIVE`}
-          withBorder
-        />
-        <TabView
-          renderTabBar={(props) => renderTabBar(props)}
-          navigationState={this.state}
-          renderScene={this.renderScene}
-          onIndexChange={this.handleIndexChange}
-          initialLayout={{ width: Dimensions.get('window').width }}
-        />
-        <OfflineBar />
+        <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
+          <HathorHeader
+            title={t`RECEIVE`}
+            withBorder
+          />
+          <TabView
+            renderTabBar={(props) => renderTabBar(props)}
+            navigationState={this.state}
+            renderScene={this.renderScene}
+            onIndexChange={this.handleIndexChange}
+            initialLayout={{ width: Dimensions.get('window').width }}
+          />
+          <OfflineBar />
+        </Pressable>
       </View>
     );
   }
