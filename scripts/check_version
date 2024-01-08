@@ -83,5 +83,9 @@ else
   fi
 fi
 
+if [[ x${EXITCODE}x != x0x ]]; then
+  echo "Check version failed. Consider using 'make bump updateType=xx' to update the version"
+fi
+
 # Exit the script with the error code
 exit $EXITCODE
