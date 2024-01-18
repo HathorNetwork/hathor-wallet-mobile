@@ -31,7 +31,7 @@
           ];
           packages = with pkgs; [
             nixpkgs-fmt
-            nodejs-16_x
+            nodejs-18_x
             ruby
             gnumake
             gettext
