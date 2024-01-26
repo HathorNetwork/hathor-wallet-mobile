@@ -18,7 +18,6 @@ import {
   select,
   fork,
   spawn,
-  takeEvery,
 } from 'redux-saga/effects';
 import { getUniqueId } from 'react-native-device-info';
 import {
@@ -154,6 +153,5 @@ function mapFeatureToggles(toggles) {
 export function* saga() {
   yield all([
     fork(monitorFeatureFlags),
-    takeEvery(types.FEATURE_TOGGLE_UPDATE, handleToggleUpdate),
   ]);
 }
