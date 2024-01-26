@@ -18,7 +18,6 @@ import {
   select,
   fork,
   spawn,
-  takeEvery,
 } from 'redux-saga/effects';
 import { getUniqueId } from 'react-native-device-info';
 import {
@@ -76,18 +75,6 @@ export function* fetchTogglesRoutine() {
       console.error('Erroed fetching feature toggles');
     }
   }
-}
-
-export function* handleToggleUpdate() {
-  console.log('Handling feature toggle update');
-  const unleashClient = yield select((state) => state.unleashClient);
-  const networkSettings = yield select((state) => state.networkSettings);
-
-  const toggles = unleashClient.getToggles();
-  const featureToggles = disableFeaturesIfNeeded(networkSettings, mapFeatureToggles(toggles));
-
-  yield put(setFeatureToggles(featureToggles));
-  yield put({ type: types.FEATURE_TOGGLE_UPDATED });
 }
 
 export function* monitorFeatureFlags(currentRetry = 0) {
@@ -152,6 +139,5 @@ function mapFeatureToggles(toggles) {
 export function* saga() {
   yield all([
     fork(monitorFeatureFlags),
-    takeEvery(types.FEATURE_TOGGLE_UPDATE, handleToggleUpdate),
   ]);
 }
