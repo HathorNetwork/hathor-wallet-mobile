@@ -1,6 +1,7 @@
 {
   "extends": "airbnb",
   "parser": "@babel/eslint-parser",
+  "ignorePatterns": ["lockdown.umd.js"],
   "plugins": [
   	"react"
   ],
