@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import './lockdown.umd';
 import './i18nInit';
 import { AppRegistry, View, Text } from 'react-native';
 import { setJSExceptionHandler } from 'react-native-exception-handler';
@@ -17,11 +16,6 @@ import {
   setBackgroundMessageListener,
   setNotifeeBackgroundListener,
 } from './src/workers/backgroundListeners';
-
-lockdown({
-  consoleTaming: 'unsafe',
-  errorTaming: 'unsafe',
-});
 
 // Set the background listeners for push notifications
 setNotifeeBackgroundListener();
