@@ -82,3 +82,6 @@ ios/HathorMobile.xcodeproj/project.xcworkspace/
 .metro-health-check*
 # testing
 /coverage
+
+# Env file used by pre_release.sh.
+/env
