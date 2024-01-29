@@ -134,9 +134,21 @@
     "setupFiles": [
       "<rootDir>/jestMockSetup.js"
     ],
-    "cacheDirectory": ".jest/cache",
-    "testMatch": [
-      "**/*.test.js"
-    ]
+    "cacheDirectory": ".jest/cache"
+  },
+  "lavamoat": {
+    "allowScripts": {
+      "$root$": false,
+      "@fortawesome/fontawesome-svg-core": false,
+      "@fortawesome/fontawesome-svg-core>@fortawesome/fontawesome-common-types": false,
+      "@fortawesome/free-regular-svg-icons": false,
+      "@fortawesome/free-regular-svg-icons>@fortawesome/fontawesome-common-types": false,
+      "@fortawesome/free-solid-svg-icons": false,
+      "@fortawesome/free-solid-svg-icons>@fortawesome/fontawesome-common-types": false,
+      "@hathor/wallet-lib>level>classic-level": false,
+      "@lavamoat/preinstall-always-fail": false,
+      "@sentry/react-native>@sentry/cli": false,
+      "ttag-cli": false
+    }
   }
 }
