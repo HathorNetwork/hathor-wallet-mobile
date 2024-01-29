@@ -11,7 +11,6 @@ import UnleashClient from 'hathor-unleash-client';
 import { get } from 'lodash';
 
 import {
-  takeEvery,
   all,
   call,
   delay,
@@ -19,13 +18,14 @@ import {
   select,
   fork,
   spawn,
+  takeEvery,
 } from 'redux-saga/effects';
 import { getUniqueId } from 'react-native-device-info';
 import {
+  types,
   setUnleashClient,
   setFeatureToggles,
   featureToggleInitialized,
-  types,
 } from '../actions';
 import {
   UNLEASH_URL,
@@ -68,13 +68,28 @@ export function* fetchTogglesRoutine() {
     try {
       // This call always make unleash to emit the event 'UPDATE',
       // which by its turn triggers the action 'FEATURE_TOGGLE_UPDATE'
-      yield call(() => unleashClient.fetchToggles());
+      const state = yield call(() => unleashClient.fetchToggles());
+      if (state === 'Updated') {
+        yield put({ type: types.FEATURE_TOGGLE_UPDATE });
+      }
     } catch (e) {
       // No need to do anything here as it will try again automatically in
       // UNLEASH_POLLING_INTERVAL. Just prevent it from crashing the saga.
       console.error('Erroed fetching feature toggles');
     }
   }
+}
+
+export function* handleToggleUpdate() {
+  console.log('Handling feature toggle update');
+  const unleashClient = yield select((state) => state.unleashClient);
+  const networkSettings = yield select((state) => state.networkSettings);
+
+  const toggles = unleashClient.getToggles();
+  const featureToggles = disableFeaturesIfNeeded(networkSettings, mapFeatureToggles(toggles));
+
+  yield put(setFeatureToggles(featureToggles));
+  yield put({ type: types.FEATURE_TOGGLE_UPDATED });
 }
 
 export function* monitorFeatureFlags(currentRetry = 0) {
@@ -139,5 +154,6 @@ function mapFeatureToggles(toggles) {
 export function* saga() {
   yield all([
     fork(monitorFeatureFlags),
+    takeEvery(types.FEATURE_TOGGLE_UPDATE, handleToggleUpdate),
   ]);
 }
