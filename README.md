@@ -4,7 +4,13 @@ See the instructions to run on (Windows)[./WINDOWS.md].
 
 ## Install
 
-`npm install`
+`npm run setup`
+
+### Check SES integrity
+
+The SES lockdown file should match the commited sha256 sum
+
+`sha256sum -c SHA256SUMS`
 
 ### Podfile install for iOS
 
