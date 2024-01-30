@@ -13,6 +13,7 @@
     "start:clean": "react-native start --reset-cache",
     "lint": "eslint .",
     "test": "jest",
+    "setup": "npm install && ./node_modules/.bin/allow-scripts",
     "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/",
     "postinstall": "rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack"
   },
@@ -139,7 +140,7 @@
   },
   "lavamoat": {
     "allowScripts": {
-      "$root$": false,
+      "$root$": true,
       "@fortawesome/fontawesome-svg-core": false,
       "@fortawesome/fontawesome-svg-core>@fortawesome/fontawesome-common-types": false,
       "@fortawesome/free-regular-svg-icons": false,
