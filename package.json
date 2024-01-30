@@ -74,7 +74,6 @@
     "redux": "4.2.1",
     "redux-saga": "1.2.3",
     "redux-thunk": "2.4.2",
-    "ses": "^1.0.1",
     "stream-browserify": "1.0.0",
     "ttag": "1.7.24",
     "url": "0.11.1"
