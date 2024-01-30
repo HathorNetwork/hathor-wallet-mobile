@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native/Libraries/Core/InitializeCore.js b/node_modules/react-native/Libraries/Core/InitializeCore.js
-index 25377f6..7ab3637 100644
+index 25377f6..b0dd11d 100644
 --- a/node_modules/react-native/Libraries/Core/InitializeCore.js
 +++ b/node_modules/react-native/Libraries/Core/InitializeCore.js
-@@ -24,13 +24,44 @@
+@@ -24,6 +24,37 @@
  
  'use strict';
  
@@ -40,11 +40,3 @@ index 25377f6..7ab3637 100644
  const start = Date.now();
  
  require('./setUpGlobals');
- require('./setUpDOM');
- require('./setUpPerformance');
- require('./setUpErrorHandling');
--require('./polyfillPromise');
-+// require('./polyfillPromise');
- require('./setUpRegeneratorRuntime');
- require('./setUpTimers');
- require('./setUpXHR');
