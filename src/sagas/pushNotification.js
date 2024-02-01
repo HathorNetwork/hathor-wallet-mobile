@@ -378,6 +378,7 @@ export function* loadWallet() {
       });
     } catch (error) {
       yield put(pushLoadWalletFailed({ error }));
+      return;
     }
   } else {
     walletService = yield select((state) => state.wallet);
