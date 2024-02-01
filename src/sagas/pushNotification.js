@@ -398,14 +398,14 @@ const hasPostNotificationAuthorization = async () => {
     return false;
   }
 
-  if (status === messaging.AuthorizationStatus.NOT_DETERMINED) {
-    log.debug('Device clean. Asking for permission to send push notification.');
+  if (status === messaging.AuthorizationStatus.NOT_DETERMINED
+  || status === messaging.AuthorizationStatus.EPHEMERAL
+  || status === messaging.AuthorizationStatus.PROVISIONAL) {
+    log.debug('Asking for permission to send push notification.');
     status = await messaging().requestPermission();
   }
 
-  log.debug('Device permission status: ', status);
-  return status === messaging.AuthorizationStatus.AUTHORIZED
-      || status === messaging.AuthorizationStatus.PROVISIONAL;
+  return status === messaging.AuthorizationStatus.AUTHORIZED;
 };
 
 /**
