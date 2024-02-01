@@ -15,6 +15,7 @@ import {
   take,
   takeLatest,
   debounce,
+  delay,
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
@@ -358,6 +359,11 @@ export function* loadWallet() {
     const network = new Network(networkSettings.network);
 
     const pin = yield call(showPinScreenForResult, dispatch);
+
+    // Delay 300ms to resume script execution in the next loop.
+    // This solution liberates the PinScreen to dismiss.
+    yield race([delay(300)]);
+
     const seed = yield STORE.getWalletWords(pin);
     walletService = new HathorWalletServiceWallet({
       seed,
