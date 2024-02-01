@@ -362,7 +362,7 @@ export function* loadWallet() {
 
     // Delay 300ms to resume script execution in the next loop.
     // This solution liberates the PinScreen to dismiss.
-    yield race([delay(300)]);
+    yield delay(300);
 
     const seed = yield STORE.getWalletWords(pin);
     walletService = new HathorWalletServiceWallet({
