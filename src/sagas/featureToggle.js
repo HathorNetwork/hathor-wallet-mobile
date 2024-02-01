@@ -7,7 +7,7 @@
 
 import { Platform } from 'react-native';
 import VersionNumber from 'react-native-version-number';
-import UnleashClient from 'hathor-unleash-client';
+import UnleashClient, { FetchTogglesStatus } from 'hathor-unleash-client';
 import { get } from 'lodash';
 
 import {
@@ -66,10 +66,8 @@ export function* fetchTogglesRoutine() {
     const unleashClient = yield select((state) => state.unleashClient);
 
     try {
-      // This call always make unleash to emit the event 'UPDATE',
-      // which by its turn triggers the action 'FEATURE_TOGGLE_UPDATE'
       const state = yield call(() => unleashClient.fetchToggles());
-      if (state === 'Updated') {
+      if (state === FetchTogglesStatus.Updated) {
         yield put({ type: types.FEATURE_TOGGLE_UPDATE });
       }
     } catch (e) {
