@@ -393,7 +393,7 @@ export function* loadWallet() {
  */
 const hasPostNotificationAuthorization = async () => {
   let status = await messaging().hasPermission();
-  if (status === messaging.AuthorizationStatus.BLOCKED) {
+  if (status === messaging.AuthorizationStatus.DENIED) {
     log.debug('Device not authorized to send push notification and blocked to ask permission.');
     return false;
   }
