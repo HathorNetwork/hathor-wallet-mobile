@@ -7,7 +7,7 @@
 
 import { Platform } from 'react-native';
 import VersionNumber from 'react-native-version-number';
-import UnleashClient, { FetchTogglesStatus } from 'hathor-unleash-client';
+import UnleashClient, { FetchTogglesStatus } from '@hathor/unleash-client';
 import { get } from 'lodash';
 
 import {
