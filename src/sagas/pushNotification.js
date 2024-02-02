@@ -15,6 +15,7 @@ import {
   take,
   takeLatest,
   debounce,
+  spawn,
   delay,
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
@@ -315,12 +316,27 @@ export function* init() {
     }
   }
 
-  // If the user has not been asked yet, we should ask him if he wants to enable push notifications
-  // We should appear only once, so we should save the fact that the user has dismissed the question
-  const optInDismissed = STORE.getItem(pushNotificationKey.optInDismissed);
-  if (optInDismissed === null || !optInDismissed) {
-    yield put(pushAskOptInQuestion());
-  }
+  // Gives users the option to opt-in the Push Notification
+  // after its initialization, but only opens the opt-in
+  // modal after wallet become ready.
+  // Spwan creates a detached thread from this current thread.
+  yield spawn(function* handleOptIn() {
+    const { ready } = yield race({
+      ready: take(types.WALLET_STATE_READY),
+      // Do nothing with error, only terminates the thread.
+      error: take(types.WALLET_STATE_ERROR),
+    });
+
+    if (ready) {
+      // Ask user for push notification opt-in if it has not
+      // been asked previously. It appears only once because
+      // we persist the dismiss action on store.
+      const optInDismissed = STORE.getItem(pushNotificationKey.optInDismissed);
+      if (optInDismissed === null || !optInDismissed) {
+        yield put(pushAskOptInQuestion());
+      }
+    }
+  });
 }
 
 /**
