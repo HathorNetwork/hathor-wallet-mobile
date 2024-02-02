@@ -13,16 +13,21 @@ export default function AskForPushNotification(props) {
     dispatch(pushDismissOptInQuestion());
   };
 
-  if (!showOptIn) {
-    return null;
+  const putDismissOptInQuestion = () => {
+    dispatch(pushDismissOptInQuestion());
+  };
+
+  const pushNotificationOptInModal = () => (<ActionModal
+    title={t`Do you want to enable push notifications for this wallet?`}
+    text={t`You can always change this later in the settings menu`}
+    button={t`Yes, enable`}
+    onAction={onEnablePushNotifications}
+    onDismiss={putDismissOptInQuestion}
+  />);
+
+  if (showOptIn) {
+    return pushNotificationOptInModal();
   }
-  return (
-    <ActionModal
-      title={t`Do you want to enable push notifications for this wallet?`}
-      text={t`You can always change this later in the settings menu`}
-      button={t`Yes, enable`}
-      onAction={() => onEnablePushNotifications()}
-      onDismiss={() => dispatch(pushDismissOptInQuestion())}
-    />
-  );
+
+  return null;
 }
