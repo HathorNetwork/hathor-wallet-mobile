@@ -6,6 +6,7 @@
  */
 
 import { Platform } from 'react-native';
+import VersionNumber from 'react-native-version-number';
 import { UnleashClient, EVENTS as UnleashEvents } from 'unleash-proxy-client';
 import { get } from 'lodash';
 
@@ -89,11 +90,15 @@ export function* monitorFeatureFlags(currentRetry = 0) {
     disableRefresh: true, // Disable it, we will handle it ourselves
     appName: `wallet-mobile-${Platform.OS}`,
   });
+
+  const { appVersion } = VersionNumber;
+
   const options = {
     userId: getUniqueId(),
     properties: {
       platform: Platform.OS,
       stage: STAGE,
+      appVersion,
     },
   };
 
