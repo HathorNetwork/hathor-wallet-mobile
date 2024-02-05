@@ -61,6 +61,7 @@ import {
   setAvailablePushNotification,
   resetWalletSuccess,
   setTokens,
+  setShowWalletServiceLoadFailedModal,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -80,7 +81,8 @@ export const WALLET_STATUS = {
   LOADING: 'loading',
 };
 
-export const IGNORE_WS_TOGGLE_FLAG = 'featureFlags:ignoreWalletServiceFlag';
+export const IGNORE_WS_TOGGLE_FLAG = 'featureFlags:shouldIgnoreWalletServiceFlag';
+export const EXPIRE_WS_IGNORE_FLAG = 24 * 60 * 1000; // 24 hours
 
 /**
  * Returns the value of the PUSH_NOTIFICATION_FEATURE_TOGGLE feature flag
@@ -97,12 +99,22 @@ export function* isPushNotificationEnabled() {
  * @returns {Generator<unknown, boolean>}
  */
 export function* isWalletServiceEnabled() {
+  // Users might have had issues with the wallet-service in the past, we can detect
+  // old flags because they were booleans, new flags are integers (timestamps)
   const shouldIgnoreFlag = yield call(() => AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG));
+  const shouldIgnoreFlagTs = parseInt(shouldIgnoreFlag, 10);
 
-  // If we should ignore flag, it shouldn't matter what the featureToggle is, wallet service
-  // is definitely disabled.
-  if (shouldIgnoreFlag) {
-    return false;
+  if (!Number.isNaN(shouldIgnoreFlagTs)) {
+    const now = new Date().getTime();
+    const delta = now - shouldIgnoreFlagTs;
+
+    if (delta < EXPIRE_WS_IGNORE_FLAG) {
+      console.log(`Still ignoring wallet-service, will expire in ${EXPIRE_WS_IGNORE_FLAG - delta}ms`);
+      return false;
+    }
+  } else {
+    // We can safely remove the old flag and continue
+    yield call(() => AsyncStorage.removeItem(IGNORE_WS_TOGGLE_FLAG));
   }
 
   const walletServiceEnabled = yield call(checkForFeatureFlag, WALLET_SERVICE_FEATURE_TOGGLE);
@@ -194,11 +206,18 @@ export function* startWallet(action) {
     });
   } catch (e) {
     if (useWalletService) {
+      yield put(setShowWalletServiceLoadFailedModal(true));
+      yield take(types.WALLETSERVICE_RENDER_FAILED_ACK);
+      yield put(setShowWalletServiceLoadFailedModal(false));
+
       // Wallet Service start wallet will fail if the status returned from
       // the service is 'error' or if the start wallet request failed.
       // We should fallback to the old facade by storing the flag to ignore
       // the feature flag
-      yield call(() => AsyncStorage.setItem(IGNORE_WS_TOGGLE_FLAG, 'true'));
+      //
+      // This might be a temporary issue on the wallet-service side, we should
+      // store the timestamp of when this flag was set, so we're able to expire it
+      yield call(() => AsyncStorage.setItem(IGNORE_WS_TOGGLE_FLAG, `${new Date().getTime()}`));
 
       // Yield the same action so it will now load on the old facade
       yield put(action);

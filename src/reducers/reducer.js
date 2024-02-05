@@ -214,6 +214,7 @@ const initialState = {
   networkSettings: PRE_SETTINGS_MAINNET,
   networkSettingsInvalid: {},
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
+  showWalletServiceLoadFailedModal: false,
 };
 
 export const reducer = (state = initialState, action) => {
@@ -370,6 +371,8 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateFailure(state);
     case types.NETWORKSETTINGS_UPDATE_INVALID:
       return onNetworkSettingsUpdateInvalid(state, action);
+    case types.WALLETSERVICE_SET_SHOW_MODAL:
+      return onSetShowWalletServiceLoadFailedModal(state, action);
     default:
       return state;
   }
@@ -1188,4 +1191,13 @@ export const onNetworkSettingsUpdateInvalid = (state, { payload }) => ({
   ...state,
   networkSettingsInvalid: payload,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
+});
+
+/**
+ * @param {Object} action.payload Whether we should display the modal on the
+ * loadHistoryStatus screen or not.
+ */
+export const onSetShowWalletServiceLoadFailedModal = (state, { payload }) => ({
+  ...state,
+  showWalletServiceLoadFailedModal: payload,
 });
