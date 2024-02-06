@@ -15,6 +15,7 @@ import {
   take,
   takeLatest,
   debounce,
+  delay,
 } from 'redux-saga/effects';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
@@ -358,6 +359,11 @@ export function* loadWallet() {
     const network = new Network(networkSettings.network);
 
     const pin = yield call(showPinScreenForResult, dispatch);
+
+    // Delay 300ms to resume script execution in the next loop.
+    // This solution liberates the PinScreen to dismiss.
+    yield delay(300);
+
     const seed = yield STORE.getWalletWords(pin);
     walletService = new HathorWalletServiceWallet({
       seed,
@@ -372,6 +378,7 @@ export function* loadWallet() {
       });
     } catch (error) {
       yield put(pushLoadWalletFailed({ error }));
+      return;
     }
   } else {
     walletService = yield select((state) => state.wallet);
@@ -386,19 +393,19 @@ export function* loadWallet() {
  */
 const hasPostNotificationAuthorization = async () => {
   let status = await messaging().hasPermission();
-  if (status === messaging.AuthorizationStatus.BLOCKED) {
+  if (status === messaging.AuthorizationStatus.DENIED) {
     log.debug('Device not authorized to send push notification and blocked to ask permission.');
     return false;
   }
 
-  if (status === messaging.AuthorizationStatus.NOT_DETERMINED) {
-    log.debug('Device clean. Asking for permission to send push notification.');
+  if (status === messaging.AuthorizationStatus.NOT_DETERMINED
+  || status === messaging.AuthorizationStatus.EPHEMERAL
+  || status === messaging.AuthorizationStatus.PROVISIONAL) {
+    log.debug('Asking for permission to send push notification.');
     status = await messaging().requestPermission();
   }
 
-  log.debug('Device permission status: ', status);
-  return status === messaging.AuthorizationStatus.AUTHORIZED
-      || status === messaging.AuthorizationStatus.PROVISIONAL;
+  return status === messaging.AuthorizationStatus.AUTHORIZED;
 };
 
 /**
