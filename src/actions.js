@@ -137,6 +137,12 @@ export const types = {
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
   /* It updates the redux state of network settings status */
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
+  /* It initiates a registration process of a Nano Contract.  */
+  NANOCONTRACT_REGISTER_REQUEST: 'NANOCONTRACT_REGISTER_REQUEST',
+  /* It indicates a Nano Contract registration is couldn't complete.  */
+  NANOCONTRACT_REGISTER_FAILURE: 'NANOCONTRACT_REGISTER_FAILURE',
+  /* It indicates a Nano Contract registration is complete.  */
+  NANOCONTRACT_REGISTER_SUCCESS: 'NANOCONTRACT_REGISTER_SUCCESS',
 };
 
 export const featureToggleInitialized = () => ({
