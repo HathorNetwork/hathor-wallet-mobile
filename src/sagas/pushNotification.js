@@ -317,7 +317,7 @@ export function* init() {
 
   // Gives users the option to opt-in the Push Notification
   // after its initialization, but only opens the opt-in
-  // modal after waller become ready.
+  // modal after wallet become ready.
   // Spwan creates a detached thread from this current thread.
   yield spawn(function* handleOptIn() {
     const { ready } = yield race({
