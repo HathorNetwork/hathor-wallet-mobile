@@ -201,7 +201,6 @@ export function* startWallet(action) {
   yield put(setUniqueDeviceId(uniqueDeviceId));
 
   try {
-    throw new Error('a new test error has appeared');
     yield call(wallet.start.bind(wallet), {
       pinCode: pin,
       password: pin,
@@ -216,7 +215,6 @@ export function* startWallet(action) {
     }
 
     if (useWalletService) {
-
       // Wallet Service start wallet will fail if the status returned from
       // the service is 'error' or if the start wallet request failed.
       //

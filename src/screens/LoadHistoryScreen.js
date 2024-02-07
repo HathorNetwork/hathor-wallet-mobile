@@ -15,7 +15,6 @@ import { t } from 'ttag';
 import {
   onWalletReload,
   resetLoadedData,
-  walletServiceLoadFailedAck,
 } from '../actions';
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
