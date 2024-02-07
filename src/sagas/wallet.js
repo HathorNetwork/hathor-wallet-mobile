@@ -12,6 +12,7 @@ import {
   Network,
   constants as hathorLibConstants,
   config,
+  errors,
 } from '@hathor/wallet-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -61,7 +62,7 @@ import {
   setAvailablePushNotification,
   resetWalletSuccess,
   setTokens,
-  setShowWalletServiceLoadFailedModal,
+  onExceptionCaptured,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -82,7 +83,7 @@ export const WALLET_STATUS = {
 };
 
 export const IGNORE_WS_TOGGLE_FLAG = 'featureFlags:shouldIgnoreWalletServiceFlag';
-export const EXPIRE_WS_IGNORE_FLAG = 24 * 60 * 1000; // 24 hours
+export const EXPIRE_WS_IGNORE_FLAG = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
  * Returns the value of the PUSH_NOTIFICATION_FEATURE_TOGGLE feature flag
@@ -206,26 +207,27 @@ export function* startWallet(action) {
     });
   } catch (e) {
     if (useWalletService) {
-      yield put(setShowWalletServiceLoadFailedModal(true));
-      yield take(types.WALLETSERVICE_RENDER_FAILED_ACK);
-      yield put(setShowWalletServiceLoadFailedModal(false));
+      // WalletRequestError can either be an network error making the request
+      // fail or the wallet might have failed to start and returned status: error.
+      // We don't need to send those to Sentry, so we'll capture all the others
+      // here:
+      if (!(e instanceof errors.WalletRequestError)) {
+        yield put(onExceptionCaptured(e, false));
+      }
 
       // Wallet Service start wallet will fail if the status returned from
       // the service is 'error' or if the start wallet request failed.
+      //
       // We should fallback to the old facade by storing the flag to ignore
       // the feature flag
       //
       // This might be a temporary issue on the wallet-service side, we should
       // store the timestamp of when this flag was set, so we're able to expire it
       yield call(() => AsyncStorage.setItem(IGNORE_WS_TOGGLE_FLAG, `${new Date().getTime()}`));
-
-      // Yield the same action so it will now load on the old facade
-      yield put(action);
-    } else {
-      console.log('failed to start fullnode wallet');
-      yield put(startWalletFailed());
-      return;
     }
+
+    yield put(startWalletFailed());
+    return;
   }
 
   setKeychainPin(pin);
