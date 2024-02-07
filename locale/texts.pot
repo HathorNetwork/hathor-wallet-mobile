@@ -98,20 +98,20 @@ msgstr ""
 msgid "New transaction received"
 msgstr ""
 
-#: src/screens/About.js:83
+#: src/screens/About.js:82
 msgid "ABOUT"
 msgstr ""
 
-#: src/screens/About.js:95
+#: src/screens/About.js:94
 msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr ""
 
-#: src/screens/About.js:99
+#: src/screens/About.js:98
 #: src/screens/InitWallet.js:64
 msgid "This wallet is connected to the **mainnet**."
 msgstr ""
 
-#: src/screens/About.js:102
+#: src/screens/About.js:101
 #: src/screens/InitWallet.js:67
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
@@ -119,7 +119,7 @@ msgid ""
 "pocket money."
 msgstr ""
 
-#: src/screens/About.js:107
+#: src/screens/About.js:106
 msgid ""
 "For further information, check out the |link1:Terms of Service| and "
 "|link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
@@ -196,7 +196,7 @@ msgstr ""
 msgid "Start the Wallet"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:120
+#: src/screens/CreateTokenAmount.js:119
 #: src/screens/CreateTokenConfirm.js:163
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenName.js:43
@@ -204,27 +204,27 @@ msgstr ""
 msgid "CREATE TOKEN"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:128
+#: src/screens/CreateTokenAmount.js:127
 #, javascript-format
 msgid "Amount of ${ this.name } (${ this.symbol })"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:140
+#: src/screens/CreateTokenAmount.js:139
 msgid "Deposit:"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:144
+#: src/screens/CreateTokenAmount.js:143
 #, javascript-format
 msgid "You have ${ amountAvailableText } HTR available"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:149
+#: src/screens/CreateTokenAmount.js:148
 #: src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84
 #: src/screens/InitWallet.js:220
 #: src/screens/InitWallet.js:341
 #: src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:185
+#: src/screens/SendAmountInput.js:179
 msgid "Next"
 msgstr ""
 
@@ -412,32 +412,18 @@ msgstr ""
 msgid "Enter your seed words separated by space"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:65
+#: src/screens/LoadHistoryScreen.js:67
 msgid "Loading your transactions"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:68
+#: src/screens/LoadHistoryScreen.js:70
 #, javascript-format
-msgid "**${ loadedData.transactions } transactions** found"
+msgid "**${ _this.props.loadedData.transactions } transactions** found"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:71
+#: src/screens/LoadHistoryScreen.js:73
 #, javascript-format
-msgid "**${ loadedData.addresses } addresses** found"
-msgstr ""
-
-#: src/screens/LoadHistoryScreen.js:80
-msgid "Wallet Service failed"
-msgstr ""
-
-#: src/screens/LoadHistoryScreen.js:81
-msgid ""
-"Loading wallet in the wallet service facade failed, falling back to the "
-"fullnode facade."
-msgstr ""
-
-#: src/screens/LoadHistoryScreen.js:82
-msgid "Ok"
+msgid "**${ _this.props.loadedData.addresses } addresses** found"
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:19
@@ -450,7 +436,7 @@ msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:21
 #: src/screens/PinScreen.js:268
-#: src/screens/Settings.js:154
+#: src/screens/Settings.js:151
 msgid "Reset wallet"
 msgstr ""
 
@@ -537,7 +523,7 @@ msgid "Cancel"
 msgstr ""
 
 #: src/screens/PushNotification.js:58
-#: src/screens/Settings.js:128
+#: src/screens/Settings.js:125
 msgid "Push Notification"
 msgstr ""
 
@@ -566,7 +552,7 @@ msgstr ""
 msgid "Payment Request"
 msgstr ""
 
-#: src/screens/Receive.js:107
+#: src/screens/Receive.js:106
 msgid "RECEIVE"
 msgstr ""
 
@@ -662,11 +648,11 @@ msgstr ""
 msgid "Address to send"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:110
+#: src/screens/SendAmountInput.js:105
 msgid "Insufficient funds"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:141
+#: src/screens/SendAmountInput.js:136
 #: src/screens/SendConfirmScreen.js:125
 #, javascript-format
 msgid "${ amountAndToken } available"
@@ -674,7 +660,7 @@ msgid_plural "${ amountAndToken } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:154
+#: src/screens/SendAmountInput.js:148
 #: src/screens/SendConfirmScreen.js:133
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
@@ -702,7 +688,7 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:264
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:258
 #: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr ""
@@ -725,43 +711,43 @@ msgstr ""
 msgid "Scan the QR code"
 msgstr ""
 
-#: src/screens/Settings.js:97
+#: src/screens/Settings.js:94
 msgid "You are connected to"
 msgstr ""
 
-#: src/screens/Settings.js:105
+#: src/screens/Settings.js:102
 msgid "General Settings"
 msgstr ""
 
-#: src/screens/Settings.js:109
+#: src/screens/Settings.js:106
 msgid "Connected to"
 msgstr ""
 
-#: src/screens/Settings.js:122
+#: src/screens/Settings.js:119
 msgid "Security"
 msgstr ""
 
-#: src/screens/Settings.js:135
+#: src/screens/Settings.js:132
 msgid "Create a new token"
 msgstr ""
 
-#: src/screens/Settings.js:142
+#: src/screens/Settings.js:139
 msgid "Register a token"
 msgstr ""
 
-#: src/screens/Settings.js:158
+#: src/screens/Settings.js:155
 msgid "About"
 msgstr ""
 
-#: src/screens/Settings.js:165
+#: src/screens/Settings.js:162
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/Settings.js:179
+#: src/screens/Settings.js:174
 msgid "Developer Settings"
 msgstr ""
 
-#: src/screens/Settings.js:181
+#: src/screens/Settings.js:176
 msgid "Network Settings"
 msgstr ""
 
@@ -839,70 +825,70 @@ msgstr ""
 msgid "Manual"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:18
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:17
 msgid "Custom Network Settings"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:19
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:18
 msgid ""
 "Any token outside mainnet network bear no value. Only change if you know "
 "what you are doing."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:19
 #: src/screens/NetworkSettings/helper.js:4
 msgid "Updating custom network settings..."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:21
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
 #: src/screens/NetworkSettings/helper.js:5
 msgid "Network settings successfully customized."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:22
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:21
 #: src/screens/NetworkSettings/helper.js:6
 msgid ""
 "There was an error while customizing network settings. Please try again "
 "later."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:41
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:40
 msgid "nodeUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:45
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:44
 msgid "explorerUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:49
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:48
 msgid "explorerServiceUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:53
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:52
 msgid "txMiningServiceUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:205
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:202
 msgid "Node URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:214
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:211
 msgid "Explorer URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:223
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:220
 msgid "Explorer Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:232
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:229
 msgid "Transaction Mining Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:243
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:238
 msgid "Wallet Service URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:251
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:247
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
@@ -925,45 +911,45 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
-#: src/sagas/networkSettings.js:88
+#: src/sagas/networkSettings.js:87
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:95
+#: src/sagas/networkSettings.js:94
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:102
+#: src/sagas/networkSettings.js:101
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:109
+#: src/sagas/networkSettings.js:108
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:116
+#: src/sagas/networkSettings.js:115
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:123
+#: src/sagas/networkSettings.js:122
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:130
+#: src/sagas/networkSettings.js:129
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:290
+#: src/sagas/networkSettings.js:288
 #.  If we fall into this situation, the app should be killed
 #.  for the custom new network settings take effect.
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 
-#: src/sagas/pushNotification.js:57
+#: src/sagas/pushNotification.js:53
 msgid "Transaction"
 msgstr ""
 
-#: src/sagas/pushNotification.js:58
+#: src/sagas/pushNotification.js:54
 msgid "Open"
 msgstr ""
 
