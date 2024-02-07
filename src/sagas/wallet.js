@@ -201,19 +201,21 @@ export function* startWallet(action) {
   yield put(setUniqueDeviceId(uniqueDeviceId));
 
   try {
+    throw new Error('a new test error has appeared');
     yield call(wallet.start.bind(wallet), {
       pinCode: pin,
       password: pin,
     });
   } catch (e) {
+    // WalletRequestError can either be an network error making the request
+    // fail or the wallet might have failed to start and returned status: error.
+    // We don't need to send those to Sentry, so we'll capture all the others
+    // here:
+    if (!(e instanceof errors.WalletRequestError)) {
+      yield put(onExceptionCaptured(e, false));
+    }
+
     if (useWalletService) {
-      // WalletRequestError can either be an network error making the request
-      // fail or the wallet might have failed to start and returned status: error.
-      // We don't need to send those to Sentry, so we'll capture all the others
-      // here:
-      if (!(e instanceof errors.WalletRequestError)) {
-        yield put(onExceptionCaptured(e, false));
-      }
 
       // Wallet Service start wallet will fail if the status returned from
       // the service is 'error' or if the start wallet request failed.
