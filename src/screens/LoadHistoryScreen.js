@@ -17,7 +17,6 @@ import {
   resetLoadedData,
   walletServiceLoadFailedAck,
 } from '../actions';
-import ActionModal from '../components/ActionModal';
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';
@@ -33,9 +32,6 @@ export default function LoadHistoryScreen() {
    */
   const loadHistoryStatus = useSelector((state) => state.loadHistoryStatus);
   const loadedData = useSelector((state) => state.loadedData);
-  const shouldDisplayWalletServiceLoadFailedModal = useSelector(
-    (state) => state.showWalletServiceLoadFailedModal,
-  );
 
   useEffect(() => {
     dispatch(resetLoadedData());
@@ -73,25 +69,10 @@ export default function LoadHistoryScreen() {
     </View>
   );
 
-  const dispatchRenderFailedAck = () => dispatch(walletServiceLoadFailedAck());
-
-  const renderFailedWalletServiceModal = () => (
-    <ActionModal
-      title={t`Wallet Service failed`}
-      text={t`Loading wallet in the wallet service facade failed, falling back to the fullnode facade.`}
-      button={t`Ok`}
-      onAction={dispatchRenderFailedAck}
-      onDismiss={dispatchRenderFailedAck}
-    />
-  );
-
   return (
-    <>
-      {shouldDisplayWalletServiceLoadFailedModal && renderFailedWalletServiceModal()}
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        {loadHistoryStatus.error ? renderError() : renderLoading()}
-      </View>
-    </>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      {loadHistoryStatus.error ? renderError() : renderLoading()}
+    </View>
   );
 }
 

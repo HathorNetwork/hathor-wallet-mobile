@@ -137,10 +137,6 @@ export const types = {
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
   /* It updates the redux state of network settings status */
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
-  /* Sets whether we should display the wallet service load error modal in the LoadHistoryScreen or not. */
-  WALLETSERVICE_SET_SHOW_MODAL: 'WALLETSERVICE_SET_SHOW_MODAL',
-  /* Meant to be dispatched when the user acknowledge the load error in the wallet-service facade. */
-  WALLETSERVICE_RENDER_FAILED_ACK: 'WALLETSERVICE_RENDER_FAILED_ACK',
 };
 
 export const featureToggleInitialized = () => ({
@@ -978,23 +974,4 @@ export const networkSettingsUpdateInvalid = (errors) => ({
  */
 export const networkSettingsUpdateReady = () => ({
   type: types.NETWORKSETTINGS_UPDATE_READY,
-});
-
-/**
- * Used when the user dismisses the modal indicating that the wallet-service
- * facade failed to load.
- */
-export const walletServiceLoadFailedAck = () => ({
-  type: types.WALLETSERVICE_RENDER_FAILED_ACK,
-});
-
-/**
- * Set whether we should display the modal indicating that the load failed in the
- * wallet-service facade on the LoadHistoryScreen.
- *
- * show {boolean} If we should show the modal or not
- */
-export const setShowWalletServiceLoadFailedModal = (show) => ({
-  type: types.WALLETSERVICE_SET_SHOW_MODAL,
-  payload: show,
 });
