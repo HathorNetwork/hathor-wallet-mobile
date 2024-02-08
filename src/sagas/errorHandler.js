@@ -60,7 +60,15 @@ export function* errorModalHandler(action) {
 
   if (reportError) {
     const wallet = yield select((state) => state.wallet);
-    const accessData = yield call(() => wallet.getAccessData().catch(() => null));
+
+    let accessData = null;
+    try {
+      accessData = yield call(() => wallet.getAccessData());
+    } catch (_e) {
+      // Nothing to do, the error might have ocurred before the wallet is
+      // started.
+    }
+
     sentryReportError(error, accessData);
   }
 
