@@ -44,10 +44,9 @@ export function formatNanoContractRegistryEntry(address, ncId) {
 export async function getNanoContractState(ncId) {
   try {
     const state = await ncApi.getNanoContractState(ncId);
-    return { ncState: {...state} };
-  }
-  catch (err) {
-    return { error: err }; 
+    return { ncState: { ...state } };
+  } catch (err) {
+    return { error: err };
   }
 }
 
@@ -91,11 +90,11 @@ export function* registerNanoContract({ payload }) {
     yield put(nanoContractRegisterFailure(failureMessage.nanoContractStateFailure));
     return;
   }
-  
+
   // persist the pair address-nanocontract
   const ncEntryValue = {
-    address: address,
-    ncId: ncId,
+    address,
+    ncId,
     blueprintId: ncState.blueprint_id,
     blueprintName: ncState.blueprint_name
   };

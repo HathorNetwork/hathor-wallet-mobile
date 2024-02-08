@@ -1,5 +1,6 @@
 import { put } from 'redux-saga/effects';
 import { ncApi } from '@hathor/wallet-lib';
+import { jest, test, expect, beforeEach, describe } from '@jest/globals';
 import { getNanoContractState, registerNanoContract, formatNanoContractRegistryEntry, failureMessage } from '../../../src/sagas/nanoContract';
 import { nanoContractRegisterFailure, nanoContractRegisterRequest, types } from '../../../src/actions';
 import { STORE } from '../../../src/store';
@@ -17,12 +18,12 @@ const fixtures = {
         nc_id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
         blueprint_name: 'Bet',
         fields: {
-          token_uid: {'value': '00'},
-          total: {'value': 300},
-          final_result: {'value': '1x0'},
-          oracle_script: {'value': '76a91441c431ff7ad5d6ce5565991e3dcd5d9106cfd1e288ac'},
-          'withdrawals.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': {'value': 300},
-          'address_details.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': {'value': {'1x0': 100}},
+          token_uid: { value: '00' },
+          total: { value: 300 },
+          final_result: { value: '1x0' },
+          oracle_script: { value: '76a91441c431ff7ad5d6ce5565991e3dcd5d9106cfd1e288ac' },
+          'withdrawals.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': { value: 300 },
+          'address_details.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': { value: { '1x0': 100 } },
         }
       }
     }
@@ -38,12 +39,12 @@ const fixtures = {
           nc_id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
           blueprint_name: 'Bet',
           fields: {
-            token_uid: {'value': '00'},
-            total: {'value': 300},
-            final_result: {'value': '1x0'},
-            oracle_script: {'value': '76a91441c431ff7ad5d6ce5565991e3dcd5d9106cfd1e288ac'},
-            'withdrawals.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': {'value': 300},
-            'address_details.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': {'value': {'1x0': 100}},
+            token_uid: { value: '00' },
+            total: { value: 300 },
+            final_result: { value: '1x0' },
+            oracle_script: { value: '76a91441c431ff7ad5d6ce5565991e3dcd5d9106cfd1e288ac' },
+            'withdrawals.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': { value: 300 },
+            'address_details.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': { value: { '1x0': 100 } },
           }
         },
       }
@@ -67,20 +68,14 @@ const fixtures = {
 beforeEach(() => {
   jest.clearAllMocks();
   STORE.clearItems();
-
-  // need a mocked ncApi
-  // need ncApi.getNanoContractState
-  // need a mocked wallet
-  // need wallet.isReady true
-  // need wallet.isAddressMine true
-  // need a state.wallet
 });
 
 describe('sagas/nanoContract/getNanoContractState', () => {
   test('success', async () => {
     // arrange ncApi mock
     const mockedNcApi = jest.mocked(ncApi);
-    mockedNcApi.getNanoContractState.mockReturnValue(fixtures.ncApi.getNanoContractState.successResponse);
+    mockedNcApi.getNanoContractState
+      .mockReturnValue(fixtures.ncApi.getNanoContractState.successResponse);
 
     // call getNanoContractState
     const result = await getNanoContractState(fixtures.ncId);
@@ -109,24 +104,25 @@ describe('sagas/nanoContract/getNanoContractState', () => {
 describe('sagas/nanoContract/registerNanoContract', () => {
   test('contract already registered', async () => {
     // arrange Nano Contract registration inputs
-    const { address, ncId } = fixtures; 
+    const { address, ncId } = fixtures;
 
     // add an entry to registeredContracts
     const ncEntry = formatNanoContractRegistryEntry(address, ncId);
-    STORE.setItem(nanoContractKey.registeredContracts, {[ncEntry]: {}});
+    STORE.setItem(nanoContractKey.registeredContracts, { [ncEntry]: {} });
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
 
     // assert failure
-    expect(gen.next().value).toStrictEqual(put(nanoContractRegisterFailure(failureMessage.alreadyRegistered)))
+    expect(gen.next().value)
+      .toStrictEqual(put(nanoContractRegisterFailure(failureMessage.alreadyRegistered)))
     // assert termination
     expect(gen.next().value).toBeUndefined();
   });
 
   test('wallet not ready', async () => {
     // arrange Nano Contract registration inputs
-    const { address, ncId } = fixtures; 
+    const { address, ncId } = fixtures;
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
@@ -143,7 +139,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
   test('address not mine', async () => {
     // arrange Nano Contract registration inputs
-    const { address, ncId } = fixtures; 
+    const { address, ncId } = fixtures;
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
@@ -162,7 +158,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
   test('getNanoContractState error', async () => {
     // arrange Nano Contract registration inputs
-    const { address, ncId } = fixtures; 
+    const { address, ncId } = fixtures;
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
@@ -183,7 +179,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
   test('register with success', async () => {
     // arrange Nano Contract registration inputs
-    const { address, ncId } = fixtures; 
+    const { address, ncId } = fixtures;
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
@@ -197,7 +193,6 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     const actionResult = gen.next(fixtures.ncSaga.getNanoContractState.successResponse).value;
 
     // assert success
-    // resume getNanoContractState call and advance generator to failure
     expect(actionResult.payload.action.type)
       .toBe(types.NANOCONTRACT_REGISTER_SUCCESS);
     expect(actionResult.payload.action.payload.entryKey)
@@ -213,4 +208,3 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     expect(actionResult.payload.action.payload.entryKey).toBeDefined();
   });
 });
-

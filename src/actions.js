@@ -1014,4 +1014,3 @@ export const nanoContractRegisterSuccess = (ncEntry) => ({
   type: types.NANOCONTRACT_REGISTER_SUCCESS,
   payload: ncEntry,
 });
-
