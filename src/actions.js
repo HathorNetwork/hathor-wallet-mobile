@@ -981,3 +981,37 @@ export const networkSettingsUpdateInvalid = (errors) => ({
 export const networkSettingsUpdateReady = () => ({
   type: types.NETWORKSETTINGS_UPDATE_READY,
 });
+
+/**
+ * Request a Nano Contract to be registered.
+ * @param {{
+ *   address: string,
+ *   ncId: string,
+ * }} registry Inputs to register a Nano Contract
+ */
+export const nanoContractRegisterRequest = (registerRequest) => ({
+  type: types.NANOCONTRACT_REGISTER_REQUEST,
+  payload: registerRequest,
+});
+
+/**
+ * Nano Contract registration has failed.
+ * @param {string} error Registration failure reason.
+ */
+export const nanoContractRegisterFailure = (error) => ({
+  type: types.NANOCONTRACT_REGISTER_FAILURE,
+  payload: { error }
+});
+
+/**
+ * Nano Contract registration has finished with success.
+ * @param {{
+ *   entryKey: string,
+ *   entryValue: Object,
+ * }} ncEntry basic information of Nano Contract registered.
+ */
+export const nanoContractRegisterSuccess = (ncEntry) => ({
+  type: types.NANOCONTRACT_REGISTER_SUCCESS,
+  payload: ncEntry,
+});
+

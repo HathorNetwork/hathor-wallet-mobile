@@ -1216,14 +1216,17 @@ export const onNetworkSettingsUpdateInvalid = (state, { payload }) => ({
 
 /**
  * @param {Object} state
- * @param {{ payload: {
- *   [string]: {
- *     address: string,
- *     ncId: string,
- *     blueprintId: string,
- *     blueprintName: string,
+ * @param {{
+ *   payload: {
+ *     entryKey: string,
+ *     entryValue: {
+ *       address: string,
+ *       ncId: string,
+ *       blueprintId: string,
+ *       blueprintName: string
+ *     }
  *   }
- * }}} action
+  * }} action
  */
 export const onNanoContractRegisterSuccess = (state, { payload }) => ({
   ...state,
@@ -1231,7 +1234,7 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
     ...state.nanoContract,
     registeredContracts: {
       ...state.nanoContract.registeredContracts,
-      ...payload,
+      [payload.entryKey]: payload.entryValue,
     }
   },
 });
