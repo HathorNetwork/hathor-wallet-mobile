@@ -112,6 +112,14 @@ export const pushNotificationKey = {
   available: 'pushNotification:available',
   notificationError: 'pushNotification:notificationError',
 };
+
+/**
+ * Nano Contract storage keys.
+ */
+export const nanoContractKey = {
+  registeredContracts: 'nanoContract:registeredContracts',
+};
+
 /**
  * this is the message key for localization of new transaction when show amount is enabled
  */
