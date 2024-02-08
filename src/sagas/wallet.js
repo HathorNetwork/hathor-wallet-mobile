@@ -206,7 +206,7 @@ export function* startWallet(action) {
       password: pin,
     });
   } catch (e) {
-    // WalletRequestError can either be an network error making the request
+    // WalletRequestError can either be a network error making the request
     // fail or the wallet might have failed to start and returned status: error.
     // We don't need to send those to Sentry, so we'll capture all the others
     // here:
