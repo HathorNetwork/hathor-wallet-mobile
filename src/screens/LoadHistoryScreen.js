@@ -48,7 +48,7 @@ export default function LoadHistoryScreen() {
         containerStyle={{ marginTop: 12 }}
         textStyle={{ fontSize: 18 }}
         onPress={() => dispatch(onWalletReload())}
-        title='Try again'
+        title={t`Try again`}
       />
     </View>
   );

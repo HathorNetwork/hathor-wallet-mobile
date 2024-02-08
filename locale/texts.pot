@@ -412,26 +412,27 @@ msgstr ""
 msgid "Enter your seed words separated by space"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:61
+#: src/screens/LoadHistoryScreen.js:51
+#: src/screens/LoadWalletErrorScreen.js:20
+msgid "Try again"
+msgstr ""
+
+#: src/screens/LoadHistoryScreen.js:60
 msgid "Loading your transactions"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:64
+#: src/screens/LoadHistoryScreen.js:63
 #, javascript-format
 msgid "**${ loadedData.transactions } transactions** found"
 msgstr ""
 
-#: src/screens/LoadHistoryScreen.js:67
+#: src/screens/LoadHistoryScreen.js:66
 #, javascript-format
 msgid "**${ loadedData.addresses } addresses** found"
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:19
 msgid "There's been an error connecting to the server."
-msgstr ""
-
-#: src/screens/LoadWalletErrorScreen.js:20
-msgid "Try again"
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:21
