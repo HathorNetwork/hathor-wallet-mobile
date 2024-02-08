@@ -82,7 +82,7 @@ export const WALLET_STATUS = {
   LOADING: 'loading',
 };
 
-export const IGNORE_WS_TOGGLE_FLAG = 'featureFlags:shouldIgnoreWalletServiceFlag';
+export const IGNORE_WS_TOGGLE_FLAG = 'featureFlags:ignoreWalletServiceFlag';
 export const EXPIRE_WS_IGNORE_FLAG = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
