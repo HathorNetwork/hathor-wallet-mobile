@@ -242,7 +242,7 @@ const initialState = {
      * }} registered Nano Contracts per wallet address with basic information.
      * @example
      * {
-     *   'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V.00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185': {
+     *   'HTeZeYT.00c30fc': {
      *     address: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
      *     ncId: '00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185',
      *     blueprintId: 0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4,
@@ -1259,4 +1259,3 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
     }
   },
 });
-
