@@ -586,7 +586,7 @@ export const getTxDetails = async (wallet, txId) => {
       name: each.tokenName,
       symbol: each.tokenSymbol,
       balance: each.balance,
-      isRegistered: await isTokenRegistered(each.tokenId),
+      isRegistered: await isTokenRegistered(wallet, each.tokenId),
     }))),
   });
 
