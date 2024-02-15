@@ -254,6 +254,7 @@ export function* startWallet(action) {
     yield call(loadTokens);
   } catch (e) {
     console.error('Tokens load failed: ', e);
+    yield put(onExceptionCaptured(e, false));
     yield put(startWalletFailed());
     return;
   }
@@ -657,6 +658,8 @@ export function* onWalletReloadData() {
     // Finally, set the wallet to READY by dispatching startWalletSuccess
     yield put(startWalletSuccess());
   } catch (e) {
+    console.log('Wallet reload data failed: ', e);
+    yield put(onExceptionCaptured(e, false));
     yield put(startWalletFailed());
   }
 }
