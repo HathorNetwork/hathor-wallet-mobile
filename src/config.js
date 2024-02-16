@@ -24,12 +24,17 @@ export const _IS_MULTI_TOKEN = true;
 
 /**
  * Default token.
- *
- * Example config:
+ * @constant
+ * @type {{
+ *   uid: string;
+ *   name: string;
+ *   symbol: string;
+ * }}
+ * @default
  * {
- *   name: 'YanCoin',
- *   symbol: 'YAN',
- *   uid: '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824'
+ *   name: 'Hathor',
+ *   symbol: 'HTR',
+ *   uid: '00'
  * }
  */
 export const _DEFAULT_TOKEN = hathorLib.constants.HATHOR_TOKEN_CONFIG;

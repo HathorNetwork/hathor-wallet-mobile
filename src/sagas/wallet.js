@@ -72,6 +72,7 @@ import {
   checkForFeatureFlag,
   getRegisteredTokens,
   getNetworkSettings,
+  getRegisteredTokenUids,
 } from './helpers';
 import { setKeychainPin } from '../utils';
 
@@ -288,6 +289,7 @@ export function* startWallet(action) {
  * and dispatch actions to asynchronously load all registered tokens.
  *
  * Will throw an error if the download fails for any token.
+ * @returns {string[]} Array of token uid
  */
 export function* loadTokens() {
   const customTokenUid = DEFAULT_TOKEN.uid;
@@ -303,11 +305,11 @@ export function* loadTokens() {
 
   const wallet = yield select((state) => state.wallet);
 
-  const registeredTokens = yield getRegisteredTokens(wallet);
+  const tokens = yield getRegisteredTokens(wallet);
 
-  yield put(setTokens(registeredTokens));
+  yield put(setTokens(tokens));
 
-  const registeredUids = registeredTokens.map((t) => t.uid);
+  const registeredUids = getRegisteredTokenUids({ tokens });
 
   // We don't need to wait for the metadatas response, so we can just
   // spawn a new "thread" to handle it.
@@ -450,8 +452,7 @@ export function* handleTx(action) {
   }
 
   // find tokens affected by the transaction
-  const stateTokens = yield select((state) => state.tokens);
-  const registeredTokens = stateTokens.map((token) => token.uid);
+  const registeredUids = yield select(getRegisteredTokenUids);
 
   // To be able to only download balances for tokens belonging to this wallet, we
   // need a list of tokens and addresses involved in the transaction from both the
@@ -466,18 +467,18 @@ export function* handleTx(action) {
       return acc;
     }
 
-    const { token, decoded: { address } } = io;
+    const { token: tokenUid, decoded: { address } } = io;
 
     // We are only interested in registered tokens
-    if (registeredTokens.indexOf(token) === -1) {
+    if (registeredUids.indexOf(tokenUid) === -1) {
       return acc;
     }
 
-    if (!acc[0][token]) {
-      acc[0][token] = new Set([]);
+    if (!acc[0][tokenUid]) {
+      acc[0][tokenUid] = new Set([]);
     }
 
-    acc[0][token].add(address);
+    acc[0][tokenUid].add(address);
     acc[1].add(address);
 
     return acc;
