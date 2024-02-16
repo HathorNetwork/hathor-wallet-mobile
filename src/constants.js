@@ -38,7 +38,7 @@ export const NETWORK_MAINNET = 'mainnet';
  *   }
  * }}
  */
-export const INITIAL_TOKENS = {[DEFAULT_TOKEN.uid]: DEFAULT_TOKEN};
+export const INITIAL_TOKENS = { [DEFAULT_TOKEN.uid]: DEFAULT_TOKEN };
 
 /**
  * Wallet will lock if app goes to background for more than LOCK_TIMEOUT seconds

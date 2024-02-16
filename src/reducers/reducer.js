@@ -81,7 +81,8 @@ const initialState = {
   latestInvoice: null,
   invoicePayment: null,
   /**
-   * tokens {Object.<string, Object>} Map of tokens added plus initial tokens, @see {@link INITIAL_TOKENS}
+   * tokens {Object.<string, Object>} Map of tokens added plus initial tokens,
+   * @see {@link INITIAL_TOKENS}
    */
   tokens: INITIAL_TOKENS,
   /**
@@ -515,11 +516,12 @@ const onUpdateSelectedToken = (state, action) => ({
 /**
  * Add a new token to the list of available tokens in this wallet
  * @param {object} state
- * @param {{payload: { uid: string }}} action containing a token data in payload, @see {@link initialState.tokens}
+ * @param {{payload: { uid: string }}} action containing a token data in payload,
+ * @see {@link initialState.tokens}
  */
 const onNewToken = (state, { payload }) => ({
   ...state,
-  tokens: { ...state.tokens, [payload.uid]: {...payload} },
+  tokens: { ...state.tokens, [payload.uid]: { ...payload } },
 });
 
 /**
@@ -535,7 +537,7 @@ const onSetTokens = (state, { payload }) => {
   }
   return {
     ...state,
-    tokens: {...payload},
+    tokens: { ...payload },
     selectedToken,
   };
 };

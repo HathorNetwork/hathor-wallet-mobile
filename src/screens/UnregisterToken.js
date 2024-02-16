@@ -85,7 +85,7 @@ class UnregisterToken extends React.Component {
       while (!next.done) {
         const token = next.value;
         // We need to filter the token data to remove the metadata from this list (e.g. balance)
-        newTokens[token.uid] = {...token};
+        newTokens[token.uid] = { ...token };
         // eslint-disable-next-line no-await-in-loop
         next = await iterator.next();
       }

@@ -173,7 +173,7 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
   while (!next.done) {
     const token = next.value;
     if ((!excludeHTR) || token.uid !== htrUid) {
-      tokens[token.uid] = {...token};
+      tokens[token.uid] = { ...token };
     }
     // eslint-disable-next-line no-await-in-loop
     next = await iterator.next();
@@ -181,7 +181,7 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
 
   // XXX: This will add any default tokens configured, not only HTR
   if (!excludeHTR) {
-    return {...INITIAL_TOKENS, ...tokens};
+    return { ...INITIAL_TOKENS, ...tokens };
   }
 
   return tokens;
