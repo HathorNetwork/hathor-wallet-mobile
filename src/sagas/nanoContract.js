@@ -8,19 +8,22 @@ import {
   put,
   call,
 } from 'redux-saga/effects';
+import { t } from 'ttag';
 import { STORE } from '../store';
 import {
   nanoContractRegisterFailure,
   nanoContractRegisterSuccess,
+  onExceptionCaptured,
   types,
 } from '../actions';
 import { nanoContractKey } from '../constants';
 
 export const failureMessage = {
-  alreadyRegistered: 'Nano Contract already registered.',
-  walletNotReady: 'Wallet is not ready yet.',
-  addressNotMine: 'The informed address do not belongs to the wallet.',
-  nanoContractStateFailure: 'Error while trying to get Nano Contract state.',
+  alreadyRegistered: t`Nano Contract already registered.`,
+  walletNotReady: t`Wallet is not ready yet.`,
+  walletNotReadyError: t`Wallet is not ready yet to register a Nano Contract.`,
+  addressNotMine: t`The informed address do not belongs to the wallet.`,
+  nanoContractStateFailure: t`Error while trying to get Nano Contract state.`,
 };
 
 /**
@@ -74,6 +77,8 @@ export function* registerNanoContract({ payload }) {
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
     yield put(nanoContractRegisterFailure(failureMessage.walletNotReady));
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), false));
     return;
   }
 
