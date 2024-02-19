@@ -912,6 +912,22 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
+#: src/sagas/nanoContract.js:22
+msgid "Nano Contract already registered."
+msgstr ""
+
+#: src/sagas/nanoContract.js:23
+msgid "Wallet is not ready yet."
+msgstr ""
+
+#: src/sagas/nanoContract.js:24
+msgid "The informed address do not belongs to the wallet."
+msgstr ""
+
+#: src/sagas/nanoContract.js:25
+msgid "Error while trying to get Nano Contract state."
+msgstr ""
+
 #: src/sagas/networkSettings.js:88
 msgid "Custom Network Settings cannot be empty."
 msgstr ""

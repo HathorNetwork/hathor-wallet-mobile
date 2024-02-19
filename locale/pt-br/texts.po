@@ -943,6 +943,22 @@ msgstr ""
 "circunstância altere a rede por sugestão de terceiros, uma vez que ao "
 "alterar a rede você pode ser vítima de fraude."
 
+#: src/sagas/nanoContract.js:22
+msgid "Nano Contract already registered."
+msgstr "Nano Contract já registrado."
+
+#: src/sagas/nanoContract.js:23
+msgid "Wallet is not ready yet."
+msgstr "Wallet não está pronta ainda."
+
+#: src/sagas/nanoContract.js:24
+msgid "The informed address do not belongs to the wallet."
+msgstr "O endereço informado não pertence a esta carteira."
+
+#: src/sagas/nanoContract.js:25
+msgid "Error while trying to get Nano Contract state."
+msgstr "Erro ao fazer download do Nano Contract."
+
 #: src/sagas/networkSettings.js:88
 msgid "Custom Network Settings cannot be empty."
 msgstr "As Configurações de Rede não podem estar vazias."
