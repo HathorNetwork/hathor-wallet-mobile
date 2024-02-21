@@ -245,3 +245,8 @@ export const HTTP_REQUEST_TIMEOUT = 3000;
  * Any network that is not mainnet or testnet should be a privatenet.
  */
 export const NETWORK_PRIVATENET = 'privatenet';
+
+/**
+ * Nano Contract's transaction history list size.
+ */
+export const NANO_CONTRACT_TX_HISTORY_SIZE = 100;
