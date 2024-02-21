@@ -3,6 +3,8 @@ import { jest, test, expect, beforeEach, describe } from '@jest/globals';
 import { registerNanoContract, failureMessage } from '../../../src/sagas/nanoContract';
 import { nanoContractRegisterFailure, nanoContractRegisterRequest, onExceptionCaptured, types } from '../../../src/actions';
 import { STORE } from '../../../src/store';
+import { nanoContractKey } from '../../../src/constants';
+import { fixtures } from './fixtures';
 
 const fixtures = {
   address: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
