@@ -137,12 +137,20 @@ export const types = {
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
   /* It updates the redux state of network settings status. */
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
-  /* It initiates a registration process of a Nano Contract.  */
+  /* It initiates a registration process of a Nano Contract. */
   NANOCONTRACT_REGISTER_REQUEST: 'NANOCONTRACT_REGISTER_REQUEST',
-  /* It indicates a Nano Contract registration is couldn't complete.  */
+  /* It indicates a Nano Contract registration is couldn't complete. */
   NANOCONTRACT_REGISTER_FAILURE: 'NANOCONTRACT_REGISTER_FAILURE',
-  /* It indicates a Nano Contract registration is complete.  */
+  /* It indicates a Nano Contract registration is complete. */
   NANOCONTRACT_REGISTER_SUCCESS: 'NANOCONTRACT_REGISTER_SUCCESS',
+  /* It indicates a Nano Contract hitory was requested to load. */
+  NANOCONTRACT_HISTORY_REQUEST: 'NANOCONTRACT_HISTORY_REQUEST',
+  /* It indicates a Nano Contract history chunk should load into store and history. */
+  NANOCONTRACT_HISTORY_LOAD: 'NANOCONTRACT_HISTORY_LOAD',
+  /* It indicates a Nano Contract history was successfully loaded. */
+  NANOCONTRACT_HISTORY_SUCCESS: 'NANOCONTRACT_HISTORY_SUCCESS',
+  /* It indicates a Nano Contract history failed to load. */
+  NANOCONTRACT_HISTORY_FAILURE: 'NANOCONTRACT_HISTORY_FAILURE',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1013,4 +1021,45 @@ export const nanoContractRegisterFailure = (error) => ({
 export const nanoContractRegisterSuccess = (ncEntry) => ({
   type: types.NANOCONTRACT_REGISTER_SUCCESS,
   payload: ncEntry,
+});
+
+/**
+ * Nano Contract request fetch history.
+ * @param {{
+ *   address: string;
+ *   ncId: string;
+ *   after: string;
+ * }} ncEntry Basic information of Nano Contract registered.
+ */
+export const nanoContractHistoryRequest = (ncEntry) => ({
+  type: types.NANOCONTRACT_HISTORY_REQUEST,
+  payload: ncEntry,
+});
+
+/**
+ * Nano Contract history's chunk to load.
+ * @param {{
+ *   ncEntry: string;
+ *   history: Object;
+ * }} chunkToLoad History chunk to load into store and redux.
+ */
+export const nanoContractHistoryLoad = (chunkToLoad) => ({
+  type: types.NANOCONTRACT_HISTORY_LOAD,
+  payload: chunkToLoad,
+});
+
+/**
+ * Nano Contract history has loaded success.
+ */
+export const nanoContractHistorySuccess = () => ({
+  type: types.NANOCONTRACT_HISTORY_SUCCESS,
+});
+
+/**
+ * Nano Contract history has failed.
+ * @param {string} error History failure reason.
+ */
+export const nanoContractHistoryFailure = (failure) => ({
+  type: types.NANOCONTRACT_HISTORY_FAILURE,
+  payload: failure,
 });

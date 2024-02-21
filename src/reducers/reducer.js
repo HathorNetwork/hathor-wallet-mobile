@@ -251,6 +251,39 @@ const initialState = {
      * }
      */
     registeredContracts: {},
+    /**
+     * contractsHistory {{
+     *   [AddressAndNanoContractIdStr: string]: {
+     *     txId: string;
+     *     timestamp: number;
+     *     tokens: string[];
+     *     balance: {[uid: string]: Object};
+     *     isVoided: boolean;
+     *     ncId: string;
+     *     ncMethod: string;
+     *     blueprintId: string;
+     *     caller: string;
+     *     callerOrigin: 'mine'|'nc'|'oracle'|'wallet';
+     *   }[];
+     * }} history of Nano Contracts registered per wallet address.
+     * @example
+     * {
+     *   'HTeZeYT.00c30fc': [
+     *     {
+     *       txId: "000000203e87e8575f121de16d0eb347bd1473eedd9f46cc76c1bc8d4e5a5fce",
+     *       timestamp: 1708356261,
+     *       tokens: [
+     *         "00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d",
+     *         "0000038c49253f86e6792006dd9124e2c50e6487fde3296b7bd637e3e1a497e7"
+     *       ],
+     *       isVoided: false,
+     *       ncId: "000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a",
+     *       ncMethod: "swap",
+     *     },
+     *   ],
+     * }
+     */
+    contractsHistory: {},
   },
 };
 
@@ -410,6 +443,8 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateInvalid(state, action);
     case types.NANOCONTRACT_REGISTER_SUCCESS:
       return onNanoContractRegisterSuccess(state, action);
+    case types.NANOCONTRACT_HISTORY_LOAD:
+      return onNanoContractHistoryLoad(state, action);
     default:
       return state;
   }
@@ -1256,6 +1291,36 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
     registeredContracts: {
       ...state.nanoContract.registeredContracts,
       [payload.entryKey]: payload.entryValue,
-    }
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     entryKey: string;
+ *     history: {
+ *       txId: string;
+ *       timestamp: number;
+ *       tokens: string[];
+ *       isVoided: boolean;
+ *       ncId: string;
+ *       ncMethod: string;
+ *     };
+ *   };
+ * }} action
+ */
+export const onNanoContractHistoryLoad = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    contractsHistory: {
+      ...state.nanoContract.contractsHistory,
+      [payload.entryKey]: [
+        ...(state.nanoContract.contractsHistory[payload.entryKey] || []),
+        ...payload.history
+      ],
+    },
   },
 });
