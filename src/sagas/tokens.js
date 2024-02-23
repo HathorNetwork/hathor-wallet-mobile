@@ -19,7 +19,7 @@ import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
 import { specificTypeAndPayload, dispatchAndWait, getRegisteredTokenUids } from './helpers';
-import { mapTokenHistory } from '../utils';
+import { mapToTxHistory } from '../utils';
 import {
   types,
   tokenFetchBalanceRequested,
@@ -30,6 +30,10 @@ import {
   tokenFetchHistoryFailed,
 } from '../actions';
 
+/**
+ * @readonly
+ * @enum {string}
+ */
 export const TOKEN_DOWNLOAD_STATUS = {
   READY: 'ready',
   FAILED: 'failed',
@@ -127,7 +131,7 @@ function* fetchTokenHistory(action) {
     }
 
     const response = yield call(wallet.getTxHistory.bind(wallet), { token_id: tokenId });
-    const data = response.map((txHistory) => mapTokenHistory(txHistory, tokenId));
+    const data = response.map(mapToTxHistory(tokenId));
 
     yield put(tokenFetchHistorySuccess(tokenId, data));
   } catch (e) {
