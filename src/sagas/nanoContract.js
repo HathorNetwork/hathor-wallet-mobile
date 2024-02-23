@@ -16,7 +16,6 @@ import {
   onExceptionCaptured,
   types,
 } from '../actions';
-import { nanoContractKey } from '../constants';
 
 export const failureMessage = {
   alreadyRegistered: t`Nano Contract already registered.`,
@@ -65,10 +64,11 @@ export async function getNanoContractState(ncId) {
 export function* registerNanoContract({ payload }) {
   const { address, ncId } = payload;
   const ncEntryKey = formatNanoContractRegistryEntry(address, ncId);
+  const storage = STORE.getStorage();
 
   // check the Nano Contract is already registered
-  let registeredNanoContracts = STORE.getItem(nanoContractKey.registeredContracts) || {};
-  if (ncEntryKey in registeredNanoContracts) {
+  const isRegistered = storage.isNanoContractRegistered(ncEntryKey);
+  if (isRegistered) {
     yield put(nanoContractRegisterFailure(failureMessage.alreadyRegistered));
     return;
   }
@@ -96,16 +96,14 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  // persist the pair address-nanocontract
+  // persist using the pair address-nanocontract as key
   const ncEntryValue = {
     address,
     ncId,
     blueprintId: ncState.blueprint_id,
     blueprintName: ncState.blueprint_name
   };
-  registeredNanoContracts = STORE.getItem(nanoContractKey.registeredContracts) || {};
-  registeredNanoContracts[ncEntryKey] = ncEntryValue;
-  STORE.setItem(nanoContractKey.registeredContracts, registeredNanoContracts)
+  storage.registerNanoContract(ncEntryKey, ncEntryValue);
 
   // emit action NANOCONTRACT_REGISTER_SUCCESS
   yield put(nanoContractRegisterSuccess({ entryKey: ncEntryKey, entryValue: ncEntryValue }));
