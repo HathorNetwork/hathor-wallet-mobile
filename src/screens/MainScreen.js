@@ -37,6 +37,7 @@ import { fetchMoreHistory, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
+import { TxHistory } from '../models';
 
 /**
  * txList {Array} array with transactions of the selected token
@@ -454,6 +455,11 @@ class TxListItem extends React.Component {
   }
 
   render() {
+    /**
+     * @type {{
+     *   item: TxHistory;
+     * }} TxListItem properties
+     */
     const { item } = this.props;
     const style = this.getStyle(item);
     const image = this.getImage(item);
