@@ -114,13 +114,6 @@ export const pushNotificationKey = {
 };
 
 /**
- * Nano Contract storage keys.
- */
-export const nanoContractKey = {
-  registeredContracts: 'nanoContract:registeredContracts',
-};
-
-/**
  * this is the message key for localization of new transaction when show amount is enabled
  */
 export const NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED = 'new_transaction_received_description_with_tokens';
