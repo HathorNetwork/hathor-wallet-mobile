@@ -16,6 +16,7 @@ import SlideIndicatorBar from './SlideIndicatorBar';
 import CopyClipboard from './CopyClipboard';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
+import { TxHistory } from '../models';
 
 class TxDetailsModal extends Component {
   style = StyleSheet.create({
@@ -29,6 +30,13 @@ class TxDetailsModal extends Component {
   });
 
   render() {
+    /**
+     * @type {{
+     *   token: unknown;
+     *   tx: TxHistory;
+     *   isNFT: boolean;
+     * }} TxDetailsModal properties
+     */
     const { token, tx, isNFT } = this.props;
     const fullTokenStr = getTokenLabel(token);
     const description = tx.getDescription(token);
@@ -60,6 +68,13 @@ class TxDetailsModal extends Component {
               <ListItem title={t`Description`} text={description} />
               <ListItem title={t`Date & Time`} text={timestampStr} />
               <ListItem title={t`ID`} text={txIdComponent} />
+              {tx.isNanoContract() &&
+                <>
+                  <ListItem title={t`Nano Contract ID`} text={tx.ncId} />
+                  <ListItem title={t`Nano Contract Method`} text={tx.ncMethod} />
+                  <ListItem title={t`Nano Contract Caller`} text={tx.ncCaller?.base58} />
+                </>
+              }
               <PublicExplorerListButton txId={tx.txId} />
             </View>
           </View>
