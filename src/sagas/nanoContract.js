@@ -36,7 +36,7 @@ export function formatNanoContractRegistryEntry(address, ncId) {
 }
 
 /**
- * Calls Nano Contract API to retrive Nano Contract state.
+ * Calls Nano Contract API to retrieve Nano Contract state.
  * @param {string} ncId Nano Contract ID
  * @returns {{
  *   ncState?: Object,

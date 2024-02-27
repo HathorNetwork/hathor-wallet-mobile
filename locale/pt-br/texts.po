@@ -949,7 +949,7 @@ msgstr "Nano Contract já registrado."
 
 #: src/sagas/nanoContract.js:23
 msgid "Wallet is not ready yet."
-msgstr "Wallet não está pronta ainda."
+msgstr "A wallet não está pronta ainda."
 
 #: src/sagas/nanoContract.js:24
 msgid "The informed address do not belongs to the wallet."
@@ -957,7 +957,7 @@ msgstr "O endereço informado não pertence a esta carteira."
 
 #: src/sagas/nanoContract.js:25
 msgid "Error while trying to get Nano Contract state."
-msgstr "Erro ao fazer download do Nano Contract."
+msgstr "Erro ao obter o estado do Nano Contract."
 
 #: src/sagas/networkSettings.js:88
 msgid "Custom Network Settings cannot be empty."
