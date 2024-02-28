@@ -185,10 +185,10 @@ export async function fetchHistory(ncId, count, after) {
 export function* requestHistoryNanoContract({ payload }) {
   const { address, ncId, after } = payload;
   const count = NANO_CONTRACT_TX_HISTORY_SIZE;
-
   const ncEntryKey = formatNanoContractRegistryEntry(address, ncId);
-  const allNcs = STORE.getItem(nanoContractKey.registeredContracts) || {};
-  if (!allNcs[ncEntryKey]) {
+  const storage = STORE.getStorage();
+
+  if (!storage.isNanoContractRegistered(ncEntryKey)) {
     yield put(nanoContractHistoryFailure(failureMessage.notRegistered));
   }
 
@@ -197,11 +197,10 @@ export function* requestHistoryNanoContract({ payload }) {
     const { history, next } = yield call(fetchHistory, ncId, count, after);
 
     // load into store
-    const allNcs = STORE.getItem(nanoContractKey.registeredContracts) || {};
-    const currentNc = allNcs[ncEntryKey];
-    const historyLoaded = currentNc.history || [];
-    currentNc.history = [...historyLoaded, ...history];
-    STORE.setItem(nanoContractKey.registeredContracts, allNcs)
+    const ncData = storage.getNanoContract(ncEntryKey);
+    const loadedHistory = ncData.history || [];
+    ncData.history = [...loadedHistory, ...history];
+    storage.registerNanoContract(ncEntryKey, ncData);
 
     // create an opportunity to load into redux
     yield put(nanoContractHistoryLoad({
