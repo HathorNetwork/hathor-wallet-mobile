@@ -149,13 +149,13 @@ export default Dashboard = () => {
 }
 
 const Wrapper = ({ children }) => (
-  <View style={style.wrapper}>
+  <View style={styles.wrapper}>
     {children}
   </View>
 );
 
 const DashBoardHeader = ({ children }) => (
-  <View style={[style.headerWrapper]}>
+  <View style={[styles.headerWrapper]}>
     {children}
   </View>
 );
@@ -171,13 +171,17 @@ const RegisterToken = () => {
 };
 
 const TokensHeader = () => (
-  <HathorHeader
-    title={t`TOKENS`}
-    rightElement={<RegisterToken />}
-  />
+  <HathorHeader>
+    <HathorHeader.Left>
+      <Text style={[styles.headerTitle]}>{t`Tokens`}</Text>
+    </HathorHeader.Left>
+    <HathorHeader.Right>
+      <RegisterToken />
+    </HathorHeader.Right>
+  </HathorHeader>
 );
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
   },
@@ -186,6 +190,11 @@ const style = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     backgroundColor: COLORS.lowContrastDetail,
+  },
+  headerTitle: {
+    fontSize: 24,
+    lineHeight: 24,
+    fontWeight: 'bold',
   },
 });
 
