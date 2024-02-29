@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
@@ -16,9 +16,11 @@ import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
 import SimpleButton from '../components/SimpleButton';
 import OfflineBar from '../components/OfflineBar';
+import { TwoOptionsToggle } from '../components/TwoOptionsToggle.component';
 import { tokenFetchBalanceRequested, updateSelectedToken } from '../actions';
 import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
 import AskForPushNotificationRefresh from '../components/AskForPushNotificationRefresh';
+import { COLORS } from '../styles/themes';
 
 /**
  * tokens {Array} array with all added tokens on this wallet
@@ -62,27 +64,22 @@ class Dashboard extends React.Component {
   }
 
   render() {
-    const ManualInfoButton = () => (
-      <SimpleButton
-        title={t`Register token`}
-        onPress={() => this.props.navigation.navigate('RegisterToken')}
-      />
-    );
-
-    const Header = () => (
-      <HathorHeader
-        title={t`TOKENS`}
-        rightElement={<ManualInfoButton />}
-      />
-    );
-
     return (
       <View style={{ flex: 1 }}>
         <ShowPushNotificationTxDetails navigation={this.props.navigation} />
         <AskForPushNotification navigation={this.props.navigation} />
         <AskForPushNotificationRefresh />
+        <DashBoardHeader>
+          <TwoOptionsToggle
+            options={{
+              first: { value: 'Tokens', onTap: () => null },
+              second: { value: 'Nano Contracts', onTap: () => null }
+            }}
+            defaultOption={'first'}
+          />
+        </DashBoardHeader>
         <TokenSelect
-          header={<Header />}
+          header={<TokensHeader />}
           renderArrow
           onItemPress={this.onItemPress}
           selectedToken={this.props.selectedToken}
@@ -95,5 +92,34 @@ class Dashboard extends React.Component {
     );
   }
 }
+
+const DashBoardHeader = ({ children }) => (
+  <View style={[styleDashboardHeader.wrapper]}>
+    {children}
+  </View>
+);
+
+const styleDashboardHeader = StyleSheet.create({
+  wrapper: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: COLORS.lowContrastDetail,
+  },
+});
+
+const RegisterToken = () => (
+  <SimpleButton
+    title={t`Register token`}
+    onPress={() => this.props.navigation.navigate('RegisterToken')}
+  />
+);
+
+const TokensHeader = () => (
+  <HathorHeader
+    title={t`TOKENS`}
+    rightElement={<RegisterToken />}
+  />
+);
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);
