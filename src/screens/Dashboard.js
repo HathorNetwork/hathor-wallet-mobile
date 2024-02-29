@@ -96,7 +96,7 @@ export default Dashboard = () => {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <Wrapper>
       <ShowPushNotificationTxDetails navigation={navigation} />
       <AskForPushNotification navigation={navigation} />
       <AskForPushNotificationRefresh />
@@ -119,24 +119,21 @@ export default Dashboard = () => {
         tokenMetadata={tokensMetadata}
       />
       <OfflineBar />
-    </View>
+    </Wrapper>
   );
 }
 
-const DashBoardHeader = ({ children }) => (
-  <View style={[styleDashboardHeader.wrapper]}>
+const Wrapper = ({ children }) => (
+  <View style={style.wrapper}>
     {children}
   </View>
 );
 
-const styleDashboardHeader = StyleSheet.create({
-  wrapper: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    backgroundColor: COLORS.lowContrastDetail,
-  },
-});
+const DashBoardHeader = ({ children }) => (
+  <View style={[style.headerWrapper]}>
+    {children}
+  </View>
+);
 
 const RegisterToken = () => {
   const navigation = useNavigation();
@@ -154,3 +151,16 @@ const TokensHeader = () => (
     rightElement={<RegisterToken />}
   />
 );
+
+const style = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+  },
+  headerWrapper: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: COLORS.lowContrastDetail,
+  },
+});
+
