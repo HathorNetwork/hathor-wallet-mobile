@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
 
@@ -21,76 +21,106 @@ import { tokenFetchBalanceRequested, updateSelectedToken } from '../actions';
 import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
 import AskForPushNotificationRefresh from '../components/AskForPushNotificationRefresh';
 import { COLORS } from '../styles/themes';
+import { useNavigation } from '@react-navigation/native';
+import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 
 /**
- * tokens {Array} array with all added tokens on this wallet
- * tokensBalance {Object} dict with balance for each token
- * selectedToken {Object} token currently selected by the user
- * tokenMetadata {Object} metadata of tokens
+ * State filter to retrieve token-related data from root state.
+ * 
+ * @typedef {Object} TokenData
+ * @property {string} selectedToken - Current token selected.
+ * @property {string[]} tokens - Array containing all the tokens registered on the wallet.
+ * @property {{ [uid: string]: Object }} tokensBalance - Map of balance per token.
+ * @property {{ [uid: string]: Object }} tokensMetadata - Map of token's metadata per token.
+ * 
+ * @returns {TokenData} Token-related data obtained from the root state.
  */
-const mapStateToProps = (state) => ({
+const getTokensState = (state) => ({
+  selectedToken: state.selectedToken,
   tokens: state.tokens,
   tokensBalance: state.tokensBalance,
-  tokensHistory: state.tokensHistory,
-  selectedToken: state.selectedToken,
-  tokenMetadata: state.tokenMetadata,
-  tokenLoadingState: state.tokenLoadingState,
+  tokensMetadata: state.tokenMetadata,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  updateSelectedToken: (token) => dispatch(updateSelectedToken(token)),
-  getBalance: (token) => dispatch(tokenFetchBalanceRequested(token)),
-});
+// Check if the token balance is already loaded
+/**
+ * @param {{ [uid: string]: Object }} tokensBalance a map of token's balance per token uid
+ * @param {{ uid: string }} token the token data
+ * @returns {string} the status of the current tokens balance loading process.
+ */
+const getTokensBalanceStatus = (tokensBalance, token) => {
+  return get(tokensBalance, `${token.uid}.status`, TOKEN_DOWNLOAD_STATUS.LOADING)
+};
 
-class Dashboard extends React.Component {
-  static navigatorStyle = { tabBarVisible: false }
+/**
+ * @param {string} status the current status from tokens balance loading process.
+ * @returns {boolean} `true` if loading, `false` otherwise.
+ */
+const isTokensBalanceLoading = (status) => {
+  return status === TOKEN_DOWNLOAD_STATUS.LOADING;
+};
 
-  onItemPress = (item) => {
-    // Check if the token balance is already loaded
-    const tokenBalanceStatus = get(this.props.tokensBalance, `${item.uid}.status`, 'loading');
+/**
+ * @param {string} status the current status from tokens balance loading process.
+ * @returns {boolean} `true` if failed, `false` otherwise.
+ */
+const isTokensBalanceFailed = (status) => {
+  return status === TOKEN_DOWNLOAD_STATUS.FAILED;
+};
 
-    if (tokenBalanceStatus === 'loading') {
+export default Dashboard = () => {
+  const {
+    tokens,
+    tokensBalance,
+    selectedToken,
+    tokensMetadata,
+  } = useSelector(getTokensState);
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+  const onTokenPress = (token) => {
+    const status = getTokensBalanceStatus(tokensBalance, token);
+
+    if (isTokensBalanceLoading(status)) {
       return;
     }
 
-    if (tokenBalanceStatus === 'failed') {
+    if (isTokensBalanceFailed(status)) {
       // If the token balance status is failed, we should try again
-      this.props.getBalance(item.uid);
+      dispatch(tokenFetchBalanceRequested(token.uid))
       return;
     }
 
-    this.props.updateSelectedToken(item);
-    this.props.navigation.navigate('MainScreen');
+    dispatch(updateSelectedToken(token));
+    navigation.navigate('MainScreen');
   }
 
-  render() {
-    return (
-      <View style={{ flex: 1 }}>
-        <ShowPushNotificationTxDetails navigation={this.props.navigation} />
-        <AskForPushNotification navigation={this.props.navigation} />
-        <AskForPushNotificationRefresh />
-        <DashBoardHeader>
-          <TwoOptionsToggle
-            options={{
-              first: { value: 'Tokens', onTap: () => null },
-              second: { value: 'Nano Contracts', onTap: () => null }
-            }}
-            defaultOption={'first'}
-          />
-        </DashBoardHeader>
-        <TokenSelect
-          header={<TokensHeader />}
-          renderArrow
-          onItemPress={this.onItemPress}
-          selectedToken={this.props.selectedToken}
-          tokens={this.props.tokens}
-          tokensBalance={this.props.tokensBalance}
-          tokenMetadata={this.props.tokenMetadata}
+  return (
+    <View style={{ flex: 1 }}>
+      <ShowPushNotificationTxDetails navigation={navigation} />
+      <AskForPushNotification navigation={navigation} />
+      <AskForPushNotificationRefresh />
+      <DashBoardHeader>
+        <TwoOptionsToggle
+          options={{
+            first: { value: 'Tokens', onTap: () => null },
+            second: { value: 'Nano Contracts', onTap: () => null }
+          }}
+          defaultOption={'first'}
         />
-        <OfflineBar />
-      </View>
-    );
-  }
+      </DashBoardHeader>
+      <TokenSelect
+        header={<TokensHeader />}
+        renderArrow
+        onItemPress={onTokenPress}
+        selectedToken={selectedToken}
+        tokens={tokens}
+        tokensBalance={tokensBalance}
+        tokenMetadata={tokensMetadata}
+      />
+      <OfflineBar />
+    </View>
+  );
 }
 
 const DashBoardHeader = ({ children }) => (
@@ -108,12 +138,15 @@ const styleDashboardHeader = StyleSheet.create({
   },
 });
 
-const RegisterToken = () => (
-  <SimpleButton
-    title={t`Register token`}
-    onPress={() => this.props.navigation.navigate('RegisterToken')}
-  />
-);
+const RegisterToken = () => {
+  const navigation = useNavigation();
+  return (
+    <SimpleButton
+      title={t`Register token`}
+      onPress={() => navigation.navigate('RegisterToken')}
+    />
+  );
+};
 
 const TokensHeader = () => (
   <HathorHeader
@@ -121,5 +154,3 @@ const TokensHeader = () => (
     rightElement={<RegisterToken />}
   />
 );
-
-export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);
