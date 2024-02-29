@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
@@ -68,6 +68,28 @@ const isTokensBalanceFailed = (status) => {
   return status === TOKEN_DOWNLOAD_STATUS.FAILED;
 };
 
+/**
+ * Enum for the list component that can be selected to render on Dashboard.
+ * @readonly
+ * @enum {string}
+ */
+const listOption = {
+  tokens: 'tokens',
+  nanoContracts: 'nanoContracts',
+};
+
+/**
+ * @param {listOption} currList the list component selected to be rendered.
+ * @returns {boolean} `true` if tokens list is selected, `false` otherwier.
+ */
+const isTokensSelected = (currList) => currList === listOption.tokens;
+
+/**
+ * @param {listOption} currList the list component selected to be rendered.
+ * @returns {boolean} `true` if nanoContracts list is selected, `false` otherwier.
+ */
+const isNanoContractsSelected = (currList) => currList === listOption.nanoContracts;
+
 export default Dashboard = () => {
   const {
     tokens,
@@ -75,6 +97,7 @@ export default Dashboard = () => {
     selectedToken,
     tokensMetadata,
   } = useSelector(getTokensState);
+  const [currList, selectList] = useState(listOption.tokens);
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
@@ -103,21 +126,23 @@ export default Dashboard = () => {
       <DashBoardHeader>
         <TwoOptionsToggle
           options={{
-            first: { value: 'Tokens', onTap: () => null },
-            second: { value: 'Nano Contracts', onTap: () => null }
+            first: { value: 'Tokens', onTap: () => selectList(listOption.tokens) },
+            second: { value: 'Nano Contracts', onTap: () => selectList(listOption.nanoContracts) }
           }}
           defaultOption={'first'}
         />
       </DashBoardHeader>
-      <TokenSelect
-        header={<TokensHeader />}
-        renderArrow
-        onItemPress={onTokenPress}
-        selectedToken={selectedToken}
-        tokens={tokens}
-        tokensBalance={tokensBalance}
-        tokenMetadata={tokensMetadata}
-      />
+      {isTokensSelected(currList)
+        && <TokenSelect
+          header={<TokensHeader />}
+          renderArrow
+          onItemPress={onTokenPress}
+          selectedToken={selectedToken}
+          tokens={tokens}
+          tokensBalance={tokensBalance}
+          tokenMetadata={tokensMetadata}
+      />}
+      {isNanoContractsSelected(currList) && <Text>Nano Contracts</Text>}
       <OfflineBar />
     </Wrapper>
   );
