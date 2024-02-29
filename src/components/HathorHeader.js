@@ -21,20 +21,52 @@ const HathorHeader = ({
   rightElement,
   withLogo,
   withBorder,
-  wrapperStyle,
   onBackPress,
   onCancel,
+  wrapperStyle,
+  children,
 }) => {
+  const hasChildren = children != null;
+  const left = React.Children.toArray(children).find((child) => child.type.displayName === HathorHeaderLeft.displayName);
+  const right = React.Children.toArray(children).find((child) => child.type.displayName === HathorHeaderRight.displayName);
+
   return (
-    <View style={[styles.wrapper, wrapperStyle, applyExtraStyle(withBorder)]}>
-      <View style={styles.innerWrapper}>
-        <LeftComponent onBackPress={onBackPress} />
-        <CentralComponent title={title} withLogo={withLogo} />
-        <RightComponent rightElement={rightElement} onCancel={onCancel} />
-      </View>
-    </View>
+    <Wrapper withBorder={withBorder} style={wrapperStyle}>
+        {hasChildren &&
+          <InnerWrapper>
+            {left}
+            {right}
+          </InnerWrapper>}
+        {!hasChildren &&
+          <InnerWrapper>
+            <LeftComponent onBackPress={onBackPress} />
+            <CentralComponent title={title} withLogo={withLogo} />
+            <RightComponent rightElement={rightElement}onCancel={onCancel} />
+          </InnerWrapper>}
+    </Wrapper>
   );
 };
+
+const Wrapper = ({ withBorder, style, children }) => (
+  <View style={[styles.wrapper, style, withBorder && styles.wrapperWithBorder]}>
+    {children}
+  </View>
+);
+
+const InnerWrapper = ({ children }) => (
+  <View style={styles.innerWrapper}>
+    {children}
+  </View>
+); 
+
+const HathorHeaderLeft = ({ children }) => (<View>{children}</View>);
+HathorHeaderLeft.displayName = 'HathorHeaderLeft';
+
+const HathorHeaderRight = ({ children }) => <View>{children}</View>;
+HathorHeaderRight.displayName = 'HathorHeaderRight';
+
+HathorHeader.Left = HathorHeaderLeft;
+HathorHeader.Right = HathorHeaderRight;
 
 const CancelButton = () => (
   <SimpleButton
@@ -76,13 +108,6 @@ const RightComponent = ({ rightElement, onCancel }) => {
   );
 };
 
-const applyExtraStyle = (withBorder) => {
-  if (withBorder) {
-    return { borderBottomWidth: 1 };
-  }
-  return {};
-};
-
 const styles = StyleSheet.create({
   wrapper: {
     height: STYLE.headerHeight,
@@ -90,6 +115,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     borderColor: COLORS.borderColor,
     paddingHorizontal: 16,
+  },
+  wrapperWithBorder: {
+    borderBottomWidth: 1,
   },
   innerWrapper: {
     flex: 1,
@@ -104,4 +132,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
 export default HathorHeader;
