@@ -1,15 +1,14 @@
 import React from 'react';
-import { TouchableHighlight,FlatList, StyleSheet, View, Text, Image } from 'react-native';
+import { FlatList, StyleSheet, View, Text } from 'react-native';
 import { t } from 'ttag';
 import { useNavigation } from '@react-navigation/native';
 
-import chevronRight from '../../assets/icons/chevron-right.png';
 import { COLORS } from "../../styles/themes";
 import { formatNanoContractRegistryEntry } from "../../sagas/nanoContract";
-import { getShortContent, getShortHash } from '../utils';
-import SimpleButton from '../SimpleButton';
 import HathorHeader from "../HathorHeader";
-import { NanoContractIcon } from './NanoContractIcon.svg.component';
+import { NoNanoContracts } from './NoNanoContracts.component';
+import { RegisterNanoContract } from './RegisterNewNanoContractButton.component';
+import { NanoContractsListItem } from './NanoContractsListItem.component';
 
 const fixtureNanoContractData = [
   {
@@ -40,7 +39,7 @@ export const NanoContractsList = ({}) => {
         <FlatList
           data={fixtureNanoContractData}
           renderItem={({item, index}) => (
-            <NcItem
+            <NanoContractsListItem
               item={item}
               index={index}
               onPress={navigatesToNanoContractTransactions}
@@ -69,147 +68,9 @@ const Header = () => (
   </HathorHeader>
 );
 
-const NoNanoContracts = () => {
-  const navigation = useNavigation();
-  const navigatesToDocumentation = () => {
-    navigation.navigate('add documentation link here');
-  };
-  return (
-    <View style={noNanoContractStyles.wrapper}>
-      <Text style={noNanoContractStyles.title}>{t`No Nano Contracts`}</Text>
-      <Text style={noNanoContractStyles.content}>
-        {t`You can keep track of your registered Nano Contracts here once you have registered them.`}
-        <View style={noNanoContractStyles.learnMoreWrapper}>
-          <SimpleButton
-            containerStyle={noNanoContractStyles.learnMoreContainer}
-            textStyle={noNanoContractStyles.learnMoreText}
-            title={t`Learn More.`}
-            onPress={navigatesToDocumentation}
-          />
-        </View>
-      </Text>
-      <RegisterNanoContract />
-    </View>
-  )
-};
-
-const noNanoContractStyles = StyleSheet.create({
-  wrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: '50%',
-    paddingHorizontal: 45,
-  },
-  title: {
-    fontSize: 16,
-    lineHeight: 20,
-    fontWeight: 'bold',
-    paddingBottom: 16,
-  },
-  content: {
-    fontSize: 14,
-    lineHeight: 20,
-    paddingBottom: 16,
-    textAlign: 'center',
-  },
-  learnMoreWrapper: {
-    display: 'inline-block',
-    /* We are using negative margin here to correct the text position
-     * and create an optic effect of alignment. */
-    marginBottom: -4,
-    paddingLeft: 2,
-  },
-  learnMoreContainer: {
-    justifyContent: 'flex-start',
-    borderBottomWidth: 1,
-  },
-  learnMoreText: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: 'bold',
-    color: 'black',
-  },
-});
-
-const RegisterNanoContract = () => {
-  const navigation = useNavigation();
-  const navigatesToRegisterNanoContract = () => {
-    navigation.navigate('RegisterNanoContract');
-  };
-
-  return (
-    <SimpleButton
-      title={t`Register new`}
-      onPress={navigatesToRegisterNanoContract}
-    />
-  );
-};
-
 const ListWrapper = ({ children }) => (
   <View style={[styles.listWrapper]}>
     {children}
-  </View>
-);
-
-/**
- * Renders each item of Nano Contract List.
- *
- * @param {Object} ncItem 
- * @property {Object} ncItem.item registered Nano Contract data
- * @property {number} ncItem.index position in the list
- */
-const NcItem = ({ item, index, onPress }) => {
-  return (
-    <NcItemWrapper index={index} onPress={onPress}>
-      <NcItemIcon />
-      <NcItemContentWrapper nc={item} />
-      <NcArrowLeft />
-    </NcItemWrapper>
-  );
-};
-
-const NcItemWrapper = ({ index, onPress, children }) => {
-  const isFirstItem = index === 0;
-  return (
-    <TouchableHighlight
-      style={[isFirstItem && styles.ncFirstItem]}
-      onPress={onPress}
-      underlayColor={COLORS.primaryOpacity30}
-    >
-      <View style={styles.ncWrapper}>{children}</View>
-    </TouchableHighlight>
-  );
-};
-
-const NcItemIcon = () => (
-  <View style={styles.ncIcon}>
-    <NanoContractIcon />
-  </View>
-);
-
-/**
- * Renders item core content.
- *
- * @param {Object} ncItem
- * @property {Obeject} ncItem.nc registered Nano Contract data
- */
-const NcItemContentWrapper = ({ nc }) => {
-  return (
-    <View style={styles.ncContentWrapper}>
-      <Text style={[styles.ncText, styles.ncProperty]}>{'Nano Contract ID'}</Text>
-      <Text style={[styles.ncText]}>{getShortHash(nc.ncId, 7)}</Text>
-      <Text style={[styles.ncText, styles.ncProperty]}>{'Blueprint Name'}</Text>
-      <Text style={[styles.ncText]}>{nc.blueprintName}</Text>
-      <Text style={[styles.ncText, styles.ncProperty]}>{'Registered Address'}</Text>
-      <Text style={[styles.ncText, styles.ncPadding0]}>{getShortContent(nc.address, 7)}</Text>
-    </View>
-  );
-};
-
-const NcArrowLeft = () => (
-  <View>
-    <Image source={chevronRight} width={24} height={24} />
   </View>
 );
 
@@ -236,49 +97,5 @@ const styles = StyleSheet.create({
     fontSize: 24,
     lineHeight: 24,
     fontWeight: 'bold',
-  },
-  ncWrapper: {
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderColor: COLORS.borderColor,
-  },
-  ncFirstItem: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  ncContentWrapper: {
-    maxWidth: '80%',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginRight: 'auto',
-    paddingHorizontal: 16,
-  },
-  ncIcon: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    backgroundColor: COLORS.primary,
-    alignSelf: 'flex-start',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-  },
-  ncText: {
-    fontSize: 14,
-    lineHeight: 20,
-    paddingBottom: 6,
-    color: 'hsla(0, 0%, 38%, 1)',
-  },
-  ncProperty: {
-    paddingBottom: 4,
-    fontWeight: 'bold',
-    color: 'black',
-  },
-  ncPadding0: {
-    paddingBottom: 0,
   },
 });
