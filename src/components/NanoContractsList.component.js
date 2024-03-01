@@ -21,13 +21,22 @@ const fixtureNanoContractData = [
 ];
 
 export const NanoContractsList = ({}) => {
+  const navigation = useNavigation();
+  const navigatesToNanoContractTransactions = () => {
+    navigation.navigate('NanoContractTransactions');
+  };
   return (
     <Wrapper>
       <Header />
       <ListWrapper>
         <FlatList
           data={fixtureNanoContractData}
-          renderItem={NcItem}
+          renderItem={({item, index}) => (
+            <NcItem
+              item={item}
+              index={index}
+              onPress={navigatesToNanoContractTransactions}
+            />)}
           keyExtractor={(nc) => formatNanoContractRegistryEntry(nc.address, nc.ncId)}
         />
       </ListWrapper>
@@ -48,10 +57,24 @@ const Header = () => (
       <Text style={[styles.headerTitle]}>{t`Nano Contracts`}</Text>
     </HathorHeader.Left>
     <HathorHeader.Right>
-      <Text>{'Register new'}</Text>
+      <RegisterNanoContract />
     </HathorHeader.Right>
   </HathorHeader>
 );
+
+const RegisterNanoContract = () => {
+  const navigation = useNavigation();
+  const navigatesToRegisterNanoContract = () => {
+    navigation.navigate('RegisterNanoContract');
+  };
+
+  return (
+    <SimpleButton
+      title={t`Register new`}
+      onPress={navigatesToRegisterNanoContract}
+    />
+  );
+};
 
 const ListWrapper = ({ children }) => (
   <View style={[styles.listWrapper]}>
@@ -66,11 +89,9 @@ const ListWrapper = ({ children }) => (
  * @property {Object} ncItem.item registered Nano Contract data
  * @property {number} ncItem.index position in the list
  */
-const NcItem = ({ item, index }) => {
-  // TODO: implement navigation when component is available
-  const navigatesToNcTxList = () => null;
+const NcItem = ({ item, index, onPress }) => {
   return (
-    <NcItemWrapper index={index}onPress={navigatesToNcTxList}>
+    <NcItemWrapper index={index} onPress={onPress}>
       <NcItemIcon />
       <NcItemContentWrapper nc={item} />
       <NcArrowLeft />
