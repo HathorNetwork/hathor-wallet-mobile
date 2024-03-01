@@ -1,14 +1,15 @@
 import React from 'react';
 import { TouchableHighlight,FlatList, StyleSheet, View, Text, Image } from 'react-native';
 import { t } from 'ttag';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faScroll } from '@fortawesome/free-solid-svg-icons';
 
 import { getShortContent, getShortHash } from '../utils';
 import chevronRight from '../assets/icons/chevron-right.png';
 import { formatNanoContractRegistryEntry } from "../sagas/nanoContract";
 import HathorHeader from "./HathorHeader";
 import { COLORS } from "../styles/themes";
+import { NanoContractIcon } from './NanoContractIcon.svg.component';
+import { useNavigation } from '@react-navigation/native';
+import SimpleButton from './SimpleButton';
 
 const fixtureNanoContractData = [
   {
@@ -92,11 +93,7 @@ const NcItemWrapper = ({ index, onPress, children }) => {
 
 const NcItemIcon = () => (
   <View style={styles.ncIcon}>
-    <FontAwesomeIcon
-      icon={faScroll}
-      color={COLORS.primary}
-      size={24}
-    />
+    <NanoContractIcon />
   </View>
 );
 
@@ -171,12 +168,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   ncIcon: {
-    padding: 4,
-    backgroundColor: COLORS.lowContrastDetail,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    backgroundColor: COLORS.primary,
     alignSelf: 'flex-start',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 4,
+    borderRadius: 8,
   },
   ncText: {
     fontSize: 14,
