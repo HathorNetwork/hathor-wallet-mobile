@@ -9,24 +9,25 @@ import HathorHeader from "../HathorHeader";
 import { NoNanoContracts } from './NoNanoContracts.component';
 import { RegisterNanoContract } from './RegisterNewNanoContractButton.component';
 import { NanoContractsListItem } from './NanoContractsListItem.component';
+import { useSelector } from 'react-redux';
 
-const fixtureNanoContractData = [
-  {
-    address: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
-    ncId: '00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185',
-    blueprintId: '0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4',
-    blueprintName: 'Swap',
-  },
-];
-
-const fixtureEmptyList = [];
+/**
+ * @param {Object} state Redux root state
+ * @returns {Object} Array of registered Nano Contract with basic information
+ */
+const getRegisteredNanoContracts = (state) => {
+  const registeredContracts = state.nanoContract.registeredContracts;
+  return Object.values(registeredContracts);
+}
 
 export const NanoContractsList = ({}) => {
+  const registeredNanoContracts = useSelector(getRegisteredNanoContracts);
   const navigation = useNavigation();
+
   const navigatesToNanoContractTransactions = () => {
     navigation.navigate('NanoContractTransactions');
   };
-  const isEmpty = () => fixtureNanoContractData.length === 0;
+  const isEmpty = () => registeredNanoContracts.length === 0;
 
   return (
     <Wrapper>
@@ -37,7 +38,7 @@ export const NanoContractsList = ({}) => {
         {/* FlatList doesn't render when data is empty.
           * That's why we don't need a conditional rendering here. */}
         <FlatList
-          data={fixtureNanoContractData}
+          data={registeredNanoContracts}
           renderItem={({item, index}) => (
             <NanoContractsListItem
               item={item}
