@@ -20,17 +20,25 @@ const fixtureNanoContractData = [
   },
 ];
 
+const fixtureEmptyList = [];
+
 export const NanoContractsList = ({}) => {
   const navigation = useNavigation();
   const navigatesToNanoContractTransactions = () => {
     navigation.navigate('NanoContractTransactions');
   };
+  const isEmpty = () => fixtureEmptyList.length === 0;
+
   return (
     <Wrapper>
       <Header />
       <ListWrapper>
+        {isEmpty() &&
+          <NoNanoContracts />}
+        {/* FlatList doesn't render when data is empty.
+          * That's why we don't need a conditional rendering here. */}
         <FlatList
-          data={fixtureNanoContractData}
+          data={fixtureEmptyList}
           renderItem={({item, index}) => (
             <NcItem
               item={item}
@@ -43,7 +51,6 @@ export const NanoContractsList = ({}) => {
     </Wrapper>
   );
 };
-
 
 const Wrapper = ({ children }) => (
   <View style={[styles.wrapper]}>
@@ -61,6 +68,69 @@ const Header = () => (
     </HathorHeader.Right>
   </HathorHeader>
 );
+
+const NoNanoContracts = () => {
+  const navigation = useNavigation();
+  const navigatesToDocumentation = () => {
+    navigation.navigate('add documentation link here');
+  };
+  return (
+    <View style={noNanoContractStyles.wrapper}>
+      <Text style={noNanoContractStyles.title}>{t`No Nano Contracts`}</Text>
+      <Text style={noNanoContractStyles.content}>
+        {t`You can keep track of your registered Nano Contracts here once you have registered them.`}
+        <View style={noNanoContractStyles.learnMoreWrapper}>
+          <SimpleButton
+            containerStyle={noNanoContractStyles.learnMoreContainer}
+            textStyle={noNanoContractStyles.learnMoreText}
+            title={t`Learn More.`}
+            onPress={navigatesToDocumentation}
+          />
+        </View>
+      </Text>
+      <RegisterNanoContract />
+    </View>
+  )
+};
+
+const noNanoContractStyles = StyleSheet.create({
+  wrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: '50%',
+    paddingHorizontal: 45,
+  },
+  title: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: 'bold',
+    paddingBottom: 16,
+  },
+  content: {
+    fontSize: 14,
+    lineHeight: 20,
+    paddingBottom: 16,
+    textAlign: 'center',
+  },
+  learnMoreWrapper: {
+    display: 'inline-block',
+    /* We are using negative margin here to correct the text position
+     * and create an optic effect of alignment. */
+    marginBottom: -4,
+    paddingLeft: 2,
+  },
+  learnMoreContainer: {
+    justifyContent: 'flex-start',
+    borderBottomWidth: 1,
+  },
+  learnMoreText: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+});
 
 const RegisterNanoContract = () => {
   const navigation = useNavigation();
