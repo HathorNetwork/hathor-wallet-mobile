@@ -1,15 +1,15 @@
 import React from 'react';
 import { TouchableHighlight,FlatList, StyleSheet, View, Text, Image } from 'react-native';
 import { t } from 'ttag';
-
-import { getShortContent, getShortHash } from '../utils';
-import chevronRight from '../assets/icons/chevron-right.png';
-import { formatNanoContractRegistryEntry } from "../sagas/nanoContract";
-import HathorHeader from "./HathorHeader";
-import { COLORS } from "../styles/themes";
-import { NanoContractIcon } from './NanoContractIcon.svg.component';
 import { useNavigation } from '@react-navigation/native';
-import SimpleButton from './SimpleButton';
+
+import chevronRight from '../../assets/icons/chevron-right.png';
+import { COLORS } from "../../styles/themes";
+import { formatNanoContractRegistryEntry } from "../../sagas/nanoContract";
+import { getShortContent, getShortHash } from '../utils';
+import SimpleButton from '../SimpleButton';
+import HathorHeader from "../HathorHeader";
+import { NanoContractIcon } from './NanoContractIcon.svg.component';
 
 const fixtureNanoContractData = [
   {
@@ -27,7 +27,7 @@ export const NanoContractsList = ({}) => {
   const navigatesToNanoContractTransactions = () => {
     navigation.navigate('NanoContractTransactions');
   };
-  const isEmpty = () => fixtureEmptyList.length === 0;
+  const isEmpty = () => fixtureNanoContractData.length === 0;
 
   return (
     <Wrapper>
@@ -38,7 +38,7 @@ export const NanoContractsList = ({}) => {
         {/* FlatList doesn't render when data is empty.
           * That's why we don't need a conditional rendering here. */}
         <FlatList
-          data={fixtureEmptyList}
+          data={fixtureNanoContractData}
           renderItem={({item, index}) => (
             <NcItem
               item={item}
