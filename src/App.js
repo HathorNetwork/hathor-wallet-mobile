@@ -534,7 +534,7 @@ class _AppStackWrapper extends React.Component {
     if (!this.props.wallet?.storage) {
       return;
     }
-    const tokens = [...INITIAL_TOKENS];
+    const tokens = { ...INITIAL_TOKENS };
     const iterator = this.props.wallet.storage.getRegisteredTokens();
     let next = await iterator.next();
     // XXX: The "for await" syntax wouldbe better but this is failing due to
@@ -542,11 +542,7 @@ class _AppStackWrapper extends React.Component {
     while (!next.done) {
       const token = next.value;
       // We need to filter the token data to remove the metadata from this list (e.g. balance)
-      tokens.push({
-        uid: token.uid,
-        symbol: token.symbol,
-        name: token.name,
-      });
+      tokens[token.uid] = { ...token };
       // eslint-disable-next-line no-await-in-loop
       next = await iterator.next();
     }

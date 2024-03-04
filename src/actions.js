@@ -252,7 +252,7 @@ export const updateSelectedToken = (selectedToken) => (
 export const newToken = (token) => ({ type: types.NEW_TOKEN, payload: token });
 
 /**
- * tokens {Array} list of tokens to update state
+ * @param {Object.<string, {uid: string, name: string; symbol: string}>} tokens map of tokens to update state
  */
 export const setTokens = (tokens) => ({ type: types.SET_TOKENS, payload: tokens });
 
