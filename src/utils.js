@@ -16,6 +16,7 @@ import { KEYCHAIN_USER } from './constants';
 import { STORE } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
+import moment from 'moment';
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
@@ -389,3 +390,7 @@ export function combineURLs(baseURL, relativeURL) {
 export const isPushNotificationAvailableForUser = (state) => (
   state.pushNotification.available && state.pushNotification.deviceRegistered
 );
+
+export const getTimestampFormat = (timestamp) => {
+  return moment.unix(timestamp).format('DD MMM YYYY [•] HH:mm');
+}

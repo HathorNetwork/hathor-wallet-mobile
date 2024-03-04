@@ -247,7 +247,7 @@ const initialState = {
      *     ncMethod: string;
      *     blueprintId: string;
      *     caller: string;
-     *     callerOrigin: 'mine'|'nc'|'oracle'|'wallet';
+     *     callerOrigin: 'mine'|'nc'|'oracle'|'wallet'|'other';
      *   }[];
      * }} history of Nano Contracts registered per wallet address.
      * @example
@@ -263,6 +263,8 @@ const initialState = {
      *       isVoided: false,
      *       ncId: "000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a",
      *       ncMethod: "swap",
+     *       caller: "HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V",
+     *       callerOrigin: "mine",
      *     },
      *   ],
      * }

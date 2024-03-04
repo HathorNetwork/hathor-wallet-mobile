@@ -16,16 +16,24 @@ import { useSelector } from 'react-redux';
  * @returns {Object} Array of registered Nano Contract with basic information
  */
 const getRegisteredNanoContracts = (state) => {
-  const registeredContracts = state.nanoContract.registeredContracts;
-  return Object.values(registeredContracts);
+  // const registeredContracts = state.nanoContract.registeredContracts;
+  // return Object.values(registeredContracts);
+  return [
+    {
+      address: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
+      ncId: '00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185',
+      blueprintId: '0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4',
+      blueprintName: 'Swap',
+    },
+  ];
 }
 
 export const NanoContractsList = ({}) => {
   const registeredNanoContracts = useSelector(getRegisteredNanoContracts);
   const navigation = useNavigation();
 
-  const navigatesToNanoContractTransactions = () => {
-    navigation.navigate('NanoContractTransactions');
+  const navigatesToNanoContractTransactions = (nc) => {
+    navigation.navigate('NanoContractTransactions', { nc});
   };
   const isEmpty = () => registeredNanoContracts.length === 0;
 
@@ -43,7 +51,7 @@ export const NanoContractsList = ({}) => {
             <NanoContractsListItem
               item={item}
               index={index}
-              onPress={navigatesToNanoContractTransactions}
+              onPress={() => navigatesToNanoContractTransactions(item)}
             />)}
           keyExtractor={(nc) => formatNanoContractRegistryEntry(nc.address, nc.ncId)}
         />
