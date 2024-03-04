@@ -28,9 +28,17 @@ export const STAGE = 'mainnet';
 export const NETWORK_MAINNET = 'mainnet';
 
 /**
- * Default tokens for the wallet (to start on redux)
+ * Default tokens for the wallet (to start on redux).
+ * @constant
+ * @type{{
+ *   [uid: string]: {
+ *     uid: string;
+ *     name: string;
+ *     symbol: string;
+ *   }
+ * }}
  */
-export const INITIAL_TOKENS = [DEFAULT_TOKEN];
+export const INITIAL_TOKENS = { [DEFAULT_TOKEN.uid]: DEFAULT_TOKEN };
 
 /**
  * Wallet will lock if app goes to background for more than LOCK_TIMEOUT seconds
