@@ -107,7 +107,8 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
     // add an entry to registeredContracts
     const ncEntry = formatNanoContractRegistryEntry(address, ncId);
-    STORE.setItem(nanoContractKey.registeredContracts, { [ncEntry]: {} });
+    const storage = STORE.getStorage();
+    storage.registerNanoContract(ncEntry, {});
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
@@ -202,8 +203,8 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     expect(gen.next().value).toBeUndefined();
 
     // assert nano contract persistence
-    const registeredContracts = STORE.getItem(nanoContractKey.registeredContracts);
-    expect(registeredContracts).toBeDefined();
+    const storage = STORE.getStorage();
+    expect(storage.isNanoContractRegistered(ncEntryKey)).toBeTruthy();
     expect(actionResult.payload.action.payload.entryKey).toBeDefined();
   });
 });
