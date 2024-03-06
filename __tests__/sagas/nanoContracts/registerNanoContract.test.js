@@ -203,6 +203,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     expect(gen.next().value).toBeUndefined();
 
     // assert nano contract persistence
+    const ncEntryKey = formatNanoContractRegistryEntry(address, ncId);
     const storage = STORE.getStorage();
     expect(storage.isNanoContractRegistered(ncEntryKey)).toBeTruthy();
     expect(actionResult.payload.action.payload.entryKey).toBeDefined();
