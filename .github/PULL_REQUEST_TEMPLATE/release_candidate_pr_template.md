@@ -4,5 +4,5 @@
 
 ### Description
 
-Start the release candidate process for version `X.X.X-rc1`.
+Start the release candidate process for version `X.X.X-rc.1`.
 This PR will merge any changes on `master` into `release-candidate` branch.
