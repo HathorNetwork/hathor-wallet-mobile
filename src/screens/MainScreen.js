@@ -321,7 +321,8 @@ class TxListItem extends React.Component {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: COLORS.backgroundColor,
-      height: 80,
+      minHeight: 80,
+      paddingVertical: 16,
     },
     firstItemBorder: {
       borderTopLeftRadius: 16,
@@ -486,6 +487,7 @@ class TxListItem extends React.Component {
             <View style={style.middleView}>
               <Text style={style.description}>{description}</Text>
               <Text style={style.timestamp}>{timestamp}</Text>
+              <Text style={style.timestamp}>{item.getVersionInfo().label}</Text>
             </View>
             <Text style={style.balance} numberOfLines={1}>{balanceStr}</Text>
           </View>
