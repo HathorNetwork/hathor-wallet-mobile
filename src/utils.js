@@ -31,6 +31,11 @@ export const getShortHash = (hash, length = 4) => (
   `${hash.substring(0, length)}...${hash.substring(64 - length, 64)}`
 );
 
+export const getShortContent = (content, length = 4) => (
+  `${content.substring(0, length)}...${content.substring(content.length - length, content.length)}`
+);
+
+
 /**
  * Get amount text value and transform in its integer value
  *
