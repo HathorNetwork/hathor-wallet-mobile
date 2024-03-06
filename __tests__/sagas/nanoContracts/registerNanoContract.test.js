@@ -4,7 +4,6 @@ import { jest, test, expect, beforeEach, describe } from '@jest/globals';
 import { getNanoContractState, registerNanoContract, formatNanoContractRegistryEntry, failureMessage } from '../../../src/sagas/nanoContract';
 import { nanoContractRegisterFailure, nanoContractRegisterRequest, types } from '../../../src/actions';
 import { STORE } from '../../../src/store';
-import { nanoContractKey } from '../../../src/constants';
 
 jest.mock('@hathor/wallet-lib');
 
