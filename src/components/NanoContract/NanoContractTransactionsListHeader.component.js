@@ -51,25 +51,59 @@ const HeaderShrank = () => (
 const HeaderExpanded = ({ nc }) => (
   <>
     <View style={styles.wrapper}>
-      <Text style={[styles.text, styles.value]}>{getShortHash(nc.ncId, 7)}</Text>
-      <Text style={[styles.text]}>{t`Nano Contract ID`}</Text>
-      <Text style={[styles.text, styles.value]}>{nc.blueprintName}</Text>
-      <Text style={[styles.text]}>{t`Blueprint Name`}</Text>
-      <Text style={[styles.text, styles.value]}>{getShortContent(nc.address, 7)}</Text>
-      <Text style={[styles.text, styles.lastElement]}>{t`Registered Address`}</Text>
-      <View style={[styles.TwoActionsWrapper]}>
-        <SimpleButton
-          title={t`See status details`}
-          containerStyle={[styles.buttonWrapper, styles.buttonDetails]}
-          textStyle={styles.buttonText} />
-        <SimpleButton
-          title={t`Unregister contract`}
-          containerStyle={[styles.buttonWrapper]}
-          textStyle={styles.buttonUnregister} />
-      </View>
+      <InfoContainer>
+        <TextValue>{getShortHash(nc.ncId, 7)}</TextValue>
+        <TextLabel>{t`Nano Contract ID`}</TextLabel>
+      </InfoContainer>
+      <InfoContainer>
+        <TextValue>{nc.blueprintName}</TextValue>
+        <TextLabel>{t`Blueprint Name`}</TextLabel>
+      </InfoContainer>
+      <InfoContainer lastElement>
+        <TextValue>{getShortContent(nc.address, 7)}</TextValue>
+        <TextLabel>{t`Registered Address`}</TextLabel>
+      </InfoContainer>
+      <TwoActionsWrapper>
+        <PrimaryTextButton title={t`See status details`} />
+        <DenyTextButton title={t`Unregister contract`}/>
+      </TwoActionsWrapper>
     </View>
     <ArrowUpIcon />
   </>
+);
+
+const InfoContainer = ({ lastElement, children }) => (
+  <View style={[styles.infoContainer, lastElement && styles.lastElement]}>
+    {children}
+  </View>
+);
+
+const TextValue = ({ children }) => (
+  <Text style={[styles.textValue]}>{children}</Text>
+);
+
+const TextLabel = ({ children }) => (
+  <Text style={[styles.textLabel]}>{children}</Text>
+);
+
+const TwoActionsWrapper = ({ children }) => (
+  <View style={[styles.TwoActionsWrapper]}>
+    {children}
+  </View>
+);
+
+const PrimaryTextButton = ({ title }) => (
+  <SimpleButton
+    title={title}
+    containerStyle={[styles.buttonWrapper, styles.buttonDetails]}
+    textStyle={styles.buttonText} />
+);
+
+const DenyTextButton = ({ title }) => (
+  <SimpleButton
+    title={title}
+    containerStyle={[styles.buttonWrapper]}
+    textStyle={styles.buttonUnregister} />
 );
 
 const styles = StyleSheet.create({
@@ -88,25 +122,27 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   wrapper: {
-    alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
-  text: {
+  infoContainer: {
+    alignItems: 'center',
+    paddingBottom: 16,
+  },
+  lastElement: {
+    paddingBottom: 0,
+  },
+  textLabel: {
     fontSize: 12,
     lineHeight: 20,
-    paddingBottom: 16,
     color: 'hsla(0, 0%, 38%, 1)',
   },
-  value: {
+  textValue: {
     fontSize: 14,
     lineHeight: 20,
     paddingBottom: 4,
     fontWeight: 'bold',
     color: 'black',
-  },
-  lastElement: {
-    paddingBottom: 0,
   },
   TwoActionsWrapper: {
     flexDirection: 'row',
