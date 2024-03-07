@@ -76,7 +76,7 @@ class UnregisterToken extends React.Component {
     // XXX: maybe we should create a new action `removeToken`
     // so we dont need to get all registered tokens to call setTokens
     const promise = this.props.storage.unregisterToken(tokenUnregister).then(async () => {
-      const newTokens = [];
+      const newTokens = {};
 
       const iterator = this.props.storage.getRegisteredTokens();
       let next = await iterator.next();
@@ -85,11 +85,7 @@ class UnregisterToken extends React.Component {
       while (!next.done) {
         const token = next.value;
         // We need to filter the token data to remove the metadata from this list (e.g. balance)
-        newTokens.push({
-          uid: token.uid,
-          symbol: token.symbol,
-          name: token.name,
-        });
+        newTokens[token.uid] = { ...token };
         // eslint-disable-next-line no-await-in-loop
         next = await iterator.next();
       }
