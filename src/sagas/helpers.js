@@ -153,11 +153,17 @@ export function isUnlockScreen(action) {
  * Get registered tokens from the wallet instance.
  * @param {HathorWallet} wallet
  * @param {boolean} excludeHTR If we should exclude the HTR token.
- * @returns {Promise<{ uid: string, symbol: string, name: string }[]>}
+ * @returns {Promise<{
+ *   [uid: string]: {
+ *     uid: string;
+ *     symbol: string;
+ *     name: string;
+ *   }
+ * }>}
  */
 export async function getRegisteredTokens(wallet, excludeHTR = false) {
   const htrUid = hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
-  const tokens = [];
+  const tokens = {};
 
   // redux-saga generator magic does not work well with the "for await..of" syntax
   // The asyncGenerator is not recognized as an iterable and it throws an exception
@@ -167,11 +173,7 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
   while (!next.done) {
     const token = next.value;
     if ((!excludeHTR) || token.uid !== htrUid) {
-      tokens.push({
-        uid: token.uid,
-        symbol: token.symbol,
-        name: token.name,
-      });
+      tokens[token.uid] = { ...token };
     }
     // eslint-disable-next-line no-await-in-loop
     next = await iterator.next();
@@ -179,10 +181,19 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
 
   // XXX: This will add any default tokens configured, not only HTR
   if (!excludeHTR) {
-    tokens.unshift(...INITIAL_TOKENS);
+    return { ...INITIAL_TOKENS, ...tokens };
   }
 
   return tokens;
+}
+
+/**
+ * Flat registered tokens to uid.
+ * @param {{ tokens: Object }} Map of registered tokens by uid
+ * @returns {string[]} Array of token uid
+ */
+export function getRegisteredTokenUids({ tokens }) {
+  return Object.keys(tokens);
 }
 
 /**
@@ -193,7 +204,7 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
  */
 export async function isTokenRegistered(wallet, tokenUid) {
   const tokens = await getRegisteredTokens(wallet);
-  return tokens.some((token) => token.uid === tokenUid);
+  return tokens[tokenUid] != null;
 }
 
 export async function getFullnodeNetwork() {

@@ -18,7 +18,7 @@ import {
 import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
-import { specificTypeAndPayload, dispatchAndWait } from './helpers';
+import { specificTypeAndPayload, dispatchAndWait, getRegisteredTokenUids } from './helpers';
 import { mapTokenHistory } from '../utils';
 import {
   types,
@@ -139,6 +139,7 @@ function* fetchTokenHistory(action) {
  * This saga will route the actions dispatched from SET_TOKEN and NEW_TOKEN to the
  * TOKEN_FETCH_BALANCE_REQUESTED saga, the idea is to load the balance for new tokens
  * registered or created on the app.
+ * @param {{type: string; payload: Object;}} action to route
  */
 function* routeTokenChange(action) {
   const wallet = yield select((state) => state.wallet);
@@ -153,8 +154,8 @@ function* routeTokenChange(action) {
       break;
     case 'SET_TOKENS':
     default:
-      for (const token of action.payload) {
-        yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: token.uid });
+      for (const uid of getRegisteredTokenUids({ tokens: action.payload })) {
+        yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: uid });
       }
       break;
   }
