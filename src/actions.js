@@ -151,6 +151,8 @@ export const types = {
   NANOCONTRACT_HISTORY_SUCCESS: 'NANOCONTRACT_HISTORY_SUCCESS',
   /* It indicates a Nano Contract history failed to load. */
   NANOCONTRACT_HISTORY_FAILURE: 'NANOCONTRACT_HISTORY_FAILURE',
+  /* It initiates an unregistration process of a Nano Contract. */
+  NANOCONTRACT_UNREGISTER_REQUEST: 'NANOCONTRACT_UNREGISTER_REQUEST',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1062,4 +1064,15 @@ export const nanoContractHistorySuccess = () => ({
 export const nanoContractHistoryFailure = (failure) => ({
   type: types.NANOCONTRACT_HISTORY_FAILURE,
   payload: failure,
+});
+
+/**
+ * Request unregistration of a Nano Contract by its key.
+ * @param {{
+ *   ncKey: string,
+ * }} Nano Contract key to unregister.
+ */
+export const nanoContractUnregisterRequest = (unregisterRequest) => ({
+  type: types.NANOCONTRACT_UNREGISTER_REQUEST,
+  payload: unregisterRequest,
 });
