@@ -26,7 +26,7 @@ import { formatNanoContractRegistryEntry } from '../../sagas/nanoContract';
 import { COLORS } from '../../styles/themes';
 import { getShortContent, getShortHash } from '../../utils';
 import SimpleButton from '../SimpleButton';
-import { NanoContractIcon } from './NanoContractIcon.svg.component';
+import { NanoContractIcon } from '../Icon/NanoContract.icon';
 
 const getNanoContractHistory = (ncKey) => (state) => {
   // const history = state.nanoContract.contractHistory[ncKey];
@@ -145,8 +145,8 @@ const Header = ({ nc }) => {
 };
 
 const HeaderIcon = () => (
-  <View style={styles.headerIcon}>
-    <NanoContractIcon />
+  <View>
+    <NanoContractIcon type='fill' color={COLORS.white} />
   </View>
 );
 
@@ -231,12 +231,6 @@ const styles = StyleSheet.create({
   },
   headerCentralWrapper: {
     alignItems: 'center',
-  },
-  headerIcon: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    backgroundColor: COLORS.primary,
-    borderRadius: 8,
   },
   headerTitle: {
     fontSize: 18,

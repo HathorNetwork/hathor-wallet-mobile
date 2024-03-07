@@ -12,7 +12,7 @@ import { t } from 'ttag';
 import chevronRight from '../../assets/icons/chevron-right.png';
 import { COLORS } from "../../styles/themes";
 import { getShortHash, getTimestampFormat } from '../../utils';
-import { NanoContractIcon } from './NanoContractIcon.svg.component';
+import { NanoContractIcon } from '../Icon/NanoContract.icon';
 import { RandomTxIcon } from '../Icon/RandomTx.icon';
 import { WalletIcon } from '../Icon/Wallet.icon';
 import { RegisteredIcon } from '../Icon/Registered.icon';

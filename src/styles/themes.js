@@ -43,8 +43,10 @@ import { HslColor } from '../HslColor';
  * @property {string} primary Primary color, as set on the application config file
  * @property {string} primaryOpacity10 Primary color washed down to 10% opacity
  * @property {string} primaryOpacity30 Primary color washed down to 30% opacity
+ * @enum {string}
  */
 export const COLORS = {
+  white: '#fff',
   backgroundColor: '#fff',
   lowContrastDetail: '#f7f7f7',
   midContrastDetail: '#9e9e9e',

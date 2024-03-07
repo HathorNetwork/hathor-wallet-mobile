@@ -1,6 +1,6 @@
 import * as React from "react"
 import Svg, { SvgProps, Path } from "react-native-svg"
-import { BaseIcon } from "../Icon/BaseIcon.component";
+import { BaseIcon } from "./BaseIcon.component";
 /**
  * @param {SvgProps|{type: 'default'|'outline'|'fill'}} props
  *
