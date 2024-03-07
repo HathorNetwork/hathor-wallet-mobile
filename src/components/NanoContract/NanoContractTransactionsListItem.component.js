@@ -5,8 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faWallet, faRegistered, faGrip } from '@fortawesome/free-solid-svg-icons';
 import React from 'react';
 import { TouchableHighlight,StyleSheet, View, Text, Image } from 'react-native';
 import { t } from 'ttag';
@@ -15,6 +13,9 @@ import chevronRight from '../../assets/icons/chevron-right.png';
 import { COLORS } from "../../styles/themes";
 import { getShortHash, getTimestampFormat } from '../../utils';
 import { NanoContractIcon } from './NanoContractIcon.svg.component';
+import { RandomTxIcon } from '../Icon/RandomTx.icon';
+import { WalletIcon } from '../Icon/Wallet.icon';
+import { RegisteredIcon } from '../Icon/Registered.icon';
 
 const originFlag = {
   mine: t`From registered address`,
@@ -59,13 +60,13 @@ const Wrapper = ({ index, onPress, children }) => {
 const OriginIcon = ({ origin }) => (
   <View style={[styles.icon]}>
     {origin === 'other' &&
-      <FontAwesomeIcon icon={faGrip} size={18} color={'white'} />}
+      <RandomTxIcon type='outline' />}
     {origin === 'mine' &&
-      <FontAwesomeIcon icon={faRegistered} size={18} color={'white'} />}
+      <RegisteredIcon type='outline' />}
     {origin === 'wallet' &&
-      <FontAwesomeIcon icon={faWallet} size={18} color={'white'} />}
+      <WalletIcon type='outline' />}
     {origin === 'oracle' &&
-      <NanoContractIcon />}
+      <NanoContractIcon type='outline' />}
   </View>
 );
 
@@ -115,13 +116,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   icon: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
     alignSelf: 'flex-start',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    backgroundColor: COLORS.primary,
   },
   text: {
     fontSize: 14,
