@@ -1,20 +1,23 @@
-import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   TouchableWithoutFeedback,
+  Linking,
 } from 'react-native';
 import { t } from 'ttag';
 
 import HathorHeader from '../../components/HathorHeader';
 import { COLORS } from '../../styles/themes';
-import { getShortContent, getShortHash } from '../../utils';
+import { combineURLs, getShortContent, getShortHash } from '../../utils';
 import SimpleButton from '../SimpleButton';
 import { NanoContractIcon } from '../Icon/NanoContract.icon';
 import { ArrowDownIcon } from '../Icon/ArrowDown.icon';
 import { ArrowUpIcon } from '../Icon/ArrowUp.icon';
+import { useDispatch, useSelector } from 'react-redux';
+import { nanoContractUnregisterRequest } from '../../actions';
+import { formatNanoContractRegistryEntry } from '../../sagas/nanoContract';
 
 export const NanoContractTransactionsListHeader = ({ nc }) => {
   const [isShrank, toggleShrank] = useState(true);
@@ -48,29 +51,45 @@ const HeaderShrank = () => (
   <ArrowDownIcon />
 );
 
-const HeaderExpanded = ({ nc }) => (
-  <>
-    <View style={styles.wrapper}>
-      <InfoContainer>
-        <TextValue>{getShortHash(nc.ncId, 7)}</TextValue>
-        <TextLabel>{t`Nano Contract ID`}</TextLabel>
-      </InfoContainer>
-      <InfoContainer>
-        <TextValue>{nc.blueprintName}</TextValue>
-        <TextLabel>{t`Blueprint Name`}</TextLabel>
-      </InfoContainer>
-      <InfoContainer lastElement>
-        <TextValue>{getShortContent(nc.address, 7)}</TextValue>
-        <TextLabel>{t`Registered Address`}</TextLabel>
-      </InfoContainer>
-      <TwoActionsWrapper>
-        <PrimaryTextButton title={t`See status details`} />
-        <DenyTextButton title={t`Unregister contract`}/>
-      </TwoActionsWrapper>
-    </View>
-    <ArrowUpIcon />
-  </>
-);
+const HeaderExpanded = ({ nc }) => {
+  const dispatch = useDispatch();
+  const baseExplorerUrl = useSelector((state) => state.networkSettings.explorerUrl);
+
+  const navigatesToExplorer = () => {
+    const txUrl = `transaction/${nc.ncId}`;
+    const explorerLink = combineURLs(baseExplorerUrl, txUrl);
+    Linking.openURL(explorerLink);
+  };
+
+  const onUnregisterContract = () => {
+    const ncKey = formatNanoContractRegistryEntry(nc.address, nc.ncId);
+    dispatch(nanoContractUnregisterRequest({ ncKey }));
+  };
+
+  return (
+    <>
+      <View style={styles.wrapper}>
+        <InfoContainer>
+          <TextValue>{getShortHash(nc.ncId, 7)}</TextValue>
+          <TextLabel>{t`Nano Contract ID`}</TextLabel>
+        </InfoContainer>
+        <InfoContainer>
+          <TextValue>{nc.blueprintName}</TextValue>
+          <TextLabel>{t`Blueprint Name`}</TextLabel>
+        </InfoContainer>
+        <InfoContainer lastElement>
+          <TextValue>{getShortContent(nc.address, 7)}</TextValue>
+          <TextLabel>{t`Registered Address`}</TextLabel>
+        </InfoContainer>
+        <TwoActionsWrapper>
+          <PrimaryTextButton title={t`See status details`} onPress={navigatesToExplorer} />
+          <DenyTextButton title={t`Unregister contract`} onPress={onUnregisterContract} />
+        </TwoActionsWrapper>
+      </View>
+      <ArrowUpIcon />
+    </>
+  )
+};
 
 const InfoContainer = ({ lastElement, children }) => (
   <View style={[styles.infoContainer, lastElement && styles.lastElement]}>
@@ -92,18 +111,22 @@ const TwoActionsWrapper = ({ children }) => (
   </View>
 );
 
-const PrimaryTextButton = ({ title }) => (
+const PrimaryTextButton = ({ title, onPress }) => (
   <SimpleButton
     title={title}
     containerStyle={[styles.buttonWrapper, styles.buttonDetails]}
-    textStyle={styles.buttonText} />
+    textStyle={styles.buttonText}
+    onPress={onPress}
+  />
 );
 
-const DenyTextButton = ({ title }) => (
+const DenyTextButton = ({ title, onPress }) => (
   <SimpleButton
     title={title}
     containerStyle={[styles.buttonWrapper]}
-    textStyle={styles.buttonUnregister} />
+    textStyle={styles.buttonUnregister}
+    onPress={onPress}
+  />
 );
 
 const styles = StyleSheet.create({
