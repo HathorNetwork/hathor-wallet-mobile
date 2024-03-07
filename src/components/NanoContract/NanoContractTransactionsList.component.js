@@ -6,27 +6,18 @@
  */
 
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   View,
   FlatList,
-  Text,
-  Image,
-  TouchableWithoutFeedback,
 } from 'react-native';
 import { useSelector } from 'react-redux';
-import { t } from 'ttag';
 
-import chevronDown from '../../assets/icons/chevron-down.png';
-import chevronUp from '../../assets/icons/chevron-up.png';
-import HathorHeader from '../../components/HathorHeader';
 import { NanoContractTransactionsListItem } from '../../components/NanoContract/NanoContractTransactionsListItem.component';
 import { formatNanoContractRegistryEntry } from '../../sagas/nanoContract';
 import { COLORS } from '../../styles/themes';
-import { getShortContent, getShortHash } from '../../utils';
-import SimpleButton from '../SimpleButton';
-import { NanoContractIcon } from '../Icon/NanoContract.icon';
+import { NanoContractTransactionsListHeader } from './NanoContractTransactionsListHeader.component';
 
 const getNanoContractHistory = (ncKey) => (state) => {
   // const history = state.nanoContract.contractHistory[ncKey];
@@ -105,7 +96,7 @@ export const NanoContractTransactionsList = ({ nc }) => {
 
   return (
     <Wrapper>
-      <Header nc={nc} />
+      <NanoContractTransactionsListHeader nc={nc} />
       <ListWrapper>
         <FlatList
           data={ncHistory}
@@ -121,74 +112,6 @@ export const NanoContractTransactionsList = ({ nc }) => {
     </Wrapper>
   );
 };
-
-const Header = ({ nc }) => {
-  const [isShrank, toggleShrank] = useState(true);
-  const isExpanded = () => !isShrank;
-
-  return (
-    <HathorHeader>
-      <HathorHeader.Central style={styles.headerCentral}>
-        <TouchableWithoutFeedback onPress={() => toggleShrank(!isShrank)}>
-          <View style={styles.headerCentralWrapper}>
-            <HeaderIcon />
-            <Text style={[styles.headerTitle]}>{t`Nano Contract`}</Text>
-            {isShrank &&
-              <HeaderShrank />}
-            {isExpanded() &&
-              <HeaderExpanded nc={nc} />}
-          </View>
-        </TouchableWithoutFeedback>
-      </HathorHeader.Central>
-    </HathorHeader>
-  )
-};
-
-const HeaderIcon = () => (
-  <View>
-    <NanoContractIcon type='fill' color={COLORS.white} />
-  </View>
-);
-
-const HeaderShrank = () => (
-  <ArrowDown />
-);
-
-const HeaderExpanded = ({ nc }) => (
-  <>
-    <View style={styles.contentWrapper}>
-      <Text style={[styles.text, styles.property]}>{getShortHash(nc.ncId, 7)}</Text>
-      <Text style={[styles.text]}>{'Nano Contract ID'}</Text>
-      <Text style={[styles.text, styles.property]}>{nc.blueprintName}</Text>
-      <Text style={[styles.text]}>{'Blueprint Name'}</Text>
-      <Text style={[styles.text, styles.property]}>{getShortContent(nc.address, 7)}</Text>
-      <Text style={[styles.text, styles.padding0]}>{'Registered Address'}</Text>
-      <View style={[styles.headerCentralActionWrapper]}>
-        <SimpleButton
-          title={'See status details'}
-          containerStyle={[styles.actionButton, styles.actionDetailsContainerButton]}
-          textStyle={styles.actionDetailsButton} />
-        <SimpleButton
-          title={'Unregister contract'}
-          containerStyle={[styles.actionButton]}
-          textStyle={styles.actionUnregisterButton} />
-      </View>
-    </View>
-    <ArrowUp />
-  </>
-);
-
-const ArrowDown = () => (
-  <View style={styles.headerArrow}>
-    <Image source={chevronDown} width={24} height={24} />
-  </View>
-);
-
-const ArrowUp = () => (
-  <View style={styles.headerArrow}>
-    <Image source={chevronUp} width={24} height={24} />
-  </View>
-);
 
 const Wrapper = ({ children }) => (
   <View style={styles.wrapper}>
@@ -220,69 +143,5 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowColor: COLORS.textColor,
     shadowOpacity: 0.08,
-  },
-  header: {
-    paddingTop: 24,
-  },
-  headerCentral: {
-    flex: 1,
-    alignItems: 'center',
-    paddingTop: 24,
-  },
-  headerCentralWrapper: {
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    lineHeight: 20,
-    fontWeight: 'bold',
-    paddingTop: 16,
-  },
-  headerArrow: {
-    paddingTop: 16,
-  },
-  contentWrapper: {
-    alignItems: 'center',
-    paddingTop: 24,
-    paddingHorizontal: 16,
-  },
-  text: {
-    fontSize: 12,
-    lineHeight: 20,
-    paddingBottom: 16,
-    color: 'hsla(0, 0%, 38%, 1)',
-  },
-  property: {
-    fontSize: 14,
-    lineHeight: 20,
-    paddingBottom: 4,
-    fontWeight: 'bold',
-    color: 'black',
-  },
-  padding0: {
-    paddingBottom: 0,
-  },
-  headerCentralActionWrapper: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-  },
-  actionButton: {
-    paddingTop: 24,
-  },
-  actionDetailsContainerButton: {
-    display: 'inline-block',
-    /* We are using negative margin here to correct the text position
-     * and create an optic effect of alignment. */
-    marginBottom: -2,
-    borderBottomWidth: 1,
-    borderColor: COLORS.primary,
-  },
-  actionDetailsButton: {
-    fontWeight: 'bold',
-    fontStyle: 'underline',
-  },
-  actionUnregisterButton: {
-    marginStart: 24,
-    color: 'hsla(0, 100%, 41%, 1)',
   },
 });
