@@ -159,7 +159,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontWeight: 'bold',
-    fontStyle: 'underline',
   },
   buttonUnregister: {
     marginStart: 24,
