@@ -91,7 +91,6 @@ const getNanoContractHistory = (ncKey) => (state) => {
 export const NanoContractTransactionsList = ({ nc }) => {
   const ncKey = formatNanoContractRegistryEntry(nc.address, nc.ncId);
   const [ncAddress, changeAddress] = useState(nc.address);
-  const [showEditAddressModal, setShowEditAddressModal] = useState(false);
   const ncHistory = useSelector(getNanoContractHistory(ncKey));
   const navigation = useNavigation();
 
@@ -99,20 +98,11 @@ export const NanoContractTransactionsList = ({ nc }) => {
     navigation.navigate('NanoContractTransaction', { tx });
   };
 
-  const onEditAddress = () => {
-    setShowEditAddressModal(true);
-  }
-
-  const toggleEditAddressModal = () => {
-    setShowEditAddressModal(!showEditAddressModal);
-  };
-
   return (
     <Wrapper>
       <NanoContractTransactionsListHeader
         nc={nc}
         address={ncAddress}
-        onEditAddress={onEditAddress}
       />
       <ListWrapper>
         <FlatList
@@ -126,11 +116,6 @@ export const NanoContractTransactionsList = ({ nc }) => {
           keyExtractor={(item) => item.txId}
         />
       </ListWrapper>
-      <EditAddressModal
-        show={showEditAddressModal}
-        address={ncAddress}
-        onDismiss={toggleEditAddressModal}
-      />
     </Wrapper>
   );
 };

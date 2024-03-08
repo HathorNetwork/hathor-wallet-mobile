@@ -21,10 +21,21 @@ import { formatNanoContractRegistryEntry } from '../../sagas/nanoContract';
 import { TextValue } from '../TextValue.component';
 import { TextLabel } from '../TextLabel.component';
 import { EditInfoContainer } from '../EditInfoContainer.component';
+import { EditAddressModal } from './EditAddressModal.component';
 
-export const NanoContractTransactionsListHeader = ({ nc, address, onEditAddress }) => {
+export const NanoContractTransactionsListHeader = ({ nc, address }) => {
   const [isShrank, toggleShrank] = useState(true);
+  const [showEditAddressModal, setShowEditAddressModal] = useState(false);
+
   const isExpanded = () => !isShrank;
+
+  const onEditAddress = () => {
+    setShowEditAddressModal(true);
+  }
+
+  const toggleEditAddressModal = () => {
+    setShowEditAddressModal(!showEditAddressModal);
+  };
 
   return (
     <HathorHeader>
@@ -39,6 +50,11 @@ export const NanoContractTransactionsListHeader = ({ nc, address, onEditAddress 
               <HeaderExpanded nc={nc} address={address} onEditAddress={onEditAddress} />}
           </View>
         </TouchableWithoutFeedback>
+        <EditAddressModal
+          show={showEditAddressModal}
+          address={address}
+          onDismiss={toggleEditAddressModal}
+        />
       </HathorHeader.Central>
     </HathorHeader>
   )

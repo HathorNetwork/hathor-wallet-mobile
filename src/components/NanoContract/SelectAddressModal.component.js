@@ -59,7 +59,7 @@ export const SelectAddressModal = ({ show, onDismiss, onSelectAddress }) => {
       <ModalBase.Body style={styles.body}>
         <FlatList
           data={addresses}
-          renderItem={({item}) => (<AddressItem item={item} onSelect={onSelectAddress} />)}
+          renderItem={({item}) => (<AddressItem item={item} onSelectAddress={onSelectAddress} />)}
           keyExtractor={(item) => item.address}
         />
       </ModalBase.Body>
@@ -67,9 +67,9 @@ export const SelectAddressModal = ({ show, onDismiss, onSelectAddress }) => {
   );
 };
 
-const AddressItem = ({ item, onSelect }) => (
+const AddressItem = ({ item, onSelectAddress }) => (
   <TouchableHighlight
-    onPress={() => onSelect(item.address)}
+    onPress={() => onSelectAddress(item.address)}
     underlayColor={COLORS.primaryOpacity30}
   >
     <View style={addressItemStyle.wrapper}>

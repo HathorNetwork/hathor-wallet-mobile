@@ -19,11 +19,11 @@ import { TextLabel } from '../TextLabel.component';
 import { TextValue } from '../TextValue.component';
 
 export const EditAddressModal = ({ show, onDismiss, address }) => {
-  const [selectedAddress, changeAddress] = useState(address);
+  const [selectedAddress, setSelectedAddress] = useState(address);
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const [saveDisabled, setSaveDisabled] = useState(true);
 
-  const onChangeAddressRequest = () => {
+  const onEditAddress = () => {
     setShowSelectAddressModal(true);
   };
 
@@ -33,17 +33,16 @@ export const EditAddressModal = ({ show, onDismiss, address }) => {
 
   const onSelectAddress = (address) => {
     toggleSelectAddressModal();
-    changeAddress(address);
+    setSelectedAddress(address);
     setSaveDisabled(false);
   };
-
 
   return (
     <ModalBase show={show} onDismiss={onDismiss} >
       <ModalBase.Title>{t`Edit Nano Contract Address`}</ModalBase.Title>
       <ModalBase.Body style={styles.body}>
         <FieldContainer>
-          <EditInfoContainer onPress={onChangeAddressRequest}>
+          <EditInfoContainer onPress={onEditAddress}>
             <TextLabel pb8 bold>{t`Address`}</TextLabel>
             <TextValue>{selectedAddress}</TextValue>
           </EditInfoContainer>
