@@ -11,19 +11,15 @@ import {
   StyleSheet,
   View,
   FlatList,
-  TouchableHighlight,
 } from 'react-native';
 import { useSelector } from 'react-redux';
-import { t } from 'ttag';
 
+import { SelectAddressModal } from './SelectAddressModal.component';
+import { EditAddressModal } from './EditAddressModal.component';
+import { NanoContractTransactionsListHeader } from './NanoContractTransactionsListHeader.component';
 import { NanoContractTransactionsListItem } from '../../components/NanoContract/NanoContractTransactionsListItem.component';
 import { formatNanoContractRegistryEntry } from '../../sagas/nanoContract';
 import { COLORS } from '../../styles/themes';
-import { EditInfoContainer } from '../EditInfoContainer.component';
-import { ModalBase } from '../ModalBase.component';
-import { TextLabel } from '../TextLabel.component';
-import { TextValue } from '../TextValue.component';
-import { NanoContractTransactionsListHeader } from './NanoContractTransactionsListHeader.component';
 
 const getNanoContractHistory = (ncKey) => (state) => {
   // const history = state.nanoContract.contractHistory[ncKey];
@@ -96,7 +92,6 @@ export const NanoContractTransactionsList = ({ nc }) => {
   const ncKey = formatNanoContractRegistryEntry(nc.address, nc.ncId);
   const [ncAddress, changeAddress] = useState(nc.address);
   const [showEditAddressModal, setShowEditAddressModal] = useState(false);
-  const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const ncHistory = useSelector(getNanoContractHistory(ncKey));
   const navigation = useNavigation();
 
@@ -110,20 +105,6 @@ export const NanoContractTransactionsList = ({ nc }) => {
 
   const toggleEditAddressModal = () => {
     setShowEditAddressModal(!showEditAddressModal);
-  };
-
-  const onChangeAddress = () => {
-    // TODO: Fix this mechanism, it is not good yet
-    setShowSelectAddressModal(true);
-  };
-
-  const toggleSelectAddressModal = () => {
-    setShowSelectAddressModal(!showSelectAddressModal);
-  };
-
-  const onSelectAddress = (address) => {
-    changeAddress(address);
-    toggleSelectAddressModal();
   };
 
   return (
@@ -149,93 +130,10 @@ export const NanoContractTransactionsList = ({ nc }) => {
         show={showEditAddressModal}
         address={ncAddress}
         onDismiss={toggleEditAddressModal}
-        onChangeAddress={onChangeAddress}
-      />
-      <SelectAddressModal
-        show={showSelectAddressModal}
-        onDismiss={toggleSelectAddressModal}
-        onSelectAddress={onSelectAddress}
       />
     </Wrapper>
   );
 };
-
-const EditAddressModal = ({ show, onDismiss, address, onChangeAddress }) => (
-  <ModalBase show={show} onDismiss={onDismiss} >
-    <ModalBase.Title>{t`Edit Nano Contract Address`}</ModalBase.Title>
-    <ModalBase.Body style={modalStyles.body}>
-      <FieldContainer>
-        <EditInfoContainer onPress={onChangeAddress}>
-          <TextLabel pb8 bold>{t`Address`}</TextLabel>
-          <TextValue>{address}</TextValue>
-        </EditInfoContainer>
-      </FieldContainer>
-    </ModalBase.Body>
-    <ModalBase.Button title={t`Save`} disabled />
-  </ModalBase>
-);
-
-const FieldContainer = ({ children }) => (
-  <View style={modalStyles.fieldContainer}>
-    {children}
-  </View>
-);
-
-const modalStyles = StyleSheet.create({
-  body: {
-    paddingBottom: 20,
-  },
-  fieldContainer: {
-    padding: 6,
-  },
-});
-
-const SelectAddressModal = ({ show, onDismiss, onSelectAddress }) => {
-  const usedAddresses = () => ([
-    { address: 'abc' },
-    { address: 'def' },
-  ]);
-  return (
-    <ModalBase
-      show={show}
-      onDismiss={onDismiss}
-    >
-      <ModalBase.Title>{t`Choose New Wallet Address`}</ModalBase.Title>
-      <ModalBase.Body style={modalStyles.body}>
-        <FlatList
-          data={usedAddresses()}
-          renderItem={({item}) => (<AddressItem item={item} onSelect={onSelectAddress} />)}
-          keyExtractor={(item) => item.address}
-        />
-      </ModalBase.Body>
-    </ModalBase>
-  );
-};
-
-const AddressItem = ({ item, onSelect }) => (
-  <TouchableHighlight
-    onPress={() => onSelect(item.address)}
-    underlayColor={COLORS.primaryOpacity30}
-  >
-    <View style={addressItemStyle.wrapper}>
-      <View>
-        <TextValue>{item.address}</TextValue>
-      </View>
-    </View>
-  </TouchableHighlight>
-);
-
-const addressItemStyle = StyleSheet.create({
-  wrapper: {
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderColor: COLORS.borderColor,
-  },
-});
 
 const Wrapper = ({ children }) => (
   <View style={styles.wrapper}>
