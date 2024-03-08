@@ -71,8 +71,8 @@ const Body = ({ style, children }) => (
 );
 Body.displayName = 'ModalBaseBody';
 
-const Button = ({ title, disabled, secondary }) => (
-  <NewHathorButton title={title} {...{disabled, secondary}} />
+const Button = ({ title, disabled, secondary, onPress }) => (
+  <NewHathorButton title={title} {...{disabled, secondary, onPress}} />
 );
 Button.displayName = 'ModalBaseButton';
 
