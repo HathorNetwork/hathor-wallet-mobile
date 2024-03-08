@@ -9,7 +9,9 @@ import { PenIcon } from './Icon/Pen.icon';
 
 export const EditInfoContainer = ({ center, onPress, children }) => (
   <TouchableOpacity
-    style={[styles.editInfoWrapper]}
+    style={[
+      center && styles.editInfoWrapperCentered
+    ]}
     onPress={onPress}
   >
     <View style={[
@@ -29,7 +31,7 @@ export const EditInfoContainer = ({ center, onPress, children }) => (
 );
 
 const styles = StyleSheet.create({
-  editInfoWrapper: {
+  editInfoWrapperCentered: {
     alignSelf: 'center',
   },
   editInfoContainer: {
