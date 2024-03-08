@@ -18,7 +18,7 @@ import Modal from 'react-native-modal';
 import { COLORS } from '../styles/themes';
 import NewHathorButton from './NewHathorButton';
 
-const ModalBase = ({ show, children }) => {
+const ModalBase = ({ show, onDismiss, children }) => {
   const hasChildren = children != null;
 
   const title = hasChildren && React.Children.toArray(children).find((child) => child.type.displayName === Title.displayName);
@@ -26,7 +26,14 @@ const ModalBase = ({ show, children }) => {
   const button = hasChildren && React.Children.toArray(children).find((child) => child.type.displayName === Button.displayName);
 
   return (
-  <Modal isVisible={show}>
+  <Modal
+    isVisible={show}
+    animationIn='slideInUp'
+    swipeDirection={['down']}
+    onSwipeComplete={onDismiss}
+    onBackButtonPress={onDismiss}
+    onBackdropPress={onDismiss}
+  >
     <View style={styles.wrapper}>
       {title && title}
       {body && body}
