@@ -18,8 +18,11 @@ import { ArrowUpIcon } from '../Icon/ArrowUp.icon';
 import { useDispatch, useSelector } from 'react-redux';
 import { nanoContractUnregisterRequest } from '../../actions';
 import { formatNanoContractRegistryEntry } from '../../sagas/nanoContract';
+import { TextValue } from '../TextValue.component';
+import { TextLabel } from '../TextLabel.component';
+import { EditInfoContainer } from '../EditInfoContainer.component';
 
-export const NanoContractTransactionsListHeader = ({ nc }) => {
+export const NanoContractTransactionsListHeader = ({ nc, address, onChangeAddress }) => {
   const [isShrank, toggleShrank] = useState(true);
   const isExpanded = () => !isShrank;
 
@@ -33,7 +36,7 @@ export const NanoContractTransactionsListHeader = ({ nc }) => {
             {isShrank &&
               <HeaderShrank />}
             {isExpanded() &&
-              <HeaderExpanded nc={nc} />}
+              <HeaderExpanded nc={nc} address={address} onChangeAddress={onChangeAddress} />}
           </View>
         </TouchableWithoutFeedback>
       </HathorHeader.Central>
@@ -51,7 +54,7 @@ const HeaderShrank = () => (
   <ArrowDownIcon />
 );
 
-const HeaderExpanded = ({ nc }) => {
+const HeaderExpanded = ({ nc, address, onChangeAddress }) => {
   const dispatch = useDispatch();
   const baseExplorerUrl = useSelector((state) => state.networkSettings.explorerUrl);
 
@@ -70,17 +73,17 @@ const HeaderExpanded = ({ nc }) => {
     <>
       <View style={styles.wrapper}>
         <InfoContainer>
-          <TextValue>{getShortHash(nc.ncId, 7)}</TextValue>
+          <TextValue bold pb4>{getShortHash(nc.ncId, 7)}</TextValue>
           <TextLabel>{t`Nano Contract ID`}</TextLabel>
         </InfoContainer>
         <InfoContainer>
-          <TextValue>{nc.blueprintName}</TextValue>
+          <TextValue bold pb4>{nc.blueprintName}</TextValue>
           <TextLabel>{t`Blueprint Name`}</TextLabel>
         </InfoContainer>
-        <InfoContainer lastElement>
-          <TextValue>{getShortContent(nc.address, 7)}</TextValue>
+        <EditInfoContainer center onPress={onChangeAddress}>
+          <TextValue bold pb4>{getShortContent(address, 7)}</TextValue>
           <TextLabel>{t`Registered Address`}</TextLabel>
-        </InfoContainer>
+        </EditInfoContainer>
         <TwoActionsWrapper>
           <PrimaryTextButton title={t`See status details`} onPress={navigatesToExplorer} />
           <DenyTextButton title={t`Unregister contract`} onPress={onUnregisterContract} />
@@ -95,14 +98,6 @@ const InfoContainer = ({ lastElement, children }) => (
   <View style={[styles.infoContainer, lastElement && styles.lastElement]}>
     {children}
   </View>
-);
-
-const TextValue = ({ children }) => (
-  <Text style={[styles.textValue]}>{children}</Text>
-);
-
-const TextLabel = ({ children }) => (
-  <Text style={[styles.textLabel]}>{children}</Text>
 );
 
 const TwoActionsWrapper = ({ children }) => (
@@ -154,18 +149,6 @@ const styles = StyleSheet.create({
   },
   lastElement: {
     paddingBottom: 0,
-  },
-  textLabel: {
-    fontSize: 12,
-    lineHeight: 20,
-    color: 'hsla(0, 0%, 38%, 1)',
-  },
-  textValue: {
-    fontSize: 14,
-    lineHeight: 20,
-    paddingBottom: 4,
-    fontWeight: 'bold',
-    color: 'black',
   },
   TwoActionsWrapper: {
     flexDirection: 'row',
