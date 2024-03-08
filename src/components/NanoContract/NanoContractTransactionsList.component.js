@@ -14,8 +14,6 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { SelectAddressModal } from './SelectAddressModal.component';
-import { EditAddressModal } from './EditAddressModal.component';
 import { NanoContractTransactionsListHeader } from './NanoContractTransactionsListHeader.component';
 import { NanoContractTransactionsListItem } from '../../components/NanoContract/NanoContractTransactionsListItem.component';
 import { formatNanoContractRegistryEntry } from '../../sagas/nanoContract';
