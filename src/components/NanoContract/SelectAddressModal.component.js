@@ -18,6 +18,7 @@ import { ModalBase } from '../ModalBase.component';
 import { TextValue } from '../TextValue.component';
 import { COLORS } from '../../styles/themes';
 import { useSelector } from 'react-redux';
+import { TextLabel } from '../TextLabel.component';
 
 const consumeAsyncIterator = async (asyncIterator) => {
   const list = [];
@@ -38,16 +39,21 @@ export const SelectAddressModal = ({ show, onDismiss, onSelectAddress }) => {
   const wallet = useSelector((state) => state.wallet);
   const [addresses, setAddresses] = useState([]);
 
-  useEffect(async () => {
-    const iterator = await wallet.getAllAddresses();
-    const allAddresses = await consumeAsyncIterator(iterator);
-    setAddresses(allAddresses);
+  useEffect(() => {
+    const fetchData = async () => {
+      const iterator = await wallet.getAllAddresses();
+      const allAddresses = await consumeAsyncIterator(iterator);
+      setAddresses(allAddresses);
+    };
+    fetchData();
   }, []);
 
   return (
     <ModalBase
       show={show}
       onDismiss={onDismiss}
+      styleModal={styles.modal}
+      styleWrapper={styles.wrapper}
     >
       <ModalBase.Title>{t`Choose New Wallet Address`}</ModalBase.Title>
       <ModalBase.Body style={styles.body}>
@@ -68,6 +74,7 @@ const AddressItem = ({ item, onSelect }) => (
   >
     <View style={addressItemStyle.wrapper}>
       <View>
+        <TextLabel>{item.index}</TextLabel>
         <TextValue>{item.address}</TextValue>
       </View>
     </View>
@@ -75,6 +82,14 @@ const AddressItem = ({ item, onSelect }) => (
 );
 
 const styles = StyleSheet.create({
+  modal: {
+    justifyContent: 'flex-end',
+    marginHorizontal: 0,
+  },
+  wrapper: {
+    height: '80%',
+    paddingBottom: 56,
+  },
   body: {
     paddingBottom: 20,
   },
