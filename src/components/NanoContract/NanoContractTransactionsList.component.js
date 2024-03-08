@@ -12,7 +12,7 @@ import {
   View,
   FlatList,
 } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { SelectAddressModal } from './SelectAddressModal.component';
 import { EditAddressModal } from './EditAddressModal.component';
@@ -20,6 +20,7 @@ import { NanoContractTransactionsListHeader } from './NanoContractTransactionsLi
 import { NanoContractTransactionsListItem } from '../../components/NanoContract/NanoContractTransactionsListItem.component';
 import { formatNanoContractRegistryEntry } from '../../sagas/nanoContract';
 import { COLORS } from '../../styles/themes';
+import { nanoContractAddressChangeRequest } from '../../actions';
 
 const getNanoContractHistory = (ncKey) => (state) => {
   // const history = state.nanoContract.contractHistory[ncKey];
@@ -90,9 +91,16 @@ const getNanoContractHistory = (ncKey) => (state) => {
 
 export const NanoContractTransactionsList = ({ nc }) => {
   const ncKey = formatNanoContractRegistryEntry(nc.address, nc.ncId);
-  const [ncAddress, changeAddress] = useState(nc.address);
   const ncHistory = useSelector(getNanoContractHistory(ncKey));
+
+  const dispatch = useDispatch();
+  const [ncAddress, changeNcAddress] = useState(nc.address);
   const navigation = useNavigation();
+
+  const onAddressChange = (address) => {
+    changeNcAddress(address);
+    dispatch(nanoContractAddressChangeRequest({ newAddress: address, oldNc: nc }));
+  }
 
   const navigatesToNanoContractTransaction = (tx) => {
     navigation.navigate('NanoContractTransaction', { tx });
@@ -103,6 +111,7 @@ export const NanoContractTransactionsList = ({ nc }) => {
       <NanoContractTransactionsListHeader
         nc={nc}
         address={ncAddress}
+        onAddressChange={onAddressChange}
       />
       <ListWrapper>
         <FlatList

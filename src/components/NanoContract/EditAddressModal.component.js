@@ -18,7 +18,7 @@ import { ModalBase } from '../ModalBase.component';
 import { TextLabel } from '../TextLabel.component';
 import { TextValue } from '../TextValue.component';
 
-export const EditAddressModal = ({ show, onDismiss, address }) => {
+export const EditAddressModal = ({ address, show, onAddressChange, onDismiss }) => {
   const [selectedAddress, setSelectedAddress] = useState(address);
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const [saveDisabled, setSaveDisabled] = useState(true);
@@ -53,7 +53,11 @@ export const EditAddressModal = ({ show, onDismiss, address }) => {
           onSelectAddress={onSelectAddress}
         />
       </ModalBase.Body>
-      <ModalBase.Button title={t`Save`} disabled={saveDisabled} />
+      <ModalBase.Button
+        title={t`Save`}
+        disabled={saveDisabled}
+        onPress={() => onAddressChange(selectedAddress)}
+      />
     </ModalBase>
   );
 };

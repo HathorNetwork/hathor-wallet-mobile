@@ -23,11 +23,16 @@ import { TextLabel } from '../TextLabel.component';
 import { EditInfoContainer } from '../EditInfoContainer.component';
 import { EditAddressModal } from './EditAddressModal.component';
 
-export const NanoContractTransactionsListHeader = ({ nc, address }) => {
+export const NanoContractTransactionsListHeader = ({ nc, address, onAddressChange }) => {
   const [isShrank, toggleShrank] = useState(true);
   const [showEditAddressModal, setShowEditAddressModal] = useState(false);
 
   const isExpanded = () => !isShrank;
+
+  const hookAddressChange = (address) => {
+    toggleEditAddressModal();
+    onAddressChange(address);
+  }
 
   const onEditAddress = () => {
     setShowEditAddressModal(true);
@@ -54,6 +59,7 @@ export const NanoContractTransactionsListHeader = ({ nc, address }) => {
           show={showEditAddressModal}
           address={address}
           onDismiss={toggleEditAddressModal}
+          onAddressChange={hookAddressChange}
         />
       </HathorHeader.Central>
     </HathorHeader>
