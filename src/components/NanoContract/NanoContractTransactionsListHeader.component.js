@@ -22,7 +22,7 @@ import { TextValue } from '../TextValue.component';
 import { TextLabel } from '../TextLabel.component';
 import { EditInfoContainer } from '../EditInfoContainer.component';
 
-export const NanoContractTransactionsListHeader = ({ nc, address, onChangeAddress }) => {
+export const NanoContractTransactionsListHeader = ({ nc, address, onEditAddress }) => {
   const [isShrank, toggleShrank] = useState(true);
   const isExpanded = () => !isShrank;
 
@@ -36,7 +36,7 @@ export const NanoContractTransactionsListHeader = ({ nc, address, onChangeAddres
             {isShrank &&
               <HeaderShrank />}
             {isExpanded() &&
-              <HeaderExpanded nc={nc} address={address} onChangeAddress={onChangeAddress} />}
+              <HeaderExpanded nc={nc} address={address} onEditAddress={onEditAddress} />}
           </View>
         </TouchableWithoutFeedback>
       </HathorHeader.Central>
@@ -54,7 +54,7 @@ const HeaderShrank = () => (
   <ArrowDownIcon />
 );
 
-const HeaderExpanded = ({ nc, address, onChangeAddress }) => {
+const HeaderExpanded = ({ nc, address, onEditAddress }) => {
   const dispatch = useDispatch();
   const baseExplorerUrl = useSelector((state) => state.networkSettings.explorerUrl);
 
@@ -80,7 +80,7 @@ const HeaderExpanded = ({ nc, address, onChangeAddress }) => {
           <TextValue bold pb4>{nc.blueprintName}</TextValue>
           <TextLabel>{t`Blueprint Name`}</TextLabel>
         </InfoContainer>
-        <EditInfoContainer center onPress={onChangeAddress}>
+        <EditInfoContainer center onPress={onEditAddress}>
           <TextValue bold pb4>{getShortContent(address, 7)}</TextValue>
           <TextLabel>{t`Registered Address`}</TextLabel>
         </EditInfoContainer>
