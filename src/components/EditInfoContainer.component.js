@@ -7,13 +7,18 @@ import {
 
 import { PenIcon } from './Icon/Pen.icon';
 
-export const EditInfoContainer = ({ lastElement, onPress, children }) => (
+export const EditInfoContainer = ({ center, onPress, children }) => (
   <TouchableOpacity
-    style={[styles.editInfoWrapper, lastElement && styles.lastElement]}
+    style={[styles.editInfoWrapper]}
     onPress={onPress}
   >
-    <View style={[styles.editInfoContainer]}>
-      <View>
+    <View style={[
+      styles.editInfoContainer,
+      center && styles.editInfoContainerCentered,
+    ]}>
+      <View style={[
+        center && styles.alignCenter,
+      ]}>
         {children}
       </View>
       <View style={styles.editIcon}>
@@ -26,7 +31,6 @@ export const EditInfoContainer = ({ lastElement, onPress, children }) => (
 const styles = StyleSheet.create({
   editInfoWrapper: {
     alignSelf: 'center',
-    paddingBottom: 8,
   },
   editInfoContainer: {
     paddingVertical: 8,
@@ -37,6 +41,12 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: 'hsla(0, 0%, 88%, 1)',
     borderRadius: 8,
+  },
+  editInfoContainerCentered: {
+    paddingLeft: 40,
+  },
+  alignCenter: {
+    alignItems: 'center',
   },
   editIcon: {
     position: 'absolute',
