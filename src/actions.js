@@ -153,6 +153,8 @@ export const types = {
   NANOCONTRACT_HISTORY_FAILURE: 'NANOCONTRACT_HISTORY_FAILURE',
   /* It initiates an unregistration process of a Nano Contract. */
   NANOCONTRACT_UNREGISTER_REQUEST: 'NANOCONTRACT_UNREGISTER_REQUEST',
+  /* It initiates a process to change the address on registered Nano Contract. */
+  NANOCONTRACT_ADDRESS_CHANGE_REQUEST: 'NANOCONTRACT_ADDRESS_CHANGE_REQUEST',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1075,4 +1077,16 @@ export const nanoContractHistoryFailure = (failure) => ({
 export const nanoContractUnregisterRequest = (unregisterRequest) => ({
   type: types.NANOCONTRACT_UNREGISTER_REQUEST,
   payload: unregisterRequest,
+});
+
+/**
+ * Request a change on the Nano Contract registered.
+ * @param {{
+ *   newAddress: string;
+ *   oldNc: Object;
+ * }} changeAddressRequest
+ */
+export const nanoContractAddressChangeRequest = (changeAddressRequest) => ({
+  type: types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST,
+  payload: changeAddressRequest,
 });
