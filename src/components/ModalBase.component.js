@@ -18,7 +18,7 @@ import Modal from 'react-native-modal';
 import { COLORS } from '../styles/themes';
 import NewHathorButton from './NewHathorButton';
 
-const ModalBase = ({ show, onDismiss, children }) => {
+const ModalBase = ({ styleModal, styleWrapper, show, onDismiss, children }) => {
   const hasChildren = children != null;
 
   const title = hasChildren && React.Children.toArray(children).find((child) => child.type.displayName === Title.displayName);
@@ -33,8 +33,13 @@ const ModalBase = ({ show, onDismiss, children }) => {
     onSwipeComplete={onDismiss}
     onBackButtonPress={onDismiss}
     onBackdropPress={onDismiss}
+    style={styleModal}
+    propagateSwipe={true}
   >
-    <View style={styles.wrapper}>
+    <View style={[
+        styles.wrapper,
+        styleWrapper,
+    ]}>
       {title && title}
       {body && body}
       {button && button}
