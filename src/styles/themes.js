@@ -47,6 +47,7 @@ import { HslColor } from '../HslColor';
  */
 export const COLORS = {
   white: '#fff',
+  black: '#000',
   backgroundColor: '#fff',
   lowContrastDetail: '#f7f7f7',
   midContrastDetail: '#9e9e9e',
