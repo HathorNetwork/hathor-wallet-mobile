@@ -13,6 +13,7 @@ import {
 import { t } from 'ttag';
 
 import HathorHeader from '../../components/HathorHeader';
+import { NanoContractTransactionHeader } from '../../components/NanoContract/NanoContractTransactionHeader.component';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 
@@ -22,7 +23,7 @@ export function NanoContractTransaction({ navigation, route }) {
     <Wrapper>
       <NavigationHeader navigation={navigation} />
       <ContentWrapper>
-        <NanoContractTransactionHeader />
+        <NanoContractTransactionHeader tx={tx} />
         <NanoContractTransactionBalanceList />
       </ContentWrapper>
       <OfflineBar />
@@ -44,14 +45,8 @@ const Wrapper = ({ children }) => (
 );
 
 const ContentWrapper = ({ children }) => (
-  <Wrapper>
+  <View style={styles.wrapper}>
     {children}
-  </Wrapper>
-);
-
-
-const NanoContractTransactionHeader = () => (
-  <View>
   </View>
 );
 
