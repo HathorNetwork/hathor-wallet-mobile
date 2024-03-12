@@ -25,64 +25,65 @@ const getNanoContractHistory = (ncKey) => (state) => {
   // return Object.values(history);
   return [
     {
-      txId: "000000203e87e8575f121de16d0eb347bd1473eedd9f46cc76c1bc8d4e5a5fce",
-      timestamp: 1708356261,
-      tokens: [
-        "00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d",
-        "0000038c49253f86e6792006dd9124e2c50e6487fde3296b7bd637e3e1a497e7"
-      ],
+      tx_id: "0000024c0720b64421b8ae7915c24b77291f0d70b78746035b0c98669bf2bd49",
+      txId: "0000024c0720b64421b8ae7915c24b77291f0d70b78746035b0c98669bf2bd49",
+      version: 4,
+      weight: 21.937001914291383,
+      timestamp: 1709651014,
+      is_voided: false,
       isVoided: false,
+      inputs: [
+        {
+          value: 89100,
+          token_data: 1,
+          script: "dqkUUsHGkfofqIoaBi7hbSTJ1pq9TCqIrA==",
+          decoded: {
+            type: "P2PKH",
+            address: "WWDcRRin3Wej7Es1KGmqqVV6RFyyH3x2DQ",
+            timelock: null
+          },
+          token: "0000046a7350a07e3985dfbb797fb374706cc7daaf8994765c2ef488730a88fd",
+          tx_id: "000002e1a1a438ea18d2b5bcbddffd549603db8aaddf7ee9f93372de12ea2fce",
+          index: 0
+        }
+      ],
+      outputs: [
+        {
+          value: 88800,
+          token_data: 1,
+          script: "dqkUztu0u/2LY202REnRkKZ0NwdDKzKIrA==",
+          decoded: {
+            type: "P2PKH",
+            address: "WhXoGtGmissCdtTx7ZuCXphZR8ak4JwyVp",
+            timelock: null
+          },
+          token: "0000046a7350a07e3985dfbb797fb374706cc7daaf8994765c2ef488730a88fd",
+          spent_by: null
+        },
+        {
+          value: 300,
+          token_data: 2,
+          script: "dqkUztu0u/2LY202REnRkKZ0NwdDKzKIrA==",
+          decoded: {
+            type: "P2PKH",
+            address: "WhXoGtGmissCdtTx7ZuCXphZR8ak4JwyVp",
+            timelock: null
+          },
+          token: "0000000d8f20c7629acdba93f02172bbc7a96e68c27bdc78e03dfe79984d7654",
+          spent_by: null
+        }
+      ],
+      parents: [
+        "000002e1a1a438ea18d2b5bcbddffd549603db8aaddf7ee9f93372de12ea2fce",
+        "000000bb7f87575f4a81e71427727c6b56c9575b83d2a8bd2fd79858317f718f"
+      ],
+      tokens: [
+        "0000000d8f20c7629acdba93f02172bbc7a96e68c27bdc78e03dfe79984d7654",
+        "0000046a7350a07e3985dfbb797fb374706cc7daaf8994765c2ef488730a88fd"
+      ],
       ncId: "000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a",
       ncMethod: "swap",
       callerOrigin: 'mine',
-    },
-    {
-      txId: "000000203e87e8575f121de16d0eb347bd1473eedd9f46cc76c1bc8d4e5a5fcd",
-      timestamp: 1708356261,
-      tokens: [
-        "00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d",
-        "0000038c49253f86e6792006dd9124e2c50e6487fde3296b7bd637e3e1a497e7"
-      ],
-      isVoided: false,
-      ncId: "000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a",
-      ncMethod: "swap",
-      callerOrigin: 'oracle',
-    },
-    {
-      txId: "000000203e87e8575f121de16d0eb347bd1473eedd9f46cc76c1bc8d4e5a5fcc",
-      timestamp: 1708356261,
-      tokens: [
-        "00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d",
-        "0000038c49253f86e6792006dd9124e2c50e6487fde3296b7bd637e3e1a497e7"
-      ],
-      isVoided: false,
-      ncId: "000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a",
-      ncMethod: "swap",
-      callerOrigin: 'wallet',
-    },
-    {
-      txId: "000000203e87e8575f121de16d0eb347bd1473eedd9f46cc76c1bc8d4e5a5fcb",
-      timestamp: 1708356261,
-      tokens: [
-        "00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d",
-        "0000038c49253f86e6792006dd9124e2c50e6487fde3296b7bd637e3e1a497e7"
-      ],
-      isVoided: false,
-      ncId: "000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a",
-      ncMethod: "swap",
-      callerOrigin: 'other',
-    },
-    {
-      txId: "000000203e87e8575f121de16d0eb347bd1473eedd9f46cc76c1bc8d4e5a5fca",
-      timestamp: 1708356261,
-      tokens: [
-        "00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d",
-        "0000038c49253f86e6792006dd9124e2c50e6487fde3296b7bd637e3e1a497e7"
-      ],
-      isVoided: true,
-      ncId: "000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a",
-      ncMethod: "swap",
-      callerOrigin: 'other',
     },
   ].filter((tx) => tx.isVoided === false);
 }
