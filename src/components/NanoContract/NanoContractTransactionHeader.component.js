@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
-  Text,
   TouchableWithoutFeedback,
   Linking,
 } from 'react-native';
@@ -35,7 +34,10 @@ export const NanoContractTransactionHeader = ({ tx }) => {
       <HathorHeader.Central style={styles.headerCentral}>
         <TouchableWithoutFeedback onPress={() => toggleShrank(!isShrank)}>
           <View style={styles.headerWrapper}>
-            <Text style={[styles.headerTitle]}>{t`Transaction`}</Text>
+            <InfoContainer>
+              <TextValue title pb4>{getShortHash(tx.txId, 7)}</TextValue>
+              <TextLabel>{t`Transaction ID`}</TextLabel>
+            </InfoContainer>
             {isShrank &&
               <HeaderShrank />}
             {isExpanded() &&
@@ -64,10 +66,6 @@ const HeaderExpanded = ({ tx }) => {
     <>
       <View style={styles.wrapper}>
         <InfoContainer>
-          <TextValue bold pb4>{getShortHash(tx.txId, 7)}</TextValue>
-          <TextLabel>{t`Transaction ID`}</TextLabel>
-        </InfoContainer>
-        <InfoContainer>
           <TextValue bold pb4>{tx.ncMethod}</TextValue>
           <TextLabel>{t`Blueprint Method`}</TextLabel>
         </InfoContainer>
@@ -75,7 +73,7 @@ const HeaderExpanded = ({ tx }) => {
           <TextValue bold pb4>{getTimestampFormat(tx.timestamp)}</TextValue>
           <TextLabel>{t`Date and Time`}</TextLabel>
         </InfoContainer>
-        <InfoContainer>
+        <InfoContainer lastElement>
           <TextValue bold>{originMap[tx.callerOrigin]}</TextValue>
           <TextLabel>{t`Origin`}</TextLabel>
         </InfoContainer>
