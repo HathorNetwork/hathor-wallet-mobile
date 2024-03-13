@@ -36,7 +36,6 @@ import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
-  NANO_CONTRACT_FEATURE_TOGGLE,
 } from '../constants';
 import { STORE } from '../store';
 import {
@@ -64,7 +63,6 @@ import {
   resetWalletSuccess,
   setTokens,
   onExceptionCaptured,
-  setNanoContractAvailability,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -96,16 +94,6 @@ export function* isPushNotificationEnabled() {
   const pushEnabled = yield call(checkForFeatureFlag, PUSH_NOTIFICATION_FEATURE_TOGGLE);
 
   return pushEnabled;
-}
-
-/**
- * Returns the value of the NANO_CONTRACT_FEATURE_TOGGLE feature flag
- * @returns {Generator<unknown, boolean>}
- */
-export function* isNanoContractEnabled() {
-  const nanoEnabled = yield call(checkForFeatureFlag, NANO_CONTRACT_FEATURE_TOGGLE);
-
-  return nanoEnabled;
 }
 
 /**
@@ -145,11 +133,9 @@ export function* startWallet(action) {
   const uniqueDeviceId = getUniqueId();
   const useWalletService = yield call(isWalletServiceEnabled);
   const usePushNotification = yield call(isPushNotificationEnabled);
-  const useNanoContract = yield call(isNanoContractEnabled);
 
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
-  yield put(setNanoContractAvailability(useNanoContract));
 
   // clean storage and metadata before starting the wallet
   // this should be cleaned when stopping the wallet,

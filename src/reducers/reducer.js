@@ -230,13 +230,6 @@ const initialState = {
   networkSettings: PRE_SETTINGS_MAINNET,
   networkSettingsInvalid: {},
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
-  nanoContract: {
-    /**
-     * @property {boolean}
-     * @description Reflects Nano Contract's unleash feature toggle value.
-     */
-    available: false,
-  },
 };
 
 export const reducer = (state = initialState, action) => {
@@ -393,8 +386,6 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateFailure(state);
     case types.NETWORKSETTINGS_UPDATE_INVALID:
       return onNetworkSettingsUpdateInvalid(state, action);
-    case types.NANOCONTRACT_FEATURETOGGLE_SET_AVAILABILITY:
-      return onNanoContractFeatureToggleAvailability(state, action);
     default:
       return state;
   }
@@ -1218,16 +1209,4 @@ export const onNetworkSettingsUpdateInvalid = (state, { payload }) => ({
   ...state,
   networkSettingsInvalid: payload,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
-});
-
-/**
- * @param {Object} state Redux state
- * @param {{ payload: boolean }} Nano Contract unleash feature toggle value
- */
-export const onNanoContractFeatureToggleAvailability = (state, { payload }) => ({
-  ...state,
-  nanoContract: {
-    ...state.nanoContract,
-    available: payload,
-  },
 });
