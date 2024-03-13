@@ -232,7 +232,7 @@ const initialState = {
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
   nanoContract: {
     /**
-     * @property {boolean} 
+     * @property {boolean}
      * @description Reflects Nano Contract's unleash feature toggle value.
      */
     available: false,
