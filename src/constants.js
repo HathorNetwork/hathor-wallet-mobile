@@ -158,6 +158,7 @@ export const WALLET_SERVICE_FEATURE_TOGGLE = 'wallet-service-mobile.rollout';
 export const PUSH_NOTIFICATION_FEATURE_TOGGLE = 'push-notification.rollout';
 export const WALLET_CONNECT_FEATURE_TOGGLE = 'wallet-connect-mobile.rollout';
 export const NETWORK_SETTINGS_FEATURE_TOGGLE = 'network-settings.rollout';
+export const NANO_CONTRACT_FEATURE_TOGGLE = 'nano-contract.rollout';
 
 /**
  * Default feature toggle values.
@@ -172,6 +173,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [PUSH_NOTIFICATION_FEATURE_TOGGLE]: false,
   [WALLET_CONNECT_FEATURE_TOGGLE]: false,
   [NETWORK_SETTINGS_FEATURE_TOGGLE]: false,
+  [NANO_CONTRACT_FEATURE_TOGGLE]: false,
 };
 
 // Project id configured in https://walletconnect.com
