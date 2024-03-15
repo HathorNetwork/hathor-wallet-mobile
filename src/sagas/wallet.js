@@ -287,7 +287,7 @@ export function* startWallet(action) {
 
 /**
  * This saga will load both HTR and DEFAULT_TOKEN (if they are different)
- * and dispatch actions to asynchronously load all registered tokens.
+ * and dispatch actions to asynchronously load all registered tokens forcefully.
  *
  * Will throw an error if the download fails for any token.
  * @returns {string[]} Array of token uid
@@ -301,6 +301,9 @@ export function* loadTokens() {
   yield call(fetchTokenData, htrUid, true);
 
   if (customTokenUid !== htrUid) {
+    // custom tokens doesn't need to be forced to download because its history status
+    // will be marked as invalidated, and history will get requested the next time a user
+    // enters the history screen.
     yield call(fetchTokenData, customTokenUid);
   }
 
@@ -628,7 +631,7 @@ export function* onWalletReloadData() {
   }
 
   try {
-    // Here we force the download of HTR history
+    // Here we force the download of tokens history
     const registeredTokens = yield call(loadTokens);
 
     const customTokenUid = DEFAULT_TOKEN.uid;
