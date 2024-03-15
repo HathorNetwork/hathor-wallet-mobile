@@ -243,7 +243,7 @@ export function* fetchTokenMetadata({ tokenId }) {
   }
 }
 
-export function* fetchTokenData(tokenId) {
+export function* fetchTokenData(tokenId, force = false) {
   const fetchBalanceResponse = yield call(
     dispatchAndWait,
     tokenFetchBalanceRequested(tokenId),
@@ -256,7 +256,7 @@ export function* fetchTokenData(tokenId) {
   );
   const fetchHistoryResponse = yield call(
     dispatchAndWait,
-    tokenFetchHistoryRequested(tokenId),
+    tokenFetchHistoryRequested(tokenId, force),
     specificTypeAndPayload(types.TOKEN_FETCH_HISTORY_SUCCESS, {
       tokenId,
     }),
