@@ -298,7 +298,7 @@ export function* loadTokens() {
 
   // fetchTokenData will throw an error if the download failed, we should just
   // let it crash as throwing an error is the default behavior for loadTokens
-  yield call(fetchTokenData, htrUid);
+  yield call(fetchTokenData, htrUid, true);
 
   if (customTokenUid !== htrUid) {
     yield call(fetchTokenData, customTokenUid);
@@ -628,6 +628,7 @@ export function* onWalletReloadData() {
   }
 
   try {
+    // Here we force the download of HTR history
     const registeredTokens = yield call(loadTokens);
 
     const customTokenUid = DEFAULT_TOKEN.uid;
