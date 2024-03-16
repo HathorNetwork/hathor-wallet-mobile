@@ -28,6 +28,7 @@ import {
   take,
   fork,
   spawn,
+  delay,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
@@ -447,6 +448,43 @@ export function* listenForWalletReady(wallet) {
   }
 }
 
+/**
+ * An abstraction effect to call wallet's checkAddressMine method.
+ * This effect applies a retry strategy and throws a fatal error
+ * after max retry attempts.
+ *
+ * @param {Object} wallet Either fullnode or wallet-service wallet.
+ * @param {string[]} txAddresses A collection of addresses to check.
+ * @returns {{ [address: string]: boolean }} A map of type address:isMine.
+ */
+function* checkAddressMine(wallet, txAddresses) {
+  const maxRetries = 5;
+  const resultHandler = async (cb) => {
+    try {
+      const success = await cb();
+      return { success };
+    } catch (error) {
+      return { error }
+    }
+  };
+
+  let result = null;
+  for (let i = 0; i < maxRetries; i++) {
+    result = yield call(resultHandler, async () => await wallet.checkAddressesMine.bind(wallet)([...txAddresses]));
+    if (result.success) {
+      return result.success;
+    }
+    // attemp 0: 300ms
+    // attemp 1: 330ms
+    // attemp 2: 420ms
+    // attemp 3: 570ms
+    // attemp 4: 780ms
+    yield delay(300 + 30 * (i ** i));
+  }
+
+  yield put(onExceptionCaptured(result.error, true));
+}
+
 export function* handleTx(action) {
   const tx = action.payload;
   const wallet = yield select((state) => state.wallet);
@@ -488,9 +526,9 @@ export function* handleTx(action) {
     return acc;
   }, [{}, new Set([])],);
 
-  const txWalletAddresses = yield call(wallet.checkAddressesMine.bind(wallet), [...txAddresses]);
-  const tokensToDownload = [];
+  const txWalletAddresses = yield call(checkAddressMine, wallet, [...txAddresses]);
 
+  const tokensToDownload = [];
   for (const [tokenUid, addresses] of Object.entries(tokenAddressesMap)) {
     for (const [address] of addresses.entries()) {
       // txWalletAddresses should always have the address we requested, but we should double check
