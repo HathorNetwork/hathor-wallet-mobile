@@ -246,3 +246,7 @@ export const HTTP_REQUEST_TIMEOUT = 3000;
  * Any network that is not mainnet or testnet should be a privatenet.
  */
 export const NETWORK_PRIVATENET = 'privatenet';
+
+export const MAX_RETRIES_WS_CALL = 5;
+export const INITIAL_RETRY_LATENCY = 300; // ms
+export const LATENCY_MULTIPLIER = 30; // multiplier per iteration

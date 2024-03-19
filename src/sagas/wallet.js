@@ -37,6 +37,9 @@ import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
+  MAX_RETRIES_WS_CALL,
+  INITIAL_RETRY_LATENCY,
+  LATENCY_MULTIPLIER,
 } from '../constants';
 import { STORE } from '../store';
 import {
@@ -458,7 +461,6 @@ export function* listenForWalletReady(wallet) {
  * @returns {{ [address: string]: boolean }} A map of type address:isMine.
  */
 function* checkAddressMine(wallet, txAddresses) {
-  const maxRetries = 5;
   const resultHandler = async (cb) => {
     try {
       const success = await cb();
@@ -469,17 +471,17 @@ function* checkAddressMine(wallet, txAddresses) {
   };
 
   let result = null;
-  for (let i = 0; i < maxRetries; i++) {
+  for (let i = 0; i < MAX_RETRIES_WS_CALL; i++) {
     result = yield call(resultHandler, async () => await wallet.checkAddressesMine.bind(wallet)([...txAddresses]));
     if (result.success) {
       return result.success;
     }
-    // attemp 0: 300ms
-    // attemp 1: 330ms
-    // attemp 2: 420ms
-    // attemp 3: 570ms
-    // attemp 4: 780ms
-    yield delay(300 + 30 * (i ** i));
+    // attempt 0: 300ms
+    // attempt 1: 330ms
+    // attempt 2: 420ms
+    // attempt 3: 570ms
+    // attempt 4: 780ms
+    yield delay(INITIAL_RETRY_LATENCY + LATENCY_MULTIPLIER * (i ** i));
   }
 
   yield put(onExceptionCaptured(result.error, true));
