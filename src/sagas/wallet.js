@@ -460,6 +460,7 @@ export function* listenForWalletReady(wallet) {
  * @param {string[]} txAddresses A collection of addresses to check.
  * @returns {{ [address: string]: boolean }} A map of type address:isMine.
  */
+// eslint-disable-next-line consistent-return
 function* checkAddressMine(wallet, txAddresses) {
   const resultHandler = async (cb) => {
     try {
@@ -471,8 +472,12 @@ function* checkAddressMine(wallet, txAddresses) {
   };
 
   let result = null;
+  // eslint-disable-next-line no-plusplus
   for (let i = 0; i < MAX_RETRIES_WS_CALL; i++) {
-    result = yield call(resultHandler, async () => await wallet.checkAddressesMine.bind(wallet)([...txAddresses]));
+    result = yield call(
+      resultHandler,
+      async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses])
+    );
     if (result.success) {
       return result.success;
     }
