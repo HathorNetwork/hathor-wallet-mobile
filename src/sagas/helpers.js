@@ -13,6 +13,7 @@ import {
   take,
   call,
   select,
+  delay,
 } from 'redux-saga/effects';
 import { t } from 'ttag';
 import axiosWrapperCreateRequestInstance from '@hathor/wallet-lib/lib/api/axiosWrapper';
@@ -28,6 +29,9 @@ import {
   WALLET_SERVICE_FEATURE_TOGGLE,
   WALLET_SERVICE_REQUEST_TIMEOUT,
   networkSettingsKeyMap,
+  MAX_RETRIES_WS_CALL,
+  INITIAL_RETRY_LATENCY,
+  LATENCY_MULTIPLIER,
 } from '../constants';
 import { STORE } from '../store';
 
@@ -274,4 +278,55 @@ export function getNetworkSettings(state) {
   // The state is always present, but the stored network settings
   // has precedence, once it indicates a custom network.
   return STORE.getItem(networkSettingsKeyMap.networkSettings) ?? state.networkSettings;
+}
+
+/**
+ * A request abstraction that applies a progressive retry strategy.
+ * One can define how many retries it should make or use the default value.
+ *
+ * @param {Promise<any>} request The async callback function to be executed.
+ * @param {number} maxRetries The max retries allowed, with default value.
+ * Notice this param should be at least 2 to make sense.
+ * @returns {{ success?: any; error?: any } A success object from the request,
+ * or an error definition after retries exhausted.
+ *
+ * @example
+ * yield call(progressiveRetryRequest, async () => asyncFn());
+ * // use default maxRetries
+ *
+ * @example
+ * yield call(progressiveRetryRequest, async () => asyncFn(), 3);
+ * // use custom maxRetries equal to 3
+ */
+export function* progressiveRetryRequest(request, maxRetries = MAX_RETRIES_WS_CALL) {
+  const resultHandler = async (cb) => {
+    try {
+      const success = await cb();
+      return { success };
+    } catch (error) {
+      return { error }
+    }
+  };
+
+  let result = null;
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < maxRetries; i++) {
+    result = yield call(resultHandler, request);
+    if (result.success) {
+      return result;
+    }
+
+    // skip delay for last call
+    if (i === maxRetries -1) {
+      continue;
+    }
+
+    // attempt 0: 300ms
+    // attempt 1: 330ms
+    // attempt 2: 420ms
+    // attempt 3: 570ms
+    // attempt 4: 780ms
+    yield delay(INITIAL_RETRY_LATENCY + LATENCY_MULTIPLIER * (i ** i));
+  }
+  return result;
 }

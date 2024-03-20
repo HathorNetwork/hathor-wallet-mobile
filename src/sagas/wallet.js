@@ -28,7 +28,6 @@ import {
   take,
   fork,
   spawn,
-  delay,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
@@ -37,9 +36,6 @@ import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
-  MAX_RETRIES_WS_CALL,
-  INITIAL_RETRY_LATENCY,
-  LATENCY_MULTIPLIER,
 } from '../constants';
 import { STORE } from '../store';
 import {
@@ -77,6 +73,7 @@ import {
   getRegisteredTokens,
   getNetworkSettings,
   getRegisteredTokenUids,
+  progressiveRetryRequest,
 } from './helpers';
 import { setKeychainPin } from '../utils';
 
@@ -453,43 +450,21 @@ export function* listenForWalletReady(wallet) {
 
 /**
  * An abstraction effect to call wallet's checkAddressMine method.
- * This effect applies a retry strategy and throws a fatal error
- * after max retry attempts.
+ * It subjects the call to a retry strategy and return the result of the request,
+ * which can be either success or error.
  *
  * @param {Object} wallet Either fullnode or wallet-service wallet.
  * @param {string[]} txAddresses A collection of addresses to check.
- * @returns {{ [address: string]: boolean }} A map of type address:isMine.
+ * @returns {{
+ *   success?: { [address: string]: boolean };
+ *   error?: any;
+ * }} If success, it returns a map of type address:isMine,
+ * otherwise it will return the error definition.
  */
-// eslint-disable-next-line consistent-return
 function* checkAddressMine(wallet, txAddresses) {
-  const resultHandler = async (cb) => {
-    try {
-      const success = await cb();
-      return { success };
-    } catch (error) {
-      return { error }
-    }
-  };
-
-  let result = null;
-  // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < MAX_RETRIES_WS_CALL; i++) {
-    result = yield call(
-      resultHandler,
-      async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses])
-    );
-    if (result.success) {
-      return result.success;
-    }
-    // attempt 0: 300ms
-    // attempt 1: 330ms
-    // attempt 2: 420ms
-    // attempt 3: 570ms
-    // attempt 4: 780ms
-    yield delay(INITIAL_RETRY_LATENCY + LATENCY_MULTIPLIER * (i ** i));
-  }
-
-  yield put(onExceptionCaptured(result.error, true));
+  const fn = wallet.checkAddressesMine.bind(wallet);
+  const request = async () => fn([...txAddresses]);
+  return yield call(progressiveRetryRequest, request);
 }
 
 export function* handleTx(action) {
@@ -533,7 +508,15 @@ export function* handleTx(action) {
     return acc;
   }, [{}, new Set([])],);
 
-  const txWalletAddresses = yield call(checkAddressMine, wallet, [...txAddresses]);
+  const {
+    success: txWalletAddresses,
+    error: txWalletAddressesError
+  } = yield call(checkAddressMine, wallet, txAddresses);
+  if (txWalletAddressesError) {
+    // Emmit a fatal error feedback to user and halts tx processing.
+    yield put(onExceptionCaptured(txWalletAddressesError, true));
+    return;
+  }
 
   const tokensToDownload = [];
   for (const [tokenUid, addresses] of Object.entries(tokenAddressesMap)) {
