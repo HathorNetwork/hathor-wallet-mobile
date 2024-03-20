@@ -1,11 +1,9 @@
 import { put } from 'redux-saga/effects';
-import { ncApi } from '@hathor/wallet-lib';
+import * as hathorLib from '@hathor/wallet-lib';
 import { jest, test, expect, beforeEach, describe } from '@jest/globals';
-import { getNanoContractState, registerNanoContract, formatNanoContractRegistryEntry, failureMessage } from '../../../src/sagas/nanoContract';
-import { nanoContractRegisterFailure, nanoContractRegisterRequest, types } from '../../../src/actions';
+import { getNanoContractState, registerNanoContract, failureMessage } from '../../../src/sagas/nanoContract';
+import { nanoContractRegisterFailure, nanoContractRegisterRequest, onExceptionCaptured, types } from '../../../src/actions';
 import { STORE } from '../../../src/store';
-
-jest.mock('@hathor/wallet-lib');
 
 const fixtures = {
   address: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
@@ -72,9 +70,8 @@ beforeEach(() => {
 describe('sagas/nanoContract/getNanoContractState', () => {
   test('success', async () => {
     // arrange ncApi mock
-    const mockedNcApi = jest.mocked(ncApi);
-    mockedNcApi.getNanoContractState
-      .mockReturnValue(fixtures.ncApi.getNanoContractState.successResponse);
+    const mockedFn = jest.spyOn(hathorLib.ncApi, 'getNanoContractState');
+    mockedFn.mockReturnValue(fixtures.ncApi.getNanoContractState.successResponse);
 
     // call getNanoContractState
     const result = await getNanoContractState(fixtures.ncId);
@@ -82,13 +79,13 @@ describe('sagas/nanoContract/getNanoContractState', () => {
     // assert
     expect(result.ncState).toBeDefined();
     expect(result.error).toBeUndefined();
-    expect(mockedNcApi.getNanoContractState).toBeCalledTimes(1);
+    expect(mockedFn).toBeCalledTimes(1);
   });
 
   test('failure', async () => {
     // arrange ncApi mock
-    const mockedNcApi = jest.mocked(ncApi);
-    mockedNcApi.getNanoContractState.mockRejectedValue(new Error('api call failure'));
+    const mockedFn = jest.spyOn(hathorLib.ncApi, 'getNanoContractState');
+    mockedFn.mockRejectedValue(new Error('api call failure'));
 
     // call getNanoContractState
     const result = await getNanoContractState(fixtures.ncId);
@@ -96,7 +93,7 @@ describe('sagas/nanoContract/getNanoContractState', () => {
     // assert
     expect(result.ncState).toBeUndefined();
     expect(result.error).toBeDefined();
-    expect(mockedNcApi.getNanoContractState).toBeCalledTimes(1);
+    expect(mockedFn).toBeCalledTimes(1);
   });
 });
 
@@ -105,16 +102,14 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     // arrange Nano Contract registration inputs
     const { address, ncId } = fixtures;
 
-    // add an entry to registeredContracts
-    const ncEntry = formatNanoContractRegistryEntry(address, ncId);
-    const storage = STORE.getStorage();
-    storage.registerNanoContract(ncEntry, {});
-
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
+    // call isNanoContractRegistered
+    gen.next();
 
     // assert failure
-    expect(gen.next().value)
+    // feed back isNanoContractRegistered
+    expect(gen.next(true).value)
       .toStrictEqual(put(nanoContractRegisterFailure(failureMessage.alreadyRegistered)))
     // assert termination
     expect(gen.next().value).toBeUndefined();
@@ -126,13 +121,21 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
-    // emmit selector effect
+    // call isNanoContractRegistered
     gen.next();
+    // feed back isNanoContractRegistered
+    gen.next(false);
 
     // assert failure
     // feed back the selector and advance generator to failure
+    // first emmit NANOCONTRACT_REGISTER_FAILURE
     expect(gen.next(fixtures.wallet.notReady).value)
       .toStrictEqual(put(nanoContractRegisterFailure(failureMessage.walletNotReady)))
+    // then emmit EXCEPTION_CAPTURED
+    expect(gen.next().value)
+      .toStrictEqual(
+        put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), false))
+      );
     // assert termination
     expect(gen.next().value).toBeUndefined();
   });
@@ -143,8 +146,10 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
-    // emmit selector effect
+    // call isNanoContractRegistered
     gen.next();
+    // feed back isNanoContractRegistered
+    gen.next(false);
     // feed back the selector
     gen.next(fixtures.wallet.addressNotMine);
 
@@ -162,11 +167,13 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
-    // emmit selector effect
+    // call isNanoContractRegistered
     gen.next();
+    // feed back isNanoContractRegistered
+    gen.next(false);
     // feed back the selector
     gen.next(fixtures.wallet.readyAndMine);
-    // resume isAddressMine call
+    // feed back isAddressMine call
     gen.next(fixtures.wallet.readyAndMine.isAddressMine());
 
     // assert failure
@@ -183,29 +190,29 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
-    // emmit selector effect
+    // call isNanoContractRegistered
     gen.next();
+    // feed back isNanoContractRegistered
+    gen.next(false);
     // feed back the selector
     gen.next(fixtures.wallet.readyAndMine);
-    // resume isAddressMine call
+    // feed back isAddressMine call
     gen.next(fixtures.wallet.readyAndMine.isAddressMine());
-    // resume getNanoContractState call and advance generator to success
-    const actionResult = gen.next(fixtures.ncSaga.getNanoContractState.successResponse).value;
+    // feed back getNanoContractState call
+    gen.next(fixtures.ncSaga.getNanoContractState.successResponse);
+    // feed back registerNanoContract
+    const actionResult = gen.next().value;
 
     // assert success
     expect(actionResult.payload.action.type)
       .toBe(types.NANOCONTRACT_REGISTER_SUCCESS);
-    expect(actionResult.payload.action.payload.entryKey)
-      .toBe(formatNanoContractRegistryEntry(address, ncId));
-    expect(actionResult.payload.action.payload.entryValue)
-      .toBeDefined();
+    expect(actionResult.payload.action.payload.entryKey).toBe(ncId);
+    expect(actionResult.payload.action.payload.entryValue).toEqual(expect.objectContaining({
+      address,
+      ncId,
+      blueprintName: expect.any(String),
+    }));
     // assert termination
     expect(gen.next().value).toBeUndefined();
-
-    // assert nano contract persistence
-    const ncEntryKey = formatNanoContractRegistryEntry(address, ncId);
-    const storage = STORE.getStorage();
-    expect(storage.isNanoContractRegistered(ncEntryKey)).toBeTruthy();
-    expect(actionResult.payload.action.payload.entryKey).toBeDefined();
   });
 });

@@ -63,11 +63,10 @@ export async function getNanoContractState(ncId) {
  */
 export function* registerNanoContract({ payload }) {
   const { address, ncId } = payload;
-  const ncEntryKey = formatNanoContractRegistryEntry(address, ncId);
   const storage = STORE.getStorage();
 
   // check the Nano Contract is already registered
-  const isRegistered = storage.isNanoContractRegistered(ncEntryKey);
+  const isRegistered = yield call(storage.isNanoContractRegistered, ncId);
   if (isRegistered) {
     yield put(nanoContractRegisterFailure(failureMessage.alreadyRegistered));
     return;
@@ -97,16 +96,16 @@ export function* registerNanoContract({ payload }) {
   }
 
   // persist using the pair address-nanocontract as key
-  const ncEntryValue = {
+  const nc = {
     address,
     ncId,
     blueprintId: ncState.blueprint_id,
     blueprintName: ncState.blueprint_name
   };
-  storage.registerNanoContract(ncEntryKey, ncEntryValue);
+  yield call(storage.registerNanoContract, ncId, nc);
 
   // emit action NANOCONTRACT_REGISTER_SUCCESS
-  yield put(nanoContractRegisterSuccess({ entryKey: ncEntryKey, entryValue: ncEntryValue }));
+  yield put(nanoContractRegisterSuccess({ entryKey: ncId, entryValue: nc }));
 }
 
 export function* saga() {
