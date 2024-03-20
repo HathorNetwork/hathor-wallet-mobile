@@ -317,7 +317,7 @@ export function* progressiveRetryRequest(request, maxRetries = MAX_RETRIES_WS_CA
     }
 
     // skip delay for last call
-    if (i === maxRetries -1) {
+    if (i === maxRetries - 1) {
       continue;
     }
 
