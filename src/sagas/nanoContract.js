@@ -26,16 +26,6 @@ export const failureMessage = {
 };
 
 /**
- * Nano Contract registration has finished with success.
- * @param {string} address Address used to bind with Nano Contract
- * @param {string} ncId Nano Contract ID
- * @returns {string} An entry key to points to the registered Nano Contract
- */
-export function formatNanoContractRegistryEntry(address, ncId) {
-  return `${address}.${ncId}`;
-}
-
-/**
  * Calls Nano Contract API to retrieve Nano Contract state.
  * @param {string} ncId Nano Contract ID
  * @returns {{
