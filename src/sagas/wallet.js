@@ -489,7 +489,6 @@ export function* handleTx(action) {
     return acc;
   }, [{}, new Set([])],);
 
-
   let txWalletAddresses = null;
   try {
     const request = async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses]);
