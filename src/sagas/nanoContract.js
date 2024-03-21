@@ -9,6 +9,7 @@ import {
   call,
 } from 'redux-saga/effects';
 import { t } from 'ttag';
+import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
 import { STORE } from '../store';
 import {
   nanoContractRegisterFailure,
@@ -21,6 +22,7 @@ export const failureMessage = {
   alreadyRegistered: t`Nano Contract already registered.`,
   walletNotReadyError: t`Wallet is not ready yet to register a Nano Contract.`,
   addressNotMine: t`The informed address do not belongs to the wallet.`,
+  nanoContractStateNotFound: t`Nano Contract not found.`,
   nanoContractStateFailure: t`Error while trying to get Nano Contract state.`,
 };
 
@@ -80,7 +82,11 @@ export function* registerNanoContract({ payload }) {
   // validate nanocontract exists
   const { ncState, error } = yield call(getNanoContractState, ncId)
   if (error) {
-    yield put(nanoContractRegisterFailure(failureMessage.nanoContractStateFailure));
+    if (error instanceof NanoRequest404Error) {
+      yield put(nanoContractRegisterFailure(failureMessage.nanoContractStateNotFound));
+    } else {
+      yield put(nanoContractRegisterFailure(failureMessage.nanoContractStateFailure));
+    }
     return;
   }
 
