@@ -921,19 +921,23 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
-#: src/sagas/nanoContract.js:22
+#: src/sagas/nanoContract.js:23
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:23
+#: src/sagas/nanoContract.js:24
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:24
+#: src/sagas/nanoContract.js:25
 msgid "The informed address do not belongs to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:25
+#: src/sagas/nanoContract.js:26
+msgid "Nano Contract not found."
+msgstr ""
+
+#: src/sagas/nanoContract.js:27
 msgid "Error while trying to get Nano Contract state."
 msgstr ""
 
