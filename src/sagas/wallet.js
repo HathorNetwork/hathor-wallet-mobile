@@ -448,25 +448,6 @@ export function* listenForWalletReady(wallet) {
   }
 }
 
-/**
- * An abstraction effect to call wallet's checkAddressMine method.
- * It subjects the call to a retry strategy and return the result of the request,
- * which can be either success or error.
- *
- * @param {Object} wallet Either fullnode or wallet-service wallet.
- * @param {string[]} txAddresses A collection of addresses to check.
- * @returns {{
- *   success?: { [address: string]: boolean };
- *   error?: any;
- * }} If success, it returns a map of type address:isMine,
- * otherwise it will return the error definition.
- */
-function* checkAddressMine(wallet, txAddresses) {
-  const fn = wallet.checkAddressesMine.bind(wallet);
-  const request = async () => fn([...txAddresses]);
-  return yield call(progressiveRetryRequest, request);
-}
-
 export function* handleTx(action) {
   const tx = action.payload;
   const wallet = yield select((state) => state.wallet);
@@ -508,13 +489,14 @@ export function* handleTx(action) {
     return acc;
   }, [{}, new Set([])],);
 
-  const {
-    success: txWalletAddresses,
-    error: txWalletAddressesError
-  } = yield call(checkAddressMine, wallet, txAddresses);
-  if (txWalletAddressesError) {
+
+  let txWalletAddresses = null;
+  try {
+    const request = async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses]);
+    txWalletAddresses = yield call(progressiveRetryRequest, request, 1);
+  } catch (error) {
     // Emmit a fatal error feedback to user and halts tx processing.
-    yield put(onExceptionCaptured(txWalletAddressesError, true));
+    yield put(onExceptionCaptured(error, true));
     return;
   }
 

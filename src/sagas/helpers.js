@@ -287,8 +287,8 @@ export function getNetworkSettings(state) {
  * @param {Promise<any>} request The async callback function to be executed.
  * @param {number} maxRetries The max retries allowed, with default value.
  * Notice this param should be at least 1 to make sense.
- * @returns {{ success?: any; error?: any } A success object from the request,
- * or an error definition after retries exhausted.
+ * @returns {any} A success object from the request.
+ * @throws An error after retries exhausted.
  *
  * @example
  * yield call(progressiveRetryRequest, async () => asyncFn());
@@ -299,21 +299,15 @@ export function getNetworkSettings(state) {
  * // use custom maxRetries equal to 3
  */
 export function* progressiveRetryRequest(request, maxRetries = MAX_RETRIES) {
-  const resultHandler = async (cb) => {
-    try {
-      const success = await cb();
-      return { success };
-    } catch (error) {
-      return { error }
-    }
-  };
+  let lastError = null;
 
-  let result = null;
   // eslint-disable-next-line no-plusplus
   for (let i = 0; i <= maxRetries; i++) {
-    result = yield call(resultHandler, request);
-    if (result.success) {
-      return result;
+    try {
+      // return if success
+      return yield call(request)
+    } catch (error) {
+      lastError = error;
     }
 
     // skip delay for last call
@@ -326,7 +320,12 @@ export function* progressiveRetryRequest(request, maxRetries = MAX_RETRIES) {
     // attempt 2: 420ms
     // attempt 3: 570ms
     // attempt 4: 780ms
+    // attempt 5: 1050ms
+    // attempt 6: 1380ms
+    // attempt 7: 1770ms
     yield delay(INITIAL_RETRY_LATENCY + LATENCY_MULTIPLIER * (i * i));
   }
-  return result;
+
+  // throw last error after retries exhausted
+  throw lastError;
 }
