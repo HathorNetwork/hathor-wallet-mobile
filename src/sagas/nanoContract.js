@@ -19,7 +19,6 @@ import {
 
 export const failureMessage = {
   alreadyRegistered: t`Nano Contract already registered.`,
-  walletNotReady: t`Wallet is not ready yet.`,
   walletNotReadyError: t`Wallet is not ready yet to register a Nano Contract.`,
   addressNotMine: t`The informed address do not belongs to the wallet.`,
   nanoContractStateFailure: t`Error while trying to get Nano Contract state.`,
@@ -65,7 +64,7 @@ export function* registerNanoContract({ payload }) {
   // validate address belongs to the wallet
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
-    yield put(nanoContractRegisterFailure(failureMessage.walletNotReady));
+    yield put(nanoContractRegisterFailure(failureMessage.walletNotReadyError));
     // This will show user an error modal with the option to send the error to sentry.
     yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), false));
     return;

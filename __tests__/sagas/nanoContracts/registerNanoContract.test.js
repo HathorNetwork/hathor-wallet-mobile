@@ -130,7 +130,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     // feed back the selector and advance generator to failure
     // first emmit NANOCONTRACT_REGISTER_FAILURE
     expect(gen.next(fixtures.wallet.notReady).value)
-      .toStrictEqual(put(nanoContractRegisterFailure(failureMessage.walletNotReady)))
+      .toStrictEqual(put(nanoContractRegisterFailure(failureMessage.walletNotReadyError)))
     // then emmit EXCEPTION_CAPTURED
     expect(gen.next().value)
       .toStrictEqual(
