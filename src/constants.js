@@ -247,6 +247,10 @@ export const HTTP_REQUEST_TIMEOUT = 3000;
  */
 export const NETWORK_PRIVATENET = 'privatenet';
 
+/**
+ * The following constants are used on a progressive retry mechanism.
+ * @see `src/sagas/helper.js@progressiveRetryRequest`
+ */
 export const MAX_RETRIES = 8;
 export const INITIAL_RETRY_LATENCY = 300; // ms
 export const LATENCY_MULTIPLIER = 30; // multiplier per iteration
