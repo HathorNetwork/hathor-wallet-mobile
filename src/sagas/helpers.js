@@ -29,7 +29,7 @@ import {
   WALLET_SERVICE_FEATURE_TOGGLE,
   WALLET_SERVICE_REQUEST_TIMEOUT,
   networkSettingsKeyMap,
-  MAX_RETRIES_WS_CALL,
+  MAX_RETRIES,
   INITIAL_RETRY_LATENCY,
   LATENCY_MULTIPLIER,
 } from '../constants';
@@ -286,7 +286,7 @@ export function getNetworkSettings(state) {
  *
  * @param {Promise<any>} request The async callback function to be executed.
  * @param {number} maxRetries The max retries allowed, with default value.
- * Notice this param should be at least 2 to make sense.
+ * Notice this param should be at least 1 to make sense.
  * @returns {{ success?: any; error?: any } A success object from the request,
  * or an error definition after retries exhausted.
  *
@@ -298,7 +298,7 @@ export function getNetworkSettings(state) {
  * yield call(progressiveRetryRequest, async () => asyncFn(), 3);
  * // use custom maxRetries equal to 3
  */
-export function* progressiveRetryRequest(request, maxRetries = MAX_RETRIES_WS_CALL) {
+export function* progressiveRetryRequest(request, maxRetries = MAX_RETRIES) {
   const resultHandler = async (cb) => {
     try {
       const success = await cb();
@@ -310,14 +310,14 @@ export function* progressiveRetryRequest(request, maxRetries = MAX_RETRIES_WS_CA
 
   let result = null;
   // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < maxRetries; i++) {
+  for (let i = 0; i <= maxRetries; i++) {
     result = yield call(resultHandler, request);
     if (result.success) {
       return result;
     }
 
     // skip delay for last call
-    if (i === maxRetries - 1) {
+    if (i === maxRetries) {
       continue;
     }
 
@@ -326,7 +326,7 @@ export function* progressiveRetryRequest(request, maxRetries = MAX_RETRIES_WS_CA
     // attempt 2: 420ms
     // attempt 3: 570ms
     // attempt 4: 780ms
-    yield delay(INITIAL_RETRY_LATENCY + LATENCY_MULTIPLIER * (i ** i));
+    yield delay(INITIAL_RETRY_LATENCY + LATENCY_MULTIPLIER * (i * i));
   }
   return result;
 }
