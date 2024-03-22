@@ -21,7 +21,7 @@ import {
 export const failureMessage = {
   alreadyRegistered: t`Nano Contract already registered.`,
   walletNotReadyError: t`Wallet is not ready yet to register a Nano Contract.`,
-  addressNotMine: t`The informed address do not belongs to the wallet.`,
+  addressNotMine: t`The informed address does not belong to the wallet.`,
   nanoContractStateNotFound: t`Nano Contract not found.`,
   nanoContractStateFailure: t`Error while trying to get Nano Contract state.`,
 };

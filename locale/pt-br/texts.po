@@ -945,7 +945,7 @@ msgstr ""
 
 #: src/sagas/nanoContract.js:23
 msgid "Nano Contract already registered."
-msgstr "Nano Contracto já registrado."
+msgstr "Nano Contrato já registrado."
 
 #: src/sagas/nanoContract.js:24
 msgid "Wallet is not ready yet to register a Nano Contract."
@@ -961,7 +961,7 @@ msgstr "Nano Contrato não encontrado"
 
 #: src/sagas/nanoContract.js:27
 msgid "Error while trying to get Nano Contract state."
-msgstr "Erro ao obter o estado do Nano Contracto."
+msgstr "Erro ao obter o estado do Nano Contrato."
 
 #: src/sagas/networkSettings.js:88
 msgid "Custom Network Settings cannot be empty."
