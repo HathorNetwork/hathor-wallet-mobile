@@ -73,6 +73,7 @@ import {
   getRegisteredTokens,
   getNetworkSettings,
   getRegisteredTokenUids,
+  progressiveRetryRequest,
 } from './helpers';
 import { setKeychainPin } from '../utils';
 
@@ -287,7 +288,7 @@ export function* startWallet(action) {
 
 /**
  * This saga will load both HTR and DEFAULT_TOKEN (if they are different)
- * and dispatch actions to asynchronously load all registered tokens.
+ * and dispatch actions to asynchronously load all registered tokens forcefully.
  *
  * Will throw an error if the download fails for any token.
  * @returns {string[]} Array of token uid
@@ -298,9 +299,12 @@ export function* loadTokens() {
 
   // fetchTokenData will throw an error if the download failed, we should just
   // let it crash as throwing an error is the default behavior for loadTokens
-  yield call(fetchTokenData, htrUid);
+  yield call(fetchTokenData, htrUid, true);
 
   if (customTokenUid !== htrUid) {
+    // custom tokens doesn't need to be forced to download because its history status
+    // will be marked as invalidated, and history will get requested the next time a user
+    // enters the history screen.
     yield call(fetchTokenData, customTokenUid);
   }
 
@@ -485,9 +489,17 @@ export function* handleTx(action) {
     return acc;
   }, [{}, new Set([])],);
 
-  const txWalletAddresses = yield call(wallet.checkAddressesMine.bind(wallet), [...txAddresses]);
-  const tokensToDownload = [];
+  let txWalletAddresses = null;
+  try {
+    const request = async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses]);
+    txWalletAddresses = yield call(progressiveRetryRequest, request);
+  } catch (error) {
+    // Emmit a fatal error feedback to user and halts tx processing.
+    yield put(onExceptionCaptured(error, true));
+    return;
+  }
 
+  const tokensToDownload = [];
   for (const [tokenUid, addresses] of Object.entries(tokenAddressesMap)) {
     for (const [address] of addresses.entries()) {
       // txWalletAddresses should always have the address we requested, but we should double check
@@ -628,6 +640,7 @@ export function* onWalletReloadData() {
   }
 
   try {
+    // Here we force the download of tokens history
     const registeredTokens = yield call(loadTokens);
 
     const customTokenUid = DEFAULT_TOKEN.uid;
