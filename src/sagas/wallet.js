@@ -73,6 +73,7 @@ import {
   getRegisteredTokens,
   getNetworkSettings,
   getRegisteredTokenUids,
+  progressiveRetryRequest,
 } from './helpers';
 import { setKeychainPin } from '../utils';
 
@@ -488,9 +489,17 @@ export function* handleTx(action) {
     return acc;
   }, [{}, new Set([])],);
 
-  const txWalletAddresses = yield call(wallet.checkAddressesMine.bind(wallet), [...txAddresses]);
-  const tokensToDownload = [];
+  let txWalletAddresses = null;
+  try {
+    const request = async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses]);
+    txWalletAddresses = yield call(progressiveRetryRequest, request);
+  } catch (error) {
+    // Emmit a fatal error feedback to user and halts tx processing.
+    yield put(onExceptionCaptured(error, true));
+    return;
+  }
 
+  const tokensToDownload = [];
   for (const [tokenUid, addresses] of Object.entries(tokenAddressesMap)) {
     for (const [address] of addresses.entries()) {
       // txWalletAddresses should always have the address we requested, but we should double check
