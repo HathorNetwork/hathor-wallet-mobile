@@ -107,40 +107,40 @@ class HybridStore extends MemoryStore {
   }
 
   /**
-   * Return if a nano contract key is registered or not.
+   * Return true if a nano contract is registered, false otherwise.
    *
-   * @param {string} ncKey Address and nano contract concatenated.
+   * @param {string} ncId Nano contract ID.
    * @returns {Promise<boolean>} Nano contract data instance.
    * @async
    */
-  async isNanoContractRegistered(ncKey) {
+  async isNanoContractRegistered(ncId) {
     const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
-    return ncKey in contracts;
+    return ncId in contracts;
   }
 
   /**
    * Get a nano contract data on storage from the ncKey.
    *
-   * @param {string} ncKey Address and nano contract concatenated.
+   * @param {string} ncId Nano Contract ID.
    * @returns {Promise<INcData|null>} Nano contract data instance.
    * @async
    */
-  async getNanoContract(ncKey) {
+  async getNanoContract(ncId) {
     const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
-    return contracts[ncKey] || null;
+    return contracts[ncId] || null;
   }
 
   /**
    * Register a nano contract.
    *
-   * @param {string} ncKey Address and nano contract id concatenated.
+   * @param {string} ncId Nano Contract ID.
    * @param {INcData} ncValue Nano contract basic information.
    * @returns {Promise<void>}
    * @async
    */
-  async registerNanoContract(ncKey, ncValue) {
+  async registerNanoContract(ncId, ncValue) {
     const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
-    contracts[ncKey] = ncValue;
+    contracts[ncId] = ncValue;
     STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts)
   }
 }

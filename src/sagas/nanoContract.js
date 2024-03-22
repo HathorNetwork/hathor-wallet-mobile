@@ -56,14 +56,12 @@ export function* registerNanoContract({ payload }) {
   const { address, ncId } = payload;
   const storage = STORE.getStorage();
 
-  // check the Nano Contract is already registered
   const isRegistered = yield call(storage.isNanoContractRegistered, ncId);
   if (isRegistered) {
     yield put(nanoContractRegisterFailure(failureMessage.alreadyRegistered));
     return;
   }
 
-  // validate address belongs to the wallet
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
     yield put(nanoContractRegisterFailure(failureMessage.walletNotReadyError));
@@ -72,7 +70,6 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  // validate address belongs to the wallet
   const isAddressMine = yield call(wallet.isAddressMine.bind(wallet), address);
   if (!isAddressMine) {
     yield put(nanoContractRegisterFailure(failureMessage.addressNotMine));
@@ -90,7 +87,6 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  // persist using the pair address-nanocontract as key
   const nc = {
     address,
     ncId,
