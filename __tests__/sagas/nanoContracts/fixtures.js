@@ -119,10 +119,26 @@ export const fixtures = {
     addressNotMine: {
       isReady: () => true,
       isAddressMine: jest.fn().mockReturnValue(false),
+      storage: {
+        isNanoContractRegistered: jest.fn(),
+        registerNanoContract: jest.fn(),
+      },
     },
     readyAndMine: {
       isReady: () => true,
       isAddressMine: jest.fn().mockReturnValue(true),
+      storage: {
+        isNanoContractRegistered: jest.fn(),
+        registerNanoContract: jest.fn(),
+        getNanoContract: jest.fn(),
+      },
+    },
+  },
+  store: {
+    nanoContractAddressAlreadyRegistered: {
+      ncId: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
+      blueprintName: 'Bet',
+      addresses: new Set(['HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V']),
     },
   },
 };

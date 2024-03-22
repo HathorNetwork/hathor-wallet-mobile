@@ -1039,7 +1039,7 @@ export const nanoContractHistoryRequest = (ncEntry) => ({
 /**
  * Nano Contract history's chunk to load.
  * @param {{
- *   ncEntry: string;
+ *   ncId: string;
  *   history: Object;
  * }} chunkToLoad History chunk to load into store and redux.
  */
