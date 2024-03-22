@@ -492,7 +492,7 @@ export function* handleTx(action) {
   let txWalletAddresses = null;
   try {
     const request = async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses]);
-    txWalletAddresses = yield call(progressiveRetryRequest, request, 1);
+    txWalletAddresses = yield call(progressiveRetryRequest, request);
   } catch (error) {
     // Emmit a fatal error feedback to user and halts tx processing.
     yield put(onExceptionCaptured(error, true));
