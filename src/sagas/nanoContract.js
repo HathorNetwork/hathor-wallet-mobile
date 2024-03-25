@@ -27,22 +27,6 @@ export const failureMessage = {
 };
 
 /**
- * Calls Nano Contract API to retrieve Nano Contract state.
- * @param {string} ncId Nano Contract ID
- * @returns {{
- *   ncState?: Object,
- *   error?: Error,
- * }} Returns either an object containing ncState or an error.
- */
-export async function getNanoContractState(ncId) {
-  try {
-    return { ncState: { ...state } };
-  } catch (err) {
-    return { error: err };
-  }
-}
-
-/**
  * Process Nano Contract registration request.
  * @param {{
  *   payload: {
@@ -53,19 +37,18 @@ export async function getNanoContractState(ncId) {
  */
 export function* registerNanoContract({ payload }) {
   const { address, ncId } = payload;
-  const storage = STORE.getStorage();
-
-  const isRegistered = yield call(storage.isNanoContractRegistered, ncId);
-  if (isRegistered) {
-    yield put(nanoContractRegisterFailure(failureMessage.alreadyRegistered));
-    return;
-  }
 
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
     yield put(nanoContractRegisterFailure(failureMessage.walletNotReadyError));
     // This will show user an error modal with the option to send the error to sentry.
     yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), false));
+    return;
+  }
+
+  const isRegistered = yield call(wallet.storage.isNanoContractRegistered, ncId);
+  if (isRegistered) {
+    yield put(nanoContractRegisterFailure(failureMessage.alreadyRegistered));
     return;
   }
 
@@ -93,7 +76,7 @@ export function* registerNanoContract({ payload }) {
     blueprintId: ncState.blueprint_id,
     blueprintName: ncState.blueprint_name
   };
-  yield call(storage.registerNanoContract, ncId, nc);
+  yield call(wallet.storage.registerNanoContract, ncId, nc);
 
   // emit action NANOCONTRACT_REGISTER_SUCCESS
   yield put(nanoContractRegisterSuccess({ entryKey: ncId, entryValue: nc }));

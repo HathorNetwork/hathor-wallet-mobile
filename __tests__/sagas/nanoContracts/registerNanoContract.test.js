@@ -1,7 +1,6 @@
 import { put } from 'redux-saga/effects';
-import * as hathorLib from '@hathor/wallet-lib';
 import { jest, test, expect, beforeEach, describe } from '@jest/globals';
-import { getNanoContractState, registerNanoContract, failureMessage } from '../../../src/sagas/nanoContract';
+import { registerNanoContract, failureMessage } from '../../../src/sagas/nanoContract';
 import { nanoContractRegisterFailure, nanoContractRegisterRequest, onExceptionCaptured, types } from '../../../src/actions';
 import { STORE } from '../../../src/store';
 
@@ -50,10 +49,18 @@ const fixtures = {
     addressNotMine: {
       isReady: () => true,
       isAddressMine: jest.fn().mockReturnValue(false),
+      storage: {
+        isNanoContractRegistered: jest.fn(),
+        registerNanoContract: jest.fn(),
+      },
     },
     readyAndMine: {
       isReady: () => true,
       isAddressMine: jest.fn().mockReturnValue(true),
+      storage: {
+        isNanoContractRegistered: jest.fn(),
+        registerNanoContract: jest.fn(),
+      },
     },
   },
 };
@@ -70,8 +77,10 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
-    // call isNanoContractRegistered
+    // call select wallet
     gen.next();
+    // feed back the selector
+    gen.next(fixtures.wallet.addressNotMine);
 
     // assert failure
     // feed back isNanoContractRegistered
@@ -87,10 +96,8 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
-    // call isNanoContractRegistered
+    // call select wallet
     gen.next();
-    // feed back isNanoContractRegistered
-    gen.next(false);
 
     // assert failure
     // feed back the selector and advance generator to failure
@@ -112,12 +119,12 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
-    // call isNanoContractRegistered
+    // call select wallet
     gen.next();
-    // feed back isNanoContractRegistered
-    gen.next(false);
     // feed back the selector
     gen.next(fixtures.wallet.addressNotMine);
+    // feed back isNanoContractRegistered
+    gen.next(false);
 
     // assert failure
     // resume isAddressMine call and advance generator to failure
@@ -133,12 +140,12 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
-    // call isNanoContractRegistered
+    // call select wallet
     gen.next();
-    // feed back isNanoContractRegistered
-    gen.next(false);
     // feed back the selector
     gen.next(fixtures.wallet.readyAndMine);
+    // feed back isNanoContractRegistered
+    gen.next(false);
     // feed back isAddressMine call
     gen.next(fixtures.wallet.readyAndMine.isAddressMine());
 
@@ -156,12 +163,12 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
-    // call isNanoContractRegistered
+    // call select wallet
     gen.next();
-    // feed back isNanoContractRegistered
-    gen.next(false);
     // feed back the selector
     gen.next(fixtures.wallet.readyAndMine);
+    // feed back isNanoContractRegistered
+    gen.next(false);
     // feed back isAddressMine call
     gen.next(fixtures.wallet.readyAndMine.isAddressMine());
     // feed back getNanoContractState call
