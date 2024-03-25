@@ -26,3 +26,9 @@ if (typeof localStorage !== 'undefined') {
 // If using the crypto shim, uncomment the following line to ensure
 // crypto is loaded first, so it can populate global.crypto
 require('crypto')
+
+const TextEncoder = require('text-encoding').TextEncoder;
+const TextDecoder = require('text-encoding').TextDecoder;
+
+global.TextDecoder = TextDecoder;
+global.TextEncoder = TextEncoder;
