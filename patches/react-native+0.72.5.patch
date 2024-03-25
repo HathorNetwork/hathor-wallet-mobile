@@ -1,0 +1,42 @@
+diff --git a/node_modules/react-native/Libraries/Core/InitializeCore.js b/node_modules/react-native/Libraries/Core/InitializeCore.js
+index 25377f6..b0dd11d 100644
+--- a/node_modules/react-native/Libraries/Core/InitializeCore.js
++++ b/node_modules/react-native/Libraries/Core/InitializeCore.js
+@@ -24,6 +24,37 @@
+ 
+ 'use strict';
+ 
++const Platform = require('../Utilities/Platform');
++
++const IS_LOCKDOWN_ENABLED = true;
++
++// This piece of code was taken from this PR: https://github.com/MetaMask/metamask-mobile/pull/6586/files
++// which is the reference implementation of SES On react-native
++if (IS_LOCKDOWN_ENABLED && Platform.OS === 'ios' && !global?.HermesInternal) {
++  require('../../../../lockdown.umd.js');
++
++  /**
++   * Without consoleTaming: 'unsafe' causes:
++   * - Attempting to define property on object that is not extensible.
++   * Without errorTrapping 'none' causes:
++   * - TypeError: undefined is not a function (near '...globalThis.process.on...')
++   * Without unhandledRejectionTrapping 'none' causes:
++   * - TypeError: globalThis.process.on is not a function. (In 'globalThis.process.on('unhandledRejection', h.unhandledRejectionHandler)', 'globalThis.process.on' is undefined)
++   * overrideTaming 'severe' is ideal (default override?)
++   * Nb: global.process is only partially shimmed, which confuses SES
++   * Nb: All are Unhandled JS Exceptions, since we call lockdown before setUpErrorHandling
++  */
++  repairIntrinsics({
++    consoleTaming: 'unsafe',
++    errorTrapping: 'none',
++    unhandledRejectionTrapping: 'none',
++    overrideTaming: 'severe',
++  });
++
++  hardenIntrinsics();
++}
++
++
+ const start = Date.now();
+ 
+ require('./setUpGlobals');
