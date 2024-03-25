@@ -61,6 +61,8 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
+import { Core } from '@walletconnect/core';
+import { Web3Wallet } from '@walletconnect/web3wallet';
 
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
@@ -93,12 +95,6 @@ const ERROR_CODES = {
   USER_REJECTED_METHOD: 5002,
   INVALID_PAYLOAD: 5003,
 };
-
-// We're mocking it here because we don't want to add the walletconnect
-// libraries in our production build. If you really want to add it, just run the
-// src/walletconnect.sh script
-const Core = class {};
-const Web3Wallet = class {};
 
 function* isWalletConnectEnabled() {
   const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
