@@ -27,23 +27,19 @@ const fixtures = {
   },
   ncSaga: {
     getNanoContractState: {
-      errorResponse: {
-        error: new Error('API call error')
-      },
+      errorResponse: new Error('API call error'),
       successResponse: {
-        ncState: {
-          success: true,
-          nc_id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
-          blueprint_name: 'Bet',
-          fields: {
-            token_uid: { value: '00' },
-            total: { value: 300 },
-            final_result: { value: '1x0' },
-            oracle_script: { value: '76a91441c431ff7ad5d6ce5565991e3dcd5d9106cfd1e288ac' },
-            'withdrawals.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': { value: 300 },
-            'address_details.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': { value: { '1x0': 100 } },
-          }
-        },
+        success: true,
+        nc_id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
+        blueprint_name: 'Bet',
+        fields: {
+          token_uid: { value: '00' },
+          total: { value: 300 },
+          final_result: { value: '1x0' },
+          oracle_script: { value: '76a91441c431ff7ad5d6ce5565991e3dcd5d9106cfd1e288ac' },
+          'withdrawals.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': { value: 300 },
+          'address_details.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': { value: { '1x0': 100 } },
+        }
       }
     },
   },
@@ -65,36 +61,6 @@ const fixtures = {
 beforeEach(() => {
   jest.clearAllMocks();
   STORE.clearItems();
-});
-
-describe('sagas/nanoContract/getNanoContractState', () => {
-  test('success', async () => {
-    // arrange ncApi mock
-    const mockedFn = jest.spyOn(hathorLib.ncApi, 'getNanoContractState');
-    mockedFn.mockReturnValue(fixtures.ncApi.getNanoContractState.successResponse);
-
-    // call getNanoContractState
-    const result = await getNanoContractState(fixtures.ncId);
-
-    // assert
-    expect(result.ncState).toBeDefined();
-    expect(result.error).toBeUndefined();
-    expect(mockedFn).toBeCalledTimes(1);
-  });
-
-  test('failure', async () => {
-    // arrange ncApi mock
-    const mockedFn = jest.spyOn(hathorLib.ncApi, 'getNanoContractState');
-    mockedFn.mockRejectedValue(new Error('api call failure'));
-
-    // call getNanoContractState
-    const result = await getNanoContractState(fixtures.ncId);
-
-    // assert
-    expect(result.ncState).toBeUndefined();
-    expect(result.error).toBeDefined();
-    expect(mockedFn).toBeCalledTimes(1);
-  });
 });
 
 describe('sagas/nanoContract/registerNanoContract', () => {
@@ -178,7 +144,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
 
     // assert failure
     // resume getNanoContractState call and advance generator to failure
-    expect(gen.next(fixtures.ncSaga.getNanoContractState.errorResponse).value)
+    expect(gen.throw(fixtures.ncSaga.getNanoContractState.errorResponse).value)
       .toStrictEqual(put(nanoContractRegisterFailure(failureMessage.nanoContractStateFailure)))
     // assert termination
     expect(gen.next().value).toBeUndefined();

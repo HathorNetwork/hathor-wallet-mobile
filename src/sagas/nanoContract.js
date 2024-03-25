@@ -36,7 +36,6 @@ export const failureMessage = {
  */
 export async function getNanoContractState(ncId) {
   try {
-    const state = await ncApi.getNanoContractState(ncId);
     return { ncState: { ...state } };
   } catch (err) {
     return { error: err };
@@ -76,9 +75,10 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  // validate nanocontract exists
-  const { ncState, error } = yield call(getNanoContractState, ncId)
-  if (error) {
+  let ncState = null;
+  try {
+    ncState = yield call(ncApi.getNanoContractState, ncId);
+  } catch (error) {
     if (error instanceof NanoRequest404Error) {
       yield put(nanoContractRegisterFailure(failureMessage.nanoContractStateNotFound));
     } else {
