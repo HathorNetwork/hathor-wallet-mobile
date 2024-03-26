@@ -10,7 +10,6 @@ import {
 } from 'redux-saga/effects';
 import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
-import { STORE } from '../store';
 import {
   nanoContractRegisterFailure,
   nanoContractRegisterSuccess,
