@@ -230,6 +230,28 @@ const initialState = {
   networkSettings: PRE_SETTINGS_MAINNET,
   networkSettingsInvalid: {},
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
+  nanoContract: {
+    /**
+     * registeredContracts {{
+     *   [ncId: string]: {
+     *     address: string,
+     *     ncId: string,
+     *     blueprintId: string,
+     *     blueprintName: string,
+     *   }
+     * }} registered Nano Contracts per wallet address with basic information.
+     * @example
+     * {
+     *   '00c30fc': {
+     *     address: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
+     *     ncId: '00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185',
+     *     blueprintId: 0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4,
+     *     blueprintName: 'Swap',
+     *   },
+     * }
+     */
+    registeredContracts: {},
+  },
 };
 
 export const reducer = (state = initialState, action) => {
@@ -386,6 +408,8 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateFailure(state);
     case types.NETWORKSETTINGS_UPDATE_INVALID:
       return onNetworkSettingsUpdateInvalid(state, action);
+    case types.NANOCONTRACT_REGISTER_SUCCESS:
+      return onNanoContractRegisterSuccess(state, action);
     default:
       return state;
   }
@@ -1209,4 +1233,29 @@ export const onNetworkSettingsUpdateInvalid = (state, { payload }) => ({
   ...state,
   networkSettingsInvalid: payload,
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     entryKey: string,
+ *     entryValue: {
+ *       address: string,
+ *       ncId: string,
+ *       blueprintId: string,
+ *       blueprintName: string
+ *     }
+ *   }
+  * }} action
+ */
+export const onNanoContractRegisterSuccess = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    registeredContracts: {
+      ...state.nanoContract.registeredContracts,
+      [payload.entryKey]: payload.entryValue,
+    }
+  },
 });

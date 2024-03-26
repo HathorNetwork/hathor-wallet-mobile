@@ -137,6 +137,12 @@ export const types = {
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
   /* It updates the redux state of network settings status. */
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
+  /* It initiates a registration process of a Nano Contract.  */
+  NANOCONTRACT_REGISTER_REQUEST: 'NANOCONTRACT_REGISTER_REQUEST',
+  /* It indicates a Nano Contract registration is couldn't complete.  */
+  NANOCONTRACT_REGISTER_FAILURE: 'NANOCONTRACT_REGISTER_FAILURE',
+  /* It indicates a Nano Contract registration is complete.  */
+  NANOCONTRACT_REGISTER_SUCCESS: 'NANOCONTRACT_REGISTER_SUCCESS',
 };
 
 export const featureToggleInitialized = () => ({
@@ -974,4 +980,37 @@ export const networkSettingsUpdateInvalid = (errors) => ({
  */
 export const networkSettingsUpdateReady = () => ({
   type: types.NETWORKSETTINGS_UPDATE_READY,
+});
+
+/**
+ * Request a Nano Contract to be registered.
+ * @param {{
+ *   address: string,
+ *   ncId: string,
+ * }} registry Inputs to register a Nano Contract
+ */
+export const nanoContractRegisterRequest = (registerRequest) => ({
+  type: types.NANOCONTRACT_REGISTER_REQUEST,
+  payload: registerRequest,
+});
+
+/**
+ * Nano Contract registration has failed.
+ * @param {string} error Registration failure reason.
+ */
+export const nanoContractRegisterFailure = (error) => ({
+  type: types.NANOCONTRACT_REGISTER_FAILURE,
+  payload: { error }
+});
+
+/**
+ * Nano Contract registration has finished with success.
+ * @param {{
+ *   entryKey: string,
+ *   entryValue: Object,
+ * }} ncEntry basic information of Nano Contract registered.
+ */
+export const nanoContractRegisterSuccess = (ncEntry) => ({
+  type: types.NANOCONTRACT_REGISTER_SUCCESS,
+  payload: ncEntry,
 });
