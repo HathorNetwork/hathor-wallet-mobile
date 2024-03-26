@@ -756,28 +756,28 @@ msgstr ""
 msgid "Unregister"
 msgstr ""
 
-#: src/screens/UnregisterToken.js:112
+#: src/screens/UnregisterToken.js:108
 msgid "UNREGISTER TOKEN"
 msgstr ""
 
-#: src/screens/UnregisterToken.js:117
+#: src/screens/UnregisterToken.js:113
 msgid ""
 "If you unregister this token **you won't be able to execute operations with "
 "it**, unless you register it again."
 msgstr ""
 
-#: src/screens/UnregisterToken.js:120
+#: src/screens/UnregisterToken.js:116
 msgid ""
 "You won't lose your tokens, they will just not appear on this wallet "
 "anymore."
 msgstr ""
 
-#: src/screens/UnregisterToken.js:124
+#: src/screens/UnregisterToken.js:120
 #, javascript-format
 msgid "I want to unregister the token **${ tokenLabel }**"
 msgstr ""
 
-#: src/screens/UnregisterToken.js:139
+#: src/screens/UnregisterToken.js:135
 msgid "Unregister token"
 msgstr ""
 
@@ -912,6 +912,26 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
+#: src/sagas/nanoContract.js:22
+msgid "Nano Contract already registered."
+msgstr ""
+
+#: src/sagas/nanoContract.js:23
+msgid "Wallet is not ready yet to register a Nano Contract."
+msgstr ""
+
+#: src/sagas/nanoContract.js:24
+msgid "The informed address does not belong to the wallet."
+msgstr ""
+
+#: src/sagas/nanoContract.js:25
+msgid "Nano Contract not found."
+msgstr ""
+
+#: src/sagas/nanoContract.js:26
+msgid "Error while trying to get Nano Contract state."
+msgstr ""
+
 #: src/sagas/networkSettings.js:88
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
@@ -946,23 +966,23 @@ msgstr ""
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 
-#: src/sagas/pushNotification.js:57
+#: src/sagas/pushNotification.js:59
 msgid "Transaction"
 msgstr ""
 
-#: src/sagas/pushNotification.js:58
+#: src/sagas/pushNotification.js:60
 msgid "Open"
 msgstr ""
 
-#: src/components/AskForPushNotification.js:21
+#: src/components/AskForPushNotification.js:22
 msgid "Do you want to enable push notifications for this wallet?"
 msgstr ""
 
-#: src/components/AskForPushNotification.js:22
+#: src/components/AskForPushNotification.js:23
 msgid "You can always change this later in the settings menu"
 msgstr ""
 
-#: src/components/AskForPushNotification.js:23
+#: src/components/AskForPushNotification.js:24
 msgid "Yes, enable"
 msgstr ""
 

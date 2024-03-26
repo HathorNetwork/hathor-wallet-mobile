@@ -112,6 +112,7 @@ export const pushNotificationKey = {
   available: 'pushNotification:available',
   notificationError: 'pushNotification:notificationError',
 };
+
 /**
  * this is the message key for localization of new transaction when show amount is enabled
  */

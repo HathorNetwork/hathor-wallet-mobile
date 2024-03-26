@@ -13,10 +13,12 @@ import { NETWORK_MAINNET } from './constants';
 export const ACCESS_DATA_KEY = 'asyncstorage:access';
 export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
 export const STORE_VERSION_KEY = 'asyncstorage:version';
+export const REGISTERED_NANO_CONTRACTS_KEY = 'asyncstorage:registeredNanoContracts';
 
 export const walletKeys = [
   ACCESS_DATA_KEY,
   REGISTERED_TOKENS_KEY,
+  REGISTERED_NANO_CONTRACTS_KEY,
 ];
 
 /* eslint-disable class-methods-use-this */
@@ -102,6 +104,44 @@ class HybridStore extends MemoryStore {
   async isTokenRegistered(tokenUid) {
     const registeredTokens = STORE.getItem(REGISTERED_TOKENS_KEY) || {};
     return tokenUid in registeredTokens;
+  }
+
+  /**
+   * Return true if a nano contract is registered, false otherwise.
+   *
+   * @param {string} ncId Nano contract ID.
+   * @returns {Promise<boolean>} Nano contract data instance.
+   * @async
+   */
+  async isNanoContractRegistered(ncId) {
+    const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
+    return ncId in contracts;
+  }
+
+  /**
+   * Get a nano contract data on storage from the ncKey.
+   *
+   * @param {string} ncId Nano Contract ID.
+   * @returns {Promise<INcData|null>} Nano contract data instance.
+   * @async
+   */
+  async getNanoContract(ncId) {
+    const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
+    return contracts[ncId] || null;
+  }
+
+  /**
+   * Register a nano contract.
+   *
+   * @param {string} ncId Nano Contract ID.
+   * @param {INcData} ncValue Nano contract basic information.
+   * @returns {Promise<void>}
+   * @async
+   */
+  async registerNanoContract(ncId, ncValue) {
+    const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
+    contracts[ncId] = ncValue;
+    STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts)
   }
 }
 /* eslint-enable class-methods-use-this */
