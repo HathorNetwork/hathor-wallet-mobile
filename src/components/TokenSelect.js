@@ -50,7 +50,6 @@ const TokenSelect = (props) => {
 
     return (
       <TouchableHighlight
-        style={index === 0 ? styles.firstItemWrapper : null}
         onPress={() => { props.onItemPress(item); }}
         underlayColor={COLORS.primaryOpacity30}
       >
@@ -101,31 +100,39 @@ const TokenSelect = (props) => {
           extraData={[props.tokensBalance, props.selectedToken.uid]}
           renderItem={renderItem}
           keyExtractor={(item, index) => item.uid}
+          ItemSeparatorComponent={ItemSeparator}
         />
       </View>
     </View>
   );
 };
 
+const ItemSeparator = () => (
+  <View style={{ width: '100%', height: 1, backgroundColor: COLORS.borderColor }} />
+);
+
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
   },
   listWrapper: {
     alignSelf: 'stretch',
-    flex: 1,
     marginTop: 16,
     backgroundColor: COLORS.backgroundColor,
     marginHorizontal: 16,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
     shadowOffset: { height: 2, width: 0 },
     shadowRadius: 4,
     shadowColor: COLORS.textColor,
     shadowOpacity: 0.08,
+    paddingTop: 16,
+    paddingBottom: 20,
   },
   itemWrapper: {
     height: 80,
@@ -133,12 +140,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderColor: COLORS.borderColor,
-  },
-  firstItemWrapper: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
   },
   itemLeftWrapper: {
     flexDirection: 'row',
