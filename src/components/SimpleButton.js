@@ -12,6 +12,7 @@ import {
 import { PRIMARY_COLOR } from '../constants';
 
 const SimpleButton = (props) => {
+  const { children } = props;
   const renderTitle = () => {
     if (props.title) {
       const textStyles = [styles.text, props.textStyle];
@@ -40,6 +41,7 @@ const SimpleButton = (props) => {
     <TouchableOpacity onPress={props.onPress} style={[styles.container, props.containerStyle]}>
       {renderTitle()}
       {renderIcon()}
+      {children}
     </TouchableOpacity>
   );
 };
