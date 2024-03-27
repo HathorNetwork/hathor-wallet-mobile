@@ -18,6 +18,7 @@ import Spinner from './Spinner';
 import { renderValue, isTokenNFT } from '../utils';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
+import { HathorFlatList } from './HathorFlatList.component';
 
 /**
  * @typedef TokenBalance
@@ -93,16 +94,14 @@ const TokenSelect = (props) => {
   return (
     <View style={styles.wrapper}>
       {props.header}
-      <View style={styles.listWrapper}>
-        <FlatList
-          data={tokens}
-          // use extraData to make sure list updates (props.tokens might remain the same object)
-          extraData={[props.tokensBalance, props.selectedToken.uid]}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => item.uid}
-          ItemSeparatorComponent={ItemSeparator}
-        />
-      </View>
+      <HathorFlatList
+        data={tokens}
+        // use extraData to make sure list updates (props.tokens might remain the same object)
+        extraData={[props.tokensBalance, props.selectedToken.uid]}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => item.uid}
+        ItemSeparatorComponent={ItemSeparator}
+      />
     </View>
   );
 };
@@ -117,22 +116,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
-  },
-  listWrapper: {
-    alignSelf: 'stretch',
-    marginTop: 16,
-    backgroundColor: COLORS.backgroundColor,
-    marginHorizontal: 16,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
-    shadowOffset: { height: 2, width: 0 },
-    shadowRadius: 4,
-    shadowColor: COLORS.textColor,
-    shadowOpacity: 0.08,
-    paddingTop: 16,
-    paddingBottom: 20,
   },
   itemWrapper: {
     height: 80,
