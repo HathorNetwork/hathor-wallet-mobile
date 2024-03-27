@@ -29,7 +29,8 @@ describe('sagas/nanoContract/fetchHistory', () => {
       getNetworkObject: jest.fn(),
       storage: {
         isAddressMine: jest.fn(),
-      }};
+      },
+    };
     // arrange ncApi mock
     const mockedNcApi = jest.mocked(ncApi);
     mockedNcApi.getNanoContractHistory
@@ -103,7 +104,7 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     // feed back isNanoContractRegistered
     const fetchHistoryCall = gen.next(true).value;
 
-    // throws on fetchHistory call 
+    // throws on fetchHistory call
     const failureCall = gen.throw(new Error('history')).value;
     const onErrorCall = gen.next().value;
 
@@ -128,7 +129,7 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     // feed back fetchHistory
     gen.next(fixtures.ncSaga.fetchHistory.successResponse);
     // feed back getNanoContract
-    gen.next({ ncId }).value;
+    gen.next({ ncId });
     // call registerNanoContract and yield put nanoContractHistoryLoad
     const historyLoadCall = gen.next().value;
 

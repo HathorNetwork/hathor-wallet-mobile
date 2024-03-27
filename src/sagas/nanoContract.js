@@ -116,7 +116,7 @@ export function* registerNanoContract({ payload }) {
  * @property {string[]} tokens
  * @property {number} version
  * @property {number} weight
- * @property {boolean} is_voided 
+ * @property {boolean} is_voided
  *
  * @typedef {Object} RawNcTxHistoryResponse
  * @property {boolean} success
@@ -158,9 +158,13 @@ export async function fetchHistory(ncId, count, after, wallet) {
 
   const history = [];
   for (const rawTx of rawHistory) {
-    const caller = addressUtils.getAddressFromPubkey(rawTx.nc_pubkey, wallet.getNetworkObject()).base58;
+    const network = wallet.getNetworkObject();
+    const caller = addressUtils.getAddressFromPubkey(rawTx.nc_pubkey, network).base58;
+    // eslint-disable-next-line no-await-in-loop
     const isMine = await wallet.storage.isAddressMine(caller);
-    const balance = await transactionUtils.getTxBalance.bind(transactionUtils)(rawTx, wallet.storage);
+    const getTxBalanceFn = transactionUtils.getTxBalance.bind(transactionUtils);
+    // eslint-disable-next-line no-await-in-loop
+    const balance = await getTxBalanceFn(rawTx, wallet.storage);
     const tx = {
       txId: rawTx.hash,
       timestamp: rawTx.timestamp,
