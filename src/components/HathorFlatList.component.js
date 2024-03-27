@@ -32,6 +32,7 @@ const ItemSeparator = () => (
 
 const styles = StyleSheet.create({
   wrapper: {
+    flexShrink: 1,
     alignSelf: 'stretch',
     marginTop: 16,
     marginBottom: 24,
