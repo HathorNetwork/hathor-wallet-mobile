@@ -8,7 +8,6 @@
 import React from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   StyleSheet,
   Text,
   View,
@@ -39,6 +38,7 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
 import { TxHistory } from '../models';
 import { HathorFlatList } from '../components/HathorFlatList.component';
+import { ActionDot } from '../components/ActionDot.icon';
 
 /**
  * txList {Array} array with transactions of the selected token
@@ -203,10 +203,9 @@ class MainScreen extends React.Component {
     const renderRightElement = () => {
       if (this.props.selectedToken.uid !== hathorConstants.HATHOR_TOKEN_CONFIG.uid) {
         return (
-          <SimpleButton
-            icon={infoIcon}
-            onPress={this.tokenInfo}
-          />
+          <SimpleButton onPress={this.tokenInfo}>
+            <ActionDot />
+          </SimpleButton>
         );
       }
 
