@@ -37,6 +37,7 @@ import { fetchMoreHistory, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
+import { TxHistory } from '../models';
 
 /**
  * txList {Array} array with transactions of the selected token
@@ -320,7 +321,8 @@ class TxListItem extends React.Component {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: COLORS.backgroundColor,
-      height: 80,
+      minHeight: 80,
+      paddingVertical: 16,
     },
     firstItemBorder: {
       borderTopLeftRadius: 16,
@@ -454,6 +456,11 @@ class TxListItem extends React.Component {
   }
 
   render() {
+    /**
+     * @type {{
+     *   item: TxHistory;
+     * }} TxListItem properties
+     */
     const { item } = this.props;
     const style = this.getStyle(item);
     const image = this.getImage(item);
@@ -480,6 +487,7 @@ class TxListItem extends React.Component {
             <View style={style.middleView}>
               <Text style={style.description}>{description}</Text>
               <Text style={style.timestamp}>{timestamp}</Text>
+              <Text style={style.timestamp}>{item.getVersionInfo().label}</Text>
             </View>
             <Text style={style.balance} numberOfLines={1}>{balanceStr}</Text>
           </View>

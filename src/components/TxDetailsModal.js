@@ -10,12 +10,13 @@ import { Text, StyleSheet, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { t } from 'ttag';
 
-import { getShortHash, getTokenLabel, renderValue } from '../utils';
+import { getShortContent, getShortHash, getTokenLabel, renderValue } from '../utils';
 import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 import CopyClipboard from './CopyClipboard';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
+import { TxHistory } from '../models';
 
 class TxDetailsModal extends Component {
   style = StyleSheet.create({
@@ -29,11 +30,21 @@ class TxDetailsModal extends Component {
   });
 
   render() {
+    /**
+     * @type {{
+     *   token: unknown;
+     *   tx: TxHistory;
+     *   isNFT: boolean;
+     * }} TxDetailsModal properties
+     */
     const { token, tx, isNFT } = this.props;
     const fullTokenStr = getTokenLabel(token);
     const description = tx.getDescription(token);
     const timestampStr = tx.getTimestampFormat();
     const idStr = getShortHash(tx.txId, 12);
+    const ncId = tx.ncId && getShortHash(tx.ncId, 7);
+    const ncMethod = tx.ncMethod;
+    const ncCallerAddress = tx.ncCaller && getShortContent(tx.ncCaller.base58, 7);
     const txIdComponent = (
       <CopyClipboard
         text={idStr}
@@ -60,6 +71,13 @@ class TxDetailsModal extends Component {
               <ListItem title={t`Description`} text={description} />
               <ListItem title={t`Date & Time`} text={timestampStr} />
               <ListItem title={t`ID`} text={txIdComponent} />
+              {tx.isNanoContract() &&
+                <>
+                  <ListItem title={t`Nano Contract ID`} text={ncId} />
+                  <ListItem title={t`Nano Contract Method`} text={ncMethod} />
+                  <ListItem title={t`Nano Contract Caller`} text={ncCallerAddress} />
+                </>
+              }
               <PublicExplorerListButton txId={tx.txId} />
             </View>
           </View>

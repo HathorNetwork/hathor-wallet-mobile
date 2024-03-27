@@ -31,6 +31,11 @@ export const getShortHash = (hash, length = 4) => (
   `${hash.substring(0, length)}...${hash.substring(64 - length, 64)}`
 );
 
+export const getShortContent = (content, length = 4) => (
+  `${content.substring(0, length)}...${content.substring(content.length - length, content.length)}`
+);
+
+
 /**
  * Get amount text value and transform in its integer value
  *
@@ -329,21 +334,14 @@ export const changePin = async (wallet, oldPin, newPin) => {
 };
 
 /**
- * Map history element to expected TxHistory model object
+ * Curry function that maps a raw history element to an expected TxHistory model object.
  *
- * element {Object} Tx history element with {txId, timestamp, balance, voided?}
- * token {string} Token uid
+ * @param {string} tokenUid - Token uid
+ *
+ * @returns {(rawTxHistory: Object) => TxHistory} A function that maps a raw transaction history element to a TxHistory object
  */
-export const mapTokenHistory = (element, token) => {
-  const data = {
-    txId: element.txId,
-    timestamp: element.timestamp,
-    balance: element.balance,
-    // in wallet service this comes as 0/1 and in the full node comes with true/false
-    isVoided: Boolean(element.voided),
-    tokenUid: token
-  };
-  return new TxHistory(data);
+export const mapToTxHistory = (tokenUid) => (rawTxHistory) => {
+  return TxHistory.from(rawTxHistory, tokenUid);
 };
 
 /**
