@@ -131,6 +131,7 @@
     "setupFiles": [
       "<rootDir>/jestMockSetup.js"
     ],
-    "cacheDirectory": ".jest/cache"
+    "cacheDirectory": ".jest/cache",
+    "testMatch": ["**/*.test.js"]
   }
 }

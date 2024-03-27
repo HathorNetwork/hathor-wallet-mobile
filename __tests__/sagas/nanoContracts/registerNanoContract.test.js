@@ -3,67 +3,7 @@ import { jest, test, expect, beforeEach, describe } from '@jest/globals';
 import { registerNanoContract, failureMessage } from '../../../src/sagas/nanoContract';
 import { nanoContractRegisterFailure, nanoContractRegisterRequest, onExceptionCaptured, types } from '../../../src/actions';
 import { STORE } from '../../../src/store';
-
-const fixtures = {
-  address: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
-  ncId: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
-  ncApi: {
-    getNanoContractState: {
-      successResponse: {
-        success: true,
-        nc_id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
-        blueprint_name: 'Bet',
-        fields: {
-          token_uid: { value: '00' },
-          total: { value: 300 },
-          final_result: { value: '1x0' },
-          oracle_script: { value: '76a91441c431ff7ad5d6ce5565991e3dcd5d9106cfd1e288ac' },
-          'withdrawals.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': { value: 300 },
-          'address_details.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': { value: { '1x0': 100 } },
-        }
-      }
-    }
-  },
-  ncSaga: {
-    getNanoContractState: {
-      errorResponse: new Error('API call error'),
-      successResponse: {
-        success: true,
-        nc_id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
-        blueprint_name: 'Bet',
-        fields: {
-          token_uid: { value: '00' },
-          total: { value: 300 },
-          final_result: { value: '1x0' },
-          oracle_script: { value: '76a91441c431ff7ad5d6ce5565991e3dcd5d9106cfd1e288ac' },
-          'withdrawals.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': { value: 300 },
-          'address_details.a\'Wi8zvxdXHjaUVAoCJf52t3WovTZYcU9aX6\'': { value: { '1x0': 100 } },
-        }
-      }
-    },
-  },
-  wallet: {
-    notReady: {
-      isReady: () => false,
-    },
-    addressNotMine: {
-      isReady: () => true,
-      isAddressMine: jest.fn().mockReturnValue(false),
-      storage: {
-        isNanoContractRegistered: jest.fn(),
-        registerNanoContract: jest.fn(),
-      },
-    },
-    readyAndMine: {
-      isReady: () => true,
-      isAddressMine: jest.fn().mockReturnValue(true),
-      storage: {
-        isNanoContractRegistered: jest.fn(),
-        registerNanoContract: jest.fn(),
-      },
-    },
-  },
-};
+import { fixtures } from './fixtures';
 
 beforeEach(() => {
   jest.clearAllMocks();

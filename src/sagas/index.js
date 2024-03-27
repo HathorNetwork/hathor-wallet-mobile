@@ -14,6 +14,7 @@ import { saga as featureToggleSagas } from './featureToggle';
 import { saga as permissionsSagas } from './permissions';
 import { saga as walletConnectSagas } from './walletConnect';
 import { saga as networkSettingsSagas } from './networkSettings';
+import { saga as nanoContractSagas } from './nanoContract';
 
 const sagas = [
   walletSagas,
@@ -24,6 +25,7 @@ const sagas = [
   featureToggleSagas,
   permissionsSagas,
   walletConnectSagas,
+  nanoContractSagas,
 ];
 
 function* defaultSaga() {
