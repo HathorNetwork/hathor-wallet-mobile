@@ -215,7 +215,7 @@ class MainScreen extends React.Component {
 
     return (
       <View style={{
-        flex: 1, backgroundColor: COLORS.lowContrastDetail, justifyContent: 'center', alignItems: 'center',
+        flex: 1, backgroundColor: COLORS.lowContrastDetail, justifyContent: 'flex-start', alignItems: 'center',
       }}
       >
         {this.state.modal}
@@ -230,9 +230,7 @@ class MainScreen extends React.Component {
           token={this.props.selectedToken}
           isNFT={this.isNFT()}
         />
-        <View style={{ flex: 1, justifyContent: 'center', alignSelf: 'stretch' }}>
-          {renderTxHistory()}
-        </View>
+        {renderTxHistory()}
         <OfflineBar />
       </View>
     );
