@@ -225,6 +225,7 @@ export function* fetchTokenMetadata({ tokenId }) {
       try {
         const data = yield call(metadataApi.getDagMetadata, tokenId, network);
 
+        log.debug('Success fetching token metadata.');
         yield put({
           type: types.TOKEN_FETCH_METADATA_SUCCESS,
           tokenId,
@@ -232,6 +233,7 @@ export function* fetchTokenMetadata({ tokenId }) {
         });
         return;
       } catch (e) {
+        log.error('Error trying to get DAG metadata.', e);
         yield delay(1000); // Wait 1s before trying again
       }
     }
@@ -243,7 +245,7 @@ export function* fetchTokenMetadata({ tokenId }) {
       tokenId,
     });
     // eslint-disable-next-line
-    console.log('Error downloading metadata of token', tokenId);
+    log.log('Error downloading metadata of token', tokenId);
   }
 }
 
