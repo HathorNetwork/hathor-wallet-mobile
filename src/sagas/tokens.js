@@ -29,6 +29,10 @@ import {
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
 } from '../actions';
+import { logger } from '../logger';
+
+const log = logger('tokens-saga');
+
 
 /**
  * @readonly
@@ -111,8 +115,10 @@ function* fetchTokenBalance(action) {
       locked: token.balance.locked,
     };
 
+    log.debug('Success fetching token balance.');
     yield put(tokenFetchBalanceSuccess(tokenId, balance));
   } catch (e) {
+    log.error('Error while fetching token balance.', e);
     yield put(tokenFetchBalanceFailed(tokenId));
   }
 }
@@ -126,6 +132,7 @@ function* fetchTokenHistory(action) {
 
     if (!force && tokenHistory && tokenHistory.oldStatus === TOKEN_DOWNLOAD_STATUS.READY) {
       // The data is already loaded, we should dispatch success
+      log.debug('Success fetching token history from store.');
       yield put(tokenFetchHistorySuccess(tokenId, tokenHistory.data));
       return;
     }
@@ -133,8 +140,10 @@ function* fetchTokenHistory(action) {
     const response = yield call(wallet.getTxHistory.bind(wallet), { token_id: tokenId });
     const data = response.map(mapToTxHistory(tokenId));
 
+    log.debug('Success fetching token history.');
     yield put(tokenFetchHistorySuccess(tokenId, data));
   } catch (e) {
+    log.error('Error while fetching token history.', e);
     yield put(tokenFetchHistoryFailed(tokenId));
   }
 }
