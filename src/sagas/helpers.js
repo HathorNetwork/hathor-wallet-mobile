@@ -34,6 +34,9 @@ import {
   LATENCY_MULTIPLIER,
 } from '../constants';
 import { STORE } from '../store';
+import { logger } from '../logger';
+
+const log = logger('helper');
 
 export function* waitForFeatureToggleInitialization() {
   const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
@@ -219,7 +222,8 @@ export async function getFullnodeNetwork() {
       });
     });
     return response.network;
-  } catch {
+  } catch (e) {
+    log.error('Error while getting fullnode network version.', e);
     throw new Error('Error getting fullnode version data.');
   }
 }
