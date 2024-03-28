@@ -16,6 +16,12 @@ export function PublicExplorerListButton(props) {
   const explorerLink = combineURLs(baseExplorerUrl, txUrl);
 
   return (
-    <ListButton title={t`Public Explorer`} button={explorerIcon} onPress={() => { Linking.openURL(explorerLink); }} titleStyle={{ color: COLORS.textColorShadow }} isLast />
+    <ListButton
+      title={t`Public Explorer`}
+      button={explorerIcon}
+      onPress={() => { Linking.openURL(explorerLink); }} titleStyle={{ color: COLORS.textColorShadow }}
+      // It introduces an opportunity to override previous settings
+      {...props}
+    />
   );
 }
