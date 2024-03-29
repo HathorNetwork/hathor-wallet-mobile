@@ -17,6 +17,7 @@ import CopyClipboard from './CopyClipboard';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
 import { TxHistory } from '../models';
+import { TransactionStatusLabel } from './TransactionStatusLabel.component';
 
 class TxDetailsModal extends Component {
   style = StyleSheet.create({
@@ -47,6 +48,10 @@ class TxDetailsModal extends Component {
     />
   );
 
+  getTxStatus = (processingStatus, isVoided) => (
+    <TransactionStatusLabel processingStatus={processingStatus} isVoided={isVoided} />
+  );
+
   render() {
     /**
      * @type {{
@@ -60,6 +65,7 @@ class TxDetailsModal extends Component {
     const description = tx.getDescription(token);
     const timestampStr = tx.getTimestampFormat();
     const shortTxId = getShortHash(tx.txId, 7);
+    const txStatus = this.getTxStatus(tx.processingStatus, tx.isVoided);
     const ncMethod = tx.ncMethod;
     const shortNcId = tx.ncId && getShortHash(tx.ncId, 7);
     const shortNcCallerAddr = tx.ncCaller && getShortContent(tx.ncCaller.base58, 7);
@@ -93,7 +99,7 @@ class TxDetailsModal extends Component {
                       <ListItem title={t`Blueprint Method`} text={ncMethod} />
                       <ListItem title={t`Nano Contract ID`} text={ncId} />
                       <ListItem title={t`Nano Contract Caller`} text={ncCallerAddr} />
-                      <ListItem title={t`Status`} text={ncMethod} />
+                      <ListItem title={t`Status`} text={txStatus} />
                       <PublicExplorerListButton txId={shortNcId} title={t`Nano Contract`} />
                     </>
                   }
