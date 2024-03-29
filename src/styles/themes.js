@@ -10,40 +10,8 @@ import { DefaultTheme } from '@react-navigation/native';
 import { _PRIMARY_COLOR as PRIMARY_COLOR } from '../config';
 import { HslColor } from '../HslColor';
 
-/**
- * Light theme color scheme
- * @type {{
- * midContrastDetail: string,
- * errorBgColor: string,
- * backgroundColor: string,
- * borderColor: string,
- * lowContrastDetail: string,
- * textColorShadow: string,
- * positiveBalanceColor: string,
- * textColor: string,
- * errorTextColor: string,
- * tabBarBackground: string,
- * primaryOpacity30: string,
- * textColorShadowLight: string,
- * primaryOpacity10: string,
- * errorTextShadow: string,
- * primary: string}}
- * @property {string} backgroundColor The main background color
- * @property {string} lowContrastDetail Low contrast with background: separator lines, containers...
- * @property {string} midContrastDetail Medium contrast with background: placeholders, ...
- * @property {string} borderColor Defines borders
- * @property {string} textColor Maximum contrast with the background color, for reading
- * @property {string} textColorShadow Washed down version of the text
- * @property {string} textColorShadowLight More washed down version of the text
- * @property {string} tabBarBackground Specific for tab bar selectors
- * @property {string} positiveBalanceColor Represents a positive feedback for the user
- * @property {string} errorBgColor For containers with error feedbacks
- * @property {string} errorTextColor For texts with error messages
- * @property {string} errorTextShadow Washed down version of error texts
- * @property {string} primary Primary color, as set on the application config file
- * @property {string} primaryOpacity10 Primary color washed down to 10% opacity
- * @property {string} primaryOpacity30 Primary color washed down to 30% opacity
- */
+
+
 export const COLORS = {
   backgroundColor: '#fff',
   lowContrastDetail: '#f7f7f7',
@@ -69,6 +37,14 @@ export const COLORS = {
   primary: PRIMARY_COLOR,
   primaryOpacity10: `${PRIMARY_COLOR}1A`,
   primaryOpacity30: `${PRIMARY_COLOR}4D`,
+  feedbackSuccess100: 'hsla(161, 30%, 85%, 1)',
+  feedbackSuccess400: 'hsla(159, 75%, 17%, 1)',
+  feedbackWarning100: 'hsla(21, 100%, 90%, 1)',
+  feedbackWarning300: 'hsla(21, 54%, 49%, 1)',
+  feedbackError200: 'hsla(7, 69%, 95%, 1)',
+  feedbackError600: 'hsla(7, 100%, 30%, 1)',
+  freeze100: 'hsla(0, 0%, 90%, 1)',
+  freeze300: 'hsla(0, 0%, 45%, 1)',
 };
 
 /**
