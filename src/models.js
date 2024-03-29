@@ -44,13 +44,14 @@ export class TxHistory {
    *   tokenUid: string;
    *   balance: number;
    *   voided: boolean;
+   *   processingStatus?: 'processing'|'finished';
    *   version: number;
    *   ncId?: string;
    *   ncMethod?: string;
    *   ncCaller?: Address;
    * }}
    */
-  constructor({ txId, timestamp, tokenUid, balance, isVoided, version, ncId, ncMethod, ncCaller }) {
+  constructor({ txId, timestamp, tokenUid, balance, isVoided, version, processingStatus, ncId, ncMethod, ncCaller }) {
     /**
      * @type {string}
      */
@@ -75,6 +76,10 @@ export class TxHistory {
      * @type {number}
      */
     this.version = version;
+    /**
+     * @type {'processing'|'finished'}
+     */
+    this.processingStatus = processingStatus
     /**
      * @type {string?}
      */
@@ -136,6 +141,7 @@ export class TxHistory {
    *   timestamp: number;
    *   voided: boolean;
    *   version: number;
+   *   processingStatus: string;
    *   ncId?: string;
    *   ncMethod?: string;
    *   ncCaller?: Address;
@@ -150,6 +156,7 @@ export class TxHistory {
       timestamp,
       balance,
       version,
+      processingStatus,
       ncId,
       ncMethod,
       ncCaller,
@@ -159,6 +166,7 @@ export class TxHistory {
       timestamp,
       balance,
       version,
+      processingStatus,
       ncId,
       ncMethod,
       ncCaller,
