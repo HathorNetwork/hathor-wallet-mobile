@@ -1299,7 +1299,7 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
  * @param {Object} state
  * @param {{
  *   payload: {
- *     entryKey: string;
+ *     ncId: string;
  *     history: {
  *       txId: string;
  *       timestamp: number;
@@ -1317,8 +1317,8 @@ export const onNanoContractHistoryLoad = (state, { payload }) => ({
     ...state.nanoContract,
     contractsHistory: {
       ...state.nanoContract.contractsHistory,
-      [payload.entryKey]: [
-        ...(state.nanoContract.contractsHistory[payload.entryKey] || []),
+      [payload.ncId]: [
+        ...(state.nanoContract.contractsHistory[payload.ncId] || []),
         ...payload.history
       ],
     },

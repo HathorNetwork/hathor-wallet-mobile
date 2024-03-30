@@ -1,8 +1,7 @@
 import { put } from 'redux-saga/effects';
-import { ncApi } from '@hathor/wallet-lib';
+import { ncApi, addressUtils, transactionUtils } from '@hathor/wallet-lib';
 import { jest, test, expect, beforeEach, describe } from '@jest/globals';
 import {
-  formatNanoContractRegistryEntry,
   failureMessage,
   requestHistoryNanoContract,
   fetchHistory
@@ -14,7 +13,6 @@ import {
   onExceptionCaptured
 } from '../../../src/actions';
 import { STORE } from '../../../src/store';
-import { nanoContractKey } from '../../../src/constants';
 import { fixtures } from './fixtures';
 
 jest.mock('@hathor/wallet-lib');
@@ -24,24 +22,32 @@ beforeEach(() => {
   STORE.clearItems();
 });
 
-function addNanoContractEntry(address, ncId) {
-  // add an entry to registeredContracts
-  const ncEntry = formatNanoContractRegistryEntry(address, ncId);
-  STORE.setItem(nanoContractKey.registeredContracts, { [ncEntry]: {} });
-  return ncEntry;
-}
-
 describe('sagas/nanoContract/fetchHistory', () => {
   test('success', async () => {
+    // arrange wallet mock
+    const mockedWallet = {
+      getNetworkObject: jest.fn(),
+      storage: {
+        isAddressMine: jest.fn(),
+      },
+    };
     // arrange ncApi mock
     const mockedNcApi = jest.mocked(ncApi);
     mockedNcApi.getNanoContractHistory
       .mockReturnValue(fixtures.ncApi.getNanoContractHistory.successResponse);
+    // arrange addressUtils mock
+    const mockedAddressUtils = jest.mocked(addressUtils);
+    mockedAddressUtils.getAddressFromPubkey
+      .mockResolvedValue('123');
+    // arrange transactionUtils
+    const mockedTransactionUtils = jest.mocked(transactionUtils);
+    mockedTransactionUtils.getTxBalance
+      .mockResolvedValue({});
 
     // call fetchHistory
     const count = 1;
     const after = null;
-    const result = await fetchHistory(fixtures.ncId, count, after);
+    const result = await fetchHistory(fixtures.ncId, count, after, mockedWallet);
 
     // assert result is defined
     expect(result.history).toBeDefined();
@@ -72,58 +78,73 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
 
     // call effect to request history
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ address, ncId }));
+    // select wallet
+    gen.next();
+    // feed back wallet
+    gen.next(fixtures.wallet.readyAndMine);
 
     // expect failure
-    expect(gen.next().value)
+    // feed back isNanoContractRegistered
+    expect(gen.next(false).value)
       .toStrictEqual(put(nanoContractHistoryFailure(failureMessage.notRegistered)));
   });
 
   test('fetch history fails', () => {
     // arrange Nano Contract registration inputs
     const { address, ncId } = fixtures;
-    addNanoContractEntry(address, ncId);
+    const storage = STORE.getStorage();
+    storage.registerNanoContract(ncId, { ncId });
 
     // call effect to request history
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ address, ncId }));
-    // advances to fetchHistory
-    const fetchHistoryCall = gen.next();
-    // advances to failure
-    const failureCall = gen.throw(new Error('history'));
-    const onErrorCall = gen.next();
+    // select wallet
+    gen.next();
+    // feed back wallet
+    gen.next(fixtures.wallet.readyAndMine);
+    // feed back isNanoContractRegistered
+    const fetchHistoryCall = gen.next(true).value;
+
+    // throws on fetchHistory call
+    const failureCall = gen.throw(new Error('history')).value;
+    const onErrorCall = gen.next().value;
 
     // assert failure
-    expect(fetchHistoryCall.value.payload.fn).toBe(fetchHistory);
-    expect(failureCall.value).toStrictEqual(put(nanoContractHistoryFailure(failureMessage.nanoContractHistoryFailure, new Error('history'))));
-    expect(onErrorCall.value).toStrictEqual(put(onExceptionCaptured(new Error('history'), false)));
+    expect(fetchHistoryCall.payload.fn).toBe(fetchHistory);
+    expect(failureCall).toStrictEqual(put(nanoContractHistoryFailure(failureMessage.nanoContractHistoryFailure, new Error('history'))));
+    expect(onErrorCall).toStrictEqual(put(onExceptionCaptured(new Error('history'), false)));
   });
 
   test('history with success', () => {
     // arrange Nano Contract registration inputs
     const { address, ncId } = fixtures;
-    const ncEntry = addNanoContractEntry(address, ncId);
 
     // call effect to request history
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ address, ncId }));
-    // advances to fetchHistory
-    const fetchHistoryCall = gen.next();
-    // feed back fetchHistory and advances to history load
-    const historyLoadCall = gen.next(fixtures.ncSaga.fetchHistory.successResponse);
-    // advances to success
-    const sucessCall = gen.next();
+    // select wallet
+    gen.next();
+    // feed back wallet
+    gen.next(fixtures.wallet.readyAndMine);
+    // feed back isNanoContractRegistered
+    const fetchHistoryCall = gen.next(true).value;
+    // feed back fetchHistory
+    gen.next(fixtures.ncSaga.fetchHistory.successResponse);
+    // feed back getNanoContract
+    gen.next({ ncId });
+    // call registerNanoContract and yield put nanoContractHistoryLoad
+    const historyLoadCall = gen.next().value;
+
+    const sucessCall = gen.next().value;
 
     // assert success
-    expect(fetchHistoryCall.value.payload.fn).toBe(fetchHistory);
-    expect(historyLoadCall.value.payload).toHaveProperty('action.payload.history');
-    expect(historyLoadCall.value.payload).toHaveProperty('action.payload.ncEntry');
-    expect(sucessCall.value).toStrictEqual(put(nanoContractHistorySuccess()));
+    expect(fetchHistoryCall.payload.fn).toBe(fetchHistory);
+    expect(historyLoadCall.payload).toHaveProperty('action.payload.ncId');
+    expect(historyLoadCall.payload).toHaveProperty('action.payload.history');
+    expect(historyLoadCall.payload.action.payload.ncId).toStrictEqual(ncId);
+    expect(historyLoadCall.payload.action.payload.history).toStrictEqual(
+      fixtures.ncSaga.fetchHistory.successResponse.history
+    );
+    expect(sucessCall).toStrictEqual(put(nanoContractHistorySuccess()));
     // assert termination
     expect(gen.next().value).toBeUndefined();
-
-    // assert nano contract history persistence
-    const registeredContracts = STORE.getItem(nanoContractKey.registeredContracts);
-    expect(registeredContracts).toBeDefined();
-    expect(registeredContracts[ncEntry]).toHaveProperty('history');
-    expect(registeredContracts[ncEntry].history)
-      .toStrictEqual(fixtures.ncSaga.fetchHistory.successResponse.history);
   });
 });
