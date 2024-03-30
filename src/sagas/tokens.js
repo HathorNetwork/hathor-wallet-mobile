@@ -33,7 +33,6 @@ import { logger } from '../logger';
 
 const log = logger('tokens-saga');
 
-
 export const TOKEN_DOWNLOAD_STATUS = {
   READY: 'ready',
   FAILED: 'failed',
