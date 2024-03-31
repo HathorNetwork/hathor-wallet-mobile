@@ -16,59 +16,94 @@ import chevronLeft from '../assets/icons/chevron-left.png';
 import closeIcon from '../assets/icons/icCloseActive.png';
 import { COLORS, STYLE } from '../styles/themes';
 
-const HathorHeader = (props) => {
-  const renderBackButton = () => {
-    if (props.onBackPress) {
-      return (
-        <View style={[styles.iconWrapper, { justifyContent: 'flex-start' }]}>
-          <TouchableOpacity onPress={props.onBackPress}>
-            <Image source={chevronLeft} width={24} height={24} />
-          </TouchableOpacity>
-        </View>
-      );
-    }
-    return <View style={styles.iconWrapper} />;
-  };
-
-  const CancelButton = () => (
-    <SimpleButton
-      icon={closeIcon}
-      onPress={props.onCancel}
-    />
-  );
-
-  const renderHeaderRight = () => {
-    const element = (props.onCancel ? <CancelButton /> : props.rightElement);
-    return (
-      <View style={[styles.iconWrapper, { justifyContent: 'flex-end' }]}>
-        {element}
-      </View>
-    );
-  };
-
-  const renderHeaderCentral = () => {
-    if (props.withLogo) {
-      return (
-        <Logo
-          style={{ height: 22, width: 100 }}
-        />
-      );
-    }
-    return <Text>{props.title}</Text>;
-  };
-
-  let extraStyle = {};
-  if (props.withBorder) {
-    extraStyle = { borderBottomWidth: 1 };
-  }
+const HathorHeader = ({
+  title,
+  rightElement,
+  withLogo,
+  withBorder,
+  onBackPress,
+  onCancel,
+  wrapperStyle,
+  children,
+}) => {
+  const hasChildren = children != null;
+  const left = React.Children.toArray(children).find((child) => child.type.displayName === HathorHeaderLeft.displayName);
+  const right = React.Children.toArray(children).find((child) => child.type.displayName === HathorHeaderRight.displayName);
 
   return (
-    <View style={[styles.wrapper, props.wrapperStyle, extraStyle]}>
-      <View style={styles.innerWrapper}>
-        {renderBackButton()}
-        {renderHeaderCentral()}
-        {renderHeaderRight()}
+    <Wrapper withBorder={withBorder} style={wrapperStyle}>
+        {hasChildren &&
+          <InnerWrapper>
+            {left}
+            {right}
+          </InnerWrapper>}
+        {!hasChildren &&
+          <InnerWrapper>
+            <LeftComponent onBackPress={onBackPress} />
+            <CentralComponent title={title} withLogo={withLogo} />
+            <RightComponent rightElement={rightElement}onCancel={onCancel} />
+          </InnerWrapper>}
+    </Wrapper>
+  );
+};
+
+const Wrapper = ({ withBorder, style, children }) => (
+  <View style={[styles.wrapper, style, withBorder && styles.wrapperWithBorder]}>
+    {children}
+  </View>
+);
+
+const InnerWrapper = ({ children }) => (
+  <View style={styles.innerWrapper}>
+    {children}
+  </View>
+); 
+
+const HathorHeaderLeft = ({ children }) => (<View>{children}</View>);
+HathorHeaderLeft.displayName = 'HathorHeaderLeft';
+
+const HathorHeaderRight = ({ children }) => <View>{children}</View>;
+HathorHeaderRight.displayName = 'HathorHeaderRight';
+
+HathorHeader.Left = HathorHeaderLeft;
+HathorHeader.Right = HathorHeaderRight;
+
+const CancelButton = () => (
+  <SimpleButton
+    icon={closeIcon}
+    onPress={onCancel}
+  />
+);
+
+const LeftComponent = ({ onBackPress }) => {
+  if (onBackPress) {
+    return (
+      <View style={[styles.iconWrapper, { justifyContent: 'flex-start' }]}>
+        <TouchableOpacity onPress={onBackPress}>
+          <Image source={chevronLeft} width={24} height={24} />
+        </TouchableOpacity>
       </View>
+    );
+  }
+  return <View style={styles.iconWrapper} />;
+};
+
+const CentralComponent = ({ title, withLogo }) => {
+  if (withLogo) {
+    return (
+      <Logo
+        style={{ height: 22, width: 100 }}
+      />
+    );
+  }
+  return <Text>{title}</Text>;
+};
+
+const RightComponent = ({ rightElement, onCancel }) => {
+  const element = (onCancel ? <CancelButton /> : rightElement);
+  return (
+    <View style={[styles.iconWrapper, { justifyContent: 'flex-end' }]}>
+      {element}
     </View>
   );
 };
@@ -80,6 +115,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     borderColor: COLORS.borderColor,
     paddingHorizontal: 16,
+  },
+  wrapperWithBorder: {
+    borderBottomWidth: 1,
   },
   innerWrapper: {
     flex: 1,
@@ -94,4 +132,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
 export default HathorHeader;
