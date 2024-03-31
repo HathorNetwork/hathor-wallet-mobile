@@ -91,6 +91,10 @@ export const COLORS = {
   feedbackError600: 'hsla(7, 100%, 30%, 1)',
   freeze100: 'hsla(0, 0%, 90%, 1)',
   freeze300: 'hsla(0, 0%, 45%, 1)',
+  /**
+   * @type {string} Black with 38% of light and full opaque
+   */
+  textLabel: 'hsla(0, 0%, 38%, 1)',
 };
 
 /**

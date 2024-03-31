@@ -9,6 +9,7 @@ import HathorHeader from '../HathorHeader';
 import { NoNanoContracts } from './NoNanoContracts.component';
 import { RegisterNanoContract } from './RegisterNewNanoContractButton.component';
 import { NanoContractsListItem } from './NanoContractsListItem.component';
+import { HathorFlatList } from '../HathorFlatList.component';
 
 /**
  * @param {Object} state Redux root state
@@ -27,27 +28,24 @@ export const NanoContractsList = () => {
     navigation.navigate('NanoContractTransactions');
   };
   const isEmpty = () => registeredNanoContracts.length === 0;
+  const notEmpty = () => !isEmpty();
 
   return (
     <Wrapper>
       <Header />
-      <ListWrapper>
-        {isEmpty()
-          && <NoNanoContracts />}
-        {/* FlatList doesn't render when data is empty.
-          * That's why we don't need a conditional rendering here. */}
-        <FlatList
+      {isEmpty()
+        && <ListWrapper><NoNanoContracts /></ListWrapper>}
+      {notEmpty()
+        && <HathorFlatList
           data={registeredNanoContracts}
-          renderItem={({ item, index }) => (
+          renderItem={({ item }) => (
             <NanoContractsListItem
               item={item}
-              index={index}
               onPress={navigatesToNanoContractTransactions}
             />
           )}
           keyExtractor={(nc) => nc.ncId}
-        />
-      </ListWrapper>
+        />}
     </Wrapper>
   );
 };
@@ -78,17 +76,19 @@ const ListWrapper = ({ children }) => (
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
   },
   listWrapper: {
-    alignSelf: 'stretch',
     flex: 1,
+    justifyContent: 'center',
+    alignSelf: 'stretch',
     marginTop: 16,
+    marginBottom: 45,
     backgroundColor: COLORS.backgroundColor,
     marginHorizontal: 16,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderRadius: 16,
     shadowOffset: { height: 2, width: 0 },
     shadowRadius: 4,
     shadowColor: COLORS.textColor,

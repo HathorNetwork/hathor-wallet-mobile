@@ -3,7 +3,7 @@ import { TouchableHighlight, StyleSheet, View, Text, Image } from 'react-native'
 
 import chevronRight from '../../assets/icons/chevron-right.png';
 import { COLORS } from '../../styles/themes';
-import { getShortContent, getShortHash } from '../../utils';
+import { getShortHash } from '../../utils';
 import { NanoContractIcon } from './NanoContractIcon.svg.component';
 
 /**
@@ -13,26 +13,22 @@ import { NanoContractIcon } from './NanoContractIcon.svg.component';
  * @property {Object} ncItem.item registered Nano Contract data
  * @property {number} ncItem.index position in the list
  */
-export const NanoContractsListItem = ({ item, index, onPress }) => (
-  <Wrapper index={index} onPress={onPress}>
+export const NanoContractsListItem = ({ item, onPress }) => (
+  <Wrapper onPress={onPress}>
     <Icon />
     <ContentWrapper nc={item} />
     <ArrowLeft />
   </Wrapper>
 );
 
-const Wrapper = ({ index, onPress, children }) => {
-  const isFirstItem = index === 0;
-  return (
-    <TouchableHighlight
-      style={[isFirstItem && styles.firstItem]}
-      onPress={onPress}
-      underlayColor={COLORS.primaryOpacity30}
-    >
-      <View style={styles.wrapper}>{children}</View>
-    </TouchableHighlight>
-  );
-};
+const Wrapper = ({ onPress, children }) => (
+  <TouchableHighlight
+    onPress={onPress}
+    underlayColor={COLORS.primaryOpacity30}
+  >
+    <View style={styles.wrapper}>{children}</View>
+  </TouchableHighlight>
+);
 
 const Icon = () => (
   <View style={styles.icon}>
@@ -51,9 +47,7 @@ const ContentWrapper = ({ nc }) => (
     <Text style={[styles.text, styles.property]}>Nano Contract ID</Text>
     <Text style={[styles.text]}>{getShortHash(nc.ncId, 7)}</Text>
     <Text style={[styles.text, styles.property]}>Blueprint Name</Text>
-    <Text style={[styles.text]}>{nc.blueprintName}</Text>
-    <Text style={[styles.text, styles.property]}>Registered Address</Text>
-    <Text style={[styles.text, styles.padding0]}>{getShortContent(nc.address, 7)}</Text>
+    <Text style={[styles.text, styles.padding0]}>{nc.blueprintName}</Text>
   </View>
 );
 
@@ -65,17 +59,11 @@ const ArrowLeft = () => (
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingVertical: 24,
+    paddingVertical: 16,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderColor: COLORS.borderColor,
-  },
-  firstItem: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
   },
   contentWrapper: {
     maxWidth: '80%',
@@ -98,7 +86,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     paddingBottom: 6,
-    color: 'hsla(0, 0%, 38%, 1)',
+    color: COLORS.textLabel,
   },
   property: {
     paddingBottom: 4,

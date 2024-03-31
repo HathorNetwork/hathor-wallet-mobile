@@ -1,15 +1,13 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Linking } from 'react-native';
 import { t } from 'ttag';
-import { useNavigation } from '@react-navigation/native';
 
 import SimpleButton from '../SimpleButton';
 import { RegisterNanoContract } from './RegisterNewNanoContractButton.component';
 
 export const NoNanoContracts = () => {
-  const navigation = useNavigation();
   const navigatesToDocumentation = () => {
-    navigation.navigate('add documentation link here');
+    Linking.openURL('https://docs.hathor.network/explanations/features/nano-contracts/');
   };
   return (
     <View style={styles.wrapper}>
@@ -35,8 +33,9 @@ const styles = StyleSheet.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: '50%',
     paddingHorizontal: 45,
+    /* Play the role of a minimum vertical padding for small screens */
+    paddingVertical: 90,
   },
   title: {
     fontSize: 16,
