@@ -19,7 +19,8 @@ export function PublicExplorerListButton(props) {
     <ListButton
       title={t`Public Explorer`}
       button={explorerIcon}
-      onPress={() => { Linking.openURL(explorerLink); }} titleStyle={{ color: COLORS.textColorShadow }}
+      onPress={() => { Linking.openURL(explorerLink) }}
+      titleStyle={{ color: COLORS.textColorShadow }}
       // It introduces an opportunity to override previous settings
       {...props}
     />

@@ -33,7 +33,6 @@ import { logger } from '../logger';
 
 const log = logger('tokens-saga');
 
-
 /**
  * @readonly
  * @enum {string}

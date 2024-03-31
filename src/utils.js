@@ -35,7 +35,6 @@ export const getShortContent = (content, length = 4) => (
   `${content.substring(0, length)}...${content.substring(content.length - length, content.length)}`
 );
 
-
 /**
  * Get amount text value and transform in its integer value
  *
@@ -338,11 +337,12 @@ export const changePin = async (wallet, oldPin, newPin) => {
  *
  * @param {string} tokenUid - Token uid
  *
- * @returns {(rawTxHistory: Object) => TxHistory} A function that maps a raw transaction history element to a TxHistory object
+ * @returns {(rawTxHistory: Object) => TxHistory} A function that maps a raw
+ * transaction history element to a TxHistory object
  */
-export const mapToTxHistory = (tokenUid) => (rawTxHistory) => {
-  return TxHistory.from(rawTxHistory, tokenUid);
-};
+export const mapToTxHistory = (tokenUid) => (rawTxHistory) => (
+  TxHistory.from(rawTxHistory, tokenUid)
+);
 
 /**
  * Select the push notification settings from redux state

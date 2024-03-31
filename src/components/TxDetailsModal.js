@@ -61,17 +61,30 @@ class TxDetailsModal extends Component {
      * }} TxDetailsModal properties
      */
     const { token, tx, isNFT } = this.props;
+    const { txId, processingStatus, isVoided, ncId, ncMethod, ncCaller } = tx;
+    const ncCallerAddr = ncCaller && ncCaller.base58;
+
     const fullTokenStr = getTokenLabel(token);
     const description = tx.getDescription(token);
     const timestampStr = tx.getTimestampFormat();
-    const shortTxId = getShortHash(tx.txId, 7);
-    const txStatus = this.getTxStatus(tx.processingStatus, tx.isVoided);
-    const ncMethod = tx.ncMethod;
-    const shortNcId = tx.ncId && getShortHash(tx.ncId, 7);
-    const shortNcCallerAddr = tx.ncCaller && getShortContent(tx.ncCaller.base58, 7);
-    const txId = this.getCopyClipboard({ text: shortTxId, copyText: tx.txId });
-    const ncId = tx.ncId && this.getCopyClipboard({ text: shortNcId, copyText: tx.ncId });
-    const ncCallerAddr = tx.ncCaller && this.getCopyClipboard({ text: shortNcCallerAddr, copyText: tx.ncCaller.base58 });
+    const shortTxId = getShortHash(txId, 7);
+    const txStatus = this.getTxStatus(processingStatus, isVoided);
+    const shortNcId = ncId && getShortHash(ncId, 7);
+    const shortNcCallerAddr = ncCallerAddr && getShortContent(ncCallerAddr, 7);
+    const txIdComponent = this.getCopyClipboard({
+      text: shortTxId,
+      copyText: txId
+    });
+    const ncIdComponent = ncId && this.getCopyClipboard({
+      text: shortNcId,
+      copyText: ncId
+    });
+    const ncCallerAddrComponent = ncCaller && this.getCopyClipboard({
+      text: shortNcCallerAddr,
+      copyText: ncCallerAddr
+    });
+    const isNc = tx.isNanoContract();
+
     return (
       <Modal
         isVisible
@@ -81,7 +94,7 @@ class TxDetailsModal extends Component {
         onBackButtonPress={this.props.onRequestClose}
         onBackdropPress={this.props.onRequestClose}
         style={this.style.modal}
-        propagateSwipe={true}
+        propagateSwipe
       >
         <View style={this.style.wrapper}>
           <View style={this.style.inner}>
@@ -93,16 +106,12 @@ class TxDetailsModal extends Component {
                   <ListItem title={t`Token`} text={fullTokenStr} />
                   <ListItem title={t`Description`} text={description} />
                   <ListItem title={t`Date & Time`} text={timestampStr} />
-                  <ListItem title={t`Transaction ID`} text={txId} />
-                  {tx.isNanoContract() &&
-                    <>
-                      <ListItem title={t`Blueprint Method`} text={ncMethod} />
-                      <ListItem title={t`Nano Contract ID`} text={ncId} />
-                      <ListItem title={t`Nano Contract Caller`} text={ncCallerAddr} />
-                      <ListItem title={t`Status`} text={txStatus} />
-                      <PublicExplorerListButton txId={shortNcId} title={t`Nano Contract`} />
-                    </>
-                  }
+                  <ListItem title={t`Transaction ID`} text={txIdComponent} />
+                  {isNc && <ListItem title={t`Blueprint Method`} text={ncMethod} />}
+                  {isNc && <ListItem title={t`Nano Contract ID`} text={ncIdComponent} />}
+                  {isNc && <ListItem title={t`Nano Contract Caller`} text={ncCallerAddrComponent} />}
+                  {isNc && <ListItem title={t`Status`} text={txStatus} />}
+                  {isNc && <PublicExplorerListButton txId={shortNcId} title={t`Nano Contract`} />}
                   <PublicExplorerListButton txId={tx.txId} isLast />
                 </View>
               </TouchableWithoutFeedback>

@@ -29,7 +29,7 @@ const VersionType = {
  * @readonly
  */
 const VersionInfo = {
-  [VersionType.blockVersion]: { symbol: 'b', label: t`Block` } ,
+  [VersionType.blockVersion]: { symbol: 'b', label: t`Block` },
   [VersionType.transactionVersion]: { symbol: 'tx', label: t`Transaction` },
   [VersionType.createTokenTransactionVersion]: { symbol: 'tk', label: t`Create Token Transaction` },
   [VersionType.mergedMinedBlockVersion]: { symbol: 'mb', label: t`Merged Mined Block` },
@@ -51,7 +51,18 @@ export class TxHistory {
    *   ncCaller?: Address;
    * }}
    */
-  constructor({ txId, timestamp, tokenUid, balance, isVoided, version, processingStatus, ncId, ncMethod, ncCaller }) {
+  constructor({
+    txId,
+    timestamp,
+    tokenUid,
+    balance,
+    isVoided,
+    version,
+    processingStatus,
+    ncId,
+    ncMethod,
+    ncCaller
+  }) {
     /**
      * @type {string}
      */
@@ -130,7 +141,7 @@ export class TxHistory {
 
   isNanoContract() {
     return this.version === VersionType.nanoContractTransaction;
-  };
+  }
 
   /**
    * Creates a TxHistory instance from raw transaction history data.
