@@ -27,22 +27,30 @@ const HathorHeader = ({
   children,
 }) => {
   const hasChildren = children != null;
-  const left = React.Children.toArray(children).find((child) => child.type.displayName === HathorHeaderLeft.displayName);
-  const right = React.Children.toArray(children).find((child) => child.type.displayName === HathorHeaderRight.displayName);
+  const left = React.Children.toArray(children).find(
+    (child) => child.type.displayName === HathorHeaderLeft.displayName
+  );
+  const right = React.Children.toArray(children).find(
+    (child) => child.type.displayName === HathorHeaderRight.displayName
+  );
 
   return (
     <Wrapper withBorder={withBorder} style={wrapperStyle}>
-        {hasChildren &&
+      {hasChildren
+          && (
           <InnerWrapper>
             {left}
             {right}
-          </InnerWrapper>}
-        {!hasChildren &&
+          </InnerWrapper>
+          )}
+      {!hasChildren
+          && (
           <InnerWrapper>
             <LeftComponent onBackPress={onBackPress} />
             <CentralComponent title={title} withLogo={withLogo} />
-            <RightComponent rightElement={rightElement}onCancel={onCancel} />
-          </InnerWrapper>}
+            <RightComponent rightElement={rightElement} onCancel={onCancel} />
+          </InnerWrapper>
+          )}
     </Wrapper>
   );
 };
@@ -57,7 +65,7 @@ const InnerWrapper = ({ children }) => (
   <View style={styles.innerWrapper}>
     {children}
   </View>
-); 
+);
 
 const HathorHeaderLeft = ({ children }) => (<View>{children}</View>);
 HathorHeaderLeft.displayName = 'HathorHeaderLeft';
@@ -68,7 +76,7 @@ HathorHeaderRight.displayName = 'HathorHeaderRight';
 HathorHeader.Left = HathorHeaderLeft;
 HathorHeader.Right = HathorHeaderRight;
 
-const CancelButton = () => (
+const CancelButton = ({ onCancel }) => (
   <SimpleButton
     icon={closeIcon}
     onPress={onCancel}
@@ -100,7 +108,7 @@ const CentralComponent = ({ title, withLogo }) => {
 };
 
 const RightComponent = ({ rightElement, onCancel }) => {
-  const element = (onCancel ? <CancelButton /> : rightElement);
+  const element = (onCancel ? <CancelButton onCancel={onCancel} /> : rightElement);
   return (
     <View style={[styles.iconWrapper, { justifyContent: 'flex-end' }]}>
       {element}

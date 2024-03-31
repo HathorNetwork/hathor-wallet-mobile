@@ -10,6 +10,7 @@ import { StyleSheet, View, Text } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
+import { useNavigation } from '@react-navigation/native';
 
 import AskForPushNotification from '../components/AskForPushNotification';
 import HathorHeader from '../components/HathorHeader';
@@ -21,18 +22,18 @@ import { tokenFetchBalanceRequested, updateSelectedToken } from '../actions';
 import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
 import AskForPushNotificationRefresh from '../components/AskForPushNotificationRefresh';
 import { COLORS } from '../styles/themes';
-import { useNavigation } from '@react-navigation/native';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
+import { NanoContractsList } from '../components/NanoContract/NanoContractsList.component';
 
 /**
  * State filter to retrieve token-related data from root state.
- * 
+ *
  * @typedef {Object} TokenData
  * @property {string} selectedToken - Current token selected.
  * @property {string[]} tokens - Array containing all the tokens registered on the wallet.
  * @property {{ [uid: string]: Object }} tokensBalance - Map of balance per token.
  * @property {{ [uid: string]: Object }} tokensMetadata - Map of token's metadata per token.
- * 
+ *
  * @returns {TokenData} Token-related data obtained from the root state.
  */
 const getTokensState = (state) => ({
@@ -48,25 +49,19 @@ const getTokensState = (state) => ({
  * @param {{ uid: string }} token the token data
  * @returns {string} the status of the current tokens balance loading process.
  */
-const getTokensBalanceStatus = (tokensBalance, token) => {
-  return get(tokensBalance, `${token.uid}.status`, TOKEN_DOWNLOAD_STATUS.LOADING)
-};
+const getTokensBalanceStatus = (tokensBalance, token) => get(tokensBalance, `${token.uid}.status`, TOKEN_DOWNLOAD_STATUS.LOADING);
 
 /**
  * @param {string} status the current status from tokens balance loading process.
  * @returns {boolean} `true` if loading, `false` otherwise.
  */
-const isTokensBalanceLoading = (status) => {
-  return status === TOKEN_DOWNLOAD_STATUS.LOADING;
-};
+const isTokensBalanceLoading = (status) => status === TOKEN_DOWNLOAD_STATUS.LOADING;
 
 /**
  * @param {string} status the current status from tokens balance loading process.
  * @returns {boolean} `true` if failed, `false` otherwise.
  */
-const isTokensBalanceFailed = (status) => {
-  return status === TOKEN_DOWNLOAD_STATUS.FAILED;
-};
+const isTokensBalanceFailed = (status) => status === TOKEN_DOWNLOAD_STATUS.FAILED;
 
 /**
  * Enum for the list component that can be selected to render on Dashboard.
@@ -90,7 +85,7 @@ const isTokensSelected = (currList) => currList === listOption.tokens;
  */
 const isNanoContractsSelected = (currList) => currList === listOption.nanoContracts;
 
-export default Dashboard = () => {
+export const Dashboard = () => {
   const {
     tokens,
     tokensBalance,
@@ -129,11 +124,12 @@ export default Dashboard = () => {
             first: { value: 'Tokens', onTap: () => selectList(listOption.tokens) },
             second: { value: 'Nano Contracts', onTap: () => selectList(listOption.nanoContracts) }
           }}
-          defaultOption={'first'}
+          defaultOption='first'
         />
       </DashBoardHeader>
       {isTokensSelected(currList)
-        && <TokenSelect
+        && (
+        <TokenSelect
           header={<TokensHeader />}
           renderArrow
           onItemPress={onTokenPress}
@@ -141,8 +137,10 @@ export default Dashboard = () => {
           tokens={tokens}
           tokensBalance={tokensBalance}
           tokenMetadata={tokensMetadata}
-      />}
-      {isNanoContractsSelected(currList) && <Text>Nano Contracts</Text>}
+        />
+        )}
+      {isNanoContractsSelected(currList)
+        && <NanoContractsList />}
       <OfflineBar />
     </Wrapper>
   );
@@ -198,3 +196,4 @@ const styles = StyleSheet.create({
   },
 });
 
+export default Dashboard;

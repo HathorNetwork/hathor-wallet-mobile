@@ -11,25 +11,47 @@ import {
 } from 'react-native';
 import { PRIMARY_COLOR } from '../constants';
 
-const SimpleButton = (props) => {
-  const { children } = props;
+/**
+ * Simple button component.
+ *
+ * @typedef {Object} Props
+ * @property {string} [title] - The title text of the button.
+ * @property {Object} [textStyle] - The style object for the text of the button.
+ * @property {string} [color] - The color of button's text.
+ * @property {string} [icon] - The icon component to be displayed in the button.
+ * @property {Object} [iconStyle] - The style object for the icon component.
+ * @property {Object} [containerStyle] - The style object for the container of the button.
+ * @property {Function} onPress - The function to be called when the button is pressed.
+ *
+ * @param {Props} props - The props for the SimpleButton component.
+ */
+const SimpleButton = ({
+  title,
+  textStyle,
+  color,
+  icon,
+  iconStyle,
+  containerStyle,
+  onPress,
+  children
+}) => {
   const renderTitle = () => {
-    if (props.title) {
-      const textStyles = [styles.text, props.textStyle];
-      if (props.color) {
-        textStyles.push({ color: props.color });
+    if (title) {
+      const textStyles = [styles.text, textStyle];
+      if (color) {
+        textStyles.push({ color });
       }
-      return <Text style={textStyles}>{props.title}</Text>;
+      return <Text style={textStyles}>{title}</Text>;
     }
 
     return null;
   };
 
   const renderIcon = () => {
-    if (props.icon) {
+    if (icon) {
       return (
-        <View style={[styles.icon, props.iconStyle]}>
-          <Image source={props.icon} />
+        <View style={[styles.icon, iconStyle]}>
+          <Image source={icon} />
         </View>
       );
     }
@@ -38,7 +60,7 @@ const SimpleButton = (props) => {
   };
 
   return (
-    <TouchableOpacity onPress={props.onPress} style={[styles.container, props.containerStyle]}>
+    <TouchableOpacity onPress={onPress} style={[styles.container, containerStyle]}>
       {renderTitle()}
       {renderIcon()}
       {children}

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { COLORS } from '../styles/themes';
@@ -10,7 +9,7 @@ import { COLORS } from '../styles/themes';
  * }}
  */
 export const TwoOptionsToggle = ({ options, defaultOption }) => {
-  const [ currOption, setCurrOption ] = useState(defaultOption);
+  const [currOption, setCurrOption] = useState(defaultOption);
   const isActive = (currOption) => (componentOption) => currOption === componentOption;
   const onTap = (option) => {
     setCurrOption(option);
@@ -19,8 +18,8 @@ export const TwoOptionsToggle = ({ options, defaultOption }) => {
   };
   return (
     <View style={[styles.wrapper]}>
-      <Option option={'first'} optionValue={options.first.value} isActive={isActive(currOption)} onTap={onTap} />
-      <Option option={'second'} optionValue={options.second.value} isActive={isActive(currOption)} onTap={onTap} />
+      <Option option='first' optionValue={options.first.value} isActive={isActive(currOption)} onTap={onTap} />
+      <Option option='second' optionValue={options.second.value} isActive={isActive(currOption)} onTap={onTap} />
     </View>
   );
 };
