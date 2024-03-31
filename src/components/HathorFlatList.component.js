@@ -14,17 +14,15 @@ import { COLORS } from '../styles/themes';
 /**
  * param {FlatListProps} props
  */
-export const HathorFlatList = (props) => {
-  return (
-    <View style={styles.wrapper}>
-      <FlatList 
-        ItemSeparatorComponent={ItemSeparator}
-        // Introduced last to allow overwrite
-        {...props}
-      />
-    </View>
-  );
-};
+export const HathorFlatList = (props) => (
+  <View style={styles.wrapper}>
+    <FlatList
+      ItemSeparatorComponent={ItemSeparator}
+      // Introduced last to allow overwrite
+      {...props}
+    />
+  </View>
+);
 
 const ItemSeparator = () => (
   <View style={{ width: '100%', height: 1, backgroundColor: COLORS.borderColor }} />

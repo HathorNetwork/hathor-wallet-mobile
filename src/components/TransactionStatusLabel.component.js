@@ -54,20 +54,18 @@ const styles = StyleSheet.create({
  * @param {Object} param.style Style props to customize the base component
  * @param {Object} param.children Icon component to compose with the label
  */
-const TransactionStatusBase = ({ label, style, children: icon }) => {
-  return (
-    <View style={[styles.wrapper, style]}>
-      <View>
-        {icon}
-      </View>
-      <View>
-        <Text style={[styles.label, style]}>
-          {label.toUpperCase()}
-        </Text>
-      </View>
+const TransactionStatusBase = ({ label, style, children: icon }) => (
+  <View style={[styles.wrapper, style]}>
+    <View>
+      {icon}
     </View>
-  );
-};
+    <View>
+      <Text style={[styles.label, style]}>
+        {label.toUpperCase()}
+      </Text>
+    </View>
+  </View>
+);
 
 const Confirmed = () => (
   <TransactionStatusBase style={styles.feedbackSuccess} label={t`Confirmed`}>
@@ -75,17 +73,17 @@ const Confirmed = () => (
   </TransactionStatusBase>
 );
 const Processing = () => (
-  <TransactionStatusBase style={styles.feedbackWarning} label={t`Processing`} >
+  <TransactionStatusBase style={styles.feedbackWarning} label={t`Processing`}>
     <CircleClock size={16} color={styles.feedbackWarning.color} />
   </TransactionStatusBase>
 );
 const Voided = () => (
-  <TransactionStatusBase style={styles.feedbackError} label={t`Voided`} >
+  <TransactionStatusBase style={styles.feedbackError} label={t`Voided`}>
     <CircleError size={16} color={styles.feedbackError.color} />
   </TransactionStatusBase>
 );
 const Unkown = () => (
-  <TransactionStatusBase style={styles.freeze} label={t`Unkown`} >
+  <TransactionStatusBase style={styles.freeze} label={t`Unkown`}>
     <CircleError size={16} color={styles.freeze.color} />
   </TransactionStatusBase>
 );
@@ -100,13 +98,16 @@ export const TransactionStatusLabel = ({ processingStatus, isVoided = false }) =
 
   if (status === 'confirmed') {
     return Confirmed();
-  } else if (status === 'processing') {
-    return Processing();
-  } else if (status === 'voided') {
-    return Voided();
-  } else {
-    // In case status is undefined
-    return Unkown();
   }
-};
 
+  if (status === 'processing') {
+    return Processing();
+  }
+
+  if (status === 'voided') {
+    return Voided();
+  }
+
+  // In case status is undefined
+  return Unkown();
+};
