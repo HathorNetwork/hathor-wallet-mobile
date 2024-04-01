@@ -4,14 +4,14 @@ import { TouchableHighlight, StyleSheet, View, Text, Image } from 'react-native'
 import chevronRight from '../../assets/icons/chevron-right.png';
 import { COLORS } from '../../styles/themes';
 import { getShortHash } from '../../utils';
-import { NanoContractIcon } from './NanoContractIcon.svg.component';
+import { NanoContractIcon } from '../Icon/NanoContract.icon';
 
 /**
  * Renders each item of Nano Contract List.
  *
  * @param {Object} ncItem
  * @property {Object} ncItem.item registered Nano Contract data
- * @property {number} ncItem.index position in the list
+ * @property {Function} ncItem.onPress Callback function to trigger when pressed
  */
 export const NanoContractsListItem = ({ item, onPress }) => (
   <Wrapper onPress={onPress}>
@@ -32,7 +32,7 @@ const Wrapper = ({ onPress, children }) => (
 
 const Icon = () => (
   <View style={styles.icon}>
-    <NanoContractIcon />
+    <NanoContractIcon type='fill' color={COLORS.white} />
   </View>
 );
 
@@ -74,13 +74,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   icon: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    backgroundColor: COLORS.primary,
     alignSelf: 'flex-start',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
   },
   text: {
     fontSize: 14,

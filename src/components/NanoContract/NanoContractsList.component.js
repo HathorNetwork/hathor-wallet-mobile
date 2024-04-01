@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { t } from 'ttag';
 import { useNavigation } from '@react-navigation/native';
 
@@ -17,15 +17,18 @@ import { HathorFlatList } from '../HathorFlatList.component';
  */
 const getRegisteredNanoContracts = (state) => {
   const { registeredContracts } = state.nanoContract;
-  return Object.values(registeredContracts);
+  if (registeredContracts) {
+    return Object.values(registeredContracts);
+  }
+  return [];
 }
 
 export const NanoContractsList = () => {
   const registeredNanoContracts = useSelector(getRegisteredNanoContracts);
   const navigation = useNavigation();
 
-  const navigatesToNanoContractTransactions = () => {
-    navigation.navigate('NanoContractTransactions');
+  const navigatesToNanoContractTransactions = (nc) => {
+    navigation.navigate('NanoContractTransactions', { nc });
   };
   const isEmpty = () => registeredNanoContracts.length === 0;
   const notEmpty = () => !isEmpty();
@@ -36,16 +39,18 @@ export const NanoContractsList = () => {
       {isEmpty()
         && <ListWrapper><NoNanoContracts /></ListWrapper>}
       {notEmpty()
-        && <HathorFlatList
+        && (
+        <HathorFlatList
           data={registeredNanoContracts}
           renderItem={({ item }) => (
             <NanoContractsListItem
               item={item}
-              onPress={navigatesToNanoContractTransactions}
+              onPress={() => navigatesToNanoContractTransactions(item)}
             />
           )}
           keyExtractor={(nc) => nc.ncId}
-        />}
+        />
+        )}
     </Wrapper>
   );
 };
