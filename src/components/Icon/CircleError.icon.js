@@ -8,7 +8,7 @@
 import * as React from 'react'
 import Svg, { Path } from 'react-native-svg'
 
-export const CircleError = ({ size = 24, color = '#000' }) => (
+export const CircleErrorIcon = ({ size = 24, color = '#000' }) => (
   <Svg
     xmlns='http://www.w3.org/2000/svg'
     width={size}
