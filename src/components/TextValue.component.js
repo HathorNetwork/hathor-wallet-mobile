@@ -4,9 +4,10 @@ import {
   Text,
 } from 'react-native';
 
-export const TextValue = ({ bold, pb4, children }) => (
+export const TextValue = ({ bold, pb4, title, children }) => (
   <Text style={[
     styles.textValue,
+    title && styles.title,
     bold && styles.bold,
     pb4 && styles.pb4,
   ]}
@@ -18,6 +19,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: 'black',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   pb4: {
     paddingBottom: 4,
