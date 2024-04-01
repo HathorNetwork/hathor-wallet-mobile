@@ -247,9 +247,9 @@ const initialState = {
      * }} registered Nano Contracts per wallet address with basic information.
      * @example
      * {
-     *   '00c30fc': {
-     *     address: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
-     *     ncId: '00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185',
+     *   '000039774c1490254ae5c8dda6d26b2f90e97fd795ac91300f3892494fd362e4': {
+     *     address: 'WRqBSi5jc74P8tRo7CmgiGByA1eTzfMh7B',
+     *     ncId: '000039774c1490254ae5c8dda6d26b2f90e97fd795ac91300f3892494fd362e4',
      *     blueprintId: '0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4',
      *     blueprintName: 'Swap',
      *   },
@@ -268,22 +268,24 @@ const initialState = {
      *     ncMethod: string;
      *     blueprintId: string;
      *     caller: string;
-     *     callerOrigin: 'mine'|'nc'|'oracle'|'wallet';
+     *     isMine: boolean;
      *   }[];
      * }} history of Nano Contracts registered per wallet address.
      * @example
      * {
-     *   'HTeZeYT.00c30fc': [
+     *   '000039774c1490254ae5c8dda6d26b2f90e97fd795ac91300f3892494fd362e4': [
      *     {
-     *       txId: "000000203e87e8575f121de16d0eb347bd1473eedd9f46cc76c1bc8d4e5a5fce",
+     *       txId: '000000203e87e8575f121de16d0eb347bd1473eedd9f46cc76c1bc8d4e5a5fce',
      *       timestamp: 1708356261,
      *       tokens: [
-     *         "00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d",
-     *         "0000038c49253f86e6792006dd9124e2c50e6487fde3296b7bd637e3e1a497e7"
+     *         '00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d',
+     *         '0000038c49253f86e6792006dd9124e2c50e6487fde3296b7bd637e3e1a497e7'
      *       ],
      *       isVoided: false,
-     *       ncId: "000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a",
-     *       ncMethod: "swap",
+     *       ncId: '000039774c1490254ae5c8dda6d26b2f90e97fd795ac91300f3892494fd362e4',
+     *       ncMethod: 'swap',
+     *       caller: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
+     *       isMine: true,
      *     },
      *   ],
      * }
@@ -448,6 +450,8 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateInvalid(state, action);
     case types.NANOCONTRACT_REGISTER_SUCCESS:
       return onNanoContractRegisterSuccess(state, action);
+    case types.NANOCONTRACT_UNREGISTER_SUCCESS:
+      return onNanoContractUnregisterSuccess(state, action);
     case types.NANOCONTRACT_HISTORY_LOAD:
       return onNanoContractHistoryLoad(state, action);
     default:
@@ -1301,6 +1305,31 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
     },
   },
 });
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     ncId: string,
+ *   }
+  * }} action
+ */
+export const onNanoContractUnregisterSuccess = (state, { payload }) => {
+  const { ncId } = payload;
+  const newRegisteredContracts = { ...state.nanoContract.registeredContracts };
+  delete newRegisteredContracts[ncId];
+
+  const newContractsHistory = { ...state.nanoContract.contractsHistory };
+  delete newContractsHistory[ncId];
+
+  return ({
+    ...state,
+    nanoContract: {
+      registeredContracts: { ...newRegisteredContracts },
+      contractsHistory: { ...newContractsHistory },
+    },
+  });
+};
 
 /**
  * @param {Object} state

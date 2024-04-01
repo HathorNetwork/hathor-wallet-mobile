@@ -19,6 +19,7 @@ import {
   nanoContractHistorySuccess,
   nanoContractRegisterFailure,
   nanoContractRegisterSuccess,
+  nanoContractUnregisterSuccess,
   onExceptionCaptured,
   types,
 } from '../actions';
@@ -252,9 +253,36 @@ export function* requestHistoryNanoContract({ payload }) {
   }
 }
 
+/**
+ * Process Nano Contract unregister request.
+ * @param {{
+ *   payload: {
+ *     ncId: string;
+ *   }
+ * }} action with request payload.
+ */
+export function* unregisterNanoContract({ payload }) {
+  const { ncId } = payload;
+
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet.isReady()) {
+    log.debug('Fail unregistering Nano Contract because wallet is not ready yet.');
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), true));
+    return;
+  }
+
+  yield call(wallet.storage.unregisterNanoContract.bind(wallet.storage), ncId);
+
+  log.debug(`Success unregistering Nano Contract. ncId = ${ncId}`);
+  // emit action NANOCONTRACT_REGISTER_SUCCESS
+  yield put(nanoContractUnregisterSuccess({ ncId }));
+}
+
 export function* saga() {
   yield all([
     takeEvery(types.NANOCONTRACT_REGISTER_REQUEST, registerNanoContract),
     takeEvery(types.NANOCONTRACT_HISTORY_REQUEST, requestHistoryNanoContract),
+    takeEvery(types.NANOCONTRACT_UNREGISTER_REQUEST, unregisterNanoContract),
   ]);
 }

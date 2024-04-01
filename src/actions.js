@@ -152,6 +152,12 @@ export const types = {
   NANOCONTRACT_HISTORY_SUCCESS: 'NANOCONTRACT_HISTORY_SUCCESS',
   /* It indicates a Nano Contract history failed to load. */
   NANOCONTRACT_HISTORY_FAILURE: 'NANOCONTRACT_HISTORY_FAILURE',
+  /* It initiates an unregistration process of a Nano Contract. */
+  NANOCONTRACT_UNREGISTER_REQUEST: 'NANOCONTRACT_UNREGISTER_REQUEST',
+  /* It initiates an unregistration process is complete. */
+  NANOCONTRACT_UNREGISTER_SUCCESS: 'NANOCONTRACT_UNREGISTER_SUCCESS',
+  /* It initiates a process to change the address on registered Nano Contract. */
+  NANOCONTRACT_ADDRESS_CHANGE_REQUEST: 'NANOCONTRACT_ADDRESS_CHANGE_REQUEST',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1063,4 +1069,38 @@ export const nanoContractHistorySuccess = () => ({
 export const nanoContractHistoryFailure = (failure) => ({
   type: types.NANOCONTRACT_HISTORY_FAILURE,
   payload: failure,
+});
+
+/**
+ * Request unregistration of a Nano Contract by its key.
+ * @param {{
+ *   ncId: string,
+ * }} Nano Contract ID to unregister.
+ */
+export const nanoContractUnregisterRequest = (unregisterRequest) => ({
+  type: types.NANOCONTRACT_UNREGISTER_REQUEST,
+  payload: unregisterRequest,
+});
+
+/**
+ * Unregistration of a Nano Contract has finished with success.
+ * @param {{
+ *   ncId: string,
+ * }} Nano Contract ID unregistered.
+ */
+export const nanoContractUnregisterSuccess = (unregistered) => ({
+  type: types.NANOCONTRACT_UNREGISTER_SUCCESS,
+  payload: unregistered,
+});
+
+/**
+ * Request a change on the Nano Contract registered.
+ * @param {{
+ *   newAddress: string;
+ *   oldNc: Object;
+ * }} changeAddressRequest
+ */
+export const nanoContractAddressChangeRequest = (changeAddressRequest) => ({
+  type: types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST,
+  payload: changeAddressRequest,
 });
