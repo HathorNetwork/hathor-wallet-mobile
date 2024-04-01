@@ -123,6 +123,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     expect(actionResult.payload.action.payload.entryValue).toEqual(expect.objectContaining({
       address,
       ncId,
+      blueprintId: expect.any(String),
       blueprintName: expect.any(String),
     }));
     // assert termination

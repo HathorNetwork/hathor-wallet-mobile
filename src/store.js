@@ -145,6 +145,19 @@ class HybridStore extends MemoryStore {
   }
 
   /**
+   * Unregister a nano contract.
+   *
+   * @param {string} ncId Nano Contract ID.
+   * @returns {Promise<void>}
+   * @async
+   */
+  async unregisterNanoContract(ncId) {
+    await super.unregisterNanoContract(ncId);
+    const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
+    delete contracts[ncId];
+  }
+
+  /**
    * Clean the storage.
    * @param {boolean} cleanHistory if we should clean the transaction history.
    * @param {boolean} cleanAddresses if we should clean the addresses.
@@ -157,6 +170,7 @@ class HybridStore extends MemoryStore {
     if (cleanTokens) {
       // Remove from the cache
       STORE.removeItem(REGISTERED_TOKENS_KEY);
+      STORE.removeItem(REGISTERED_NANO_CONTRACTS_KEY);
     }
   }
 }

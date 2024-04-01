@@ -24,6 +24,7 @@ import {
   nanoContractHistorySuccess,
   nanoContractRegisterFailure,
   nanoContractRegisterSuccess,
+  nanoContractUnregisterSuccess,
   onExceptionCaptured,
   types,
 } from '../actions';
@@ -80,7 +81,8 @@ export function* registerNanoContract({ payload }) {
 
   let ncState = null;
   try {
-    ncState = yield call(ncApi.getNanoContractState.bind(ncApi), ncId);
+    const response = yield call(ncApi.getNanoContractState.bind(ncApi), ncId);
+    ncState = response.ncState;
   } catch (error) {
     if (error instanceof NanoRequest404Error) {
       yield put(nanoContractRegisterFailure(failureMessage.nanoContractStateNotFound));
@@ -95,7 +97,7 @@ export function* registerNanoContract({ payload }) {
     address,
     ncId,
     blueprintId: ncState.blueprint_id,
-    blueprintName: ncState.blueprint_name
+    blueprintName: ncState.blueprint_name,
   };
   yield call(wallet.storage.registerNanoContract.bind(wallet.storage), ncId, nc);
 
@@ -254,9 +256,35 @@ export function* requestHistoryNanoContract({ payload }) {
   }
 }
 
+/**
+ * Process Nano Contract unregister request.
+ * @param {{
+ *   payload: {
+ *     ncId: string;
+ *   }
+ * }} action with request payload.
+ */
+export function* unregisterNanoContract({ payload }) {
+  const { ncId } = payload;
+
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet.isReady()) {
+    log.debug('Fail unregistering Nano Contract because wallet is not ready yet.');
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), true));
+    return;
+  }
+
+  yield call(wallet.storage.unregisterNanoContract.bind(wallet.storage), ncId);
+
+  log.debug(`Success unregistering Nano Contract. ncId = ${ncId}`);
+  yield put(nanoContractUnregisterSuccess({ ncId }));
+}
+
 export function* saga() {
   yield all([
     takeEvery(types.NANOCONTRACT_REGISTER_REQUEST, registerNanoContract),
     takeEvery(types.NANOCONTRACT_HISTORY_REQUEST, requestHistoryNanoContract),
+    takeEvery(types.NANOCONTRACT_UNREGISTER_REQUEST, unregisterNanoContract),
   ]);
 }
