@@ -38,7 +38,7 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
 import { TxHistory } from '../models';
 import { HathorFlatList } from '../components/HathorFlatList.component';
-import { ActionDot } from '../components/ActionDot.icon';
+import { ActionDotIcon } from '../components/Icon/ActionDot.icon';
 
 /**
  * txList {Array} array with transactions of the selected token
@@ -204,7 +204,7 @@ class MainScreen extends React.Component {
       if (this.props.selectedToken.uid !== hathorConstants.HATHOR_TOKEN_CONFIG.uid) {
         return (
           <SimpleButton onPress={this.tokenInfo}>
-            <ActionDot />
+            <ActionDotIcon />
           </SimpleButton>
         );
       }
