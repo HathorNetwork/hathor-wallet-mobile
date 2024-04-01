@@ -10,7 +10,6 @@ import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
-  FlatList,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
