@@ -30,6 +30,9 @@ const HathorHeader = ({
   const left = React.Children.toArray(children).find(
     (child) => child.type.displayName === HathorHeaderLeft.displayName
   );
+  const central = React.Children.toArray(children).find(
+    (child) => child.type.displayName === HathorHeaderCentral.displayName
+  );
   const right = React.Children.toArray(children).find(
     (child) => child.type.displayName === HathorHeaderRight.displayName
   );
@@ -40,6 +43,7 @@ const HathorHeader = ({
           && (
           <InnerWrapper>
             {left}
+            {central}
             {right}
           </InnerWrapper>
           )}
@@ -70,10 +74,14 @@ const InnerWrapper = ({ children }) => (
 const HathorHeaderLeft = ({ children }) => (<View>{children}</View>);
 HathorHeaderLeft.displayName = 'HathorHeaderLeft';
 
+const HathorHeaderCentral = ({ style, children }) => <View style={style}>{children}</View>;
+HathorHeaderCentral.displayName = 'HathorHeaderCentral';
+
 const HathorHeaderRight = ({ children }) => <View>{children}</View>;
 HathorHeaderRight.displayName = 'HathorHeaderRight';
 
 HathorHeader.Left = HathorHeaderLeft;
+HathorHeader.Central = HathorHeaderCentral;
 HathorHeader.Right = HathorHeaderRight;
 
 const CancelButton = ({ onCancel }) => (
@@ -118,7 +126,7 @@ const RightComponent = ({ rightElement, onCancel }) => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    height: STYLE.headerHeight,
+    minHeight: STYLE.headerHeight,
     flexDirection: 'row',
     alignItems: 'flex-end',
     borderColor: COLORS.borderColor,
