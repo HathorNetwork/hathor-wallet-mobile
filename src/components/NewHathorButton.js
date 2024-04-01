@@ -21,6 +21,11 @@ const NewHathorButton = (props) => {
     textStyle.push(style.textDisabled);
   }
 
+  if (props.discrete) {
+    wrapperViewStyle.push(style.wrapperDiscrete);
+    textStyle.push(style.textDiscrete);
+  }
+
   if (props.secondary) {
     wrapperViewStyle.push(style.wrapperSecondary);
     textStyle.push(style.textSecondary);
@@ -32,6 +37,11 @@ const NewHathorButton = (props) => {
       wrapperViewStyle.push({ borderColor: props.color });
       textStyle.push({ color: props.color });
     }
+  }
+
+  if (props.danger) {
+    wrapperViewStyle.push(style.wrapperSecondaryDanger);
+    textStyle.push(style.textSecondaryDanger);
   }
 
   return (
@@ -79,6 +89,14 @@ const style = StyleSheet.create({
   wrapperSecondaryDisabled: {
     borderColor: COLORS.textColorShadow,
   },
+  wrapperDiscrete: {
+    backgroundColor: COLORS.backgroundColor,
+    borderColor: COLORS.backgroundColor,
+    borderWidth: 1.5,
+  },
+  wrapperSecondaryDanger: {
+    borderColor: COLORS.errorBgColor,
+  },
   touchable: {
     flex: 1,
     flexDirection: 'row',
@@ -100,6 +118,12 @@ const style = StyleSheet.create({
   },
   textDisabled: {
     color: COLORS.textColorShadow,
+  },
+  textDiscrete: {
+    color: COLORS.freeze300,
+  },
+  textSecondaryDanger: {
+    color: COLORS.errorBgColor,
   },
 });
 

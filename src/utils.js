@@ -11,6 +11,7 @@ import React from 'react';
 import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
+import moment from 'moment';
 import baseStyle from './styles/init';
 import { KEYCHAIN_USER } from './constants';
 import { STORE } from './store';
@@ -383,3 +384,5 @@ export function combineURLs(baseURL, relativeURL) {
 export const isPushNotificationAvailableForUser = (state) => (
   state.pushNotification.available && state.pushNotification.deviceRegistered
 );
+
+export const getTimestampFormat = (timestamp) => moment.unix(timestamp).format('DD MMM YYYY [•] HH:mm')

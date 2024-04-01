@@ -9,9 +9,9 @@ import React from 'react';
 import { StyleSheet, Text, View, } from 'react-native';
 import { t } from 'ttag';
 import { COLORS } from '../styles/themes';
-import { CircleCheck } from './CircleCheck.icon';
-import { CircleClock } from './CircleClock.icon';
-import { CircleError } from './CircleError.icon';
+import { CircleCheckIcon } from './Icon/CircleCheck.icon';
+import { CircleClockIcon } from './Icon/CircleClock.icon';
+import { CircleErrorIcon } from './Icon/CircleError.icon';
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -69,22 +69,22 @@ const TransactionStatusBase = ({ label, style, children: icon }) => (
 
 const Confirmed = () => (
   <TransactionStatusBase style={styles.feedbackSuccess} label={t`Confirmed`}>
-    <CircleCheck size={16} color={styles.feedbackSuccess.color} />
+    <CircleCheckIcon size={16} color={styles.feedbackSuccess.color} />
   </TransactionStatusBase>
 );
 const Processing = () => (
   <TransactionStatusBase style={styles.feedbackWarning} label={t`Processing`}>
-    <CircleClock size={16} color={styles.feedbackWarning.color} />
+    <CircleClockIcon size={16} color={styles.feedbackWarning.color} />
   </TransactionStatusBase>
 );
 const Voided = () => (
   <TransactionStatusBase style={styles.feedbackError} label={t`Voided`}>
-    <CircleError size={16} color={styles.feedbackError.color} />
+    <CircleErrorIcon size={16} color={styles.feedbackError.color} />
   </TransactionStatusBase>
 );
 const Unkown = () => (
   <TransactionStatusBase style={styles.freeze} label={t`Unkown`}>
-    <CircleError size={16} color={styles.freeze.color} />
+    <CircleErrorIcon size={16} color={styles.freeze.color} />
   </TransactionStatusBase>
 );
 
