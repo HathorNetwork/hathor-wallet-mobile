@@ -145,6 +145,8 @@ export const types = {
   NANOCONTRACT_REGISTER_FAILURE: 'NANOCONTRACT_REGISTER_FAILURE',
   /* It indicates a Nano Contract registration is complete. */
   NANOCONTRACT_REGISTER_SUCCESS: 'NANOCONTRACT_REGISTER_SUCCESS',
+  /* It updates the redux state of nano contract register status to ready. */
+  NANOCONTRACT_REGISTER_READY: 'NANOCONTRACT_REGISTER_READY',
   /* It indicates a Nano Contract hitory was requested to load. */
   NANOCONTRACT_HISTORY_REQUEST: 'NANOCONTRACT_HISTORY_REQUEST',
   /* It indicates a Nano Contract history is processing. */
@@ -1044,6 +1046,13 @@ export const nanoContractRegisterFailure = (error) => ({
 export const nanoContractRegisterSuccess = (ncEntry) => ({
   type: types.NANOCONTRACT_REGISTER_SUCCESS,
   payload: ncEntry,
+});
+
+/**
+ * Request a change on Nano Contract register status to ready.
+ */
+export const nanoContractRegisterReady = () => ({
+  type: types.NANOCONTRACT_REGISTER_READY,
 });
 
 /**

@@ -7,7 +7,7 @@
 
 import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
-import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS, PRE_SETTINGS_MAINNET, NETWORKSETTINGS_STATUS } from '../constants';
+import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS, PRE_SETTINGS_MAINNET, NETWORKSETTINGS_STATUS, NANOCONTRACT_REGISTER_STATUS } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
@@ -235,6 +235,8 @@ const initialState = {
   networkSettingsInvalid: {},
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
   nanoContract: {
+    registerStatus: NANOCONTRACT_REGISTER_STATUS.READY,
+    registerFailureMessage: null,
     /**
      * registered {{
      *   [ncId: string]: {
@@ -493,6 +495,14 @@ export const reducer = (state = initialState, action) => {
       return onNanoContractUnregisterSuccess(state, action);
     case types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST:
       return onNanoContractAddressChangeRequest(state, action);
+    case types.NANOCONTRACT_REGISTER_REQUEST:
+      return onNanoContractRegisterRequest(state);
+    case types.NANOCONTRACT_REGISTER_FAILURE:
+      return onNanoContractRegisterFailure(state, action);
+    case types.NANOCONTRACT_REGISTER_SUCCESS:
+      return onNanoContractRegisterSuccess(state, action);
+    case types.NANOCONTRACT_REGISTER_READY:
+      return onNanoContractRegisterReady(state);
     case types.SELECTADDRESS_ADDRESSES_REQUEST:
       return onSelectAddressAddressesRequest(state);
     case types.SELECTADDRESS_ADDRESSES_FAILURE:
@@ -1326,6 +1336,30 @@ export const onNetworkSettingsUpdateInvalid = (state, { payload }) => ({
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
 });
 
+export const onNanoContractRegisterRequest = (state) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    registerStatus: NANOCONTRACT_REGISTER_STATUS.LOADING,
+    registerFailureMessage: null,
+  },
+});
+
+/**
+ * @param {Object} state Redux store state
+ * @param {Object} action
+ * @param {Object} action.payload
+ * @param {string} action.payload.error Error message on failure
+ */
+export const onNanoContractRegisterFailure = (state, { payload: { error } }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    registerStatus: NANOCONTRACT_REGISTER_STATUS.FAILED,
+    registerFailureMessage: error,
+  },
+});
+
 /**
  * @param {Object} state
  * @param {{
@@ -1344,10 +1378,19 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
+    registerStatus: NANOCONTRACT_REGISTER_STATUS.SUCCESSFUL,
     registered: {
       ...state.nanoContract.registered,
       [payload.entryKey]: payload.entryValue,
     },
+  },
+});
+
+export const onNanoContractRegisterReady = (state) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    registerStatus: NANOCONTRACT_REGISTER_STATUS.READY,
   },
 });
 

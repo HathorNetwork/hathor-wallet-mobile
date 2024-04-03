@@ -76,6 +76,9 @@ export function* init() {
 export function* registerNanoContract({ payload }) {
   const { address, ncId } = payload;
 
+  // This delay protects this process against user jitter
+  yield delay(720);
+
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
     log.debug('Fail registering Nano Contract because wallet is not ready yet.');
@@ -122,7 +125,7 @@ export function* registerNanoContract({ payload }) {
   };
   yield call(wallet.storage.registerNanoContract.bind(wallet.storage), ncId, nc);
 
-  log.debug('Success registering Nano Contract.');
+  log.debug(`Success registering Nano Contract. nc = ${nc}`);
   // emit action NANOCONTRACT_REGISTER_SUCCESS
   yield put(nanoContractRegisterSuccess({ entryKey: ncId, entryValue: nc }));
 }
