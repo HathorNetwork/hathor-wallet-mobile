@@ -679,11 +679,11 @@ msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
-#: src/sagas/helpers.js:132 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:136 src/screens/SendConfirmScreen.js:104
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
-#: src/sagas/helpers.js:133 src/screens/SendConfirmScreen.js:105
+#: src/sagas/helpers.js:137 src/screens/SendConfirmScreen.js:105
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
@@ -695,7 +695,7 @@ msgstr "Ваш перевод **${ this.amountAndToken }** был подтвер
 msgid "Address"
 msgstr "Адрес"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:264
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:288
 #: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr "Отправить"
@@ -762,11 +762,11 @@ msgstr ""
 msgid "Unregister"
 msgstr "Отменить регистрацию"
 
-#: src/screens/UnregisterToken.js:112
+#: src/screens/UnregisterToken.js:108
 msgid "UNREGISTER TOKEN"
 msgstr "ОТМЕНИТЬ РЕГИСТРАЦИЮ ТОКЕНА"
 
-#: src/screens/UnregisterToken.js:117
+#: src/screens/UnregisterToken.js:113
 msgid ""
 "If you unregister this token **you won't be able to execute operations with "
 "it**, unless you register it again."
@@ -774,19 +774,19 @@ msgstr ""
 "Если вы отмените регистрацию этого токена, **вы не сможете выполнять "
 "операции с ним**, пока не зарегистрируете его снова."
 
-#: src/screens/UnregisterToken.js:120
+#: src/screens/UnregisterToken.js:116
 msgid ""
 "You won't lose your tokens, they will just not appear on this wallet anymore."
 msgstr ""
 "Вы не потеряете свои токены, они просто больше не будут появляться на этом "
 "кошельке."
 
-#: src/screens/UnregisterToken.js:124
+#: src/screens/UnregisterToken.js:120
 #, javascript-format
 msgid "I want to unregister the token **${ tokenLabel }**"
 msgstr "Я хочу отменить регистрацию токена **${ tokenLabel }**"
 
-#: src/screens/UnregisterToken.js:139
+#: src/screens/UnregisterToken.js:135
 msgid "Unregister token"
 msgstr "Отменить регистрацию токена"
 
@@ -878,27 +878,35 @@ msgstr ""
 msgid "txMiningServiceUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:205
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:62
+msgid "walletServiceUrl is required when walletServiceWsUrl is filled."
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:65
+msgid "walletServiceWsUrl is required when walletServiceUrl is filled."
+msgstr ""
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:229
 msgid "Node URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:214
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:239
 msgid "Explorer URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:223
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:248
 msgid "Explorer Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:232
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:257
 msgid "Transaction Mining Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:243
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:268
 msgid "Wallet Service URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:251
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:277
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
@@ -955,23 +963,23 @@ msgstr ""
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 
-#: src/sagas/pushNotification.js:57
+#: src/sagas/pushNotification.js:59
 msgid "Transaction"
 msgstr "Нет транзакций"
 
-#: src/sagas/pushNotification.js:58
+#: src/sagas/pushNotification.js:60
 msgid "Open"
 msgstr "Открыть"
 
-#: src/components/AskForPushNotification.js:21
+#: src/components/AskForPushNotification.js:22
 msgid "Do you want to enable push notifications for this wallet?"
 msgstr ""
 
-#: src/components/AskForPushNotification.js:22
+#: src/components/AskForPushNotification.js:23
 msgid "You can always change this later in the settings menu"
 msgstr ""
 
-#: src/components/AskForPushNotification.js:23
+#: src/components/AskForPushNotification.js:24
 msgid "Yes, enable"
 msgstr ""
 
