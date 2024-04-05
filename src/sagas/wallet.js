@@ -320,7 +320,7 @@ export function* loadTokens() {
   // spawn a new "thread" to handle it.
   //
   // `spawn` is similar to `fork`, but it creates a `detached` fork
-  yield spawn(fetchTokensMetadata, registeredUids);
+  yield spawn(fetchTokensMetadata, registeredUids.filter((token) => token !== htrUid));
 
   // Since we already know here what tokens are registered, we can dispatch actions
   // to asynchronously load the balances of each one. The `put` effect will just dispatch
