@@ -21,7 +21,7 @@ import FeedbackModal from '../../components/FeedbackModal';
 import { networkSettingsPersistStore, networkSettingsUpdateReady } from '../../actions';
 import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
 import { CustomNetworkSettingsNav } from './CustomNetworkSettingsScreen';
-import { feedbackSucceedText, feedbackFailedText, feedbackLoadingText, hasFailed, isLoading, hasSucceed } from './helper';
+import { feedbackSucceedText, feedbackFailedText, feedbackLoadingText, hasFailed, isLoading, hasSucceeded } from './helper';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
 
@@ -102,7 +102,7 @@ export function NetworkPreSettingsScreen({ navigation }) {
         />
       )}
 
-      {hasSucceed(networkSettingsStatus) && (
+      {hasSucceeded(networkSettingsStatus) && (
         <FeedbackModal
           icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
           text={feedbackSucceedText}
