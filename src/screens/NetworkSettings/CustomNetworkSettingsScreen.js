@@ -53,6 +53,20 @@ function validate(formModel) {
     invalidModel.txMiningServiceUrl = t`txMiningServiceUrl is required.`;
   }
 
+  // if any wallet-service fields have a value, then evaluate, otherwise pass
+  if (formModel.walletServiceUrl || formModel.walletServiceWsUrl) {
+    // if not both wallet-service fields have a value, then evaluate, otherwise pass
+    if (!(formModel.walletServiceUrl && formModel.walletServiceWsUrl)) {
+      // invalidade the one that don't have a value
+      if (!formModel.walletServiceUrl) {
+        invalidModel.walletServiceUrl = t`walletServiceUrl is required when walletServiceWsUrl is filled.`;
+      }
+      if (!formModel.walletServiceWsUrl) {
+        invalidModel.walletServiceWsUrl = t`walletServiceWsUrl is required when walletServiceUrl is filled.`;
+      }
+    }
+  }
+
   return invalidModel;
 }
 
@@ -104,18 +118,18 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     nodeUrl: networkSettings.nodeUrl,
     explorerUrl: networkSettings.explorerUrl,
     explorerServiceUrl: networkSettings.explorerServiceUrl,
+    txMiningServiceUrl: networkSettings.txMiningServiceUrl || '',
     walletServiceUrl: networkSettings.walletServiceUrl || '',
     walletServiceWsUrl: networkSettings.walletServiceWsUrl || '',
-    txMiningServiceUrl: networkSettings.txMiningServiceUrl || '',
   });
 
   const [invalidModel, setInvalidModel] = useState({
     nodeUrl: networkSettingsInvalid?.nodeUrl || '',
     explorerUrl: networkSettingsInvalid?.explorerUrl || '',
     explorerServiceUrl: networkSettingsInvalid?.explorerServiceUrl || '',
+    txMiningServiceUrl: networkSettingsInvalid.txMiningServiceUrl || '',
     walletServiceUrl: networkSettingsInvalid?.walletServiceUrl || '',
     walletServiceWsUrl: networkSettingsInvalid?.walletServiceWsUrl || '',
-    txMiningServiceUrl: networkSettingsInvalid.txMiningServiceUrl || '',
   });
 
   // eslint-disable-next-line max-len
