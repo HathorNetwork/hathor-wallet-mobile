@@ -183,7 +183,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
   return (
     <KeyboardAvoidingView
       behavior='padding'
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       keyboardVerticalOffset={48} /* some size for padding bottom on formWrapper */
     >
       <View style={styles.wrapper}>
@@ -223,64 +223,64 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
 
         <ScrollView>
           <View style={[styles.container, styles.formWrapper]}>
+            <SimpleInput
+              keyboardType='url'
+              containerStyle={styles.input}
+              label={t`Node URL`}
+              autoFocus
+              onChangeText={handleInputChange('nodeUrl')}
+              error={invalidModel.nodeUrl}
+              value={formModel.nodeUrl}
+            />
+
+            <SimpleInput
+              keyboardType='url'
+              containerStyle={styles.input}
+              label={t`Explorer URL`}
+              onChangeText={handleInputChange('explorerUrl')}
+              error={invalidModel.explorerUrl}
+              value={formModel.explorerUrl}
+            />
+
+            <SimpleInput
+              keyboardType='url'
+              containerStyle={styles.input}
+              label={t`Explorer Service URL`}
+              onChangeText={handleInputChange('explorerServiceUrl')}
+              error={invalidModel.explorerServiceUrl}
+              value={formModel.explorerServiceUrl}
+            />
+
+            <SimpleInput
+              keyboardType='url'
+              containerStyle={styles.input}
+              label={t`Transaction Mining Service URL`}
+              onChangeText={handleInputChange('txMiningServiceUrl')}
+              error={invalidModel.txMiningServiceUrl}
+              value={formModel.txMiningServiceUrl}
+            />
+
+            {walletServiceEnabled && (
+            <>
               <SimpleInput
                 keyboardType='url'
                 containerStyle={styles.input}
-                label={t`Node URL`}
-                autoFocus
-                onChangeText={handleInputChange('nodeUrl')}
-                error={invalidModel.nodeUrl}
-                value={formModel.nodeUrl}
+                label={t`Wallet Service URL (optional)`}
+                onChangeText={handleInputChange('walletServiceUrl')}
+                error={invalidModel.walletServiceUrl}
+                value={formModel.walletServiceUrl}
               />
 
               <SimpleInput
                 keyboardType='url'
                 containerStyle={styles.input}
-                label={t`Explorer URL`}
-                onChangeText={handleInputChange('explorerUrl')}
-                error={invalidModel.explorerUrl}
-                value={formModel.explorerUrl}
+                label={t`Wallet Service WS URL (optional)`}
+                onChangeText={handleInputChange('walletServiceWsUrl')}
+                error={invalidModel.walletServiceWsUrl}
+                value={formModel.walletServiceWsUrl}
               />
-
-              <SimpleInput
-                keyboardType='url'
-                containerStyle={styles.input}
-                label={t`Explorer Service URL`}
-                onChangeText={handleInputChange('explorerServiceUrl')}
-                error={invalidModel.explorerServiceUrl}
-                value={formModel.explorerServiceUrl}
-              />
-
-              <SimpleInput
-                keyboardType='url'
-                containerStyle={styles.input}
-                label={t`Transaction Mining Service URL`}
-                onChangeText={handleInputChange('txMiningServiceUrl')}
-                error={invalidModel.txMiningServiceUrl}
-                value={formModel.txMiningServiceUrl}
-              />
-
-              {walletServiceEnabled && (
-                <>
-                  <SimpleInput
-                    keyboardType='url'
-                    containerStyle={styles.input}
-                    label={t`Wallet Service URL (optional)`}
-                    onChangeText={handleInputChange('walletServiceUrl')}
-                    error={invalidModel.walletServiceUrl}
-                    value={formModel.walletServiceUrl}
-                  />
-
-                  <SimpleInput
-                    keyboardType='url'
-                    containerStyle={styles.input}
-                    label={t`Wallet Service WS URL (optional)`}
-                    onChangeText={handleInputChange('walletServiceWsUrl')}
-                    error={invalidModel.walletServiceWsUrl}
-                    value={formModel.walletServiceWsUrl}
-                  />
-                </>
-              )}
+            </>
+            )}
 
             <NewHathorButton
               disabled={hasError(invalidModel)}
