@@ -232,7 +232,7 @@ const initialState = {
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
   nanoContract: {
     /**
-     * registeredContracts {{
+     * registered {{
      *   [ncId: string]: {
      *     address: string,
      *     ncId: string,
@@ -250,9 +250,9 @@ const initialState = {
      *   },
      * }
      */
-    registeredContracts: {},
+    registered: {},
     /**
-     * contractsHistory {{
+     * history {{
      *   [ncId: string]: {
      *     txId: string;
      *     timestamp: number;
@@ -289,7 +289,7 @@ const initialState = {
      *   ],
      * }
      */
-    contractsHistory: {},
+    history: {},
   },
 };
 
@@ -1294,8 +1294,8 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
-    registeredContracts: {
-      ...state.nanoContract.registeredContracts,
+    registered: {
+      ...state.nanoContract.registered,
       [payload.entryKey]: payload.entryValue,
     },
   },
@@ -1321,11 +1321,11 @@ export const onNanoContractHistoryLoad = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
-    contractsHistory: {
-      ...state.nanoContract.contractsHistory,
+    history: {
+      ...state.nanoContract.history,
       [payload.ncId]: [
-        ...(state.nanoContract.contractsHistory[payload.ncId] || []),
-        ...payload.history
+        ...(state.nanoContract.history[payload.ncId] || []),
+        payload.history,
       ],
     },
   },
