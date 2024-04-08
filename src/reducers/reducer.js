@@ -242,10 +242,10 @@ const initialState = {
      * }} registered Nano Contracts per wallet address with basic information.
      * @example
      * {
-     *   '00c30fc': {
+     *   '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a': {
      *     address: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
-     *     ncId: '00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185',
-     *     blueprintId: 0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4,
+     *     ncId: '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a',
+     *     blueprintId: '0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4',
      *     blueprintName: 'Swap',
      *   },
      * }
@@ -253,32 +253,38 @@ const initialState = {
     registeredContracts: {},
     /**
      * contractsHistory {{
-     *   [AddressAndNanoContractIdStr: string]: {
+     *   [ncId: string]: {
      *     txId: string;
      *     timestamp: number;
      *     tokens: string[];
-     *     balance: {[uid: string]: Object};
      *     isVoided: boolean;
      *     ncId: string;
      *     ncMethod: string;
      *     blueprintId: string;
-     *     caller: string;
-     *     callerOrigin: 'mine'|'nc'|'oracle'|'wallet';
+     *     caller: Object; // address object
+     *     isMine: boolean;
+     *     balance: {[uid: string]: Object};
      *   }[];
      * }} history of Nano Contracts registered per wallet address.
      * @example
      * {
-     *   'HTeZeYT.00c30fc': [
+     *   '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a': [
      *     {
-     *       txId: "000000203e87e8575f121de16d0eb347bd1473eedd9f46cc76c1bc8d4e5a5fce",
+     *       txId: '000000203e87e8575f121de16d0eb347bd1473eedd9f46cc76c1bc8d4e5a5fce',
      *       timestamp: 1708356261,
      *       tokens: [
-     *         "00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d",
-     *         "0000038c49253f86e6792006dd9124e2c50e6487fde3296b7bd637e3e1a497e7"
+     *         '00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d',
+     *         '0000038c49253f86e6792006dd9124e2c50e6487fde3296b7bd637e3e1a497e7'
      *       ],
      *       isVoided: false,
-     *       ncId: "000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a",
-     *       ncMethod: "swap",
+     *       ncId: '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a',
+     *       ncMethod: 'swap',
+     *       blueprintId: '0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4';
+     *       caller: { base58: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V' },
+     *       isMine: true,
+     *       balance: {
+     *         '00': 300,
+     *       },
      *     },
      *   ],
      * }
