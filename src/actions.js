@@ -1026,7 +1026,6 @@ export const nanoContractRegisterSuccess = (ncEntry) => ({
 /**
  * Nano Contract request fetch history.
  * @param {{
- *   address: string;
  *   ncId: string;
  *   after: string;
  * }} ncEntry Basic information of Nano Contract registered.

@@ -77,7 +77,7 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     const { address, ncId } = fixtures;
 
     // call effect to request history
-    const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ address, ncId }));
+    const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
     // select wallet
     gen.next();
     // feed back wallet
@@ -96,7 +96,7 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     storage.registerNanoContract(ncId, { ncId });
 
     // call effect to request history
-    const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ address, ncId }));
+    const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
     // select wallet
     gen.next();
     // feed back wallet
@@ -119,7 +119,7 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     const { address, ncId } = fixtures;
 
     // call effect to request history
-    const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ address, ncId }));
+    const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
     // select wallet
     gen.next();
     // feed back wallet
