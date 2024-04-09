@@ -7,17 +7,20 @@
 
 import * as React from 'react'
 import Svg, { Mask, Path } from 'react-native-svg'
+import { COLORS } from '../../styles/themes'
+import { DEFAULT_ICON_SIZE } from './constants'
+import { getScale, getViewBox } from './helper'
 
-export const CircleCheck = ({ size = 24, color = '#000' }) => (
+export const CircleCheck = ({ size = DEFAULT_ICON_SIZE, color = COLORS.black }) => (
   <Svg
     xmlns='http://www.w3.org/2000/svg'
     width={size}
     height={size}
-    viewBox={`0 0 ${size} ${size}`}
-    transform={`scale(${size / 24})`}
+    viewBox={getViewBox(size)}
+    transform={getScale(size, DEFAULT_ICON_SIZE)}
     fill='none'
   >
-    <Mask id='a' fill='#fff'>
+    <Mask id='a' fill={COLORS.white}>
       <Path
         fillRule='evenodd'
         d='M19.5 12a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Zm1.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-5-1.94A.75.75 0 0 0 14.94 9l-4.44 4.44L9.06 12A.75.75 0 0 0 8 13.06l2.5 2.5 5.5-5.5Z'

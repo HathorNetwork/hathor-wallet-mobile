@@ -7,14 +7,17 @@
 
 import * as React from 'react'
 import Svg, { Path } from 'react-native-svg'
+import { COLORS } from '../../styles/themes'
+import { DEFAULT_ICON_SIZE } from './constants'
+import { getScale, getViewBox } from './helper'
 
-export const CircleClock = ({ size = 24, color = '#000' }) => (
+export const CircleClock = ({ size = DEFAULT_ICON_SIZE, color = COLORS.black }) => (
   <Svg
     xmlns='http://www.w3.org/2000/svg'
     width={size}
     height={size}
-    viewBox={`0 0 ${size} ${size}`}
-    transform={`scale(${size / 24})`}
+    viewBox={getViewBox(size)}
+    transform={getScale(size, DEFAULT_ICON_SIZE)}
     fill='none'
   >
     <Path
