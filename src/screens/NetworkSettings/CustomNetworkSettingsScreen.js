@@ -11,14 +11,14 @@ import SimpleInput from '../../components/SimpleInput';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import Spinner from '../../components/Spinner';
-import { hasSucceed, hasFailed, isLoading } from './helper';
+import { hasSucceeded, hasFailed, isLoading } from './helper';
 import { AlertUI } from '../../styles/themes';
 import { WALLET_SERVICE_FEATURE_TOGGLE } from '../../constants';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
 const warningText = t`Any token outside mainnet network bear no value. Only change if you know what you are doing.`;
 const feedbackLoadingText = t`Updating custom network settings...`;
-const feedbackSucceedText = t`Network settings successfully customized.`;
+const feedbackSucceededText = t`Network settings successfully customized.`;
 const feedbackFailedText = t`There was an error while customizing network settings. Please try again later.`;
 
 /**
@@ -72,6 +72,9 @@ function validate(formModel) {
 
 const styles = StyleSheet.create({
   wrapper: {
+    flex: 1,
+  },
+  keyboardWrapper: {
     flex: 1,
   },
   container: {
@@ -183,7 +186,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
   return (
     <KeyboardAvoidingView
       behavior='padding'
-      style={{ flex: 1 }}
+      style={styles.keyboardWrapper}
       keyboardVerticalOffset={48} /* some size for padding bottom on formWrapper */
     >
       <View style={styles.wrapper}>
@@ -199,10 +202,10 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           />
         )}
 
-        {hasSucceed(networkSettingsStatus) && (
+        {hasSucceeded(networkSettingsStatus) && (
           <FeedbackModal
             icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
-            text={feedbackSucceedText}
+            text={feedbackSucceededText}
             onDismiss={handleFeedbackModalDismiss}
           />
         )}
