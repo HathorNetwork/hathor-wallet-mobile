@@ -144,6 +144,7 @@ export function* registerNanoContract({ payload }) {
  * @param {number} count Maximum quantity of history items
  * @param {string} after Transaction hash to start to get items
  * @param {Object} wallet Wallet instance from redux state
+ * @throw Error when request code is greater then 399 or when response's success is false
  */
 export async function fetchHistory(ncId, count, after, wallet) {
   /**
@@ -225,8 +226,8 @@ export function* requestHistoryNanoContract({ payload }) {
     // load into store
     const nc = yield call(wallet.storage.getNanoContract.bind(wallet.storage), ncId);
     const loadedHistory = nc.history || [];
-    nc.history = [...loadedHistory, ...history];
-    yield call(wallet.storage.registerNanoContract.bind(wallet.storage), ncId, nc);
+    const newHistory = [...loadedHistory, ...history];
+    yield call(wallet.storage.registerNanoContract.bind(wallet.storage), ncId, newHistory);
 
     // create an opportunity to load into redux
     yield put(nanoContractHistoryLoad({

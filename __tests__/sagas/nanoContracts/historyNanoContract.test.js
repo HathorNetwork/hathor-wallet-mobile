@@ -74,7 +74,7 @@ describe('sagas/nanoContract/fetchHistory', () => {
 describe('sagas/nanoContract/requestHistoryNanoContract', () => {
   test('history without registered contract', () => {
     // arrange Nano Contract registration inputs
-    const { address, ncId } = fixtures;
+    const { ncId } = fixtures;
 
     // call effect to request history
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
@@ -91,7 +91,7 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
 
   test('fetch history fails', () => {
     // arrange Nano Contract registration inputs
-    const { address, ncId } = fixtures;
+    const { ncId } = fixtures;
     const storage = STORE.getStorage();
     storage.registerNanoContract(ncId, { ncId });
 
@@ -116,7 +116,7 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
 
   test('history with success', () => {
     // arrange Nano Contract registration inputs
-    const { address, ncId } = fixtures;
+    const { ncId } = fixtures;
 
     // call effect to request history
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
