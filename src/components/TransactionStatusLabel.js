@@ -67,8 +67,8 @@ const TransactionStatusBase = ({ label, style, children: icon }) => (
   </View>
 );
 
-const Confirmed = () => (
-  <TransactionStatusBase style={styles.feedbackSuccess} label={t`Confirmed`}>
+const Executed = () => (
+  <TransactionStatusBase style={styles.feedbackSuccess} label={t`Executed`}>
     <CircleCheck size={16} color={styles.feedbackSuccess.color} />
   </TransactionStatusBase>
 );
@@ -82,32 +82,22 @@ const Voided = () => (
     <CircleError size={16} color={styles.feedbackError.color} />
   </TransactionStatusBase>
 );
-const Unkown = () => (
-  <TransactionStatusBase style={styles.freeze} label={t`Unkown`}>
-    <CircleError size={16} color={styles.freeze.color} />
-  </TransactionStatusBase>
-);
 
 /**
  * @param {Object} param
- * @param {'confirmed'|'processing'} param.processingStatus Status of a Nano Contract transaction
+ * @param {boolean} param.hasFirstBlock It indicates if a transaction has a first block
  * @param {boolean} param.isVoided Transaction's void flag
  */
-export const TransactionStatusLabel = ({ processingStatus, isVoided = false }) => {
-  const status = isVoided ? 'voided' : processingStatus;
-
-  if (status === 'confirmed') {
-    return Confirmed();
-  }
-
-  if (status === 'processing') {
-    return Processing();
-  }
-
-  if (status === 'voided') {
+export const TransactionStatusLabel = ({ hasFirstBlock, isVoided = false }) => {
+  if (isVoided) {
     return Voided();
   }
 
-  // In case status is undefined
-  return Unkown();
+  if (hasFirstBlock) {
+    return Executed();
+  }
+
+  if (!hasFirstBlock) {
+    return Processing();
+  }
 };
