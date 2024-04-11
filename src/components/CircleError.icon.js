@@ -7,17 +7,14 @@
 
 import * as React from 'react'
 import Svg, { Path } from 'react-native-svg'
-import { COLORS } from '../../styles/themes'
-import { DEFAULT_ICON_SIZE } from './constants'
-import { getScale, getViewBox } from './helper'
 
-export const CircleError = ({ size = DEFAULT_ICON_SIZE, color = COLORS.black }) => (
+export const CircleError = ({ size = 24, color = '#000' }) => (
   <Svg
     xmlns='http://www.w3.org/2000/svg'
     width={size}
     height={size}
-    viewBox={getViewBox(size)}
-    transform={getScale(size, DEFAULT_ICON_SIZE)}
+    viewBox={`0 0 ${size} ${size}`}
+    transform={`scale(${size / 24})`}
     fill='none'
   >
     <Path
