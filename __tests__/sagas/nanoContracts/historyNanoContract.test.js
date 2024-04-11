@@ -80,7 +80,7 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
     // select wallet
     gen.next();
-    // feed back historyMeta 
+    // feed back historyMeta
     gen.next({ [ncId]: { isLoading: true, after: null } });
 
     // assert termination
@@ -95,15 +95,16 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
     // select wallet
     gen.next();
-    // feed back historyMeta 
+    // feed back historyMeta
     gen.next({});
     // feed back wallet
     gen.next(fixtures.wallet.readyAndMine);
 
     // expect failure
     // feed back isNanoContractRegistered
-    expect(gen.next(false).value)
-      .toStrictEqual(put(nanoContractHistoryFailure({ ncId, error: failureMessage.notRegistered })));
+    expect(gen.next(false).value).toStrictEqual(
+      put(nanoContractHistoryFailure({ ncId, error: failureMessage.notRegistered }))
+    );
   });
 
   test('fetch history fails', () => {
@@ -116,7 +117,7 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
     // select wallet
     gen.next();
-    // feed back historyMeta 
+    // feed back historyMeta
     gen.next({});
     // feed back wallet
     gen.next(fixtures.wallet.readyAndMine);
@@ -129,7 +130,9 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
 
     // assert failure
     expect(fetchHistoryCall.payload.fn).toBe(fetchHistory);
-    expect(failureCall).toStrictEqual(put(nanoContractHistoryFailure({ ncId, error: failureMessage.nanoContractHistoryFailure })));
+    expect(failureCall).toStrictEqual(
+      put(nanoContractHistoryFailure({ ncId, error: failureMessage.nanoContractHistoryFailure }))
+    );
     expect(onErrorCall).toStrictEqual(put(onExceptionCaptured(new Error('history'), false)));
   });
 
@@ -141,7 +144,7 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
     // select wallet
     gen.next();
-    // feed back historyMeta 
+    // feed back historyMeta
     gen.next({});
     // feed back wallet
     gen.next(fixtures.wallet.readyAndMine);
@@ -151,13 +154,15 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     const sucessCall = gen.next(fixtures.ncSaga.fetchHistory.successResponse).value;
 
     // assert success
-    const expectedHistory = fixtures.ncSaga.fetchHistory.successResponse.history; 
+    const expectedHistory = fixtures.ncSaga.fetchHistory.successResponse.history;
     expect(fetchHistoryCall.payload.fn).toBe(fetchHistory);
     expect(sucessCall.payload).toHaveProperty('action.payload.ncId');
     expect(sucessCall.payload).toHaveProperty('action.payload.history');
     expect(sucessCall.payload.action.payload.ncId).toStrictEqual(ncId);
     expect(sucessCall.payload.action.payload.history).toStrictEqual(expectedHistory);
-    expect(sucessCall).toStrictEqual(put(nanoContractHistorySuccess({ ncId, history: expectedHistory, after: null })));
+    expect(sucessCall).toStrictEqual(
+      put(nanoContractHistorySuccess({ ncId, history: expectedHistory, after: null }))
+    );
     // assert termination
     expect(gen.next().value).toBeUndefined();
   });

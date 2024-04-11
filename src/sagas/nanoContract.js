@@ -14,8 +14,6 @@ import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
 import {
   nanoContractHistoryFailure,
-  nanoContractHistoryLoad,
-  nanoContractHistoryRequest,
   nanoContractHistorySuccess,
   nanoContractRegisterFailure,
   nanoContractRegisterSuccess,
@@ -234,7 +232,9 @@ export function* requestHistoryNanoContract({ payload }) {
   } catch (error) {
     log.error('Error while fetching Nano Contract history.', error);
     // break loading process and give feedback to user
-    yield put(nanoContractHistoryFailure({ ncId, error: failureMessage.nanoContractHistoryFailure }));
+    yield put(
+      nanoContractHistoryFailure({ ncId, error: failureMessage.nanoContractHistoryFailure })
+    );
     // give opportunity for users to send the error to our team
     yield put(onExceptionCaptured(error, false));
   }
