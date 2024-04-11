@@ -202,10 +202,16 @@ export function* requestHistoryNanoContract({ payload }) {
   const { ncId, after } = payload;
   const count = NANO_CONTRACT_TX_HISTORY_SIZE;
 
+  const historyMeta = yield select((state) => state.nanoContract.historyMeta);
+  if (historyMeta[ncId] && historyMeta[ncId].isLoading) {
+    // Do nothing if nano contract already loading...
+    return;
+  }
+
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
     log.debug('Fail fetching Nano Contract history because wallet is not ready.');
-    yield put(nanoContractHistoryFailure(failureMessage.walletNotReadyError));
+    yield put(nanoContractHistoryFailure({ ncId, error: failureMessage.walletNotReadyError }));
     // This will show user an error modal with the option to send the error to sentry.
     yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), false));
     return;
@@ -215,7 +221,7 @@ export function* requestHistoryNanoContract({ payload }) {
   const isNcRegistered = yield call(fn, ncId);
   if (!isNcRegistered) {
     log.debug('Fail fetching Nano Contract history because Nano Contract is not registered yet.');
-    yield put(nanoContractHistoryFailure(failureMessage.notRegistered));
+    yield put(nanoContractHistoryFailure({ ncId, error: failureMessage.notRegistered }));
     return;
   }
 
@@ -223,31 +229,12 @@ export function* requestHistoryNanoContract({ payload }) {
     // fetch from fullnode
     const { history, next } = yield call(fetchHistory, ncId, count, after, wallet);
 
-    // load into store
-    const nc = yield call(wallet.storage.getNanoContract.bind(wallet.storage), ncId);
-    const loadedHistory = nc.history || [];
-    const newHistory = [...loadedHistory, ...history];
-    yield call(wallet.storage.registerNanoContract.bind(wallet.storage), ncId, newHistory);
-
-    // create an opportunity to load into redux
-    yield put(nanoContractHistoryLoad({
-      ncId,
-      history,
-    }));
-
-    if (!next) {
-      // finish loading and give feedback to user
-      log.debug('Success fetching Nano Contract history.');
-      yield put(nanoContractHistorySuccess());
-      return;
-    }
-
-    // keep loading the next chunk
-    yield put(nanoContractHistoryRequest({ ncId, after: next }));
+    log.debug('Success fetching Nano Contract history.');
+    yield put(nanoContractHistorySuccess({ ncId, history, after: next }));
   } catch (error) {
     log.error('Error while fetching Nano Contract history.', error);
     // break loading process and give feedback to user
-    yield put(nanoContractHistoryFailure(failureMessage.nanoContractHistoryFailure));
+    yield put(nanoContractHistoryFailure({ ncId, error: failureMessage.nanoContractHistoryFailure }));
     // give opportunity for users to send the error to our team
     yield put(onExceptionCaptured(error, false));
   }

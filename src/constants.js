@@ -258,4 +258,4 @@ export const LATENCY_MULTIPLIER = 30; // multiplier per iteration
 /**
  * Nano Contract's transaction history list size.
  */
-export const NANO_CONTRACT_TX_HISTORY_SIZE = 100;
+export const NANO_CONTRACT_TX_HISTORY_SIZE = 20;

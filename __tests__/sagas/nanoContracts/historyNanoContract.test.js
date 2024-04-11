@@ -72,6 +72,21 @@ describe('sagas/nanoContract/fetchHistory', () => {
 });
 
 describe('sagas/nanoContract/requestHistoryNanoContract', () => {
+  test('history loading', () => {
+    // arrange Nano Contract registration inputs
+    const { ncId } = fixtures;
+
+    // call effect to request history
+    const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
+    // select wallet
+    gen.next();
+    // feed back historyMeta 
+    gen.next({ [ncId]: { isLoading: true, after: null } });
+
+    // assert termination
+    expect(gen.next().value).toBeUndefined();
+  });
+
   test('history without registered contract', () => {
     // arrange Nano Contract registration inputs
     const { ncId } = fixtures;
@@ -80,13 +95,15 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
     // select wallet
     gen.next();
+    // feed back historyMeta 
+    gen.next({});
     // feed back wallet
     gen.next(fixtures.wallet.readyAndMine);
 
     // expect failure
     // feed back isNanoContractRegistered
     expect(gen.next(false).value)
-      .toStrictEqual(put(nanoContractHistoryFailure(failureMessage.notRegistered)));
+      .toStrictEqual(put(nanoContractHistoryFailure({ ncId, error: failureMessage.notRegistered })));
   });
 
   test('fetch history fails', () => {
@@ -99,6 +116,8 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
     // select wallet
     gen.next();
+    // feed back historyMeta 
+    gen.next({});
     // feed back wallet
     gen.next(fixtures.wallet.readyAndMine);
     // feed back isNanoContractRegistered
@@ -110,7 +129,7 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
 
     // assert failure
     expect(fetchHistoryCall.payload.fn).toBe(fetchHistory);
-    expect(failureCall).toStrictEqual(put(nanoContractHistoryFailure(failureMessage.nanoContractHistoryFailure, new Error('history'))));
+    expect(failureCall).toStrictEqual(put(nanoContractHistoryFailure({ ncId, error: failureMessage.nanoContractHistoryFailure })));
     expect(onErrorCall).toStrictEqual(put(onExceptionCaptured(new Error('history'), false)));
   });
 
@@ -122,28 +141,23 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
     // select wallet
     gen.next();
+    // feed back historyMeta 
+    gen.next({});
     // feed back wallet
     gen.next(fixtures.wallet.readyAndMine);
     // feed back isNanoContractRegistered
     const fetchHistoryCall = gen.next(true).value;
     // feed back fetchHistory
-    gen.next(fixtures.ncSaga.fetchHistory.successResponse);
-    // feed back getNanoContract
-    gen.next({ ncId });
-    // call registerNanoContract and yield put nanoContractHistoryLoad
-    const historyLoadCall = gen.next().value;
-
-    const sucessCall = gen.next().value;
+    const sucessCall = gen.next(fixtures.ncSaga.fetchHistory.successResponse).value;
 
     // assert success
+    const expectedHistory = fixtures.ncSaga.fetchHistory.successResponse.history; 
     expect(fetchHistoryCall.payload.fn).toBe(fetchHistory);
-    expect(historyLoadCall.payload).toHaveProperty('action.payload.ncId');
-    expect(historyLoadCall.payload).toHaveProperty('action.payload.history');
-    expect(historyLoadCall.payload.action.payload.ncId).toStrictEqual(ncId);
-    expect(historyLoadCall.payload.action.payload.history).toStrictEqual(
-      fixtures.ncSaga.fetchHistory.successResponse.history
-    );
-    expect(sucessCall).toStrictEqual(put(nanoContractHistorySuccess()));
+    expect(sucessCall.payload).toHaveProperty('action.payload.ncId');
+    expect(sucessCall.payload).toHaveProperty('action.payload.history');
+    expect(sucessCall.payload.action.payload.ncId).toStrictEqual(ncId);
+    expect(sucessCall.payload.action.payload.history).toStrictEqual(expectedHistory);
+    expect(sucessCall).toStrictEqual(put(nanoContractHistorySuccess({ ncId, history: expectedHistory, after: null })));
     // assert termination
     expect(gen.next().value).toBeUndefined();
   });

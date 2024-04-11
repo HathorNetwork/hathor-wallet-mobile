@@ -145,8 +145,6 @@ export const types = {
   NANOCONTRACT_REGISTER_SUCCESS: 'NANOCONTRACT_REGISTER_SUCCESS',
   /* It indicates a Nano Contract hitory was requested to load. */
   NANOCONTRACT_HISTORY_REQUEST: 'NANOCONTRACT_HISTORY_REQUEST',
-  /* It indicates a Nano Contract history chunk should load into store and history. */
-  NANOCONTRACT_HISTORY_LOAD: 'NANOCONTRACT_HISTORY_LOAD',
   /* It indicates a Nano Contract history was successfully loaded. */
   NANOCONTRACT_HISTORY_SUCCESS: 'NANOCONTRACT_HISTORY_SUCCESS',
   /* It indicates a Nano Contract history failed to load. */
@@ -1036,29 +1034,24 @@ export const nanoContractHistoryRequest = (ncEntry) => ({
 });
 
 /**
- * Nano Contract history's chunk to load.
- * @param {{
- *   ncId: string;
- *   history: Object;
- * }} chunkToLoad History chunk to load into store and redux.
- */
-export const nanoContractHistoryLoad = (chunkToLoad) => ({
-  type: types.NANOCONTRACT_HISTORY_LOAD,
-  payload: chunkToLoad,
-});
-
-/**
  * Nano Contract history has loaded success.
+ * @param {Object} payload
+ * @param {string} payload.ncId Nano Contract ID.
+ * @param {Object[]} payload.history Nano Contract's history chunk as array.
+ * @param {string} payload.after A new history chunk will be fetched after this hash.
  */
-export const nanoContractHistorySuccess = () => ({
+export const nanoContractHistorySuccess = (payload) => ({
   type: types.NANOCONTRACT_HISTORY_SUCCESS,
+  payload,
 });
 
 /**
  * Nano Contract history has failed.
- * @param {string} error History failure reason.
+ * @param {Object} payload
+ * @param {string} payload.ncId Nano Contract ID.
+ * @param {string} payload.error History failure reason.
  */
-export const nanoContractHistoryFailure = (failure) => ({
+export const nanoContractHistoryFailure = (payload) => ({
   type: types.NANOCONTRACT_HISTORY_FAILURE,
-  payload: failure,
+  payload,
 });

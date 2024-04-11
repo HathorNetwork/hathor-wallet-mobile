@@ -290,6 +290,22 @@ const initialState = {
      * }
      */
     history: {},
+    /**
+     * historyMeta {{
+     *   [ncId: string]: {
+     *     isLoading: boolean;
+     *     after: string;
+     *   };
+     * }} holds the after hash from which a new history chunk should be fetched, exclusively.
+     * @example
+     * {
+     *   '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a': {
+     *     isLoading: false,
+     *     after: '000075e15f015dc768065763acd9b563ec002e37182869965ff2c712bed83e1e',
+     *   },
+     * }
+     */
+    historyMeta: {},
   },
 };
 
@@ -449,8 +465,12 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateInvalid(state, action);
     case types.NANOCONTRACT_REGISTER_SUCCESS:
       return onNanoContractRegisterSuccess(state, action);
-    case types.NANOCONTRACT_HISTORY_LOAD:
-      return onNanoContractHistoryLoad(state, action);
+    case types.NANOCONTRACT_HISTORY_REQUEST:
+      return onNanoContractHistoryRequest(state, action);
+    case types.NANOCONTRACT_HISTORY_FAILURE:
+      return onNanoContractHistoryFailure(state, action);
+    case types.NANOCONTRACT_HISTORY_SUCCESS:
+      return onNanoContractHistorySuccess(state, action);
     default:
       return state;
   }
@@ -1306,18 +1326,59 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
  * @param {{
  *   payload: {
  *     ncId: string;
- *     history: {
- *       txId: string;
- *       timestamp: number;
- *       tokens: string[];
- *       isVoided: boolean;
- *       ncId: string;
- *       ncMethod: string;
- *     };
- *   };
+ *     after: string;
+ *   }
  * }} action
  */
-export const onNanoContractHistoryLoad = (state, { payload }) => ({
+export const onNanoContractHistoryRequest = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    historyMeta: {
+      ...state.nanoContract.historyMeta,
+      [payload.ncId]: {
+        isLoading: true,
+        after: payload.after,
+      },
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     ncId: string;
+ *     error: string;
+ *   }
+ * }} action
+ */
+export const onNanoContractHistoryFailure = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    historyMeta: {
+      ...state.nanoContract.historyMeta,
+      [payload.ncId]: {
+        ...(state.nanoContract.historyMeta[payload.ncId]),
+        isLoading: false,
+        error: payload.error,
+      },
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     ncId: string;
+ *     history: Object[];
+ *     after: string;
+ *   }
+ * }} action
+ */
+export const onNanoContractHistorySuccess = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
@@ -1325,8 +1386,16 @@ export const onNanoContractHistoryLoad = (state, { payload }) => ({
       ...state.nanoContract.history,
       [payload.ncId]: [
         ...(state.nanoContract.history[payload.ncId] || []),
-        payload.history,
+        // we are putting at the bottom because we expect an array with descending order.
+        ...payload.history,
       ],
+    },
+    historyMeta: {
+      ...state.nanoContract.historyMeta,
+      [payload.ncId]: {
+        isLoading: false,
+        after: payload.after,
+      },
     },
   },
 });
