@@ -31,7 +31,7 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
-import { get } from 'lodash';
+import { get, isEmpty  } from 'lodash';
 import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
@@ -154,7 +154,7 @@ export function* startWallet(action) {
   const networkSettings = yield select(getNetworkSettings);
 
   let wallet;
-  if (useWalletService) {
+  if (useWalletService && !isEmpty(networkSettings.walletServiceUrl)) {
     const network = new Network(networkSettings.network);
 
     // Set urls for wallet service

@@ -156,7 +156,7 @@ export function* updateNetworkSettings(action) {
   // - nodeUrl as fallback
   let potentialNetwork;
   let network;
-  if (walletServiceUrl && useWalletService) {
+  if (useWalletService && !isEmpty(walletServiceUrl)) {
     config.setWalletServiceBaseUrl(walletServiceUrl);
     config.setWalletServiceBaseWsUrl(walletServiceWsUrl);
 
@@ -222,6 +222,7 @@ export function* updateNetworkSettings(action) {
     nodeUrl,
     explorerUrl,
     explorerServiceUrl,
+    txMiningServiceUrl,
     walletServiceUrl,
     walletServiceWsUrl,
   };
