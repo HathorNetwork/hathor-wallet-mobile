@@ -679,11 +679,11 @@ msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
-#: src/sagas/helpers.js:132 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:136 src/screens/SendConfirmScreen.js:104
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
-#: src/sagas/helpers.js:133 src/screens/SendConfirmScreen.js:105
+#: src/sagas/helpers.js:137 src/screens/SendConfirmScreen.js:105
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
@@ -921,23 +921,23 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
-#: src/sagas/nanoContract.js:22
+#: src/sagas/nanoContract.js:21
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:23
+#: src/sagas/nanoContract.js:22
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:24
+#: src/sagas/nanoContract.js:23
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:25
+#: src/sagas/nanoContract.js:24
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:26
+#: src/sagas/nanoContract.js:25
 msgid "Error while trying to get Nano Contract state."
 msgstr ""
 
@@ -1119,6 +1119,18 @@ msgstr ""
 msgid ""
 "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr "Это конфигурация вашего токена ${ tokenLabel }: ${ configString }"
+
+#: src/components/TransactionStatusLabel.js:71
+msgid "Executed"
+msgstr ""
+
+#: src/components/TransactionStatusLabel.js:76
+msgid "Processing"
+msgstr ""
+
+#: src/components/TransactionStatusLabel.js:81
+msgid "Voided"
+msgstr ""
 
 #: src/components/TxDetailsModal.js:60
 msgid "Description"
