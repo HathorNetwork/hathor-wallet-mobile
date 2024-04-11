@@ -34,7 +34,7 @@ import { isPushNotificationAvailableForUser } from '../utils';
  */
 const mapStateToProps = (state) => {
   let server;
-  const walletServiceUrl = state.networkSettings.walletServiceUrl;
+  const { walletServiceUrl } = state.networkSettings;
   if (state.useWalletService && !isEmpty(walletServiceUrl)) {
     server = walletServiceUrl;
   }

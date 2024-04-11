@@ -31,11 +31,12 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
-import { get, isEmpty  } from 'lodash';
+import { get, isEmpty } from 'lodash';
 import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
+  networkSettingsKeyMap,
 } from '../constants';
 import { STORE } from '../store';
 import {
@@ -63,6 +64,7 @@ import {
   resetWalletSuccess,
   setTokens,
   onExceptionCaptured,
+  networkSettingsUpdateState,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -151,7 +153,26 @@ export function* startWallet(action) {
     dispatch = _dispatch;
   });
 
-  const networkSettings = yield select(getNetworkSettings);
+  // Network settings either from store or redux state
+  let networkSettings;
+  // Custom network settings are persisted in the app storage
+  const customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
+  if (customNetwork) {
+    networkSettings = customNetwork;
+    // On custom network settings one may use a different
+    // URL for the services from the ones registered by default
+    // for mainnet and testnet in the lib, and the wallet must
+    // behave consistently to the URLs set
+    config.setExplorerServiceBaseUrl(networkSettings.explorerServiceUrl);
+    config.setServerUrl(networkSettings.nodeUrl);
+    config.setTxMiningUrl(networkSettings.txMiningServiceUrl);
+
+    // If the wallet is initialized from quit state it must
+    // update the network settings on redux state
+    yield put(networkSettingsUpdateState(networkSettings));
+  } else {
+    networkSettings = yield select(getNetworkSettings);
+  }
 
   let wallet;
   if (useWalletService && !isEmpty(networkSettings.walletServiceUrl)) {
