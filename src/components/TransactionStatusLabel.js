@@ -9,9 +9,9 @@ import React from 'react';
 import { StyleSheet, Text, View, } from 'react-native';
 import { t } from 'ttag';
 import { COLORS } from '../styles/themes';
-import { CircleCheck } from './CircleCheck.icon';
-import { CircleClock } from './CircleClock.icon';
-import { CircleError } from './CircleError.icon';
+import { CircleCheck } from './Icons/CircleCheck.icon';
+import { CircleClock } from './Icons/CircleClock.icon';
+import { CircleError } from './Icons/CircleError.icon';
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -84,6 +84,9 @@ const Voided = () => (
 );
 
 /**
+ * @description
+ * This component was devised to be used in Nano Contract context
+ * to provide a visual indication for transaction "status".
  * @param {Object} param
  * @param {boolean} param.hasFirstBlock It indicates if a transaction has a first block
  * @param {boolean} param.isVoided Transaction's void flag
@@ -97,7 +100,5 @@ export const TransactionStatusLabel = ({ hasFirstBlock, isVoided = false }) => {
     return Executed();
   }
 
-  if (!hasFirstBlock) {
-    return Processing();
-  }
+  return Processing();
 };
