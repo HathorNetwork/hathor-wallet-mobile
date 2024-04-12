@@ -13,7 +13,7 @@
     "start:clean": "react-native start --reset-cache",
     "lint": "eslint .",
     "test": "jest",
-    "setup": "npm install && ./node_modules/.bin/allow-scripts",
+    "setup": "npm install && ./node_modules/.bin/allow-scripts && npm run postinstall",
     "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/",
     "postinstall": "rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack"
   },
