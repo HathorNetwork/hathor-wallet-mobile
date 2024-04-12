@@ -160,6 +160,7 @@ export const PUSH_NOTIFICATION_FEATURE_TOGGLE = 'push-notification.rollout';
 export const WALLET_CONNECT_FEATURE_TOGGLE = 'wallet-connect-mobile.rollout';
 export const NETWORK_SETTINGS_FEATURE_TOGGLE = 'network-settings.rollout';
 export const NANO_CONTRACT_FEATURE_TOGGLE = 'nano-contract.rollout';
+export const SES_FEATURE_TOGGLE = 'ses-mobile.rollout';
 
 /**
  * Default feature toggle values.
@@ -255,3 +256,8 @@ export const NETWORK_PRIVATENET = 'privatenet';
 export const MAX_RETRIES = 8;
 export const INITIAL_RETRY_LATENCY = 300; // ms
 export const LATENCY_MULTIPLIER = 30; // multiplier per iteration
+
+// This key is read during the react-native initialization (read the patch in
+// patches/react-native+0.72.5.patch), to decide whether to activate SES (secure
+// ecmascript)
+export const SHOULD_ENABLE_SES_STORAGE_KEY = 'should-enable-ses';
