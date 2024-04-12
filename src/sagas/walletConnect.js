@@ -62,8 +62,6 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
-import { Core } from '@walletconnect/core';
-import { Web3Wallet } from '@walletconnect/web3wallet';
 
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
@@ -79,6 +77,8 @@ import {
   setWCConnectionFailed,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
+import { isSESEnabled } from './ses';
+import logger from '../logger';
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'hathor_signMessage',
@@ -106,10 +106,23 @@ function* isWalletConnectEnabled() {
 function* init() {
   try {
     const walletConnectEnabled = yield call(isWalletConnectEnabled);
+    const sesEnabled = yield call(isSESEnabled);
 
     if (!walletConnectEnabled) {
+      logger.debug('wallet connect not enabled');
       return;
     }
+
+    // Even if walletconnect is enabled, we don't want to load its dependencies
+    // when SES is not protecting our app, so ignore it.
+    if (!sesEnabled) {
+      return;
+    }
+
+    // Dynamically import walletconnect modules so that it's not loaded in case
+    // wallet connect is not enabled.
+    const { Core } = yield call(() => import('@walletconnect/core'));
+    const { Web3Wallet } = yield call(() => import('@walletconnect/web3wallet'));
 
     const core = new Core({
       projectId: WALLET_CONNECT_PROJECT_ID,
@@ -141,7 +154,7 @@ function* init() {
 
     yield cancel();
   } catch (error) {
-    console.error('Error loading wallet connect', error);
+    logger.error('Error loading wallet connect', error);
     yield put(onExceptionCaptured(error));
   }
 }
@@ -231,7 +244,7 @@ export function* onSessionRequest(action) {
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
   const requestSession = activeSessions[payload.topic];
   if (!requestSession) {
-    console.error('Could not identify the request session, ignoring request..');
+    logger.error('Could not identify the request session, ignoring request..');
     return;
   }
 
@@ -284,7 +297,7 @@ export function* onSignMessageRequest(data) {
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet.isReady()) {
-    console.error('Got a session request but wallet is not ready, ignoring..');
+    logger.error('Got a session request but wallet is not ready, ignoring..');
     return;
   }
 
@@ -358,7 +371,7 @@ export function* onSignMessageRequest(data) {
       response,
     }));
   } catch (error) {
-    console.log('Captured error on signMessage: ', error);
+    logger.error('Captured error on signMessage: ', error);
     yield put(onExceptionCaptured(error));
   }
 }
@@ -440,7 +453,7 @@ export function* onSessionProposal(action) {
 
     yield call(refreshActiveSessions);
   } catch (error) {
-    console.error('Error on sessionProposal: ', error);
+    logger.error('Error on sessionProposal: ', error);
     yield put(onExceptionCaptured(error));
   }
 }
