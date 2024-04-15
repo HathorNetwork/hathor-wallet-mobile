@@ -15,6 +15,7 @@
     "test": "jest",
     "setup": "npm install && ./node_modules/.bin/allow-scripts && npm run postinstall",
     "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/",
+    "preinstall": "exit 1",
     "postinstall": "rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack"
   },
   "dependencies": {
@@ -24,7 +25,7 @@
     "@fortawesome/react-native-fontawesome": "0.2.7",
     "@hathor/unleash-client": "0.1.0",
     "@hathor/wallet-lib": "1.0.1",
-    "@lavamoat/preinstall-always-fail": "^2.0.0",
+    "@lavamoat/preinstall-always-fail": "2.0.0",
     "@notifee/react-native": "5.7.0",
     "@react-native-async-storage/async-storage": "1.19.0",
     "@react-native-firebase/app": "16.7.0",
