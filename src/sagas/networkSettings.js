@@ -6,7 +6,6 @@ import {
   networkSettingsPersistStore,
   networkSettingsUpdateInvalid,
   networkSettingsUpdateFailure,
-  networkSettingsUpdateState,
   networkSettingsUpdateSuccess,
   networkSettingsUpdateWaiting,
   types,
@@ -36,11 +35,6 @@ import { isWalletServiceEnabled } from './wallet';
  * Initialize the network settings saga when the wallet starts successfully.
  */
 export function* initNetworkSettings() {
-  const customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
-  if (customNetwork) {
-    yield put(networkSettingsUpdateState(customNetwork));
-  }
-
   const status = yield select((state) => state.networkSettingsStatus);
   if (status === NETWORKSETTINGS_STATUS.WAITING) {
     // This branch completes the network update by delivering
@@ -60,13 +54,14 @@ export function* initNetworkSettings() {
  *
  * @param {{
  *    payload: {
- *      stage: string,
- *      network: string,
- *      nodeUrl: string,
- *      explorerUrl: string,
- *      explorerServiceUrl: string,
- *      walletServiceUrl?: string
- *      walletServiceWsUrl?: string
+ *      stage: string;
+ *      network: string;
+ *      nodeUrl: string;
+ *      explorerUrl: string;
+ *      explorerServiceUrl: string;
+ *      txMiningServiceUrl: string;
+ *      walletServiceUrl?: string;
+ *      walletServiceWsUrl?: string;
  *    }
  * }} action contains the payload with the new
  * network settings requested by the user to be processd.
@@ -148,15 +143,15 @@ export function* updateNetworkSettings(action) {
     txMiningServiceUrl: networkSettings.txMiningServiceUrl,
   };
 
+  config.setTxMiningUrl(txMiningServiceUrl);
   config.setExplorerServiceBaseUrl(explorerServiceUrl);
   config.setServerUrl(nodeUrl);
-  config.setTxMiningUrl(txMiningServiceUrl);
 
   // - walletServiceUrl has precedence
   // - nodeUrl as fallback
   let potentialNetwork;
   let network;
-  if (walletServiceUrl && useWalletService) {
+  if (useWalletService && !isEmpty(walletServiceUrl)) {
     config.setWalletServiceBaseUrl(walletServiceUrl);
     config.setWalletServiceBaseWsUrl(walletServiceWsUrl);
 
@@ -222,6 +217,7 @@ export function* updateNetworkSettings(action) {
     nodeUrl,
     explorerUrl,
     explorerServiceUrl,
+    txMiningServiceUrl,
     walletServiceUrl,
     walletServiceWsUrl,
   };
