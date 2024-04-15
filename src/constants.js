@@ -293,7 +293,6 @@ export const MAX_RETRIES = 8;
 export const INITIAL_RETRY_LATENCY = 300; // ms
 export const LATENCY_MULTIPLIER = 30; // multiplier per iteration
 
-<<<<<<< HEAD
 /**
  * Timeout for await wallet load in the context of tx details loading.
  * It awaits 5 minutes.
