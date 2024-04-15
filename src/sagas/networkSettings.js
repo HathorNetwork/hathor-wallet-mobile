@@ -6,7 +6,6 @@ import {
   networkSettingsPersistStore,
   networkSettingsUpdateInvalid,
   networkSettingsUpdateFailure,
-  networkSettingsUpdateState,
   networkSettingsUpdateSuccess,
   networkSettingsUpdateWaiting,
   types,
