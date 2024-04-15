@@ -16,7 +16,7 @@
     "setup": "npm install && ./node_modules/.bin/allow-scripts && npm run postinstall",
     "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/",
     "preinstall": "exit 1",
-    "postinstall": "rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack"
+    "postinstall": "rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack && npx patch-package"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "1.2.36",
