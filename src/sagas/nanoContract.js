@@ -142,7 +142,8 @@ export function* registerNanoContract({ payload }) {
  * @param {number} count Maximum quantity of history items
  * @param {string} after Transaction hash to start to get items
  * @param {Object} wallet Wallet instance from redux state
- * @throw Error when request code is greater then 399 or when response's success is false
+ *
+ * @throws {Error} when request code is greater then 399 or when response's success is false
  */
 export async function fetchHistory(ncId, count, after, wallet) {
   /**
