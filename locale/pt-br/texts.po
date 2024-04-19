@@ -1170,7 +1170,7 @@ msgstr "Processando"
 
 #: src/components/TransactionStatusLabel.js:81
 msgid "Voided"
-msgstr "Invalidada"
+msgstr "Inválida"
 
 #: src/components/TxDetailsModal.js:60
 msgid "Description"
