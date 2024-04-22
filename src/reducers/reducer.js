@@ -294,9 +294,11 @@ const initialState = {
      * historyMeta {{
      *   [ncId: string]: {
      *     isLoading: boolean;
+     *     error: string;
      *     after: string;
      *   };
-     * }} holds the after hash from which a new history chunk should be fetched, exclusively.
+     * }} holds the load state for each nano contract, including the after hash
+     * from which a new history chunk should be fetched, exclusively.
      * @example
      * {
      *   '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a': {

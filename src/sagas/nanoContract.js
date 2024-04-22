@@ -161,7 +161,7 @@ export async function fetchHistory(ncId, count, after, wallet) {
     const network = wallet.getNetworkObject();
     const caller = addressUtils.getAddressFromPubkey(rawTx.nc_pubkey, network).base58;
     // eslint-disable-next-line no-await-in-loop
-    const isMine = await wallet.storage.isAddressMine(caller);
+    const isMine = await wallet.isAddressMine(caller);
     const getTxBalanceFn = transactionUtils.getTxBalance.bind(transactionUtils);
     // eslint-disable-next-line no-await-in-loop
     const balance = await getTxBalanceFn(rawTx, wallet.storage);
