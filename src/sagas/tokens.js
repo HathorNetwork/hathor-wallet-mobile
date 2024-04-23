@@ -19,7 +19,7 @@ import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
 import { specificTypeAndPayload, dispatchAndWait, getRegisteredTokenUids } from './helpers';
-import { mapTokenHistory } from '../utils';
+import { mapToTxHistory } from '../utils';
 import {
   types,
   tokenFetchBalanceRequested,
@@ -33,6 +33,10 @@ import { logger } from '../logger';
 
 const log = logger('tokens-saga');
 
+/**
+ * @readonly
+ * @enum {string}
+ */
 export const TOKEN_DOWNLOAD_STATUS = {
   READY: 'ready',
   FAILED: 'failed',
@@ -133,7 +137,7 @@ function* fetchTokenHistory(action) {
     }
 
     const response = yield call(wallet.getTxHistory.bind(wallet), { token_id: tokenId });
-    const data = response.map((txHistory) => mapTokenHistory(txHistory, tokenId));
+    const data = response.map(mapToTxHistory(tokenId));
 
     log.debug('Success fetching token history.');
     yield put(tokenFetchHistorySuccess(tokenId, data));
@@ -249,7 +253,7 @@ export function* fetchTokenMetadata({ tokenId }) {
       tokenId,
     });
     // eslint-disable-next-line
-    log.log('Error downloading metadata of token', tokenId);
+    log.log(`Error downloading metadata of token ${tokenId}`);
   }
 }
 

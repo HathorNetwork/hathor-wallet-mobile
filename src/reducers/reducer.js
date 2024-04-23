@@ -11,6 +11,7 @@ import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
+import { TxHistory } from '../models';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
@@ -21,12 +22,6 @@ import { WALLET_STATUS } from '../sagas/wallet';
  *      available: int,
  *      locked: int
  *    }
- * }])
- * tokensHistory {Object} stores the history for each token (Dict[tokenUid: str, {
- *  status: string,
- *  oldStatus: string,
- *  updatedAt: int,
- *  data: TxHistory[]
  * }])
  * loadHistoryStatus {Object} progress on loading tx history {
  *   active {boolean} indicates we're loading the tx history
@@ -75,6 +70,16 @@ import { WALLET_STATUS } from '../sagas/wallet';
  * lastSharedIndex {int} The current address index to use
  */
 const initialState = {
+  /**
+   * @type {{
+   *  [tokenUid: string]: {
+   *    status: TOKEN_DOWNLOAD_STATUS;
+   *    oldStatus: string;
+   *    updatedAt: number;
+   *    data: TxHistory[];
+   *  }
+   * }} stores the history for each token ()
+   */
   tokensHistory: {},
   tokensBalance: {},
   loadHistoryStatus: { active: true, error: false },
@@ -820,8 +825,10 @@ export const onTokenFetchBalanceFailed = (state, action) => {
 };
 
 /**
+ * @param {Object} state - redux state
+ * @param {Object} action - token's history
  * @param {String} action.tokenId - The tokenId to mark as success
- * @param {Object} action.data - The token history information to store on redux
+ * @param {TxHistory} action.data - The token history information to store on redux
  */
 export const onTokenFetchHistorySuccess = (state, action) => {
   const { tokenId, data } = action;
