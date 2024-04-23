@@ -124,7 +124,7 @@ export function* isWalletServiceEnabled() {
 
   let walletServiceEnabled = yield call(checkForFeatureFlag, WALLET_SERVICE_FEATURE_TOGGLE);
 
-  // At this point the networkSettings already have been set by startWallet.
+  // At this point, the networkSettings have already been set by startWallet.
   const networkSettings = yield select(getNetworkSettings);
   if (walletServiceEnabled && isEmpty(networkSettings.walletServiceUrl)) {
     // In case of an empty value for walletServiceUrl, it means the user
@@ -142,6 +142,13 @@ export function* startWallet(action) {
     words,
     pin,
   } = action.payload;
+
+  // clean memory storage and metadata before starting the wallet.
+  // This should be cleaned when stopping the wallet,
+  // but the wallet may be closed unexpectedly
+  const storage = STORE.getStorage();
+  yield call([storage.store, storage.store.cleanMetadata]); // clean metadata on memory
+  yield call([storage, storage.cleanStorage], true); // clean transaction history
 
   // As this is a core setting for the wallet, it should be loaded first.
   // Network settings either from store or redux state
@@ -171,13 +178,6 @@ export function* startWallet(action) {
 
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
-
-  // clean storage and metadata before starting the wallet
-  // this should be cleaned when stopping the wallet,
-  // but the wallet may be closed unexpectedly
-  const storage = STORE.getStorage();
-  yield storage.store.cleanMetadata();
-  yield storage.cleanStorage(true);
 
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
