@@ -122,7 +122,17 @@ export function* isWalletServiceEnabled() {
     yield call(() => AsyncStorage.removeItem(IGNORE_WS_TOGGLE_FLAG));
   }
 
-  const walletServiceEnabled = yield call(checkForFeatureFlag, WALLET_SERVICE_FEATURE_TOGGLE);
+  let walletServiceEnabled = yield call(checkForFeatureFlag, WALLET_SERVICE_FEATURE_TOGGLE);
+
+  // At this point, the networkSettings have already been set by startWallet.
+  const networkSettings = yield select(getNetworkSettings);
+  if (walletServiceEnabled && isEmpty(networkSettings.walletServiceUrl)) {
+    // In case of an empty value for walletServiceUrl, it means the user
+    // doesn't intend to use the Wallet Service. Therefore, we need to force
+    // a disable on it.
+    walletServiceEnabled = false;
+    yield put(setUseWalletService(false));
+  }
 
   return walletServiceEnabled;
 }
@@ -133,26 +143,14 @@ export function* startWallet(action) {
     pin,
   } = action.payload;
 
-  const uniqueDeviceId = getUniqueId();
-  const useWalletService = yield call(isWalletServiceEnabled);
-  const usePushNotification = yield call(isPushNotificationEnabled);
-
-  yield put(setUseWalletService(useWalletService));
-  yield put(setAvailablePushNotification(usePushNotification));
-
-  // clean storage and metadata before starting the wallet
-  // this should be cleaned when stopping the wallet,
+  // clean memory storage and metadata before starting the wallet.
+  // This should be cleaned when stopping the wallet,
   // but the wallet may be closed unexpectedly
   const storage = STORE.getStorage();
-  yield storage.store.cleanMetadata();
-  yield storage.cleanStorage(true);
+  yield call([storage.store, storage.store.cleanMetadata]); // clean metadata on memory
+  yield call([storage, storage.cleanStorage], true); // clean transaction history
 
-  // This is a work-around so we can dispatch actions from inside callbacks.
-  let dispatch;
-  yield put((_dispatch) => {
-    dispatch = _dispatch;
-  });
-
+  // As this is a core setting for the wallet, it should be loaded first.
   // Network settings either from store or redux state
   let networkSettings;
   // Custom network settings are persisted in the app storage
@@ -173,6 +171,19 @@ export function* startWallet(action) {
   } else {
     networkSettings = yield select(getNetworkSettings);
   }
+
+  const uniqueDeviceId = getUniqueId();
+  const useWalletService = yield call(isWalletServiceEnabled);
+  const usePushNotification = yield call(isPushNotificationEnabled);
+
+  yield put(setUseWalletService(useWalletService));
+  yield put(setAvailablePushNotification(usePushNotification));
+
+  // This is a work-around so we can dispatch actions from inside callbacks.
+  let dispatch;
+  yield put((_dispatch) => {
+    dispatch = _dispatch;
+  });
 
   let wallet;
   if (useWalletService && !isEmpty(networkSettings.walletServiceUrl)) {
