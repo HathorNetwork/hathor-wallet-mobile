@@ -160,9 +160,15 @@ export async function fetchHistory(ncId, count, after, wallet) {
   for (const rawTx of rawHistory) {
     const network = wallet.getNetworkObject();
     const caller = addressUtils.getAddressFromPubkey(rawTx.nc_pubkey, network).base58;
+    // XXX: Wallet Service Wallet doesn't implement isAddressMine.
+    // It means this method can't run under wallet-service without
+    // throwing an exception.
     // eslint-disable-next-line no-await-in-loop
     const isMine = await wallet.isAddressMine(caller);
     const getTxBalanceFn = transactionUtils.getTxBalance.bind(transactionUtils);
+    // XXX: Wallet Service Wallet doesn't support getTxBalanceFn.
+    // It means this method can't run under wallet-service without
+    // throwing an exception.
     // eslint-disable-next-line no-await-in-loop
     const balance = await getTxBalanceFn(rawTx, wallet.storage);
     const tx = {
