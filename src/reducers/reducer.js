@@ -232,7 +232,7 @@ const initialState = {
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
   nanoContract: {
     /**
-     * registeredContracts {{
+     * registered {{
      *   [ncId: string]: {
      *     address: string,
      *     ncId: string,
@@ -242,15 +242,72 @@ const initialState = {
      * }} registered Nano Contracts per wallet address with basic information.
      * @example
      * {
-     *   '00c30fc': {
+     *   '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a': {
      *     address: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
-     *     ncId: '00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185',
-     *     blueprintId: 0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4,
+     *     ncId: '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a',
+     *     blueprintId: '0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4',
      *     blueprintName: 'Swap',
      *   },
      * }
      */
-    registeredContracts: {},
+    registered: {},
+    /**
+     * history {{
+     *   [ncId: string]: {
+     *     txId: string;
+     *     timestamp: number;
+     *     tokens: string[];
+     *     isVoided: boolean;
+     *     ncId: string;
+     *     ncMethod: string;
+     *     blueprintId: string;
+     *     caller: Object; // address object
+     *     isMine: boolean;
+     *     balance: {[uid: string]: Object};
+     *   }[];
+     * }} history of Nano Contracts registered per wallet address.
+     * @example
+     * {
+     *   '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a': [
+     *     {
+     *       txId: '000000203e87e8575f121de16d0eb347bd1473eedd9f46cc76c1bc8d4e5a5fce',
+     *       timestamp: 1708356261,
+     *       tokens: [
+     *         '00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d',
+     *         '0000038c49253f86e6792006dd9124e2c50e6487fde3296b7bd637e3e1a497e7'
+     *       ],
+     *       isVoided: false,
+     *       ncId: '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a',
+     *       ncMethod: 'swap',
+     *       blueprintId: '0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4';
+     *       caller: { base58: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V' },
+     *       isMine: true,
+     *       balance: {
+     *         '00': 300,
+     *       },
+     *     },
+     *   ],
+     * }
+     */
+    history: {},
+    /**
+     * historyMeta {{
+     *   [ncId: string]: {
+     *     isLoading: boolean;
+     *     error: string;
+     *     after: string;
+     *   };
+     * }} holds the load state for each nano contract, including the after hash
+     * from which a new history chunk should be fetched, exclusively.
+     * @example
+     * {
+     *   '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a': {
+     *     isLoading: false,
+     *     after: '000075e15f015dc768065763acd9b563ec002e37182869965ff2c712bed83e1e',
+     *   },
+     * }
+     */
+    historyMeta: {},
   },
 };
 
@@ -410,6 +467,12 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateInvalid(state, action);
     case types.NANOCONTRACT_REGISTER_SUCCESS:
       return onNanoContractRegisterSuccess(state, action);
+    case types.NANOCONTRACT_HISTORY_REQUEST:
+      return onNanoContractHistoryRequest(state, action);
+    case types.NANOCONTRACT_HISTORY_FAILURE:
+      return onNanoContractHistoryFailure(state, action);
+    case types.NANOCONTRACT_HISTORY_SUCCESS:
+      return onNanoContractHistorySuccess(state, action);
     default:
       return state;
   }
@@ -1253,9 +1316,88 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
-    registeredContracts: {
-      ...state.nanoContract.registeredContracts,
+    registered: {
+      ...state.nanoContract.registered,
       [payload.entryKey]: payload.entryValue,
-    }
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     ncId: string;
+ *     after: string;
+ *   }
+ * }} action
+ */
+export const onNanoContractHistoryRequest = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    historyMeta: {
+      ...state.nanoContract.historyMeta,
+      [payload.ncId]: {
+        isLoading: true,
+        after: payload.after,
+      },
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     ncId: string;
+ *     error: string;
+ *   }
+ * }} action
+ */
+export const onNanoContractHistoryFailure = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    historyMeta: {
+      ...state.nanoContract.historyMeta,
+      [payload.ncId]: {
+        ...(state.nanoContract.historyMeta[payload.ncId]),
+        isLoading: false,
+        error: payload.error,
+      },
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     ncId: string;
+ *     history: Object[];
+ *     after: string;
+ *   }
+ * }} action
+ */
+export const onNanoContractHistorySuccess = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    history: {
+      ...state.nanoContract.history,
+      [payload.ncId]: [
+        ...(state.nanoContract.history[payload.ncId] || []),
+        // we are putting at the bottom because we expect an array with descending order.
+        ...payload.history,
+      ],
+    },
+    historyMeta: {
+      ...state.nanoContract.historyMeta,
+      [payload.ncId]: {
+        isLoading: false,
+        after: payload.after,
+      },
+    },
   },
 });
