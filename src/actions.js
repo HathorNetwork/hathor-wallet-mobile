@@ -137,12 +137,18 @@ export const types = {
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
   /* It updates the redux state of network settings status. */
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
-  /* It initiates a registration process of a Nano Contract.  */
+  /* It initiates a registration process of a Nano Contract. */
   NANOCONTRACT_REGISTER_REQUEST: 'NANOCONTRACT_REGISTER_REQUEST',
-  /* It indicates a Nano Contract registration is couldn't complete.  */
+  /* It indicates a Nano Contract registration is couldn't complete. */
   NANOCONTRACT_REGISTER_FAILURE: 'NANOCONTRACT_REGISTER_FAILURE',
-  /* It indicates a Nano Contract registration is complete.  */
+  /* It indicates a Nano Contract registration is complete. */
   NANOCONTRACT_REGISTER_SUCCESS: 'NANOCONTRACT_REGISTER_SUCCESS',
+  /* It indicates a Nano Contract hitory was requested to load. */
+  NANOCONTRACT_HISTORY_REQUEST: 'NANOCONTRACT_HISTORY_REQUEST',
+  /* It indicates a Nano Contract history was successfully loaded. */
+  NANOCONTRACT_HISTORY_SUCCESS: 'NANOCONTRACT_HISTORY_SUCCESS',
+  /* It indicates a Nano Contract history failed to load. */
+  NANOCONTRACT_HISTORY_FAILURE: 'NANOCONTRACT_HISTORY_FAILURE',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1013,4 +1019,39 @@ export const nanoContractRegisterFailure = (error) => ({
 export const nanoContractRegisterSuccess = (ncEntry) => ({
   type: types.NANOCONTRACT_REGISTER_SUCCESS,
   payload: ncEntry,
+});
+
+/**
+ * Nano Contract request fetch history.
+ * @param {{
+ *   ncId: string;
+ *   after: string;
+ * }} ncEntry Basic information of Nano Contract registered.
+ */
+export const nanoContractHistoryRequest = (ncEntry) => ({
+  type: types.NANOCONTRACT_HISTORY_REQUEST,
+  payload: ncEntry,
+});
+
+/**
+ * Nano Contract history has loaded success.
+ * @param {Object} payload
+ * @param {string} payload.ncId Nano Contract ID.
+ * @param {Object[]} payload.history Nano Contract's history chunk as array.
+ * @param {string} payload.after A new history chunk will be fetched after this hash.
+ */
+export const nanoContractHistorySuccess = (payload) => ({
+  type: types.NANOCONTRACT_HISTORY_SUCCESS,
+  payload,
+});
+
+/**
+ * Nano Contract history has failed.
+ * @param {Object} payload
+ * @param {string} payload.ncId Nano Contract ID.
+ * @param {string} payload.error History failure reason.
+ */
+export const nanoContractHistoryFailure = (payload) => ({
+  type: types.NANOCONTRACT_HISTORY_FAILURE,
+  payload,
 });

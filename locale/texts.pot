@@ -932,6 +932,14 @@ msgstr ""
 msgid "Error while trying to get Nano Contract state."
 msgstr ""
 
+#: src/sagas/nanoContract.js:35
+msgid "Nano Contract not registered."
+msgstr ""
+
+#: src/sagas/nanoContract.js:36
+msgid "Error while trying to fetch Nano Contract history."
+msgstr ""
+
 #: src/sagas/networkSettings.js:88
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
