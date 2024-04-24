@@ -20,6 +20,7 @@ import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import {
   IS_MULTI_TOKEN,
   NETWORK_SETTINGS_FEATURE_TOGGLE,
+  SES_FEATURE_TOGGLE,
   WALLET_CONNECT_FEATURE_TOGGLE,
 } from '../constants';
 import CopyClipboard from '../components/CopyClipboard';
@@ -43,7 +44,8 @@ const mapStateToProps = (state) => {
     uniqueDeviceId: state.uniqueDeviceId,
     server,
     isPushNotificationAvailable: isPushNotificationAvailableForUser(state),
-    walletConnectEnabled: state.featureToggles[WALLET_CONNECT_FEATURE_TOGGLE],
+    walletConnectEnabled: (state.featureToggles[WALLET_CONNECT_FEATURE_TOGGLE]
+      && state.featureToggles[SES_FEATURE_TOGGLE]),
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
   };
 };
