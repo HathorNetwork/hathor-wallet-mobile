@@ -27,6 +27,9 @@ if (typeof localStorage !== 'undefined') {
 // crypto is loaded first, so it can populate global.crypto
 require('crypto')
 
+
+// shims needed by wallet-connect:
+
 const { TextEncoder, TextDecoder } = require('text-encoding');
 
 global.TextDecoder = TextDecoder;
