@@ -12,9 +12,12 @@ import {
   fork,
   take,
   all,
+  put,
 } from 'redux-saga/effects';
 import { checkForFeatureFlag } from './helpers';
 import { SES_FEATURE_TOGGLE, SHOULD_ENABLE_SES_STORAGE_KEY } from '../constants';
+import { logger } from '../logger';
+import { onExceptionCaptured } from '../actions';
 
 const storage = new MMKV();
 
@@ -23,7 +26,7 @@ function verifySesEnabled() {
 }
 
 function disableSes(restart = true) {
-  console.log('disabling SES!!');
+  logger.debug('Disabling SAS');
   storage.set(SHOULD_ENABLE_SES_STORAGE_KEY, false);
 
   if (restart) {
@@ -51,6 +54,7 @@ function* init() {
   if (unleashEnabled && storageEnabled && !sesEnabled) {
     // This is an issue, the environment is not secure, we should issue a fatal
     // error.
+    yield put(onExceptionCaptured(new Error('SES should be enabled but environment is not secure, failing!'), true));
   }
 
   if (!unleashEnabled && storageEnabled) {
