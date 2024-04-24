@@ -27,8 +27,7 @@ if (typeof localStorage !== 'undefined') {
 // crypto is loaded first, so it can populate global.crypto
 require('crypto')
 
-const TextEncoder = require('text-encoding').TextEncoder;
-const TextDecoder = require('text-encoding').TextDecoder;
+const { TextEncoder, TextDecoder } = require('text-encoding');
 
 global.TextDecoder = TextDecoder;
 global.TextEncoder = TextEncoder;
