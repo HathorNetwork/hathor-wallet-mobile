@@ -18,12 +18,9 @@ import { checkForFeatureFlag } from './helpers';
 import { SES_FEATURE_TOGGLE, SHOULD_ENABLE_SES_STORAGE_KEY } from '../constants';
 import { logger } from '../logger';
 import { onExceptionCaptured } from '../actions';
+import { verifySesEnabled } from '../utils';
 
 const storage = new MMKV();
-
-function verifySesEnabled() {
-  return Object.isFrozen([].prototype);
-}
 
 function disableSes(restart = true) {
   logger.debug('Disabling SAS');
