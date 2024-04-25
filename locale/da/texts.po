@@ -106,7 +106,7 @@ msgstr "[Sidste] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:150
+#: src/utils.js:153
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 
@@ -722,11 +722,11 @@ msgstr "SEND ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
-#: src/sagas/helpers.js:136 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:139 src/screens/SendConfirmScreen.js:104
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
-#: src/sagas/helpers.js:137 src/screens/SendConfirmScreen.js:105
+#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:105
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -962,71 +962,67 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
-#: src/sagas/nanoContract.js:21
+#: src/sagas/nanoContract.js:36
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:22
+#: src/sagas/nanoContract.js:37
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:23
+#: src/sagas/nanoContract.js:38
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:24
+#: src/sagas/nanoContract.js:39
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:25
+#: src/sagas/nanoContract.js:40
 msgid "Error while trying to get Nano Contract state."
 msgstr ""
 
-#: src/sagas/nanoContract.js:35
+#: src/sagas/nanoContract.js:41
 msgid "Nano Contract not registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:36
+#: src/sagas/nanoContract.js:42
 msgid "Error while trying to fetch Nano Contract history."
 msgstr ""
 
-#: src/sagas/networkSettings.js:88
+#: src/sagas/networkSettings.js:91
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:95
+#: src/sagas/networkSettings.js:98
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:102
+#: src/sagas/networkSettings.js:105
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:109
+#: src/sagas/networkSettings.js:112
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:116
+#: src/sagas/networkSettings.js:119
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:123
+#: src/sagas/networkSettings.js:126
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:130
+#: src/sagas/networkSettings.js:133
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
 #.  If we fall into this situation, the app should be killed
 #.  for the custom new network settings take effect.
-#: src/sagas/networkSettings.js:290
+#: src/sagas/networkSettings.js:296
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
-
-#: src/sagas/pushNotification.js:59
-msgid "Transaction"
-msgstr "Transaktion"
 
 #: src/sagas/pushNotification.js:60
 msgid "Open"
@@ -1131,7 +1127,7 @@ msgstr "Opret betalingsanmodning"
 msgid "No internet connection"
 msgstr "Ingen internetforbindelse"
 
-#: src/components/PublicExplorerListButton.js:20
+#: src/components/PublicExplorerListButton.js:17
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
@@ -1196,7 +1192,7 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:60
+#: src/components/TxDetailsModal.js:101
 msgid "Description"
 msgstr "Beskrivelse"
 

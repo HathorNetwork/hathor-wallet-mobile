@@ -106,7 +106,7 @@ msgstr "[Última] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:150
+#: src/utils.js:153
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
@@ -738,11 +738,11 @@ msgstr "ENVIAR ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/sagas/helpers.js:136 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:139 src/screens/SendConfirmScreen.js:104
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
-#: src/sagas/helpers.js:137 src/screens/SendConfirmScreen.js:105
+#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:105
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -988,72 +988,68 @@ msgstr ""
 "circunstância altere a rede por sugestão de terceiros, uma vez que ao "
 "alterar a rede você pode ser vítima de fraude."
 
-#: src/sagas/nanoContract.js:21
+#: src/sagas/nanoContract.js:36
 msgid "Nano Contract already registered."
 msgstr "Nano Contract já registrado."
 
-#: src/sagas/nanoContract.js:22
+#: src/sagas/nanoContract.js:37
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr "A wallet não está pronta ainda para registrar Nano Contracts."
 
-#: src/sagas/nanoContract.js:23
+#: src/sagas/nanoContract.js:38
 msgid "The informed address does not belong to the wallet."
 msgstr "O endereço informado não pertence a esta carteira."
 
-#: src/sagas/nanoContract.js:24
+#: src/sagas/nanoContract.js:39
 msgid "Nano Contract not found."
 msgstr "Nano Contract não encontrado"
 
-#: src/sagas/nanoContract.js:25
+#: src/sagas/nanoContract.js:40
 msgid "Error while trying to get Nano Contract state."
 msgstr "Erro ao obter o estado do Nano Contract."
 
-#: src/sagas/nanoContract.js:35
+#: src/sagas/nanoContract.js:41
 msgid "Nano Contract not registered."
 msgstr "Nano Contract não registrado."
 
-#: src/sagas/nanoContract.js:36
+#: src/sagas/nanoContract.js:42
 msgid "Error while trying to fetch Nano Contract history."
 msgstr "Error ao fazer download do histórico de transações do Nano Contract."
 
-#: src/sagas/networkSettings.js:88
+#: src/sagas/networkSettings.js:91
 msgid "Custom Network Settings cannot be empty."
 msgstr "As Configurações de Rede não podem estar vazias."
 
-#: src/sagas/networkSettings.js:95
+#: src/sagas/networkSettings.js:98
 msgid "explorerUrl should be a valid URL."
 msgstr "explorerUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:102
+#: src/sagas/networkSettings.js:105
 msgid "explorerServiceUrl should be a valid URL."
 msgstr "explorerServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:109
+#: src/sagas/networkSettings.js:112
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr "txMiningServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:116
+#: src/sagas/networkSettings.js:119
 msgid "nodeUrl should be a valid URL."
 msgstr "nodeUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:123
+#: src/sagas/networkSettings.js:126
 msgid "walletServiceUrl should be a valid URL."
 msgstr "walletServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:130
+#: src/sagas/networkSettings.js:133
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr "walletServiceWsUrl deve ser uma URL válida."
 
 #.  If we fall into this situation, the app should be killed
 #.  for the custom new network settings take effect.
-#: src/sagas/networkSettings.js:290
+#: src/sagas/networkSettings.js:296
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 "Wallet não encontrada ao persistir a configuração personalizada da rede."
-
-#: src/sagas/pushNotification.js:59
-msgid "Transaction"
-msgstr "Transação"
 
 #: src/sagas/pushNotification.js:60
 msgid "Open"
@@ -1161,7 +1157,7 @@ msgstr "Criar requisição de pagamento"
 msgid "No internet connection"
 msgstr "Sem conexão com a internet"
 
-#: src/components/PublicExplorerListButton.js:20
+#: src/components/PublicExplorerListButton.js:17
 msgid "Public Explorer"
 msgstr "Explorer Público"
 
@@ -1225,7 +1221,7 @@ msgstr "Processando"
 msgid "Voided"
 msgstr "Inválida"
 
-#: src/components/TxDetailsModal.js:60
+#: src/components/TxDetailsModal.js:101
 msgid "Description"
 msgstr "Descrição"
 
