@@ -11,6 +11,7 @@ import React from 'react';
 import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
+import { isEmpty } from 'lodash';
 import baseStyle from './styles/init';
 import { KEYCHAIN_USER } from './constants';
 import { STORE } from './store';
@@ -383,5 +384,10 @@ export function combineURLs(baseURL, relativeURL) {
  * @returns {Boolean} true if available, false otherwise.
  */
 export const isPushNotificationAvailableForUser = (state) => (
-  state.pushNotification.available && state.pushNotification.deviceRegistered
+  state.pushNotification.available
+    // On iOS a simulator can't register a device token on APNS
+    && state.pushNotification.deviceRegistered
+    // If Wallet Service URLs are empty it makes impossible to use the
+    // Wallet Service API to register the device's token.
+    && !isEmpty(state.networkSettings.walletServiceUrl)
 );
