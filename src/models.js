@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Address } from '@hathor/wallet-lib';
 import moment from 'moment';
 import { t } from 'ttag';
 

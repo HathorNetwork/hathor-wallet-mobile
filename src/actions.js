@@ -14,7 +14,6 @@ import {
   METADATA_CONCURRENT_DOWNLOAD,
 } from './constants';
 import { mapToTxHistory } from './utils';
-import { TxHistory } from './models';
 
 // TODO: We should apply the agreed taxonomy to all the actions.
 // See: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/334

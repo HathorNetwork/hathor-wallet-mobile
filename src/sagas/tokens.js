@@ -252,7 +252,6 @@ export function* fetchTokenMetadata({ tokenId }) {
       type: types.TOKEN_FETCH_METADATA_FAILED,
       tokenId,
     });
-    // eslint-disable-next-line
     log.log(`Error downloading metadata of token ${tokenId}`);
   }
 }

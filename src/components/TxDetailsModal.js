@@ -16,7 +16,6 @@ import SlideIndicatorBar from './SlideIndicatorBar';
 import CopyClipboard from './CopyClipboard';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
-import { TxHistory } from '../models';
 
 class TxDetailsModal extends Component {
   style = StyleSheet.create({

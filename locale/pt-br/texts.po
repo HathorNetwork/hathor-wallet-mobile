@@ -1227,7 +1227,7 @@ msgstr "Descrição"
 
 #: src/components/TxDetailsModal.js:103
 msgid "Transaction ID"
-msgstr "Transação"
+msgstr "ID da Transação"
 
 #: src/components/TxDetailsModal.js:104
 msgid "Blueprint Method"
@@ -1235,11 +1235,11 @@ msgstr "Método Blueprint"
 
 #: src/components/TxDetailsModal.js:105
 msgid "Nano Contract ID"
-msgstr ""
+msgstr "ID do Nano Contract"
 
 #: src/components/TxDetailsModal.js:106
 msgid "Nano Contract Caller"
-msgstr ""
+msgstr "Acionador do Nano Contract"
 
 #: src/components/TxDetailsModal.js:107
 msgid "Nano Contract"

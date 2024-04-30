@@ -30,13 +30,11 @@ import { HathorList } from '../components/HathorList';
 import { Strong, str2jsx, renderValue, isTokenNFT } from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
-import infoIcon from '../assets/icons/info-circle.png';
 import { IS_MULTI_TOKEN } from '../constants';
 import { fetchMoreHistory, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
-import { TxHistory } from '../models';
 import { HathorFlatList } from '../components/HathorFlatList';
 import { ActionDot } from '../components/Icons/ActionDot.icon';
 
