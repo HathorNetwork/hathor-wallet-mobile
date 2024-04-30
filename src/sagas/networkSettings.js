@@ -29,7 +29,7 @@ import {
   getFullnodeNetwork,
   getWalletServiceNetwork,
 } from './helpers';
-import { STORE } from '../store';
+import { REGISTERED_TOKENS_KEY, STORE } from '../store';
 import { isWalletServiceEnabled } from './wallet';
 import { logger } from '../logger';
 
@@ -299,6 +299,8 @@ export function* persistNetworkSettings(action) {
     return;
   }
 
+  // Remove registered tokens
+  STORE.removeItem(REGISTERED_TOKENS_KEY);
   // Stop wallet and clean its storage without clean its access data.
   wallet.stop({ cleanStorage: true, cleanAddresses: true });
   // This action should clean the tokens history on redux.
