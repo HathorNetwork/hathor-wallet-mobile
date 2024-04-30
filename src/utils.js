@@ -396,6 +396,11 @@ export const isPushNotificationAvailableForUser = (state) => (
   state.pushNotification.available
     // On iOS a simulator can't register a device token on APNS
     && state.pushNotification.deviceRegistered
+    // TODO: We should drop this condition when we add support other networks
+    // XXX: We don't have support in this app to generate device tokens
+    // to the FCM testnet app. Currently we embbed only the mainnet
+    // configuration file during the build.
+    && state.networkSettings.network === NETWORK_MAINNET
     // If Wallet Service URLs are empty it makes impossible to use the
     // Wallet Service API to register the device's token.
     && !isEmpty(state.networkSettings.walletServiceUrl)
