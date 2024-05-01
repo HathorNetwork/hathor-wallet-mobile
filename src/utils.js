@@ -13,7 +13,7 @@ import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { isEmpty } from 'lodash';
 import baseStyle from './styles/init';
-import { KEYCHAIN_USER } from './constants';
+import { KEYCHAIN_USER, NETWORK_MAINNET } from './constants';
 import { STORE } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
