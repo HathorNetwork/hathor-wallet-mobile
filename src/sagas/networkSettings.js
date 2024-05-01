@@ -12,7 +12,7 @@ import {
   types,
   reloadWalletRequested,
   onExceptionCaptured,
-  networkSettingsUpdateReady
+  networkSettingsUpdateReady,
 } from '../actions';
 import {
   NETWORK_MAINNET,
@@ -23,13 +23,13 @@ import {
   STAGE_DEV_PRIVNET,
   STAGE_TESTNET,
   WALLET_SERVICE_REQUEST_TIMEOUT,
-  NETWORK_PRIVATENET
+  NETWORK_PRIVATENET,
 } from '../constants';
 import {
   getFullnodeNetwork,
   getWalletServiceNetwork,
 } from './helpers';
-import { REGISTERED_TOKENS_KEY, STORE } from '../store';
+import { STORE } from '../store';
 import { isWalletServiceEnabled } from './wallet';
 import { logger } from '../logger';
 
@@ -299,8 +299,8 @@ export function* persistNetworkSettings(action) {
     return;
   }
 
-  // Remove registered tokens
-  STORE.removeItem(REGISTERED_TOKENS_KEY);
+  // Remove registered tokens only
+  yield call([wallet.storage, wallet.storage.cleanStorage], false, false, true)
   // Stop wallet and clean its storage without clean its access data.
   wallet.stop({ cleanStorage: true, cleanAddresses: true });
   // This action should clean the tokens history on redux.
