@@ -15,12 +15,12 @@ import { transactionUtils } from '@hathor/wallet-lib'
  * @readonly
  */
 const VersionInfo = {
-  'Block': { symbol: 'b', label: t`Block` },
-  'Transaction': { symbol: 'tx', label: t`Transaction` },
+  Block: { symbol: 'b', label: t`Block` },
+  Transaction: { symbol: 'tx', label: t`Transaction` },
   'Create Token Transaction': { symbol: 'tk', label: t`Create Token Transaction` },
   'Merged Mined Block': { symbol: 'mb', label: t`Merged Mined Block` },
   'Nano Contract Transaction': { symbol: 'nc', label: t`Nano Contract Transaction` },
-  'Unkown': { symbol: '?', label: t`Unkown` },
+  Unkown: { symbol: '?', label: t`Unkown` },
 };
 
 export class TxHistory {
