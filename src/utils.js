@@ -33,6 +33,12 @@ export const getShortHash = (hash, length = 4) => (
 
 /**
  * It short any string content without length bound.
+ * @param {string} content Content to be sliced in two parts
+ * @param {string} length Size of the substrigs in both sides of `...`
+ *
+ * @example
+ * getShortContent('00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185', 3)
+ * // output: '00c...185'
  */
 export const getShortContent = (content, length = 4) => (
   `${content.substring(0, length)}...${content.substring(content.length - length, content.length)}`
