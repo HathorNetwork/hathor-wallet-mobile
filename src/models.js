@@ -7,20 +7,7 @@
 
 import moment from 'moment';
 import { t } from 'ttag';
-
-/**
- * Map a version name to its corresponding type;
- *
- * @enum
- * @readonly
- */
-const VersionType = {
-  blockVersion: 0,
-  transactionVersion: 1,
-  createTokenTransactionVersion: 2,
-  mergedMinedBlockVersion: 3,
-  nanoContractTransaction: 4,
-};
+import { transactionUtils } from '@hathor/wallet-lib'
 
 /**
  * Map version type to info that should assist on token list visualization.
@@ -28,11 +15,12 @@ const VersionType = {
  * @readonly
  */
 const VersionInfo = {
-  [VersionType.blockVersion]: { symbol: 'b', label: t`Block` },
-  [VersionType.transactionVersion]: { symbol: 'tx', label: t`Transaction` },
-  [VersionType.createTokenTransactionVersion]: { symbol: 'tk', label: t`Create Token Transaction` },
-  [VersionType.mergedMinedBlockVersion]: { symbol: 'mb', label: t`Merged Mined Block` },
-  [VersionType.nanoContractTransaction]: { symbol: 'nc', label: t`Nano Contract Transaction` },
+  'Block': { symbol: 'b', label: t`Block` },
+  'Transaction': { symbol: 'tx', label: t`Transaction` },
+  'Create Token Transaction': { symbol: 'tk', label: t`Create Token Transaction` },
+  'Merged Mined Block': { symbol: 'mb', label: t`Merged Mined Block` },
+  'Nano Contract Transaction': { symbol: 'nc', label: t`Nano Contract Transaction` },
+  'Unkown': { symbol: '?', label: t`Unkown` },
 };
 
 export class TxHistory {
@@ -43,7 +31,6 @@ export class TxHistory {
    *   tokenUid: string;
    *   balance: number;
    *   voided: boolean;
-   *   processingStatus?: 'processing'|'finished';
    *   version: number;
    *   ncId?: string;
    *   ncMethod?: string;
@@ -57,7 +44,6 @@ export class TxHistory {
     balance,
     isVoided,
     version,
-    processingStatus,
     ncId,
     ncMethod,
     ncCaller
@@ -86,10 +72,6 @@ export class TxHistory {
      * @type {number}
      */
     this.version = version;
-    /**
-     * @type {'processing'|'finished'}
-     */
-    this.processingStatus = processingStatus
     /**
      * @type {string?}
      */
@@ -135,11 +117,12 @@ export class TxHistory {
   }
 
   getVersionInfo() {
-    return VersionInfo[this.version];
+    const txType = transactionUtils.getTxType(this);
+    return VersionInfo[txType];
   }
 
   isNanoContract() {
-    return this.version === VersionType.nanoContractTransaction;
+    return this.version === 4;
   }
 
   /**
@@ -151,7 +134,6 @@ export class TxHistory {
    *   timestamp: number;
    *   voided: boolean;
    *   version: number;
-   *   processingStatus: string;
    *   ncId?: string;
    *   ncMethod?: string;
    *   ncCaller?: Address;
@@ -166,7 +148,6 @@ export class TxHistory {
       timestamp,
       balance,
       version,
-      processingStatus,
       ncId,
       ncMethod,
       ncCaller,
@@ -176,7 +157,6 @@ export class TxHistory {
       timestamp,
       balance,
       version,
-      processingStatus,
       ncId,
       ncMethod,
       ncCaller,

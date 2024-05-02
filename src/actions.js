@@ -356,7 +356,7 @@ export const fetchHistoryAndBalance = async (wallet) => {
     const tokenBalance = balance[0].balance;
     tokensBalance[token] = { available: tokenBalance.unlocked, locked: tokenBalance.locked };
     const history = await wallet.getTxHistory({ token_id: token });
-    tokensHistory[token] = history.map((element) => mapToTxHistory(element, token));
+    tokensHistory[token] = history.map(mapToTxHistory(token));
     /* eslint-enable no-await-in-loop */
   }
 
@@ -372,7 +372,7 @@ export const fetchHistoryAndBalance = async (wallet) => {
  */
 export const fetchMoreHistory = async (wallet, token, history) => {
   const newHistory = await wallet.getTxHistory({ token_id: token, skip: history.length });
-  const newHistoryObjects = newHistory.map((element) => mapToTxHistory(element, token));
+  const newHistoryObjects = newHistory.map(mapToTxHistory(token));
 
   return newHistoryObjects;
 };
