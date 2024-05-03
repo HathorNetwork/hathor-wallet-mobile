@@ -12,101 +12,56 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.3.1\n"
 
-#. *
-#.  * Map version type to info that should assist on token list visualization.
-#.  *
-#.  * @readonly
-#.  
-#: src/models.js:32
-msgid "Block"
-msgstr ""
-
-#. *
-#.  * Map version type to info that should assist on token list visualization.
-#.  *
-#.  * @readonly
-#.  
-#: src/models.js:33 src/sagas/pushNotification.js:59
-msgid "Transaction"
-msgstr "Transaktion"
-
-#. *
-#.  * Map version type to info that should assist on token list visualization.
-#.  *
-#.  * @readonly
-#.  
-#: src/models.js:34
-msgid "Create Token Transaction"
-msgstr ""
-
-#. *
-#.  * Map version type to info that should assist on token list visualization.
-#.  *
-#.  * @readonly
-#.  
-#: src/models.js:35
-msgid "Merged Mined Block"
-msgstr ""
-
-#. *
-#.  * Map version type to info that should assist on token list visualization.
-#.  *
-#.  * @readonly
-#.  
-#: src/models.js:36
-msgid "Nano Contract Transaction"
-msgstr ""
-
 #.  This should never happen!
-#: src/models.js:112
+#: src/models.js:79
 msgid "Unknown"
 msgstr "Ukendt"
 
-#: src/models.js:115
+#: src/models.js:82
 #, javascript-format
 msgid "Received ${ symbol }"
 msgstr "Modtaget ${ symbol }"
 
-#: src/models.js:117
+#: src/models.js:84
 msgid "Sent ${ symbol }"
 msgstr "Sendt ${ symbol }"
 
-#: src/models.js:119
+#: src/models.js:86
 #, javascript-format
 msgid "You sent ${ symbol } to yourself"
 msgstr "Du sendte ${ symbol } til dig selv"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:129
+#: src/models.js:96
 msgid "[Today •] HH:mm"
 msgstr "[I dag •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:130
+#: src/models.js:97
 msgid "[Tomorrow •] HH:mm"
 msgstr "[I morgen •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:131
+#: src/models.js:98
 msgid "dddd [•] HH:mm"
 msgstr "dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:132
+#: src/models.js:99
 msgid "[Yesterday •] HH:mm"
 msgstr "[I går •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:133
+#: src/models.js:100
 msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:134
+#: src/models.js:101
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:153
+#: src/utils.js:159
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 
@@ -497,31 +452,31 @@ msgstr ""
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
-#: src/screens/MainScreen.js:128
+#: src/screens/MainScreen.js:126
 msgid "No transactions"
 msgstr "Ingen transaktioner"
 
-#: src/screens/MainScreen.js:131
+#: src/screens/MainScreen.js:129
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr "|share:Del din adresse| med venner og begynd at udveksle tokens"
 
-#: src/screens/MainScreen.js:148
+#: src/screens/MainScreen.js:146
 msgid "Loading transactions"
 msgstr "Indlæser dine transaktioner"
 
-#: src/screens/MainScreen.js:157
+#: src/screens/MainScreen.js:155
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:160
+#: src/screens/MainScreen.js:158
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:537 src/screens/MainScreen.js:569
+#: src/screens/MainScreen.js:535 src/screens/MainScreen.js:567
 msgid "Available Balance"
 msgstr "Tilgængelig saldo"
 
-#: src/screens/MainScreen.js:546
+#: src/screens/MainScreen.js:544
 msgid "Locked"
 msgstr "Låst"
 
@@ -534,11 +489,11 @@ msgstr "Du har lige modtaget **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "BETALINGSANMODNING"
 
-#: src/components/TxDetailsModal.js:100 src/screens/PaymentRequestDetail.js:123
+#: src/components/TxDetailsModal.js:99 src/screens/PaymentRequestDetail.js:123
 msgid "Token"
 msgstr "Token"
 
-#: src/components/TxDetailsModal.js:153 src/screens/PaymentRequestDetail.js:127
+#: src/components/TxDetailsModal.js:152 src/screens/PaymentRequestDetail.js:127
 msgid "Amount"
 msgstr "Antal"
 
@@ -1024,6 +979,10 @@ msgstr ""
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 
+#: src/sagas/pushNotification.js:59
+msgid "Transaction"
+msgstr "Transaktion"
+
 #: src/sagas/pushNotification.js:60
 msgid "Open"
 msgstr "Åben"
@@ -1131,7 +1090,7 @@ msgstr "Ingen internetforbindelse"
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
-#: src/components/PushTxDetailsModal.js:69 src/components/TxDetailsModal.js:102
+#: src/components/PushTxDetailsModal.js:69 src/components/TxDetailsModal.js:101
 msgid "Date & Time"
 msgstr "Dato & Tid"
 
@@ -1192,27 +1151,27 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:101
+#: src/components/TxDetailsModal.js:100
 msgid "Description"
 msgstr "Beskrivelse"
 
-#: src/components/TxDetailsModal.js:103
+#: src/components/TxDetailsModal.js:102
 msgid "Transaction ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:104
+#: src/components/TxDetailsModal.js:103
 msgid "Blueprint Method"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:105
+#: src/components/TxDetailsModal.js:104
 msgid "Nano Contract ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:106
+#: src/components/TxDetailsModal.js:105
 msgid "Nano Contract Caller"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:107
+#: src/components/TxDetailsModal.js:106
 msgid "Nano Contract"
 msgstr ""
 
