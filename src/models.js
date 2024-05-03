@@ -103,7 +103,7 @@ export class TxHistory {
   }
 
   getVersionInfo() {
-    transactionUtils.getTxType(this)
+    return transactionUtils.getTxType(this)
   }
 
   isNanoContract() {
