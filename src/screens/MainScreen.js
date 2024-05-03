@@ -8,7 +8,6 @@
 import React from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   StyleSheet,
   Text,
   View,
@@ -31,12 +30,13 @@ import { HathorList } from '../components/HathorList';
 import { Strong, str2jsx, renderValue, isTokenNFT } from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
-import infoIcon from '../assets/icons/info-circle.png';
 import { IS_MULTI_TOKEN } from '../constants';
 import { fetchMoreHistory, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
+import { HathorFlatList } from '../components/HathorFlatList';
+import { ActionDot } from '../components/Icons/ActionDot.icon';
 
 /**
  * txList {Array} array with transactions of the selected token
@@ -201,10 +201,9 @@ class MainScreen extends React.Component {
     const renderRightElement = () => {
       if (this.props.selectedToken.uid !== hathorConstants.HATHOR_TOKEN_CONFIG.uid) {
         return (
-          <SimpleButton
-            icon={infoIcon}
-            onPress={this.tokenInfo}
-          />
+          <SimpleButton onPress={this.tokenInfo}>
+            <ActionDot />
+          </SimpleButton>
         );
       }
 
@@ -213,7 +212,7 @@ class MainScreen extends React.Component {
 
     return (
       <View style={{
-        flex: 1, backgroundColor: COLORS.lowContrastDetail, justifyContent: 'center', alignItems: 'center',
+        flex: 1, backgroundColor: COLORS.lowContrastDetail, justifyContent: 'flex-start', alignItems: 'center',
       }}
       >
         {this.state.modal}
@@ -228,9 +227,7 @@ class MainScreen extends React.Component {
           token={this.props.selectedToken}
           isNFT={this.isNFT()}
         />
-        <View style={{ flex: 1, justifyContent: 'center', alignSelf: 'stretch' }}>
-          {renderTxHistory()}
-        </View>
+        {renderTxHistory()}
         <OfflineBar />
       </View>
     );
@@ -287,16 +284,14 @@ class TxHistoryView extends React.Component {
 
   render() {
     return (
-      <View style={{ flex: 1, alignSelf: 'stretch' }}>
-        <FlatList
-          data={this.props.txList}
-          renderItem={this.renderItem}
-          keyExtractor={(item) => item.txId}
-          onEndReached={this.loadMoreHistory}
-          onEndReachedThreshold={0.2}
-          ListFooterComponent={this.renderFooter}
-        />
-      </View>
+      <HathorFlatList
+        data={this.props.txList}
+        renderItem={this.renderItem}
+        keyExtractor={(item) => item.txId}
+        onEndReached={this.loadMoreHistory}
+        onEndReachedThreshold={0.2}
+        ListFooterComponent={this.renderFooter}
+      />
     );
   }
 }
@@ -305,30 +300,11 @@ class TxListItem extends React.Component {
   state = { timestamp: null };
 
   style = StyleSheet.create({
-    container: {
-      marginLeft: 16,
-      marginRight: 16,
-      marginTop: 0,
-      borderColor: COLORS.borderColor,
-      borderBottomWidth: 1,
-      shadowOffset: { height: 2, width: 0 },
-      shadowRadius: 4,
-      shadowColor: COLORS.textColor,
-      shadowOpacity: 0.08,
-    },
     view: {
       flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: COLORS.backgroundColor,
-      height: 80,
-    },
-    firstItemBorder: {
-      borderTopLeftRadius: 16,
-      borderTopRightRadius: 16,
-    },
-    lastItemBorder: {
-      borderBottomLeftRadius: 16,
-      borderBottomRightRadius: 16,
+      alignItems: 'flex-start',
+      minHeight: 80,
+      paddingVertical: 24,
     },
     middleView: {
       flex: 1,
@@ -351,10 +327,13 @@ class TxListItem extends React.Component {
       lineHeight: 20,
       fontWeight: 'bold',
     },
-    timestamp: {
+    secondaryText: {
       fontSize: 12,
       lineHeight: 20,
       color: COLORS.textColorShadow,
+    },
+    bold: {
+      fontWeight: 'bold',
     },
   });
 
@@ -365,7 +344,7 @@ class TxListItem extends React.Component {
         color: COLORS.textColorShadowLight,
       },
       timestamp: {
-        ...this.style.timestamp,
+        ...this.style.secondaryText,
         color: COLORS.textColorShadowLight,
       },
       balance: {
@@ -454,37 +433,33 @@ class TxListItem extends React.Component {
   }
 
   render() {
+    /**
+     * @type {{
+     *   item: TxHistory;
+     * }} TxListItem properties
+     */
     const { item } = this.props;
     const style = this.getStyle(item);
     const image = this.getImage(item);
-
-    const viewStyle = [style.view];
-    const touchStyle = [];
-    if (this.props.isFirst) {
-      viewStyle.push(style.firstItemBorder);
-      touchStyle.push(style.firstItemBorder);
-    }
-    if (this.props.isLast) {
-      viewStyle.push(style.lastItemBorder);
-      touchStyle.push(style.lastItemBorder);
-    }
 
     const balanceStr = renderValue(item.balance, this.props.isNFT);
     const description = item.getDescription(this.props.token);
     const { timestamp } = this.state;
     return (
-      <View style={style.container}>
-        <TouchableHighlight style={touchStyle} onPress={() => this.onItemPress(item)}>
-          <View style={viewStyle}>
-            {image}
-            <View style={style.middleView}>
-              <Text style={style.description}>{description}</Text>
-              <Text style={style.timestamp}>{timestamp}</Text>
-            </View>
-            <Text style={style.balance} numberOfLines={1}>{balanceStr}</Text>
+      <TouchableHighlight
+        onPress={() => this.onItemPress(item)}
+        underlayColor={COLORS.primaryOpacity30}
+      >
+        <View style={style.view}>
+          {image}
+          <View style={style.middleView}>
+            <Text style={style.description}>{description}</Text>
+            <Text style={style.secondaryText}>{timestamp}</Text>
+            <Text style={[style.secondaryText, style.bold]}>{item.getVersionInfo().label}</Text>
           </View>
-        </TouchableHighlight>
-      </View>
+          <Text style={style.balance} numberOfLines={1}>{balanceStr}</Text>
+        </View>
+      </TouchableHighlight>
     );
   }
 }

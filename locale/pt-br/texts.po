@@ -13,55 +13,55 @@ msgstr ""
 "X-Generator: Poedit 3.3.1\n"
 
 #.  This should never happen!
-#: src/models.js:24
+#: src/models.js:79
 msgid "Unknown"
 msgstr "Desconhecido"
 
-#: src/models.js:27
+#: src/models.js:82
 #, javascript-format
 msgid "Received ${ symbol }"
 msgstr "Recebido ${ symbol }"
 
-#: src/models.js:29
+#: src/models.js:84
 msgid "Sent ${ symbol }"
 msgstr "Enviado ${ symbol }"
 
-#: src/models.js:31
+#: src/models.js:86
 #, javascript-format
 msgid "You sent ${ symbol } to yourself"
 msgstr "Você enviou ${ symbol } para você mesmo"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:41
+#: src/models.js:96
 msgid "[Today •] HH:mm"
 msgstr "[Hoje •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:42
+#: src/models.js:97
 msgid "[Tomorrow •] HH:mm"
 msgstr "[Amanhã •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:43
+#: src/models.js:98
 msgid "dddd [•] HH:mm"
 msgstr "dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:44
+#: src/models.js:99
 msgid "[Yesterday •] HH:mm"
 msgstr "[Ontem •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:45
+#: src/models.js:100
 msgid "[Last] dddd [•] HH:mm"
 msgstr "[Última] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:46
+#: src/models.js:101
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:146
+#: src/utils.js:159
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
@@ -485,11 +485,11 @@ msgstr "Ocorreu um erro ao carregar seu histórico de transações"
 msgid "Please |tryAgain:try again|"
 msgstr "Por favor |tryAgain:tente novamente|"
 
-#: src/screens/MainScreen.js:560 src/screens/MainScreen.js:592
+#: src/screens/MainScreen.js:535 src/screens/MainScreen.js:567
 msgid "Available Balance"
 msgstr "Saldo Disponível"
 
-#: src/screens/MainScreen.js:569
+#: src/screens/MainScreen.js:544
 msgid "Locked"
 msgstr "Bloqueado"
 
@@ -502,11 +502,11 @@ msgstr "Você recebeu **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "REQUISIÇÃO DE PAGAMENTO"
 
-#: src/components/TxDetailsModal.js:59 src/screens/PaymentRequestDetail.js:123
+#: src/components/TxDetailsModal.js:99 src/screens/PaymentRequestDetail.js:123
 msgid "Token"
 msgstr "Token"
 
-#: src/components/TxDetailsModal.js:106 src/screens/PaymentRequestDetail.js:127
+#: src/components/TxDetailsModal.js:152 src/screens/PaymentRequestDetail.js:127
 msgid "Amount"
 msgstr "Quantidade"
 
@@ -693,11 +693,11 @@ msgstr "ENVIAR ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/sagas/helpers.js:136 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:139 src/screens/SendConfirmScreen.js:104
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
-#: src/sagas/helpers.js:137 src/screens/SendConfirmScreen.js:105
+#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:105
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -943,65 +943,65 @@ msgstr ""
 "circunstância altere a rede por sugestão de terceiros, uma vez que ao "
 "alterar a rede você pode ser vítima de fraude."
 
-#: src/sagas/nanoContract.js:21
+#: src/sagas/nanoContract.js:36
 msgid "Nano Contract already registered."
 msgstr "Nano Contract já registrado."
 
-#: src/sagas/nanoContract.js:22
+#: src/sagas/nanoContract.js:37
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr "A wallet não está pronta ainda para registrar Nano Contracts."
 
-#: src/sagas/nanoContract.js:23
+#: src/sagas/nanoContract.js:38
 msgid "The informed address does not belong to the wallet."
 msgstr "O endereço informado não pertence a esta carteira."
 
-#: src/sagas/nanoContract.js:24
+#: src/sagas/nanoContract.js:39
 msgid "Nano Contract not found."
 msgstr "Nano Contract não encontrado"
 
-#: src/sagas/nanoContract.js:25
+#: src/sagas/nanoContract.js:40
 msgid "Error while trying to get Nano Contract state."
 msgstr "Erro ao obter o estado do Nano Contract."
 
-#: src/sagas/nanoContract.js:35
+#: src/sagas/nanoContract.js:41
 msgid "Nano Contract not registered."
 msgstr "Nano Contract não registrado."
 
-#: src/sagas/nanoContract.js:36
+#: src/sagas/nanoContract.js:42
 msgid "Error while trying to fetch Nano Contract history."
 msgstr "Error ao fazer download do histórico de transações do Nano Contract."
 
-#: src/sagas/networkSettings.js:88
+#: src/sagas/networkSettings.js:91
 msgid "Custom Network Settings cannot be empty."
 msgstr "As Configurações de Rede não podem estar vazias."
 
-#: src/sagas/networkSettings.js:95
+#: src/sagas/networkSettings.js:98
 msgid "explorerUrl should be a valid URL."
 msgstr "explorerUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:102
+#: src/sagas/networkSettings.js:105
 msgid "explorerServiceUrl should be a valid URL."
 msgstr "explorerServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:109
+#: src/sagas/networkSettings.js:112
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr "txMiningServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:116
+#: src/sagas/networkSettings.js:119
 msgid "nodeUrl should be a valid URL."
 msgstr "nodeUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:123
+#: src/sagas/networkSettings.js:126
 msgid "walletServiceUrl should be a valid URL."
 msgstr "walletServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:130
+#: src/sagas/networkSettings.js:133
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr "walletServiceWsUrl deve ser uma URL válida."
 
 #.  If we fall into this situation, the app should be killed
 #.  for the custom new network settings take effect.
-#: src/sagas/networkSettings.js:290
+#: src/sagas/networkSettings.js:296
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 "Wallet não encontrada ao persistir a configuração personalizada da rede."
@@ -1116,15 +1116,15 @@ msgstr "Criar requisição de pagamento"
 msgid "No internet connection"
 msgstr "Sem conexão com a internet"
 
-#: src/components/PublicExplorerListButton.js:19
+#: src/components/PublicExplorerListButton.js:17
 msgid "Public Explorer"
 msgstr "Explorer Público"
 
-#: src/components/PushTxDetailsModal.js:69 src/components/TxDetailsModal.js:61
+#: src/components/PushTxDetailsModal.js:69 src/components/TxDetailsModal.js:101
 msgid "Date & Time"
 msgstr "Data & Hora"
 
-#: src/components/PushTxDetailsModal.js:70 src/components/TxDetailsModal.js:62
+#: src/components/PushTxDetailsModal.js:70
 msgid "ID"
 msgstr "ID"
 
@@ -1180,9 +1180,29 @@ msgstr "Processando"
 msgid "Voided"
 msgstr "Inválida"
 
-#: src/components/TxDetailsModal.js:60
+#: src/components/TxDetailsModal.js:100
 msgid "Description"
 msgstr "Descrição"
+
+#: src/components/TxDetailsModal.js:102
+msgid "Transaction ID"
+msgstr "ID da Transação"
+
+#: src/components/TxDetailsModal.js:103
+msgid "Blueprint Method"
+msgstr "Método do Blueprint"
+
+#: src/components/TxDetailsModal.js:104
+msgid "Nano Contract ID"
+msgstr "ID do Nano Contract"
+
+#: src/components/TxDetailsModal.js:105
+msgid "Nano Contract Caller"
+msgstr "Endereço de assinatura do Nano Contract"
+
+#: src/components/TxDetailsModal.js:106
+msgid "Nano Contract"
+msgstr "Nano Contract"
 
 #: src/components/WalletConnect/ApproveRejectModal.js:63
 msgid "Reject"

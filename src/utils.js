@@ -32,6 +32,19 @@ export const getShortHash = (hash, length = 4) => (
 );
 
 /**
+ * It short any string content without length bound.
+ * @param {string} content Content to be sliced in two parts
+ * @param {string} length Size of the substrigs in both sides of `...`
+ *
+ * @example
+ * getShortContent('00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185', 3)
+ * // output: '00c...185'
+ */
+export const getShortContent = (content, length = 4) => (
+  `${content.substring(0, length)}...${content.substring(content.length - length, content.length)}`
+);
+
+/**
  * Get amount text value and transform in its integer value
  *
  * "10" => 1000
@@ -329,22 +342,16 @@ export const changePin = async (wallet, oldPin, newPin) => {
 };
 
 /**
- * Map history element to expected TxHistory model object
+ * Curry function that maps a raw history element to an expected TxHistory model object.
  *
- * element {Object} Tx history element with {txId, timestamp, balance, voided?}
- * token {string} Token uid
+ * @param {string} tokenUid - Token uid
+ *
+ * @returns {(rawTxHistory: Object) => TxHistory} A function that maps a raw
+ * transaction history element to a TxHistory object
  */
-export const mapTokenHistory = (element, token) => {
-  const data = {
-    txId: element.txId,
-    timestamp: element.timestamp,
-    balance: element.balance,
-    // in wallet service this comes as 0/1 and in the full node comes with true/false
-    isVoided: Boolean(element.voided),
-    tokenUid: token
-  };
-  return new TxHistory(data);
-};
+export const mapToTxHistory = (tokenUid) => (rawTxHistory) => (
+  TxHistory.from(rawTxHistory, tokenUid)
+);
 
 /**
  * Select the push notification settings from redux state

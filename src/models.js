@@ -7,14 +7,69 @@
 
 import moment from 'moment';
 import { t } from 'ttag';
+import { transactionUtils, constants } from '@hathor/wallet-lib'
 
 export class TxHistory {
-  constructor({ txId, timestamp, tokenUid, balance, isVoided }) {
+  /**
+   * @param {{
+   *   txId: string;
+   *   timestamp: number;
+   *   tokenUid: string;
+   *   balance: number;
+   *   voided: boolean;
+   *   version: number;
+   *   ncId?: string;
+   *   ncMethod?: string;
+   *   ncCaller?: Address;
+   * }}
+   */
+  constructor({
+    txId,
+    timestamp,
+    tokenUid,
+    balance,
+    isVoided,
+    version,
+    ncId,
+    ncMethod,
+    ncCaller
+  }) {
+    /**
+     * @type {string}
+     */
     this.txId = txId;
+    /**
+     * @type {number}
+     */
     this.timestamp = timestamp;
+    /**
+     * @type {string}
+     */
     this.tokenUid = tokenUid;
+    /**
+     * @type {number}
+     */
     this.balance = balance;
+    /**
+     * @type {boolean}
+     */
     this.isVoided = isVoided;
+    /**
+     * @type {number}
+     */
+    this.version = version;
+    /**
+     * @type {string?}
+     */
+    this.ncId = ncId;
+    /**
+     * @type {string?}
+     */
+    this.ncMethod = ncMethod;
+    /**
+     * @type {Address?}
+     */
+    this.ncCaller = ncCaller;
   }
 
   getDescription(token) {
@@ -44,6 +99,55 @@ export class TxHistory {
       lastDay: t`[Yesterday •] HH:mm`,
       lastWeek: t`[Last] dddd [•] HH:mm`,
       sameElse: t`DD MMM YYYY [•] HH:mm`,
+    });
+  }
+
+  getVersionInfo() {
+    return transactionUtils.getTxType(this)
+  }
+
+  isNanoContract() {
+    return this.version === constants.NANO_CONTRACTS_VERSION;
+  }
+
+  /**
+   * Creates a TxHistory instance from raw transaction history data.
+   *
+   * @param {{
+   *   txId: string;
+   *   balance: number;
+   *   timestamp: number;
+   *   voided: boolean;
+   *   version: number;
+   *   ncId?: string;
+   *   ncMethod?: string;
+   *   ncCaller?: Address;
+   * }} rawTxHistory - The raw transaction history data.
+   * @param {string} tokenUid - The UID of the token associated with the transaction.
+   *
+   * @returns {TxHistory} A TxHistory instance representing the transaction.
+   */
+  static from(rawTxHistory, tokenUid) {
+    const {
+      txId,
+      timestamp,
+      balance,
+      version,
+      ncId,
+      ncMethod,
+      ncCaller,
+    } = rawTxHistory;
+    return new TxHistory({
+      txId,
+      timestamp,
+      balance,
+      version,
+      ncId,
+      ncMethod,
+      ncCaller,
+      tokenUid,
+      // in wallet service this comes as 0/1 and in the full node comes with true/false
+      isVoided: Boolean(rawTxHistory.voided),
     });
   }
 }

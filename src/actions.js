@@ -13,7 +13,7 @@ import {
 import {
   METADATA_CONCURRENT_DOWNLOAD,
 } from './constants';
-import { mapTokenHistory } from './utils';
+import { mapToTxHistory } from './utils';
 
 // TODO: We should apply the agreed taxonomy to all the actions.
 // See: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/334
@@ -356,7 +356,7 @@ export const fetchHistoryAndBalance = async (wallet) => {
     const tokenBalance = balance[0].balance;
     tokensBalance[token] = { available: tokenBalance.unlocked, locked: tokenBalance.locked };
     const history = await wallet.getTxHistory({ token_id: token });
-    tokensHistory[token] = history.map((element) => mapTokenHistory(element, token));
+    tokensHistory[token] = history.map(mapToTxHistory(token));
     /* eslint-enable no-await-in-loop */
   }
 
@@ -372,7 +372,7 @@ export const fetchHistoryAndBalance = async (wallet) => {
  */
 export const fetchMoreHistory = async (wallet, token, history) => {
   const newHistory = await wallet.getTxHistory({ token_id: token, skip: history.length });
-  const newHistoryObjects = newHistory.map((element) => mapTokenHistory(element, token));
+  const newHistoryObjects = newHistory.map(mapToTxHistory(token));
 
   return newHistoryObjects;
 };
@@ -546,8 +546,8 @@ export const tokenFetchHistoryRequested = (tokenId, force) => ({
 });
 
 /**
- * tokenId: The tokenId to store history data
- * data: The downloaded history data
+ * @param {string} tokenId: The tokenId to store history data
+ * @param {TxHistory} data: The downloaded history data
  */
 export const tokenFetchHistorySuccess = (tokenId, data) => ({
   type: types.TOKEN_FETCH_HISTORY_SUCCESS,

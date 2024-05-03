@@ -13,6 +13,7 @@ import { HslColor } from '../HslColor';
  * Light theme color scheme
  */
 export const COLORS = {
+  black: '#000',
   /**
    * @type {string} The main background color
    */
