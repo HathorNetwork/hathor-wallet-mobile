@@ -21,6 +21,7 @@ export class TxHistory {
    *   ncId?: string;
    *   ncMethod?: string;
    *   ncCaller?: Address;
+   *   firstBlock?: string;
    * }}
    */
   constructor({
@@ -32,7 +33,8 @@ export class TxHistory {
     version,
     ncId,
     ncMethod,
-    ncCaller
+    ncCaller,
+    firstBlock,
   }) {
     /**
      * @type {string}
@@ -70,6 +72,10 @@ export class TxHistory {
      * @type {Address?}
      */
     this.ncCaller = ncCaller;
+    /**
+     * @type {string?}
+     */
+    this.firstBlock = firstBlock;
   }
 
   getDescription(token) {
@@ -110,6 +116,11 @@ export class TxHistory {
     return this.version === constants.NANO_CONTRACTS_VERSION;
   }
 
+  hasFirstBlock() {
+    // not null, not undefined and not string empty
+    return this.firstBlock != null && this.firstBlock.trim() !== '';
+  }
+
   /**
    * Creates a TxHistory instance from raw transaction history data.
    *
@@ -122,6 +133,7 @@ export class TxHistory {
    *   ncId?: string;
    *   ncMethod?: string;
    *   ncCaller?: Address;
+   *   firstBlock?: string;
    * }} rawTxHistory - The raw transaction history data.
    * @param {string} tokenUid - The UID of the token associated with the transaction.
    *
@@ -136,6 +148,7 @@ export class TxHistory {
       ncId,
       ncMethod,
       ncCaller,
+      firstBlock,
     } = rawTxHistory;
     return new TxHistory({
       txId,
@@ -148,6 +161,7 @@ export class TxHistory {
       tokenUid,
       // in wallet service this comes as 0/1 and in the full node comes with true/false
       isVoided: Boolean(rawTxHistory.voided),
+      firstBlock,
     });
   }
 }
