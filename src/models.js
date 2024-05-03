@@ -7,7 +7,7 @@
 
 import moment from 'moment';
 import { t } from 'ttag';
-import { transactionUtils } from '@hathor/wallet-lib'
+import { transactionUtils, constants } from '@hathor/wallet-lib'
 
 export class TxHistory {
   /**
@@ -107,7 +107,7 @@ export class TxHistory {
   }
 
   isNanoContract() {
-    return this.version === 4;
+    return this.version === constants.NANO_CONTRACTS_VERSION;
   }
 
   /**
