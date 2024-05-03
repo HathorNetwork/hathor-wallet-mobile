@@ -6,11 +6,11 @@
  */
 
 import React, { Component } from 'react';
-import { Text, StyleSheet, View } from 'react-native';
+import { Text, StyleSheet, View, ScrollView, TouchableWithoutFeedback } from 'react-native';
 import Modal from 'react-native-modal';
 import { t } from 'ttag';
 
-import { getShortHash, getTokenLabel, renderValue } from '../utils';
+import { getShortContent, getShortHash, getTokenLabel, renderValue } from '../utils';
 import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 import CopyClipboard from './CopyClipboard';
@@ -21,26 +21,63 @@ class TxDetailsModal extends Component {
   style = StyleSheet.create({
     modal: {
       justifyContent: 'flex-end',
+      marginVertical: 0,
+      marginHorizontal: 0,
+    },
+    wrapper: {
+      flex: 1,
+      paddingTop: 96,
+      paddingHorizontal: 8,
     },
     inner: {
-      backgroundColor: COLORS.backgroundColor,
+      flexShrink: 1,
+      marginTop: 'auto',
       borderRadius: 8,
+      paddingBottom: 24,
+      backgroundColor: COLORS.backgroundColor,
     },
   });
 
+  getCopyClipboard = ({ text, copyText }) => (
+    <CopyClipboard
+      text={text}
+      copyText={copyText}
+      textStyle={{ fontSize: 16 }}
+    />
+  );
+
   render() {
+    /**
+     * @type {{
+     *   token: unknown;
+     *   tx: TxHistory;
+     *   isNFT: boolean;
+     * }} TxDetailsModal properties
+     */
     const { token, tx, isNFT } = this.props;
+    const { txId, ncId, ncMethod, ncCaller } = tx;
+    const ncCallerAddr = ncCaller && ncCaller.base58;
+
     const fullTokenStr = getTokenLabel(token);
     const description = tx.getDescription(token);
     const timestampStr = tx.getTimestampFormat();
-    const idStr = getShortHash(tx.txId, 12);
-    const txIdComponent = (
-      <CopyClipboard
-        text={idStr}
-        copyText={tx.txId}
-        textStyle={{ fontSize: 16 }}
-      />
-    );
+    const shortTxId = getShortHash(txId, 7);
+    const shortNcId = ncId && getShortHash(ncId, 7);
+    const shortNcCallerAddr = ncCallerAddr && getShortContent(ncCallerAddr, 7);
+    const txIdComponent = this.getCopyClipboard({
+      text: shortTxId,
+      copyText: txId
+    });
+    const ncIdComponent = ncId && this.getCopyClipboard({
+      text: shortNcId,
+      copyText: ncId
+    });
+    const ncCallerAddrComponent = ncCaller && this.getCopyClipboard({
+      text: shortNcCallerAddr,
+      copyText: ncCallerAddr
+    });
+    const isNc = tx.isNanoContract();
+
     return (
       <Modal
         isVisible
@@ -50,18 +87,27 @@ class TxDetailsModal extends Component {
         onBackButtonPress={this.props.onRequestClose}
         onBackdropPress={this.props.onRequestClose}
         style={this.style.modal}
+        propagateSwipe
       >
-        <View>
+        <View style={this.style.wrapper}>
           <View style={this.style.inner}>
             <SlideIndicatorBar />
             <BalanceView tx={tx} token={token} isNFT={isNFT} />
-            <View>
-              <ListItem title={t`Token`} text={fullTokenStr} />
-              <ListItem title={t`Description`} text={description} />
-              <ListItem title={t`Date & Time`} text={timestampStr} />
-              <ListItem title={t`ID`} text={txIdComponent} />
-              <PublicExplorerListButton txId={tx.txId} />
-            </View>
+            <ScrollView>
+              <TouchableWithoutFeedback>
+                <View>
+                  <ListItem title={t`Token`} text={fullTokenStr} />
+                  <ListItem title={t`Description`} text={description} />
+                  <ListItem title={t`Date & Time`} text={timestampStr} />
+                  <ListItem title={t`Transaction ID`} text={txIdComponent} />
+                  {isNc && <ListItem title={t`Blueprint Method`} text={ncMethod} />}
+                  {isNc && <ListItem title={t`Nano Contract ID`} text={ncIdComponent} />}
+                  {isNc && <ListItem title={t`Nano Contract Caller`} text={ncCallerAddrComponent} />}
+                  {isNc && <PublicExplorerListButton txId={shortNcId} title={t`Nano Contract`} />}
+                  <PublicExplorerListButton txId={tx.txId} />
+                </View>
+              </TouchableWithoutFeedback>
+            </ScrollView>
           </View>
         </View>
       </Modal>

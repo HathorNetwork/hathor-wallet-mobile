@@ -11,24 +11,33 @@ import {
 } from 'react-native';
 import { PRIMARY_COLOR } from '../constants';
 
-const SimpleButton = (props) => {
+const SimpleButton = ({
+  title,
+  color,
+  icon,
+  onPress,
+  containerStyle,
+  textStyle,
+  iconStyle,
+  children
+}) => {
   const renderTitle = () => {
-    if (props.title) {
-      const textStyles = [styles.text, props.textStyle];
-      if (props.color) {
-        textStyles.push({ color: props.color });
+    if (title) {
+      const textStyles = [styles.text, textStyle];
+      if (color) {
+        textStyles.push({ color });
       }
-      return <Text style={textStyles}>{props.title}</Text>;
+      return <Text style={textStyles}>{title}</Text>;
     }
 
     return null;
   };
 
   const renderIcon = () => {
-    if (props.icon) {
+    if (icon) {
       return (
-        <View style={[styles.icon, props.iconStyle]}>
-          <Image source={props.icon} />
+        <View style={[styles.icon, iconStyle]}>
+          <Image source={icon} />
         </View>
       );
     }
@@ -37,9 +46,13 @@ const SimpleButton = (props) => {
   };
 
   return (
-    <TouchableOpacity onPress={props.onPress} style={[styles.container, props.containerStyle]}>
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.container, containerStyle]}
+    >
       {renderTitle()}
       {renderIcon()}
+      {children}
     </TouchableOpacity>
   );
 };

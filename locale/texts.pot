@@ -3,56 +3,56 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
-#: src/models.js:24
+#: src/models.js:79
 #.  This should never happen!
 msgid "Unknown"
 msgstr ""
 
-#: src/models.js:27
+#: src/models.js:82
 #, javascript-format
 msgid "Received ${ symbol }"
 msgstr ""
 
-#: src/models.js:29
+#: src/models.js:84
 msgid "Sent ${ symbol }"
 msgstr ""
 
-#: src/models.js:31
+#: src/models.js:86
 #, javascript-format
 msgid "You sent ${ symbol } to yourself"
 msgstr ""
 
-#: src/models.js:41
+#: src/models.js:96
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Today •] HH:mm"
 msgstr ""
 
-#: src/models.js:42
+#: src/models.js:97
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Tomorrow •] HH:mm"
 msgstr ""
 
-#: src/models.js:43
+#: src/models.js:98
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "dddd [•] HH:mm"
 msgstr ""
 
-#: src/models.js:44
+#: src/models.js:99
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Yesterday •] HH:mm"
 msgstr ""
 
-#: src/models.js:45
+#: src/models.js:100
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
-#: src/models.js:46
+#: src/models.js:101
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src/utils.js:146
+#: src/utils.js:159
 msgid "Invalid address"
 msgstr ""
 
@@ -461,12 +461,12 @@ msgstr ""
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:560
-#: src/screens/MainScreen.js:592
+#: src/screens/MainScreen.js:535
+#: src/screens/MainScreen.js:567
 msgid "Available Balance"
 msgstr ""
 
-#: src/screens/MainScreen.js:569
+#: src/screens/MainScreen.js:544
 msgid "Locked"
 msgstr ""
 
@@ -479,12 +479,12 @@ msgstr ""
 msgid "PAYMENT REQUEST"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:59
+#: src/components/TxDetailsModal.js:99
 #: src/screens/PaymentRequestDetail.js:123
 msgid "Token"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:106
+#: src/components/TxDetailsModal.js:152
 #: src/screens/PaymentRequestDetail.js:127
 msgid "Amount"
 msgstr ""
@@ -671,12 +671,12 @@ msgstr ""
 msgid "Your transfer is being processed"
 msgstr ""
 
-#: src/sagas/helpers.js:136
+#: src/sagas/helpers.js:139
 #: src/screens/SendConfirmScreen.js:104
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
-#: src/sagas/helpers.js:137
+#: src/sagas/helpers.js:140
 #: src/screens/SendConfirmScreen.js:105
 msgid "Authorize operation"
 msgstr ""
@@ -912,63 +912,63 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
-#: src/sagas/nanoContract.js:21
+#: src/sagas/nanoContract.js:36
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:22
+#: src/sagas/nanoContract.js:37
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:23
+#: src/sagas/nanoContract.js:38
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:24
+#: src/sagas/nanoContract.js:39
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:25
+#: src/sagas/nanoContract.js:40
 msgid "Error while trying to get Nano Contract state."
 msgstr ""
 
-#: src/sagas/nanoContract.js:35
+#: src/sagas/nanoContract.js:41
 msgid "Nano Contract not registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:36
+#: src/sagas/nanoContract.js:42
 msgid "Error while trying to fetch Nano Contract history."
 msgstr ""
 
-#: src/sagas/networkSettings.js:88
+#: src/sagas/networkSettings.js:91
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:95
+#: src/sagas/networkSettings.js:98
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:102
+#: src/sagas/networkSettings.js:105
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:109
+#: src/sagas/networkSettings.js:112
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:116
+#: src/sagas/networkSettings.js:119
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:123
+#: src/sagas/networkSettings.js:126
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:130
+#: src/sagas/networkSettings.js:133
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:290
+#: src/sagas/networkSettings.js:296
 #.  If we fall into this situation, the app should be killed
 #.  for the custom new network settings take effect.
 msgid "Wallet not found while trying to persist the custom network settings."
@@ -1067,17 +1067,16 @@ msgstr ""
 msgid "No internet connection"
 msgstr ""
 
-#: src/components/PublicExplorerListButton.js:19
+#: src/components/PublicExplorerListButton.js:17
 msgid "Public Explorer"
 msgstr ""
 
 #: src/components/PushTxDetailsModal.js:69
-#: src/components/TxDetailsModal.js:61
+#: src/components/TxDetailsModal.js:101
 msgid "Date & Time"
 msgstr ""
 
 #: src/components/PushTxDetailsModal.js:70
-#: src/components/TxDetailsModal.js:62
 msgid "ID"
 msgstr ""
 
@@ -1132,8 +1131,28 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:60
+#: src/components/TxDetailsModal.js:100
 msgid "Description"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:102
+msgid "Transaction ID"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:103
+msgid "Blueprint Method"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:104
+msgid "Nano Contract ID"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:105
+msgid "Nano Contract Caller"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:106
+msgid "Nano Contract"
 msgstr ""
 
 #: src/components/WalletConnect/ApproveRejectModal.js:63
