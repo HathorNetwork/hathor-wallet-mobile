@@ -9,20 +9,6 @@ import moment from 'moment';
 import { t } from 'ttag';
 import { transactionUtils } from '@hathor/wallet-lib'
 
-/**
- * Map version type to info that should assist on token list visualization.
- *
- * @readonly
- */
-const VersionInfo = {
-  Block: { symbol: 'b', label: t`Block` },
-  Transaction: { symbol: 'tx', label: t`Transaction` },
-  'Create Token Transaction': { symbol: 'tk', label: t`Create Token Transaction` },
-  'Merged Mined Block': { symbol: 'mb', label: t`Merged Mined Block` },
-  'Nano Contract Transaction': { symbol: 'nc', label: t`Nano Contract Transaction` },
-  Unkown: { symbol: '?', label: t`Unkown` },
-};
-
 export class TxHistory {
   /**
    * @param {{
@@ -117,8 +103,7 @@ export class TxHistory {
   }
 
   getVersionInfo() {
-    const txType = transactionUtils.getTxType(this);
-    return VersionInfo[txType];
+    transactionUtils.getTxType(this)
   }
 
   isNanoContract() {
