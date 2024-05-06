@@ -14,51 +14,51 @@ msgstr ""
 "X-Generator: Poedit 3.3.1\n"
 
 #.  This should never happen!
-#: src/models.js:79
+#: src/models.js:85
 msgid "Unknown"
 msgstr "Неизвестно"
 
-#: src/models.js:82
+#: src/models.js:88
 #, javascript-format
 msgid "Received ${ symbol }"
 msgstr "Получено ${ symbol }"
 
-#: src/models.js:84
+#: src/models.js:90
 msgid "Sent ${ symbol }"
 msgstr "Отправлено ${ symbol }"
 
-#: src/models.js:86
+#: src/models.js:92
 #, javascript-format
 msgid "You sent ${ symbol } to yourself"
 msgstr "Вы отправили себе ${ symbol }"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:96
+#: src/models.js:102
 msgid "[Today •] HH:mm"
 msgstr "[Сегодня •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:97
+#: src/models.js:103
 msgid "[Tomorrow •] HH:mm"
 msgstr "[Завтра •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:98
+#: src/models.js:104
 msgid "dddd [•] HH:mm"
 msgstr "dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:99
+#: src/models.js:105
 msgid "[Yesterday •] HH:mm"
 msgstr "[Вчера •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:100
+#: src/models.js:106
 msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:101
+#: src/models.js:107
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -491,11 +491,11 @@ msgstr "Вы только что получили **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "ЗАПРОС СРЕДСТВ"
 
-#: src/components/TxDetailsModal.js:99 src/screens/PaymentRequestDetail.js:123
+#: src/components/TxDetailsModal.js:101 src/screens/PaymentRequestDetail.js:123
 msgid "Token"
 msgstr "Токен"
 
-#: src/components/TxDetailsModal.js:152 src/screens/PaymentRequestDetail.js:127
+#: src/components/TxDetailsModal.js:166 src/screens/PaymentRequestDetail.js:127
 msgid "Amount"
 msgstr "Количество"
 
@@ -1080,7 +1080,7 @@ msgstr "Нет соединения с интернетом"
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
-#: src/components/PushTxDetailsModal.js:69 src/components/TxDetailsModal.js:101
+#: src/components/PushTxDetailsModal.js:69 src/components/TxDetailsModal.js:103
 msgid "Date & Time"
 msgstr "Дата и Время"
 
@@ -1140,27 +1140,31 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:100
+#: src/components/TxDetailsModal.js:102
 msgid "Description"
 msgstr "Описание"
 
-#: src/components/TxDetailsModal.js:102
+#: src/components/TxDetailsModal.js:104
 msgid "Transaction ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:103
+#: src/components/TxDetailsModal.js:105
 msgid "Blueprint Method"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:104
+#: src/components/TxDetailsModal.js:106
 msgid "Nano Contract ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:105
+#: src/components/TxDetailsModal.js:107
 msgid "Nano Contract Caller"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:106
+#: src/components/TxDetailsModal.js:111
+msgid "Nano Contract Status"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:120
 msgid "Nano Contract"
 msgstr ""
 
