@@ -17,7 +17,7 @@ import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
 import SimpleButton from '../components/SimpleButton';
 import OfflineBar from '../components/OfflineBar';
-import { TwoOptionsToggle } from '../components/TwoOptionsToggle.component';
+import { TwoOptionsToggle } from '../components/TwoOptionsToggle';
 import { tokenFetchBalanceRequested, updateSelectedToken } from '../actions';
 import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
 import AskForPushNotificationRefresh from '../components/AskForPushNotificationRefresh';
