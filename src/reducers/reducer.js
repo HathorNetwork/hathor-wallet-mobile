@@ -11,6 +11,7 @@ import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
+import { TxHistory } from '../models';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
