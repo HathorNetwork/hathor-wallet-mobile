@@ -23,7 +23,7 @@ import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxD
 import AskForPushNotificationRefresh from '../components/AskForPushNotificationRefresh';
 import { COLORS } from '../styles/themes';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
-import { NanoContractsList } from '../components/NanoContract/NanoContractsList.component';
+import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
 
 /**
  * State filter to retrieve token-related data from root state.

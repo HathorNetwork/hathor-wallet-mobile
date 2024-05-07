@@ -13,9 +13,9 @@ import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { COLORS } from '../../styles/themes';
 import HathorHeader from '../HathorHeader';
-import { NoNanoContracts } from './NoNanoContracts.component';
+import { NoNanoContracts } from './NoNanoContracts';
 import { RegisterNanoContract } from './RegisterNewNanoContractButton.component';
-import { NanoContractsListItem } from './NanoContractsListItem.component';
+import { NanoContractsListItem } from './NanoContractsListItem';
 import { HathorFlatList } from '../HathorFlatList.component';
 
 /**

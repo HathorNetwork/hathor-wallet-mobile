@@ -10,7 +10,7 @@ import { StyleSheet, View, Text, Linking } from 'react-native';
 import { t } from 'ttag';
 
 import SimpleButton from '../SimpleButton';
-import { RegisterNanoContract } from './RegisterNewNanoContractButton.component';
+import { RegisterNanoContract } from './RegisterNewNanoContractButton';
 
 export const NoNanoContracts = () => {
   const navigatesToDocumentation = () => {
