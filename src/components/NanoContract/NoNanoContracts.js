@@ -8,13 +8,14 @@
 import React from 'react';
 import { StyleSheet, View, Text, Linking } from 'react-native';
 import { t } from 'ttag';
+import { NANO_CONTRACT_INFO_URL } from '../../constants';
 
 import SimpleButton from '../SimpleButton';
 import { RegisterNanoContract } from './RegisterNewNanoContractButton';
 
 export const NoNanoContracts = () => {
   const navigatesToDocumentation = () => {
-    Linking.openURL('https://docs.hathor.network/explanations/features/nano-contracts/');
+    Linking.openURL(NANO_CONTRACT_INFO_URL);
   };
   return (
     <View style={styles.wrapper}>
