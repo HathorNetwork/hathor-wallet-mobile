@@ -86,7 +86,7 @@ const CancelButton = ({ onCancel }) => (
 const LeftComponent = ({ onBackPress }) => {
   if (onBackPress) {
     return (
-      <View style={[styles.iconWrapper, { justifyContent: 'flex-start' }]}>
+      <View style={[styles.iconWrapper, styles.iconWrapperStart]}>
         <TouchableOpacity onPress={onBackPress}>
           <Image source={chevronLeft} width={24} height={24} />
         </TouchableOpacity>
@@ -100,7 +100,7 @@ const CentralComponent = ({ title, withLogo }) => {
   if (withLogo) {
     return (
       <Logo
-        style={{ height: 22, width: 100 }}
+        style={styles.centralComponentLogo}
       />
     );
   }
@@ -110,7 +110,7 @@ const CentralComponent = ({ title, withLogo }) => {
 const RightComponent = ({ rightElement, onCancel }) => {
   const element = (onCancel ? <CancelButton onCancel={onCancel} /> : rightElement);
   return (
-    <View style={[styles.iconWrapper, { justifyContent: 'flex-end' }]}>
+    <View style={[styles.iconWrapper, styles.iconWrapperEnd]}>
       {element}
     </View>
   );
@@ -138,6 +138,16 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  iconWrapperStart: {
+    justifyContent: 'flex-start',
+  },
+  iconWrapperEnd: {
+    justifyContent: 'flex-end',
+  },
+  centralComponentLogo: {
+    height: 22,
+    width: 100,
   },
 });
 
