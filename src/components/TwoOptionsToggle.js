@@ -17,7 +17,7 @@ import { COLORS } from '../styles/themes';
  */
 export const TwoOptionsToggle = ({ options, defaultOption }) => {
   const [currOption, setCurrOption] = useState(defaultOption);
-  const isActive = (currOption) => (componentOption) => currOption === componentOption;
+  const isActive = (option) => (componentOption) => option === componentOption;
   const onTap = (option) => {
     setCurrOption(option);
     // Execute the callback assigned to the option
