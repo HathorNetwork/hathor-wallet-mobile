@@ -16,7 +16,7 @@ export class TxHistory {
    *   timestamp: number;
    *   tokenUid: string;
    *   balance: number;
-   *   voided: boolean;
+   *   isVoided: boolean;
    *   version: number;
    *   ncId?: string;
    *   ncMethod?: string;

@@ -11,14 +11,28 @@ import {
 } from 'react-native';
 import { PRIMARY_COLOR } from '../constants';
 
+/**
+ * Simple button component.
+ *
+ * @typedef {Object} Props
+ * @property {string} [title] - The title text of the button.
+ * @property {Object} [textStyle] - The style object for the text of the button.
+ * @property {string} [color] - The color of button's text.
+ * @property {string} [icon] - The icon component to be displayed in the button.
+ * @property {Object} [iconStyle] - The style object for the icon component.
+ * @property {Object} [containerStyle] - The style object for the container of the button.
+ * @property {Function} onPress - The function to be called when the button is pressed.
+ *
+ * @param {Props} props - The props for the SimpleButton component.
+ */
 const SimpleButton = ({
   title,
+  textStyle,
   color,
   icon,
-  onPress,
-  containerStyle,
-  textStyle,
   iconStyle,
+  containerStyle,
+  onPress,
   children
 }) => {
   const renderTitle = () => {
@@ -46,10 +60,7 @@ const SimpleButton = ({
   };
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[styles.container, containerStyle]}
-    >
+    <TouchableOpacity onPress={onPress} style={[styles.container, containerStyle]}>
       {renderTitle()}
       {renderIcon()}
       {children}

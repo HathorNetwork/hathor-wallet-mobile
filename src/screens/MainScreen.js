@@ -35,6 +35,7 @@ import { fetchMoreHistory, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
+import { TxHistory } from '../models';
 import { HathorFlatList } from '../components/HathorFlatList';
 import { ActionDot } from '../components/Icons/ActionDot.icon';
 
@@ -455,7 +456,7 @@ class TxListItem extends React.Component {
           <View style={style.middleView}>
             <Text style={style.description}>{description}</Text>
             <Text style={style.secondaryText}>{timestamp}</Text>
-            <Text style={[style.secondaryText, style.bold]}>{item.getVersionInfo().label}</Text>
+            <Text style={[style.secondaryText, style.bold]}>{item.getVersionInfo()}</Text>
           </View>
           <Text style={style.balance} numberOfLines={1}>{balanceStr}</Text>
         </View>
