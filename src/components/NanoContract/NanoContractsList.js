@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { FlatList, StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { t } from 'ttag';
 import { useNavigation } from '@react-navigation/native';
 
@@ -14,9 +14,9 @@ import { useSelector } from 'react-redux';
 import { COLORS } from '../../styles/themes';
 import HathorHeader from '../HathorHeader';
 import { NoNanoContracts } from './NoNanoContracts';
-import { RegisterNanoContract } from './RegisterNewNanoContractButton.component';
+import { RegisterNanoContract } from './RegisterNewNanoContractButton';
 import { NanoContractsListItem } from './NanoContractsListItem';
-import { HathorFlatList } from '../HathorFlatList.component';
+import { HathorFlatList } from '../HathorFlatList';
 
 /**
  * @param {Object} state Redux root state
@@ -43,16 +43,18 @@ export const NanoContractsList = () => {
       {isEmpty()
         && <ListWrapper><NoNanoContracts /></ListWrapper>}
       {notEmpty()
-        && <HathorFlatList
-          data={registeredNanoContracts}
-          renderItem={({ item }) => (
-            <NanoContractsListItem
-              item={item}
-              onPress={navigatesToNanoContractTransactions}
-            />
-          )}
-          keyExtractor={(nc) => nc.ncId}
-        />}
+        && (
+          <HathorFlatList
+            data={registeredNanoContracts}
+            renderItem={({ item }) => (
+              <NanoContractsListItem
+                item={item}
+                onPress={navigatesToNanoContractTransactions}
+              />
+            )}
+            keyExtractor={(nc) => nc.ncId}
+          />
+        )}
     </Wrapper>
   );
 };

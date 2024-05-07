@@ -31,10 +31,6 @@ export const getShortHash = (hash, length = 4) => (
   `${hash.substring(0, length)}...${hash.substring(64 - length, 64)}`
 );
 
-export const getShortContent = (value, length = 4) => (
-  `${value.substring(0, length)}...${value.substring(value.length - length, value.length)}`
-);
-
 /**
  * It short any string content without length bound.
  * @param {string} content Content to be sliced in two parts
