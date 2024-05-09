@@ -344,13 +344,13 @@ msgstr "O símbolo é a versão reduzida do nome do seu token"
 msgid "E.g. HTR"
 msgstr "Por exemplo, HTR"
 
-#: src/screens/Dashboard.js:67 src/screens/RegisterTokenManual.js:147
+#: src/screens/Dashboard.js:165 src/screens/RegisterTokenManual.js:147
 msgid "Register token"
 msgstr "Registrar um token"
 
-#: src/screens/Dashboard.js:74
-msgid "TOKENS"
-msgstr "TOKENS"
+#: src/screens/Dashboard.js:174
+msgid "Tokens"
+msgstr "Tokens"
 
 #: src/screens/InitWallet.js:61
 msgid "Welcome to Hathor Wallet!"
@@ -1014,23 +1014,23 @@ msgstr "Transação"
 msgid "Open"
 msgstr "Abrir"
 
-#: src/components/AskForPushNotification.js:22
+#: src/components/AskForPushNotification.js:29
 msgid "Do you want to enable push notifications for this wallet?"
 msgstr "Você deseja habilitar as notificações para esta wallet?"
 
-#: src/components/AskForPushNotification.js:23
+#: src/components/AskForPushNotification.js:30
 msgid "You can always change this later in the settings menu"
 msgstr "Você sempre pode alterar as configurações depois no menu"
 
-#: src/components/AskForPushNotification.js:24
+#: src/components/AskForPushNotification.js:31
 msgid "Yes, enable"
 msgstr "Sim, habilitar"
 
-#: src/components/AskForPushNotificationRefresh.js:28
+#: src/components/AskForPushNotificationRefresh.js:35
 msgid "Refresh your push notification registration"
 msgstr "Atualize sua configuração de notificação"
 
-#: src/components/AskForPushNotificationRefresh.js:29
+#: src/components/AskForPushNotificationRefresh.js:36
 msgid ""
 "In order to keep receiving push notifications, you need to refresh your "
 "registration. Do you want to do it now?"
@@ -1038,7 +1038,7 @@ msgstr ""
 "Para continuar recebendo notificações, é necessário atualizar sua "
 "configuração de notificação. Deseja atualizar agora?"
 
-#: src/components/AskForPushNotificationRefresh.js:30
+#: src/components/AskForPushNotificationRefresh.js:37
 msgid "Refresh"
 msgstr "Atualizar"
 
@@ -1120,15 +1120,15 @@ msgstr "Sem conexão com a internet"
 msgid "Public Explorer"
 msgstr "Explorer Público"
 
-#: src/components/PushTxDetailsModal.js:69 src/components/TxDetailsModal.js:103
+#: src/components/PushTxDetailsModal.js:76 src/components/TxDetailsModal.js:101
 msgid "Date & Time"
 msgstr "Data & Hora"
 
-#: src/components/PushTxDetailsModal.js:70
+#: src/components/PushTxDetailsModal.js:77
 msgid "ID"
 msgstr "ID"
 
-#: src/components/PushTxDetailsModal.js:94
+#: src/components/PushTxDetailsModal.js:101
 msgid "New Transaction"
 msgstr "Transação"
 
@@ -1149,16 +1149,16 @@ msgstr "Compartilhar"
 msgid "Propagating transaction to the network."
 msgstr "Propagando a transação para a rede."
 
-#: src/components/ShowPushNotificationTxDetails.js:8
+#: src/components/ShowPushNotificationTxDetails.js:15
 msgid "Transation not found"
 msgstr "Transação não encontrada"
 
-#: src/components/ShowPushNotificationTxDetails.js:9
+#: src/components/ShowPushNotificationTxDetails.js:16
 msgid ""
 "The transaction has not arrived yet in your wallet. Do you want to retry?"
 msgstr "A transação ainda não chegou na sua carteira. Deseja tentar novamente?"
 
-#: src/components/ShowPushNotificationTxDetails.js:10
+#: src/components/ShowPushNotificationTxDetails.js:17
 msgid "Retry"
 msgstr "Tentar novamente"
 
@@ -1247,6 +1247,31 @@ msgstr ""
 #: src/components/NetworkSettings/NetworkStatusBar.js:14
 msgid "Custom network"
 msgstr "Rede personalizada"
+
+#: src/components/NanoContract/NanoContractsList.js:71
+msgid "Nano Contracts"
+msgstr "Nano Contract"
+
+#: src/components/NanoContract/NoNanoContracts.js:22
+msgid "No Nano Contracts"
+msgstr "Nenhum Nano Contract"
+
+#: src/components/NanoContract/NoNanoContracts.js:24
+msgid ""
+"You can keep track of your registered Nano Contracts here once you have "
+"registered them."
+msgstr "Você pode acompanhar os Nano Contracts registrados nesta tela."
+
+#: src/components/NanoContract/NoNanoContracts.js:29
+msgid "Learn More."
+msgstr "Saiba mais"
+
+#: src/components/NanoContract/RegisterNewNanoContractButton.js:22
+msgid "Register new"
+msgstr "Registrar um token"
+
+#~ msgid "TOKENS"
+#~ msgstr "TOKENS"
 
 #~ msgid "There has been an error upgrading your wallet."
 #~ msgstr "Ocorreu um erro ao atualizar sua wallet."
