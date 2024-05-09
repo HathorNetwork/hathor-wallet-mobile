@@ -328,13 +328,13 @@ msgstr ""
 msgid "E.g. HTR"
 msgstr ""
 
-#: src/screens/Dashboard.js:67
+#: src/screens/Dashboard.js:165
 #: src/screens/RegisterTokenManual.js:147
 msgid "Register token"
 msgstr ""
 
-#: src/screens/Dashboard.js:74
-msgid "TOKENS"
+#: src/screens/Dashboard.js:174
+msgid "Tokens"
 msgstr ""
 
 #: src/screens/InitWallet.js:61
@@ -982,29 +982,29 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: src/components/AskForPushNotification.js:22
+#: src/components/AskForPushNotification.js:29
 msgid "Do you want to enable push notifications for this wallet?"
 msgstr ""
 
-#: src/components/AskForPushNotification.js:23
+#: src/components/AskForPushNotification.js:30
 msgid "You can always change this later in the settings menu"
 msgstr ""
 
-#: src/components/AskForPushNotification.js:24
+#: src/components/AskForPushNotification.js:31
 msgid "Yes, enable"
 msgstr ""
 
-#: src/components/AskForPushNotificationRefresh.js:28
+#: src/components/AskForPushNotificationRefresh.js:35
 msgid "Refresh your push notification registration"
 msgstr ""
 
-#: src/components/AskForPushNotificationRefresh.js:29
+#: src/components/AskForPushNotificationRefresh.js:36
 msgid ""
 "In order to keep receiving push notifications, you need to refresh your "
 "registration. Do you want to do it now?"
 msgstr ""
 
-#: src/components/AskForPushNotificationRefresh.js:30
+#: src/components/AskForPushNotificationRefresh.js:37
 msgid "Refresh"
 msgstr ""
 
@@ -1071,16 +1071,16 @@ msgstr ""
 msgid "Public Explorer"
 msgstr ""
 
-#: src/components/PushTxDetailsModal.js:69
+#: src/components/PushTxDetailsModal.js:76
 #: src/components/TxDetailsModal.js:101
 msgid "Date & Time"
 msgstr ""
 
-#: src/components/PushTxDetailsModal.js:70
+#: src/components/PushTxDetailsModal.js:77
 msgid "ID"
 msgstr ""
 
-#: src/components/PushTxDetailsModal.js:94
+#: src/components/PushTxDetailsModal.js:101
 msgid "New Transaction"
 msgstr ""
 
@@ -1102,15 +1102,15 @@ msgstr ""
 msgid "Propagating transaction to the network."
 msgstr ""
 
-#: src/components/ShowPushNotificationTxDetails.js:8
+#: src/components/ShowPushNotificationTxDetails.js:15
 msgid "Transation not found"
 msgstr ""
 
-#: src/components/ShowPushNotificationTxDetails.js:9
+#: src/components/ShowPushNotificationTxDetails.js:16
 msgid "The transaction has not arrived yet in your wallet. Do you want to retry?"
 msgstr ""
 
-#: src/components/ShowPushNotificationTxDetails.js:10
+#: src/components/ShowPushNotificationTxDetails.js:17
 msgid "Retry"
 msgstr ""
 
@@ -1186,4 +1186,26 @@ msgstr ""
 
 #: src/components/NetworkSettings/NetworkStatusBar.js:14
 msgid "Custom network"
+msgstr ""
+
+#: src/components/NanoContract/NanoContractsList.js:71
+msgid "Nano Contracts"
+msgstr ""
+
+#: src/components/NanoContract/NoNanoContracts.js:22
+msgid "No Nano Contracts"
+msgstr ""
+
+#: src/components/NanoContract/NoNanoContracts.js:24
+msgid ""
+"You can keep track of your registered Nano Contracts here once you have "
+"registered them."
+msgstr ""
+
+#: src/components/NanoContract/NoNanoContracts.js:29
+msgid "Learn More."
+msgstr ""
+
+#: src/components/NanoContract/RegisterNewNanoContractButton.js:22
+msgid "Register new"
 msgstr ""
