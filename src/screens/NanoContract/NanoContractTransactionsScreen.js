@@ -17,7 +17,10 @@ import { NanoContractTransactionsList } from '../../components/NanoContract/Nano
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 
-export function NanoContractTransactions({ navigation, route }) {
+/**
+ * Presents a list of Nano Contract transactions.
+ */
+export function NanoContractTransactionsScreen({ navigation, route }) {
   const { nc } = route.params;
   return (
     <Wrapper>

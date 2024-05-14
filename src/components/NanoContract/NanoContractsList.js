@@ -13,12 +13,14 @@ import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { COLORS } from '../../styles/themes';
 import HathorHeader from '../HathorHeader';
+import { HathorFlatList } from '../HathorFlatList';
 import { NoNanoContracts } from './NoNanoContracts';
 import { RegisterNanoContract } from './RegisterNewNanoContractButton';
 import { NanoContractsListItem } from './NanoContractsListItem';
-import { HathorFlatList } from '../HathorFlatList';
 
 /**
+ * It selects the list of registered Nano Contracts.
+ *
  * @param {Object} state Redux root state
  * @returns {Object} Array of registered Nano Contract with basic information
  */
@@ -27,12 +29,15 @@ const getRegisteredNanoContracts = (state) => {
   return Object.values(registered);
 }
 
+/**
+ * It presents a list of Nano Contracts or an empty content.
+ */
 export const NanoContractsList = () => {
   const registeredNanoContracts = useSelector(getRegisteredNanoContracts);
   const navigation = useNavigation();
 
-  const navigatesToNanoContractTransactions = () => {
-    navigation.navigate('NanoContractTransactions');
+  const navigatesToNanoContractTransactions = (nc) => {
+    navigation.navigate('NanoContractTransactionsScreen', { nc });
   };
   const isEmpty = () => registeredNanoContracts.length === 0;
   const notEmpty = () => !isEmpty();
@@ -49,7 +54,7 @@ export const NanoContractsList = () => {
             renderItem={({ item }) => (
               <NanoContractsListItem
                 item={item}
-                onPress={navigatesToNanoContractTransactions}
+                onPress={() => navigatesToNanoContractTransactions(item)}
               />
             )}
             keyExtractor={(nc) => nc.ncId}

@@ -202,7 +202,7 @@ class MainScreen extends React.Component {
       if (this.props.selectedToken.uid !== hathorConstants.HATHOR_TOKEN_CONFIG.uid) {
         return (
           <SimpleButton onPress={this.tokenInfo}>
-            <ActionDot/>
+            <ActionDot />
           </SimpleButton>
         );
       }

@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { TouchableHighlight, StyleSheet, View, Text, Image } from 'react-native';
+import { t } from 'ttag';
 
 import chevronRight from '../../assets/icons/chevron-right.png';
 import { COLORS } from '../../styles/themes';
@@ -14,16 +15,16 @@ import { getShortHash } from '../../utils';
 import { NanoContractIcon } from '../Icons/NanoContract.icon';
 
 /**
- * Renders each item of Nano Contract List.
+ * It renders an item of Nano Contracts list.
  *
- * @param {Object} ncItem
- * @property {Object} ncItem.item registered Nano Contract data
- * @property {() => {}} ncItem.onPress A void function to be called when item is pressed.
+ * @param {Object} props
+ * @param {Object} props.item Registered Nano Contract data
+ * @param {() => {}} props.onPress Callback function called on press
  */
 export const NanoContractsListItem = ({ item, onPress }) => (
   <Wrapper onPress={onPress}>
     <Icon />
-    <ContentWrapper nc={item} />
+    <NanoContractSummary nc={item} />
     <ArrowRight />
   </Wrapper>
 );
@@ -39,21 +40,23 @@ const Wrapper = ({ onPress, children }) => (
 
 const Icon = () => (
   <View style={styles.icon}>
-    <NanoContractIcon />
+    <NanoContractIcon type='fill' color={COLORS.white} />
   </View>
 );
 
 /**
- * Renders item core content.
+ * It presents summarized Nano Contract information.
  *
- * @param {Object} ncItem
- * @property {Obeject} ncItem.nc registered Nano Contract data
+ * @param {Object} props
+ * @param {Object} props.nc Registered Nano Contract data
+ * @param {string} props.nc.ncId
+ * @param {string} props.nc.blueprintName
  */
-const ContentWrapper = ({ nc }) => (
+const NanoContractSummary = ({ nc }) => (
   <View style={styles.contentWrapper}>
-    <Text style={[styles.text, styles.property]}>Nano Contract ID</Text>
+    <Text style={[styles.text, styles.property]}>{t`Nano Contract ID`}</Text>
     <Text style={[styles.text]}>{getShortHash(nc.ncId, 7)}</Text>
-    <Text style={[styles.text, styles.property]}>Blueprint Name</Text>
+    <Text style={[styles.text, styles.property]}>{t`Blueprint Name`}</Text>
     <Text style={[styles.text, styles.padding0]}>{nc.blueprintName}</Text>
   </View>
 );
@@ -81,13 +84,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   icon: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    backgroundColor: COLORS.primary,
     alignSelf: 'flex-start',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
   },
   text: {
     fontSize: 14,
