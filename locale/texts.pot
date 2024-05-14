@@ -52,7 +52,7 @@ msgstr ""
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src/utils.js:159
+#: src/utils.js:160
 msgid "Invalid address"
 msgstr ""
 

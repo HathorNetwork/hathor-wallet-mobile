@@ -61,7 +61,7 @@ msgstr "[Sidste] dddd [•] HH:mm"
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:159
+#: src/utils.js:160
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 

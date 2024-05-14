@@ -405,4 +405,11 @@ export const getNanoContractFeatureToggle = (state) => (
   state.featureToggles[NANO_CONTRACT_FEATURE_TOGGLE]
 );
 
-export const getTimestampFormat = (timestamp) => moment.unix(timestamp).format('DD MMM YYYY [•] HH:mm')
+/**
+ * Get timestamp in specific format.
+ *
+ * @param {number} timestamp
+ *
+ * @returns {string} formatted timestamp
+ */
+export const getTimestampFormat = (timestamp) => moment.unix(timestamp).format(t`DD MMM YYYY [•] HH:mm`)

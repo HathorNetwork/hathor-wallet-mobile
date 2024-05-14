@@ -5,13 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { ReactNode } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   View,
   Text,
-  StyleProp,
-  ViewStyle
 } from 'react-native';
 import Modal from 'react-native-modal';
 
@@ -30,7 +28,6 @@ const ModalBase = ({ styleModal, styleWrapper, show, onDismiss, children }) => {
   const button = hasChildren && React.Children.toArray(children).find(
     (child) => child.type.displayName === Button.displayName
   );
-
   const discreteButton = hasChildren && React.Children.toArray(children).find(
     (child) => child.type.displayName === DiscreteButton.displayName
   );
@@ -70,11 +67,9 @@ const Title = ({ children }) => (
 Title.displayName = 'ModalBaseTitle';
 
 /**
- * @typedef {Object} Properties p
- * @property {ReactNode} p.children
- * @property {StyleProp<ViewStyle>} p.style
- *
- * @param {Properties}
+ * @param {Object} props
+ * @property {ReactNode} props.children
+ * @property {StyleProp<ViewStyle>} props.style
  */
 const Body = ({ style, children }) => (
   <View style={style}>
