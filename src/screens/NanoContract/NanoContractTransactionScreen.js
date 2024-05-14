@@ -11,14 +11,16 @@ import {
   View,
 } from 'react-native';
 import { t } from 'ttag';
-
 import HathorHeader from '../../components/HathorHeader';
 import { NanoContractTransactionBalanceList } from '../../components/NanoContract/NanoContractTransactionBalanceList.component';
 import { NanoContractTransactionHeader } from '../../components/NanoContract/NanoContractTransactionHeader.component';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 
-export function NanoContractTransaction({ navigation, route }) {
+/**
+ * It presents information about the transaction.
+ */
+export function NanoContractTransactionScreen({ navigation, route }) {
   const { tx } = route.params;
   return (
     <Wrapper>
