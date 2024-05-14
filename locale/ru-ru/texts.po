@@ -342,7 +342,7 @@ msgstr "Зарегистрировать токен"
 
 #: src/screens/Dashboard.js:174
 msgid "Tokens"
-msgstr "Токен"
+msgstr "ТокенЫ"
 
 #: src/screens/InitWallet.js:61
 msgid "Welcome to Hathor Wallet!"
