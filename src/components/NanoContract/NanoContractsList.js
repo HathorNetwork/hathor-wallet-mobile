@@ -23,8 +23,8 @@ import { HathorFlatList } from '../HathorFlatList';
  * @returns {Object} Array of registered Nano Contract with basic information
  */
 const getRegisteredNanoContracts = (state) => {
-  const { registeredContracts } = state.nanoContract;
-  return Object.values(registeredContracts);
+  const { registered } = state.nanoContract;
+  return Object.values(registered);
 }
 
 export const NanoContractsList = () => {
