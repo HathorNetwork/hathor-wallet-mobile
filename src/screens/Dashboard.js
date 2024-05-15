@@ -24,6 +24,7 @@ import AskForPushNotificationRefresh from '../components/AskForPushNotificationR
 import { COLORS } from '../styles/themes';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
+import { getNanoContractFeatureToggle } from '../utils';
 
 /**
  * State filter to retrieve token-related data from root state.
@@ -92,6 +93,8 @@ export const Dashboard = () => {
     selectedToken,
     tokensMetadata,
   } = useSelector(getTokensState);
+  const isNanoContratEnabled = useSelector(getNanoContractFeatureToggle);
+
   const [currList, selectList] = useState(listOption.tokens);
   const navigation = useNavigation();
   const dispatch = useDispatch();
@@ -118,29 +121,39 @@ export const Dashboard = () => {
       <ShowPushNotificationTxDetails navigation={navigation} />
       <AskForPushNotification navigation={navigation} />
       <AskForPushNotificationRefresh />
-      <DashBoardHeader>
-        <TwoOptionsToggle
-          options={{
-            first: { value: 'Tokens', onTap: () => selectList(listOption.tokens) },
-            second: { value: 'Nano Contracts', onTap: () => selectList(listOption.nanoContracts) }
-          }}
-          defaultOption='first'
-        />
-      </DashBoardHeader>
-      {isTokensSelected(currList)
+      { // Only show the toggle button when Nano Contract is enabled to the wallet
+        isNanoContratEnabled
         && (
-        <TokenSelect
-          header={<TokensHeader />}
-          renderArrow
-          onItemPress={onTokenPress}
-          selectedToken={selectedToken}
-          tokens={tokens}
-          tokensBalance={tokensBalance}
-          tokenMetadata={tokensMetadata}
-        />
-        )}
-      {isNanoContractsSelected(currList)
-        && <NanoContractsList />}
+          <DashBoardHeader>
+            <TwoOptionsToggle
+              options={{
+                first: { value: 'Tokens', onTap: () => selectList(listOption.tokens) },
+                second: { value: 'Nano Contracts', onTap: () => selectList(listOption.nanoContracts) }
+              }}
+              defaultOption='first'
+            />
+          </DashBoardHeader>
+        )
+      }
+      { // Default behavior is to show tokens list
+        isTokensSelected(currList)
+        && (
+          <TokenSelect
+            header={<TokensHeader />}
+            renderArrow
+            onItemPress={onTokenPress}
+            selectedToken={selectedToken}
+            tokens={tokens}
+            tokensBalance={tokensBalance}
+            tokenMetadata={tokensMetadata}
+          />
+        )
+      }
+      { // Only show if Nano Contract is enabled in the wallet
+        isNanoContratEnabled
+        && isNanoContractsSelected(currList)
+        && <NanoContractsList />
+      }
       <OfflineBar />
     </Wrapper>
   );
