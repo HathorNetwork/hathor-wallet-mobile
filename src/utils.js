@@ -12,7 +12,7 @@ import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import baseStyle from './styles/init';
-import { KEYCHAIN_USER } from './constants';
+import { KEYCHAIN_USER, NANO_CONTRACT_FEATURE_TOGGLE } from './constants';
 import { STORE } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
@@ -391,4 +391,15 @@ export function combineURLs(baseURL, relativeURL) {
  */
 export const isPushNotificationAvailableForUser = (state) => (
   state.pushNotification.available && state.pushNotification.deviceRegistered
+);
+
+/**
+ * Get Nano Contract feature toggle state from redux.
+ *
+ * @param {Object} state Redux store state
+ *
+ * @returns {boolean} the Nano Contract feature toggle state.
+ */
+export const getNanoContractFeatureToggle = (state) => (
+  state.featureToggles[NANO_CONTRACT_FEATURE_TOGGLE]
 );
