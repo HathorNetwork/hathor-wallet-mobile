@@ -22,6 +22,7 @@ import { PRIMARY_COLOR } from '../constants';
  * @property {Object} [iconStyle] - The style object for the icon component.
  * @property {Object} [containerStyle] - The style object for the container of the button.
  * @property {Function} onPress - The function to be called when the button is pressed.
+ * @property {Object} children - The children component to be rendered.
  *
  * @param {Props} props - The props for the SimpleButton component.
  */
