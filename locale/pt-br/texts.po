@@ -1248,22 +1248,23 @@ msgstr "Rede personalizada"
 msgid "Nano Contracts"
 msgstr "Nano Contract"
 
-#: src/components/NanoContract/NoNanoContracts.js:16
+#: src/components/NanoContract/NoNanoContracts.js:22
 msgid "No Nano Contracts"
 msgstr "Nenhum Nano Contract"
 
-#: src/components/NanoContract/NoNanoContracts.js:18
+#: src/components/NanoContract/NoNanoContracts.js:24
 msgid ""
 "You can keep track of your registered Nano Contracts here once you have "
 "registered them."
 msgstr "Você pode acompanhar os Nano Contracts registrados nesta tela."
 
+#: src/components/NanoContract/NoNanoContracts.js:29
+msgid "Learn More."
+msgstr "Saiba mais."
+
 #: src/components/NanoContract/RegisterNewNanoContractButton.js:22
 msgid "Register new"
 msgstr "Registrar um token"
-
-#~ msgid "Learn More."
-#~ msgstr "Saiba mais"
 
 #~ msgid "TOKENS"
 #~ msgstr "TOKENS"
