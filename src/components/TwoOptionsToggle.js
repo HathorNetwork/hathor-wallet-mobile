@@ -19,6 +19,10 @@ export const TwoOptionsToggle = ({ options, defaultOption }) => {
   const [currOption, setCurrOption] = useState(defaultOption);
   const isActive = (option) => (componentOption) => option === componentOption;
   const onTap = (option) => {
+    if (option === currOption) {
+      // do nothing and halt.
+      return;
+    }
     setCurrOption(option);
     // Execute the callback assigned to the option
     options[option].onTap();
