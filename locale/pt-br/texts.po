@@ -344,11 +344,11 @@ msgstr "O símbolo é a versão reduzida do nome do seu token"
 msgid "E.g. HTR"
 msgstr "Por exemplo, HTR"
 
-#: src/screens/Dashboard.js:165 src/screens/RegisterTokenManual.js:147
+#: src/screens/Dashboard.js:178 src/screens/RegisterTokenManual.js:147
 msgid "Register token"
 msgstr "Registrar um token"
 
-#: src/screens/Dashboard.js:174
+#: src/screens/Dashboard.js:187
 msgid "Tokens"
 msgstr "Tokens"
 
@@ -1252,23 +1252,22 @@ msgstr "Rede personalizada"
 msgid "Nano Contracts"
 msgstr "Nano Contract"
 
-#: src/components/NanoContract/NoNanoContracts.js:22
+#: src/components/NanoContract/NoNanoContracts.js:16
 msgid "No Nano Contracts"
 msgstr "Nenhum Nano Contract"
 
-#: src/components/NanoContract/NoNanoContracts.js:24
+#: src/components/NanoContract/NoNanoContracts.js:18
 msgid ""
 "You can keep track of your registered Nano Contracts here once you have "
 "registered them."
 msgstr "Você pode acompanhar os Nano Contracts registrados nesta tela."
 
-#: src/components/NanoContract/NoNanoContracts.js:29
-msgid "Learn More."
-msgstr "Saiba mais"
-
 #: src/components/NanoContract/RegisterNewNanoContractButton.js:22
 msgid "Register new"
 msgstr "Registrar um token"
+
+#~ msgid "Learn More."
+#~ msgstr "Saiba mais"
 
 #~ msgid "TOKENS"
 #~ msgstr "TOKENS"
