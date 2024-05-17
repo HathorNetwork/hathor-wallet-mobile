@@ -6,20 +6,35 @@
  */
 
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Linking } from 'react-native';
 import { t } from 'ttag';
+import { NANO_CONTRACT_INFO_URL } from '../../constants';
 
+import SimpleButton from '../SimpleButton';
 import { RegisterNanoContract } from './RegisterNewNanoContractButton';
 
-export const NoNanoContracts = () => (
-  <View style={styles.wrapper}>
-    <Text style={styles.title}>{t`No Nano Contracts`}</Text>
-    <Text style={styles.content}>
-      {t`You can keep track of your registered Nano Contracts here once you have registered them.`}
-    </Text>
-    <RegisterNanoContract />
-  </View>
-);
+export const NoNanoContracts = () => {
+  const navigatesToDocumentation = () => {
+    Linking.openURL(NANO_CONTRACT_INFO_URL);
+  };
+  return (
+    <View style={styles.wrapper}>
+      <Text style={styles.title}>{t`No Nano Contracts`}</Text>
+      <Text style={styles.content}>
+        {t`You can keep track of your registered Nano Contracts here once you have registered them.`}
+        <View style={styles.learnMoreWrapper}>
+          <SimpleButton
+            containerStyle={styles.learnMoreContainer}
+            textStyle={styles.learnMoreText}
+            title={t`Learn More.`}
+            onPress={navigatesToDocumentation}
+          />
+        </View>
+      </Text>
+      <RegisterNanoContract />
+    </View>
+  )
+};
 
 const styles = StyleSheet.create({
   wrapper: {
