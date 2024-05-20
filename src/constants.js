@@ -28,9 +28,17 @@ export const STAGE = 'mainnet';
 export const NETWORK_MAINNET = 'mainnet';
 
 /**
- * Default tokens for the wallet (to start on redux)
+ * Default tokens for the wallet (to start on redux).
+ * @constant
+ * @type{{
+ *   [uid: string]: {
+ *     uid: string;
+ *     name: string;
+ *     symbol: string;
+ *   }
+ * }}
  */
-export const INITIAL_TOKENS = [DEFAULT_TOKEN];
+export const INITIAL_TOKENS = { [DEFAULT_TOKEN.uid]: DEFAULT_TOKEN };
 
 /**
  * Wallet will lock if app goes to background for more than LOCK_TIMEOUT seconds
@@ -150,6 +158,7 @@ export const WALLET_SERVICE_FEATURE_TOGGLE = 'wallet-service-mobile.rollout';
 export const PUSH_NOTIFICATION_FEATURE_TOGGLE = 'push-notification.rollout';
 export const WALLET_CONNECT_FEATURE_TOGGLE = 'wallet-connect-mobile.rollout';
 export const NETWORK_SETTINGS_FEATURE_TOGGLE = 'network-settings.rollout';
+export const NANO_CONTRACT_FEATURE_TOGGLE = 'nano-contract.rollout';
 
 /**
  * Default feature toggle values.
@@ -164,6 +173,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [PUSH_NOTIFICATION_FEATURE_TOGGLE]: false,
   [WALLET_CONNECT_FEATURE_TOGGLE]: false,
   [NETWORK_SETTINGS_FEATURE_TOGGLE]: false,
+  [NANO_CONTRACT_FEATURE_TOGGLE]: false,
 };
 
 // Project id configured in https://walletconnect.com
@@ -236,3 +246,11 @@ export const HTTP_REQUEST_TIMEOUT = 3000;
  * Any network that is not mainnet or testnet should be a privatenet.
  */
 export const NETWORK_PRIVATENET = 'privatenet';
+
+/**
+ * The following constants are used on a progressive retry mechanism.
+ * @see `src/sagas/helper.js@progressiveRetryRequest`
+ */
+export const MAX_RETRIES = 8;
+export const INITIAL_RETRY_LATENCY = 300; // ms
+export const LATENCY_MULTIPLIER = 30; // multiplier per iteration

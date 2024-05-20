@@ -135,7 +135,7 @@ export const types = {
   NETWORKSETTINGS_UPDATE_INVALID: 'NETWORKSETTINGS_UPDATE_INVALID',
   /* It indicates the update request has failed. */
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
-  /* It updates the redux state of network settings status */
+  /* It updates the redux state of network settings status. */
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
 };
 
@@ -252,7 +252,7 @@ export const updateSelectedToken = (selectedToken) => (
 export const newToken = (token) => ({ type: types.NEW_TOKEN, payload: token });
 
 /**
- * tokens {Array} list of tokens to update state
+ * @param {Object.<string, {uid: string, name: string; symbol: string}>} tokens map of tokens to update state
  */
 export const setTokens = (tokens) => ({ type: types.SET_TOKENS, payload: tokens });
 
@@ -913,8 +913,8 @@ export const networkSettingsUpdateState = (customNetwork) => ({
  *   network: string,
  *   nodeUrl: string,
  *   explorerUrl: string,
- *   txMiningServiceUrl: string,
  *   explorerServiceUrl: string,
+ *   txMiningServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string
  * }} customNetwork Settings to persist

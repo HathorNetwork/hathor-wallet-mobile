@@ -13,6 +13,7 @@ import {
   take,
   call,
   select,
+  delay,
 } from 'redux-saga/effects';
 import { t } from 'ttag';
 import axiosWrapperCreateRequestInstance from '@hathor/wallet-lib/lib/api/axiosWrapper';
@@ -28,6 +29,9 @@ import {
   WALLET_SERVICE_FEATURE_TOGGLE,
   WALLET_SERVICE_REQUEST_TIMEOUT,
   networkSettingsKeyMap,
+  MAX_RETRIES,
+  INITIAL_RETRY_LATENCY,
+  LATENCY_MULTIPLIER,
 } from '../constants';
 import { STORE } from '../store';
 
@@ -153,11 +157,17 @@ export function isUnlockScreen(action) {
  * Get registered tokens from the wallet instance.
  * @param {HathorWallet} wallet
  * @param {boolean} excludeHTR If we should exclude the HTR token.
- * @returns {Promise<{ uid: string, symbol: string, name: string }[]>}
+ * @returns {Promise<{
+ *   [uid: string]: {
+ *     uid: string;
+ *     symbol: string;
+ *     name: string;
+ *   }
+ * }>}
  */
 export async function getRegisteredTokens(wallet, excludeHTR = false) {
   const htrUid = hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
-  const tokens = [];
+  const tokens = {};
 
   // redux-saga generator magic does not work well with the "for await..of" syntax
   // The asyncGenerator is not recognized as an iterable and it throws an exception
@@ -167,11 +177,7 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
   while (!next.done) {
     const token = next.value;
     if ((!excludeHTR) || token.uid !== htrUid) {
-      tokens.push({
-        uid: token.uid,
-        symbol: token.symbol,
-        name: token.name,
-      });
+      tokens[token.uid] = { ...token };
     }
     // eslint-disable-next-line no-await-in-loop
     next = await iterator.next();
@@ -179,10 +185,19 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
 
   // XXX: This will add any default tokens configured, not only HTR
   if (!excludeHTR) {
-    tokens.unshift(...INITIAL_TOKENS);
+    return { ...INITIAL_TOKENS, ...tokens };
   }
 
   return tokens;
+}
+
+/**
+ * Flat registered tokens to uid.
+ * @param {{ tokens: Object }} Map of registered tokens by uid
+ * @returns {string[]} Array of token uid
+ */
+export function getRegisteredTokenUids({ tokens }) {
+  return Object.keys(tokens);
 }
 
 /**
@@ -193,7 +208,7 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
  */
 export async function isTokenRegistered(wallet, tokenUid) {
   const tokens = await getRegisteredTokens(wallet);
-  return tokens.some((token) => token.uid === tokenUid);
+  return tokens[tokenUid] != null;
 }
 
 export async function getFullnodeNetwork() {
@@ -263,4 +278,54 @@ export function getNetworkSettings(state) {
   // The state is always present, but the stored network settings
   // has precedence, once it indicates a custom network.
   return STORE.getItem(networkSettingsKeyMap.networkSettings) ?? state.networkSettings;
+}
+
+/**
+ * A request abstraction that applies a progressive retry strategy.
+ * One can define how many retries it should make or use the default value.
+ *
+ * @param {Promise<any>} request The async callback function to be executed.
+ * @param {number} maxRetries The max retries allowed, with default value.
+ * Notice this param should be at least 1 to make sense.
+ * @returns {any} A success object from the request.
+ * @throws An error after retries exhausted.
+ *
+ * @example
+ * yield call(progressiveRetryRequest, async () => asyncFn());
+ * // use default maxRetries
+ *
+ * @example
+ * yield call(progressiveRetryRequest, async () => asyncFn(), 3);
+ * // use custom maxRetries equal to 3
+ */
+export function* progressiveRetryRequest(request, maxRetries = MAX_RETRIES) {
+  let lastError = null;
+
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      // return if success
+      return yield call(request)
+    } catch (error) {
+      lastError = error;
+    }
+
+    // skip delay for last call
+    if (i === maxRetries) {
+      continue;
+    }
+
+    // attempt 0: 300ms
+    // attempt 1: 330ms
+    // attempt 2: 420ms
+    // attempt 3: 570ms
+    // attempt 4: 780ms
+    // attempt 5: 1050ms
+    // attempt 6: 1380ms
+    // attempt 7: 1770ms
+    yield delay(INITIAL_RETRY_LATENCY + LATENCY_MULTIPLIER * (i * i));
+  }
+
+  // throw last error after retries exhausted
+  throw lastError;
 }

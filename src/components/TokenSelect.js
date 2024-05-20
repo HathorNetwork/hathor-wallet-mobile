@@ -30,12 +30,13 @@ import { COLORS } from '../styles/themes';
  * @param {Record<string,TokenBalance>} props.tokensBalance
  * @param {{ uid: string }} props.selectedToken
  * @param {unknown} props.tokenMetadata
- * @param {unknown} props.tokens
+ * @param {{ [uid: string]: { uid: string; name: string; symbol: string; }}} props.tokens
  * @param {unknown} props.header
  * @param {boolean} props.renderArrow
  * @param {function} props.onItemPress
  */
 const TokenSelect = (props) => {
+  const tokens = Object.values(props.tokens);
   const renderItem = ({ item, index }) => {
     const symbolWrapperStyle = [styles.symbolWrapper];
     const symbolTextStyle = [styles.text, styles.leftText, styles.symbolText];
@@ -95,7 +96,7 @@ const TokenSelect = (props) => {
       {props.header}
       <View style={styles.listWrapper}>
         <FlatList
-          data={props.tokens}
+          data={tokens}
           // use extraData to make sure list updates (props.tokens might remain the same object)
           extraData={[props.tokensBalance, props.selectedToken.uid]}
           renderItem={renderItem}

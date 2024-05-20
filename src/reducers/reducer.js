@@ -38,7 +38,6 @@ import { WALLET_STATUS } from '../sagas/wallet';
  *   token {Object} payment should be made in this token
  * }
  * invoicePayment {Object} null if not paid or the tx that settles latestInvoice
- * tokens {Array} array of tokens added [{name, symbol, uid}]
  * selectedToken {Object} token currently selected by the user
  * isOnline {bool} Indicates whether the wallet is connected to the fullnode's websocket
  * serverInfo {Object} {
@@ -81,7 +80,24 @@ const initialState = {
   loadHistoryStatus: { active: true, error: false },
   latestInvoice: null,
   invoicePayment: null,
+  /**
+   * tokens {Object.<string, Object>} Map of tokens added plus initial tokens,
+   * @see {@link INITIAL_TOKENS}
+   */
   tokens: INITIAL_TOKENS,
+  /**
+   * selectedToken {{
+   *  uid: string;
+   *  name; string;
+   *  symbol: string
+   * }} Token selected to operate with
+   * @example
+   * {
+   *   name: 'YanCoin',
+   *   symbol: 'YAN',
+   *   uid: '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824'
+   * }
+   */
   selectedToken: DEFAULT_TOKEN,
   isOnline: false,
   serverInfo: { version: '', network: '' },
@@ -211,6 +227,18 @@ const initialState = {
   featureToggles: {
     ...FEATURE_TOGGLE_DEFAULTS,
   },
+  /**
+   * @param {{
+   *  stage: string;
+   *  network: string;
+   *  nodeUrl: string;
+   *  explorerUrl: string;
+   *  explorerServiceUrl: string;
+   *  txMiningServiceUrl: string;
+   *  walletServiceUrl: string;
+   *  walletServiceWsUrl: string;
+   * }}
+   */
   networkSettings: PRE_SETTINGS_MAINNET,
   networkSettingsInvalid: {},
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
@@ -499,24 +527,29 @@ const onUpdateSelectedToken = (state, action) => ({
 
 /**
  * Add a new token to the list of available tokens in this wallet
+ * @param {object} state
+ * @param {{payload: { uid: string }}} action containing a token data in payload,
+ * @see {@link initialState.tokens}
  */
-const onNewToken = (state, action) => ({
+const onNewToken = (state, { payload }) => ({
   ...state,
-  tokens: [...state.tokens, action.payload],
+  tokens: { ...state.tokens, [payload.uid]: { ...payload } },
 });
 
 /**
  * Set the list of tokens added in this wallet
+ * @param {object} state
+ * @param {{ payload }} action containing all registered tokens in payload
  */
-const onSetTokens = (state, action) => {
+const onSetTokens = (state, { payload }) => {
   let { selectedToken } = state;
-  if (action.payload.indexOf(selectedToken) === -1) {
+  if (payload[selectedToken.uid] == null) {
     // We have unregistered this token
     selectedToken = DEFAULT_TOKEN;
   }
   return {
     ...state,
-    tokens: [...action.payload],
+    tokens: { ...payload },
     selectedToken,
   };
 };
