@@ -43,7 +43,7 @@ export const TwoOptionsToggle = ({ options, defaultOption }) => {
 /**
  * @param {{
  *   optionValue: string;
- *   isActive: (componentOption: string) => boolean;
+ *   isActive: boolean;
  *   onTap: (option: string) => void;
  * }}
  */
