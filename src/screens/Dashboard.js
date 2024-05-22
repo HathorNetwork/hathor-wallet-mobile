@@ -127,8 +127,8 @@ export const Dashboard = () => {
           <DashBoardHeader>
             <TwoOptionsToggle
               options={{
-                first: { value: 'Tokens', onTap: () => selectList(listOption.tokens) },
-                second: { value: 'Nano Contracts', onTap: () => selectList(listOption.nanoContracts) }
+                first: { value: t`Tokens`, onTap: () => selectList(listOption.tokens) },
+                second: { value: t`Nano Contracts`, onTap: () => selectList(listOption.nanoContracts) }
               }}
               defaultOption='first'
             />

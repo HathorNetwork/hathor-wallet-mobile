@@ -17,7 +17,11 @@ import { COLORS } from '../styles/themes';
  */
 export const TwoOptionsToggle = ({ options, defaultOption }) => {
   const [currOption, setCurrOption] = useState(defaultOption);
-  const isActive = (option) => (componentOption) => option === componentOption;
+  const isFirst = currOption === 'first';
+  const isSecond = currOption === 'second';
+
+  const onTapFirst = () => onTap('first');
+  const onTapSecond = () => onTap('second');
   const onTap = (option) => {
     if (option === currOption) {
       // do nothing and halt.
@@ -27,28 +31,28 @@ export const TwoOptionsToggle = ({ options, defaultOption }) => {
     // Execute the callback assigned to the option
     options[option].onTap();
   };
+
   return (
     <View style={[styles.wrapper]}>
-      <Option option='first' optionValue={options.first.value} isActive={isActive(currOption)} onTap={onTap} />
-      <Option option='second' optionValue={options.second.value} isActive={isActive(currOption)} onTap={onTap} />
+      <Option optionValue={options.first.value} isActive={isFirst} onTap={onTapFirst} />
+      <Option optionValue={options.second.value} isActive={isSecond} onTap={onTapSecond} />
     </View>
   );
 };
 
 /**
  * @param {{
- *   option: 'first'|'second';
  *   optionValue: string;
  *   isActive: (componentOption: string) => boolean;
  *   onTap: (option: string) => void;
  * }}
  */
-const Option = ({ option, optionValue, isActive, onTap }) => (
+const Option = ({ optionValue, isActive, onTap }) => (
   <TouchableOpacity
-    style={[styles.button, isActive(option) && styles.buttonFocus]}
-    onPress={() => onTap(option)}
+    style={[styles.button, isActive && styles.buttonFocus]}
+    onPress={onTap}
   >
-    <Text style={[styles.text, isActive(option) && styles.textFocus]}>{optionValue}</Text>
+    <Text style={[styles.text, isActive && styles.textFocus]}>{optionValue}</Text>
   </TouchableOpacity>
 );
 

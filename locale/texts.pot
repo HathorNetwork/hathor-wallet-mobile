@@ -328,13 +328,21 @@ msgstr ""
 msgid "E.g. HTR"
 msgstr ""
 
+#: src/screens/Dashboard.js:130
+#: src/screens/Dashboard.js:187
+#.  Only show the toggle button when Nano Contract is enabled to the wallet
+msgid "Tokens"
+msgstr ""
+
+#: src/components/NanoContract/NanoContractsList.js:71
+#: src/screens/Dashboard.js:131
+#.  Only show the toggle button when Nano Contract is enabled to the wallet
+msgid "Nano Contracts"
+msgstr ""
+
 #: src/screens/Dashboard.js:178
 #: src/screens/RegisterTokenManual.js:147
 msgid "Register token"
-msgstr ""
-
-#: src/screens/Dashboard.js:187
-msgid "Tokens"
 msgstr ""
 
 #: src/screens/InitWallet.js:61
@@ -1190,10 +1198,6 @@ msgstr ""
 
 #: src/components/NetworkSettings/NetworkStatusBar.js:14
 msgid "Custom network"
-msgstr ""
-
-#: src/components/NanoContract/NanoContractsList.js:71
-msgid "Nano Contracts"
 msgstr ""
 
 #: src/components/NanoContract/NoNanoContracts.js:16
