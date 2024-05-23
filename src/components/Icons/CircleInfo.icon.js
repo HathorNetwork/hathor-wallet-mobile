@@ -7,8 +7,17 @@
 
 import * as React from 'react'
 import Svg, { G, Path, Defs, ClipPath } from 'react-native-svg'
+import { COLORS } from '../../styles/themes';
 
-export const CircleInfoIcon = ({ size = 20, color = '#000' }) => (
+/**
+ * @param {object} props
+ * @property {number} props.size
+ * @property {StyleSheet} props.color
+ *
+ * @description
+ * Svg converted from Figma using transaformer at https://react-svgr.com/playground/?native=true
+ */
+export const CircleInfoIcon = ({ size = 20, color = COLORS.white }) => (
   <Svg
     xmlns='http://www.w3.org/2000/svg'
     width={size}
@@ -25,7 +34,7 @@ export const CircleInfoIcon = ({ size = 20, color = '#000' }) => (
     </G>
     <Defs>
       <ClipPath id='a'>
-        <Path fill='#fff' d='M0 0h20v20H0z' />
+        <Path fill={color} d='M0 0h20v20H0z' />
       </ClipPath>
     </Defs>
   </Svg>

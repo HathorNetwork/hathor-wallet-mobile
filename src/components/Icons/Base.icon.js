@@ -9,14 +9,12 @@ import { StyleSheet, View } from 'react-native';
 import { COLORS } from '../../styles/themes';
 
 /**
- * @typedef {Object} Base base
- * @property {'default'|'outline'|'fill'} base.type
- * @property {StyleSheet} base.style
- * @property {ReactNode} base.children
- *
- * @param {Base}
+ * @param {object} props
+ * @property {'default'|'outline'|'fill'} props.type
+ * @property {StyleSheet} props.style
+ * @property {ReactNode} props.children
  */
-export const BaseIcon = ({ type, style, children }) => (
+export const BaseIcon = ({ type = 'default', style, children }) => (
   <View style={[
     styles[type],
     style

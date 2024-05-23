@@ -11,6 +11,14 @@ import { COLORS } from '../../styles/themes'
 import { DEFAULT_ICON_SIZE } from './constants'
 import { getScale, getViewBox } from './helper'
 
+/**
+ * @param {object} props
+ * @property {number} props.size
+ * @property {StyleSheet} props.color
+ *
+ * @description
+ * Svg converted from Figma using transaformer at https://react-svgr.com/playground/?native=true
+ */
 export const CircleCheck = ({ size = DEFAULT_ICON_SIZE, color = COLORS.black }) => (
   <Svg
     xmlns='http://www.w3.org/2000/svg'

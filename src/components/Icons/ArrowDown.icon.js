@@ -8,16 +8,20 @@
 import * as React from 'react'
 import { View, Image, StyleSheet } from 'react-native';
 import chevronDown from '../../assets/icons/chevron-down.png';
+import { DEFAULT_ICON_SIZE } from './constants';
 
 /**
- * @typedef {Object} Properties prop
- * @property {StyleSheet} prop.style
- *
- * @param {Properties} properties
+ * @param {object} props
+ * @property {number} props.size
+ * @property {StyleSheet} props.style
  */
-export const ArrowDownIcon = ({ style }) => (
+export const ArrowDownIcon = ({ size = DEFAULT_ICON_SIZE, style }) => (
   <View style={[styles.wrapper, style]}>
-    <Image source={chevronDown} width={24} height={24} />
+    <Image
+      source={chevronDown}
+      width={size}
+      height={size}
+    />
   </View>
 );
 
