@@ -13,51 +13,51 @@ msgstr ""
 "X-Generator: Poedit 3.3.1\n"
 
 #.  This should never happen!
-#: src/models.js:79
+#: src/models.js:85
 msgid "Unknown"
 msgstr "Desconhecido"
 
-#: src/models.js:82
+#: src/models.js:88
 #, javascript-format
 msgid "Received ${ symbol }"
 msgstr "Recebido ${ symbol }"
 
-#: src/models.js:84
+#: src/models.js:90
 msgid "Sent ${ symbol }"
 msgstr "Enviado ${ symbol }"
 
-#: src/models.js:86
+#: src/models.js:92
 #, javascript-format
 msgid "You sent ${ symbol } to yourself"
 msgstr "Você enviou ${ symbol } para você mesmo"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:96
+#: src/models.js:102
 msgid "[Today •] HH:mm"
 msgstr "[Hoje •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:97
+#: src/models.js:103
 msgid "[Tomorrow •] HH:mm"
 msgstr "[Amanhã •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:98
+#: src/models.js:104
 msgid "dddd [•] HH:mm"
 msgstr "dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:99
+#: src/models.js:105
 msgid "[Yesterday •] HH:mm"
 msgstr "[Ontem •] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:100
+#: src/models.js:106
 msgid "[Last] dddd [•] HH:mm"
 msgstr "[Última] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:101
+#: src/models.js:107
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -502,11 +502,11 @@ msgstr "Você recebeu **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "REQUISIÇÃO DE PAGAMENTO"
 
-#: src/components/TxDetailsModal.js:99 src/screens/PaymentRequestDetail.js:123
+#: src/components/TxDetailsModal.js:101 src/screens/PaymentRequestDetail.js:123
 msgid "Token"
 msgstr "Token"
 
-#: src/components/TxDetailsModal.js:152 src/screens/PaymentRequestDetail.js:127
+#: src/components/TxDetailsModal.js:166 src/screens/PaymentRequestDetail.js:127
 msgid "Amount"
 msgstr "Quantidade"
 
@@ -1120,7 +1120,7 @@ msgstr "Sem conexão com a internet"
 msgid "Public Explorer"
 msgstr "Explorer Público"
 
-#: src/components/PushTxDetailsModal.js:69 src/components/TxDetailsModal.js:101
+#: src/components/PushTxDetailsModal.js:69 src/components/TxDetailsModal.js:103
 msgid "Date & Time"
 msgstr "Data & Hora"
 
@@ -1180,27 +1180,31 @@ msgstr "Processando"
 msgid "Voided"
 msgstr "Inválida"
 
-#: src/components/TxDetailsModal.js:100
+#: src/components/TxDetailsModal.js:102
 msgid "Description"
 msgstr "Descrição"
 
-#: src/components/TxDetailsModal.js:102
+#: src/components/TxDetailsModal.js:104
 msgid "Transaction ID"
 msgstr "ID da Transação"
 
-#: src/components/TxDetailsModal.js:103
+#: src/components/TxDetailsModal.js:105
 msgid "Blueprint Method"
 msgstr "Método do Blueprint"
 
-#: src/components/TxDetailsModal.js:104
+#: src/components/TxDetailsModal.js:106
 msgid "Nano Contract ID"
 msgstr "ID do Nano Contract"
 
-#: src/components/TxDetailsModal.js:105
+#: src/components/TxDetailsModal.js:107
 msgid "Nano Contract Caller"
 msgstr "Endereço de assinatura do Nano Contract"
 
-#: src/components/TxDetailsModal.js:106
+#: src/components/TxDetailsModal.js:111
+msgid "Nano Contract Status"
+msgstr "Status do Nano Contract"
+
+#: src/components/TxDetailsModal.js:120
 msgid "Nano Contract"
 msgstr "Nano Contract"
 

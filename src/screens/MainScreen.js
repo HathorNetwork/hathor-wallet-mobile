@@ -455,7 +455,7 @@ class TxListItem extends React.Component {
           <View style={style.middleView}>
             <Text style={style.description}>{description}</Text>
             <Text style={style.secondaryText}>{timestamp}</Text>
-            <Text style={[style.secondaryText, style.bold]}>{item.getVersionInfo().label}</Text>
+            <Text style={[style.secondaryText, style.bold]}>{item.getVersionInfo()}</Text>
           </View>
           <Text style={style.balance} numberOfLines={1}>{balanceStr}</Text>
         </View>
