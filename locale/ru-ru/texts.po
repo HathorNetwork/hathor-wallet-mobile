@@ -1220,7 +1220,7 @@ msgstr ""
 
 #: src/components/NanoContract/RegisterNewNanoContractButton.js:22
 msgid "Register new"
-msgstr "Зарегистрировать токен"
+msgstr ""
 
 #~ msgid "TOKENS"
 #~ msgstr "ТОКЕНЫ"

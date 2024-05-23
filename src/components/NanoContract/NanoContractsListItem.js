@@ -18,13 +18,13 @@ import { NanoContractIcon } from './NanoContractIcon.icon';
  *
  * @param {Object} ncItem
  * @property {Object} ncItem.item registered Nano Contract data
- * @property {number} ncItem.index position in the list
+ * @property {() => {}} ncItem.onPress A void function to be called when item is pressed.
  */
 export const NanoContractsListItem = ({ item, onPress }) => (
   <Wrapper onPress={onPress}>
     <Icon />
     <ContentWrapper nc={item} />
-    <ArrowLeft />
+    <ArrowRight />
   </Wrapper>
 );
 
@@ -58,7 +58,7 @@ const ContentWrapper = ({ nc }) => (
   </View>
 );
 
-const ArrowLeft = () => (
+const ArrowRight = () => (
   <View>
     <Image source={chevronRight} width={24} height={24} />
   </View>

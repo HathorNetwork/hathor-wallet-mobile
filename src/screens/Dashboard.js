@@ -76,13 +76,13 @@ const listOption = {
 
 /**
  * @param {listOption} currList the list component selected to be rendered.
- * @returns {boolean} `true` if tokens list is selected, `false` otherwier.
+ * @returns {boolean} `true` if tokens list is selected, `false` otherwise.
  */
 const isTokensSelected = (currList) => currList === listOption.tokens;
 
 /**
  * @param {listOption} currList the list component selected to be rendered.
- * @returns {boolean} `true` if nanoContracts list is selected, `false` otherwier.
+ * @returns {boolean} `true` if nanoContracts list is selected, `false` otherwise.
  */
 const isNanoContractsSelected = (currList) => currList === listOption.nanoContracts;
 
@@ -93,7 +93,7 @@ export const Dashboard = () => {
     selectedToken,
     tokensMetadata,
   } = useSelector(getTokensState);
-  const isNanoContratEnabled = useSelector(getNanoContractFeatureToggle);
+  const isNanoContractEnabled = useSelector(getNanoContractFeatureToggle);
 
   const [currList, selectList] = useState(listOption.tokens);
   const navigation = useNavigation();
@@ -122,7 +122,7 @@ export const Dashboard = () => {
       <AskForPushNotification navigation={navigation} />
       <AskForPushNotificationRefresh />
       { // Only show the toggle button when Nano Contract is enabled to the wallet
-        isNanoContratEnabled
+        isNanoContractEnabled
         && (
           <DashBoardHeader>
             <TwoOptionsToggle
@@ -150,7 +150,7 @@ export const Dashboard = () => {
         )
       }
       { // Only show if Nano Contract is enabled in the wallet
-        isNanoContratEnabled
+        isNanoContractEnabled
         && isNanoContractsSelected(currList)
         && <NanoContractsList />
       }

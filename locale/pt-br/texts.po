@@ -1267,7 +1267,7 @@ msgstr "Você pode acompanhar os Nano Contracts registrados nesta tela."
 
 #: src/components/NanoContract/RegisterNewNanoContractButton.js:22
 msgid "Register new"
-msgstr "Registrar um token"
+msgstr "Registrar Nano Contract"
 
 #~ msgid "Learn More."
 #~ msgstr "Saiba mais"
