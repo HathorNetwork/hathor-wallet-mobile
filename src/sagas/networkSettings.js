@@ -299,10 +299,8 @@ export function* persistNetworkSettings(action) {
     return;
   }
 
-  // Remove registered tokens only
-  yield call([wallet.storage, wallet.storage.cleanStorage], false, false, true)
   // Stop wallet and clean its storage without clean its access data.
-  wallet.stop({ cleanStorage: true, cleanAddresses: true });
+  wallet.stop({ cleanStorage: true, cleanAddresses: true, cleanTokens: true });
   // This action should clean the tokens history on redux.
   // In addition, the reload also clean the inmemory storage.
   yield put(reloadWalletRequested());
