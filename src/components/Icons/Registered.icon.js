@@ -10,6 +10,7 @@ import Svg, { Path } from 'react-native-svg'
 import { COLORS } from '../../styles/themes';
 import { BaseIcon } from './Base.icon';
 import { DEFAULT_ICON_SIZE } from './constants';
+import { getScale, getViewBox } from './helper';
 
 /**
  * @param {object} props
