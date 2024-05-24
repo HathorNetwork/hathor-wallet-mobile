@@ -1221,9 +1221,3 @@ msgstr ""
 #: src/components/NanoContract/RegisterNewNanoContractButton.js:22
 msgid "Register new"
 msgstr ""
-
-#~ msgid "TOKENS"
-#~ msgstr "ТОКЕНЫ"
-
-#~ msgid "I understand the risks of using a mobile wallet"
-#~ msgstr "Я осознаю риски использования мобильного кошелька"

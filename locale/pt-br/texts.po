@@ -1268,21 +1268,3 @@ msgstr "Você pode acompanhar os Nano Contracts registrados nesta tela."
 #: src/components/NanoContract/RegisterNewNanoContractButton.js:22
 msgid "Register new"
 msgstr "Registrar Nano Contract"
-
-#~ msgid "Learn More."
-#~ msgstr "Saiba mais"
-
-#~ msgid "TOKENS"
-#~ msgstr "TOKENS"
-
-#~ msgid "There has been an error upgrading your wallet."
-#~ msgstr "Ocorreu um erro ao atualizar sua wallet."
-
-#~ msgid "Please reset it and restore it with your seed."
-#~ msgstr "Por favor resete sua wallet e restaure utilizando sua seed."
-
-#~ msgid "Upgrading your wallet, please hang on."
-#~ msgstr "Atualizando sua wallet, por favor aguarde."
-
-#~ msgid "I understand the risks of using a mobile wallet"
-#~ msgstr "Eu entendo os riscos de usar uma wallet de celular"
