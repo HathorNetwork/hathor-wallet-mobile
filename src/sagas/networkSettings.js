@@ -12,7 +12,7 @@ import {
   types,
   reloadWalletRequested,
   onExceptionCaptured,
-  networkSettingsUpdateReady
+  networkSettingsUpdateReady,
 } from '../actions';
 import {
   NETWORK_MAINNET,
@@ -23,7 +23,7 @@ import {
   STAGE_DEV_PRIVNET,
   STAGE_TESTNET,
   WALLET_SERVICE_REQUEST_TIMEOUT,
-  NETWORK_PRIVATENET
+  NETWORK_PRIVATENET,
 } from '../constants';
 import {
   getFullnodeNetwork,
@@ -300,7 +300,7 @@ export function* persistNetworkSettings(action) {
   }
 
   // Stop wallet and clean its storage without clean its access data.
-  wallet.stop({ cleanStorage: true, cleanAddresses: true });
+  wallet.stop({ cleanStorage: true, cleanAddresses: true, cleanTokens: true });
   // This action should clean the tokens history on redux.
   // In addition, the reload also clean the inmemory storage.
   yield put(reloadWalletRequested());

@@ -143,6 +143,22 @@ class HybridStore extends MemoryStore {
     contracts[ncId] = ncValue;
     STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts)
   }
+
+  /**
+   * Clean the storage.
+   * @param {boolean} cleanHistory if we should clean the transaction history.
+   * @param {boolean} cleanAddresses if we should clean the addresses.
+   * @param {boolean} cleanTokens if we should clean the registered tokens.
+   * @async
+   * @returns {Promise<void>}
+   */
+  async cleanStorage(cleanHistory = false, cleanAddresses = false, cleanTokens = false) {
+    super.cleanStorage(cleanHistory, cleanAddresses, cleanTokens);
+    if (cleanTokens) {
+      // Remove from the cache
+      STORE.removeItem(REGISTERED_TOKENS_KEY);
+    }
+  }
 }
 /* eslint-enable class-methods-use-this */
 
