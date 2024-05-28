@@ -11,6 +11,11 @@ import { COLORS } from '../../styles/themes'
 import { DEFAULT_ICON_SIZE } from './constants'
 import { getScale, getViewBox } from './helper'
 
+/**
+ * @param {object} props
+ * @property {number} props.size
+ * @property {StyleSheet} props.color
+ */
 export const ActionDot = ({ size = DEFAULT_ICON_SIZE, color = COLORS.black }) => (
   <Svg
     xmlns='http://www.w3.org/2000/svg'

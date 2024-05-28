@@ -11,7 +11,7 @@ import { TouchableHighlight, StyleSheet, View, Text, Image } from 'react-native'
 import chevronRight from '../../assets/icons/chevron-right.png';
 import { COLORS } from '../../styles/themes';
 import { getShortHash } from '../../utils';
-import { NanoContractIcon } from './NanoContractIcon.icon';
+import { NanoContractIcon } from '../Icons/NanoContract.icon';
 
 /**
  * Renders each item of Nano Contract List.
