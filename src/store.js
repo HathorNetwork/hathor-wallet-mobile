@@ -41,6 +41,7 @@ class HybridStore extends MemoryStore {
    * @returns {Promise<void>}
    */
   async saveAccessData(data) {
+    await super.saveAccessData(data);
     STORE.setItem(ACCESS_DATA_KEY, data);
   }
 
@@ -75,6 +76,7 @@ class HybridStore extends MemoryStore {
    * @returns {Promise<void>}
    */
   async registerToken(token) {
+    await super.registerToken(token);
     const registeredTokens = STORE.getItem(REGISTERED_TOKENS_KEY) || {};
     registeredTokens[token.uid] = token;
     STORE.setItem(REGISTERED_TOKENS_KEY, registeredTokens);
@@ -88,6 +90,7 @@ class HybridStore extends MemoryStore {
    * @returns {Promise<void>}
    */
   async unregisterToken(tokenUid) {
+    await super.unregisterToken(tokenUid);
     const registeredTokens = STORE.getItem(REGISTERED_TOKENS_KEY) || {};
     if (tokenUid in registeredTokens) {
       delete registeredTokens[tokenUid];
@@ -139,6 +142,7 @@ class HybridStore extends MemoryStore {
    * @async
    */
   async registerNanoContract(ncId, ncValue) {
+    await super.registerNanoContract(ncId, ncValue);
     const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
     contracts[ncId] = ncValue;
     STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts)
@@ -153,7 +157,7 @@ class HybridStore extends MemoryStore {
    * @returns {Promise<void>}
    */
   async cleanStorage(cleanHistory = false, cleanAddresses = false, cleanTokens = false) {
-    super.cleanStorage(cleanHistory, cleanAddresses, cleanTokens);
+    await super.cleanStorage(cleanHistory, cleanAddresses, cleanTokens);
     if (cleanTokens) {
       // Remove from the cache
       STORE.removeItem(REGISTERED_TOKENS_KEY);
