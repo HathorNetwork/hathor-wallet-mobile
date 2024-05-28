@@ -11,6 +11,7 @@ import React from 'react';
 import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
+import moment from 'moment';
 import baseStyle from './styles/init';
 import { KEYCHAIN_USER, NANO_CONTRACT_FEATURE_TOGGLE } from './constants';
 import { STORE } from './store';
@@ -403,3 +404,12 @@ export const isPushNotificationAvailableForUser = (state) => (
 export const getNanoContractFeatureToggle = (state) => (
   state.featureToggles[NANO_CONTRACT_FEATURE_TOGGLE]
 );
+
+/**
+ * Get timestamp in specific format.
+ *
+ * @param {number} timestamp
+ *
+ * @returns {string} formatted timestamp
+ */
+export const getTimestampFormat = (timestamp) => moment.unix(timestamp).format(t`DD MMM YYYY [•] HH:mm`)
