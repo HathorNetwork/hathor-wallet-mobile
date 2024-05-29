@@ -1460,6 +1460,7 @@ export const onNanoContractAddressChangeRequest = (state, { payload }) => {
   return {
     ...state,
     nanoContract: {
+      ...state.nanoContract,
       registered: {
         ...state.nanoContract.registered,
         [payload.ncId]: newRegisteredNc,
