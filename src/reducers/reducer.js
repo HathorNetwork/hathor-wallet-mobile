@@ -477,6 +477,10 @@ export const reducer = (state = initialState, action) => {
       return onNanoContractHistoryFailure(state, action);
     case types.NANOCONTRACT_HISTORY_SUCCESS:
       return onNanoContractHistorySuccess(state, action);
+    case types.NANOCONTRACT_UNREGISTER_SUCCESS:
+      return onNanoContractUnregisterSuccess(state, action);
+    case types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST:
+      return onNanoContractAddressChangeRequest(state, action);
     default:
       return state;
   }
@@ -1333,6 +1337,37 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
  * @param {Object} state
  * @param {{
  *   payload: {
+ *     ncId: string,
+ *   }
+  * }} action
+ */
+export const onNanoContractUnregisterSuccess = (state, { payload }) => {
+  const { ncId } = payload;
+
+  const newRegisteredContracts = { ...state.nanoContract.registered };
+  delete newRegisteredContracts[ncId];
+
+  const newContractsHistory = { ...state.nanoContract.history };
+  delete newContractsHistory[ncId];
+
+  const newContractsHistoryMeta = { ...state.nanoContract.historyMeta };
+  delete newContractsHistoryMeta[ncId];
+
+  return ({
+    ...state,
+    nanoContract: {
+      ...state.nanoContract,
+      registered: newRegisteredContracts,
+      history: newContractsHistory,
+      historyMeta: newContractsHistoryMeta,
+    },
+  });
+};
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
  *     ncId: string;
  *     after: string;
  *   }
@@ -1407,3 +1442,29 @@ export const onNanoContractHistorySuccess = (state, { payload }) => ({
     },
   },
 });
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     ncId: string;
+ *     newAddress: string;
+ *   }
+ * }} action
+ */
+export const onNanoContractAddressChangeRequest = (state, { payload }) => {
+  const newRegisteredNc = {
+    ...state.nanoContract.registered[payload.ncId],
+    address: payload.newAddress,
+  };
+  return {
+    ...state,
+    nanoContract: {
+      ...state.nanoContract,
+      registered: {
+        ...state.nanoContract.registered,
+        [payload.ncId]: newRegisteredNc,
+      },
+    },
+  };
+};

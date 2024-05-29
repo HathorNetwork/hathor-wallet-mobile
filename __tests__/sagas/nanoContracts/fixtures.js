@@ -81,6 +81,7 @@ export const fixtures = {
         ncState: {
           success: true,
           nc_id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
+          blueprint_id: '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a',
           blueprint_name: 'Bet',
           fields: {
             token_uid: { value: '00' },

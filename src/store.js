@@ -145,7 +145,21 @@ class HybridStore extends MemoryStore {
     await super.registerNanoContract(ncId, ncValue);
     const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
     contracts[ncId] = ncValue;
-    STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts)
+    STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts);
+  }
+
+  /**
+   * Unregister a nano contract.
+   *
+   * @param {string} ncId Nano Contract ID.
+   * @returns {Promise<void>}
+   * @async
+   */
+  async unregisterNanoContract(ncId) {
+    await super.unregisterNanoContract(ncId);
+    const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
+    delete contracts[ncId];
+    STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts);
   }
 
   /**
@@ -161,6 +175,7 @@ class HybridStore extends MemoryStore {
     if (cleanTokens) {
       // Remove from the cache
       STORE.removeItem(REGISTERED_TOKENS_KEY);
+      STORE.removeItem(REGISTERED_NANO_CONTRACTS_KEY);
     }
   }
 }

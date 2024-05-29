@@ -27,9 +27,7 @@ describe('sagas/nanoContract/fetchHistory', () => {
     // arrange wallet mock
     const mockedWallet = {
       getNetworkObject: jest.fn(),
-      storage: {
-        isAddressMine: jest.fn(),
-      },
+      isAddressMine: jest.fn(),
     };
     // arrange ncApi mock
     const mockedNcApi = jest.mocked(ncApi);
@@ -115,10 +113,10 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
 
     // call effect to request history
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
-    // select wallet
+    // select historyMeta
     gen.next();
     // feed back historyMeta
-    gen.next({});
+    gen.next({ [ncId]: { isLoading: false, after: null } });
     // feed back wallet
     gen.next(fixtures.wallet.readyAndMine);
     // feed back isNanoContractRegistered
