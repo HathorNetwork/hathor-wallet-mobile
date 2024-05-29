@@ -269,7 +269,7 @@ export function* unregisterNanoContract({ payload }) {
 
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
-    log.debug('Fail unregistering Nano Contract because wallet is not ready yet.');
+    log.error('Fail unregistering Nano Contract because wallet is not ready yet.');
     // This will show user an error modal with the option to send the error to sentry.
     yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), true));
     return;
