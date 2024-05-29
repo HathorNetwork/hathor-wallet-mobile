@@ -81,7 +81,7 @@ export function* registerNanoContract({ payload }) {
 
   let ncState = null;
   try {
-    const response = yield call(ncApi.getNanoContractState.bind(ncApi), ncId);
+    const response = yield call([ncApi, ncApi.getNanoContractState], ncId);
     ncState = response.ncState;
   } catch (error) {
     if (error instanceof NanoRequest404Error) {

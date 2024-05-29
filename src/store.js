@@ -141,7 +141,7 @@ class HybridStore extends MemoryStore {
   async registerNanoContract(ncId, ncValue) {
     const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
     contracts[ncId] = ncValue;
-    STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts)
+    STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts);
   }
 
   /**
@@ -155,6 +155,7 @@ class HybridStore extends MemoryStore {
     await super.unregisterNanoContract(ncId);
     const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
     delete contracts[ncId];
+    STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts);
   }
 
   /**
