@@ -10,22 +10,20 @@ import { Text, View } from 'react-native';
 import PropTypes from 'prop-types';
 import HathorModal from './HathorModal';
 
-const FeedbackModal = (props) => {
-  return (
-    <HathorModal onDismiss={props.onDismiss}>
-      {props.icon}
-      <Text style={{ fontSize: 18, marginTop: 40, textAlign: 'center' }} {...props.textProps}>
-        {props.text}
-      </Text>
-      {props.action
-        && (
-          <View style={{ width: '100%', marginTop: 8 }}>
-            {props.action}
-          </View>
-        )}
-    </HathorModal>
-  );
-};
+const FeedbackModal = (props) => (
+  <HathorModal onDismiss={props.onDismiss}>
+    {props.icon}
+    <Text style={{ fontSize: 18, marginTop: 40, textAlign: 'center' }} {...props.textProps}>
+      {props.text}
+    </Text>
+    {props.action
+      && (
+        <View style={{ width: '100%', marginTop: 8 }}>
+          {props.action}
+        </View>
+      )}
+  </HathorModal>
+);
 
 FeedbackModal.propTypes = {
   // Icon used on this modal. Usually an image or the Spinner component

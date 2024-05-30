@@ -15,17 +15,16 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { isEmpty } from 'lodash';
-
 import HathorHeader from '../../components/HathorHeader';
-import { CircleInfoIcon } from '../../components/Icon/CircleInfo.icon';
+import { CircleInfoIcon } from '../../components/Icons/CircleInfo.icon';
 import NewHathorButton from '../../components/NewHathorButton';
 import OfflineBar from '../../components/OfflineBar';
 import SimpleInput from '../../components/SimpleInput';
-import { TextLabel } from '../../components/TextLabel.component';
-import { TextValue } from '../../components/TextValue.component';
+import { TextLabel } from '../../components/TextLabel';
+import { TextValue } from '../../components/TextValue';
 import { COLORS } from '../../styles/themes';
 import { nanoContractRegisterReady, nanoContractRegisterRequest } from '../../actions';
-import { feedbackSucceedText, hasFailed, hasSucceed, isLoading, notReady } from './helper';
+import { feedbackSucceedText, hasFailed, hasSucceed, isLoading } from './helper';
 import Spinner from '../../components/Spinner';
 import FeedbackModal from '../../components/FeedbackModal';
 import errorIcon from '../../assets/images/icErrorBig.png';
@@ -120,8 +119,8 @@ export function NanoContractRegister({ navigation }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const address = await wallet.getAddressAtIndex(0);
-      setAddress(address);
+      const defaultAddress = await wallet.getAddressAtIndex(0);
+      setAddress(defaultAddress);
     };
     fetchData();
   }, []);

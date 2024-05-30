@@ -481,8 +481,6 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateFailure(state);
     case types.NETWORKSETTINGS_UPDATE_INVALID:
       return onNetworkSettingsUpdateInvalid(state, action);
-    case types.NANOCONTRACT_REGISTER_SUCCESS:
-      return onNanoContractRegisterSuccess(state, action);
     case types.NANOCONTRACT_HISTORY_LOADING:
       return onNanoContractHistoryLoading(state, action);
     case types.NANOCONTRACT_HISTORY_FAILURE:
