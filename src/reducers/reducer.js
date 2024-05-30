@@ -1366,7 +1366,6 @@ export const onNanoContractRegisterFailure = (state, { payload: { error } }) => 
  *     entryValue: {
  *       address: string,
  *       ncId: string,
- *       blueprintId: string,
  *       blueprintName: string
  *     }
  *   }
