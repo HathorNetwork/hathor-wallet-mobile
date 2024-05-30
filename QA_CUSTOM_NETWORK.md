@@ -121,7 +121,7 @@
     1. [ ] Navigate to Settings screen
     1. [ ] Check Push Notification didn't appear
 
-1. **Check Push Notification aren't beeing received on Testnet**
+1. **Check Push Notification aren't being received on Testnet**
     1. [ ] Go to Unleash and enables the Wallet Service for the wallet
         1. You should set this configuration on `wallet-service-mobile.rollout`
     1. [ ] Navigate to Network Pre-Settings screen
