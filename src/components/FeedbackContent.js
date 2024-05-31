@@ -35,19 +35,21 @@ import { COLORS } from '../styles/themes';
  * />
  */
 export const FeedbackContent = ({ title, message, icon, action, offcard }) => (
-  <View style={[styles.wrapper, !offcard && styles.card]}>
-    <View style={styles.content}>
-      {icon
-        && (<View style={styles.icon}>{icon}</View>)}
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.message}>{message}</Text>
-      {action && (action)}
+  <View style={[styles.container, !offcard && styles.card]}>
+    <View style={styles.wrapper}>
+      <View style={styles.content}>
+        {icon
+          && (<View style={styles.icon}>{icon}</View>)}
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.message}>{message}</Text>
+        {action && (action)}
+      </View>
     </View>
   </View>
 );
 
 const styles = StyleSheet.create({
-  wrapper: {
+  container: {
     flex: 1,
     justifyContent: 'center',
     alignSelf: 'stretch',
@@ -62,6 +64,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowColor: COLORS.textColor,
     shadowOpacity: 0.08,
+  },
+  wrapper: {
+    overflow: 'scroll',
   },
   content: {
     display: 'flex',

@@ -70,7 +70,7 @@ const HeaderShrank = () => (
 const HeaderExpanded = ({ tx }) => {
   const baseExplorerUrl = useSelector((state) => state.networkSettings.explorerUrl);
   const ncId = getShortHash(tx.ncId, 7);
-  const callerAddr = getShortContent(tx.caller.base58, 7);
+  const callerAddr = getShortContent(tx.caller, 7);
   const hasFirstBlock = tx.firstBlock != null;
 
   const navigatesToExplorer = () => {
