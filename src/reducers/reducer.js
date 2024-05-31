@@ -1380,6 +1380,18 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
       ...state.nanoContract.registered,
       [payload.entryKey]: payload.entryValue,
     },
+    history: {
+      ...state.nanoContract.history,
+      [payload.entryKey]: [],
+    },
+    historyMeta: {
+      ...state.nanoContract.historyMeta,
+      [payload.entryKey]: {
+        isLoading: false,
+        error: null,
+        after: null,
+      },
+    },
   },
 });
 
