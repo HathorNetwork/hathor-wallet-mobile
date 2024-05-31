@@ -29,7 +29,6 @@ import Spinner from '../../components/Spinner';
 import FeedbackModal from '../../components/FeedbackModal';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
-import { NANOCONTRACT_REGISTER_STATUS } from '../../constants';
 
 /**
  * Verifies if the invalidModel of the form has an error message.
@@ -55,17 +54,15 @@ function validate(formModel) {
 }
 
 export function NanoContractRegister({ navigation }) {
+  const dispatch = useDispatch();
   const wallet = useSelector((state) => state.wallet);
   const registerState = useSelector((state) => ({
     registerStatus: state.nanoContract.registerStatus,
     registerFailureMessage: state.nanoContract.registerFailureMessage,
   }));
-  const registeredContracts = useSelector((state) => state.nanoContract.registeredContracts);
-  const dispatch = useDispatch();
 
   const [address, setAddress] = useState(null);
   const [isClean, setClean] = useState(true);
-  const [registeredNc, setRegisteredNc] = useState(null);
 
   const [formModel, setFormModel] = useState({
     ncId: null,
@@ -114,7 +111,7 @@ export function NanoContractRegister({ navigation }) {
 
   const navigatesToNanoContractTransactions = () => {
     dispatch(nanoContractRegisterReady());
-    navigation.navigate('NanoContractTransactions', { nc: registeredNc });
+    navigation.navigate('NanoContractTransactionsScreen', { ncId: formModel.ncId });
   }
 
   useEffect(() => {
@@ -124,18 +121,6 @@ export function NanoContractRegister({ navigation }) {
     };
     fetchData();
   }, []);
-
-  /**
-   * This effect monitors registeredContracts state to be able to capture the
-   * registered nano contract, which can be used in the success feedback action
-   * to navigate to the contract transactions screen.
-   */
-  useEffect(() => {
-    if (registerState.registerStatus === NANOCONTRACT_REGISTER_STATUS.SUCCESSFUL) {
-      const nc = registeredContracts[formModel.ncId];
-      setRegisteredNc(nc);
-    }
-  }, [registeredContracts]);
 
   return (
     <Wrapper>
