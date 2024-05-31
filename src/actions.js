@@ -137,6 +137,8 @@ export const types = {
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
   /* It updates the redux state of network settings status. */
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
+  /* It signals Nano Contract initialization. */
+  NANOCONTRACT_INIT: 'NANOCONTRACT_INIT',
   /* It initiates a registration process of a Nano Contract. */
   NANOCONTRACT_REGISTER_REQUEST: 'NANOCONTRACT_REGISTER_REQUEST',
   /* It indicates a Nano Contract registration is couldn't complete. */
@@ -994,6 +996,13 @@ export const networkSettingsUpdateInvalid = (errors) => ({
  */
 export const networkSettingsUpdateReady = () => ({
   type: types.NETWORKSETTINGS_UPDATE_READY,
+});
+
+/**
+ * It signals Nano Contract initialization.
+ */
+export const nanoContractInit = () => ({
+  type: types.NANOCONTRACT_INIT,
 });
 
 /**

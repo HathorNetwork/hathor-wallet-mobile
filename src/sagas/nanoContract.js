@@ -16,6 +16,8 @@ import {
   all,
   put,
   call,
+  delay,
+  debounce,
 } from 'redux-saga/effects';
 import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
@@ -31,6 +33,8 @@ import {
 } from '../actions';
 import { logger } from '../logger';
 import { NANO_CONTRACT_TX_HISTORY_SIZE } from '../constants';
+import { getNanoContractFeatureToggle } from '../utils';
+import { getRegisteredNanoContracts } from './helpers';
 
 const log = logger('nano-contract-saga');
 
@@ -43,6 +47,21 @@ export const failureMessage = {
   notRegistered: t`Nano Contract not registered.`,
   nanoContractHistoryFailure: t`Error while trying to download Nano Contract transactions history.`,
 };
+
+export function* init() {
+  const isEnabled = yield select(getNanoContractFeatureToggle);
+  if (!isEnabled) {
+    log.debug('Halting nano contract initialization because the feature flag is disabled.');
+    return;
+  }
+
+  const wallet = yield select((state) => state.wallet);
+  const contracts = yield call(getRegisteredNanoContracts, wallet);
+  for (const contract of contracts) {
+    yield put(nanoContractRegisterSuccess({ entryKey: contract.ncId, entryValue: contract }));
+  }
+  log.debug('Registered Nano Contracts loaded.');
+}
 
 /**
  * Process Nano Contract registration request.
@@ -294,6 +313,7 @@ export function* unregisterNanoContract({ payload }) {
 
 export function* saga() {
   yield all([
+    debounce(500, [[types.START_WALLET_SUCCESS, types.NANOCONTRACT_INIT]], init),
     takeEvery(types.NANOCONTRACT_REGISTER_REQUEST, registerNanoContract),
     takeEvery(types.NANOCONTRACT_HISTORY_REQUEST, requestHistoryNanoContract),
     takeEvery(types.NANOCONTRACT_UNREGISTER_REQUEST, unregisterNanoContract),
