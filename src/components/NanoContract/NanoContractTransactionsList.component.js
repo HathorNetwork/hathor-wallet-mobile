@@ -37,8 +37,14 @@ import { FeedbackContent } from '../FeedbackContent';
  * }}
  */
 const getNanoContractDetails = (ncId) => (state) => {
+  /* Without this default the app breaks after the current Nano Contract unregistration.
+   * By having a default value the app can render the component normally after unregistration
+   * and let it step aside while coming back to Dashboard screen. This transition happens
+   * quickly, therefore the user will not have time to see the default state.
+   */
+  const defaultMeta = { isLoading: false, error: null, after: null };
   const txHistory = Object.values(state.nanoContract.history[ncId] || {});
-  const { isLoading, error, after } = state.nanoContract.historyMeta[ncId];
+  const { isLoading, error, after } = state.nanoContract.historyMeta[ncId] || defaultMeta;
   return {
     txHistory,
     isLoading,
@@ -84,7 +90,6 @@ export const NanoContractTransactionsList = ({ nc }) => {
   }, []);
 
   const handleMoreTransactions = () => {
-    console.log('fetching more. After', after);
     if (after == null) {
       /* This situation is unlikely to happen because on the first transactions history load
        * the `after` is assigned with the hash of the last transaction in the list.
