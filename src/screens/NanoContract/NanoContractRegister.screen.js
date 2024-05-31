@@ -111,7 +111,7 @@ export function NanoContractRegister({ navigation }) {
 
   const navigatesToNanoContractTransactions = () => {
     dispatch(nanoContractRegisterReady());
-    navigation.navigate('NanoContractTransactionsScreen', { ncId: formModel.ncId });
+    navigation.replace('NanoContractTransactionsScreen', { ncId: formModel.ncId });
   }
 
   useEffect(() => {
