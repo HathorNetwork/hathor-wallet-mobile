@@ -350,7 +350,7 @@ msgid "Tokens"
 msgstr "Tokens"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
-#: src/components/NanoContract/NanoContractsList.js:76
+#: src/components/NanoContract/NanoContractsList.js:75
 #: src/screens/Dashboard.js:131
 msgid "Nano Contracts"
 msgstr "Nano Contracts"
@@ -443,6 +443,7 @@ msgstr "Palavras"
 msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
+#: src/components/NanoContract/NanoContractDetails.component.js:195
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 msgid "Try again"
 msgstr "Tente novamente"
@@ -700,11 +701,11 @@ msgstr "ENVIAR ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/sagas/helpers.js:139 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:104
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
-#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:105
+#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:105
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -952,36 +953,36 @@ msgstr ""
 "circunstância altere a rede por sugestão de terceiros, uma vez que ao "
 "alterar a rede você pode ser vítima de fraude."
 
-#: src/screens/NanoContract/NanoContractTransactionsScreen.js:28
+#: src/screens/NanoContract/NanoContractDetailsScreen.js:36
 msgid "Nano Contract Transactions"
 msgstr "Transações do Nano Contract"
 
-#: src/sagas/nanoContract.js:37
+#: src/sagas/nanoContract.js:42
 msgid "Nano Contract already registered."
 msgstr "Nano Contract já registrado."
 
-#: src/sagas/nanoContract.js:38
+#: src/sagas/nanoContract.js:43
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr "A wallet não está pronta ainda para registrar Nano Contracts."
 
-#: src/sagas/nanoContract.js:39
+#: src/sagas/nanoContract.js:44
 msgid "The informed address does not belong to the wallet."
 msgstr "O endereço informado não pertence a esta carteira."
 
-#: src/sagas/nanoContract.js:40
+#: src/sagas/nanoContract.js:45
 msgid "Nano Contract not found."
 msgstr "Nano Contract não encontrado"
 
-#: src/sagas/nanoContract.js:41
+#: src/sagas/nanoContract.js:46
 msgid "Error while trying to get Nano Contract state."
 msgstr "Erro ao obter o estado do Nano Contract."
 
-#: src/sagas/nanoContract.js:42
+#: src/sagas/nanoContract.js:47
 msgid "Nano Contract not registered."
 msgstr "Nano Contract não registrado."
 
-#: src/sagas/nanoContract.js:43
-msgid "Error while trying to fetch Nano Contract history."
+#: src/sagas/nanoContract.js:48
+msgid "Error while trying to download Nano Contract transactions history."
 msgstr "Error ao fazer download do histórico de transações do Nano Contract."
 
 #: src/sagas/networkSettings.js:91
@@ -1205,7 +1206,7 @@ msgstr "ID da Transação"
 msgid "Blueprint Method"
 msgstr "Método do Blueprint"
 
-#: src/components/NanoContract/NanoContractTransactionsListHeader.component.js:138
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:138
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/TxDetailsModal.js:106
 msgid "Nano Contract ID"
@@ -1219,7 +1220,7 @@ msgstr "Endereço de assinatura do Nano Contract"
 msgid "Nano Contract Status"
 msgstr "Status do Nano Contract"
 
-#: src/components/NanoContract/NanoContractTransactionsListHeader.component.js:75
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:75
 #: src/components/TxDetailsModal.js:120
 msgid "Nano Contract"
 msgstr "Nano Contract"
@@ -1273,8 +1274,8 @@ msgid ""
 "This address signs any transactions you created with Nano Contracts method. "
 "Switching to a new one means"
 msgstr ""
-"Este endereço assina toda transação criada com os métodos do Nano Contract. Ao "
-"alterar para um novo endereço significa que"
+"Este endereço assina toda transação criada com os métodos do Nano Contract. "
+"Ao alterar para um novo endereço significa que"
 
 #: src/components/NanoContract/EditAddressModal.component.js:55
 msgid "all future transactions will use this address."
@@ -1296,20 +1297,32 @@ msgstr "Confirmar novo endereço"
 msgid "Go back"
 msgstr "Voltar"
 
-#: src/components/NanoContract/NanoContractTransactionsListHeader.component.js:142
+#: src/components/NanoContract/NanoContractDetails.component.js:159
+msgid "No Nano Contract Transactions"
+msgstr "Nenhuma transação do Nano Contract"
+
+#: src/components/NanoContract/NanoContractDetails.component.js:160
+msgid "There is not transaction to show yet."
+msgstr "Não há transação para apresentar ainda."
+
+#: src/components/NanoContract/NanoContractDetails.component.js:174
+msgid "Nano Contract Transactions Error"
+msgstr "Error em Transações do Nano Contract"
+
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:142
 #: src/components/NanoContract/NanoContractsListItem.js:59
 msgid "Blueprint Name"
 msgstr "Nome do Blueprint"
 
-#: src/components/NanoContract/NanoContractTransactionsListHeader.component.js:146
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:146
 msgid "Registered Address"
 msgstr "Endereço Registrado"
 
-#: src/components/NanoContract/NanoContractTransactionsListHeader.component.js:149
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:149
 msgid "See status details"
 msgstr "Ver detalhes"
 
-#: src/components/NanoContract/NanoContractTransactionsListHeader.component.js:150
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:150
 msgid "Unregister contract"
 msgstr "Desregistrar contract"
 
@@ -1317,11 +1330,11 @@ msgstr "Desregistrar contract"
 msgid "From this wallet"
 msgstr "Desta wallet"
 
-#: src/components/NanoContract/NoNanoContracts.js:16
+#: src/components/NanoContract/NanoContractsList.js:85
 msgid "No Nano Contracts"
 msgstr "Nenhum Nano Contract"
 
-#: src/components/NanoContract/NoNanoContracts.js:18
+#: src/components/NanoContract/NanoContractsList.js:86
 msgid ""
 "You can keep track of your registered Nano Contracts here once you have "
 "registered them."

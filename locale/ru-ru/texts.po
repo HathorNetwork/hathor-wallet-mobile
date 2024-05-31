@@ -342,7 +342,7 @@ msgid "Tokens"
 msgstr "ТокенЫ"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
-#: src/components/NanoContract/NanoContractsList.js:76
+#: src/components/NanoContract/NanoContractsList.js:75
 #: src/screens/Dashboard.js:131
 msgid "Nano Contracts"
 msgstr ""
@@ -433,6 +433,7 @@ msgstr "Слова"
 msgid "Enter your seed words separated by space"
 msgstr "Введите seed-фразу"
 
+#: src/components/NanoContract/NanoContractDetails.component.js:195
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 msgid "Try again"
 msgstr ""
@@ -686,11 +687,11 @@ msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
-#: src/sagas/helpers.js:139 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:104
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
-#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:105
+#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:105
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
@@ -930,36 +931,36 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractTransactionsScreen.js:28
+#: src/screens/NanoContract/NanoContractDetailsScreen.js:36
 msgid "Nano Contract Transactions"
 msgstr ""
 
-#: src/sagas/nanoContract.js:37
+#: src/sagas/nanoContract.js:42
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:38
+#: src/sagas/nanoContract.js:43
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:39
+#: src/sagas/nanoContract.js:44
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:40
+#: src/sagas/nanoContract.js:45
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:41
+#: src/sagas/nanoContract.js:46
 msgid "Error while trying to get Nano Contract state."
 msgstr ""
 
-#: src/sagas/nanoContract.js:42
+#: src/sagas/nanoContract.js:47
 msgid "Nano Contract not registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:43
-msgid "Error while trying to fetch Nano Contract history."
+#: src/sagas/nanoContract.js:48
+msgid "Error while trying to download Nano Contract transactions history."
 msgstr ""
 
 #: src/sagas/networkSettings.js:91
@@ -1165,7 +1166,7 @@ msgstr ""
 msgid "Blueprint Method"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionsListHeader.component.js:138
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:138
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/TxDetailsModal.js:106
 msgid "Nano Contract ID"
@@ -1179,7 +1180,7 @@ msgstr ""
 msgid "Nano Contract Status"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionsListHeader.component.js:75
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:75
 #: src/components/TxDetailsModal.js:120
 msgid "Nano Contract"
 msgstr ""
@@ -1247,20 +1248,32 @@ msgstr ""
 msgid "Go back"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionsListHeader.component.js:142
+#: src/components/NanoContract/NanoContractDetails.component.js:159
+msgid "No Nano Contract Transactions"
+msgstr ""
+
+#: src/components/NanoContract/NanoContractDetails.component.js:160
+msgid "There is not transaction to show yet."
+msgstr ""
+
+#: src/components/NanoContract/NanoContractDetails.component.js:174
+msgid "Nano Contract Transactions Error"
+msgstr ""
+
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:142
 #: src/components/NanoContract/NanoContractsListItem.js:59
 msgid "Blueprint Name"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionsListHeader.component.js:146
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:146
 msgid "Registered Address"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionsListHeader.component.js:149
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:149
 msgid "See status details"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionsListHeader.component.js:150
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:150
 msgid "Unregister contract"
 msgstr ""
 
@@ -1268,11 +1281,11 @@ msgstr ""
 msgid "From this wallet"
 msgstr ""
 
-#: src/components/NanoContract/NoNanoContracts.js:16
+#: src/components/NanoContract/NanoContractsList.js:85
 msgid "No Nano Contracts"
 msgstr ""
 
-#: src/components/NanoContract/NoNanoContracts.js:18
+#: src/components/NanoContract/NanoContractsList.js:86
 msgid ""
 "You can keep track of your registered Nano Contracts here once you have "
 "registered them."
