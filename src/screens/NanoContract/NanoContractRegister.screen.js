@@ -182,7 +182,7 @@ export function NanoContractRegister({ navigation }) {
           )}
         <View style={styles.buttonContainer}>
           <NewHathorButton
-            disabled={hasError(invalidModel) || isClean}
+            disabled={hasError(invalidModel) || isClean || isLoading(registerState.registerStatus)}
             onPress={handleSubmit}
             title={t`Register Nano Contract`}
           />

@@ -11,19 +11,34 @@ import PropTypes from 'prop-types';
 import HathorModal from './HathorModal';
 
 const FeedbackModal = (props) => (
-  <HathorModal onDismiss={props.onDismiss}>
+  <HathorModal
+    onDismiss={props.onDismiss}
+  >
     {props.icon}
-    <Text style={{ fontSize: 18, marginTop: 40, textAlign: 'center' }} {...props.textProps}>
+    <Text style={styles.content} {...props.textProps}>
       {props.text}
     </Text>
     {props.action
       && (
-        <View style={{ width: '100%', marginTop: 8 }}>
+        <View style={styles.action}>
           {props.action}
         </View>
       )}
   </HathorModal>
 );
+
+const styles = {
+  content: {
+    fontSize: 18,
+    lineHeight: 21,
+    paddingTop: 36,
+    textAlign: 'center',
+  },
+  action: {
+    width: '100%',
+    paddingTop: 8,
+  },
+};
 
 FeedbackModal.propTypes = {
   // Icon used on this modal. Usually an image or the Spinner component
