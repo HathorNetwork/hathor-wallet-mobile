@@ -33,19 +33,17 @@ import { COLORS } from '../styles/themes';
  *   action={<TryAgain ncId={ncId} />}
  * />
  */
-export const FeedbackContent = ({ title, message, icon, action }) => {
-  return (
-    <View style={[styles.card]}>
-      <View style={styles.content}>
-        {icon
-          && (<View style={styles.icon}>{icon}</View>)}
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.message}>{message}</Text>
-        {action && (action)}
-      </View>
+export const FeedbackContent = ({ title, message, icon, action }) => (
+  <View style={[styles.card]}>
+    <View style={styles.content}>
+      {icon
+        && (<View style={styles.icon}>{icon}</View>)}
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.message}>{message}</Text>
+      {action && (action)}
     </View>
-  );
-};
+  </View>
+);
 
 const styles = StyleSheet.create({
   card: {

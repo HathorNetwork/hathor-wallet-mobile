@@ -152,16 +152,14 @@ const Wrapper = ({ children }) => (
 );
 
 /**
- * Renders a feedback for the lack of transactions. 
+ * Renders a feedback for the lack of transactions.
  */
-export const NoNanoContractTransaction = () => {
-  return (
-    <FeedbackContent
-      title={t`No Nano Contract Transactions`}
-      message={t`There is not transaction to show yet.`}
-    />
-  );
-};
+export const NoNanoContractTransaction = () => (
+  <FeedbackContent
+    title={t`No Nano Contract Transactions`}
+    message={t`There is not transaction to show yet.`}
+  />
+);
 
 /**
  * Renders an error feedback for when the history load request goes wrong,
@@ -171,16 +169,14 @@ export const NoNanoContractTransaction = () => {
  * @param {string} props.ncId Nano Contract ID
  * @param {string} props.error
  */
-export const ErrorLoadingTransaction = ({ ncId, error }) => {
-  return (
-    <FeedbackContent
-      title={t`Nano Contract Transactions Error`}
-      message={error}
-      icon={<Image source={errorIcon} style={{ height: 36, width: 36}} resizeMode='contain' />}
-      action={<TryAgain ncId={ncId} />}
-    />
-  );
-};
+export const ErrorLoadingTransaction = ({ ncId, error }) => (
+  <FeedbackContent
+    title={t`Nano Contract Transactions Error`}
+    message={error}
+    icon={<Image source={errorIcon} style={{ height: 36, width: 36 }} resizeMode='contain' />}
+    action={<TryAgain ncId={ncId} />}
+  />
+);
 
 /**
  * Renders a call to action to request history loading again.
