@@ -471,8 +471,8 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateInvalid(state, action);
     case types.NANOCONTRACT_REGISTER_SUCCESS:
       return onNanoContractRegisterSuccess(state, action);
-    case types.NANOCONTRACT_HISTORY_REQUEST:
-      return onNanoContractHistoryRequest(state, action);
+    case types.NANOCONTRACT_HISTORY_LOADING:
+      return onNanoContractHistoryLoading(state, action);
     case types.NANOCONTRACT_HISTORY_FAILURE:
       return onNanoContractHistoryFailure(state, action);
     case types.NANOCONTRACT_HISTORY_SUCCESS:
@@ -1369,19 +1369,19 @@ export const onNanoContractUnregisterSuccess = (state, { payload }) => {
  * @param {{
  *   payload: {
  *     ncId: string;
- *     after: string;
  *   }
  * }} action
  */
-export const onNanoContractHistoryRequest = (state, { payload }) => ({
+export const onNanoContractHistoryLoading = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
     historyMeta: {
       ...state.nanoContract.historyMeta,
       [payload.ncId]: {
+        ...(state.nanoContract.historyMeta[payload.ncId]),
         isLoading: true,
-        after: payload.after,
+        error: null,
       },
     },
   },
@@ -1436,8 +1436,10 @@ export const onNanoContractHistorySuccess = (state, { payload }) => ({
     historyMeta: {
       ...state.nanoContract.historyMeta,
       [payload.ncId]: {
+        ...(state.nanoContract.historyMeta[payload.ncId]),
         isLoading: false,
         after: payload.after,
+        error: null,
       },
     },
   },

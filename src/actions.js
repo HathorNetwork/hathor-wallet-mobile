@@ -145,6 +145,8 @@ export const types = {
   NANOCONTRACT_REGISTER_SUCCESS: 'NANOCONTRACT_REGISTER_SUCCESS',
   /* It indicates a Nano Contract hitory was requested to load. */
   NANOCONTRACT_HISTORY_REQUEST: 'NANOCONTRACT_HISTORY_REQUEST',
+  /* It indicates a Nano Contract history is processing. */
+  NANOCONTRACT_HISTORY_LOADING: 'NANOCONTRACT_HISTORY_LOADING',
   /* It indicates a Nano Contract history was successfully loaded. */
   NANOCONTRACT_HISTORY_SUCCESS: 'NANOCONTRACT_HISTORY_SUCCESS',
   /* It indicates a Nano Contract history failed to load. */
@@ -1036,6 +1038,17 @@ export const nanoContractRegisterSuccess = (ncEntry) => ({
  */
 export const nanoContractHistoryRequest = (ncEntry) => ({
   type: types.NANOCONTRACT_HISTORY_REQUEST,
+  payload: ncEntry,
+});
+
+/**
+ * Nano Contract fetch history is loading.
+ * @param {{
+ *   ncId: string;
+ * }}
+ */
+export const nanoContractHistoryLoading = (ncEntry) => ({
+  type: types.NANOCONTRACT_HISTORY_LOADING,
   payload: ncEntry,
 });
 

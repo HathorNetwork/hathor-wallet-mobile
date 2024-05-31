@@ -21,6 +21,7 @@ import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
 import {
   nanoContractHistoryFailure,
+  nanoContractHistoryLoading,
   nanoContractHistorySuccess,
   nanoContractRegisterFailure,
   nanoContractRegisterSuccess,
@@ -40,7 +41,7 @@ export const failureMessage = {
   nanoContractStateNotFound: t`Nano Contract not found.`,
   nanoContractStateFailure: t`Error while trying to get Nano Contract state.`,
   notRegistered: t`Nano Contract not registered.`,
-  nanoContractHistoryFailure: t`Error while trying to fetch Nano Contract history.`,
+  nanoContractHistoryFailure: t`Error while trying to download Nano Contract transactions history.`,
 };
 
 /**
@@ -195,8 +196,8 @@ export async function fetchHistory(ncId, count, after, wallet) {
     history.push(tx);
   }
 
-  let next = null;
-  if (history && history.length === count) {
+  let next = after;
+  if (history && history.length > 0) {
     next = history[history.length - 1].txId;
   }
 
@@ -215,12 +216,15 @@ export async function fetchHistory(ncId, count, after, wallet) {
 export function* requestHistoryNanoContract({ payload }) {
   const { ncId, after } = payload;
   const count = NANO_CONTRACT_TX_HISTORY_SIZE;
+  log.debug('Start processing request for nano contract transaction history...');
 
   const historyMeta = yield select((state) => state.nanoContract.historyMeta);
   if (historyMeta[ncId] && historyMeta[ncId].isLoading) {
     // Do nothing if nano contract already loading...
+    log.debug('Halting processing for nano contract transaction history request while it is loading...');
     return;
   }
+  yield put(nanoContractHistoryLoading({ ncId }));
 
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
@@ -242,6 +246,13 @@ export function* requestHistoryNanoContract({ payload }) {
   try {
     // fetch from fullnode
     const { history, next } = yield call(fetchHistory, ncId, count, after, wallet);
+
+    if (after != null) {
+      // The first load has always `after` equals null. The first load means to be fast,
+      // but the subsequent ones are all request by user and we want slow down multiple
+      // calls to this effect.
+      yield delay(1000)
+    }
 
     log.debug('Success fetching Nano Contract history.');
     yield put(nanoContractHistorySuccess({ ncId, history, after: next }));

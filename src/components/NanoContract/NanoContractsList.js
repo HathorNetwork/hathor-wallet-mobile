@@ -9,14 +9,13 @@ import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { t } from 'ttag';
 import { useNavigation } from '@react-navigation/native';
-
 import { useSelector } from 'react-redux';
 import { COLORS } from '../../styles/themes';
 import HathorHeader from '../HathorHeader';
 import { HathorFlatList } from '../HathorFlatList';
-import { NoNanoContracts } from './NoNanoContracts';
 import { RegisterNanoContract } from './RegisterNewNanoContractButton';
 import { NanoContractsListItem } from './NanoContractsListItem';
+import { FeedbackContent } from '../FeedbackContent';
 
 /**
  * It selects the list of registered Nano Contracts.
@@ -46,7 +45,7 @@ export const NanoContractsList = () => {
     <Wrapper>
       <Header />
       {isEmpty()
-        && <ListWrapper><NoNanoContracts /></ListWrapper>}
+        && <NoNanoContracts />}
       {notEmpty()
         && (
           <HathorFlatList
@@ -81,10 +80,12 @@ const Header = () => (
   </HathorHeader>
 );
 
-const ListWrapper = ({ children }) => (
-  <View style={[styles.listWrapper]}>
-    {children}
-  </View>
+export const NoNanoContracts = () => (
+  <FeedbackContent
+    title={t`No Nano Contracts`}
+    message={t`You can keep track of your registered Nano Contracts here once you have registered them.`}
+    action={<RegisterNanoContract />}
+  />
 );
 
 const styles = StyleSheet.create({
@@ -93,20 +94,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
-  },
-  listWrapper: {
-    flex: 1,
-    justifyContent: 'center',
-    alignSelf: 'stretch',
-    marginTop: 16,
-    marginBottom: 45,
-    backgroundColor: COLORS.backgroundColor,
-    marginHorizontal: 16,
-    borderRadius: 16,
-    shadowOffset: { height: 2, width: 0 },
-    shadowRadius: 4,
-    shadowColor: COLORS.textColor,
-    shadowOpacity: 0.08,
   },
   headerTitle: {
     fontSize: 24,
