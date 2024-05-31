@@ -36,7 +36,7 @@ import { UnregisterNanoContractModal } from './UnregisterNanoContractModal.compo
  * @param {string} props.address Default address selected
  * @param {(address:string) => {}} props.onAddressChange Function called when address changes
  */
-export const NanoContractTransactionsListHeader = ({ nc, address, onAddressChange }) => {
+export const NanoContractDetailsHeader = ({ nc, address, onAddressChange }) => {
   const [isShrank, toggleShrank] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState(address);
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
@@ -159,7 +159,6 @@ const HeaderExpanded = ({ nc, address, onEditAddress, onUnregisterNanoContract }
  * Container for value and label pair components.
  *
  * @param {Object} props
- * @param {string} props.last
  * @param {Object} props.children
  */
 const InfoContainer = ({ children }) => (
@@ -172,7 +171,6 @@ const InfoContainer = ({ children }) => (
  * It presents two button options inline.
  *
  * @param {Object} props
- * @param {string} props.last
  * @param {Object} props.children
  */
 const TwoActionsWrapper = ({ children }) => (

@@ -10,25 +10,33 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { useSelector } from 'react-redux';
 import { t } from 'ttag';
 
 import HathorHeader from '../../components/HathorHeader';
-import { NanoContractTransactionsList } from '../../components/NanoContract/NanoContractTransactionsList.component';
+import { NanoContractDetails } from '../../components/NanoContract/NanoContractDetails.component';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 
 /**
  * Presents a list of Nano Contract transactions.
  */
-export function NanoContractTransactionsScreen({ navigation, route }) {
-  const { nc } = route.params;
+export function NanoContractDetailsScreen({ navigation, route }) {
+  /* Without this default the app breaks after the current Nano Contract unregistration.
+   * By having a default value the app can render the screen normally after unregistration
+   * and let it step aside while coming back to Dashboard screen. This transition happens
+   * quickly, therefore the user will not have time to see the default state.
+   */
+  const defaultNc = { ncId: '', address: '' };
+  const { ncId } = route.params;
+  const nc = useSelector((state) => state.nanoContract.registered[ncId]) || defaultNc;
   return (
     <Wrapper>
       <HathorHeader
         title={t`Nano Contract Transactions`.toUpperCase()}
         onBackPress={() => navigation.goBack()}
       />
-      <NanoContractTransactionsList nc={nc} />
+      <NanoContractDetails nc={nc} />
       <OfflineBar />
     </Wrapper>
   );

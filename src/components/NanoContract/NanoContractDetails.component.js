@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
-import { NanoContractTransactionsListHeader } from './NanoContractTransactionsListHeader.component';
+import { NanoContractDetailsHeader } from './NanoContractDetailsHeader.component';
 import { NanoContractTransactionsListItem } from './NanoContractTransactionsListItem.component';
 import { COLORS } from '../../styles/themes';
 import { nanoContractAddressChangeRequest, nanoContractHistoryRequest } from '../../actions';
@@ -37,8 +37,14 @@ import { FeedbackContent } from '../FeedbackContent';
  * }}
  */
 const getNanoContractDetails = (ncId) => (state) => {
+  /* Without this default the app breaks after the current Nano Contract unregistration.
+   * By having a default value the app can render the component normally after unregistration
+   * and let it step aside while coming back to Dashboard screen. This transition happens
+   * quickly, therefore the user will not have time to see the default state.
+   */
+  const defaultMeta = { isLoading: false, error: null, after: null };
   const txHistory = Object.values(state.nanoContract.history[ncId] || {});
-  const { isLoading, error, after } = state.nanoContract.historyMeta[ncId];
+  const { isLoading, error, after } = state.nanoContract.historyMeta[ncId] || defaultMeta;
   return {
     txHistory,
     isLoading,
@@ -55,7 +61,7 @@ const getNanoContractDetails = (ncId) => (state) => {
  * @param {string} props.nc.ncId Nano Contract ID
  * @param {string} props.nc.address Default caller address for Nano Contract interaction
  */
-export const NanoContractTransactionsList = ({ nc }) => {
+export const NanoContractDetails = ({ nc }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
@@ -104,7 +110,7 @@ export const NanoContractTransactionsList = ({ nc }) => {
 
   return (
     <Wrapper>
-      <NanoContractTransactionsListHeader
+      <NanoContractDetailsHeader
         nc={nc}
         address={ncAddress}
         onAddressChange={onAddressChange}
