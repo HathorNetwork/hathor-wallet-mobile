@@ -53,7 +53,7 @@ function validate(formModel) {
   return invalidModel;
 }
 
-export function NanoContractRegister({ navigation }) {
+export function NanoContractRegisterScreen({ navigation }) {
   const dispatch = useDispatch();
   const wallet = useSelector((state) => state.wallet);
   const registerState = useSelector((state) => ({
@@ -111,7 +111,7 @@ export function NanoContractRegister({ navigation }) {
 
   const navigatesToNanoContractTransactions = () => {
     dispatch(nanoContractRegisterReady());
-    navigation.replace('NanoContractTransactionsScreen', { ncId: formModel.ncId });
+    navigation.replace('NanoContractDetailsScreen', { ncId: formModel.ncId });
   }
 
   useEffect(() => {
