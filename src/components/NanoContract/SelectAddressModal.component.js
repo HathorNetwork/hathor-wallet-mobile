@@ -20,28 +20,7 @@ import { ModalBase } from '../ModalBase';
 import { TextValue } from '../TextValue';
 import { TextLabel } from '../TextLabel';
 import { EditAddressModal } from './EditAddressModal.component';
-
-/**
- * Extract all the items of an async iterator/generator.
- *
- * @async
- * @returns {Promise<unknown[]>} A promise of an array of unkown object.
- */
-const consumeAsyncIterator = async (asyncIterator) => {
-  const list = [];
-  for (;;) {
-    /* eslint-disable no-await-in-loop */
-    const objYielded = await asyncIterator.next();
-    const { value, done } = objYielded;
-
-    if (done) {
-      break;
-    }
-
-    list.push(value);
-  }
-  return [...list];
-};
+import { consumeAsyncIterator } from '../../utils';
 
 /**
  * Use this modal to select an address from the wallet.
