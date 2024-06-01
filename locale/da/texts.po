@@ -434,6 +434,7 @@ msgstr "Indtast dine seed-ord adskilt med mellemrum"
 
 #: src/components/NanoContract/NanoContractDetails.component.js:194
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:145
 msgid "Try again"
 msgstr ""
 
@@ -852,17 +853,17 @@ msgid ""
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
-#: src/screens/NetworkSettings/helper.js:4
+#: src/screens/NetworkSettings/helper.js:11
 msgid "Updating custom network settings..."
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:21
-#: src/screens/NetworkSettings/helper.js:5
+#: src/screens/NetworkSettings/helper.js:12
 msgid "Network settings successfully customized."
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:22
-#: src/screens/NetworkSettings/helper.js:6
+#: src/screens/NetworkSettings/helper.js:13
 msgid ""
 "There was an error while customizing network settings. Please try again "
 "later."
@@ -942,6 +943,50 @@ msgstr ""
 #.  This will show the message in the feedback content at SelectAddressModal
 #: src/sagas/mixins.js:47
 msgid "There was an error while loading wallet addresses. Try again."
+msgstr ""
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:50
+msgid "Nano Contract ID is required."
+msgstr ""
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:135
+msgid "See contract"
+msgstr ""
+
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:138
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:90
+#: src/components/NanoContract/NanoContractsListItem.js:57
+#: src/components/TxDetailsModal.js:106
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:152
+msgid "Nano Contract ID"
+msgstr ""
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:160
+msgid "Wallet Address"
+msgstr ""
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:170
+msgid "If you want to change the wallet address, you will be able to do"
+msgstr ""
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:172
+msgid "after the contract is registered."
+msgstr ""
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:187
+msgid "Register Nano Contract"
+msgstr ""
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:204
+msgid "Nano Contract Registration"
+msgstr ""
+
+#: src/screens/NanoContract/NanoContractTransactionScreen.js:39
+msgid "Nano Contract Transaction"
+msgstr ""
+
+#: src/screens/NanoContract/helper.js:11
+msgid "Contract successfully registered."
 msgstr ""
 
 #: src/sagas/nanoContract.js:43

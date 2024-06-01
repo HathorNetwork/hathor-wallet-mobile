@@ -445,6 +445,7 @@ msgstr "Digite suas palavras separadas por espaços"
 
 #: src/components/NanoContract/NanoContractDetails.component.js:194
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:145
 msgid "Try again"
 msgstr "Tente novamente"
 
@@ -873,17 +874,17 @@ msgstr ""
 "souber o que está fazendo."
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
-#: src/screens/NetworkSettings/helper.js:4
+#: src/screens/NetworkSettings/helper.js:11
 msgid "Updating custom network settings..."
 msgstr "Atualizando configurações de rede..."
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:21
-#: src/screens/NetworkSettings/helper.js:5
+#: src/screens/NetworkSettings/helper.js:12
 msgid "Network settings successfully customized."
 msgstr "Configuração de rede atualizada com sucesso."
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:22
-#: src/screens/NetworkSettings/helper.js:6
+#: src/screens/NetworkSettings/helper.js:13
 msgid ""
 "There was an error while customizing network settings. Please try again "
 "later."
@@ -969,6 +970,51 @@ msgstr "A wallet não está pronta para carregar endereços."
 #: src/sagas/mixins.js:47
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro durante download dos endereços da wallet. Tente novamente."
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:50
+msgid "Nano Contract ID is required."
+msgstr "ID do Nano Contract é obrigatório."
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:135
+msgid "See contract"
+msgstr "Ver contrato"
+
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:138
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:90
+#: src/components/NanoContract/NanoContractsListItem.js:57
+#: src/components/TxDetailsModal.js:106
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:152
+msgid "Nano Contract ID"
+msgstr "ID do Nano Contract"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:160
+msgid "Wallet Address"
+msgstr "Endereço da Carteira"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:170
+msgid "If you want to change the wallet address, you will be able to do"
+msgstr "Se deseja alterar o endereço de assinatura, você pode alterar"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:172
+msgid "after the contract is registered."
+msgstr "depois do contrato ser registrado."
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:187
+#, fuzzy
+msgid "Register Nano Contract"
+msgstr "Desregistrar Nano Contract"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:204
+msgid "Nano Contract Registration"
+msgstr "Registro do Nano Contract"
+
+#: src/screens/NanoContract/NanoContractTransactionScreen.js:39
+msgid "Nano Contract Transaction"
+msgstr "Transação do Nano Contract"
+
+#: src/screens/NanoContract/helper.js:11
+msgid "Contract successfully registered."
+msgstr "Nano Contract registrado com sucesso."
 
 #: src/sagas/nanoContract.js:43
 msgid "Nano Contract already registered."
