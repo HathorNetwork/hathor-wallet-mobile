@@ -74,7 +74,7 @@ export const NanoContractDetails = ({ nc }) => {
   }
 
   const navigatesToNanoContractTransaction = (tx) => {
-    navigation.navigate('NanoContractTransaction', { tx });
+    navigation.navigate('NanoContractTransactionScreen', { tx });
   };
 
   useEffect(() => {
@@ -85,7 +85,7 @@ export const NanoContractDetails = ({ nc }) => {
        * For the first transaction history load we don't need to specify the `after` param,
        * it will be set during the load.
        */
-      dispatch(nanoContractHistoryRequest({ ncId: nc.ncId, after: null }));
+      // dispatch(nanoContractHistoryRequest({ ncId: nc.ncId, after: null }));
     }
   }, []);
 
