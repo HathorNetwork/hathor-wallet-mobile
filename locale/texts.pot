@@ -696,7 +696,7 @@ msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr ""
 
 #: src/components/NanoContract/EditAddressModal.component.js:63
-#: src/components/NanoContract/SelectAddressModal.component.js:113
+#: src/components/NanoContract/SelectAddressModal.component.js:92
 #: src/screens/SendConfirmScreen.js:161
 msgid "Address"
 msgstr ""
@@ -925,7 +925,7 @@ msgid ""
 msgstr ""
 
 #: src/screens/NanoContract/NanoContractDetailsScreen.js:36
-msgid "Nano Contract Transactions"
+msgid "Nano Contract Details"
 msgstr ""
 
 #: src/sagas/nanoContract.js:42
@@ -1288,19 +1288,19 @@ msgstr ""
 msgid "Register new"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:106
+#: src/components/NanoContract/SelectAddressModal.component.js:85
 msgid "Choose New Wallet Address"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:110
+#: src/components/NanoContract/SelectAddressModal.component.js:89
 msgid "Current Information"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:111
+#: src/components/NanoContract/SelectAddressModal.component.js:90
 msgid "To change, select other address on the list below."
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:164
+#: src/components/NanoContract/SelectAddressModal.component.js:143
 msgid "index"
 msgstr ""
 

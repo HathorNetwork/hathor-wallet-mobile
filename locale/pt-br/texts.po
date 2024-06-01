@@ -714,7 +714,7 @@ msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ this.amountAndToken }** foi confirmada"
 
 #: src/components/NanoContract/EditAddressModal.component.js:63
-#: src/components/NanoContract/SelectAddressModal.component.js:113
+#: src/components/NanoContract/SelectAddressModal.component.js:92
 #: src/screens/SendConfirmScreen.js:161
 msgid "Address"
 msgstr "Endereço"
@@ -954,8 +954,8 @@ msgstr ""
 "alterar a rede você pode ser vítima de fraude."
 
 #: src/screens/NanoContract/NanoContractDetailsScreen.js:36
-msgid "Nano Contract Transactions"
-msgstr "Transações do Nano Contract"
+msgid "Nano Contract Details"
+msgstr "Detalhes do Nano Contract"
 
 #: src/sagas/nanoContract.js:42
 msgid "Nano Contract already registered."
@@ -1344,19 +1344,19 @@ msgstr "Você pode acompanhar os Nano Contracts registrados nesta tela."
 msgid "Register new"
 msgstr "Registrar novo"
 
-#: src/components/NanoContract/SelectAddressModal.component.js:106
+#: src/components/NanoContract/SelectAddressModal.component.js:85
 msgid "Choose New Wallet Address"
 msgstr "Escolha o Novo Endereço"
 
-#: src/components/NanoContract/SelectAddressModal.component.js:110
+#: src/components/NanoContract/SelectAddressModal.component.js:89
 msgid "Current Information"
 msgstr "Informação Atual"
 
-#: src/components/NanoContract/SelectAddressModal.component.js:111
+#: src/components/NanoContract/SelectAddressModal.component.js:90
 msgid "To change, select other address on the list below."
 msgstr "Para alterar, selecione outro endereço da lista abaixo."
 
-#: src/components/NanoContract/SelectAddressModal.component.js:164
+#: src/components/NanoContract/SelectAddressModal.component.js:143
 msgid "index"
 msgstr "índice"
 
@@ -1375,3 +1375,6 @@ msgstr "Sim, desregistrar"
 #: src/components/NanoContract/UnregisterNanoContractModal.component.js:50
 msgid "No, go back"
 msgstr "Não, voltar"
+
+#~ msgid "Nano Contract Transactions"
+#~ msgstr "Transações do Nano Contract"

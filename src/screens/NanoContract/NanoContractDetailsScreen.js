@@ -33,7 +33,7 @@ export function NanoContractDetailsScreen({ navigation, route }) {
   return (
     <Wrapper>
       <HathorHeader
-        title={t`Nano Contract Transactions`.toUpperCase()}
+        title={t`Nano Contract Details`.toUpperCase()}
         onBackPress={() => navigation.goBack()}
       />
       <NanoContractDetails nc={nc} />
