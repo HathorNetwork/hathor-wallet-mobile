@@ -1207,15 +1207,18 @@ msgstr "Inválida"
 msgid "Description"
 msgstr "Descrição"
 
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:46
 #: src/components/TxDetailsModal.js:104
 msgid "Transaction ID"
 msgstr "ID da Transação"
 
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:94
 #: src/components/TxDetailsModal.js:105
 msgid "Blueprint Method"
 msgstr "Método do Blueprint"
 
 #: src/components/NanoContract/NanoContractDetailsHeader.component.js:142
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:90
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/TxDetailsModal.js:106
 msgid "Nano Contract ID"
@@ -1336,9 +1339,38 @@ msgstr "Ver detalhes"
 msgid "Unregister contract"
 msgstr "Desregistrar contract"
 
+#: src/components/NanoContract/NanoContractTransactionBalanceList.component.js:161
+msgid "No Tokens Balance"
+msgstr "Nenhum saldo de token"
+
+#: src/components/NanoContract/NanoContractTransactionBalanceList.component.js:162
+msgid "The transaction doesn't have token deposit or token withdrawal."
+msgstr "A transação não tem saldo de token para depósito nem para saque."
+
+#: src/components/NanoContract/NanoContractTransactionBalanceListItem.component.js:109
+msgid "Sent ${ tokenValue }"
+msgstr "Enviado ${ symbol }"
+
+#: src/components/NanoContract/NanoContractTransactionBalanceListItem.component.js:110
+msgid "Received ${ tokenValue }"
+msgstr "Recebido ${ symbol }"
+
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:98
+msgid "Date and Time"
+msgstr "Data & Hora"
+
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:105
 #: src/components/NanoContract/NanoContractTransactionsListItem.component.js:62
 msgid "From this wallet"
 msgstr "Desta wallet"
+
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:108
+msgid "Caller"
+msgstr "Caller"
+
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:111
+msgid "See transaction details"
+msgstr "Ver detalhes"
 
 #: src/components/NanoContract/NanoContractsList.js:85
 msgid "No Nano Contracts"
