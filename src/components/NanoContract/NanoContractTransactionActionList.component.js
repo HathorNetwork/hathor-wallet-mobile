@@ -10,7 +10,7 @@ import { StyleSheet, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { COLORS } from '../../styles/themes';
-import { NanoContractTransactionBalanceListItem } from './NanoContractTransactionBalanceListItem.component';
+import { NanoContractTransactionActionListItem } from './NanoContractTransactionActionListItem.component';
 import { HathorFlatList } from '../HathorFlatList';
 import { FeedbackContent } from '../FeedbackContent';
 
@@ -20,7 +20,7 @@ import { FeedbackContent } from '../FeedbackContent';
  * @param {Object} props
  * @param {Object} props.tx Transaction data
  */
-export const NanoContractTransactionBalanceList = ({ tx }) => {
+export const NanoContractTransactionActionList = ({ tx }) => {
   const wallet = useSelector((state) => state.wallet);
   const [tokensBalance, setTokensBalance] = useState([]);
 
@@ -45,7 +45,7 @@ export const NanoContractTransactionBalanceList = ({ tx }) => {
           <HathorFlatList
             data={tokensBalance}
             renderItem={({ item, index }) => (
-              <NanoContractTransactionBalanceListItem
+              <NanoContractTransactionActionListItem
                 item={item}
                 index={index}
               />

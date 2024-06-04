@@ -54,7 +54,7 @@ function getTokenValue(tokenUid, tokens) {
  * @param {Object} props.item registered Nano Contract data
  * @param {number} props.index position in the list
  */
-export const NanoContractTransactionBalanceListItem = ({ item, index }) => {
+export const NanoContractTransactionActionListItem = ({ item, index }) => {
   const balance = item.available + item.locked;
   const tokens = useSelector((state) => state.tokens) || {};
   const tokenValue = getTokenValue(item.tokenUid, tokens);
