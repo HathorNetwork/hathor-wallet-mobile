@@ -40,7 +40,7 @@ export const NanoContractTransactionActionList = ({ tx }) => {
   return (
     <Wrapper>
       {isEmpty()
-        && (<NoTokenBalance />)}
+        && (<NoActions />)}
       {notEmpty()
         && (
           <HathorFlatList
@@ -58,10 +58,10 @@ export const NanoContractTransactionActionList = ({ tx }) => {
   );
 };
 
-const NoTokenBalance = () => (
+const NoActions = () => (
   <FeedbackContent
-    title={t`No Tokens Balance`}
-    message={t`The transaction doesn't have token deposit or token withdrawal.`}
+    title={t`No Actions`}
+    message={t`See full transaction details on Public Explorer.`}
   />
 );
 
