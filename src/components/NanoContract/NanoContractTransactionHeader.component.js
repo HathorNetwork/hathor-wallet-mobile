@@ -32,14 +32,14 @@ import { TransactionStatusLabel } from '../TransactionStatusLabel';
  * @param {Obejct} props.tx Transaction data
  */
 export const NanoContractTransactionHeader = ({ tx }) => {
-  const [isShrank, toggleShrank] = useState(true);
+  const [isShrank, toggleShrank] = useState(false);
 
   const isExpanded = () => !isShrank;
 
   return (
     <HathorHeader>
       <HathorHeader.Central style={styles.headerCentral}>
-        <TouchableWithoutFeedback onPress={() => toggleShrank(!isShrank)}>
+        <TouchableWithoutFeedback onPress={() => {}}>
           <View style={styles.headerWrapper}>
             <InfoContainer>
               <TextValue title pb4>{getShortHash(tx.txId, 7)}</TextValue>
@@ -111,7 +111,6 @@ const HeaderExpanded = ({ tx }) => {
           <PrimaryTextButton title={t`See transaction details`} onPress={navigatesToExplorer} />
         </TwoActionsWrapper>
       </View>
-      <ArrowUpIcon />
     </>
   )
 };

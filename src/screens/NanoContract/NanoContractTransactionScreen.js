@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
-import { NanoContractTransactionBalanceList } from '../../components/NanoContract/NanoContractTransactionBalanceList.component';
 import { NanoContractTransactionHeader } from '../../components/NanoContract/NanoContractTransactionHeader.component';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
@@ -27,7 +26,6 @@ export function NanoContractTransactionScreen({ navigation, route }) {
       <NavigationHeader navigation={navigation} />
       <ContentWrapper>
         <NanoContractTransactionHeader tx={tx} />
-        <NanoContractTransactionBalanceList tx={tx} />
       </ContentWrapper>
       <OfflineBar />
     </Wrapper>
