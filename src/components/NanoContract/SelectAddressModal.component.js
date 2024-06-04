@@ -57,7 +57,9 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
   };
 
   const onSelectItem = (item) => {
-    setSelectedItem(item);
+    if (item !== address) {
+      setSelectedItem(item);
+    }
     toggleEditAddressModal();
   };
 
@@ -88,10 +90,10 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
           <View style={styles.infoWrapper}>
             <Text style={[styles.infoText, styles.textBold]}>{t`Current Information`}</Text>
             <Text style={styles.infoText}>{t`To change, select other address on the list below.`}</Text>
-            <Text style={styles.infoText}>
-              <Text style={styles.textBold}>{t`Address`}: </Text>
-              <Text>{address}</Text>
-            </Text>
+            <View style={{ flexDirection: 'row' }}>
+              <TextValue bold oneline>{t`Address`}{': '}</TextValue>
+              <TextValue shrink>{address}</TextValue>
+            </View>
           </View>
           <FlatList
             data={addresses}
@@ -127,24 +129,32 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
  * @param {(address:string) => void} props.onSelectItem
  * Callback function called when an address is selected
  */
-const AddressItem = ({ currentAddress, item, onSelectItem }) => (
-  <TouchableHighlight
-    onPress={() => onSelectItem(item)}
-    underlayColor={COLORS.primaryOpacity30}
-  >
-    <View
-      style={[
-        addressItemStyle.wrapper,
-        currentAddress === item.address && addressItemStyle.selected
-      ]}
+const AddressItem = ({ currentAddress, item, onSelectItem }) => {
+  const onPress = () => {
+    if (currentAddress === item.address) {
+      return;
+    }
+    onSelectItem(item);
+  };
+  return (
+    <TouchableHighlight
+      onPress={onPress}
+      underlayColor={COLORS.primaryOpacity30}
     >
-      <View>
-        <TextValue>{item.address}</TextValue>
-        <TextLabel>{t`index`} {item.index}</TextLabel>
+      <View
+        style={[
+          addressItemStyle.wrapper,
+          currentAddress === item.address && addressItemStyle.selected
+        ]}
+      >
+        <View>
+          <TextValue>{item.address}</TextValue>
+          <TextLabel>{t`index`} {item.index}</TextLabel>
+        </View>
       </View>
-    </View>
-  </TouchableHighlight>
-);
+    </TouchableHighlight>
+  )
+};
 
 const styles = StyleSheet.create({
   modal: {

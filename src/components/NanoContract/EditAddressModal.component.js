@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   View,
@@ -15,7 +15,6 @@ import { t } from 'ttag';
 import { COLORS } from '../../styles/themes';
 import { CircleInfoIcon } from '../Icons/CircleInfo.icon';
 import { ModalBase } from '../ModalBase';
-import { TextLabel } from '../TextLabel';
 import { TextValue } from '../TextValue';
 
 /**
@@ -37,49 +36,47 @@ import { TextValue } from '../TextValue';
  *   onAddressChange={handleAddressChange}
  * />
  */
-export const EditAddressModal = ({ item, show, onAddressChange, onDismiss }) => {
-  const [selectedItem] = useState(item);
-
-  return (
-    <ModalBase show={show} onDismiss={onDismiss}>
-      <ModalBase.Title>{t`New Nano Contract Address`}</ModalBase.Title>
-      <ModalBase.Body style={styles.body}>
-        <View style={styles.infoContainer}>
-          <View style={styles.infoIcon}>
-            <CircleInfoIcon size={20} color='hsla(203, 100%, 25%, 1)' />
-          </View>
-          <View style={styles.infoContent}>
-            <Text style={styles.text}>
-              {t`This address signs any transactions you created with Nano Contracts method. Switching to a new one means`}
-              <Text style={styles.bold}>
-                {' '}{t`all future transactions will use this address.`}
-              </Text>
+export const EditAddressModal = ({ item, show, onAddressChange, onDismiss }) => (
+  <ModalBase show={show} onDismiss={onDismiss}>
+    <ModalBase.Title>{t`New Nano Contract Address`}</ModalBase.Title>
+    <ModalBase.Body style={styles.body}>
+      <View style={styles.infoContainer}>
+        <View style={styles.infoIcon}>
+          <CircleInfoIcon size={20} color='hsla(203, 100%, 25%, 1)' />
+        </View>
+        <View style={styles.infoContent}>
+          <Text style={styles.text}>
+            {t`This address signs any transaction you create with Nano Contracts method. Switching to a new one means`}
+            <Text style={styles.bold}>
+              {' '}{t`all future transactions will use this address.`}
             </Text>
-          </View>
+          </Text>
         </View>
-        <View style={styles.selectionContainer}>
-          <Text style={[styles.text, styles.bold, styles.pd8]}>{t`Selected Information`}</Text>
-          <FieldContainer>
-            <TextLabel pb8 bold>{t`Address`}</TextLabel>
-            <TextValue>{selectedItem.address}</TextValue>
-          </FieldContainer>
-          <FieldContainer last>
-            <TextLabel pb8 bold>{t`Index`}</TextLabel>
-            <TextValue>{selectedItem.index}</TextValue>
-          </FieldContainer>
+      </View>
+      <View style={styles.selectionContainer}>
+        <Text style={[styles.text, styles.bold, styles.pd8]}>{t`Selected Information`}</Text>
+        <View style={{ flexDirection: 'row' }}>
+          <TextValue bold oneline>{t`Address`}{': '}</TextValue>
+          <TextValue shrink>{item.address}</TextValue>
         </View>
-      </ModalBase.Body>
-      <ModalBase.Button
-        title={t`Confirm new address`}
-        onPress={() => onAddressChange(selectedItem.address)}
-      />
-      <ModalBase.DiscreteButton
-        title={t`Go back`}
-        onPress={onDismiss}
-      />
-    </ModalBase>
-  );
-};
+        <FieldContainer last>
+          <Text>
+            <TextValue bold>{t`Index`}{': '}</TextValue>
+            <TextValue>{item.index}</TextValue>
+          </Text>
+        </FieldContainer>
+      </View>
+    </ModalBase.Body>
+    <ModalBase.Button
+      title={t`Confirm new address`}
+      onPress={() => onAddressChange(item.address)}
+    />
+    <ModalBase.DiscreteButton
+      title={t`Go back`}
+      onPress={onDismiss}
+    />
+  </ModalBase>
+);
 
 /**
  * Container for label and value pair components.

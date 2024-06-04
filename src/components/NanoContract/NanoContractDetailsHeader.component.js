@@ -29,7 +29,11 @@ import { SelectAddressModal } from './SelectAddressModal.component';
 import { UnregisterNanoContractModal } from './UnregisterNanoContractModal.component';
 
 /**
- * It presents the header for the list of transactions of a Nano Contract screen.
+ * It presents the header for Nano Contract Details screen and provides the following
+ * actions to users:
+ * - Open Nano Contract details at the Explorer
+ * - Edit the registered address for the Nano Contract
+ * - Unregister the Nano Contract
  *
  * @param {Object} props
  * @param {Object} props.nc Nano Contract data
@@ -60,10 +64,10 @@ export const NanoContractDetailsHeader = ({ nc, address, onAddressChange }) => {
     setShowUnregisterNanoContractModal(!showUnregisterNanoContractModal);
   };
 
-  const handleSelectAddress = (pickedAddres) => {
-    setSelectedAddress(pickedAddres);
+  const handleSelectAddress = (pickedAddress) => {
+    setSelectedAddress(pickedAddress);
     toggleSelectAddressModal();
-    onAddressChange(pickedAddres);
+    onAddressChange(pickedAddress);
   };
 
   return (

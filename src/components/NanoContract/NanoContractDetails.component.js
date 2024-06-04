@@ -43,7 +43,7 @@ const getNanoContractDetails = (ncId) => (state) => {
    * quickly, therefore the user will not have time to see the default state.
    */
   const defaultMeta = { isLoading: false, error: null, after: null };
-  const txHistory = Object.values(state.nanoContract.history[ncId] || {});
+  const txHistory = state.nanoContract.history[ncId] || [];
   const { isLoading, error, after } = state.nanoContract.historyMeta[ncId] || defaultMeta;
   return {
     txHistory,
@@ -156,8 +156,8 @@ const Wrapper = ({ children }) => (
  */
 export const NoNanoContractTransaction = () => (
   <FeedbackContent
-    title={t`No Nano Contract Transactions`}
-    message={t`There is not transaction to show yet.`}
+    title={t`Loading`}
+    message={t`Loading Nano Contract transactions.`}
   />
 );
 

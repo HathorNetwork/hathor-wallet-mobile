@@ -696,7 +696,7 @@ msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr ""
 
 #: src/components/NanoContract/EditAddressModal.component.js:63
-#: src/components/NanoContract/SelectAddressModal.component.js:92
+#: src/components/NanoContract/SelectAddressModal.component.js:94
 #: src/screens/SendConfirmScreen.js:161
 msgid "Address"
 msgstr ""
@@ -924,35 +924,35 @@ msgid ""
 "this can potentially make you susceptible to fraudulent schemes."
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractDetailsScreen.js:36
+#: src/screens/NanoContract/NanoContractDetailsScreen.js:39
 msgid "Nano Contract Details"
 msgstr ""
 
-#: src/sagas/nanoContract.js:42
+#: src/sagas/nanoContract.js:43
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:43
+#: src/sagas/nanoContract.js:44
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:44
+#: src/sagas/nanoContract.js:45
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:45
+#: src/sagas/nanoContract.js:46
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:46
+#: src/sagas/nanoContract.js:47
 msgid "Error while trying to get Nano Contract state."
 msgstr ""
 
-#: src/sagas/nanoContract.js:47
+#: src/sagas/nanoContract.js:48
 msgid "Nano Contract not registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:48
+#: src/sagas/nanoContract.js:49
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr ""
 
@@ -1159,7 +1159,7 @@ msgstr ""
 msgid "Blueprint Method"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.component.js:138
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:142
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/TxDetailsModal.js:106
 msgid "Nano Contract ID"
@@ -1173,7 +1173,7 @@ msgstr ""
 msgid "Nano Contract Status"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.component.js:75
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:79
 #: src/components/TxDetailsModal.js:120
 msgid "Nano Contract"
 msgstr ""
@@ -1242,31 +1242,31 @@ msgid "Go back"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.component.js:159
-msgid "No Nano Contract Transactions"
+msgid "Loading"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.component.js:160
-msgid "There is not transaction to show yet."
+msgid "Loading Nano Contract transactions."
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.component.js:174
 msgid "Nano Contract Transactions Error"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.component.js:142
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:146
 #: src/components/NanoContract/NanoContractsListItem.js:59
 msgid "Blueprint Name"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.component.js:146
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:150
 msgid "Registered Address"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.component.js:149
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:153
 msgid "See status details"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.component.js:150
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:154
 msgid "Unregister contract"
 msgstr ""
 
@@ -1288,19 +1288,19 @@ msgstr ""
 msgid "Register new"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:85
+#: src/components/NanoContract/SelectAddressModal.component.js:87
 msgid "Choose New Wallet Address"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:89
+#: src/components/NanoContract/SelectAddressModal.component.js:91
 msgid "Current Information"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:90
+#: src/components/NanoContract/SelectAddressModal.component.js:92
 msgid "To change, select other address on the list below."
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:143
+#: src/components/NanoContract/SelectAddressModal.component.js:145
 msgid "index"
 msgstr ""
 

@@ -22,6 +22,7 @@ import {
 import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
 import {
+  nanoContractHistoryClean,
   nanoContractHistoryFailure,
   nanoContractHistoryLoading,
   nanoContractHistorySuccess,
@@ -262,6 +263,11 @@ export function* requestHistoryNanoContract({ payload }) {
     return;
   }
 
+  if (after == null) {
+    // it clean the history when starting load from the beginning
+    yield put(nanoContractHistoryClean({ ncId }));
+  }
+
   try {
     // fetch from fullnode
     const { history, next } = yield call(fetchHistory, ncId, count, after, wallet);
@@ -311,11 +317,43 @@ export function* unregisterNanoContract({ payload }) {
   yield put(nanoContractUnregisterSuccess({ ncId }));
 }
 
+/**
+ * Process update on registered Nano Contract address to persist on store.
+ * @param {{
+ *   payload: {
+ *     ncId: string;
+ *     address: string;
+ *   }
+ * }}
+ */
+export function* requestNanoContractAddressChange({ payload }) {
+  const { ncId, address } = payload;
+
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet.isReady()) {
+    log.error('Fail updating Nano Contract address because wallet is not ready yet.');
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), true));
+    return;
+  }
+
+  yield call(
+    [
+      wallet.storage,
+      wallet.storage.updateNanoContractRegisteredAddress
+    ],
+    ncId,
+    address,
+  );
+  log.debug(`Success persisting Nano Contract address update. ncId = ${ncId}`);
+}
+
 export function* saga() {
   yield all([
     debounce(500, [[types.START_WALLET_SUCCESS, types.NANOCONTRACT_INIT]], init),
     takeEvery(types.NANOCONTRACT_REGISTER_REQUEST, registerNanoContract),
     takeEvery(types.NANOCONTRACT_HISTORY_REQUEST, requestHistoryNanoContract),
     takeEvery(types.NANOCONTRACT_UNREGISTER_REQUEST, unregisterNanoContract),
+    takeEvery(types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST, requestNanoContractAddressChange),
   ]);
 }

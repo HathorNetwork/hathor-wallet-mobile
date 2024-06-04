@@ -153,6 +153,8 @@ export const types = {
   NANOCONTRACT_HISTORY_SUCCESS: 'NANOCONTRACT_HISTORY_SUCCESS',
   /* It indicates a Nano Contract history failed to load. */
   NANOCONTRACT_HISTORY_FAILURE: 'NANOCONTRACT_HISTORY_FAILURE',
+  /* It indicates a Nano Contract history clean. */
+  NANOCONTRACT_HISTORY_CLEAN: 'NANOCONTRACT_HISTORY_CLEAN',
   /* It initiates an unregistration process of a Nano Contract. */
   NANOCONTRACT_UNREGISTER_REQUEST: 'NANOCONTRACT_UNREGISTER_REQUEST',
   /* It signals a successful completion of unregistration process. */
@@ -1070,6 +1072,16 @@ export const nanoContractHistoryLoading = (ncEntry) => ({
  */
 export const nanoContractHistorySuccess = (payload) => ({
   type: types.NANOCONTRACT_HISTORY_SUCCESS,
+  payload,
+});
+
+/**
+ * Nano Contract history clean signal.
+ * @param {Object} payload
+ * @param {string} payload.ncId Nano Contract ID.
+ */
+export const nanoContractHistoryClean = (payload) => ({
+  type: types.NANOCONTRACT_HISTORY_CLEAN,
   payload,
 });
 

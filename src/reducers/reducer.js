@@ -265,7 +265,7 @@ const initialState = {
      *     ncId: string;
      *     ncMethod: string;
      *     blueprintId: string;
-     *     caller: Object; // address object
+     *     caller: string;
      *     isMine: boolean;
      *     balance: {[uid: string]: Object};
      *   }[];
@@ -284,7 +284,7 @@ const initialState = {
      *       ncId: '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a',
      *       ncMethod: 'swap',
      *       blueprintId: '0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4';
-     *       caller: { base58: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V' },
+     *       caller: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
      *       isMine: true,
      *       balance: {
      *         '00': 300,
@@ -477,6 +477,8 @@ export const reducer = (state = initialState, action) => {
       return onNanoContractHistoryFailure(state, action);
     case types.NANOCONTRACT_HISTORY_SUCCESS:
       return onNanoContractHistorySuccess(state, action);
+    case types.NANOCONTRACT_HISTORY_CLEAN:
+      return onNanoContractHistoryClean(state, action);
     case types.NANOCONTRACT_UNREGISTER_SUCCESS:
       return onNanoContractUnregisterSuccess(state, action);
     case types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST:
@@ -1406,6 +1408,34 @@ export const onNanoContractHistoryFailure = (state, { payload }) => ({
         ...(state.nanoContract.historyMeta[payload.ncId]),
         isLoading: false,
         error: payload.error,
+      },
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     ncId: string;
+ *   }
+ * }} action
+ */
+export const onNanoContractHistoryClean = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    history: {
+      ...state.nanoContract.history,
+      [payload.ncId]: [],
+    },
+    historyMeta: {
+      ...state.nanoContract.historyMeta,
+      [payload.ncId]: {
+        ...(state.nanoContract.historyMeta[payload.ncId]),
+        isLoading: false,
+        after: null,
+        error: null,
       },
     },
   },

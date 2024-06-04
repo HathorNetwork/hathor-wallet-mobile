@@ -12,14 +12,17 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { t } from 'ttag';
-
 import HathorHeader from '../../components/HathorHeader';
 import { NanoContractDetails } from '../../components/NanoContract/NanoContractDetails.component';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 
 /**
- * Presents a list of Nano Contract transactions.
+ * Presents an information summary of the Nano Contract, a list of transactions
+ * and provides some actions to users, for instance:
+ * - Open Nano Contract details at the Explorer
+ * - Edit the registered address for the Nano Contract
+ * - Unregister the Nano Contract
  */
 export function NanoContractDetailsScreen({ navigation, route }) {
   /* Without this default the app breaks after the current Nano Contract unregistration.

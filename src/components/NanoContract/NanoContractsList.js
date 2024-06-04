@@ -36,7 +36,7 @@ export const NanoContractsList = () => {
   const navigation = useNavigation();
 
   const navigatesToNanoContractTransactions = (nc) => {
-    navigation.navigate('NanoContractDetailsScreen', { nc });
+    navigation.navigate('NanoContractDetailsScreen', { ncId: nc.ncId });
   };
   const isEmpty = () => registeredNanoContracts.length === 0;
   const notEmpty = () => !isEmpty();
