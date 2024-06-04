@@ -699,7 +699,7 @@ msgstr "Авторизовать операцию"
 msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr "Ваш перевод **${ this.amountAndToken }** был подтвержден"
 
-#: src/components/NanoContract/EditAddressModal.component.js:63
+#: src/components/NanoContract/EditAddressModal.component.js:59
 #: src/components/NanoContract/SelectAddressModal.component.js:94
 #: src/screens/SendConfirmScreen.js:161
 msgid "Address"
@@ -1218,33 +1218,33 @@ msgstr ""
 msgid "Custom network"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.component.js:45
+#: src/components/NanoContract/EditAddressModal.component.js:41
 msgid "New Nano Contract Address"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.component.js:53
+#: src/components/NanoContract/EditAddressModal.component.js:49
 msgid ""
-"This address signs any transactions you created with Nano Contracts method. "
+"This address signs any transaction you create with Nano Contracts method. "
 "Switching to a new one means"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.component.js:55
+#: src/components/NanoContract/EditAddressModal.component.js:51
 msgid "all future transactions will use this address."
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.component.js:61
+#: src/components/NanoContract/EditAddressModal.component.js:57
 msgid "Selected Information"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.component.js:67
+#: src/components/NanoContract/EditAddressModal.component.js:64
 msgid "Index"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.component.js:73
+#: src/components/NanoContract/EditAddressModal.component.js:71
 msgid "Confirm new address"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.component.js:77
+#: src/components/NanoContract/EditAddressModal.component.js:75
 msgid "Go back"
 msgstr ""
 
@@ -1307,7 +1307,7 @@ msgstr ""
 msgid "To change, select other address on the list below."
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:145
+#: src/components/NanoContract/SelectAddressModal.component.js:152
 msgid "index"
 msgstr ""
 

@@ -713,7 +713,7 @@ msgstr "Autorizar operação"
 msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ this.amountAndToken }** foi confirmada"
 
-#: src/components/NanoContract/EditAddressModal.component.js:63
+#: src/components/NanoContract/EditAddressModal.component.js:59
 #: src/components/NanoContract/SelectAddressModal.component.js:94
 #: src/screens/SendConfirmScreen.js:161
 msgid "Address"
@@ -1265,35 +1265,35 @@ msgstr ""
 msgid "Custom network"
 msgstr "Rede personalizada"
 
-#: src/components/NanoContract/EditAddressModal.component.js:45
+#: src/components/NanoContract/EditAddressModal.component.js:41
 msgid "New Nano Contract Address"
 msgstr "Novo endereço para o Nano Contract"
 
-#: src/components/NanoContract/EditAddressModal.component.js:53
+#: src/components/NanoContract/EditAddressModal.component.js:49
 msgid ""
-"This address signs any transactions you created with Nano Contracts method. "
+"This address signs any transaction you create with Nano Contracts method. "
 "Switching to a new one means"
 msgstr ""
 "Este endereço assina toda transação criada com os métodos do Nano Contract. "
 "Ao alterar para um novo endereço significa que"
 
-#: src/components/NanoContract/EditAddressModal.component.js:55
+#: src/components/NanoContract/EditAddressModal.component.js:51
 msgid "all future transactions will use this address."
 msgstr "todas as transações futuras usarão este endereço."
 
-#: src/components/NanoContract/EditAddressModal.component.js:61
+#: src/components/NanoContract/EditAddressModal.component.js:57
 msgid "Selected Information"
 msgstr "Informação Selecionada"
 
-#: src/components/NanoContract/EditAddressModal.component.js:67
+#: src/components/NanoContract/EditAddressModal.component.js:64
 msgid "Index"
 msgstr "Índice"
 
-#: src/components/NanoContract/EditAddressModal.component.js:73
+#: src/components/NanoContract/EditAddressModal.component.js:71
 msgid "Confirm new address"
 msgstr "Confirmar novo endereço"
 
-#: src/components/NanoContract/EditAddressModal.component.js:77
+#: src/components/NanoContract/EditAddressModal.component.js:75
 msgid "Go back"
 msgstr "Voltar"
 
@@ -1302,7 +1302,6 @@ msgid "Loading"
 msgstr "Carregando"
 
 #: src/components/NanoContract/NanoContractDetails.component.js:160
-#, fuzzy
 msgid "Loading Nano Contract transactions."
 msgstr "Carregando transações do Nano Contract"
 
@@ -1357,7 +1356,7 @@ msgstr "Informação Atual"
 msgid "To change, select other address on the list below."
 msgstr "Para alterar, selecione outro endereço da lista abaixo."
 
-#: src/components/NanoContract/SelectAddressModal.component.js:145
+#: src/components/NanoContract/SelectAddressModal.component.js:152
 msgid "index"
 msgstr "índice"
 
