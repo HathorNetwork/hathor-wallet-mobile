@@ -39,7 +39,7 @@ function getBalanceType(value) {
  * @param {string} tokenUid Token hash
  * @param {Object[]} tokens Registered tokens from redux store
  */
-function getTokenValue(tokenUid, tokens) {
+function getTokenSymbol(tokenUid, tokens) {
   const registeredToken = Object.values(tokens).filter((token) => token.uid === tokenUid).pop();
   if (registeredToken) {
     return registeredToken.symbol;
@@ -57,7 +57,7 @@ function getTokenValue(tokenUid, tokens) {
 export const NanoContractTransactionActionListItem = ({ item, index }) => {
   const balance = item.available + item.locked;
   const tokens = useSelector((state) => state.tokens) || {};
-  const tokenValue = getTokenValue(item.tokenUid, tokens);
+  const tokenValue = getTokenSymbol(item.tokenUid, tokens);
   const type = getBalanceType(balance);
   const tokensMetadata = useSelector((state) => state.tokenMetadata);
   const isNft = isTokenNFT(item.tokenUid, tokensMetadata);

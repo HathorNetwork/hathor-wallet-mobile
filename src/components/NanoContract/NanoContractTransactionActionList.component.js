@@ -15,25 +15,26 @@ import { HathorFlatList } from '../HathorFlatList';
 import { FeedbackContent } from '../FeedbackContent';
 
 /**
- * It presents a list of balance for tokens input and ouput of a transaction.
+ * It presents a list of actions of a transaction.
  *
  * @param {Object} props
  * @param {Object} props.tx Transaction data
  */
 export const NanoContractTransactionActionList = ({ tx }) => {
   const wallet = useSelector((state) => state.wallet);
-  const [tokensBalance, setTokensBalance] = useState([]);
+  const [actions, setActions] = useState([]);
 
   useEffect(() => {
-    const fetchTokensBalance = async () => {
+    // TODO: implement fetchActions to get actions of a transaction
+    const fetchActions = async () => {
       // TODO: getActions must be implemented in the lib
-      const balance = await getActions(tx, wallet);
-      setTokensBalance(balance);
+      const actions = await getActions(tx, wallet);
+      setActions(actions);
     };
-    fetchTokensBalance();
+    fetchActions();
   }, []);
 
-  const isEmpty = () => tokensBalance.length === 0;
+  const isEmpty = () => actions.length === 0;
   const notEmpty = () => !isEmpty();
 
   return (
@@ -43,7 +44,7 @@ export const NanoContractTransactionActionList = ({ tx }) => {
       {notEmpty()
         && (
           <HathorFlatList
-            data={tokensBalance}
+            data={actions}
             renderItem={({ item, index }) => (
               <NanoContractTransactionActionListItem
                 item={item}
