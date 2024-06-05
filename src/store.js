@@ -191,6 +191,23 @@ class HybridStore extends MemoryStore {
       STORE.removeItem(REGISTERED_NANO_CONTRACTS_KEY);
     }
   }
+
+  /**
+   * Update nano contract registered address.
+   * @param {string} ncId Nano Contract ID.
+   * @param {string} address Nano Contract registered address.
+   * @async
+   * @returns {Promise<void>}
+   */
+  async updateNanoContractRegisteredAddress(ncId, address) {
+    await super.updateNanoContractRegisteredAddress();
+    const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
+    const contract = contracts[ncId];
+    if (contract) {
+      contracts[ncId] = { ...contract, address };
+      STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts);
+    }
+  }
 }
 /* eslint-enable class-methods-use-this */
 

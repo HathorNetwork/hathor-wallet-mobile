@@ -56,10 +56,10 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
     toggleEditAddressModal();
   };
 
+  // This method is only called by AddressItem if the selected address
+  // is different from the current one.
   const onSelectItem = (item) => {
-    if (item !== address) {
-      setSelectedItem(item);
-    }
+    setSelectedItem(item);
     toggleEditAddressModal();
   };
 
