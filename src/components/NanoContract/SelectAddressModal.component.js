@@ -93,7 +93,7 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
             <Text>
               <TextValue bold>{t`Address`}</TextValue>
               {/* the unicode character u00A0 means no-break space. */}
-              <TextValue>{(': '+address).replaceAll(' ', '\u00A0')}</TextValue>
+              <TextValue>{(`: ${address}`).replaceAll(' ', '\u00A0')}</TextValue>
             </Text>
           </View>
           <FlatList
