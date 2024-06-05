@@ -55,14 +55,17 @@ export const EditAddressModal = ({ item, show, onAddressChange, onDismiss }) => 
       </View>
       <View style={styles.selectionContainer}>
         <Text style={[styles.text, styles.bold, styles.pd8]}>{t`Selected Information`}</Text>
-        <View style={{ flexDirection: 'row' }}>
-          <TextValue bold oneline>{t`Address`}{': '}</TextValue>
-          <TextValue shrink>{item.address}</TextValue>
-        </View>
+        <FieldContainer>
+          <Text>
+            <TextValue bold>{t`Address`}</TextValue>
+            {/* the unicode character u00A0 means no-break space. */}
+            <TextValue>{(': '+item.address).replaceAll(' ', '\u00A0')}</TextValue>
+          </Text>
+        </FieldContainer>
         <FieldContainer last>
           <Text>
-            <TextValue bold>{t`Index`}{': '}</TextValue>
-            <TextValue>{item.index}</TextValue>
+            <TextValue bold>{t`Index`}</TextValue>
+            <TextValue>{(': '+item.index).replaceAll(' ', '\u00A0')}</TextValue>
           </Text>
         </FieldContainer>
       </View>

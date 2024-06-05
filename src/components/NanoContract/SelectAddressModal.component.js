@@ -90,10 +90,11 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
           <View style={styles.infoWrapper}>
             <Text style={[styles.infoText, styles.textBold]}>{t`Current Information`}</Text>
             <Text style={styles.infoText}>{t`To change, select other address on the list below.`}</Text>
-            <View style={{ flexDirection: 'row' }}>
-              <TextValue bold oneline>{t`Address`}{': '}</TextValue>
-              <TextValue shrink>{address}</TextValue>
-            </View>
+            <Text>
+              <TextValue bold>{t`Address`}</TextValue>
+              {/* the unicode character u00A0 means no-break space. */}
+              <TextValue>{(': '+address).replaceAll(' ', '\u00A0')}</TextValue>
+            </Text>
           </View>
           <FlatList
             data={addresses}
