@@ -98,7 +98,7 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
           {hasFailed()
             && (
             <FeedbackContent
-              icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+              icon={(<Image source={errorIcon} style={styles.feedbackContentIcon} resizeMode='contain' />)}
               title={t`Load Addresses Error`}
               message={t`There was an error while loading wallet's addresses. Close the modal and try again.`}
               offcard
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   textBold: {
     fontWeight: 'bold',
   },
-  feedbackModalIcon: {
+  feedbackContentIcon: {
     height: 36,
     width: 36,
   },
