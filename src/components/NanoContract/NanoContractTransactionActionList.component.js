@@ -14,6 +14,10 @@ import { NanoContractTransactionActionListItem } from './NanoContractTransaction
 import { HathorFlatList } from '../HathorFlatList';
 import { FeedbackContent } from '../FeedbackContent';
 
+const getActions = async () => {
+  // TODO: To implement on wallet-lib
+};
+
 /**
  * It presents a list of actions of a transaction.
  *
@@ -28,8 +32,8 @@ export const NanoContractTransactionActionList = ({ tx }) => {
     // TODO: implement fetchActions to get actions of a transaction
     const fetchActions = async () => {
       // TODO: getActions must be implemented in the lib
-      const actions = await getActions(tx, wallet);
-      setActions(actions);
+      const txActions = await getActions(tx, wallet);
+      setActions(txActions);
     };
     fetchActions();
   }, []);

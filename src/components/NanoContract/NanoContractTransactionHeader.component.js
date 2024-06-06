@@ -20,7 +20,6 @@ import { COLORS } from '../../styles/themes';
 import { combineURLs, getShortContent, getShortHash, getTimestampFormat } from '../../utils';
 import SimpleButton from '../SimpleButton';
 import { ArrowDownIcon } from '../Icons/ArrowDown.icon';
-import { ArrowUpIcon } from '../Icons/ArrowUp.icon';
 import { TextValue } from '../TextValue';
 import { TextLabel } from '../TextLabel';
 import { TransactionStatusLabel } from '../TransactionStatusLabel';
@@ -32,6 +31,7 @@ import { TransactionStatusLabel } from '../TransactionStatusLabel';
  * @param {Obejct} props.tx Transaction data
  */
 export const NanoContractTransactionHeader = ({ tx }) => {
+  // TODO: use `toggleShrank` on 'onPress` of TouchableWithoutFeedback
   const [isShrank, toggleShrank] = useState(false);
 
   const isExpanded = () => !isShrank;
@@ -111,6 +111,7 @@ const HeaderExpanded = ({ tx }) => {
           <PrimaryTextButton title={t`See transaction details`} onPress={navigatesToExplorer} />
         </TwoActionsWrapper>
       </View>
+      {/* TODO: add <ArrowUpIcon /> when action list is ready to be showed */}
     </>
   )
 };
