@@ -424,7 +424,7 @@ msgstr ""
 #: src/components/NanoContract/NanoContractDetails.component.js:194
 #: src/screens/LoadHistoryScreen.js:51
 #: src/screens/LoadWalletErrorScreen.js:20
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:145
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:154
 msgid "Try again"
 msgstr ""
 
@@ -946,48 +946,64 @@ msgstr ""
 msgid "Nano Contract ID is required."
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:135
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:144
 msgid "See contract"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.component.js:138
-#: src/components/NanoContract/NanoContractTransactionHeader.component.js:90
-#: src/components/NanoContract/NanoContractsListItem.js:57
-#: src/components/TxDetailsModal.js:106
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:152
-msgid "Nano Contract ID"
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:162
+msgid "Load First Addresses Error"
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:160
-msgid "Wallet Address"
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:163
+msgid ""
+"There was an error while loading wallet's first address. Go back and try "
+"again."
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:170
-msgid "If you want to change the wallet address, you will be able to do"
+#: src/components/NanoContract/NanoContractDetails.component.js:158
+#: src/components/NanoContract/SelectAddressModal.component.js:110
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:171
+msgid "Loading"
 msgstr ""
 
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:172
+msgid "Loading wallet's first address."
+msgstr ""
+
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:142
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:90
+#: src/components/NanoContract/NanoContractsListItem.js:57
+#: src/components/TxDetailsModal.js:106
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:182
+msgid "Nano Contract ID"
+msgstr ""
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:190
+msgid "Wallet Address"
+msgstr ""
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:200
+msgid "If you want to change the wallet address, you will be able to do"
+msgstr ""
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:202
 msgid "after the contract is registered."
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:187
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:221
 msgid "Register Nano Contract"
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:204
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:239
 msgid "Nano Contract Registration"
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractTransactionScreen.js:39
+#: src/screens/NanoContract/NanoContractTransactionScreen.js:37
 msgid "Nano Contract Transaction"
 msgstr ""
 
 #: src/screens/NanoContract/helper.js:11
 msgid "Contract successfully registered."
-msgstr ""
-
-#: src/sagas/nanoContract.js:42
-msgid "Nano Contract already registered."
 msgstr ""
 
 #: src/sagas/nanoContract.js:43

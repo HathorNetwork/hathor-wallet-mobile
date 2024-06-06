@@ -445,7 +445,7 @@ msgstr "Digite suas palavras separadas por espaços"
 
 #: src/components/NanoContract/NanoContractDetails.component.js:194
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:145
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:154
 msgid "Try again"
 msgstr "Tente novamente"
 
@@ -975,40 +975,61 @@ msgstr "Ocorreu um erro durante download dos endereços da wallet. Tente novamen
 msgid "Nano Contract ID is required."
 msgstr "ID do Nano Contract é obrigatório."
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:135
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:144
 msgid "See contract"
 msgstr "Ver contrato"
 
-#: src/components/NanoContract/NanoContractDetailsHeader.component.js:138
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:162
+msgid "Load First Addresses Error"
+msgstr ""
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:163
+msgid ""
+"There was an error while loading wallet's first address. Go back and try "
+"again."
+msgstr ""
+"Ocorreu um erro durante download do primeiro endereço da wallet. Volte e "
+"tente novamente."
+
+#: src/components/NanoContract/NanoContractDetails.component.js:158
+#: src/components/NanoContract/SelectAddressModal.component.js:110
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:171
+msgid "Loading"
+msgstr "Carregando"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:172
+msgid "Loading wallet's first address."
+msgstr ""
+
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:142
 #: src/components/NanoContract/NanoContractTransactionHeader.component.js:90
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/TxDetailsModal.js:106
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:152
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:182
 msgid "Nano Contract ID"
 msgstr "ID do Nano Contract"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:160
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:190
 msgid "Wallet Address"
 msgstr "Endereço da Carteira"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:170
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:200
 msgid "If you want to change the wallet address, you will be able to do"
 msgstr "Se deseja alterar o endereço de assinatura, você pode alterar"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:172
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:202
 msgid "after the contract is registered."
 msgstr "depois do contrato ser registrado."
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:187
-#, fuzzy
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:221
 msgid "Register Nano Contract"
-msgstr "Desregistrar Nano Contract"
+msgstr "Registrar Nano Contract"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:204
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:239
 msgid "Nano Contract Registration"
 msgstr "Registro do Nano Contract"
 
-#: src/screens/NanoContract/NanoContractTransactionScreen.js:39
+#: src/screens/NanoContract/NanoContractTransactionScreen.js:37
 msgid "Nano Contract Transaction"
 msgstr "Transação do Nano Contract"
 
@@ -1459,3 +1480,9 @@ msgstr "Sim, desregistrar"
 #: src/components/NanoContract/UnregisterNanoContractModal.component.js:50
 msgid "No, go back"
 msgstr "Não, voltar"
+
+#~ msgid "No Tokens Balance"
+#~ msgstr "Nenhum saldo de token"
+
+#~ msgid "The transaction doesn't have token deposit or token withdrawal."
+#~ msgstr "A transação não tem saldo de token para depósito nem para saque."
