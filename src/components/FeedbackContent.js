@@ -24,6 +24,7 @@ import { COLORS } from '../styles/themes';
  * if provided, it renders uppon the title
  * @param {Object?} props.action A react component or react element containing a call to action,
  * if provided, it renders underneath the content
+ * @param {boolean} props.offcard Renders a feedback without card style
  *
  * @example
  * <FeedbackContent
@@ -33,8 +34,8 @@ import { COLORS } from '../styles/themes';
  *   action={<TryAgain ncId={ncId} />}
  * />
  */
-export const FeedbackContent = ({ title, message, icon, action }) => (
-  <View style={[styles.card]}>
+export const FeedbackContent = ({ title, message, icon, action, offcard }) => (
+  <View style={offcard ? styles.offCard : styles.card}>
     <View style={styles.content}>
       {icon
         && (<View style={styles.icon}>{icon}</View>)}
@@ -46,6 +47,15 @@ export const FeedbackContent = ({ title, message, icon, action }) => (
 );
 
 const styles = StyleSheet.create({
+  offCard: {
+    flex: 1,
+    justifyContent: 'center',
+    alignSelf: 'stretch',
+    marginTop: 16,
+    marginBottom: 45,
+    backgroundColor: COLORS.backgroundColor,
+    marginHorizontal: 16,
+  },
   card: {
     flex: 1,
     justifyContent: 'center',
