@@ -15,30 +15,33 @@ export const feedbackSucceedText = t`Contract successfully registered.`;
  * @param {object} status - status from redux store
  * @returns {boolean} - true if the status is successful, false otherwise
  */
-export function hasSucceed(status) {
-  return status === NANOCONTRACT_REGISTER_STATUS.SUCCESSFUL;
-}
+export const hasSucceeded = (status) => (
+  status === NANOCONTRACT_REGISTER_STATUS.SUCCESSFUL
+);
 
 /**
  * Check if the nano contract register status is failed.
  * @param {object} status - status from redux store
  * @returns {boolean} - true if the status is failed, false otherwise
  */
-// eslint-disable-next-line max-len
-export const hasFailed = (status) => status === NANOCONTRACT_REGISTER_STATUS.FAILED;
+export const hasFailed = (status) => (
+  status === NANOCONTRACT_REGISTER_STATUS.FAILED
+);
 
 /**
  * Check if the nano contract register status is loading.
  * @param {object} status - status from redux store
  * @returns {boolean} - true if the status is loading, false otherwise
  */
-// eslint-disable-next-line max-len
-export const isLoading = (status) => status === NANOCONTRACT_REGISTER_STATUS.LOADING;
+export const isLoading = (status) => (
+  status === NANOCONTRACT_REGISTER_STATUS.LOADING
+);
 
 /**
  * Check if the nano contract register status is not ready.
  * @param {object} status - status from redux store
  * @returns {boolean} - true if the status is not ready, false otherwise
  */
-// eslint-disable-next-line max-len
-export const notReady = (status) => status !== NANOCONTRACT_REGISTER_STATUS.READY;
+export const notReady = (status) => (
+  status !== NANOCONTRACT_REGISTER_STATUS.READY
+);
