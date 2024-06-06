@@ -74,8 +74,9 @@ export function NanoContractRegisterScreen({ navigation }) {
     ncId: null,
   });
 
-  // eslint-disable-next-line max-len
-  /* @param {'nodeUrl' | 'explorerUrl' | 'explorerServiceUrl' | 'walletServiceUrl' | 'walletServiceWsUrl' } name */
+  /* @param {
+   *   'nodeUrl'|'explorerUrl'|'explorerServiceUrl'|'walletServiceUrl'|'walletServiceWsUrl'
+   * } name */
   const handleInputChange = (name) => (value) => {
     if (isClean) {
       setClean(false);
