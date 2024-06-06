@@ -435,3 +435,22 @@ export const consumeAsyncIterator = async (asyncIterator) => {
   }
   return [...list];
 };
+
+/**
+ * Return all addresses of the wallet with info of each of them.
+ *
+ * @param {Object} wallet
+ *
+ * @returns {Promise<{
+ *   address: string;
+ *   index: number;
+ *   transactions: number;
+ * }[]>} a list of addres info.
+ *
+ * @throws {Error} either wallet not ready or other http request error if using wallet service.
+ * @async
+ **/
+export const getAllAddresses = async (wallet) => {
+  const iterator = await wallet.getAllAddresses();
+  return await consumeAsyncIterator(iterator);
+}
