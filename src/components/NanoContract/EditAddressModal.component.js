@@ -59,13 +59,13 @@ export const EditAddressModal = ({ item, show, onAddressChange, onDismiss }) => 
           <Text>
             <TextValue bold>{t`Address`}</TextValue>
             {/* the unicode character u00A0 means no-break space. */}
-            <TextValue>{(`: ${item.address}`).replaceAll(' ', '\u00A0')}</TextValue>
+            <TextValue>{`:${'\u00A0'}${item.address}`}</TextValue>
           </Text>
         </FieldContainer>
         <FieldContainer last>
           <Text>
             <TextValue bold>{t`Index`}</TextValue>
-            <TextValue>{(`: ${item.index}`).replaceAll(' ', '\u00A0')}</TextValue>
+            <TextValue>{`:${'\u00A0'}${item.index}`}</TextValue>
           </Text>
         </FieldContainer>
       </View>
