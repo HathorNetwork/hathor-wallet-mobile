@@ -443,7 +443,7 @@ msgstr "Palavras"
 msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
-#: src/components/NanoContract/NanoContractDetails.component.js:195
+#: src/components/NanoContract/NanoContractDetails.component.js:194
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 msgid "Try again"
 msgstr "Tente novamente"
@@ -713,8 +713,8 @@ msgstr "Autorizar operação"
 msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ this.amountAndToken }** foi confirmada"
 
-#: src/components/NanoContract/EditAddressModal.component.js:59
-#: src/components/NanoContract/SelectAddressModal.component.js:94
+#: src/components/NanoContract/EditAddressModal.component.js:60
+#: src/components/NanoContract/SelectAddressModal.component.js:122
 #: src/screens/SendConfirmScreen.js:161
 msgid "Address"
 msgstr "Endereço"
@@ -1285,27 +1285,28 @@ msgstr "todas as transações futuras usarão este endereço."
 msgid "Selected Information"
 msgstr "Informação Selecionada"
 
-#: src/components/NanoContract/EditAddressModal.component.js:64
+#: src/components/NanoContract/EditAddressModal.component.js:67
 msgid "Index"
 msgstr "Índice"
 
-#: src/components/NanoContract/EditAddressModal.component.js:71
+#: src/components/NanoContract/EditAddressModal.component.js:74
 msgid "Confirm new address"
 msgstr "Confirmar novo endereço"
 
-#: src/components/NanoContract/EditAddressModal.component.js:75
+#: src/components/NanoContract/EditAddressModal.component.js:78
 msgid "Go back"
 msgstr "Voltar"
 
-#: src/components/NanoContract/NanoContractDetails.component.js:159
+#: src/components/NanoContract/NanoContractDetails.component.js:158
+#: src/components/NanoContract/SelectAddressModal.component.js:110
 msgid "Loading"
 msgstr "Carregando"
 
-#: src/components/NanoContract/NanoContractDetails.component.js:160
+#: src/components/NanoContract/NanoContractDetails.component.js:159
 msgid "Loading Nano Contract transactions."
 msgstr "Carregando transações do Nano Contract"
 
-#: src/components/NanoContract/NanoContractDetails.component.js:174
+#: src/components/NanoContract/NanoContractDetails.component.js:173
 msgid "Nano Contract Transactions Error"
 msgstr "Erro em Transações do Nano Contract"
 
@@ -1344,19 +1345,35 @@ msgstr "Você pode acompanhar os Nano Contracts registrados nesta tela."
 msgid "Register new"
 msgstr "Registrar novo"
 
-#: src/components/NanoContract/SelectAddressModal.component.js:87
+#: src/components/NanoContract/SelectAddressModal.component.js:95
 msgid "Choose New Wallet Address"
 msgstr "Escolha o Novo Endereço"
 
-#: src/components/NanoContract/SelectAddressModal.component.js:91
+#: src/components/NanoContract/SelectAddressModal.component.js:102
+msgid "Load Addresses Error"
+msgstr ""
+
+#: src/components/NanoContract/SelectAddressModal.component.js:103
+msgid ""
+"There was an error while loading wallet's addresses. Close the modal and try "
+"again."
+msgstr ""
+"Ocorreu um erro durante download dos endereços da wallet. Feche o modal"
+"e tente novamente."
+
+#: src/components/NanoContract/SelectAddressModal.component.js:111
+msgid "Loading all wallet's addresses."
+msgstr ""
+
+#: src/components/NanoContract/SelectAddressModal.component.js:119
 msgid "Current Information"
 msgstr "Informação Atual"
 
-#: src/components/NanoContract/SelectAddressModal.component.js:92
+#: src/components/NanoContract/SelectAddressModal.component.js:120
 msgid "To change, select other address on the list below."
 msgstr "Para alterar, selecione outro endereço da lista abaixo."
 
-#: src/components/NanoContract/SelectAddressModal.component.js:152
+#: src/components/NanoContract/SelectAddressModal.component.js:183
 msgid "index"
 msgstr "índice"
 

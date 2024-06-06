@@ -12,6 +12,7 @@ import {
   FlatList,
   TouchableHighlight,
   Text,
+  Image,
 } from 'react-native';
 import { t } from 'ttag';
 import { useSelector } from 'react-redux';
@@ -20,7 +21,9 @@ import { ModalBase } from '../ModalBase';
 import { TextValue } from '../TextValue';
 import { TextLabel } from '../TextLabel';
 import { EditAddressModal } from './EditAddressModal.component';
-import { consumeAsyncIterator } from '../../utils';
+import { getAllAddresses } from '../../utils';
+import { FeedbackContent } from '../FeedbackContent';
+import errorIcon from '../../assets/images/icErrorBig.png';
 
 /**
  * Use this modal to select an address from the wallet.
@@ -44,6 +47,7 @@ import { consumeAsyncIterator } from '../../utils';
 export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }) => {
   const wallet = useSelector((state) => state.wallet);
   const [addresses, setAddresses] = useState([]);
+  const [isAddressesFail, setAddressesFail] = useState(false);
   const [selectedItem, setSelectedItem] = useState({ address });
   const [showEditAddressModal, setShowEditAddressModal] = useState(false);
 
@@ -69,13 +73,17 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const iterator = await wallet.getAllAddresses();
-      const allAddresses = await consumeAsyncIterator(iterator);
-      setAddresses(allAddresses);
+    const fetchAllAddresses = async () => {
+      return getAllAddresses(wallet)
+        .then((addresses) => setAddresses(addresses))
+        .catch(() => setAddressesFail(true));
     };
-    fetchData();
+    fetchAllAddresses();
   }, []);
+
+  const hasFailed = () => isAddressesFail;
+  const isLoading = () => !isAddressesFail && addresses.length === 0;
+  const hasLoaded = () => !isAddressesFail && addresses.length > 0; 
 
   return (
     <ModalBase
@@ -87,22 +95,44 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
       <ModalBase.Title>{t`Choose New Wallet Address`}</ModalBase.Title>
       <ModalBase.Body style={styles.body}>
         <View style={styles.bodyWrapper}>
-          <View style={styles.infoWrapper}>
-            <Text style={[styles.infoText, styles.textBold]}>{t`Current Information`}</Text>
-            <Text style={styles.infoText}>{t`To change, select other address on the list below.`}</Text>
-            <Text>
-              <TextValue bold>{t`Address`}</TextValue>
-              {/* the unicode character u00A0 means no-break space. */}
-              <TextValue>{(`: ${address}`).replaceAll(' ', '\u00A0')}</TextValue>
-            </Text>
-          </View>
-          <FlatList
-            data={addresses}
-            renderItem={({ item }) => (
-              <AddressItem currentAddress={address} item={item} onSelectItem={onSelectItem} />
-            )}
-            keyExtractor={(item) => item.address}
-          />
+          {hasFailed()
+            && (
+            <FeedbackContent
+              icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+              title={t`Load Addresses Error`}
+              message={t`There was an error while loading wallet's addresses. Close the modal and try again.`}
+              offcard
+            />
+          )}
+          {isLoading()
+            && (
+            <FeedbackContent
+              title={t`Loading`}
+              message={t`Loading all wallet's addresses.`}
+              offcard
+            />
+          )}
+          {hasLoaded()
+            && (
+              <>
+              <View style={styles.infoWrapper}>
+                <Text style={[styles.infoText, styles.textBold]}>{t`Current Information`}</Text>
+                <Text style={styles.infoText}>{t`To change, select other address on the list below.`}</Text>
+                <Text>
+                  <TextValue bold>{t`Address`}</TextValue>
+                  {/* the unicode character u00A0 means no-break space. */}
+                  <TextValue>{`:${'\u00A0'}${address}`}</TextValue>
+                </Text>
+              </View>
+              <FlatList
+                data={addresses}
+                renderItem={({ item }) => (
+                  <AddressItem currentAddress={address} item={item} onSelectItem={onSelectItem} />
+                )}
+                keyExtractor={(item) => item.address}
+              />
+            </>
+          )}
         </View>
         {showEditAddressModal
           && (
@@ -187,6 +217,10 @@ const styles = StyleSheet.create({
   },
   textBold: {
     fontWeight: 'bold',
+  },
+  feedbackModalIcon: {
+    height: 36,
+    width: 36, 
   },
 });
 
