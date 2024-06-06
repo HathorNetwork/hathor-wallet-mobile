@@ -201,10 +201,10 @@ class HybridStore extends MemoryStore {
    */
   async updateNanoContractRegisteredAddress(ncId, address) {
     await super.updateNanoContractRegisteredAddress(ncId, address);
-    const contract = this.getNanoContract(ncId);
+    const contract = await this.getNanoContract(ncId);
     if (contract) {
       const newContract = { ...contract, address };
-      this.registerNanoContract(ncId, newContract);
+      await this.registerNanoContract(ncId, newContract);
     }
   }
 }
