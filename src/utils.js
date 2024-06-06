@@ -464,6 +464,4 @@ export const getAllAddresses = async (wallet) => {
  * @throws {Error} either wallet not ready or other http request error if using wallet service.
  * @async
  */
-export const getFirstAddress = async (wallet) => {
-  return wallet.getAddressAtIndex(0);
-}
+export const getFirstAddress = async (wallet) => wallet.getAddressAtIndex(0);

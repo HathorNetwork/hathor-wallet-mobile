@@ -128,7 +128,7 @@ export function NanoContractRegisterScreen({ navigation }) {
   }, []);
 
   const hasFirstAddressFailed = () => hasFirstAddressLoadingFailed;
-  const isFirstAddressLoading = () => !hasFirstAddressLoadingFailed && !address; 
+  const isFirstAddressLoading = () => !hasFirstAddressLoadingFailed && !address;
   const hasFirstAddressLoaded = () => !hasFirstAddressLoadingFailed && address;
 
   return (
@@ -212,7 +212,11 @@ export function NanoContractRegisterScreen({ navigation }) {
             )}
           <View style={styles.buttonContainer}>
             <NewHathorButton
-              disabled={hasError(invalidModel) || isClean || isLoading(registerState.registerStatus)}
+              disabled={(
+                hasError(invalidModel)
+                  || isClean
+                  || isLoading(registerState.registerStatus)
+              )}
               onPress={handleSubmit}
               title={t`Register Nano Contract`}
             />
@@ -299,7 +303,7 @@ const styles = StyleSheet.create({
   },
   feedbackContentIcon: {
     height: 36,
-    width:36 
+    width: 36,
   },
   text: {
     fontSize: 14,
