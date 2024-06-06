@@ -454,3 +454,16 @@ export const getAllAddresses = async (wallet) => {
   const iterator = await wallet.getAllAddresses();
   return consumeAsyncIterator(iterator);
 }
+
+/**
+ * Return the first wallet's address.
+ *
+ * @param {Object} wallet
+ *
+ * @returns {Promise<string>}
+ * @throws {Error} either wallet not ready or other http request error if using wallet service.
+ * @async
+ */
+export const getFirstAddress = async (wallet) => {
+  return wallet.getAddressAtIndex(0);
+}

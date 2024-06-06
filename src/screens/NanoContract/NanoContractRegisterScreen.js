@@ -24,11 +24,13 @@ import { TextLabel } from '../../components/TextLabel';
 import { TextValue } from '../../components/TextValue';
 import { COLORS } from '../../styles/themes';
 import { nanoContractRegisterReady, nanoContractRegisterRequest } from '../../actions';
-import { feedbackSucceedText, hasFailed, hasSucceed, isLoading } from './helper';
+import { feedbackSucceedText, hasFailed, hasSucceeded, isLoading } from './helper';
 import Spinner from '../../components/Spinner';
 import FeedbackModal from '../../components/FeedbackModal';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
+import { getFirstAddress } from '../../utils';
+import { FeedbackContent } from '../../components/FeedbackContent';
 
 /**
  * Verifies if the invalidModel of the form has an error message.
@@ -62,6 +64,7 @@ export function NanoContractRegisterScreen({ navigation }) {
   }));
 
   const [address, setAddress] = useState(null);
+  const [hasFirstAddressLoadingFailed, setHasFirstAddressLoadingFailed] = useState(false);
   const [isClean, setClean] = useState(true);
 
   const [formModel, setFormModel] = useState({
@@ -115,18 +118,23 @@ export function NanoContractRegisterScreen({ navigation }) {
   }
 
   useEffect(() => {
-    const fetchData = async () => {
-      const defaultAddress = await wallet.getAddressAtIndex(0);
-      setAddress(defaultAddress);
+    const fetchFirstAddress = async () => {
+      getFirstAddress(wallet)
+        .then((firstAddress) => setAddress(firstAddress))
+        .catch(() => setHasFirstAddressLoadingFailed(true));
     };
-    fetchData();
+    fetchFirstAddress();
   }, []);
+
+  const hasFirstAddressFailed = () => hasFirstAddressLoadingFailed;
+  const isFirstAddressLoading = () => !hasFirstAddressLoadingFailed && !address; 
+  const hasFirstAddressLoaded = () => !hasFirstAddressLoadingFailed && address;
 
   return (
     <Wrapper>
       <NavigationHeader navigation={navigation} />
 
-      {hasSucceed(registerState.registerStatus)
+      {hasSucceeded(registerState.registerStatus)
         && (
           <FeedbackModal
             icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
@@ -146,48 +154,70 @@ export function NanoContractRegisterScreen({ navigation }) {
           />
         )}
 
-      <ContentWrapper>
-        <SimpleInput
-          containerStyle={styles.input}
-          label={t`Nano Contract ID`}
-          autoFocus
-          onChangeText={handleInputChange('ncId')}
-          error={invalidModel.ncId}
-          value={formModel.ncId}
+      {hasFirstAddressFailed()
+        && (
+        <FeedbackContent
+          icon={(<Image source={errorIcon} style={styles.feedbackContentIcon} resizeMode='contain' />)}
+          title={t`Load First Addresses Error`}
+          message={t`There was an error while loading wallet's first address. Go back and try again.`}
+          offcard
         />
-        <View style={styles.selectionContainer}>
-          <FieldContainer>
-            <TextLabel pb8 bold>{t`Wallet Address`}</TextLabel>
-            <TextValue>{address}</TextValue>
-          </FieldContainer>
-        </View>
-        <View style={styles.infoContainer}>
-          <View style={styles.infoIcon}>
-            <CircleInfoIcon size={20} color='hsla(203, 100%, 25%, 1)' />
-          </View>
-          <View style={styles.infoContent}>
-            <Text style={styles.text}>
-              {t`If you want to change the wallet address, you will be able to do`}
-              <Text style={styles.bold}>
-                {' '}{t`after the contract is registered.`}
-              </Text>
-            </Text>
-          </View>
-        </View>
-        {isLoading(registerState.registerStatus)
-          && (
-            <View style={styles.loadingContainer}>
-              <Spinner size={24} />
-            </View>
-          )}
-        <View style={styles.buttonContainer}>
-          <NewHathorButton
-            disabled={hasError(invalidModel) || isClean || isLoading(registerState.registerStatus)}
-            onPress={handleSubmit}
-            title={t`Register Nano Contract`}
+        )}
+
+      {isFirstAddressLoading()
+        && (
+        <FeedbackContent
+          title={t`Loading`}
+          message={t`Loading wallet's first address.`}
+          offcard
+        />
+        )}
+
+      {hasFirstAddressLoaded()
+        && (
+        <ContentWrapper>
+          <SimpleInput
+            containerStyle={styles.input}
+            label={t`Nano Contract ID`}
+            autoFocus
+            onChangeText={handleInputChange('ncId')}
+            error={invalidModel.ncId}
+            value={formModel.ncId}
           />
-        </View>
-      </ContentWrapper>
+          <View style={styles.selectionContainer}>
+            <FieldContainer>
+              <TextLabel pb8 bold>{t`Wallet Address`}</TextLabel>
+              <TextValue>{address}</TextValue>
+            </FieldContainer>
+          </View>
+          <View style={styles.infoContainer}>
+            <View style={styles.infoIcon}>
+              <CircleInfoIcon size={20} color='hsla(203, 100%, 25%, 1)' />
+            </View>
+            <View style={styles.infoContent}>
+              <Text style={styles.text}>
+                {t`If you want to change the wallet address, you will be able to do`}
+                <Text style={styles.bold}>
+                  {' '}{t`after the contract is registered.`}
+                </Text>
+              </Text>
+            </View>
+          </View>
+          {isLoading(registerState.registerStatus)
+            && (
+              <View style={styles.loadingContainer}>
+                <Spinner size={24} />
+              </View>
+            )}
+          <View style={styles.buttonContainer}>
+            <NewHathorButton
+              disabled={hasError(invalidModel) || isClean || isLoading(registerState.registerStatus)}
+              onPress={handleSubmit}
+              title={t`Register Nano Contract`}
+            />
+          </View>
+        </ContentWrapper>
+        )}
       <OfflineBar />
     </Wrapper>
   );
@@ -265,6 +295,10 @@ const styles = StyleSheet.create({
   feedbackModalIcon: {
     height: 105,
     width: 105
+  },
+  feedbackContentIcon: {
+    height: 36,
+    width:36 
   },
   text: {
     fontSize: 14,
