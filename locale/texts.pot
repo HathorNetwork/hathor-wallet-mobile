@@ -696,7 +696,7 @@ msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr ""
 
 #: src/components/NanoContract/EditAddressModal.component.js:60
-#: src/components/NanoContract/SelectAddressModal.component.js:122
+#: src/components/NanoContract/SelectAddressModal.component.js:117
 #: src/screens/SendConfirmScreen.js:161
 msgid "Address"
 msgstr ""
@@ -926,6 +926,15 @@ msgstr ""
 
 #: src/screens/NanoContract/NanoContractDetailsScreen.js:39
 msgid "Nano Contract Details"
+msgstr ""
+
+#: src/sagas/mixins.js:30
+msgid "Wallet is not ready to load all addresses."
+msgstr ""
+
+#: src/sagas/mixins.js:46
+#.  This will show the message in the feedback content at SelectAddressModal
+msgid "There was an error while loading all addresses. Try again later."
 msgstr ""
 
 #: src/sagas/nanoContract.js:43
@@ -1242,7 +1251,7 @@ msgid "Go back"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.component.js:158
-#: src/components/NanoContract/SelectAddressModal.component.js:110
+#: src/components/NanoContract/SelectAddressModal.component.js:105
 msgid "Loading"
 msgstr ""
 
@@ -1289,33 +1298,33 @@ msgstr ""
 msgid "Register new"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:95
+#: src/components/NanoContract/SelectAddressModal.component.js:90
 msgid "Choose New Wallet Address"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:102
+#: src/components/NanoContract/SelectAddressModal.component.js:97
 msgid "Load Addresses Error"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:103
+#: src/components/NanoContract/SelectAddressModal.component.js:98
 msgid ""
 "There was an error while loading wallet's addresses. Close the modal and "
 "try again."
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:111
+#: src/components/NanoContract/SelectAddressModal.component.js:106
 msgid "Loading all wallet's addresses."
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:119
+#: src/components/NanoContract/SelectAddressModal.component.js:114
 msgid "Current Information"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:120
+#: src/components/NanoContract/SelectAddressModal.component.js:115
 msgid "To change, select other address on the list below."
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:183
+#: src/components/NanoContract/SelectAddressModal.component.js:178
 msgid "index"
 msgstr ""
 
