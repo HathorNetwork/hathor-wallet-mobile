@@ -449,7 +449,7 @@ export const consumeAsyncIterator = async (asyncIterator) => {
  *
  * @throws {Error} either wallet not ready or other http request error if using wallet service.
  * @async
- * */
+ */
 export const getAllAddresses = async (wallet) => {
   const iterator = await wallet.getAllAddresses();
   return consumeAsyncIterator(iterator);

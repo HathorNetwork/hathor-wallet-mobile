@@ -95,7 +95,7 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
             <FeedbackContent
               icon={(<Image source={errorIcon} style={styles.feedbackContentIcon} resizeMode='contain' />)}
               title={t`Load Addresses Error`}
-              message={t`There was an error while loading wallet's addresses. Close the modal and try again.`}
+              message={error}
               offcard
             />
             )}
@@ -103,7 +103,7 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
             && (
             <FeedbackContent
               title={t`Loading`}
-              message={t`Loading all wallet's addresses.`}
+              message={t`Loading wallet addresses.`}
               offcard
             />
             )}
