@@ -161,6 +161,12 @@ export const types = {
   NANOCONTRACT_UNREGISTER_SUCCESS: 'NANOCONTRACT_UNREGISTER_SUCCESS',
   /* It initiates a process to change the address on registered Nano Contract. */
   NANOCONTRACT_ADDRESS_CHANGE_REQUEST: 'NANOCONTRACT_ADDRESS_CHANGE_REQUEST',
+  /* It triggers a process to fetch all wallet addresses. */
+  SELECTADDRESS_ADDRESSES_REQUEST: 'SELECTADDRESS_ADDRESSES_REQUEST',
+  /* It signals the fetch has loaded all the addresses with success. */
+  SELECTADDRESS_ADDRESSES_SUCCESS: 'SELECTADDRESS_ADDRESSES_SUCCESS',
+  /* It signals a fetch failure due to an error. */
+  SELECTADDRESS_ADDRESSES_FAILURE: 'SELECTADDRESS_ADDRESSES_FAILURE',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1128,4 +1134,31 @@ export const nanoContractUnregisterSuccess = (unregistered) => ({
 export const nanoContractAddressChangeRequest = (changeAddressRequest) => ({
   type: types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST,
   payload: changeAddressRequest,
+});
+
+/**
+ * Request to load all wallet addresses.
+ */
+export const selectAddressAddressesRequest = () => ({
+  type: types.SELECTADDRESS_ADDRESSES_REQUEST,
+});
+
+/**
+ * Signals all wallet addresses were loaded with success.
+ * @param {Object} successPayload
+ * @param {string[]} successPayload.addresses
+ */
+export const selectAddressAddressesSuccess = (successPayload) => ({
+  type: types.SELECTADDRESS_ADDRESSES_SUCCESS,
+  payload: successPayload,
+});
+
+/**
+ * Signals a failure on wallet addresses loading due to an error.
+ * @param {Object} failurePayload
+ * @param {string} failurePayload.error
+ */
+export const selectAddressAddressesFailure = (failurePayload) => ({
+  type: types.SELECTADDRESS_ADDRESSES_FAILURE,
+  payload: failurePayload,
 });

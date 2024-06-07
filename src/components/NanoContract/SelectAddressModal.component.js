@@ -15,15 +15,15 @@ import {
   Image,
 } from 'react-native';
 import { t } from 'ttag';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { COLORS } from '../../styles/themes';
 import { ModalBase } from '../ModalBase';
 import { TextValue } from '../TextValue';
 import { TextLabel } from '../TextLabel';
 import { EditAddressModal } from './EditAddressModal.component';
-import { getAllAddresses } from '../../utils';
 import { FeedbackContent } from '../FeedbackContent';
 import errorIcon from '../../assets/images/icErrorBig.png';
+import { selectAddressAddressesRequest } from '../../actions';
 
 /**
  * Use this modal to select an address from the wallet.
@@ -45,9 +45,9 @@ import errorIcon from '../../assets/images/icErrorBig.png';
  * />
  */
 export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }) => {
-  const wallet = useSelector((state) => state.wallet);
-  const [addresses, setAddresses] = useState([]);
-  const [isAddressesFail, setAddressesFail] = useState(false);
+  const dispatch = useDispatch();
+  const { addresses, error } = useSelector((state) => state.selectAddressModal);
+
   const [selectedItem, setSelectedItem] = useState({ address });
   const [showEditAddressModal, setShowEditAddressModal] = useState(false);
 
@@ -73,17 +73,12 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
   };
 
   useEffect(() => {
-    const fetchAllAddresses = async () => (
-      getAllAddresses(wallet)
-        .then((allAddresses) => setAddresses(allAddresses))
-        .catch(() => setAddressesFail(true))
-    );
-    fetchAllAddresses();
+    dispatch(selectAddressAddressesRequest());
   }, []);
 
-  const hasFailed = () => isAddressesFail;
-  const isLoading = () => !isAddressesFail && addresses.length === 0;
-  const hasLoaded = () => !isAddressesFail && addresses.length > 0;
+  const hasFailed = () => error;
+  const isLoading = () => !error && addresses.length === 0;
+  const hasLoaded = () => !error && addresses.length > 0;
 
   return (
     <ModalBase

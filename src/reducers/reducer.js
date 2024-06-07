@@ -311,7 +311,22 @@ const initialState = {
      *   },
      * }
      */
-    historyMeta: {},
+    historyMeta: {
+      '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a': {
+        isLoading: false,
+        after: '000075e15f015dc768065763acd9b563ec002e37182869965ff2c712bed83e1e',
+      },
+    },
+  },
+  /**
+   * selectAddressModal {{
+   *   addresses: string[];
+   *   error?: string;
+   * }} it holds all wallet addresses or the error status.
+   */
+  selectAddressModal: {
+    addresses: [],
+    error: null,
   },
 };
 
@@ -483,6 +498,12 @@ export const reducer = (state = initialState, action) => {
       return onNanoContractUnregisterSuccess(state, action);
     case types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST:
       return onNanoContractAddressChangeRequest(state, action);
+    case types.SELECTADDRESS_ADDRESSES_REQUEST:
+      return onSelectAddressAddressesRequest(state);
+    case types.SELECTADDRESS_ADDRESSES_FAILURE:
+      return onSelectAddressAddressesFailure(state, action);
+    case types.SELECTADDRESS_ADDRESSES_SUCCESS:
+      return onSelectAddressAddressesSuccess(state, action);
     default:
       return state;
   }
@@ -1500,3 +1521,43 @@ export const onNanoContractAddressChangeRequest = (state, { payload }) => {
     },
   };
 };
+
+/**
+ * @param {Object} state
+ */
+export const onSelectAddressAddressesRequest = (state) => ({
+  ...state,
+  selectAddressModal: initialState.selectAddressModal,
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     error: string;
+ *   }
+ * }} action
+ */
+export const onSelectAddressAddressesFailure = (state, { payload }) => ({
+  ...state,
+  selectAddressModal: {
+    addresses: [],
+    error: payload.error,
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     addresses: string[];
+ *   }
+ * }} action
+ */
+export const onSelectAddressAddressesSuccess = (state, { payload }) => ({
+  ...state,
+  selectAddressModal: {
+    addresses: payload.addresses,
+    error: null,
+  },
+});
