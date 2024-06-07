@@ -935,13 +935,13 @@ msgstr ""
 msgid "Nano Contract Details"
 msgstr ""
 
-#: src/sagas/mixins.js:30
-msgid "Wallet is not ready to load all addresses."
+#: src/sagas/mixins.js:31
+msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/mixins.js:46
-msgid "There was an error while loading all addresses. Try again later."
+#: src/sagas/mixins.js:47
+msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
 #: src/sagas/nanoContract.js:43
@@ -1313,14 +1313,8 @@ msgstr ""
 msgid "Load Addresses Error"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.component.js:98
-msgid ""
-"There was an error while loading wallet's addresses. Close the modal and try "
-"again."
-msgstr ""
-
 #: src/components/NanoContract/SelectAddressModal.component.js:106
-msgid "Loading all wallet's addresses."
+msgid "Loading wallet addresses."
 msgstr ""
 
 #: src/components/NanoContract/SelectAddressModal.component.js:114
