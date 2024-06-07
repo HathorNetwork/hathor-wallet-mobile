@@ -35,7 +35,7 @@ import { COLORS } from '../styles/themes';
  * />
  */
 export const FeedbackContent = ({ title, message, icon, action, offcard }) => (
-  <View style={offcard ? styles.offCard : styles.card}>
+  <View style={[styles.wrapper, !offcard && styles.card] }>
     <View style={styles.content}>
       {icon
         && (<View style={styles.icon}>{icon}</View>)}
@@ -47,7 +47,7 @@ export const FeedbackContent = ({ title, message, icon, action, offcard }) => (
 );
 
 const styles = StyleSheet.create({
-  offCard: {
+  wrapper: {
     flex: 1,
     justifyContent: 'center',
     alignSelf: 'stretch',
@@ -57,13 +57,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   card: {
-    flex: 1,
-    justifyContent: 'center',
-    alignSelf: 'stretch',
-    marginTop: 16,
-    marginBottom: 45,
-    backgroundColor: COLORS.backgroundColor,
-    marginHorizontal: 16,
     borderRadius: 16,
     shadowOffset: { height: 2, width: 0 },
     shadowRadius: 4,
