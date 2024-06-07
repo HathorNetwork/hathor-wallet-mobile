@@ -17,6 +17,7 @@ import {
   types,
   selectAddressAddressesSuccess,
   selectAddressAddressesFailure,
+  onExceptionCaptured,
 } from '../actions';
 import { logger } from '../logger';
 import { getAllAddresses } from '../utils';
@@ -39,7 +40,7 @@ export function* fetchAllWalletAddresses() {
     const addresses = yield call(getAllAddresses, wallet);
     log.log('All wallet addresses loaded with success.');
     yield put(selectAddressAddressesSuccess({ addresses }));
-  } catch(error) {
+  } catch (error) {
     log.error('Error while fetching all wallet addresses.', error);
     // This will show the message in the feedback content at SelectAddressModal
     yield put(selectAddressAddressesFailure({

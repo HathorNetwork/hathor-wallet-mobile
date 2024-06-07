@@ -35,7 +35,7 @@ import { COLORS } from '../styles/themes';
  * />
  */
 export const FeedbackContent = ({ title, message, icon, action, offcard }) => (
-  <View style={[styles.wrapper, !offcard && styles.card] }>
+  <View style={[styles.wrapper, !offcard && styles.card]}>
     <View style={styles.content}>
       {icon
         && (<View style={styles.icon}>{icon}</View>)}
