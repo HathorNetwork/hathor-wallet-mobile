@@ -169,6 +169,12 @@ export const types = {
   SELECTADDRESS_ADDRESSES_SUCCESS: 'SELECTADDRESS_ADDRESSES_SUCCESS',
   /* It signals a fetch failure due to an error. */
   SELECTADDRESS_ADDRESSES_FAILURE: 'SELECTADDRESS_ADDRESSES_FAILURE',
+  /* It triggers a process to fetch the first wallet address. */
+  FIRSTADDRESS_REQUEST: 'FIRSTADDRESS_REQUEST',
+  /* It signals the fetch has loaded the first address with success. */
+  FIRSTADDRESS_SUCCESS: 'FIRSTADDRESS_SUCCESS',
+  /* It signals a fetch failure due to an error. */
+  FIRSTADDRESS_FAILURE: 'FIRSTADDRESS_FAILURE',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1169,5 +1175,32 @@ export const selectAddressAddressesSuccess = (successPayload) => ({
  */
 export const selectAddressAddressesFailure = (failurePayload) => ({
   type: types.SELECTADDRESS_ADDRESSES_FAILURE,
+  payload: failurePayload,
+});
+
+/**
+ * Request to load first wallet address.
+ */
+export const firstAddressRequest = () => ({
+  type: types.FIRSTADDRESS_REQUEST,
+});
+
+/**
+ * Signals first wallet address were loaded with success.
+ * @param {Object} successPayload
+ * @param {string} successPayload.address
+ */
+export const firstAddressSuccess = (successPayload) => ({
+  type: types.FIRSTADDRESS_SUCCESS,
+  payload: successPayload,
+});
+
+/**
+ * Signals a failure on first wallet address loading due to an error.
+ * @param {Object} failurePayload
+ * @param {string} failurePayload.error
+ */
+export const firstAddressFailure = (failurePayload) => ({
+  type: types.FIRSTADDRESS_FAILURE,
   payload: failurePayload,
 });

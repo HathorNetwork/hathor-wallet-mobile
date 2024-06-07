@@ -23,13 +23,12 @@ import SimpleInput from '../../components/SimpleInput';
 import { TextLabel } from '../../components/TextLabel';
 import { TextValue } from '../../components/TextValue';
 import { COLORS } from '../../styles/themes';
-import { nanoContractRegisterReady, nanoContractRegisterRequest } from '../../actions';
+import { firstAddressRequest, nanoContractRegisterReady, nanoContractRegisterRequest } from '../../actions';
 import { feedbackSucceedText, hasFailed, hasSucceeded, isLoading } from './helper';
 import Spinner from '../../components/Spinner';
 import FeedbackModal from '../../components/FeedbackModal';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
-import { getFirstAddress } from '../../utils';
 import { FeedbackContent } from '../../components/FeedbackContent';
 
 /**
@@ -57,16 +56,13 @@ function validate(formModel) {
 
 export function NanoContractRegisterScreen({ navigation }) {
   const dispatch = useDispatch();
-  const wallet = useSelector((state) => state.wallet);
+  const { address, error } = useSelector((state) => state.firstAddress);
   const registerState = useSelector((state) => ({
     registerStatus: state.nanoContract.registerStatus,
     registerFailureMessage: state.nanoContract.registerFailureMessage,
   }));
 
-  const [address, setAddress] = useState(null);
-  const [hasFirstAddressLoadingFailed, setHasFirstAddressLoadingFailed] = useState(false);
   const [isClean, setClean] = useState(true);
-
   const [formModel, setFormModel] = useState({
     ncId: null,
   });
@@ -119,17 +115,12 @@ export function NanoContractRegisterScreen({ navigation }) {
   }
 
   useEffect(() => {
-    const fetchFirstAddress = async () => {
-      getFirstAddress(wallet)
-        .then((firstAddress) => setAddress(firstAddress))
-        .catch(() => setHasFirstAddressLoadingFailed(true));
-    };
-    fetchFirstAddress();
+    dispatch(firstAddressRequest());
   }, []);
 
-  const hasFirstAddressFailed = () => hasFirstAddressLoadingFailed;
-  const isFirstAddressLoading = () => !hasFirstAddressLoadingFailed && !address;
-  const hasFirstAddressLoaded = () => !hasFirstAddressLoadingFailed && address;
+  const hasFirstAddressFailed = () => error;
+  const isFirstAddressLoading = () => !error && !address;
+  const hasFirstAddressLoaded = () => !error && address;
 
   return (
     <Wrapper>
@@ -160,8 +151,7 @@ export function NanoContractRegisterScreen({ navigation }) {
         <FeedbackContent
           icon={(<Image source={errorIcon} style={styles.feedbackContentIcon} resizeMode='contain' />)}
           title={t`Load First Addresses Error`}
-          message={t`There was an error while loading wallet's first address. Go back and try again.`}
-          offcard
+          message={error}
         />
         )}
 
@@ -169,8 +159,7 @@ export function NanoContractRegisterScreen({ navigation }) {
         && (
         <FeedbackContent
           title={t`Loading`}
-          message={t`Loading wallet's first address.`}
-          offcard
+          message={t`Loading first wallet address.`}
         />
         )}
 

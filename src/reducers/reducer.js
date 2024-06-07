@@ -325,6 +325,16 @@ const initialState = {
     addresses: [],
     error: null,
   },
+  /**
+   * firstAddress {{
+   *   address?: string;
+   *   error?: string;
+   * }} it holds the first wallet address or the error status.
+   */
+  firstAddress: {
+    address: null,
+    error: null,
+  },
 };
 
 export const reducer = (state = initialState, action) => {
@@ -507,6 +517,12 @@ export const reducer = (state = initialState, action) => {
       return onSelectAddressAddressesFailure(state, action);
     case types.SELECTADDRESS_ADDRESSES_SUCCESS:
       return onSelectAddressAddressesSuccess(state, action);
+    case types.FIRSTADDRESS_REQUEST:
+      return onFirstAddressRequest(state);
+    case types.FIRSTADDRESS_FAILURE:
+      return onFirstAddressFailure(state, action);
+    case types.FIRSTADDRESS_SUCCESS:
+      return onFirstAddressSuccess(state, action);
     default:
       return state;
   }
@@ -1605,6 +1621,46 @@ export const onSelectAddressAddressesSuccess = (state, { payload }) => ({
   ...state,
   selectAddressModal: {
     addresses: payload.addresses,
+    error: null,
+  },
+});
+
+/**
+ * @param {Object} state
+ */
+export const onFirstAddressRequest = (state) => ({
+  ...state,
+  firstAddress: initialState.firstAddress,
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     error: string;
+ *   }
+ * }} action
+ */
+export const onFirstAddressFailure = (state, { payload }) => ({
+  ...state,
+  firstAddress: {
+    address: null,
+    error: payload.error,
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     address: string;
+ *   }
+ * }} action
+ */
+export const onFirstAddressSuccess = (state, { payload }) => ({
+  ...state,
+  firstAddress: {
+    address: payload.address,
     error: null,
   },
 });
