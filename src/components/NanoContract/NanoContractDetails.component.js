@@ -90,7 +90,6 @@ export const NanoContractDetails = ({ nc }) => {
   }, []);
 
   const handleMoreTransactions = () => {
-    console.log('fetching more. After', after);
     if (after == null) {
       /* This situation is unlikely to happen because on the first transactions history load
        * the `after` is assigned with the hash of the last transaction in the list.
