@@ -434,7 +434,7 @@ msgstr "Indtast dine seed-ord adskilt med mellemrum"
 
 #: src/components/NanoContract/NanoContractDetails.component.js:194
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:154
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:145
 msgid "Try again"
 msgstr ""
 
@@ -949,55 +949,49 @@ msgstr ""
 msgid "Nano Contract ID is required."
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:144
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:135
 msgid "See contract"
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:162
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:153
 msgid "Load First Addresses Error"
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:163
-msgid ""
-"There was an error while loading wallet's first address. Go back and try "
-"again."
-msgstr ""
-
 #: src/components/NanoContract/NanoContractDetails.component.js:158
-#: src/components/NanoContract/SelectAddressModal.component.js:110
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:171
+#: src/components/NanoContract/SelectAddressModal.component.js:105
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:161
 msgid "Loading"
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:172
-msgid "Loading wallet's first address."
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:162
+msgid "Loading first wallet address."
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.component.js:142
 #: src/components/NanoContract/NanoContractTransactionHeader.component.js:90
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/TxDetailsModal.js:106
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:182
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:171
 msgid "Nano Contract ID"
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:190
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:179
 msgid "Wallet Address"
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:200
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:189
 msgid "If you want to change the wallet address, you will be able to do"
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:202
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:191
 msgid "after the contract is registered."
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:221
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:210
 msgid "Register Nano Contract"
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:239
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:228
 msgid "Nano Contract Registration"
 msgstr ""
 
@@ -1007,6 +1001,24 @@ msgstr ""
 
 #: src/screens/NanoContract/helper.js:11
 msgid "Contract successfully registered."
+msgstr ""
+
+#: src/sagas/mixins.js:33
+msgid "Wallet is not ready to load addresses."
+msgstr ""
+
+#.  This will show the message in the feedback content at SelectAddressModal
+#: src/sagas/mixins.js:49
+msgid "There was an error while loading wallet addresses. Try again."
+msgstr ""
+
+#: src/sagas/mixins.js:58
+msgid "Wallet is not ready to load the first address."
+msgstr ""
+
+#.  This will show the message in the feedback content
+#: src/sagas/mixins.js:74
+msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
 #: src/sagas/nanoContract.js:43
@@ -1338,11 +1350,6 @@ msgstr ""
 
 #: src/components/NanoContract/EditAddressModal.component.js:78
 msgid "Go back"
-msgstr ""
-
-#: src/components/NanoContract/NanoContractDetails.component.js:158
-#: src/components/NanoContract/SelectAddressModal.component.js:105
-msgid "Loading"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.component.js:159
