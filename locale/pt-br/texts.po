@@ -964,7 +964,7 @@ msgstr "A wallet não está pronta para carregar endereços."
 #.  This will show the message in the feedback content at SelectAddressModal
 #: src/sagas/mixins.js:47
 msgid "There was an error while loading wallet addresses. Try again."
-msgstr "Error ao carregar endereços da wallet. Tente novamente."
+msgstr "Ocorreu um erro durante download dos endereços da wallet. Tente novamente."
 
 #: src/sagas/nanoContract.js:43
 msgid "Nano Contract already registered."

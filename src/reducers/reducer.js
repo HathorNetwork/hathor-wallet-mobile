@@ -311,12 +311,7 @@ const initialState = {
      *   },
      * }
      */
-    historyMeta: {
-      '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a': {
-        isLoading: false,
-        after: '000075e15f015dc768065763acd9b563ec002e37182869965ff2c712bed83e1e',
-      },
-    },
+    historyMeta: {},
   },
   /**
    * selectAddressModal {{

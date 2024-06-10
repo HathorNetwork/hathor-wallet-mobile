@@ -30,7 +30,7 @@ export function* fetchAllWalletAddresses() {
     log.error('Fail fetching all wallet addresses because wallet is not ready yet.');
     const errorMsg = t`Wallet is not ready to load addresses.`;
     // This will show the message in the feedback content at SelectAddressModal
-    yield put(selectAddressAddressesFailure(errorMsg));
+    yield put(selectAddressAddressesFailure({ error: errorMsg }));
     // This will show user an error modal with the option to send the error to sentry.
     yield put(onExceptionCaptured(new Error(errorMsg), false));
     return;
