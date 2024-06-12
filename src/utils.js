@@ -413,3 +413,44 @@ export const getNanoContractFeatureToggle = (state) => (
  * @returns {string} formatted timestamp
  */
 export const getTimestampFormat = (timestamp) => moment.unix(timestamp).format(t`DD MMM YYYY [•] HH:mm`)
+
+/**
+ * Extract all the items of an async iterator/generator.
+ *
+ * @returns {Promise<unknown[]>} A promise of an array of unkown object.
+ * @async
+ */
+export const consumeAsyncIterator = async (asyncIterator) => {
+  const list = [];
+  for (;;) {
+    /* eslint-disable no-await-in-loop */
+    const objYielded = await asyncIterator.next();
+    const { value, done } = objYielded;
+
+    if (done) {
+      break;
+    }
+
+    list.push(value);
+  }
+  return [...list];
+};
+
+/**
+ * Return all addresses of the wallet with info of each of them.
+ *
+ * @param {Object} wallet
+ *
+ * @returns {Promise<{
+ *   address: string;
+ *   index: number;
+ *   transactions: number;
+ * }[]>} a list of addres info.
+ *
+ * @throws {Error} either wallet not ready or other http request error if using wallet service.
+ * @async
+ */
+export const getAllAddresses = async (wallet) => {
+  const iterator = await wallet.getAllAddresses();
+  return consumeAsyncIterator(iterator);
+}

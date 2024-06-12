@@ -163,6 +163,19 @@ class HybridStore extends MemoryStore {
   }
 
   /**
+   * Iterate on registered nano contract.
+   *
+   * @async
+   * @returns {AsyncGenerator<INcData>}
+   */
+  async* registeredNanoContractsIter() {
+    const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
+    for (const contract of Object.values(contracts)) {
+      yield { ...contract };
+    }
+  }
+
+  /**
    * Clean the storage.
    * @param {boolean} cleanHistory if we should clean the transaction history.
    * @param {boolean} cleanAddresses if we should clean the addresses.
@@ -176,6 +189,22 @@ class HybridStore extends MemoryStore {
       // Remove from the cache
       STORE.removeItem(REGISTERED_TOKENS_KEY);
       STORE.removeItem(REGISTERED_NANO_CONTRACTS_KEY);
+    }
+  }
+
+  /**
+   * Update nano contract registered address.
+   * @param {string} ncId Nano Contract ID.
+   * @param {string} address Nano Contract registered address.
+   * @async
+   * @returns {Promise<void>}
+   */
+  async updateNanoContractRegisteredAddress(ncId, address) {
+    await super.updateNanoContractRegisteredAddress(ncId, address);
+    const contract = await this.getNanoContract(ncId);
+    if (contract) {
+      const newContract = { ...contract, address };
+      await this.registerNanoContract(ncId, newContract);
     }
   }
 }

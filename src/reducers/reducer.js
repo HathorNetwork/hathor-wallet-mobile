@@ -265,7 +265,7 @@ const initialState = {
      *     ncId: string;
      *     ncMethod: string;
      *     blueprintId: string;
-     *     caller: Object; // address object
+     *     caller: string;
      *     isMine: boolean;
      *     balance: {[uid: string]: Object};
      *   }[];
@@ -284,7 +284,7 @@ const initialState = {
      *       ncId: '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a',
      *       ncMethod: 'swap',
      *       blueprintId: '0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4';
-     *       caller: { base58: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V' },
+     *       caller: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
      *       isMine: true,
      *       balance: {
      *         '00': 300,
@@ -312,6 +312,16 @@ const initialState = {
      * }
      */
     historyMeta: {},
+  },
+  /**
+   * selectAddressModal {{
+   *   addresses: string[];
+   *   error?: string;
+   * }} it holds all wallet addresses or the error status.
+   */
+  selectAddressModal: {
+    addresses: [],
+    error: null,
   },
 };
 
@@ -471,16 +481,24 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateInvalid(state, action);
     case types.NANOCONTRACT_REGISTER_SUCCESS:
       return onNanoContractRegisterSuccess(state, action);
-    case types.NANOCONTRACT_HISTORY_REQUEST:
-      return onNanoContractHistoryRequest(state, action);
+    case types.NANOCONTRACT_HISTORY_LOADING:
+      return onNanoContractHistoryLoading(state, action);
     case types.NANOCONTRACT_HISTORY_FAILURE:
       return onNanoContractHistoryFailure(state, action);
     case types.NANOCONTRACT_HISTORY_SUCCESS:
       return onNanoContractHistorySuccess(state, action);
+    case types.NANOCONTRACT_HISTORY_CLEAN:
+      return onNanoContractHistoryClean(state, action);
     case types.NANOCONTRACT_UNREGISTER_SUCCESS:
       return onNanoContractUnregisterSuccess(state, action);
     case types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST:
       return onNanoContractAddressChangeRequest(state, action);
+    case types.SELECTADDRESS_ADDRESSES_REQUEST:
+      return onSelectAddressAddressesRequest(state);
+    case types.SELECTADDRESS_ADDRESSES_FAILURE:
+      return onSelectAddressAddressesFailure(state, action);
+    case types.SELECTADDRESS_ADDRESSES_SUCCESS:
+      return onSelectAddressAddressesSuccess(state, action);
     default:
       return state;
   }
@@ -1369,19 +1387,19 @@ export const onNanoContractUnregisterSuccess = (state, { payload }) => {
  * @param {{
  *   payload: {
  *     ncId: string;
- *     after: string;
  *   }
  * }} action
  */
-export const onNanoContractHistoryRequest = (state, { payload }) => ({
+export const onNanoContractHistoryLoading = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
     historyMeta: {
       ...state.nanoContract.historyMeta,
       [payload.ncId]: {
+        ...(state.nanoContract.historyMeta[payload.ncId]),
         isLoading: true,
-        after: payload.after,
+        error: null,
       },
     },
   },
@@ -1416,6 +1434,34 @@ export const onNanoContractHistoryFailure = (state, { payload }) => ({
  * @param {{
  *   payload: {
  *     ncId: string;
+ *   }
+ * }} action
+ */
+export const onNanoContractHistoryClean = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    history: {
+      ...state.nanoContract.history,
+      [payload.ncId]: [],
+    },
+    historyMeta: {
+      ...state.nanoContract.historyMeta,
+      [payload.ncId]: {
+        ...(state.nanoContract.historyMeta[payload.ncId]),
+        isLoading: false,
+        after: null,
+        error: null,
+      },
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     ncId: string;
  *     history: Object[];
  *     after: string;
  *   }
@@ -1436,8 +1482,10 @@ export const onNanoContractHistorySuccess = (state, { payload }) => ({
     historyMeta: {
       ...state.nanoContract.historyMeta,
       [payload.ncId]: {
+        ...(state.nanoContract.historyMeta[payload.ncId]),
         isLoading: false,
         after: payload.after,
+        error: null,
       },
     },
   },
@@ -1468,3 +1516,43 @@ export const onNanoContractAddressChangeRequest = (state, { payload }) => {
     },
   };
 };
+
+/**
+ * @param {Object} state
+ */
+export const onSelectAddressAddressesRequest = (state) => ({
+  ...state,
+  selectAddressModal: initialState.selectAddressModal,
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     error: string;
+ *   }
+ * }} action
+ */
+export const onSelectAddressAddressesFailure = (state, { payload }) => ({
+  ...state,
+  selectAddressModal: {
+    addresses: [],
+    error: payload.error,
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     addresses: string[];
+ *   }
+ * }} action
+ */
+export const onSelectAddressAddressesSuccess = (state, { payload }) => ({
+  ...state,
+  selectAddressModal: {
+    addresses: payload.addresses,
+    error: null,
+  },
+});

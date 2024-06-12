@@ -16,11 +16,15 @@ import {
   all,
   put,
   call,
+  delay,
+  debounce,
 } from 'redux-saga/effects';
 import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
 import {
+  nanoContractHistoryClean,
   nanoContractHistoryFailure,
+  nanoContractHistoryLoading,
   nanoContractHistorySuccess,
   nanoContractRegisterFailure,
   nanoContractRegisterSuccess,
@@ -30,6 +34,8 @@ import {
 } from '../actions';
 import { logger } from '../logger';
 import { NANO_CONTRACT_TX_HISTORY_SIZE } from '../constants';
+import { getNanoContractFeatureToggle } from '../utils';
+import { getRegisteredNanoContracts } from './helpers';
 
 const log = logger('nano-contract-saga');
 
@@ -40,8 +46,23 @@ export const failureMessage = {
   nanoContractStateNotFound: t`Nano Contract not found.`,
   nanoContractStateFailure: t`Error while trying to get Nano Contract state.`,
   notRegistered: t`Nano Contract not registered.`,
-  nanoContractHistoryFailure: t`Error while trying to fetch Nano Contract history.`,
+  nanoContractHistoryFailure: t`Error while trying to download Nano Contract transactions history.`,
 };
+
+export function* init() {
+  const isEnabled = yield select(getNanoContractFeatureToggle);
+  if (!isEnabled) {
+    log.debug('Halting nano contract initialization because the feature flag is disabled.');
+    return;
+  }
+
+  const wallet = yield select((state) => state.wallet);
+  const contracts = yield call(getRegisteredNanoContracts, wallet);
+  for (const contract of contracts) {
+    yield put(nanoContractRegisterSuccess({ entryKey: contract.ncId, entryValue: contract }));
+  }
+  log.debug('Registered Nano Contracts loaded.');
+}
 
 /**
  * Process Nano Contract registration request.
@@ -195,8 +216,8 @@ export async function fetchHistory(ncId, count, after, wallet) {
     history.push(tx);
   }
 
-  let next = null;
-  if (history && history.length === count) {
+  let next = after;
+  if (history && history.length > 0) {
     next = history[history.length - 1].txId;
   }
 
@@ -215,12 +236,15 @@ export async function fetchHistory(ncId, count, after, wallet) {
 export function* requestHistoryNanoContract({ payload }) {
   const { ncId, after } = payload;
   const count = NANO_CONTRACT_TX_HISTORY_SIZE;
+  log.debug('Start processing request for nano contract transaction history...');
 
   const historyMeta = yield select((state) => state.nanoContract.historyMeta);
   if (historyMeta[ncId] && historyMeta[ncId].isLoading) {
     // Do nothing if nano contract already loading...
+    log.debug('Halting processing for nano contract transaction history request while it is loading...');
     return;
   }
+  yield put(nanoContractHistoryLoading({ ncId }));
 
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
@@ -239,9 +263,21 @@ export function* requestHistoryNanoContract({ payload }) {
     return;
   }
 
+  if (after == null) {
+    // it clean the history when starting load from the beginning
+    yield put(nanoContractHistoryClean({ ncId }));
+  }
+
   try {
     // fetch from fullnode
     const { history, next } = yield call(fetchHistory, ncId, count, after, wallet);
+
+    if (after != null) {
+      // The first load has always `after` equals null. The first load means to be fast,
+      // but the subsequent ones are all request by user and we want slow down multiple
+      // calls to this effect.
+      yield delay(1000)
+    }
 
     log.debug('Success fetching Nano Contract history.');
     yield put(nanoContractHistorySuccess({ ncId, history, after: next }));
@@ -281,10 +317,43 @@ export function* unregisterNanoContract({ payload }) {
   yield put(nanoContractUnregisterSuccess({ ncId }));
 }
 
+/**
+ * Process update on registered Nano Contract address to persist on store.
+ * @param {{
+ *   payload: {
+ *     ncId: string;
+ *     address: string;
+ *   }
+ * }}
+ */
+export function* requestNanoContractAddressChange({ payload }) {
+  const { ncId, address } = payload;
+
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet.isReady()) {
+    log.error('Fail updating Nano Contract address because wallet is not ready yet.');
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), true));
+    return;
+  }
+
+  yield call(
+    [
+      wallet.storage,
+      wallet.storage.updateNanoContractRegisteredAddress
+    ],
+    ncId,
+    address,
+  );
+  log.debug(`Success persisting Nano Contract address update. ncId = ${ncId}`);
+}
+
 export function* saga() {
   yield all([
+    debounce(500, [[types.START_WALLET_SUCCESS, types.NANOCONTRACT_INIT]], init),
     takeEvery(types.NANOCONTRACT_REGISTER_REQUEST, registerNanoContract),
     takeEvery(types.NANOCONTRACT_HISTORY_REQUEST, requestHistoryNanoContract),
     takeEvery(types.NANOCONTRACT_UNREGISTER_REQUEST, unregisterNanoContract),
+    takeEvery(types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST, requestNanoContractAddressChange),
   ]);
 }

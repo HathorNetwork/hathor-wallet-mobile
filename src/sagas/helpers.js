@@ -35,6 +35,7 @@ import {
 } from '../constants';
 import { STORE } from '../store';
 import { logger } from '../logger';
+import { consumeAsyncIterator } from '../utils';
 
 const log = logger('helper');
 
@@ -192,6 +193,16 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
   }
 
   return tokens;
+}
+
+/**
+ * Retrieve registered Nano Contracts persisted on App's storage.
+ * @param {Object} wallet Wallet instance
+ * @return {Promise<Object[]>}
+ * @async
+ */
+export async function getRegisteredNanoContracts(wallet) {
+  return consumeAsyncIterator(wallet.storage.getRegisteredNanoContracts());
 }
 
 /**
