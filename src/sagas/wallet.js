@@ -32,6 +32,7 @@ import {
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
 import { get } from 'lodash';
+import { t } from 'ttag';
 import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
@@ -63,6 +64,8 @@ import {
   resetWalletSuccess,
   setTokens,
   onExceptionCaptured,
+  selectAddressAddressesSuccess,
+  selectAddressAddressesFailure,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -75,7 +78,10 @@ import {
   getRegisteredTokenUids,
   progressiveRetryRequest,
 } from './helpers';
-import { setKeychainPin } from '../utils';
+import { getAllAddresses, setKeychainPin } from '../utils';
+import { logger } from '../logger';
+
+const log = logger('wallet');
 
 export const WALLET_STATUS = {
   NOT_STARTED: 'not_started',
@@ -724,6 +730,31 @@ export function* refreshSharedAddress() {
   yield put(sharedAddressUpdate(address, index));
 }
 
+export function* fetchAllWalletAddresses() {
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet.isReady()) {
+    log.error('Fail fetching all wallet addresses because wallet is not ready yet.');
+    const errorMsg = t`Wallet is not ready to load addresses.`;
+    // This will show the message in the feedback content at SelectAddressModal
+    yield put(selectAddressAddressesFailure({ error: errorMsg }));
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(errorMsg), false));
+    return;
+  }
+
+  try {
+    const addresses = yield call(getAllAddresses, wallet);
+    log.log('All wallet addresses loaded with success.');
+    yield put(selectAddressAddressesSuccess({ addresses }));
+  } catch (error) {
+    log.error('Error while fetching all wallet addresses.', error);
+    // This will show the message in the feedback content at SelectAddressModal
+    yield put(selectAddressAddressesFailure({
+      error: t`There was an error while loading wallet addresses. Try again.`
+    }));
+  }
+}
+
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
@@ -735,6 +766,7 @@ export function* saga() {
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
+    takeEvery(types.SELECTADDRESS_ADDRESSES_REQUEST, fetchAllWalletAddresses),
     takeEvery(types.WALLET_REFRESH_SHARED_ADDRESS, refreshSharedAddress),
   ]);
 }
