@@ -66,6 +66,8 @@ import {
   onExceptionCaptured,
   selectAddressAddressesSuccess,
   selectAddressAddressesFailure,
+  firstAddressFailure,
+  firstAddressSuccess,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -78,7 +80,7 @@ import {
   getRegisteredTokenUids,
   progressiveRetryRequest,
 } from './helpers';
-import { getAllAddresses, setKeychainPin } from '../utils';
+import { getAllAddresses, getFirstAddress, setKeychainPin } from '../utils';
 import { logger } from '../logger';
 
 const log = logger('wallet');
@@ -755,6 +757,31 @@ export function* fetchAllWalletAddresses() {
   }
 }
 
+export function* fetchFirstWalletAddress() {
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet.isReady()) {
+    log.error('Fail fetching first wallet address because wallet is not ready yet.');
+    const errorMsg = t`Wallet is not ready to load the first address.`;
+    // This will show the message in the feedback content
+    yield put(firstAddressFailure({ error: errorMsg }));
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(errorMsg), false));
+    return;
+  }
+
+  try {
+    const address = yield call(getFirstAddress, wallet);
+    log.log('First wallet address loaded with success.');
+    yield put(firstAddressSuccess({ address }));
+  } catch (error) {
+    log.error('Error while fetching first wallet address.', error);
+    // This will show the message in the feedback content
+    yield put(firstAddressFailure({
+      error: t`There was an error while loading first wallet address. Try again.`
+    }));
+  }
+}
+
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
@@ -766,7 +793,8 @@ export function* saga() {
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
-    takeEvery(types.SELECTADDRESS_ADDRESSES_REQUEST, fetchAllWalletAddresses),
     takeEvery(types.WALLET_REFRESH_SHARED_ADDRESS, refreshSharedAddress),
+    takeEvery(types.SELECTADDRESS_ADDRESSES_REQUEST, fetchAllWalletAddresses),
+    takeEvery(types.FIRSTADDRESS_REQUEST, fetchFirstWalletAddress),
   ]);
 }
