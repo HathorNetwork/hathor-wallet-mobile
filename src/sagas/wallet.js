@@ -80,7 +80,11 @@ import {
   getRegisteredTokenUids,
   progressiveRetryRequest,
 } from './helpers';
-import { getAllAddresses, getFirstAddress, setKeychainPin } from '../utils';
+import {
+  getAllAddresses,
+  getFirstAddress,
+  setKeychainPin
+} from '../utils';
 import { logger } from '../logger';
 
 const log = logger('wallet');
@@ -735,10 +739,11 @@ export function* refreshSharedAddress() {
 export function* fetchAllWalletAddresses() {
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
-    log.error('Fail fetching all wallet addresses because wallet is not ready yet.');
-    const errorMsg = t`Wallet is not ready to load addresses.`;
+    const errorMsg = 'Fail fetching all wallet addresses because wallet is not ready yet.';
+    log.error(errorMsg);
+    const feedbackErrorMsg = t`Wallet is not ready to load addresses.`;
     // This will show the message in the feedback content at SelectAddressModal
-    yield put(selectAddressAddressesFailure({ error: errorMsg }));
+    yield put(selectAddressAddressesFailure({ error: feedbackErrorMsg }));
     // This will show user an error modal with the option to send the error to sentry.
     yield put(onExceptionCaptured(new Error(errorMsg), false));
     return;
@@ -760,10 +765,11 @@ export function* fetchAllWalletAddresses() {
 export function* fetchFirstWalletAddress() {
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
-    log.error('Fail fetching first wallet address because wallet is not ready yet.');
-    const errorMsg = t`Wallet is not ready to load the first address.`;
+    const errorMsg = 'Fail fetching first wallet address because wallet is not ready yet.';
+    log.error(errorMsg);
+    const feedbackErrorMsg = t`Wallet is not ready to load the first address.`;
     // This will show the message in the feedback content
-    yield put(firstAddressFailure({ error: errorMsg }));
+    yield put(firstAddressFailure({ error: feedbackErrorMsg }));
     // This will show user an error modal with the option to send the error to sentry.
     yield put(onExceptionCaptured(new Error(errorMsg), false));
     return;

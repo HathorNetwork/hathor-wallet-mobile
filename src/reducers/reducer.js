@@ -7,7 +7,15 @@
 
 import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
-import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS, PRE_SETTINGS_MAINNET, NETWORKSETTINGS_STATUS, NANOCONTRACT_REGISTER_STATUS } from '../constants';
+import {
+  INITIAL_TOKENS,
+  DEFAULT_TOKEN,
+  PUSH_API_STATUS,
+  FEATURE_TOGGLE_DEFAULTS,
+  PRE_SETTINGS_MAINNET,
+  NETWORKSETTINGS_STATUS,
+  NANOCONTRACT_REGISTER_STATUS
+} from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
@@ -584,9 +592,9 @@ const onNewTx = (state, action) => {
       }
 
       if (txout.decoded && txout.decoded.address
-          && txout.decoded.address === state.latestInvoice.address
-          && txout.value === state.latestInvoice.amount
-          && txout.token === state.latestInvoice.token.uid) {
+        && txout.decoded.address === state.latestInvoice.address
+        && txout.value === state.latestInvoice.amount
+        && txout.token === state.latestInvoice.token.uid) {
         invoicePayment = tx;
         break;
       }
@@ -1416,6 +1424,7 @@ export const onNanoContractRegisterReady = (state) => ({
   nanoContract: {
     ...state.nanoContract,
     registerStatus: NANOCONTRACT_REGISTER_STATUS.READY,
+    registerFailureMessage: null,
   },
 });
 

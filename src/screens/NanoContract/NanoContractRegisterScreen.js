@@ -5,14 +5,21 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useCallback
+} from 'react';
 import {
   StyleSheet,
   View,
   Text,
   Image,
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import {
+  useDispatch,
+  useSelector
+} from 'react-redux';
 import { t } from 'ttag';
 import { isEmpty } from 'lodash';
 import HathorHeader from '../../components/HathorHeader';
@@ -23,8 +30,17 @@ import SimpleInput from '../../components/SimpleInput';
 import { TextLabel } from '../../components/TextLabel';
 import { TextValue } from '../../components/TextValue';
 import { COLORS } from '../../styles/themes';
-import { firstAddressRequest, nanoContractRegisterReady, nanoContractRegisterRequest } from '../../actions';
-import { feedbackSucceedText, hasFailed, hasSucceeded, isLoading } from './helper';
+import {
+  firstAddressRequest,
+  nanoContractRegisterReady,
+  nanoContractRegisterRequest
+} from '../../actions';
+import {
+  feedbackSucceedText,
+  hasFailed,
+  hasSucceeded,
+  isLoading
+} from './helper';
 import Spinner from '../../components/Spinner';
 import FeedbackModal from '../../components/FeedbackModal';
 import errorIcon from '../../assets/images/icErrorBig.png';
@@ -73,37 +89,43 @@ export function NanoContractRegisterScreen({ navigation }) {
   /* @param {
    *   'nodeUrl'|'explorerUrl'|'explorerServiceUrl'|'walletServiceUrl'|'walletServiceWsUrl'
    * } name */
-  const handleInputChange = (name) => (value) => {
-    if (isClean) {
-      setClean(false);
-    }
+  const handleInputChange = useCallback(
+    (name) => (value) => {
+      if (isClean) {
+        setClean(false);
+      }
 
-    // update invalid model
-    const invalidModelCopy = { ...invalidModel };
-    delete invalidModelCopy[name];
-    setInvalidModel(invalidModelCopy);
+      // update invalid model
+      const invalidModelCopy = { ...invalidModel };
+      delete invalidModelCopy[name];
+      setInvalidModel(invalidModelCopy);
 
-    // update form model
-    const form = {
-      ...formModel,
-      [name]: value,
-    };
-    setFormModel(form);
+      // update form model
+      const form = {
+        ...formModel,
+        [name]: value,
+      };
+      setFormModel(form);
 
-    // validate form model and update invalid model
-    setInvalidModel(validate(form));
-  };
+      // validate form model and update invalid model
+      setInvalidModel(validate(form));
+    },
+    [isClean, invalidModel, formModel]
+  );
 
-  const handleSubmit = () => {
-    const newInvalidModel = validate(formModel);
-    if (hasError(newInvalidModel)) {
-      setInvalidModel(newInvalidModel);
-      return;
-    }
+  const handleSubmit = useCallback(
+    () => {
+      const newInvalidModel = validate(formModel);
+      if (hasError(newInvalidModel)) {
+        setInvalidModel(newInvalidModel);
+        return;
+      }
 
-    const { ncId } = formModel;
-    dispatch(nanoContractRegisterRequest({ address, ncId }));
-  };
+      const { ncId } = formModel;
+      dispatch(nanoContractRegisterRequest({ address, ncId }));
+    },
+    [formModel]
+  );
 
   const handleFeedbackModalDismiss = () => {
     dispatch(nanoContractRegisterReady());
@@ -112,7 +134,7 @@ export function NanoContractRegisterScreen({ navigation }) {
   const navigatesToNanoContractTransactions = () => {
     dispatch(nanoContractRegisterReady());
     navigation.replace('NanoContractDetailsScreen', { ncId: formModel.ncId });
-  }
+  };
 
   useEffect(() => {
     dispatch(firstAddressRequest());
