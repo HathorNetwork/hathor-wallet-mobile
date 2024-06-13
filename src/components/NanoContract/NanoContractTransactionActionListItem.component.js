@@ -22,12 +22,12 @@ import { SentIcon } from '../Icons/Sent.icon';
 /**
  * It returns either 'sent' or 'received' depending on value.
  *
- * @param {number} value
+ * @param {number} amount
  *
  * @returns {'sent'|'received'}
  */
-function getBalanceType(value) {
-  if (value < 0) {
+function getAmountType(amount) {
+  if (amount < 0) {
     return 'sent';
   }
   return 'received';
@@ -48,25 +48,24 @@ function getTokenSymbol(tokenUid, tokens) {
 }
 
 /**
- * It renders the item of Nano Contract Transactions List.
+ * It renders the item of actions list of a Nano Contract transaction.
  *
  * @param {Object} props
- * @param {Object} props.item registered Nano Contract data
+ * @param {Object} props.item An action item
  * @param {number} props.index position in the list
  */
 export const NanoContractTransactionActionListItem = ({ item, index }) => {
-  const balance = item.available + item.locked;
   const tokens = useSelector((state) => state.tokens) || {};
-  const tokenValue = getTokenSymbol(item.tokenUid, tokens);
-  const type = getBalanceType(balance);
+  const tokenSymbol = getTokenSymbol(item.token, tokens);
+  const amountType = getAmountType(item.amount);
   const tokensMetadata = useSelector((state) => state.tokenMetadata);
-  const isNft = isTokenNFT(item.tokenUid, tokensMetadata);
+  const isNft = isTokenNFT(item.token, tokensMetadata);
 
   return (
     <Wrapper index={index}>
-      <Icon type={type} />
-      <ContentWrapper tokenValue={tokenValue} type={type} />
-      <BalanceValue balance={balance} isNft={isNft} />
+      <Icon type={amountType} />
+      <ContentWrapper tokenSymbol={tokenSymbol} amountType={amountType} />
+      <TokenAmount amount={item.amount} isNft={isNft} />
     </Wrapper>
   );
 };
@@ -101,41 +100,42 @@ const Icon = ({ type }) => {
 /**
  * Renders item core content.
  *
- * @param {Object} ncItem
- * @property {Obeject} ncItem.nc registered Nano Contract data
+ * @param {Object} props
+ * @property {string} props.tokenSymbol The symbol that represents a token
+ * @property {'sent'|'received'} props.amountType The type of amount, either 'sent' or 'received'
  */
-const ContentWrapper = ({ tokenValue, type }) => {
+const ContentWrapper = ({ tokenSymbol, amountType }) => {
   const contentMap = {
-    sent: t`Sent ${tokenValue}`,
-    received: t`Received ${tokenValue}`,
+    sent: t`Sent ${tokenSymbol}`,
+    received: t`Received ${tokenSymbol}`,
   };
 
   return (
     <View style={styles.contentWrapper}>
-      <Text style={[styles.text, styles.property]}>{contentMap[type]}</Text>
+      <Text style={[styles.text, styles.property]}>{contentMap[amountType]}</Text>
     </View>
   );
 };
 
 /**
- * It presents the balance value using the right style.
+ * It presents the token's amount using the right style.
  *
  * @param {Object} props
- * @param {number} props.balance
+ * @param {number} props.amount
  * @param {boolean} props.isNft
  */
-const BalanceValue = ({ balance, isNft }) => {
-  const isReceivedType = getBalanceType(balance) === 'received';
-  const balanceValue = renderValue(balance, isNft);
+const TokenAmount = ({ amount, isNft }) => {
+  const isReceivedType = getAmountType(amount) === 'received';
+  const amountToRender = renderValue(amount, isNft);
 
   return (
-    <View style={styles.balanceWrapper}>
+    <View style={styles.amountWrapper}>
       <Text style={[
-        styles.balance,
-        isReceivedType && styles.balanceReceived,
+        styles.amount,
+        isReceivedType && styles.amountReceived,
       ]}
       >
-        {balanceValue}
+        {amountToRender}
       </Text>
     </View>
   )
@@ -180,14 +180,14 @@ const styles = StyleSheet.create({
   padding0: {
     paddingBottom: 0,
   },
-  balanceWrapper: {
+  amountWrapper: {
     marginLeft: 'auto',
   },
-  balance: {
+  amount: {
     fontSize: 16,
     lineHeight: 20,
   },
-  balanceReceived: {
+  amountReceived: {
     color: 'hsla(180, 85%, 34%, 1)',
     fontWeight: 'bold',
   },

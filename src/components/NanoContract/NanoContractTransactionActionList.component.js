@@ -55,7 +55,6 @@ export const NanoContractTransactionActionList = ({ tx }) => {
                 index={index}
               />
             )}
-            keyExtractor={(item) => item.tokenUid}
           />
         )}
     </Wrapper>

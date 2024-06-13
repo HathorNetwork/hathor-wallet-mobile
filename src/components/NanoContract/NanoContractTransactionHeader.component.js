@@ -34,8 +34,6 @@ export const NanoContractTransactionHeader = ({ tx }) => {
   // TODO: use `toggleShrank` on 'onPress` of TouchableWithoutFeedback
   const [isShrank, toggleShrank] = useState(false);
 
-  const isExpanded = () => !isShrank;
-
   return (
     <HathorHeader>
       <HathorHeader.Central style={styles.headerCentral}>
@@ -45,10 +43,7 @@ export const NanoContractTransactionHeader = ({ tx }) => {
               <TextValue title pb4>{getShortHash(tx.txId, 7)}</TextValue>
               <TextLabel>{t`Transaction ID`}</TextLabel>
             </InfoContainer>
-            {isShrank
-              && <HeaderShrank />}
-            {isExpanded()
-              && <HeaderExpanded tx={tx} />}
+            {isShrank ? <HeaderShrank /> : <HeaderExpanded tx={tx} />}
           </View>
         </TouchableWithoutFeedback>
       </HathorHeader.Central>
@@ -107,9 +102,9 @@ const HeaderExpanded = ({ tx }) => {
             )}
           <TextLabel>{t`Caller`}</TextLabel>
         </InfoContainer>
-        <TwoActionsWrapper>
+        <ActionsWrapper>
           <PrimaryTextButton title={t`See transaction details`} onPress={navigatesToExplorer} />
-        </TwoActionsWrapper>
+        </ActionsWrapper>
       </View>
       {/* TODO: add <ArrowUpIcon /> when action list is ready to be showed */}
     </>
@@ -129,13 +124,13 @@ const InfoContainer = ({ lastElement, children }) => (
 );
 
 /**
- * It presents two button options inline.
+ * It presents the action button as inline text. It can contain at maximum two actions.
  *
  * @param {Object} props
  * @param {Object} props.children
  */
-const TwoActionsWrapper = ({ children }) => (
-  <View style={[styles.TwoActionsWrapper]}>
+const ActionsWrapper = ({ children }) => (
+  <View style={[styles.actionsWrapper]}>
     {children}
   </View>
 );
@@ -182,7 +177,7 @@ const styles = StyleSheet.create({
   lastElement: {
     paddingBottom: 0,
   },
-  TwoActionsWrapper: {
+  actionsWrapper: {
     flexDirection: 'row',
     justifyContent: 'center',
     flexWrap: 'nowrap',
