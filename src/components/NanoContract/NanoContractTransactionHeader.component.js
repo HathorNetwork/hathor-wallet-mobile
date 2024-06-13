@@ -31,8 +31,11 @@ import { TransactionStatusLabel } from '../TransactionStatusLabel';
  * @param {Obejct} props.tx Transaction data
  */
 export const NanoContractTransactionHeader = ({ tx }) => {
-  // TODO: use `toggleShrank` on 'onPress` of TouchableWithoutFeedback
-  const [isShrank, toggleShrank] = useState(false);
+  // XXX: the set function for the state is beeing ignored because we can't
+  // use the shrank format just yet. We need the actions component first.
+  // For his, we also need hathor-core support for actions in each nano contract
+  // transaction.
+  const [isShrank, _] = useState(false);
 
   return (
     <HathorHeader>
@@ -74,40 +77,38 @@ const HeaderExpanded = ({ tx }) => {
     Linking.openURL(explorerLink);
   };
 
+  /* XXX: add <ArrowUpIcon /> when shrank component can be used. */
   return (
-    <>
-      <View style={styles.wrapper}>
-        <InfoContainer>
-          <TransactionStatusLabel hasFirstBlock={hasFirstBlock} isVoided={tx.isVoided} />
-        </InfoContainer>
-        <InfoContainer>
-          <TextValue bold pb4>{ncId}</TextValue>
-          <TextLabel>{t`Nano Contract ID`}</TextLabel>
-        </InfoContainer>
-        <InfoContainer>
-          <TextValue bold pb4>{tx.ncMethod}</TextValue>
-          <TextLabel>{t`Blueprint Method`}</TextLabel>
-        </InfoContainer>
-        <InfoContainer>
-          <TextValue bold pb4>{getTimestampFormat(tx.timestamp)}</TextValue>
-          <TextLabel>{t`Date and Time`}</TextLabel>
-        </InfoContainer>
-        <InfoContainer lastElement>
-          <TextValue bold>{callerAddr}</TextValue>
-          {tx.isMine
-            && (
-            <View style={styles.headlineLabel}>
-              <Text style={styles.isMineLabel}>{t`From this wallet`}</Text>
-            </View>
-            )}
-          <TextLabel>{t`Caller`}</TextLabel>
-        </InfoContainer>
-        <ActionsWrapper>
-          <PrimaryTextButton title={t`See transaction details`} onPress={navigatesToExplorer} />
-        </ActionsWrapper>
-      </View>
-      {/* TODO: add <ArrowUpIcon /> when action list is ready to be showed */}
-    </>
+    <View style={styles.wrapper}>
+      <InfoContainer>
+        <TransactionStatusLabel hasFirstBlock={hasFirstBlock} isVoided={tx.isVoided} />
+      </InfoContainer>
+      <InfoContainer>
+        <TextValue bold pb4>{ncId}</TextValue>
+        <TextLabel>{t`Nano Contract ID`}</TextLabel>
+      </InfoContainer>
+      <InfoContainer>
+        <TextValue bold pb4>{tx.ncMethod}</TextValue>
+        <TextLabel>{t`Blueprint Method`}</TextLabel>
+      </InfoContainer>
+      <InfoContainer>
+        <TextValue bold pb4>{getTimestampFormat(tx.timestamp)}</TextValue>
+        <TextLabel>{t`Date and Time`}</TextLabel>
+      </InfoContainer>
+      <InfoContainer lastElement>
+        <TextValue bold>{callerAddr}</TextValue>
+        {tx.isMine
+          && (
+          <View style={styles.headlineLabel}>
+            <Text style={styles.isMineLabel}>{t`From this wallet`}</Text>
+          </View>
+          )}
+        <TextLabel>{t`Caller`}</TextLabel>
+      </InfoContainer>
+      <ActionsWrapper>
+        <PrimaryTextButton title={t`See transaction details`} onPress={navigatesToExplorer} />
+      </ActionsWrapper>
+    </View>
   )
 };
 
