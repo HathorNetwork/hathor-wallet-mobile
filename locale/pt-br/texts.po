@@ -1343,23 +1343,6 @@ msgstr "Ver detalhes"
 msgid "Unregister contract"
 msgstr "Desregistrar contract"
 
-#: src/components/NanoContract/NanoContractTransactionActionList.component.js:66
-msgid "No Actions"
-msgstr "Nenhuma Action"
-
-#: src/components/NanoContract/NanoContractTransactionActionList.component.js:67
-msgid "See full transaction details on Public Explorer."
-msgstr "Ver detalhes da transação no Explorer Público"
-
-#: src/components/NanoContract/NanoContractTransactionActionListItem.component.js:109
-#, javascript-format
-msgid "Sent ${ tokenSymbol }"
-msgstr "Enviado ${ tokenSymbol }"
-
-#: src/components/NanoContract/NanoContractTransactionActionListItem.component.js:110
-msgid "Received ${ tokenSymbol }"
-msgstr "Recebido ${ tokenSymbol }"
-
 #: src/components/NanoContract/NanoContractTransactionHeader.component.js:93
 msgid "Date and Time"
 msgstr "Data & Hora"
