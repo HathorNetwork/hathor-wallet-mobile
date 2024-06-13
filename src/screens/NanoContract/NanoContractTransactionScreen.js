@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
-import { NanoContractTransactionHeader } from '../../components/NanoContract/NanoContractTransactionHeader.component';
+import { NanoContractTransactionHeader } from '../../components/NanoContract/NanoContractTransactionHeader';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 

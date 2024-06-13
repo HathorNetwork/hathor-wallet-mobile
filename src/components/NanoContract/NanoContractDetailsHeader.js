@@ -25,8 +25,8 @@ import { ArrowUpIcon } from '../Icons/ArrowUp.icon';
 import { TextValue } from '../TextValue';
 import { TextLabel } from '../TextLabel';
 import { EditInfoContainer } from '../EditInfoContainer';
-import { SelectAddressModal } from './SelectAddressModal.component';
-import { UnregisterNanoContractModal } from './UnregisterNanoContractModal.component';
+import { SelectAddressModal } from './SelectAddressModal';
+import { UnregisterNanoContractModal } from './UnregisterNanoContractModal';
 
 /**
  * It presents the header for Nano Contract Details screen and provides the following
