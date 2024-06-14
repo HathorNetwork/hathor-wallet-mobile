@@ -1400,7 +1400,9 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
-    registerStatus: payload.hasFeedback ? NANOCONTRACT_REGISTER_STATUS.SUCCESSFUL : NANOCONTRACT_REGISTER_STATUS.READY,
+    registerStatus: payload.hasFeedback
+      ? NANOCONTRACT_REGISTER_STATUS.SUCCESSFUL
+      : NANOCONTRACT_REGISTER_STATUS.READY,
     registered: {
       ...state.nanoContract.registered,
       [payload.entryKey]: payload.entryValue,
