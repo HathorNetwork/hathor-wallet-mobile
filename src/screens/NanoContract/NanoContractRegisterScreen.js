@@ -21,7 +21,6 @@ import {
   useSelector
 } from 'react-redux';
 import { t } from 'ttag';
-import { isEmpty } from 'lodash';
 import HathorHeader from '../../components/HathorHeader';
 import { CircleInfoIcon } from '../../components/Icons/CircleInfo.icon';
 import NewHathorButton from '../../components/NewHathorButton';
@@ -46,15 +45,7 @@ import FeedbackModal from '../../components/FeedbackModal';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import { FeedbackContent } from '../../components/FeedbackContent';
-
-/**
- * Verifies if the invalidModel of the form has an error message.
- */
-function hasError(invalidModel) {
-  return Object
-    .values({ ...invalidModel })
-    .reduce((_hasError, currValue) => _hasError || !isEmpty(currValue), false);
-}
+import { hasError } from '../../utils';
 
 /**
  * Validates the formModel, returning the invalidModel.

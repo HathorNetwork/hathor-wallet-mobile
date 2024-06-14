@@ -8,6 +8,7 @@
 import hathorLib from '@hathor/wallet-lib';
 import * as Keychain from 'react-native-keychain';
 import React from 'react';
+import { isEmpty } from 'lodash';
 import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
@@ -465,3 +466,12 @@ export const getAllAddresses = async (wallet) => {
  * @async
  */
 export const getFirstAddress = async (wallet) => wallet.getAddressAtIndex(0);
+
+/**
+ * Verifies if the invalidModel of the form has an error message.
+ */
+export function hasError(invalidModel) {
+  return Object
+    .values({ ...invalidModel })
+    .reduce((_hasError, currValue) => _hasError || !isEmpty(currValue), false);
+}
