@@ -1045,8 +1045,9 @@ export const nanoContractRegisterFailure = (error) => ({
 /**
  * Nano Contract registration has finished with success.
  * @param {{
- *   entryKey: string,
- *   entryValue: Object,
+ *   entryKey: string;
+ *   entryValue: Object;
+ *   hasFeedback?: boolean;
  * }} ncEntry basic information of Nano Contract registered.
  */
 export const nanoContractRegisterSuccess = (ncEntry) => ({

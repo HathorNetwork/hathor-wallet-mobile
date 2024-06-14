@@ -1386,12 +1386,13 @@ export const onNanoContractRegisterFailure = (state, { payload: { error } }) => 
  * @param {Object} state
  * @param {{
  *   payload: {
- *     entryKey: string,
+ *     entryKey: string;
  *     entryValue: {
  *       address: string,
  *       ncId: string,
  *       blueprintName: string
- *     }
+ *     };
+ *     hasFeedback?: boolean;
  *   }
   * }} action
  */
@@ -1399,7 +1400,7 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
-    registerStatus: NANOCONTRACT_REGISTER_STATUS.SUCCESSFUL,
+    registerStatus: payload.hasFeedback ? NANOCONTRACT_REGISTER_STATUS.SUCCESSFUL : NANOCONTRACT_REGISTER_STATUS.READY,
     registered: {
       ...state.nanoContract.registered,
       [payload.entryKey]: payload.entryValue,

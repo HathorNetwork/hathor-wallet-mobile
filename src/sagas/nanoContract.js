@@ -121,8 +121,8 @@ export function* registerNanoContract({ payload }) {
   yield call(wallet.storage.registerNanoContract.bind(wallet.storage), ncId, nc);
 
   log.debug(`Success registering Nano Contract. nc = ${nc}`);
-  // emit action NANOCONTRACT_REGISTER_SUCCESS
-  yield put(nanoContractRegisterSuccess({ entryKey: ncId, entryValue: nc }));
+  // emit action NANOCONTRACT_REGISTER_SUCCESS with feedback to user
+  yield put(nanoContractRegisterSuccess({ entryKey: ncId, entryValue: nc, hasFeedback: true }));
 }
 
 /**
