@@ -13,14 +13,16 @@ import {
 
 /**
  * @param {Object} props
+ * @param {boolean} props.title It sets font weight to bold and a larger font size
  * @param {boolean} props.bold It sets font weight to bold
  * @param {boolean} props.oneline It sets numberOfLines to 1
  * @param {boolean} props.shrink It sets flexShrink to 1
  * @param {boolean} props.pb4 It sets padding bottom to 4
  */
-export const TextValue = ({ bold, oneline, shrink, pb4, children }) => (
+export const TextValue = ({ title, bold, oneline, shrink, pb4, children }) => (
   <Text style={[
     styles.textValue,
+    title && styles.title,
     oneline && styles.oneline,
     shrink && styles.shrink,
     bold && styles.bold,
@@ -34,6 +36,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: 'black',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   pb4: {
     paddingBottom: 4,

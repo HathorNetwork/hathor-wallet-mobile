@@ -957,6 +957,10 @@ msgstr ""
 msgid "Nano Contract Details"
 msgstr "Detalhes do Nano Contract"
 
+#: src/screens/NanoContract/NanoContractTransactionScreen.js:37
+msgid "Nano Contract Transaction"
+msgstr "Transação do Nano Contract"
+
 #: src/sagas/mixins.js:31
 msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar endereços."
@@ -1207,15 +1211,18 @@ msgstr "Inválida"
 msgid "Description"
 msgstr "Descrição"
 
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:44
 #: src/components/TxDetailsModal.js:104
 msgid "Transaction ID"
 msgstr "ID da Transação"
 
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:89
 #: src/components/TxDetailsModal.js:105
 msgid "Blueprint Method"
 msgstr "Método do Blueprint"
 
 #: src/components/NanoContract/NanoContractDetailsHeader.component.js:142
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/TxDetailsModal.js:106
 msgid "Nano Contract ID"
@@ -1336,9 +1343,22 @@ msgstr "Ver detalhes"
 msgid "Unregister contract"
 msgstr "Desregistrar contract"
 
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:93
+msgid "Date and Time"
+msgstr "Data & Hora"
+
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:100
 #: src/components/NanoContract/NanoContractTransactionsListItem.component.js:62
 msgid "From this wallet"
 msgstr "Desta wallet"
+
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:103
+msgid "Caller"
+msgstr "Caller"
+
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:106
+msgid "See transaction details"
+msgstr "Ver detalhes"
 
 #: src/components/NanoContract/NanoContractsList.js:85
 msgid "No Nano Contracts"

@@ -74,7 +74,7 @@ export const NanoContractDetails = ({ nc }) => {
   }
 
   const navigatesToNanoContractTransaction = (tx) => {
-    navigation.navigate('NanoContractTransaction', { tx });
+    navigation.navigate('NanoContractTransactionScreen', { tx });
   };
 
   useEffect(() => {
