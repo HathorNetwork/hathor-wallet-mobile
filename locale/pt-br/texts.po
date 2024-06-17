@@ -1089,23 +1089,23 @@ msgstr "Abrir"
 
 #: src/sagas/wallet.js:744
 msgid "Wallet is not ready to load addresses."
-msgstr "A wallet não está pronta para carregar endereços."
+msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
 #: src/sagas/wallet.js:760
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
-"Ocorreu um erro durante download dos endereços da wallet. Tente novamente."
+"Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
 #: src/sagas/wallet.js:770
 msgid "Wallet is not ready to load the first address."
-msgstr "A wallet não está pronta para carregar primeiro endereço."
+msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content
 #: src/sagas/wallet.js:786
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
-"Ocorreu um erro durante download do primeiro endereço da wallet. Tente novamente."
+"Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
 
 #: src/components/AskForPushNotification.js:29
 msgid "Do you want to enable push notifications for this wallet?"
