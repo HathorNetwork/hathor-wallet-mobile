@@ -117,6 +117,7 @@ export function* registerNanoContract({ payload }) {
     address,
     ncId,
     blueprintName: ncState.blueprint_name,
+    blueprintId: ncState.blueprint_id,
   };
   yield call(wallet.storage.registerNanoContract.bind(wallet.storage), ncId, nc);
 
