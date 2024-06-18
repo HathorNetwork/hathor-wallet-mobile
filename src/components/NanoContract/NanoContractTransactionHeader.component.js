@@ -35,7 +35,7 @@ export const NanoContractTransactionHeader = ({ tx }) => {
   // use the shrank format just yet. We need the actions component first.
   // For his, we also need hathor-core support for actions in each nano contract
   // transaction.
-  const [isShrank, _] = useState(false);
+  const [isShrank] = useState(false);
 
   return (
     <HathorHeader>

@@ -7,7 +7,15 @@
 
 import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
-import { INITIAL_TOKENS, DEFAULT_TOKEN, PUSH_API_STATUS, FEATURE_TOGGLE_DEFAULTS, PRE_SETTINGS_MAINNET, NETWORKSETTINGS_STATUS } from '../constants';
+import {
+  INITIAL_TOKENS,
+  DEFAULT_TOKEN,
+  PUSH_API_STATUS,
+  FEATURE_TOGGLE_DEFAULTS,
+  PRE_SETTINGS_MAINNET,
+  NETWORKSETTINGS_STATUS,
+  NANOCONTRACT_REGISTER_STATUS
+} from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
@@ -235,6 +243,8 @@ const initialState = {
   networkSettingsInvalid: {},
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
   nanoContract: {
+    registerStatus: NANOCONTRACT_REGISTER_STATUS.READY,
+    registerFailureMessage: null,
     /**
      * registered {{
      *   [ncId: string]: {
@@ -321,6 +331,16 @@ const initialState = {
    */
   selectAddressModal: {
     addresses: [],
+    error: null,
+  },
+  /**
+   * firstAddress {{
+   *   address?: string;
+   *   error?: string;
+   * }} it holds the first wallet address or the error status.
+   */
+  firstAddress: {
+    address: null,
     error: null,
   },
 };
@@ -479,8 +499,6 @@ export const reducer = (state = initialState, action) => {
       return onNetworkSettingsUpdateFailure(state);
     case types.NETWORKSETTINGS_UPDATE_INVALID:
       return onNetworkSettingsUpdateInvalid(state, action);
-    case types.NANOCONTRACT_REGISTER_SUCCESS:
-      return onNanoContractRegisterSuccess(state, action);
     case types.NANOCONTRACT_HISTORY_LOADING:
       return onNanoContractHistoryLoading(state, action);
     case types.NANOCONTRACT_HISTORY_FAILURE:
@@ -493,12 +511,26 @@ export const reducer = (state = initialState, action) => {
       return onNanoContractUnregisterSuccess(state, action);
     case types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST:
       return onNanoContractAddressChangeRequest(state, action);
+    case types.NANOCONTRACT_REGISTER_REQUEST:
+      return onNanoContractRegisterRequest(state);
+    case types.NANOCONTRACT_REGISTER_FAILURE:
+      return onNanoContractRegisterFailure(state, action);
+    case types.NANOCONTRACT_REGISTER_SUCCESS:
+      return onNanoContractRegisterSuccess(state, action);
+    case types.NANOCONTRACT_REGISTER_READY:
+      return onNanoContractRegisterReady(state);
     case types.SELECTADDRESS_ADDRESSES_REQUEST:
       return onSelectAddressAddressesRequest(state);
     case types.SELECTADDRESS_ADDRESSES_FAILURE:
       return onSelectAddressAddressesFailure(state, action);
     case types.SELECTADDRESS_ADDRESSES_SUCCESS:
       return onSelectAddressAddressesSuccess(state, action);
+    case types.FIRSTADDRESS_REQUEST:
+      return onFirstAddressRequest(state);
+    case types.FIRSTADDRESS_FAILURE:
+      return onFirstAddressFailure(state, action);
+    case types.FIRSTADDRESS_SUCCESS:
+      return onFirstAddressSuccess(state, action);
     default:
       return state;
   }
@@ -560,9 +592,9 @@ const onNewTx = (state, action) => {
       }
 
       if (txout.decoded && txout.decoded.address
-          && txout.decoded.address === state.latestInvoice.address
-          && txout.value === state.latestInvoice.amount
-          && txout.token === state.latestInvoice.token.uid) {
+        && txout.decoded.address === state.latestInvoice.address
+        && txout.value === state.latestInvoice.amount
+        && txout.token === state.latestInvoice.token.uid) {
         invoicePayment = tx;
         break;
       }
@@ -1326,17 +1358,41 @@ export const onNetworkSettingsUpdateInvalid = (state, { payload }) => ({
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
 });
 
+export const onNanoContractRegisterRequest = (state) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    registerStatus: NANOCONTRACT_REGISTER_STATUS.LOADING,
+    registerFailureMessage: null,
+  },
+});
+
+/**
+ * @param {Object} state Redux store state
+ * @param {Object} action
+ * @param {Object} action.payload
+ * @param {string} action.payload.error Error message on failure
+ */
+export const onNanoContractRegisterFailure = (state, { payload: { error } }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    registerStatus: NANOCONTRACT_REGISTER_STATUS.FAILED,
+    registerFailureMessage: error,
+  },
+});
+
 /**
  * @param {Object} state
  * @param {{
  *   payload: {
- *     entryKey: string,
+ *     entryKey: string;
  *     entryValue: {
- *       address: string,
- *       ncId: string,
- *       blueprintId: string,
- *       blueprintName: string
- *     }
+ *       address: string;
+ *       ncId: string;
+ *       blueprintName: string;
+ *     };
+ *     hasFeedback?: boolean;
  *   }
   * }} action
  */
@@ -1344,10 +1400,34 @@ export const onNanoContractRegisterSuccess = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
+    registerStatus: payload.hasFeedback
+      ? NANOCONTRACT_REGISTER_STATUS.SUCCESSFUL
+      : NANOCONTRACT_REGISTER_STATUS.READY,
     registered: {
       ...state.nanoContract.registered,
       [payload.entryKey]: payload.entryValue,
     },
+    history: {
+      ...state.nanoContract.history,
+      [payload.entryKey]: [],
+    },
+    historyMeta: {
+      ...state.nanoContract.historyMeta,
+      [payload.entryKey]: {
+        isLoading: false,
+        error: null,
+        after: null,
+      },
+    },
+  },
+});
+
+export const onNanoContractRegisterReady = (state) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    registerStatus: NANOCONTRACT_REGISTER_STATUS.READY,
+    registerFailureMessage: null,
   },
 });
 
@@ -1553,6 +1633,46 @@ export const onSelectAddressAddressesSuccess = (state, { payload }) => ({
   ...state,
   selectAddressModal: {
     addresses: payload.addresses,
+    error: null,
+  },
+});
+
+/**
+ * @param {Object} state
+ */
+export const onFirstAddressRequest = (state) => ({
+  ...state,
+  firstAddress: initialState.firstAddress,
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     error: string;
+ *   }
+ * }} action
+ */
+export const onFirstAddressFailure = (state, { payload }) => ({
+  ...state,
+  firstAddress: {
+    address: null,
+    error: payload.error,
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     address: string;
+ *   }
+ * }} action
+ */
+export const onFirstAddressSuccess = (state, { payload }) => ({
+  ...state,
+  firstAddress: {
+    address: payload.address,
     error: null,
   },
 });

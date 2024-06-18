@@ -102,8 +102,7 @@ export function* registerNanoContract({ payload }) {
 
   let ncState = null;
   try {
-    const response = yield call([ncApi, ncApi.getNanoContractState], ncId);
-    ncState = response.ncState;
+    ncState = yield call([ncApi, ncApi.getNanoContractState], ncId);
   } catch (error) {
     if (error instanceof NanoRequest404Error) {
       yield put(nanoContractRegisterFailure(failureMessage.nanoContractStateNotFound));
@@ -117,14 +116,14 @@ export function* registerNanoContract({ payload }) {
   const nc = {
     address,
     ncId,
-    blueprintId: ncState.blueprint_id,
     blueprintName: ncState.blueprint_name,
+    blueprintId: ncState.blueprint_id,
   };
   yield call(wallet.storage.registerNanoContract.bind(wallet.storage), ncId, nc);
 
-  log.debug('Success registering Nano Contract.');
-  // emit action NANOCONTRACT_REGISTER_SUCCESS
-  yield put(nanoContractRegisterSuccess({ entryKey: ncId, entryValue: nc }));
+  log.debug(`Success registering Nano Contract. nc = ${nc}`);
+  // emit action NANOCONTRACT_REGISTER_SUCCESS with feedback to user
+  yield put(nanoContractRegisterSuccess({ entryKey: ncId, entryValue: nc, hasFeedback: true }));
 }
 
 /**
@@ -209,6 +208,7 @@ export async function fetchHistory(ncId, count, after, wallet) {
       ncId: rawTx.nc_id,
       ncMethod: rawTx.nc_method,
       blueprintId: rawTx.nc_blueprint_id,
+      firstBlock: rawTx.first_block,
       caller,
       isMine,
       balance,

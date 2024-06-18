@@ -445,6 +445,7 @@ msgstr "Digite suas palavras separadas por espaços"
 
 #: src/components/NanoContract/NanoContractDetails.component.js:194
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:167
 msgid "Try again"
 msgstr "Tente novamente"
 
@@ -873,17 +874,17 @@ msgstr ""
 "souber o que está fazendo."
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
-#: src/screens/NetworkSettings/helper.js:4
+#: src/screens/NetworkSettings/helper.js:11
 msgid "Updating custom network settings..."
 msgstr "Atualizando configurações de rede..."
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:21
-#: src/screens/NetworkSettings/helper.js:5
+#: src/screens/NetworkSettings/helper.js:12
 msgid "Network settings successfully customized."
 msgstr "Configuração de rede atualizada com sucesso."
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:22
-#: src/screens/NetworkSettings/helper.js:6
+#: src/screens/NetworkSettings/helper.js:13
 msgid ""
 "There was an error while customizing network settings. Please try again "
 "later."
@@ -957,18 +958,63 @@ msgstr ""
 msgid "Nano Contract Details"
 msgstr "Detalhes do Nano Contract"
 
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:67
+msgid "Nano Contract ID is required."
+msgstr "ID do Nano Contract é obrigatório."
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:157
+msgid "See contract"
+msgstr "Ver contrato"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:175
+msgid "Load First Addresses Error"
+msgstr "Erro ao carregar primeiro endereço da wallet"
+
+#: src/components/NanoContract/NanoContractDetails.component.js:158
+#: src/components/NanoContract/SelectAddressModal.component.js:105
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:183
+msgid "Loading"
+msgstr "Carregando"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:184
+msgid "Loading first wallet address."
+msgstr "Carregando primeiro endereço da wallet."
+
+#: src/components/NanoContract/NanoContractDetailsHeader.component.js:142
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:88
+#: src/components/NanoContract/NanoContractsListItem.js:57
+#: src/components/TxDetailsModal.js:106
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:193
+msgid "Nano Contract ID"
+msgstr "ID do Nano Contract"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:201
+msgid "Wallet Address"
+msgstr "Endereço da Carteira"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:211
+msgid "If you want to change the wallet address, you will be able to do"
+msgstr "Se deseja alterar o endereço de assinatura, você pode alterar"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:213
+msgid "after the contract is registered."
+msgstr "depois do contrato ser registrado."
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:232
+msgid "Register Nano Contract"
+msgstr "Registrar Nano Contract"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:250
+msgid "Nano Contract Registration"
+msgstr "Registro do Nano Contract"
+
 #: src/screens/NanoContract/NanoContractTransactionScreen.js:37
 msgid "Nano Contract Transaction"
 msgstr "Transação do Nano Contract"
 
-#: src/sagas/mixins.js:31
-msgid "Wallet is not ready to load addresses."
-msgstr "A wallet não está pronta para carregar endereços."
-
-#.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/mixins.js:47
-msgid "There was an error while loading wallet addresses. Try again."
-msgstr "Ocorreu um erro durante download dos endereços da wallet. Tente novamente."
+#: src/screens/NanoContract/helper.js:11
+msgid "Contract successfully registered."
+msgstr "Nano Contract registrado com sucesso."
 
 #: src/sagas/nanoContract.js:43
 msgid "Nano Contract already registered."
@@ -1040,6 +1086,26 @@ msgstr "Transação"
 #: src/sagas/pushNotification.js:60
 msgid "Open"
 msgstr "Abrir"
+
+#: src/sagas/wallet.js:744
+msgid "Wallet is not ready to load addresses."
+msgstr "A wallet não está pronta para carregar os endereços."
+
+#.  This will show the message in the feedback content at SelectAddressModal
+#: src/sagas/wallet.js:760
+msgid "There was an error while loading wallet addresses. Try again."
+msgstr ""
+"Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
+
+#: src/sagas/wallet.js:770
+msgid "Wallet is not ready to load the first address."
+msgstr "A wallet não está pronta para carregar o primeiro endereço."
+
+#.  This will show the message in the feedback content
+#: src/sagas/wallet.js:786
+msgid "There was an error while loading first wallet address. Try again."
+msgstr ""
+"Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
 
 #: src/components/AskForPushNotification.js:29
 msgid "Do you want to enable push notifications for this wallet?"
@@ -1211,22 +1277,15 @@ msgstr "Inválida"
 msgid "Description"
 msgstr "Descrição"
 
-#: src/components/NanoContract/NanoContractTransactionHeader.component.js:44
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:47
 #: src/components/TxDetailsModal.js:104
 msgid "Transaction ID"
 msgstr "ID da Transação"
 
-#: src/components/NanoContract/NanoContractTransactionHeader.component.js:89
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:92
 #: src/components/TxDetailsModal.js:105
 msgid "Blueprint Method"
 msgstr "Método do Blueprint"
-
-#: src/components/NanoContract/NanoContractDetailsHeader.component.js:142
-#: src/components/NanoContract/NanoContractTransactionHeader.component.js:85
-#: src/components/NanoContract/NanoContractsListItem.js:57
-#: src/components/TxDetailsModal.js:106
-msgid "Nano Contract ID"
-msgstr "ID do Nano Contract"
 
 #: src/components/TxDetailsModal.js:107
 msgid "Nano Contract Caller"
@@ -1313,11 +1372,6 @@ msgstr "Confirmar novo endereço"
 msgid "Go back"
 msgstr "Voltar"
 
-#: src/components/NanoContract/NanoContractDetails.component.js:158
-#: src/components/NanoContract/SelectAddressModal.component.js:105
-msgid "Loading"
-msgstr "Carregando"
-
 #: src/components/NanoContract/NanoContractDetails.component.js:159
 msgid "Loading Nano Contract transactions."
 msgstr "Carregando transações do Nano Contract"
@@ -1343,20 +1397,24 @@ msgstr "Ver detalhes"
 msgid "Unregister contract"
 msgstr "Desregistrar contract"
 
-#: src/components/NanoContract/NanoContractTransactionHeader.component.js:93
+#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:96
 msgid "Date and Time"
 msgstr "Data & Hora"
 
-#: src/components/NanoContract/NanoContractTransactionHeader.component.js:100
+#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:103
 #: src/components/NanoContract/NanoContractTransactionsListItem.component.js:62
 msgid "From this wallet"
 msgstr "Desta wallet"
 
-#: src/components/NanoContract/NanoContractTransactionHeader.component.js:103
+#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:106
 msgid "Caller"
 msgstr "Caller"
 
-#: src/components/NanoContract/NanoContractTransactionHeader.component.js:106
+#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
+#: src/components/NanoContract/NanoContractTransactionHeader.component.js:109
 msgid "See transaction details"
 msgstr "Ver detalhes"
 
