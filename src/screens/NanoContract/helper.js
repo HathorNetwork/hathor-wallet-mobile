@@ -12,7 +12,7 @@ export const feedbackSucceedText = t`Contract successfully registered.`;
 
 /**
  * Check if the nano contract register status is successful.
- * @param {object} status - status from redux store
+ * @param {string} status - status from redux store
  * @returns {boolean} - true if the status is successful, false otherwise
  */
 export const hasSucceeded = (status) => (
@@ -21,7 +21,7 @@ export const hasSucceeded = (status) => (
 
 /**
  * Check if the nano contract register status is failed.
- * @param {object} status - status from redux store
+ * @param {string} status - status from redux store
  * @returns {boolean} - true if the status is failed, false otherwise
  */
 export const hasFailed = (status) => (
@@ -30,7 +30,7 @@ export const hasFailed = (status) => (
 
 /**
  * Check if the nano contract register status is loading.
- * @param {object} status - status from redux store
+ * @param {string} status - status from redux store
  * @returns {boolean} - true if the status is loading, false otherwise
  */
 export const isLoading = (status) => (
@@ -39,7 +39,7 @@ export const isLoading = (status) => (
 
 /**
  * Check if the nano contract register status is not ready.
- * @param {object} status - status from redux store
+ * @param {string} status - status from redux store
  * @returns {boolean} - true if the status is not ready, false otherwise
  */
 export const notReady = (status) => (

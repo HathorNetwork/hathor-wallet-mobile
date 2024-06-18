@@ -77,9 +77,10 @@ export function NanoContractRegisterScreen({ navigation }) {
     ncId: null,
   });
 
-  /* @param {
-   *   'nodeUrl'|'explorerUrl'|'explorerServiceUrl'|'walletServiceUrl'|'walletServiceWsUrl'
-   * } name */
+  /**
+   * It handles input change to perform validations.
+   * @param { ((name: 'ncId') => (value: string) => {}) => {} }
+   */
   const handleInputChange = useCallback(
     (name) => (value) => {
       if (isClean) {
@@ -128,7 +129,9 @@ export function NanoContractRegisterScreen({ navigation }) {
   };
 
   useEffect(() => {
-    dispatch(firstAddressRequest());
+    if (!address) {
+      dispatch(firstAddressRequest());
+    }
   }, []);
 
   const hasFirstAddressFailed = () => error;
@@ -280,6 +283,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'hsla(203, 100%, 93%, 1)',
   },
   infoContent: {
+    flex: 1,
     paddingLeft: 8,
   },
   selectionContainer: {

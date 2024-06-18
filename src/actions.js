@@ -1187,7 +1187,7 @@ export const firstAddressRequest = () => ({
 });
 
 /**
- * Signals first wallet address were loaded with success.
+ * Signals first wallet address was loaded with success.
  * @param {Object} successPayload
  * @param {string} successPayload.address
  */
