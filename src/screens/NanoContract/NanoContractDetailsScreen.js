@@ -13,7 +13,7 @@ import {
 import { useSelector } from 'react-redux';
 import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
-import { NanoContractDetails } from '../../components/NanoContract/NanoContractDetails.component';
+import { NanoContractDetails } from '../../components/NanoContract/NanoContractDetails';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 

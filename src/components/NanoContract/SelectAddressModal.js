@@ -20,7 +20,7 @@ import { COLORS } from '../../styles/themes';
 import { ModalBase } from '../ModalBase';
 import { TextValue } from '../TextValue';
 import { TextLabel } from '../TextLabel';
-import { EditAddressModal } from './EditAddressModal.component';
+import { EditAddressModal } from './EditAddressModal';
 import { FeedbackContent } from '../FeedbackContent';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import { selectAddressAddressesRequest } from '../../actions';

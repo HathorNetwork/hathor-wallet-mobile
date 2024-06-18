@@ -14,8 +14,8 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
-import { NanoContractDetailsHeader } from './NanoContractDetailsHeader.component';
-import { NanoContractTransactionsListItem } from './NanoContractTransactionsListItem.component';
+import { NanoContractDetailsHeader } from './NanoContractDetailsHeader';
+import { NanoContractTransactionsListItem } from './NanoContractTransactionsListItem';
 import { COLORS } from '../../styles/themes';
 import { nanoContractAddressChangeRequest, nanoContractHistoryRequest } from '../../actions';
 import { HathorFlatList } from '../HathorFlatList';
