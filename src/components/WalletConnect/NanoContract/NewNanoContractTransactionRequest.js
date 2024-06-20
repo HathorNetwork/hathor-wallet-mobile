@@ -22,6 +22,8 @@ import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
   nanoContractBlueprintInfoRequest,
+  newNanoContactRetry,
+  newNanoContactRetryDismiss,
   setNewNanoContractStatusReady,
   walletConnectAccept,
   walletConnectReject,
@@ -58,7 +60,7 @@ import { DeclineModal } from './DeclineModal';
  * @param {string} props.ncTxRequest.dapp.description
  */
 export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
-  const { nc, dapp } = ncTxRequest;
+  const { data: nc, dapp } = ncTxRequest;
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const newTxStatus = useSelector((state) => state.walletConnect.newNanoContractTransaction.status);
@@ -155,6 +157,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
 
   const onFeedbackModalDismiss = () => {
     dispatch(setNewNanoContractStatusReady());
+    dispatch(newNanoContactRetryDismiss());
     navigation.goBack();
   };
 
@@ -165,6 +168,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
 
   const onTryAgain = () => {
     dispatch(setNewNanoContractStatusReady());
+    dispatch(newNanoContactRetry());
   };
 
   // Loading while downloading:
