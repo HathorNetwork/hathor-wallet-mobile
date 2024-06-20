@@ -536,6 +536,8 @@ export const reducer = (state = initialState, action) => {
       return onUpdateLoadedData(state, action);
     case types.SET_USE_WALLET_SERVICE:
       return onSetUseWalletService(state, action);
+    case types.TOKENS_FETCH_METADATA_REQUESTED:
+      return onTokensFetchMetadataRequested(state);
     case types.TOKEN_METADATA_UPDATED:
       return onTokenMetadataUpdated(state, action);
     case types.TOKEN_METADATA_REMOVED:
@@ -934,6 +936,14 @@ const onUpdateLoadedData = (state, action) => ({
 const onTokenMetadataLoaded = (state, action) => ({
   ...state,
   metadataLoaded: action.payload,
+});
+
+/**
+ * Update token metadata status to false, meaning it is loading.
+ */
+const onTokensFetchMetadataRequested = (state) => ({
+  ...state,
+  metadataLoaded: false,
 });
 
 /**
