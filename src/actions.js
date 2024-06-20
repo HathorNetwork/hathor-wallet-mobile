@@ -57,6 +57,8 @@ export const types = {
   TOKEN_METADATA_LOADED: 'TOKEN_METADATA_LOADED',
   SET_UNIQUE_DEVICE_ID: 'SET_UNIQUE_DEVICE_ID',
   SET_IS_SHOWING_PIN_SCREEN: 'SET_IS_SHOWING_PIN_SCREEN',
+  /* It initiates download of tokens metadata. */
+  TOKENS_FETCH_METADATA_REQUESTED: 'TOKENS_FETCH_METADATA_REQUESTED',
   TOKEN_FETCH_METADATA_REQUESTED: 'TOKEN_FETCH_METADATA_REQUESTED',
   TOKEN_FETCH_METADATA_SUCCESS: 'TOKEN_FETCH_METADATA_SUCCESS',
   TOKEN_FETCH_METADATA_FAILED: 'TOKEN_FETCH_METADATA_FAILED',
@@ -188,6 +190,10 @@ export const types = {
   WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
   UNREGISTEREDTOKENS_REQUEST: 'UNREGISTEREDTOKENS_REQUEST',
   UNREGISTEREDTOKENS_UPDATE: 'UNREGISTEREDTOKENS_UPDATE',
+  WALLETCONNECT_NEW_NANOCONTRACT_RETRY: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY',
+  WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS',
+  SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
+  SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL'
 };
 
 export const featureToggleInitialized = () => ({
@@ -1244,6 +1250,29 @@ export const firstAddressFailure = (failurePayload) => ({
 });
 
 /**
+ * Request the download of token metadata for a list of tokens.
+ * @param {string[]} tokens A list of token uid
+ */
+export const tokensFetchMetadataRequest = (tokens) => ({
+  type: types.TOKENS_FETCH_METADATA_REQUESTED,
+  tokens
+});
+
+/**
+ * Signals that the user wants to attempt to retry the nano contract tx send
+ */
+export const newNanoContactRetry = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY,
+});
+
+/**
+ * Signals that the user doesn't want to retry the new nano contract tx send
+ */
+export const newNanoContactRetryDismiss = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS,
+});
+
+/**
  * Signals update on new nano contract status to ready.
  */
 export const setNewNanoContractStatusReady = () => ({
@@ -1334,4 +1363,24 @@ export const unregisteredTokensRequest = (payload) => ({
 export const unregisteredTokensUpdate = (payload) => ({
   type: types.UNREGISTEREDTOKENS_UPDATE,
   payload,
+});
+
+export const showSignMessageWithAddressModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_SIGN_MESSAGE_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+    dapp,
+  },
+});
+
+export const showNanoContractSendTxModal = (accept, deny, nc, dapp) => ({
+  type: types.SHOW_NANO_CONTRACT_SEND_TX_MODAL,
+  payload: {
+    accept,
+    deny,
+    nc,
+    dapp,
+  },
 });
