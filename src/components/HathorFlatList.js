@@ -15,7 +15,7 @@ import { COLORS } from '../styles/themes';
  * param {FlatListProps} props
  */
 export const HathorFlatList = (props) => (
-  <View style={styles.wrapper}>
+  <View style={[styles.wrapper, props.wrapperStyle]}>
     <FlatList
       ItemSeparatorComponent={ItemSeparator}
       // Introduced last to allow overwrite
