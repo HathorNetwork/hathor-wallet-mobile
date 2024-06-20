@@ -57,6 +57,8 @@ export const types = {
   TOKEN_METADATA_LOADED: 'TOKEN_METADATA_LOADED',
   SET_UNIQUE_DEVICE_ID: 'SET_UNIQUE_DEVICE_ID',
   SET_IS_SHOWING_PIN_SCREEN: 'SET_IS_SHOWING_PIN_SCREEN',
+  /* It initiates download of tokens metadata. */
+  TOKENS_FETCH_METADATA_REQUESTED: 'TOKENS_FETCH_METADATA_REQUESTED',
   TOKEN_FETCH_METADATA_REQUESTED: 'TOKEN_FETCH_METADATA_REQUESTED',
   TOKEN_FETCH_METADATA_SUCCESS: 'TOKEN_FETCH_METADATA_SUCCESS',
   TOKEN_FETCH_METADATA_FAILED: 'TOKEN_FETCH_METADATA_FAILED',
@@ -1241,6 +1243,15 @@ export const firstAddressSuccess = (successPayload) => ({
 export const firstAddressFailure = (failurePayload) => ({
   type: types.FIRSTADDRESS_FAILURE,
   payload: failurePayload,
+});
+
+/**
+ * Request the downalod of token metadata for a list of tokens.
+ * @param {string[]} tokens A list of token uid
+ */
+export const tokensFetchMetadataRequest = (tokens) => ({
+  type: types.TOKENS_FETCH_METADATA_REQUESTED,
+  tokens
 });
 
 /**
