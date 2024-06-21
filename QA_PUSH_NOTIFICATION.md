@@ -103,7 +103,8 @@ It's a second custom NFT token to test.
         1. The **Balance** page should open
 
 1. **View the details of the transaction (quit)**
-    >[!INFO]
+
+    >[!NOTE]
     >Notifee v5.7.0 with Android API 32 has a [known issue regarding onBackgroundEvent](https://github.com/invertase/notifee/issues/404).
 
     1. [ ] Turn on the `push-notification` feature toggle
@@ -212,9 +213,10 @@ It's a second custom NFT token to test.
         1. The **Balance** page should open
 
 1. **Register `TTT` token and send 2 tokens after turn on `Show amounts on notification` option**
-    >[!WARN]
+
+    >[!WARNING]
     >Not possible using `wallet-service` in `testnet` due to a validation that consults the fullnode.
-    >Jump to **Test open the wallet 2 weeks later** (20)
+    >Jump to **Test open the wallet 2 weeks later**
 
     1. [ ] Register `TTT` token in the wallet
     1. [ ] Turn on the `push-notification` feature toggle
@@ -254,7 +256,8 @@ It's a second custom NFT token to test.
     1. Wait some minutes to guarantee you won't receive any notifications for this tx
 
 1. Test open the wallet 2 weeks later
-    >[!WARN]
+
+    >[!WARNING]
     >Skip if running the wallet from store.
 
     1. [ ] Open the file `src/sagas/pushNotification.js` and search for the following assignment:

@@ -29,7 +29,7 @@
         - Wallet Service URL (optional)
         - Wallet Service WS URL (optional)
 
-        >[!INFO]
+        >[!NOTE]
         >Wallet Service fields only appears if the wallet is allowed on Wallet Service feature.
 
     1. [ ] Check you see a button at the bottom of the page to send the form
@@ -65,6 +65,7 @@
     1. [ ] Ensure that the network status bar at the top of the screen has disappeared
 
 1. **Check testnet balance**
+
     >[!NOTE]
     >In this test we want to check the difference of transaction history and balance between mainnet and testnet of the same wallet. Therefore, you should have some transactions also in your testnet wallet.
 
