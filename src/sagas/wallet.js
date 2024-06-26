@@ -345,12 +345,21 @@ export function* loadTokens() {
 }
 
 /**
+ * It handles the request to fetch tokens metadata and open a thread to process it.
+ * @param {{ tokens: string[] }}
+ */
+export function* fetchTokensMetadataRequest(action) {
+  yield spawn(fetchTokensMetadata, action.tokens);
+}
+
+/**
  * The wallet needs each token metadata to show information correctly
  * So we fetch the tokens metadata and store on redux
  */
 export function* fetchTokensMetadata(tokens) {
-  // No tokens to load
+  // No tokens to load, set metadata as loaded
   if (!tokens.length) {
+    yield put(tokenMetadataUpdated({}));
     return;
   }
 
@@ -375,8 +384,7 @@ export function* fetchTokensMetadata(tokens) {
   const tokenMetadatas = {};
   for (const response of responses) {
     if (response.type === types.TOKEN_FETCH_METADATA_FAILED) {
-      // eslint-disable-next-line
-      console.log('Error downloading metadata of token', response.tokenId);
+      log(`Error downloading metadata of token ${response.tokenId}.`);
     } else if (response.type === types.TOKEN_FETCH_METADATA_SUCCESS) {
       // When the request returns null, it means that we have no metadata for this token
       if (response.data) {
@@ -799,6 +807,7 @@ export function* saga() {
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
+    takeEvery(types.TOKENS_FETCH_METADATA_REQUESTED, fetchTokensMetadataRequest),
     takeEvery(types.WALLET_REFRESH_SHARED_ADDRESS, refreshSharedAddress),
     takeEvery(types.SELECTADDRESS_ADDRESSES_REQUEST, fetchAllWalletAddresses),
     takeEvery(types.FIRSTADDRESS_REQUEST, fetchFirstWalletAddress),
