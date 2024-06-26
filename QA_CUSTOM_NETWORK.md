@@ -30,7 +30,7 @@
         - Wallet Service WS URL (optional)
 
         >[!NOTE]
-        >Wallet Service fields only appears if the wallet is allowed on Wallet Service feature.
+        >Wallet Service fields only appear if the wallet is allowed on Wallet Service feature.
 
     1. [ ] Check you see a button at the bottom of the page to send the form
 
