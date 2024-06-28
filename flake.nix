@@ -11,7 +11,7 @@
         let pkgs = import nixpkgs {
           inherit system;
 
-          overlays = [ devshell.overlay ];
+          overlays = [ devshell.overlays.default ];
         };
         in
         pkgs.devshell.mkShell {
@@ -31,7 +31,7 @@
           ];
           packages = with pkgs; [
             nixpkgs-fmt
-            nodejs-18_x
+            nodejs_20
             ruby
             gnumake
             gettext
