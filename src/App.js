@@ -736,9 +736,8 @@ const App = () => (
         >
           <NetworkStatusBar />
           <RootStack />
-          <NewNanoContractTransactionModal />
+          <WalletConnectModal />
         </NavigationContainer>
-        <WalletConnectModal />
         <GlobalErrorHandler />
       </SafeAreaView>
     </Provider>

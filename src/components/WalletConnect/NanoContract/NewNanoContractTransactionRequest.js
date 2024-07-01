@@ -52,8 +52,15 @@ import { DeclineModal } from './DeclineModal';
  * @param {string} props.ncTxRequest.dapp.url
  * @param {string} props.ncTxRequest.dapp.description
  */
-export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
-  const { nc, dapp } = ncTxRequest;
+export const NewNanoContractTransactionRequest = ({
+  onDismiss,
+  data,
+}) => {
+  const { payload } = data;
+
+  const nc = payload.data;
+
+  // const { nc, dapp } = data;
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const newTxStatus = useSelector((state) => state.walletConnect.newNanoContractTransaction.status);
@@ -88,6 +95,8 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     // Update the caller with the address selected by the user.
     const acceptedNc = { ...nc, caller: ncAddress };
     // Signal the user has accepted the current request and pass the accepted data.
+    onDismiss();
+    console.log('Accepted NC:', acceptedNc);
     dispatch(walletConnectAccept(acceptedNc));
   };
 
@@ -97,7 +106,8 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
     dispatch(walletWalletReject());
-    navigation.goBack();
+    // navigation.goBack();
+    onDismiss();
     // TODO: It is not being dimissed automatically
   };
   const onDismissDeclineModal = () => {
