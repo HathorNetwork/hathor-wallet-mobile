@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Button } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
@@ -25,6 +25,7 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
 import { getNanoContractFeatureToggle } from '../utils';
 import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
+import { Address } from '@hathor/wallet-lib';
 
 /**
  * State filter to retrieve token-related data from root state.
@@ -94,6 +95,7 @@ export const Dashboard = () => {
     tokensMetadata,
   } = useSelector(getTokensState);
   const isNanoContractEnabled = useSelector(getNanoContractFeatureToggle);
+  const wallet = useSelector((state) => state.wallet);
 
   const [currList, selectList] = useState(listOption.tokens);
   const navigation = useNavigation();
@@ -116,8 +118,44 @@ export const Dashboard = () => {
     navigation.navigate('MainScreen');
   }
 
+  const onSendNanoTx = () => {
+    dispatch({
+      type: 'WC_SESSION_REQUEST',
+      payload: {
+        id: 3,
+        topic: '6514868878fe1dadd648a495692d5ab9d458c7d45876f2c63e1e7274640a53d4',
+        jsonrpc: '2.0',
+        params: {
+          request: {
+            method: 'htr_sendNanoContractTx',
+            params: {
+              push_tx: true,
+              network: 'testnet',
+              method: 'bet',
+              blueprint_id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
+              nc_id: '0000076f749170bb0fdc9e84e261774735f6a4f69522aae9e5f92f162110095f',
+              actions: [{
+                type: 'deposit',
+                token: '00',
+                amount: 1
+              }],
+              args: [
+                (new Address('WdXfZ6zKa1mQpBAhGQVj9pCuWDqCrG5ZR6', {
+                  network: wallet.getNetwork()
+                })).decode().toString('hex'),
+                '2x0'
+              ],
+            },
+          },
+        },
+      },
+    });
+    console.log('Sending nano tx');
+  };
+
   return (
     <Wrapper>
+      <Button title='Send Nano Tx' onPress={onSendNanoTx} />
       <ShowPushNotificationTxDetails navigation={navigation} />
       <AskForPushNotification navigation={navigation} />
       <AskForPushNotificationRefresh />

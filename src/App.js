@@ -806,9 +806,8 @@ const App = () => (
           <ShowPushNotificationTxDetails />
           <NetworkStatusBar />
           <RootStack />
-          <NewNanoContractTransactionModal />
+          <WalletConnectModal />
         </NavigationContainer>
-        <WalletConnectModal />
         <GlobalErrorHandler />
       </SafeAreaView>
     </Provider>
