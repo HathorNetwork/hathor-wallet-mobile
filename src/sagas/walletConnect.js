@@ -64,6 +64,11 @@ import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
 import { Core } from '@walletconnect/core';
 import { Web3Wallet } from '@walletconnect/web3wallet';
+import {
+  ConfirmationPromptTypes,
+  ConfirmationResponseTypes,
+  handleRpcRequest,
+} from 'hathor-rpc-handler';
 
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
@@ -77,11 +82,14 @@ import {
   setWalletConnectSessions,
   onExceptionCaptured,
   setWCConnectionFailed,
+  showSignMessageWithAddressModal,
+  showNanoContractSendTxModal,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
+import { store } from '../reducers/reducer.init';
 
 const AVAILABLE_METHODS = {
-  HATHOR_SIGN_MESSAGE: 'hathor_signMessage',
+  HATHOR_SIGN_MESSAGE: 'htr_signWithAddress',
 };
 const AVAILABLE_EVENTS = [];
 
@@ -224,50 +232,148 @@ export function* clearSessions() {
  * is requested from a dApp
  */
 export function* onSessionRequest(action) {
+  console.log('onSessionRequest: ', JSON.stringify(action.payload));
+
   const { payload } = action;
   const { params } = payload;
 
+  const wallet = yield select((state) => state.wallet);
+
   const { web3wallet } = yield select((state) => state.walletConnect.client);
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
-  const requestSession = activeSessions[payload.topic];
-  if (!requestSession) {
+  // const requestSession = activeSessions[payload.topic];
+  /* if (!requestSession) {
     console.error('Could not identify the request session, ignoring request..');
     return;
-  }
+  } */
 
-  const data = {
+  /* const data = {
     icon: get(requestSession.peer, 'metadata.icons[0]', null),
     proposer: get(requestSession.peer, 'metadata.name', ''),
     url: get(requestSession.peer, 'metadata.url', ''),
     description: get(requestSession.peer, 'metadata.description', ''),
     chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
+  */
 
-  switch (params.request.method) {
-    case AVAILABLE_METHODS.HATHOR_SIGN_MESSAGE:
-      yield call(onSignMessageRequest, {
-        ...data,
-        requestId: payload.id,
-        topic: payload.topic,
-        message: get(params, 'request.params.message'),
-      });
-      break;
-    default:
-      yield call(() => web3wallet.respondSessionRequest({
-        topic: payload.topic,
-        response: {
-          id: payload.id,
-          jsonrpc: '2.0',
-          error: {
-            code: ERROR_CODES.USER_REJECTED_METHOD,
-            message: 'Rejected by the user',
-          },
+  try {
+    const response = yield call(handleRpcRequest, params.request, wallet, promptHandler);
+    yield call(() => web3wallet.respondSessionRequest({
+      topic: payload.topic,
+      response: {
+        id: payload.id,
+        jsonrpc: '2.0',
+        result: response,
+      },
+    }));
+  } catch (e) {
+    console.log('e: ', e);
+    console.log('Responded with error', JSON.stringify(e));
+    yield call(() => web3wallet.respondSessionRequest({
+      topic: payload.topic,
+      response: {
+        id: payload.id,
+        jsonrpc: '2.0',
+        error: {
+          code: ERROR_CODES.USER_REJECTED_METHOD,
+          message: 'Rejected by the user',
         },
-      }));
-      break;
+      },
+    }));
   }
 }
 
+async function promptHandler(request) {
+  // eslint-disable-next-line
+  return new Promise(async (resolve, reject) => {
+    switch (request.type) {
+      case ConfirmationPromptTypes.SignMessageWithAddressConfirmationPrompt: {
+        const signMessageResponseTemplate = (data) => () => resolve({
+          type: ConfirmationResponseTypes.SignMessageWithAddressConfirmationResponse,
+          data,
+        });
+        store.dispatch(showSignMessageWithAddressModal(
+          signMessageResponseTemplate(true),
+          signMessageResponseTemplate(false)
+        ))
+      } break;
+      case ConfirmationPromptTypes.SendNanoContractTxConfirmationPrompt: {
+        const proxy = (result) => {
+          console.log('RESULT: ', result);
+          return resolve(result);
+        };
+        const signMessageResponseTemplate = () => (data) => proxy({
+          type: ConfirmationResponseTypes.SendNanoContractTxConfirmationResponse,
+          data: {
+            accepted: true,
+            nc: data.payload,
+          }
+        });
+        store.dispatch(showNanoContractSendTxModal(
+          signMessageResponseTemplate({
+            accepted: true,
+            nc: request.data,
+          }),
+          signMessageResponseTemplate({
+            accepted: false,
+          }),
+          request.data,
+        ));
+      } break;
+      case ConfirmationPromptTypes.PinConfirmationPrompt: {
+        const pinCode = await showPinScreenForResult(store.dispatch);
+
+        resolve({
+          type: ConfirmationResponseTypes.PinRequestResponse,
+          data: {
+            accepted: true,
+            pinCode,
+          }
+        });
+      } break;
+      default: reject(new Error('Invalid request'));
+    }
+  });
+}
+
+export function* onSendNanoContractTxRequest(data) {
+  const { accept: acceptCb, deny: denyCb } = data.payload;
+
+  console.log('Data: ', JSON.stringify({
+    data,
+    accept: acceptCb,
+    deny: denyCb
+  }));
+
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet.isReady()) {
+    console.error('Got a session request but wallet is not ready, ignoring..');
+    return;
+  }
+
+  yield put(setWalletConnectModal({
+    show: true,
+    type: WalletConnectModalTypes.SEND_NANO_CONTRACT_TX,
+    data,
+  }));
+
+  const { deny, accept } = yield race({
+    accept: take(types.WALLET_CONNECT_ACCEPT),
+    deny: take(types.WALLET_CONNECT_REJECT),
+  });
+
+  console.log('Deny: ', deny);
+  console.log('Accept: ', accept);
+
+  if (deny) {
+    denyCb();
+
+    return;
+  }
+
+  acceptCb(accept);
+}
 /**
  * This saga will be called (dispatched from the event listener) when a sign
  * message RPC is published from a dApp
@@ -277,7 +383,7 @@ export function* onSessionRequest(action) {
  * @param {String} data.message Message the dApp requested a signature for
  */
 export function* onSignMessageRequest(data) {
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
+  const { accept, deny: denyCb } = data.payload;
 
   const onAcceptAction = { type: 'WALLET_CONNECT_ACCEPT' };
   const onRejectAction = { type: 'WALLET_CONNECT_REJECT' };
@@ -297,71 +403,18 @@ export function* onSignMessageRequest(data) {
     onRejectAction,
   }));
 
-  const { reject } = yield race({
+  const { deny } = yield race({
     accept: take(onAcceptAction.type),
-    reject: take(onRejectAction.type),
+    deny: take(onRejectAction.type),
   });
 
-  try {
-    if (reject) {
-      yield call(() => web3wallet.respondSessionRequest({
-        topic: data.topic,
-        response: {
-          id: data.requestId,
-          jsonrpc: '2.0',
-          error: {
-            code: ERROR_CODES.USER_REJECTED,
-            message: 'Rejected by the user',
-          },
-        },
-      }));
-      return;
-    }
+  if (deny) {
+    denyCb();
 
-    if (!data.message) {
-      yield call(() => web3wallet.respondSessionRequest({
-        topic: data.topic,
-        response: {
-          id: data.requestId,
-          jsonrpc: '2.0',
-          error: {
-            code: ERROR_CODES.INVALID_PAYLOAD,
-            message: 'Missing message to sign',
-          },
-        },
-      }));
-
-      return;
-    }
-
-    const { message } = data;
-
-    let dispatch;
-    yield put((_dispatch) => {
-      dispatch = _dispatch;
-    });
-
-    const pinCode = yield call(() => showPinScreenForResult(dispatch));
-    const signedMessage = yield call(() => wallet.signMessageWithAddress(
-      message,
-      0, // First address
-      pinCode,
-    ));
-
-    const response = {
-      id: data.requestId,
-      jsonrpc: '2.0',
-      result: signedMessage,
-    };
-
-    yield call(() => web3wallet.respondSessionRequest({
-      topic: data.topic,
-      response,
-    }));
-  } catch (error) {
-    console.log('Captured error on signMessage: ', error);
-    yield put(onExceptionCaptured(error));
+    return;
   }
+
+  accept();
 }
 
 /**
@@ -518,6 +571,8 @@ export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
     takeLatest(types.START_WALLET_SUCCESS, init),
+    takeLatest(types.SHOW_NANO_CONTRACT_SEND_TX_MODAL, onSendNanoContractTxRequest),
+    takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
     takeLeading('WC_SESSION_REQUEST', onSessionRequest),
     takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('WC_SESSION_DELETE', onSessionDelete),

@@ -116,6 +116,7 @@ export function* isPushNotificationEnabled() {
  * @returns {Generator<unknown, boolean>}
  */
 export function* isWalletServiceEnabled() {
+  return false;
   // Users might have had issues with the wallet-service in the past, we can detect
   // old flags because they were booleans, new flags are integers (timestamps)
   const shouldIgnoreFlag = yield call(() => AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG));
@@ -185,7 +186,7 @@ export function* startWallet(action) {
   }
 
   const uniqueDeviceId = getUniqueId();
-  const useWalletService = yield call(isWalletServiceEnabled);
+  const useWalletService = false; // yield call(isWalletServiceEnabled);
   const usePushNotification = yield call(isPushNotificationEnabled);
 
   yield put(setUseWalletService(useWalletService));

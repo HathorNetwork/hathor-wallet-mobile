@@ -190,6 +190,8 @@ export const types = {
   WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
   UNREGISTEREDTOKENS_REQUEST: 'UNREGISTEREDTOKENS_REQUEST',
   UNREGISTEREDTOKENS_UPDATE: 'UNREGISTEREDTOKENS_UPDATE',
+  SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
+  SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL'
 };
 
 export const featureToggleInitialized = () => ({
@@ -1345,4 +1347,21 @@ export const unregisteredTokensRequest = (payload) => ({
 export const unregisteredTokensUpdate = (payload) => ({
   type: types.UNREGISTEREDTOKENS_UPDATE,
   payload,
+});
+
+export const showSignMessageWithAddressModal = (accept, deny) => ({
+  type: types.SHOW_SIGN_MESSAGE_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+  },
+});
+
+export const showNanoContractSendTxModal = (accept, deny, data) => ({
+  type: types.SHOW_NANO_CONTRACT_SEND_TX_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+  },
 });

@@ -12,6 +12,7 @@ import { hideWalletConnectModal } from '../../actions';
 import SignMessageModal from './SignMessageModal';
 import ConnectModal from './ConnectModal';
 import { COLORS } from '../../styles/themes';
+import { NewNanoContractTransactionRequest } from './NanoContract/NewNanoContractTransactionRequest';
 
 export default () => {
   const dispatch = useDispatch();
@@ -38,6 +39,14 @@ export default () => {
       case WalletConnectModalTypes.SIGN_MESSAGE:
         return (
           <SignMessageModal
+            {...walletConnectModal}
+            onDismiss={onDismiss}
+            baseStyles={baseStyles}
+          />
+        );
+      case WalletConnectModalTypes.SEND_NANO_CONTRACT_TX:
+        return (
+          <NewNanoContractTransactionRequest
             {...walletConnectModal}
             onDismiss={onDismiss}
             baseStyles={baseStyles}
@@ -100,4 +109,5 @@ const baseStyles = StyleSheet.create({
 export const WalletConnectModalTypes = {
   CONNECT: 'CONNECT',
   SIGN_MESSAGE: 'SIGN_MESSAGE',
+  SEND_NANO_CONTRACT_TX: 'SEND_NANO_CONTRACT_TX',
 };
