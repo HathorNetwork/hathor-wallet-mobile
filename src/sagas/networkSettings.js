@@ -202,7 +202,7 @@ export function* updateNetworkSettings(action) {
   // Validates the potential network and set the network accordingly
   if (potentialNetwork === NETWORK_MAINNET) {
     network = NETWORK_MAINNET;
-  } else if (potentialNetwork.startsWith(NETWORK_TESTNET)) {
+  } else if (potentialNetwork.indexOf(NETWORK_TESTNET) > -1) {
     network = NETWORK_TESTNET;
   } else if (potentialNetwork.startsWith(NETWORK_PRIVATENET)) {
     network = NETWORK_PRIVATENET;

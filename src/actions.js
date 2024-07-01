@@ -190,6 +190,8 @@ export const types = {
   FIRSTADDRESS_FAILURE: 'FIRSTADDRESS_FAILURE',
   /* It updates the redux state of new nano contract transaction status on wallet connect register. */
   WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
+  SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
+  SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL'
 };
 
 export const featureToggleInitialized = () => ({
@@ -1322,4 +1324,21 @@ export const nanoContractBlueprintInfoSuccess = (blueprintInfo) => ({
  */
 export const nanoContractBlueprintInfoReady = () => ({
   type: types.NANOCONTRACT_BLUEPRINTINFO_READY,
+});
+
+export const showSignMessageWithAddressModal = (accept, deny) => ({
+  type: types.SHOW_SIGN_MESSAGE_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+  },
+});
+
+export const showNanoContractSendTxModal = (accept, deny, data) => ({
+  type: types.SHOW_NANO_CONTRACT_SEND_TX_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+  },
 });
