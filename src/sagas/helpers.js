@@ -232,6 +232,7 @@ export async function getFullnodeNetwork() {
         reject(error);
       });
     });
+    console.log('Response: ', response)
     return response.network;
   } catch (e) {
     log.error('Error while getting fullnode network version.', e);
