@@ -227,6 +227,7 @@ export function* updateNetworkSettings(action) {
     nodeUrl,
     explorerUrl,
     explorerServiceUrl,
+    txMiningServiceUrl,
     walletServiceUrl,
     walletServiceWsUrl,
   };
