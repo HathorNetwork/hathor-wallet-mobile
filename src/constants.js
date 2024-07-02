@@ -203,7 +203,7 @@ export const PRE_SETTINGS_TESTNET = {
 
 export const NODE_SERVER_MAINNET_URL = 'https://mobile.wallet.hathor.network/v1a/';
 export const EXPLORER_MAINNET_URL = 'https://explorer.hathor.network/';
-export const EXPLORER_SERVICE_MAINNET_URL = 'https://explorer-service.hathor.network';
+export const EXPLORER_SERVICE_MAINNET_URL = 'https://explorer-service.hathor.network/';
 export const TX_MINING_SERVICE_MAINNET_URL = 'https://txmining.mainnet.hathor.network/';
 
 export const PRE_SETTINGS_MAINNET = {
