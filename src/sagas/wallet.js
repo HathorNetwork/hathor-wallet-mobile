@@ -199,6 +199,10 @@ export function* startWallet(action) {
     wallet = new HathorWallet(walletConfig);
   }
 
+  // Extra wallet configuration based on customNetwork
+  config.setExplorerServiceBaseUrl(networkSettings.explorerServiceUrl);
+  config.setTxMiningUrl(networkSettings.txMiningServiceUrl);
+
   yield put(setWallet(wallet));
 
   // Setup listeners before starting the wallet so we don't lose messages
