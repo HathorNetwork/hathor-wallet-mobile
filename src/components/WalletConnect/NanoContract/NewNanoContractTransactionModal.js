@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -18,51 +18,41 @@ import { COLORS } from '../../../styles/themes';
 import { CircleInfoIcon } from '../../Icons/CircleInfo.icon';
 import { ModalBase } from '../../ModalBase';
 import SimpleButton from '../../SimpleButton';
-import { setNewNanoContractTransaction, walletWalletReject } from '../../../actions';
-import { WALLET_STATUS } from '../../../sagas/wallet';
+import { walletConnectReject } from '../../../actions';
 import { NANO_CONTRACT_INFO_URL } from '../../../constants';
 
-export const NewNanoContractTransactionModal = () => {
+export const NewNanoContractTransactionModal = ({
+  onDismiss,
+  data: { payload },
+}) => {
+  const isRetrying = useSelector(({ walletConnect }) => (
+    walletConnect.newNanoContractTransaction.retrying
+  ));
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const readMoreUrl = NANO_CONTRACT_INFO_URL;
 
-  const {
-    showModal,
-    ncTxRequest,
-  } = useSelector((state) => {
-    const {
-      walletStartState,
-      walletConnect: {
-        newNanoContractTransaction: {
-          showModal: showNcTxModal,
-          data,
-        }
-      },
-    } = state;
-    const isWalletReady = walletStartState === WALLET_STATUS.READY;
-
-    return {
-      showModal: showNcTxModal && isWalletReady,
-      ncTxRequest: data,
-    };
-  });
-
-  const onDismiss = () => {
-    dispatch(walletWalletReject());
-    dispatch(setNewNanoContractTransaction({ show: false, data: null }));
-  };
+  const onModalDismiss = useCallback(() => {
+    dispatch(walletConnectReject());
+    onDismiss();
+  }, []);
 
   const navigatesToNewNanoContractScreen = () => {
-    dispatch(setNewNanoContractTransaction({ show: false, data: null }));
-    navigation.navigate('NewNanoContractTransactionScreen', { ncTxRequest });
+    onDismiss();
+    navigation.navigate('NewNanoContractTransactionScreen', { ncTxRequest: payload });
   };
+
+  useEffect(() => {
+    if (isRetrying) {
+      navigatesToNewNanoContractScreen();
+    }
+  }, [isRetrying, navigation]);
 
   // XXX: Make it navigates to readMoreUrl
   const onReadMore = () => {};
 
   return (
-    <ModalBase show={showModal} onDismiss={onDismiss}>
+    <ModalBase show onDismiss={onModalDismiss}>
       <ModalBase.Title>{t`New Nano Contract Transaction`}</ModalBase.Title>
       <ModalBase.Body style={styles.body}>
         <WarnDisclaimer onReadMore={onReadMore} />
@@ -80,7 +70,7 @@ export const NewNanoContractTransactionModal = () => {
       />
       <ModalBase.DiscreteButton
         title={t`Cancel`}
-        onPress={onDismiss}
+        onPress={onModalDismiss}
       />
     </ModalBase>
   );
