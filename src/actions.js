@@ -1250,7 +1250,7 @@ export const firstAddressFailure = (failurePayload) => ({
 });
 
 /**
- * Request the downalod of token metadata for a list of tokens.
+ * Request the download of token metadata for a list of tokens.
  * @param {string[]} tokens A list of token uid
  */
 export const tokensFetchMetadataRequest = (tokens) => ({
