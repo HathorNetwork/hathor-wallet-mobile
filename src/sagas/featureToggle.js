@@ -79,14 +79,12 @@ export function* fetchTogglesRoutine() {
 }
 
 export function* handleToggleUpdate() {
-  console.log('Handling feature toggle update');
   const unleashClient = yield select((state) => state.unleashClient);
   const networkSettings = yield select((state) => state.networkSettings);
 
   const toggles = unleashClient.getToggles();
   const featureToggles = disableFeaturesIfNeeded(networkSettings, mapFeatureToggles(toggles));
 
-  console.log('Toggles:', toggles);
   yield put(setFeatureToggles(featureToggles));
   yield put({ type: types.FEATURE_TOGGLE_UPDATED });
 }
@@ -103,7 +101,6 @@ export function* monitorFeatureFlags(currentRetry = 0) {
     },
   };
 
-  console.log('Stage: ', STAGE);
   const unleashClient = new UnleashClient({
     url: UNLEASH_URL,
     clientKey: UNLEASH_CLIENT_KEY,
@@ -124,7 +121,6 @@ export function* monitorFeatureFlags(currentRetry = 0) {
     // At this point, unleashClient.fetchToggles() already fetched the toggles
     // (this will throw if it hasn't)
     const featureToggles = mapFeatureToggles(unleashClient.getToggles());
-    console.log('TOGGLES: ', featureToggles);
 
     yield put(setFeatureToggles(featureToggles));
     yield put(featureToggleInitialized());
