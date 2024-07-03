@@ -21,7 +21,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
-    newNanoContactRetry,
+  newNanoContactRetry,
   newNanoContactRetryDismiss,
   setNewNanoContractStatusReady,
   tokensFetchMetadataRequest,

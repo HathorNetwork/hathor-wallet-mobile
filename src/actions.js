@@ -1342,11 +1342,13 @@ export const nanoContractBlueprintInfoReady = () => ({
   type: types.NANOCONTRACT_BLUEPRINTINFO_READY,
 });
 
-export const showSignMessageWithAddressModal = (accept, deny) => ({
+export const showSignMessageWithAddressModal = (accept, deny, data, dapp) => ({
   type: types.SHOW_SIGN_MESSAGE_REQUEST_MODAL,
   payload: {
     accept,
     deny,
+    data,
+    dapp,
   },
 });
 
