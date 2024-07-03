@@ -91,7 +91,6 @@ import { NanoContractDetailsScreen } from './screens/NanoContract/NanoContractDe
 import { NanoContractTransactionScreen } from './screens/NanoContract/NanoContractTransactionScreen';
 import { NanoContractRegisterScreen } from './screens/NanoContract/NanoContractRegisterScreen';
 import { NewNanoContractTransactionScreen } from './screens/WalletConnect/NewNanoContractTransactionScreen';
-import { NewNanoContractTransactionModal } from './components/WalletConnect/NanoContract/NewNanoContractTransactionModal';
 import { NanoContractRegisterQrCodeScreen } from './screens/NanoContractRegisterQrCodeScreen';
 
 /**
