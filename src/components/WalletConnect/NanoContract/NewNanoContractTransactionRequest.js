@@ -21,10 +21,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
+    newNanoContactRetry,
+  newNanoContactRetryDismiss,
   setNewNanoContractStatusReady,
   tokensFetchMetadataRequest,
   walletConnectAccept,
-  walletWalletReject
+  walletConnectReject
 } from '../../../actions';
 import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
@@ -51,15 +53,8 @@ import { DeclineModal } from './DeclineModal';
  * @param {string} props.ncTxRequest.dapp.url
  * @param {string} props.ncTxRequest.dapp.description
  */
-export const NewNanoContractTransactionRequest = ({
-  onDismiss,
-  data,
-}) => {
-  const { payload } = data;
-
-  const nc = payload.data;
-
-  // const { nc, dapp } = data;
+export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
+  const { nc, dapp } = ncTxRequest;
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const newTxStatus = useSelector((state) => state.walletConnect.newNanoContractTransaction.status);
@@ -93,8 +88,6 @@ export const NewNanoContractTransactionRequest = ({
     // Update the caller with the address selected by the user.
     const acceptedNc = { ...nc, caller: ncAddress };
     // Signal the user has accepted the current request and pass the accepted data.
-    onDismiss();
-    console.log('Accepted NC:', acceptedNc);
     dispatch(walletConnectAccept(acceptedNc));
   };
 
@@ -103,9 +96,8 @@ export const NewNanoContractTransactionRequest = ({
   };
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
-    dispatch(walletWalletReject());
-    // navigation.goBack();
-    onDismiss();
+    dispatch(walletConnectReject());
+    navigation.goBack();
     // TODO: It is not being dimissed automatically
   };
   const onDismissDeclineModal = () => {
@@ -149,6 +141,7 @@ export const NewNanoContractTransactionRequest = ({
 
   const onFeedbackModalDismiss = () => {
     dispatch(setNewNanoContractStatusReady());
+    dispatch(newNanoContactRetryDismiss());
     navigation.goBack();
   };
 
@@ -159,6 +152,7 @@ export const NewNanoContractTransactionRequest = ({
 
   const onTryAgain = () => {
     dispatch(setNewNanoContractStatusReady());
+    dispatch(newNanoContactRetry());
   };
 
   const isTxInfoLoading = () => !metadataLoaded;
