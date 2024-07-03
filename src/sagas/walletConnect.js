@@ -245,7 +245,6 @@ export function* onSessionRequest(action) {
   const wallet = yield select((state) => state.wallet);
 
   const { web3wallet } = yield select((state) => state.walletConnect.client);
-  /*
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
   const requestSession = activeSessions[payload.topic];
   if (!requestSession) {
@@ -260,15 +259,9 @@ export function* onSessionRequest(action) {
     description: get(requestSession.peer, 'metadata.description', ''),
     chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
-  */
 
   try {
-    const response = yield call(handleRpcRequest, params.request, wallet, {
-      icon: 'https://place-hold.it/50x50/black/white.png&text=wen%20nano&bold&fontsize=14',
-      proposer: 'Some random dapp',
-      url: 'https://hathor.network',
-      description: 'Random dapp',
-    }, promptHandler);
+    const response = yield call(handleRpcRequest, params.request, wallet, data, promptHandler);
 
     switch (response.type) {
       case RpcResponseTypes.SendNanoContractTxResponse:
@@ -278,14 +271,14 @@ export function* onSessionRequest(action) {
         break;
     }
 
-    /* yield call(() => web3wallet.respondSessionRequest({
+    yield call(() => web3wallet.respondSessionRequest({
       topic: payload.topic,
       response: {
         id: payload.id,
         jsonrpc: '2.0',
         result: response,
       }
-    })); */
+    }));
   } catch (e) {
     let shouldAnswer = true;
     switch (e.constructor) {
@@ -309,7 +302,7 @@ export function* onSessionRequest(action) {
     }
 
     if (shouldAnswer) {
-      console.log('Should answer.');
+      console.log('Error: ', e);
       yield call(() => web3wallet.respondSessionRequest({
         topic: payload.topic,
         response: {
@@ -332,11 +325,13 @@ async function promptHandler(request, requestMetadata) {
       case TriggerTypes.SignMessageWithAddressConfirmationPrompt: {
         const signMessageResponseTemplate = (accepted) => () => resolve({
           type: TriggerResponseTypes.SignMessageWithAddressConfirmationResponse,
-          accepted,
+          data: accepted,
         });
         store.dispatch(showSignMessageWithAddressModal(
           signMessageResponseTemplate(true),
-          signMessageResponseTemplate(false)
+          signMessageResponseTemplate(false),
+          request.data,
+          requestMetadata,
         ))
       } break;
       case TriggerTypes.SendNanoContractTxConfirmationPrompt: {

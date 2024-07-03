@@ -8,7 +8,6 @@
 import React, { useCallback, useEffect } from 'react';
 import {
   StyleSheet,
-  View,
   Text,
   Linking,
 } from 'react-native';
@@ -16,11 +15,10 @@ import { t } from 'ttag';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { COLORS } from '../../../styles/themes';
-import { CircleInfoIcon } from '../../Icons/CircleInfo.icon';
 import { ModalBase } from '../../ModalBase';
-import SimpleButton from '../../SimpleButton';
 import { walletConnectReject } from '../../../actions';
 import { NANO_CONTRACT_INFO_URL } from '../../../constants';
+import { WarnDisclaimer } from '../WarnDisclaimer';
 
 export const NewNanoContractTransactionModal = ({
   onDismiss,
@@ -77,27 +75,6 @@ export const NewNanoContractTransactionModal = ({
     </ModalBase>
   );
 };
-
-const WarnDisclaimer = ({ onReadMore }) => (
-  <View style={styles.warnContainer}>
-    <View style={styles.infoIcon}>
-      <CircleInfoIcon color={COLORS.cardWarning200} />
-    </View>
-    <View style={styles.warnContent}>
-      <Text style={styles.warnMessage}>
-        {t`Caution: There are risks associated with signing dapp transaction requests.`}
-      </Text>
-      <View style={styles.learnMoreWrapper}>
-        <SimpleButton
-          containerStyle={styles.learnMoreContainer}
-          textStyle={styles.learnMoreText}
-          title={t`Read More.`}
-          onPress={onReadMore}
-        />
-      </View>
-    </View>
-  </View>
-);
 
 const styles = StyleSheet.create({
   body: {
