@@ -90,7 +90,6 @@ import { NanoContractDetailsScreen } from './screens/NanoContract/NanoContractDe
 import { NanoContractTransactionScreen } from './screens/NanoContract/NanoContractTransactionScreen';
 import { NanoContractRegisterScreen } from './screens/NanoContract/NanoContractRegisterScreen';
 import { NewNanoContractTransactionScreen } from './screens/WalletConnect/NewNanoContractTransactionScreen';
-import { NewNanoContractTransactionModal } from './components/WalletConnect/NanoContract/NewNanoContractTransactionModal';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
