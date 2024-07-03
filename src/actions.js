@@ -190,6 +190,8 @@ export const types = {
   FIRSTADDRESS_FAILURE: 'FIRSTADDRESS_FAILURE',
   /* It updates the redux state of new nano contract transaction status on wallet connect register. */
   WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
+  WALLETCONNECT_NEW_NANOCONTRACT_RETRY: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY',
+  WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS',
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
   SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL'
 };
@@ -260,7 +262,7 @@ export const walletConnectAccept = (data) => ({
   payload: data,
 });
 
-export const walletWalletReject = () => ({
+export const walletConnectReject = () => ({
   type: types.WALLET_CONNECT_REJECT,
 });
 
@@ -1257,6 +1259,20 @@ export const tokensFetchMetadataRequest = (tokens) => ({
 });
 
 /**
+ * Signals that the user wants to attempt to retry the nano contract tx send
+ */
+export const newNanoContactRetry = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY,
+});
+
+/**
+ * Signals that the user doesn't want to retry the new nano contract tx send
+ */
+export const newNanoContactRetryDismiss = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS,
+});
+
+/**
  * Signals update on new nano contract status to ready.
  */
 export const setNewNanoContractStatusReady = () => ({
@@ -1334,11 +1350,12 @@ export const showSignMessageWithAddressModal = (accept, deny) => ({
   },
 });
 
-export const showNanoContractSendTxModal = (accept, deny, data) => ({
+export const showNanoContractSendTxModal = (accept, deny, nc, dapp) => ({
   type: types.SHOW_NANO_CONTRACT_SEND_TX_MODAL,
   payload: {
     accept,
     deny,
-    data,
+    nc,
+    dapp,
   },
 });
