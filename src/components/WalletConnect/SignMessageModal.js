@@ -7,61 +7,75 @@
 
 import React from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import { StyleSheet, Text } from 'react-native';
-import ApproveRejectModal from './ApproveRejectModal';
 import { COLORS } from '../../styles/themes';
+import { ModalBase } from '../ModalBase';
+import { WarnDisclaimer } from './WarnDisclaimer';
+import { walletConnectReject } from '../../actions';
 
-const modalStyle = StyleSheet.create({
-  signMessageText: {
-    backgroundColor: COLORS.textColorShadowLighter,
-    width: '100%',
-    height: 100,
-    borderRadius: 15,
-    padding: 8,
-    marginBottom: 12,
-    marginTop: 12,
+const styles = StyleSheet.create({
+  body: {
+    paddingBottom: 24,
+  },
+  text: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  selectionContainer: {
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.freeze100,
   },
 });
 
 export default ({
-  onAcceptAction,
-  onRejectAction,
   onDismiss,
   data,
-  baseStyles,
 }) => {
-  const styles = { ...baseStyles, modalStyle };
+  const navigation = useNavigation();
   const dispatch = useDispatch();
-  const { message, } = data;
+  const { payload } = data;
 
-  const onAccept = () => {
-    onDismiss();
-    dispatch(onAcceptAction);
-  };
+  // XXX: Make it navigates to readMoreUrl
+  const onReadMore = () => {};
 
   const onReject = () => {
     onDismiss();
-    dispatch(onRejectAction);
+    dispatch(walletConnectReject());
+  };
+
+  const navigateToSignMessageRequestScreen = () => {
+    onDismiss();
+    navigation.navigate('SignMessageRequest', { signMessageRequest: payload });
   };
 
   return (
-    <ApproveRejectModal
-      headerText={t`Sign this message?`}
-      body={(
-        <>
-          <Text style={styles.signMessageText}>
-            { message }
+    <ModalBase show onDismiss={onReject}>
+      <ModalBase.Title>{t`New Sign Message Request`}</ModalBase.Title>
+      <ModalBase.Body style={styles.body}>
+        <WarnDisclaimer onReadMore={onReadMore} />
+        <Text style={styles.text}>
+          {t`You have received a new Sign Message Request. Please`}
+          <Text style={styles.bold}>
+            {' '}{t`carefully review the details`}{' '}
           </Text>
-          <Text style={styles.modalText}>
-            { t`By clicking approve, you will sign the requested message using the first address derived from your root key on the m/44'/280'/0'/0/0 derivation path.` }
-          </Text>
-        </>
-      )}
-      onAccept={onAccept}
-      onReject={onReject}
-      data={data}
-      baseStyles={styles}
-    />
+          {t`before deciding to accept or decline.`}
+        </Text>
+      </ModalBase.Body>
+      <ModalBase.Button
+        title={t`Review Sign Message Request details`}
+        onPress={navigateToSignMessageRequestScreen}
+      />
+      <ModalBase.DiscreteButton
+        title={t`Cancel`}
+        onPress={onReject}
+      />
+    </ModalBase>
   );
 };
