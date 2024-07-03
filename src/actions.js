@@ -1268,6 +1268,20 @@ export const newNanoContactRetryDismiss = () => ({
 });
 
 /**
+ * Signals that the user wants to attempt to retry the nano contract tx send
+ */
+export const newNanoContactRetry = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY,
+});
+
+/**
+ * Signals that the user doesn't want to retry the new nano contract tx send
+ */
+export const newNanoContactRetryDismiss = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS,
+});
+
+/**
  * Signals update on new nano contract status to ready.
  */
 export const setNewNanoContractStatusReady = () => ({
