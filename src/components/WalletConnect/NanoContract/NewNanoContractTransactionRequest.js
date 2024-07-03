@@ -100,7 +100,6 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     setShowDeclineModal(false);
     dispatch(walletConnectReject());
     navigation.goBack();
-    // TODO: It is not being dimissed automatically
   };
   const onDismissDeclineModal = () => {
     setShowDeclineModal(false);
