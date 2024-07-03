@@ -256,6 +256,7 @@ const initialState = {
     /**
      * newNanoContractTransaction {{
      *   showModal: boolean;
+     *   retrying: boolean;
      *   data: {
      *     nc: {
      *       network: string;
@@ -283,6 +284,7 @@ const initialState = {
     newNanoContractTransaction: {
       status: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.READY,
       showModal: false,
+      retrying: false,
       data: null,
     },
     connectionFailed: false,
@@ -687,6 +689,10 @@ export const reducer = (state = initialState, action) => {
       return onUnregisteredTokensRequest(state);
     case types.UNREGISTEREDTOKENS_UPDATE:
       return onUnregisteredTokensUpdate(state, action);
+    case types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY:
+      return onNewNanoContractTransactionRetry(state);
+    case types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS:
+      return onNewNanoContractTransactionRetryDismiss(state);
     default:
       return state;
   }
@@ -1877,6 +1883,28 @@ export const onSetNewNanoContractTransaction = (state, { payload }) => ({
     newNanoContractTransaction: {
       ...payload,
       status: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.READY,
+    },
+  },
+});
+
+export const onNewNanoContractTransactionRetry = (state) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    newNanoContractTransaction: {
+      ...state.walletConnect.newNanoContractTransaction,
+      retrying: true,
+    },
+  },
+});
+
+export const onNewNanoContractTransactionRetryDismiss = (state) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    newNanoContractTransaction: {
+      ...state.walletConnect.newNanoContractTransaction,
+      retrying: false,
     },
   },
 });
