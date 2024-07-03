@@ -59,6 +59,7 @@ import {
   takeEvery,
   select,
   race,
+  spawn,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
@@ -77,9 +78,14 @@ import {
   setWCConnectionFailed,
   showSignMessageWithAddressModal,
   showNanoContractSendTxModal,
+  setNewNanoContractStatusLoading,
+  setNewNanoContractStatusReady,
+  setNewNanoContractStatusFailure,
+  setNewNanoContractStatusSuccess,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
 import { store } from '../reducers/reducer.init';
+import { onSetNewNanoContractTransactionStatus } from '../reducers/reducer';
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'htr_signWithAddress',
@@ -239,14 +245,15 @@ export function* onSessionRequest(action) {
   const wallet = yield select((state) => state.wallet);
 
   const { web3wallet } = yield select((state) => state.walletConnect.client);
+  /*
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
-  // const requestSession = activeSessions[payload.topic];
-  /* if (!requestSession) {
+  const requestSession = activeSessions[payload.topic];
+  if (!requestSession) {
     console.error('Could not identify the request session, ignoring request..');
     return;
-  } */
+  }
 
-  /* const data = {
+  const data = {
     icon: get(requestSession.peer, 'metadata.icons[0]', null),
     proposer: get(requestSession.peer, 'metadata.name', ''),
     url: get(requestSession.peer, 'metadata.url', ''),
@@ -256,74 +263,111 @@ export function* onSessionRequest(action) {
   */
 
   try {
-    const response = yield call(handleRpcRequest, params.request, wallet, promptHandler);
-    yield call(() => web3wallet.respondSessionRequest({
+    const response = yield call(handleRpcRequest, params.request, wallet, {
+      icon: 'https://place-hold.it/50x50/black/white.png&text=wen%20nano&bold&fontsize=14',
+      proposer: 'Some random dapp',
+      url: 'https://hathor.network',
+      description: 'Random dapp',
+    }, promptHandler);
+
+    switch (response.type) {
+      case RpcResponseTypes.SendNanoContractTxResponse:
+        yield put(setNewNanoContractStatusSuccess());
+        break;
+      default:
+        break;
+    }
+
+    /* yield call(() => web3wallet.respondSessionRequest({
       topic: payload.topic,
       response: {
         id: payload.id,
         jsonrpc: '2.0',
         result: response,
-      },
-    }));
+      }
+    })); */
   } catch (e) {
-    console.log('e: ', e);
-    console.log('Responded with error', JSON.stringify(e));
-    yield call(() => web3wallet.respondSessionRequest({
-      topic: payload.topic,
-      response: {
-        id: payload.id,
-        jsonrpc: '2.0',
-        error: {
-          code: ERROR_CODES.USER_REJECTED_METHOD,
-          message: 'Rejected by the user',
+    let shouldAnswer = true;
+    switch (e.constructor) {
+      case SendNanoContractTxFailure: {
+        yield put(setNewNanoContractStatusFailure());
+
+        // User might try again, wait for it.
+        const { retry } = yield race({
+          retry: take(types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY),
+          dismiss: take(types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS),
+        });
+
+        if (retry) {
+          shouldAnswer = false;
+          // Retry the action, exactly as it came:
+          yield spawn(onSessionRequest, action);
+        }
+      } break;
+      default:
+        break;
+    }
+
+    if (shouldAnswer) {
+      console.log('Should answer.');
+      yield call(() => web3wallet.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          error: {
+            code: ERROR_CODES.USER_REJECTED_METHOD,
+            message: 'Rejected by the user',
+          },
         },
-      },
-    }));
+      }));
+    }
   }
 }
 
-async function promptHandler(request) {
+async function promptHandler(request, requestMetadata) {
   // eslint-disable-next-line
   return new Promise(async (resolve, reject) => {
     switch (request.type) {
-      case ConfirmationPromptTypes.SignMessageWithAddressConfirmationPrompt: {
-        const signMessageResponseTemplate = (data) => () => resolve({
-          type: ConfirmationResponseTypes.SignMessageWithAddressConfirmationResponse,
-          data,
+      case TriggerTypes.SignMessageWithAddressConfirmationPrompt: {
+        const signMessageResponseTemplate = (accepted) => () => resolve({
+          type: TriggerResponseTypes.SignMessageWithAddressConfirmationResponse,
+          accepted,
         });
         store.dispatch(showSignMessageWithAddressModal(
           signMessageResponseTemplate(true),
           signMessageResponseTemplate(false)
         ))
       } break;
-      case ConfirmationPromptTypes.SendNanoContractTxConfirmationPrompt: {
-        const proxy = (result) => {
-          console.log('RESULT: ', result);
-          return resolve(result);
-        };
-        const signMessageResponseTemplate = () => (data) => proxy({
-          type: ConfirmationResponseTypes.SendNanoContractTxConfirmationResponse,
+      case TriggerTypes.SendNanoContractTxConfirmationPrompt: {
+        const sendNanoContractTxResponseTemplate = (accepted) => (data) => resolve({
+          type: TriggerResponseTypes.SendNanoContractTxConfirmationResponse,
           data: {
-            accepted: true,
-            nc: data.payload,
+            accepted,
+            nc: data?.payload,
           }
         });
+
         store.dispatch(showNanoContractSendTxModal(
-          signMessageResponseTemplate({
-            accepted: true,
-            nc: request.data,
-          }),
-          signMessageResponseTemplate({
-            accepted: false,
-          }),
+          sendNanoContractTxResponseTemplate(true),
+          sendNanoContractTxResponseTemplate(false),
           request.data,
+          requestMetadata,
         ));
       } break;
-      case ConfirmationPromptTypes.PinConfirmationPrompt: {
+      case TriggerTypes.SendNanoContractTxLoadingTrigger:
+        store.dispatch(setNewNanoContractStatusLoading());
+        resolve();
+        break;
+      case TriggerTypes.LoadingFinishedTrigger:
+        store.dispatch(setNewNanoContractStatusReady());
+        resolve();
+        break;
+      case TriggerTypes.PinConfirmationPrompt: {
         const pinCode = await showPinScreenForResult(store.dispatch);
 
         resolve({
-          type: ConfirmationResponseTypes.PinRequestResponse,
+          type: TriggerResponseTypes.PinRequestResponse,
           data: {
             accepted: true,
             pinCode,
@@ -337,12 +381,6 @@ async function promptHandler(request) {
 
 export function* onSendNanoContractTxRequest(data) {
   const { accept: acceptCb, deny: denyCb } = data.payload;
-
-  console.log('Data: ', JSON.stringify({
-    data,
-    accept: acceptCb,
-    deny: denyCb
-  }));
 
   const wallet = yield select((state) => state.wallet);
 
@@ -361,9 +399,6 @@ export function* onSendNanoContractTxRequest(data) {
     accept: take(types.WALLET_CONNECT_ACCEPT),
     deny: take(types.WALLET_CONNECT_REJECT),
   });
-
-  console.log('Deny: ', deny);
-  console.log('Accept: ', accept);
 
   if (deny) {
     denyCb();
@@ -384,9 +419,6 @@ export function* onSendNanoContractTxRequest(data) {
 export function* onSignMessageRequest(data) {
   const { accept, deny: denyCb } = data.payload;
 
-  const onAcceptAction = { type: 'WALLET_CONNECT_ACCEPT' };
-  const onRejectAction = { type: 'WALLET_CONNECT_REJECT' };
-
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet.isReady()) {
@@ -398,13 +430,11 @@ export function* onSignMessageRequest(data) {
     show: true,
     type: WalletConnectModalTypes.SIGN_MESSAGE,
     data,
-    onAcceptAction,
-    onRejectAction,
   }));
 
   const { deny } = yield race({
-    accept: take(onAcceptAction.type),
-    deny: take(onRejectAction.type),
+    accept: take(types.WALLET_CONNECT_ACCEPT),
+    deny: take(types.WALLET_CONNECT_REJECT),
   });
 
   if (deny) {
