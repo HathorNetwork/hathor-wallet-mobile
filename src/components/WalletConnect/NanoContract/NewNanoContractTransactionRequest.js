@@ -22,6 +22,8 @@ import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
   nanoContractBlueprintInfoRequest,
+  newNanoContactRetry,
+  newNanoContactRetryDismiss,
   setNewNanoContractStatusReady,
   walletConnectAccept,
   walletConnectReject,
@@ -57,15 +59,8 @@ import { DeclineModal } from './DeclineModal';
  * @param {string} props.ncTxRequest.dapp.url
  * @param {string} props.ncTxRequest.dapp.description
  */
-export const NewNanoContractTransactionRequest = ({
-  onDismiss,
-  data,
-}) => {
-  const { payload } = data;
-
-  const nc = payload.data;
-
-  // const { nc, dapp } = data;
+export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
+  const { nc, dapp } = ncTxRequest;
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const newTxStatus = useSelector((state) => state.walletConnect.newNanoContractTransaction.status);
@@ -102,8 +97,6 @@ export const NewNanoContractTransactionRequest = ({
     // Update the caller with the address selected by the user.
     const acceptedNc = { ...nc, caller: ncAddress };
     // Signal the user has accepted the current request and pass the accepted data.
-    onDismiss();
-    console.log('Accepted NC:', acceptedNc);
     dispatch(walletConnectAccept(acceptedNc));
   };
 
@@ -160,6 +153,7 @@ export const NewNanoContractTransactionRequest = ({
 
   const onFeedbackModalDismiss = () => {
     dispatch(setNewNanoContractStatusReady());
+    dispatch(newNanoContactRetryDismiss());
     navigation.goBack();
   };
 
@@ -170,6 +164,7 @@ export const NewNanoContractTransactionRequest = ({
 
   const onTryAgain = () => {
     dispatch(setNewNanoContractStatusReady());
+    dispatch(newNanoContactRetry());
   };
 
   // Loading while downloading:
