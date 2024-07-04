@@ -202,12 +202,11 @@ export function* updateNetworkSettings(action) {
   // Validates the potential network and set the network accordingly
   if (potentialNetwork === NETWORK_MAINNET) {
     network = NETWORK_MAINNET;
-  } else if (potentialNetwork.startsWith(NETWORK_TESTNET)) {
+  } else if (potentialNetwork.indexOf(NETWORK_TESTNET) >= 0) {
     network = NETWORK_TESTNET;
-  } else if (potentialNetwork.startsWith(NETWORK_PRIVATENET)) {
+  } else if (potentialNetwork.indexOf(NETWORK_PRIVATENET) >= 0) {
     network = NETWORK_PRIVATENET;
   } else {
-    log.debug('The network informed is not allowed. Make sure your network is either "mainnet", "testnet" or "privatenet", or starts with "testnet" or "privatenet".');
     yield put(networkSettingsUpdateFailure());
     return;
   }
