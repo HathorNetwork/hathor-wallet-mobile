@@ -24,7 +24,7 @@ import { commonStyles } from '../theme';
  * @param {string[]} props.ncArgs A list of method's argument.
  */
 export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
-  if (!ncArgs.length) {
+  if (!ncArgs || ncArgs.length <= 0) {
     return null;
   }
 
