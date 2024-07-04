@@ -1229,6 +1229,7 @@ export const onReloadWalletRequested = (state) => ({
   tokensHistory: initialState.tokensHistory,
   tokensBalance: initialState.tokensBalance,
   loadHistoryStatus: initialState.loadHistoryStatus,
+  nanoContract: initialState.nanoContract,
 });
 
 const onWalletReloading = (state) => ({
