@@ -247,24 +247,29 @@ export function* onSessionRequest(action) {
 
   const wallet = yield select((state) => state.wallet);
 
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
+  /* const { web3wallet } = yield select((state) => state.walletConnect.client);
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
   const requestSession = activeSessions[payload.topic];
   if (!requestSession) {
     console.error('Could not identify the request session, ignoring request..');
     return;
-  }
+  } */
 
-  const data = {
+  /* const data = {
     icon: get(requestSession.peer, 'metadata.icons[0]', null),
     proposer: get(requestSession.peer, 'metadata.name', ''),
     url: get(requestSession.peer, 'metadata.url', ''),
     description: get(requestSession.peer, 'metadata.description', ''),
     chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
-  };
+  }; */
 
   try {
-    const response = yield call(handleRpcRequest, params.request, wallet, data, promptHandler);
+    const response = yield call(handleRpcRequest, params.request, wallet, {
+      icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAF5TQc1gCQpVUbn19OPUA5z7Kz1Of8J7xxQ&s',
+      proposer: '',
+      url: '',
+      description: ''
+    }, promptHandler);
 
     switch (response.type) {
       case RpcResponseTypes.SendNanoContractTxResponse:
@@ -274,14 +279,15 @@ export function* onSessionRequest(action) {
         break;
     }
 
-    yield call(() => web3wallet.respondSessionRequest({
+    /* yield call(() => web3wallet.respondSessionRequest({
       topic: payload.topic,
       response: {
         id: payload.id,
         jsonrpc: '2.0',
         result: response,
       }
-    }));
+    })); */
+
   } catch (e) {
     let shouldAnswer = true;
     switch (e.constructor) {
@@ -306,7 +312,7 @@ export function* onSessionRequest(action) {
 
     if (shouldAnswer) {
       console.log('Error: ', e);
-      yield call(() => web3wallet.respondSessionRequest({
+      /* yield call(() => web3wallet.respondSessionRequest({
         topic: payload.topic,
         response: {
           id: payload.id,
@@ -316,7 +322,7 @@ export function* onSessionRequest(action) {
             message: 'Rejected by the user',
           },
         },
-      }));
+      })); */
     }
   }
 }
