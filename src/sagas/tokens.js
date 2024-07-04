@@ -96,6 +96,8 @@ function* fetchTokenBalance(action) {
     const tokenBalance = yield select((state) => get(state.tokensBalance, tokenId));
 
     if (!force && tokenBalance && tokenBalance.oldStatus === TOKEN_DOWNLOAD_STATUS.READY) {
+      log.debug(`Token download status READY.`);
+      log.debug(`Success fetching token balance for token ${tokenId}.`);
       // The data is already loaded, we should dispatch success
       yield put(tokenFetchBalanceSuccess(tokenId, tokenBalance.data));
       return;
@@ -114,7 +116,7 @@ function* fetchTokenBalance(action) {
       locked: token.balance.locked,
     };
 
-    log.debug('Success fetching token balance.');
+    log.debug(`Success fetching token balance for token ${tokenId}.`);
     yield put(tokenFetchBalanceSuccess(tokenId, balance));
   } catch (e) {
     log.error('Error while fetching token balance.', e);
@@ -131,7 +133,7 @@ function* fetchTokenHistory(action) {
 
     if (!force && tokenHistory && tokenHistory.oldStatus === TOKEN_DOWNLOAD_STATUS.READY) {
       // The data is already loaded, we should dispatch success
-      log.debug('Success fetching token history from store.');
+      log.debug(`Success fetching token history from store for token ${tokenId}.`);
       yield put(tokenFetchHistorySuccess(tokenId, tokenHistory.data));
       return;
     }
@@ -139,7 +141,7 @@ function* fetchTokenHistory(action) {
     const response = yield call([wallet, wallet.getTxHistory], { token_id: tokenId });
     const data = response.map(mapToTxHistory(tokenId));
 
-    log.debug('Success fetching token history.');
+    log.debug(`Success fetching token history for token ${tokenId}.`);
     yield put(tokenFetchHistorySuccess(tokenId, data));
   } catch (e) {
     log.error('Error while fetching token history.', e);
@@ -162,10 +164,12 @@ function* routeTokenChange(action) {
 
   switch (action.type) {
     case 'NEW_TOKEN':
+      log.debug('[routeTokenChange] fetching token balance on NEW_TOKEN event');
       yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: action.payload.uid });
       break;
     case 'SET_TOKENS':
     default:
+      log.debug('[routeTokenChange] fetching token balance on SET_TOKENS event');
       for (const uid of getRegisteredTokenUids({ tokens: action.payload })) {
         yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: uid });
       }
