@@ -21,30 +21,33 @@ import { commonStyles } from '../theme';
  * @param {Object} props
  * @param {string[]} props.ncArgs A list of method's argument.
  */
-export const NanoContractMethodArgs = ({ ncArgs }) => (
-  <View>
+export const NanoContractMethodArgs = ({ ncArgs }) => {
+  if (!ncArgs || ncArgs.length <= 0) {
+    return null;
+  }
+
+  return (
     <View>
-      <Text style={commonStyles.sectionTitle}>{t`Argument List`}</Text>
-    </View>
-    {ncArgs.length
-      && (
-        <View style={[commonStyles.card]}>
-          <View style={[commonStyles.cardStack]}>
-            {ncArgs.map((argValue, index) => (
-              <View key={`${argValue}:${Date.now().toString()}`} style={commonStyles.cardStackItem}>
-                <View style={styles.argPosition}>
-                  <Text style={styles.argPositionText}>{t`Position ${index}`}</Text>
-                </View>
-                <View style={styles.argValue}>
-                  <Text style={styles.argValueText}>{argValue}</Text>
-                </View>
+      <View>
+        <Text style={commonStyles.sectionTitle}>{t`Argument List`}</Text>
+      </View>
+      <View style={[commonStyles.card]}>
+        <View style={[commonStyles.cardStack]}>
+          {ncArgs.map((argValue, index) => (
+            <View key={`${argValue}:${Date.now().toString()}`} style={commonStyles.cardStackItem}>
+              <View style={styles.argPosition}>
+                <Text style={styles.argPositionText}>{t`Position ${index}`}</Text>
               </View>
-            ))}
-          </View>
+              <View style={styles.argValue}>
+                <Text style={styles.argValueText}>{argValue}</Text>
+              </View>
+            </View>
+          ))}
         </View>
-      )}
-  </View>
-);
+      </View>
+    </View>
+  )
+};
 
 const styles = StyleSheet.create({
   argPosition: {
