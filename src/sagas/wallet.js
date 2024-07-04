@@ -341,7 +341,7 @@ export function* loadTokens() {
   // Since we already know here what tokens are registered, we can dispatch actions
   // to asynchronously load the balances of each one. The `put` effect will just dispatch
   // and continue, loading the tokens asynchronously
-  for (const token of registeredUids) {
+  for (const token of registeredUids.filter((token) => token !== htrUid)) {
     yield put(tokenFetchBalanceRequested(token));
   }
 
