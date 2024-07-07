@@ -60,7 +60,7 @@ import { DeclineModal } from './DeclineModal';
  * @param {string} props.ncTxRequest.dapp.description
  */
 export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
-  const { nc, dapp } = ncTxRequest;
+  const { data: nc, dapp } = ncTxRequest;
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const newTxStatus = useSelector((state) => state.walletConnect.newNanoContractTransaction.status);

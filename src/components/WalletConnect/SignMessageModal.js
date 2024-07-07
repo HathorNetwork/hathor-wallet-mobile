@@ -40,7 +40,6 @@ export default ({
 }) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const { payload } = data;
 
   // XXX: Make it navigates to readMoreUrl
   const onReadMore = () => {};
@@ -52,7 +51,7 @@ export default ({
 
   const navigateToSignMessageRequestScreen = () => {
     onDismiss();
-    navigation.navigate('SignMessageRequest', { signMessageRequest: payload });
+    navigation.navigate('SignMessageRequest', { signMessageRequest: data });
   };
 
   return (
