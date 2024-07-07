@@ -61,6 +61,7 @@ import {
   race,
   spawn,
 } from 'redux-saga/effects';
+import { t } from 'ttag';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
 import { Core } from '@walletconnect/core';
@@ -91,9 +92,11 @@ import {
   setNewNanoContractStatusReady,
   setNewNanoContractStatusFailure,
   setNewNanoContractStatusSuccess,
+  showPinScreenForResult,
 } from '../actions';
-import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
+import { checkForFeatureFlag, getNetworkSettings } from './helpers';
 import { store } from '../reducers/reducer.init';
+import NavigationService from '../NavigationService';
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'htr_signWithAddress',
@@ -359,20 +362,32 @@ async function promptHandler(request, requestMetadata) {
         store.dispatch(setNewNanoContractStatusReady());
         resolve();
         break;
-      case TriggerTypes.PinConfirmationPrompt: {
-        const pinCode = await showPinScreenForResult(store.dispatch);
-
-        resolve({
+      case TriggerTypes.PinConfirmationPrompt:
+        store.dispatch(showPinScreenForResult((pinCode) => resolve({
           type: TriggerResponseTypes.PinRequestResponse,
           data: {
             accepted: true,
             pinCode,
           }
-        });
-      } break;
+        }))); break;
       default: reject(new Error('Invalid request'));
     }
   });
+}
+
+export function* onShowPinScreenForResult({ payload }) {
+  const { resolve } = payload;
+
+  NavigationService.navigate('PinScreen', {
+    canCancel: false,
+    dispatchResponse: true,
+    screenText: t`Enter your 6-digit pin to authorize operation`,
+    biometryText: t`Authorize operation`,
+  });
+
+  const resolvedAction = yield take(types.PIN_SCREEN_RESULT);
+
+  resolve(resolvedAction.payload);
 }
 
 /**
@@ -605,6 +620,7 @@ export function* saga() {
     takeLatest(types.START_WALLET_SUCCESS, init),
     takeLatest(types.SHOW_NANO_CONTRACT_SEND_TX_MODAL, onSendNanoContractTxRequest),
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
+    takeLatest(types.SHOW_PIN_SCREEN_FOR_RESULT, onShowPinScreenForResult),
     takeLeading('WC_SESSION_REQUEST', onSessionRequest),
     takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('WC_SESSION_DELETE', onSessionDelete),

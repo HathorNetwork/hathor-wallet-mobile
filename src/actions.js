@@ -193,7 +193,9 @@ export const types = {
   WALLETCONNECT_NEW_NANOCONTRACT_RETRY: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY',
   WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS',
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
-  SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL'
+  SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL',
+  SHOW_PIN_SCREEN_FOR_RESULT: 'SHOW_PIN_SCREEN_FOR_RESULT',
+  PIN_SCREEN_RESULT: 'PIN_SCREEN_RESULT',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1360,4 +1362,16 @@ export const showNanoContractSendTxModal = (accept, deny, nc, dapp) => ({
     nc,
     dapp,
   },
+});
+
+export const showPinScreenForResult = (resolve) => ({
+  type: types.SHOW_PIN_SCREEN_FOR_RESULT,
+  payload: {
+    resolve,
+  },
+});
+
+export const pinScreenResult = (pinCode) => ({
+  type: types.PIN_SCREEN_RESULT,
+  payload: pinCode,
 });
