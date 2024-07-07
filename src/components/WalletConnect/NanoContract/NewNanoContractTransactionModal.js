@@ -21,7 +21,7 @@ import { WarnDisclaimer } from '../WarnDisclaimer';
 
 export const NewNanoContractTransactionModal = ({
   onDismiss,
-  data: { payload },
+  data,
 }) => {
   const isRetrying = useSelector(({ walletConnect }) => (
     walletConnect.newNanoContractTransaction.retrying
@@ -37,7 +37,7 @@ export const NewNanoContractTransactionModal = ({
 
   const navigatesToNewNanoContractScreen = () => {
     onDismiss();
-    navigation.navigate('NewNanoContractTransactionScreen', { ncTxRequest: payload });
+    navigation.navigate('NewNanoContractTransactionScreen', { ncTxRequest: data });
   };
 
   useEffect(() => {

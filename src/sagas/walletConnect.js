@@ -94,10 +94,10 @@ import {
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
 import { store } from '../reducers/reducer.init';
-import { onSetNewNanoContractTransactionStatus } from '../reducers/reducer';
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'htr_signWithAddress',
+  HATHOR_SEND_NANO_TX: 'htr_sendNanoContractTx',
 };
 const AVAILABLE_EVENTS = [];
 
@@ -240,35 +240,29 @@ export function* clearSessions() {
  * is requested from a dApp
  */
 export function* onSessionRequest(action) {
-  console.log('onSessionRequest: ', JSON.stringify(action.payload));
-
   const { payload } = action;
   const { params } = payload;
 
   const wallet = yield select((state) => state.wallet);
 
-  /* const { web3wallet } = yield select((state) => state.walletConnect.client);
+  const { web3wallet } = yield select((state) => state.walletConnect.client);
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
   const requestSession = activeSessions[payload.topic];
+
   if (!requestSession) {
     console.error('Could not identify the request session, ignoring request..');
     return;
-  }*/
+  }
 
-  /* const data = {
+  const data = {
     icon: get(requestSession.peer, 'metadata.icons[0]', null),
     proposer: get(requestSession.peer, 'metadata.name', ''),
     url: get(requestSession.peer, 'metadata.url', ''),
     description: get(requestSession.peer, 'metadata.description', ''),
-  }; */
+  };
 
   try {
-    const response = yield call(handleRpcRequest, params.request, wallet, {
-      icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAF5TQc1gCQpVUbn19OPUA5z7Kz1Of8J7xxQ&s',
-      proposer: '',
-      url: '',
-      description: ''
-    }, promptHandler);
+    const response = yield call(handleRpcRequest, params.request, wallet, data, promptHandler);
 
     switch (response.type) {
       case RpcResponseTypes.SendNanoContractTxResponse:
@@ -278,14 +272,14 @@ export function* onSessionRequest(action) {
         break;
     }
 
-    /* yield call(() => web3wallet.respondSessionRequest({
+    yield call(() => web3wallet.respondSessionRequest({
       topic: payload.topic,
       response: {
         id: payload.id,
         jsonrpc: '2.0',
         result: response,
       }
-    }));*/
+    }));
   } catch (e) {
     let shouldAnswer = true;
     switch (e.constructor) {
@@ -310,7 +304,7 @@ export function* onSessionRequest(action) {
 
     if (shouldAnswer) {
       console.log('Error: ', e);
-      /* yield call(() => web3wallet.respondSessionRequest({
+      yield call(() => web3wallet.respondSessionRequest({
         topic: payload.topic,
         response: {
           id: payload.id,
@@ -320,7 +314,7 @@ export function* onSessionRequest(action) {
             message: 'Rejected by the user',
           },
         },
-      }));*/
+      }));
     }
   }
 }
@@ -381,35 +375,6 @@ async function promptHandler(request, requestMetadata) {
   });
 }
 
-export function* onSendNanoContractTxRequest(data) {
-  const { accept: acceptCb, deny: denyCb } = data.payload;
-
-  const wallet = yield select((state) => state.wallet);
-
-  if (!wallet.isReady()) {
-    console.error('Got a session request but wallet is not ready, ignoring..');
-    return;
-  }
-
-  yield put(setWalletConnectModal({
-    show: true,
-    type: WalletConnectModalTypes.SEND_NANO_CONTRACT_TX,
-    data,
-  }));
-
-  const { deny, accept } = yield race({
-    accept: take(types.WALLET_CONNECT_ACCEPT),
-    deny: take(types.WALLET_CONNECT_REJECT),
-  });
-
-  if (deny) {
-    denyCb();
-
-    return;
-  }
-
-  acceptCb(accept);
-}
 /**
  * This saga will be called (dispatched from the event listener) when a sign
  * message RPC is published from a dApp
@@ -418,8 +383,8 @@ export function* onSendNanoContractTxRequest(data) {
  * @param {String} data.topic Unique identifier of the connected session
  * @param {String} data.message Message the dApp requested a signature for
  */
-export function* onSignMessageRequest(data) {
-  const { accept, deny: denyCb } = data.payload;
+export function* onSignMessageRequest({ payload }) {
+  const { accept, deny: denyCb, data, dapp } = payload;
 
   const wallet = yield select((state) => state.wallet);
 
@@ -431,7 +396,10 @@ export function* onSignMessageRequest(data) {
   yield put(setWalletConnectModal({
     show: true,
     type: WalletConnectModalTypes.SIGN_MESSAGE,
-    data,
+    data: {
+      data,
+      dapp,
+    },
   }));
 
   const { deny } = yield race({
@@ -446,6 +414,39 @@ export function* onSignMessageRequest(data) {
   }
 
   accept();
+}
+
+export function* onSendNanoContractTxRequest({ payload }) {
+  const { accept: acceptCb, deny: denyCb, nc, dapp } = payload;
+
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet.isReady()) {
+    console.error('Got a session request but wallet is not ready, ignoring..');
+    return;
+  }
+
+  yield put(setWalletConnectModal({
+    show: true,
+    type: WalletConnectModalTypes.SEND_NANO_CONTRACT_TX,
+    data: {
+      dapp,
+      data: nc,
+    },
+  }));
+
+  const { deny, accept } = yield race({
+    accept: take(types.WALLET_CONNECT_ACCEPT),
+    deny: take(types.WALLET_CONNECT_REJECT),
+  });
+
+  if (deny) {
+    denyCb();
+
+    return;
+  }
+
+  acceptCb(accept);
 }
 
 /**
