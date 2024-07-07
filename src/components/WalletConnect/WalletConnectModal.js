@@ -12,7 +12,6 @@ import { hideWalletConnectModal } from '../../actions';
 import SignMessageModal from './SignMessageModal';
 import ConnectModal from './ConnectModal';
 import { COLORS } from '../../styles/themes';
-import { NewNanoContractTransactionRequest } from './NanoContract/NewNanoContractTransactionRequest';
 import { NewNanoContractTransactionModal } from './NanoContract/NewNanoContractTransactionModal';
 
 export default () => {
