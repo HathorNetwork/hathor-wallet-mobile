@@ -192,8 +192,8 @@ export const types = {
   WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS',
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
   SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL',
-  WALLETCONNECT_TOKENS_REQUEST: 'WALLETCONNECT_TOKENS_REQUEST',
-  WALLETCONNECT_TOKENS_UPDATE: 'WALLETCONNECT_TOKENS_UPDATE',
+  SHOW_PIN_SCREEN_FOR_RESULT: 'SHOW_PIN_SCREEN_FOR_RESULT',
+  PIN_SCREEN_RESULT: 'PIN_SCREEN_RESULT',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1268,20 +1268,6 @@ export const newNanoContactRetryDismiss = () => ({
 });
 
 /**
- * Signals that the user wants to attempt to retry the nano contract tx send
- */
-export const newNanoContactRetry = () => ({
-  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY,
-});
-
-/**
- * Signals that the user doesn't want to retry the new nano contract tx send
- */
-export const newNanoContactRetryDismiss = () => ({
-  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS,
-});
-
-/**
  * Signals update on new nano contract status to ready.
  */
 export const setNewNanoContractStatusReady = () => ({
@@ -1392,4 +1378,16 @@ export const showNanoContractSendTxModal = (accept, deny, nc, dapp) => ({
     nc,
     dapp,
   },
+});
+
+export const showPinScreenForResult = (resolve) => ({
+  type: types.SHOW_PIN_SCREEN_FOR_RESULT,
+  payload: {
+    resolve,
+  },
+});
+
+export const pinScreenResult = (pinCode) => ({
+  type: types.PIN_SCREEN_RESULT,
+  payload: pinCode,
 });
