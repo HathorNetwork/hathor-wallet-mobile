@@ -21,6 +21,7 @@ import {
   startWalletRequested as startWalletRequestedAction,
   resetOnLockScreen as resetOnLockScreenAction,
   onExceptionCaptured,
+  pinScreenResult,
 } from '../actions';
 import { PIN_SIZE } from '../constants';
 import { COLORS } from '../styles/themes';
@@ -228,10 +229,8 @@ export default function PinScreen({ isLockScreen }) {
       // end up dismissing the wrong screen
       navigation.goBack();
 
-      // execute the callback passing the pin, if any cb was given
-      const cb = route.params.cb ?? null;
-      if (cb) {
-        cb(pin);
+      if (route.params.dispatchResponse) {
+        dispatch(pinScreenResult(pin));
       }
     }
   };
