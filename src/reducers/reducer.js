@@ -1222,7 +1222,13 @@ export const onExceptionCaptured = (state, { payload }) => {
 };
 
 /**
- * On wallet reload, tokens data will be reloaded as well.
+ * On wallet reload, tokens and nano contract  data will be
+ * reloaded as well.
+ *
+ * Some flows can request a wallet reload such as:
+ *   - Disable wallet service
+ *   - Change network settings
+ *   - Loose network connection
  */
 export const onReloadWalletRequested = (state) => ({
   ...state,
