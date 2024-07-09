@@ -97,7 +97,7 @@ function* fetchTokenBalance(action) {
 
     if (!force && tokenBalance && tokenBalance.oldStatus === TOKEN_DOWNLOAD_STATUS.READY) {
       log.debug(`Token download status READY.`);
-      log.debug(`Success fetching token balance for token ${tokenId}.`);
+      log.debug(`Token balance already downloaded for token ${tokenId}. Skipping download.`);
       // The data is already loaded, we should dispatch success
       yield put(tokenFetchBalanceSuccess(tokenId, tokenBalance.data));
       return;
@@ -133,7 +133,7 @@ function* fetchTokenHistory(action) {
 
     if (!force && tokenHistory && tokenHistory.oldStatus === TOKEN_DOWNLOAD_STATUS.READY) {
       // The data is already loaded, we should dispatch success
-      log.debug(`Success fetching token history from store for token ${tokenId}.`);
+      log.debug(`Token history already downloaded for token ${tokenId}. Skipping download.`);
       yield put(tokenFetchHistorySuccess(tokenId, tokenHistory.data));
       return;
     }
