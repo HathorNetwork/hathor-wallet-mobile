@@ -38,9 +38,8 @@ export const _IS_MULTI_TOKEN = true;
  * }
  */
 export const _DEFAULT_TOKEN = {
-  name: 'Hathor',
-  symbol: 'HTR',
-  uid: '00',
+  uid: hathorLib.constants.NATIVE_TOKEN_UID,
+  ...hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG,
 };
 
 /**
