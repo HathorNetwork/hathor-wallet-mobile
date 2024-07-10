@@ -247,6 +247,13 @@ export const WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS = {
   SUCCESSFUL: 'successful',
 };
 
+export const NANOCONTRACT_BLUEPRINTINFO_STATUS = {
+  READY: 'ready',
+  FAILED: 'failed',
+  LOADING: 'loading',
+  SUCCESSFUL: 'successful',
+};
+
 /**
  * Timeout in miliseconds to call wallet-service.
  */

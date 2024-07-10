@@ -62,12 +62,17 @@ const getActionTitle = (tokens, action) => {
 
 /**
  * It renders a list of actions with a proper title for each one.
+ * It renders nothing if there aren't actions to render.
  *
  * @param {Object} props
  * @param {Object[]} props.ncActions A list of Nano Contract actions.
  * @param {Object} props.tokens A map of token metadata by token uid.
  */
 export const NanoContractActions = ({ ncActions, tokens }) => {
+  if (!ncActions || ncActions.length < 1) {
+    return null;
+  }
+
   const styles = StyleSheet.create({
     wrapper: { marginTop: 0, marginBottom: 0, marginHorizontal: 0 },
     action: [commonStyles.text, commonStyles.bold],
@@ -91,10 +96,10 @@ export const NanoContractActions = ({ ncActions, tokens }) => {
               <Text style={styles.action}>{getActionTitle(tokens, item)}</Text>
               {item.address
                 && (
-                <View>
-                  <Text style={styles.valueLabel}>{t`To Address:`}</Text>
-                  <Text style={styles.value}>{item.address}</Text>
-                </View>
+                  <View>
+                    <Text style={styles.valueLabel}>{t`To Address:`}</Text>
+                    <Text style={styles.value}>{item.address}</Text>
+                  </View>
                 )}
             </View>
             <Amount amount={item.amount} isNft={false} />

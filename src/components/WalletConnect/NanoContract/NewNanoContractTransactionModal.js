@@ -35,7 +35,7 @@ export const NewNanoContractTransactionModal = () => {
       walletStartState,
       walletConnect: {
         newNanoContractTransaction: {
-          showModal,
+          showModal: showNcTxModal,
           data,
         }
       },
@@ -43,7 +43,7 @@ export const NewNanoContractTransactionModal = () => {
     const isWalletReady = walletStartState === WALLET_STATUS.READY;
 
     return {
-      showModal: showModal && isWalletReady,
+      showModal: showNcTxModal && isWalletReady,
       ncTxRequest: data,
     };
   });

@@ -56,15 +56,23 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const newTxStatus = useSelector((state) => state.walletConnect.newNanoContractTransaction.status);
-  const { blueprintName, address } = useSelector((state) => state.nanoContract.registered[nc.ncId]);
+  const firstAddress = useSelector((state) => state.firstAddress);
+  // Nullable if the nano contract method is 'initialize'
+  const registeredNc = useSelector((state) => state.nanoContract.registered[nc.ncId]);
   const registeredTokensMetadata = useSelector((state) => state.tokenMetadata);
   // Use it to add loading feedback
   const metadataLoaded = useSelector((state) => state.metadataLoaded);
 
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
-  const [ncAddress, setNcAddress] = useState(address);
-  const ncToAccept = useMemo(() => ({ ...nc, caller: ncAddress }), [ncAddress])
+  // If nano-contract's method is 'initialize' then the expression
+  // should be resolved to firstAddress value by default.
+  // However, the wallet can have trouble to
+  const [ncAddress, setNcAddress] = useState(registeredNc?.address || firstAddress.address);
+  const ncToAccept = useMemo(() => ({
+    ...nc,
+    caller: ncAddress || firstAddress.address,
+  }), [ncAddress, firstAddress])
 
   // Controle SelectAddressModal
   const toggleSelectAddressModal = () => setShowSelectAddressModal(!showSelectAddressModal);
@@ -94,13 +102,20 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     setShowDeclineModal(false);
   };
 
+  // Control which content to show, if the nano contract is not registered
+  // a feedback content should tell user the nano contract must be registered first
+  // and only let user decline the transaction to get out the page, otherwise interaction
+  // content is showed.
+  const notRegistered = ncToAccept.method !== 'initialize' && registeredNc == null;
+  const isRegistered = !notRegistered;
+
   useEffect(() => {
-    if (!blueprintName) {
-      throw new Error(`Nano Contract ${nc.ncId} not registered.`);
-    }
+    // Do nothing if nano contract is not registered and don't call initialize method.
+    if (notRegistered) return;
 
     // Get tokens metadata
-    const tokensUid = nc.actions.map((each) => each.token);
+    // actions can be null?
+    const tokensUid = nc.actions?.map((each) => each.token) || [];
     const tokensMetadataToDownload = [];
 
     tokensUid.forEach((uid) => {
@@ -140,61 +155,76 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
 
   return (
     <>
-      <ScrollView style={styles.wide}>
-        <TouchableWithoutFeedback>
-          <View style={styles.wrapper}>
-            {isTxInfoLoading() && (
-              <FeedbackContent
-                title={t`Loading`}
-                message={t`Loading transaction information.`}
-                icon={<Spinner size={48} animating />}
-                offmargin
-                offcard
-                offbackground
-              />
-            )}
-            {isTxInfoLoaded() && (
-              <View style={styles.content}>
-                <DappContainer dapp={dapp} />
-                <NanoContractExecInfo
-                  nc={ncToAccept}
-                  blueprintName={blueprintName}
-                  onSelectAddress={toggleSelectAddressModal}
+      {notRegistered && (
+        <FeedbackContent
+          title={t`Nano Contract Not Found`}
+          message={t`The Nano Contract requested is not registered. First register the Nano Contract to interact with it.`}
+          action={(
+            <NewHathorButton
+              title={t`Decline Transaction`}
+              onPress={onDeclineTransaction}
+              secondary
+              danger
+            />
+          )}
+        />
+      )}
+      {isRegistered && (
+        <ScrollView style={styles.wide}>
+          <TouchableWithoutFeedback>
+            <View style={styles.wrapper}>
+              {isTxInfoLoading() && (
+                <FeedbackContent
+                  title={t`Loading`}
+                  message={t`Loading transaction information.`}
+                  icon={<Spinner size={48} animating />}
+                  offmargin
+                  offcard
+                  offbackground
                 />
-                <NanoContractActions
-                  ncActions={nc.actions}
-                  tokens={registeredTokensMetadata}
-                />
-                <NanoContractMethodArgs ncArgs={nc.args} />
+              )}
+              {isTxInfoLoaded() && (
+                <View style={styles.content}>
+                  <DappContainer dapp={dapp} />
+                  <NanoContractExecInfo
+                    nc={ncToAccept}
+                    onSelectAddress={toggleSelectAddressModal}
+                  />
+                  <NanoContractActions
+                    ncActions={nc.actions}
+                    tokens={registeredTokensMetadata}
+                  />
+                  <NanoContractMethodArgs ncArgs={nc.args} />
 
-                {/* User actions */}
-                <View style={styles.actionContainer}>
-                  <NewHathorButton
-                    title={t`Accept Transaction`}
-                    onPress={onAcceptTransaction}
-                  />
-                  <NewHathorButton
-                    title={t`Decline Transaction`}
-                    onPress={onDeclineTransaction}
-                    secondary
-                    danger
-                  />
+                  {/* User actions */}
+                  <View style={styles.actionContainer}>
+                    <NewHathorButton
+                      title={t`Accept Transaction`}
+                      onPress={onAcceptTransaction}
+                    />
+                    <NewHathorButton
+                      title={t`Decline Transaction`}
+                      onPress={onDeclineTransaction}
+                      secondary
+                      danger
+                    />
+                  </View>
                 </View>
-              </View>
-            )}
-            {isTxProcessing() && (
-              <FeedbackContent
-                title={t`Sending transaction`}
-                message={t`Please wait.`}
-                icon={<Spinner size={48} animating />}
-                offmargin
-                offcard
-                offbackground
-              />
-            )}
-          </View>
-        </TouchableWithoutFeedback>
-      </ScrollView>
+              )}
+              {isTxProcessing() && (
+                <FeedbackContent
+                  title={t`Sending transaction`}
+                  message={t`Please wait.`}
+                  icon={<Spinner size={48} animating />}
+                  offmargin
+                  offcard
+                  offbackground
+                />
+              )}
+            </View>
+          </TouchableWithoutFeedback>
+        </ScrollView>
+      )}
 
       <DeclineModal
         show={showDeclineModal}

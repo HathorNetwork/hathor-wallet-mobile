@@ -10,23 +10,28 @@ import {
   StyleSheet,
   Text,
 } from 'react-native';
+import { commonStyles } from './WalletConnect/theme';
 
 /**
  * @param {Object} props
  * @param {boolean} props.title It sets font weight to bold and a larger font size
+ * @param {boolean} props.label It sets font weight to bold and a bottom margin
  * @param {boolean} props.bold It sets font weight to bold
  * @param {boolean} props.oneline It sets numberOfLines to 1
  * @param {boolean} props.shrink It sets flexShrink to 1
  * @param {boolean} props.pb4 It sets padding bottom to 4
+ * @param {string} props.color It sets text color
  */
-export const TextValue = ({ title, bold, oneline, shrink, pb4, children }) => (
+export const TextValue = ({ title, label, bold, oneline, shrink, pb4, color, children }) => (
   <Text style={[
     styles.textValue,
     title && styles.title,
+    label && styles.label,
     oneline && styles.oneline,
     shrink && styles.shrink,
     bold && styles.bold,
     pb4 && styles.pb4,
+    color && { color },
   ]}
   >{children}</Text>
 );
@@ -41,6 +46,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  label: [
+    commonStyles.bold,
+    commonStyles.mb4,
+  ],
   pb4: {
     paddingBottom: 4,
   },
