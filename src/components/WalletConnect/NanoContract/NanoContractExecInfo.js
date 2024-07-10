@@ -69,8 +69,15 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
   const hasBlueprintInfoFailed = blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.FAILED;
 
   const hasCaller = nc.caller != null;
+<<<<<<< HEAD
   const hasFirstAddressFailed = !hasCaller && isInitialize && firstAddress.error;
   const isFirstAddressLoading = !hasCaller
+=======
+  const hasFirstAddress = firstAddress.address != null;
+  const hasFirstAddressFailed = !hasCaller && isInitialize && firstAddress.error;
+  const isFirstAddressLoading = !hasFirstAddress
+                                && !hasCaller
+>>>>>>> b236a6f (feat: adapt new nc tx to initialize, set result and withdrawal)
                                 && isInitialize
                                 && !hasFirstAddressFailed;
 
