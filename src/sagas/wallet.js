@@ -199,6 +199,10 @@ export function* startWallet(action) {
     wallet = new HathorWallet(walletConfig);
   }
 
+  // Extra wallet configuration based on customNetwork
+  config.setExplorerServiceBaseUrl(networkSettings.explorerServiceUrl);
+  config.setTxMiningUrl(networkSettings.txMiningServiceUrl);
+
   yield put(setWallet(wallet));
 
   // Setup listeners before starting the wallet so we don't lose messages
@@ -338,6 +342,8 @@ export function* loadTokens() {
   // to asynchronously load the balances of each one. The `put` effect will just dispatch
   // and continue, loading the tokens asynchronously
   for (const token of registeredUids) {
+    // Skip the native token, once it has its balance loaded already
+    if (token === htrUid) continue;
     yield put(tokenFetchBalanceRequested(token));
   }
 
