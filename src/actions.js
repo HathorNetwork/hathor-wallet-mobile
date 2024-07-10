@@ -420,7 +420,7 @@ export const fetchTokensMetadata = async (tokens, network) => {
   for (const tokenChunk of tokenChunks) {
     /* eslint-disable no-await-in-loop */
     await Promise.all(tokenChunk.map(async (token) => {
-      if (token === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid) {
+      if (token === hathorLibConstants.NATIVE_TOKEN_UID) {
         return;
       }
 
@@ -491,7 +491,7 @@ export const fetchTokenBalance = async (wallet, uid) => {
  * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
  */
 export const fetchNewHTRBalance = async (wallet) => {
-  const { uid } = hathorLibConstants.HATHOR_TOKEN_CONFIG;
+  const uid = hathorLibConstants.NATIVE_TOKEN_UID;
   return fetchTokenBalance(wallet, uid);
 };
 

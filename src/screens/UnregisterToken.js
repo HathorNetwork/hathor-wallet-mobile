@@ -69,7 +69,7 @@ class UnregisterToken extends React.Component {
   unregisterConfirmed = () => {
     const tokenUnregister = this.props.selectedToken.uid;
     // Preventing unregistering HTR token, even if the user gets on this screen because of an error
-    if (tokenUnregister === hathorLib.constants.HATHOR_TOKEN_CONFIG.uid) {
+    if (tokenUnregister === hathorLib.constants.NATIVE_TOKEN_UID) {
       return;
     }
 

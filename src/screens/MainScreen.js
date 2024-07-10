@@ -110,7 +110,7 @@ class MainScreen extends React.Component {
   }
 
   tokenInfo = () => {
-    if (this.props.selectedToken.uid !== hathorConstants.HATHOR_TOKEN_CONFIG.uid) {
+    if (this.props.selectedToken.uid !== hathorConstants.NATIVE_TOKEN_UID) {
       this.props.navigation.navigate('TokenDetail');
     }
   }
@@ -199,7 +199,7 @@ class MainScreen extends React.Component {
     };
 
     const renderRightElement = () => {
-      if (this.props.selectedToken.uid !== hathorConstants.HATHOR_TOKEN_CONFIG.uid) {
+      if (this.props.selectedToken.uid !== hathorConstants.NATIVE_TOKEN_UID) {
         return (
           <SimpleButton onPress={this.tokenInfo}>
             <ActionDot />
