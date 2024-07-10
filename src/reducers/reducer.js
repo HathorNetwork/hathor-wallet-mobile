@@ -15,7 +15,8 @@ import {
   PRE_SETTINGS_MAINNET,
   NETWORKSETTINGS_STATUS,
   NANOCONTRACT_REGISTER_STATUS,
-  WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS
+  WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS,
+  NANOCONTRACT_BLUEPRINTINFO_STATUS
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -355,6 +356,20 @@ const initialState = {
      * }
      */
     historyMeta: {},
+    /**
+     * blueprintInfo {{
+     *   status: string;
+     *   data?: {
+     *     name: string;
+     *   };
+     *   error?: string;
+     * }}
+     */
+    blueprintInfo: {
+      status: NANOCONTRACT_BLUEPRINTINFO_STATUS.READY,
+      data: null,
+      error: null,
+    },
   },
   /**
    * selectAddressModal {{
@@ -570,6 +585,14 @@ export const reducer = (state = initialState, action) => {
       return onSetNewNanoContractTransaction(state, action);
     case types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS:
       return onSetNewNanoContractTransactionStatus(state, action);
+    case types.NANOCONTRACT_BLUEPRINTINFO_REQUEST:
+      return onNanoContractBlueprintInfoRequest(state);
+    case types.NANOCONTRACT_BLUEPRINTINFO_READY:
+      return onNanoContractBlueprintInfoReady(state);
+    case types.NANOCONTRACT_BLUEPRINTINFO_FAILURE:
+      return onNanoContractBlueprintInfoFailure(state, action);
+    case types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS:
+      return onNanoContractBlueprintInfoSuccess(state, action);
     default:
       return state;
   }
@@ -1780,5 +1803,48 @@ export const onSetNewNanoContractTransactionStatus = (state, { payload }) => ({
       ...state.walletConnect.newNanoContractTransaction,
       status: payload,
     },
+  },
+});
+
+export const onNanoContractBlueprintInfoRequest = (state) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    blueprintInfo: {
+      ...state.nanoContract.blueprintInfo,
+      status: NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING,
+    },
+  },
+});
+
+export const onNanoContractBlueprintInfoFailure = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    blueprintInfo: {
+      ...state.nanoContract.blueprintInfo,
+      status: NANOCONTRACT_BLUEPRINTINFO_STATUS.FAILED,
+      error: payload.error,
+    },
+  },
+});
+
+export const onNanoContractBlueprintInfoSuccess = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    blueprintInfo: {
+      ...state.nanoContract.blueprintInfo,
+      status: NANOCONTRACT_BLUEPRINTINFO_STATUS.SUCCESSFUL,
+      data: payload.data,
+    },
+  },
+});
+
+export const onNanoContractBlueprintInfoReady = (state) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    blueprintInfo: initialState.nanoContract.blueprintInfo,
   },
 });

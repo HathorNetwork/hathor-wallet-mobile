@@ -168,6 +168,14 @@ export const types = {
   NANOCONTRACT_UNREGISTER_SUCCESS: 'NANOCONTRACT_UNREGISTER_SUCCESS',
   /* It initiates a process to change the address on registered Nano Contract. */
   NANOCONTRACT_ADDRESS_CHANGE_REQUEST: 'NANOCONTRACT_ADDRESS_CHANGE_REQUEST',
+  /* It triggers a process to fetch blueprint info. */
+  NANOCONTRACT_BLUEPRINTINFO_REQUEST: 'NANOCONTRACT_BLUEPRINTINFO_REQUEST',
+  /* It signals a failure on fetch blueprint info. */
+  NANOCONTRACT_BLUEPRINTINFO_FAILURE: 'NANOCONTRACT_BLUEPRINTINFO_FAILURE',
+  /* It signals a success on fetch blueprint info. */
+  NANOCONTRACT_BLUEPRINTINFO_SUCCESS: 'NANOCONTRACT_BLUEPRINTINFO_SUCCESS',
+  /* It signals the blueprint info state is ready. */
+  NANOCONTRACT_BLUEPRINTINFO_READY: 'NANOCONTRACT_BLUEPRINTINFO_READY',
   /* It triggers a process to fetch all wallet addresses. */
   SELECTADDRESS_ADDRESSES_REQUEST: 'SELECTADDRESS_ADDRESSES_REQUEST',
   /* It signals the fetch has loaded all the addresses with success. */
@@ -1276,4 +1284,42 @@ export const setNewNanoContractStatusFailure = () => ({
 export const setNewNanoContractStatusSuccess = () => ({
   type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
   payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL,
+});
+
+/**
+ * Blueprint Info request in the context of a Nano Contract.
+ * @param {string} id Blueprint ID.
+ */
+export const nanoContractBlueprintInfoRequest = (id) => ({
+  type: types.NANOCONTRACT_BLUEPRINTINFO_REQUEST,
+  payload: { id },
+});
+
+/**
+ * Signals the bluprint info request has failed.
+ * @param {string} error Request failure reason.
+ */
+export const nanoContractBlueprintInfoFailure = (error) => ({
+  type: types.NANOCONTRACT_BLUEPRINTINFO_FAILURE,
+  payload: { error },
+});
+
+/**
+ * Signals the blueprint info was fetched with success.
+ * @param {{
+ *   data: {
+ *     name: string;
+ *   };
+ * }} blueprintInfo
+ */
+export const nanoContractBlueprintInfoSuccess = (blueprintInfo) => ({
+  type: types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS,
+  payload: blueprintInfo,
+});
+
+/**
+ * Signals the blueprint info state is ready.
+ */
+export const nanoContractBlueprintInfoReady = () => ({
+  type: types.NANOCONTRACT_BLUEPRINTINFO_READY,
 });
