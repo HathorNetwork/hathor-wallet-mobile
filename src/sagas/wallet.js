@@ -307,7 +307,7 @@ export function* startWallet(action) {
  */
 export function* loadTokens() {
   const customTokenUid = DEFAULT_TOKEN.uid;
-  const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
+  const htrUid = hathorLibConstants.NATIVE_TOKEN_UID;
 
   // fetchTokenData will throw an error if the download failed, we should just
   // let it crash as throwing an error is the default behavior for loadTokens
@@ -541,7 +541,7 @@ export function* handleTx(action) {
   for (const tokenUid of tokensToDownload) {
     yield put(tokenFetchBalanceRequested(tokenUid, true));
 
-    if (tokenUid === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid
+    if (tokenUid === hathorLibConstants.NATIVE_TOKEN_UID
         || tokenUid === DEFAULT_TOKEN.uid) {
       yield put(tokenFetchHistoryRequested(tokenUid, true));
     } else {
@@ -634,7 +634,7 @@ export function* bestBlockUpdate({ payload }) {
   }
 
   if (currentHeight !== payload) {
-    yield put(tokenFetchBalanceRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
+    yield put(tokenFetchBalanceRequested(hathorLibConstants.NATIVE_TOKEN_UID));
   }
 }
 
@@ -664,7 +664,7 @@ export function* onWalletReloadData() {
     const registeredTokens = yield call(loadTokens);
 
     const customTokenUid = DEFAULT_TOKEN.uid;
-    const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
+    const htrUid = hathorLibConstants.NATIVE_TOKEN_UID;
 
     // We might have lost transactions during the reload, so we must invalidate the
     // token histories:

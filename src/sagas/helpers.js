@@ -170,7 +170,7 @@ export function isUnlockScreen(action) {
  * }>}
  */
 export async function getRegisteredTokens(wallet, excludeHTR = false) {
-  const htrUid = hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
+  const htrUid = hathorLib.constants.NATIVE_TOKEN_UID;
   const tokens = {};
 
   // redux-saga generator magic does not work well with the "for await..of" syntax
