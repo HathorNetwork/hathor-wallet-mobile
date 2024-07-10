@@ -48,7 +48,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
 #: src/models.js:107
-#: src/utils.js:426
+#: src/utils.js:416
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
@@ -422,7 +422,7 @@ msgid "Enter your seed words separated by space"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.js:194
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:293
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:250
 #: src/screens/LoadHistoryScreen.js:51
 #: src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:161
@@ -449,7 +449,7 @@ msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:21
 #: src/screens/PinScreen.js:268
-#: src/screens/Settings.js:161
+#: src/screens/Settings.js:154
 msgid "Reset wallet"
 msgstr ""
 
@@ -530,14 +530,14 @@ msgstr ""
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:84
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:82
 #: src/screens/PinScreen.js:265
 #: src/screens/WalletConnect/WalletConnectList.js:125
 msgid "Cancel"
 msgstr ""
 
 #: src/screens/PushNotification.js:58
-#: src/screens/Settings.js:135
+#: src/screens/Settings.js:128
 msgid "Push Notification"
 msgstr ""
 
@@ -571,7 +571,7 @@ msgid "RECEIVE"
 msgstr ""
 
 #: src/screens/RegisterToken.js:27
-#: src/screens/SendScanQRCode.js:87
+#: src/screens/SendScanQRCode.js:89
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 msgid "Manual info"
@@ -654,7 +654,7 @@ msgid "Lock wallet"
 msgstr ""
 
 #: src/screens/SendAddressInput.js:53
-#: src/screens/SendScanQRCode.js:95
+#: src/screens/SendScanQRCode.js:97
 msgid "SEND"
 msgstr ""
 
@@ -704,7 +704,7 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:291
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:264
 #: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr ""
@@ -717,53 +717,53 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#: src/screens/SendScanQRCode.js:71
+#: src/screens/SendScanQRCode.js:73
 #, javascript-format
 msgid "You don't have the requested token [${ tokenLabel }]"
 msgstr ""
 
-#: src/screens/SendScanQRCode.js:103
+#: src/screens/SendScanQRCode.js:105
 #: src/screens/WalletConnect/WalletConnectScan.js:49
 msgid "Scan the QR code"
 msgstr ""
 
-#: src/screens/Settings.js:104
+#: src/screens/Settings.js:97
 msgid "You are connected to"
 msgstr ""
 
-#: src/screens/Settings.js:112
+#: src/screens/Settings.js:105
 msgid "General Settings"
 msgstr ""
 
-#: src/screens/Settings.js:116
+#: src/screens/Settings.js:109
 msgid "Connected to"
 msgstr ""
 
-#: src/screens/Settings.js:129
+#: src/screens/Settings.js:122
 msgid "Security"
 msgstr ""
 
-#: src/screens/Settings.js:142
+#: src/screens/Settings.js:135
 msgid "Create a new token"
 msgstr ""
 
-#: src/screens/Settings.js:149
+#: src/screens/Settings.js:142
 msgid "Register a token"
 msgstr ""
 
-#: src/screens/Settings.js:165
+#: src/screens/Settings.js:158
 msgid "About"
 msgstr ""
 
-#: src/screens/Settings.js:172
+#: src/screens/Settings.js:165
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/Settings.js:186
+#: src/screens/Settings.js:179
 msgid "Developer Settings"
 msgstr ""
 
-#: src/screens/Settings.js:188
+#: src/screens/Settings.js:181
 msgid "Network Settings"
 msgstr ""
 
@@ -796,7 +796,7 @@ msgstr ""
 msgid "Unregister token"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:68
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:66
 #: src/screens/WalletConnect/NewNanoContractTransactionScreen.js:24
 msgid "New Nano Contract Transaction"
 msgstr ""
@@ -889,35 +889,27 @@ msgstr ""
 msgid "txMiningServiceUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:62
-msgid "walletServiceUrl is required when walletServiceWsUrl is filled."
-msgstr ""
-
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:65
-msgid "walletServiceWsUrl is required when walletServiceUrl is filled."
-msgstr ""
-
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:232
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:205
 msgid "Node URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:242
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:214
 msgid "Explorer URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:251
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:223
 msgid "Explorer Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:260
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:232
 msgid "Transaction Mining Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:271
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:243
 msgid "Wallet Service URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:280
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:251
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
@@ -958,7 +950,7 @@ msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.js:158
 #: src/components/NanoContract/SelectAddressModal.js:105
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:213
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:175
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:177
 msgid "Loading"
 msgstr ""
@@ -968,10 +960,10 @@ msgid "Loading first wallet address."
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:142
-#: src/components/NanoContract/NanoContractTransactionHeader.js:85
+#: src/components/NanoContract/NanoContractTransactionHeader.js:89
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/TxDetailsModal.js:106
-#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:83
+#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:87
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:187
 msgid "Nano Contract ID"
 msgstr ""
@@ -996,7 +988,7 @@ msgstr ""
 msgid "Nano Contract Registration"
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractTransactionScreen.js:39
+#: src/screens/NanoContract/NanoContractTransactionScreen.js:37
 msgid "Nano Contract Transaction"
 msgstr ""
 
@@ -1004,106 +996,98 @@ msgstr ""
 msgid "Contract successfully registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:44
+#: src/sagas/nanoContract.js:45
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:45
+#: src/sagas/nanoContract.js:46
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:46
+#: src/sagas/nanoContract.js:47
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:47
+#: src/sagas/nanoContract.js:48
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:48
+#: src/sagas/nanoContract.js:49
 msgid "Error while trying to get Nano Contract state."
 msgstr ""
 
-#: src/sagas/nanoContract.js:49
+#: src/sagas/nanoContract.js:50
 msgid "Blueprint not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:50
+#: src/sagas/nanoContract.js:51
 msgid "Couldn't get Blueprint info."
 msgstr ""
 
-#: src/sagas/nanoContract.js:51
+#: src/sagas/nanoContract.js:52
 msgid "Nano Contract not registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:52
+#: src/sagas/nanoContract.js:53
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr ""
 
-#: src/sagas/networkSettings.js:86
+#: src/sagas/networkSettings.js:91
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:93
+#: src/sagas/networkSettings.js:98
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:100
+#: src/sagas/networkSettings.js:105
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:107
+#: src/sagas/networkSettings.js:112
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:114
+#: src/sagas/networkSettings.js:119
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:121
+#: src/sagas/networkSettings.js:126
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:128
+#: src/sagas/networkSettings.js:133
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:291
+#: src/sagas/networkSettings.js:296
 #.  If we fall into this situation, the app should be killed
 #.  for the custom new network settings take effect.
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 
-#: src/sagas/pushNotification.js:71
+#: src/sagas/pushNotification.js:59
 msgid "Transaction"
 msgstr ""
 
-#: src/sagas/pushNotification.js:72
+#: src/sagas/pushNotification.js:60
 msgid "Open"
 msgstr ""
 
-#: src/sagas/tokens.js:40
-msgid "Wallet is not ready yet."
-msgstr ""
-
-#: src/sagas/tokens.js:41
-msgid "Error loading the details of some tokens."
-msgstr ""
-
-#: src/sagas/wallet.js:790
+#: src/sagas/wallet.js:752
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:806
+#: src/sagas/wallet.js:768
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:816
+#: src/sagas/wallet.js:778
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:832
+#: src/sagas/wallet.js:794
 #.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
@@ -1228,15 +1212,15 @@ msgstr ""
 msgid "Propagating transaction to the network."
 msgstr ""
 
-#: src/components/ShowPushNotificationTxDetails.js:16
+#: src/components/ShowPushNotificationTxDetails.js:15
 msgid "Transation not found"
 msgstr ""
 
-#: src/components/ShowPushNotificationTxDetails.js:17
+#: src/components/ShowPushNotificationTxDetails.js:16
 msgid "The transaction has not arrived yet in your wallet. Do you want to retry?"
 msgstr ""
 
-#: src/components/ShowPushNotificationTxDetails.js:18
+#: src/components/ShowPushNotificationTxDetails.js:17
 msgid "Retry"
 msgstr ""
 
@@ -1261,14 +1245,14 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionHeader.js:44
+#: src/components/NanoContract/NanoContractTransactionHeader.js:48
 #: src/components/TxDetailsModal.js:104
 msgid "Transaction ID"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionHeader.js:89
+#: src/components/NanoContract/NanoContractTransactionHeader.js:93
 #: src/components/TxDetailsModal.js:105
-#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:116
+#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:120
 msgid "Blueprint Method"
 msgstr ""
 
@@ -1339,124 +1323,120 @@ msgstr ""
 msgid "No, go back"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NanoContractActions.js:36
+#: src/components/WalletConnect/NanoContract/NanoContractActions.js:33
 #, javascript-format
 msgid "${ tokenSymbol } Deposit"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NanoContractActions.js:37
+#: src/components/WalletConnect/NanoContract/NanoContractActions.js:34
 msgid "${ tokenSymbol } Withdrawal"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NanoContractActions.js:101
+#: src/components/WalletConnect/NanoContract/NanoContractActions.js:86
 msgid "Action List"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NanoContractActions.js:150
+#: src/components/WalletConnect/NanoContract/NanoContractActions.js:100
 msgid "To Address:"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:88
+#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:92
 msgid "Blueprint ID"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:146
 #: src/components/NanoContract/NanoContractsListItem.js:59
-#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:93
+#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:97
 msgid "Blueprint Name"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:109
-#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:140
+#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:113
+#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:144
 msgid "Loading..."
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionHeader.js:103
-#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:124
+#: src/components/NanoContract/NanoContractTransactionHeader.js:107
+#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:128
 msgid "Caller"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:143
+#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:147
 msgid "Couldn't determine address, select one"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:50
+#: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:27
+msgid "Argument List"
+msgstr ""
+
+#: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:36
 #, javascript-format
-msgid "Position ${ idx }"
+msgid "Position ${ index }"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:98
-msgid "Arguments"
-msgstr ""
-
-#: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:103
-msgid "Loading arguments."
-msgstr ""
-
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:72
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:70
 msgid "You have received a new Nano Contract Transaction. Please"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:74
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:72
 msgid "carefully review the details"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:76
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:74
 msgid "before deciding to accept or decline."
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:80
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:78
 msgid "Review transaction details"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:98
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:96
 msgid "Caution: There are risks associated with signing dapp transaction requests."
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:104
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:102
 msgid "Read More."
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:195
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:157
 msgid "Nano Contract Not Found"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:196
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:158
 msgid ""
 "The Nano Contract requested is not registered. First register the Nano "
 "Contract to interact with it."
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:199
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:246
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:161
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:203
 msgid "Decline Transaction"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:214
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:176
 msgid "Loading transaction information."
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:242
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:199
 msgid "Accept Transaction"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:256
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:213
 msgid "Sending transaction"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:257
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:214
 msgid "Please wait."
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:283
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:240
 msgid "Transaction successfully sent."
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:285
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:242
 msgid "Ok, close"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:291
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:248
 msgid "Error while sending transaction."
 msgstr ""
 
@@ -1514,33 +1494,19 @@ msgstr ""
 msgid "Unregister contract"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionActionList.js:44
-msgid "No Actions"
-msgstr ""
-
-#: src/components/NanoContract/NanoContractTransactionActionList.js:45
-msgid "See full transaction details on Public Explorer."
-msgstr ""
-
-#: src/components/NanoContract/NanoContractTransactionActionListItem.js:108
-#, javascript-format
-msgid "Deposit ${ tokenSymbol }"
-msgstr ""
-
-#: src/components/NanoContract/NanoContractTransactionActionListItem.js:109
-msgid "Withdrawal ${ tokenSymbol }"
-msgstr ""
-
-#: src/components/NanoContract/NanoContractTransactionHeader.js:93
+#: src/components/NanoContract/NanoContractTransactionHeader.js:97
+#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
 msgid "Date and Time"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionHeader.js:100
+#: src/components/NanoContract/NanoContractTransactionHeader.js:104
 #: src/components/NanoContract/NanoContractTransactionsListItem.js:62
+#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
 msgid "From this wallet"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractTransactionHeader.js:106
+#: src/components/NanoContract/NanoContractTransactionHeader.js:110
+#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
 msgid "See transaction details"
 msgstr ""
 

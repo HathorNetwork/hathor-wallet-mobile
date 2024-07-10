@@ -2024,4 +2024,4 @@ export const onUnregisteredTokensUpdate = (state, { payload }) => ({
     isLoading: false,
     error: payload.error || null,
   },
-})
+});
