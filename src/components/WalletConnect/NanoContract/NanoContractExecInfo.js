@@ -13,8 +13,8 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
-import { firstAddressRequest } from '../../../actions';
-import { NANOCONTRACT_BLUEPRINTINFO_STATUS as STATUS } from '../../../constants';
+import { firstAddressRequest, nanoContractBlueprintInfoRequest } from '../../../actions';
+import { NANOCONTRACT_BLUEPRINTINFO_STATUS } from '../../../constants';
 import { COLORS } from '../../../styles/themes';
 import { FrozenTextValue } from '../../FrozenTextValue';
 import { CircleError } from '../../Icons/CircleError.icon';
@@ -46,7 +46,7 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
       return registeredNc.blueprintName;
     }
 
-    if (blueprintInfo?.status === STATUS.SUCCESSFUL) {
+    if (blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.SUCCESSFUL) {
       return blueprintInfo.data.name;
     }
     return null;
@@ -54,6 +54,10 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
 
   useEffect(() => {
     if (isInitialize) {
+      // If method is 'initialize' we don't have the nano contract registered,
+      // therefore we need to request the blueprint info.
+      dispatch(nanoContractBlueprintInfoRequest(nc.blueprintId));
+
       // Load firstAddress if not loaded
       if (!firstAddress.address) {
         dispatch(firstAddressRequest());
@@ -61,10 +65,8 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
     }
   }, []);
 
-  const isBlueprintInfoLoading = !registeredNc
-                                 && blueprintInfo?.status === STATUS.LOADING;
-  const hasBlueprintInfoFailed = !registeredNc
-                                 && blueprintInfo?.status === STATUS.FAILED;
+  const isBlueprintInfoLoading = blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING;
+  const hasBlueprintInfoFailed = blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.FAILED;
 
   const hasCaller = nc.caller != null;
   const hasFirstAddressFailed = !hasCaller && isInitialize && firstAddress.error;
