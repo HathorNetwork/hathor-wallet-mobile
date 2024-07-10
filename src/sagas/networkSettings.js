@@ -202,12 +202,11 @@ export function* updateNetworkSettings(action) {
   // Validates the potential network and set the network accordingly
   if (potentialNetwork === NETWORK_MAINNET) {
     network = NETWORK_MAINNET;
-  } else if (potentialNetwork.startsWith(NETWORK_TESTNET)) {
+  } else if (potentialNetwork.includes(NETWORK_TESTNET)) {
     network = NETWORK_TESTNET;
-  } else if (potentialNetwork.startsWith(NETWORK_PRIVATENET)) {
+  } else if (potentialNetwork.includes(NETWORK_PRIVATENET)) {
     network = NETWORK_PRIVATENET;
   } else {
-    log.debug('The network informed is not allowed. Make sure your network is either "mainnet", "testnet" or "privatenet", or starts with "testnet" or "privatenet".');
     yield put(networkSettingsUpdateFailure());
     return;
   }
@@ -227,6 +226,7 @@ export function* updateNetworkSettings(action) {
     nodeUrl,
     explorerUrl,
     explorerServiceUrl,
+    txMiningServiceUrl,
     walletServiceUrl,
     walletServiceWsUrl,
   };
