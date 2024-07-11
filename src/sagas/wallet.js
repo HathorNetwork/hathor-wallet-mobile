@@ -144,6 +144,8 @@ export function* startWallet(action) {
     pin,
   } = action.payload;
 
+  console.log('PIN: ', pin);
+
   const uniqueDeviceId = getUniqueId();
   const useWalletService = false; // yield call(isWalletServiceEnabled);
   const usePushNotification = yield call(isPushNotificationEnabled);
