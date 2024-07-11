@@ -25,122 +25,6 @@ import { COLORS } from '../styles/themes';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
 import { getNanoContractFeatureToggle } from '../utils';
-import { Address } from '@hathor/wallet-lib';
-
-const MOCK_DEPOSIT = (wallet) => ({
-  type: 'WC_SESSION_REQUEST',
-  payload: {
-    id: 3,
-    topic: '6514868878fe1dadd648a495692d5ab9d458c7d45876f2c63e1e7274640a53d4',
-    jsonrpc: '2.0',
-    params: {
-      request: {
-        method: 'htr_sendNanoContractTx',
-        params: {
-          push_tx: true,
-          network: 'testnet',
-          method: 'bet',
-          blueprint_id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
-          nc_id: '00002a71944472852754ed2f53dbd366b90b090bb319715e82f7fe0e786f0553',
-          actions: [{
-            type: 'deposit',
-            token: '00',
-            amount: 1
-          }],
-          args: [
-            (new Address('WdXfZ6zKa1mQpBAhGQVj9pCuWDqCrG5ZR6', {
-              network: wallet.getNetwork()
-            })).decode().toString('hex'),
-            'true'
-          ],
-        },
-      },
-    },
-  },
-});
-
-const MOCK_INITIALIZE = (wallet) => ({
-  type: 'WC_SESSION_REQUEST',
-  payload: {
-    id: 3,
-    topic: '6514868878fe1dadd648a495692d5ab9d458c7d45876f2c63e1e7274640a53d4',
-    jsonrpc: '2.0',
-    params: {
-      request: {
-        method: 'htr_sendNanoContractTx',
-        params: {
-          push_tx: true,
-          network: 'testnet',
-          method: 'initialize',
-          blueprint_id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
-          args: [
-            '76a914969647cffd30891b1444944ff228f3bd7582fa4588ac',
-            '00',
-            1720281665,
-          ],
-        },
-      },
-    },
-  },
-});
-
-const MOCK_WITHDRAWL = (wallet) => ({
-  type: 'WC_SESSION_REQUEST',
-  payload: {
-    id: 3,
-    topic: '6514868878fe1dadd648a495692d5ab9d458c7d45876f2c63e1e7274640a53d4',
-    jsonrpc: '2.0',
-    params: {
-      request: {
-        method: 'htr_sendNanoContractTx',
-        params: {
-          push_tx: true,
-          network: 'testnet',
-          method: 'withdrawl',
-          blueprint_id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
-          nc_id: '00002a71944472852754ed2f53dbd366b90b090bb319715e82f7fe0e786f0553',
-          actions: [{
-            type: 'withdrawal',
-            token: '00',
-            amount: 1
-          }],
-        },
-      },
-    },
-  },
-});
-
-const MOCK_SET_RESULT = (wallet) => ({
-  type: 'WC_SESSION_REQUEST',
-  payload: {
-    id: 3,
-    topic: '6514868878fe1dadd648a495692d5ab9d458c7d45876f2c63e1e7274640a53d4',
-    jsonrpc: '2.0',
-    params: {
-      request: {
-        method: 'htr_sendNanoContractTx',
-        params: {
-          push_tx: true,
-          network: 'testnet',
-          method: 'set_result',
-          blueprint_id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
-          nc_id: '00002a71944472852754ed2f53dbd366b90b090bb319715e82f7fe0e786f0553',
-          actions: [{
-            type: 'deposit',
-            token: '00',
-            amount: 1
-          }],
-          args: [
-            (new Address('WdXfZ6zKa1mQpBAhGQVj9pCuWDqCrG5ZR6', {
-              network: wallet.getNetwork()
-            })).decode().toString('hex'),
-            'true'
-          ],
-        },
-      },
-    },
-  },
-});
 
 /**
  * State filter to retrieve token-related data from root state.
@@ -233,32 +117,8 @@ export const Dashboard = () => {
     navigation.navigate('MainScreen');
   }
 
-  const onInitializeNanoTx = () => {
-    dispatch(MOCK_INITIALIZE(wallet));
-    console.log('initialize call on nano contract');
-  };
-
-  const onSendNanoTx = () => {
-    dispatch(MOCK_DEPOSIT(wallet));
-    console.log('deposit call on nano contract');
-  };
-
-  const onWithdrawalNanoTx = () => {
-    dispatch(MOCK_WITHDRAWL(wallet));
-    console.log('withdrawal call on nano contract');
-  };
-
-  const onSetResultNanoTx = () => {
-    dispatch(MOCK_SET_RESULT(wallet));
-    console.log('set_result call on nano contract');
-  };
-
   return (
     <Wrapper>
-      <Button title='Deposit Nano Tx' onPress={onSendNanoTx} />
-      <Button title='Initialize Nano Tx' onPress={onInitializeNanoTx} />
-      <Button title='Withdrawal Nano Tx' onPress={onWithdrawalNanoTx} />
-      <Button title='Set Result Nano Tx' onPress={onSetResultNanoTx} />
       <ShowPushNotificationTxDetails navigation={navigation} />
       <AskForPushNotification navigation={navigation} />
       <AskForPushNotificationRefresh />
