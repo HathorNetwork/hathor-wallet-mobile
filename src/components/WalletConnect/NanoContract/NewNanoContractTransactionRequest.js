@@ -71,8 +71,8 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const [ncAddress, setNcAddress] = useState(registeredNc?.address || firstAddress.address);
   const ncToAccept = useMemo(() => ({
     ...nc,
-    caller: ncAddress || firstAddress.address,
-  }), [ncAddress, firstAddress])
+    caller: ncAddress,
+  }), [ncAddress])
 
   // Controle SelectAddressModal
   const toggleSelectAddressModal = () => setShowSelectAddressModal(!showSelectAddressModal);
@@ -109,6 +109,14 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const notRegistered = ncToAccept.method !== 'initialize' && registeredNc == null;
   const isRegistered = !notRegistered;
 
+  // This effect should run only once because firstAddress is kept on state when loaded
+  useEffect(() => {
+    if (firstAddress.address) {
+      setNcAddress(firstAddress.address);
+    }
+  }, [firstAddress]);
+
+  // This effect runs only once in the construct phase
   useEffect(() => {
     // Do nothing if nano contract is not registered and don't call initialize method.
     if (notRegistered) return;
