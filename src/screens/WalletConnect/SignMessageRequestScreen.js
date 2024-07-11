@@ -19,8 +19,6 @@ import { COLORS } from '../../styles/themes';
 export function SignMessageRequestScreen({ route }) {
   const { signMessageRequest } = route.params;
 
-  console.log('Sign Message Request: ', signMessageRequest);
-
   return (
     <Wrapper>
       <HathorHeader
