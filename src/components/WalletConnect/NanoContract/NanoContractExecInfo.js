@@ -75,9 +75,13 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
 =======
   const hasFirstAddress = firstAddress.address != null;
   const hasFirstAddressFailed = !hasCaller && isInitialize && firstAddress.error;
+<<<<<<< HEAD
   const isFirstAddressLoading = !hasFirstAddress
                                 && !hasCaller
 >>>>>>> b236a6f (feat: adapt new nc tx to initialize, set result and withdrawal)
+=======
+  const isFirstAddressLoading = !hasCaller
+>>>>>>> 5846149 (refactor: removed mocks from dashboard)
                                 && isInitialize
                                 && !hasFirstAddressFailed;
 
@@ -142,7 +146,11 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
                   </WarnTextValue>
                 )}
               </TextValue>
+<<<<<<< HEAD
               {hasCaller && (
+=======
+              {(hasCaller) && (
+>>>>>>> 5846149 (refactor: removed mocks from dashboard)
                 <FrozenTextValue>{nc.caller || firstAddress.address}</FrozenTextValue>
               )}
               {isFirstAddressLoading && (
