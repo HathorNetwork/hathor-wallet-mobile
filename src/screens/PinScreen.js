@@ -233,6 +233,10 @@ export default function PinScreen({ isLockScreen }) {
       if (cb) {
         cb(pin);
       }
+
+      if (route.params.dispatchResponse) {
+        dispatch(pinScreenResult(pin));
+      }
     }
   };
 
