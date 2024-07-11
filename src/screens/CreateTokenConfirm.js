@@ -103,6 +103,7 @@ class CreateTokenConfirm extends React.Component {
         },
       });
     }, (err) => {
+      console.log('Err: ', err);
       this.onError(err.message);
     });
   }
@@ -112,7 +113,7 @@ class CreateTokenConfirm extends React.Component {
    */
   onSendPress = () => {
     const params = {
-      cb: this.executeCreate,
+      cb: this.executeCreate.bind(this),
       screenText: t`Enter your 6-digit pin to create your token`,
       biometryText: t`Authorize token creation`,
       canCancel: true,
@@ -138,6 +139,7 @@ class CreateTokenConfirm extends React.Component {
    * @param {String} message Error message
    */
   onError = (message) => {
+    console.log('Message on error: ', message);
     this.setState({
       modalType: 'FeedbackModal',
       modal: {
@@ -169,9 +171,9 @@ class CreateTokenConfirm extends React.Component {
           this.state.modalType === 'FeedbackModal' ? (
             // eslint-disable-next-line react/jsx-indent
             <FeedbackModal
-              icon={this.modal.icon}
-              text={this.modal.message}
-              onDismiss={this.modal.onDismiss}
+              icon={this.state.modal.icon}
+              text={this.state.modal.text}
+              onDismiss={this.state.modal.onDismiss}
             />
           ) : (
             // eslint-disable-next-line react/jsx-indent
