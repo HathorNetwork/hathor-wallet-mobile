@@ -232,6 +232,12 @@ export default function PinScreen({ isLockScreen }) {
       if (route.params.dispatchResponse) {
         dispatch(pinScreenResult(pin));
       }
+
+      // TODO: We need to refactor CreateTokenConfirm and SendConfirmScreen
+      // to stop passing a method as callback so we can remove this:
+      if (route.params.cb) {
+        route.params.cb(pin);
+      }
     }
   };
 
