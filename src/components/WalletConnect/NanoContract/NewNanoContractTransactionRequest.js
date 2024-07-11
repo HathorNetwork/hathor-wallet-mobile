@@ -119,13 +119,9 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   // It results in true for registered nc and initialize request
   const showRequest = !notRegistered;
 
-  // This effect should run at most twice:
-  // 1. when in the construct phase
-  // 2. after firstAddress is set on store after a request to load it
-  // The mentioned load request at (2) can happen for 'initialize' transaction,
-  // it is requested from a child component, NanoContractExecInfo.
+  // This effect should run only once because firstAddress is kept on state when loaded
   useEffect(() => {
-    if (ncToAccept.method === 'initialize' && firstAddress.address) {
+    if (firstAddress.address) {
       setNcAddress(firstAddress.address);
     }
   }, [firstAddress]);
