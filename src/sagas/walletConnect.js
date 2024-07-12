@@ -72,7 +72,7 @@ import {
   SendNanoContractTxFailure,
   handleRpcRequest,
 } from 'hathor-rpc-handler';
-
+import { isWalletServiceEnabled } from './wallet';
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
   WALLET_CONNECT_PROJECT_ID,
@@ -93,7 +93,6 @@ import {
   setNewNanoContractStatusSuccess,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
-import { store } from '../reducers/reducer.init';
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'htr_signWithAddress',
@@ -121,7 +120,12 @@ function* isWalletConnectEnabled() {
 
 function* init() {
   try {
+    const walletServiceEnabled = yield call(isWalletServiceEnabled);
     const walletConnectEnabled = yield call(isWalletConnectEnabled);
+
+    if (walletServiceEnabled) {
+      return;
+    }
 
     if (!walletConnectEnabled) {
       return;
@@ -262,7 +266,12 @@ export function* onSessionRequest(action) {
   };
 
   try {
-    const response = yield call(handleRpcRequest, params.request, wallet, data, promptHandler);
+    let dispatch;
+    yield put((_dispatch) => {
+      dispatch = _dispatch;
+    });
+
+    const response = yield call(handleRpcRequest, params.request, wallet, data, promptHandler(dispatch));
 
     switch (response.type) {
       case RpcResponseTypes.SendNanoContractTxResponse:
@@ -303,7 +312,6 @@ export function* onSessionRequest(action) {
     }
 
     if (shouldAnswer) {
-      console.log('Error: ', e);
       yield call(() => web3wallet.respondSessionRequest({
         topic: payload.topic,
         response: {
@@ -319,16 +327,16 @@ export function* onSessionRequest(action) {
   }
 }
 
-async function promptHandler(request, requestMetadata) {
+const promptHandler = (dispatch) => (request, requestMetadata) =>
   // eslint-disable-next-line
-  return new Promise(async (resolve, reject) => {
+  new Promise(async (resolve, reject) => {
     switch (request.type) {
       case TriggerTypes.SignMessageWithAddressConfirmationPrompt: {
         const signMessageResponseTemplate = (accepted) => () => resolve({
           type: TriggerResponseTypes.SignMessageWithAddressConfirmationResponse,
           data: accepted,
         });
-        store.dispatch(showSignMessageWithAddressModal(
+        dispatch(showSignMessageWithAddressModal(
           signMessageResponseTemplate(true),
           signMessageResponseTemplate(false),
           request.data,
@@ -344,7 +352,7 @@ async function promptHandler(request, requestMetadata) {
           }
         });
 
-        store.dispatch(showNanoContractSendTxModal(
+        dispatch(showNanoContractSendTxModal(
           sendNanoContractTxResponseTemplate(true),
           sendNanoContractTxResponseTemplate(false),
           request.data,
@@ -352,15 +360,15 @@ async function promptHandler(request, requestMetadata) {
         ));
       } break;
       case TriggerTypes.SendNanoContractTxLoadingTrigger:
-        store.dispatch(setNewNanoContractStatusLoading());
+        dispatch(setNewNanoContractStatusLoading());
         resolve();
         break;
       case TriggerTypes.LoadingFinishedTrigger:
-        store.dispatch(setNewNanoContractStatusReady());
+        dispatch(setNewNanoContractStatusReady());
         resolve();
         break;
       case TriggerTypes.PinConfirmationPrompt: {
-        const pinCode = await showPinScreenForResult(store.dispatch);
+        const pinCode = await showPinScreenForResult(dispatch);
 
         resolve({
           type: TriggerResponseTypes.PinRequestResponse,
@@ -373,7 +381,6 @@ async function promptHandler(request, requestMetadata) {
       default: reject(new Error('Invalid request'));
     }
   });
-}
 
 /**
  * This saga will be called (dispatched from the event listener) when a sign
