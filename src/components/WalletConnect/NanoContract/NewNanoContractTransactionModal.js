@@ -33,7 +33,7 @@ export const NewNanoContractTransactionModal = ({
   const onModalDismiss = useCallback(() => {
     dispatch(walletConnectReject());
     onDismiss();
-  }, []);
+  }, [onDismiss]);
 
   const navigatesToNewNanoContractScreen = () => {
     onDismiss();
