@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Button } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
@@ -93,7 +93,6 @@ export const Dashboard = () => {
     tokensMetadata,
   } = useSelector(getTokensState);
   const isNanoContractEnabled = useSelector(getNanoContractFeatureToggle);
-  const wallet = useSelector((state) => state.wallet);
 
   const [currList, selectList] = useState(listOption.tokens);
   const navigation = useNavigation();
