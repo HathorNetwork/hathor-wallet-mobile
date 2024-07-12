@@ -271,7 +271,13 @@ export function* onSessionRequest(action) {
       dispatch = _dispatch;
     });
 
-    const response = yield call(handleRpcRequest, params.request, wallet, data, promptHandler(dispatch));
+    const response = yield call(
+      handleRpcRequest,
+      params.request,
+      wallet,
+      data,
+      promptHandler(dispatch),
+    );
 
     switch (response.type) {
       case RpcResponseTypes.SendNanoContractTxResponse:
@@ -327,6 +333,43 @@ export function* onSessionRequest(action) {
   }
 }
 
+/**
+ * Handles various types of prompt requests by dispatching appropriate actions
+ * and resolving with the corresponding responses.
+ *
+ * @param {function} dispatch - The dispatch function to send actions to the store.
+ * @returns {function} - A function that receives Trigger requests from the rpc
+ * library and dispatches actions
+ *
+ * The returned function performs the following:
+ *
+ * - Depending on the `request.type`, it will:
+ *   - `TriggerTypes.SignMessageWithAddressConfirmationPrompt`:
+ *     - Dispatches `showSignMessageWithAddressModal` with acceptance/rejection handlers.
+ *     - Resolves with `TriggerResponseTypes.SignMessageWithAddressConfirmationResponse`.
+ *   - `TriggerTypes.SendNanoContractTxConfirmationPrompt`:
+ *     - Dispatches `showNanoContractSendTxModal` with acceptance/rejection handlers.
+ *     - Resolves with `TriggerResponseTypes.SendNanoContractTxConfirmationResponse`.
+ *   - `TriggerTypes.SendNanoContractTxLoadingTrigger`:
+ *     - Dispatches `setNewNanoContractStatusLoading`.
+ *     - Resolves immediately.
+ *   - `TriggerTypes.LoadingFinishedTrigger`:
+ *     - Dispatches `setNewNanoContractStatusReady`.
+ *     - Resolves immediately.
+ *   - `TriggerTypes.PinConfirmationPrompt`:
+ *     - Awaits `showPinScreenForResult` to get the PIN code.
+ *     - Resolves with `TriggerResponseTypes.PinRequestResponse`.
+ *   - For any other `request.type`, this method will reject with an error.
+ *
+ * @param {Object} request - The request object containing type and data.
+ * @param {Object} requestMetadata - Additional metadata for the request.
+ *
+ * @returns {Promise<Object>} - A Promise that resolves with the appropriate
+ * response based on the request type.
+ *
+ * @example
+ * const handler = promptHandler(dispatch);
+ */
 const promptHandler = (dispatch) => (request, requestMetadata) =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
