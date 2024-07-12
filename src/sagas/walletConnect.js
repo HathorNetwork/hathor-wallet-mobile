@@ -83,6 +83,9 @@ import {
   setNewNanoContractStatusSuccess,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
+import { logger } from '../logger';
+
+const log = logger('walletConnect');
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'htr_signWithAddress',
@@ -425,9 +428,17 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
  * This saga will be called (dispatched from the event listener) when a sign
  * message RPC is published from a dApp
  *
- * @param {String} data.requestId Unique identifier of the request
- * @param {String} data.topic Unique identifier of the connected session
- * @param {String} data.message Message the dApp requested a signature for
+ * @param {String} payload.data.requestId Unique identifier of the request
+ * @param {String} payload.data.topic Unique identifier of the connected session
+ * @param {String} payload.data.message Message the dApp requested a signature for
+ * @param {String} payload.dapp.icon The icon sent by the dApp
+ * @param {String} payload.dapp.proposer The proposer name sent by the dapp
+ * @param {String} payload.dapp.url The url sent by the dApp
+ * @param {String} payload.dapp.description The description sent by the dApp
+ * @param {String} payload.accept A callback function to indicate that the
+ * request has been accepted.
+ * @param {String} payload.deny A callback function to indicate that the request
+ * has been denied.
  */
 export function* onSignMessageRequest({ payload }) {
   const { accept, deny: denyCb, data, dapp } = payload;
@@ -435,7 +446,7 @@ export function* onSignMessageRequest({ payload }) {
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet.isReady()) {
-    console.error('Got a session request but wallet is not ready, ignoring..');
+    log.error('Got a session request but wallet is not ready, ignoring..');
     return;
   }
 
@@ -462,6 +473,22 @@ export function* onSignMessageRequest({ payload }) {
   accept();
 }
 
+/**
+ * This saga will be called (dispatched from the event listener) when a
+ * sendNanoContractTx message RPC is published from a dApp
+ *
+ * @param {String} payload.data.requestId Unique identifier of the request
+ * @param {String} payload.data.topic Unique identifier of the connected session
+ * @param {String} payload.data.message Message the dApp requested a signature for
+ * @param {String} payload.dapp.icon The icon sent by the dApp
+ * @param {String} payload.dapp.proposer The proposer name sent by the dapp
+ * @param {String} payload.dapp.url The url sent by the dApp
+ * @param {String} payload.dapp.description The description sent by the dApp
+ * @param {String} payload.accept A callback function to indicate that the
+ * request has been accepted.
+ * @param {String} payload.deny A callback function to indicate that the request
+ * has been denied.
+ */
 export function* onSendNanoContractTxRequest({ payload }) {
   const { accept: acceptCb, deny: denyCb, nc, dapp } = payload;
 
