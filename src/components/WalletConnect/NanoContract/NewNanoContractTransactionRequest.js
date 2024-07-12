@@ -97,7 +97,6 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     // Update the caller with the address selected by the user.
     const acceptedNc = { ...nc, caller: ncAddress };
     // Signal the user has accepted the current request and pass the accepted data.
-    console.log('acceptedNc: ', acceptedNc);
     dispatch(walletConnectAccept(acceptedNc));
   };
 
