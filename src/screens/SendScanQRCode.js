@@ -57,10 +57,8 @@ class SendScanQRCode extends React.Component {
     if (!qrcode.isValid) {
       this.showAlertError(qrcode.error);
     } else if (qrcode.token && qrcode.amount) {
-      const isTokenRegistered = this.props.tokens.some(
-        (stateToken) => stateToken.uid === qrcode.token.uid
-      );
-      if (isTokenRegistered) {
+      // If token is registered then navigates to confirmation screen 
+      if (qrcode.token.uid in this.props.tokens) {
         const params = {
           address: qrcode.address,
           token: qrcode.token,
