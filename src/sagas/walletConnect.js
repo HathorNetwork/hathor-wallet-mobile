@@ -161,6 +161,10 @@ function* init() {
     // Refresh redux with the active sessions, loaded from storage
     yield call(refreshActiveSessions);
 
+    const pendingSessions = yield call(() => web3wallet.getPendingSessionRequests());
+
+    console.log('Pending: ', pendingSessions);
+
     // If the wallet is reset, we should cancel all listeners
     yield take(types.RESET_WALLET);
 
@@ -172,9 +176,15 @@ function* init() {
 }
 
 export function* refreshActiveSessions() {
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
+  const client = yield select((state) => state.walletConnect.client);
+  if (!client || !client.web3wallet) {
+    log.error('Tried to refresh active sessions but web3client not ready yet.');
 
-  const activeSessions = yield call(() => web3wallet.getActiveSessions());
+    return;
+  }
+
+  const activeSessions = yield call(() => client.web3wallet.getActiveSessions());
+
   yield put(setWalletConnectSessions(activeSessions));
 }
 
@@ -349,6 +359,9 @@ export function* onSessionRequest(action) {
  * The returned function performs the following:
  *
  * - Depending on the `request.type`, it will:
+ *   - `TriggerTypes.SignOracleDataConfirmationPrompt`:
+ *     - Dispatches `showSignOracleDataModal` with acceptance/rejection handlers.
+ *     - Resolves with `TriggerResponseTypes.SignMessageWithAddressConfirmationResponse`.
  *   - `TriggerTypes.SignMessageWithAddressConfirmationPrompt`:
  *     - Dispatches `showSignMessageWithAddressModal` with acceptance/rejection handlers.
  *     - Resolves with `TriggerResponseTypes.SignMessageWithAddressConfirmationResponse`.
@@ -731,6 +744,7 @@ export function* saga() {
     takeLatest(types.SHOW_NANO_CONTRACT_SEND_TX_MODAL, onSendNanoContractTxRequest),
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
     takeLatest(types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL, onSignOracleDataRequest),
+    takeLatest(types.WALLETCONNECT_REFRESH_SESSIONS, refreshActiveSessions),
     takeLeading('WC_SESSION_REQUEST', onSessionRequest),
     takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('WC_SESSION_DELETE', onSessionDelete),
