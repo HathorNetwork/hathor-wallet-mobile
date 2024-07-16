@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
@@ -27,6 +27,7 @@ import { HathorList } from '../../components/HathorList';
 import {
   walletConnectCancelSession,
   setWCConnectionFailed,
+  refreshWalletConnectSessions,
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
 
@@ -91,6 +92,10 @@ export default function WalletConnectList({ navigation }) {
   const dispatch = useDispatch();
   const connectionFailed = useSelector((state) => state.walletConnect.connectionFailed);
   const connectedSessions = useSelector((state) => state.walletConnect.sessions);
+
+  useEffect(() => {
+    dispatch(refreshWalletConnectSessions());
+  }, []);
 
   const mappedSessions = Object.keys(connectedSessions).map((sessionKey) => {
     const session = connectedSessions[sessionKey];
