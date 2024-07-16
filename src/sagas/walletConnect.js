@@ -91,6 +91,7 @@ import {
   setNewNanoContractStatusReady,
   setNewNanoContractStatusFailure,
   setNewNanoContractStatusSuccess,
+  showSignOracleDataModal,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -100,6 +101,7 @@ const log = logger('walletConnect');
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'htr_signWithAddress',
   HATHOR_SEND_NANO_TX: 'htr_sendNanoContractTx',
+  HATHOR_SIGN_ORACLE_DATA: 'htr_signOracleData',
 };
 const AVAILABLE_EVENTS = [];
 
@@ -377,6 +379,19 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
     switch (request.type) {
+      case TriggerTypes.SignOracleDataConfirmationPrompt: {
+        const signOracleDataResponseTemplate = (accepted) => () => resolve({
+          type: TriggerResponseTypes.SignOracleDataConfirmationResponse,
+          data: accepted,
+        });
+
+        dispatch(showSignOracleDataModal(
+          signOracleDataResponseTemplate(true),
+          signOracleDataResponseTemplate(false),
+          request.data,
+          requestMetadata,
+        ));
+      } break;
       case TriggerTypes.SignMessageWithAddressConfirmationPrompt: {
         const signMessageResponseTemplate = (accepted) => () => resolve({
           type: TriggerResponseTypes.SignMessageWithAddressConfirmationResponse,
@@ -387,7 +402,7 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           signMessageResponseTemplate(false),
           request.data,
           requestMetadata,
-        ))
+        ));
       } break;
       case TriggerTypes.SendNanoContractTxConfirmationPrompt: {
         const sendNanoContractTxResponseTemplate = (accepted) => (data) => resolve({
@@ -457,6 +472,39 @@ export function* onSignMessageRequest({ payload }) {
   yield put(setWalletConnectModal({
     show: true,
     type: WalletConnectModalTypes.SIGN_MESSAGE,
+    data: {
+      data,
+      dapp,
+    },
+  }));
+
+  const { deny } = yield race({
+    accept: take(types.WALLET_CONNECT_ACCEPT),
+    deny: take(types.WALLET_CONNECT_REJECT),
+  });
+
+  if (deny) {
+    denyCb();
+
+    return;
+  }
+
+  accept();
+}
+
+export function* onSignOracleDataRequest({ payload }) {
+  const { accept, deny: denyCb, data, dapp } = payload;
+
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet.isReady()) {
+    log.error('Got a session request but wallet is not ready, ignoring..');
+    return;
+  }
+
+  yield put(setWalletConnectModal({
+    show: true,
+    type: WalletConnectModalTypes.SIGN_ORACLE_DATA,
     data: {
       data,
       dapp,
@@ -682,6 +730,7 @@ export function* saga() {
     takeLatest(types.START_WALLET_SUCCESS, init),
     takeLatest(types.SHOW_NANO_CONTRACT_SEND_TX_MODAL, onSendNanoContractTxRequest),
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
+    takeLatest(types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL, onSignOracleDataRequest),
     takeLeading('WC_SESSION_REQUEST', onSessionRequest),
     takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('WC_SESSION_DELETE', onSessionDelete),
