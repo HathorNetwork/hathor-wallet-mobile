@@ -191,7 +191,8 @@ export const types = {
   WALLETCONNECT_NEW_NANOCONTRACT_RETRY: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY',
   WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS',
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
-  SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL'
+  SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL',
+  SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1352,6 +1353,16 @@ export const unregisteredTokensRequest = (payload) => ({
 export const unregisteredTokensUpdate = (payload) => ({
   type: types.UNREGISTEREDTOKENS_UPDATE,
   payload,
+});
+
+export const showSignOracleDataModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+    dapp,
+  },
 });
 
 export const showSignMessageWithAddressModal = (accept, deny, data, dapp) => ({
