@@ -68,7 +68,7 @@ export default ({
         </Text>
       </ModalBase.Body>
       <ModalBase.Button
-        title={t`Review Sign Message Request details`}
+        title={t`Review Sign Oracle Data details`}
         onPress={navigateToSignOracleDataScreen}
       />
       <ModalBase.DiscreteButton

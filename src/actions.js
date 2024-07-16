@@ -193,6 +193,7 @@ export const types = {
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
   SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL',
   SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
+  WALLETCONNECT_REFRESH_SESSIONS: 'WALLETCONNECT_REFRESH_SESSIONS',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1383,4 +1384,8 @@ export const showNanoContractSendTxModal = (accept, deny, nc, dapp) => ({
     nc,
     dapp,
   },
+});
+
+export const refreshWalletConnectSessions = () => ({
+  type: types.WALLETCONNECT_REFRESH_SESSIONS,
 });
