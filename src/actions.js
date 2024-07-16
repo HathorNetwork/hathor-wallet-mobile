@@ -1297,29 +1297,40 @@ export const nanoContractBlueprintInfoRequest = (id) => ({
 
 /**
  * Signals the bluprint info request has failed.
+ * @param {string} id Blueprint ID.
  * @param {string} error Request failure reason.
  */
-export const nanoContractBlueprintInfoFailure = (error) => ({
+export const nanoContractBlueprintInfoFailure = (id, error) => ({
   type: types.NANOCONTRACT_BLUEPRINTINFO_FAILURE,
-  payload: { error },
+  payload: { id, error },
 });
 
 /**
  * Signals the blueprint info was fetched with success.
+ * @param {string} id Blueprint ID.
  * @param {{
- *   data: {
- *     name: string;
+ *   id: string;
+ *   name: string;
+ *   public_methods: {
+ *     [methodName: string]: {
+ *       args: {
+ *         type: string;
+ *         name: string;
+ *       }[];
+ *     };
  *   };
- * }} blueprintInfo
+ * }} blueprintInfo Raw data response from fullnode.
  */
-export const nanoContractBlueprintInfoSuccess = (blueprintInfo) => ({
+export const nanoContractBlueprintInfoSuccess = (id, blueprintInfo) => ({
   type: types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS,
-  payload: blueprintInfo,
+  payload: { id, data: { ...blueprintInfo } },
 });
 
 /**
  * Signals the blueprint info state is ready.
+ * @param {string} id Blueprint ID.
  */
-export const nanoContractBlueprintInfoReady = () => ({
+export const nanoContractBlueprintInfoReady = (id) => ({
   type: types.NANOCONTRACT_BLUEPRINTINFO_READY,
+  payload: { id },
 });

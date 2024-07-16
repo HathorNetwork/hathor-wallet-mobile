@@ -367,16 +367,16 @@ export function* requestBlueprintInfo({ payload }) {
     blueprintInfo = yield call([ncApi, ncApi.getBlueprintInformation], id);
   } catch (error) {
     if (error instanceof NanoRequest404Error) {
-      yield put(nanoContractBlueprintInfoFailure(failureMessage.blueprintInfoNotFound));
+      yield put(nanoContractBlueprintInfoFailure(id, failureMessage.blueprintInfoNotFound));
     } else {
       log.error('Error while fetching blueprint info.', error);
-      yield put(nanoContractBlueprintInfoFailure(failureMessage.blueprintInfoFailure));
+      yield put(nanoContractBlueprintInfoFailure(id, failureMessage.blueprintInfoFailure));
     }
     return;
   }
 
   log.debug(`Success fetching blueprint info. id = ${id}`);
-  yield put(nanoContractBlueprintInfoSuccess({ data: { name: blueprintInfo.name } }));
+  yield put(nanoContractBlueprintInfoSuccess(id, blueprintInfo));
 }
 
 export function* saga() {

@@ -13,8 +13,8 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
-import { firstAddressRequest, nanoContractBlueprintInfoRequest } from '../../../actions';
-import { NANOCONTRACT_BLUEPRINTINFO_STATUS } from '../../../constants';
+import { firstAddressRequest } from '../../../actions';
+import { NANOCONTRACT_BLUEPRINTINFO_STATUS as STATUS } from '../../../constants';
 import { COLORS } from '../../../styles/themes';
 import { FrozenTextValue } from '../../FrozenTextValue';
 import { CircleError } from '../../Icons/CircleError.icon';
@@ -35,7 +35,7 @@ import { commonStyles } from '../theme';
 export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
   const dispatch = useDispatch();
   const registeredNc = useSelector((state) => state.nanoContract.registered[nc.ncId]);
-  const blueprintInfo = useSelector((state) => state.nanoContract.blueprintInfo);
+  const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[nc.blueprintId]);
   const firstAddress = useSelector((state) => state.firstAddress);
 
   const isInitialize = nc.method === 'initialize';
@@ -46,7 +46,7 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
       return registeredNc.blueprintName;
     }
 
-    if (blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.SUCCESSFUL) {
+    if (blueprintInfo?.status === STATUS.SUCCESSFUL) {
       return blueprintInfo.data.name;
     }
     return null;
@@ -54,10 +54,6 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
 
   useEffect(() => {
     if (isInitialize) {
-      // If method is 'initialize' we don't have the nano contract registered,
-      // therefore we need to request the blueprint info.
-      dispatch(nanoContractBlueprintInfoRequest(nc.blueprintId));
-
       // Load firstAddress if not loaded
       if (!firstAddress.address) {
         dispatch(firstAddressRequest());
@@ -65,8 +61,8 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
     }
   }, []);
 
-  const isBlueprintInfoLoading = blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING;
-  const hasBlueprintInfoFailed = blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.FAILED;
+  const isBlueprintInfoLoading = blueprintInfo?.status === STATUS.LOADING;
+  const hasBlueprintInfoFailed = blueprintInfo?.status === STATUS.FAILED;
 
   const hasCaller = nc.caller != null;
   const hasFirstAddressFailed = !hasCaller && isInitialize && firstAddress.error;
@@ -95,7 +91,7 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
             {t`Blueprint Name`}
             {isBlueprintInfoLoading && (
               <WarnTextValue>
-                {' '}<Spinner size={14} />
+                {' '}<Spinner size={14} animating />
               </WarnTextValue>
             )}
             {hasBlueprintInfoFailed && (

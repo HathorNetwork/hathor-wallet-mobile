@@ -357,19 +357,81 @@ const initialState = {
      */
     historyMeta: {},
     /**
-     * blueprintInfo {{
-     *   status: string;
-     *   data?: {
-     *     name: string;
-     *   };
-     *   error?: string;
-     * }}
+     * blueprint {
+     *   [blueprintId: string]: {
+     *     status: string;
+     *     data?: {
+     *       id: string;
+     *       name: string;
+     *       public_methods: {
+     *         [methodName: string]: {
+     *           args: {
+     *             type: string;
+     *             name: string;
+     *           }[];
+     *         };
+     *       };
+     *     };
+     *     error?: string;
+     *   }
+     * }
+     * @example
+     * {
+     *   '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595': {
+     *     status: 'success',
+     *     data: {
+     *       id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
+     *       name: 'Bet',
+     *       public_methods: {
+     *         bet: {
+     *           args: [
+     *             {
+     *               name: "address",
+     *               type: "bytes"
+     *             },
+     *             {
+     *               name: "score",
+     *               type: "str"
+     *             }
+     *           ],
+     *           return_type: "null"
+     *         },
+     *         initialize: {
+     *           args: [
+     *             {
+     *               name: "oracle_script",
+     *               type: "bytes"
+     *             },
+     *             {
+     *               name: "token_uid",
+     *               type: "bytes"
+     *             },
+     *             {
+     *               name: "date_last_bet",
+     *               type: "int"
+     *             }
+     *           ],
+     *           return_type: "null"
+     *         },
+     *         set_result: {
+     *           args: [
+     *             {
+     *               name: "result",
+     *               type: "SignedData[str]"
+     *             }
+     *           ],
+     *           return_type: "null"
+     *         },
+     *         withdraw: {
+     *           args: [],
+     *           return_type: "null"
+     *         }
+     *       },
+     *     },
+     *   },
+     * }
      */
-    blueprintInfo: {
-      status: NANOCONTRACT_BLUEPRINTINFO_STATUS.READY,
-      data: null,
-      error: null,
-    },
+    blueprint: {},
   },
   /**
    * selectAddressModal {{
@@ -586,9 +648,9 @@ export const reducer = (state = initialState, action) => {
     case types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS:
       return onSetNewNanoContractTransactionStatus(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_REQUEST:
-      return onNanoContractBlueprintInfoRequest(state);
+      return onNanoContractBlueprintInfoRequest(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_READY:
-      return onNanoContractBlueprintInfoReady(state);
+      return onNanoContractBlueprintInfoReady(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_FAILURE:
       return onNanoContractBlueprintInfoFailure(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS:
@@ -1806,45 +1868,107 @@ export const onSetNewNanoContractTransactionStatus = (state, { payload }) => ({
   },
 });
 
-export const onNanoContractBlueprintInfoRequest = (state) => ({
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     id: string;
+ *   };
+ * }} action
+ */
+export const onNanoContractBlueprintInfoRequest = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
-    blueprintInfo: {
-      ...state.nanoContract.blueprintInfo,
-      status: NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING,
+    blueprint: {
+      ...state.nanoContract.blueprint,
+      [payload.id]: {
+        status: NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING,
+        data: null,
+        error: null,
+      },
     },
   },
 });
 
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     id: string;
+ *     error: string;
+ *   };
+ * }} action
+ */
 export const onNanoContractBlueprintInfoFailure = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
-    blueprintInfo: {
-      ...state.nanoContract.blueprintInfo,
-      status: NANOCONTRACT_BLUEPRINTINFO_STATUS.FAILED,
-      error: payload.error,
+    blueprint: {
+      ...state.nanoContract.blueprint,
+      [payload.id]: {
+        status: NANOCONTRACT_BLUEPRINTINFO_STATUS.FAILED,
+        data: null,
+        error: payload.error,
+      },
     },
   },
 });
 
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     id: string;
+ *     data: {
+ *       id: string;
+ *       name: string;
+ *       public_methods: {
+ *         [methodName: string]: {
+ *           args: {
+ *             type: string;
+ *             name: string;
+ *           }[];
+ *         };
+ *       };
+ *     };
+ *   };
+ * }} action
+ */
 export const onNanoContractBlueprintInfoSuccess = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
-    blueprintInfo: {
-      ...state.nanoContract.blueprintInfo,
-      status: NANOCONTRACT_BLUEPRINTINFO_STATUS.SUCCESSFUL,
-      data: payload.data,
+    blueprint: {
+      ...state.nanoContract.blueprint,
+      [payload.id]: {
+        status: NANOCONTRACT_BLUEPRINTINFO_STATUS.SUCCESSFUL,
+        data: payload.data,
+        error: null,
+      },
     },
   },
 });
 
-export const onNanoContractBlueprintInfoReady = (state) => ({
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     id: string;
+ *   };
+ * }} action
+ */
+export const onNanoContractBlueprintInfoReady = (state, { payload }) => ({
   ...state,
   nanoContract: {
     ...state.nanoContract,
-    blueprintInfo: initialState.nanoContract.blueprintInfo,
+    blueprint: {
+      ...state.nanoContract.blueprint,
+      [payload.id]: {
+        status: NANOCONTRACT_BLUEPRINTINFO_STATUS.READY,
+        data: null,
+        error: null,
+      },
+    },
   },
 });

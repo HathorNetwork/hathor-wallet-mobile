@@ -21,6 +21,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
+  nanoContractBlueprintInfoRequest,
   setNewNanoContractStatusReady,
   tokensFetchMetadataRequest,
   walletConnectAccept,
@@ -62,6 +63,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const registeredTokensMetadata = useSelector((state) => state.tokenMetadata);
   // Use it to add loading feedback
   const metadataLoaded = useSelector((state) => state.metadataLoaded);
+  const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[nc.blueprintId]);
 
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
@@ -120,6 +122,13 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   useEffect(() => {
     // Do nothing if nano contract is not registered and don't call initialize method.
     if (notRegistered) return;
+
+    // Request blueprint info if not present to feed the components:
+    // - NanoContractExecInfo, and
+    // - NanoContractMethodArgs
+    if (!blueprintInfo) {
+      dispatch(nanoContractBlueprintInfoRequest(nc.blueprintId));
+    }
 
     // Get tokens metadata
     // actions can be null?
@@ -202,7 +211,11 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
                     ncActions={nc.actions}
                     tokens={registeredTokensMetadata}
                   />
-                  <NanoContractMethodArgs ncArgs={nc.args} />
+                  <NanoContractMethodArgs
+                    blueprintId={nc.blueprintId}
+                    method={nc.method}
+                    ncArgs={nc.args}
+                  />
 
                   {/* User actions */}
                   <View style={styles.actionContainer}>
