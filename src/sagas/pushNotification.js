@@ -644,7 +644,8 @@ export function* loadTxDetails(action) {
     // Halt if wallet loading has already failed
     const walletStatus = yield select((state) => state.walletStartState);
     if (walletStatus === WALLET_STATUS.FAILED) {
-      // It shoun'd have happen.
+      // It shouldn't happen because this very effect is invoked only after
+      // wallet load succeeds.
       log.error('Error loading tx details while wallet has failed.');
       log.haltingTxDetailsLoading();
       return;
