@@ -1417,7 +1417,7 @@ msgstr "Caller"
 
 #: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:141
 msgid "Couldn't determine address, select one"
-msgstr ""
+msgstr "Não foi possível determinar um endereço, selecione um"
 
 #: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:38
 #, javascript-format
@@ -1426,7 +1426,7 @@ msgstr "Posição ${ idx }"
 
 #: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:44
 msgid "Argument List"
-msgstr "List de Argumentos"
+msgstr "Lista de Argumentos"
 
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:70
 msgid "You have received a new Nano Contract Transaction. Please"
@@ -1457,7 +1457,7 @@ msgstr "Ler mais."
 
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:177
 msgid "Nano Contract Not Found"
-msgstr "Nano Contract não nncontrado"
+msgstr "Nano Contract não encontrado"
 
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:178
 msgid ""
