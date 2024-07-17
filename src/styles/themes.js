@@ -93,6 +93,8 @@ export const COLORS = {
   feedbackError600: 'hsla(7, 100%, 30%, 1)',
   freeze100: 'hsla(0, 0%, 90%, 1)',
   freeze300: 'hsla(0, 0%, 45%, 1)',
+  cardWarning100: 'hsla(46, 100%, 95%, 1)',
+  cardWarning200: 'hsla(46, 100%, 58%, 1)',
   /**
    * @type {string} Black with 38% of light and full opaque
    */

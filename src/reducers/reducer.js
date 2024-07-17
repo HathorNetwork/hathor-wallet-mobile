@@ -14,7 +14,9 @@ import {
   FEATURE_TOGGLE_DEFAULTS,
   PRE_SETTINGS_MAINNET,
   NETWORKSETTINGS_STATUS,
-  NANOCONTRACT_REGISTER_STATUS
+  NANOCONTRACT_REGISTER_STATUS,
+  WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS,
+  NANOCONTRACT_BLUEPRINTINFO_STATUS
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -231,6 +233,38 @@ const initialState = {
     modal: {
       show: false,
     },
+    /**
+     * newNanoContractTransaction {{
+     *   showModal: boolean;
+     *   data: {
+     *     nc: {
+     *       network: string;
+     *       ncId: string;
+     *       blueprintId: string;
+     *       method: string;
+     *       caller: string;
+     *       actions: {
+     *         type: string;
+     *         token: string;
+     *         amount: number;
+     *         address?: string;
+     *       }[];
+     *       args: string[];
+     *     };
+     *     dapp: {
+     *       icon: string;
+     *       proposer: string;
+     *       url: string;
+     *       description: string;
+     *     };
+     *   };
+     * }}
+     */
+    newNanoContractTransaction: {
+      status: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.READY,
+      showModal: false,
+      data: null,
+    },
     connectionFailed: false,
     sessions: {},
   },
@@ -322,6 +356,82 @@ const initialState = {
      * }
      */
     historyMeta: {},
+    /**
+     * blueprint {
+     *   [blueprintId: string]: {
+     *     status: string;
+     *     data?: {
+     *       id: string;
+     *       name: string;
+     *       public_methods: {
+     *         [methodName: string]: {
+     *           args: {
+     *             type: string;
+     *             name: string;
+     *           }[];
+     *         };
+     *       };
+     *     };
+     *     error?: string;
+     *   }
+     * }
+     * @example
+     * {
+     *   '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595': {
+     *     status: 'success',
+     *     data: {
+     *       id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
+     *       name: 'Bet',
+     *       public_methods: {
+     *         bet: {
+     *           args: [
+     *             {
+     *               name: "address",
+     *               type: "bytes"
+     *             },
+     *             {
+     *               name: "score",
+     *               type: "str"
+     *             }
+     *           ],
+     *           return_type: "null"
+     *         },
+     *         initialize: {
+     *           args: [
+     *             {
+     *               name: "oracle_script",
+     *               type: "bytes"
+     *             },
+     *             {
+     *               name: "token_uid",
+     *               type: "bytes"
+     *             },
+     *             {
+     *               name: "date_last_bet",
+     *               type: "int"
+     *             }
+     *           ],
+     *           return_type: "null"
+     *         },
+     *         set_result: {
+     *           args: [
+     *             {
+     *               name: "result",
+     *               type: "SignedData[str]"
+     *             }
+     *           ],
+     *           return_type: "null"
+     *         },
+     *         withdraw: {
+     *           args: [],
+     *           return_type: "null"
+     *         }
+     *       },
+     *     },
+     *   },
+     * }
+     */
+    blueprint: {},
   },
   /**
    * selectAddressModal {{
@@ -387,6 +497,8 @@ export const reducer = (state = initialState, action) => {
       return onUpdateLoadedData(state, action);
     case types.SET_USE_WALLET_SERVICE:
       return onSetUseWalletService(state, action);
+    case types.TOKENS_FETCH_METADATA_REQUESTED:
+      return onTokensFetchMetadataRequested(state);
     case types.TOKEN_METADATA_UPDATED:
       return onTokenMetadataUpdated(state, action);
     case types.TOKEN_METADATA_REMOVED:
@@ -531,6 +643,18 @@ export const reducer = (state = initialState, action) => {
       return onFirstAddressFailure(state, action);
     case types.FIRSTADDRESS_SUCCESS:
       return onFirstAddressSuccess(state, action);
+    case types.SET_NEW_NANO_CONTRACT_TRANSACTION:
+      return onSetNewNanoContractTransaction(state, action);
+    case types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS:
+      return onSetNewNanoContractTransactionStatus(state, action);
+    case types.NANOCONTRACT_BLUEPRINTINFO_REQUEST:
+      return onNanoContractBlueprintInfoRequest(state, action);
+    case types.NANOCONTRACT_BLUEPRINTINFO_READY:
+      return onNanoContractBlueprintInfoReady(state, action);
+    case types.NANOCONTRACT_BLUEPRINTINFO_FAILURE:
+      return onNanoContractBlueprintInfoFailure(state, action);
+    case types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS:
+      return onNanoContractBlueprintInfoSuccess(state, action);
     default:
       return state;
   }
@@ -771,6 +895,14 @@ const onUpdateLoadedData = (state, action) => ({
 const onTokenMetadataLoaded = (state, action) => ({
   ...state,
   metadataLoaded: action.payload,
+});
+
+/**
+ * Update token metadata status to false, meaning it is loading.
+ */
+const onTokensFetchMetadataRequested = (state) => ({
+  ...state,
+  metadataLoaded: false,
 });
 
 /**
@@ -1681,5 +1813,162 @@ export const onFirstAddressSuccess = (state, { payload }) => ({
   firstAddress: {
     address: payload.address,
     error: null,
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     showModal: boolean;
+ *     data: {
+ *       nc: {
+ *         network: string;
+ *         ncId: string;
+ *         blueprintId: string;
+ *         method: string;
+ *         caller: string;
+ *         actions: {
+ *           type: string;
+ *           token: string;
+ *           amount: number;
+ *           address?: string;
+ *         }[];
+ *         args: string[];
+ *       };
+ *       dapp: {
+ *         icon: string;
+ *         proposer: string;
+ *         url: string;
+ *         description: string;
+ *       };
+ *     };
+ *   };
+ * }} action
+ */
+export const onSetNewNanoContractTransaction = (state, { payload }) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    newNanoContractTransaction: {
+      ...payload,
+      status: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.READY,
+    },
+  },
+});
+
+export const onSetNewNanoContractTransactionStatus = (state, { payload }) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    newNanoContractTransaction: {
+      ...state.walletConnect.newNanoContractTransaction,
+      status: payload,
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     id: string;
+ *   };
+ * }} action
+ */
+export const onNanoContractBlueprintInfoRequest = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    blueprint: {
+      ...state.nanoContract.blueprint,
+      [payload.id]: {
+        status: NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING,
+        data: null,
+        error: null,
+      },
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     id: string;
+ *     error: string;
+ *   };
+ * }} action
+ */
+export const onNanoContractBlueprintInfoFailure = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    blueprint: {
+      ...state.nanoContract.blueprint,
+      [payload.id]: {
+        status: NANOCONTRACT_BLUEPRINTINFO_STATUS.FAILED,
+        data: null,
+        error: payload.error,
+      },
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     id: string;
+ *     data: {
+ *       id: string;
+ *       name: string;
+ *       public_methods: {
+ *         [methodName: string]: {
+ *           args: {
+ *             type: string;
+ *             name: string;
+ *           }[];
+ *         };
+ *       };
+ *     };
+ *   };
+ * }} action
+ */
+export const onNanoContractBlueprintInfoSuccess = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    blueprint: {
+      ...state.nanoContract.blueprint,
+      [payload.id]: {
+        status: NANOCONTRACT_BLUEPRINTINFO_STATUS.SUCCESSFUL,
+        data: payload.data,
+        error: null,
+      },
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     id: string;
+ *   };
+ * }} action
+ */
+export const onNanoContractBlueprintInfoReady = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    blueprint: {
+      ...state.nanoContract.blueprint,
+      [payload.id]: {
+        status: NANOCONTRACT_BLUEPRINTINFO_STATUS.READY,
+        data: null,
+        error: null,
+      },
+    },
   },
 });

@@ -25,6 +25,7 @@ import { COLORS } from '../styles/themes';
  * @param {Object?} props.action A react component or react element containing a call to action,
  * if provided, it renders underneath the content
  * @param {boolean} props.offcard Renders a feedback without card style
+ * @param {boolean} props.offmargin Renders a feedback without margins
  *
  * @example
  * <FeedbackContent
@@ -34,8 +35,22 @@ import { COLORS } from '../styles/themes';
  *   action={<TryAgain ncId={ncId} />}
  * />
  */
-export const FeedbackContent = ({ title, message, icon, action, offcard }) => (
-  <View style={[styles.container, !offcard && styles.card]}>
+export const FeedbackContent = ({
+  title,
+  message,
+  icon,
+  action,
+  offcard,
+  offmargin,
+  offbackground
+}) => (
+  <View style={[
+    styles.container,
+    !offcard && styles.card,
+    offmargin && styles.offMargin,
+    offbackground && styles.offBackground
+  ]}
+  >
     <View style={styles.wrapper}>
       <View style={styles.content}>
         {icon
@@ -55,8 +70,8 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     marginTop: 16,
     marginBottom: 45,
-    backgroundColor: COLORS.backgroundColor,
     marginHorizontal: 16,
+    backgroundColor: COLORS.backgroundColor,
   },
   card: {
     borderRadius: 16,
@@ -64,6 +79,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowColor: COLORS.textColor,
     shadowOpacity: 0.08,
+  },
+  offMargin: {
+    marginHorizontal: 0,
+    marginVertical: 0,
+  },
+  offBackground: {
+    backgroundColor: COLORS.lowContrastDetail,
   },
   wrapper: {
     overflow: 'scroll',
