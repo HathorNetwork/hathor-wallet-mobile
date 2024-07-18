@@ -1,6 +1,7 @@
 #!/bin/sh
 base=$1
 convert "$base" -resize '29x29'     -unsharp 1x4 "Icon-Small.png"
+convert "$base" -resize '87x87'     -unsharp 1x4 "Icon-Small-87.png"
 convert "$base" -resize '40x40'     -unsharp 1x4 "Icon-Small-40.png"
 convert "$base" -resize '50x50'     -unsharp 1x4 "Icon-Small-50.png"
 convert "$base" -resize '57x57'     -unsharp 1x4 "Icon.png"
