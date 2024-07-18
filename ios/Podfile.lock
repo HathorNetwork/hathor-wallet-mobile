@@ -394,6 +394,8 @@ PODS:
     - React-Core
   - react-native-get-random-values (1.11.0):
     - React-Core
+  - react-native-netinfo (11.3.1):
+    - React-Core
   - react-native-pager-view (5.4.25):
     - React-Core
   - react-native-randombytes (3.6.1):
@@ -891,4 +893,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: c422aedd0c3b236578801088c8afef28030c3c83
 
-COCOAPODS: 1.13.0
+COCOAPODS: 1.15.2

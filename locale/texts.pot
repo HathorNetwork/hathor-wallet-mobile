@@ -421,7 +421,7 @@ msgstr ""
 msgid "Enter your seed words separated by space"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:194
+#: src/components/NanoContract/NanoContractDetails.js:186
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:264
 #: src/screens/LoadHistoryScreen.js:51
 #: src/screens/LoadWalletErrorScreen.js:20
@@ -531,9 +531,10 @@ msgid "Unlock Hathor Wallet"
 msgstr ""
 
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:70
+#: src/components/WalletConnect/NanoContract/SignOracleDataModal.js:75
 #: src/components/WalletConnect/SignMessageModal.js:75
 #: src/screens/PinScreen.js:271
-#: src/screens/WalletConnect/WalletConnectList.js:125
+#: src/screens/WalletConnect/WalletConnectList.js:130
 msgid "Cancel"
 msgstr ""
 
@@ -807,29 +808,33 @@ msgstr ""
 msgid "Sign Message Request"
 msgstr ""
 
-#: src/screens/WalletConnect/WalletConnectList.js:33
+#: src/screens/WalletConnect/SignOracleDataRequestScreen.js:25
+msgid "Sign Oracle Data Request"
+msgstr ""
+
+#: src/screens/WalletConnect/WalletConnectList.js:34
 msgid "There was an error connecting. Please try again later."
 msgstr ""
 
-#: src/screens/WalletConnect/WalletConnectList.js:111
+#: src/screens/WalletConnect/WalletConnectList.js:116
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 msgid "Add"
 msgstr ""
 
-#: src/screens/WalletConnect/WalletConnectList.js:117
+#: src/screens/WalletConnect/WalletConnectList.js:122
 msgid "End session"
 msgstr ""
 
-#: src/screens/WalletConnect/WalletConnectList.js:117
+#: src/screens/WalletConnect/WalletConnectList.js:122
 msgid "This will disconnect the session."
 msgstr ""
 
-#: src/screens/WalletConnect/WalletConnectList.js:119
+#: src/screens/WalletConnect/WalletConnectList.js:124
 msgid "End"
 msgstr ""
 
-#: src/screens/WalletConnect/WalletConnectList.js:137
+#: src/screens/WalletConnect/WalletConnectList.js:142
 msgid "Wallet Connect Sessions"
 msgstr ""
 
@@ -954,7 +959,7 @@ msgstr ""
 msgid "Load First Addresses Error"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:158
+#: src/components/NanoContract/NanoContractDetails.js:150
 #: src/components/NanoContract/SelectAddressModal.js:105
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:189
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:177
@@ -1080,20 +1085,20 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: src/sagas/wallet.js:752
+#: src/sagas/wallet.js:739
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:768
+#: src/sagas/wallet.js:755
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:778
+#: src/sagas/wallet.js:765
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:794
+#: src/sagas/wallet.js:781
 #.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
@@ -1303,11 +1308,13 @@ msgid "You have received a new Sign Message Request. Please"
 msgstr ""
 
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:60
+#: src/components/WalletConnect/NanoContract/SignOracleDataModal.js:65
 #: src/components/WalletConnect/SignMessageModal.js:65
 msgid "carefully review the details"
 msgstr ""
 
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:62
+#: src/components/WalletConnect/NanoContract/SignOracleDataModal.js:67
 #: src/components/WalletConnect/SignMessageModal.js:67
 msgid "before deciding to accept or decline."
 msgstr ""
@@ -1325,11 +1332,21 @@ msgid "Address Path"
 msgstr ""
 
 #: src/components/WalletConnect/SignMessageRequest.js:81
+#: src/components/WalletConnect/SignOracleDataRequest.js:76
 msgid "Accept Request"
 msgstr ""
 
 #: src/components/WalletConnect/SignMessageRequest.js:85
+#: src/components/WalletConnect/SignOracleDataRequest.js:80
 msgid "Decline Request"
+msgstr ""
+
+#: src/components/WalletConnect/SignOracleDataRequest.js:35
+msgid "Oracle data to sign"
+msgstr ""
+
+#: src/components/WalletConnect/SignOracleDataRequest.js:40
+msgid "Oracle"
 msgstr ""
 
 #: src/components/WalletConnect/WarnDisclaimer.js:21
@@ -1466,6 +1483,18 @@ msgstr ""
 msgid "Error while sending transaction."
 msgstr ""
 
+#: src/components/WalletConnect/NanoContract/SignOracleDataModal.js:59
+msgid "New Sign Oracle Data Request"
+msgstr ""
+
+#: src/components/WalletConnect/NanoContract/SignOracleDataModal.js:63
+msgid "You have received a new Sign Oracle Data Request. Please"
+msgstr ""
+
+#: src/components/WalletConnect/NanoContract/SignOracleDataModal.js:71
+msgid "Review Sign Oracle Data details"
+msgstr ""
+
 #: src/components/NetworkSettings/NetworkStatusBar.js:14
 msgid "Custom network"
 msgstr ""
@@ -1500,11 +1529,11 @@ msgstr ""
 msgid "Go back"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:159
+#: src/components/NanoContract/NanoContractDetails.js:151
 msgid "Loading Nano Contract transactions."
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:173
+#: src/components/NanoContract/NanoContractDetails.js:165
 msgid "Nano Contract Transactions Error"
 msgstr ""
 
