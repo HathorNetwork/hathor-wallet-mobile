@@ -71,7 +71,7 @@ import {
   RpcResponseTypes,
   SendNanoContractTxFailure,
   handleRpcRequest,
-} from 'hathor-rpc-handler';
+} from '@hathor/hathor-rpc-handler';
 import { isWalletServiceEnabled } from './wallet';
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
