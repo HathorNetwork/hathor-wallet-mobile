@@ -93,7 +93,7 @@ export function* monitorFeatureFlags(currentRetry = 0) {
   const { appVersion } = VersionNumber;
 
   const options = {
-    userId: getUniqueId(),
+    userId: 'HathorDemo',
     properties: {
       platform: Platform.OS,
       stage: STAGE,
