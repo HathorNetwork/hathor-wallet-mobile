@@ -78,15 +78,7 @@ export const NanoContractDetails = ({ nc }) => {
   };
 
   useEffect(() => {
-    if (txHistory.length === 0) {
-      /* The first time we load the Nano Contract details its transaction history is empty.
-       * The second time it is garanteed that its transaction history is not empty,
-       * because a Nano Contract must have at least the 'initialize' transaction to exists.
-       * For the first transaction history load we don't need to specify the `after` param,
-       * it will be set during the load.
-       */
-      dispatch(nanoContractHistoryRequest({ ncId: nc.ncId, after: null }));
-    }
+    dispatch(nanoContractHistoryRequest({ ncId: nc.ncId, after: null }));
   }, []);
 
   const handleMoreTransactions = () => {
