@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Hathor Wallet</string>
+	<string>Hathor Demo</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -32,25 +32,25 @@
 		<dict/>
 	</dict>
 	<key>NSAppleMusicUsageDescription</key>
-	<string>Hathor Wallet does not use it.</string>
+	<string>Hathor Demo does not use it.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Hathor Wallet does not use it.</string>
+	<string>Hathor Demo does not use it.</string>
 	<key>NSCalendarsUsageDescription</key>
-	<string>Hathor Wallet does not use it.</string>
+	<string>Hathor Demo does not use it.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>The camera is only used to scan QR Codes.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Protect your wallet with Face ID.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Hathor Wallet does not use it.</string>
+	<string>Hathor Demo does not use it.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Hathor Wallet does not use it.</string>
+	<string>Hathor Demo does not use it.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>Hathor Wallet does not use it.</string>
+	<string>Hathor Demo does not use it.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Hathor Wallet does not use it.</string>
+	<string>Hathor Demo does not use it.</string>
 	<key>NSUserNotificationsUsageDescription</key>
-	<string>Hathor Wallet can use it to send notifications for new transactions.</string>
+	<string>Hathor Demo can use it to send notifications for new transactions.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>tabbar.ttf</string>
