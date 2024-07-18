@@ -292,7 +292,7 @@ export function disableFeaturesIfNeeded(customNetworkSettings, currentFeatureTog
 export function getNetworkSettings(state) {
   // The state is always present, but the stored network settings
   // has precedence, once it indicates a custom network.
-  return STORE.getItem(networkSettingsKeyMap.networkSettings) ?? state.networkSettings;
+  return state.networkSettings;
 }
 
 /**

@@ -113,28 +113,8 @@ export function* isPushNotificationEnabled() {
  * Returns a boolean indicating if we should use the wallet-service
  * @returns {Generator<unknown, boolean>}
  */
-export function* isWalletServiceEnabled() {
-  // Users might have had issues with the wallet-service in the past, we can detect
-  // old flags because they were booleans, new flags are integers (timestamps)
-  const shouldIgnoreFlag = yield call(() => AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG));
-  const shouldIgnoreFlagTs = parseInt(shouldIgnoreFlag, 10);
-
-  if (!Number.isNaN(shouldIgnoreFlagTs)) {
-    const now = new Date().getTime();
-    const delta = now - shouldIgnoreFlagTs;
-
-    if (delta < EXPIRE_WS_IGNORE_FLAG) {
-      console.log(`Still ignoring wallet-service, will expire in ${EXPIRE_WS_IGNORE_FLAG - delta}ms`);
-      return false;
-    }
-  } else {
-    // We can safely remove the old flag and continue
-    yield call(() => AsyncStorage.removeItem(IGNORE_WS_TOGGLE_FLAG));
-  }
-
-  const walletServiceEnabled = yield call(checkForFeatureFlag, WALLET_SERVICE_FEATURE_TOGGLE);
-
-  return walletServiceEnabled;
+export function isWalletServiceEnabled() {
+  return false;
 }
 
 export function* startWallet(action) {
@@ -144,7 +124,7 @@ export function* startWallet(action) {
   } = action.payload;
 
   const uniqueDeviceId = getUniqueId();
-  const useWalletService = yield call(isWalletServiceEnabled);
+  const useWalletService = false; // yield call(isWalletServiceEnabled);
   const usePushNotification = yield call(isPushNotificationEnabled);
 
   yield put(setUseWalletService(useWalletService));
@@ -224,6 +204,7 @@ export function* startWallet(action) {
       password: pin,
     });
   } catch (e) {
+    console.error(e);
     // WalletRequestError can either be a network error making the request
     // fail or the wallet might have failed to start and returned status: error.
     // We don't need to send those to Sentry, so we'll capture all the others

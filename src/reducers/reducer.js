@@ -16,7 +16,8 @@ import {
   NETWORKSETTINGS_STATUS,
   NANOCONTRACT_REGISTER_STATUS,
   WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS,
-  NANOCONTRACT_BLUEPRINTINFO_STATUS
+  NANOCONTRACT_BLUEPRINTINFO_STATUS,
+  PRE_SETTINGS_NANO_TESTNET
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -275,7 +276,7 @@ const initialState = {
   featureToggles: {
     ...FEATURE_TOGGLE_DEFAULTS,
   },
-  networkSettings: PRE_SETTINGS_MAINNET,
+  networkSettings: PRE_SETTINGS_NANO_TESTNET,
   networkSettingsInvalid: {},
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
   nanoContract: {
