@@ -150,7 +150,6 @@ export function* registerNanoContract({ payload }) {
  *
  * @typedef {Object} RawNcTxHistoryResponse
  * @property {boolean} success
- * @property {number|null} after
  * @property {RawNcTxHistory} history
  */
 
@@ -175,21 +174,33 @@ export function* registerNanoContract({ payload }) {
  * @param {string} after Transaction hash to start to get items
  * @param {Object} wallet Wallet instance from redux state
  *
+ * @description
+ * We use `after` because we look at time from present to future, therefore `after` means
+ * "from now on in the future".
+ *
  * @throws {Error} when request code is greater then 399 or when response's success is false
  */
 export async function fetchHistory(ncId, count, after, wallet) {
+  // getNanoContractHistory returns a list of transactions by ascending order,
+  // however its pagination works by descending order.
+  // That's why we ask for new transactions `before` an specific tx.
+  // Pagination: future (newest tx) <- current last tx (before) -> past (oldest tx).
+  // Page order: past (oldest tx) -> future (newest tx).
   /**
    * @type {RawNcTxHistoryResponse} response
    */
-  const response = await ncApi.getNanoContractHistory(ncId, count, after);
+  const response = await ncApi.getNanoContractHistory(ncId, count, /* past */ null, /* future */ after);
   const { success, history: rawHistory } = response;
 
   if (!success) {
     throw new Error('Failed to fetch nano contract history');
   }
 
-  const history = [];
-  for (const rawTx of rawHistory) {
+  // We are interested to produce a list of transactions in descending order
+  // because we want users to see newest txs first.
+  const historyReversed = new Array(rawHistory.length) 
+  for (const idx in rawHistory) {
+    const rawTx = rawHistory[idx];
     const network = wallet.getNetworkObject();
     const caller = addressUtils.getAddressFromPubkey(rawTx.nc_pubkey, network).base58;
     // XXX: Wallet Service Wallet doesn't implement isAddressMine.
@@ -215,15 +226,18 @@ export async function fetchHistory(ncId, count, after, wallet) {
       isMine,
       actions,
     };
-    history.push(tx);
+    historyReversed[rawHistory.length - idx - 1] = tx;
   }
 
   let next = after;
-  if (history && history.length > 0) {
-    next = history[history.length - 1].txId;
+  if (historyReversed && historyReversed.length > 0) {
+    // We should get the first item of the list because we are looking
+    // from present -> past, and we want to paginate from preset toward future.
+    // Pagination: future (our interest) <- present -> past
+    next = historyReversed[0].txId;
   }
 
-  return { history, next };
+  return { history: historyReversed, next };
 }
 
 /**
