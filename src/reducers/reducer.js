@@ -1561,9 +1561,9 @@ export const onNanoContractHistorySuccess = (state, { payload }) => ({
     history: {
       ...state.nanoContract.history,
       [payload.ncId]: [
-        ...(state.nanoContract.history[payload.ncId] || []),
-        // we are putting at the bottom because we expect an array with descending order.
+        // we are putting at the top because we expect an array with descending order.
         ...payload.history,
+        ...(state.nanoContract.history[payload.ncId] || []),
       ],
     },
     historyMeta: {

@@ -86,6 +86,8 @@ export const NanoContractDetails = ({ nc }) => {
        * it will be set during the load.
        */
       dispatch(nanoContractHistoryRequest({ ncId: nc.ncId, after: null }));
+    } else {
+      dispatch(nanoContractHistoryRequest({ ncId: nc.ncId, after }))
     }
   }, []);
 
