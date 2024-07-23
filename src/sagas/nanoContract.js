@@ -186,17 +186,21 @@ export async function fetchHistory(ncId, count, after, wallet) {
   /**
    * @type {RawNcTxHistoryResponse} response
    */
-  const response = await ncApi.getNanoContractHistory(ncId, count, /* past */ null, /* future */ after);
+  const response = await ncApi.getNanoContractHistory(
+    ncId,
+    count,
+    /* past */ null,
+    /* future */ after
+  );
   const { success, history: rawHistory } = response;
 
   if (!success) {
     throw new Error('Failed to fetch nano contract history');
   }
-
   // We are interested to produce a list of transactions in descending order
   // because we want users to see newest txs first.
-  const historyReversed = new Array(rawHistory.length) 
-  for (const idx in rawHistory) {
+  const historyReversed = new Array(rawHistory.length)
+  for (let idx = 0; idx < rawHistory.length; idx += 1) {
     const rawTx = rawHistory[idx];
     const network = wallet.getNetworkObject();
     const caller = addressUtils.getAddressFromPubkey(rawTx.nc_pubkey, network).base58;
