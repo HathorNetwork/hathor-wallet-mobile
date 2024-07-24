@@ -323,12 +323,11 @@ export function* onSessionRequest(action) {
         try {
           const method = get(response, 'response.method');
           const hash = get(response, 'response.hash');
-          const addressArg = get(response, 'response.args[0]');
 
           if (method === 'initialize' && hash) {
-            const address = parseP2PKH(addressArg, wallet.getNetworkObject()).address.base58;
+            const address0 = yield call(() => wallet.getAddressAtIndex(0));
 
-            yield spawn(registerNanoContractWithRetry, hash, address);
+            yield spawn(registerNanoContractWithRetry, hash, address0);
           }
         } catch (e) {
           console.error(e);
