@@ -97,6 +97,8 @@ import {
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
+import { parseP2PKH } from '@hathor/wallet-lib/lib/utils/scripts';
+import { bufferUtils } from '@hathor/wallet-lib';
 
 const log = logger('walletConnect');
 
@@ -315,19 +317,23 @@ export function* onSessionRequest(action) {
     );
 
     switch (response.type) {
-      case RpcResponseTypes.SendNanoContractTxResponse: {
-        const method = get(response, 'response.method');
-        const hash = get(response, 'response.hash');
-        console.log({
-          method,
-          hash,
-        });
-        if (method === 'initialize' && hash) {
-          console.log('will send nano contract register request');
-          yield spawn(registerNanoContractWithRetry, hash, 'WXNSUbP5orwSpUJ2hzHKUs1HmwA8PcDoej');
-        }
+      case RpcResponseTypes.SendNanoContractTxResponse:
         yield put(setNewNanoContractStatusSuccess());
-      } break;
+
+        try {
+          const method = get(response, 'response.method');
+          const hash = get(response, 'response.hash');
+          const addressArg = get(response, 'response.args[0]');
+
+          if (method === 'initialize' && hash) {
+            const address = parseP2PKH(addressArg, wallet.getNetworkObject()).address.base58;
+
+            yield spawn(registerNanoContractWithRetry, hash, address);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+        break;
       default:
         break;
     }
