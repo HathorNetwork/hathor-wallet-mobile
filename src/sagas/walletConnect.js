@@ -60,6 +60,7 @@ import {
   select,
   race,
   spawn,
+  delay,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
@@ -92,6 +93,7 @@ import {
   setNewNanoContractStatusFailure,
   setNewNanoContractStatusSuccess,
   showSignOracleDataModal,
+  nanoContractRegisterRequest,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -254,6 +256,24 @@ export function* clearSessions() {
   yield call(refreshActiveSessions);
 }
 
+export function* registerNanoContractWithRetry(ncId, address, retryCount = 0) {
+  yield put(nanoContractRegisterRequest({
+    address,
+    ncId,
+  }));
+
+  const { failure } = yield race({
+    success: take(types.NANOCONTRACT_REGISTER_SUCCESS),
+    failure: take(types.NANOCONTRACT_REGISTER_FAILURE),
+  });
+
+  // Max: 5 minutes wait
+  if (failure && retryCount < 100) {
+    yield delay(3000);
+    yield spawn(registerNanoContractWithRetry, ncId, address, retryCount + 1);
+  }
+}
+
 /**
  * This saga will be called (dispatched from the event listener) when a session
  * is requested from a dApp
@@ -277,7 +297,7 @@ export function* onSessionRequest(action) {
     icon: get(requestSession.peer, 'metadata.icons[0]', null),
     proposer: get(requestSession.peer, 'metadata.name', ''),
     url: get(requestSession.peer, 'metadata.url', ''),
-    description: get(requestSession.peer, 'metadata.description', ''),
+    chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
 
   try {
@@ -295,9 +315,19 @@ export function* onSessionRequest(action) {
     );
 
     switch (response.type) {
-      case RpcResponseTypes.SendNanoContractTxResponse:
+      case RpcResponseTypes.SendNanoContractTxResponse: {
+        const method = get(response, 'response.method');
+        const hash = get(response, 'response.hash');
+        console.log({
+          method,
+          hash,
+        });
+        if (method === 'initialize' && hash) {
+          console.log('will send nano contract register request');
+          yield spawn(registerNanoContractWithRetry, hash, 'WXNSUbP5orwSpUJ2hzHKUs1HmwA8PcDoej');
+        }
         yield put(setNewNanoContractStatusSuccess());
-        break;
+      } break;
       default:
         break;
     }

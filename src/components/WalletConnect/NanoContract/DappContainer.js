@@ -34,7 +34,7 @@ export const DappContainer = ({ dapp }) => (
       </View>
       <View>
         <Text style={styles.proposer}>{dapp.proposer}</Text>
-        <Text style={styles.network}>{'• '}{'mainnet'}</Text>
+        <Text style={styles.network}>{dapp.chain}</Text>
       </View>
     </View>
     <View>

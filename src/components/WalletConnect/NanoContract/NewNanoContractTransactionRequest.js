@@ -205,7 +205,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
                     ncActions={nc.actions}
                     tokens={registeredTokensMetadata}
                   />
-                  <NanoContractMethodArgs ncArgs={nc.args} />
+                  <NanoContractMethodArgs method={ncToAccept.method} ncArgs={nc.args} />
 
                   {/* User actions */}
                   <View style={styles.actionContainer}>
