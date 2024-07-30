@@ -254,3 +254,8 @@ export const NETWORK_PRIVATENET = 'privatenet';
 export const MAX_RETRIES = 8;
 export const INITIAL_RETRY_LATENCY = 300; // ms
 export const LATENCY_MULTIPLIER = 30; // multiplier per iteration
+/**
+ * Timeout for await wallet load in the context of tx details loading.
+ * It awaits 5 minutes.
+ */
+export const TX_DETAILS_TIMEOUT = 5 * 60 * 1000; // 5 minutes

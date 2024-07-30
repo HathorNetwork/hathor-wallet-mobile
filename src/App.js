@@ -86,6 +86,7 @@ import WalletConnectModal from './components/WalletConnect/WalletConnectModal';
 import { COLORS, HathorTheme } from './styles/themes';
 import { NetworkSettingsFlowNav, NetworkSettingsFlowStack } from './screens/NetworkSettings';
 import { NetworkStatusBar } from './components/NetworkSettings/NetworkStatusBar';
+import ShowPushNotificationTxDetails from './components/ShowPushNotificationTxDetails';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -725,6 +726,7 @@ const App = () => (
           theme={HathorTheme}
           ref={navigationRef}
         >
+          <ShowPushNotificationTxDetails />
           <NetworkStatusBar />
           <RootStack />
         </NavigationContainer>
