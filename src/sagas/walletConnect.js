@@ -123,6 +123,7 @@ function* init() {
     const walletConnectEnabled = yield call(isWalletConnectEnabled);
 
     if (walletServiceEnabled) {
+      log('Wallet Service enabled, skipping wallet-connect init.');
       return;
     }
 
