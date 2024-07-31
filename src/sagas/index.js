@@ -15,31 +15,43 @@ import { saga as permissionsSagas } from './permissions';
 import { saga as walletConnectSagas } from './walletConnect';
 import { saga as networkSettingsSagas } from './networkSettings';
 import { saga as nanoContractSagas } from './nanoContract';
-import { logger } from '../logger';
 import { onExceptionCaptured } from '../actions';
 
-function* rootSaga() {
-  const sagas = [
-    ['walletSagas', walletSagas],
-    ['tokensSagas', tokensSagas],
-    ['pushNotificationSaga', pushNotificationSaga],
-    ['networkSettingsSagas', networkSettingsSagas],
-    ['errorHandlerSagas', errorHandlerSagas],
-    ['featureToggleSagas', featureToggleSagas],
-    ['permissionsSagas', permissionsSagas],
-    ['walletConnectSagas', walletConnectSagas],
-    ['nanoContractSagas', nanoContractSagas],
-  ];
+const MAX_RETRIES = 5;
 
-  yield all(sagas.map(([name, saga]) => spawn(function* supervisor() {
+const sagas = {
+  walletSagas: { saga: walletSagas, retryCount: 0, critical: true },
+  tokensSagas: { saga: tokensSagas, retryCount: 0, critical: true },
+  pushNotificationSaga: { saga: pushNotificationSaga, retryCount: 0, critical: true },
+  networkSettingsSagas: { saga: networkSettingsSagas, retryCount: 0, critical: true },
+  errorHandlerSagas: { saga: errorHandlerSagas, retryCount: 0, critical: true },
+  featureToggleSagas: { saga: featureToggleSagas, retryCount: 0, critical: true },
+  permissionsSagas: { saga: permissionsSagas, retryCount: 0, critical: true },
+  walletConnectSagas: { saga: walletConnectSagas, retryCount: 0, critical: false },
+  nanoContractSagas: { saga: nanoContractSagas, retryCount: 0, critical: false },
+};
+
+function* rootSaga() {
+  yield all(Object.keys(sagas).map((name) => spawn(function* supervisor() {
     while (true) {
+      const { saga, retryCount, critical } = sagas[name];
+
       try {
-        logger('rootSaga').debug(`Starting saga: ${name}`);
-        yield call(saga)
+        if (retryCount > MAX_RETRIES && !critical) {
+          continue;
+        }
+
+        yield call(saga);
+
         break
       } catch (e) {
-        // TODO: We should have a retry strategy, e.g. if the wallet saga restarts
-        // more than 3 times, we should restart the app and yield a fatal exception
+        sagas[name].retryCount = retryCount + 1;
+
+        if (retryCount >= MAX_RETRIES) {
+          yield put(onExceptionCaptured(e, critical));
+          break;
+        }
+
         yield put(onExceptionCaptured(e, false));
       }
     }
