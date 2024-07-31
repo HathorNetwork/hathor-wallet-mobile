@@ -45,7 +45,7 @@ export const NewNanoContractTransactionModal = ({
     if (isRetrying) {
       navigatesToNewNanoContractScreen();
     }
-  }, [isRetrying, navigation]);
+  }, [isRetrying]);
 
   const onReadMore = () => {
     Linking.openURL(readMoreUrl)
