@@ -44,7 +44,7 @@ export const NewNanoContractTransactionModal = ({
     if (isRetrying) {
       navigatesToNewNanoContractScreen();
     }
-  }, [isRetrying, navigation]);
+  }, [isRetrying]);
 
   // XXX: Make it navigates to readMoreUrl
   const onReadMore = () => {};
