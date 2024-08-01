@@ -93,7 +93,10 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  const isAddressMine = yield call(wallet.isAddressMine.bind(wallet), address);
+  // XXX: Make sure to disable the Wallet Service feature if you are testing
+  // the nano-testnet network because Wallet Service Wallet doesn't implement
+  // `isAddressMine`.
+  const isAddressMine = yield call([wallet, wallet.isAddressMine], address);
   if (!isAddressMine) {
     log.debug('Fail registering Nano Contract because address do not belongs to this wallet.');
     yield put(nanoContractRegisterFailure(failureMessage.addressNotMine));
@@ -197,9 +200,7 @@ export async function fetchHistory(ncId, count, after, wallet) {
   if (!success) {
     throw new Error('Failed to fetch nano contract history');
   }
-  // We are interested to produce a list of transactions in descending order
-  // because we want users to see newest txs first.
-  const historyReversed = new Array(rawHistory.length)
+  const historyNewestToOldest = new Array(rawHistory.length)
   for (let idx = 0; idx < rawHistory.length; idx += 1) {
     const rawTx = rawHistory[idx];
     const network = wallet.getNetworkObject();
@@ -207,6 +208,8 @@ export async function fetchHistory(ncId, count, after, wallet) {
     // XXX: Wallet Service Wallet doesn't implement isAddressMine.
     // It means this method can't run under wallet-service without
     // throwing an exception.
+    // XXX: Make sure to disable the Wallet Service feature if you are testing
+    // the nano-testnet network
     // eslint-disable-next-line no-await-in-loop
     const isMine = await wallet.isAddressMine(caller);
     const getTxBalanceFn = transactionUtils.getTxBalance.bind(transactionUtils);
@@ -228,18 +231,16 @@ export async function fetchHistory(ncId, count, after, wallet) {
       isMine,
       balance,
     };
-    historyReversed[rawHistory.length - idx - 1] = tx;
+    historyNewestToOldest[idx] = tx;
   }
 
   let next = after;
-  if (historyReversed && historyReversed.length > 0) {
-    // We should get the first item of the list because we are looking
-    // from present -> past, and we want to paginate from preset toward future.
-    // Pagination: future (our interest) <- present -> past
-    next = historyReversed[0].txId;
+  if (historyNewestToOldest && historyNewestToOldest.length > 0) {
+    // The first item is the newest one. 
+    next = historyNewestToOldest[0].txId;
   }
 
-  return { history: historyReversed, next };
+  return { history: historyNewestToOldest, next };
 }
 
 /**
