@@ -28,7 +28,7 @@ const sagas = {
   featureToggleSagas: { saga: featureToggleSagas, retryCount: 0, critical: true },
   permissionsSagas: { saga: permissionsSagas, retryCount: 0, critical: true },
   walletConnectSagas: { saga: walletConnectSagas, retryCount: 0, critical: false },
-  nanoContractSagas: { saga: nanoContractSagas, retryCount: 0, critical: false },
+  nanoContractSagas: { saga: nanoContractSagas, retryCount: 0, critical: true },
 };
 
 function* rootSaga() {
