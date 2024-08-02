@@ -118,6 +118,13 @@ function* isWalletConnectEnabled() {
 }
 
 function* init() {
+  const walletStartState = yield select((state) => state.walletStartState);
+
+  if (walletStartState !== WALLET_STATUS.READY) {
+    log.debug('Wallet not ready yet, waiting for START_WALLET_SUCCESS.');
+    yield take(types.START_WALLET_SUCCESS);
+  }
+
   try {
     const walletServiceEnabled = yield call(isWalletServiceEnabled);
     const walletConnectEnabled = yield call(isWalletConnectEnabled);
@@ -676,7 +683,7 @@ export function* onSessionDelete(action) {
 export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
-    takeLatest(types.START_WALLET_SUCCESS, init),
+    fork(init),
     takeLatest(types.SHOW_NANO_CONTRACT_SEND_TX_MODAL, onSendNanoContractTxRequest),
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
     takeLeading('WC_SESSION_REQUEST', onSessionRequest),
