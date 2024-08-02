@@ -16,8 +16,11 @@ import { saga as walletConnectSagas } from './walletConnect';
 import { saga as networkSettingsSagas } from './networkSettings';
 import { saga as nanoContractSagas } from './nanoContract';
 import { onExceptionCaptured } from '../actions';
+import { logger } from '../logger';
 
 const MAX_RETRIES = 5;
+
+const log = logger('rootSaga');
 
 const sagas = {
   walletSagas: { saga: walletSagas, retryCount: 0, critical: true },
@@ -45,9 +48,11 @@ function* rootSaga() {
 
         break
       } catch (e) {
+        log.error(`Saga ${name} crashed, restarting. [${retryCount}/${MAX_RETRIES}]`);
         sagas[name].retryCount = retryCount + 1;
 
         if (retryCount >= MAX_RETRIES) {
+          log.error(`Max retries reached for saga ${name}`);
           yield put(onExceptionCaptured(e, critical));
           break;
         }
