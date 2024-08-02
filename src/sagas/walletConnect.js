@@ -123,6 +123,7 @@ function* init() {
   if (walletStartState !== WALLET_STATUS.READY) {
     log.debug('Wallet not ready yet, waiting for START_WALLET_SUCCESS.');
     yield take(types.START_WALLET_SUCCESS);
+    log.debug('Starting wallet-connect.');
   }
 
   try {
@@ -130,7 +131,7 @@ function* init() {
     const walletConnectEnabled = yield call(isWalletConnectEnabled);
 
     if (walletServiceEnabled) {
-      log('Wallet Service enabled, skipping wallet-connect init.');
+      log.debug('Wallet Service enabled, skipping wallet-connect init.');
       return;
     }
 
