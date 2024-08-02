@@ -422,7 +422,7 @@ export function* fetchTokensMetadata(tokens) {
   const tokenMetadatas = {};
   for (const response of responses) {
     if (response.type === types.TOKEN_FETCH_METADATA_FAILED) {
-      log.log(`Error downloading metadata of token ${response.tokenId}.`);
+      log.error(`Error downloading metadata of token ${response.tokenId}.`);
     } else if (response.type === types.TOKEN_FETCH_METADATA_SUCCESS) {
       // When the request returns null, it means that we have no metadata for this token
       if (response.data) {
