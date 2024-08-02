@@ -24,6 +24,7 @@ import {
   onStartWalletLock,
   startWalletRequested,
   resetOnLockScreen,
+  pinScreenResult,
 } from '../actions';
 import { PIN_SIZE } from '../constants';
 import { COLORS } from '../styles/themes';
@@ -46,6 +47,7 @@ const mapDispatchToProps = (dispatch) => ({
   setTempPin: (pin) => dispatch(setTempPin(pin)),
   onStartWalletLock: () => dispatch(onStartWalletLock()),
   startWalletRequested: (payload) => dispatch(startWalletRequested(payload)),
+  pinScreenResult: (payload) => dispatch(pinScreenResult(payload)),
 });
 
 class PinScreen extends React.Component {
@@ -156,6 +158,10 @@ class PinScreen extends React.Component {
       const cb = this.props.route.params.cb ?? null;
       if (cb) {
         cb(pin);
+      }
+
+      if (this.props.route.params.dispatchResponse) {
+        pinScreenResult(pin);
       }
     }
   };
@@ -268,6 +274,7 @@ class PinScreen extends React.Component {
         title = t`Reset wallet`;
         onPress = () => this.goToReset();
       }
+
       return (
         <SimpleButton
           onPress={onPress}

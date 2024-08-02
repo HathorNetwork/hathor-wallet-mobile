@@ -448,7 +448,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:21
-#: src/screens/PinScreen.js:268
+#: src/screens/PinScreen.js:274
 #: src/screens/Settings.js:154
 msgid "Reset wallet"
 msgstr ""
@@ -518,20 +518,21 @@ msgstr ""
 msgid "Waiting confirmation"
 msgstr ""
 
-#: src/screens/PinScreen.js:253
+#: src/screens/PinScreen.js:259
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
-#: src/screens/PinScreen.js:67
+#: src/screens/PinScreen.js:69
 msgid "Enter your PIN Code "
 msgstr ""
 
-#: src/screens/PinScreen.js:68
+#: src/screens/PinScreen.js:70
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:82
-#: src/screens/PinScreen.js:265
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:70
+#: src/components/WalletConnect/SignMessageModal.js:75
+#: src/screens/PinScreen.js:271
 #: src/screens/WalletConnect/WalletConnectList.js:125
 msgid "Cancel"
 msgstr ""
@@ -700,6 +701,7 @@ msgstr ""
 
 #: src/components/NanoContract/EditAddressModal.js:60
 #: src/components/NanoContract/SelectAddressModal.js:117
+#: src/components/WalletConnect/SignMessageRequest.js:40
 #: src/screens/SendConfirmScreen.js:161
 msgid "Address"
 msgstr ""
@@ -796,9 +798,13 @@ msgstr ""
 msgid "Unregister token"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:66
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:54
 #: src/screens/WalletConnect/NewNanoContractTransactionScreen.js:24
 msgid "New Nano Contract Transaction"
+msgstr ""
+
+#: src/screens/WalletConnect/SignMessageRequestScreen.js:25
+msgid "Sign Message Request"
 msgstr ""
 
 #: src/screens/WalletConnect/WalletConnectList.js:33
@@ -1288,14 +1294,50 @@ msgid ""
 "security step to protect your data from potential phishing risks."
 msgstr ""
 
-#: src/components/WalletConnect/SignMessageModal.js:50
-msgid "Sign this message?"
+#: src/components/WalletConnect/SignMessageModal.js:59
+msgid "New Sign Message Request"
 msgstr ""
 
-#: src/components/WalletConnect/SignMessageModal.js:57
-msgid ""
-"By clicking approve, you will sign the requested message using the first "
-"address derived from your root key on the m/44'/280'/0'/0/0 derivation path."
+#: src/components/WalletConnect/SignMessageModal.js:63
+msgid "You have received a new Sign Message Request. Please"
+msgstr ""
+
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:60
+#: src/components/WalletConnect/SignMessageModal.js:65
+msgid "carefully review the details"
+msgstr ""
+
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:62
+#: src/components/WalletConnect/SignMessageModal.js:67
+msgid "before deciding to accept or decline."
+msgstr ""
+
+#: src/components/WalletConnect/SignMessageModal.js:71
+msgid "Review Sign Message Request details"
+msgstr ""
+
+#: src/components/WalletConnect/SignMessageRequest.js:35
+msgid "Message to sign"
+msgstr ""
+
+#: src/components/WalletConnect/SignMessageRequest.js:45
+msgid "Address Path"
+msgstr ""
+
+#: src/components/WalletConnect/SignMessageRequest.js:81
+msgid "Accept Request"
+msgstr ""
+
+#: src/components/WalletConnect/SignMessageRequest.js:85
+msgid "Decline Request"
+msgstr ""
+
+#: src/components/WalletConnect/WarnDisclaimer.js:21
+msgid "Caution: There are risks associated with signing dapp transaction requests."
+msgstr ""
+
+#: src/components/WalletConnect/WarnDisclaimer.js:27
+msgid "Read More."
 msgstr ""
 
 #: src/components/WalletConnect/NanoContract/DappContainer.js:41
@@ -1373,19 +1415,11 @@ msgstr ""
 msgid "Argument List"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:70
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:58
 msgid "You have received a new Nano Contract Transaction. Please"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:72
-msgid "carefully review the details"
-msgstr ""
-
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:74
-msgid "before deciding to accept or decline."
-msgstr ""
-
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:78
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:66
 msgid "Review transaction details"
 msgstr ""
 

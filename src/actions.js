@@ -190,6 +190,10 @@ export const types = {
   FIRSTADDRESS_FAILURE: 'FIRSTADDRESS_FAILURE',
   /* It updates the redux state of new nano contract transaction status on wallet connect register. */
   WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
+  WALLETCONNECT_NEW_NANOCONTRACT_RETRY: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY',
+  WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS',
+  SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
+  SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL'
 };
 
 export const featureToggleInitialized = () => ({
@@ -258,7 +262,7 @@ export const walletConnectAccept = (data) => ({
   payload: data,
 });
 
-export const walletWalletReject = () => ({
+export const walletConnectReject = () => ({
   type: types.WALLET_CONNECT_REJECT,
 });
 
@@ -1246,12 +1250,26 @@ export const firstAddressFailure = (failurePayload) => ({
 });
 
 /**
- * Request the downalod of token metadata for a list of tokens.
+ * Request the download of token metadata for a list of tokens.
  * @param {string[]} tokens A list of token uid
  */
 export const tokensFetchMetadataRequest = (tokens) => ({
   type: types.TOKENS_FETCH_METADATA_REQUESTED,
   tokens
+});
+
+/**
+ * Signals that the user wants to attempt to retry the nano contract tx send
+ */
+export const newNanoContactRetry = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY,
+});
+
+/**
+ * Signals that the user doesn't want to retry the new nano contract tx send
+ */
+export const newNanoContactRetryDismiss = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS,
 });
 
 /**
@@ -1333,4 +1351,24 @@ export const nanoContractBlueprintInfoSuccess = (id, blueprintInfo) => ({
 export const nanoContractBlueprintInfoReady = (id) => ({
   type: types.NANOCONTRACT_BLUEPRINTINFO_READY,
   payload: { id },
+});
+
+export const showSignMessageWithAddressModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_SIGN_MESSAGE_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+    dapp,
+  },
+});
+
+export const showNanoContractSendTxModal = (accept, deny, nc, dapp) => ({
+  type: types.SHOW_NANO_CONTRACT_SEND_TX_MODAL,
+  payload: {
+    accept,
+    deny,
+    nc,
+    dapp,
+  },
 });
