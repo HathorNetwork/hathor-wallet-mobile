@@ -309,7 +309,6 @@ const initialState = {
      *   [ncId: string]: {
      *     isLoading: boolean;
      *     error: string;
-     *     after: string;
      *   };
      * }} holds the load state for each nano contract, including the after hash
      * from which a new history chunk should be fetched, exclusively.
@@ -317,7 +316,6 @@ const initialState = {
      * {
      *   '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a': {
      *     isLoading: false,
-     *     after: '000075e15f015dc768065763acd9b563ec002e37182869965ff2c712bed83e1e',
      *   },
      * }
      */
@@ -1537,7 +1535,6 @@ export const onNanoContractHistoryClean = (state, { payload }) => ({
       [payload.ncId]: {
         ...(state.nanoContract.historyMeta[payload.ncId]),
         isLoading: false,
-        after: null,
         error: null,
       },
     },
@@ -1549,8 +1546,9 @@ export const onNanoContractHistoryClean = (state, { payload }) => ({
  * @param {{
  *   payload: {
  *     ncId: string;
- *     history: Object[];
- *     after: string;
+ *     history?: Object[];
+ *     beforeHistory?: Object[];
+ *     afterHistory?: Object[];
  *   }
  * }} action
  */
@@ -1561,9 +1559,9 @@ export const onNanoContractHistorySuccess = (state, { payload }) => ({
     history: {
       ...state.nanoContract.history,
       [payload.ncId]: [
-        ...(state.nanoContract.history[payload.ncId] || []),
-        // we are putting at the bottom because we expect an array with descending order.
-        ...payload.history,
+        ...(payload.beforeHistory || []),
+        ...(payload.history || state.nanoContract.history[payload.ncId] || []),
+        ...(payload.afterHistory || []),
       ],
     },
     historyMeta: {
@@ -1571,7 +1569,6 @@ export const onNanoContractHistorySuccess = (state, { payload }) => ({
       [payload.ncId]: {
         ...(state.nanoContract.historyMeta[payload.ncId]),
         isLoading: false,
-        after: payload.after,
         error: null,
       },
     },
