@@ -1717,30 +1717,28 @@ export const onNanoContractHistoryClean = (state, { payload }) => ({
  *   }
  * }} action
  */
-export const onNanoContractHistorySuccess = (state, { payload }) => {
-  return {
-    ...state,
-    nanoContract: {
-      ...state.nanoContract,
-      history: {
-        ...state.nanoContract.history,
-        [payload.ncId]: [
-          ...(payload.beforeHistory || []),
-          ...(payload.history || state.nanoContract.history[payload.ncId] || []),
-          ...(payload.afterHistory || []),
-        ],
-      },
-      historyMeta: {
-        ...state.nanoContract.historyMeta,
-        [payload.ncId]: {
-          ...(state.nanoContract.historyMeta[payload.ncId]),
-          isLoading: false,
-          error: null,
-        },
+export const onNanoContractHistorySuccess = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    history: {
+      ...state.nanoContract.history,
+      [payload.ncId]: [
+        ...(payload.beforeHistory || []),
+        ...(payload.history || state.nanoContract.history[payload.ncId] || []),
+        ...(payload.afterHistory || []),
+      ],
+    },
+    historyMeta: {
+      ...state.nanoContract.historyMeta,
+      [payload.ncId]: {
+        ...(state.nanoContract.historyMeta[payload.ncId]),
+        isLoading: false,
+        error: null,
       },
     },
-  }
-};
+  },
+});
 
 /**
  * @param {Object} state
