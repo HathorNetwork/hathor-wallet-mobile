@@ -1126,8 +1126,12 @@ export const nanoContractHistoryLoading = (ncEntry) => ({
  * Nano Contract history has loaded success.
  * @param {Object} payload
  * @param {string} payload.ncId Nano Contract ID.
- * @param {Object[]} payload.history Nano Contract's history chunk as array.
- * @param {string} payload.after A new history chunk will be fetched after this hash.
+ * @param {Object[]?} payload.history A chunk of txs to initialize history
+ * @param {Object[]?} payload.beforeHistory A chunk of newer txs.
+ * @param {Object[]?} payload.afterHistory A chunk of older txs.
+ *
+ * @description
+ * The history options are mutually exclusive.
  */
 export const nanoContractHistorySuccess = (payload) => ({
   type: types.NANOCONTRACT_HISTORY_SUCCESS,
