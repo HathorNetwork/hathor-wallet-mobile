@@ -169,37 +169,45 @@ export function* registerNanoContract({ payload }) {
 
 /**
  * Fetch history from Nano Contract wallet's API.
- * @param {string} ncId Nano Contract ID
- * @param {number} count Maximum quantity of history items
- * @param {string} after Transaction hash to start to get items
- * @param {Object} wallet Wallet instance from redux state
+ * @req {Object} req
+ * @param {string} req.ncId Nano Contract ID
+ * @param {number} req.count Maximum quantity of items to fetch
+ * @param {string} req.before Transaction hash to start to get newer items
+ * @param {string} req.after Transaction hash to start to get older items
+ * @param {Object} req.wallet Wallet instance from redux state
  *
- * @description
- * We use `after` because we look at time from present to future, therefore `after` means
- * "from now on in the future".
+ * @returns {{
+ *   history: {};
+ * }}
  *
  * @throws {Error} when request code is greater then 399 or when response's success is false
  */
-export async function fetchHistory(ncId, count, after, wallet) {
-  // getNanoContractHistory returns a list of transactions by ascending order,
-  // however its pagination works by descending order.
-  // That's why we ask for new transactions `before` an specific tx.
-  // Pagination: future (newest tx) <- current last tx (before) -> past (oldest tx).
-  // Page order: past (oldest tx) -> future (newest tx).
+export async function fetchHistory(req) {
+  const {
+    wallet,
+    ncId,
+    count,
+    after,
+    before,
+  } = req;
   /**
    * @type {RawNcTxHistoryResponse} response
    */
   const response = await ncApi.getNanoContractHistory(
     ncId,
     count,
-    /* past */ null,
-    /* future */ after
+    after || null,
+    before || null,
   );
   const { success, history: rawHistory } = response;
 
   if (!success) {
     throw new Error('Failed to fetch nano contract history');
   }
+
+  /* TODO: Make it run concurrently while guaranting the order.
+  /* see https://github.com/HathorNetwork/hathor-wallet-mobile/issues/514
+   */
   const historyNewestToOldest = new Array(rawHistory.length)
   for (let idx = 0; idx < rawHistory.length; idx += 1) {
     const rawTx = rawHistory[idx];
@@ -234,13 +242,7 @@ export async function fetchHistory(ncId, count, after, wallet) {
     historyNewestToOldest[idx] = tx;
   }
 
-  let next = after;
-  if (historyNewestToOldest && historyNewestToOldest.length > 0) {
-    // The first item is the newest one. 
-    next = historyNewestToOldest[0].txId;
-  }
-
-  return { history: historyNewestToOldest, next };
+  return { history: historyNewestToOldest };
 }
 
 /**
@@ -248,13 +250,13 @@ export async function fetchHistory(ncId, count, after, wallet) {
  * @param {{
  *   payload: {
  *     ncId: string;
- *     after: string;
+ *     before?: string;
+ *     after?: string;
  *   }
  * }} action with request payload.
  */
 export function* requestHistoryNanoContract({ payload }) {
-  const { ncId, after } = payload;
-  const count = NANO_CONTRACT_TX_HISTORY_SIZE;
+  const { ncId, before, after } = payload;
   log.debug('Start processing request for nano contract transaction history...');
 
   const historyMeta = yield select((state) => state.nanoContract.historyMeta);
@@ -282,24 +284,38 @@ export function* requestHistoryNanoContract({ payload }) {
     return;
   }
 
-  if (after == null) {
+  if (before == null && after == null) {
     // it clean the history when starting load from the beginning
+    log.debug('Cleaning previous history to start over.');
     yield put(nanoContractHistoryClean({ ncId }));
   }
 
   try {
-    // fetch from fullnode
-    const { history, next } = yield call(fetchHistory, ncId, count, after, wallet);
+    const req = {
+      wallet,
+      ncId,
+      before,
+      after,
+      count: NANO_CONTRACT_TX_HISTORY_SIZE,
+    };
+    const { history } = yield call(fetchHistory, req);
 
-    if (after != null) {
-      // The first load has always `after` equals null. The first load means to be fast,
-      // but the subsequent ones are all request by user and we want slow down multiple
-      // calls to this effect.
+    if (after != null || before != null) {
+      // We want slow down multiple calls to this effect.
       yield delay(1000)
     }
 
     log.debug('Success fetching Nano Contract history.');
-    yield put(nanoContractHistorySuccess({ ncId, history, after: next }));
+    if (before != null) {
+      log.debug('Adding beforeHistory.');
+      yield put(nanoContractHistorySuccess({ ncId, beforeHistory: history }));
+    } else if (after != null) {
+      log.debug('Adding afterHistory.');
+      yield put(nanoContractHistorySuccess({ ncId, afterHistory: history }));
+    } else {
+      log.debug('Initializing history.');
+      yield put(nanoContractHistorySuccess({ ncId, history }));
+    }
   } catch (error) {
     log.error('Error while fetching Nano Contract history.', error);
     // break loading process and give feedback to user

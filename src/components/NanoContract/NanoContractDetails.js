@@ -33,7 +33,6 @@ import { FeedbackContent } from '../FeedbackContent';
  *   txHistory: Object[];
  *   isLoading: boolean;
  *   error: string;
- *   after: string;
  * }}
  */
 const getNanoContractDetails = (ncId) => (state) => {
@@ -42,14 +41,13 @@ const getNanoContractDetails = (ncId) => (state) => {
    * and let it step aside while coming back to Dashboard screen. This transition happens
    * quickly, therefore the user will not have time to see the default state.
    */
-  const defaultMeta = { isLoading: false, error: null, after: null };
+  const defaultMeta = { isLoading: false, error: null };
   const txHistory = state.nanoContract.history[ncId] || [];
-  const { isLoading, error, after } = state.nanoContract.historyMeta[ncId] || defaultMeta;
+  const { isLoading, error } = state.nanoContract.historyMeta[ncId] || defaultMeta;
   return {
     txHistory,
     isLoading,
     error,
-    after,
   };
 }
 
@@ -65,7 +63,11 @@ export const NanoContractDetails = ({ nc }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
-  const { txHistory, isLoading, error, after } = useSelector(getNanoContractDetails(nc.ncId));
+  const {
+    txHistory,
+    isLoading,
+    error,
+  } = useSelector(getNanoContractDetails(nc.ncId));
   const [ncAddress, changeNcAddress] = useState(nc.address);
 
   const onAddressChange = (newAddress) => {
@@ -77,6 +79,7 @@ export const NanoContractDetails = ({ nc }) => {
     navigation.navigate('NanoContractTransactionScreen', { tx });
   };
 
+  // This effect runs only once when the component is first built.
   useEffect(() => {
     if (txHistory.length === 0) {
       /* The first time we load the Nano Contract details its transaction history is empty.
@@ -85,20 +88,18 @@ export const NanoContractDetails = ({ nc }) => {
        * For the first transaction history load we don't need to specify the `after` param,
        * it will be set during the load.
        */
-      dispatch(nanoContractHistoryRequest({ ncId: nc.ncId, after: null }));
+      dispatch(nanoContractHistoryRequest({ ncId: nc.ncId }));
     } else {
-      dispatch(nanoContractHistoryRequest({ ncId: nc.ncId, after }))
+      // Fetch new transactions when there are some transactions in the history.
+      dispatch(nanoContractHistoryRequest({ ncId: nc.ncId, before: txHistory[0].txId }));
     }
   }, []);
 
-  const handleMoreTransactions = () => {
-    if (after == null) {
-      /* This situation is unlikely to happen because on the first transactions history load
-       * the `after` is assigned with the hash of the last transaction in the list.
-       */
-      return;
-    }
-    dispatch(nanoContractHistoryRequest({ ncId: nc.ncId, after }));
+  /**
+   * Triggered when a user makes the pull gesture on the transaction history content.
+   */
+  const handleNewTransactions = () => {
+    dispatch(nanoContractHistoryRequest({ ncId: nc.ncId, before: txHistory[0].txId }));
   };
 
   /* If an error happens on loading transactions history, an error feedback
@@ -135,7 +136,7 @@ export const NanoContractDetails = ({ nc }) => {
             )}
             keyExtractor={(item) => item.txId}
             refreshing={isLoading}
-            onRefresh={handleMoreTransactions}
+            onRefresh={handleNewTransactions} // pull gesture
           />
         )}
     </Wrapper>
