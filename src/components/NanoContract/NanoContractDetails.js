@@ -23,6 +23,7 @@ import Spinner from '../Spinner';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import SimpleButton from '../SimpleButton';
 import { FeedbackContent } from '../FeedbackContent';
+import NewHathorButton from '../NewHathorButton';
 
 /**
  * Retrieves Nano Contract details from Redux.
@@ -98,7 +99,7 @@ export const NanoContractDetails = ({ nc }) => {
   /**
    * Triggered when a user makes the pull gesture on the transaction history content.
    */
-  const handleNewTransactions = () => {
+  const handleNewerTransactions = () => {
     dispatch(nanoContractHistoryRequest({ ncId: nc.ncId, before: txHistory[0].txId }));
   };
 
@@ -136,11 +137,48 @@ export const NanoContractDetails = ({ nc }) => {
             )}
             keyExtractor={(item) => item.txId}
             refreshing={isLoading}
-            onRefresh={handleNewTransactions} // pull gesture
+            onRefresh={handleNewerTransactions} // pull gesture
+            ListFooterComponent={<LoadMoreButton lastTx={txHistory.slice(-1,).pop()} />}
+            extraData={[isLoading, error]}
           />
         )}
     </Wrapper>
   );
+};
+
+/**
+ * It show a button to 'Load More' transactions after the last one.
+ * It hides the button when the last transaction is the initialize.
+ *
+ * @param {Object} prop Properties object
+ * @param {{
+ *   ncId: string;
+ *   txId: string;
+ * }} prop.lastTx A transaction item from transaction history
+ */
+const LoadMoreButton = ({ lastTx }) => {
+  const dispatch = useDispatch();
+  const isInitializeTx = lastTx.ncMethod === 'initialize';
+
+  /**
+   * This handling will dispatch an action to request for
+   * older transactions after a txId.
+   */
+  const handleLoadMore = () => dispatch(nanoContractHistoryRequest({
+    ncId: lastTx.ncId,
+    after: lastTx.txId,
+  }));
+
+  return !isInitializeTx && (
+    <NewHathorButton
+      title={t`Load More`}
+      onPress={handleLoadMore}
+      discrete
+      wrapperStyle={{
+        marginTop: 16,
+      }}
+    />
+  )
 };
 
 /**
