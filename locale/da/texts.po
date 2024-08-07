@@ -1098,16 +1098,16 @@ msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:765
+#: src/sagas/wallet.js:766
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:775
+#: src/sagas/wallet.js:776
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:791
+#: src/sagas/wallet.js:792
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
@@ -1509,12 +1509,21 @@ msgstr ""
 msgid "Go back"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:159
+#: src/components/NanoContract/NanoContractDetails.js:174
+msgid "Load More"
+msgstr ""
+
+#: src/components/NanoContract/NanoContractDetails.js:200
 msgid "Loading Nano Contract transactions."
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:173
+#: src/components/NanoContract/NanoContractDetails.js:214
 msgid "Nano Contract Transactions Error"
+msgstr ""
+
+#: src/components/NanoContract/NanoContractDetailsHeader.js:146
+#: src/components/NanoContract/NanoContractsListItem.js:59
+msgid "Blueprint Name"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:150
@@ -1538,6 +1547,11 @@ msgstr ""
 #: src/components/NanoContract/NanoContractTransactionHeader.js:103
 #: src/components/NanoContract/NanoContractTransactionsListItem.js:62
 msgid "From this wallet"
+msgstr ""
+
+#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
+#: src/components/NanoContract/NanoContractTransactionHeader.js:106
+msgid "Caller"
 msgstr ""
 
 #.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
@@ -1593,4 +1607,8 @@ msgstr ""
 
 #: src/components/NanoContract/UnregisterNanoContractModal.js:44
 msgid "Yes, unregister contract"
+msgstr ""
+
+#: src/components/NanoContract/UnregisterNanoContractModal.js:50
+msgid "No, go back"
 msgstr ""

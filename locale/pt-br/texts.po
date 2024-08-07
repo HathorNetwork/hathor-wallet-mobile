@@ -1552,13 +1552,22 @@ msgstr "Confirmar novo endereço"
 msgid "Go back"
 msgstr "Voltar"
 
-#: src/components/NanoContract/NanoContractDetails.js:159
+#: src/components/NanoContract/NanoContractDetails.js:174
+msgid "Load More"
+msgstr "Carregar mais"
+
+#: src/components/NanoContract/NanoContractDetails.js:200
 msgid "Loading Nano Contract transactions."
 msgstr "Carregando transações do Nano Contract"
 
-#: src/components/NanoContract/NanoContractDetails.js:173
+#: src/components/NanoContract/NanoContractDetails.js:214
 msgid "Nano Contract Transactions Error"
 msgstr "Erro em Transações do Nano Contract"
+
+#: src/components/NanoContract/NanoContractDetailsHeader.js:146
+#: src/components/NanoContract/NanoContractsListItem.js:59
+msgid "Blueprint Name"
+msgstr "Nome do Blueprint"
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:150
 msgid "Registered Address"
@@ -1582,6 +1591,11 @@ msgstr "Data & Hora"
 #: src/components/NanoContract/NanoContractTransactionsListItem.js:62
 msgid "From this wallet"
 msgstr "Desta wallet"
+
+#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
+#: src/components/NanoContract/NanoContractTransactionHeader.js:106
+msgid "Caller"
+msgstr "Caller"
 
 #.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:109
@@ -1637,3 +1651,7 @@ msgstr "Confirma que deseja desregistrar este Nano Contract?"
 #: src/components/NanoContract/UnregisterNanoContractModal.js:44
 msgid "Yes, unregister contract"
 msgstr "Sim, desregistrar"
+
+#: src/components/NanoContract/UnregisterNanoContractModal.js:50
+msgid "No, go back"
+msgstr "Não, voltar"
