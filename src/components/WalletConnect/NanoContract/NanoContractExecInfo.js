@@ -61,8 +61,10 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
     }
   }, []);
 
-  const isBlueprintInfoLoading = blueprintInfo?.status === STATUS.LOADING;
-  const hasBlueprintInfoFailed = blueprintInfo?.status === STATUS.FAILED;
+  const isBlueprintInfoLoading = !registeredNc
+                                 && blueprintInfo?.status === STATUS.LOADING;
+  const hasBlueprintInfoFailed = !registeredNc
+                                 && blueprintInfo?.status === STATUS.FAILED;
 
   const hasCaller = nc.caller != null;
   const hasFirstAddressFailed = !hasCaller && isInitialize && firstAddress.error;
