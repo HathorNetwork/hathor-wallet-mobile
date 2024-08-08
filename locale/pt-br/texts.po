@@ -1367,7 +1367,7 @@ msgstr "Recusar transação"
 
 #: src/components/WalletConnect/NanoContract/DeclineModal.js:29
 msgid "Are you sure you want to decline this transaction?"
-msgstr "Está certo de recursar esta transação?"
+msgstr "Tem certeza que deseja recursar esta transação?"
 
 #: src/components/WalletConnect/NanoContract/DeclineModal.js:33
 msgid "Yes, decline transaction"

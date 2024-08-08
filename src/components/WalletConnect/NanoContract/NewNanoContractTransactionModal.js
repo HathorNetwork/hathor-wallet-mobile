@@ -10,6 +10,7 @@ import {
   StyleSheet,
   View,
   Text,
+  Linking,
 } from 'react-native';
 import { t } from 'ttag';
 import { useNavigation } from '@react-navigation/native';
@@ -18,7 +19,7 @@ import { COLORS } from '../../../styles/themes';
 import { CircleInfoIcon } from '../../Icons/CircleInfo.icon';
 import { ModalBase } from '../../ModalBase';
 import SimpleButton from '../../SimpleButton';
-import { setNewNanoContractTransaction, walletWalletReject } from '../../../actions';
+import { setNewNanoContractTransaction, walletConnectReject } from '../../../actions';
 import { WALLET_STATUS } from '../../../sagas/wallet';
 import { NANO_CONTRACT_INFO_URL } from '../../../constants';
 
@@ -49,7 +50,7 @@ export const NewNanoContractTransactionModal = () => {
   });
 
   const onDismiss = () => {
-    dispatch(walletWalletReject());
+    dispatch(walletConnectReject());
     dispatch(setNewNanoContractTransaction({ show: false, data: null }));
   };
 
@@ -58,8 +59,9 @@ export const NewNanoContractTransactionModal = () => {
     navigation.navigate('NewNanoContractTransactionScreen', { ncTxRequest });
   };
 
-  // XXX: Make it navigates to readMoreUrl
-  const onReadMore = () => {};
+  const onReadMore = () => {
+    Linking.openURL(readMoreUrl)
+  };
 
   return (
     <ModalBase show={showModal} onDismiss={onDismiss}>
@@ -108,18 +110,8 @@ const WarnDisclaimer = ({ onReadMore }) => (
 );
 
 const styles = StyleSheet.create({
-  pd0: {
-    paddingBottom: 0,
-  },
-  pd8: {
-    paddingBottom: 8,
-  },
   body: {
     paddingBottom: 24,
-  },
-  fieldContainer: {
-    width: '100%',
-    paddingBottom: 4,
   },
   text: {
     fontSize: 14,
@@ -149,12 +141,6 @@ const styles = StyleSheet.create({
   warnMessage: {
     fontSize: 12,
     lineHeight: 16,
-  },
-  selectionContainer: {
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: COLORS.freeze100,
   },
   learnMoreWrapper: {
     display: 'inline-block',

@@ -21,6 +21,8 @@ import { commonStyles } from '../theme';
  * It renders a list of method arguments for when the Nano Contract executes.
  *
  * @param {Object} props
+ * @param {string} props.blueprintId ID of blueprint.
+ * @param {string} props.method Method's name.
  * @param {string[]} props.ncArgs A list of method's argument.
  */
 export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {

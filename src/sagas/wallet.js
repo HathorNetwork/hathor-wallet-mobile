@@ -124,7 +124,7 @@ export function* isWalletServiceEnabled() {
     const delta = now - shouldIgnoreFlagTs;
 
     if (delta < EXPIRE_WS_IGNORE_FLAG) {
-      console.log(`Still ignoring wallet-service, will expire in ${EXPIRE_WS_IGNORE_FLAG - delta}ms`);
+      log.log(`Still ignoring wallet-service, will expire in ${EXPIRE_WS_IGNORE_FLAG - delta}ms`);
       return false;
     }
   } else {
@@ -271,7 +271,7 @@ export function* startWallet(action) {
   try {
     yield call(loadTokens);
   } catch (e) {
-    console.error('Tokens load failed: ', e);
+    log.error('Tokens load failed: ', e);
     yield put(onExceptionCaptured(e, false));
     yield put(startWalletFailed());
     return;
@@ -390,7 +390,7 @@ export function* fetchTokensMetadata(tokens) {
   const tokenMetadatas = {};
   for (const response of responses) {
     if (response.type === types.TOKEN_FETCH_METADATA_FAILED) {
-      log(`Error downloading metadata of token ${response.tokenId}.`);
+      log.log(`Error downloading metadata of token ${response.tokenId}.`);
     } else if (response.type === types.TOKEN_FETCH_METADATA_SUCCESS) {
       // When the request returns null, it means that we have no metadata for this token
       if (response.data) {
@@ -403,7 +403,7 @@ export function* fetchTokensMetadata(tokens) {
 }
 
 export function* onWalletServiceDisabled() {
-  console.debug('We are currently in the wallet-service and the feature-flag is disabled, reloading.');
+  log.debug('We are currently in the wallet-service and the feature-flag is disabled, reloading.');
   yield put(reloadWalletRequested());
 }
 
@@ -698,7 +698,7 @@ export function* onWalletReloadData() {
     // Finally, set the wallet to READY by dispatching startWalletSuccess
     yield put(startWalletSuccess());
   } catch (e) {
-    console.log('Wallet reload data failed: ', e);
+    log.error('Wallet reload data failed: ', e);
     yield put(onExceptionCaptured(e, false));
     yield put(startWalletFailed());
   }

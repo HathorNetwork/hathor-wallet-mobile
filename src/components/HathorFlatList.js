@@ -5,14 +5,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+/* eslint no-unused-vars: ["warn", { "varsIgnorePattern": "Props" }] --
+ * Properties like `FlatListProps` are not counted as used,
+ * however they are important for coding completion during development.
+ */
+
 import React from 'react';
 import {
-  FlatList, StyleSheet, View,
+  FlatList, StyleSheet, View, FlatListProps
 } from 'react-native';
 import { COLORS } from '../styles/themes';
 
 /**
- * param {FlatListProps} props
+ * @param {FlatListProps} props
+ * @param {Object} props.wrapperStyle A custom style object used to control the wrapper component.
  */
 export const HathorFlatList = (props) => (
   <View style={[styles.wrapper, props.wrapperStyle]}>

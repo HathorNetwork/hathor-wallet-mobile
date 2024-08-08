@@ -25,7 +25,7 @@ import {
   setNewNanoContractStatusReady,
   tokensFetchMetadataRequest,
   walletConnectAccept,
-  walletWalletReject
+  walletConnectReject
 } from '../../../actions';
 import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
@@ -46,6 +46,11 @@ import { DeclineModal } from './DeclineModal';
  * @param {Object} props
  * @param {Object} props.ncTxRequest
  * @param {Object} props.ncTxRequest.nc
+ * @param {string} props.ncTxRequest.nc.ncId
+ * @param {string} props.ncTxRequest.nc.blueprintId
+ * @param {Object[]} props.ncTxRequest.nc.actions
+ * @param {string} props.ncTxRequest.nc.method
+ * @param {string[]} props.ncTxRequest.nc.args
  * @param {Object} props.ncTxRequest.dapp
  * @param {string} props.ncTxRequest.dapp.icon
  * @param {string} props.ncTxRequest.dapp.proposer
@@ -69,14 +74,12 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   // If nano-contract's method is 'initialize' then the expression
   // should be resolved to firstAddress value by default.
-  // However, the wallet can have trouble to
   const [ncAddress, setNcAddress] = useState(registeredNc?.address || firstAddress.address);
   const ncToAccept = useMemo(() => ({
     ...nc,
     caller: ncAddress,
   }), [ncAddress])
 
-  // Controle SelectAddressModal
   const toggleSelectAddressModal = () => setShowSelectAddressModal(!showSelectAddressModal);
   const handleAddressSelection = (newAddress) => {
     setNcAddress(newAddress);
@@ -96,9 +99,8 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   };
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
-    dispatch(walletWalletReject());
+    dispatch(walletConnectReject());
     navigation.goBack();
-    // TODO: It is not being dimissed automatically
   };
   const onDismissDeclineModal = () => {
     setShowDeclineModal(false);
@@ -131,7 +133,6 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     }
 
     // Get tokens metadata
-    // actions can be null?
     const tokensUid = nc.actions?.map((each) => each.token) || [];
     const tokensMetadataToDownload = [];
 

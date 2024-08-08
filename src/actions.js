@@ -258,7 +258,7 @@ export const walletConnectAccept = (data) => ({
   payload: data,
 });
 
-export const walletWalletReject = () => ({
+export const walletConnectReject = () => ({
   type: types.WALLET_CONNECT_REJECT,
 });
 
@@ -1246,7 +1246,7 @@ export const firstAddressFailure = (failurePayload) => ({
 });
 
 /**
- * Request the downalod of token metadata for a list of tokens.
+ * Request the download of token metadata for a list of tokens.
  * @param {string[]} tokens A list of token uid
  */
 export const tokensFetchMetadataRequest = (tokens) => ({
