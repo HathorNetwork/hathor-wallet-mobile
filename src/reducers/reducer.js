@@ -285,6 +285,15 @@ const initialState = {
       showModal: false,
       data: null,
     },
+    /**
+     * Remarks
+     * We use the map of tokens to collect token details for tokens
+     * used in actions but not registered by the user.
+     */
+    tokens: {
+      isLoading: false,
+      error: null,
+    },
     connectionFailed: false,
     sessions: {},
   },
@@ -698,6 +707,10 @@ export const reducer = (state = initialState, action) => {
       return onUnregisteredTokensRequest(state);
     case types.UNREGISTEREDTOKENS_UPDATE:
       return onUnregisteredTokensUpdate(state, action);
+    case types.WALLETCONNECT_TOKENS_REQUEST:
+      return onWalletConnectTokensRequest(state);
+    case types.WALLETCONNECT_TOKENS_UPDATE:
+      return onWalletConnectTokensUpdate(state, action);
     default:
       return state;
   }
@@ -2025,3 +2038,42 @@ export const onUnregisteredTokensUpdate = (state, { payload }) => ({
     error: payload.error || null,
   },
 });
+
+/**
+ * Remarks
+ * This reducer aims to clean error feedback message before processing the request.
+ */
+export const onWalletConnectTokensRequest = (state) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    tokens: {
+      ...state.walletConnect.tokens,
+      isLoading: true,
+      error: null,
+    },
+  },
+});
+
+/**
+ * Update walletConnect.tokens with some tokens data needed to feed UI components
+ * without the need to register them, also update an error feedback message if present.
+ *
+ * @param {Object} state
+ * @param {Object} action
+ * @param {Object} action.payload
+ * @param {Object} action.payload.tokens A map of token data by its UID.
+ * @param {string} action.payload.error The error message as feedback to user
+ */
+export const onWalletConnectTokensUpdate = (state, { payload }) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    tokens: {
+      ...state.walletConnect.tokens,
+      ...payload.tokens,
+      isLoading: false,
+      error: payload.error || null,
+    },
+  },
+})
