@@ -77,7 +77,10 @@ import {
   setWCConnectionFailed,
   walletConnectTokensUpdate,
 } from '../actions';
+import { logger } from '../logger';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
+
+const log = logger('wallet-connect');
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'hathor_signMessage',
@@ -557,10 +560,13 @@ export function* requestTokens(action) {
 
   if (someError) {
     log.log('There was a failure while getting tokens data to feed walletConnect.tokens.');
-    return yield put(walletConnectTokensUpdate({ tokens, error: failureMessage.someTokensNotLoaded }));
+    yield put(
+      walletConnectTokensUpdate({ tokens, error: failureMessage.someTokensNotLoaded })
+    );
+    return;
   }
   log.log('Success getting tokens data to feed walletConnect.tokens.');
-  return yield put(walletConnectTokensUpdate({ tokens }));
+  yield put(walletConnectTokensUpdate({ tokens }));
 }
 
 export function* saga() {
