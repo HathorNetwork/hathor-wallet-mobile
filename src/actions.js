@@ -190,6 +190,8 @@ export const types = {
   FIRSTADDRESS_FAILURE: 'FIRSTADDRESS_FAILURE',
   /* It updates the redux state of new nano contract transaction status on wallet connect register. */
   WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
+  WALLETCONNECT_TOKENS_REQUEST: 'WALLETCONNECT_TOKENS_REQUEST',
+  WALLETCONNECT_TOKENS_UPDATE: 'WALLETCONNECT_TOKENS_UPDATE',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1333,4 +1335,25 @@ export const nanoContractBlueprintInfoSuccess = (id, blueprintInfo) => ({
 export const nanoContractBlueprintInfoReady = (id) => ({
   type: types.NANOCONTRACT_BLUEPRINTINFO_READY,
   payload: { id },
+});
+
+/**
+ * Signals a request to load a collection of token data by a collection of token UID.
+ * @param {Object} payload
+ * @param {string[]} payload.uids A list of token UID.
+ */
+export const walletConnectTokensRequest = (payload) => ({
+  type: types.WALLETCONNECT_TOKENS_REQUEST,
+  payload,
+});
+
+/**
+ * Signals an update to wallet connect's tokens state.
+ * @param {Object} payload
+ * @param {Object} payload.tokens A map of token data by its UID.
+ * @param {string} payload.error The error message as feedback to user
+ */
+export const walletConnectTokensUpdate = (payload) => ({
+  type: types.WALLETCONNECT_TOKENS_UPDATE,
+  payload,
 });

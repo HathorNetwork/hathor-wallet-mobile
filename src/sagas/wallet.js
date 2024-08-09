@@ -365,7 +365,6 @@ export function* fetchTokensMetadataRequest(action) {
 export function* fetchTokensMetadata(tokens) {
   // No tokens to load, set metadata as loaded
   if (!tokens.length) {
-    yield put(tokenMetadataUpdated({}));
     return;
   }
 

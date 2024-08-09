@@ -45,6 +45,9 @@ export const commonStyles = StyleSheet.create({
     paddingVertical: 24,
     paddingHorizontal: 16,
   },
+  feedbackItem: {
+    paddingHorizontal: 16,
+  },
 
   // General
   text: {

@@ -23,9 +23,9 @@ import { t } from 'ttag';
 import {
   nanoContractBlueprintInfoRequest,
   setNewNanoContractStatusReady,
-  tokensFetchMetadataRequest,
   walletConnectAccept,
-  walletConnectReject
+  walletConnectReject,
+  walletConnectTokensRequest
 } from '../../../actions';
 import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
@@ -65,15 +65,19 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const firstAddress = useSelector((state) => state.firstAddress);
   // Nullable if the nano contract method is 'initialize'
   const registeredNc = useSelector((state) => state.nanoContract.registered[nc.ncId]);
-  const registeredTokensMetadata = useSelector((state) => state.tokenMetadata);
-  // Use it to add loading feedback
-  const metadataLoaded = useSelector((state) => state.metadataLoaded);
+  const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.walletConnect.tokens }));
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[nc.blueprintId]);
 
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
-  // If nano-contract's method is 'initialize' then the expression
-  // should be resolved to firstAddress value by default.
+  /**
+   * If nano-contract's method is 'initialize' then the expression
+   * should be resolved to firstAddress value by default.
+   *
+   * In case of failure to load the first address the user will see
+   * a feedback message instruction it to select an address for the
+   * transaction.
+   */
   const [ncAddress, setNcAddress] = useState(registeredNc?.address || firstAddress.address);
   const ncToAccept = useMemo(() => ({
     ...nc,
@@ -110,8 +114,10 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   // a feedback content should tell user the nano contract must be registered first
   // and only let user decline the transaction to get out the page, otherwise interaction
   // content is showed.
-  const notRegistered = ncToAccept.method !== 'initialize' && registeredNc == null;
-  const isRegistered = !notRegistered;
+  const notInitialize = ncToAccept.method !== 'initialize';
+  const notRegistered = notInitialize && registeredNc == null;
+  // It results in true for registered nc and initialize request
+  const showRequest = !notRegistered;
 
   // This effect should run only once because firstAddress is kept on state when loaded
   useEffect(() => {
@@ -132,19 +138,15 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
       dispatch(nanoContractBlueprintInfoRequest(nc.blueprintId));
     }
 
-    // Get tokens metadata
-    const tokensUid = nc.actions?.map((each) => each.token) || [];
-    const tokensMetadataToDownload = [];
-
-    tokensUid.forEach((uid) => {
-      if (uid !== DEFAULT_TOKEN.uid && !(uid in registeredTokensMetadata)) {
-        tokensMetadataToDownload.push(uid);
+    // Request token data for each unknown token present in actions
+    const unknownTokensUid = [];
+    const actionTokensUid = nc.actions?.map((each) => each.token) || [];
+    actionTokensUid.forEach((uid) => {
+      if (uid !== DEFAULT_TOKEN.uid && !(uid in knownTokens)) {
+        unknownTokensUid.push(uid);
       }
     });
-
-    if (tokensMetadataToDownload.length) {
-      dispatch(tokensFetchMetadataRequest(tokensMetadataToDownload));
-    }
+    dispatch(walletConnectTokensRequest({ uids: unknownTokensUid }));
   }, []);
 
   const onFeedbackModalDismiss = () => {
@@ -161,12 +163,12 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     dispatch(setNewNanoContractStatusReady());
   };
 
-  const isTxInfoLoading = () => !metadataLoaded;
+  const isTxInfoLoading = () => knownTokens.isLoading;
   const isTxInfoLoaded = () => (
-    metadataLoaded && newTxStatus !== WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
+    !knownTokens.isLoading && newTxStatus !== WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
   );
   const isTxProcessing = () => (
-    metadataLoaded && newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
+    !knownTokens.isLoading && newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
   );
   const isTxSuccessful = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL;
   const isTxFailed = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.FAILED;
@@ -187,7 +189,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
           )}
         />
       )}
-      {isRegistered && (
+      {showRequest && (
         <ScrollView style={styles.wide}>
           <TouchableWithoutFeedback>
             <View style={styles.wrapper}>
@@ -210,7 +212,8 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
                   />
                   <NanoContractActions
                     ncActions={nc.actions}
-                    tokens={registeredTokensMetadata}
+                    tokens={knownTokens}
+                    error={knownTokens.error}
                   />
                   <NanoContractMethodArgs
                     blueprintId={nc.blueprintId}

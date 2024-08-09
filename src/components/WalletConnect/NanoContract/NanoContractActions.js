@@ -17,8 +17,10 @@ import { commonStyles } from '../theme';
 import { getShortHash, renderValue } from '../../../utils';
 import { ReceivedIcon } from '../../Icons/Received.icon';
 import { SentIcon } from '../../Icons/Sent.icon';
-import { COLORS } from '../../../styles/themes';
+import { AlertUI, COLORS } from '../../../styles/themes';
 import { DEFAULT_TOKEN } from '../../../constants';
+import { WarnTextValue } from '../../WarnTextValue';
+import { CircleError } from '../../Icons/CircleError.icon';
 
 /**
  * It returns the title template for each action type,
@@ -67,8 +69,9 @@ const getActionTitle = (tokens, action) => {
  * @param {Object} props
  * @param {Object[]} props.ncActions A list of Nano Contract actions.
  * @param {Object} props.tokens A map of token metadata by token uid.
+ * @param {string} props.error A feedback error for tokens not loaded.
  */
-export const NanoContractActions = ({ ncActions, tokens }) => {
+export const NanoContractActions = ({ ncActions, tokens, error }) => {
   if (!ncActions || ncActions.length < 1) {
     return null;
   }
@@ -103,6 +106,15 @@ export const NanoContractActions = ({ ncActions, tokens }) => {
                 )}
             </View>
             <Amount amount={item.amount} isNft={false} />
+          </View>
+        )}
+        // If has error, shows the feedback error message in the list header.
+        ListHeaderComponent={error && (
+          <View style={[commonStyles.cardSplit, commonStyles.feedbackItem]}>
+            <CircleError color={AlertUI.darkColor} size={24} />
+            <View style={commonStyles.cardSplitContent}>
+              <WarnTextValue>{error}</WarnTextValue>
+            </View>
           </View>
         )}
       />
