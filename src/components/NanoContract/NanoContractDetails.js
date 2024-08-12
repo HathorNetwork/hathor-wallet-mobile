@@ -137,7 +137,10 @@ export const NanoContractDetails = ({ nc }) => {
             )}
             keyExtractor={(item) => item.txId}
             refreshing={isLoading}
-            onRefresh={handleNewerTransactions} // pull gesture
+            // Enables the pull gesture to get newer transactions
+            onRefresh={handleNewerTransactions}
+            // Enables a button to load more of older transactions until the end
+            // By reaching the end, the button ceases to render
             ListFooterComponent={<LoadMoreButton lastTx={txHistory.slice(-1,).pop()} />}
             extraData={[isLoading, error]}
           />
