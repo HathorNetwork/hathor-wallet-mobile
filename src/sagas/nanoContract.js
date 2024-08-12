@@ -15,7 +15,6 @@ import {
   all,
   put,
   call,
-  delay,
   debounce,
 } from 'redux-saga/effects';
 import { t } from 'ttag';
@@ -35,8 +34,9 @@ import {
 } from '../actions';
 import { logger } from '../logger';
 import { NANO_CONTRACT_TX_HISTORY_SIZE } from '../constants';
-import { getNanoContractFeatureToggle } from '../utils';
+import { consumeGenerator, getNanoContractFeatureToggle } from '../utils';
 import { getRegisteredNanoContracts } from './helpers';
+import { isWalletServiceEnabled } from './wallet';
 
 const log = logger('nano-contract-saga');
 
@@ -96,10 +96,15 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  // XXX: Make sure to disable the Wallet Service feature if you are testing
-  // the nano-testnet network because Wallet Service Wallet doesn't implement
-  // `isAddressMine`.
-  const isAddressMine = yield call([wallet, wallet.isAddressMine], address);
+  // XXX: Wallet Service doesn't implement isAddressMine.
+  // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
+  // Default to `false` if using Wallet Service.
+  let isAddressMine = false;
+  const useWalletService = yield call(isWalletServiceEnabled);
+  if (!useWalletService) {
+    isAddressMine = yield call([wallet, wallet.isAddressMine], address);
+  }
+
   if (!isAddressMine) {
     log.debug('Fail registering Nano Contract because address do not belongs to this wallet.');
     yield put(nanoContractRegisterFailure(failureMessage.addressNotMine));
@@ -216,18 +221,21 @@ export async function fetchHistory(req) {
     const rawTx = rawHistory[idx];
     const network = wallet.getNetworkObject();
     const caller = addressUtils.getAddressFromPubkey(rawTx.nc_pubkey, network).base58;
-    // XXX: Wallet Service Wallet doesn't implement isAddressMine.
-    // It means this method can't run under wallet-service without
-    // throwing an exception.
-    // XXX: Make sure to disable the Wallet Service feature if you are testing
-    // the nano-testnet network
-    // eslint-disable-next-line no-await-in-loop
-    const isMine = await wallet.isAddressMine(caller);
+    // XXX: Wallet Service doesn't implement isAddressMine.
+    // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
+    // Default to `false` if using Wallet Service.
+    let isMine = false;
+    const useWalletService = consumeGenerator(isWalletServiceEnabled);
+    if (!useWalletService) {
+      // eslint-disable-next-line no-await-in-loop
+      isMine = await wallet.isAddressMine(caller);
+    }
     const actions = rawTx.nc_context.actions.map((each) => ({
       type: each.type, // 'deposit' or 'withdrawal'
       uid: each.token_uid,
       amount: each.amount,
     }));
+
     const tx = {
       txId: rawTx.hash,
       timestamp: rawTx.timestamp,
@@ -301,11 +309,6 @@ export function* requestHistoryNanoContract({ payload }) {
       count: NANO_CONTRACT_TX_HISTORY_SIZE,
     };
     const { history } = yield call(fetchHistory, req);
-
-    if (after != null || before != null) {
-      // We want slow down multiple calls to this effect.
-      yield delay(1000)
-    }
 
     log.debug('Success fetching Nano Contract history.');
     if (before != null) {
