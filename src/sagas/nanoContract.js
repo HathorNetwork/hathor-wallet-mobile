@@ -225,7 +225,7 @@ export async function fetchHistory(req) {
     // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
     // Default to `false` if using Wallet Service.
     let isMine = false;
-    const useWalletService = consumeGenerator(isWalletServiceEnabled);
+    const useWalletService = consumeGenerator(isWalletServiceEnabled());
     if (!useWalletService) {
       // eslint-disable-next-line no-await-in-loop
       isMine = await wallet.isAddressMine(caller);
