@@ -6,7 +6,7 @@
  */
 
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -167,10 +167,10 @@ const LoadMoreButton = ({ lastTx }) => {
    * This handling will dispatch an action to request for
    * older transactions after a txId.
    */
-  const handleLoadMore = () => dispatch(nanoContractHistoryRequest({
+  const handleLoadMore = () => useCallback(dispatch(nanoContractHistoryRequest({
     ncId: lastTx.ncId,
     after: lastTx.txId,
-  }));
+  })), [lastTx]);
 
   return !isInitializeTx && (
     <NewHathorButton
