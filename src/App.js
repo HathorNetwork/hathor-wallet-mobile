@@ -87,6 +87,9 @@ import { COLORS, HathorTheme } from './styles/themes';
 import { NetworkSettingsFlowNav, NetworkSettingsFlowStack } from './screens/NetworkSettings';
 import { NetworkStatusBar } from './components/NetworkSettings/NetworkStatusBar';
 import ShowPushNotificationTxDetails from './components/ShowPushNotificationTxDetails';
+import { NanoContractDetailsScreen } from './screens/NanoContract/NanoContractDetailsScreen';
+import { NanoContractTransactionScreen } from './screens/NanoContract/NanoContractTransactionScreen';
+import { NanoContractRegisterScreen } from './screens/NanoContract/NanoContractRegisterScreen';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -377,6 +380,9 @@ const AppStack = () => {
           initialParams={{ hName: 'Main' }}
           component={TabNavigator}
         />
+        <Stack.Screen name='NanoContractDetailsScreen' component={NanoContractDetailsScreen} />
+        <Stack.Screen name='NanoContractTransactionScreen' component={NanoContractTransactionScreen} />
+        <Stack.Screen name='NanoContractRegisterScreen' component={NanoContractRegisterScreen} />
         <Stack.Screen name='About' component={About} />
         <Stack.Screen name='Security' component={Security} />
         <Stack.Screen name='WalletConnectList' component={WalletConnectList} />

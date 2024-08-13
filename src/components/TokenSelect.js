@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {
-  FlatList, Image, StyleSheet, View, Text, TouchableHighlight,
+  Image, StyleSheet, View, Text, TouchableHighlight,
 } from 'react-native';
 import { get } from 'lodash';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -18,6 +18,7 @@ import Spinner from './Spinner';
 import { renderValue, isTokenNFT } from '../utils';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
+import { HathorFlatList } from './HathorFlatList';
 
 /**
  * @typedef TokenBalance
@@ -37,7 +38,7 @@ import { COLORS } from '../styles/themes';
  */
 const TokenSelect = (props) => {
   const tokens = Object.values(props.tokens);
-  const renderItem = ({ item, index }) => {
+  const renderItem = ({ item }) => {
     const symbolWrapperStyle = [styles.symbolWrapper];
     const symbolTextStyle = [styles.text, styles.leftText, styles.symbolText];
     if (props.selectedToken && props.selectedToken.uid === item.uid) {
@@ -50,7 +51,6 @@ const TokenSelect = (props) => {
 
     return (
       <TouchableHighlight
-        style={index === 0 ? styles.firstItemWrapper : null}
         onPress={() => { props.onItemPress(item); }}
         underlayColor={COLORS.primaryOpacity30}
       >
@@ -94,38 +94,28 @@ const TokenSelect = (props) => {
   return (
     <View style={styles.wrapper}>
       {props.header}
-      <View style={styles.listWrapper}>
-        <FlatList
-          data={tokens}
-          // use extraData to make sure list updates (props.tokens might remain the same object)
-          extraData={[props.tokensBalance, props.selectedToken.uid]}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => item.uid}
-        />
-      </View>
+      <HathorFlatList
+        data={tokens}
+        // use extraData to make sure list updates (props.tokens might remain the same object)
+        extraData={[props.tokensBalance, props.selectedToken.uid]}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.uid}
+        ItemSeparatorComponent={ItemSeparator}
+      />
     </View>
   );
 };
 
+const ItemSeparator = () => (
+  <View style={{ width: '100%', height: 1, backgroundColor: COLORS.borderColor }} />
+);
+
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
-  },
-  listWrapper: {
-    alignSelf: 'stretch',
-    flex: 1,
-    marginTop: 16,
-    backgroundColor: COLORS.backgroundColor,
-    marginHorizontal: 16,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    shadowOffset: { height: 2, width: 0 },
-    shadowRadius: 4,
-    shadowColor: COLORS.textColor,
-    shadowOpacity: 0.08,
   },
   itemWrapper: {
     height: 80,
@@ -133,12 +123,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderColor: COLORS.borderColor,
-  },
-  firstItemWrapper: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
   },
   itemLeftWrapper: {
     flexDirection: 'row',

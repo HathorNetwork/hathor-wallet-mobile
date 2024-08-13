@@ -112,6 +112,7 @@ export const pushNotificationKey = {
   available: 'pushNotification:available',
   notificationError: 'pushNotification:notificationError',
 };
+
 /**
  * this is the message key for localization of new transaction when show amount is enabled
  */
@@ -202,7 +203,7 @@ export const PRE_SETTINGS_TESTNET = {
 
 export const NODE_SERVER_MAINNET_URL = 'https://mobile.wallet.hathor.network/v1a/';
 export const EXPLORER_MAINNET_URL = 'https://explorer.hathor.network/';
-export const EXPLORER_SERVICE_MAINNET_URL = 'https://explorer-service.hathor.network';
+export const EXPLORER_SERVICE_MAINNET_URL = 'https://explorer-service.hathor.network/';
 export const TX_MINING_SERVICE_MAINNET_URL = 'https://txmining.mainnet.hathor.network/';
 
 export const PRE_SETTINGS_MAINNET = {
@@ -229,6 +230,13 @@ export const NETWORKSETTINGS_STATUS = {
   FAILED: 'failed',
   LOADING: 'loading',
   WAITING: 'waiting',
+  SUCCESSFUL: 'successful',
+};
+
+export const NANOCONTRACT_REGISTER_STATUS = {
+  READY: 'ready',
+  FAILED: 'failed',
+  LOADING: 'loading',
   SUCCESSFUL: 'successful',
 };
 
@@ -259,3 +267,8 @@ export const LATENCY_MULTIPLIER = 30; // multiplier per iteration
  * It awaits 5 minutes.
  */
 export const TX_DETAILS_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Nano Contract's transaction history list size.
+ */
+export const NANO_CONTRACT_TX_HISTORY_SIZE = 20;

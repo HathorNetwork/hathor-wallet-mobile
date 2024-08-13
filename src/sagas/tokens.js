@@ -19,7 +19,7 @@ import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
 import { specificTypeAndPayload, dispatchAndWait, getRegisteredTokenUids } from './helpers';
-import { mapTokenHistory } from '../utils';
+import { mapToTxHistory } from '../utils';
 import {
   types,
   tokenFetchBalanceRequested,
@@ -29,7 +29,14 @@ import {
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
 } from '../actions';
+import { logger } from '../logger';
 
+const log = logger('tokens-saga');
+
+/**
+ * @readonly
+ * @enum {string}
+ */
 export const TOKEN_DOWNLOAD_STATUS = {
   READY: 'ready',
   FAILED: 'failed',
@@ -89,6 +96,8 @@ function* fetchTokenBalance(action) {
     const tokenBalance = yield select((state) => get(state.tokensBalance, tokenId));
 
     if (!force && tokenBalance && tokenBalance.oldStatus === TOKEN_DOWNLOAD_STATUS.READY) {
+      log.debug(`Token download status READY.`);
+      log.debug(`Token balance already downloaded for token ${tokenId}. Skipping download.`);
       // The data is already loaded, we should dispatch success
       yield put(tokenFetchBalanceSuccess(tokenId, tokenBalance.data));
       return;
@@ -107,8 +116,10 @@ function* fetchTokenBalance(action) {
       locked: token.balance.locked,
     };
 
+    log.debug(`Success fetching token balance for token ${tokenId}.`);
     yield put(tokenFetchBalanceSuccess(tokenId, balance));
   } catch (e) {
+    log.error('Error while fetching token balance.', e);
     yield put(tokenFetchBalanceFailed(tokenId));
   }
 }
@@ -122,15 +133,18 @@ function* fetchTokenHistory(action) {
 
     if (!force && tokenHistory && tokenHistory.oldStatus === TOKEN_DOWNLOAD_STATUS.READY) {
       // The data is already loaded, we should dispatch success
+      log.debug(`Token history already downloaded for token ${tokenId}. Skipping download.`);
       yield put(tokenFetchHistorySuccess(tokenId, tokenHistory.data));
       return;
     }
 
-    const response = yield call(wallet.getTxHistory.bind(wallet), { token_id: tokenId });
-    const data = response.map((txHistory) => mapTokenHistory(txHistory, tokenId));
+    const response = yield call([wallet, wallet.getTxHistory], { token_id: tokenId });
+    const data = response.map(mapToTxHistory(tokenId));
 
+    log.debug(`Success fetching token history for token ${tokenId}.`);
     yield put(tokenFetchHistorySuccess(tokenId, data));
   } catch (e) {
+    log.error('Error while fetching token history.', e);
     yield put(tokenFetchHistoryFailed(tokenId));
   }
 }
@@ -150,10 +164,12 @@ function* routeTokenChange(action) {
 
   switch (action.type) {
     case 'NEW_TOKEN':
+      log.debug('[routeTokenChange] fetching token balance on NEW_TOKEN event');
       yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: action.payload.uid });
       break;
     case 'SET_TOKENS':
     default:
+      log.debug('[routeTokenChange] fetching token balance on SET_TOKENS event');
       for (const uid of getRegisteredTokenUids({ tokens: action.payload })) {
         yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: uid });
       }
@@ -221,6 +237,7 @@ export function* fetchTokenMetadata({ tokenId }) {
       try {
         const data = yield call(metadataApi.getDagMetadata, tokenId, network);
 
+        log.debug('Success fetching token metadata.');
         yield put({
           type: types.TOKEN_FETCH_METADATA_SUCCESS,
           tokenId,
@@ -228,6 +245,7 @@ export function* fetchTokenMetadata({ tokenId }) {
         });
         return;
       } catch (e) {
+        log.error('Error trying to get DAG metadata.', e);
         yield delay(1000); // Wait 1s before trying again
       }
     }
@@ -238,8 +256,7 @@ export function* fetchTokenMetadata({ tokenId }) {
       type: types.TOKEN_FETCH_METADATA_FAILED,
       tokenId,
     });
-    // eslint-disable-next-line
-    console.log('Error downloading metadata of token', tokenId);
+    log.log(`Error downloading metadata of token ${tokenId}`);
   }
 }
 

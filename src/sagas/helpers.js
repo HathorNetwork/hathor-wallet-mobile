@@ -34,6 +34,10 @@ import {
   LATENCY_MULTIPLIER,
 } from '../constants';
 import { STORE } from '../store';
+import { logger } from '../logger';
+import { consumeAsyncIterator } from '../utils';
+
+const log = logger('helper');
 
 export function* waitForFeatureToggleInitialization() {
   const featureTogglesInitialized = yield select((state) => state.featureTogglesInitialized);
@@ -166,7 +170,7 @@ export function isUnlockScreen(action) {
  * }>}
  */
 export async function getRegisteredTokens(wallet, excludeHTR = false) {
-  const htrUid = hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
+  const htrUid = hathorLib.constants.NATIVE_TOKEN_UID;
   const tokens = {};
 
   // redux-saga generator magic does not work well with the "for await..of" syntax
@@ -189,6 +193,16 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
   }
 
   return tokens;
+}
+
+/**
+ * Retrieve registered Nano Contracts persisted on App's storage.
+ * @param {Object} wallet Wallet instance
+ * @return {Promise<Object[]>}
+ * @async
+ */
+export async function getRegisteredNanoContracts(wallet) {
+  return consumeAsyncIterator(wallet.storage.getRegisteredNanoContracts());
 }
 
 /**
@@ -219,7 +233,8 @@ export async function getFullnodeNetwork() {
       });
     });
     return response.network;
-  } catch {
+  } catch (e) {
+    log.error('Error while getting fullnode network version.', e);
     throw new Error('Error getting fullnode version data.');
   }
 }

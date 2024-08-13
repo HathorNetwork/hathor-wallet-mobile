@@ -27,7 +27,7 @@ import { COLORS } from '../styles/themes';
 const mapStateToProps = (state) => ({
   balance: get(
     state.tokensBalance,
-    `[${hathorLib.constants.HATHOR_TOKEN_CONFIG.uid}].data`,
+    `[${hathorLib.constants.NATIVE_TOKEN_UID}].data`,
     {
       available: 0,
       locked: 0,

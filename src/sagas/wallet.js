@@ -32,6 +32,7 @@ import {
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
 import { get, isEmpty } from 'lodash';
+import { t } from 'ttag';
 import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
@@ -65,6 +66,10 @@ import {
   setTokens,
   onExceptionCaptured,
   networkSettingsUpdateState,
+  selectAddressAddressesSuccess,
+  selectAddressAddressesFailure,
+  firstAddressFailure,
+  firstAddressSuccess,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -77,7 +82,14 @@ import {
   getRegisteredTokenUids,
   progressiveRetryRequest,
 } from './helpers';
-import { setKeychainPin } from '../utils';
+import {
+  getAllAddresses,
+  getFirstAddress,
+  setKeychainPin
+} from '../utils';
+import { logger } from '../logger';
+
+const log = logger('wallet');
 
 export const WALLET_STATUS = {
   NOT_STARTED: 'not_started',
@@ -219,6 +231,10 @@ export function* startWallet(action) {
     wallet = new HathorWallet(walletConfig);
   }
 
+  // Extra wallet configuration based on customNetwork
+  config.setExplorerServiceBaseUrl(networkSettings.explorerServiceUrl);
+  config.setTxMiningUrl(networkSettings.txMiningServiceUrl);
+
   yield put(setWallet(wallet));
 
   // Setup listeners before starting the wallet so we don't lose messages
@@ -327,7 +343,7 @@ export function* startWallet(action) {
  */
 export function* loadTokens() {
   const customTokenUid = DEFAULT_TOKEN.uid;
-  const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
+  const htrUid = hathorLibConstants.NATIVE_TOKEN_UID;
 
   // fetchTokenData will throw an error if the download failed, we should just
   // let it crash as throwing an error is the default behavior for loadTokens
@@ -352,12 +368,14 @@ export function* loadTokens() {
   // spawn a new "thread" to handle it.
   //
   // `spawn` is similar to `fork`, but it creates a `detached` fork
-  yield spawn(fetchTokensMetadata, registeredUids);
+  yield spawn(fetchTokensMetadata, registeredUids.filter((token) => token !== htrUid));
 
   // Since we already know here what tokens are registered, we can dispatch actions
   // to asynchronously load the balances of each one. The `put` effect will just dispatch
   // and continue, loading the tokens asynchronously
   for (const token of registeredUids) {
+    // Skip the native token, once it has its balance loaded already
+    if (token === htrUid) continue;
     yield put(tokenFetchBalanceRequested(token));
   }
 
@@ -553,7 +571,7 @@ export function* handleTx(action) {
   for (const tokenUid of tokensToDownload) {
     yield put(tokenFetchBalanceRequested(tokenUid, true));
 
-    if (tokenUid === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid
+    if (tokenUid === hathorLibConstants.NATIVE_TOKEN_UID
         || tokenUid === DEFAULT_TOKEN.uid) {
       yield put(tokenFetchHistoryRequested(tokenUid, true));
     } else {
@@ -646,7 +664,7 @@ export function* bestBlockUpdate({ payload }) {
   }
 
   if (currentHeight !== payload) {
-    yield put(tokenFetchBalanceRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
+    yield put(tokenFetchBalanceRequested(hathorLibConstants.NATIVE_TOKEN_UID));
   }
 }
 
@@ -676,7 +694,7 @@ export function* onWalletReloadData() {
     const registeredTokens = yield call(loadTokens);
 
     const customTokenUid = DEFAULT_TOKEN.uid;
-    const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
+    const htrUid = hathorLibConstants.NATIVE_TOKEN_UID;
 
     // We might have lost transactions during the reload, so we must invalidate the
     // token histories:
@@ -756,6 +774,58 @@ export function* refreshSharedAddress() {
   yield put(sharedAddressUpdate(address, index));
 }
 
+export function* fetchAllWalletAddresses() {
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet.isReady()) {
+    const errorMsg = 'Fail fetching all wallet addresses because wallet is not ready yet.';
+    log.error(errorMsg);
+    const feedbackErrorMsg = t`Wallet is not ready to load addresses.`;
+    // This will show the message in the feedback content at SelectAddressModal
+    yield put(selectAddressAddressesFailure({ error: feedbackErrorMsg }));
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(errorMsg), false));
+    return;
+  }
+
+  try {
+    const addresses = yield call(getAllAddresses, wallet);
+    log.log('All wallet addresses loaded with success.');
+    yield put(selectAddressAddressesSuccess({ addresses }));
+  } catch (error) {
+    log.error('Error while fetching all wallet addresses.', error);
+    // This will show the message in the feedback content at SelectAddressModal
+    yield put(selectAddressAddressesFailure({
+      error: t`There was an error while loading wallet addresses. Try again.`
+    }));
+  }
+}
+
+export function* fetchFirstWalletAddress() {
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet.isReady()) {
+    const errorMsg = 'Fail fetching first wallet address because wallet is not ready yet.';
+    log.error(errorMsg);
+    const feedbackErrorMsg = t`Wallet is not ready to load the first address.`;
+    // This will show the message in the feedback content
+    yield put(firstAddressFailure({ error: feedbackErrorMsg }));
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(errorMsg), false));
+    return;
+  }
+
+  try {
+    const address = yield call(getFirstAddress, wallet);
+    log.log('First wallet address loaded with success.');
+    yield put(firstAddressSuccess({ address }));
+  } catch (error) {
+    log.error('Error while fetching first wallet address.', error);
+    // This will show the message in the feedback content
+    yield put(firstAddressFailure({
+      error: t`There was an error while loading first wallet address. Try again.`
+    }));
+  }
+}
+
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
@@ -768,5 +838,7 @@ export function* saga() {
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
     takeEvery(types.WALLET_REFRESH_SHARED_ADDRESS, refreshSharedAddress),
+    takeEvery(types.SELECTADDRESS_ADDRESSES_REQUEST, fetchAllWalletAddresses),
+    takeEvery(types.FIRSTADDRESS_REQUEST, fetchFirstWalletAddress),
   ]);
 }

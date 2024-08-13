@@ -23,7 +23,7 @@ const HathorModal = (props) => (
     onBackdropPress={props.onDismiss}
     style={styles.modal}
   >
-    <View style={props.viewStyle || styles.view}>
+    <View style={StyleSheet.compose(styles.view, props.viewStyle)}>
       {props.children}
     </View>
   </Modal>
@@ -38,9 +38,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingBottom: 56,
-    paddingTop: 48,
-    height: 290,
+    paddingBottom: 24,
+    paddingTop: 42,
+    minHeight: 290,
   },
 });
 
