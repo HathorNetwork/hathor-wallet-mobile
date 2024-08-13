@@ -12,7 +12,6 @@ import { isEmpty } from 'lodash';
 import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
-import { isEmpty } from 'lodash';
 import moment from 'moment';
 import baseStyle from './styles/init';
 import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE } from './constants';
