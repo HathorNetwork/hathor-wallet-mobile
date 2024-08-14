@@ -116,15 +116,6 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
             </View>
           </View>
         )}
-        // If has error, shows the feedback error message in the list header.
-        ListHeaderComponent={error && (
-          <View style={[commonStyles.cardSplit, commonStyles.feedbackItem]}>
-            <CircleError color={AlertUI.darkColor} size={24} />
-            <View style={commonStyles.cardSplitContent}>
-              <WarnTextValue>{error}</WarnTextValue>
-            </View>
-          </View>
-        )}
       />
     </View>
   );
