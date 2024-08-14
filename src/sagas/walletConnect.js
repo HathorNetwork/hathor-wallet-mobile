@@ -59,7 +59,6 @@ import {
   select,
   race,
 } from 'redux-saga/effects';
-import { t } from 'ttag';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
 
@@ -75,7 +74,6 @@ import {
   setWalletConnectSessions,
   onExceptionCaptured,
   setWCConnectionFailed,
-  unregisteredTokensUpdate,
 } from '../actions';
 import { logger } from '../logger';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
@@ -104,11 +102,6 @@ const ERROR_CODES = {
 // src/walletconnect.sh script
 const Core = class {};
 const Web3Wallet = class {};
-
-const failureMessage = {
-  walletNotReadyError: t`Wallet is not ready yet to process a Wallet Connect effect.`,
-  someTokensNotLoaded: t`Error loading the details of some tokens.`,
-};
 
 function* isWalletConnectEnabled() {
   const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
@@ -527,48 +520,6 @@ export function* onSessionDelete(action) {
   yield call(onCancelSession, action);
 }
 
-/**
- * Request tokens data to feed walletConnect's tokens.
- * @param {Object} action
- * @param {Object} action.payload
- * @param {string[]} action.payload.uids
- */
-export function* requestTokens(action) {
-  const { uids } = action.payload;
-
-  const wallet = yield select((state) => state.wallet);
-  if (!wallet.isReady()) {
-    log.error('Fail updating loading tokens data because wallet is not ready yet.');
-    // This will show user an error modal with the option to send the error to sentry.
-    yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), true));
-    return;
-  }
-
-  const tokens = {};
-  let someError = false;
-  for (const uid of uids) {
-    try {
-      const { tokenInfo: { symbol, name } } = yield call([wallet, wallet.getTokenDetails], uid);
-      const token = { uid, symbol, name };
-      tokens[uid] = token;
-    } catch (e) {
-      log.error(`Fail getting token data for token ${uid}.`, e);
-      someError = true;
-      // continue
-    }
-  }
-
-  if (someError) {
-    log.log('There was a failure while getting tokens data to feed unregisteredTokens.');
-    yield put(
-      unregisteredTokensUpdate({ tokens, error: failureMessage.someTokensNotLoaded })
-    );
-    return;
-  }
-  log.log('Success getting tokens data to feed unregisteredTokens.');
-  yield put(unregisteredTokensUpdate({ tokens }));
-}
-
 export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
@@ -580,6 +531,5 @@ export function* saga() {
     takeEvery('WC_SHUTDOWN', clearSessions),
     takeEvery(types.RESET_WALLET, onWalletReset),
     takeLatest(types.WC_URI_INPUTTED, onUriInputted),
-    takeEvery(types.UNREGISTEREDTOKENS_REQUEST, requestTokens),
   ]);
 }
