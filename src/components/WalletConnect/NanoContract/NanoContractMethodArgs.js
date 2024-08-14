@@ -17,12 +17,35 @@ import { get } from 'lodash';
 import { COLORS } from '../../../styles/themes';
 import { commonStyles } from '../theme';
 import { onExceptionCaptured } from '../../../actions';
+import { NANOCONTRACT_BLUEPRINTINFO_STATUS as STATUS } from '../../../constants';
 
 /**
  * Get method info from registered blueprint data.
+ *
+ * @param {{
+ *   data: Object;
+ * }} blueprint The blueprint info object
+ * @param {string} method The method name to get info from blueprint public methods
+ *
+ * @returns {Object}
  */
 function getMethodInfoFromBlueprint(blueprint, method) {
   return get(blueprint.data, `public_methods.${method}`, null);
+}
+
+/**
+ * Get the fallback entries for the method arguments.
+ *
+ * @param {string[]} args A list of argument value
+ *
+ * @returns {[argName: string, value: string][]}
+ *
+ * @example
+ * getFallbackArgEntries([...argValues])
+ * >>> [['Position 0', 'abc'], ['Position 1', '00'], ['Position 2', 123]]
+ */
+function getFallbackArgEntries(args) {
+  return args.map((arg, idx) => [t`Position ${idx}`, arg]);
 }
 
 /**
@@ -45,6 +68,11 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
   // or a fallback like:
   // >>> [['Position 0', 'abc'], ['Position 1', '00'], ['Position 2', 123]]
   const argEntries = useMemo(() => {
+    // Retrieve the fallback entries while blueprint info is being loading.
+    if (blueprintInfo.status === STATUS.LOADING) {
+      return getFallbackArgEntries(ncArgs);
+    }
+
     const methodInfo = getMethodInfoFromBlueprint(blueprintInfo, method);
     if (methodInfo) {
       return ncArgs.map((arg, idx) => [methodInfo.args[idx].name, arg]);
@@ -56,7 +84,7 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
     dispatch(onExceptionCaptured(new Error(errMsg), false));
 
     // Still render a fallback
-    return ncArgs.map((arg, idx) => [t`Position ${idx}`, arg]);
+    return getFallbackArgEntries(ncArgs);
   }, [method, ncArgs, blueprintInfo]);
 
   return (
