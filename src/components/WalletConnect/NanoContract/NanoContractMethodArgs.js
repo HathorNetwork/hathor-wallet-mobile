@@ -70,8 +70,9 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
   // or a fallback like:
   // >>> [['Position 0', 'abc'], ['Position 1', '00'], ['Position 2', 123]]
   const argEntries = useMemo(() => {
-    if (blueprintInfo == null || blueprintInfo.status === STATUS.LOADING) {
-      return [];
+    // Retrieve the fallback entries while blueprint info is being loading.
+    if (blueprintInfo.status === STATUS.LOADING) {
+      return getFallbackArgEntries(ncArgs);
     }
 
     const methodInfo = getMethodInfoFromBlueprint(blueprintInfo, method);
