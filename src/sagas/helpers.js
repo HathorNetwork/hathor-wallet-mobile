@@ -344,3 +344,12 @@ export function* progressiveRetryRequest(request, maxRetries = MAX_RETRIES) {
   // throw last error after retries exhausted
   throw lastError;
 }
+
+export function* retryHandler(retryAction, dismissAction) {
+  const { retry } = yield race({
+    retry: take(retryAction),
+    dismiss: take(dismissAction),
+  });
+
+  return retry != null;
+}

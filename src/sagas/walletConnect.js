@@ -68,6 +68,7 @@ import {
   RpcResponseTypes,
   SendNanoContractTxFailure,
   handleRpcRequest,
+  CreateTokenError,
 } from '@hathor/hathor-rpc-handler';
 import { isWalletServiceEnabled, WALLET_STATUS } from './wallet';
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
@@ -88,8 +89,13 @@ import {
   setNewNanoContractStatusReady,
   setNewNanoContractStatusFailure,
   setNewNanoContractStatusSuccess,
+  showCreateTokenModal,
+  setCreateTokenStatusLoading,
+  setCreateTokenStatusReady,
+  setCreateTokenStatusSuccessful,
+  setCreateTokenStatusFailed,
 } from '../actions';
-import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
+import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
 
 const log = logger('walletConnect');
@@ -302,6 +308,9 @@ export function* onSessionRequest(action) {
       case RpcResponseTypes.SendNanoContractTxResponse:
         yield put(setNewNanoContractStatusSuccess());
         break;
+      case RpcResponseTypes.CreateTokenResponse:
+        yield put(setCreateTokenStatusSuccessful());
+        break;
       default:
         break;
     }
@@ -320,11 +329,27 @@ export function* onSessionRequest(action) {
       case SendNanoContractTxFailure: {
         yield put(setNewNanoContractStatusFailure());
 
+        const retry = yield call(
+          retryHandler,
+          types.WALLETCONNECT_CREATE_TOKEN_RETRY,
+          types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
+          // Retry the action, exactly as it came:
+          yield spawn(onSessionRequest, action);
+        }
+      } break;
+      case CreateTokenError: {
+        yield put(setCreateTokenStatusFailed());
+
         // User might try again, wait for it.
-        const { retry } = yield race({
-          retry: take(types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY),
-          dismiss: take(types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS),
-        });
+        const retry = yield call(
+          retryHandler,
+          types.WALLETCONNECT_CREATE_TOKEN_RETRY,
+          types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
+        );
 
         if (retry) {
           shouldAnswer = false;
@@ -425,7 +450,15 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         dispatch(setNewNanoContractStatusLoading());
         resolve();
         break;
-      case TriggerTypes.LoadingFinishedTrigger:
+      case TriggerTypes.CreateTokenLoadingTrigger:
+        dispatch(setCreateTokenStatusLoading());
+        resolve();
+        break;
+      case TriggerTypes.CreateTokenLoadingFinishedTrigger:
+        dispatch(setCreateTokenStatusReady());
+        resolve();
+        break;
+      case TriggerTypes.SendNanoContractTxLoadingFinishedTrigger:
         dispatch(setNewNanoContractStatusReady());
         resolve();
         break;

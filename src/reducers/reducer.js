@@ -16,7 +16,8 @@ import {
   NETWORKSETTINGS_STATUS,
   NANOCONTRACT_REGISTER_STATUS,
   WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS,
-  NANOCONTRACT_BLUEPRINTINFO_STATUS
+  NANOCONTRACT_BLUEPRINTINFO_STATUS,
+  WALLETCONNECT_CREATE_TOKEN_STATUS
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -286,6 +287,10 @@ const initialState = {
       showModal: false,
       retrying: false,
       data: null,
+    },
+    createToken: {
+      status: WALLETCONNECT_CREATE_TOKEN_STATUS.READY,
+      retrying: false,
     },
     connectionFailed: false,
     sessions: {},
@@ -686,6 +691,12 @@ export const reducer = (state = initialState, action) => {
       return onSetNewNanoContractTransaction(state, action);
     case types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS:
       return onSetNewNanoContractTransactionStatus(state, action);
+    case types.WALLETCONNECT_CREATE_TOKEN_STATUS:
+      return onSetCreateTokenStatus(state, action);
+    case types.WALLETCONNECT_CREATE_TOKEN_RETRY:
+      return onSetCreateTokenRetry(state, action);
+    case types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS:
+      return onSetCreateTokenRetryDismiss(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_REQUEST:
       return onNanoContractBlueprintInfoRequest(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_FAILURE:
@@ -1922,6 +1933,40 @@ export const onSetNewNanoContractTransactionStatus = (state, { payload }) => ({
     newNanoContractTransaction: {
       ...state.walletConnect.newNanoContractTransaction,
       status: payload,
+    },
+  },
+});
+
+export const onSetCreateTokenRetry = (state) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    createToken: {
+      ...state.walletConnect.createToken,
+      retrying: true,
+    },
+  },
+});
+
+export const onSetCreateTokenRetryDismiss = (state) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    createToken: {
+      ...state.walletConnect.createToken,
+      retrying: true,
+    },
+  },
+});
+
+export const onSetCreateTokenStatus = (state, { payload }) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    createToken: {
+      ...state.walletConnect.createToken,
+      status: payload,
+      retrying: false,
     },
   },
 });
