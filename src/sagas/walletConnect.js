@@ -75,7 +75,7 @@ import {
   setWalletConnectSessions,
   onExceptionCaptured,
   setWCConnectionFailed,
-  walletConnectTokensUpdate,
+  unregisteredTokensUpdate,
 } from '../actions';
 import { logger } from '../logger';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
@@ -559,14 +559,14 @@ export function* requestTokens(action) {
   }
 
   if (someError) {
-    log.log('There was a failure while getting tokens data to feed walletConnect.tokens.');
+    log.log('There was a failure while getting tokens data to feed unregisteredTokens.');
     yield put(
-      walletConnectTokensUpdate({ tokens, error: failureMessage.someTokensNotLoaded })
+      unregisteredTokensUpdate({ tokens, error: failureMessage.someTokensNotLoaded })
     );
     return;
   }
-  log.log('Success getting tokens data to feed walletConnect.tokens.');
-  yield put(walletConnectTokensUpdate({ tokens }));
+  log.log('Success getting tokens data to feed unregisteredTokens.');
+  yield put(unregisteredTokensUpdate({ tokens }));
 }
 
 export function* saga() {
@@ -580,6 +580,6 @@ export function* saga() {
     takeEvery('WC_SHUTDOWN', clearSessions),
     takeEvery(types.RESET_WALLET, onWalletReset),
     takeLatest(types.WC_URI_INPUTTED, onUriInputted),
-    takeEvery(types.WALLETCONNECT_TOKENS_REQUEST, requestTokens),
+    takeEvery(types.UNREGISTEREDTOKENS_REQUEST, requestTokens),
   ]);
 }
