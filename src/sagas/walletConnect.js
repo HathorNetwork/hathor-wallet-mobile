@@ -75,10 +75,7 @@ import {
   onExceptionCaptured,
   setWCConnectionFailed,
 } from '../actions';
-import { logger } from '../logger';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
-
-const log = logger('wallet-connect');
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'hathor_signMessage',

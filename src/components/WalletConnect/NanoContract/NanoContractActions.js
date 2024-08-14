@@ -12,6 +12,7 @@ import {
   Text,
 } from 'react-native';
 import { t } from 'ttag';
+import { useSelector } from 'react-redux';
 import { HathorFlatList } from '../../HathorFlatList';
 import { commonStyles } from '../theme';
 import { getShortHash, isTokenNFT, renderValue } from '../../../utils';
@@ -21,7 +22,6 @@ import { AlertUI, COLORS } from '../../../styles/themes';
 import { DEFAULT_TOKEN } from '../../../constants';
 import { WarnTextValue } from '../../WarnTextValue';
 import { CircleError } from '../../Icons/CircleError.icon';
-import { useSelector } from 'react-redux';
 
 /**
  * It returns the title template for each action type,
@@ -132,7 +132,7 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
  * @param {boolean} props.isNft A flag to inform if the token is an NFT or not
  * @param {string} props.title The card title for the action
  */
-const ActionItem = ({ action, title , isNft }) => {
+const ActionItem = ({ action, title, isNft }) => {
   const styles = StyleSheet.create({
     action: [commonStyles.text, commonStyles.bold],
     valueLabel: [commonStyles.text, commonStyles.value, commonStyles.bold, commonStyles.mb4],
