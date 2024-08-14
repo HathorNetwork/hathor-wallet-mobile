@@ -11,11 +11,19 @@ import {
   View,
   Text,
 } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
 import { COLORS } from '../../../styles/themes';
 import { commonStyles } from '../theme';
+import { onExceptionCaptured } from '../../../actions';
+
+/**
+ * Get method info from registered blueprint data.
+ */
+function getMethodInfoFromBlueprint(blueprint, method) {
+  return get(blueprint.data, `public_methods.${method}`, null);
+}
 
 /**
  * It renders a list of method arguments for when the Nano Contract executes.
@@ -29,16 +37,27 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
   if (!ncArgs.length) {
     return null;
   }
+  const dispatch = useDispatch();
 
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[blueprintId]);
+  // It results a in a list of entries like:
+  // >>> [['oracle_script', 'abc'], ['token_uid', '00'], ['date_last_bet', 123]]
+  // or a fallback like:
+  // >>> [['Position 0', 'abc'], ['Position 1', '00'], ['Position 2', 123]]
   const argEntries = useMemo(() => {
-    const _methodInfo = get(blueprintInfo?.data, `public_methods.${method}`, null);
-    if (_methodInfo) {
-      return ncArgs.map((arg, idx) => [_methodInfo.args[idx].name, arg]);
+    const methodInfo = getMethodInfoFromBlueprint(blueprintInfo, method);
+    if (methodInfo) {
+      return ncArgs.map((arg, idx) => [methodInfo.args[idx].name, arg]);
     }
 
+    // Send this condition to sentry because it should never happen.
+    // Check any change in the lib or in the fullnode that could cause an impact here.
+    const errMsg = 'Error while getting the argument names of public_methods on blueprint';
+    dispatch(onExceptionCaptured(new Error(errMsg), false));
+
+    // Still render a fallback
     return ncArgs.map((arg, idx) => [t`Position ${idx}`, arg]);
-  }, [blueprintInfo]);
+  }, [method, ncArgs, blueprintInfo]);
 
   return (
     <View>
