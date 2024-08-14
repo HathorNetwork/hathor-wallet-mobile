@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -14,13 +14,14 @@ import {
 import { t } from 'ttag';
 import { HathorFlatList } from '../../HathorFlatList';
 import { commonStyles } from '../theme';
-import { getShortHash, renderValue } from '../../../utils';
+import { getShortHash, isTokenNFT, renderValue } from '../../../utils';
 import { ReceivedIcon } from '../../Icons/Received.icon';
 import { SentIcon } from '../../Icons/Sent.icon';
 import { AlertUI, COLORS } from '../../../styles/themes';
 import { DEFAULT_TOKEN } from '../../../constants';
 import { WarnTextValue } from '../../WarnTextValue';
 import { CircleError } from '../../Icons/CircleError.icon';
+import { useSelector } from 'react-redux';
 
 /**
  * It returns the title template for each action type,
@@ -40,6 +41,8 @@ const actionTitleMap = (tokenSymbol) => ({
  * Get action title depending on the action type.
  * @param {Object} tokens A map of token metadata by token uid
  * @param {Object} action An action object
+ *
+ * @returns {string} A formatted title to be used in the action card
  *
  * @example
  * getActionTitle({ '123': { ..., symbol: 'STR' }}, { ..., token: '123', type: 'deposit' })
@@ -76,11 +79,20 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
     return null;
   }
 
+  const tokenMetadata = useSelector((state) => state.tokenMetadata);
+  // A callback to check if the action token is an NFT.
+  const isNft = useCallback(
+    (token) => isTokenNFT(token, tokenMetadata),
+    [tokenMetadata]
+  );
+  // A callback to retrieve the action title by its token symbol of hash.
+  const getTitle = useCallback(
+    (action) => getActionTitle(tokens, action),
+    [tokens]
+  );
+
   const styles = StyleSheet.create({
     wrapper: { marginTop: 0, marginBottom: 0, marginHorizontal: 0 },
-    action: [commonStyles.text, commonStyles.bold],
-    valueLabel: [commonStyles.text, commonStyles.value, commonStyles.bold, commonStyles.mb4],
-    value: [commonStyles.text, commonStyles.value],
   });
 
   return (
@@ -93,20 +105,7 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
         wrapperStyle={styles.wrapper}
         data={ncActions}
         renderItem={({ item }) => (
-          <View style={[commonStyles.cardSplit, commonStyles.listItem]}>
-            <Icon type={item.type} />
-            <View style={commonStyles.cardSplitContent}>
-              <Text style={styles.action}>{getActionTitle(tokens, item)}</Text>
-              {item.address
-                && (
-                  <View>
-                    <Text style={styles.valueLabel}>{t`To Address:`}</Text>
-                    <Text style={styles.value}>{item.address}</Text>
-                  </View>
-                )}
-            </View>
-            <Amount amount={item.amount} isNft={false} />
-          </View>
+          <ActionItem action={item} isNft={isNft(item.token)} title={getTitle(item)} />
         )}
         // If has error, shows the feedback error message in the list header.
         ListHeaderComponent={error && (
@@ -121,6 +120,42 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
     </View>
   );
 };
+
+/**
+ * @param {Object} props
+ * @param {{
+ *   type: 'deposit'|'withdrawal';
+ *   token: string;
+ *   amount: number;
+ *   address: string;
+ * }} props.action A transaction's action object
+ * @param {boolean} props.isNft A flag to inform if the token is an NFT or not
+ * @param {string} props.title The card title for the action
+ */
+const ActionItem = ({ action, title , isNft }) => {
+  const styles = StyleSheet.create({
+    action: [commonStyles.text, commonStyles.bold],
+    valueLabel: [commonStyles.text, commonStyles.value, commonStyles.bold, commonStyles.mb4],
+    value: [commonStyles.text, commonStyles.value],
+  });
+
+  return (
+    <View style={[commonStyles.cardSplit, commonStyles.listItem]}>
+      <Icon type={action.type} />
+      <View style={commonStyles.cardSplitContent}>
+        <Text style={styles.action}>{title}</Text>
+        {action.address
+          && (
+            <View>
+              <Text style={styles.valueLabel}>{t`To Address:`}</Text>
+              <Text style={styles.value}>{action.address}</Text>
+            </View>
+          )}
+      </View>
+      <Amount amount={action.amount} isNft={isNft} />
+    </View>
+  )
+}
 
 /**
  * It renders an icon by action type, either 'deposit' or 'withdrawal'.
