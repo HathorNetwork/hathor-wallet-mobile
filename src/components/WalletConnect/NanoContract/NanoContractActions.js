@@ -135,8 +135,8 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
 const ActionItem = ({ action, title, isNft }) => {
   const styles = StyleSheet.create({
     action: [commonStyles.text, commonStyles.bold],
-    valueLabel: [commonStyles.text, commonStyles.value, commonStyles.bold, commonStyles.mb4],
-    value: [commonStyles.text, commonStyles.value],
+    valueLabel: [commonStyles.text, commonStyles.field, commonStyles.bold, commonStyles.mb4],
+    value: [commonStyles.text, commonStyles.field],
   });
 
   return (
