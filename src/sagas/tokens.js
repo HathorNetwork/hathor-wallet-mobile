@@ -15,6 +15,7 @@ import {
   all,
   put,
 } from 'redux-saga/effects';
+import { t } from 'ttag';
 import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
@@ -28,10 +29,17 @@ import {
   tokenFetchHistoryRequested,
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
+  onExceptionCaptured,
+  unregisteredTokensUpdate,
 } from '../actions';
 import { logger } from '../logger';
 
 const log = logger('tokens-saga');
+
+const failureMessage = {
+  walletNotReadyError: t`Wallet is not ready yet.`,
+  someTokensNotLoaded: t`Error loading the details of some tokens.`,
+};
 
 /**
  * @readonly
@@ -287,6 +295,48 @@ export function* fetchTokenData(tokenId, force = false) {
   }
 }
 
+/**
+ * Request tokens data to feed walletConnect's tokens.
+ * @param {Object} action
+ * @param {Object} action.payload
+ * @param {string[]} action.payload.uids
+ */
+export function* requestTokens(action) {
+  const { uids } = action.payload;
+
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet.isReady()) {
+    log.error('Fail updating loading tokens data because wallet is not ready yet.');
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), true));
+    return;
+  }
+
+  const tokens = {};
+  let someError = false;
+  for (const uid of uids) {
+    try {
+      const { tokenInfo: { symbol, name } } = yield call([wallet, wallet.getTokenDetails], uid);
+      const token = { uid, symbol, name };
+      tokens[uid] = token;
+    } catch (e) {
+      log.error(`Fail getting token data for token ${uid}.`, e);
+      someError = true;
+      // continue download of tokens
+    }
+  }
+
+  if (someError) {
+    log.log('There was a failure while getting tokens data to feed unregisteredTokens.');
+    yield put(
+      unregisteredTokensUpdate({ tokens, error: failureMessage.someTokensNotLoaded })
+    );
+    return;
+  }
+  log.log('Success getting tokens data to feed unregisteredTokens.');
+  yield put(unregisteredTokensUpdate({ tokens }));
+}
+
 export function* saga() {
   yield all([
     fork(fetchTokenBalanceQueue),
@@ -294,5 +344,6 @@ export function* saga() {
     takeEvery(types.TOKEN_FETCH_HISTORY_REQUESTED, fetchTokenHistory),
     takeEvery(types.NEW_TOKEN, routeTokenChange),
     takeEvery(types.SET_TOKENS, routeTokenChange),
+    takeEvery(types.UNREGISTEREDTOKENS_REQUEST, requestTokens),
   ]);
 }
