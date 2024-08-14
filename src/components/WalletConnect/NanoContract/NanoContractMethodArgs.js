@@ -62,7 +62,7 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
   return (
     <View>
       <View>
-        <Text style={commonStyles.sectionTitle}>{t`Argument List`}</Text>
+        <Text style={commonStyles.sectionTitle}>{t`Arguments`}</Text>
       </View>
       {argEntries.length
         && (
