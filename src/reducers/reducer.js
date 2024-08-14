@@ -667,8 +667,6 @@ export const reducer = (state = initialState, action) => {
       return onSetNewNanoContractTransactionStatus(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_REQUEST:
       return onNanoContractBlueprintInfoRequest(state, action);
-    case types.NANOCONTRACT_BLUEPRINTINFO_READY:
-      return onNanoContractBlueprintInfoReady(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_FAILURE:
       return onNanoContractBlueprintInfoFailure(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS:
@@ -1958,29 +1956,6 @@ export const onNanoContractBlueprintInfoSuccess = (state, { payload }) => ({
       [payload.id]: {
         status: NANOCONTRACT_BLUEPRINTINFO_STATUS.SUCCESSFUL,
         data: payload.data,
-        error: null,
-      },
-    },
-  },
-});
-
-/**
- * @param {Object} state
- * @param {{
- *   payload: {
- *     id: string;
- *   };
- * }} action
- */
-export const onNanoContractBlueprintInfoReady = (state, { payload }) => ({
-  ...state,
-  nanoContract: {
-    ...state.nanoContract,
-    blueprint: {
-      ...state.nanoContract.blueprint,
-      [payload.id]: {
-        status: NANOCONTRACT_BLUEPRINTINFO_STATUS.READY,
-        data: null,
         error: null,
       },
     },

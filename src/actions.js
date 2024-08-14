@@ -172,8 +172,6 @@ export const types = {
   NANOCONTRACT_BLUEPRINTINFO_FAILURE: 'NANOCONTRACT_BLUEPRINTINFO_FAILURE',
   /* It signals a success on fetch blueprint info. */
   NANOCONTRACT_BLUEPRINTINFO_SUCCESS: 'NANOCONTRACT_BLUEPRINTINFO_SUCCESS',
-  /* It signals the blueprint info state is ready. */
-  NANOCONTRACT_BLUEPRINTINFO_READY: 'NANOCONTRACT_BLUEPRINTINFO_READY',
   /* It triggers a process to fetch all wallet addresses. */
   SELECTADDRESS_ADDRESSES_REQUEST: 'SELECTADDRESS_ADDRESSES_REQUEST',
   /* It signals the fetch has loaded all the addresses with success. */
@@ -1315,15 +1313,6 @@ export const nanoContractBlueprintInfoFailure = (id, error) => ({
 export const nanoContractBlueprintInfoSuccess = (id, blueprintInfo) => ({
   type: types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS,
   payload: { id, data: { ...blueprintInfo } },
-});
-
-/**
- * Signals the blueprint info state is ready.
- * @param {string} id Blueprint ID.
- */
-export const nanoContractBlueprintInfoReady = (id) => ({
-  type: types.NANOCONTRACT_BLUEPRINTINFO_READY,
-  payload: { id },
 });
 
 /**
