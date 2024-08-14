@@ -25,7 +25,7 @@ import {
   setNewNanoContractStatusReady,
   walletConnectAccept,
   walletConnectReject,
-  walletConnectTokensRequest
+  unregisteredTokensRequest
 } from '../../../actions';
 import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
@@ -65,7 +65,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const firstAddress = useSelector((state) => state.firstAddress);
   // Nullable if the nano contract method is 'initialize'
   const registeredNc = useSelector((state) => state.nanoContract.registered[nc.ncId]);
-  const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.walletConnect.tokens }));
+  const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.unregisteredTokens }));
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[nc.blueprintId]);
 
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
@@ -146,7 +146,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
         unknownTokensUid.push(uid);
       }
     });
-    dispatch(walletConnectTokensRequest({ uids: unknownTokensUid }));
+    dispatch(unregisteredTokensRequest({ uids: unknownTokensUid }));
   }, []);
 
   const onFeedbackModalDismiss = () => {

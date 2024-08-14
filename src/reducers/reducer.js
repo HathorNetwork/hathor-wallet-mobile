@@ -100,6 +100,26 @@ const initialState = {
    */
   tokens: INITIAL_TOKENS,
   /**
+   * Remarks
+   * We use the map of tokens to collect token details for tokens
+   * used in actions but not registered by the user.
+   *
+   * @example
+   * {
+   *   '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824': {
+   *     name: 'YanCoin',
+   *     symbol: 'YAN',
+   *     uid: '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824',
+   *   },
+   *   isLoading: false,
+   *   error: null,
+   * }
+   */
+  unregisteredTokens: {
+    isLoading: false,
+    error: null,
+  },
+  /**
    * selectedToken {{
    *  uid: string;
    *  name; string;
@@ -264,15 +284,6 @@ const initialState = {
       status: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.READY,
       showModal: false,
       data: null,
-    },
-    /**
-     * Remarks
-     * We use the map of tokens to collect token details for tokens
-     * used in actions but not registered by the user.
-     */
-    tokens: {
-      isLoading: false,
-      error: null,
     },
     connectionFailed: false,
     sessions: {},
@@ -664,10 +675,10 @@ export const reducer = (state = initialState, action) => {
       return onNanoContractBlueprintInfoFailure(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS:
       return onNanoContractBlueprintInfoSuccess(state, action);
-    case types.WALLETCONNECT_TOKENS_REQUEST:
-      return onWalletConnectTokensRequest(state);
-    case types.WALLETCONNECT_TOKENS_UPDATE:
-      return onWalletConnectTokensUpdate(state, action);
+    case types.UNREGISTEREDTOKENS_REQUEST:
+      return onUnregisteredTokensRequest(state);
+    case types.UNREGISTEREDTOKENS_UPDATE:
+      return onUnregisteredTokensUpdate(state, action);
     default:
       return state;
   }
@@ -1990,15 +2001,12 @@ export const onNanoContractBlueprintInfoReady = (state, { payload }) => ({
  * Remarks
  * This reducer aims to clean error feedback message before processing the request.
  */
-export const onWalletConnectTokensRequest = (state) => ({
+export const onUnregisteredTokensRequest = (state) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
-    tokens: {
-      ...state.walletConnect.tokens,
-      isLoading: true,
-      error: null,
-    },
+  unregisteredTokens: {
+    ...state.unregisteredTokens,
+    isLoading: true,
+    error: null,
   },
 });
 
@@ -2012,15 +2020,12 @@ export const onWalletConnectTokensRequest = (state) => ({
  * @param {Object} action.payload.tokens A map of token data by its UID.
  * @param {string} action.payload.error The error message as feedback to user
  */
-export const onWalletConnectTokensUpdate = (state, { payload }) => ({
+export const onUnregisteredTokensUpdate = (state, { payload }) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
-    tokens: {
-      ...state.walletConnect.tokens,
-      ...payload.tokens,
-      isLoading: false,
-      error: payload.error || null,
-    },
+  unregisteredTokens: {
+    ...state.unregisteredTokens,
+    ...payload.tokens,
+    isLoading: false,
+    error: payload.error || null,
   },
 })
