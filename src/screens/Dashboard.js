@@ -19,12 +19,12 @@ import SimpleButton from '../components/SimpleButton';
 import OfflineBar from '../components/OfflineBar';
 import { TwoOptionsToggle } from '../components/TwoOptionsToggle';
 import { tokenFetchBalanceRequested, updateSelectedToken } from '../actions';
-import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
 import AskForPushNotificationRefresh from '../components/AskForPushNotificationRefresh';
 import { COLORS } from '../styles/themes';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
 import { getNanoContractFeatureToggle } from '../utils';
+import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
 
 /**
  * State filter to retrieve token-related data from root state.

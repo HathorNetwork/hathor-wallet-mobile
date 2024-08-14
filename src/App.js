@@ -86,6 +86,7 @@ import WalletConnectModal from './components/WalletConnect/WalletConnectModal';
 import { COLORS, HathorTheme } from './styles/themes';
 import { NetworkSettingsFlowNav, NetworkSettingsFlowStack } from './screens/NetworkSettings';
 import { NetworkStatusBar } from './components/NetworkSettings/NetworkStatusBar';
+import ShowPushNotificationTxDetails from './components/ShowPushNotificationTxDetails';
 import { NanoContractDetailsScreen } from './screens/NanoContract/NanoContractDetailsScreen';
 import { NanoContractTransactionScreen } from './screens/NanoContract/NanoContractTransactionScreen';
 import { NanoContractRegisterScreen } from './screens/NanoContract/NanoContractRegisterScreen';
@@ -731,6 +732,7 @@ const App = () => (
           theme={HathorTheme}
           ref={navigationRef}
         >
+          <ShowPushNotificationTxDetails />
           <NetworkStatusBar />
           <RootStack />
         </NavigationContainer>

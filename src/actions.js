@@ -951,8 +951,8 @@ export const networkSettingsUpdateState = (customNetwork) => ({
  *   network: string,
  *   nodeUrl: string,
  *   explorerUrl: string,
- *   txMiningServiceUrl: string,
  *   explorerServiceUrl: string,
+ *   txMiningServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string
  * }} customNetwork Settings to persist

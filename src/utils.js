@@ -14,7 +14,7 @@ import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import moment from 'moment';
 import baseStyle from './styles/init';
-import { KEYCHAIN_USER, NANO_CONTRACT_FEATURE_TOGGLE } from './constants';
+import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE } from './constants';
 import { STORE } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
@@ -392,7 +392,17 @@ export function combineURLs(baseURL, relativeURL) {
  * @returns {Boolean} true if available, false otherwise.
  */
 export const isPushNotificationAvailableForUser = (state) => (
-  state.pushNotification.available && state.pushNotification.deviceRegistered
+  state.pushNotification.available
+    // On iOS a simulator can't register a device token on APNS
+    && state.pushNotification.deviceRegistered
+    // TODO: We should drop this condition when we add support other networks
+    // XXX: We don't have support in this app to generate device tokens
+    // to the FCM testnet app. Currently we embbed only the mainnet
+    // configuration file during the build.
+    && state.networkSettings.network === NETWORK_MAINNET
+    // If Wallet Service URLs are empty it makes impossible to use the
+    // Wallet Service API to register the device's token.
+    && !isEmpty(state.networkSettings.walletServiceUrl)
 );
 
 /**

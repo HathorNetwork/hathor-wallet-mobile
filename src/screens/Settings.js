@@ -14,6 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { isEmpty } from 'lodash';
 import OfflineBar from '../components/OfflineBar';
 import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
@@ -32,9 +33,15 @@ import { isPushNotificationAvailableForUser } from '../utils';
  * server {str} URL of server this wallet is connected to
  */
 const mapStateToProps = (state) => {
-  const server = state.useWalletService
-    ? state.wallet.storage.config.getWalletServiceBaseUrl()
-    : state.wallet.storage.config.getServerUrl();
+  let server;
+  const { walletServiceUrl } = state.networkSettings;
+  if (state.useWalletService && !isEmpty(walletServiceUrl)) {
+    server = walletServiceUrl;
+  }
+
+  if (!server) {
+    server = state.networkSettings.nodeUrl;
+  }
 
   return {
     selectedToken: state.selectedToken,

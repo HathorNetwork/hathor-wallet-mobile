@@ -239,6 +239,18 @@ const initialState = {
   featureToggles: {
     ...FEATURE_TOGGLE_DEFAULTS,
   },
+  /**
+   * @param {{
+   *  stage: string;
+   *  network: string;
+   *  nodeUrl: string;
+   *  explorerUrl: string;
+   *  explorerServiceUrl: string;
+   *  txMiningServiceUrl: string;
+   *  walletServiceUrl: string;
+   *  walletServiceWsUrl: string;
+   * }}
+   */
   networkSettings: PRE_SETTINGS_MAINNET,
   networkSettingsInvalid: {},
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,

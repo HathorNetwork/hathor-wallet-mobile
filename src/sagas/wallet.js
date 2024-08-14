@@ -31,12 +31,13 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
-import { get } from 'lodash';
+import { get, isEmpty } from 'lodash';
 import { t } from 'ttag';
 import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
+  networkSettingsKeyMap,
 } from '../constants';
 import { STORE } from '../store';
 import {
@@ -64,6 +65,7 @@ import {
   resetWalletSuccess,
   setTokens,
   onExceptionCaptured,
+  networkSettingsUpdateState,
   selectAddressAddressesSuccess,
   selectAddressAddressesFailure,
   firstAddressFailure,
@@ -132,7 +134,17 @@ export function* isWalletServiceEnabled() {
     yield call(() => AsyncStorage.removeItem(IGNORE_WS_TOGGLE_FLAG));
   }
 
-  const walletServiceEnabled = yield call(checkForFeatureFlag, WALLET_SERVICE_FEATURE_TOGGLE);
+  let walletServiceEnabled = yield call(checkForFeatureFlag, WALLET_SERVICE_FEATURE_TOGGLE);
+
+  // At this point, the networkSettings have already been set by startWallet.
+  const networkSettings = yield select(getNetworkSettings);
+  if (walletServiceEnabled && isEmpty(networkSettings.walletServiceUrl)) {
+    // In case of an empty value for walletServiceUrl, it means the user
+    // doesn't intend to use the Wallet Service. Therefore, we need to force
+    // a disable on it.
+    walletServiceEnabled = false;
+    yield put(setUseWalletService(false));
+  }
 
   return walletServiceEnabled;
 }
@@ -143,6 +155,35 @@ export function* startWallet(action) {
     pin,
   } = action.payload;
 
+  // clean memory storage and metadata before starting the wallet.
+  // This should be cleaned when stopping the wallet,
+  // but the wallet may be closed unexpectedly
+  const storage = STORE.getStorage();
+  yield call([storage.store, storage.store.cleanMetadata]); // clean metadata on memory
+  yield call([storage, storage.cleanStorage], true); // clean transaction history
+
+  // As this is a core setting for the wallet, it should be loaded first.
+  // Network settings either from store or redux state
+  let networkSettings;
+  // Custom network settings are persisted in the app storage
+  const customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
+  if (customNetwork) {
+    networkSettings = customNetwork;
+    // On custom network settings one may use a different
+    // URL for the services from the ones registered by default
+    // for mainnet and testnet in the lib, and the wallet must
+    // behave consistently to the URLs set
+    config.setExplorerServiceBaseUrl(networkSettings.explorerServiceUrl);
+    config.setServerUrl(networkSettings.nodeUrl);
+    config.setTxMiningUrl(networkSettings.txMiningServiceUrl);
+
+    // If the wallet is initialized from quit state it must
+    // update the network settings on redux state
+    yield put(networkSettingsUpdateState(networkSettings));
+  } else {
+    networkSettings = yield select(getNetworkSettings);
+  }
+
   const uniqueDeviceId = getUniqueId();
   const useWalletService = yield call(isWalletServiceEnabled);
   const usePushNotification = yield call(isPushNotificationEnabled);
@@ -150,23 +191,14 @@ export function* startWallet(action) {
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
 
-  // clean storage and metadata before starting the wallet
-  // this should be cleaned when stopping the wallet,
-  // but the wallet may be closed unexpectedly
-  const storage = STORE.getStorage();
-  yield storage.store.cleanMetadata();
-  yield storage.cleanStorage(true);
-
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
   yield put((_dispatch) => {
     dispatch = _dispatch;
   });
 
-  const networkSettings = yield select(getNetworkSettings);
-
   let wallet;
-  if (useWalletService) {
+  if (useWalletService && !isEmpty(networkSettings.walletServiceUrl)) {
     const network = new Network(networkSettings.network);
 
     // Set urls for wallet service

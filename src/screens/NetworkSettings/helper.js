@@ -17,7 +17,7 @@ export const feedbackFailedText = t`There was an error while customizing network
  * @param {object} networkSettingsStatus - status from redux store
  * @returns {boolean} - true if the status is successful, false otherwise
  */
-export function hasSucceed(networkSettingsStatus) {
+export function hasSucceeded(networkSettingsStatus) {
   return networkSettingsStatus === NETWORKSETTINGS_STATUS.SUCCESSFUL;
 }
 

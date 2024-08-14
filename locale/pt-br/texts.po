@@ -720,7 +720,7 @@ msgstr "Sua transferência de **${ this.amountAndToken }** foi confirmada"
 msgid "Address"
 msgstr "Endereço"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:264
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:288
 #: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr "Enviar"
@@ -908,27 +908,35 @@ msgstr "explorerServiceUrl é obrigatório."
 msgid "txMiningServiceUrl is required."
 msgstr "txMiningServiceUrl é obrigatório."
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:205
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:62
+msgid "walletServiceUrl is required when walletServiceWsUrl is filled."
+msgstr "walletServiceUrl é obrigatório quando walletServiceWsUrl está preenchido."
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:65
+msgid "walletServiceWsUrl is required when walletServiceUrl is filled."
+msgstr "walletServiceWsUrl é obrigatório quando walletServiceUrl está preenchido"
+
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:229
 msgid "Node URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:214
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:239
 msgid "Explorer URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:223
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:248
 msgid "Explorer Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:232
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:257
 msgid "Transaction Mining Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:243
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:268
 msgid "Wallet Service URL (optional)"
 msgstr "Wallet Service URL (opcional)"
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:251
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:277
 msgid "Wallet Service WS URL (optional)"
 msgstr "Wallet Service WS URL (opcional)"
 
