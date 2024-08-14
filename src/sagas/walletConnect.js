@@ -107,7 +107,7 @@ const Web3Wallet = class {};
 
 const failureMessage = {
   walletNotReadyError: t`Wallet is not ready yet to process a Wallet Connect effect.`,
-  someTokensNotLoaded: t`Some token details couldn't have been loaded.`,
+  someTokensNotLoaded: t`Error loading the details of some tokens.`,
 };
 
 function* isWalletConnectEnabled() {
