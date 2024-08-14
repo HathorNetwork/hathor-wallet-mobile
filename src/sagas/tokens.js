@@ -301,7 +301,7 @@ export function* fetchTokenData(tokenId, force = false) {
  * @param {Object} action.payload
  * @param {string[]} action.payload.uids
  */
-export function* requestTokens(action) {
+export function* requestUnregisteredTokens(action) {
   const { uids } = action.payload;
 
   const wallet = yield select((state) => state.wallet);
@@ -344,6 +344,6 @@ export function* saga() {
     takeEvery(types.TOKEN_FETCH_HISTORY_REQUESTED, fetchTokenHistory),
     takeEvery(types.NEW_TOKEN, routeTokenChange),
     takeEvery(types.SET_TOKENS, routeTokenChange),
-    takeEvery(types.UNREGISTEREDTOKENS_REQUEST, requestTokens),
+    takeEvery(types.UNREGISTEREDTOKENS_REQUEST, requestUnregisteredTokens),
   ]);
 }
