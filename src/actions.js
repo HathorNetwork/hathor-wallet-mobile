@@ -1256,15 +1256,6 @@ export const firstAddressFailure = (failurePayload) => ({
 });
 
 /**
- * Request the download of token metadata for a list of tokens.
- * @param {string[]} tokens A list of token uid
- */
-export const tokensFetchMetadataRequest = (tokens) => ({
-  type: types.TOKENS_FETCH_METADATA_REQUESTED,
-  tokens
-});
-
-/**
  * Signals that the user wants to attempt to retry the nano contract tx send
  */
 export const newNanoContactRetry = () => ({
