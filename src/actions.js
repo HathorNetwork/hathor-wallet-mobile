@@ -1379,24 +1379,3 @@ export const showNanoContractSendTxModal = (accept, deny, nc, dapp) => ({
     dapp,
   },
 });
-
-/**
- * Signals a request to load a collection of token data by a collection of token UID.
- * @param {Object} payload
- * @param {string[]} payload.uids A list of token UID.
- */
-export const unregisteredTokensRequest = (payload) => ({
-  type: types.UNREGISTEREDTOKENS_REQUEST,
-  payload,
-});
-
-/**
- * Signals an update to unregistered tokens state.
- * @param {Object} payload
- * @param {Object} payload.tokens A map of token data by its UID.
- * @param {string} payload.error The error message as feedback to user
- */
-export const unregisteredTokensUpdate = (payload) => ({
-  type: types.UNREGISTEREDTOKENS_UPDATE,
-  payload,
-});
