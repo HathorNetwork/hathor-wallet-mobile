@@ -314,4 +314,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     textAlign: 'center',
   },
+  feedbackModalIcon: {
+    height: 105,
+    width: 105
+  },
 });
