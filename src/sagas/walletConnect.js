@@ -185,7 +185,7 @@ function* init() {
 
     yield cancel();
   } catch (error) {
-    console.error('Error loading wallet connect', error);
+    log.error('Error loading wallet connect', error);
     yield put(onExceptionCaptured(error));
   }
 }
@@ -278,7 +278,7 @@ export function* onSessionRequest(action) {
   const requestSession = activeSessions[payload.topic];
 
   if (!requestSession) {
-    console.error('Could not identify the request session, ignoring request..');
+    log.error('Could not identify the request session, ignoring request..');
     return;
   }
 
@@ -548,7 +548,7 @@ export function* onSendNanoContractTxRequest({ payload }) {
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet.isReady()) {
-    console.error('Got a session request but wallet is not ready, ignoring..');
+    log.error('Got a session request but wallet is not ready, ignoring..');
     return;
   }
 
@@ -575,6 +575,38 @@ export function* onSendNanoContractTxRequest({ payload }) {
   acceptCb(accept);
 }
 
+export function* onCreateTokenRequest({ payload }) {
+  const { accept: acceptCb, deny: denyCb, token, dapp } = payload;
+
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet.isReady()) {
+    log.error('Got a session request but wallet is not ready, ignoring..');
+    return;
+  }
+
+  yield put(setWalletConnectModal({
+    show: true,
+    type: WalletConnectModalTypes.CREATE_TOKEN,
+    data: {
+      dapp,
+      data: token,
+    },
+  }));
+
+  const { deny, accept } = yield race({
+    accept: take(types.WALLET_CONNECT_ACCEPT),
+    deny: take(types.WALLET_CONNECT_REJECT),
+  });
+
+  if (deny) {
+    denyCb();
+
+    return;
+  }
+
+  acceptCb(accept);
+}
 /**
  * Listens for the wallet reset action, dispatched from the wallet sagas so we
  * can clear all current sessions.
@@ -652,7 +684,7 @@ export function* onSessionProposal(action) {
 
     yield call(refreshActiveSessions);
   } catch (error) {
-    console.error('Error on sessionProposal: ', error);
+    log.error('Error on sessionProposal: ', error);
     yield put(onExceptionCaptured(error));
   }
 }
