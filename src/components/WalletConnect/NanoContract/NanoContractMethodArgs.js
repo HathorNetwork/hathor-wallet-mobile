@@ -18,6 +18,8 @@ import { COLORS } from '../../../styles/themes';
 import { commonStyles } from '../theme';
 import { onExceptionCaptured } from '../../../actions';
 import { NANOCONTRACT_BLUEPRINTINFO_STATUS as STATUS } from '../../../constants';
+import { FeedbackContent } from '../../FeedbackContent';
+import Spinner from '../../Spinner';
 
 /**
  * Get method info from registered blueprint data.
@@ -68,9 +70,8 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
   // or a fallback like:
   // >>> [['Position 0', 'abc'], ['Position 1', '00'], ['Position 2', 123]]
   const argEntries = useMemo(() => {
-    // Retrieve the fallback entries while blueprint info is being loading.
     if (blueprintInfo == null || blueprintInfo.status === STATUS.LOADING) {
-      return getFallbackArgEntries(ncArgs);
+      return [];
     }
 
     const methodInfo = getMethodInfoFromBlueprint(blueprintInfo, method);
@@ -87,12 +88,25 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
     return getFallbackArgEntries(ncArgs);
   }, [method, ncArgs, blueprintInfo]);
 
+  // Empty while downloading the bleuprint details
+  const isEmpty = argEntries.length === 0;
+  const notEmpty = !isEmpty;
+
   return (
     <View>
       <View>
         <Text style={commonStyles.sectionTitle}>{t`Arguments`}</Text>
       </View>
-      {argEntries.length
+      {isEmpty /* This is a reduhdancy to the general loading */
+        && (
+          <FeedbackContent
+            message={t`Loading arguments.`}
+            icon={<Spinner size={48} animating />}
+            offmargin
+          />
+        )
+      }
+      {notEmpty
         && (
           <View style={[commonStyles.card]}>
             <View style={[commonStyles.cardStack]}>

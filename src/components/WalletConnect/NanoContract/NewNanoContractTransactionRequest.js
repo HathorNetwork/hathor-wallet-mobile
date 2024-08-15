@@ -31,7 +31,7 @@ import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
 import { SelectAddressModal } from '../../NanoContract/SelectAddressModal';
 import { FeedbackContent } from '../../FeedbackContent';
-import { DEFAULT_TOKEN, WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS } from '../../../constants';
+import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS, WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS } from '../../../constants';
 import Spinner from '../../Spinner';
 import FeedbackModal from '../../FeedbackModal';
 import errorIcon from '../../../assets/images/icErrorBig.png';
@@ -167,7 +167,12 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     dispatch(setNewNanoContractStatusReady());
   };
 
-  const isTxInfoLoading = () => knownTokens.isLoading;
+  // Loading while downloading:
+  // 1. each token details
+  // 2. the blueprint details
+  const isTxInfoLoading = () => knownTokens.isLoading
+                                || blueprintInfo == null
+                                || blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING;
   const isTxInfoLoaded = () => (
     !isTxInfoLoading() && newTxStatus !== WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
   );
