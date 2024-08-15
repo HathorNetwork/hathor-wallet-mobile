@@ -21,6 +21,7 @@ import {
   useSelector
 } from 'react-redux';
 import { t } from 'ttag';
+import QRCode from 'react-native-qrcode-svg';
 import HathorHeader from '../../components/HathorHeader';
 import { CircleInfoIcon } from '../../components/Icons/CircleInfo.icon';
 import NewHathorButton from '../../components/NewHathorButton';
@@ -61,7 +62,9 @@ function validate(formModel) {
   return invalidModel;
 }
 
-export function NanoContractRegisterScreen({ navigation }) {
+export function NanoContractRegisterScreen({ navigation, route }) {
+  const ncIdFromQrCode = route.params?.ncId;
+
   const dispatch = useDispatch();
   const { address, error } = useSelector((state) => state.firstAddress);
   const registerState = useSelector((state) => ({
@@ -116,7 +119,7 @@ export function NanoContractRegisterScreen({ navigation }) {
       const { ncId } = formModel;
       dispatch(nanoContractRegisterRequest({ address, ncId }));
     },
-    [formModel]
+    [formModel, address]
   );
 
   const handleFeedbackModalDismiss = () => {
@@ -129,6 +132,11 @@ export function NanoContractRegisterScreen({ navigation }) {
   };
 
   useEffect(() => {
+    if (ncIdFromQrCode) {
+      // Set ncId in the input when given
+      handleInputChange('ncId')(ncIdFromQrCode);
+    }
+
     if (!address) {
       dispatch(firstAddressRequest());
     }
