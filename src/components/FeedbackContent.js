@@ -81,8 +81,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
   },
   offMargin: {
-    marginHorizontal: 0,
-    marginVertical: 0,
+    marginTop: 0,
+    marginBottom: 0,
+    marginRight: 0,
+    marginLeft: 0,
   },
   offBackground: {
     backgroundColor: COLORS.lowContrastDetail,
