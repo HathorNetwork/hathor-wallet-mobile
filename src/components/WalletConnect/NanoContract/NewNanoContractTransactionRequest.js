@@ -170,9 +170,11 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   // Loading while downloading:
   // 1. each token details
   // 2. the blueprint details
-  const isTxInfoLoading = () => knownTokens.isLoading
-                                || blueprintInfo == null
-                                || blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING;
+  const isTxInfoLoading = () => (
+    knownTokens.isLoading
+    || blueprintInfo == null
+    || blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING
+  );
   const isTxInfoLoaded = () => (
     !isTxInfoLoading() && newTxStatus !== WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
   );

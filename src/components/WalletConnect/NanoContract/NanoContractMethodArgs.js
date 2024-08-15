@@ -104,8 +104,7 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
             icon={<Spinner size={48} animating />}
             offmargin
           />
-        )
-      }
+        )}
       {notEmpty
         && (
           <View style={[commonStyles.card]}>
