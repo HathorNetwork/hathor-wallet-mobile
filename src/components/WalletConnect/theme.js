@@ -58,7 +58,7 @@ export const commonStyles = StyleSheet.create({
   bold: {
     fontWeight: 'bold',
   },
-  value: {
+  field: {
     color: 'hsla(0, 0%, 38%, 1)',
   },
   mb4: {

@@ -59,7 +59,7 @@ function getFallbackArgEntries(args) {
  * @param {string[]} props.ncArgs A list of method's argument.
  */
 export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
-  if (!ncArgs || ncArgs.length <= 0) {
+  if (!ncArgs.length) {
     return null;
   }
   const dispatch = useDispatch();

@@ -59,7 +59,7 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
         dispatch(firstAddressRequest());
       }
     }
-  }, [nc]);
+  }, []);
 
   const isBlueprintInfoLoading = !registeredNc
                                  && blueprintInfo?.status === STATUS.LOADING;

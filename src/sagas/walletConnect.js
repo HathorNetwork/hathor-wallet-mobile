@@ -275,6 +275,7 @@ export function* onSessionRequest(action) {
     proposer: get(requestSession.peer, 'metadata.name', ''),
     url: get(requestSession.peer, 'metadata.url', ''),
     description: get(requestSession.peer, 'metadata.description', ''),
+    chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
 
   try {

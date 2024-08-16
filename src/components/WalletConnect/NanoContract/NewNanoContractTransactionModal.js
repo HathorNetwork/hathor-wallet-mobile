@@ -27,6 +27,7 @@ export const NewNanoContractTransactionModal = ({
   const isRetrying = useSelector(({ walletConnect }) => (
     walletConnect.newNanoContractTransaction.retrying
   ));
+
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const readMoreUrl = NANO_CONTRACT_INFO_URL;
