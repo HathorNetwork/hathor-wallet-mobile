@@ -1089,7 +1089,6 @@ msgstr ""
 msgid "Open"
 msgstr "Открыть"
 
-<<<<<<< HEAD
 #: src/sagas/tokens.js:40
 msgid "Wallet is not ready yet."
 msgstr ""
@@ -1125,17 +1124,6 @@ msgid "You can always change this later in the settings menu"
 msgstr ""
 
 #: src/components/AskForPushNotification.js:31
-=======
-#: src/components/AskForPushNotification.js:22
-msgid "Do you want to enable push notifications for this wallet?"
-msgstr ""
-
-#: src/components/AskForPushNotification.js:23
-msgid "You can always change this later in the settings menu"
-msgstr ""
-
-#: src/components/AskForPushNotification.js:24
->>>>>>> d1995ae (fix: custom network settings form (#461))
 msgid "Yes, enable"
 msgstr ""
 
