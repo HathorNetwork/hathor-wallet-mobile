@@ -97,7 +97,7 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
       <View>
         <Text style={commonStyles.sectionTitle}>{t`Arguments`}</Text>
       </View>
-      {isEmpty /* This is a reduhdancy to the general loading */
+      {isEmpty /* This is a redundancy to the general loading */
         && (
           <FeedbackContent
             message={t`Loading arguments.`}
