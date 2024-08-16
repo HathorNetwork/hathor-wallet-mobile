@@ -24,6 +24,7 @@ import { COLORS } from '../styles/themes';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
 import { getNanoContractFeatureToggle } from '../utils';
+import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
 
 /**
  * State filter to retrieve token-related data from root state.
