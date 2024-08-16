@@ -14,7 +14,9 @@ import {
   FEATURE_TOGGLE_DEFAULTS,
   PRE_SETTINGS_MAINNET,
   NETWORKSETTINGS_STATUS,
-  NANOCONTRACT_REGISTER_STATUS
+  NANOCONTRACT_REGISTER_STATUS,
+  WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS,
+  NANOCONTRACT_BLUEPRINTINFO_STATUS
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -97,6 +99,26 @@ const initialState = {
    * @see {@link INITIAL_TOKENS}
    */
   tokens: INITIAL_TOKENS,
+  /**
+   * Remarks
+   * We use the map of tokens to collect token details for tokens
+   * used in actions but not registered by the user.
+   *
+   * @example
+   * {
+   *   '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824': {
+   *     name: 'YanCoin',
+   *     symbol: 'YAN',
+   *     uid: '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824',
+   *   },
+   *   isLoading: false,
+   *   error: null,
+   * }
+   */
+  unregisteredTokens: {
+    isLoading: false,
+    error: null,
+  },
   /**
    * selectedToken {{
    *  uid: string;
@@ -231,6 +253,38 @@ const initialState = {
     modal: {
       show: false,
     },
+    /**
+     * newNanoContractTransaction {{
+     *   showModal: boolean;
+     *   data: {
+     *     nc: {
+     *       network: string;
+     *       ncId: string;
+     *       blueprintId: string;
+     *       method: string;
+     *       caller: string;
+     *       actions: {
+     *         type: string;
+     *         token: string;
+     *         amount: number;
+     *         address?: string;
+     *       }[];
+     *       args: string[];
+     *     };
+     *     dapp: {
+     *       icon: string;
+     *       proposer: string;
+     *       url: string;
+     *       description: string;
+     *     };
+     *   };
+     * }}
+     */
+    newNanoContractTransaction: {
+      status: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.READY,
+      showModal: false,
+      data: null,
+    },
     connectionFailed: false,
     sessions: {},
   },
@@ -334,6 +388,82 @@ const initialState = {
      * }
      */
     historyMeta: {},
+    /**
+     * blueprint {
+     *   [blueprintId: string]: {
+     *     status: string;
+     *     data?: {
+     *       id: string;
+     *       name: string;
+     *       public_methods: {
+     *         [methodName: string]: {
+     *           args: {
+     *             type: string;
+     *             name: string;
+     *           }[];
+     *         };
+     *       };
+     *     };
+     *     error?: string;
+     *   }
+     * }
+     * @example
+     * {
+     *   '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595': {
+     *     status: 'success',
+     *     data: {
+     *       id: '3cb032600bdf7db784800e4ea911b10676fa2f67591f82bb62628c234e771595',
+     *       name: 'Bet',
+     *       public_methods: {
+     *         bet: {
+     *           args: [
+     *             {
+     *               name: "address",
+     *               type: "bytes"
+     *             },
+     *             {
+     *               name: "score",
+     *               type: "str"
+     *             }
+     *           ],
+     *           return_type: "null"
+     *         },
+     *         initialize: {
+     *           args: [
+     *             {
+     *               name: "oracle_script",
+     *               type: "bytes"
+     *             },
+     *             {
+     *               name: "token_uid",
+     *               type: "bytes"
+     *             },
+     *             {
+     *               name: "date_last_bet",
+     *               type: "int"
+     *             }
+     *           ],
+     *           return_type: "null"
+     *         },
+     *         set_result: {
+     *           args: [
+     *             {
+     *               name: "result",
+     *               type: "SignedData[str]"
+     *             }
+     *           ],
+     *           return_type: "null"
+     *         },
+     *         withdraw: {
+     *           args: [],
+     *           return_type: "null"
+     *         }
+     *       },
+     *     },
+     *   },
+     * }
+     */
+    blueprint: {},
   },
   /**
    * selectAddressModal {{
@@ -543,6 +673,20 @@ export const reducer = (state = initialState, action) => {
       return onFirstAddressFailure(state, action);
     case types.FIRSTADDRESS_SUCCESS:
       return onFirstAddressSuccess(state, action);
+    case types.SET_NEW_NANO_CONTRACT_TRANSACTION:
+      return onSetNewNanoContractTransaction(state, action);
+    case types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS:
+      return onSetNewNanoContractTransactionStatus(state, action);
+    case types.NANOCONTRACT_BLUEPRINTINFO_REQUEST:
+      return onNanoContractBlueprintInfoRequest(state, action);
+    case types.NANOCONTRACT_BLUEPRINTINFO_FAILURE:
+      return onNanoContractBlueprintInfoFailure(state, action);
+    case types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS:
+      return onNanoContractBlueprintInfoSuccess(state, action);
+    case types.UNREGISTEREDTOKENS_REQUEST:
+      return onUnregisteredTokensRequest(state);
+    case types.UNREGISTEREDTOKENS_UPDATE:
+      return onUnregisteredTokensUpdate(state, action);
     default:
       return state;
   }
@@ -1695,3 +1839,170 @@ export const onFirstAddressSuccess = (state, { payload }) => ({
     error: null,
   },
 });
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     showModal: boolean;
+ *     data: {
+ *       nc: {
+ *         network: string;
+ *         ncId: string;
+ *         blueprintId: string;
+ *         method: string;
+ *         caller: string;
+ *         actions: {
+ *           type: string;
+ *           token: string;
+ *           amount: number;
+ *           address?: string;
+ *         }[];
+ *         args: string[];
+ *       };
+ *       dapp: {
+ *         icon: string;
+ *         proposer: string;
+ *         url: string;
+ *         description: string;
+ *       };
+ *     };
+ *   };
+ * }} action
+ */
+export const onSetNewNanoContractTransaction = (state, { payload }) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    newNanoContractTransaction: {
+      ...payload,
+      status: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.READY,
+    },
+  },
+});
+
+export const onSetNewNanoContractTransactionStatus = (state, { payload }) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    newNanoContractTransaction: {
+      ...state.walletConnect.newNanoContractTransaction,
+      status: payload,
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     id: string;
+ *   };
+ * }} action
+ */
+export const onNanoContractBlueprintInfoRequest = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    blueprint: {
+      ...state.nanoContract.blueprint,
+      [payload.id]: {
+        status: NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING,
+        data: null,
+        error: null,
+      },
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     id: string;
+ *     error: string;
+ *   };
+ * }} action
+ */
+export const onNanoContractBlueprintInfoFailure = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    blueprint: {
+      ...state.nanoContract.blueprint,
+      [payload.id]: {
+        status: NANOCONTRACT_BLUEPRINTINFO_STATUS.FAILED,
+        data: null,
+        error: payload.error,
+      },
+    },
+  },
+});
+
+/**
+ * @param {Object} state
+ * @param {{
+ *   payload: {
+ *     id: string;
+ *     data: {
+ *       id: string;
+ *       name: string;
+ *       public_methods: {
+ *         [methodName: string]: {
+ *           args: {
+ *             type: string;
+ *             name: string;
+ *           }[];
+ *         };
+ *       };
+ *     };
+ *   };
+ * }} action
+ */
+export const onNanoContractBlueprintInfoSuccess = (state, { payload }) => ({
+  ...state,
+  nanoContract: {
+    ...state.nanoContract,
+    blueprint: {
+      ...state.nanoContract.blueprint,
+      [payload.id]: {
+        status: NANOCONTRACT_BLUEPRINTINFO_STATUS.SUCCESSFUL,
+        data: payload.data,
+        error: null,
+      },
+    },
+  },
+});
+
+/**
+ * Remarks
+ * This reducer aims to clean error feedback message before processing the request.
+ */
+export const onUnregisteredTokensRequest = (state) => ({
+  ...state,
+  unregisteredTokens: {
+    ...state.unregisteredTokens,
+    isLoading: true,
+    error: null,
+  },
+});
+
+/**
+ * Update walletConnect.tokens with some tokens data needed to feed UI components
+ * without the need to register them, also update an error feedback message if present.
+ *
+ * @param {Object} state
+ * @param {Object} action
+ * @param {Object} action.payload
+ * @param {Object} action.payload.tokens A map of token data by its UID.
+ * @param {string} action.payload.error The error message as feedback to user
+ */
+export const onUnregisteredTokensUpdate = (state, { payload }) => ({
+  ...state,
+  unregisteredTokens: {
+    ...state.unregisteredTokens,
+    ...payload.tokens,
+    isLoading: false,
+    error: payload.error || null,
+  },
+})

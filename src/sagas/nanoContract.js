@@ -22,6 +22,8 @@ import {
 import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
 import {
+  nanoContractBlueprintInfoFailure,
+  nanoContractBlueprintInfoSuccess,
   nanoContractHistoryClean,
   nanoContractHistoryFailure,
   nanoContractHistoryLoading,
@@ -45,6 +47,8 @@ export const failureMessage = {
   addressNotMine: t`The informed address does not belong to the wallet.`,
   nanoContractStateNotFound: t`Nano Contract not found.`,
   nanoContractStateFailure: t`Error while trying to get Nano Contract state.`,
+  blueprintInfoNotFound: t`Blueprint not found.`,
+  blueprintInfoFailure: t`Couldn't get Blueprint info.`,
   notRegistered: t`Nano Contract not registered.`,
   nanoContractHistoryFailure: t`Error while trying to download Nano Contract transactions history.`,
 };
@@ -348,6 +352,33 @@ export function* requestNanoContractAddressChange({ payload }) {
   log.debug(`Success persisting Nano Contract address update. ncId = ${ncId}`);
 }
 
+/**
+ * Process request to fetch blueprint info.
+ * @param {{
+ *   payload: {
+ *     id: string;
+ *   }
+ * }}
+ */
+export function* requestBlueprintInfo({ payload }) {
+  const { id } = payload;
+  let blueprintInfo = null;
+  try {
+    blueprintInfo = yield call([ncApi, ncApi.getBlueprintInformation], id);
+  } catch (error) {
+    if (error instanceof NanoRequest404Error) {
+      yield put(nanoContractBlueprintInfoFailure(id, failureMessage.blueprintInfoNotFound));
+    } else {
+      log.error('Error while fetching blueprint info.', error);
+      yield put(nanoContractBlueprintInfoFailure(id, failureMessage.blueprintInfoFailure));
+    }
+    return;
+  }
+
+  log.debug(`Success fetching blueprint info. id = ${id}`);
+  yield put(nanoContractBlueprintInfoSuccess(id, blueprintInfo));
+}
+
 export function* saga() {
   yield all([
     debounce(500, [[types.START_WALLET_SUCCESS, types.NANOCONTRACT_INIT]], init),
@@ -355,5 +386,6 @@ export function* saga() {
     takeEvery(types.NANOCONTRACT_HISTORY_REQUEST, requestHistoryNanoContract),
     takeEvery(types.NANOCONTRACT_UNREGISTER_REQUEST, unregisterNanoContract),
     takeEvery(types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST, requestNanoContractAddressChange),
+    takeEvery(types.NANOCONTRACT_BLUEPRINTINFO_REQUEST, requestBlueprintInfo),
   ]);
 }

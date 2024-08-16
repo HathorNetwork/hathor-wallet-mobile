@@ -240,6 +240,19 @@ export const NANOCONTRACT_REGISTER_STATUS = {
   SUCCESSFUL: 'successful',
 };
 
+export const WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS = {
+  READY: 'ready',
+  FAILED: 'failed',
+  LOADING: 'loading',
+  SUCCESSFUL: 'successful',
+};
+
+export const NANOCONTRACT_BLUEPRINTINFO_STATUS = {
+  FAILED: 'failed',
+  LOADING: 'loading',
+  SUCCESSFUL: 'successful',
+};
+
 /**
  * Timeout in miliseconds to call wallet-service.
  */
@@ -262,6 +275,7 @@ export const NETWORK_PRIVATENET = 'privatenet';
 export const MAX_RETRIES = 8;
 export const INITIAL_RETRY_LATENCY = 300; // ms
 export const LATENCY_MULTIPLIER = 30; // multiplier per iteration
+
 /**
  * Timeout for await wallet load in the context of tx details loading.
  * It awaits 5 minutes.
@@ -272,3 +286,7 @@ export const TX_DETAILS_TIMEOUT = 5 * 60 * 1000; // 5 minutes
  * Nano Contract's transaction history list size.
  */
 export const NANO_CONTRACT_TX_HISTORY_SIZE = 20;
+/**
+ * Nano Contract documentation URL.
+ */
+export const NANO_CONTRACT_INFO_URL = 'https://docs.hathor.network/explanations/features/nano-contracts/';

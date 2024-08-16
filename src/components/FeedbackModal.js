@@ -10,6 +10,19 @@ import { Text, View } from 'react-native';
 import PropTypes from 'prop-types';
 import HathorModal from './HathorModal';
 
+/**
+ * It renders a modal with some feedback to user.
+ *
+ * @param {Object} props
+ *
+ * @example
+ * <FeedbackModal
+ *   icon={(<Image source={errorIcon} resizeMode='contain' />)}
+ *   text={t`Error while sending transaction.`}
+ *   onDismiss={handleFeedbackModalDismiss}
+ *   action={(<NewHathorButton discrete title={t`Ok, close`} onPress={handleErrorModalAction} />)}
+ * />
+ */
 const FeedbackModal = (props) => (
   <HathorModal
     onDismiss={props.onDismiss}

@@ -11,7 +11,7 @@ import {
   metadataApi,
 } from '@hathor/wallet-lib';
 import {
-  METADATA_CONCURRENT_DOWNLOAD,
+  METADATA_CONCURRENT_DOWNLOAD, WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS,
 } from './constants';
 import { mapToTxHistory } from './utils';
 
@@ -113,6 +113,9 @@ export const types = {
   SET_WALLET_CONNECT: 'SET_WALLET_CONNECT',
   SET_WALLET_CONNECT_MODAL: 'SET_WALLET_CONNECT_MODAL',
   SET_WALLET_CONNECT_SESSIONS: 'SET_WALLET_CONNECT_SESSIONS',
+  WALLET_CONNECT_ACCEPT: 'WALLET_CONNECT_ACCEPT',
+  WALLET_CONNECT_REJECT: 'WALLET_CONNECT_REJECT',
+  SET_NEW_NANO_CONTRACT_TRANSACTION: 'SET_NEW_NANO_CONTRACT_TRANSACTION',
   SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
   WC_URI_INPUTTED: 'WC_URI_INPUTTED',
   WC_CANCEL_SESSION: 'WC_CANCEL_SESSION',
@@ -163,6 +166,12 @@ export const types = {
   NANOCONTRACT_UNREGISTER_SUCCESS: 'NANOCONTRACT_UNREGISTER_SUCCESS',
   /* It initiates a process to change the address on registered Nano Contract. */
   NANOCONTRACT_ADDRESS_CHANGE_REQUEST: 'NANOCONTRACT_ADDRESS_CHANGE_REQUEST',
+  /* It triggers a process to fetch blueprint info. */
+  NANOCONTRACT_BLUEPRINTINFO_REQUEST: 'NANOCONTRACT_BLUEPRINTINFO_REQUEST',
+  /* It signals a failure on fetch blueprint info. */
+  NANOCONTRACT_BLUEPRINTINFO_FAILURE: 'NANOCONTRACT_BLUEPRINTINFO_FAILURE',
+  /* It signals a success on fetch blueprint info. */
+  NANOCONTRACT_BLUEPRINTINFO_SUCCESS: 'NANOCONTRACT_BLUEPRINTINFO_SUCCESS',
   /* It triggers a process to fetch all wallet addresses. */
   SELECTADDRESS_ADDRESSES_REQUEST: 'SELECTADDRESS_ADDRESSES_REQUEST',
   /* It signals the fetch has loaded all the addresses with success. */
@@ -175,6 +184,10 @@ export const types = {
   FIRSTADDRESS_SUCCESS: 'FIRSTADDRESS_SUCCESS',
   /* It signals a fetch failure due to an error. */
   FIRSTADDRESS_FAILURE: 'FIRSTADDRESS_FAILURE',
+  /* It updates the redux state of new nano contract transaction status on wallet connect register. */
+  WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
+  UNREGISTEREDTOKENS_REQUEST: 'UNREGISTEREDTOKENS_REQUEST',
+  UNREGISTEREDTOKENS_UPDATE: 'UNREGISTEREDTOKENS_UPDATE',
 };
 
 export const featureToggleInitialized = () => ({
@@ -233,6 +246,30 @@ export const hideWalletConnectModal = () => ({
 export const walletConnectCancelSession = (sessionKey) => ({
   type: types.WC_CANCEL_SESSION,
   payload: sessionKey,
+});
+
+/**
+ * @param {Object} data Data that the user has accepted.
+ */
+export const walletConnectAccept = (data) => ({
+  type: types.WALLET_CONNECT_ACCEPT,
+  payload: data,
+});
+
+export const walletConnectReject = () => ({
+  type: types.WALLET_CONNECT_REJECT,
+});
+
+/**
+ * @param {Object} ncRequest
+ * @param {boolean} ncRequest.show
+ * @param {Object} ncRequest.data
+ * @param {Object} ncRequest.data.nc
+ * @param {Object} ncRequest.data.dapp
+ */
+export const setNewNanoContractTransaction = (ncRequest) => ({
+  type: types.SET_NEW_NANO_CONTRACT_TRANSACTION,
+  payload: ncRequest
 });
 
 /**
@@ -1204,4 +1241,97 @@ export const firstAddressSuccess = (successPayload) => ({
 export const firstAddressFailure = (failurePayload) => ({
   type: types.FIRSTADDRESS_FAILURE,
   payload: failurePayload,
+});
+
+/**
+ * Signals update on new nano contract status to ready.
+ */
+export const setNewNanoContractStatusReady = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
+  payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.READY,
+});
+
+/**
+ * Signals update on new nano contract status to loading.
+ */
+export const setNewNanoContractStatusLoading = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
+  payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING,
+});
+
+/**
+ * Signals update on new nano contract status to failed.
+ */
+export const setNewNanoContractStatusFailure = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
+  payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.FAILED,
+});
+
+/**
+ * Signals update on new nano contract status to successful.
+ */
+export const setNewNanoContractStatusSuccess = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
+  payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL,
+});
+
+/**
+ * Blueprint Info request in the context of a Nano Contract.
+ * @param {string} id Blueprint ID.
+ */
+export const nanoContractBlueprintInfoRequest = (id) => ({
+  type: types.NANOCONTRACT_BLUEPRINTINFO_REQUEST,
+  payload: { id },
+});
+
+/**
+ * Signals the bluprint info request has failed.
+ * @param {string} id Blueprint ID.
+ * @param {string} error Request failure reason.
+ */
+export const nanoContractBlueprintInfoFailure = (id, error) => ({
+  type: types.NANOCONTRACT_BLUEPRINTINFO_FAILURE,
+  payload: { id, error },
+});
+
+/**
+ * Signals the blueprint info was fetched with success.
+ * @param {string} id Blueprint ID.
+ * @param {{
+ *   id: string;
+ *   name: string;
+ *   public_methods: {
+ *     [methodName: string]: {
+ *       args: {
+ *         type: string;
+ *         name: string;
+ *       }[];
+ *     };
+ *   };
+ * }} blueprintInfo Raw data response from fullnode.
+ */
+export const nanoContractBlueprintInfoSuccess = (id, blueprintInfo) => ({
+  type: types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS,
+  payload: { id, data: { ...blueprintInfo } },
+});
+
+/**
+ * Signals a request to load a collection of token data by a collection of token UID.
+ * @param {Object} payload
+ * @param {string[]} payload.uids A list of token UID.
+ */
+export const unregisteredTokensRequest = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_REQUEST,
+  payload,
+});
+
+/**
+ * Signals an update to unregistered tokens state.
+ * @param {Object} payload
+ * @param {Object} payload.tokens A map of token data by its UID.
+ * @param {string} payload.error The error message as feedback to user
+ */
+export const unregisteredTokensUpdate = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_UPDATE,
+  payload,
 });
