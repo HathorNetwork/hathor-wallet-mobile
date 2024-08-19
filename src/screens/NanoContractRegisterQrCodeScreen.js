@@ -45,7 +45,7 @@ export const NanoContractRegisterQrCodeScreen = ({ navigation }) => {
       }}
       >
         <HathorHeader
-          title={t`Register Nano Contract`.toUpperCase()}
+          title={t`Nano Contract Registration`.toUpperCase()}
           onBackPress={() => navigation.pop()}
           rightElement={renderHeaderRightElement()}
         />

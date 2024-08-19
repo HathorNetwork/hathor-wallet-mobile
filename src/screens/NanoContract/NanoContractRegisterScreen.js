@@ -21,7 +21,6 @@ import {
   useSelector
 } from 'react-redux';
 import { t } from 'ttag';
-import QRCode from 'react-native-qrcode-svg';
 import HathorHeader from '../../components/HathorHeader';
 import { CircleInfoIcon } from '../../components/Icons/CircleInfo.icon';
 import NewHathorButton from '../../components/NewHathorButton';
