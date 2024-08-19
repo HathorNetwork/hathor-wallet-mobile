@@ -159,9 +159,6 @@ const styles = StyleSheet.create({
     marginRight: 'auto',
     paddingHorizontal: 16,
   },
-  icon: {
-    alignSelf: 'flex-start',
-  },
   text: {
     fontSize: 14,
     lineHeight: 20,

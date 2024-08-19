@@ -95,11 +95,11 @@ const HeaderExpanded = ({ tx }) => {
         <InfoContainer lastElement>
           <TextValue bold>{callerAddr}</TextValue>
           {tx.isMine
-          && (
-          <View style={styles.headlineLabel}>
-            <Text style={styles.isMineLabel}>{t`From this wallet`}</Text>
-          </View>
-          )}
+              && (
+              <View style={styles.headlineLabel}>
+                <Text style={styles.isMineLabel}>{t`From this wallet`}</Text>
+              </View>
+              )}
           <TextLabel>{t`Caller`}</TextLabel>
         </InfoContainer>
         <ActionsWrapper>
