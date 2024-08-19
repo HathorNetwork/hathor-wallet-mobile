@@ -150,7 +150,7 @@ export const NanoContractDetails = ({ nc }) => {
 };
 
 /**
- * It show a button to 'Load More' transactions after the last one.
+ * It shows a button to 'Load More' transactions after the last one.
  * It hides the button when the last transaction is the initialize.
  *
  * @param {Object} prop Properties object
