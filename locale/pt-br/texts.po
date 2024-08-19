@@ -443,10 +443,9 @@ msgstr "Palavras"
 msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
-#: src/components/NanoContract/NanoContractDetails.js:238
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:289
+#: src/components/NanoContract/NanoContractDetails.js:194
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:161
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:168
 msgid "Try again"
 msgstr "Tente novamente"
 
@@ -502,6 +501,23 @@ msgstr "Saldo Disponível"
 #: src/screens/MainScreen.js:544
 msgid "Locked"
 msgstr "Bloqueado"
+
+#.  translator: Used when the QR Code Scanner is opened, and user will manually
+#.  enter the information.
+#: src/screens/NanoContractRegisterQrCodeScreen.js:26
+#: src/screens/RegisterToken.js:27 src/screens/SendScanQRCode.js:87
+msgid "Manual info"
+msgstr "Digitar"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:233
+#: src/screens/NanoContractRegisterQrCodeScreen.js:48
+msgid "Register Nano Contract"
+msgstr "Registrar Nano Contract"
+
+#: src/screens/NanoContractRegisterQrCodeScreen.js:63
+#: src/screens/RegisterToken.js:53
+msgid "Scan the token QR code"
+msgstr "Leia o QR code do token"
 
 #: src/screens/PaymentRequestDetail.js:88
 #, javascript-format
@@ -589,19 +605,9 @@ msgstr "Requisição de Pagamento"
 msgid "RECEIVE"
 msgstr "RECEBER"
 
-#.  translator: Used when the QR Code Scanner is opened, and user will manually
-#.  enter the information.
-#: src/screens/RegisterToken.js:27 src/screens/SendScanQRCode.js:87
-msgid "Manual info"
-msgstr "Digitar"
-
 #: src/screens/RegisterToken.js:42 src/screens/RegisterTokenManual.js:126
 msgid "REGISTER TOKEN"
 msgstr "REGISTRAR UM TOKEN"
-
-#: src/screens/RegisterToken.js:53
-msgid "Scan the token QR code"
-msgstr "Leia o QR code do token"
 
 #: src/screens/RegisterTokenManual.js:102
 msgid "You're going to register the following token:"
@@ -979,22 +985,21 @@ msgstr "Detalhes do Nano Contract"
 msgid "Nano Contract ID is required."
 msgstr "ID do Nano Contract é obrigatório."
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:151
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:158
 msgid "See contract"
 msgstr "Ver contrato"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:169
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:176
 msgid "Load First Addresses Error"
 msgstr "Erro ao carregar primeiro endereço da wallet"
 
 #: src/components/NanoContract/NanoContractDetails.js:202
 #: src/components/NanoContract/SelectAddressModal.js:105
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:209
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:177
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:184
 msgid "Loading"
 msgstr "Carregando"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:178
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:185
 msgid "Loading first wallet address."
 msgstr "Carregando primeiro endereço da wallet."
 
@@ -1002,28 +1007,23 @@ msgstr "Carregando primeiro endereço da wallet."
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/TxDetailsModal.js:106
-#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:83
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:187
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:194
 msgid "Nano Contract ID"
 msgstr "ID do Nano Contract"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:195
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:202
 msgid "Wallet Address"
 msgstr "Endereço da Carteira"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:205
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:212
 msgid "If you want to change the wallet address, you will be able to do"
 msgstr "Se deseja alterar o endereço de assinatura, você pode alterar"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:207
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:214
 msgid "after the contract is registered."
 msgstr "depois do contrato ser registrado."
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:226
-msgid "Register Nano Contract"
-msgstr "Registrar Nano Contract"
-
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:244
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:251
 msgid "Nano Contract Registration"
 msgstr "Registro do Nano Contract"
 
@@ -1127,16 +1127,16 @@ msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:797
+#: src/sagas/wallet.js:798
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
-#: src/sagas/wallet.js:807
+#: src/sagas/wallet.js:808
 msgid "Wallet is not ready to load the first address."
 msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:823
+#: src/sagas/wallet.js:824
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
@@ -1570,6 +1570,11 @@ msgstr "Carregando transações do Nano Contract"
 msgid "Nano Contract Transactions Error"
 msgstr "Erro em Transações do Nano Contract"
 
+#: src/components/NanoContract/NanoContractDetailsHeader.js:146
+#: src/components/NanoContract/NanoContractsListItem.js:59
+msgid "Blueprint Name"
+msgstr "Nome do Blueprint"
+
 #: src/components/NanoContract/NanoContractDetailsHeader.js:150
 msgid "Registered Address"
 msgstr "Endereço Registrado"
@@ -1609,7 +1614,13 @@ msgstr "Data & Hora"
 msgid "From this wallet"
 msgstr "Desta wallet"
 
+#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:106
+msgid "Caller"
+msgstr "Caller"
+
+#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
+#: src/components/NanoContract/NanoContractTransactionHeader.js:109
 msgid "See transaction details"
 msgstr "Ver detalhes"
 
@@ -1662,3 +1673,7 @@ msgstr "Confirma que deseja desregistrar este Nano Contract?"
 #: src/components/NanoContract/UnregisterNanoContractModal.js:44
 msgid "Yes, unregister contract"
 msgstr "Sim, desregistrar"
+
+#: src/components/NanoContract/UnregisterNanoContractModal.js:50
+msgid "No, go back"
+msgstr "Não, voltar"
