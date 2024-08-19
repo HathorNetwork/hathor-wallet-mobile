@@ -23,6 +23,7 @@ import { ArrowDownIcon } from '../Icons/ArrowDown.icon';
 import { TextValue } from '../TextValue';
 import { TextLabel } from '../TextLabel';
 import { TransactionStatusLabel } from '../TransactionStatusLabel';
+import { ArrowUpIcon } from '../Icons/ArrowUp.icon';
 
 /**
  * It presents the header of Nano Contract Transaction screen.
@@ -31,16 +32,12 @@ import { TransactionStatusLabel } from '../TransactionStatusLabel';
  * @param {Obejct} props.tx Transaction data
  */
 export const NanoContractTransactionHeader = ({ tx }) => {
-  // XXX: the set function for the state is beeing ignored because we can't
-  // use the shrank format just yet. We need the actions component first.
-  // For his, we also need hathor-core support for actions in each nano contract
-  // transaction.
-  const [isShrank] = useState(false);
+  const [isShrank, toggleShrank] = useState(false); // shows expanded header by default
 
   return (
     <HathorHeader>
       <HathorHeader.Central style={styles.headerCentral}>
-        <TouchableWithoutFeedback onPress={() => {}}>
+        <TouchableWithoutFeedback onPress={() => toggleShrank(!isShrank)}>
           <View style={styles.headerWrapper}>
             <InfoContainer>
               <TextValue title pb4>{getShortHash(tx.txId, 7)}</TextValue>
@@ -77,38 +74,40 @@ const HeaderExpanded = ({ tx }) => {
     Linking.openURL(explorerLink);
   };
 
-  /* XXX: add <ArrowUpIcon /> when shrank component can be used. */
   return (
-    <View style={styles.wrapper}>
-      <InfoContainer>
-        <TransactionStatusLabel hasFirstBlock={hasFirstBlock} isVoided={tx.isVoided} />
-      </InfoContainer>
-      <InfoContainer>
-        <TextValue bold pb4>{ncId}</TextValue>
-        <TextLabel>{t`Nano Contract ID`}</TextLabel>
-      </InfoContainer>
-      <InfoContainer>
-        <TextValue bold pb4>{tx.ncMethod}</TextValue>
-        <TextLabel>{t`Blueprint Method`}</TextLabel>
-      </InfoContainer>
-      <InfoContainer>
-        <TextValue bold pb4>{getTimestampFormat(tx.timestamp)}</TextValue>
-        <TextLabel>{t`Date and Time`}</TextLabel>
-      </InfoContainer>
-      <InfoContainer lastElement>
-        <TextValue bold>{callerAddr}</TextValue>
-        {tx.isMine
-          && (
-          <View style={styles.headlineLabel}>
-            <Text style={styles.isMineLabel}>{t`From this wallet`}</Text>
-          </View>
-          )}
-        <TextLabel>{t`Caller`}</TextLabel>
-      </InfoContainer>
-      <ActionsWrapper>
-        <PrimaryTextButton title={t`See transaction details`} onPress={navigatesToExplorer} />
-      </ActionsWrapper>
-    </View>
+    <>
+      <View style={styles.wrapper}>
+        <InfoContainer>
+          <TransactionStatusLabel hasFirstBlock={hasFirstBlock} isVoided={tx.isVoided} />
+        </InfoContainer>
+        <InfoContainer>
+          <TextValue bold pb4>{ncId}</TextValue>
+          <TextLabel>{t`Nano Contract ID`}</TextLabel>
+        </InfoContainer>
+        <InfoContainer>
+          <TextValue bold pb4>{tx.ncMethod}</TextValue>
+          <TextLabel>{t`Blueprint Method`}</TextLabel>
+        </InfoContainer>
+        <InfoContainer>
+          <TextValue bold pb4>{getTimestampFormat(tx.timestamp)}</TextValue>
+          <TextLabel>{t`Date and Time`}</TextLabel>
+        </InfoContainer>
+        <InfoContainer lastElement>
+          <TextValue bold>{callerAddr}</TextValue>
+          {tx.isMine
+              && (
+              <View style={styles.headlineLabel}>
+                <Text style={styles.isMineLabel}>{t`From this wallet`}</Text>
+              </View>
+              )}
+          <TextLabel>{t`Caller`}</TextLabel>
+        </InfoContainer>
+        <ActionsWrapper>
+          <PrimaryTextButton title={t`See transaction details`} onPress={navigatesToExplorer} />
+        </ActionsWrapper>
+      </View>
+      <ArrowUpIcon />
+    </>
   )
 };
 
@@ -161,12 +160,6 @@ const styles = StyleSheet.create({
   headerWrapper: {
     alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 18,
-    lineHeight: 20,
-    fontWeight: 'bold',
-    paddingVertical: 16,
-  },
   wrapper: {
     paddingHorizontal: 16,
     paddingBottom: 16,
@@ -188,10 +181,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontWeight: 'bold',
-  },
-  buttonUnregister: {
-    marginStart: 24,
-    color: 'hsla(0, 100%, 41%, 1)',
   },
   buttonDetails: {
     display: 'inline-block',

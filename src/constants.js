@@ -290,3 +290,11 @@ export const NANO_CONTRACT_TX_HISTORY_SIZE = 20;
  * Nano Contract documentation URL.
  */
 export const NANO_CONTRACT_INFO_URL = 'https://docs.hathor.network/explanations/features/nano-contracts/';
+
+/**
+ * Nano Contract Action Enum
+ */
+export const NANO_CONTRACT_ACTION = {
+  withdrawal: 'withdrawal',
+  deposit: 'deposit',
+};

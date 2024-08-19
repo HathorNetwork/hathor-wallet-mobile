@@ -7,7 +7,6 @@
 
 import {
   ncApi,
-  transactionUtils,
   addressUtils,
 } from '@hathor/wallet-lib';
 import {
@@ -198,12 +197,11 @@ export async function fetchHistory(ncId, count, after, wallet) {
     // throwing an exception.
     // eslint-disable-next-line no-await-in-loop
     const isMine = await wallet.isAddressMine(caller);
-    const getTxBalanceFn = transactionUtils.getTxBalance.bind(transactionUtils);
-    // XXX: Wallet Service Wallet doesn't support getTxBalanceFn.
-    // It means this method can't run under wallet-service without
-    // throwing an exception.
-    // eslint-disable-next-line no-await-in-loop
-    const balance = await getTxBalanceFn(rawTx, wallet.storage);
+    const actions = rawTx.nc_context.actions.map((each) => ({
+      type: each.type, // 'deposit' or 'withdrawal'
+      uid: each.token_uid,
+      amount: each.amount,
+    }));
     const tx = {
       txId: rawTx.hash,
       timestamp: rawTx.timestamp,
@@ -215,7 +213,7 @@ export async function fetchHistory(ncId, count, after, wallet) {
       firstBlock: rawTx.first_block,
       caller,
       isMine,
-      balance,
+      actions,
     };
     history.push(tx);
   }

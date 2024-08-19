@@ -341,9 +341,14 @@ const initialState = {
      *     ncId: string;
      *     ncMethod: string;
      *     blueprintId: string;
+     *     firstBlock: string;
      *     caller: string;
      *     isMine: boolean;
-     *     balance: {[uid: string]: Object};
+     *     actions: {
+     *       type: 'withdrawal'|'deposit';
+     *       uid: string;
+     *       amount: number;
+     *     }[];
      *   }[];
      * }} history of Nano Contracts registered per wallet address.
      * @example
@@ -362,9 +367,13 @@ const initialState = {
      *       blueprintId: '0025dadebe337a79006f181c05e4799ce98639aedfbd26335806790bdea4b1d4';
      *       caller: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
      *       isMine: true,
-     *       balance: {
-     *         '00': 300,
-     *       },
+     *       actions: [
+     *         {
+     *           type: 'withdrawal',
+     *           uid: '00',
+     *           amount: 100,
+     *         }
+     *       ]
      *     },
      *   ],
      * }
