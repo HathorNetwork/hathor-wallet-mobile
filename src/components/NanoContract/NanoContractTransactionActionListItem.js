@@ -21,7 +21,7 @@ import { ReceivedIcon } from '../Icons/Received.icon';
 import { SentIcon } from '../Icons/Sent.icon';
 
 /**
- * Retrives token symbol, otherwise returns a shortened token hash.
+ * Retrieves token symbol, otherwise returns a shortened token hash.
  *
  * @param {string} tokenUid Token hash
  * @returns {(state) => boolean} Callback that takes state as input
