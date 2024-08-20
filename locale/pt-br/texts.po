@@ -826,7 +826,7 @@ msgstr "Nova Transação de Nano Contract"
 
 #: src/screens/WalletConnect/SignMessageRequestScreen.js:25
 msgid "Sign Message Request"
-msgstr "Solicitação de Assinatura"
+msgstr "Solicitação de Assinatura de Mensagem"
 
 #: src/screens/WalletConnect/WalletConnectList.js:33
 msgid "There was an error connecting. Please try again later."
@@ -1366,11 +1366,12 @@ msgstr ""
 
 #: src/components/WalletConnect/SignMessageModal.js:59
 msgid "New Sign Message Request"
-msgstr "Nova Solicitação de Assinatura"
+msgstr "Nova Solicitação de Assinatura de Mensagem"
 
 #: src/components/WalletConnect/SignMessageModal.js:63
 msgid "You have received a new Sign Message Request. Please"
-msgstr "Você recebeu uma nova Solicitação de Assinatura. Por favor,"
+msgstr ""
+"Você recebeu uma nova Solicitação de Assinatura de Mensagem. Por favor,"
 
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:63
 #: src/components/WalletConnect/SignMessageModal.js:65
@@ -1384,7 +1385,7 @@ msgstr "antes de decidir aceitar ou recusar."
 
 #: src/components/WalletConnect/SignMessageModal.js:71
 msgid "Review Sign Message Request details"
-msgstr "Revisar detalhes da Solicitação de Assinatura"
+msgstr "Revisar detalhes da Solicitação de Assinatura de Mensagem"
 
 #: src/components/WalletConnect/SignMessageRequest.js:35
 msgid "Message to sign"
