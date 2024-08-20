@@ -433,6 +433,7 @@ msgid "Enter your seed words separated by space"
 msgstr "Indtast dine seed-ord adskilt med mellemrum"
 
 #: src/components/NanoContract/NanoContractDetails.js:194
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:289
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
 msgid "Try again"
@@ -496,9 +497,9 @@ msgstr "Låst"
 msgid "Manual info"
 msgstr "Manuel information"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:233
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:251
 #: src/screens/NanoContractRegisterQrCodeScreen.js:48
-msgid "Register Nano Contract"
+msgid "Nano Contract Registration"
 msgstr ""
 
 #: src/screens/NanoContractRegisterQrCodeScreen.js:63
@@ -967,6 +968,7 @@ msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.js:202
 #: src/components/NanoContract/SelectAddressModal.js:105
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:209
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:184
 msgid "Loading"
 msgstr ""
@@ -979,6 +981,7 @@ msgstr ""
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/TxDetailsModal.js:106
+#: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:83
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:194
 msgid "Nano Contract ID"
 msgstr ""
@@ -995,8 +998,8 @@ msgstr ""
 msgid "after the contract is registered."
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:251
-msgid "Nano Contract Registration"
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:233
+msgid "Register Nano Contract"
 msgstr ""
 
 #: src/screens/NanoContract/NanoContractTransactionScreen.js:39
@@ -1098,16 +1101,16 @@ msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:798
+#: src/sagas/wallet.js:797
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:808
+#: src/sagas/wallet.js:807
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:824
+#: src/sagas/wallet.js:823
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
@@ -1525,11 +1528,6 @@ msgstr ""
 msgid "Nano Contract Transactions Error"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.js:146
-#: src/components/NanoContract/NanoContractsListItem.js:59
-msgid "Blueprint Name"
-msgstr ""
-
 #: src/components/NanoContract/NanoContractDetailsHeader.js:150
 msgid "Registered Address"
 msgstr ""
@@ -1568,13 +1566,7 @@ msgstr ""
 msgid "From this wallet"
 msgstr ""
 
-#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:106
-msgid "Caller"
-msgstr ""
-
-#.  XXX: add <ArrowUpIcon /> when shrank component can be used. 
-#: src/components/NanoContract/NanoContractTransactionHeader.js:109
 msgid "See transaction details"
 msgstr ""
 
@@ -1626,8 +1618,4 @@ msgstr ""
 
 #: src/components/NanoContract/UnregisterNanoContractModal.js:44
 msgid "Yes, unregister contract"
-msgstr ""
-
-#: src/components/NanoContract/UnregisterNanoContractModal.js:50
-msgid "No, go back"
 msgstr ""
