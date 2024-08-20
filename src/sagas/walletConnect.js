@@ -118,10 +118,13 @@ const ERROR_CODES = {
   INVALID_PAYLOAD: 5003,
 };
 
-function* isWalletConnectEnabled() {
+function isWalletConnectEnabled() {
+  return false;
+  /*
   const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
 
   return walletConnectEnabled;
+  */
 }
 
 function* init() {
