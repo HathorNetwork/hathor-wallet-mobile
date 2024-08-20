@@ -58,7 +58,7 @@ const condRenderData = (
   return null;
 };
 
-function renderBoolean(bool) {
+function renderBooleanFormatter(bool) {
   return bool ? t`Yes` : t`No`;
 }
 
@@ -71,11 +71,11 @@ export const CreateTokenRequestData = ({ data }) => (
       { condRenderData(data.changeAddress, t`Address to send change ${DEFAULT_TOKEN.uid}`, true) }
       { condRenderData(data.mintAuthorityAddress, t`Address to send the mint authority`, true) }
       { condRenderData(data.meltAuthorityAddress, t`Address to send the melt authority`, true) }
-      { condRenderData(data.allowExternalMintAuthorityAddress, t`Allow external mint authority addresses?`, true, renderBoolean) }
-      { condRenderData(data.allowExternalMeltAuthorityAddress, t`Allow external melt authority addresses?`, true, renderBoolean) }
-      { condRenderData(data.createMint, t`Create mint authority?`, true, renderBoolean) }
-      { condRenderData(data.createMelt, t`Create melt authority?`, true, renderBoolean) }
-      { condRenderData(data.data, t`Token data`, true, (tokenData) => tokenData.split('\n')) }
+      { condRenderData(data.allowExternalMintAuthorityAddress, t`Allow external mint authority addresses?`, true, renderBooleanFormatter) }
+      { condRenderData(data.allowExternalMeltAuthorityAddress, t`Allow external melt authority addresses?`, true, renderBooleanFormatter) }
+      { condRenderData(data.createMint, t`Create mint authority?`, true, renderBooleanFormatter) }
+      { condRenderData(data.createMelt, t`Create melt authority?`, true, renderBooleanFormatter) }
+      { condRenderData(data.data, t`Token data`, true, (tokenData) => tokenData.join('\n')) }
     </View>
   </View>
 );
@@ -83,7 +83,7 @@ export const CreateTokenRequestData = ({ data }) => (
 export const CreateTokenRequest = ({ createTokenRequest }) => {
   const { dapp, data } = createTokenRequest;
   const { message, address } = data;
-  const { retrying, status } = useSelector((state) => state.walletConnect.createToken);
+  const { status } = useSelector((state) => state.walletConnect.createToken);
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
