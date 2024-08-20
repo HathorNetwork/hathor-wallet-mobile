@@ -248,7 +248,6 @@ export const WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS = {
 };
 
 export const NANOCONTRACT_BLUEPRINTINFO_STATUS = {
-  READY: 'ready',
   FAILED: 'failed',
   LOADING: 'loading',
   SUCCESSFUL: 'successful',
