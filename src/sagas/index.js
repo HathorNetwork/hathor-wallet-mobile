@@ -58,6 +58,7 @@ function* rootSaga() {
         }
 
         yield put(onExceptionCaptured(e, false));
+        log.error(e);
       }
     }
   })));
