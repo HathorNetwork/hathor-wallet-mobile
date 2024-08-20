@@ -387,7 +387,6 @@ export function* loadTokens() {
  * So we fetch the tokens metadata and store on redux
  */
 export function* fetchTokensMetadata(tokens) {
-  // No tokens to load, set metadata as loaded
   if (!tokens.length) {
     return;
   }
