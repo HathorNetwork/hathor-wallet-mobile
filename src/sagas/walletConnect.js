@@ -45,7 +45,6 @@
  * loaded.
  */
 
-import '@walletconnect/react-native-compat';
 import {
   call,
   fork,
@@ -63,15 +62,13 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
-import { Core } from '@walletconnect/core';
-import { Web3Wallet } from '@walletconnect/web3wallet';
 import {
   TriggerTypes,
   TriggerResponseTypes,
   RpcResponseTypes,
   SendNanoContractTxFailure,
   handleRpcRequest,
-} from 'hathor-rpc-handler';
+} from '@hathor/hathor-rpc-handler';
 import { isWalletServiceEnabled, WALLET_STATUS } from './wallet';
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
@@ -102,6 +99,12 @@ const AVAILABLE_METHODS = {
   HATHOR_SEND_NANO_TX: 'htr_sendNanoContractTx',
 };
 const AVAILABLE_EVENTS = [];
+
+// We're mocking it here because we don't want to add the walletconnect
+// libraries in our production build. If you really want to add it, just run the
+// src/walletconnect.sh script
+const Core = class {};
+const Web3Wallet = class {};
 
 /**
  * Those are the only ones we are currently using, extracted from
