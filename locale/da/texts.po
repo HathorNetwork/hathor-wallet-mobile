@@ -1351,24 +1351,20 @@ msgid "Review Sign Message Request details"
 msgstr ""
 
 #: src/components/WalletConnect/SignMessageRequest.js:35
-#, fuzzy
 msgid "Message to sign"
-msgstr "Adresse, der skal sendes til"
+msgstr ""
 
 #: src/components/WalletConnect/SignMessageRequest.js:45
-#, fuzzy
 msgid "Address Path"
-msgstr "Adresse"
+msgstr ""
 
 #: src/components/WalletConnect/SignMessageRequest.js:81
-#, fuzzy
 msgid "Accept Request"
-msgstr "Betalingsanmodning"
+msgstr ""
 
 #: src/components/WalletConnect/SignMessageRequest.js:85
-#, fuzzy
 msgid "Decline Request"
-msgstr "Betalingsanmodning"
+msgstr ""
 
 #: src/components/WalletConnect/WarnDisclaimer.js:21
 msgid ""
@@ -1455,9 +1451,8 @@ msgid "Arguments"
 msgstr ""
 
 #: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:103
-#, fuzzy
 msgid "Loading arguments."
-msgstr "Indlæser dine transaktioner"
+msgstr ""
 
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:61
 msgid "You have received a new Nano Contract Transaction. Please"
