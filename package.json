@@ -17,7 +17,6 @@
     "postinstall": "rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack"
   },
   "dependencies": {
-    "@ethersproject/shims": "5.7.0",
     "@fortawesome/fontawesome-svg-core": "1.2.36",
     "@fortawesome/free-regular-svg-icons": "6.4.0",
     "@fortawesome/free-solid-svg-icons": "6.4.0",
@@ -28,7 +27,6 @@
     "@json-rpc-tools/utils": "^1.7.6",
     "@notifee/react-native": "5.7.0",
     "@react-native-async-storage/async-storage": "1.19.0",
-    "@react-native-community/netinfo": "11.3.1",
     "@react-native-firebase/app": "16.7.0",
     "@react-native-firebase/messaging": "16.7.0",
     "@react-navigation/bottom-tabs": "6.5.8",
@@ -60,7 +58,6 @@
     "react-native-device-info": "8.7.1",
     "react-native-exception-handler": "2.10.10",
     "react-native-gesture-handler": "2.13.1",
-    "react-native-get-random-values": "1.11.0",
     "react-native-keychain": "8.1.1",
     "react-native-localize": "2.2.6",
     "react-native-modal": "13.0.1",
