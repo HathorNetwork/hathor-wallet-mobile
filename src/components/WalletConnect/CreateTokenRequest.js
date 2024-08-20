@@ -58,6 +58,10 @@ const condRenderData = (
   return null;
 };
 
+/**
+ * Renders translated values for boolean inputs
+ * @param {boolean} bool
+ */
 function renderBooleanFormatter(bool) {
   return bool ? t`Yes` : t`No`;
 }
@@ -71,8 +75,20 @@ export const CreateTokenRequestData = ({ data }) => (
       { condRenderData(data.changeAddress, t`Address to send change ${DEFAULT_TOKEN.uid}`, true) }
       { condRenderData(data.mintAuthorityAddress, t`Address to send the mint authority`, true) }
       { condRenderData(data.meltAuthorityAddress, t`Address to send the melt authority`, true) }
-      { condRenderData(data.allowExternalMintAuthorityAddress, t`Allow external mint authority addresses?`, true, renderBooleanFormatter) }
-      { condRenderData(data.allowExternalMeltAuthorityAddress, t`Allow external melt authority addresses?`, true, renderBooleanFormatter) }
+      { data.mintAuthorityAddress != null
+          && condRenderData(
+            data.allowExternalMintAuthorityAddress,
+            t`Allow external mint authority addresses?`,
+            true,
+            renderBooleanFormatter,
+          )}
+      { data.meltAuthorityAddress != null
+          && condRenderData(
+            data.allowExternalMeltAuthorityAddress,
+            t`Allow external melt authority addresses?`,
+            true,
+            renderBooleanFormatter,
+          )}
       { condRenderData(data.createMint, t`Create mint authority?`, true, renderBooleanFormatter) }
       { condRenderData(data.createMelt, t`Create melt authority?`, true, renderBooleanFormatter) }
       { condRenderData(data.data, t`Token data`, true, (tokenData) => tokenData.join('\n')) }
