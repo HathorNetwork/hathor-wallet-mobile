@@ -45,7 +45,6 @@
  * loaded.
  */
 
-import '@walletconnect/react-native-compat';
 import {
   call,
   fork,
