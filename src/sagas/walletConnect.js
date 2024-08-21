@@ -68,7 +68,9 @@ import {
   RpcResponseTypes,
   SendNanoContractTxFailure,
   handleRpcRequest,
-} from '@hathor/hathor-rpc-handler';
+  BluePrintNotFoundError,
+  ParamsValidationError,
+} from 'hathor-rpc-handler-test';
 import { isWalletServiceEnabled, WALLET_STATUS } from './wallet';
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
@@ -316,6 +318,13 @@ export function* onSessionRequest(action) {
   } catch (e) {
     let shouldAnswer = true;
     switch (e.constructor) {
+      case BluePrintNotFoundError:
+        log.error('Blueprint from RPC request was not found.');
+        // falls through intentionally
+      case ParamsValidationError:
+        // We should quietly reject the RPC request.
+        log.error('ParamsValidationError, rejecting RPC');
+        break;
       case SendNanoContractTxFailure: {
         yield put(setNewNanoContractStatusFailure());
 
