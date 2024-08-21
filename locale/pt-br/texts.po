@@ -1667,15 +1667,3 @@ msgstr "Confirma que deseja desregistrar este Nano Contract?"
 #: src/components/NanoContract/UnregisterNanoContractModal.js:44
 msgid "Yes, unregister contract"
 msgstr "Sim, desregistrar"
-
-#~ msgid "Sign this message?"
-#~ msgstr "Assinar essa mensagem?"
-
-#~ msgid ""
-#~ "By clicking approve, you will sign the requested message using the first "
-#~ "address derived from your root key on the m/44'/280'/0'/0/0 derivation "
-#~ "path."
-#~ msgstr ""
-#~ "Ao clicar em aprovar, você assinará a mensagem solicitada usando o "
-#~ "primeiro endereço derivado da sua chave raiz no caminho de derivação "
-#~ "m/44'/280'/0'/0/0."
