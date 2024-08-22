@@ -505,9 +505,8 @@ msgid "Nano Contract Registration"
 msgstr ""
 
 #: src/screens/NanoContractRegisterQrCodeScreen.js:63
-#: src/screens/RegisterToken.js:53
-msgid "Scan the token QR code"
-msgstr "Сканировать QR-код токена"
+msgid "Scan the nano contract ID QR code"
+msgstr ""
 
 #: src/screens/PaymentRequestDetail.js:88
 #, javascript-format
@@ -596,6 +595,10 @@ msgstr "ПОЛУЧИТЬ"
 #: src/screens/RegisterToken.js:42 src/screens/RegisterTokenManual.js:126
 msgid "REGISTER TOKEN"
 msgstr "РЕГИСТРАЦИЯ ТОКЕНА"
+
+#: src/screens/RegisterToken.js:53
+msgid "Scan the token QR code"
+msgstr "Сканировать QR-код токена"
 
 #: src/screens/RegisterTokenManual.js:102
 msgid "You're going to register the following token:"
