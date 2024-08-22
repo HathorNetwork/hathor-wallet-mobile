@@ -27,13 +27,15 @@ import {
   setNewNanoContractStatusReady,
   walletConnectAccept,
   walletConnectReject,
-  unregisteredTokensRequest
+  unregisteredTokensRequest,
+  nanoContractRegisterRequest,
+  firstAddressRequest
 } from '../../../actions';
 import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
 import { SelectAddressModal } from '../../NanoContract/SelectAddressModal';
 import { FeedbackContent } from '../../FeedbackContent';
-import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS, WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS } from '../../../constants';
+import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS, NANOCONTRACT_REGISTER_STATUS, WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS } from '../../../constants';
 import Spinner from '../../Spinner';
 import FeedbackModal from '../../FeedbackModal';
 import errorIcon from '../../../assets/images/icErrorBig.png';
@@ -69,6 +71,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const registeredNc = useSelector((state) => state.nanoContract.registered[nc.ncId]);
   const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.unregisteredTokens }));
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[nc.blueprintId]);
+  const registerStatus = useSelector((state) => state.nanoContract.registerStatus);
 
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
@@ -98,6 +101,13 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     const acceptedNc = { ...nc, caller: ncAddress };
     // Signal the user has accepted the current request and pass the accepted data.
     dispatch(walletConnectAccept(acceptedNc));
+  };
+
+  const onRegisterNanoContract = () => {
+    dispatch(nanoContractRegisterRequest({
+      address: firstAddress.address,
+      ncId: ncToAccept.ncId
+    }));
   };
 
   const onDeclineTransaction = () => {
@@ -134,8 +144,12 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
 
   // This effect runs only once in the construct phase
   useEffect(() => {
-    // Do nothing if nano contract is not registered and don't call initialize method.
-    if (notRegistered) return;
+    // Load the first address to be used in the register nano contract action
+    // and halt to not initialize the regular path of component
+    if (notRegistered) {
+      dispatch(firstAddressRequest());
+      return;
+    }
 
     // Request blueprint info if not present to feed the components:
     // - NanoContractExecInfo, and
@@ -188,21 +202,45 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const isTxSuccessful = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL;
   const isTxFailed = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.FAILED;
 
+  const isNcRegistering = () => (
+    registerStatus === NANOCONTRACT_REGISTER_STATUS.LOADING
+  );
+
   return (
     <>
       {notRegistered && (
-        <FeedbackContent
-          title={t`Nano Contract Not Found`}
-          message={t`The Nano Contract requested is not registered. First register the Nano Contract to interact with it.`}
-          action={(
-            <NewHathorButton
-              title={t`Decline Transaction`}
-              onPress={onDeclineTransaction}
-              secondary
-              danger
+        <View>
+          {isNcRegistering() && (
+            <FeedbackContent
+              title={t`Loading`}
+              message={t`Registering Nano Contract.`}
+              icon={<Spinner size={48} animating />}
+              offmargin
+              offcard
+              offbackground
             />
           )}
-        />
+          {!isNcRegistering() && (
+            <FeedbackContent
+              title={t`Nano Contract Not Found`}
+              message={t`The Nano Contract requested is not registered. First register the Nano Contract to interact with it.`}
+              action={(
+                <View style={styles.actionContainer}>
+                  <NewHathorButton
+                    title={t`Register Nano Contract`}
+                    onPress={onRegisterNanoContract}
+                  />
+                  <NewHathorButton
+                    title={t`Decline Transaction`}
+                    onPress={onDeclineTransaction}
+                    secondary
+                    danger
+                  />
+                </View>
+              )}
+            />
+          )}
+        </View>
       )}
       {showRequest && (
         <ScrollView style={styles.wide}>
