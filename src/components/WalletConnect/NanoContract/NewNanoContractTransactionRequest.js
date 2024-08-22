@@ -29,7 +29,8 @@ import {
   walletConnectReject,
   unregisteredTokensRequest,
   nanoContractRegisterRequest,
-  firstAddressRequest
+  firstAddressRequest,
+  nanoContractRegisterReady
 } from '../../../actions';
 import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
@@ -115,6 +116,9 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   };
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
+    // Restore ready status to Nano Contract registration state if
+    // we have had a registration while handling a new transaction request
+    dispatch(nanoContractRegisterReady());
     dispatch(walletConnectReject());
     navigation.goBack();
   };
@@ -127,7 +131,9 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   // and only let user decline the transaction to get out the page, otherwise interaction
   // content is showed.
   const notInitialize = ncToAccept.method !== 'initialize';
-  const notRegistered = notInitialize && registeredNc == null;
+  const notRegistered = useMemo(() => (
+    notInitialize && registeredNc == null
+  ), [notInitialize, registeredNc]); 
   // It results in true for registered nc and initialize request
   const showRequest = !notRegistered;
 
@@ -167,7 +173,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
       }
     });
     dispatch(unregisteredTokensRequest({ uids: unknownTokensUid }));
-  }, []);
+  }, [notRegistered]);
 
   const onFeedbackModalDismiss = () => {
     dispatch(setNewNanoContractStatusReady());
@@ -202,33 +208,100 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const isTxSuccessful = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL;
   const isTxFailed = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.FAILED;
 
-  const isNcRegistering = () => (
+  const isNcRegistering = (
     registerStatus === NANOCONTRACT_REGISTER_STATUS.LOADING
+  );
+
+  const hasNcRegisterFailed = (
+    registerStatus === NANOCONTRACT_REGISTER_STATUS.FAILED
   );
 
   return (
     <>
-      {notRegistered && (
-        <View>
-          {isNcRegistering() && (
-            <FeedbackContent
-              title={t`Loading`}
-              message={t`Registering Nano Contract.`}
-              icon={<Spinner size={48} animating />}
-              offmargin
-              offcard
-              offbackground
-            />
+      {notRegistered && isNcRegistering && (
+        <FeedbackContent
+          title={t`Loading`}
+          message={t`Registering Nano Contract.`}
+          icon={<Spinner size={48} animating />}
+          offmargin
+          offcard
+          offbackground
+        />
+      )}
+      {notRegistered && !isNcRegistering && (
+        <FeedbackContent
+          title={t`Nano Contract Not Found`}
+          message={t`The Nano Contract requested is not registered. First register the Nano Contract to interact with it.`}
+          action={(
+            <View style={styles.feedbackActionContainer}>
+              <NewHathorButton
+                title={t`Register Nano Contract`}
+                onPress={onRegisterNanoContract}
+              />
+              <NewHathorButton
+                title={t`Decline Transaction`}
+                onPress={onDeclineTransaction}
+                secondary
+                danger
+              />
+            </View>
           )}
-          {!isNcRegistering() && (
-            <FeedbackContent
-              title={t`Nano Contract Not Found`}
-              message={t`The Nano Contract requested is not registered. First register the Nano Contract to interact with it.`}
-              action={(
+        />
+      )}
+      {notRegistered && hasNcRegisterFailed && (
+        <FeedbackModal
+          icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+          text={t`Error while registering Nano Contract.`}
+          onDismiss={onDeclineConfirmation}
+          action={(<NewHathorButton discrete title={t`Decline Transaction`} onPress={onDeclineConfirmation} />)}
+        />
+      )}
+      {showRequest && isTxInfoLoading() && (
+        <FeedbackContent
+          title={t`Loading`}
+          message={t`Loading transaction information.`}
+          icon={<Spinner size={48} animating />}
+          offmargin
+          offcard
+          offbackground
+        />
+      )}
+      {showRequest && isTxProcessing() && (
+        <FeedbackContent
+          title={t`Sending transaction`}
+          message={t`Please wait.`}
+          icon={<Spinner size={48} animating />}
+          offmargin
+          offcard
+          offbackground
+        />
+      )}
+      {showRequest && isTxInfoLoaded() && (
+        <ScrollView style={styles.wide}>
+          <TouchableWithoutFeedback>
+            <View style={styles.wrapper}>
+              <View style={styles.content}>
+                <DappContainer dapp={dapp} />
+                <NanoContractExecInfo
+                  nc={ncToAccept}
+                  onSelectAddress={toggleSelectAddressModal}
+                />
+                <NanoContractActions
+                  ncActions={nc.actions}
+                  tokens={knownTokens}
+                  error={knownTokens.error}
+                />
+                <NanoContractMethodArgs
+                  blueprintId={nc.blueprintId}
+                  method={nc.method}
+                  ncArgs={nc.args}
+                />
+
+                {/* User actions */}
                 <View style={styles.actionContainer}>
                   <NewHathorButton
-                    title={t`Register Nano Contract`}
-                    onPress={onRegisterNanoContract}
+                    title={t`Accept Transaction`}
+                    onPress={onAcceptTransaction}
                   />
                   <NewHathorButton
                     title={t`Decline Transaction`}
@@ -237,68 +310,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
                     danger
                   />
                 </View>
-              )}
-            />
-          )}
-        </View>
-      )}
-      {showRequest && (
-        <ScrollView style={styles.wide}>
-          <TouchableWithoutFeedback>
-            <View style={styles.wrapper}>
-              {isTxInfoLoading() && (
-                <FeedbackContent
-                  title={t`Loading`}
-                  message={t`Loading transaction information.`}
-                  icon={<Spinner size={48} animating />}
-                  offmargin
-                  offcard
-                  offbackground
-                />
-              )}
-              {isTxInfoLoaded() && (
-                <View style={styles.content}>
-                  <DappContainer dapp={dapp} />
-                  <NanoContractExecInfo
-                    nc={ncToAccept}
-                    onSelectAddress={toggleSelectAddressModal}
-                  />
-                  <NanoContractActions
-                    ncActions={nc.actions}
-                    tokens={knownTokens}
-                    error={knownTokens.error}
-                  />
-                  <NanoContractMethodArgs
-                    blueprintId={nc.blueprintId}
-                    method={nc.method}
-                    ncArgs={nc.args}
-                  />
-
-                  {/* User actions */}
-                  <View style={styles.actionContainer}>
-                    <NewHathorButton
-                      title={t`Accept Transaction`}
-                      onPress={onAcceptTransaction}
-                    />
-                    <NewHathorButton
-                      title={t`Decline Transaction`}
-                      onPress={onDeclineTransaction}
-                      secondary
-                      danger
-                    />
-                  </View>
-                </View>
-              )}
-              {isTxProcessing() && (
-                <FeedbackContent
-                  title={t`Sending transaction`}
-                  message={t`Please wait.`}
-                  icon={<Spinner size={48} animating />}
-                  offmargin
-                  offcard
-                  offbackground
-                />
-              )}
+              </View>
             </View>
           </TouchableWithoutFeedback>
         </ScrollView>
@@ -337,7 +349,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
 
 const styles = StyleSheet.create({
   wide: {
-    width: '100%'
+    width: '100%',
   },
   wrapper: {
     flex: 1,
@@ -353,6 +365,11 @@ const styles = StyleSheet.create({
   balanceReceived: {
     color: 'hsla(180, 85%, 34%, 1)',
     fontWeight: 'bold',
+  },
+  feedbackActionContainer: {
+    flexDirection: 'column',
+    gap: 8,
+    paddingTop: 32,
   },
   actionContainer: {
     flexDirection: 'column',
