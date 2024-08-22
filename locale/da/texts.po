@@ -432,7 +432,7 @@ msgstr "Ord"
 msgid "Enter your seed words separated by space"
 msgstr "Indtast dine seed-ord adskilt med mellemrum"
 
-#: src/components/NanoContract/NanoContractDetails.js:194
+#: src/components/NanoContract/NanoContractDetails.js:238
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:289
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
@@ -1046,37 +1046,37 @@ msgstr ""
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr ""
 
-#: src/sagas/networkSettings.js:86
+#: src/sagas/networkSettings.js:85
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:93
+#: src/sagas/networkSettings.js:92
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:100
+#: src/sagas/networkSettings.js:99
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:107
+#: src/sagas/networkSettings.js:106
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:114
+#: src/sagas/networkSettings.js:113
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:121
+#: src/sagas/networkSettings.js:120
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:128
+#: src/sagas/networkSettings.js:127
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
 #.  If we fall into this situation, the app should be killed
 #.  for the custom new network settings take effect.
-#: src/sagas/networkSettings.js:291
+#: src/sagas/networkSettings.js:279
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 
