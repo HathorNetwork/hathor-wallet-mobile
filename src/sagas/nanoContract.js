@@ -15,7 +15,6 @@ import {
   all,
   put,
   call,
-  delay,
   debounce,
 } from 'redux-saga/effects';
 import { t } from 'ttag';
@@ -35,8 +34,9 @@ import {
 } from '../actions';
 import { logger } from '../logger';
 import { NANO_CONTRACT_TX_HISTORY_SIZE } from '../constants';
-import { getNanoContractFeatureToggle } from '../utils';
+import { consumeGenerator, getNanoContractFeatureToggle } from '../utils';
 import { getRegisteredNanoContracts } from './helpers';
+import { isWalletServiceEnabled } from './wallet';
 
 const log = logger('nano-contract-saga');
 
@@ -96,7 +96,15 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  const isAddressMine = yield call(wallet.isAddressMine.bind(wallet), address);
+  // XXX: Wallet Service doesn't implement isAddressMine.
+  // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
+  // Default to `false` if using Wallet Service.
+  let isAddressMine = false;
+  const useWalletService = yield call(isWalletServiceEnabled);
+  if (!useWalletService) {
+    isAddressMine = yield call([wallet, wallet.isAddressMine], address);
+  }
+
   if (!isAddressMine) {
     log.debug('Fail registering Nano Contract because address do not belongs to this wallet.');
     yield put(nanoContractRegisterFailure(failureMessage.addressNotMine));
@@ -150,7 +158,6 @@ export function* registerNanoContract({ payload }) {
  *
  * @typedef {Object} RawNcTxHistoryResponse
  * @property {boolean} success
- * @property {number|null} after
  * @property {RawNcTxHistory} history
  */
 
@@ -170,38 +177,65 @@ export function* registerNanoContract({ payload }) {
 
 /**
  * Fetch history from Nano Contract wallet's API.
- * @param {string} ncId Nano Contract ID
- * @param {number} count Maximum quantity of history items
- * @param {string} after Transaction hash to start to get items
- * @param {Object} wallet Wallet instance from redux state
+ * @req {Object} req
+ * @param {string} req.ncId Nano Contract ID
+ * @param {number} req.count Maximum quantity of items to fetch
+ * @param {string} req.before Transaction hash to start to get newer items
+ * @param {string} req.after Transaction hash to start to get older items
+ * @param {Object} req.wallet Wallet instance from redux state
+ *
+ * @returns {{
+ *   history: {};
+ * }}
  *
  * @throws {Error} when request code is greater then 399 or when response's success is false
  */
-export async function fetchHistory(ncId, count, after, wallet) {
+export async function fetchHistory(req) {
+  const {
+    wallet,
+    ncId,
+    count,
+    after,
+    before,
+  } = req;
   /**
    * @type {RawNcTxHistoryResponse} response
    */
-  const response = await ncApi.getNanoContractHistory(ncId, count, after);
+  const response = await ncApi.getNanoContractHistory(
+    ncId,
+    count,
+    after || null,
+    before || null,
+  );
   const { success, history: rawHistory } = response;
 
   if (!success) {
     throw new Error('Failed to fetch nano contract history');
   }
 
-  const history = [];
-  for (const rawTx of rawHistory) {
+  /* TODO: Make it run concurrently while guaranting the order.
+  /* see https://github.com/HathorNetwork/hathor-wallet-mobile/issues/514
+   */
+  const historyNewestToOldest = new Array(rawHistory.length)
+  for (let idx = 0; idx < rawHistory.length; idx += 1) {
+    const rawTx = rawHistory[idx];
     const network = wallet.getNetworkObject();
     const caller = addressUtils.getAddressFromPubkey(rawTx.nc_pubkey, network).base58;
-    // XXX: Wallet Service Wallet doesn't implement isAddressMine.
-    // It means this method can't run under wallet-service without
-    // throwing an exception.
-    // eslint-disable-next-line no-await-in-loop
-    const isMine = await wallet.isAddressMine(caller);
+    // XXX: Wallet Service doesn't implement isAddressMine.
+    // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
+    // Default to `false` if using Wallet Service.
+    let isMine = false;
+    const useWalletService = consumeGenerator(isWalletServiceEnabled());
+    if (!useWalletService) {
+      // eslint-disable-next-line no-await-in-loop
+      isMine = await wallet.isAddressMine(caller);
+    }
     const actions = rawTx.nc_context.actions.map((each) => ({
       type: each.type, // 'deposit' or 'withdrawal'
       uid: each.token_uid,
       amount: each.amount,
     }));
+
     const tx = {
       txId: rawTx.hash,
       timestamp: rawTx.timestamp,
@@ -215,15 +249,10 @@ export async function fetchHistory(ncId, count, after, wallet) {
       isMine,
       actions,
     };
-    history.push(tx);
+    historyNewestToOldest[idx] = tx;
   }
 
-  let next = after;
-  if (history && history.length > 0) {
-    next = history[history.length - 1].txId;
-  }
-
-  return { history, next };
+  return { history: historyNewestToOldest };
 }
 
 /**
@@ -231,13 +260,13 @@ export async function fetchHistory(ncId, count, after, wallet) {
  * @param {{
  *   payload: {
  *     ncId: string;
- *     after: string;
+ *     before?: string;
+ *     after?: string;
  *   }
  * }} action with request payload.
  */
 export function* requestHistoryNanoContract({ payload }) {
-  const { ncId, after } = payload;
-  const count = NANO_CONTRACT_TX_HISTORY_SIZE;
+  const { ncId, before, after } = payload;
   log.debug('Start processing request for nano contract transaction history...');
 
   const historyMeta = yield select((state) => state.nanoContract.historyMeta);
@@ -265,24 +294,33 @@ export function* requestHistoryNanoContract({ payload }) {
     return;
   }
 
-  if (after == null) {
+  if (before == null && after == null) {
     // it clean the history when starting load from the beginning
+    log.debug('Cleaning previous history to start over.');
     yield put(nanoContractHistoryClean({ ncId }));
   }
 
   try {
-    // fetch from fullnode
-    const { history, next } = yield call(fetchHistory, ncId, count, after, wallet);
-
-    if (after != null) {
-      // The first load has always `after` equals null. The first load means to be fast,
-      // but the subsequent ones are all request by user and we want slow down multiple
-      // calls to this effect.
-      yield delay(1000)
-    }
+    const req = {
+      wallet,
+      ncId,
+      before,
+      after,
+      count: NANO_CONTRACT_TX_HISTORY_SIZE,
+    };
+    const { history } = yield call(fetchHistory, req);
 
     log.debug('Success fetching Nano Contract history.');
-    yield put(nanoContractHistorySuccess({ ncId, history, after: next }));
+    if (before != null) {
+      log.debug('Adding beforeHistory.');
+      yield put(nanoContractHistorySuccess({ ncId, beforeHistory: history }));
+    } else if (after != null) {
+      log.debug('Adding afterHistory.');
+      yield put(nanoContractHistorySuccess({ ncId, afterHistory: history }));
+    } else {
+      log.debug('Initializing history.');
+      yield put(nanoContractHistorySuccess({ ncId, history }));
+    }
   } catch (error) {
     log.error('Error while fetching Nano Contract history.', error);
     // break loading process and give feedback to user
