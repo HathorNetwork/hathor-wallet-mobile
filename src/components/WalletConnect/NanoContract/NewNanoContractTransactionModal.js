@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { t } from 'ttag';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { ModalBase } from '../../ModalBase';
 import { walletConnectReject } from '../../../actions';
 import { WarnDisclaimer } from '../WarnDisclaimer';
@@ -21,9 +21,6 @@ export const NewNanoContractTransactionModal = ({
   onDismiss,
   data,
 }) => {
-  const isRetrying = useSelector(({ walletConnect }) => (
-    walletConnect.newNanoContractTransaction.retrying
-  ));
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
@@ -38,10 +35,8 @@ export const NewNanoContractTransactionModal = ({
   };
 
   useEffect(() => {
-    if (isRetrying) {
-      navigatesToNewNanoContractScreen();
-    }
-  }, [isRetrying]);
+    navigatesToNewNanoContractScreen();
+  }, []);
 
   return (
     <ModalBase show onDismiss={onModalDismiss}>
