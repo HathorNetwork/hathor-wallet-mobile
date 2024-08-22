@@ -1,5 +1,5 @@
 import { all, takeEvery, put, call, race, delay, select } from 'redux-saga/effects';
-import { config } from '@hathor/wallet-lib';
+import { config, helpersUtils } from '@hathor/wallet-lib';
 import { isEmpty } from 'lodash';
 import { t } from 'ttag';
 import {
@@ -22,7 +22,6 @@ import {
   STAGE_DEV_PRIVNET,
   STAGE_TESTNET,
   WALLET_SERVICE_REQUEST_TIMEOUT,
-  NETWORK_PRIVATENET,
 } from '../constants';
 import {
   getFullnodeNetwork,
@@ -154,7 +153,6 @@ export function* updateNetworkSettings(action) {
   // - walletServiceUrl has precedence
   // - nodeUrl as fallback
   let potentialNetwork;
-  let network;
   if (useWalletService && !isEmpty(walletServiceUrl)) {
     log.debug('Configuring wallet-service on custom network settings.');
     config.setWalletServiceBaseUrl(walletServiceUrl);
@@ -194,17 +192,7 @@ export function* updateNetworkSettings(action) {
     return;
   }
 
-  // Validates the potential network and set the network accordingly
-  if (potentialNetwork === NETWORK_MAINNET) {
-    network = NETWORK_MAINNET;
-  } else if (potentialNetwork.includes(NETWORK_TESTNET)) {
-    network = NETWORK_TESTNET;
-  } else if (potentialNetwork.includes(NETWORK_PRIVATENET)) {
-    network = NETWORK_PRIVATENET;
-  } else {
-    yield put(networkSettingsUpdateFailure());
-    return;
-  }
+  const network = helpersUtils.getNetworkFromFullNodeNetwork(potentialNetwork);
 
   let stage;
   if (network === NETWORK_MAINNET) {
