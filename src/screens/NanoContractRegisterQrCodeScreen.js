@@ -60,7 +60,7 @@ export const NanoContractRegisterQrCodeScreen = ({ navigation }) => {
           <QRCodeReader
             navigation={navigation}
             onSuccess={onSuccess}
-            bottomText={t`Scan the token QR code`}
+            bottomText={t`Scan the nano contract ID QR code`}
           />
         </View>
       </View>

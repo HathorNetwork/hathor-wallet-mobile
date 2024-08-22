@@ -468,7 +468,6 @@ const AppStack = () => {
         <Stack.Screen name='PaymentRequestDetail' component={PaymentRequestDetail} />
         <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
         <Stack.Screen name='RegisterNanoContract' component={RegisterNanoContractStack} />
-        <Stack.Screen name='Register' component={RegisterTokenStack} />
         <Stack.Screen name='ChangeToken' component={ChangeToken} />
         <Stack.Screen name={NetworkSettingsFlowNav} component={NetworkSettingsFlowStack} />
         <Stack.Screen
