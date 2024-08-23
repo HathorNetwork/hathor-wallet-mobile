@@ -14,6 +14,7 @@ import {
   _DEFAULT_TOKEN as DEFAULT_TOKEN,
   _PRIMARY_COLOR as PRIMARY_COLOR,
   _SENTRY_DSN as SENTRY_DSN,
+  DEFAULT_EVENT_TOKEN,
 } from './config';
 
 /**
@@ -38,7 +39,7 @@ export const NETWORK_MAINNET = 'mainnet';
  *   }
  * }}
  */
-export const INITIAL_TOKENS = { [DEFAULT_TOKEN.uid]: DEFAULT_TOKEN };
+export const INITIAL_TOKENS = { [DEFAULT_TOKEN.uid]: DEFAULT_TOKEN, [DEFAULT_EVENT_TOKEN.uid]: DEFAULT_EVENT_TOKEN };
 
 /**
  * Wallet will lock if app goes to background for more than LOCK_TIMEOUT seconds
