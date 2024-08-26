@@ -65,6 +65,9 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
     return null;
   }
   const dispatch = useDispatch();
+  const network = useSelector((state) => new Network(state.networkSettings.network));
+  const tokens = useSelector((state) => state.tokens);
+  const deserializer = new NanoContractDeserializer(network);
 
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[blueprintId]);
   // It results a in a list of entries like:
@@ -125,7 +128,13 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
                   </View>
                   <View style={styles.argValue}>
                     <Text style={styles.argValueText}>
-                      <ArgValue type={argType} value={argValue} />
+                      <ArgValue
+                        type={argType}
+                        value={argValue}
+                        network={network}
+                        tokens={tokens}
+                        deserializer={deserializer}
+                      />
                     </Text>
                   </View>
                 </View>
@@ -155,12 +164,11 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
  * @param {Object} props
  * @param {string} props.type An argument type
  * @param {string} props.value An argument value
+ * @param {Object} props.network A network object
+ * @param {Object} props.tokens A map of registered tokens
+ * @param {Object} props.deserializer The Nano Contract deserializer
  */
-const ArgValue = ({ type, value }) => {
-  const network = useSelector((state) => new Network(state.networkSettings.network));
-  const tokens = useSelector((state) => state.tokens);
-  const deserializer = new NanoContractDeserializer(network);
-
+const ArgValue = ({ type, value, network, tokens, deserializer }) => {
   if (type === 'Amount') {
     return renderValue(value);
   }
