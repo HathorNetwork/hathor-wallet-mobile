@@ -199,8 +199,6 @@ export const TX_MINING_SERVICE_NANO_TESTNET_URL = 'https://txmining.nano-testnet
 export const PRE_SETTINGS_NANO_TESTNET = {
   stage: STAGE_TESTNET,
   network: NETWORK_NANO_TESTNET,
-  walletServiceUrl: WALLET_SERVICE_TESTNET_BASE_URL,
-  walletServiceWsUrl: WALLET_SERVICE_TESTNET_BASE_WS_URL,
   nodeUrl: NODE_SERVER_NANO_TESTNET_URL,
   explorerUrl: EXPLORER_NANO_TESTNET_URL,
   explorerServiceUrl: EXPLORER_SERVICE_TESTNET_URL,
