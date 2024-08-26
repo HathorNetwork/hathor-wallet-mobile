@@ -16,6 +16,7 @@ import SlideIndicatorBar from './SlideIndicatorBar';
 import CopyClipboard from './CopyClipboard';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
+import { TransactionStatusLabel } from './TransactionStatusLabel';
 
 class TxDetailsModal extends Component {
   style = StyleSheet.create({
@@ -55,7 +56,7 @@ class TxDetailsModal extends Component {
      * }} TxDetailsModal properties
      */
     const { token, tx, isNFT } = this.props;
-    const { txId, ncId, ncMethod, ncCaller } = tx;
+    const { txId, ncId, ncMethod, ncCaller, isVoided } = tx;
     const ncCallerAddr = ncCaller && ncCaller.base58;
 
     const fullTokenStr = getTokenLabel(token);
@@ -106,8 +107,8 @@ class TxDetailsModal extends Component {
                         title={t`Nano Contract Status`}
                         text={(
                           <TransactionStatusLabel
-                            hasFirstBlock={hasFirstBlock}
                             isVoided={isVoided}
+                            hasFirstBlock={null}
                           />
                         )}
                       />
