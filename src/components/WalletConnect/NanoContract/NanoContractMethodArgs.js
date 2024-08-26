@@ -158,6 +158,8 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
  */
 const ArgValue = ({ type, value }) => {
   const network = useSelector((state) => new Network(state.networkSettings.network));
+  const tokens = useSelector((state) => state.tokens);
+
   if (type === 'Amount') {
     return renderValue(value);
   }
@@ -181,8 +183,10 @@ const ArgValue = ({ type, value }) => {
     if (value === DEFAULT_TOKEN.uid) {
       return DEFAULT_TOKEN.symbol;
     }
-    // XXX: We may want to extend to show the token symbol of
-    // registered tokens.
+
+    if (value in tokens) {
+      return tokens[value].symbol;
+    }
   }
 
   return value;
