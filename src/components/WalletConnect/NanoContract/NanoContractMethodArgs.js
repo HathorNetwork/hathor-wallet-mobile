@@ -14,7 +14,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
-import { Network } from '@hathor/wallet-lib';
+import { NanoContractDeserializer, Network } from '@hathor/wallet-lib';
 import { COLORS } from '../../../styles/themes';
 import { commonStyles } from '../theme';
 import { onExceptionCaptured } from '../../../actions';
@@ -159,6 +159,7 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
 const ArgValue = ({ type, value }) => {
   const network = useSelector((state) => new Network(state.networkSettings.network));
   const tokens = useSelector((state) => state.tokens);
+  const deserializer = new NanoContractDeserializer(network);
 
   if (type === 'Amount') {
     return renderValue(value);
@@ -187,6 +188,10 @@ const ArgValue = ({ type, value }) => {
     if (value in tokens) {
       return tokens[value].symbol;
     }
+  }
+
+  if (type === 'Address') {
+    return deserializer.toAddress(Buffer.from(value, 'hex'));
   }
 
   return value;
