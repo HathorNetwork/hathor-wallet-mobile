@@ -446,7 +446,7 @@ msgstr "Digite suas palavras separadas por espaços"
 #: src/components/NanoContract/NanoContractDetails.js:238
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:289
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:161
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:168
 msgid "Try again"
 msgstr "Tente novamente"
 
@@ -502,6 +502,22 @@ msgstr "Saldo Disponível"
 #: src/screens/MainScreen.js:544
 msgid "Locked"
 msgstr "Bloqueado"
+
+#.  translator: Used when the QR Code Scanner is opened, and user will manually
+#.  enter the information.
+#: src/screens/NanoContractRegisterQrCodeScreen.js:26
+#: src/screens/RegisterToken.js:27 src/screens/SendScanQRCode.js:87
+msgid "Manual info"
+msgstr "Digitar"
+
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:251
+#: src/screens/NanoContractRegisterQrCodeScreen.js:48
+msgid "Nano Contract Registration"
+msgstr "Registro do Nano Contract"
+
+#: src/screens/NanoContractRegisterQrCodeScreen.js:63
+msgid "Scan the nano contract ID QR code"
+msgstr "Leia o QR code do Nano Contract ID"
 
 #: src/screens/PaymentRequestDetail.js:88
 #, javascript-format
@@ -588,12 +604,6 @@ msgstr "Requisição de Pagamento"
 #: src/screens/Receive.js:107
 msgid "RECEIVE"
 msgstr "RECEBER"
-
-#.  translator: Used when the QR Code Scanner is opened, and user will manually
-#.  enter the information.
-#: src/screens/RegisterToken.js:27 src/screens/SendScanQRCode.js:87
-msgid "Manual info"
-msgstr "Digitar"
 
 #: src/screens/RegisterToken.js:42 src/screens/RegisterTokenManual.js:126
 msgid "REGISTER TOKEN"
@@ -979,22 +989,22 @@ msgstr "Detalhes do Nano Contract"
 msgid "Nano Contract ID is required."
 msgstr "ID do Nano Contract é obrigatório."
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:151
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:158
 msgid "See contract"
 msgstr "Ver contrato"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:169
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:176
 msgid "Load First Addresses Error"
 msgstr "Erro ao carregar primeiro endereço da wallet"
 
 #: src/components/NanoContract/NanoContractDetails.js:202
 #: src/components/NanoContract/SelectAddressModal.js:105
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:209
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:177
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:184
 msgid "Loading"
 msgstr "Carregando"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:178
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:185
 msgid "Loading first wallet address."
 msgstr "Carregando primeiro endereço da wallet."
 
@@ -1003,29 +1013,25 @@ msgstr "Carregando primeiro endereço da wallet."
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/TxDetailsModal.js:106
 #: src/components/WalletConnect/NanoContract/NanoContractExecInfo.js:83
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:187
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:194
 msgid "Nano Contract ID"
 msgstr "ID do Nano Contract"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:195
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:202
 msgid "Wallet Address"
 msgstr "Endereço da Carteira"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:205
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:212
 msgid "If you want to change the wallet address, you will be able to do"
 msgstr "Se deseja alterar o endereço de assinatura, você pode alterar"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:207
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:214
 msgid "after the contract is registered."
 msgstr "depois do contrato ser registrado."
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:226
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:233
 msgid "Register Nano Contract"
 msgstr "Registrar Nano Contract"
-
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:244
-msgid "Nano Contract Registration"
-msgstr "Registro do Nano Contract"
 
 #: src/screens/NanoContract/NanoContractTransactionScreen.js:39
 msgid "Nano Contract Transaction"
@@ -1071,37 +1077,37 @@ msgstr "Nano Contract não registrado."
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr "Error ao fazer download do histórico de transações do Nano Contract."
 
-#: src/sagas/networkSettings.js:86
+#: src/sagas/networkSettings.js:85
 msgid "Custom Network Settings cannot be empty."
 msgstr "As Configurações de Rede não podem estar vazias."
 
-#: src/sagas/networkSettings.js:93
+#: src/sagas/networkSettings.js:92
 msgid "explorerUrl should be a valid URL."
 msgstr "explorerUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:100
+#: src/sagas/networkSettings.js:99
 msgid "explorerServiceUrl should be a valid URL."
 msgstr "explorerServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:107
+#: src/sagas/networkSettings.js:106
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr "txMiningServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:114
+#: src/sagas/networkSettings.js:113
 msgid "nodeUrl should be a valid URL."
 msgstr "nodeUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:121
+#: src/sagas/networkSettings.js:120
 msgid "walletServiceUrl should be a valid URL."
 msgstr "walletServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:128
+#: src/sagas/networkSettings.js:127
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr "walletServiceWsUrl deve ser uma URL válida."
 
 #.  If we fall into this situation, the app should be killed
 #.  for the custom new network settings take effect.
-#: src/sagas/networkSettings.js:291
+#: src/sagas/networkSettings.js:279
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 "Wallet não encontrada ao persistir a configuração personalizada da rede."
@@ -1596,7 +1602,6 @@ msgid "Deposit ${ tokenSymbol }"
 msgstr "Depósito ${ tokenSymbol }"
 
 #: src/components/NanoContract/NanoContractTransactionActionListItem.js:109
-#, javascript-format
 msgid "Withdrawal ${ tokenSymbol }"
 msgstr "Saque ${ tokenSymbol }"
 

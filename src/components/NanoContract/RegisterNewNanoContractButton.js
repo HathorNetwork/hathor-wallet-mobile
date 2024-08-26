@@ -14,7 +14,7 @@ import SimpleButton from '../SimpleButton';
 export const RegisterNanoContract = () => {
   const navigation = useNavigation();
   const navigatesToRegisterNanoContract = () => {
-    navigation.navigate('NanoContractRegisterScreen');
+    navigation.navigate('RegisterNanoContract');
   };
 
   return (
