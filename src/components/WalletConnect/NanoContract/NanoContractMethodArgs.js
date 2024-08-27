@@ -84,11 +84,7 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
 
     const methodInfo = getMethodInfoFromBlueprint(blueprintInfo, method);
     if (methodInfo) {
-      return ncArgs.map((arg, idx) => [
-        methodInfo.args[idx]?.name || t`Position ${idx}`,
-        arg,
-        methodInfo.args[idx]?.type || 'str',
-      ]);
+      return ncArgs.map((arg, idx) => [methodInfo.args[idx].name, arg, methodInfo.args[idx].type]);
     }
 
     // Send this condition to sentry because it should never happen.
