@@ -18,6 +18,9 @@ import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE } from './
 import { STORE } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
+import { logger } from './logger';
+
+const log = logger('utils');
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
@@ -519,7 +522,7 @@ export const parseScriptData = (scriptData, network) => {
     const script = hathorLib.bufferUtils.hexToBuffer(scriptData);
     return hathorLib.scriptsUtils.parseScript(script, network);
   } catch (error) {
-    console.error('Error parsing script data.', error);
+    log.error('Error parsing script data.', error);
     // Avoid throwing exception when we can't parse the script no matter the reason
     return null;
   }
