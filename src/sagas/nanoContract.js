@@ -46,7 +46,7 @@ export const failureMessage = {
   walletNotReadyError: t`Wallet is not ready yet to register a Nano Contract.`,
   addressNotMine: t`The informed address does not belong to the wallet.`,
   nanoContractStateNotFound: t`Nano Contract not found.`,
-  nanoContractFailure: t`Error while trying register Nano Contract.`,
+  nanoContractFailure: t`Error while trying to register Nano Contract.`,
   nanoContractInvalid: t`Invalid transaction to register as Nano Contract.`,
   blueprintInfoNotFound: t`Blueprint not found.`,
   blueprintInfoFailure: t`Couldn't get Blueprint info.`,
