@@ -145,19 +145,19 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
 };
 
 /**
- * Component resposible to render the appropriate format for the value
+ * Component responsible to render the appropriate format for the value
  * taking in consideration the type.
  *
  * Remarks
- * The values received in here when derived from 'byte' type like
- * 'TxOutputScript', 'TokenUid' and 'VertexId' are already in its
+ * The values received here when derived from 'byte' type like
+ * 'TxOutputScript', 'TokenUid' and 'VertexId' are already in their
  * hexadecimal format.
  *
  * Values of type 'Address', which also derives from 'byte' are
- * in its base58 format.
+ * in base58 format.
  *
- * Values of type 'SignedData[Result]' arrives here using its data
- * part already.
+ * Values of type 'SignedData[Result]' arrives here in presentation
+ * format.
  *
  * @param {Object} props
  * @param {string} props.type An argument type

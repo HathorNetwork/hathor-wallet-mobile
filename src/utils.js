@@ -518,8 +518,9 @@ export const parseScriptData = (scriptData, network) => {
   try {
     const script = hathorLib.bufferUtils.hexToBuffer(scriptData);
     return hathorLib.scriptsUtils.parseScript(script, network);
-  } catch {
-    // Avoid to throw exception when we can't parse the script no matter the reason
+  } catch (error) {
+    console.error('Error parsing script data.', error);
+    // Avoid throwing exception when we can't parse the script no matter the reason
     return null;
   }
 }
