@@ -14,7 +14,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
-import { NanoContractDeserializer, Network } from '@hathor/wallet-lib';
+import { Network } from '@hathor/wallet-lib';
 import { COLORS } from '../../../styles/themes';
 import { commonStyles } from '../theme';
 import { onExceptionCaptured } from '../../../actions';
@@ -67,7 +67,6 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
   const dispatch = useDispatch();
   const network = useSelector((state) => new Network(state.networkSettings.network));
   const tokens = useSelector((state) => state.tokens);
-  const deserializer = new NanoContractDeserializer(network);
 
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[blueprintId]);
   // It results a in a list of entries like:
@@ -85,7 +84,11 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
 
     const methodInfo = getMethodInfoFromBlueprint(blueprintInfo, method);
     if (methodInfo) {
-      return ncArgs.map((arg, idx) => [methodInfo.args[idx].name, arg, methodInfo.args[idx].type]);
+      return ncArgs.map((arg, idx) => [
+        methodInfo.args[idx]?.name || t`Position ${idx}`,
+        arg,
+        methodInfo.args[idx]?.type || 'str',
+      ]);
     }
 
     // Send this condition to sentry because it should never happen.
@@ -133,7 +136,6 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
                         value={argValue}
                         network={network}
                         tokens={tokens}
-                        deserializer={deserializer}
                       />
                     </Text>
                   </View>
@@ -166,9 +168,8 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
  * @param {string} props.value An argument value
  * @param {Object} props.network A network object
  * @param {Object} props.tokens A map of registered tokens
- * @param {Object} props.deserializer The Nano Contract deserializer
  */
-const ArgValue = ({ type, value, network, tokens, deserializer }) => {
+const ArgValue = ({ type, value, network, tokens }) => {
   if (type === 'Amount') {
     return renderValue(value);
   }
@@ -196,10 +197,6 @@ const ArgValue = ({ type, value, network, tokens, deserializer }) => {
     if (value in tokens) {
       return tokens[value].symbol;
     }
-  }
-
-  if (type === 'Address') {
-    return deserializer.toAddress(Buffer.from(value, 'hex'));
   }
 
   return value;
