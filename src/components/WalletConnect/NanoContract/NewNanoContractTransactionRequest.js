@@ -100,6 +100,8 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const onAcceptTransaction = () => {
     // Update the caller with the address selected by the user.
     const acceptedNc = { ...nc, caller: ncAddress };
+    // Restore ready status to Nano Contract registration state
+    dispatch(nanoContractRegisterReady());
     // Signal the user has accepted the current request and pass the accepted data.
     dispatch(walletConnectAccept(acceptedNc));
   };
