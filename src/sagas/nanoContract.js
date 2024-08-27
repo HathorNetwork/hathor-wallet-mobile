@@ -8,6 +8,7 @@
 import {
   ncApi,
   addressUtils,
+  nanoUtils,
 } from '@hathor/wallet-lib';
 import {
   takeEvery,
@@ -45,7 +46,8 @@ export const failureMessage = {
   walletNotReadyError: t`Wallet is not ready yet to register a Nano Contract.`,
   addressNotMine: t`The informed address does not belong to the wallet.`,
   nanoContractStateNotFound: t`Nano Contract not found.`,
-  nanoContractStateFailure: t`Error while trying to get Nano Contract state.`,
+  nanoContractFailure: t`Error while trying register Nano Contract.`,
+  nanoContractInvalid: t`Invalid transaction to register as Nano Contract.`,
   blueprintInfoNotFound: t`Blueprint not found.`,
   blueprintInfoFailure: t`Couldn't get Blueprint info.`,
   notRegistered: t`Nano Contract not registered.`,
@@ -111,19 +113,22 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  let ncHistory = null;
+  let tx;
   try {
-    ncHistory = yield call([ncApi, ncApi.getNanoContractHistory], ncId, 1);
+    const response = yield call([wallet, wallet.getFullTxById], ncId);
+    tx = response.tx;
   } catch (error) {
-    if (error instanceof NanoRequest404Error) {
-      yield put(nanoContractRegisterFailure(failureMessage.nanoContractStateNotFound));
-    } else {
-      log.error('Error while registering Nano Contract.', error);
-      yield put(nanoContractRegisterFailure(failureMessage.nanoContractStateFailure));
-    }
+    log.debug('Fail registering Nano Contract while getting full transaction by ID.');
+    yield put(nanoContractRegisterFailure(failureMessage.nanoContractFailure));
     return;
   }
-  const { nc_blueprint_id: blueprintId } = ncHistory.history[0];
+
+  if (!nanoUtils.isNanoContractCreateTx(tx)) {
+    log.debug('Fail registering Nano Contract because transaction is not calling initialize.');
+    yield put(nanoContractRegisterFailure(failureMessage.nanoContractInvalid));
+    return;
+  }
+  const { nc_blueprint_id: blueprintId } = tx;
 
   let blueprintName = null;
   try {
