@@ -57,7 +57,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:427
+#: src/models.js:107 src/utils.js:426
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -1030,7 +1030,7 @@ msgid "Nano Contract not found."
 msgstr ""
 
 #: src/sagas/nanoContract.js:49
-msgid "Error while trying register Nano Contract."
+msgid "Error while trying to register Nano Contract."
 msgstr ""
 
 #: src/sagas/nanoContract.js:50
