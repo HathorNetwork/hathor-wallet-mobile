@@ -141,7 +141,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
       // Restore ready status to Nano Contract registration state if
       // we have had a registration while handling a new transaction request
       dispatch(nanoContractRegisterReady());
-    }
+    };
   }, []);
 
   // This effect should run at most twice:
