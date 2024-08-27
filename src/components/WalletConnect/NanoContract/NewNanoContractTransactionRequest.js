@@ -100,8 +100,6 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const onAcceptTransaction = () => {
     // Update the caller with the address selected by the user.
     const acceptedNc = { ...nc, caller: ncAddress };
-    // Restore ready status to Nano Contract registration state
-    dispatch(nanoContractRegisterReady());
     // Signal the user has accepted the current request and pass the accepted data.
     dispatch(walletConnectAccept(acceptedNc));
   };
@@ -118,9 +116,6 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   };
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
-    // Restore ready status to Nano Contract registration state if
-    // we have had a registration while handling a new transaction request
-    dispatch(nanoContractRegisterReady());
     dispatch(walletConnectReject());
     navigation.goBack();
   };
@@ -138,6 +133,16 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   ), [notInitialize, registeredNc]); 
   // It results in true for registered nc and initialize request
   const showRequest = !notRegistered;
+
+  // Mount: do nothing
+  useEffect(() => {
+    // Unmount
+    return () => {
+      // Restore ready status to Nano Contract registration state if
+      // we have had a registration while handling a new transaction request
+      dispatch(nanoContractRegisterReady());
+    }
+  }, []);
 
   // This effect should run at most twice:
   // 1. when in the construct phase
