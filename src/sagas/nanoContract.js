@@ -111,9 +111,9 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  let ncState = null;
+  let ncHistory = null;
   try {
-    ncState = yield call([ncApi, ncApi.getNanoContractState], ncId);
+    ncHistory = yield call([ncApi, ncApi.getNanoContractHistory], ncId, 1);
   } catch (error) {
     if (error instanceof NanoRequest404Error) {
       yield put(nanoContractRegisterFailure(failureMessage.nanoContractStateNotFound));
@@ -123,12 +123,29 @@ export function* registerNanoContract({ payload }) {
     }
     return;
   }
+  const { nc_blueprint_id: blueprintId } = ncHistory.history[0];
+
+  let blueprintName = null;
+  try {
+    const blueprintInfo = yield call([ncApi, ncApi.getBlueprintInformation], blueprintId);
+    blueprintName = blueprintInfo.name;
+    // Also set blueprint on store
+    yield put(nanoContractBlueprintInfoSuccess(blueprintId, blueprintInfo));
+  } catch (error) {
+    if (error instanceof NanoRequest404Error) {
+      yield put(nanoContractRegisterFailure(failureMessage.blueprintInfoNotFound));
+    } else {
+      log.error('Error while registering Nano Contract.', error);
+      yield put(nanoContractRegisterFailure(failureMessage.blueprintInfoFailure));
+    }
+    return;
+  }
 
   const nc = {
     address,
     ncId,
-    blueprintName: ncState.blueprint_name,
-    blueprintId: ncState.blueprint_id,
+    blueprintId,
+    blueprintName,
   };
   yield call(wallet.storage.registerNanoContract.bind(wallet.storage), ncId, nc);
 
