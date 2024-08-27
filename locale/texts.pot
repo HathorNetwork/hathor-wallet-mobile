@@ -1010,39 +1010,43 @@ msgstr ""
 msgid "Contract successfully registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:44
+#: src/sagas/nanoContract.js:45
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:45
+#: src/sagas/nanoContract.js:46
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:46
+#: src/sagas/nanoContract.js:47
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:47
+#: src/sagas/nanoContract.js:48
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:48
-msgid "Error while trying to get Nano Contract state."
-msgstr ""
-
 #: src/sagas/nanoContract.js:49
-msgid "Blueprint not found."
+msgid "Error while trying to register Nano Contract."
 msgstr ""
 
 #: src/sagas/nanoContract.js:50
-msgid "Couldn't get Blueprint info."
+msgid "Invalid transaction to register as Nano Contract."
 msgstr ""
 
 #: src/sagas/nanoContract.js:51
-msgid "Nano Contract not registered."
+msgid "Blueprint not found."
 msgstr ""
 
 #: src/sagas/nanoContract.js:52
+msgid "Couldn't get Blueprint info."
+msgstr ""
+
+#: src/sagas/nanoContract.js:53
+msgid "Nano Contract not registered."
+msgstr ""
+
+#: src/sagas/nanoContract.js:54
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr ""
 
