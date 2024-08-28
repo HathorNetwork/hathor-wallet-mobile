@@ -49,6 +49,12 @@ export const DEFAULT_EVENT_TOKEN = {
 };
 
 /**
+ * Whether we should skip the words confirmation screen during
+ * new wallet creation
+ */
+export const SKIP_SEED_CONFIRMATION = true;
+
+/**
  * App's primary color (Hathor purple)
  */
 export const _PRIMARY_COLOR = '#8C46FF';
