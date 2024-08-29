@@ -41,7 +41,6 @@ export default () => {
           <SignMessageModal
             {...walletConnectModal}
             onDismiss={onDismiss}
-            baseStyles={baseStyles}
           />
         );
       case WalletConnectModalTypes.SEND_NANO_CONTRACT_TX:
@@ -49,7 +48,6 @@ export default () => {
           <NewNanoContractTransactionModal
             {...walletConnectModal}
             onDismiss={onDismiss}
-            baseStyles={baseStyles}
           />
         );
       default:
