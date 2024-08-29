@@ -68,7 +68,7 @@ msgstr "Endereço inválido"
 #. *
 #.          * @example
 #.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
-#.          
+#.
 #: src/workers/pushNotificationHandler.js:92
 #, javascript-format
 msgid ""
@@ -87,7 +87,7 @@ msgstr[1] ""
 #. *
 #.          * @example
 #.          * You have received 10 T2 and 5 T1 on a new transaction.
-#.          
+#.
 #: src/workers/pushNotificationHandler.js:105
 #, javascript-format
 msgid ""
@@ -99,7 +99,7 @@ msgstr ""
 #. *
 #.          * @example
 #.          * You have received 10 T2 on a new transaction.
-#.          
+#.
 #: src/workers/pushNotificationHandler.js:113
 msgid "You have received ${ _firstToken2 } on a new transaction."
 msgstr "Você recebeu ${ _firstToken2 } em uma nova transação."
@@ -309,7 +309,7 @@ msgstr "DETALHES DO TOKEN"
 
 #. *
 #.    * name {string} token name
-#.    
+#.
 #: src/screens/CreateTokenName.js:26
 msgid "0/30 characters"
 msgstr "0/30 caracteres"
@@ -516,9 +516,8 @@ msgid "Nano Contract Registration"
 msgstr "Registro do Nano Contract"
 
 #: src/screens/NanoContractRegisterQrCodeScreen.js:63
-#, fuzzy
 msgid "Scan the nano contract ID QR code"
-msgstr "Leia o QR code do token"
+msgstr "Escaneie o QR code do ID do Nano Contract"
 
 #: src/screens/PaymentRequestDetail.js:88
 #, javascript-format
@@ -596,7 +595,7 @@ msgstr ""
 
 #. *
 #.      * index {number} Selected index of the tab bar
-#.      
+#.
 #.  eslint thinks routes is not used, but TabView uses it
 #.  eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:31
@@ -940,7 +939,7 @@ msgstr ""
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:65
 msgid "walletServiceWsUrl is required when walletServiceUrl is filled."
 msgstr ""
-"walletServiceWsUrl é obrigatório quando walletServiceUrl está preenchido"
+"walletServiceWsUrl é obrigatório quando walletServiceUrl está preenchido."
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:232
 msgid "Node URL"
@@ -1062,17 +1061,15 @@ msgstr "O endereço informado não pertence a esta carteira."
 
 #: src/sagas/nanoContract.js:48
 msgid "Nano Contract not found."
-msgstr "Nano Contract não encontrado"
+msgstr "Nano Contract não encontrado."
 
 #: src/sagas/nanoContract.js:49
-#, fuzzy
 msgid "Error while trying to register Nano Contract."
-msgstr "Erro ao obter o estado do Nano Contract."
+msgstr "Erro ao tentar registrar o Nano Contract."
 
 #: src/sagas/nanoContract.js:50
-#, fuzzy
 msgid "Invalid transaction to register as Nano Contract."
-msgstr "A wallet não está pronta ainda para registrar Nano Contracts."
+msgstr "Nano Contract inválido."
 
 #: src/sagas/nanoContract.js:51
 msgid "Blueprint not found."
@@ -1503,7 +1500,7 @@ msgstr "Argumentos"
 
 #: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:96
 msgid "Loading arguments."
-msgstr "Carregando argumentos"
+msgstr "Carregando argumentos."
 
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:60
 msgid "You have received a new Nano Contract Transaction. Please"
@@ -1596,13 +1593,12 @@ msgid "Go back"
 msgstr "Voltar"
 
 #: src/components/NanoContract/NanoContractDetails.js:177
-#, fuzzy
 msgid "Load More"
-msgstr "Ler mais."
+msgstr "Carregar mais"
 
 #: src/components/NanoContract/NanoContractDetails.js:203
 msgid "Loading Nano Contract transactions."
-msgstr "Carregando transações do Nano Contract"
+msgstr "Carregando transações do Nano Contract."
 
 #: src/components/NanoContract/NanoContractDetails.js:217
 msgid "Nano Contract Transactions Error"
@@ -1621,24 +1617,21 @@ msgid "Unregister contract"
 msgstr "Desregistrar contract"
 
 #: src/components/NanoContract/NanoContractTransactionActionList.js:44
-#, fuzzy
 msgid "No Actions"
-msgstr "Nenhuma transação"
+msgstr "Nenhuma Action"
 
 #: src/components/NanoContract/NanoContractTransactionActionList.js:45
-#, fuzzy
 msgid "See full transaction details on Public Explorer."
-msgstr "Ver detalhes"
+msgstr "Ver detalhes completos da transação no Explorer Público."
 
 #: src/components/NanoContract/NanoContractTransactionActionListItem.js:108
-#, fuzzy, javascript-format
+#, javascript-format
 msgid "Deposit ${ tokenSymbol }"
-msgstr "${ tokenSymbol } Depósito"
+msgstr "Depósito ${ tokenSymbol }"
 
 #: src/components/NanoContract/NanoContractTransactionActionListItem.js:109
-#, fuzzy
 msgid "Withdrawal ${ tokenSymbol }"
-msgstr "${ tokenSymbol } Depósito"
+msgstr "Saque ${ tokenSymbol }"
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:93
 msgid "Date and Time"
