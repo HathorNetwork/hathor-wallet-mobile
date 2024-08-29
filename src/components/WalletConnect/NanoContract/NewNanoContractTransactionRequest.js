@@ -22,8 +22,8 @@ import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
   nanoContractBlueprintInfoRequest,
-  newNanoContactRetry,
-  newNanoContactRetryDismiss,
+  newNanoContractRetry,
+  newNanoContractRetryDismiss,
   setNewNanoContractStatusReady,
   walletConnectAccept,
   walletConnectReject,
@@ -157,7 +157,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
 
   const onFeedbackModalDismiss = () => {
     dispatch(setNewNanoContractStatusReady());
-    dispatch(newNanoContactRetryDismiss());
+    dispatch(newNanoContractRetryDismiss());
     navigation.goBack();
   };
 
@@ -168,7 +168,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
 
   const onTryAgain = () => {
     dispatch(setNewNanoContractStatusReady());
-    dispatch(newNanoContactRetry());
+    dispatch(newNanoContractRetry());
   };
 
   // Loading while downloading:
