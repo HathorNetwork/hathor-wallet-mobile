@@ -41,9 +41,6 @@ export default ({
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
-  // XXX: Make it navigates to readMoreUrl
-  const onReadMore = () => {};
-
   const onReject = () => {
     onDismiss();
     dispatch(walletConnectReject());
@@ -58,7 +55,7 @@ export default ({
     <ModalBase show onDismiss={onReject}>
       <ModalBase.Title>{t`New Sign Message Request`}</ModalBase.Title>
       <ModalBase.Body style={styles.body}>
-        <WarnDisclaimer onReadMore={onReadMore} />
+        <WarnDisclaimer />
         <Text style={styles.text}>
           {t`You have received a new Sign Message Request. Please`}
           <Text style={styles.bold}>
