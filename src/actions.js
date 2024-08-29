@@ -1254,14 +1254,14 @@ export const firstAddressFailure = (failurePayload) => ({
 /**
  * Signals that the user wants to attempt to retry the nano contract tx send
  */
-export const newNanoContactRetry = () => ({
+export const newNanoContractRetry = () => ({
   type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY,
 });
 
 /**
  * Signals that the user doesn't want to retry the new nano contract tx send
  */
-export const newNanoContactRetryDismiss = () => ({
+export const newNanoContractRetryDismiss = () => ({
   type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS,
 });
 
