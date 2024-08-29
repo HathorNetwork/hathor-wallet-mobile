@@ -14,6 +14,7 @@ import {
   _DEFAULT_TOKEN as DEFAULT_TOKEN,
   _PRIMARY_COLOR as PRIMARY_COLOR,
   _SENTRY_DSN as SENTRY_DSN,
+  DEFAULT_EVENT_TOKEN,
 } from './config';
 
 /**
@@ -38,7 +39,7 @@ export const NETWORK_MAINNET = 'mainnet';
  *   }
  * }}
  */
-export const INITIAL_TOKENS = { [DEFAULT_TOKEN.uid]: DEFAULT_TOKEN };
+export const INITIAL_TOKENS = { [DEFAULT_TOKEN.uid]: DEFAULT_TOKEN, [DEFAULT_EVENT_TOKEN.uid]: DEFAULT_EVENT_TOKEN };
 
 /**
  * Wallet will lock if app goes to background for more than LOCK_TIMEOUT seconds
@@ -189,6 +190,21 @@ export const NODE_SERVER_TESTNET_URL = 'https://node1.testnet.hathor.network/v1a
 export const EXPLORER_TESTNET_URL = 'https://explorer.testnet.hathor.network/';
 export const EXPLORER_SERVICE_TESTNET_URL = 'https://explorer-service.testnet.hathor.network/';
 export const TX_MINING_SERVICE_TESTNET_URL = 'https://txmining.testnet.hathor.network/';
+
+// Nano testnet settings:
+export const NETWORK_NANO_TESTNET = 'testnet';
+export const NODE_SERVER_NANO_TESTNET_URL = 'https://node1.nano-testnet.hathor.network/v1a/';
+export const EXPLORER_NANO_TESTNET_URL = 'https://explorer.alpha.nano-testnet.hathor.network/';
+export const TX_MINING_SERVICE_NANO_TESTNET_URL = 'https://txmining.nano-testnet.hathor.network/';
+
+export const PRE_SETTINGS_NANO_TESTNET = {
+  stage: STAGE_TESTNET,
+  network: NETWORK_NANO_TESTNET,
+  nodeUrl: NODE_SERVER_NANO_TESTNET_URL,
+  explorerUrl: EXPLORER_NANO_TESTNET_URL,
+  explorerServiceUrl: EXPLORER_SERVICE_TESTNET_URL,
+  txMiningServiceUrl: TX_MINING_SERVICE_NANO_TESTNET_URL,
+};
 
 export const PRE_SETTINGS_TESTNET = {
   stage: STAGE_TESTNET,

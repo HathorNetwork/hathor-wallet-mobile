@@ -42,6 +42,18 @@ export const _DEFAULT_TOKEN = {
   ...hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG,
 };
 
+export const DEFAULT_EVENT_TOKEN = {
+  uid: '00000008ff7c8af2f3ea120b7a3bab5788f917d320ccc98098445bc1ef78ecca',
+  name: 'EventCoin',
+  symbol: 'EVC',
+};
+
+/**
+ * Whether we should skip the words confirmation screen during
+ * new wallet creation
+ */
+export const SKIP_SEED_CONFIRMATION = true;
+
 /**
  * App's primary color (Hathor purple)
  */
