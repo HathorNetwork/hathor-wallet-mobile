@@ -466,7 +466,7 @@ export function* onSignMessageRequest({ payload }) {
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring..');
+    log.error('Got a session request but wallet is not ready, ignoring.');
     return;
   }
 
