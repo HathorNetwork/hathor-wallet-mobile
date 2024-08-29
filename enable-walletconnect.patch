@@ -1,3 +1,191 @@
+diff --git a/enable-walletconnect.patch b/enable-walletconnect.patch
+index 28ff4b7..e69de29 100644
+--- a/enable-walletconnect.patch
++++ b/enable-walletconnect.patch
+@@ -1,132 +0,0 @@
+-diff --git a/package.json b/package.json
+-index b60cc5a..1156937 100644
+---- a/package.json
+-+++ b/package.json
+-@@ -17,27 +17,35 @@
+-     "postinstall": "rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack"
+-   },
+-   "dependencies": {
+-+    "@ethersproject/shims": "5.7.0",
+-     "@fortawesome/fontawesome-svg-core": "1.2.36",
+-     "@fortawesome/free-regular-svg-icons": "6.4.0",
+-     "@fortawesome/free-solid-svg-icons": "6.4.0",
+-     "@fortawesome/react-native-fontawesome": "0.2.7",
+--    "@hathor/hathor-rpc-handler": "0.0.1-experimental-alpha",
+-+    "@hathor/hathor-rpc-handler": "^0.0.1-experimental-alpha",
+-     "@hathor/unleash-client": "0.1.0",
+-     "@hathor/wallet-lib": "1.8.0",
+-+    "@json-rpc-tools/utils": "1.7.6",
+-     "@notifee/react-native": "5.7.0",
+-     "@react-native-async-storage/async-storage": "1.19.0",
+-+    "@react-native-community/netinfo": "11.3.1",
+-     "@react-native-firebase/app": "16.7.0",
+-     "@react-native-firebase/messaging": "16.7.0",
+-     "@react-navigation/bottom-tabs": "6.5.8",
+-     "@react-navigation/native": "6.1.7",
+-     "@react-navigation/stack": "6.3.17",
+-     "@sentry/react-native": "5.6.0",
+-+    "@walletconnect/core": "2.12.2",
+-+    "@walletconnect/react-native-compat": "2.12.2",
+-+    "@walletconnect/web3wallet": "1.11.2",
+-     "assert": "2.0.0",
+-     "buffer": "4.9.2",
+-     "console-browserify": "1.2.0",
+-     "crypto-js": "4.1.1",
+-     "deprecated-react-native-prop-types": "2.3.0",
+--    "events": "1.1.1",
+-+    "ethers": "5.7.2",
+-+    "events": "3.3.0",
+-+    "fast-text-encoding": "1.0.6",
+-     "intl": "1.2.5",
+-     "lodash": "4.17.21",
+-     "metro-config": "0.70.4",
+-@@ -52,6 +60,7 @@
+-     "react-native-device-info": "8.7.1",
+-     "react-native-exception-handler": "2.10.10",
+-     "react-native-gesture-handler": "2.13.1",
+-+    "react-native-get-random-values": "1.11.0",
+-     "react-native-keychain": "8.1.1",
+-     "react-native-localize": "2.2.6",
+-     "react-native-modal": "13.0.1",
+-@@ -73,6 +82,7 @@
+-     "redux-saga": "1.2.3",
+-     "redux-thunk": "2.4.2",
+-     "stream-browserify": "1.0.0",
+-+    "text-encoding": "0.7.0",
+-     "ttag": "1.7.24",
+-     "unleash-proxy-client": "1.11.0",
+-     "url": "0.11.1"
+-diff --git a/shim.js b/shim.js
+-index 73c130d..deae975 100644
+---- a/shim.js
+-+++ b/shim.js
+-@@ -26,3 +26,20 @@ if (typeof localStorage !== 'undefined') {
+- // If using the crypto shim, uncomment the following line to ensure
+- // crypto is loaded first, so it can populate global.crypto
+- require('crypto')
+-+
+-+const { TextEncoder, TextDecoder } = require('text-encoding');
+-+
+-+global.TextDecoder = TextDecoder;
+-+global.TextEncoder = TextEncoder;
+-+
+-+if (typeof btoa === 'undefined') {
+-+  global.btoa = function (str) {
+-+    return Buffer.from(str, 'binary').toString('base64');
+-+  };
+-+}
+-+
+-+if (typeof atob === 'undefined') {
+-+  global.atob = function (b64Encoded) {
+-+    return Buffer.from(b64Encoded, 'base64').toString('binary');
+-+  };
+-+}
+-diff --git a/src/sagas/walletConnect.js b/src/sagas/walletConnect.js
+-index 755753a..55e9c5f 100644
+---- a/src/sagas/walletConnect.js
+-+++ b/src/sagas/walletConnect.js
+-@@ -45,6 +45,7 @@
+-  * loaded.
+-  */
+- 
+-+import '@walletconnect/react-native-compat';
+- import {
+-   call,
+-   fork,
+-@@ -62,6 +63,8 @@ import {
+- } from 'redux-saga/effects';
+- import { eventChannel } from 'redux-saga';
+- import { get, values } from 'lodash';
+-+import { Core } from '@walletconnect/core';
+-+import { Web3Wallet } from '@walletconnect/web3wallet';
+- import {
+-   TriggerTypes,
+-   TriggerResponseTypes,
+-@@ -100,12 +103,6 @@ const AVAILABLE_METHODS = {
+- };
+- const AVAILABLE_EVENTS = [];
+- 
+--// We're mocking it here because we don't want to add the walletconnect
+--// libraries in our production build. If you really want to add it, just run the
+--// src/walletconnect.sh script
+--const Core = class {};
+--const Web3Wallet = class {};
+--
+- /**
+-  * Those are the only ones we are currently using, extracted from
+-  * https://docs.walletconnect.com/2.0/specs/clients/sign/error-codes
+-@@ -118,13 +115,10 @@ const ERROR_CODES = {
+-   INVALID_PAYLOAD: 5003,
+- };
+- 
+--function isWalletConnectEnabled() {
+--  return false;
+--  /*
+-+function* isWalletConnectEnabled() {
+-   const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
+- 
+-   return walletConnectEnabled;
+--  */
+- }
+- 
+- function* init() {
+diff --git a/ios/Podfile.lock b/ios/Podfile.lock
+index 676a0a0..28ffa36 100644
+--- a/ios/Podfile.lock
++++ b/ios/Podfile.lock
+@@ -389,6 +389,13 @@ PODS:
+   - React-jsinspector (0.72.5)
+   - React-logger (0.72.5):
+     - glog
++  - react-native-compat (2.12.2):
++    - RCT-Folly (= 2021.07.22.00)
++    - React-Core
++  - react-native-get-random-values (1.11.0):
++    - React-Core
++  - react-native-netinfo (11.3.1):
++    - React-Core
+   - react-native-pager-view (5.4.25):
+     - React-Core
+   - react-native-randombytes (3.6.1):
+@@ -612,6 +619,9 @@ DEPENDENCIES:
+   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
+   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
+   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
++  - "react-native-compat (from `../node_modules/@walletconnect/react-native-compat`)"
++  - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
++  - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
+   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
+   - react-native-randombytes (from `../node_modules/react-native-randombytes`)
+   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+@@ -717,6 +727,12 @@ EXTERNAL SOURCES:
+     :path: "../node_modules/react-native/ReactCommon/jsinspector"
+   React-logger:
+     :path: "../node_modules/react-native/ReactCommon/logger"
++  react-native-compat:
++    :path: "../node_modules/@walletconnect/react-native-compat"
++  react-native-get-random-values:
++    :path: "../node_modules/react-native-get-random-values"
++  react-native-netinfo:
++    :path: "../node_modules/@react-native-community/netinfo"
+   react-native-pager-view:
+     :path: "../node_modules/react-native-pager-view"
+   react-native-randombytes:
+@@ -830,6 +846,9 @@ SPEC CHECKSUMS:
+   React-jsiexecutor: ff70a72027dea5cc7d71cfcc6fad7f599f63987a
+   React-jsinspector: aef73cbd43b70675f572214d10fa438c89bf11ba
+   React-logger: 2e4aee3e11b3ec4fa6cfd8004610bbb3b8d6cca4
++  react-native-compat: ea766c4bcad72b3cb36765a97a846c9551b5b802
++  react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
++  react-native-netinfo: bdb108d340cdb41875c9ced535977cac6d2ff321
+   react-native-pager-view: da490aa1f902c9a5aeecf0909cc975ad0e92e53e
+   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
+   react-native-safe-area-context: 68b07eabfb0d14547d36f6929c0e98d818064f02
 diff --git a/package.json b/package.json
 index b60cc5a..1156937 100644
 --- a/package.json
@@ -82,7 +270,7 @@ index 73c130d..deae975 100644
 +  };
 +}
 diff --git a/src/sagas/walletConnect.js b/src/sagas/walletConnect.js
-index 755753a..55e9c5f 100644
+index 0a07c9b..bb36df3 100644
 --- a/src/sagas/walletConnect.js
 +++ b/src/sagas/walletConnect.js
 @@ -45,6 +45,7 @@
