@@ -6,31 +6,38 @@
  */
 
 import { t } from 'ttag';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Linking } from 'react-native';
 import { COLORS } from '../../styles/themes';
 import { CircleInfoIcon } from '../Icons/CircleInfo.icon';
 import SimpleButton from '../SimpleButton';
+import { NANO_CONTRACT_INFO_URL } from '../../constants';
 
-export const WarnDisclaimer = ({ onReadMore }) => (
-  <View style={styles.warnContainer}>
-    <View style={styles.infoIcon}>
-      <CircleInfoIcon color={COLORS.cardWarning200} />
-    </View>
-    <View style={styles.warnContent}>
-      <Text style={styles.warnMessage}>
-        {t`Caution: There are risks associated with signing dapp transaction requests.`}
-      </Text>
-      <View style={styles.learnMoreWrapper}>
-        <SimpleButton
-          containerStyle={styles.learnMoreContainer}
-          textStyle={styles.learnMoreText}
-          title={t`Read More.`}
-          onPress={onReadMore}
-        />
+export const WarnDisclaimer = () => {
+  const onReadMore = () => {
+    Linking.openURL(NANO_CONTRACT_INFO_URL)
+  };
+
+  return (
+    <View style={styles.warnContainer}>
+      <View style={styles.infoIcon}>
+        <CircleInfoIcon color={COLORS.cardWarning200} />
+      </View>
+      <View style={styles.warnContent}>
+        <Text style={styles.warnMessage}>
+          {t`Caution: There are risks associated with signing dapp transaction requests.`}
+        </Text>
+        <View style={styles.learnMoreWrapper}>
+          <SimpleButton
+            containerStyle={styles.learnMoreContainer}
+            textStyle={styles.learnMoreText}
+            title={t`Read More.`}
+            onPress={onReadMore}
+          />
+        </View>
       </View>
     </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   warnContainer: {

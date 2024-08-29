@@ -9,7 +9,6 @@ import React, { useCallback, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
-  Linking,
 } from 'react-native';
 import { t } from 'ttag';
 import { useNavigation } from '@react-navigation/native';
@@ -17,7 +16,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { COLORS } from '../../../styles/themes';
 import { ModalBase } from '../../ModalBase';
 import { walletConnectReject } from '../../../actions';
-import { NANO_CONTRACT_INFO_URL } from '../../../constants';
 import { WarnDisclaimer } from '../WarnDisclaimer';
 
 export const NewNanoContractTransactionModal = ({
@@ -29,7 +27,6 @@ export const NewNanoContractTransactionModal = ({
   ));
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const readMoreUrl = NANO_CONTRACT_INFO_URL;
 
   const onModalDismiss = useCallback(() => {
     dispatch(walletConnectReject());
@@ -47,15 +44,11 @@ export const NewNanoContractTransactionModal = ({
     }
   }, [isRetrying]);
 
-  const onReadMore = () => {
-    Linking.openURL(readMoreUrl)
-  };
-
   return (
     <ModalBase show onDismiss={onModalDismiss}>
       <ModalBase.Title>{t`New Nano Contract Transaction`}</ModalBase.Title>
       <ModalBase.Body style={styles.body}>
-        <WarnDisclaimer onReadMore={onReadMore} />
+        <WarnDisclaimer />
         <Text style={styles.text}>
           {t`You have received a new Nano Contract Transaction. Please`}
           <Text style={styles.bold}>
