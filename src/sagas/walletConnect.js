@@ -103,12 +103,6 @@ const AVAILABLE_METHODS = {
 };
 const AVAILABLE_EVENTS = [];
 
-// We're mocking it here because we don't want to add the walletconnect
-// libraries in our production build. If you really want to add it, just run the
-// src/walletconnect.sh script
-const Core = class {};
-const Web3Wallet = class {};
-
 /**
  * Those are the only ones we are currently using, extracted from
  * https://docs.walletconnect.com/2.0/specs/clients/sign/error-codes
