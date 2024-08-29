@@ -56,10 +56,10 @@ export const SignMessageRequest = ({ signMessageRequest }) => {
   const navigation = useNavigation();
 
   const onAcceptSignMessageRequest = () => {
-    const acceptedNc = { address, message };
+    const acceptedReq = { address, message };
 
     // Signal the user has accepted the current request and pass the accepted data.
-    dispatch(walletConnectAccept(acceptedNc));
+    dispatch(walletConnectAccept(acceptedReq));
     navigation.goBack();
   };
 
