@@ -153,16 +153,18 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
       }
     });
     dispatch(unregisteredTokensRequest({ uids: unknownTokensUid }));
+
+    return () => {
+      dispatch(setNewNanoContractStatusReady());
+      dispatch(newNanoContractRetryDismiss());
+    };
   }, []);
 
   const onFeedbackModalDismiss = () => {
-    dispatch(setNewNanoContractStatusReady());
-    dispatch(newNanoContractRetryDismiss());
     navigation.goBack();
   };
 
   const onNavigateToDashboard = () => {
-    dispatch(setNewNanoContractStatusReady());
     navigation.navigate('Dashboard');
   };
 
