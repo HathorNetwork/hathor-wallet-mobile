@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
@@ -14,6 +14,7 @@ import { COLORS } from '../../styles/themes';
 import { ModalBase } from '../ModalBase';
 import { WarnDisclaimer } from './WarnDisclaimer';
 import { walletConnectReject } from '../../actions';
+import { WALLETCONNECT_SKIP_CONFIRMATION_MODAL } from '../../config';
 
 const styles = StyleSheet.create({
   body: {
@@ -50,6 +51,12 @@ export default ({
     onDismiss();
     navigation.navigate('SignMessageRequest', { signMessageRequest: data });
   };
+
+  useEffect(() => {
+    if (WALLETCONNECT_SKIP_CONFIRMATION_MODAL) {
+      navigateToSignMessageRequestScreen();
+    }
+  }, []);
 
   return (
     <ModalBase show onDismiss={onReject}>

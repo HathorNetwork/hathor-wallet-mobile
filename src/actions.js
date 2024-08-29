@@ -1254,7 +1254,6 @@ export const firstAddressFailure = (failurePayload) => ({
 });
 
 /**
-<<<<<<< HEAD
  * Signals that the user wants to attempt to retry the nano contract tx send
  */
 export const newNanoContractRetry = () => ({

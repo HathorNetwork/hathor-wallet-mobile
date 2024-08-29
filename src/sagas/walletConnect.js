@@ -45,6 +45,7 @@
  * loaded.
  */
 
+import '@walletconnect/react-native-compat';
 import {
   call,
   fork,
@@ -62,6 +63,8 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
+import { Core } from '@walletconnect/core';
+import { Web3Wallet } from '@walletconnect/web3wallet';
 import {
   TriggerTypes,
   TriggerResponseTypes,
@@ -100,12 +103,6 @@ const AVAILABLE_METHODS = {
 };
 const AVAILABLE_EVENTS = [];
 
-// We're mocking it here because we don't want to add the walletconnect
-// libraries in our production build. If you really want to add it, just run the
-// src/walletconnect.sh script
-const Core = class {};
-const Web3Wallet = class {};
-
 /**
  * Those are the only ones we are currently using, extracted from
  * https://docs.walletconnect.com/2.0/specs/clients/sign/error-codes
@@ -118,13 +115,10 @@ const ERROR_CODES = {
   INVALID_PAYLOAD: 5003,
 };
 
-function isWalletConnectEnabled() {
-  return false;
-  /*
+function* isWalletConnectEnabled() {
   const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
 
   return walletConnectEnabled;
-  */
 }
 
 function* init() {
