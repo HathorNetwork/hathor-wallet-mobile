@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ModalBase } from '../../ModalBase';
 import { walletConnectReject } from '../../../actions';
 import { WarnDisclaimer } from '../WarnDisclaimer';
+import { WALLETCONNECT_SKIP_CONFIRMATION_MODAL } from '../../../config';
 
 export const NewNanoContractTransactionModal = ({
   onDismiss,
@@ -38,7 +39,7 @@ export const NewNanoContractTransactionModal = ({
   };
 
   useEffect(() => {
-    if (isRetrying) {
+    if (WALLETCONNECT_SKIP_CONFIRMATION_MODAL || isRetrying) {
       navigatesToNewNanoContractScreen();
     }
   }, [isRetrying]);
