@@ -135,7 +135,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   // This effect runs only once in the construct phase
   useEffect(() => {
     // Do nothing if nano contract is not registered and don't call initialize method.
-    if (notRegistered) return;
+    if (notRegistered) return undefined;
 
     // Request blueprint info if not present to feed the components:
     // - NanoContractExecInfo, and
