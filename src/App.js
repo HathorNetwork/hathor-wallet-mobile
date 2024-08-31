@@ -94,6 +94,7 @@ import { NewNanoContractTransactionScreen } from './screens/WalletConnect/NewNan
 import { NanoContractRegisterQrCodeScreen } from './screens/NanoContractRegisterQrCodeScreen';
 import { SignMessageRequestScreen } from './screens/WalletConnect/SignMessageRequestScreen';
 import { CreateTokenRequestScreen } from './screens/WalletConnect/CreateTokenScreen';
+import { SignOracleDataRequestScreen } from './screens/WalletConnect/SignOracleDataRequestScreen';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -461,6 +462,7 @@ const AppStack = () => {
         <Stack.Screen name='NewNanoContractTransactionScreen' component={NewNanoContractTransactionScreen} />
         <Stack.Screen name='SignMessageRequest' component={SignMessageRequestScreen} />
         <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
+        <Stack.Screen name='SignOracleDataRequestScreen' component={SignOracleDataRequestScreen} />
         <Stack.Screen name='PushNotification' component={PushNotification} />
         <Stack.Screen name='ChangePin' component={ChangePin} />
         <Stack.Screen

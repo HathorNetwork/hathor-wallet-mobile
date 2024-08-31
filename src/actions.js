@@ -205,6 +205,7 @@ export const types = {
   WALLETCONNECT_CREATE_TOKEN_RETRY: 'WALLETCONNECT_CREATE_TOKEN_RETRY',
   WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS: 'WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS',
   SET_USE_SAFE_BIOMETRY_MODE: 'SET_USE_SAFE_BIOMETRY_MODE',
+  SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1436,6 +1437,16 @@ export const unregisteredTokensDownloadFailure = (payload) => ({
  */
 export const unregisteredTokensDownloadEnd = () => ({
   type: types.UNREGISTEREDTOKENS_DOWNLOAD_END,
+});
+
+export const showSignOracleDataModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+    dapp,
+  },
 });
 
 export const showSignMessageWithAddressModal = (accept, deny, data, dapp) => ({
