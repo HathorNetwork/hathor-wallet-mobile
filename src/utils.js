@@ -18,6 +18,9 @@ import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE } from './
 import { STORE } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
+import { logger } from './logger';
+
+const log = logger('utils');
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
@@ -496,4 +499,31 @@ export function hasError(invalidModel) {
   return Object
     .values({ ...invalidModel })
     .reduce((_hasError, currValue) => _hasError || !isEmpty(currValue), false);
+}
+
+/**
+ * Parses a script data to return an instance of script type.
+ *
+ * @example
+ * parseScriptData('P2PKH or P2SH script', networkObj);
+ * >>> { address, timelock }
+ *
+ * @example
+ * parseScriptData('Data script', networkObj);
+ * >>> { data }
+ *
+ * @param {string} scriptData A script in its hexadecimal format
+ * @param {Object} network A network object
+ *
+ * @return {P2PKH | P2SH | ScriptData | null} Parsed script object
+ */
+export const parseScriptData = (scriptData, network) => {
+  try {
+    const script = hathorLib.bufferUtils.hexToBuffer(scriptData);
+    return hathorLib.scriptsUtils.parseScript(script, network);
+  } catch (error) {
+    log.error('Error parsing script data.', error);
+    // Avoid throwing exception when we can't parse the script no matter the reason
+    return null;
+  }
 }

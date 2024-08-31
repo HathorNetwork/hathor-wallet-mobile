@@ -14,12 +14,14 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
+import { Network } from '@hathor/wallet-lib';
 import { COLORS } from '../../../styles/themes';
 import { commonStyles } from '../theme';
 import { onExceptionCaptured } from '../../../actions';
-import { NANOCONTRACT_BLUEPRINTINFO_STATUS as STATUS } from '../../../constants';
+import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS as STATUS } from '../../../constants';
 import { FeedbackContent } from '../../FeedbackContent';
 import Spinner from '../../Spinner';
+import { getTimestampFormat, parseScriptData, renderValue } from '../../../utils';
 
 /**
  * Get method info from registered blueprint data.
@@ -63,10 +65,16 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
     return null;
   }
   const dispatch = useDispatch();
+  const network = useSelector((state) => new Network(state.networkSettings.network));
+  const tokens = useSelector((state) => state.tokens);
 
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[blueprintId]);
   // It results a in a list of entries like:
-  // >>> [['oracle_script', 'abc'], ['token_uid', '00'], ['date_last_bet', 123]]
+  // >>>[
+  // >>>  ['oracle_script', 'abc', 'TxOutputScript'],
+  // >>>  ['token_uid', '00', 'TokenUid'],
+  // >>>  ['date_last_bet', 123, 'Timestamp']
+  // >>>]
   // or a fallback like:
   // >>> [['Position 0', 'abc'], ['Position 1', '00'], ['Position 2', 123]]
   const argEntries = useMemo(() => {
@@ -76,7 +84,7 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
 
     const methodInfo = getMethodInfoFromBlueprint(blueprintInfo, method);
     if (methodInfo) {
-      return ncArgs.map((arg, idx) => [methodInfo.args[idx].name, arg]);
+      return ncArgs.map((arg, idx) => [methodInfo.args[idx].name, arg, methodInfo.args[idx].type]);
     }
 
     // Send this condition to sentry because it should never happen.
@@ -109,7 +117,7 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
         && (
           <View style={[commonStyles.card]}>
             <View style={[commonStyles.cardStack]}>
-              {argEntries.map(([argName, argValue]) => (
+              {argEntries.map(([argName, argValue, argType]) => (
                 <View
                   key={argName}
                   style={commonStyles.cardStackItem}
@@ -118,7 +126,14 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
                     <Text style={styles.argPositionText}>{argName}</Text>
                   </View>
                   <View style={styles.argValue}>
-                    <Text style={styles.argValueText}>{argValue}</Text>
+                    <Text style={styles.argValueText}>
+                      <ArgValue
+                        type={argType}
+                        value={argValue}
+                        network={network}
+                        tokens={tokens}
+                      />
+                    </Text>
                   </View>
                 </View>
               ))}
@@ -127,6 +142,60 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
         )}
     </View>
   )
+};
+
+/**
+ * Component responsible to render the appropriate format for the value
+ * taking in consideration the type.
+ *
+ * Remarks
+ * The values received here when derived from 'byte' type like
+ * 'TxOutputScript', 'TokenUid' and 'VertexId' are already in their
+ * hexadecimal format.
+ *
+ * Values of type 'Address', which also derives from 'byte' are
+ * in base58 format.
+ *
+ * Values of type 'SignedData[Result]' arrives here in presentation
+ * format.
+ *
+ * @param {Object} props
+ * @param {string} props.type An argument type
+ * @param {string} props.value An argument value
+ * @param {Object} props.network A network object
+ * @param {Object} props.tokens A map of registered tokens
+ */
+const ArgValue = ({ type, value, network, tokens }) => {
+  if (type === 'Amount') {
+    return renderValue(value);
+  }
+
+  if (type === 'Timestamp') {
+    return getTimestampFormat(value);
+  }
+
+  if (type === 'TxOutputScript') {
+    const parsedScript = parseScriptData(value, network);
+    if (parsedScript && parsedScript.getType() === 'data') {
+      return parsedScript.data;
+    }
+
+    if (parsedScript) {
+      return parsedScript.address.base58;
+    }
+  }
+
+  if (type === 'TokenUid') {
+    if (value === DEFAULT_TOKEN.uid) {
+      return DEFAULT_TOKEN.symbol;
+    }
+
+    if (value in tokens) {
+      return tokens[value].symbol;
+    }
+  }
+
+  return value;
 };
 
 const styles = StyleSheet.create({
