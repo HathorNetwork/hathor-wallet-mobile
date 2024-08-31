@@ -12,11 +12,11 @@ import {
   DEFAULT_TOKEN,
   PUSH_API_STATUS,
   FEATURE_TOGGLE_DEFAULTS,
-  PRE_SETTINGS_MAINNET,
   NETWORKSETTINGS_STATUS,
   NANOCONTRACT_REGISTER_STATUS,
   WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS,
-  NANOCONTRACT_BLUEPRINTINFO_STATUS
+  NANOCONTRACT_BLUEPRINTINFO_STATUS,
+  PRE_SETTINGS_NANO_TESTNET
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -307,7 +307,7 @@ const initialState = {
    *  walletServiceWsUrl: string;
    * }}
    */
-  networkSettings: PRE_SETTINGS_MAINNET,
+  networkSettings: PRE_SETTINGS_NANO_TESTNET,
   networkSettingsInvalid: {},
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
   nanoContract: {
@@ -538,6 +538,8 @@ export const reducer = (state = initialState, action) => {
       return onUpdateLoadedData(state, action);
     case types.SET_USE_WALLET_SERVICE:
       return onSetUseWalletService(state, action);
+    case types.TOKENS_FETCH_METADATA_REQUESTED:
+      return onTokensFetchMetadataRequested(state);
     case types.TOKEN_METADATA_UPDATED:
       return onTokenMetadataUpdated(state, action);
     case types.TOKEN_METADATA_REMOVED:
@@ -940,6 +942,14 @@ const onUpdateLoadedData = (state, action) => ({
 const onTokenMetadataLoaded = (state, action) => ({
   ...state,
   metadataLoaded: action.payload,
+});
+
+/**
+ * Update token metadata status to false, meaning it is loading.
+ */
+const onTokensFetchMetadataRequested = (state) => ({
+  ...state,
+  metadataLoaded: false,
 });
 
 /**

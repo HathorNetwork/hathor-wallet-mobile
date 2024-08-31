@@ -78,7 +78,6 @@ class TxDetailsModal extends Component {
       copyText: ncCallerAddr
     });
     const isNc = tx.isNanoContract();
-    const hasFirstBlock = tx.hasFirstBlock();
 
     return (
       <Modal
@@ -102,21 +101,21 @@ class TxDetailsModal extends Component {
                   <ListItem title={t`Description`} text={description} />
                   <ListItem title={t`Date & Time`} text={timestampStr} />
                   <ListItem title={t`Transaction ID`} text={txIdComponent} />
-                  {isNc && <ListItem title={t`Blueprint Method`} text={ncMethod} />}
-                  {isNc && <ListItem title={t`Nano Contract ID`} text={ncIdComponent} />}
-                  {isNc && <ListItem title={t`Nano Contract Caller`} text={ncCallerAddrComponent} />}
-                  {isNc
+                  {isNc && isVoided
                     && (
                       <ListItem
                         title={t`Nano Contract Status`}
                         text={(
                           <TransactionStatusLabel
-                            hasFirstBlock={hasFirstBlock}
                             isVoided={isVoided}
+                            hasFirstBlock={null}
                           />
                         )}
                       />
                     )}
+                  {isNc && <ListItem title={t`Blueprint Method`} text={ncMethod} />}
+                  {isNc && <ListItem title={t`Nano Contract ID`} text={ncIdComponent} />}
+                  {isNc && <ListItem title={t`Nano Contract Caller`} text={ncCallerAddrComponent} />}
                   {isNc && <PublicExplorerListButton txId={shortNcId} title={t`Nano Contract`} />}
                   <PublicExplorerListButton txId={tx.txId} />
                 </View>

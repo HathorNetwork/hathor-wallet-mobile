@@ -383,11 +383,20 @@ export function* loadTokens() {
 }
 
 /**
+ * It handles the request to fetch tokens metadata and open a thread to process it.
+ * @param {{ tokens: string[] }}
+ */
+export function* fetchTokensMetadataRequest(action) {
+  yield spawn(fetchTokensMetadata, action.tokens);
+}
+
+/**
  * The wallet needs each token metadata to show information correctly
  * So we fetch the tokens metadata and store on redux
  */
 export function* fetchTokensMetadata(tokens) {
   if (!tokens.length) {
+    yield put(tokenMetadataUpdated({}));
     return;
   }
 
@@ -835,6 +844,7 @@ export function* saga() {
     takeEvery('WALLET_UPDATE_TX', handleTx),
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
+    takeEvery(types.TOKENS_FETCH_METADATA_REQUESTED, fetchTokensMetadataRequest),
     takeEvery(types.WALLET_REFRESH_SHARED_ADDRESS, refreshSharedAddress),
     takeEvery(types.SELECTADDRESS_ADDRESSES_REQUEST, fetchAllWalletAddresses),
     takeEvery(types.FIRSTADDRESS_REQUEST, fetchFirstWalletAddress),

@@ -74,9 +74,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "network.hathor.wallet"
+    namespace "com.hathordemo"
     defaultConfig {
-        applicationId "network.hathor.wallet"
+        applicationId "com.hathordemo"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 72

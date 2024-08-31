@@ -273,7 +273,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nexport NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
+			shellScript = "set -e\n\nexport NODE_BINARY=/nix/store/aj0gchv6acrixr34qbn00m7ss9hagmnj-devshell-dir/bin/node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
 		05236F6C0A91F8F7AC940133 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -516,6 +516,7 @@
 				DEVELOPMENT_TEAM = 55SHY647CG;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = HathorMobile/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Hathor Play";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -527,7 +528,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = network.hathor.wallet;
+				PRODUCT_BUNDLE_IDENTIFIER = network.hathor.nanodemo;
 				PRODUCT_NAME = HathorMobile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -545,6 +546,7 @@
 				CURRENT_PROJECT_VERSION = 1.0.0;
 				DEVELOPMENT_TEAM = 55SHY647CG;
 				INFOPLIST_FILE = HathorMobile/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Hathor Play";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -556,7 +558,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = network.hathor.wallet;
+				PRODUCT_BUNDLE_IDENTIFIER = network.hathor.nanodemo;
 				PRODUCT_NAME = HathorMobile;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -638,7 +640,10 @@
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					" ",
+					"-Wl",
+					"-ld_classic",
+					"-Wl",
+					"-ld_classic",
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
@@ -716,7 +721,10 @@
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					" ",
+					"-Wl",
+					"-ld_classic",
+					"-Wl",
+					"-ld_classic",
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;

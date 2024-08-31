@@ -32,6 +32,7 @@ import { Link, str2jsx } from '../utils';
 
 import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '../constants';
 import { COLORS } from '../styles/themes';
+import { SKIP_SEED_CONFIRMATION } from '../config';
 
 class WelcomeScreen extends React.Component {
   state = { switchValue: false };
@@ -166,6 +167,14 @@ class NewWordsScreen extends React.Component {
     const wordsArr = this.state.words ? this.state.words.split(' ') : [];
     const wordsPerRow = 2;
 
+    const navigateToNextStep = () => {
+      const nextStep = SKIP_SEED_CONFIRMATION ? 'ChoosePinScreen' : 'BackupWords';
+
+      this.props.navigation.navigate(nextStep, {
+        words: this.state.words,
+      })
+    };
+
     const renderWords = () => {
       const data = [];
 
@@ -216,7 +225,7 @@ class NewWordsScreen extends React.Component {
           {renderWords()}
           <View style={this.style.buttonView}>
             <NewHathorButton
-              onPress={() => this.props.navigation.navigate('BackupWords', { words: this.state.words })}
+              onPress={navigateToNextStep}
               title={t`Next`}
             />
           </View>

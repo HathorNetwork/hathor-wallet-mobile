@@ -1,4 +1,4 @@
-package network.hathor.wallet;
+package com.hathordemo;
 
 import com.facebook.react.ReactInstanceManager;
 
