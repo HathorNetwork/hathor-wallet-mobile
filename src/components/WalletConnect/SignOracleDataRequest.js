@@ -51,10 +51,10 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
   const navigation = useNavigation();
 
   const onAcceptSignOracleDataRequest = () => {
-    const acceptedNc = { address, message };
+    const acceptedData = { address, message };
 
     // Signal the user has accepted the current request and pass the accepted data.
-    dispatch(walletConnectAccept(acceptedNc));
+    dispatch(walletConnectAccept(acceptedData));
     navigation.goBack();
   };
 

@@ -49,7 +49,6 @@ export default () => {
           <SignOracleDataModal
             {...walletConnectModal}
             onDismiss={onDismiss}
-            baseStyles={baseStyles}
           />
         );
       case WalletConnectModalTypes.SEND_NANO_CONTRACT_TX:
