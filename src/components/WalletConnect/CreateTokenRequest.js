@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -103,6 +104,10 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
+  useEffect(() => () => {
+    dispatch(setCreateTokenStatusReady());
+  }, []);
+
   const onAcceptCreateTokenRequest = () => {
     const acceptedNc = { address, message };
 
@@ -120,18 +125,15 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
   const isTxFailed = status === WALLETCONNECT_CREATE_TOKEN_STATUS.FAILED;
 
   const onFeedbackModalDismiss = () => {
-    dispatch(setCreateTokenStatusReady());
     dispatch(createTokenRetryDismiss());
     navigation.goBack();
   };
 
   const onNavigateToDashboard = () => {
-    dispatch(setCreateTokenStatusReady());
     navigation.navigate('Dashboard');
   };
 
   const onTryAgain = () => {
-    dispatch(setCreateTokenStatusReady());
     dispatch(createTokenRetry());
   };
 
