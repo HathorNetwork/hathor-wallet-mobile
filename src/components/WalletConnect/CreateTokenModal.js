@@ -9,30 +9,11 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
-import { StyleSheet, Text } from 'react-native';
-import { COLORS } from '../../styles/themes';
+import { Text } from 'react-native';
 import { ModalBase } from '../ModalBase';
 import { WarnDisclaimer } from './WarnDisclaimer';
 import { walletConnectReject } from '../../actions';
-
-const styles = StyleSheet.create({
-  body: {
-    paddingBottom: 24,
-  },
-  text: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  bold: {
-    fontWeight: 'bold',
-  },
-  selectionContainer: {
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: COLORS.freeze100,
-  },
-});
+import { commonStyles } from './theme';
 
 export default ({
   onDismiss,
@@ -64,11 +45,11 @@ export default ({
   return (
     <ModalBase show onDismiss={onReject}>
       <ModalBase.Title>{t`New Create Token Request`}</ModalBase.Title>
-      <ModalBase.Body style={styles.body}>
+      <ModalBase.Body style={commonStyles.body}>
         <WarnDisclaimer onReadMore={onReadMore} />
-        <Text style={styles.text}>
+        <Text style={commonStyles.text}>
           {t`You have received a new Create Token Request. Please`}
-          <Text style={styles.bold}>
+          <Text style={commonStyles.bold}>
             {' '}{t`carefully review the details`}{' '}
           </Text>
           {t`before deciding to accept or decline.`}
