@@ -23,9 +23,6 @@ export default ({
   const dispatch = useDispatch();
   const isRetrying = useSelector((state) => state.walletConnect.createToken.retrying);
 
-  // XXX: Make it navigates to readMoreUrl
-  const onReadMore = () => {};
-
   const onReject = () => {
     onDismiss();
     dispatch(walletConnectReject());
@@ -46,7 +43,7 @@ export default ({
     <ModalBase show onDismiss={onReject}>
       <ModalBase.Title>{t`New Create Token Request`}</ModalBase.Title>
       <ModalBase.Body style={commonStyles.body}>
-        <WarnDisclaimer onReadMore={onReadMore} />
+        <WarnDisclaimer />
         <Text style={commonStyles.text}>
           {t`You have received a new Create Token Request. Please`}
           <Text style={commonStyles.bold}>
