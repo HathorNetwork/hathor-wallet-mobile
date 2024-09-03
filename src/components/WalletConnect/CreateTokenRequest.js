@@ -209,17 +209,10 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingVertical: 16,
   },
-  balanceReceived: {
-    color: 'hsla(180, 85%, 34%, 1)',
-    fontWeight: 'bold',
-  },
   actionContainer: {
     flexDirection: 'column',
     gap: 8,
     paddingBottom: 48,
-  },
-  declineModalBody: {
-    paddingBottom: 24,
   },
   value: [commonStyles.text, commonStyles.value],
 });
