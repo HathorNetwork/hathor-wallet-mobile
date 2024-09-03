@@ -85,11 +85,11 @@ import {
   setWCConnectionFailed,
   showSignMessageWithAddressModal,
   showNanoContractSendTxModal,
+  showCreateTokenModal,
   setNewNanoContractStatusLoading,
   setNewNanoContractStatusReady,
   setNewNanoContractStatusFailure,
   setNewNanoContractStatusSuccess,
-  showCreateTokenModal,
   setCreateTokenStatusLoading,
   setCreateTokenStatusReady,
   setCreateTokenStatusSuccessful,
@@ -418,6 +418,18 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
     switch (request.type) {
+      case TriggerTypes.CreateTokenConfirmationPrompt: {
+        const createTokenResponseTemplate = (accepted) => () => resolve({
+          type: TriggerResponseTypes.SignMessageWithAddressConfirmationResponse,
+          data: accepted,
+        });
+        dispatch(showCreateTokenModal(
+          createTokenResponseTemplate(true),
+          createTokenResponseTemplate(false),
+          request.data,
+          requestMetadata,
+        ))
+      } break;
       case TriggerTypes.SignMessageWithAddressConfirmationPrompt: {
         const signMessageResponseTemplate = (accepted) => () => resolve({
           type: TriggerResponseTypes.SignMessageWithAddressConfirmationResponse,
@@ -763,6 +775,7 @@ export function* saga() {
     fork(init),
     takeLatest(types.SHOW_NANO_CONTRACT_SEND_TX_MODAL, onSendNanoContractTxRequest),
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
+    takeLatest(types.SHOW_CREATE_TOKEN_REQUEST_MODAL, onCreateTokenRequest),
     takeLeading('WC_SESSION_REQUEST', onSessionRequest),
     takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('WC_SESSION_DELETE', onSessionDelete),
