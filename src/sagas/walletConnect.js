@@ -278,7 +278,7 @@ export function* onSessionRequest(action) {
   const requestSession = activeSessions[payload.topic];
 
   if (!requestSession) {
-    log.error('Could not identify the request session, ignoring request..');
+    log.error('Could not identify the request session, ignoring request.');
     return;
   }
 
@@ -560,7 +560,7 @@ export function* onSendNanoContractTxRequest({ payload }) {
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring..');
+    log.error('Got a session request but wallet is not ready, ignoring.');
     return;
   }
 
@@ -593,7 +593,7 @@ export function* onCreateTokenRequest({ payload }) {
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring..');
+    log.error('Got a session request but wallet is not ready, ignoring.');
     return;
   }
 
