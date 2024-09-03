@@ -10,7 +10,6 @@ import {
   StyleSheet,
   View,
   ScrollView,
-  TouchableWithoutFeedback,
   Text,
   Image,
 } from 'react-native';
@@ -140,39 +139,37 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
   return (
     <>
       <ScrollView style={styles.wide}>
-        <TouchableWithoutFeedback>
-          <View style={styles.wrapper}>
-            {isTxReady && (
-              <View style={styles.content}>
-                <DappContainer dapp={dapp} />
-                <CreateTokenRequestData data={data} />
-                {/* User actions */}
-                <View style={styles.actionContainer}>
-                  <NewHathorButton
-                    title={t`Accept Request`}
-                    onPress={onAcceptCreateTokenRequest}
-                  />
-                  <NewHathorButton
-                    title={t`Decline Request`}
-                    onPress={onDeclineTransaction}
-                    secondary
-                    danger
-                  />
-                </View>
+        <View style={styles.wrapper}>
+          {isTxReady && (
+            <View style={styles.content}>
+              <DappContainer dapp={dapp} />
+              <CreateTokenRequestData data={data} />
+              {/* User actions */}
+              <View style={styles.actionContainer}>
+                <NewHathorButton
+                  title={t`Accept Request`}
+                  onPress={onAcceptCreateTokenRequest}
+                />
+                <NewHathorButton
+                  title={t`Decline Request`}
+                  onPress={onDeclineTransaction}
+                  secondary
+                  danger
+                />
               </View>
-            )}
-            {isTxProcessing && (
-              <FeedbackContent
-                title={t`Sending transaction`}
-                message={t`Please wait.`}
-                icon={<Spinner size={48} animating />}
-                offmargin
-                offcard
-                offbackground
-              />
-            )}
-          </View>
-        </TouchableWithoutFeedback>
+            </View>
+          )}
+          {isTxProcessing && (
+            <FeedbackContent
+              title={t`Sending transaction`}
+              message={t`Please wait.`}
+              icon={<Spinner size={48} animating />}
+              offmargin
+              offcard
+              offbackground
+            />
+          )}
+        </View>
       </ScrollView>
 
       {isTxSuccessful && (
