@@ -48,7 +48,7 @@ function* rootSaga() {
 
         break
       } catch (e) {
-        log.error(e);
+        log.error('Error on root saga', e);
         log.error(`Saga ${name} crashed, restarting. [${retryCount}/${MAX_RETRIES}]`);
         sagas[name].retryCount = retryCount + 1;
 
