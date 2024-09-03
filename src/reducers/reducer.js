@@ -1954,7 +1954,7 @@ export const onSetCreateTokenRetryDismiss = (state) => ({
     ...state.walletConnect,
     createToken: {
       ...state.walletConnect.createToken,
-      retrying: true,
+      retrying: false,
     },
   },
 });
