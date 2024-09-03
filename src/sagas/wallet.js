@@ -387,7 +387,6 @@ export function* loadTokens() {
  * So we fetch the tokens metadata and store on redux
  */
 export function* fetchTokensMetadata(tokens) {
-  // No tokens to load, set metadata as loaded
   if (!tokens.length) {
     return;
   }
@@ -413,7 +412,7 @@ export function* fetchTokensMetadata(tokens) {
   const tokenMetadatas = {};
   for (const response of responses) {
     if (response.type === types.TOKEN_FETCH_METADATA_FAILED) {
-      log.log(`Error downloading metadata of token ${response.tokenId}.`);
+      log.error(`Error downloading metadata of token ${response.tokenId}.`);
     } else if (response.type === types.TOKEN_FETCH_METADATA_SUCCESS) {
       // When the request returns null, it means that we have no metadata for this token
       if (response.data) {

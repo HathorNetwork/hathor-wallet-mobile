@@ -268,6 +268,7 @@ class PinScreen extends React.Component {
         title = t`Reset wallet`;
         onPress = () => this.goToReset();
       }
+
       return (
         <SimpleButton
           onPress={onPress}

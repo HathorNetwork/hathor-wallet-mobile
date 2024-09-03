@@ -58,10 +58,18 @@ import {
   takeEvery,
   select,
   race,
+  spawn,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
-
+import {
+  TriggerTypes,
+  TriggerResponseTypes,
+  RpcResponseTypes,
+  SendNanoContractTxFailure,
+  handleRpcRequest,
+} from '@hathor/hathor-rpc-handler';
+import { isWalletServiceEnabled, WALLET_STATUS } from './wallet';
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
   WALLET_CONNECT_PROJECT_ID,
@@ -74,13 +82,29 @@ import {
   setWalletConnectSessions,
   onExceptionCaptured,
   setWCConnectionFailed,
+  showSignMessageWithAddressModal,
+  showNanoContractSendTxModal,
+  setNewNanoContractStatusLoading,
+  setNewNanoContractStatusReady,
+  setNewNanoContractStatusFailure,
+  setNewNanoContractStatusSuccess,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
+import { logger } from '../logger';
+
+const log = logger('walletConnect');
 
 const AVAILABLE_METHODS = {
-  HATHOR_SIGN_MESSAGE: 'hathor_signMessage',
+  HATHOR_SIGN_MESSAGE: 'htr_signWithAddress',
+  HATHOR_SEND_NANO_TX: 'htr_sendNanoContractTx',
 };
 const AVAILABLE_EVENTS = [];
+
+// We're mocking it here because we don't want to add the walletconnect
+// libraries in our production build. If you really want to add it, just run the
+// src/walletconnect.sh script
+const Core = class {};
+const Web3Wallet = class {};
 
 /**
  * Those are the only ones we are currently using, extracted from
@@ -94,21 +118,32 @@ const ERROR_CODES = {
   INVALID_PAYLOAD: 5003,
 };
 
-// We're mocking it here because we don't want to add the walletconnect
-// libraries in our production build. If you really want to add it, just run the
-// src/walletconnect.sh script
-const Core = class {};
-const Web3Wallet = class {};
-
-function* isWalletConnectEnabled() {
+function isWalletConnectEnabled() {
+  return false;
+  /*
   const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
 
   return walletConnectEnabled;
+  */
 }
 
 function* init() {
+  const walletStartState = yield select((state) => state.walletStartState);
+
+  if (walletStartState !== WALLET_STATUS.READY) {
+    log.debug('Wallet not ready yet, waiting for START_WALLET_SUCCESS.');
+    yield take(types.START_WALLET_SUCCESS);
+    log.debug('Starting wallet-connect.');
+  }
+
   try {
+    const walletServiceEnabled = yield call(isWalletServiceEnabled);
     const walletConnectEnabled = yield call(isWalletConnectEnabled);
+
+    if (walletServiceEnabled) {
+      log.debug('Wallet Service enabled, skipping wallet-connect init.');
+      return;
+    }
 
     if (!walletConnectEnabled) {
       return;
@@ -230,9 +265,12 @@ export function* onSessionRequest(action) {
   const { payload } = action;
   const { params } = payload;
 
+  const wallet = yield select((state) => state.wallet);
+
   const { web3wallet } = yield select((state) => state.walletConnect.client);
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
   const requestSession = activeSessions[payload.topic];
+
   if (!requestSession) {
     console.error('Could not identify the request session, ignoring request..');
     return;
@@ -246,16 +284,59 @@ export function* onSessionRequest(action) {
     chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
 
-  switch (params.request.method) {
-    case AVAILABLE_METHODS.HATHOR_SIGN_MESSAGE:
-      yield call(onSignMessageRequest, {
-        ...data,
-        requestId: payload.id,
-        topic: payload.topic,
-        message: get(params, 'request.params.message'),
-      });
-      break;
-    default:
+  try {
+    let dispatch;
+    yield put((_dispatch) => {
+      dispatch = _dispatch;
+    });
+
+    const response = yield call(
+      handleRpcRequest,
+      params.request,
+      wallet,
+      data,
+      promptHandler(dispatch),
+    );
+
+    switch (response.type) {
+      case RpcResponseTypes.SendNanoContractTxResponse:
+        yield put(setNewNanoContractStatusSuccess());
+        break;
+      default:
+        break;
+    }
+
+    yield call(() => web3wallet.respondSessionRequest({
+      topic: payload.topic,
+      response: {
+        id: payload.id,
+        jsonrpc: '2.0',
+        result: response,
+      }
+    }));
+  } catch (e) {
+    let shouldAnswer = true;
+    switch (e.constructor) {
+      case SendNanoContractTxFailure: {
+        yield put(setNewNanoContractStatusFailure());
+
+        // User might try again, wait for it.
+        const { retry } = yield race({
+          retry: take(types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY),
+          dismiss: take(types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS),
+        });
+
+        if (retry) {
+          shouldAnswer = false;
+          // Retry the action, exactly as it came:
+          yield spawn(onSessionRequest, action);
+        }
+      } break;
+      default:
+        break;
+    }
+
+    if (shouldAnswer) {
       yield call(() => web3wallet.respondSessionRequest({
         topic: payload.topic,
         response: {
@@ -267,23 +348,169 @@ export function* onSessionRequest(action) {
           },
         },
       }));
-      break;
+    }
   }
 }
+
+/**
+ * Handles various types of prompt requests by dispatching appropriate actions
+ * and resolving with the corresponding responses.
+ *
+ * @param {function} dispatch - The dispatch function to send actions to the store.
+ * @returns {function} - A function that receives Trigger requests from the rpc
+ * library and dispatches actions
+ *
+ * The returned function performs the following:
+ *
+ * - Depending on the `request.type`, it will:
+ *   - `TriggerTypes.SignMessageWithAddressConfirmationPrompt`:
+ *     - Dispatches `showSignMessageWithAddressModal` with acceptance/rejection handlers.
+ *     - Resolves with `TriggerResponseTypes.SignMessageWithAddressConfirmationResponse`.
+ *   - `TriggerTypes.SendNanoContractTxConfirmationPrompt`:
+ *     - Dispatches `showNanoContractSendTxModal` with acceptance/rejection handlers.
+ *     - Resolves with `TriggerResponseTypes.SendNanoContractTxConfirmationResponse`.
+ *   - `TriggerTypes.SendNanoContractTxLoadingTrigger`:
+ *     - Dispatches `setNewNanoContractStatusLoading`.
+ *     - Resolves immediately.
+ *   - `TriggerTypes.LoadingFinishedTrigger`:
+ *     - Dispatches `setNewNanoContractStatusReady`.
+ *     - Resolves immediately.
+ *   - `TriggerTypes.PinConfirmationPrompt`:
+ *     - Awaits `showPinScreenForResult` to get the PIN code.
+ *     - Resolves with `TriggerResponseTypes.PinRequestResponse`.
+ *   - For any other `request.type`, this method will reject with an error.
+ *
+ * @param {Object} request - The request object containing type and data.
+ * @param {Object} requestMetadata - Additional metadata for the request.
+ *
+ * @returns {Promise<Object>} - A Promise that resolves with the appropriate
+ * response based on the request type.
+ *
+ * @example
+ * const handler = promptHandler(dispatch);
+ */
+const promptHandler = (dispatch) => (request, requestMetadata) =>
+  // eslint-disable-next-line
+  new Promise(async (resolve, reject) => {
+    switch (request.type) {
+      case TriggerTypes.SignMessageWithAddressConfirmationPrompt: {
+        const signMessageResponseTemplate = (accepted) => () => resolve({
+          type: TriggerResponseTypes.SignMessageWithAddressConfirmationResponse,
+          data: accepted,
+        });
+        dispatch(showSignMessageWithAddressModal(
+          signMessageResponseTemplate(true),
+          signMessageResponseTemplate(false),
+          request.data,
+          requestMetadata,
+        ))
+      } break;
+      case TriggerTypes.SendNanoContractTxConfirmationPrompt: {
+        const sendNanoContractTxResponseTemplate = (accepted) => (data) => resolve({
+          type: TriggerResponseTypes.SendNanoContractTxConfirmationResponse,
+          data: {
+            accepted,
+            nc: data?.payload,
+          }
+        });
+
+        dispatch(showNanoContractSendTxModal(
+          sendNanoContractTxResponseTemplate(true),
+          sendNanoContractTxResponseTemplate(false),
+          request.data,
+          requestMetadata,
+        ));
+      } break;
+      case TriggerTypes.SendNanoContractTxLoadingTrigger:
+        dispatch(setNewNanoContractStatusLoading());
+        resolve();
+        break;
+      case TriggerTypes.LoadingFinishedTrigger:
+        dispatch(setNewNanoContractStatusReady());
+        resolve();
+        break;
+      case TriggerTypes.PinConfirmationPrompt: {
+        const pinCode = await showPinScreenForResult(dispatch);
+
+        resolve({
+          type: TriggerResponseTypes.PinRequestResponse,
+          data: {
+            accepted: true,
+            pinCode,
+          }
+        });
+      } break;
+      default: reject(new Error('Invalid request'));
+    }
+  });
 
 /**
  * This saga will be called (dispatched from the event listener) when a sign
  * message RPC is published from a dApp
  *
- * @param {String} data.requestId Unique identifier of the request
- * @param {String} data.topic Unique identifier of the connected session
- * @param {String} data.message Message the dApp requested a signature for
+ * @param {String} payload.data.requestId Unique identifier of the request
+ * @param {String} payload.data.topic Unique identifier of the connected session
+ * @param {String} payload.data.message Message the dApp requested a signature for
+ * @param {String} payload.dapp.icon The icon sent by the dApp
+ * @param {String} payload.dapp.proposer The proposer name sent by the dapp
+ * @param {String} payload.dapp.url The url sent by the dApp
+ * @param {String} payload.dapp.description The description sent by the dApp
+ * @param {String} payload.accept A callback function to indicate that the
+ * request has been accepted.
+ * @param {String} payload.deny A callback function to indicate that the request
+ * has been denied.
  */
-export function* onSignMessageRequest(data) {
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
+export function* onSignMessageRequest({ payload }) {
+  const { accept, deny: denyCb, data, dapp } = payload;
 
-  const onAcceptAction = { type: 'WALLET_CONNECT_ACCEPT' };
-  const onRejectAction = { type: 'WALLET_CONNECT_REJECT' };
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet.isReady()) {
+    log.error('Got a session request but wallet is not ready, ignoring.');
+    return;
+  }
+
+  yield put(setWalletConnectModal({
+    show: true,
+    type: WalletConnectModalTypes.SIGN_MESSAGE,
+    data: {
+      data,
+      dapp,
+    },
+  }));
+
+  const { deny } = yield race({
+    accept: take(types.WALLET_CONNECT_ACCEPT),
+    deny: take(types.WALLET_CONNECT_REJECT),
+  });
+
+  if (deny) {
+    denyCb();
+
+    return;
+  }
+
+  accept();
+}
+
+/**
+ * This saga will be called (dispatched from the event listener) when a
+ * sendNanoContractTx message RPC is published from a dApp
+ *
+ * @param {String} payload.data.requestId Unique identifier of the request
+ * @param {String} payload.data.topic Unique identifier of the connected session
+ * @param {String} payload.data.message Message the dApp requested a signature for
+ * @param {String} payload.dapp.icon The icon sent by the dApp
+ * @param {String} payload.dapp.proposer The proposer name sent by the dapp
+ * @param {String} payload.dapp.url The url sent by the dApp
+ * @param {String} payload.dapp.description The description sent by the dApp
+ * @param {String} payload.accept A callback function to indicate that the
+ * request has been accepted.
+ * @param {String} payload.deny A callback function to indicate that the request
+ * has been denied.
+ */
+export function* onSendNanoContractTxRequest({ payload }) {
+  const { accept: acceptCb, deny: denyCb, nc, dapp } = payload;
 
   const wallet = yield select((state) => state.wallet);
 
@@ -294,77 +521,25 @@ export function* onSignMessageRequest(data) {
 
   yield put(setWalletConnectModal({
     show: true,
-    type: WalletConnectModalTypes.SIGN_MESSAGE,
-    data,
-    onAcceptAction,
-    onRejectAction,
+    type: WalletConnectModalTypes.SEND_NANO_CONTRACT_TX,
+    data: {
+      dapp,
+      data: nc,
+    },
   }));
 
-  const { reject } = yield race({
-    accept: take(onAcceptAction.type),
-    reject: take(onRejectAction.type),
+  const { deny, accept } = yield race({
+    accept: take(types.WALLET_CONNECT_ACCEPT),
+    deny: take(types.WALLET_CONNECT_REJECT),
   });
 
-  try {
-    if (reject) {
-      yield call(() => web3wallet.respondSessionRequest({
-        topic: data.topic,
-        response: {
-          id: data.requestId,
-          jsonrpc: '2.0',
-          error: {
-            code: ERROR_CODES.USER_REJECTED,
-            message: 'Rejected by the user',
-          },
-        },
-      }));
-      return;
-    }
+  if (deny) {
+    denyCb();
 
-    if (!data.message) {
-      yield call(() => web3wallet.respondSessionRequest({
-        topic: data.topic,
-        response: {
-          id: data.requestId,
-          jsonrpc: '2.0',
-          error: {
-            code: ERROR_CODES.INVALID_PAYLOAD,
-            message: 'Missing message to sign',
-          },
-        },
-      }));
-
-      return;
-    }
-
-    const { message } = data;
-
-    let dispatch;
-    yield put((_dispatch) => {
-      dispatch = _dispatch;
-    });
-
-    const pinCode = yield call(() => showPinScreenForResult(dispatch));
-    const signedMessage = yield call(() => wallet.signMessageWithAddress(
-      message,
-      0, // First address
-      pinCode,
-    ));
-
-    const response = {
-      id: data.requestId,
-      jsonrpc: '2.0',
-      result: signedMessage,
-    };
-
-    yield call(() => web3wallet.respondSessionRequest({
-      topic: data.topic,
-      response,
-    }));
-  } catch (error) {
-    console.log('Captured error on signMessage: ', error);
-    yield put(onExceptionCaptured(error));
+    return;
   }
+
+  acceptCb(accept);
 }
 
 /**
@@ -520,7 +695,9 @@ export function* onSessionDelete(action) {
 export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
-    takeLatest(types.START_WALLET_SUCCESS, init),
+    fork(init),
+    takeLatest(types.SHOW_NANO_CONTRACT_SEND_TX_MODAL, onSendNanoContractTxRequest),
+    takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
     takeLeading('WC_SESSION_REQUEST', onSessionRequest),
     takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('WC_SESSION_DELETE', onSessionDelete),

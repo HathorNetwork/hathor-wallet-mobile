@@ -188,6 +188,10 @@ export const types = {
   WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
   UNREGISTEREDTOKENS_REQUEST: 'UNREGISTEREDTOKENS_REQUEST',
   UNREGISTEREDTOKENS_UPDATE: 'UNREGISTEREDTOKENS_UPDATE',
+  WALLETCONNECT_NEW_NANOCONTRACT_RETRY: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY',
+  WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS',
+  SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
+  SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL'
 };
 
 export const featureToggleInitialized = () => ({
@@ -1248,6 +1252,20 @@ export const firstAddressFailure = (failurePayload) => ({
 });
 
 /**
+ * Signals that the user wants to attempt to retry the nano contract tx send
+ */
+export const newNanoContractRetry = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY,
+});
+
+/**
+ * Signals that the user doesn't want to retry the new nano contract tx send
+ */
+export const newNanoContractRetryDismiss = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS,
+});
+
+/**
  * Signals update on new nano contract status to ready.
  */
 export const setNewNanoContractStatusReady = () => ({
@@ -1338,4 +1356,24 @@ export const unregisteredTokensRequest = (payload) => ({
 export const unregisteredTokensUpdate = (payload) => ({
   type: types.UNREGISTEREDTOKENS_UPDATE,
   payload,
+});
+
+export const showSignMessageWithAddressModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_SIGN_MESSAGE_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+    dapp,
+  },
+});
+
+export const showNanoContractSendTxModal = (accept, deny, nc, dapp) => ({
+  type: types.SHOW_NANO_CONTRACT_SEND_TX_MODAL,
+  payload: {
+    accept,
+    deny,
+    nc,
+    dapp,
+  },
 });

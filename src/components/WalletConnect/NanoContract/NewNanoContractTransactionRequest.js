@@ -22,6 +22,8 @@ import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
   nanoContractBlueprintInfoRequest,
+  newNanoContractRetry,
+  newNanoContractRetryDismiss,
   setNewNanoContractStatusReady,
   walletConnectAccept,
   walletConnectReject,
@@ -58,7 +60,7 @@ import { DeclineModal } from './DeclineModal';
  * @param {string} props.ncTxRequest.dapp.description
  */
 export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
-  const { nc, dapp } = ncTxRequest;
+  const { data: nc, dapp } = ncTxRequest;
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const newTxStatus = useSelector((state) => state.walletConnect.newNanoContractTransaction.status);
@@ -133,7 +135,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   // This effect runs only once in the construct phase
   useEffect(() => {
     // Do nothing if nano contract is not registered and don't call initialize method.
-    if (notRegistered) return;
+    if (notRegistered) return undefined;
 
     // Request blueprint info if not present to feed the components:
     // - NanoContractExecInfo, and
@@ -151,20 +153,24 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
       }
     });
     dispatch(unregisteredTokensRequest({ uids: unknownTokensUid }));
+
+    return () => {
+      dispatch(setNewNanoContractStatusReady());
+      dispatch(newNanoContractRetryDismiss());
+    };
   }, []);
 
   const onFeedbackModalDismiss = () => {
-    dispatch(setNewNanoContractStatusReady());
     navigation.goBack();
   };
 
   const onNavigateToDashboard = () => {
-    dispatch(setNewNanoContractStatusReady());
     navigation.navigate('Dashboard');
   };
 
   const onTryAgain = () => {
     dispatch(setNewNanoContractStatusReady());
+    dispatch(newNanoContractRetry());
   };
 
   // Loading while downloading:

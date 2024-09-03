@@ -20,10 +20,10 @@ import { COLORS } from '../../styles/themes';
 import { combineURLs, getShortContent, getShortHash, getTimestampFormat } from '../../utils';
 import SimpleButton from '../SimpleButton';
 import { ArrowDownIcon } from '../Icons/ArrowDown.icon';
+import { ArrowUpIcon } from '../Icons/ArrowUp.icon';
 import { TextValue } from '../TextValue';
 import { TextLabel } from '../TextLabel';
 import { TransactionStatusLabel } from '../TransactionStatusLabel';
-import { ArrowUpIcon } from '../Icons/ArrowUp.icon';
 
 /**
  * It presents the header of Nano Contract Transaction screen.
