@@ -394,6 +394,8 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           type: TriggerResponseTypes.SignOracleDataConfirmationResponse,
           data: accepted,
         });
+        // This will avoid the show success feedback on tx request screen.
+        request.data.showSuccessFeedback = false;
 
         dispatch(showSignOracleDataModal(
           signOracleDataResponseTemplate(true),

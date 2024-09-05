@@ -64,6 +64,8 @@ import { DeclineModal } from './DeclineModal';
  */
 export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const { data: nc, dapp } = ncTxRequest;
+  const successFeedbackOn = nc.showSuccessFeedback !== false;
+
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const newTxStatus = useSelector((state) => state.walletConnect.newNanoContractTransaction.status);
@@ -332,7 +334,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
         onDismiss={toggleSelectAddressModal}
         onSelectAddress={handleAddressSelection}
       />
-      {isTxSuccessful() && (
+      {successFeedbackOn && isTxSuccessful() && (
         <FeedbackModal
           icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
           text={t`Transaction successfully sent.`}
