@@ -361,10 +361,11 @@ export function* retryHandler(retryAction, dismissAction) {
  * @param {Object} effect The targeted effect.
  * @param {(error) => void} onError The error handling effect,
  *    which receives the error object as first argument.
- * 
+ *
  * @returns An anonymous effect.
  */
 export function safeEffect(effect, onError) {
+  // eslint-disable-next-line func-names
   return function* (payload) {
     try {
       yield call(effect, payload);

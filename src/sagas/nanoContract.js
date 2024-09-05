@@ -450,7 +450,10 @@ export function* requestBlueprintInfo({ payload }) {
 export function* saga() {
   yield all([
     debounce(500, [[types.START_WALLET_SUCCESS, types.NANOCONTRACT_INIT]], init),
-    takeEvery(types.NANOCONTRACT_REGISTER_REQUEST, safeEffect(registerNanoContract, registerNanoContractOnError)),
+    takeEvery(
+      types.NANOCONTRACT_REGISTER_REQUEST,
+      safeEffect(registerNanoContract, registerNanoContractOnError)
+    ),
     takeEvery(types.NANOCONTRACT_HISTORY_REQUEST, requestHistoryNanoContract),
     takeEvery(types.NANOCONTRACT_UNREGISTER_REQUEST, unregisterNanoContract),
     takeEvery(types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST, requestNanoContractAddressChange),
