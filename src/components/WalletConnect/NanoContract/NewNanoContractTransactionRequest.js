@@ -73,7 +73,12 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.unregisteredTokens }));
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[nc.blueprintId]);
   const registerStatus = useSelector((state) => state.nanoContract.registerStatus);
-
+  const isNcRegistering = (
+    registerStatus === NANOCONTRACT_REGISTER_STATUS.LOADING
+  );
+  const hasNcRegisterFailed = (
+    registerStatus === NANOCONTRACT_REGISTER_STATUS.FAILED
+  );
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   /**
@@ -153,6 +158,10 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     if (ncToAccept.method === 'initialize' && firstAddress.address) {
       setNcAddress(firstAddress.address);
     }
+
+    if (notRegistered && !isNcRegistering && !firstAddress.address && !firstAddress.error) {
+      dispatch(firstAddressRequest());
+    }
   }, [firstAddress]);
 
   // This effect runs only once in the construct phase
@@ -213,14 +222,6 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const isTxSuccessful = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL;
   const isTxFailed = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.FAILED;
 
-  const isNcRegistering = (
-    registerStatus === NANOCONTRACT_REGISTER_STATUS.LOADING
-  );
-
-  const hasNcRegisterFailed = (
-    registerStatus === NANOCONTRACT_REGISTER_STATUS.FAILED
-  );
-
   return (
     <>
       {notRegistered && isNcRegistering && (
@@ -239,10 +240,12 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
           message={t`The Nano Contract requested is not registered. First register the Nano Contract to interact with it.`}
           action={(
             <View style={styles.feedbackActionContainer}>
-              <NewHathorButton
-                title={t`Register Nano Contract`}
-                onPress={onRegisterNanoContract}
-              />
+              {!firstAddress.error && ( /* Doesn't show up if an error happens in first address request */
+                <NewHathorButton
+                  title={t`Register Nano Contract`}
+                  onPress={onRegisterNanoContract}
+                />
+              )}
               <NewHathorButton
                 title={t`Decline Transaction`}
                 onPress={onDeclineTransaction}
