@@ -58,11 +58,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:426
+#: src/models.js:107 src/utils.js:429
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:161
+#: src/utils.js:164
 msgid "Invalid address"
 msgstr "Неправильный адрес"
 
@@ -434,7 +434,8 @@ msgid "Enter your seed words separated by space"
 msgstr "Введите seed-фразу"
 
 #: src/components/NanoContract/NanoContractDetails.js:238
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:293
+#: src/components/WalletConnect/CreateTokenRequest.js:197
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:295
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
 msgid "Try again"
@@ -521,7 +522,9 @@ msgstr "ЗАПРОС СРЕДСТВ"
 msgid "Token"
 msgstr "Токен"
 
-#: src/components/TxDetailsModal.js:166 src/screens/PaymentRequestDetail.js:127
+#: src/components/TxDetailsModal.js:166
+#: src/components/WalletConnect/CreateTokenRequest.js:82
+#: src/screens/PaymentRequestDetail.js:127
 msgid "Amount"
 msgstr "Количество"
 
@@ -553,8 +556,9 @@ msgstr "Введите свой PIN-код "
 msgid "Unlock Hathor Wallet"
 msgstr "Разблокировать Hathor Wallet"
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:72
-#: src/components/WalletConnect/SignMessageModal.js:75
+#: src/components/WalletConnect/CreateTokenModal.js:60
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:64
+#: src/components/WalletConnect/SignMessageModal.js:72
 #: src/screens/PinScreen.js:265
 #: src/screens/WalletConnect/WalletConnectList.js:125
 msgid "Cancel"
@@ -815,7 +819,12 @@ msgstr "Я хочу отменить регистрацию токена **${ to
 msgid "Unregister token"
 msgstr "Отменить регистрацию токена"
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:56
+#: src/screens/WalletConnect/CreateTokenScreen.js:25
+#, fuzzy
+msgid "Create Token Request"
+msgstr "Создать запрос на получение средств"
+
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:48
 #: src/screens/WalletConnect/NewNanoContractTransactionScreen.js:24
 msgid "New Nano Contract Transaction"
 msgstr ""
@@ -981,7 +990,7 @@ msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.js:202
 #: src/components/NanoContract/SelectAddressModal.js:105
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:213
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:215
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:184
 msgid "Loading"
 msgstr ""
@@ -1327,25 +1336,130 @@ msgid ""
 "security step to protect your data from potential phishing risks."
 msgstr ""
 
-#: src/components/WalletConnect/SignMessageModal.js:59
-msgid "New Sign Message Request"
+#: src/components/WalletConnect/CreateTokenModal.js:44
+#, fuzzy
+msgid "New Create Token Request"
+msgstr "Создать запрос на получение средств"
+
+#: src/components/WalletConnect/CreateTokenModal.js:48
+msgid "You have received a new Create Token Request. Please"
 msgstr ""
 
-#: src/components/WalletConnect/SignMessageModal.js:63
-msgid "You have received a new Sign Message Request. Please"
-msgstr ""
-
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:62
-#: src/components/WalletConnect/SignMessageModal.js:65
+#: src/components/WalletConnect/CreateTokenModal.js:50
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:54
+#: src/components/WalletConnect/SignMessageModal.js:62
 msgid "carefully review the details"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:64
-#: src/components/WalletConnect/SignMessageModal.js:67
+#: src/components/WalletConnect/CreateTokenModal.js:52
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:56
+#: src/components/WalletConnect/SignMessageModal.js:64
 msgid "before deciding to accept or decline."
 msgstr ""
 
-#: src/components/WalletConnect/SignMessageModal.js:71
+#: src/components/WalletConnect/CreateTokenModal.js:56
+msgid "Review Create Token Request details"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:74
+msgid "Yes"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:74
+msgid "No"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:80
+msgid "Title"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:81
+#, fuzzy
+msgid "Symbol"
+msgstr "Символ: "
+
+#: src/components/WalletConnect/CreateTokenRequest.js:83
+#, javascript-format
+msgid "Address to send newly minted ${ data.symbol }"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:84
+msgid "Address to send change ${ DEFAULT_TOKEN.uid }"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:85
+msgid "Create mint authority?"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:86
+msgid "Create melt authority?"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:87
+#, fuzzy
+msgid "Address to send the mint authority"
+msgstr "Адрес отправки"
+
+#: src/components/WalletConnect/CreateTokenRequest.js:88
+#, fuzzy
+msgid "Address to send the melt authority"
+msgstr "Адрес отправки"
+
+#: src/components/WalletConnect/CreateTokenRequest.js:92
+msgid "Allow external mint authority addresses?"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:99
+msgid "Allow external melt authority addresses?"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:103
+#, fuzzy
+msgid "Token data"
+msgstr "Имя токена"
+
+#: src/components/WalletConnect/CreateTokenRequest.js:158
+#: src/components/WalletConnect/SignMessageRequest.js:81
+msgid "Accept Request"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:162
+#: src/components/WalletConnect/SignMessageRequest.js:85
+msgid "Decline Request"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:172
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:258
+msgid "Sending transaction"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:173
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:259
+msgid "Please wait."
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:186
+msgid "Create Token Transaction successfully sent."
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:188
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:287
+msgid "Ok, close"
+msgstr ""
+
+#: src/components/WalletConnect/CreateTokenRequest.js:195
+msgid "Error while sending create token transaction."
+msgstr ""
+
+#: src/components/WalletConnect/SignMessageModal.js:56
+msgid "New Sign Message Request"
+msgstr ""
+
+#: src/components/WalletConnect/SignMessageModal.js:60
+msgid "You have received a new Sign Message Request. Please"
+msgstr ""
+
+#: src/components/WalletConnect/SignMessageModal.js:68
 msgid "Review Sign Message Request details"
 msgstr ""
 
@@ -1357,20 +1471,12 @@ msgstr ""
 msgid "Address Path"
 msgstr ""
 
-#: src/components/WalletConnect/SignMessageRequest.js:81
-msgid "Accept Request"
-msgstr ""
-
-#: src/components/WalletConnect/SignMessageRequest.js:85
-msgid "Decline Request"
-msgstr ""
-
-#: src/components/WalletConnect/WarnDisclaimer.js:21
+#: src/components/WalletConnect/WarnDisclaimer.js:27
 msgid ""
 "Caution: There are risks associated with signing dapp transaction requests."
 msgstr ""
 
-#: src/components/WalletConnect/WarnDisclaimer.js:27
+#: src/components/WalletConnect/WarnDisclaimer.js:33
 msgid "Read More."
 msgstr ""
 
@@ -1440,67 +1546,55 @@ msgstr ""
 msgid "Couldn't determine address, select one"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:49
+#: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:51
 #, javascript-format
 msgid "Position ${ idx }"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:91
+#: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:100
 msgid "Arguments"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:96
+#: src/components/WalletConnect/NanoContract/NanoContractMethodArgs.js:105
 msgid "Loading arguments."
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:60
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:52
 msgid "You have received a new Nano Contract Transaction. Please"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:68
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:60
 msgid "Review transaction details"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:195
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:197
 msgid "Nano Contract Not Found"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:196
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:198
 msgid ""
 "The Nano Contract requested is not registered. First register the Nano "
 "Contract to interact with it."
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:199
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:246
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:201
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:248
 msgid "Decline Transaction"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:214
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:216
 msgid "Loading transaction information."
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:242
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:244
 msgid "Accept Transaction"
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:256
-msgid "Sending transaction"
-msgstr ""
-
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:257
-msgid "Please wait."
-msgstr ""
-
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:283
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:285
 msgid "Transaction successfully sent."
 msgstr ""
 
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:285
-msgid "Ok, close"
-msgstr ""
-
-#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:291
+#: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:293
 msgid "Error while sending transaction."
 msgstr ""
 
@@ -1571,6 +1665,7 @@ msgid "See full transaction details on Public Explorer."
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionActionListItem.js:108
+#, javascript-format
 msgid "Deposit ${ tokenSymbol }"
 msgstr ""
 
