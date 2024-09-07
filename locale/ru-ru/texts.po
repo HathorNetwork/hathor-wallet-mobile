@@ -820,9 +820,8 @@ msgid "Unregister token"
 msgstr "Отменить регистрацию токена"
 
 #: src/screens/WalletConnect/CreateTokenScreen.js:25
-#, fuzzy
 msgid "Create Token Request"
-msgstr "Создать запрос на получение средств"
+msgstr ""
 
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:48
 #: src/screens/WalletConnect/NewNanoContractTransactionScreen.js:24
@@ -1337,9 +1336,8 @@ msgid ""
 msgstr ""
 
 #: src/components/WalletConnect/CreateTokenModal.js:44
-#, fuzzy
 msgid "New Create Token Request"
-msgstr "Создать запрос на получение средств"
+msgstr ""
 
 #: src/components/WalletConnect/CreateTokenModal.js:48
 msgid "You have received a new Create Token Request. Please"
@@ -1374,9 +1372,8 @@ msgid "Title"
 msgstr ""
 
 #: src/components/WalletConnect/CreateTokenRequest.js:81
-#, fuzzy
 msgid "Symbol"
-msgstr "Символ: "
+msgstr ""
 
 #: src/components/WalletConnect/CreateTokenRequest.js:83
 #, javascript-format
@@ -1396,14 +1393,12 @@ msgid "Create melt authority?"
 msgstr ""
 
 #: src/components/WalletConnect/CreateTokenRequest.js:87
-#, fuzzy
 msgid "Address to send the mint authority"
-msgstr "Адрес отправки"
+msgstr ""
 
 #: src/components/WalletConnect/CreateTokenRequest.js:88
-#, fuzzy
 msgid "Address to send the melt authority"
-msgstr "Адрес отправки"
+msgstr ""
 
 #: src/components/WalletConnect/CreateTokenRequest.js:92
 msgid "Allow external mint authority addresses?"
@@ -1414,9 +1409,8 @@ msgid "Allow external melt authority addresses?"
 msgstr ""
 
 #: src/components/WalletConnect/CreateTokenRequest.js:103
-#, fuzzy
 msgid "Token data"
-msgstr "Имя токена"
+msgstr ""
 
 #: src/components/WalletConnect/CreateTokenRequest.js:158
 #: src/components/WalletConnect/SignMessageRequest.js:81
