@@ -16,7 +16,7 @@ import OfflineBar from '../../components/OfflineBar';
 import { CreateTokenRequest } from '../../components/WalletConnect/CreateTokenRequest';
 import { COLORS } from '../../styles/themes';
 
-export function CreateTokenScreen({ route }) {
+export function CreateTokenRequestScreen({ route }) {
   const { createTokenRequest } = route.params;
 
   return (

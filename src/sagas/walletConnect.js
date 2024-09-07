@@ -419,9 +419,12 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
   new Promise(async (resolve, reject) => {
     switch (request.type) {
       case TriggerTypes.CreateTokenConfirmationPrompt: {
-        const createTokenResponseTemplate = (accepted) => () => resolve({
-          type: TriggerResponseTypes.SignMessageWithAddressConfirmationResponse,
-          data: accepted,
+        const createTokenResponseTemplate = (accepted) => (data) => resolve({
+          type: TriggerResponseTypes.CreateTokenConfirmationResponse,
+          data: {
+            accepted,
+            token: data?.payload,
+          }
         });
         dispatch(showCreateTokenModal(
           createTokenResponseTemplate(true),
@@ -588,7 +591,7 @@ export function* onSendNanoContractTxRequest({ payload }) {
 }
 
 export function* onCreateTokenRequest({ payload }) {
-  const { accept: acceptCb, deny: denyCb, token, dapp } = payload;
+  const { accept: acceptCb, deny: denyCb, data, dapp } = payload;
 
   const wallet = yield select((state) => state.wallet);
 
@@ -602,7 +605,7 @@ export function* onCreateTokenRequest({ payload }) {
     type: WalletConnectModalTypes.CREATE_TOKEN,
     data: {
       dapp,
-      data: token,
+      data,
     },
   }));
 

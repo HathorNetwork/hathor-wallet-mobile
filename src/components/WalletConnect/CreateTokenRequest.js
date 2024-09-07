@@ -46,7 +46,15 @@ const condRenderData = (
       <>
         { separator && <View style={commonStyles.cardSeparator} /> }
         <View>
-          <Text style={styles.property}>{ title }</Text>
+          <Text style={[
+            commonStyles.text,
+            commonStyles.field,
+            commonStyles.bold,
+            commonStyles.mb4,
+          ]}
+          >
+            { title }
+          </Text>
           <Text style={[styles.value, styles.bold]}>
             { formatter(attribute) }
           </Text>
@@ -69,9 +77,9 @@ function renderBooleanFormatter(bool) {
 export const CreateTokenRequestData = ({ data }) => (
   <View style={[commonStyles.card, commonStyles.cardSplit]}>
     <View style={commonStyles.cardSplitContent}>
-      { condRenderData(data.name, t`Token Name`, false) }
-      { condRenderData(data.symbol, t`Token Symbol`, true) }
-      { condRenderData(data.amount, t`Token Amount`, true, numberUtils.prettyValue) }
+      { condRenderData(data.name, t`Title`, false) }
+      { condRenderData(data.symbol, t`Symbol`, true) }
+      { condRenderData(data.amount, t`Amount`, true, numberUtils.prettyValue) }
       { condRenderData(data.changeAddress, t`Address to send change ${DEFAULT_TOKEN.uid}`, true) }
       { condRenderData(data.mintAuthorityAddress, t`Address to send the mint authority`, true) }
       { condRenderData(data.meltAuthorityAddress, t`Address to send the melt authority`, true) }
@@ -98,7 +106,6 @@ export const CreateTokenRequestData = ({ data }) => (
 
 export const CreateTokenRequest = ({ createTokenRequest }) => {
   const { dapp, data } = createTokenRequest;
-  const { message, address } = data;
   const { status } = useSelector((state) => state.walletConnect.createToken);
   const dispatch = useDispatch();
   const navigation = useNavigation();
@@ -108,9 +115,9 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
   }, []);
 
   const onAcceptCreateTokenRequest = () => {
-    const acceptedNc = { address, message };
+    const acceptedCreateToken = data;
 
-    dispatch(walletConnectAccept(acceptedNc));
+    dispatch(walletConnectAccept(acceptedCreateToken));
   };
 
   const onDeclineTransaction = () => {

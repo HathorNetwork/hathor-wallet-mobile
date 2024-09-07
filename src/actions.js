@@ -1431,6 +1431,7 @@ export const showNanoContractSendTxModal = (accept, deny, nc, dapp) => ({
 });
 
 export const showCreateTokenModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_CREATE_TOKEN_REQUEST_MODAL,
   payload: {
     accept,
     deny,
