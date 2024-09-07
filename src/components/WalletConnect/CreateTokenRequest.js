@@ -80,7 +80,10 @@ export const CreateTokenRequestData = ({ data }) => (
       { condRenderData(data.name, t`Title`, false) }
       { condRenderData(data.symbol, t`Symbol`, true) }
       { condRenderData(data.amount, t`Amount`, true, numberUtils.prettyValue) }
+      { condRenderData(data.address, t`Address to send newly minted ${data.symbol}`, true) }
       { condRenderData(data.changeAddress, t`Address to send change ${DEFAULT_TOKEN.uid}`, true) }
+      { condRenderData(data.createMint, t`Create mint authority?`, true, renderBooleanFormatter) }
+      { condRenderData(data.createMelt, t`Create melt authority?`, true, renderBooleanFormatter) }
       { condRenderData(data.mintAuthorityAddress, t`Address to send the mint authority`, true) }
       { condRenderData(data.meltAuthorityAddress, t`Address to send the melt authority`, true) }
       { data.mintAuthorityAddress != null
@@ -97,8 +100,6 @@ export const CreateTokenRequestData = ({ data }) => (
             true,
             renderBooleanFormatter,
           )}
-      { condRenderData(data.createMint, t`Create mint authority?`, true, renderBooleanFormatter) }
-      { condRenderData(data.createMelt, t`Create melt authority?`, true, renderBooleanFormatter) }
       { condRenderData(data.data, t`Token data`, true, (tokenData) => tokenData.join('\n')) }
     </View>
   </View>
