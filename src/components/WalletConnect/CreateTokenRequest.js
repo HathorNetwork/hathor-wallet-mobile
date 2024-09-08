@@ -77,7 +77,7 @@ function renderBooleanFormatter(bool) {
 export const CreateTokenRequestData = ({ data }) => (
   <View style={[commonStyles.card, commonStyles.cardSplit]}>
     <View style={commonStyles.cardSplitContent}>
-      { condRenderData(data.name, t`Title`, false) }
+      { condRenderData(data.name, t`Name`, false) }
       { condRenderData(data.symbol, t`Symbol`, true) }
       { condRenderData(data.amount, t`Amount`, true, numberUtils.prettyValue) }
       { condRenderData(data.address, t`Address to send newly minted ${data.symbol}`, true) }

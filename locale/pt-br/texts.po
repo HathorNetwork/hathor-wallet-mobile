@@ -835,7 +835,7 @@ msgstr "Desregistrar token"
 
 #: src/screens/WalletConnect/CreateTokenScreen.js:25
 msgid "Create Token Request"
-msgstr "Request de Criação de Token"
+msgstr "Requisição de Criação de Token"
 
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:48
 #: src/screens/WalletConnect/NewNanoContractTransactionScreen.js:24
@@ -1384,7 +1384,7 @@ msgstr ""
 
 #: src/components/WalletConnect/CreateTokenModal.js:44
 msgid "New Create Token Request"
-msgstr "Novo Request de Criação de Token"
+msgstr "Nova Requisição de Criação de Token"
 
 #: src/components/WalletConnect/CreateTokenModal.js:48
 msgid "You have received a new Create Token Request. Please"
@@ -1425,7 +1425,7 @@ msgstr "Símbolo"
 #: src/components/WalletConnect/CreateTokenRequest.js:83
 #, javascript-format
 msgid "Address to send newly minted ${ data.symbol }"
-msgstr "Endereço para enviar os tokens ${ data.symbol } minted"
+msgstr "Endereço para enviar os tokens ${ data.symbol } criados"
 
 #: src/components/WalletConnect/CreateTokenRequest.js:84
 msgid "Address to send change ${ DEFAULT_TOKEN.uid }"
@@ -1457,7 +1457,7 @@ msgstr "Permitir endereços externos de melt authority?"
 
 #: src/components/WalletConnect/CreateTokenRequest.js:103
 msgid "Token data"
-msgstr "Data do Token"
+msgstr "Dados do Token"
 
 #: src/components/WalletConnect/CreateTokenRequest.js:158
 #: src/components/WalletConnect/SignMessageRequest.js:81
@@ -1490,7 +1490,7 @@ msgstr "Ok, fechar"
 
 #: src/components/WalletConnect/CreateTokenRequest.js:195
 msgid "Error while sending create token transaction."
-msgstr "Erro an enviar transação de criação de token."
+msgstr "Erro ao enviar transação de criação de token."
 
 #: src/components/WalletConnect/SignMessageModal.js:56
 msgid "New Sign Message Request"
