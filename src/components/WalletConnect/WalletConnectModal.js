@@ -14,6 +14,7 @@ import ConnectModal from './ConnectModal';
 import { COLORS } from '../../styles/themes';
 import { NewNanoContractTransactionModal } from './NanoContract/NewNanoContractTransactionModal';
 import SignOracleDataModal from './NanoContract/SignOracleDataModal';
+import CreateTokenModal from './CreateTokenModal';
 
 export default () => {
   const dispatch = useDispatch();
@@ -54,6 +55,13 @@ export default () => {
       case WalletConnectModalTypes.SEND_NANO_CONTRACT_TX:
         return (
           <NewNanoContractTransactionModal
+            {...walletConnectModal}
+            onDismiss={onDismiss}
+          />
+        );
+      case WalletConnectModalTypes.CREATE_TOKEN:
+        return (
+          <CreateTokenModal
             {...walletConnectModal}
             onDismiss={onDismiss}
           />
@@ -117,4 +125,5 @@ export const WalletConnectModalTypes = {
   SIGN_MESSAGE: 'SIGN_MESSAGE',
   SEND_NANO_CONTRACT_TX: 'SEND_NANO_CONTRACT_TX',
   SIGN_ORACLE_DATA: 'SIGN_ORACLE_DATA',
+  CREATE_TOKEN: 'CREATE_TOKEN',
 };

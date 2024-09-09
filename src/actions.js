@@ -11,7 +11,9 @@ import {
   metadataApi,
 } from '@hathor/wallet-lib';
 import {
-  METADATA_CONCURRENT_DOWNLOAD, WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS,
+  METADATA_CONCURRENT_DOWNLOAD,
+  WALLETCONNECT_CREATE_TOKEN_STATUS,
+  WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS,
 } from './constants';
 import { mapToTxHistory } from './utils';
 
@@ -195,6 +197,10 @@ export const types = {
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
   SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL',
   SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
+  SHOW_CREATE_TOKEN_REQUEST_MODAL: 'SHOW_CREATE_TOKEN_REQUEST_MODAL',
+  WALLETCONNECT_CREATE_TOKEN_STATUS: 'WALLETCONNECT_CREATE_TOKEN_STATUS',
+  WALLETCONNECT_CREATE_TOKEN_RETRY: 'WALLETCONNECT_CREATE_TOKEN_RETRY',
+  WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS: 'WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1301,6 +1307,52 @@ export const setNewNanoContractStatusSuccess = () => ({
 });
 
 /**
+ * Signals that the user wants to attempt to retry the create token request
+ */
+export const createTokenRetry = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_RETRY,
+});
+
+/**
+ * Signals that the user doesn't want to retry the create token request
+ */
+export const createTokenRetryDismiss = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
+});
+
+/**
+ * Signals update on create token status to ready.
+ */
+export const setCreateTokenStatusReady = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
+  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.READY,
+});
+
+/**
+ * Signals update on create token status to loading.
+ */
+export const setCreateTokenStatusLoading = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
+  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.LOADING,
+});
+
+/**
+ * Signals update on create token status to failed.
+ */
+export const setCreateTokenStatusFailed = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
+  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.FAILED,
+});
+
+/**
+ * Signals update on create token status to successful.
+ */
+export const setCreateTokenStatusSuccessful = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
+  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.SUCCESSFUL,
+});
+
+/**
  * Blueprint Info request in the context of a Nano Contract.
  * @param {string} id Blueprint ID.
  */
@@ -1387,6 +1439,16 @@ export const showNanoContractSendTxModal = (accept, deny, nc, dapp) => ({
     accept,
     deny,
     nc,
+    dapp,
+  },
+});
+
+export const showCreateTokenModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_CREATE_TOKEN_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
     dapp,
   },
 });
