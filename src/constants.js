@@ -225,32 +225,32 @@ export const networkSettingsKeyMap = {
   networkSettings: 'networkSettings:networkSettings'
 };
 
-export const NETWORKSETTINGS_STATUS = {
+export const BASE_STATUS = {
   READY: 'ready',
   FAILED: 'failed',
   LOADING: 'loading',
-  WAITING: 'waiting',
   SUCCESSFUL: 'successful',
+};
+
+export const NETWORKSETTINGS_STATUS = {
+  ...BASE_STATUS,
+  WAITING: 'waiting',
+};
+
+export const WALLETCONNECT_CREATE_TOKEN_STATUS = {
+  ...BASE_STATUS,
 };
 
 export const NANOCONTRACT_REGISTER_STATUS = {
-  READY: 'ready',
-  FAILED: 'failed',
-  LOADING: 'loading',
-  SUCCESSFUL: 'successful',
+  ...BASE_STATUS,
 };
 
 export const WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS = {
-  READY: 'ready',
-  FAILED: 'failed',
-  LOADING: 'loading',
-  SUCCESSFUL: 'successful',
+  ...BASE_STATUS,
 };
 
 export const NANOCONTRACT_BLUEPRINTINFO_STATUS = {
-  FAILED: 'failed',
-  LOADING: 'loading',
-  SUCCESSFUL: 'successful',
+  ...BASE_STATUS,
 };
 
 /**

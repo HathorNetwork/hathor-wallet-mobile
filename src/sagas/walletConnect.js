@@ -68,6 +68,7 @@ import {
   RpcResponseTypes,
   SendNanoContractTxFailure,
   handleRpcRequest,
+  CreateTokenError,
 } from '@hathor/hathor-rpc-handler';
 import { isWalletServiceEnabled, WALLET_STATUS } from './wallet';
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
@@ -84,12 +85,17 @@ import {
   setWCConnectionFailed,
   showSignMessageWithAddressModal,
   showNanoContractSendTxModal,
+  showCreateTokenModal,
   setNewNanoContractStatusLoading,
   setNewNanoContractStatusReady,
   setNewNanoContractStatusFailure,
   setNewNanoContractStatusSuccess,
+  setCreateTokenStatusLoading,
+  setCreateTokenStatusReady,
+  setCreateTokenStatusSuccessful,
+  setCreateTokenStatusFailed,
 } from '../actions';
-import { checkForFeatureFlag, getNetworkSettings, showPinScreenForResult } from './helpers';
+import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
 
 const log = logger('walletConnect');
@@ -179,7 +185,7 @@ function* init() {
 
     yield cancel();
   } catch (error) {
-    console.error('Error loading wallet connect', error);
+    log.error('Error loading wallet connect', error);
     yield put(onExceptionCaptured(error));
   }
 }
@@ -272,7 +278,7 @@ export function* onSessionRequest(action) {
   const requestSession = activeSessions[payload.topic];
 
   if (!requestSession) {
-    console.error('Could not identify the request session, ignoring request..');
+    log.error('Could not identify the request session, ignoring request.');
     return;
   }
 
@@ -302,6 +308,9 @@ export function* onSessionRequest(action) {
       case RpcResponseTypes.SendNanoContractTxResponse:
         yield put(setNewNanoContractStatusSuccess());
         break;
+      case RpcResponseTypes.CreateTokenResponse:
+        yield put(setCreateTokenStatusSuccessful());
+        break;
       default:
         break;
     }
@@ -320,11 +329,27 @@ export function* onSessionRequest(action) {
       case SendNanoContractTxFailure: {
         yield put(setNewNanoContractStatusFailure());
 
+        const retry = yield call(
+          retryHandler,
+          types.WALLETCONNECT_CREATE_TOKEN_RETRY,
+          types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
+          // Retry the action, exactly as it came:
+          yield spawn(onSessionRequest, action);
+        }
+      } break;
+      case CreateTokenError: {
+        yield put(setCreateTokenStatusFailed());
+
         // User might try again, wait for it.
-        const { retry } = yield race({
-          retry: take(types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY),
-          dismiss: take(types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS),
-        });
+        const retry = yield call(
+          retryHandler,
+          types.WALLETCONNECT_CREATE_TOKEN_RETRY,
+          types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
+        );
 
         if (retry) {
           shouldAnswer = false;
@@ -393,6 +418,21 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
     switch (request.type) {
+      case TriggerTypes.CreateTokenConfirmationPrompt: {
+        const createTokenResponseTemplate = (accepted) => (data) => resolve({
+          type: TriggerResponseTypes.CreateTokenConfirmationResponse,
+          data: {
+            accepted,
+            token: data?.payload,
+          }
+        });
+        dispatch(showCreateTokenModal(
+          createTokenResponseTemplate(true),
+          createTokenResponseTemplate(false),
+          request.data,
+          requestMetadata,
+        ))
+      } break;
       case TriggerTypes.SignMessageWithAddressConfirmationPrompt: {
         const signMessageResponseTemplate = (accepted) => () => resolve({
           type: TriggerResponseTypes.SignMessageWithAddressConfirmationResponse,
@@ -425,7 +465,15 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         dispatch(setNewNanoContractStatusLoading());
         resolve();
         break;
-      case TriggerTypes.LoadingFinishedTrigger:
+      case TriggerTypes.CreateTokenLoadingTrigger:
+        dispatch(setCreateTokenStatusLoading());
+        resolve();
+        break;
+      case TriggerTypes.CreateTokenLoadingFinishedTrigger:
+        dispatch(setCreateTokenStatusReady());
+        resolve();
+        break;
+      case TriggerTypes.SendNanoContractTxLoadingFinishedTrigger:
         dispatch(setNewNanoContractStatusReady());
         resolve();
         break;
@@ -515,7 +563,7 @@ export function* onSendNanoContractTxRequest({ payload }) {
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet.isReady()) {
-    console.error('Got a session request but wallet is not ready, ignoring..');
+    log.error('Got a session request but wallet is not ready, ignoring.');
     return;
   }
 
@@ -542,6 +590,38 @@ export function* onSendNanoContractTxRequest({ payload }) {
   acceptCb(accept);
 }
 
+export function* onCreateTokenRequest({ payload }) {
+  const { accept: acceptCb, deny: denyCb, data, dapp } = payload;
+
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet.isReady()) {
+    log.error('Got a session request but wallet is not ready, ignoring.');
+    return;
+  }
+
+  yield put(setWalletConnectModal({
+    show: true,
+    type: WalletConnectModalTypes.CREATE_TOKEN,
+    data: {
+      dapp,
+      data,
+    },
+  }));
+
+  const { deny, accept } = yield race({
+    accept: take(types.WALLET_CONNECT_ACCEPT),
+    deny: take(types.WALLET_CONNECT_REJECT),
+  });
+
+  if (deny) {
+    denyCb();
+
+    return;
+  }
+
+  acceptCb(accept);
+}
 /**
  * Listens for the wallet reset action, dispatched from the wallet sagas so we
  * can clear all current sessions.
@@ -619,7 +699,7 @@ export function* onSessionProposal(action) {
 
     yield call(refreshActiveSessions);
   } catch (error) {
-    console.error('Error on sessionProposal: ', error);
+    log.error('Error on sessionProposal: ', error);
     yield put(onExceptionCaptured(error));
   }
 }
@@ -698,6 +778,7 @@ export function* saga() {
     fork(init),
     takeLatest(types.SHOW_NANO_CONTRACT_SEND_TX_MODAL, onSendNanoContractTxRequest),
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
+    takeLatest(types.SHOW_CREATE_TOKEN_REQUEST_MODAL, onCreateTokenRequest),
     takeLeading('WC_SESSION_REQUEST', onSessionRequest),
     takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('WC_SESSION_DELETE', onSessionDelete),
