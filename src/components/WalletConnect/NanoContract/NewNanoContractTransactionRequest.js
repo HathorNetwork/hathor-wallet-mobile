@@ -40,7 +40,6 @@ import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS, NANOCONTRACT_REGISTER
 import Spinner from '../../Spinner';
 import FeedbackModal from '../../FeedbackModal';
 import errorIcon from '../../../assets/images/icErrorBig.png';
-import checkIcon from '../../../assets/images/icCheckBig.png';
 import { DappContainer } from './DappContainer';
 import { NanoContractExecInfo } from './NanoContractExecInfo';
 import { NanoContractActions } from './NanoContractActions';
@@ -192,12 +191,20 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL) {
+      navigation.navigate(
+        'SuccessFeedbackScreen',
+        {
+          title: t`Success!`,
+          message: t`Transaction successfully sent.`,
+        }
+      );
+    }
+  }, [newTxStatus]);
+
   const onFeedbackModalDismiss = () => {
     navigation.goBack();
-  };
-
-  const onNavigateToDashboard = () => {
-    navigation.navigate('Dashboard');
   };
 
   const onTryAgain = () => {
@@ -219,7 +226,6 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const isTxProcessing = () => (
     !isTxInfoLoading() && newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
   );
-  const isTxSuccessful = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL;
   const isTxFailed = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.FAILED;
 
   return (
@@ -335,14 +341,6 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
         onDismiss={toggleSelectAddressModal}
         onSelectAddress={handleAddressSelection}
       />
-      {isTxSuccessful() && (
-        <FeedbackModal
-          icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
-          text={t`Transaction successfully sent.`}
-          onDismiss={onFeedbackModalDismiss}
-          action={(<NewHathorButton discrete title={t`Ok, close`} onPress={onNavigateToDashboard} />)}
-        />
-      )}
       {isTxFailed() && (
         <FeedbackModal
           icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
