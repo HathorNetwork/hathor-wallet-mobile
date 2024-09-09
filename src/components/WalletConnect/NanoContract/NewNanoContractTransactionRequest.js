@@ -29,8 +29,8 @@ import {
   walletConnectReject,
   unregisteredTokensRequest,
   nanoContractRegisterRequest,
+  nanoContractRegisterReady,
   firstAddressRequest,
-  nanoContractRegisterReady
 } from '../../../actions';
 import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
@@ -134,37 +134,14 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const notInitialize = ncToAccept.method !== 'initialize';
   const notRegistered = useMemo(() => (
     notInitialize && registeredNc == null
-  ), [notInitialize, registeredNc]); 
+  ), [notInitialize, registeredNc]);
   // It results in true for registered nc and initialize request
   const showRequest = !notRegistered;
 
-  // Mount: do nothing
   useEffect(() => {
-    // Unmount
-    return () => {
-      // Restore ready status to Nano Contract registration state if
-      // we have had a registration while handling a new transaction request
-      dispatch(nanoContractRegisterReady());
-    };
-  }, []);
+    // This component should always start with ready state.
+    dispatch(setNewNanoContractStatusReady());
 
-  // This effect should run at most twice:
-  // 1. when in the construct phase
-  // 2. after firstAddress is set on store after a request to load it
-  // The mentioned load request at (2) can happen for 'initialize' transaction,
-  // it is requested from a child component, NanoContractExecInfo.
-  useEffect(() => {
-    if (ncToAccept.method === 'initialize' && firstAddress.address) {
-      setNcAddress(firstAddress.address);
-    }
-
-    if (notRegistered && !isNcRegistering && !firstAddress.address && !firstAddress.error) {
-      dispatch(firstAddressRequest());
-    }
-  }, [firstAddress]);
-
-  // This effect runs only once in the construct phase
-  useEffect(() => {
     // Do nothing if nano contract is not registered and don't call initialize method.
     if (notRegistered) return undefined;
 
@@ -185,11 +162,32 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     });
     dispatch(unregisteredTokensRequest({ uids: unknownTokensUid }));
 
+    // Unmount
     return () => {
+      // Restore ready status to Nano Contract registration state if
+      // we have had a registration while handling a new transaction request
+      dispatch(nanoContractRegisterReady());
+      // Restore ready status to New Nano Contract Transaction state
       dispatch(setNewNanoContractStatusReady());
+      // Dismiss the retry condition to New Nano Contract Transaction
       dispatch(newNanoContractRetryDismiss());
     };
   }, []);
+
+  // This effect should run at most twice:
+  // 1. when in the construct phase
+  // 2. after firstAddress is set on store after a request to load it
+  // The mentioned load request at (2) can happen for 'initialize' transaction,
+  // it is requested from a child component, NanoContractExecInfo.
+  useEffect(() => {
+    if (ncToAccept.method === 'initialize' && firstAddress.address) {
+      setNcAddress(firstAddress.address);
+    }
+
+    if (notRegistered && !isNcRegistering && !firstAddress.address && !firstAddress.error) {
+      dispatch(firstAddressRequest());
+    }
+  }, [firstAddress]);
 
   useEffect(() => {
     if (newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL) {
