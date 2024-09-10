@@ -365,8 +365,7 @@ export function* retryHandler(retryAction, dismissAction) {
  * @returns An anonymous effect.
  */
 export function safeEffect(effect, onError) {
-  // eslint-disable-next-line func-names
-  return function* (payload) {
+  return function* _safeEffect(payload) {
     try {
       yield call(effect, payload);
     } catch (error) {
