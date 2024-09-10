@@ -196,7 +196,7 @@ export const TX_MINING_SERVICE_TESTNET_URL = 'https://txmining.testnet.hathor.ne
 
 // Nano testnet settings:
 export const NETWORK_NANO_TESTNET = 'testnet';
-export const NODE_SERVER_NANO_TESTNET_URL = 'https://node1.nano-testnet.hathor.network/v1a/';
+export const NODE_SERVER_NANO_TESTNET_URL = 'https://staging.nano-testnet.hathor.network/v1a/';
 export const EXPLORER_NANO_TESTNET_URL = 'https://explorer.alpha.nano-testnet.hathor.network/';
 export const TX_MINING_SERVICE_NANO_TESTNET_URL = 'https://txmining.nano-testnet.hathor.network/';
 

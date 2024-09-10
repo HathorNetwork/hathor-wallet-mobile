@@ -201,6 +201,7 @@ export const types = {
   WALLETCONNECT_CREATE_TOKEN_STATUS: 'WALLETCONNECT_CREATE_TOKEN_STATUS',
   WALLETCONNECT_CREATE_TOKEN_RETRY: 'WALLETCONNECT_CREATE_TOKEN_RETRY',
   WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS: 'WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS',
+  NETWORK_CHANGED: 'NETWORK_CHANGED',
 };
 
 export const featureToggleInitialized = () => ({
@@ -682,6 +683,10 @@ export const tokenInvalidateBalance = (tokenId) => ({
 
 export const reloadWalletRequested = () => ({
   type: types.RELOAD_WALLET_REQUESTED,
+});
+
+export const networkChanged = () => ({
+  type: types.NETWORK_CHANGED,
 });
 
 export const startWalletRequested = (payload) => ({
