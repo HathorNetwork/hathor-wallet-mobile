@@ -165,7 +165,7 @@ export function* registerNanoContract({ payload }) {
  */
 function* registerNanoContractOnError(error) {
   log.error('Unexpected error while registering Nano Contract.', error);
-  yield put(nanoContractRegisterFailure(failureMessage.blueprintInfoFailure));
+  yield put(nanoContractRegisterFailure(failureMessage.nanoContractFailure));
   yield put(onExceptionCaptured(error, false));
 }
 
