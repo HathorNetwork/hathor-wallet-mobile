@@ -12,6 +12,7 @@ import {
   reloadWalletRequested,
   onExceptionCaptured,
   networkSettingsUpdateReady,
+  networkChanged,
 } from '../actions';
 import {
   NETWORK_MAINNET,
@@ -281,6 +282,8 @@ export function* persistNetworkSettings(action) {
     yield put(onExceptionCaptured(errMsg, /* isFatal */ true));
     return;
   }
+
+  yield put(networkChanged());
 
   // Stop wallet and clean its storage without clean its access data.
   wallet.stop({ cleanStorage: true, cleanAddresses: true, cleanTokens: true });
