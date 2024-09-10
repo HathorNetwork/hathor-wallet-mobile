@@ -847,13 +847,14 @@ export function* featureToggleUpdateListener() {
  * Sends a disconnect session RPC message to the connected cloud server
  */
 export function* onCancelSession(action) {
+  console.log('on cancel session', action);
   const { web3wallet } = yield select((state) => state.walletConnect.client);
 
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
 
   if (activeSessions[action.payload.id]) {
     yield call(() => web3wallet.disconnectSession({
-      topic: activeSessions[action.payload].topic,
+      topic: activeSessions[action.payload.id].topic,
       reason: {
         code: ERROR_CODES.USER_DISCONNECTED,
         message: 'User cancelled the session',
