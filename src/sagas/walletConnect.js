@@ -716,12 +716,14 @@ export function* onSessionProposal(action) {
 
   if (reject) {
     yield call(() => web3wallet.rejectSession({
-      id: params.id,
+      id,
       reason: {
         code: ERROR_CODES.USER_REJECTED,
         message: 'User rejected the session',
       },
     }));
+
+    return;
   }
 
   const networkSettings = yield select(getNetworkSettings);
