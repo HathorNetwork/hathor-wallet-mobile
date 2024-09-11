@@ -174,10 +174,16 @@ function* init() {
     yield fork(setupListeners, web3wallet);
 
     // Refresh redux with the active sessions, loaded from storage
-    yield call(refreshActiveSessions);
+    // Pass extend = true so session expiration date get renewed
+    yield call(refreshActiveSessions, true);
+
+    yield fork(listenForNetworkChange);
+    yield fork(listenForAppStateChange);
 
     // If the wallet is reset, we should cancel all listeners
     yield take(types.RESET_WALLET);
+
+    yield call(clearSessions);
 
     yield cancel();
   } catch (error) {
@@ -186,11 +192,75 @@ function* init() {
   }
 }
 
-export function* refreshActiveSessions() {
+export function* listenForNetworkChange() {
+  while (true) {
+    // XXX: We should check the fullnode's genesisHash and only reset
+    // the sessions if it changed.
+    yield take(types.NETWORK_CHANGED);
+    log.debug('Network changed, resetting all sessions.');
+    yield call(clearSessions);
+  }
+}
+
+export function* listenForAppStateChange() {
+  while (true) {
+    const { payload: { oldState, newState } } = yield take(types.APPSTATE_UPDATED);
+    console.log('STATE CHANGED', {
+      oldState,
+      newState
+    });
+
+    if (oldState === 'background'
+      && newState === 'active') {
+      // Refresh and extend sessions
+      yield call(refreshActiveSessions, true);
+      // Check for pending requests
+      yield call(checkForPendingRequests);
+    }
+  }
+}
+
+export function* checkForPendingRequests() {
+  const { web3wallet } = yield select((state) => state.walletConnect.client);
+
+  yield call([web3wallet, web3wallet.getPendingAuthRequests]);
+}
+
+export function* refreshActiveSessions(extend = false) {
+  log.debug('Refreshing active sessions.');
   const { web3wallet } = yield select((state) => state.walletConnect.client);
 
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
   yield put(setWalletConnectSessions(activeSessions));
+
+  if (extend) {
+    for (const key of Object.keys(activeSessions)) {
+      log.debug('Extending session ');
+      log.debug(activeSessions[key].topic);
+
+      try {
+        yield call(() => web3wallet.extendSession({
+          topic: activeSessions[key].topic,
+        }));
+      } catch (extendError) {
+        log.error('Error extending session, attempting to remove. Error:', extendError);
+
+        // Extending session failed, remove it
+        try {
+          yield call(() => web3wallet.disconnectSession({
+            topic: activeSessions[key].topic,
+            reason: {
+              code: ERROR_CODES.USER_DISCONNECTED,
+              message: 'Unable to extend session',
+            },
+          }));
+        } catch (disconnectError) {
+          log.error('Unable to remove session after extend failed.', disconnectError);
+          yield put(onExceptionCaptured(disconnectError));
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -214,6 +284,7 @@ export function* setupListeners(web3wallet) {
     addListener('session_request');
     addListener('session_proposal');
     addListener('session_delete');
+    addListener('disconnect');
 
     return () => listenerMap.forEach((
       listener,
@@ -358,17 +429,21 @@ export function* onSessionRequest(action) {
     }
 
     if (shouldAnswer) {
-      yield call(() => web3wallet.respondSessionRequest({
-        topic: payload.topic,
-        response: {
-          id: payload.id,
-          jsonrpc: '2.0',
-          error: {
-            code: ERROR_CODES.USER_REJECTED_METHOD,
-            message: 'Rejected by the user',
+      try {
+        yield call(() => web3wallet.respondSessionRequest({
+          topic: payload.topic,
+          response: {
+            id: payload.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.USER_REJECTED_METHOD,
+              message: 'Rejected by the user',
+            },
           },
-        },
-      }));
+        }));
+      } catch (error) {
+        log.error('Error rejecting response on sessionRequest', error);
+      }
     }
   }
 }
@@ -715,13 +790,19 @@ export function* onSessionProposal(action) {
   });
 
   if (reject) {
-    yield call(() => web3wallet.rejectSession({
-      id: params.id,
-      reason: {
-        code: ERROR_CODES.USER_REJECTED,
-        message: 'User rejected the session',
-      },
-    }));
+    try {
+      yield call(() => web3wallet.rejectSession({
+        id,
+        reason: {
+          code: ERROR_CODES.USER_REJECTED,
+          message: 'User rejected the session',
+        },
+      }));
+    } catch (e) {
+      log.error('Error rejecting session on sessionProposal', e);
+    }
+
+    return;
   }
 
   const networkSettings = yield select(getNetworkSettings);
@@ -742,7 +823,20 @@ export function* onSessionProposal(action) {
     yield call(refreshActiveSessions);
   } catch (error) {
     log.error('Error on sessionProposal: ', error);
-    yield put(onExceptionCaptured(error));
+    try {
+      // Attempt once more to reject the session, so it doesn't linger in the
+      // message queue
+      yield call(() => web3wallet.rejectSession({
+        id,
+        reason: {
+          code: ERROR_CODES.USER_REJECTED,
+          message: 'User rejected the session',
+        },
+      }));
+    } catch (e) {
+      // Only if this fails, send the exception to Sentry
+      yield put(onExceptionCaptured(error));
+    }
   }
 }
 
@@ -786,21 +880,20 @@ export function* featureToggleUpdateListener() {
  * Sends a disconnect session RPC message to the connected cloud server
  */
 export function* onCancelSession(action) {
+  console.log('on cancel session', action);
   const { web3wallet } = yield select((state) => state.walletConnect.client);
 
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
 
-  if (!activeSessions[action.payload]) {
-    return;
+  if (activeSessions[action.payload.id]) {
+    yield call(() => web3wallet.disconnectSession({
+      topic: activeSessions[action.payload.id].topic,
+      reason: {
+        code: ERROR_CODES.USER_DISCONNECTED,
+        message: 'User cancelled the session',
+      },
+    }));
   }
-
-  yield call(() => web3wallet.disconnectSession({
-    topic: activeSessions[action.payload].topic,
-    reason: {
-      code: ERROR_CODES.USER_DISCONNECTED,
-      message: 'User cancelled the session',
-    },
-  }));
 
   yield call(refreshActiveSessions);
 }

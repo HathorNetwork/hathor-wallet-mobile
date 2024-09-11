@@ -118,7 +118,7 @@ export default function WalletConnectList({ navigation }) {
       {
         text: t`End`,
         onPress: () => {
-          dispatch(walletConnectCancelSession(sessionKey));
+          dispatch(walletConnectCancelSession({ id: sessionKey }));
         },
       },
       {

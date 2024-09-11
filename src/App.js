@@ -29,6 +29,7 @@ import IconTabBar from './icon-font';
 import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
+    appStateUpdate,
   lockScreen,
   onExceptionCaptured,
   pushTxDetailsRequested,
@@ -508,6 +509,7 @@ const mapDispatchToProps = (dispatch) => ({
   resetData: () => dispatch(resetData()),
   loadTxDetails: (txId) => dispatch(pushTxDetailsRequested(txId)),
   captureError: (error) => dispatch(onExceptionCaptured(error)),
+  appStateUpdate: (oldState, newState) => dispatch(appStateUpdate(oldState, newState)),
 });
 
 class _AppStackWrapper extends React.Component {
@@ -649,6 +651,8 @@ class _AppStackWrapper extends React.Component {
       console.warn(`App transition from ${this.appState} to ${nextAppState}. This should never happen.`);
       return;
     }
+
+    this.props.appStateUpdate(this.appState, nextAppState);
 
     if (nextAppState === 'active') {
       if (this.appState === 'inactive') {
