@@ -178,6 +178,7 @@ function* init() {
     yield call(refreshActiveSessions, true);
 
     yield fork(listenForNetworkChange);
+    yield fork(listenForAppStateChange);
 
     // If the wallet is reset, we should cancel all listeners
     yield take(types.RESET_WALLET);
@@ -199,6 +200,30 @@ export function* listenForNetworkChange() {
     log.debug('Network changed, resetting all sessions.');
     yield call(clearSessions);
   }
+}
+
+export function* listenForAppStateChange() {
+  while (true) {
+    const { payload: { oldState, newState } } = yield take(types.APPSTATE_UPDATED);
+    console.log('STATE CHANGED', {
+      oldState,
+      newState
+    });
+
+    if (oldState === 'background'
+      && newState === 'active') {
+      // Refresh and extend sessions
+      yield call(refreshActiveSessions, true);
+      // Check for pending requests
+      yield call(checkForPendingRequests);
+    }
+  }
+}
+
+export function* checkForPendingRequests() {
+  const { web3wallet } = yield select((state) => state.walletConnect.client);
+
+  yield call([web3wallet, web3wallet.getPendingAuthRequests]);
 }
 
 export function* refreshActiveSessions(extend = false) {
@@ -404,17 +429,21 @@ export function* onSessionRequest(action) {
     }
 
     if (shouldAnswer) {
-      yield call(() => web3wallet.respondSessionRequest({
-        topic: payload.topic,
-        response: {
-          id: payload.id,
-          jsonrpc: '2.0',
-          error: {
-            code: ERROR_CODES.USER_REJECTED_METHOD,
-            message: 'Rejected by the user',
+      try {
+        yield call(() => web3wallet.respondSessionRequest({
+          topic: payload.topic,
+          response: {
+            id: payload.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.USER_REJECTED_METHOD,
+              message: 'Rejected by the user',
+            },
           },
-        },
-      }));
+        }));
+      } catch (error) {
+        log.error('Error rejecting response on sessionRequest', error);
+      }
     }
   }
 }
@@ -761,13 +790,17 @@ export function* onSessionProposal(action) {
   });
 
   if (reject) {
-    yield call(() => web3wallet.rejectSession({
-      id,
-      reason: {
-        code: ERROR_CODES.USER_REJECTED,
-        message: 'User rejected the session',
-      },
-    }));
+    try {
+      yield call(() => web3wallet.rejectSession({
+        id,
+        reason: {
+          code: ERROR_CODES.USER_REJECTED,
+          message: 'User rejected the session',
+        },
+      }));
+    } catch (e) {
+      log.error('Error rejecting session on sessionProposal', e);
+    }
 
     return;
   }
