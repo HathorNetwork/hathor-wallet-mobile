@@ -69,10 +69,10 @@ import {
   TriggerTypes,
   TriggerResponseTypes,
   RpcResponseTypes,
-  SendNanoContractTxFailure,
   handleRpcRequest,
   CreateTokenError,
-} from '@hathor/hathor-rpc-handler';
+  SendNanoContractTxError,
+} from 'hathor-rpc-handler-test';
 import { isWalletServiceEnabled, WALLET_STATUS } from './wallet';
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
@@ -206,10 +206,6 @@ export function* listenForNetworkChange() {
 export function* listenForAppStateChange() {
   while (true) {
     const { payload: { oldState, newState } } = yield take(types.APPSTATE_UPDATED);
-    console.log('STATE CHANGED', {
-      oldState,
-      newState
-    });
 
     if (oldState === 'background'
       && newState === 'active') {
@@ -394,7 +390,7 @@ export function* onSessionRequest(action) {
   } catch (e) {
     let shouldAnswer = true;
     switch (e.constructor) {
-      case SendNanoContractTxFailure: {
+      case SendNanoContractTxError: {
         yield put(setNewNanoContractStatusFailure());
 
         const retry = yield call(
@@ -699,11 +695,6 @@ export function* onSendNanoContractTxRequest({ payload }) {
     deny: take(types.WALLET_CONNECT_REJECT),
   });
 
-  console.log({
-    deny,
-    accept,
-  });
-
   if (deny) {
     denyCb();
 
@@ -886,7 +877,6 @@ export function* featureToggleUpdateListener() {
  * Sends a disconnect session RPC message to the connected cloud server
  */
 export function* onCancelSession(action) {
-  console.log('on cancel session', action);
   const { web3wallet } = yield select((state) => state.walletConnect.client);
 
   const activeSessions = yield call(() => web3wallet.getActiveSessions());
