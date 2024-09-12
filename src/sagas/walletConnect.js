@@ -699,6 +699,11 @@ export function* onSendNanoContractTxRequest({ payload }) {
     deny: take(types.WALLET_CONNECT_REJECT),
   });
 
+  console.log({
+    deny,
+    accept,
+  });
+
   if (deny) {
     denyCb();
 
