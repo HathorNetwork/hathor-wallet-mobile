@@ -346,14 +346,21 @@ export function* requestUnregisteredTokens(action) {
     return;
   }
 
+  /**
+   * NOTE: We can improve the follwoing strategy by adopting a more robust
+   * rate-limit algorithm, like the sliding window or token bucket.
+   */
+
   // These are the default values configured in the nginx conf public nodes.
   const perBurst = NODE_RATE_LIMIT_CONF.thin_wallet_token.burst;
   const burstDelay = NODE_RATE_LIMIT_CONF.thin_wallet_token.delay;
   const uidGroups = splitInGroups(uids, perBurst); 
-
   for (const group of uidGroups) {
+    // Fork is a non-blocking effect, it doesn't cause the caller suspension.
     const tasks = yield all(group.map((uid) => fork(getTokenDetails, wallet, uid)));
+    // Awaits a group to finish before burst the next group
     yield join(tasks); 
+    // This is a quick request, we should give a break before next burst
     yield delay(burstDelay * 1000);
   }
   log.log('Success getting tokens data to feed unregisteredTokens.');
