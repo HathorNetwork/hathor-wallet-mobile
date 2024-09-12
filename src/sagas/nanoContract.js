@@ -36,7 +36,7 @@ import {
 import { logger } from '../logger';
 import { NANO_CONTRACT_TX_HISTORY_SIZE } from '../constants';
 import { consumeGenerator, getNanoContractFeatureToggle } from '../utils';
-import { getRegisteredNanoContracts } from './helpers';
+import { getRegisteredNanoContracts, safeEffect } from './helpers';
 import { isWalletServiceEnabled } from './wallet';
 
 const log = logger('nano-contract-saga');
@@ -157,6 +157,16 @@ export function* registerNanoContract({ payload }) {
   log.debug(`Success registering Nano Contract. nc = ${nc}`);
   // emit action NANOCONTRACT_REGISTER_SUCCESS with feedback to user
   yield put(nanoContractRegisterSuccess({ entryKey: ncId, entryValue: nc, hasFeedback: true }));
+}
+/**
+ * Effect invoked by safeEffect if an unexpected error occurs.
+ *
+ * @param {Object} error The error captured.
+ */
+function* registerNanoContractOnError(error) {
+  log.error('Unexpected error while registering Nano Contract.', error);
+  yield put(nanoContractRegisterFailure(failureMessage.nanoContractFailure));
+  yield put(onExceptionCaptured(error, false));
 }
 
 /**
@@ -440,7 +450,10 @@ export function* requestBlueprintInfo({ payload }) {
 export function* saga() {
   yield all([
     debounce(500, [[types.START_WALLET_SUCCESS, types.NANOCONTRACT_INIT]], init),
-    takeEvery(types.NANOCONTRACT_REGISTER_REQUEST, registerNanoContract),
+    takeEvery(
+      types.NANOCONTRACT_REGISTER_REQUEST,
+      safeEffect(registerNanoContract, registerNanoContractOnError)
+    ),
     takeEvery(types.NANOCONTRACT_HISTORY_REQUEST, requestHistoryNanoContract),
     takeEvery(types.NANOCONTRACT_UNREGISTER_REQUEST, unregisterNanoContract),
     takeEvery(types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST, requestNanoContractAddressChange),

@@ -353,3 +353,23 @@ export function* retryHandler(retryAction, dismissAction) {
 
   return retry != null;
 }
+
+/**
+ * A wrapper effect to catch unexpected error and provide a binding
+ * for the desired handling behavior.
+ *
+ * @param {Object} effect The targeted effect.
+ * @param {(error) => void} onError The error handling effect,
+ *    which receives the error object as first argument.
+ *
+ * @returns An anonymous effect.
+ */
+export function safeEffect(effect, onError) {
+  return function* _safeEffect(payload) {
+    try {
+      yield call(effect, payload);
+    } catch (error) {
+      yield call(onError, error);
+    }
+  }
+}
