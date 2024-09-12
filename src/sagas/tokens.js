@@ -14,13 +14,14 @@ import {
   take,
   all,
   put,
+  join,
 } from 'redux-saga/effects';
 import { t } from 'ttag';
 import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
 import { specificTypeAndPayload, dispatchAndWait, getRegisteredTokenUids } from './helpers';
-import { mapToTxHistory } from '../utils';
+import { mapToTxHistory, splitInGroups } from '../utils';
 import {
   types,
   tokenFetchBalanceRequested,
@@ -33,6 +34,7 @@ import {
   unregisteredTokensUpdate,
 } from '../actions';
 import { logger } from '../logger';
+import { NODE_RATE_LIMIT_CONF } from '../constants';
 
 const log = logger('tokens-saga');
 
@@ -296,13 +298,45 @@ export function* fetchTokenData(tokenId, force = false) {
 }
 
 /**
- * Request tokens data to feed walletConnect's tokens.
+ * Get token details from wallet.
+ *
+ * @param {Object} wallet The application wallet.
+ * @param {string} uid Token UID.
+ *
+ * @description
+ * The token endpoint has 3r/s with 10r of burst and 3s of delay.
+ */
+export function* getTokenDetails(wallet, uid) {
+  try {
+    const { tokenInfo: { symbol, name } } = yield call([wallet, wallet.getTokenDetails], uid);
+    yield put(unregisteredTokensUpdate({ tokens: {[uid]: { uid, symbol, name }} }));
+  } catch (e) {
+    log.error(`Fail getting token data for token ${uid}.`, e);
+    yield put(unregisteredTokensUpdate({ error: failureMessage.someTokensNotLoaded }));
+  }
+}
+
+/**
+ * Request token details of unregistered tokens to feed new
+ * nano contract request actions.
+ *
+ * @description
+ * It optimizes for burst because we need the data as soon as possible,
+ * at the same time we should avoid request denials from the endpoint,
+ * which justifies a delay from burst to burst.
+ *
  * @param {Object} action
  * @param {Object} action.payload
  * @param {string[]} action.payload.uids
  */
 export function* requestUnregisteredTokens(action) {
   const { uids } = action.payload;
+
+  if (uids.length === 0) {
+    // Do nothing.
+    log.debug('No uids to request token details.');
+    return;
+  }
 
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
@@ -312,29 +346,17 @@ export function* requestUnregisteredTokens(action) {
     return;
   }
 
-  const tokens = {};
-  let someError = false;
-  for (const uid of uids) {
-    try {
-      const { tokenInfo: { symbol, name } } = yield call([wallet, wallet.getTokenDetails], uid);
-      const token = { uid, symbol, name };
-      tokens[uid] = token;
-    } catch (e) {
-      log.error(`Fail getting token data for token ${uid}.`, e);
-      someError = true;
-      // continue download of tokens
-    }
-  }
+  // These are the default values configured in the nginx conf public nodes.
+  const perBurst = NODE_RATE_LIMIT_CONF.thin_wallet_token.burst;
+  const burstDelay = NODE_RATE_LIMIT_CONF.thin_wallet_token.delay;
+  const uidGroups = splitInGroups(uids, perBurst); 
 
-  if (someError) {
-    log.log('There was a failure while getting tokens data to feed unregisteredTokens.');
-    yield put(
-      unregisteredTokensUpdate({ tokens, error: failureMessage.someTokensNotLoaded })
-    );
-    return;
+  for (const group of uidGroups) {
+    const tasks = yield all(group.map((uid) => fork(getTokenDetails, wallet, uid)));
+    yield join(tasks); 
+    yield delay(burstDelay * 1000);
   }
   log.log('Success getting tokens data to feed unregisteredTokens.');
-  yield put(unregisteredTokensUpdate({ tokens }));
 }
 
 export function* saga() {
