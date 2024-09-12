@@ -79,8 +79,8 @@ android {
         applicationId "com.hathordemo"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 75
-        versionName "0.28.2"
+        versionCode 76
+        versionName "0.28.3"
         missingDimensionStrategy "react-native-camera", "general"
     }
     signingConfigs {
