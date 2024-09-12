@@ -198,6 +198,8 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
           message: t`Transaction successfully sent.`,
         }
       );
+      // Restore ready status to New Nano Contract Transaction state
+      dispatch(setNewNanoContractStatusReady());
     }
   }, [newTxStatus]);
 
