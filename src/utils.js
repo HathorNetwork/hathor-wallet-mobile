@@ -543,7 +543,7 @@ export const parseScriptData = (scriptData, network) => {
 export function splitInGroups(list, groupSize) {
   if (groupSize === 0) {
     return list;
-  };
+  }
 
   const groups = [];
   for (let i = 0; i < list.length; i += groupSize) {

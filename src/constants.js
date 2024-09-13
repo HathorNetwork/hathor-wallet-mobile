@@ -299,7 +299,7 @@ export const NANO_CONTRACT_ACTION = {
   deposit: 'deposit',
 };
 
-export const NODE_RATE_LIMIT_CONF  = {
+export const NODE_RATE_LIMIT_CONF = {
   thin_wallet_token: {
     perSecond: 3,
     burst: 10,

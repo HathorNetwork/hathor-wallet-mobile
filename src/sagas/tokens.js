@@ -310,7 +310,7 @@ export function* fetchTokenData(tokenId, force = false) {
 export function* getTokenDetails(wallet, uid) {
   try {
     const { tokenInfo: { symbol, name } } = yield call([wallet, wallet.getTokenDetails], uid);
-    yield put(unregisteredTokensUpdate({ tokens: {[uid]: { uid, symbol, name }} }));
+    yield put(unregisteredTokensUpdate({ tokens: { [uid]: { uid, symbol, name } } }));
   } catch (e) {
     log.error(`Fail getting token data for token ${uid}.`, e);
     yield put(unregisteredTokensUpdate({ error: failureMessage.someTokensNotLoaded }));
@@ -355,12 +355,12 @@ export function* requestUnregisteredTokens(action) {
   // These are the default values configured in the nginx conf public nodes.
   const perBurst = NODE_RATE_LIMIT_CONF.thin_wallet_token.burst;
   const burstDelay = NODE_RATE_LIMIT_CONF.thin_wallet_token.delay;
-  const uidGroups = splitInGroups(uids, perBurst); 
+  const uidGroups = splitInGroups(uids, perBurst);
   for (const group of uidGroups) {
     // Fork is a non-blocking effect, it doesn't cause the caller suspension.
     const tasks = yield all(group.map((uid) => fork(getTokenDetails, wallet, uid)));
     // Awaits a group to finish before burst the next group
-    yield join(tasks); 
+    yield join(tasks);
     // Skip delay if there is only one group or is the last group
     if (uidGroups.length === 1 || group === uidGroups.at(-1)) {
       break;
