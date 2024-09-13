@@ -361,6 +361,10 @@ export function* requestUnregisteredTokens(action) {
     const tasks = yield all(group.map((uid) => fork(getTokenDetails, wallet, uid)));
     // Awaits a group to finish before burst the next group
     yield join(tasks); 
+    // Skip delay if there is only one group or is the last group
+    if (uidGroups.length === 1 || group === uidGroups.at(-1)) {
+      break;
+    }
     // This is a quick request, we should give a break before next burst
     yield delay(burstDelay * 1000);
   }
