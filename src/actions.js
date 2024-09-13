@@ -1425,7 +1425,6 @@ export const unregisteredTokensFailure = (payload) => ({
   payload,
 });
 
-
 /**
  * Signals the unregistered tokens request has ended.
  */
