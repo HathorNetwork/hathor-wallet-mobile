@@ -190,6 +190,7 @@ export const types = {
   WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
   UNREGISTEREDTOKENS_REQUEST: 'UNREGISTEREDTOKENS_REQUEST',
   UNREGISTEREDTOKENS_UPDATE: 'UNREGISTEREDTOKENS_UPDATE',
+  UNREGISTEREDTOKENS_END: 'UNREGISTEREDTOKENS_END',
   WALLETCONNECT_NEW_NANOCONTRACT_RETRY: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY',
   WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS',
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
@@ -1408,6 +1409,13 @@ export const unregisteredTokensRequest = (payload) => ({
 export const unregisteredTokensUpdate = (payload) => ({
   type: types.UNREGISTEREDTOKENS_UPDATE,
   payload,
+});
+
+/**
+ * Signals the unregistered tokens request has ended.
+ */
+export const unregisteredTokensEnd = () => ({
+  type: types.UNREGISTEREDTOKENS_END,
 });
 
 export const showSignMessageWithAddressModal = (accept, deny, data, dapp) => ({

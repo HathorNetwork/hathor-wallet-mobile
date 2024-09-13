@@ -32,6 +32,7 @@ import {
   tokenFetchHistoryFailed,
   onExceptionCaptured,
   unregisteredTokensUpdate,
+  unregisteredTokensEnd,
 } from '../actions';
 import { logger } from '../logger';
 import { NODE_RATE_LIMIT_CONF } from '../constants';
@@ -333,8 +334,8 @@ export function* requestUnregisteredTokens(action) {
   const { uids } = action.payload;
 
   if (uids.length === 0) {
-    // Do nothing.
     log.debug('No uids to request token details.');
+    yield put(unregisteredTokensEnd());
     return;
   }
 
@@ -364,6 +365,7 @@ export function* requestUnregisteredTokens(action) {
     yield delay(burstDelay * 1000);
   }
   log.log('Success getting tokens data to feed unregisteredTokens.');
+  yield put(unregisteredTokensEnd());
 }
 
 export function* saga() {
