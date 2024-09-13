@@ -55,11 +55,10 @@ import {
   cancel,
   cancelled,
   takeLatest,
-  takeLeading,
   takeEvery,
   select,
   race,
-  spawn,
+  actionChannel,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
@@ -177,9 +176,9 @@ function* init() {
     // Refresh redux with the active sessions, loaded from storage
     // Pass extend = true so session expiration date get renewed
     yield call(refreshActiveSessions, true);
-
-    yield fork(listenForNetworkChange);
     yield fork(listenForAppStateChange);
+    yield fork(listenForNetworkChange);
+    yield fork(requestsListener);
 
     // If the wallet is reset, we should cancel all listeners
     yield take(types.RESET_WALLET);
@@ -221,6 +220,7 @@ export function* checkForPendingRequests() {
   const { web3wallet } = yield select((state) => state.walletConnect.client);
 
   yield call([web3wallet, web3wallet.getPendingAuthRequests]);
+  yield call([web3wallet, web3wallet.getPendingSessionRequests]);
 }
 
 export function* refreshActiveSessions(extend = false) {
@@ -327,11 +327,26 @@ export function* clearSessions() {
   yield call(refreshActiveSessions);
 }
 
+function* requestsListener() {
+  const requestsChannel = yield actionChannel('WC_SESSION_REQUEST');
+
+  let action;
+  while (true) {
+    try {
+      action = yield take(requestsChannel);
+      yield call(processRequest, action);
+    } catch (error) {
+      log.error('Error processing request.', error);
+      yield put(onExceptionCaptured(error));
+    }
+  }
+}
+
 /**
  * This saga will be called (dispatched from the event listener) when a session
  * is requested from a dApp
  */
-export function* onSessionRequest(action) {
+export function* processRequest(action) {
   const { payload } = action;
   const { params } = payload;
 
@@ -402,7 +417,7 @@ export function* onSessionRequest(action) {
         if (retry) {
           shouldAnswer = false;
           // Retry the action, exactly as it came:
-          yield spawn(onSessionRequest, action);
+          yield* processRequest(action);
         }
       } break;
       case CreateTokenError: {
@@ -418,7 +433,7 @@ export function* onSessionRequest(action) {
         if (retry) {
           shouldAnswer = false;
           // Retry the action, exactly as it came:
-          yield spawn(onSessionRequest, action);
+          yield* processRequest(action);
         }
       } break;
       default:
@@ -911,7 +926,6 @@ export function* saga() {
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
     takeLatest(types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL, onSignOracleDataRequest),
     takeLatest(types.SHOW_CREATE_TOKEN_REQUEST_MODAL, onCreateTokenRequest),
-    takeLeading('WC_SESSION_REQUEST', onSessionRequest),
     takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('WC_SESSION_DELETE', onSessionDelete),
     takeEvery('WC_CANCEL_SESSION', onCancelSession),
