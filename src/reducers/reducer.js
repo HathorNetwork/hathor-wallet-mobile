@@ -705,8 +705,12 @@ export const reducer = (state = initialState, action) => {
       return onNanoContractBlueprintInfoSuccess(state, action);
     case types.UNREGISTEREDTOKENS_REQUEST:
       return onUnregisteredTokensRequest(state);
-    case types.UNREGISTEREDTOKENS_UPDATE:
-      return onUnregisteredTokensUpdate(state, action);
+    case types.UNREGISTEREDTOKENS_SUCCESS:
+      return onUnregisteredTokensSuccess(state, action);
+    case types.UNREGISTEREDTOKENS_FAILURE:
+      return onUnregisteredTokensFailure(state, action);
+    case types.UNREGISTEREDTOKENS_END:
+      return onUnregisteredTokensEnd(state);
     case types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY:
       return onNewNanoContractTransactionRetry(state);
     case types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS:
@@ -2067,21 +2071,46 @@ export const onUnregisteredTokensRequest = (state) => ({
 });
 
 /**
- * Update walletConnect.tokens with some tokens data needed to feed UI components
- * without the need to register them, also update an error feedback message if present.
+ * Update tokens state as the request was successful.
  *
  * @param {Object} state
  * @param {Object} action
  * @param {Object} action.payload
- * @param {Object} action.payload.tokens A map of token data by its UID.
  * @param {string} action.payload.error The error message as feedback to user
  */
-export const onUnregisteredTokensUpdate = (state, { payload }) => ({
+export const onUnregisteredTokensSuccess = (state, { payload }) => ({
   ...state,
   unregisteredTokens: {
     ...state.unregisteredTokens,
     ...payload.tokens,
-    isLoading: false,
+  },
+});
+
+/**
+ * Set error message as a user feedback.
+ *
+ * @param {Object} state
+ * @param {Object} action
+ * @param {Object} action.payload
+ * @param {string} action.payload.error The error message as feedback to user
+ */
+export const onUnregisteredTokensFailure = (state, { payload }) => ({
+  ...state,
+  unregisteredTokens: {
+    ...state.unregisteredTokens,
     error: payload.error || null,
   },
-})
+});
+
+/**
+ * Change state of isLoading to false while keeping tokens state.
+ *
+ * @param {Object} state
+ */
+export const onUnregisteredTokensEnd = (state) => ({
+  ...state,
+  unregisteredTokens: {
+    ...state.unregisteredTokens,
+    isLoading: false,
+  },
+});

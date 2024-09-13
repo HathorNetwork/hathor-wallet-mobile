@@ -31,8 +31,9 @@ import {
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
   onExceptionCaptured,
-  unregisteredTokensUpdate,
+  unregisteredTokensSuccess,
   unregisteredTokensEnd,
+  unregisteredTokensFailure,
 } from '../actions';
 import { logger } from '../logger';
 import { NODE_RATE_LIMIT_CONF } from '../constants';
@@ -310,10 +311,10 @@ export function* fetchTokenData(tokenId, force = false) {
 export function* getTokenDetails(wallet, uid) {
   try {
     const { tokenInfo: { symbol, name } } = yield call([wallet, wallet.getTokenDetails], uid);
-    yield put(unregisteredTokensUpdate({ tokens: { [uid]: { uid, symbol, name } } }));
+    yield put(unregisteredTokensSuccess({ tokens: { [uid]: { uid, symbol, name } } }));
   } catch (e) {
     log.error(`Fail getting token data for token ${uid}.`, e);
-    yield put(unregisteredTokensUpdate({ error: failureMessage.someTokensNotLoaded }));
+    yield put(unregisteredTokensFailure({ error: failureMessage.someTokensNotLoaded }));
   }
 }
 

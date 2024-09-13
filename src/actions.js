@@ -188,8 +188,13 @@ export const types = {
   FIRSTADDRESS_FAILURE: 'FIRSTADDRESS_FAILURE',
   /* It updates the redux state of new nano contract transaction status on wallet connect register. */
   WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
+  /* It triggers a process to fetch token details for a list of unregistered tokens. */
   UNREGISTEREDTOKENS_REQUEST: 'UNREGISTEREDTOKENS_REQUEST',
-  UNREGISTEREDTOKENS_UPDATE: 'UNREGISTEREDTOKENS_UPDATE',
+  /* It signals the process has loaded at least one token details with success. */
+  UNREGISTEREDTOKENS_SUCCESS: 'UNREGISTEREDTOKENS_SUCCESS',
+  /* It signals the process has failed to load at least one token details. */
+  UNREGISTEREDTOKENS_FAILURE: 'UNREGISTEREDTOKENS_FAILURE',
+  /* It signals the end of the process. */
   UNREGISTEREDTOKENS_END: 'UNREGISTEREDTOKENS_END',
   WALLETCONNECT_NEW_NANOCONTRACT_RETRY: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY',
   WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS',
@@ -1401,15 +1406,25 @@ export const unregisteredTokensRequest = (payload) => ({
 });
 
 /**
- * Signals an update to unregistered tokens state.
+ * Signals the success of unregistered tokens request.
  * @param {Object} payload
  * @param {Object} payload.tokens A map of token data by its UID.
- * @param {string} payload.error The error message as feedback to user
  */
-export const unregisteredTokensUpdate = (payload) => ({
-  type: types.UNREGISTEREDTOKENS_UPDATE,
+export const unregisteredTokensSuccess = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_SUCCESS,
   payload,
 });
+
+/**
+ * Signals a failure on unregistered tokens request.
+ * @param {Object} payload
+ * @param {string} payload.error The error message as feedback to user
+ */
+export const unregisteredTokensFailure = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_FAILURE,
+  payload,
+});
+
 
 /**
  * Signals the unregistered tokens request has ended.
