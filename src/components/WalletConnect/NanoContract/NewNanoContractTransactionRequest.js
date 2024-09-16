@@ -89,10 +89,10 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
    * transaction.
    */
   const [ncAddress, setNcAddress] = useState(registeredNc?.address || firstAddress.address);
-  const ncToAccept = useMemo(() => ({
+  const ncToAccept = {
     ...nc,
     caller: ncAddress,
-  }), [ncAddress])
+  };
 
   const toggleSelectAddressModal = () => setShowSelectAddressModal(!showSelectAddressModal);
   const handleAddressSelection = (newAddress) => {
