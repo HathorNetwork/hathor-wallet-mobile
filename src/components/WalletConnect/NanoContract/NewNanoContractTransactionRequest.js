@@ -180,7 +180,8 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   // The mentioned load request at (2) can happen for 'initialize' transaction,
   // it is requested from a child component, NanoContractExecInfo.
   useEffect(() => {
-    if (ncToAccept.method === 'initialize' && firstAddress.address) {
+    // When initialize it doesn't have a registered address
+    if (firstAddress.address && !registeredNc?.address) {
       setNcAddress(firstAddress.address);
     }
 
