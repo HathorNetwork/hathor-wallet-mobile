@@ -102,6 +102,9 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
           {blueprintName && (
             <FrozenTextValue>{blueprintName}</FrozenTextValue>
           )}
+          {isBlueprintInfoLoading && (
+            <WarnTextValue>{t`Loading...`}</WarnTextValue>
+          )}
           {hasBlueprintInfoFailed && (
             <WarnTextValue>{blueprintInfo.error}</WarnTextValue>
           )}
