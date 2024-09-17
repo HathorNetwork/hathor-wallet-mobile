@@ -215,6 +215,7 @@ function* registerNanoContractOnError(error) {
  * @param {string} req.before Transaction hash to start to get newer items
  * @param {string} req.after Transaction hash to start to get older items
  * @param {Object} req.wallet Wallet instance from redux state
+ * @param {boolean} req.useWalletService A flag that determines if wallet service is in use
  *
  * @returns {{
  *   history: NcTxHistory;
