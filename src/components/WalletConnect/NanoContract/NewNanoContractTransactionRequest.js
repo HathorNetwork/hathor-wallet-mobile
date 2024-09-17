@@ -174,13 +174,21 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     };
   }, []);
 
+  // When nano contract is registered it should set the caller address
+  useEffect(() => {
+    if (!ncAddress && registeredNc?.address) {
+      setNcAddress(registeredNc.address);
+    }
+  }, [registeredNc])
+
   // This effect should run at most twice:
   // 1. when in the construct phase
   // 2. after firstAddress is set on store after a request to load it
   // The mentioned load request at (2) can happen for 'initialize' transaction,
   // it is requested from a child component, NanoContractExecInfo.
   useEffect(() => {
-    if (ncToAccept.method === 'initialize' && firstAddress.address) {
+    // When initialize it doesn't have a registered address
+    if (!ncAddress && firstAddress.address) {
       setNcAddress(firstAddress.address);
     }
 
