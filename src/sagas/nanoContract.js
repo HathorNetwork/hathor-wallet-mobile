@@ -20,6 +20,8 @@ import {
 } from 'redux-saga/effects';
 import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
+import { getRegisteredNanoContracts, safeEffect } from './helpers';
+import { isWalletServiceEnabled } from './wallet';
 import {
   nanoContractBlueprintInfoFailure,
   nanoContractBlueprintInfoSuccess,
@@ -35,9 +37,7 @@ import {
 } from '../actions';
 import { logger } from '../logger';
 import { NANO_CONTRACT_TX_HISTORY_SIZE } from '../constants';
-import { consumeGenerator, getNanoContractFeatureToggle } from '../utils';
-import { getRegisteredNanoContracts, safeEffect } from './helpers';
-import { isWalletServiceEnabled } from './wallet';
+import * as utils from '../utils';
 
 const log = logger('nano-contract-saga');
 
@@ -55,7 +55,7 @@ export const failureMessage = {
 };
 
 export function* init() {
-  const isEnabled = yield select(getNanoContractFeatureToggle);
+  const isEnabled = yield select(utils.getNanoContractFeatureToggle);
   if (!isEnabled) {
     log.debug('Halting nano contract initialization because the feature flag is disabled.');
     return;
@@ -217,7 +217,7 @@ function* registerNanoContractOnError(error) {
  * @param {Object} req.wallet Wallet instance from redux state
  *
  * @returns {{
- *   history: {};
+ *   history: NcTxHistory;
  * }}
  *
  * @throws {Error} when request code is greater then 399 or when response's success is false
@@ -225,6 +225,7 @@ function* registerNanoContractOnError(error) {
 export async function fetchHistory(req) {
   const {
     wallet,
+    useWalletService,
     ncId,
     count,
     after,
@@ -245,28 +246,21 @@ export async function fetchHistory(req) {
     throw new Error('Failed to fetch nano contract history');
   }
 
-  /* TODO: Make it run concurrently while guaranting the order.
-  /* see https://github.com/HathorNetwork/hathor-wallet-mobile/issues/514
-   */
-  const historyNewestToOldest = new Array(rawHistory.length)
-  for (let idx = 0; idx < rawHistory.length; idx += 1) {
-    const rawTx = rawHistory[idx];
-    const network = wallet.getNetworkObject();
+  const network = wallet.getNetworkObject();
+  // As isAddressMine call is async we collect the tasks to avoid
+  // suspend the iteration with an await.
+  const isMineTasks = [];
+  // Translate rawNcTxHistory to NcTxHistory and collect isAddressMine tasks
+  const historyNewestToOldest = rawHistory.map((rawTx) => {
     const caller = addressUtils.getAddressFromPubkey(rawTx.nc_pubkey, network).base58;
-    // XXX: Wallet Service doesn't implement isAddressMine.
-    // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
-    // Default to `false` if using Wallet Service.
-    let isMine = false;
-    const useWalletService = consumeGenerator(isWalletServiceEnabled());
-    if (!useWalletService) {
-      // eslint-disable-next-line no-await-in-loop
-      isMine = await wallet.isAddressMine(caller);
-    }
     const actions = rawTx.nc_context.actions.map((each) => ({
       type: each.type, // 'deposit' or 'withdrawal'
       uid: each.token_uid,
       amount: each.amount,
     }));
+    // As this is a promise, collect as task to hydrate later.
+    // This strategy avoids an await suspension.
+    isMineTasks.push(utils.isAddressMine(wallet, caller, useWalletService));
 
     const tx = {
       txId: rawTx.hash,
@@ -278,11 +272,16 @@ export async function fetchHistory(req) {
       blueprintId: rawTx.nc_blueprint_id,
       firstBlock: rawTx.first_block,
       caller,
-      isMine,
       actions,
     };
-    historyNewestToOldest[idx] = tx;
-  }
+    return tx;
+  });
+
+  // Hydrate ncTxHistory with isMine flag
+  const isMineResults = await Promise.all(isMineTasks);
+  isMineResults.forEach((isMine, idx) => {
+    historyNewestToOldest[idx].isMine = isMine;
+  });
 
   return { history: historyNewestToOldest };
 }
@@ -332,9 +331,11 @@ export function* requestHistoryNanoContract({ payload }) {
     yield put(nanoContractHistoryClean({ ncId }));
   }
 
+  const useWalletService = yield select((state) => state.useWalletService);
   try {
     const req = {
       wallet,
+      useWalletService,
       ncId,
       before,
       after,
