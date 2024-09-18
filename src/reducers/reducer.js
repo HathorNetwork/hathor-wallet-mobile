@@ -321,7 +321,7 @@ const initialState = {
     /**
      * registered {{
      *   [ncId: string]: {
-     *     address: string,
+     *     address?: string,
      *     ncId: string,
      *     blueprintId: string,
      *     blueprintName: string,

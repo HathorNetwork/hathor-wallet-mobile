@@ -73,13 +73,12 @@ export function* init() {
  * Process Nano Contract registration request.
  * @param {{
  *   payload: {
- *     address: string,
  *     ncId: string,
  *   }
  * }} action with request payload.
  */
 export function* registerNanoContract({ payload }) {
-  const { address, ncId } = payload;
+  const { ncId } = payload;
 
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
@@ -95,21 +94,6 @@ export function* registerNanoContract({ payload }) {
   if (isRegistered) {
     log.debug('Fail registering Nano Contract because it is already registered.');
     yield put(nanoContractRegisterFailure(failureMessage.alreadyRegistered));
-    return;
-  }
-
-  // XXX: Wallet Service doesn't implement isAddressMine.
-  // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
-  // Default to `false` if using Wallet Service.
-  let isAddressMine = false;
-  const useWalletService = yield call(isWalletServiceEnabled);
-  if (!useWalletService) {
-    isAddressMine = yield call([wallet, wallet.isAddressMine], address);
-  }
-
-  if (!isAddressMine) {
-    log.debug('Fail registering Nano Contract because address do not belongs to this wallet.');
-    yield put(nanoContractRegisterFailure(failureMessage.addressNotMine));
     return;
   }
 

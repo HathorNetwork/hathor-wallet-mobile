@@ -16,7 +16,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     const { address, ncId } = fixtures;
 
     // call effect to register nano contract
-    const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
+    const gen = registerNanoContract(nanoContractRegisterRequest({ ncId }));
     // call select wallet
     gen.next();
     // feed back the selector
@@ -35,7 +35,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     const { address, ncId } = fixtures;
 
     // call effect to register nano contract
-    const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
+    const gen = registerNanoContract(nanoContractRegisterRequest({ ncId }));
     // call select wallet
     gen.next();
 
@@ -58,7 +58,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     const { address, ncId } = fixtures;
 
     // call effect to register nano contract
-    const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
+    const gen = registerNanoContract(nanoContractRegisterRequest({ ncId }));
     // call select wallet
     gen.next();
     // feed back the selector
@@ -79,7 +79,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     const { address, ncId } = fixtures;
 
     // call effect to register nano contract
-    const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
+    const gen = registerNanoContract(nanoContractRegisterRequest({ ncId }));
     // call select wallet
     gen.next();
     // feed back the selector
@@ -102,7 +102,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     const { address, ncId } = fixtures;
 
     // call effect to register nano contract
-    const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
+    const gen = registerNanoContract(nanoContractRegisterRequest({ ncId }));
     // call select wallet
     gen.next();
     // feed back the selector

@@ -13,7 +13,6 @@ import React, {
 import {
   StyleSheet,
   View,
-  Text,
   Image,
 } from 'react-native';
 import {
@@ -22,15 +21,11 @@ import {
 } from 'react-redux';
 import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
-import { CircleInfoIcon } from '../../components/Icons/CircleInfo.icon';
 import NewHathorButton from '../../components/NewHathorButton';
 import OfflineBar from '../../components/OfflineBar';
 import SimpleInput from '../../components/SimpleInput';
-import { TextLabel } from '../../components/TextLabel';
-import { TextValue } from '../../components/TextValue';
 import { COLORS } from '../../styles/themes';
 import {
-  firstAddressRequest,
   nanoContractRegisterReady,
   nanoContractRegisterRequest
 } from '../../actions';
@@ -44,7 +39,6 @@ import Spinner from '../../components/Spinner';
 import FeedbackModal from '../../components/FeedbackModal';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
-import { FeedbackContent } from '../../components/FeedbackContent';
 import { hasError } from '../../utils';
 
 /**
@@ -65,7 +59,6 @@ export function NanoContractRegisterScreen({ navigation, route }) {
   const ncIdFromQrCode = route.params?.ncId;
 
   const dispatch = useDispatch();
-  const { address, error } = useSelector((state) => state.firstAddress);
   const registerState = useSelector((state) => ({
     registerStatus: state.nanoContract.registerStatus,
     registerFailureMessage: state.nanoContract.registerFailureMessage,
@@ -116,9 +109,9 @@ export function NanoContractRegisterScreen({ navigation, route }) {
       }
 
       const { ncId } = formModel;
-      dispatch(nanoContractRegisterRequest({ address, ncId }));
+      dispatch(nanoContractRegisterRequest({ ncId }));
     },
-    [formModel, address]
+    [formModel]
   );
 
   const handleFeedbackModalDismiss = () => {
@@ -135,15 +128,7 @@ export function NanoContractRegisterScreen({ navigation, route }) {
       // Set ncId in the input when given
       handleInputChange('ncId')(ncIdFromQrCode);
     }
-
-    if (!address) {
-      dispatch(firstAddressRequest());
-    }
   }, []);
-
-  const hasFirstAddressFailed = () => error;
-  const isFirstAddressLoading = () => !error && !address;
-  const hasFirstAddressLoaded = () => !error && address;
 
   return (
     <Wrapper>
@@ -169,25 +154,6 @@ export function NanoContractRegisterScreen({ navigation, route }) {
           />
         )}
 
-      {hasFirstAddressFailed()
-        && (
-        <FeedbackContent
-          icon={(<Image source={errorIcon} style={styles.feedbackContentIcon} resizeMode='contain' />)}
-          title={t`Load First Addresses Error`}
-          message={error}
-        />
-        )}
-
-      {isFirstAddressLoading()
-        && (
-        <FeedbackContent
-          title={t`Loading`}
-          message={t`Loading first wallet address.`}
-        />
-        )}
-
-      {hasFirstAddressLoaded()
-        && (
         <ContentWrapper>
           <SimpleInput
             containerStyle={styles.input}
@@ -197,25 +163,6 @@ export function NanoContractRegisterScreen({ navigation, route }) {
             error={invalidModel.ncId}
             value={formModel.ncId}
           />
-          <View style={styles.selectionContainer}>
-            <FieldContainer>
-              <TextLabel pb8 bold>{t`Wallet Address`}</TextLabel>
-              <TextValue>{address}</TextValue>
-            </FieldContainer>
-          </View>
-          <View style={styles.infoContainer}>
-            <View style={styles.infoIcon}>
-              <CircleInfoIcon size={20} color='hsla(203, 100%, 25%, 1)' />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.text}>
-                {t`If you want to change the wallet address, you will be able to do`}
-                <Text style={styles.bold}>
-                  {' '}{t`after the contract is registered.`}
-                </Text>
-              </Text>
-            </View>
-          </View>
           {isLoading(registerState.registerStatus)
             && (
               <View style={styles.loadingContainer}>
@@ -234,17 +181,10 @@ export function NanoContractRegisterScreen({ navigation, route }) {
             />
           </View>
         </ContentWrapper>
-        )}
       <OfflineBar />
     </Wrapper>
   );
 }
-
-const FieldContainer = ({ last, children }) => (
-  <View style={[styles.fieldContainer, last && styles.pd0]}>
-    {children}
-  </View>
-);
 
 const NavigationHeader = ({ navigation }) => (
   <HathorHeader
@@ -279,27 +219,6 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
     paddingHorizontal: 16,
   },
-  infoContainer: {
-    flexShrink: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: 'hsla(203, 100%, 93%, 1)',
-  },
-  infoContent: {
-    flex: 1,
-    paddingLeft: 8,
-  },
-  selectionContainer: {
-    marginBottom: 16,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: COLORS.freeze100,
-  },
   loadingContainer: {
     alignItems: 'center',
   },
@@ -313,22 +232,5 @@ const styles = StyleSheet.create({
   feedbackModalIcon: {
     height: 105,
     width: 105
-  },
-  feedbackContentIcon: {
-    height: 36,
-    width: 36,
-  },
-  text: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  bold: {
-    fontWeight: 'bold',
-  },
-  pd0: {
-    paddingBottom: 0,
-  },
-  pd8: {
-    paddingBottom: 8,
   },
 });

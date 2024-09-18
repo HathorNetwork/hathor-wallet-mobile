@@ -1071,7 +1071,6 @@ export const nanoContractInit = () => ({
 /**
  * Request a Nano Contract to be registered.
  * @param {{
- *   address: string,
  *   ncId: string,
  * }} registry Inputs to register a Nano Contract
  */
