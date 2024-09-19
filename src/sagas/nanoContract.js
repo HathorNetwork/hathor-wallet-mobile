@@ -37,7 +37,7 @@ import {
 } from '../actions';
 import { logger } from '../logger';
 import { NANO_CONTRACT_TX_HISTORY_SIZE } from '../constants';
-import * as utils from '../utils';
+import { getNanoContractFeatureToggle, isAddressMine } from '../utils';
 
 const log = logger('nano-contract-saga');
 
@@ -55,7 +55,7 @@ export const failureMessage = {
 };
 
 export function* init() {
-  const isEnabled = yield select(utils.getNanoContractFeatureToggle);
+  const isEnabled = yield select(getNanoContractFeatureToggle);
   if (!isEnabled) {
     log.debug('Halting nano contract initialization because the feature flag is disabled.');
     return;
@@ -101,13 +101,13 @@ export function* registerNanoContract({ payload }) {
   // XXX: Wallet Service doesn't implement isAddressMine.
   // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
   // Default to `false` if using Wallet Service.
-  let isAddressMine = false;
+  let isAddrMine = false;
   const useWalletService = yield call(isWalletServiceEnabled);
   if (!useWalletService) {
-    isAddressMine = yield call([wallet, wallet.isAddressMine], address);
+    isAddrMine = yield call([wallet, wallet.isAddressMine], address);
   }
 
-  if (!isAddressMine) {
+  if (!isAddrMine) {
     log.debug('Fail registering Nano Contract because address do not belongs to this wallet.');
     yield put(nanoContractRegisterFailure(failureMessage.addressNotMine));
     return;
@@ -158,6 +158,7 @@ export function* registerNanoContract({ payload }) {
   // emit action NANOCONTRACT_REGISTER_SUCCESS with feedback to user
   yield put(nanoContractRegisterSuccess({ entryKey: ncId, entryValue: nc, hasFeedback: true }));
 }
+
 /**
  * Effect invoked by safeEffect if an unexpected error occurs.
  *
@@ -261,7 +262,7 @@ export async function fetchHistory(req) {
     }));
     // As this is a promise, collect as task to hydrate later.
     // This strategy avoids an await suspension.
-    isMineTasks.push(utils.isAddressMine(wallet, caller, useWalletService));
+    isMineTasks.push(isAddressMine(wallet, caller, useWalletService));
 
     const tx = {
       txId: rawTx.hash,
