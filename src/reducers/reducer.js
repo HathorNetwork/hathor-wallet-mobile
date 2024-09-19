@@ -703,14 +703,14 @@ export const reducer = (state = initialState, action) => {
       return onNanoContractBlueprintInfoFailure(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS:
       return onNanoContractBlueprintInfoSuccess(state, action);
-    case types.UNREGISTEREDTOKENS_REQUEST:
-      return onUnregisteredTokensRequest(state);
-    case types.UNREGISTEREDTOKENS_SUCCESS:
-      return onUnregisteredTokensSuccess(state, action);
-    case types.UNREGISTEREDTOKENS_FAILURE:
-      return onUnregisteredTokensFailure(state, action);
-    case types.UNREGISTEREDTOKENS_END:
-      return onUnregisteredTokensEnd(state);
+    case types.UNREGISTEREDTOKENS_DOWNLOAD_REQUEST:
+      return onUnregisteredTokensDownloadRequest(state);
+    case types.UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS:
+      return onUnregisteredTokensDownloadSuccess(state, action);
+    case types.UNREGISTEREDTOKENS_DOWNLOAD_FAILURE:
+      return onUnregisteredTokensDownloadFailure(state, action);
+    case types.UNREGISTEREDTOKENS_DOWNLOAD_END:
+      return onUnregisteredTokensDownloadEnd(state);
     case types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY:
       return onNewNanoContractTransactionRetry(state);
     case types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS:
@@ -2061,7 +2061,7 @@ export const onNanoContractBlueprintInfoSuccess = (state, { payload }) => ({
  * Remarks
  * This reducer aims to clean error feedback message before processing the request.
  */
-export const onUnregisteredTokensRequest = (state) => ({
+export const onUnregisteredTokensDownloadRequest = (state) => ({
   ...state,
   unregisteredTokens: {
     ...state.unregisteredTokens,
@@ -2078,7 +2078,7 @@ export const onUnregisteredTokensRequest = (state) => ({
  * @param {Object} action.payload
  * @param {string} action.payload.error The error message as feedback to user
  */
-export const onUnregisteredTokensSuccess = (state, { payload }) => ({
+export const onUnregisteredTokensDownloadSuccess = (state, { payload }) => ({
   ...state,
   unregisteredTokens: {
     ...state.unregisteredTokens,
@@ -2094,7 +2094,7 @@ export const onUnregisteredTokensSuccess = (state, { payload }) => ({
  * @param {Object} action.payload
  * @param {string} action.payload.error The error message as feedback to user
  */
-export const onUnregisteredTokensFailure = (state, { payload }) => ({
+export const onUnregisteredTokensDownloadFailure = (state, { payload }) => ({
   ...state,
   unregisteredTokens: {
     ...state.unregisteredTokens,
@@ -2107,7 +2107,7 @@ export const onUnregisteredTokensFailure = (state, { payload }) => ({
  *
  * @param {Object} state
  */
-export const onUnregisteredTokensEnd = (state) => ({
+export const onUnregisteredTokensDownloadEnd = (state) => ({
   ...state,
   unregisteredTokens: {
     ...state.unregisteredTokens,

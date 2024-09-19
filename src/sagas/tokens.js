@@ -31,9 +31,9 @@ import {
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
   onExceptionCaptured,
-  unregisteredTokensSuccess,
-  unregisteredTokensEnd,
-  unregisteredTokensFailure,
+  unregisteredTokensDownloadSuccess,
+  unregisteredTokensDownloadEnd,
+  unregisteredTokensDownloadFailure,
 } from '../actions';
 import { logger } from '../logger';
 import { NODE_RATE_LIMIT_CONF } from '../constants';
@@ -311,10 +311,10 @@ export function* fetchTokenData(tokenId, force = false) {
 export function* getTokenDetails(wallet, uid) {
   try {
     const { tokenInfo: { symbol, name } } = yield call([wallet, wallet.getTokenDetails], uid);
-    yield put(unregisteredTokensSuccess({ tokens: { [uid]: { uid, symbol, name } } }));
+    yield put(unregisteredTokensDownloadSuccess({ tokens: { [uid]: { uid, symbol, name } } }));
   } catch (e) {
     log.error(`Fail getting token data for token ${uid}.`, e);
-    yield put(unregisteredTokensFailure({ error: failureMessage.someTokensNotLoaded }));
+    yield put(unregisteredTokensDownloadFailure({ error: failureMessage.someTokensNotLoaded }));
   }
 }
 
@@ -331,12 +331,12 @@ export function* getTokenDetails(wallet, uid) {
  * @param {Object} action.payload
  * @param {string[]} action.payload.uids
  */
-export function* requestUnregisteredTokens(action) {
+export function* requestUnregisteredTokensDownload(action) {
   const { uids } = action.payload;
 
   if (uids.length === 0) {
     log.debug('No uids to request token details.');
-    yield put(unregisteredTokensEnd());
+    yield put(unregisteredTokensDownloadEnd());
     return;
   }
 
@@ -370,7 +370,7 @@ export function* requestUnregisteredTokens(action) {
     yield delay(burstDelay * 1000);
   }
   log.log('Success getting tokens data to feed unregisteredTokens.');
-  yield put(unregisteredTokensEnd());
+  yield put(unregisteredTokensDownloadEnd());
 }
 
 export function* saga() {
@@ -380,6 +380,6 @@ export function* saga() {
     takeEvery(types.TOKEN_FETCH_HISTORY_REQUESTED, fetchTokenHistory),
     takeEvery(types.NEW_TOKEN, routeTokenChange),
     takeEvery(types.SET_TOKENS, routeTokenChange),
-    takeEvery(types.UNREGISTEREDTOKENS_REQUEST, requestUnregisteredTokens),
+    takeEvery(types.UNREGISTEREDTOKENS_DOWNLOAD_REQUEST, requestUnregisteredTokensDownload),
   ]);
 }

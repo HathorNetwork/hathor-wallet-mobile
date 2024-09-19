@@ -189,13 +189,13 @@ export const types = {
   /* It updates the redux state of new nano contract transaction status on wallet connect register. */
   WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
   /* It triggers a process to fetch token details for a list of unregistered tokens. */
-  UNREGISTEREDTOKENS_REQUEST: 'UNREGISTEREDTOKENS_REQUEST',
+  UNREGISTEREDTOKENS_DOWNLOAD_REQUEST: 'UNREGISTEREDTOKENS_DOWNLOAD_REQUEST',
   /* It signals the process has loaded at least one token details with success. */
-  UNREGISTEREDTOKENS_SUCCESS: 'UNREGISTEREDTOKENS_SUCCESS',
+  UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS: 'UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS',
   /* It signals the process has failed to load at least one token details. */
-  UNREGISTEREDTOKENS_FAILURE: 'UNREGISTEREDTOKENS_FAILURE',
+  UNREGISTEREDTOKENS_DOWNLOAD_FAILURE: 'UNREGISTEREDTOKENS_DOWNLOAD_FAILURE',
   /* It signals the end of the process. */
-  UNREGISTEREDTOKENS_END: 'UNREGISTEREDTOKENS_END',
+  UNREGISTEREDTOKENS_DOWNLOAD_END: 'UNREGISTEREDTOKENS_DOWNLOAD_END',
   WALLETCONNECT_NEW_NANOCONTRACT_RETRY: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY',
   WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS',
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
@@ -1400,8 +1400,8 @@ export const nanoContractBlueprintInfoSuccess = (id, blueprintInfo) => ({
  * @param {Object} payload
  * @param {string[]} payload.uids A list of token UID.
  */
-export const unregisteredTokensRequest = (payload) => ({
-  type: types.UNREGISTEREDTOKENS_REQUEST,
+export const unregisteredTokensDownloadRequest = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_DOWNLOAD_REQUEST,
   payload,
 });
 
@@ -1410,8 +1410,8 @@ export const unregisteredTokensRequest = (payload) => ({
  * @param {Object} payload
  * @param {Object} payload.tokens A map of token data by its UID.
  */
-export const unregisteredTokensSuccess = (payload) => ({
-  type: types.UNREGISTEREDTOKENS_SUCCESS,
+export const unregisteredTokensDownloadSuccess = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS,
   payload,
 });
 
@@ -1420,16 +1420,16 @@ export const unregisteredTokensSuccess = (payload) => ({
  * @param {Object} payload
  * @param {string} payload.error The error message as feedback to user
  */
-export const unregisteredTokensFailure = (payload) => ({
-  type: types.UNREGISTEREDTOKENS_FAILURE,
+export const unregisteredTokensDownloadFailure = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_DOWNLOAD_FAILURE,
   payload,
 });
 
 /**
  * Signals the unregistered tokens request has ended.
  */
-export const unregisteredTokensEnd = () => ({
-  type: types.UNREGISTEREDTOKENS_END,
+export const unregisteredTokensDownloadEnd = () => ({
+  type: types.UNREGISTEREDTOKENS_DOWNLOAD_END,
 });
 
 export const showSignMessageWithAddressModal = (accept, deny, data, dapp) => ({
