@@ -249,8 +249,8 @@ export async function fetchHistory(req) {
   }
 
   const network = wallet.getNetworkObject();
-  // As isAddressMine call is async we collect the tasks to avoid
-  // suspend the iteration with an await.
+  // As isAddressMine call is async, we should collect the tasks to avoid
+  // suspending the iteration with an await.
   const isMineTasks = [];
   // Translate rawNcTxHistory to NcTxHistory and collect isAddressMine tasks
   const historyNewestToOldest = rawHistory.map((rawTx) => {
