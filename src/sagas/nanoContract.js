@@ -249,20 +249,16 @@ export async function fetchHistory(req) {
   }
 
   const network = wallet.getNetworkObject();
-  // As isAddressMine call is async, we should collect the tasks to avoid
-  // suspending the iteration with an await.
-  const isMineTasks = [];
-  // Translate rawNcTxHistory to NcTxHistory and collect isAddressMine tasks
-  const historyNewestToOldest = rawHistory.map((rawTx) => {
+  // Translate rawNcTxHistory to NcTxHistory
+  // Prouce a list ordered from newest to oldest
+  const historyTransformer = rawHistory.map(async (rawTx) => {
     const caller = addressUtils.getAddressFromPubkey(rawTx.nc_pubkey, network).base58;
     const actions = rawTx.nc_context.actions.map((each) => ({
       type: each.type, // 'deposit' or 'withdrawal'
       uid: each.token_uid,
       amount: each.amount,
     }));
-    // As this is a promise, collect as task to hydrate later.
-    // This strategy avoids an await suspension.
-    isMineTasks.push(isAddressMine(wallet, caller, useWalletService));
+    const isMine = await isAddressMine(wallet, caller, useWalletService);
 
     const tx = {
       txId: rawTx.hash,
@@ -275,17 +271,12 @@ export async function fetchHistory(req) {
       firstBlock: rawTx.first_block,
       caller,
       actions,
+      isMine,
     };
     return tx;
   });
 
-  // Hydrate ncTxHistory with isMine flag
-  const isMineResults = await Promise.all(isMineTasks);
-  isMineResults.forEach((isMine, idx) => {
-    historyNewestToOldest[idx].isMine = isMine;
-  });
-
-  return { history: historyNewestToOldest };
+  return { history: await Promise.all(historyTransformer) };
 }
 
 /**
