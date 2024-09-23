@@ -75,7 +75,7 @@
 
 ### Inspect Nano Contract Details
 - From the *Nano Contract Details* screen follow the instructions
-- [ ] Check there is at leas one transaction listed, the "initialize"
+- [ ] Check there is at least one transaction listed, the "initialize"
 - Tap on "Nano Contract" header to expand it
 - Tap on "Nano Contract" header again to shrink it
 - Tap on "Nano Contract" header to expand it again
