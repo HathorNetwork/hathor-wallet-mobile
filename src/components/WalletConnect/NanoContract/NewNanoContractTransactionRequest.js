@@ -27,7 +27,7 @@ import {
   setNewNanoContractStatusReady,
   walletConnectAccept,
   walletConnectReject,
-  unregisteredTokensRequest
+  unregisteredTokensDownloadRequest
 } from '../../../actions';
 import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
@@ -152,7 +152,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
         unknownTokensUid.push(uid);
       }
     });
-    dispatch(unregisteredTokensRequest({ uids: unknownTokensUid }));
+    dispatch(unregisteredTokensDownloadRequest({ uids: unknownTokensUid }));
 
     return () => {
       dispatch(setNewNanoContractStatusReady());

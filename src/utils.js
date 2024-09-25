@@ -527,3 +527,27 @@ export const parseScriptData = (scriptData, network) => {
     return null;
   }
 }
+
+/**
+ * Split a list in a list of groups defined by group size.
+ *
+ * @param {[]} list An array object.
+ * @param {number} groupSize The size of a group, which determines the final number of groups.
+ *
+ * @returns {[][]} Returns an array of grouped itens in array.
+ *
+ * @example
+ * splitInGroups(['a','b'], 1);
+ * // outputs: [['a'], ['b']]
+ */
+export function splitInGroups(list, groupSize) {
+  if (groupSize === 0) {
+    return list;
+  }
+
+  const groups = [];
+  for (let i = 0; i < list.length; i += groupSize) {
+    groups.push(list.slice(i, i + groupSize));
+  }
+  return groups;
+}

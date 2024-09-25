@@ -298,3 +298,11 @@ export const NANO_CONTRACT_ACTION = {
   withdrawal: 'withdrawal',
   deposit: 'deposit',
 };
+
+export const NODE_RATE_LIMIT_CONF = {
+  thin_wallet_token: {
+    perSecond: 3,
+    burst: 10,
+    delay: 3,
+  }
+};
