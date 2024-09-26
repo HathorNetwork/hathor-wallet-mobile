@@ -394,12 +394,12 @@ export function* unregisterNanoContract({ payload }) {
  * @param {{
  *   payload: {
  *     ncId: string;
- *     address: string;
+ *     newAddress: string;
  *   }
  * }}
  */
 export function* requestNanoContractAddressChange({ payload }) {
-  const { ncId, address } = payload;
+  const { ncId, newAddress } = payload;
 
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
@@ -415,7 +415,7 @@ export function* requestNanoContractAddressChange({ payload }) {
       wallet.storage.updateNanoContractRegisteredAddress
     ],
     ncId,
-    address,
+    newAddress,
   );
   log.debug(`Success persisting Nano Contract address update. ncId = ${ncId}`);
 }
