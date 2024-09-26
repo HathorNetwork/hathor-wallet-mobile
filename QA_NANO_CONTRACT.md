@@ -21,10 +21,10 @@
 ### Register Nano Contract
 - Register a new Nano Contract by tapping over "Register new" on *Nano Contract Details*
 	- It may focus on a component of loading
-- [ ] Check the Nano Contract Registration screen is in focus
-- [ ] Check the Nano Contract ID is an input
-- [ ] Check the Wallet Address is loaded
-- [ ] Check the "REGISTER NANO CONTRACT" button is disabled
+- [ ] Check if the Nano Contract Registration screen is in focus
+- [ ] Check if the Nano Contract ID is an input
+- [ ] Check if the Wallet Address is loaded
+- [ ] Check if the "REGISTER NANO CONTRACT" button is disabled
 - Type the following Nano Contract ID `00004f1a3b07f0ffc7ced77a19ae6d4407991a15a281c0ddaf3d6e04a56eba78`
 	- It represents a Nano Contract in the `nano-testnet` network
 - [ ] Check the "REGISTER NANO CONTRACT" button is now actionable
@@ -34,22 +34,20 @@
 	- If the message "The informed address does not belong to the wallet" is the failure message, it happens when you are using the wallet service. Make sure to disable it and reload the wallet.
 - Dismiss the modal by tapping outside its area
 - Remove the input
-- [ ] Check a validation message of error appear under the input:
+- [ ] Check if a validation message of error appeared under the input:
 	- It should informe the field is required
 	- it should be in color red
-- [ ] Check the "REGISTER NANO CONTRACT" button is disabled
+- [ ] Check if the "REGISTER NANO CONTRACT" button is disabled
 - Type any input
-- [ ] Check the validation error message disappear
+- [ ] Check if the validation error message disappeared
 
 ### Change network
 - Navigate to the *Settings* screen
-- Go to "Network Settings"
-- Understand disclaimer
-- Customize
-- [ ] Check you not see the fields:
+- Go to "Network Settings" > Understand disclaimer > Customize
+- [ ] Check if the following fields are hidden, you should not be able see them if Wallet Service is disabled:
 	- "Wallet Service URL (optional)", and
 	- "Wallet Service WS URL (optional)"
-- If you see the mentioned fields check they are empty or do it by your own before following the next instructions
+- [NOTE] If you see the mentioned fields because you have Wallet Service enabled, check they are empty or do it by your own before following the next instructions.
 - Set "Node URL" the input "https://node1.nano-testnet.hathor.network/v1a/"
 - Set "Explorer URL" the input "https://explorer.alpha.nano-testnet.hathor.network/"
 - Set "Explorer Service URL" the input "https://explorer-service.nano-testnet.hathor.network/"
@@ -69,8 +67,8 @@
 	- If a failure feedback modal appear with the message "The informed address does not belong to the wallet", it happens when you are using the wallet service. Make sure to disable it and reload the wallet
 - [ ] Check the feedback modal has:
 	- A message informing the registration has happen with success, and
-	- There is a "SEE CONTRACT" CTA
-- Tap on "SEE CONTRACT" CTA
+	- A "SEE CONTRACT" button
+- Tap on "SEE CONTRACT" button
 - [ ] Check *Nano Contract Details* screen is in focus
 
 ### Inspect Nano Contract Details
@@ -98,7 +96,7 @@
 	- An information content informing user this address is used to sign a transaction within the Nano Contract
 	- A mirror content informing the selected address and its index
 	- A "CONFIRM NEW ADDRESS" button
-	- A "GO BAKC" button
+	- A "GO BACK" button
 - Tap on "GO BACK" button
 - [ ] Check the modal disappear
 - Select any other indexed address
