@@ -37,7 +37,7 @@ import {
 } from '../actions';
 import { logger } from '../logger';
 import { NANO_CONTRACT_TX_HISTORY_SIZE } from '../constants';
-import { getNanoContractFeatureToggle, isAddressMine } from '../utils';
+import { getNanoContractFeatureToggle } from '../utils';
 
 const log = logger('nano-contract-saga');
 
@@ -52,6 +52,25 @@ export const failureMessage = {
   blueprintInfoFailure: t`Couldn't get Blueprint info.`,
   notRegistered: t`Nano Contract not registered.`,
   nanoContractHistoryFailure: t`Error while trying to download Nano Contract transactions history.`,
+};
+
+/**
+ * Call the async wallet method `isAddressMine` considering the type of wallet.
+ *
+ * @param {Object} wallet A wallet instance
+ * @param {string} address A wallet address to check
+ * @param {boolean} useWalletService A flag that determines if wallet service is in use
+ */
+export const isAddressMine = async (wallet, address, useWalletService) => {
+  // XXX: Wallet Service doesn't implement isAddressMine.
+  // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
+  // Default to `false` if using Wallet Service.
+  if (useWalletService) {
+    return false;
+  }
+
+  const isMine = await wallet.isAddressMine(address);
+  return isMine;
 };
 
 export function* init() {
