@@ -251,7 +251,7 @@ export async function fetchHistory(req) {
   const network = wallet.getNetworkObject();
   // Translate rawNcTxHistory to NcTxHistory
   // Prouce a list ordered from newest to oldest
-  const historyTransformer = rawHistory.map(async (rawTx) => {
+  const transformedTxHistory = rawHistory.map(async (rawTx) => {
     const caller = addressUtils.getAddressFromPubkey(rawTx.nc_pubkey, network).base58;
     const actions = rawTx.nc_context.actions.map((each) => ({
       type: each.type, // 'deposit' or 'withdrawal'
@@ -276,7 +276,7 @@ export async function fetchHistory(req) {
     return tx;
   });
 
-  return { history: await Promise.all(historyTransformer) };
+  return { history: await Promise.all(transformedTxHistory) };
 }
 
 /**
