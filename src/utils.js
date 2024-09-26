@@ -429,18 +429,6 @@ export const getNanoContractFeatureToggle = (state) => (
 export const getTimestampFormat = (timestamp) => moment.unix(timestamp).format(t`DD MMM YYYY [•] HH:mm`)
 
 /**
- * Extract the result of a generator function when it is done.
- */
-export const consumeGenerator = (generator) => {
-  for (;;) {
-    const { value, done } = generator.next();
-    if (done) {
-      return value;
-    }
-  }
-}
-
-/**
  * Extract all the items of an async iterator/generator.
  *
  * @returns {Promise<unknown[]>} A promise of an array of unkown object.

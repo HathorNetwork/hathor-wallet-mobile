@@ -20,6 +20,8 @@ import {
 } from 'redux-saga/effects';
 import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
+import { getRegisteredNanoContracts, safeEffect } from './helpers';
+import { isWalletServiceEnabled } from './wallet';
 import {
   nanoContractBlueprintInfoFailure,
   nanoContractBlueprintInfoSuccess,
@@ -35,9 +37,7 @@ import {
 } from '../actions';
 import { logger } from '../logger';
 import { NANO_CONTRACT_TX_HISTORY_SIZE } from '../constants';
-import { consumeGenerator, getNanoContractFeatureToggle } from '../utils';
-import { getRegisteredNanoContracts, safeEffect } from './helpers';
-import { isWalletServiceEnabled } from './wallet';
+import { getNanoContractFeatureToggle } from '../utils';
 
 const log = logger('nano-contract-saga');
 
@@ -52,6 +52,25 @@ export const failureMessage = {
   blueprintInfoFailure: t`Couldn't get Blueprint info.`,
   notRegistered: t`Nano Contract not registered.`,
   nanoContractHistoryFailure: t`Error while trying to download Nano Contract transactions history.`,
+};
+
+/**
+ * Call the async wallet method `isAddressMine` considering the type of wallet.
+ *
+ * @param {Object} wallet A wallet instance
+ * @param {string} address A wallet address to check
+ * @param {boolean} useWalletService A flag that determines if wallet service is in use
+ */
+export const isAddressMine = async (wallet, address, useWalletService) => {
+  // XXX: Wallet Service doesn't implement isAddressMine.
+  // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
+  // Default to `false` if using Wallet Service.
+  if (useWalletService) {
+    return false;
+  }
+
+  const isMine = await wallet.isAddressMine(address);
+  return isMine;
 };
 
 export function* init() {
@@ -101,13 +120,13 @@ export function* registerNanoContract({ payload }) {
   // XXX: Wallet Service doesn't implement isAddressMine.
   // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
   // Default to `false` if using Wallet Service.
-  let isAddressMine = false;
+  let isAddrMine = false;
   const useWalletService = yield call(isWalletServiceEnabled);
   if (!useWalletService) {
-    isAddressMine = yield call([wallet, wallet.isAddressMine], address);
+    isAddrMine = yield call([wallet, wallet.isAddressMine], address);
   }
 
-  if (!isAddressMine) {
+  if (!isAddrMine) {
     log.debug('Fail registering Nano Contract because address do not belongs to this wallet.');
     yield put(nanoContractRegisterFailure(failureMessage.addressNotMine));
     return;
@@ -158,6 +177,7 @@ export function* registerNanoContract({ payload }) {
   // emit action NANOCONTRACT_REGISTER_SUCCESS with feedback to user
   yield put(nanoContractRegisterSuccess({ entryKey: ncId, entryValue: nc, hasFeedback: true }));
 }
+
 /**
  * Effect invoked by safeEffect if an unexpected error occurs.
  *
@@ -215,9 +235,10 @@ function* registerNanoContractOnError(error) {
  * @param {string} req.before Transaction hash to start to get newer items
  * @param {string} req.after Transaction hash to start to get older items
  * @param {Object} req.wallet Wallet instance from redux state
+ * @param {boolean} req.useWalletService A flag that determines if wallet service is in use
  *
  * @returns {{
- *   history: {};
+ *   history: NcTxHistory;
  * }}
  *
  * @throws {Error} when request code is greater then 399 or when response's success is false
@@ -225,6 +246,7 @@ function* registerNanoContractOnError(error) {
 export async function fetchHistory(req) {
   const {
     wallet,
+    useWalletService,
     ncId,
     count,
     after,
@@ -245,28 +267,17 @@ export async function fetchHistory(req) {
     throw new Error('Failed to fetch nano contract history');
   }
 
-  /* TODO: Make it run concurrently while guaranting the order.
-  /* see https://github.com/HathorNetwork/hathor-wallet-mobile/issues/514
-   */
-  const historyNewestToOldest = new Array(rawHistory.length)
-  for (let idx = 0; idx < rawHistory.length; idx += 1) {
-    const rawTx = rawHistory[idx];
-    const network = wallet.getNetworkObject();
+  const network = wallet.getNetworkObject();
+  // Translate rawNcTxHistory to NcTxHistory
+  // Prouce a list ordered from newest to oldest
+  const transformedTxHistory = rawHistory.map(async (rawTx) => {
     const caller = addressUtils.getAddressFromPubkey(rawTx.nc_pubkey, network).base58;
-    // XXX: Wallet Service doesn't implement isAddressMine.
-    // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
-    // Default to `false` if using Wallet Service.
-    let isMine = false;
-    const useWalletService = consumeGenerator(isWalletServiceEnabled());
-    if (!useWalletService) {
-      // eslint-disable-next-line no-await-in-loop
-      isMine = await wallet.isAddressMine(caller);
-    }
     const actions = rawTx.nc_context.actions.map((each) => ({
       type: each.type, // 'deposit' or 'withdrawal'
       uid: each.token_uid,
       amount: each.amount,
     }));
+    const isMine = await isAddressMine(wallet, caller, useWalletService);
 
     const tx = {
       txId: rawTx.hash,
@@ -278,13 +289,13 @@ export async function fetchHistory(req) {
       blueprintId: rawTx.nc_blueprint_id,
       firstBlock: rawTx.first_block,
       caller,
-      isMine,
       actions,
+      isMine,
     };
-    historyNewestToOldest[idx] = tx;
-  }
+    return tx;
+  });
 
-  return { history: historyNewestToOldest };
+  return { history: await Promise.all(transformedTxHistory) };
 }
 
 /**
@@ -332,9 +343,11 @@ export function* requestHistoryNanoContract({ payload }) {
     yield put(nanoContractHistoryClean({ ncId }));
   }
 
+  const useWalletService = yield select((state) => state.useWalletService);
   try {
     const req = {
       wallet,
+      useWalletService,
       ncId,
       before,
       after,
