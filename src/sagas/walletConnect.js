@@ -39,7 +39,7 @@
  * SESSION_REQUEST: Handles new messages published on the cloud message queue
  * for the current session by the dApp.
  * SESSION_PROPOSAL: Handles a new dApp connection, initialized by the pair method
- * on web3wallet
+ * on walletKit
  * RESET_WALLET: This action is dispatched when the user resets his wallet.
  * START_WALLET_SUCCESS: This action is dispatched when the wallet is successfully
  * loaded.
@@ -63,7 +63,7 @@ import {
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
 import { Core } from '@walletconnect/core';
-import { Web3Wallet } from '@walletconnect/web3wallet';
+import { WalletKit } from '@reown/walletkit';
 import {
   TriggerTypes,
   TriggerResponseTypes,
@@ -161,17 +161,17 @@ function* init() {
       url: 'https://hathor.network/',
     };
 
-    const web3wallet = yield call(Web3Wallet.init, {
+    const walletKit = yield call(WalletKit.init, {
       core,
       metadata,
     });
 
     yield put(setWalletConnect({
-      web3wallet,
+      walletKit,
       core,
     }));
 
-    yield fork(setupListeners, web3wallet);
+    yield fork(setupListeners, walletKit);
 
     // Refresh redux with the active sessions, loaded from storage
     // Pass extend = true so session expiration date get renewed
@@ -217,17 +217,17 @@ export function* listenForAppStateChange() {
 }
 
 export function* checkForPendingRequests() {
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.walletConnect.client);
 
-  yield call([web3wallet, web3wallet.getPendingAuthRequests]);
-  yield call([web3wallet, web3wallet.getPendingSessionRequests]);
+  yield call([walletKit, walletKit.getPendingAuthRequests]);
+  yield call([walletKit, walletKit.getPendingSessionRequests]);
 }
 
 export function* refreshActiveSessions(extend = false) {
   log.debug('Refreshing active sessions.');
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.walletConnect.client);
 
-  const activeSessions = yield call(() => web3wallet.getActiveSessions());
+  const activeSessions = yield call(() => walletKit.getActiveSessions());
   yield put(setWalletConnectSessions(activeSessions));
 
   if (extend) {
@@ -236,7 +236,7 @@ export function* refreshActiveSessions(extend = false) {
       log.debug(activeSessions[key].topic);
 
       try {
-        yield call(() => web3wallet.extendSession({
+        yield call(() => walletKit.extendSession({
           topic: activeSessions[key].topic,
         }));
       } catch (extendError) {
@@ -244,7 +244,7 @@ export function* refreshActiveSessions(extend = false) {
 
         // Extending session failed, remove it
         try {
-          yield call(() => web3wallet.disconnectSession({
+          yield call(() => walletKit.disconnectSession({
             topic: activeSessions[key].topic,
             reason: {
               code: ERROR_CODES.USER_DISCONNECTED,
@@ -261,9 +261,9 @@ export function* refreshActiveSessions(extend = false) {
 }
 
 /**
- * @param {Web3Wallet} web3wallet The WalletConnect web3wallet instance
+ * @param {WalletKit} walletKit The WalletConnect walletKit instance
  */
-export function* setupListeners(web3wallet) {
+export function* setupListeners(walletKit) {
   const channel = eventChannel((emitter) => {
     const listenerMap = new Map();
     const addListener = (eventName) => {
@@ -274,7 +274,7 @@ export function* setupListeners(web3wallet) {
         });
       };
 
-      web3wallet.on(eventName, listener);
+      walletKit.on(eventName, listener);
       listenerMap.set(eventName, listener);
     };
 
@@ -286,7 +286,7 @@ export function* setupListeners(web3wallet) {
     return () => listenerMap.forEach((
       listener,
       eventName,
-    ) => web3wallet.removeListener(eventName, listener));
+    ) => walletKit.removeListener(eventName, listener));
   });
 
   try {
@@ -311,11 +311,11 @@ export function* setupListeners(web3wallet) {
  * the current client.
  */
 export function* clearSessions() {
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
-  const activeSessions = yield call(() => web3wallet.getActiveSessions());
+  const { walletKit } = yield select((state) => state.walletConnect.client);
+  const activeSessions = yield call(() => walletKit.getActiveSessions());
 
   for (const key of Object.keys(activeSessions)) {
-    yield call(() => web3wallet.disconnectSession({
+    yield call(() => walletKit.disconnectSession({
       topic: activeSessions[key].topic,
       reason: {
         code: ERROR_CODES.USER_DISCONNECTED,
@@ -352,8 +352,8 @@ export function* processRequest(action) {
 
   const wallet = yield select((state) => state.wallet);
 
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
-  const activeSessions = yield call(() => web3wallet.getActiveSessions());
+  const { walletKit } = yield select((state) => state.walletConnect.client);
+  const activeSessions = yield call(() => walletKit.getActiveSessions());
   const requestSession = activeSessions[payload.topic];
 
   if (!requestSession) {
@@ -394,7 +394,7 @@ export function* processRequest(action) {
         break;
     }
 
-    yield call(() => web3wallet.respondSessionRequest({
+    yield call(() => walletKit.respondSessionRequest({
       topic: payload.topic,
       response: {
         id: payload.id,
@@ -442,7 +442,7 @@ export function* processRequest(action) {
 
     if (shouldAnswer) {
       try {
-        yield call(() => web3wallet.respondSessionRequest({
+        yield call(() => walletKit.respondSessionRequest({
           topic: payload.topic,
           response: {
             id: payload.id,
@@ -771,8 +771,9 @@ export function* onWalletReset() {
  * connect URI
  */
 export function* onSessionProposal(action) {
+  console.log('Got session proposal', action);
   const { id, params } = action.payload;
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.walletConnect.client);
 
   const wallet = yield select((state) => state.wallet);
   const firstAddress = yield call(() => wallet.getAddressAtIndex(0));
@@ -803,7 +804,7 @@ export function* onSessionProposal(action) {
 
   if (reject) {
     try {
-      yield call(() => web3wallet.rejectSession({
+      yield call(() => walletKit.rejectSession({
         id,
         reason: {
           code: ERROR_CODES.USER_REJECTED,
@@ -819,7 +820,7 @@ export function* onSessionProposal(action) {
 
   const networkSettings = yield select(getNetworkSettings);
   try {
-    yield call(() => web3wallet.approveSession({
+    yield call(() => walletKit.approveSession({
       id,
       relayProtocol: params.relays[0].protocol,
       namespaces: {
@@ -838,7 +839,7 @@ export function* onSessionProposal(action) {
     try {
       // Attempt once more to reject the session, so it doesn't linger in the
       // message queue
-      yield call(() => web3wallet.rejectSession({
+      yield call(() => walletKit.rejectSession({
         id,
         reason: {
           code: ERROR_CODES.USER_REJECTED,
@@ -857,9 +858,9 @@ export function* onSessionProposal(action) {
  * a QR Code
  */
 export function* onUriInputted(action) {
-  const { web3wallet, core } = yield select((state) => state.walletConnect.client);
+  const { walletKit, core } = yield select((state) => state.walletConnect.client);
 
-  if (!web3wallet) {
+  if (!walletKit) {
     throw new Error('Wallet connect instance is new and QRCode was read');
   }
 
@@ -892,12 +893,12 @@ export function* featureToggleUpdateListener() {
  * Sends a disconnect session RPC message to the connected cloud server
  */
 export function* onCancelSession(action) {
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.walletConnect.client);
 
-  const activeSessions = yield call(() => web3wallet.getActiveSessions());
+  const activeSessions = yield call(() => walletKit.getActiveSessions());
 
   if (activeSessions[action.payload.id]) {
-    yield call(() => web3wallet.disconnectSession({
+    yield call(() => walletKit.disconnectSession({
       topic: activeSessions[action.payload.id].topic,
       reason: {
         code: ERROR_CODES.USER_DISCONNECTED,
