@@ -233,7 +233,7 @@ export const setUnleashClient = (unleashClient) => ({
 /**
  * sessions {Array} List of sessions to store
  */
-export const setWalletConnectSessions = (sessions) => ({
+export const setReownSessions = (sessions) => ({
   type: types.SET_WALLET_CONNECT_SESSIONS,
   payload: sessions,
 });
@@ -241,16 +241,16 @@ export const setWalletConnectSessions = (sessions) => ({
 /**
  * modal {Object} Modal information to display
  * modal.show {boolean} Show or hide the modal
- * modal.type {WalletConnectModalTypes} One of (CONNECT, SIGN_MESSAGE_REQUEST)
+ * modal.type {ReownModalTypes} One of (CONNECT, SIGN_MESSAGE_REQUEST)
  * modal.onAcceptAction {Object} Action to be dispatched on accept
  * modal.onRejectAction {Object} Action to be dispatched on reject
  */
-export const setWalletConnectModal = (modal) => ({
+export const setReownModal = (modal) => ({
   type: types.SET_WALLET_CONNECT_MODAL,
   payload: modal,
 });
 
-export const hideWalletConnectModal = () => ({
+export const hideReownModal = () => ({
   type: types.SET_WALLET_CONNECT_MODAL,
   payload: { show: false },
 });
@@ -869,17 +869,17 @@ export const sharedAddressUpdate = (lastSharedAddress, lastSharedIndex) => ({
 /**
  * Stores the reown instance on the redux store
  *
- * reown {WalletConnect} The WalletConnect instance
+ * reown {Reown} The Reown instance
  */
-export const setWalletConnect = (reown) => ({
+export const setReown = (reown) => ({
   type: types.SET_WALLET_CONNECT,
   payload: reown,
 });
 
 /**
- * Dispatched with data when a WalletConnect QRCode is read
+ * Dispatched with data when a Reown QRCode is read
  *
- * data {string} The WalletConnect v2 URI
+ * data {string} The Reown v2 URI
  */
 export const reownUriInputted = (data) => ({
   type: types.WC_URI_INPUTTED,

@@ -17,13 +17,13 @@ import SimpleButton from '../../components/SimpleButton';
 import { reownUriInputted } from '../../actions';
 import { COLORS } from '../../styles/themes';
 
-export default function WalletConnectScan({ navigation }) {
+export default function ReownScan({ navigation }) {
   const dispatch = useDispatch();
 
   const onSuccess = (e) => {
     dispatch(reownUriInputted(e.data));
 
-    navigation.navigate('WalletConnectList');
+    navigation.navigate('ReownList');
 
     return null;
   };
@@ -39,7 +39,7 @@ export default function WalletConnectScan({ navigation }) {
             // translator: Used when the QR Code Scanner is opened, and user will manually
             // enter the information.
             title={t`Manual`}
-            onPress={() => navigation.navigate('WalletConnectManual')}
+            onPress={() => navigation.navigate('ReownManual')}
           />
         )}
       />

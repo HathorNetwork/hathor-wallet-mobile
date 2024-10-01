@@ -153,8 +153,8 @@ export class Settings extends React.Component {
             {this.props.reownEnabled
               && (
                 <ListMenu
-                  title='Wallet Connect'
-                  onPress={() => this.props.navigation.navigate('WalletConnectList')}
+                  title='Reown'
+                  onPress={() => this.props.navigation.navigate('ReownList')}
                 />
               )}
             <ListMenu

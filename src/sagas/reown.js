@@ -73,16 +73,16 @@ import {
   SendNanoContractTxError,
 } from '@hathor/hathor-rpc-handler';
 import { isWalletServiceEnabled, WALLET_STATUS } from './wallet';
-import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
+import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
   WALLET_CONNECT_PROJECT_ID,
   WALLET_CONNECT_FEATURE_TOGGLE,
 } from '../constants';
 import {
   types,
-  setWalletConnect,
-  setWalletConnectModal,
-  setWalletConnectSessions,
+  setReown,
+  setReownModal,
+  setReownSessions,
   onExceptionCaptured,
   setWCConnectionFailed,
   showSignMessageWithAddressModal,
@@ -123,7 +123,7 @@ const ERROR_CODES = {
   INVALID_PAYLOAD: 5003,
 };
 
-function* isWalletConnectEnabled() {
+function* isReownEnabled() {
   const reownEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
 
   return reownEnabled;
@@ -140,7 +140,7 @@ function* init() {
 
   try {
     const walletServiceEnabled = yield call(isWalletServiceEnabled);
-    const reownEnabled = yield call(isWalletConnectEnabled);
+    const reownEnabled = yield call(isReownEnabled);
 
     if (walletServiceEnabled) {
       log.debug('Wallet Service enabled, skipping wallet-connect init.');
@@ -166,7 +166,7 @@ function* init() {
       metadata,
     });
 
-    yield put(setWalletConnect({
+    yield put(setReown({
       walletKit,
       core,
     }));
@@ -228,7 +228,7 @@ export function* refreshActiveSessions(extend = false) {
   const { walletKit } = yield select((state) => state.reown.client);
 
   const activeSessions = yield call(() => walletKit.getActiveSessions());
-  yield put(setWalletConnectSessions(activeSessions));
+  yield put(setReownSessions(activeSessions));
 
   if (extend) {
     for (const key of Object.keys(activeSessions)) {
@@ -261,7 +261,7 @@ export function* refreshActiveSessions(extend = false) {
 }
 
 /**
- * @param {WalletKit} walletKit The WalletConnect walletKit instance
+ * @param {WalletKit} walletKit The Reown walletKit instance
  */
 export function* setupListeners(walletKit) {
   const channel = eventChannel((emitter) => {
@@ -614,9 +614,9 @@ export function* onSignMessageRequest({ payload }) {
     return;
   }
 
-  yield put(setWalletConnectModal({
+  yield put(setReownModal({
     show: true,
-    type: WalletConnectModalTypes.SIGN_MESSAGE,
+    type: ReownModalTypes.SIGN_MESSAGE,
     data: {
       data,
       dapp,
@@ -647,9 +647,9 @@ export function* onSignOracleDataRequest({ payload }) {
     return;
   }
 
-  yield put(setWalletConnectModal({
+  yield put(setReownModal({
     show: true,
-    type: WalletConnectModalTypes.SIGN_ORACLE_DATA,
+    type: ReownModalTypes.SIGN_ORACLE_DATA,
     data: {
       data,
       dapp,
@@ -696,9 +696,9 @@ export function* onSendNanoContractTxRequest({ payload }) {
     return;
   }
 
-  yield put(setWalletConnectModal({
+  yield put(setReownModal({
     show: true,
-    type: WalletConnectModalTypes.SEND_NANO_CONTRACT_TX,
+    type: ReownModalTypes.SEND_NANO_CONTRACT_TX,
     data: {
       dapp,
       data: nc,
@@ -729,9 +729,9 @@ export function* onCreateTokenRequest({ payload }) {
     return;
   }
 
-  yield put(setWalletConnectModal({
+  yield put(setReownModal({
     show: true,
-    type: WalletConnectModalTypes.CREATE_TOKEN,
+    type: ReownModalTypes.CREATE_TOKEN,
     data: {
       dapp,
       data,
@@ -788,9 +788,9 @@ export function* onSessionProposal(action) {
   const onAcceptAction = { type: 'WALLET_CONNECT_ACCEPT' };
   const onRejectAction = { type: 'WALLET_CONNECT_REJECT' };
 
-  yield put(setWalletConnectModal({
+  yield put(setReownModal({
     show: true,
-    type: WalletConnectModalTypes.CONNECT,
+    type: ReownModalTypes.CONNECT,
     data,
     onAcceptAction,
     onRejectAction,
@@ -878,11 +878,11 @@ export function* onUriInputted(action) {
  */
 export function* featureToggleUpdateListener() {
   while (true) {
-    const oldWalletConnectEnabled = yield call(isWalletConnectEnabled);
+    const oldReownEnabled = yield call(isReownEnabled);
     yield take('FEATURE_TOGGLE_UPDATED');
-    const newWalletConnectEnabled = yield call(isWalletConnectEnabled);
+    const newReownEnabled = yield call(isReownEnabled);
 
-    if (oldWalletConnectEnabled && !newWalletConnectEnabled) {
+    if (oldReownEnabled && !newReownEnabled) {
       yield put({ type: 'WC_SHUTDOWN' });
     }
   }

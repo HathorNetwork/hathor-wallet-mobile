@@ -13,18 +13,18 @@ import {
 import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
 import OfflineBar from '../../components/OfflineBar';
-import { CreateTokenRequest } from '../../components/WalletConnect/CreateTokenRequest';
+import { SignOracleDataRequest } from '../../components/Reown/SignOracleDataRequest';
 import { COLORS } from '../../styles/themes';
 
-export function CreateTokenRequestScreen({ route }) {
-  const { createTokenRequest } = route.params;
+export function SignOracleDataRequestScreen({ route }) {
+  const { signOracleData } = route.params;
 
   return (
     <Wrapper>
       <HathorHeader
-        title={t`Create Token Request`.toUpperCase()}
+        title={t`Sign Oracle Data Request`.toUpperCase()}
       />
-      <CreateTokenRequest createTokenRequest={createTokenRequest} />
+      <SignOracleDataRequest signOracleData={signOracleData} />
       <OfflineBar />
     </Wrapper>
   );
@@ -40,6 +40,6 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
+    backgroundColor: COLORS.lowContrastDetail,
   },
 });

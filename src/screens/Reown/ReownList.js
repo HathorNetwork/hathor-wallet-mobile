@@ -87,7 +87,7 @@ const style = StyleSheet.create({
   }
 });
 
-export default function WalletConnectList({ navigation }) {
+export default function ReownList({ navigation }) {
   const dispatch = useDispatch();
   const connectionFailed = useSelector((state) => state.reown.connectionFailed);
   const connectedSessions = useSelector((state) => state.reown.sessions);
@@ -109,7 +109,7 @@ export default function WalletConnectList({ navigation }) {
       // translator: Used when the QR Code Scanner is opened, and user will manually
       // enter the information.
       title={t`Add`}
-      onPress={() => navigation.navigate('WalletConnectScan')}
+      onPress={() => navigation.navigate('ReownScan')}
     />
   );
 
@@ -134,7 +134,7 @@ export default function WalletConnectList({ navigation }) {
     <View style={style.componentWrapper}>
       <SafeAreaView style={style.safeAreaView}>
         <HathorHeader
-          title={t`Wallet Connect Sessions`}
+          title={t`Reown Sessions`}
           onBackPress={() => navigation.pop()}
           rightElement={renderHeaderRightElement()}
         />

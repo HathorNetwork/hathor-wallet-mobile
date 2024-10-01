@@ -634,11 +634,11 @@ export const reducer = (state = initialState, action) => {
     case types.FEATURE_TOGGLE_INITIALIZED:
       return onFeatureToggleInitialized(state);
     case types.SET_WALLET_CONNECT:
-      return onSetWalletConnect(state, action);
+      return onSetReown(state, action);
     case types.SET_WALLET_CONNECT_MODAL:
-      return onSetWalletConnectModal(state, action);
+      return onSetReownModal(state, action);
     case types.SET_WALLET_CONNECT_SESSIONS:
-      return onSetWalletConnectSessions(state, action);
+      return onSetReownSessions(state, action);
     case types.WC_SET_CONNECTION_FAILED:
       return onSetWCConnectionFailed(state, action);
     case types.NETWORKSETTINGS_UPDATE_REQUEST:
@@ -1444,9 +1444,9 @@ const onSharedAddressUpdate = (state, action) => ({
 });
 
 /**
- * @param {WalletConnect} action.payload The wallet connect instance
+ * @param {Reown} action.payload The wallet connect instance
  */
-export const onSetWalletConnect = (state, { payload }) => ({
+export const onSetReown = (state, { payload }) => ({
   ...state,
   reown: {
     ...state.reown,
@@ -1457,7 +1457,7 @@ export const onSetWalletConnect = (state, { payload }) => ({
 /**
  * @param {Object} action.payload The wallet connect modal options
  */
-export const onSetWalletConnectModal = (state, { payload }) => ({
+export const onSetReownModal = (state, { payload }) => ({
   ...state,
   reown: {
     ...state.reown,
@@ -1468,7 +1468,7 @@ export const onSetWalletConnectModal = (state, { payload }) => ({
 /**
  * @param {Object} action.payload The wallet connect sessions to store
  */
-export const onSetWalletConnectSessions = (state, { payload }) => ({
+export const onSetReownSessions = (state, { payload }) => ({
   ...state,
   reown: {
     ...state.reown,
