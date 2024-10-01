@@ -71,7 +71,7 @@ import {
   handleRpcRequest,
   CreateTokenError,
   SendNanoContractTxError,
-} from 'hathor-rpc-handler-test';
+} from '@hathor/hathor-rpc-handler';
 import { isWalletServiceEnabled, WALLET_STATUS } from './wallet';
 import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
 import {
@@ -771,7 +771,6 @@ export function* onWalletReset() {
  * connect URI
  */
 export function* onSessionProposal(action) {
-  console.log('Got session proposal', action);
   const { id, params } = action.payload;
   const { walletKit } = yield select((state) => state.walletConnect.client);
 

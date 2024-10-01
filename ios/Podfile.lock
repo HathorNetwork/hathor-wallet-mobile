@@ -590,7 +590,7 @@ PODS:
   - RNScreens (3.22.1):
     - React-Core
     - React-RCTImage
-  - RNSentry (5.33.1):
+  - RNSentry (5.31.0):
     - hermes-engine
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
@@ -894,7 +894,7 @@ SPEC CHECKSUMS:
   RNPermissions: d9db16f082ce2e09908e58c925189e2637d2786b
   RNReanimated: ab2e96c6d5591c3dfbb38a464f54c8d17fb34a87
   RNScreens: 50ffe2fa2342eabb2d0afbe19f7c1af286bc7fb3
-  RNSentry: cd3009914335ca385e907b3801b65cb49c525c70
+  RNSentry: b3f878fa0cef050836b302c0905e952d3e6e7452
   RNSVG: 80584470ff1ffc7994923ea135a3e5ad825546b9
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   Sentry: f8374b5415bc38dfb5645941b3ae31230fbeae57
