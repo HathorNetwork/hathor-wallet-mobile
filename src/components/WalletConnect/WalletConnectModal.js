@@ -18,9 +18,9 @@ import CreateTokenModal from './CreateTokenModal';
 
 export default () => {
   const dispatch = useDispatch();
-  const walletConnectModal = useSelector((state) => state.walletConnect.modal);
+  const reownModal = useSelector((state) => state.reown.modal);
 
-  if (!walletConnectModal.show) {
+  if (!reownModal.show) {
     return null;
   }
 
@@ -33,7 +33,7 @@ export default () => {
       case WalletConnectModalTypes.CONNECT:
         return (
           <ConnectModal
-            {...walletConnectModal}
+            {...reownModal}
             onDismiss={onDismiss}
             baseStyles={baseStyles}
           />
@@ -41,28 +41,28 @@ export default () => {
       case WalletConnectModalTypes.SIGN_MESSAGE:
         return (
           <SignMessageModal
-            {...walletConnectModal}
+            {...reownModal}
             onDismiss={onDismiss}
           />
         );
       case WalletConnectModalTypes.SIGN_ORACLE_DATA:
         return (
           <SignOracleDataModal
-            {...walletConnectModal}
+            {...reownModal}
             onDismiss={onDismiss}
           />
         );
       case WalletConnectModalTypes.SEND_NANO_CONTRACT_TX:
         return (
           <NewNanoContractTransactionModal
-            {...walletConnectModal}
+            {...reownModal}
             onDismiss={onDismiss}
           />
         );
       case WalletConnectModalTypes.CREATE_TOKEN:
         return (
           <CreateTokenModal
-            {...walletConnectModal}
+            {...reownModal}
             onDismiss={onDismiss}
           />
         );
@@ -71,7 +71,7 @@ export default () => {
     }
   };
 
-  return getModal(walletConnectModal.type);
+  return getModal(reownModal.type);
 };
 
 const baseStyles = StyleSheet.create({

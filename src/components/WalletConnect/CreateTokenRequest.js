@@ -21,8 +21,8 @@ import {
   createTokenRetry,
   createTokenRetryDismiss,
   setCreateTokenStatusReady,
-  walletConnectAccept,
-  walletConnectReject
+  reownAccept,
+  reownReject
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
 import NewHathorButton from '../NewHathorButton';
@@ -107,7 +107,7 @@ export const CreateTokenRequestData = ({ data }) => (
 
 export const CreateTokenRequest = ({ createTokenRequest }) => {
   const { dapp, data } = createTokenRequest;
-  const { status } = useSelector((state) => state.walletConnect.createToken);
+  const { status } = useSelector((state) => state.reown.createToken);
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
@@ -118,11 +118,11 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
   const onAcceptCreateTokenRequest = () => {
     const acceptedCreateToken = data;
 
-    dispatch(walletConnectAccept(acceptedCreateToken));
+    dispatch(reownAccept(acceptedCreateToken));
   };
 
   const onDeclineTransaction = () => {
-    dispatch(walletConnectReject());
+    dispatch(reownReject());
     navigation.goBack();
   };
 

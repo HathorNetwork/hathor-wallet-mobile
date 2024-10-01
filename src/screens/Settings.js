@@ -50,7 +50,7 @@ const mapStateToProps = (state) => {
     uniqueDeviceId: state.uniqueDeviceId,
     server,
     isPushNotificationAvailable: isPushNotificationAvailableForUser(state),
-    walletConnectEnabled: state.featureToggles[WALLET_CONNECT_FEATURE_TOGGLE],
+    reownEnabled: state.featureToggles[WALLET_CONNECT_FEATURE_TOGGLE],
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
   };
 };
@@ -150,7 +150,7 @@ export class Settings extends React.Component {
                   onPress={() => this.props.navigation.navigate('RegisterToken')}
                 />
               )}
-            {this.props.walletConnectEnabled
+            {this.props.reownEnabled
               && (
                 <ListMenu
                   title='Wallet Connect'

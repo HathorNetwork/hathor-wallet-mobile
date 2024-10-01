@@ -25,7 +25,7 @@ import HathorHeader from '../../components/HathorHeader';
 import SimpleButton from '../../components/SimpleButton';
 import { HathorList } from '../../components/HathorList';
 import {
-  walletConnectCancelSession,
+  reownCancelSession,
   setWCConnectionFailed,
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
@@ -89,8 +89,8 @@ const style = StyleSheet.create({
 
 export default function WalletConnectList({ navigation }) {
   const dispatch = useDispatch();
-  const connectionFailed = useSelector((state) => state.walletConnect.connectionFailed);
-  const connectedSessions = useSelector((state) => state.walletConnect.sessions);
+  const connectionFailed = useSelector((state) => state.reown.connectionFailed);
+  const connectedSessions = useSelector((state) => state.reown.sessions);
 
   const mappedSessions = Object.keys(connectedSessions).map((sessionKey) => {
     const session = connectedSessions[sessionKey];
@@ -118,7 +118,7 @@ export default function WalletConnectList({ navigation }) {
       {
         text: t`End`,
         onPress: () => {
-          dispatch(walletConnectCancelSession({ id: sessionKey }));
+          dispatch(reownCancelSession({ id: sessionKey }));
         },
       },
       {

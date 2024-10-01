@@ -14,7 +14,7 @@ import { t } from 'ttag';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { ModalBase } from '../../ModalBase';
-import { walletConnectReject } from '../../../actions';
+import { reownReject } from '../../../actions';
 import { WarnDisclaimer } from '../WarnDisclaimer';
 import { WALLETCONNECT_SKIP_CONFIRMATION_MODAL } from '../../../config';
 
@@ -22,14 +22,14 @@ export const NewNanoContractTransactionModal = ({
   onDismiss,
   data,
 }) => {
-  const isRetrying = useSelector(({ walletConnect }) => (
-    walletConnect.newNanoContractTransaction.retrying
+  const isRetrying = useSelector(({ reown }) => (
+    reown.newNanoContractTransaction.retrying
   ));
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
   const onModalDismiss = useCallback(() => {
-    dispatch(walletConnectReject());
+    dispatch(reownReject());
     onDismiss();
   }, [onDismiss]);
 

@@ -101,7 +101,7 @@ import {
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
 
-const log = logger('walletConnect');
+const log = logger('reown');
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'htr_signWithAddress',
@@ -124,9 +124,9 @@ const ERROR_CODES = {
 };
 
 function* isWalletConnectEnabled() {
-  const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
+  const reownEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
 
-  return walletConnectEnabled;
+  return reownEnabled;
 }
 
 function* init() {
@@ -140,14 +140,14 @@ function* init() {
 
   try {
     const walletServiceEnabled = yield call(isWalletServiceEnabled);
-    const walletConnectEnabled = yield call(isWalletConnectEnabled);
+    const reownEnabled = yield call(isWalletConnectEnabled);
 
     if (walletServiceEnabled) {
       log.debug('Wallet Service enabled, skipping wallet-connect init.');
       return;
     }
 
-    if (!walletConnectEnabled) {
+    if (!reownEnabled) {
       return;
     }
 
@@ -217,7 +217,7 @@ export function* listenForAppStateChange() {
 }
 
 export function* checkForPendingRequests() {
-  const { walletKit } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.reown.client);
 
   yield call([walletKit, walletKit.getPendingAuthRequests]);
   yield call([walletKit, walletKit.getPendingSessionRequests]);
@@ -225,7 +225,7 @@ export function* checkForPendingRequests() {
 
 export function* refreshActiveSessions(extend = false) {
   log.debug('Refreshing active sessions.');
-  const { walletKit } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.reown.client);
 
   const activeSessions = yield call(() => walletKit.getActiveSessions());
   yield put(setWalletConnectSessions(activeSessions));
@@ -311,7 +311,7 @@ export function* setupListeners(walletKit) {
  * the current client.
  */
 export function* clearSessions() {
-  const { walletKit } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.reown.client);
   const activeSessions = yield call(() => walletKit.getActiveSessions());
 
   for (const key of Object.keys(activeSessions)) {
@@ -352,7 +352,7 @@ export function* processRequest(action) {
 
   const wallet = yield select((state) => state.wallet);
 
-  const { walletKit } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.reown.client);
   const activeSessions = yield call(() => walletKit.getActiveSessions());
   const requestSession = activeSessions[payload.topic];
 
@@ -756,8 +756,8 @@ export function* onCreateTokenRequest({ payload }) {
  * can clear all current sessions.
  */
 export function* onWalletReset() {
-  const walletConnect = yield select((state) => state.walletConnect);
-  if (!walletConnect || !walletConnect.client) {
+  const reown = yield select((state) => state.reown);
+  if (!reown || !reown.client) {
     // Do nothing, wallet connect might not have been initialized yet
     return;
   }
@@ -772,7 +772,7 @@ export function* onWalletReset() {
  */
 export function* onSessionProposal(action) {
   const { id, params } = action.payload;
-  const { walletKit } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.reown.client);
 
   const wallet = yield select((state) => state.wallet);
   const firstAddress = yield call(() => wallet.getAddressAtIndex(0));
@@ -857,7 +857,7 @@ export function* onSessionProposal(action) {
  * a QR Code
  */
 export function* onUriInputted(action) {
-  const { walletKit, core } = yield select((state) => state.walletConnect.client);
+  const { walletKit, core } = yield select((state) => state.reown.client);
 
   if (!walletKit) {
     throw new Error('Wallet connect instance is new and QRCode was read');
@@ -892,7 +892,7 @@ export function* featureToggleUpdateListener() {
  * Sends a disconnect session RPC message to the connected cloud server
  */
 export function* onCancelSession(action) {
-  const { walletKit } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.reown.client);
 
   const activeSessions = yield call(() => walletKit.getActiveSessions());
 

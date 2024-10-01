@@ -13,7 +13,7 @@ import { StyleSheet, Text } from 'react-native';
 import { COLORS } from '../../../styles/themes';
 import { ModalBase } from '../../ModalBase';
 import { WarnDisclaimer } from '../WarnDisclaimer';
-import { walletConnectReject } from '../../../actions';
+import { reownReject } from '../../../actions';
 import { WALLETCONNECT_SKIP_CONFIRMATION_MODAL } from '../../../config';
 
 const styles = StyleSheet.create({
@@ -44,7 +44,7 @@ export default ({
 
   const onReject = () => {
     onDismiss();
-    dispatch(walletConnectReject());
+    dispatch(reownReject());
   };
 
   const navigateToSignOracleDataScreen = () => {

@@ -18,7 +18,7 @@ import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
 import SimpleInput from '../../components/SimpleInput';
 import NewHathorButton from '../../components/NewHathorButton';
-import { walletConnectUriInputted } from '../../actions';
+import { reownUriInputted } from '../../actions';
 import { getKeyboardAvoidingViewTopDistance } from '../../utils';
 
 export default function WalletConnectList({ navigation }) {
@@ -27,7 +27,7 @@ export default function WalletConnectList({ navigation }) {
   const dispatch = useDispatch();
 
   const onButtonPress = () => {
-    dispatch(walletConnectUriInputted(configString));
+    dispatch(reownUriInputted(configString));
     navigation.navigate('WalletConnectList');
   };
 

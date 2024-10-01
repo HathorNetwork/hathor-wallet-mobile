@@ -258,7 +258,7 @@ export const hideWalletConnectModal = () => ({
 /*
  * sessionKey {string} The symKey of the connected Session
  */
-export const walletConnectCancelSession = (sessionKey) => ({
+export const reownCancelSession = (sessionKey) => ({
   type: types.WC_CANCEL_SESSION,
   payload: sessionKey,
 });
@@ -266,12 +266,12 @@ export const walletConnectCancelSession = (sessionKey) => ({
 /**
  * @param {Object} data Data that the user has accepted.
  */
-export const walletConnectAccept = (data) => ({
+export const reownAccept = (data) => ({
   type: types.WALLET_CONNECT_ACCEPT,
   payload: data,
 });
 
-export const walletConnectReject = () => ({
+export const reownReject = () => ({
   type: types.WALLET_CONNECT_REJECT,
 });
 
@@ -867,13 +867,13 @@ export const sharedAddressUpdate = (lastSharedAddress, lastSharedIndex) => ({
 });
 
 /**
- * Stores the walletConnect instance on the redux store
+ * Stores the reown instance on the redux store
  *
- * walletConnect {WalletConnect} The WalletConnect instance
+ * reown {WalletConnect} The WalletConnect instance
  */
-export const setWalletConnect = (walletConnect) => ({
+export const setWalletConnect = (reown) => ({
   type: types.SET_WALLET_CONNECT,
-  payload: walletConnect,
+  payload: reown,
 });
 
 /**
@@ -881,7 +881,7 @@ export const setWalletConnect = (walletConnect) => ({
  *
  * data {string} The WalletConnect v2 URI
  */
-export const walletConnectUriInputted = (data) => ({
+export const reownUriInputted = (data) => ({
   type: types.WC_URI_INPUTTED,
   payload: data,
 });

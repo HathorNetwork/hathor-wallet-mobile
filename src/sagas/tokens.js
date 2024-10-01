@@ -296,7 +296,7 @@ export function* fetchTokenData(tokenId, force = false) {
 }
 
 /**
- * Request tokens data to feed walletConnect's tokens.
+ * Request tokens data to feed reown's tokens.
  * @param {Object} action
  * @param {Object} action.payload
  * @param {string[]} action.payload.uids

@@ -16,8 +16,8 @@ import { useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
-  walletConnectAccept,
-  walletConnectReject
+  reownAccept,
+  reownReject
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
 import NewHathorButton from '../NewHathorButton';
@@ -54,12 +54,12 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
     const acceptedData = { address, message };
 
     // Signal the user has accepted the current request and pass the accepted data.
-    dispatch(walletConnectAccept(acceptedData));
+    dispatch(reownAccept(acceptedData));
     navigation.goBack();
   };
 
   const onDeclineTransaction = () => {
-    dispatch(walletConnectReject());
+    dispatch(reownReject());
     navigation.goBack();
   };
 

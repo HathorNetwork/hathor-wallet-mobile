@@ -25,8 +25,8 @@ import {
   newNanoContractRetry,
   newNanoContractRetryDismiss,
   setNewNanoContractStatusReady,
-  walletConnectAccept,
-  walletConnectReject,
+  reownAccept,
+  reownReject,
   unregisteredTokensRequest,
   nanoContractRegisterRequest,
   nanoContractRegisterReady,
@@ -65,7 +65,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const { data: nc, dapp } = ncTxRequest;
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const newTxStatus = useSelector((state) => state.walletConnect.newNanoContractTransaction.status);
+  const newTxStatus = useSelector((state) => state.reown.newNanoContractTransaction.status);
   const firstAddress = useSelector((state) => state.firstAddress);
   // Nullable if the nano contract method is 'initialize'
   const registeredNc = useSelector((state) => state.nanoContract.registered[nc.ncId]);
@@ -105,7 +105,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     // Update the caller with the address selected by the user.
     const acceptedNc = { ...nc, caller: ncAddress };
     // Signal the user has accepted the current request and pass the accepted data.
-    dispatch(walletConnectAccept(acceptedNc));
+    dispatch(reownAccept(acceptedNc));
   };
 
   const onRegisterNanoContract = () => {
@@ -120,7 +120,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   };
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
-    dispatch(walletConnectReject());
+    dispatch(reownReject());
     navigation.goBack();
   };
   const onDismissDeclineModal = () => {
