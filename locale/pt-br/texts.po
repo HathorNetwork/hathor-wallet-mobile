@@ -895,7 +895,7 @@ msgstr "Solicitação de Assinatura de Dados do Oracle"
 
 #: src/screens/Reown/SuccessFeedbackScreen.js:36
 msgid "Back"
-msgstr ""
+msgstr "Voltar"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:18
 msgid "Custom Network Settings"
@@ -1525,7 +1525,7 @@ msgstr "Path do Endereço"
 
 #: src/components/Reown/SignOracleDataRequest.js:35
 msgid "Oracle data to sign"
-msgstr ""
+msgstr "Dados do Oracle para assinar"
 
 #: src/components/Reown/SignOracleDataRequest.js:40
 msgid "Oracle"
@@ -1630,7 +1630,7 @@ msgstr "Revisar detalhes da transação"
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:205
 msgid "Success!"
-msgstr ""
+msgstr "Sucesso!"
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:206
 msgid "Transaction successfully sent."
@@ -1638,7 +1638,7 @@ msgstr "Transação enviada com sucesso."
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:244
 msgid "Registering Nano Contract."
-msgstr "Registrando Nano Contract"
+msgstr "Registrando Nano Contract."
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:253
 msgid "Nano Contract Not Found"
