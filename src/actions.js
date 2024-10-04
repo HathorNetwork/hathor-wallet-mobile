@@ -879,7 +879,7 @@ export const setReown = (reown) => ({
 /**
  * Dispatched with data when a Reown QRCode is read
  *
- * data {string} The Reown v2 URI
+ * data {string} The Reown URI
  */
 export const reownUriInputted = (data) => ({
   type: types.WC_URI_INPUTTED,
