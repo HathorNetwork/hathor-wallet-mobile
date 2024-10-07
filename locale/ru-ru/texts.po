@@ -1587,9 +1587,8 @@ msgid "Transaction successfully sent."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:244
-#, fuzzy
 msgid "Registering Nano Contract."
-msgstr "Зарегистрировать токен"
+msgstr ""
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:253
 msgid "Nano Contract Not Found"
