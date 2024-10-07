@@ -75,8 +75,8 @@ import {
 import { isWalletServiceEnabled, WALLET_STATUS } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
-  WALLET_CONNECT_PROJECT_ID,
-  WALLET_CONNECT_FEATURE_TOGGLE,
+  REOWN_PROJECT_ID,
+  REOWN_FEATURE_TOGGLE,
 } from '../constants';
 import {
   types,
@@ -124,7 +124,7 @@ const ERROR_CODES = {
 };
 
 function* isReownEnabled() {
-  const reownEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
+  const reownEnabled = yield call(checkForFeatureFlag, REOWN_FEATURE_TOGGLE);
 
   return reownEnabled;
 }
@@ -152,7 +152,7 @@ function* init() {
     }
 
     const core = new Core({
-      projectId: WALLET_CONNECT_PROJECT_ID,
+      projectId: REOWN_PROJECT_ID,
     });
 
     const metadata = {
@@ -269,7 +269,7 @@ export function* setupListeners(walletKit) {
     const addListener = (eventName) => {
       const listener = async (data) => {
         emitter({
-          type: `WC_${eventName.toUpperCase()}`,
+          type: `REOWN_${eventName.toUpperCase()}`,
           data,
         });
       };
@@ -328,7 +328,7 @@ export function* clearSessions() {
 }
 
 function* requestsListener() {
-  const requestsChannel = yield actionChannel('WC_SESSION_REQUEST');
+  const requestsChannel = yield actionChannel('REOWN_SESSION_REQUEST');
 
   let action;
   while (true) {
@@ -410,8 +410,8 @@ export function* processRequest(action) {
 
         const retry = yield call(
           retryHandler,
-          types.WALLETCONNECT_CREATE_TOKEN_RETRY,
-          types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
+          types.REOWN_CREATE_TOKEN_RETRY,
+          types.REOWN_CREATE_TOKEN_RETRY_DISMISS,
         );
 
         if (retry) {
@@ -426,8 +426,8 @@ export function* processRequest(action) {
         // User might try again, wait for it.
         const retry = yield call(
           retryHandler,
-          types.WALLETCONNECT_CREATE_TOKEN_RETRY,
-          types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
+          types.REOWN_CREATE_TOKEN_RETRY,
+          types.REOWN_CREATE_TOKEN_RETRY_DISMISS,
         );
 
         if (retry) {
@@ -624,8 +624,8 @@ export function* onSignMessageRequest({ payload }) {
   }));
 
   const { deny } = yield race({
-    accept: take(types.WALLET_CONNECT_ACCEPT),
-    deny: take(types.WALLET_CONNECT_REJECT),
+    accept: take(types.REOWN_ACCEPT),
+    deny: take(types.REOWN_REJECT),
   });
 
   if (deny) {
@@ -657,8 +657,8 @@ export function* onSignOracleDataRequest({ payload }) {
   }));
 
   const { deny } = yield race({
-    accept: take(types.WALLET_CONNECT_ACCEPT),
-    deny: take(types.WALLET_CONNECT_REJECT),
+    accept: take(types.REOWN_ACCEPT),
+    deny: take(types.REOWN_REJECT),
   });
 
   if (deny) {
@@ -706,8 +706,8 @@ export function* onSendNanoContractTxRequest({ payload }) {
   }));
 
   const { deny, accept } = yield race({
-    accept: take(types.WALLET_CONNECT_ACCEPT),
-    deny: take(types.WALLET_CONNECT_REJECT),
+    accept: take(types.REOWN_ACCEPT),
+    deny: take(types.REOWN_REJECT),
   });
 
   if (deny) {
@@ -739,8 +739,8 @@ export function* onCreateTokenRequest({ payload }) {
   }));
 
   const { deny, accept } = yield race({
-    accept: take(types.WALLET_CONNECT_ACCEPT),
-    deny: take(types.WALLET_CONNECT_REJECT),
+    accept: take(types.REOWN_ACCEPT),
+    deny: take(types.REOWN_REJECT),
   });
 
   if (deny) {
@@ -785,8 +785,8 @@ export function* onSessionProposal(action) {
     requiredNamespaces: get(params, 'requiredNamespaces', []),
   };
 
-  const onAcceptAction = { type: 'WALLET_CONNECT_ACCEPT' };
-  const onRejectAction = { type: 'WALLET_CONNECT_REJECT' };
+  const onAcceptAction = { type: 'REOWN_ACCEPT' };
+  const onRejectAction = { type: 'REOWN_REJECT' };
 
   yield put(setReownModal({
     show: true,
@@ -883,7 +883,7 @@ export function* featureToggleUpdateListener() {
     const newReownEnabled = yield call(isReownEnabled);
 
     if (oldReownEnabled && !newReownEnabled) {
-      yield put({ type: 'WC_SHUTDOWN' });
+      yield put({ type: 'REOWN_SHUTDOWN' });
     }
   }
 }
@@ -926,11 +926,11 @@ export function* saga() {
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
     takeLatest(types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL, onSignOracleDataRequest),
     takeLatest(types.SHOW_CREATE_TOKEN_REQUEST_MODAL, onCreateTokenRequest),
-    takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
-    takeEvery('WC_SESSION_DELETE', onSessionDelete),
-    takeEvery('WC_CANCEL_SESSION', onCancelSession),
-    takeEvery('WC_SHUTDOWN', clearSessions),
+    takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
+    takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
+    takeEvery('REOWN_CANCEL_SESSION', onCancelSession),
+    takeEvery('REOWN_SHUTDOWN', clearSessions),
     takeEvery(types.RESET_WALLET, onWalletReset),
-    takeLatest(types.WC_URI_INPUTTED, onUriInputted),
+    takeLatest(types.REOWN_URI_INPUTTED, onUriInputted),
   ]);
 }

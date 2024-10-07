@@ -29,7 +29,7 @@ import NewHathorButton from '../NewHathorButton';
 import { DappContainer } from './NanoContract/DappContainer';
 import { commonStyles } from './theme';
 import { FeedbackContent } from '../FeedbackContent';
-import { DEFAULT_TOKEN, WALLETCONNECT_CREATE_TOKEN_STATUS } from '../../constants';
+import { DEFAULT_TOKEN, REOWN_CREATE_TOKEN_STATUS } from '../../constants';
 import FeedbackModal from '../FeedbackModal';
 import Spinner from '../Spinner';
 import errorIcon from '../../assets/images/icErrorBig.png';
@@ -126,10 +126,10 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
     navigation.goBack();
   };
 
-  const isTxReady = status === WALLETCONNECT_CREATE_TOKEN_STATUS.READY;
-  const isTxProcessing = status === WALLETCONNECT_CREATE_TOKEN_STATUS.LOADING;
-  const isTxSuccessful = status === WALLETCONNECT_CREATE_TOKEN_STATUS.SUCCESSFUL;
-  const isTxFailed = status === WALLETCONNECT_CREATE_TOKEN_STATUS.FAILED;
+  const isTxReady = status === REOWN_CREATE_TOKEN_STATUS.READY;
+  const isTxProcessing = status === REOWN_CREATE_TOKEN_STATUS.LOADING;
+  const isTxSuccessful = status === REOWN_CREATE_TOKEN_STATUS.SUCCESSFUL;
+  const isTxFailed = status === REOWN_CREATE_TOKEN_STATUS.FAILED;
 
   const onFeedbackModalDismiss = () => {
     dispatch(createTokenRetryDismiss());

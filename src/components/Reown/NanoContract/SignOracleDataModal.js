@@ -14,7 +14,7 @@ import { COLORS } from '../../../styles/themes';
 import { ModalBase } from '../../ModalBase';
 import { WarnDisclaimer } from '../WarnDisclaimer';
 import { reownReject } from '../../../actions';
-import { WALLETCONNECT_SKIP_CONFIRMATION_MODAL } from '../../../config';
+import { REOWN_SKIP_CONFIRMATION_MODAL } from '../../../config';
 
 const styles = StyleSheet.create({
   body: {
@@ -53,7 +53,7 @@ export default ({
   };
 
   useEffect(() => {
-    if (WALLETCONNECT_SKIP_CONFIRMATION_MODAL) {
+    if (REOWN_SKIP_CONFIRMATION_MODAL) {
       navigateToSignOracleDataScreen();
     }
   }, []);

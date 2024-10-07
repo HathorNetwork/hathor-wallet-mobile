@@ -67,4 +67,4 @@ export const _SENTRY_DSN = 'https://c1ebae9159f741e8937abdbfbeba8e8a@o239606.ing
 /**
  * Whether we should skip the initial modal on wallet-connect requests
  */
-export const WALLETCONNECT_SKIP_CONFIRMATION_MODAL = true;
+export const REOWN_SKIP_CONFIRMATION_MODAL = true;

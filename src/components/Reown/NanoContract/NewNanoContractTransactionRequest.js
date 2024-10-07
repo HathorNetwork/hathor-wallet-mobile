@@ -36,7 +36,7 @@ import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
 import { SelectAddressModal } from '../../NanoContract/SelectAddressModal';
 import { FeedbackContent } from '../../FeedbackContent';
-import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS, NANOCONTRACT_REGISTER_STATUS, WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS } from '../../../constants';
+import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS, NANOCONTRACT_REGISTER_STATUS, REOWN_NEW_NANOCONTRACT_TX_STATUS } from '../../../constants';
 import Spinner from '../../Spinner';
 import FeedbackModal from '../../FeedbackModal';
 import errorIcon from '../../../assets/images/icErrorBig.png';
@@ -198,7 +198,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   }, [firstAddress]);
 
   useEffect(() => {
-    if (newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL) {
+    if (newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL) {
       navigation.navigate(
         'SuccessFeedbackScreen',
         {
@@ -229,12 +229,12 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     || blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING
   );
   const isTxInfoLoaded = () => (
-    !isTxInfoLoading() && newTxStatus !== WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
+    !isTxInfoLoading() && newTxStatus !== REOWN_NEW_NANOCONTRACT_TX_STATUS.LOADING
   );
   const isTxProcessing = () => (
-    !isTxInfoLoading() && newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
+    !isTxInfoLoading() && newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.LOADING
   );
-  const isTxFailed = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.FAILED;
+  const isTxFailed = () => newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.FAILED;
 
   return (
     <>
