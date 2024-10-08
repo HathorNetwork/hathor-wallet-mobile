@@ -21,15 +21,15 @@ import {
   createTokenRetry,
   createTokenRetryDismiss,
   setCreateTokenStatusReady,
-  walletConnectAccept,
-  walletConnectReject
+  reownAccept,
+  reownReject
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
 import NewHathorButton from '../NewHathorButton';
 import { DappContainer } from './NanoContract/DappContainer';
 import { commonStyles } from './theme';
 import { FeedbackContent } from '../FeedbackContent';
-import { DEFAULT_TOKEN, WALLETCONNECT_CREATE_TOKEN_STATUS } from '../../constants';
+import { DEFAULT_TOKEN, REOWN_CREATE_TOKEN_STATUS } from '../../constants';
 import FeedbackModal from '../FeedbackModal';
 import Spinner from '../Spinner';
 import errorIcon from '../../assets/images/icErrorBig.png';
@@ -107,7 +107,7 @@ export const CreateTokenRequestData = ({ data }) => (
 
 export const CreateTokenRequest = ({ createTokenRequest }) => {
   const { dapp, data } = createTokenRequest;
-  const { status } = useSelector((state) => state.walletConnect.createToken);
+  const { status } = useSelector((state) => state.reown.createToken);
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
@@ -118,18 +118,18 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
   const onAcceptCreateTokenRequest = () => {
     const acceptedCreateToken = data;
 
-    dispatch(walletConnectAccept(acceptedCreateToken));
+    dispatch(reownAccept(acceptedCreateToken));
   };
 
   const onDeclineTransaction = () => {
-    dispatch(walletConnectReject());
+    dispatch(reownReject());
     navigation.goBack();
   };
 
-  const isTxReady = status === WALLETCONNECT_CREATE_TOKEN_STATUS.READY;
-  const isTxProcessing = status === WALLETCONNECT_CREATE_TOKEN_STATUS.LOADING;
-  const isTxSuccessful = status === WALLETCONNECT_CREATE_TOKEN_STATUS.SUCCESSFUL;
-  const isTxFailed = status === WALLETCONNECT_CREATE_TOKEN_STATUS.FAILED;
+  const isTxReady = status === REOWN_CREATE_TOKEN_STATUS.READY;
+  const isTxProcessing = status === REOWN_CREATE_TOKEN_STATUS.LOADING;
+  const isTxSuccessful = status === REOWN_CREATE_TOKEN_STATUS.SUCCESSFUL;
+  const isTxFailed = status === REOWN_CREATE_TOKEN_STATUS.FAILED;
 
   const onFeedbackModalDismiss = () => {
     dispatch(createTokenRetryDismiss());

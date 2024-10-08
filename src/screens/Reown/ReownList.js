@@ -25,7 +25,7 @@ import HathorHeader from '../../components/HathorHeader';
 import SimpleButton from '../../components/SimpleButton';
 import { HathorList } from '../../components/HathorList';
 import {
-  walletConnectCancelSession,
+  reownCancelSession,
   setWCConnectionFailed,
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
@@ -87,10 +87,10 @@ const style = StyleSheet.create({
   }
 });
 
-export default function WalletConnectList({ navigation }) {
+export default function ReownList({ navigation }) {
   const dispatch = useDispatch();
-  const connectionFailed = useSelector((state) => state.walletConnect.connectionFailed);
-  const connectedSessions = useSelector((state) => state.walletConnect.sessions);
+  const connectionFailed = useSelector((state) => state.reown.connectionFailed);
+  const connectedSessions = useSelector((state) => state.reown.sessions);
 
   const mappedSessions = Object.keys(connectedSessions).map((sessionKey) => {
     const session = connectedSessions[sessionKey];
@@ -109,7 +109,7 @@ export default function WalletConnectList({ navigation }) {
       // translator: Used when the QR Code Scanner is opened, and user will manually
       // enter the information.
       title={t`Add`}
-      onPress={() => navigation.navigate('WalletConnectScan')}
+      onPress={() => navigation.navigate('ReownScan')}
     />
   );
 
@@ -118,7 +118,7 @@ export default function WalletConnectList({ navigation }) {
       {
         text: t`End`,
         onPress: () => {
-          dispatch(walletConnectCancelSession({ id: sessionKey }));
+          dispatch(reownCancelSession({ id: sessionKey }));
         },
       },
       {
@@ -134,7 +134,7 @@ export default function WalletConnectList({ navigation }) {
     <View style={style.componentWrapper}>
       <SafeAreaView style={style.safeAreaView}>
         <HathorHeader
-          title={t`Wallet Connect Sessions`}
+          title={t`Reown Sessions`}
           onBackPress={() => navigation.pop()}
           rightElement={renderHeaderRightElement()}
         />

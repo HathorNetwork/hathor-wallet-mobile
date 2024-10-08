@@ -25,8 +25,8 @@ import {
   newNanoContractRetry,
   newNanoContractRetryDismiss,
   setNewNanoContractStatusReady,
-  walletConnectAccept,
-  walletConnectReject,
+  reownAccept,
+  reownReject,
   unregisteredTokensRequest,
   nanoContractRegisterRequest,
   nanoContractRegisterReady,
@@ -36,7 +36,7 @@ import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
 import { SelectAddressModal } from '../../NanoContract/SelectAddressModal';
 import { FeedbackContent } from '../../FeedbackContent';
-import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS, NANOCONTRACT_REGISTER_STATUS, WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS } from '../../../constants';
+import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS, NANOCONTRACT_REGISTER_STATUS, REOWN_NEW_NANOCONTRACT_TX_STATUS } from '../../../constants';
 import Spinner from '../../Spinner';
 import FeedbackModal from '../../FeedbackModal';
 import errorIcon from '../../../assets/images/icErrorBig.png';
@@ -65,7 +65,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const { data: nc, dapp } = ncTxRequest;
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const newTxStatus = useSelector((state) => state.walletConnect.newNanoContractTransaction.status);
+  const newTxStatus = useSelector((state) => state.reown.newNanoContractTransaction.status);
   const firstAddress = useSelector((state) => state.firstAddress);
   // Nullable if the nano contract method is 'initialize'
   const registeredNc = useSelector((state) => state.nanoContract.registered[nc.ncId]);
@@ -105,7 +105,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     // Update the caller with the address selected by the user.
     const acceptedNc = { ...nc, caller: ncAddress };
     // Signal the user has accepted the current request and pass the accepted data.
-    dispatch(walletConnectAccept(acceptedNc));
+    dispatch(reownAccept(acceptedNc));
   };
 
   const onRegisterNanoContract = () => {
@@ -120,7 +120,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   };
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
-    dispatch(walletConnectReject());
+    dispatch(reownReject());
     navigation.goBack();
   };
   const onDismissDeclineModal = () => {
@@ -198,7 +198,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   }, [firstAddress]);
 
   useEffect(() => {
-    if (newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL) {
+    if (newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL) {
       navigation.navigate(
         'SuccessFeedbackScreen',
         {
@@ -229,12 +229,12 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     || blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING
   );
   const isTxInfoLoaded = () => (
-    !isTxInfoLoading() && newTxStatus !== WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
+    !isTxInfoLoading() && newTxStatus !== REOWN_NEW_NANOCONTRACT_TX_STATUS.LOADING
   );
   const isTxProcessing = () => (
-    !isTxInfoLoading() && newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
+    !isTxInfoLoading() && newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.LOADING
   );
-  const isTxFailed = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.FAILED;
+  const isTxFailed = () => newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.FAILED;
 
   return (
     <>
@@ -254,7 +254,8 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
           message={t`The Nano Contract requested is not registered. First register the Nano Contract to interact with it.`}
           action={(
             <View style={styles.feedbackActionContainer}>
-              {!firstAddress.error && ( /* Doesn't show up if an error happens in first address request */
+              {/* Doesn't show up if an error happens in first address request */}
+              {!firstAddress.error && (
                 <NewHathorButton
                   title={t`Register Nano Contract`}
                   onPress={onRegisterNanoContract}

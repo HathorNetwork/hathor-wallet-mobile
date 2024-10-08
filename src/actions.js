@@ -12,8 +12,8 @@ import {
 } from '@hathor/wallet-lib';
 import {
   METADATA_CONCURRENT_DOWNLOAD,
-  WALLETCONNECT_CREATE_TOKEN_STATUS,
-  WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS,
+  REOWN_CREATE_TOKEN_STATUS,
+  REOWN_NEW_NANOCONTRACT_TX_STATUS,
 } from './constants';
 import { mapToTxHistory } from './utils';
 
@@ -114,16 +114,16 @@ export const types = {
   FEATURE_TOGGLE_UPDATED: 'FEATURE_TOGGLE_UPDATED',
   FEATURE_TOGGLE_READY: 'FEATURE_TOGGLE_READY',
   FEATURE_TOGGLE_ERROR: 'FEATURE_TOGGLE_ERROR',
-  SET_WALLET_CONNECT: 'SET_WALLET_CONNECT',
-  SET_WALLET_CONNECT_MODAL: 'SET_WALLET_CONNECT_MODAL',
-  SET_WALLET_CONNECT_SESSIONS: 'SET_WALLET_CONNECT_SESSIONS',
-  WALLET_CONNECT_ACCEPT: 'WALLET_CONNECT_ACCEPT',
-  WALLET_CONNECT_REJECT: 'WALLET_CONNECT_REJECT',
+  SET_REOWN: 'SET_REOWN',
+  SET_REOWN_MODAL: 'SET_REOWN_MODAL',
+  SET_REOWN_SESSIONS: 'SET_REOWN_SESSIONS',
+  REOWN_ACCEPT: 'REOWN_ACCEPT',
+  REOWN_REJECT: 'REOWN_REJECT',
   SET_NEW_NANO_CONTRACT_TRANSACTION: 'SET_NEW_NANO_CONTRACT_TRANSACTION',
   SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
-  WC_URI_INPUTTED: 'WC_URI_INPUTTED',
-  WC_CANCEL_SESSION: 'WC_CANCEL_SESSION',
-  WC_SET_CONNECTION_FAILED: 'WC_SET_CONNECTION_FAILED',
+  REOWN_URI_INPUTTED: 'REOWN_URI_INPUTTED',
+  REOWN_CANCEL_SESSION: 'REOWN_CANCEL_SESSION',
+  REOWN_SET_CONNECTION_FAILED: 'REOWN_SET_CONNECTION_FAILED',
   // Network Settings actions
   // NOTE: These actions follows a taxonomy that should be applied
   // to all other actions.
@@ -189,18 +189,18 @@ export const types = {
   /* It signals a fetch failure due to an error. */
   FIRSTADDRESS_FAILURE: 'FIRSTADDRESS_FAILURE',
   /* It updates the redux state of new nano contract transaction status on wallet connect register. */
-  WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
+  REOWN_NEW_NANOCONTRACT_STATUS: 'REOWN_NEW_NANOCONTRACT_STATUS',
   UNREGISTEREDTOKENS_REQUEST: 'UNREGISTEREDTOKENS_REQUEST',
   UNREGISTEREDTOKENS_UPDATE: 'UNREGISTEREDTOKENS_UPDATE',
-  WALLETCONNECT_NEW_NANOCONTRACT_RETRY: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY',
-  WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS',
+  REOWN_NEW_NANOCONTRACT_RETRY: 'REOWN_NEW_NANOCONTRACT_RETRY',
+  REOWN_NEW_NANOCONTRACT_RETRY_DISMISS: 'REOWN_NEW_NANOCONTRACT_RETRY_DISMISS',
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
   SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL',
   SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
   SHOW_CREATE_TOKEN_REQUEST_MODAL: 'SHOW_CREATE_TOKEN_REQUEST_MODAL',
-  WALLETCONNECT_CREATE_TOKEN_STATUS: 'WALLETCONNECT_CREATE_TOKEN_STATUS',
-  WALLETCONNECT_CREATE_TOKEN_RETRY: 'WALLETCONNECT_CREATE_TOKEN_RETRY',
-  WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS: 'WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS',
+  REOWN_CREATE_TOKEN_STATUS: 'REOWN_CREATE_TOKEN_STATUS',
+  REOWN_CREATE_TOKEN_RETRY: 'REOWN_CREATE_TOKEN_RETRY',
+  REOWN_CREATE_TOKEN_RETRY_DISMISS: 'REOWN_CREATE_TOKEN_RETRY_DISMISS',
   NETWORK_CHANGED: 'NETWORK_CHANGED',
   APPSTATE_UPDATED: 'APPSTATE_UPDATED',
 };
@@ -233,46 +233,46 @@ export const setUnleashClient = (unleashClient) => ({
 /**
  * sessions {Array} List of sessions to store
  */
-export const setWalletConnectSessions = (sessions) => ({
-  type: types.SET_WALLET_CONNECT_SESSIONS,
+export const setReownSessions = (sessions) => ({
+  type: types.SET_REOWN_SESSIONS,
   payload: sessions,
 });
 
 /**
  * modal {Object} Modal information to display
  * modal.show {boolean} Show or hide the modal
- * modal.type {WalletConnectModalTypes} One of (CONNECT, SIGN_MESSAGE_REQUEST)
+ * modal.type {ReownModalTypes} One of (CONNECT, SIGN_MESSAGE_REQUEST)
  * modal.onAcceptAction {Object} Action to be dispatched on accept
  * modal.onRejectAction {Object} Action to be dispatched on reject
  */
-export const setWalletConnectModal = (modal) => ({
-  type: types.SET_WALLET_CONNECT_MODAL,
+export const setReownModal = (modal) => ({
+  type: types.SET_REOWN_MODAL,
   payload: modal,
 });
 
-export const hideWalletConnectModal = () => ({
-  type: types.SET_WALLET_CONNECT_MODAL,
+export const hideReownModal = () => ({
+  type: types.SET_REOWN_MODAL,
   payload: { show: false },
 });
 
 /*
  * sessionKey {string} The symKey of the connected Session
  */
-export const walletConnectCancelSession = (sessionKey) => ({
-  type: types.WC_CANCEL_SESSION,
+export const reownCancelSession = (sessionKey) => ({
+  type: types.REOWN_CANCEL_SESSION,
   payload: sessionKey,
 });
 
 /**
  * @param {Object} data Data that the user has accepted.
  */
-export const walletConnectAccept = (data) => ({
-  type: types.WALLET_CONNECT_ACCEPT,
+export const reownAccept = (data) => ({
+  type: types.REOWN_ACCEPT,
   payload: data,
 });
 
-export const walletConnectReject = () => ({
-  type: types.WALLET_CONNECT_REJECT,
+export const reownReject = () => ({
+  type: types.REOWN_REJECT,
 });
 
 /**
@@ -867,22 +867,22 @@ export const sharedAddressUpdate = (lastSharedAddress, lastSharedIndex) => ({
 });
 
 /**
- * Stores the walletConnect instance on the redux store
+ * Stores the reown instance on the redux store
  *
- * walletConnect {WalletConnect} The WalletConnect instance
+ * reown {Reown} The Reown instance
  */
-export const setWalletConnect = (walletConnect) => ({
-  type: types.SET_WALLET_CONNECT,
-  payload: walletConnect,
+export const setReown = (reown) => ({
+  type: types.SET_REOWN,
+  payload: reown,
 });
 
 /**
- * Dispatched with data when a WalletConnect QRCode is read
+ * Dispatched with data when a Reown QRCode is read
  *
- * data {string} The WalletConnect v2 URI
+ * data {string} The Reown URI
  */
-export const walletConnectUriInputted = (data) => ({
-  type: types.WC_URI_INPUTTED,
+export const reownUriInputted = (data) => ({
+  type: types.REOWN_URI_INPUTTED,
   payload: data,
 });
 
@@ -962,7 +962,7 @@ export const pushDeviceRegistered = (isRegistered) => ({
  * failed {Boolean} Flag indicating whether WC failed or not.
  */
 export const setWCConnectionFailed = (failed) => ({
-  type: types.WC_SET_CONNECTION_FAILED,
+  type: types.REOWN_SET_CONNECTION_FAILED,
   payload: failed,
 });
 
@@ -1270,92 +1270,92 @@ export const firstAddressFailure = (failurePayload) => ({
  * Signals that the user wants to attempt to retry the nano contract tx send
  */
 export const newNanoContractRetry = () => ({
-  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY,
+  type: types.REOWN_NEW_NANOCONTRACT_RETRY,
 });
 
 /**
  * Signals that the user doesn't want to retry the new nano contract tx send
  */
 export const newNanoContractRetryDismiss = () => ({
-  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS,
+  type: types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
 });
 
 /**
  * Signals update on new nano contract status to ready.
  */
 export const setNewNanoContractStatusReady = () => ({
-  type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
-  payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.READY,
+  type: types.REOWN_NEW_NANOCONTRACT_STATUS,
+  payload: REOWN_NEW_NANOCONTRACT_TX_STATUS.READY,
 });
 
 /**
  * Signals update on new nano contract status to loading.
  */
 export const setNewNanoContractStatusLoading = () => ({
-  type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
-  payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING,
+  type: types.REOWN_NEW_NANOCONTRACT_STATUS,
+  payload: REOWN_NEW_NANOCONTRACT_TX_STATUS.LOADING,
 });
 
 /**
  * Signals update on new nano contract status to failed.
  */
 export const setNewNanoContractStatusFailure = () => ({
-  type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
-  payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.FAILED,
+  type: types.REOWN_NEW_NANOCONTRACT_STATUS,
+  payload: REOWN_NEW_NANOCONTRACT_TX_STATUS.FAILED,
 });
 
 /**
  * Signals update on new nano contract status to successful.
  */
 export const setNewNanoContractStatusSuccess = () => ({
-  type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
-  payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL,
+  type: types.REOWN_NEW_NANOCONTRACT_STATUS,
+  payload: REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL,
 });
 
 /**
  * Signals that the user wants to attempt to retry the create token request
  */
 export const createTokenRetry = () => ({
-  type: types.WALLETCONNECT_CREATE_TOKEN_RETRY,
+  type: types.REOWN_CREATE_TOKEN_RETRY,
 });
 
 /**
  * Signals that the user doesn't want to retry the create token request
  */
 export const createTokenRetryDismiss = () => ({
-  type: types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
+  type: types.REOWN_CREATE_TOKEN_RETRY_DISMISS,
 });
 
 /**
  * Signals update on create token status to ready.
  */
 export const setCreateTokenStatusReady = () => ({
-  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
-  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.READY,
+  type: types.REOWN_CREATE_TOKEN_STATUS,
+  payload: REOWN_CREATE_TOKEN_STATUS.READY,
 });
 
 /**
  * Signals update on create token status to loading.
  */
 export const setCreateTokenStatusLoading = () => ({
-  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
-  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.LOADING,
+  type: types.REOWN_CREATE_TOKEN_STATUS,
+  payload: REOWN_CREATE_TOKEN_STATUS.LOADING,
 });
 
 /**
  * Signals update on create token status to failed.
  */
 export const setCreateTokenStatusFailed = () => ({
-  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
-  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.FAILED,
+  type: types.REOWN_CREATE_TOKEN_STATUS,
+  payload: REOWN_CREATE_TOKEN_STATUS.FAILED,
 });
 
 /**
  * Signals update on create token status to successful.
  */
 export const setCreateTokenStatusSuccessful = () => ({
-  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
-  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.SUCCESSFUL,
+  type: types.REOWN_CREATE_TOKEN_STATUS,
+  payload: REOWN_CREATE_TOKEN_STATUS.SUCCESSFUL,
 });
 
 /**

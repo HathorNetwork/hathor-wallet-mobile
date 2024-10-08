@@ -12,7 +12,7 @@ import { t } from 'ttag';
 import { Text } from 'react-native';
 import { ModalBase } from '../ModalBase';
 import { WarnDisclaimer } from './WarnDisclaimer';
-import { walletConnectReject } from '../../actions';
+import { reownReject } from '../../actions';
 import { commonStyles } from './theme';
 
 export default ({
@@ -21,11 +21,11 @@ export default ({
 }) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const isRetrying = useSelector((state) => state.walletConnect.createToken.retrying);
+  const isRetrying = useSelector((state) => state.reown.createToken.retrying);
 
   const onReject = () => {
     onDismiss();
-    dispatch(walletConnectReject());
+    dispatch(reownReject());
   };
 
   const navigateToCreateTokenRequestScreen = () => {

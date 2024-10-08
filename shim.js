@@ -43,3 +43,7 @@ if (typeof atob === 'undefined') {
     return Buffer.from(b64Encoded, 'base64').toString('binary');
   };
 }
+
+const { URLSearchParams } = require('react-native-url-polyfill');
+
+global.URLSearchParams = URLSearchParams;

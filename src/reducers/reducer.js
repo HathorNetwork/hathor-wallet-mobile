@@ -14,10 +14,10 @@ import {
   FEATURE_TOGGLE_DEFAULTS,
   NETWORKSETTINGS_STATUS,
   NANOCONTRACT_REGISTER_STATUS,
-  WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS,
+  REOWN_NEW_NANOCONTRACT_TX_STATUS,
   NANOCONTRACT_BLUEPRINTINFO_STATUS,
   PRE_SETTINGS_NANO_TESTNET,
-  WALLETCONNECT_CREATE_TOKEN_STATUS
+  REOWN_CREATE_TOKEN_STATUS
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -249,7 +249,7 @@ const initialState = {
   walletStartState: WALLET_STATUS.NOT_STARTED,
   lastSharedAddress: null,
   lastSharedIndex: null,
-  walletConnect: {
+  reown: {
     client: null,
     modal: {
       show: false,
@@ -283,13 +283,13 @@ const initialState = {
      * }}
      */
     newNanoContractTransaction: {
-      status: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.READY,
+      status: REOWN_NEW_NANOCONTRACT_TX_STATUS.READY,
       showModal: false,
       retrying: false,
       data: null,
     },
     createToken: {
-      status: WALLETCONNECT_CREATE_TOKEN_STATUS.READY,
+      status: REOWN_CREATE_TOKEN_STATUS.READY,
       retrying: false,
     },
     connectionFailed: false,
@@ -633,14 +633,14 @@ export const reducer = (state = initialState, action) => {
       return onSetFeatureToggles(state, action);
     case types.FEATURE_TOGGLE_INITIALIZED:
       return onFeatureToggleInitialized(state);
-    case types.SET_WALLET_CONNECT:
-      return onSetWalletConnect(state, action);
-    case types.SET_WALLET_CONNECT_MODAL:
-      return onSetWalletConnectModal(state, action);
-    case types.SET_WALLET_CONNECT_SESSIONS:
-      return onSetWalletConnectSessions(state, action);
-    case types.WC_SET_CONNECTION_FAILED:
-      return onSetWCConnectionFailed(state, action);
+    case types.SET_REOWN:
+      return onSetReown(state, action);
+    case types.SET_REOWN_MODAL:
+      return onSetReownModal(state, action);
+    case types.SET_REOWN_SESSIONS:
+      return onSetReownSessions(state, action);
+    case types.REOWN_SET_CONNECTION_FAILED:
+      return onSetReownConnectionFailed(state, action);
     case types.NETWORKSETTINGS_UPDATE_REQUEST:
       return onNetworkSettingsUpdateRequest(state);
     case types.NETWORKSETTINGS_UPDATE_STATE:
@@ -691,13 +691,13 @@ export const reducer = (state = initialState, action) => {
       return onFirstAddressSuccess(state, action);
     case types.SET_NEW_NANO_CONTRACT_TRANSACTION:
       return onSetNewNanoContractTransaction(state, action);
-    case types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS:
+    case types.REOWN_NEW_NANOCONTRACT_STATUS:
       return onSetNewNanoContractTransactionStatus(state, action);
-    case types.WALLETCONNECT_CREATE_TOKEN_STATUS:
+    case types.REOWN_CREATE_TOKEN_STATUS:
       return onSetCreateTokenStatus(state, action);
-    case types.WALLETCONNECT_CREATE_TOKEN_RETRY:
+    case types.REOWN_CREATE_TOKEN_RETRY:
       return onSetCreateTokenRetry(state, action);
-    case types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS:
+    case types.REOWN_CREATE_TOKEN_RETRY_DISMISS:
       return onSetCreateTokenRetryDismiss(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_REQUEST:
       return onNanoContractBlueprintInfoRequest(state, action);
@@ -709,9 +709,9 @@ export const reducer = (state = initialState, action) => {
       return onUnregisteredTokensRequest(state);
     case types.UNREGISTEREDTOKENS_UPDATE:
       return onUnregisteredTokensUpdate(state, action);
-    case types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY:
+    case types.REOWN_NEW_NANOCONTRACT_RETRY:
       return onNewNanoContractTransactionRetry(state);
-    case types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS:
+    case types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS:
       return onNewNanoContractTransactionRetryDismiss(state);
     default:
       return state;
@@ -826,7 +826,7 @@ const onNewInvoice = (state, action) => {
 /**
  * When the user leaves the invoice screen, clear the invoice information
  */
-const onClearInvoice = (state, action) => ({
+const onClearInvoice = (state) => ({
   ...state,
   latestInvoice: null,
   invoicePayment: null,
@@ -1146,7 +1146,7 @@ export const onStartWalletLock = (state) => ({
  * @param {String} action.words - The wallet's words
  * @param {String} action.pin - The wallet's pinCode
  */
-export const onStartWalletRequested = (state, action) => ({
+export const onStartWalletRequested = (state) => ({
   ...state,
   walletStartState: WALLET_STATUS.LOADING,
 });
@@ -1444,12 +1444,12 @@ const onSharedAddressUpdate = (state, action) => ({
 });
 
 /**
- * @param {WalletConnect} action.payload The wallet connect instance
+ * @param {Reown} action.payload The wallet connect instance
  */
-export const onSetWalletConnect = (state, { payload }) => ({
+export const onSetReown = (state, { payload }) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
+  reown: {
+    ...state.reown,
     client: payload,
   }
 });
@@ -1457,10 +1457,10 @@ export const onSetWalletConnect = (state, { payload }) => ({
 /**
  * @param {Object} action.payload The wallet connect modal options
  */
-export const onSetWalletConnectModal = (state, { payload }) => ({
+export const onSetReownModal = (state, { payload }) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
+  reown: {
+    ...state.reown,
     modal: payload,
   },
 });
@@ -1468,18 +1468,18 @@ export const onSetWalletConnectModal = (state, { payload }) => ({
 /**
  * @param {Object} action.payload The wallet connect sessions to store
  */
-export const onSetWalletConnectSessions = (state, { payload }) => ({
+export const onSetReownSessions = (state, { payload }) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
+  reown: {
+    ...state.reown,
     sessions: payload,
   },
 });
 
-export const onSetWCConnectionFailed = (state, { payload }) => ({
+export const onSetReownConnectionFailed = (state, { payload }) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
+  reown: {
+    ...state.reown,
     connectionFailed: payload,
   },
 });
@@ -1905,21 +1905,21 @@ export const onFirstAddressSuccess = (state, { payload }) => ({
  */
 export const onSetNewNanoContractTransaction = (state, { payload }) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
+  reown: {
+    ...state.reown,
     newNanoContractTransaction: {
       ...payload,
-      status: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.READY,
+      status: REOWN_NEW_NANOCONTRACT_TX_STATUS.READY,
     },
   },
 });
 
 export const onNewNanoContractTransactionRetry = (state) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
+  reown: {
+    ...state.reown,
     newNanoContractTransaction: {
-      ...state.walletConnect.newNanoContractTransaction,
+      ...state.reown.newNanoContractTransaction,
       retrying: true,
     },
   },
@@ -1927,10 +1927,10 @@ export const onNewNanoContractTransactionRetry = (state) => ({
 
 export const onNewNanoContractTransactionRetryDismiss = (state) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
+  reown: {
+    ...state.reown,
     newNanoContractTransaction: {
-      ...state.walletConnect.newNanoContractTransaction,
+      ...state.reown.newNanoContractTransaction,
       retrying: false,
     },
   },
@@ -1938,10 +1938,10 @@ export const onNewNanoContractTransactionRetryDismiss = (state) => ({
 
 export const onSetNewNanoContractTransactionStatus = (state, { payload }) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
+  reown: {
+    ...state.reown,
     newNanoContractTransaction: {
-      ...state.walletConnect.newNanoContractTransaction,
+      ...state.reown.newNanoContractTransaction,
       status: payload,
     },
   },
@@ -1949,10 +1949,10 @@ export const onSetNewNanoContractTransactionStatus = (state, { payload }) => ({
 
 export const onSetCreateTokenRetry = (state) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
+  reown: {
+    ...state.reown,
     createToken: {
-      ...state.walletConnect.createToken,
+      ...state.reown.createToken,
       retrying: true,
     },
   },
@@ -1960,10 +1960,10 @@ export const onSetCreateTokenRetry = (state) => ({
 
 export const onSetCreateTokenRetryDismiss = (state) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
+  reown: {
+    ...state.reown,
     createToken: {
-      ...state.walletConnect.createToken,
+      ...state.reown.createToken,
       retrying: false,
     },
   },
@@ -1971,10 +1971,10 @@ export const onSetCreateTokenRetryDismiss = (state) => ({
 
 export const onSetCreateTokenStatus = (state, { payload }) => ({
   ...state,
-  walletConnect: {
-    ...state.walletConnect,
+  reown: {
+    ...state.reown,
     createToken: {
-      ...state.walletConnect.createToken,
+      ...state.reown.createToken,
       status: payload,
       retrying: false,
     },
@@ -2077,7 +2077,7 @@ export const onUnregisteredTokensRequest = (state) => ({
 });
 
 /**
- * Update walletConnect.tokens with some tokens data needed to feed UI components
+ * Update reown.tokens with some tokens data needed to feed UI components
  * without the need to register them, also update an error feedback message if present.
  *
  * @param {Object} state

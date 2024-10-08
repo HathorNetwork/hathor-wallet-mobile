@@ -39,7 +39,7 @@
  * SESSION_REQUEST: Handles new messages published on the cloud message queue
  * for the current session by the dApp.
  * SESSION_PROPOSAL: Handles a new dApp connection, initialized by the pair method
- * on web3wallet
+ * on walletKit
  * RESET_WALLET: This action is dispatched when the user resets his wallet.
  * START_WALLET_SUCCESS: This action is dispatched when the wallet is successfully
  * loaded.
@@ -63,7 +63,7 @@ import {
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
 import { Core } from '@walletconnect/core';
-import { Web3Wallet } from '@walletconnect/web3wallet';
+import { WalletKit } from '@reown/walletkit';
 import {
   TriggerTypes,
   TriggerResponseTypes,
@@ -71,18 +71,18 @@ import {
   handleRpcRequest,
   CreateTokenError,
   SendNanoContractTxError,
-} from 'hathor-rpc-handler-test';
+} from '@hathor/hathor-rpc-handler';
 import { isWalletServiceEnabled, WALLET_STATUS } from './wallet';
-import { WalletConnectModalTypes } from '../components/WalletConnect/WalletConnectModal';
+import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
-  WALLET_CONNECT_PROJECT_ID,
-  WALLET_CONNECT_FEATURE_TOGGLE,
+  REOWN_PROJECT_ID,
+  REOWN_FEATURE_TOGGLE,
 } from '../constants';
 import {
   types,
-  setWalletConnect,
-  setWalletConnectModal,
-  setWalletConnectSessions,
+  setReown,
+  setReownModal,
+  setReownSessions,
   onExceptionCaptured,
   setWCConnectionFailed,
   showSignMessageWithAddressModal,
@@ -101,7 +101,7 @@ import {
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
 
-const log = logger('walletConnect');
+const log = logger('reown');
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'htr_signWithAddress',
@@ -123,10 +123,10 @@ const ERROR_CODES = {
   INVALID_PAYLOAD: 5003,
 };
 
-function* isWalletConnectEnabled() {
-  const walletConnectEnabled = yield call(checkForFeatureFlag, WALLET_CONNECT_FEATURE_TOGGLE);
+function* isReownEnabled() {
+  const reownEnabled = yield call(checkForFeatureFlag, REOWN_FEATURE_TOGGLE);
 
-  return walletConnectEnabled;
+  return reownEnabled;
 }
 
 function* init() {
@@ -135,24 +135,25 @@ function* init() {
   if (walletStartState !== WALLET_STATUS.READY) {
     log.debug('Wallet not ready yet, waiting for START_WALLET_SUCCESS.');
     yield take(types.START_WALLET_SUCCESS);
-    log.debug('Starting wallet-connect.');
+    log.debug('Starting reown.');
   }
 
   try {
     const walletServiceEnabled = yield call(isWalletServiceEnabled);
-    const walletConnectEnabled = yield call(isWalletConnectEnabled);
+    const reownEnabled = yield call(isReownEnabled);
 
     if (walletServiceEnabled) {
-      log.debug('Wallet Service enabled, skipping wallet-connect init.');
+      log.debug('Wallet Service enabled, skipping reown init.');
       return;
     }
 
-    if (!walletConnectEnabled) {
+    if (!reownEnabled) {
+      log.debug('Reown is not enabled.');
       return;
     }
 
     const core = new Core({
-      projectId: WALLET_CONNECT_PROJECT_ID,
+      projectId: REOWN_PROJECT_ID,
     });
 
     const metadata = {
@@ -161,17 +162,17 @@ function* init() {
       url: 'https://hathor.network/',
     };
 
-    const web3wallet = yield call(Web3Wallet.init, {
+    const walletKit = yield call(WalletKit.init, {
       core,
       metadata,
     });
 
-    yield put(setWalletConnect({
-      web3wallet,
+    yield put(setReown({
+      walletKit,
       core,
     }));
 
-    yield fork(setupListeners, web3wallet);
+    yield fork(setupListeners, walletKit);
 
     // Refresh redux with the active sessions, loaded from storage
     // Pass extend = true so session expiration date get renewed
@@ -217,18 +218,18 @@ export function* listenForAppStateChange() {
 }
 
 export function* checkForPendingRequests() {
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.reown.client);
 
-  yield call([web3wallet, web3wallet.getPendingAuthRequests]);
-  yield call([web3wallet, web3wallet.getPendingSessionRequests]);
+  yield call([walletKit, walletKit.getPendingAuthRequests]);
+  yield call([walletKit, walletKit.getPendingSessionRequests]);
 }
 
 export function* refreshActiveSessions(extend = false) {
   log.debug('Refreshing active sessions.');
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.reown.client);
 
-  const activeSessions = yield call(() => web3wallet.getActiveSessions());
-  yield put(setWalletConnectSessions(activeSessions));
+  const activeSessions = yield call(() => walletKit.getActiveSessions());
+  yield put(setReownSessions(activeSessions));
 
   if (extend) {
     for (const key of Object.keys(activeSessions)) {
@@ -236,7 +237,7 @@ export function* refreshActiveSessions(extend = false) {
       log.debug(activeSessions[key].topic);
 
       try {
-        yield call(() => web3wallet.extendSession({
+        yield call(() => walletKit.extendSession({
           topic: activeSessions[key].topic,
         }));
       } catch (extendError) {
@@ -244,7 +245,7 @@ export function* refreshActiveSessions(extend = false) {
 
         // Extending session failed, remove it
         try {
-          yield call(() => web3wallet.disconnectSession({
+          yield call(() => walletKit.disconnectSession({
             topic: activeSessions[key].topic,
             reason: {
               code: ERROR_CODES.USER_DISCONNECTED,
@@ -261,20 +262,20 @@ export function* refreshActiveSessions(extend = false) {
 }
 
 /**
- * @param {Web3Wallet} web3wallet The WalletConnect web3wallet instance
+ * @param {WalletKit} walletKit The Reown walletKit instance
  */
-export function* setupListeners(web3wallet) {
+export function* setupListeners(walletKit) {
   const channel = eventChannel((emitter) => {
     const listenerMap = new Map();
     const addListener = (eventName) => {
       const listener = async (data) => {
         emitter({
-          type: `WC_${eventName.toUpperCase()}`,
+          type: `REOWN_${eventName.toUpperCase()}`,
           data,
         });
       };
 
-      web3wallet.on(eventName, listener);
+      walletKit.on(eventName, listener);
       listenerMap.set(eventName, listener);
     };
 
@@ -286,7 +287,7 @@ export function* setupListeners(web3wallet) {
     return () => listenerMap.forEach((
       listener,
       eventName,
-    ) => web3wallet.removeListener(eventName, listener));
+    ) => walletKit.removeListener(eventName, listener));
   });
 
   try {
@@ -311,11 +312,11 @@ export function* setupListeners(web3wallet) {
  * the current client.
  */
 export function* clearSessions() {
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
-  const activeSessions = yield call(() => web3wallet.getActiveSessions());
+  const { walletKit } = yield select((state) => state.reown.client);
+  const activeSessions = yield call(() => walletKit.getActiveSessions());
 
   for (const key of Object.keys(activeSessions)) {
-    yield call(() => web3wallet.disconnectSession({
+    yield call(() => walletKit.disconnectSession({
       topic: activeSessions[key].topic,
       reason: {
         code: ERROR_CODES.USER_DISCONNECTED,
@@ -328,7 +329,7 @@ export function* clearSessions() {
 }
 
 function* requestsListener() {
-  const requestsChannel = yield actionChannel('WC_SESSION_REQUEST');
+  const requestsChannel = yield actionChannel('REOWN_SESSION_REQUEST');
 
   let action;
   while (true) {
@@ -352,8 +353,8 @@ export function* processRequest(action) {
 
   const wallet = yield select((state) => state.wallet);
 
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
-  const activeSessions = yield call(() => web3wallet.getActiveSessions());
+  const { walletKit } = yield select((state) => state.reown.client);
+  const activeSessions = yield call(() => walletKit.getActiveSessions());
   const requestSession = activeSessions[payload.topic];
 
   if (!requestSession) {
@@ -394,7 +395,7 @@ export function* processRequest(action) {
         break;
     }
 
-    yield call(() => web3wallet.respondSessionRequest({
+    yield call(() => walletKit.respondSessionRequest({
       topic: payload.topic,
       response: {
         id: payload.id,
@@ -410,8 +411,8 @@ export function* processRequest(action) {
 
         const retry = yield call(
           retryHandler,
-          types.WALLETCONNECT_CREATE_TOKEN_RETRY,
-          types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
+          types.REOWN_CREATE_TOKEN_RETRY,
+          types.REOWN_CREATE_TOKEN_RETRY_DISMISS,
         );
 
         if (retry) {
@@ -426,8 +427,8 @@ export function* processRequest(action) {
         // User might try again, wait for it.
         const retry = yield call(
           retryHandler,
-          types.WALLETCONNECT_CREATE_TOKEN_RETRY,
-          types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
+          types.REOWN_CREATE_TOKEN_RETRY,
+          types.REOWN_CREATE_TOKEN_RETRY_DISMISS,
         );
 
         if (retry) {
@@ -442,7 +443,7 @@ export function* processRequest(action) {
 
     if (shouldAnswer) {
       try {
-        yield call(() => web3wallet.respondSessionRequest({
+        yield call(() => walletKit.respondSessionRequest({
           topic: payload.topic,
           response: {
             id: payload.id,
@@ -614,9 +615,9 @@ export function* onSignMessageRequest({ payload }) {
     return;
   }
 
-  yield put(setWalletConnectModal({
+  yield put(setReownModal({
     show: true,
-    type: WalletConnectModalTypes.SIGN_MESSAGE,
+    type: ReownModalTypes.SIGN_MESSAGE,
     data: {
       data,
       dapp,
@@ -624,8 +625,8 @@ export function* onSignMessageRequest({ payload }) {
   }));
 
   const { deny } = yield race({
-    accept: take(types.WALLET_CONNECT_ACCEPT),
-    deny: take(types.WALLET_CONNECT_REJECT),
+    accept: take(types.REOWN_ACCEPT),
+    deny: take(types.REOWN_REJECT),
   });
 
   if (deny) {
@@ -647,9 +648,9 @@ export function* onSignOracleDataRequest({ payload }) {
     return;
   }
 
-  yield put(setWalletConnectModal({
+  yield put(setReownModal({
     show: true,
-    type: WalletConnectModalTypes.SIGN_ORACLE_DATA,
+    type: ReownModalTypes.SIGN_ORACLE_DATA,
     data: {
       data,
       dapp,
@@ -657,8 +658,8 @@ export function* onSignOracleDataRequest({ payload }) {
   }));
 
   const { deny } = yield race({
-    accept: take(types.WALLET_CONNECT_ACCEPT),
-    deny: take(types.WALLET_CONNECT_REJECT),
+    accept: take(types.REOWN_ACCEPT),
+    deny: take(types.REOWN_REJECT),
   });
 
   if (deny) {
@@ -696,9 +697,9 @@ export function* onSendNanoContractTxRequest({ payload }) {
     return;
   }
 
-  yield put(setWalletConnectModal({
+  yield put(setReownModal({
     show: true,
-    type: WalletConnectModalTypes.SEND_NANO_CONTRACT_TX,
+    type: ReownModalTypes.SEND_NANO_CONTRACT_TX,
     data: {
       dapp,
       data: nc,
@@ -706,8 +707,8 @@ export function* onSendNanoContractTxRequest({ payload }) {
   }));
 
   const { deny, accept } = yield race({
-    accept: take(types.WALLET_CONNECT_ACCEPT),
-    deny: take(types.WALLET_CONNECT_REJECT),
+    accept: take(types.REOWN_ACCEPT),
+    deny: take(types.REOWN_REJECT),
   });
 
   if (deny) {
@@ -729,9 +730,9 @@ export function* onCreateTokenRequest({ payload }) {
     return;
   }
 
-  yield put(setWalletConnectModal({
+  yield put(setReownModal({
     show: true,
-    type: WalletConnectModalTypes.CREATE_TOKEN,
+    type: ReownModalTypes.CREATE_TOKEN,
     data: {
       dapp,
       data,
@@ -739,8 +740,8 @@ export function* onCreateTokenRequest({ payload }) {
   }));
 
   const { deny, accept } = yield race({
-    accept: take(types.WALLET_CONNECT_ACCEPT),
-    deny: take(types.WALLET_CONNECT_REJECT),
+    accept: take(types.REOWN_ACCEPT),
+    deny: take(types.REOWN_REJECT),
   });
 
   if (deny) {
@@ -756,8 +757,8 @@ export function* onCreateTokenRequest({ payload }) {
  * can clear all current sessions.
  */
 export function* onWalletReset() {
-  const walletConnect = yield select((state) => state.walletConnect);
-  if (!walletConnect || !walletConnect.client) {
+  const reown = yield select((state) => state.reown);
+  if (!reown || !reown.client) {
     // Do nothing, wallet connect might not have been initialized yet
     return;
   }
@@ -772,7 +773,7 @@ export function* onWalletReset() {
  */
 export function* onSessionProposal(action) {
   const { id, params } = action.payload;
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.reown.client);
 
   const wallet = yield select((state) => state.wallet);
   const firstAddress = yield call(() => wallet.getAddressAtIndex(0));
@@ -785,12 +786,12 @@ export function* onSessionProposal(action) {
     requiredNamespaces: get(params, 'requiredNamespaces', []),
   };
 
-  const onAcceptAction = { type: 'WALLET_CONNECT_ACCEPT' };
-  const onRejectAction = { type: 'WALLET_CONNECT_REJECT' };
+  const onAcceptAction = { type: 'REOWN_ACCEPT' };
+  const onRejectAction = { type: 'REOWN_REJECT' };
 
-  yield put(setWalletConnectModal({
+  yield put(setReownModal({
     show: true,
-    type: WalletConnectModalTypes.CONNECT,
+    type: ReownModalTypes.CONNECT,
     data,
     onAcceptAction,
     onRejectAction,
@@ -803,7 +804,7 @@ export function* onSessionProposal(action) {
 
   if (reject) {
     try {
-      yield call(() => web3wallet.rejectSession({
+      yield call(() => walletKit.rejectSession({
         id,
         reason: {
           code: ERROR_CODES.USER_REJECTED,
@@ -819,7 +820,7 @@ export function* onSessionProposal(action) {
 
   const networkSettings = yield select(getNetworkSettings);
   try {
-    yield call(() => web3wallet.approveSession({
+    yield call(() => walletKit.approveSession({
       id,
       relayProtocol: params.relays[0].protocol,
       namespaces: {
@@ -838,7 +839,7 @@ export function* onSessionProposal(action) {
     try {
       // Attempt once more to reject the session, so it doesn't linger in the
       // message queue
-      yield call(() => web3wallet.rejectSession({
+      yield call(() => walletKit.rejectSession({
         id,
         reason: {
           code: ERROR_CODES.USER_REJECTED,
@@ -857,9 +858,9 @@ export function* onSessionProposal(action) {
  * a QR Code
  */
 export function* onUriInputted(action) {
-  const { web3wallet, core } = yield select((state) => state.walletConnect.client);
+  const { walletKit, core } = yield select((state) => state.reown.client);
 
-  if (!web3wallet) {
+  if (!walletKit) {
     throw new Error('Wallet connect instance is new and QRCode was read');
   }
 
@@ -878,12 +879,12 @@ export function* onUriInputted(action) {
  */
 export function* featureToggleUpdateListener() {
   while (true) {
-    const oldWalletConnectEnabled = yield call(isWalletConnectEnabled);
+    const oldReownEnabled = yield call(isReownEnabled);
     yield take('FEATURE_TOGGLE_UPDATED');
-    const newWalletConnectEnabled = yield call(isWalletConnectEnabled);
+    const newReownEnabled = yield call(isReownEnabled);
 
-    if (oldWalletConnectEnabled && !newWalletConnectEnabled) {
-      yield put({ type: 'WC_SHUTDOWN' });
+    if (oldReownEnabled && !newReownEnabled) {
+      yield put({ type: 'REOWN_SHUTDOWN' });
     }
   }
 }
@@ -892,12 +893,12 @@ export function* featureToggleUpdateListener() {
  * Sends a disconnect session RPC message to the connected cloud server
  */
 export function* onCancelSession(action) {
-  const { web3wallet } = yield select((state) => state.walletConnect.client);
+  const { walletKit } = yield select((state) => state.reown.client);
 
-  const activeSessions = yield call(() => web3wallet.getActiveSessions());
+  const activeSessions = yield call(() => walletKit.getActiveSessions());
 
   if (activeSessions[action.payload.id]) {
-    yield call(() => web3wallet.disconnectSession({
+    yield call(() => walletKit.disconnectSession({
       topic: activeSessions[action.payload.id].topic,
       reason: {
         code: ERROR_CODES.USER_DISCONNECTED,
@@ -926,11 +927,11 @@ export function* saga() {
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
     takeLatest(types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL, onSignOracleDataRequest),
     takeLatest(types.SHOW_CREATE_TOKEN_REQUEST_MODAL, onCreateTokenRequest),
-    takeEvery('WC_SESSION_PROPOSAL', onSessionProposal),
-    takeEvery('WC_SESSION_DELETE', onSessionDelete),
-    takeEvery('WC_CANCEL_SESSION', onCancelSession),
-    takeEvery('WC_SHUTDOWN', clearSessions),
+    takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
+    takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
+    takeEvery('REOWN_CANCEL_SESSION', onCancelSession),
+    takeEvery('REOWN_SHUTDOWN', clearSessions),
     takeEvery(types.RESET_WALLET, onWalletReset),
-    takeLatest(types.WC_URI_INPUTTED, onUriInputted),
+    takeLatest(types.REOWN_URI_INPUTTED, onUriInputted),
   ]);
 }

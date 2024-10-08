@@ -10,11 +10,11 @@ import { useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import { StyleSheet, Text } from 'react-native';
-import { COLORS } from '../../../styles/themes';
-import { ModalBase } from '../../ModalBase';
-import { WarnDisclaimer } from '../WarnDisclaimer';
-import { walletConnectReject } from '../../../actions';
-import { WALLETCONNECT_SKIP_CONFIRMATION_MODAL } from '../../../config';
+import { COLORS } from '../../styles/themes';
+import { ModalBase } from '../ModalBase';
+import { WarnDisclaimer } from './WarnDisclaimer';
+import { reownReject } from '../../actions';
+import { REOWN_SKIP_CONFIRMATION_MODAL } from '../../config';
 
 const styles = StyleSheet.create({
   body: {
@@ -44,27 +44,27 @@ export default ({
 
   const onReject = () => {
     onDismiss();
-    dispatch(walletConnectReject());
+    dispatch(reownReject());
   };
 
-  const navigateToSignOracleDataScreen = () => {
+  const navigateToSignMessageRequestScreen = () => {
     onDismiss();
-    navigation.navigate('SignOracleDataRequestScreen', { signOracleData: data });
+    navigation.navigate('SignMessageRequest', { signMessageRequest: data });
   };
 
   useEffect(() => {
-    if (WALLETCONNECT_SKIP_CONFIRMATION_MODAL) {
-      navigateToSignOracleDataScreen();
+    if (REOWN_SKIP_CONFIRMATION_MODAL) {
+      navigateToSignMessageRequestScreen();
     }
   }, []);
 
   return (
     <ModalBase show onDismiss={onReject}>
-      <ModalBase.Title>{t`New Sign Oracle Data Request`}</ModalBase.Title>
+      <ModalBase.Title>{t`New Sign Message Request`}</ModalBase.Title>
       <ModalBase.Body style={styles.body}>
         <WarnDisclaimer />
         <Text style={styles.text}>
-          {t`You have received a new Sign Oracle Data Request. Please`}
+          {t`You have received a new Sign Message Request. Please`}
           <Text style={styles.bold}>
             {' '}{t`carefully review the details`}{' '}
           </Text>
@@ -72,8 +72,8 @@ export default ({
         </Text>
       </ModalBase.Body>
       <ModalBase.Button
-        title={t`Review Sign Oracle Data Request details`}
-        onPress={navigateToSignOracleDataScreen}
+        title={t`Review Sign Message Request details`}
+        onPress={navigateToSignMessageRequestScreen}
       />
       <ModalBase.DiscreteButton
         title={t`Cancel`}

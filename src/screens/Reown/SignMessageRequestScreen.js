@@ -13,18 +13,18 @@ import {
 import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
 import OfflineBar from '../../components/OfflineBar';
-import { SignOracleDataRequest } from '../../components/WalletConnect/SignOracleDataRequest';
+import { SignMessageRequest } from '../../components/Reown/SignMessageRequest';
 import { COLORS } from '../../styles/themes';
 
-export function SignOracleDataRequestScreen({ route }) {
-  const { signOracleData } = route.params;
+export function SignMessageRequestScreen({ route }) {
+  const { signMessageRequest } = route.params;
 
   return (
     <Wrapper>
       <HathorHeader
-        title={t`Sign Oracle Data Request`.toUpperCase()}
+        title={t`Sign Message Request`.toUpperCase()}
       />
-      <SignOracleDataRequest signOracleData={signOracleData} />
+      <SignMessageRequest signMessageRequest={signMessageRequest} />
       <OfflineBar />
     </Wrapper>
   );
