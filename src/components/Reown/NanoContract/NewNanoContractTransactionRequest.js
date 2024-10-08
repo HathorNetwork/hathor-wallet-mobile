@@ -254,7 +254,8 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
           message={t`The Nano Contract requested is not registered. First register the Nano Contract to interact with it.`}
           action={(
             <View style={styles.feedbackActionContainer}>
-              {!firstAddress.error && ( /* Doesn't show up if an error happens in first address request */
+              {/* Doesn't show up if an error happens in first address request */}
+              {!firstAddress.error && (
                 <NewHathorButton
                   title={t`Register Nano Contract`}
                   onPress={onRegisterNanoContract}

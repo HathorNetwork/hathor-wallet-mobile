@@ -29,7 +29,7 @@ import IconTabBar from './icon-font';
 import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
-    appStateUpdate,
+  appStateUpdate,
   lockScreen,
   onExceptionCaptured,
   pushTxDetailsRequested,
