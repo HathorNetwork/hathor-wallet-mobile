@@ -135,7 +135,7 @@ function* init() {
   if (walletStartState !== WALLET_STATUS.READY) {
     log.debug('Wallet not ready yet, waiting for START_WALLET_SUCCESS.');
     yield take(types.START_WALLET_SUCCESS);
-    log.debug('Starting wallet-connect.');
+    log.debug('Starting reown.');
   }
 
   try {
@@ -143,11 +143,12 @@ function* init() {
     const reownEnabled = yield call(isReownEnabled);
 
     if (walletServiceEnabled) {
-      log.debug('Wallet Service enabled, skipping wallet-connect init.');
+      log.debug('Wallet Service enabled, skipping reown init.');
       return;
     }
 
     if (!reownEnabled) {
+      log.debug('Reown is not enabled.');
       return;
     }
 

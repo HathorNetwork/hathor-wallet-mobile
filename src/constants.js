@@ -161,7 +161,7 @@ export const PUSH_ACTION = {
 
 export const WALLET_SERVICE_FEATURE_TOGGLE = 'wallet-service-mobile.rollout';
 export const PUSH_NOTIFICATION_FEATURE_TOGGLE = 'push-notification.rollout';
-export const REOWN_FEATURE_TOGGLE = 'wallet-connect-mobile.rollout';
+export const REOWN_FEATURE_TOGGLE = 'reown.rollout';
 export const NETWORK_SETTINGS_FEATURE_TOGGLE = 'network-settings.rollout';
 export const NANO_CONTRACT_FEATURE_TOGGLE = 'nano-contract.rollout';
 
