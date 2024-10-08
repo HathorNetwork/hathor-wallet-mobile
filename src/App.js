@@ -86,6 +86,14 @@ import WalletConnectModal from './components/WalletConnect/WalletConnectModal';
 import { COLORS, HathorTheme } from './styles/themes';
 import { NetworkSettingsFlowNav, NetworkSettingsFlowStack } from './screens/NetworkSettings';
 import { NetworkStatusBar } from './components/NetworkSettings/NetworkStatusBar';
+import ShowPushNotificationTxDetails from './components/ShowPushNotificationTxDetails';
+import { NanoContractDetailsScreen } from './screens/NanoContract/NanoContractDetailsScreen';
+import { NanoContractTransactionScreen } from './screens/NanoContract/NanoContractTransactionScreen';
+import { NanoContractRegisterScreen } from './screens/NanoContract/NanoContractRegisterScreen';
+import { NewNanoContractTransactionScreen } from './screens/WalletConnect/NewNanoContractTransactionScreen';
+import { NanoContractRegisterQrCodeScreen } from './screens/NanoContractRegisterQrCodeScreen';
+import { SignMessageRequestScreen } from './screens/WalletConnect/SignMessageRequestScreen';
+import { CreateTokenRequestScreen } from './screens/WalletConnect/CreateTokenScreen';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -282,6 +290,72 @@ const RegisterTokenStack = ({ navigation }) => {
   );
 };
 
+/**
+ * Stack of screens dedicated to the nano contract registration process
+ */
+const RegisterNanoContractStack = ({ navigation }) => {
+  const Stack = createStackNavigator();
+  const dispatch = useDispatch();
+  const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
+
+  /**
+   * Defines which screen will be the initial one, according to app camera permissions
+   * @param {null|boolean} cameraStatus
+   * @returns {string} Route name
+   */
+  const decideRouteByCameraAvailablity = (cameraStatus) => {
+    switch (isCameraAvailable) {
+      case true:
+        return 'NanoContractRegisterQrCodeScreen';
+      case false:
+        return 'NanoContractRegisterScreen';
+      default:
+        return 'RegisterCameraPermissionScreen';
+    }
+  };
+
+  // Initial screen set on component initial rendering
+  const [initialRoute, setInitialRoute] = useState(
+    decideRouteByCameraAvailablity(isCameraAvailable)
+  );
+
+  /*
+   * Request camera permission on initialization only if permission is not already set
+   */
+  useEffect(() => {
+    if (isCameraAvailable === null) {
+      dispatch(requestCameraPermission());
+    }
+  }, []);
+
+  // Listen to camera permission changes from user input and navigate to the relevant screen
+  useEffect(() => {
+    const newScreenName = decideRouteByCameraAvailablity(isCameraAvailable);
+
+    // Navigator screen already correct: no further action.
+    if (initialRoute === newScreenName) {
+      return;
+    }
+
+    // Set initial route and navigate there according to new permission set
+    setInitialRoute(newScreenName);
+    navigation.replace(newScreenName);
+  }, [isCameraAvailable]);
+
+  return (
+    <Stack.Navigator
+      initialRouteName={initialRoute}
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name='RegisterCameraPermissionScreen' component={CameraPermissionScreen} />
+      <Stack.Screen name='NanoContractRegisterQrCodeScreen' component={NanoContractRegisterQrCodeScreen} />
+      <Stack.Screen name='NanoContractRegisterScreen' component={NanoContractRegisterScreen} />
+    </Stack.Navigator>
+  );
+};
+
 const tabBarIconMap = {
   Home: 'icDashboard',
   Send: 'icSend',
@@ -376,11 +450,17 @@ const AppStack = () => {
           initialParams={{ hName: 'Main' }}
           component={TabNavigator}
         />
+        <Stack.Screen name='NanoContractDetailsScreen' component={NanoContractDetailsScreen} />
+        <Stack.Screen name='NanoContractTransactionScreen' component={NanoContractTransactionScreen} />
+        <Stack.Screen name='NanoContractRegisterScreen' component={NanoContractRegisterScreen} />
         <Stack.Screen name='About' component={About} />
         <Stack.Screen name='Security' component={Security} />
         <Stack.Screen name='WalletConnectList' component={WalletConnectList} />
         <Stack.Screen name='WalletConnectManual' component={WalletConnectManual} />
         <Stack.Screen name='WalletConnectScan' component={WalletConnectScan} />
+        <Stack.Screen name='NewNanoContractTransactionScreen' component={NewNanoContractTransactionScreen} />
+        <Stack.Screen name='SignMessageRequest' component={SignMessageRequestScreen} />
+        <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
         <Stack.Screen name='PushNotification' component={PushNotification} />
         <Stack.Screen name='ChangePin' component={ChangePin} />
         <Stack.Screen
@@ -390,6 +470,7 @@ const AppStack = () => {
         />
         <Stack.Screen name='PaymentRequestDetail' component={PaymentRequestDetail} />
         <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
+        <Stack.Screen name='RegisterNanoContract' component={RegisterNanoContractStack} />
         <Stack.Screen name='ChangeToken' component={ChangeToken} />
         <Stack.Screen name={NetworkSettingsFlowNav} component={NetworkSettingsFlowStack} />
         <Stack.Screen
@@ -725,10 +806,11 @@ const App = () => (
           theme={HathorTheme}
           ref={navigationRef}
         >
+          <ShowPushNotificationTxDetails />
           <NetworkStatusBar />
           <RootStack />
+          <WalletConnectModal />
         </NavigationContainer>
-        <WalletConnectModal />
         <GlobalErrorHandler />
       </SafeAreaView>
     </Provider>
