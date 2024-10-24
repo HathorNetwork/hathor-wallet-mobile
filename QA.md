@@ -4,6 +4,7 @@
     1. Load the last release of the app and start a wallet. You can confirm the version on Settings -> About.
     1. Update the code to run the latest version, without resetting the wallet.
     1. You should be shown the PIN screen. Unlock the wallet and confirm load succeeded.
+    1. Check if the Wallet Service is active for this device. This will be important to understand the context in which the following tests in this guide will be executed
     1. Reset the wallet.
 
 1. **Simple Initialization**
@@ -29,7 +30,7 @@
     1. Go to the Send Screen and check whether the camera loads correctly.
     1. Click on Manual Info.
     1. Type any random text and click Next. It must show an error message.
-    1. Enter the address WZ7pDnkPnxbs14GHdUFivFzPbzitwNtvZo and click Next.
+    1. Enter the address `WZ7pDnkPnxbs14GHdUFivFzPbzitwNtvZo` and click Next.
     1. Click on the HTR to change the token. Then, select HTR.
     1. Type 100 HTR, click Next, and check the insufficient funds error.
     1. Type 2 HTR, click Next, and check the send summary.
@@ -47,12 +48,12 @@
         1. Enable TouchID (iOS only).
         1. Lock wallet and use TouchID (iOS only).
         1. Disable TouchID (iOS only).
-        1. Lock wallet and it must require you to type your PIN Code.
+        1. Lock wallet, and it must require you to type your PIN Code.
     1. Test Security > Change PIN.
-        1. Close and open the app and check wether the wallet unlocks correctly.
+        1. Close and open the app and check whether the wallet unlocks correctly.
     1. Open About and go back.
     1. Click on Register a Token and check whether the camera loads correctly.
-    1. Go to Manual Info, type anything and get a Invalid Configuration string.
+    1. Go to Manual Info, type anything and get an Invalid Configuration string.
     1. Test Biometry (Only close the app on the steps required, this is important)
         1. Enable biometry (either Fingerprint, FaceID or TouchID depending on the device)
         1. Send 1 HTR to your own address (it will ask for the biometry instead of pin)
@@ -61,7 +62,7 @@
         1. Close the app and open, it should ask for biometry instead of pin when opening the wallet.
         1. Send 1 HTR to your own address (it will ask for the biometry again)
         1. Disable biometry
-        1. Lock wallet and it must require you to type your PIN Code.
+        1. Lock wallet, and it must require you to type your PIN Code.
 
 1. **Create a new token Tests**
     1. Click on Create a new token.
