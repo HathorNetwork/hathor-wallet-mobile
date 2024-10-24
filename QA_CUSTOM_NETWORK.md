@@ -44,6 +44,7 @@
     1. [ ] Empty the Node URL field
     1. [ ] Check that an invalidation message appears under the field informing Node URL is required
     1. [ ] Fill the field with an invalid URL, e.g. "invalid"
+    1. [ ] Click the "Send" button
     1. [ ] Check that an invalidation message appears under the field informing Node URL should be a valid URL
 
 1. **Send a custom network**
@@ -87,6 +88,9 @@
     1. [ ] Navigate to Network Pre-Settings screen
     1. [ ] Select the Testnet network
     1. [ ] Navigate to Mainscreen
+    1. [ ] Register a token on Testnet network
+    1. [ ] Navigate to Network Pre-Settings screen
+    1. [ ] Select the Mainnet network
     1. [ ] Check there is only the HTR token in the dashboard
 
 1. **Check Wallet Service fields didn't appear when Wallet Service is disabled for the wallet**
