@@ -6,6 +6,7 @@
  */
 
 import hathorLib from '@hathor/wallet-lib';
+import CryptoJS from 'crypto-js';
 import * as Keychain from 'react-native-keychain';
 import React from 'react';
 import { isEmpty } from 'lodash';
@@ -89,6 +90,12 @@ export const getAmountParsed = (text) => {
 };
 
 export const getTokenLabel = (token) => `${token.name} (${token.symbol})`;
+
+export function generateRandomPassword() {
+  const seed = CryptoJS.lib.WordArray.random(32).toString();
+  console.log(`[BIOMETRY PASSWORD] seed: ${seed}`);
+  return CryptoJS.PBKDF2(seed, seed, { iterations: 10000 }).toString();
+}
 
 export const setSupportedBiometry = (type) => {
   STORE.setItem('mobile:supportedBiometry', type);
