@@ -73,9 +73,9 @@ export class Security extends React.Component {
 
   onSafeBiometrySwitchChange = (value) => {
     if (value) {
-      this.onBiometryEnabled();
+      this.onSafeBiometryEnabled();
     } else {
-      this.onBiometryDisabled();
+      this.onSafeBiometryDisabled();
     }
   }
 
@@ -114,7 +114,7 @@ export class Security extends React.Component {
 
   onSafeBiometryDisabled = () => {
     const params = {
-      cb: this.executeBiometryDisable,
+      cb: this.executeSafeBiometryDisable,
       canCancel: true,
       screenText: t`Enter your 6-digit pin to disable biometry`,
       biometryText: t`Disable biometry`,
@@ -127,7 +127,7 @@ export class Security extends React.Component {
    */
   onSafeBiometryEnabled = () => {
     const params = {
-      cb: this.executeBiometryEnable,
+      cb: this.executeSafeBiometryEnable,
       canCancel: true,
       screenText: t`Enter your 6-digit pin to enable biometry`,
     };

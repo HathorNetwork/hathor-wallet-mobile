@@ -115,10 +115,8 @@ export const setBiometryEnabled = (value) => {
 
 export const isBiometryEnabled = () => {
   const oldBiometry = STORE.getItem(IS_OLD_BIOMETRY_ENABLED_KEY);
-  if (oldBiometry !== undefined) {
-    return oldBiometry || false;
-  }
-  return STORE.getItem(IS_BIOMETRY_ENABLED_KEY) || false;
+  const safeBiometry = STORE.getItem(IS_BIOMETRY_ENABLED_KEY);
+  return oldBiometry || safeBiometry || false;
 }
 
 /**

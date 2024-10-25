@@ -29,6 +29,7 @@ import { PIN_SIZE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import baseStyle from '../styles/init';
+import Spinner from '../components/Spinner';
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
@@ -62,6 +63,7 @@ class PinScreen extends React.Component {
       pin: '',
       pinColor: COLORS.textColor,
       error: null,
+      biometryFailed: false,
     };
 
     this.canCancel = false;
@@ -72,6 +74,7 @@ class PinScreen extends React.Component {
       this.screenText = props.route.params.screenText ?? this.screenText;
       this.biometryText = props.route.params.biometryText ?? this.biometryText;
     }
+    this.biometryEnabled = isBiometryEnabled();
 
     this.focusEvent = null;
   }
@@ -131,7 +134,14 @@ class PinScreen extends React.Component {
         this.dismiss(credentials.password);
       }
     } catch (e) {
-      // No need to do anything here as the user can type his PIN
+      this.setState({ biometryFailed: true });
+      if (this.props.safeBiometryEnabled) {
+        // This is a biometry failed response, since safe biometry mode does not
+        // have a fallback it should automatically cancel.
+        if (this.canCancel) {
+          this.props.navigation.goBack();
+        }
+      }
     }
   };
 
@@ -285,23 +295,31 @@ class PinScreen extends React.Component {
       );
     };
 
+    const safeBiometryMessage = () => {
+      return (
+        <View
+          style={{
+            flex: 1,
+            width: '100%',
+            justifyContent: 'space-between',
+          }}
+        >
+        { this.state.biometryFailed
+          ? <Text>{"Biometry failed or canceled."}</Text>
+          : <Spinner size={48} animating />
+        }
+        </View>
+      );
+    };
+
     const renderPinDigits = () => {
-      if (this.props.safeBiometryEnabled) {
-        return null;
+      if (this.props.safeBiometryEnabled && this.biometryEnabled) {
+        // Safe biometry mode is enabled, we should not render the pin input.
+        return safeBiometryMessage();
       }
 
       return (
-        <div>
-          <View
-            style={{
-              marginVertical: 16,
-              alignItems: 'center',
-              height: 21,
-              width: 120,
-            }}
-          >
-            <Logo style={{ height: 21, width: 120 }} />
-          </View>
+        <>
           <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
           <PinInput
             maxLength={PIN_SIZE}
@@ -310,21 +328,31 @@ class PinScreen extends React.Component {
             onChangeText={this.onChangeText}
             error={this.state.error}
           />
-        </div>
+        </>
       );
     };
 
-    const renderPinScreen = () => {
+    const renderPinScreen = () => (
       <View
         style={{
           flex: 1,
           alignItems: 'center',
         }}
       >
-      {renderPinDigits()}
-      {renderButton()}
+        <View
+          style={{
+            marginVertical: 16,
+            alignItems: 'center',
+            height: 21,
+            width: 120,
+          }}
+        >
+          <Logo style={{ height: 21, width: 120 }} />
+        </View>
+        {renderPinDigits()}
+        {renderButton()}
       </View>
-    };
+    );
 
     return (
       <View
