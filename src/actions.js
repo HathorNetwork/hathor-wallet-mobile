@@ -204,6 +204,7 @@ export const types = {
   WALLETCONNECT_CREATE_TOKEN_STATUS: 'WALLETCONNECT_CREATE_TOKEN_STATUS',
   WALLETCONNECT_CREATE_TOKEN_RETRY: 'WALLETCONNECT_CREATE_TOKEN_RETRY',
   WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS: 'WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS',
+  SET_USE_SAFE_BIOMETRY_MODE: 'SET_USE_SAFE_BIOMETRY_MODE',
 };
 
 export const featureToggleInitialized = () => ({
@@ -371,6 +372,11 @@ export const setLoadHistoryStatus = (active, error) => (
 
 export const setUseWalletService = (data) => ({
   type: types.SET_USE_WALLET_SERVICE,
+  payload: data,
+});
+
+export const setUseSafeBiometryMode = (data) => ({
+  type: types.SET_USE_SAFE_BIOMETRY_MODE,
   payload: data,
 });
 

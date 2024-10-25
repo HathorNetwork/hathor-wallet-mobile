@@ -15,7 +15,7 @@ import { walletUtils, cryptoUtils } from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
 import PinInput from '../components/PinInput';
 import Logo from '../components/Logo';
-import { isBiometryEnabled, getSupportedBiometry } from '../utils';
+import { isBiometryEnabled, getSupportedBiometry, biometricsMigration } from '../utils';
 import {
   lockScreen,
   unlockScreen,
@@ -26,7 +26,7 @@ import {
   resetOnLockScreen,
   onExceptionCaptured,
 } from '../actions';
-import { PIN_SIZE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
+import { PIN_SIZE } from '../constants';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import baseStyle from '../styles/init';
@@ -40,7 +40,7 @@ import errorIcon from '../assets/images/icErrorBig.png';
 const mapStateToProps = (state) => ({
   loadHistoryActive: state.loadHistoryStatus.active,
   wallet: state.wallet,
-  safeBiometryEnabled: state.featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE],
+  safeBiometryEnabled: state.safeBiometryEnabled,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -148,6 +148,7 @@ class PinScreen extends React.Component {
       // in case it's the lock screen, we just have to execute the data migration
       // method an change redux state. No need to execute callback or go back on navigation
       await STORE.handleDataMigration(pin);
+      await biometricsMigration(pin, this.props.safeBiometryEnabled);
       if (!this.props.wallet) {
         // We have already made sure we have an available accessData
         // The handleDataMigration method ensures we have already migrated if necessary
