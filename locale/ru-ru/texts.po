@@ -58,11 +58,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:436
+#: src/models.js:107 src/utils.js:446
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:171
+#: src/utils.js:181
 msgid "Invalid address"
 msgstr "Неправильный адрес"
 
@@ -459,7 +459,7 @@ msgstr "**${ loadedData.addresses } адресов** найдено"
 msgid "There's been an error connecting to the server."
 msgstr ""
 
-#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:268
+#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:283
 #: src/screens/Settings.js:161
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
@@ -544,25 +544,29 @@ msgstr "Получено"
 msgid "Waiting confirmation"
 msgstr "Ожидание подтверждения"
 
-#: src/screens/PinScreen.js:253
+#: src/screens/PinScreen.js:264
 msgid "Incorrect PIN Code. Try again."
 msgstr "Неверный PIN-код. Попробуйте еще раз."
 
-#: src/screens/PinScreen.js:67
+#: src/screens/PinScreen.js:70
 msgid "Enter your PIN Code "
 msgstr "Введите свой PIN-код "
 
-#: src/screens/PinScreen.js:68
+#: src/screens/PinScreen.js:71
 msgid "Unlock Hathor Wallet"
 msgstr "Разблокировать Hathor Wallet"
 
 #: src/components/WalletConnect/CreateTokenModal.js:60
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:64
 #: src/components/WalletConnect/SignMessageModal.js:72
-#: src/screens/PinScreen.js:265
+#: src/screens/PinScreen.js:280
 #: src/screens/WalletConnect/WalletConnectList.js:125
 msgid "Cancel"
 msgstr "Отмена"
+
+#: src/screens/PinScreen.js:311
+msgid "Biometry failed or canceled."
+msgstr "Биометрия не удалась или была отменена."
 
 #: src/screens/PushNotification.js:58 src/screens/Settings.js:135
 msgid "Push Notification"
@@ -655,36 +659,36 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr "Сбросить Кошелек"
 
-#: src/screens/Security.js:113
+#: src/screens/Security.js:119
 msgid "Enter your 6-digit pin to disable biometry"
 msgstr "Введите 6-значный PIN-код, чтобы отключить биометрию"
 
-#: src/screens/Security.js:114
+#: src/screens/Security.js:120
 msgid "Disable biometry"
 msgstr "Отключить биометрию"
 
-#: src/screens/Security.js:126
+#: src/screens/Security.js:132
 msgid "Enter your 6-digit pin to enable biometry"
 msgstr "Введите 6-значный PIN-код, чтобы включить биометрию"
 
-#: src/screens/Security.js:137
+#: src/screens/Security.js:143
 msgid "No biometry supported"
 msgstr "Биометрия не поддерживается"
 
-#: src/screens/Security.js:137
+#: src/screens/Security.js:143
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr "Использовать ${ this.supportedBiometry }"
 
-#: src/screens/Security.js:141
+#: src/screens/Security.js:147
 msgid "SECURITY"
 msgstr "БЕЗОПАСНОСТЬ"
 
-#: src/screens/Security.js:160
+#: src/screens/Security.js:168
 msgid "Change PIN"
 msgstr "Изменить PIN-код"
 
-#: src/screens/Security.js:164
+#: src/screens/Security.js:172
 msgid "Lock wallet"
 msgstr "Заблокировать кошелек"
 
