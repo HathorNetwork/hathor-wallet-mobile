@@ -305,6 +305,8 @@ class PinScreen extends React.Component {
           flex: 1,
           width: '100%',
           justifyContent: 'space-between',
+          marginTop: 32,
+          marginBottom: 16,
         }}
       >
         { this.state.biometryFailed
