@@ -16,10 +16,11 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import moment from 'moment';
 import baseStyle from './styles/init';
 import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE } from './constants';
-import { STORE } from './store';
+import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
 import { logger } from './logger';
+import { NANO_CONTRACTS_INITIALIZE_METHOD } from '@hathor/wallet-lib/lib/constants';
 
 const log = logger('utils');
 
@@ -103,11 +104,23 @@ export const setSupportedBiometry = (type) => {
 
 export const getSupportedBiometry = () => STORE.getItem('mobile:supportedBiometry');
 
+/**
+ * Old biometry mode does not require aditional data to be activated
+ * @deprecated
+ *
+ * @param {bool} value
+ */
 export const setBiometryEnabled = (value) => {
-  STORE.setItem('mobile:isBiometryEnabled', value);
+  STORE.setItem(IS_OLD_BIOMETRY_ENABLED_KEY, value);
 };
 
-export const isBiometryEnabled = () => STORE.getItem('mobile:isBiometryEnabled') || false;
+export const isBiometryEnabled = () => {
+  const oldBiometry = STORE.getItem(IS_OLD_BIOMETRY_ENABLED_KEY);
+  if (oldBiometry !== undefined) {
+    return oldBiometry || false;
+  }
+  return STORE.getItem(IS_BIOMETRY_ENABLED_KEY) || false;
+}
 
 /**
  * Convert a string into a JSX. It receives a text and a map of functions. The text

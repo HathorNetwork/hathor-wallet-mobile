@@ -19,12 +19,15 @@ import baseStyle from '../styles/init';
 import {
   isBiometryEnabled, setBiometryEnabled, getSupportedBiometry, changePin, generateRandomPassword
 } from '../utils';
+import { SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen } from '../actions';
 import { COLORS } from '../styles/themes';
+import { STORE } from '../store';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
+  safeBiometryEnabled: state.featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE],
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -64,6 +67,11 @@ export class Security extends React.Component {
   }
 
   onBiometrySwitchChange = (value) => {
+    this.setState({ biometryEnabled: value });
+    setBiometryEnabled(value);
+  }
+
+  onSafeBiometrySwitchChange = (value) => {
     if (value) {
       this.onBiometryEnabled();
     } else {
@@ -71,16 +79,15 @@ export class Security extends React.Component {
     }
   }
 
-  executeBiometryEnable = (pin) => {
+  executeSafeBiometryEnable = (pin) => {
     const password = generateRandomPassword();
     changePin(
       this.props.wallet,
       pin,
       password,
     ).then((success) => {
-      if (success)
-      {
-        setBiometryEnabled(true);
+      if (success) {
+        STORE.enableSafeBiometry(pin, password);
         this.setState({ biometryEnabled: true });
       } else {
         // Should never get here because we've done all the validations before
@@ -89,15 +96,14 @@ export class Security extends React.Component {
     });
   }
 
-  executeBiometryDisable = (password) => {
+  executeSafeBiometryDisable = (password) => {
+    const pin = STORE.disableSafeBiometry(password);
     changePin(
       this.props.wallet,
       password,
-      '000001',
+      pin,
     ).then((success) => {
-      if (success)
-      {
-        setBiometryEnabled(false);
+      if (success) {
         this.setState({ biometryEnabled: false });
       } else {
         // Should never get here because we've done all the validations before
@@ -106,7 +112,7 @@ export class Security extends React.Component {
     });
   }
 
-  onBiometryDisabled = () => {
+  onSafeBiometryDisabled = () => {
     const params = {
       cb: this.executeBiometryDisable,
       canCancel: true,
@@ -119,7 +125,7 @@ export class Security extends React.Component {
   /**
    * Executed when user clicks to enable the biometry
    */
-  onBiometryEnabled = () => {
+  onSafeBiometryEnabled = () => {
     const params = {
       cb: this.executeBiometryEnable,
       canCancel: true,
@@ -149,7 +155,7 @@ export class Security extends React.Component {
             titleStyle={!switchDisabled ? { color: COLORS.textColor } : null}
             text={(
               <Switch
-                onValueChange={this.onBiometrySwitchChange}
+                onValueChange={this.props.safeBiometryEnabled ? this.onBiometrySwitchChange : this.onBiometrySwitchChange}
                 value={this.state.biometryEnabled}
                 disabled={switchDisabled}
               />
