@@ -335,11 +335,13 @@ class PinScreen extends React.Component {
       );
     };
 
-    const renderPinScreen = () => (
+    return (
       <View
         style={{
           flex: 1,
           alignItems: 'center',
+          paddingHorizontal: 16, // Padding ensures a homogeneous background color
+          backgroundColor: baseStyle.container.backgroundColor,
         }}
       >
         <View
@@ -354,19 +356,6 @@ class PinScreen extends React.Component {
         </View>
         {renderPinDigits()}
         {renderButton()}
-      </View>
-    );
-
-    return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          paddingHorizontal: 16, // Padding ensures a homogeneous background color
-          backgroundColor: baseStyle.container.backgroundColor,
-        }}
-      >
-        {renderPinScreen()}
       </View>
     );
   }
