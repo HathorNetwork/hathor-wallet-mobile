@@ -93,7 +93,6 @@ export const getTokenLabel = (token) => `${token.name} (${token.symbol})`;
 
 export function generateRandomPassword() {
   const seed = CryptoJS.lib.WordArray.random(32).toString();
-  console.log(`[BIOMETRY PASSWORD] seed: ${seed}`);
   return CryptoJS.PBKDF2(seed, seed, { iterations: 10000 }).toString();
 }
 
