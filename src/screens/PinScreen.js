@@ -25,7 +25,7 @@ import {
   startWalletRequested,
   resetOnLockScreen,
 } from '../actions';
-import { PIN_SIZE } from '../constants';
+import { PIN_SIZE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import baseStyle from '../styles/init';
@@ -36,6 +36,7 @@ import baseStyle from '../styles/init';
 const mapStateToProps = (state) => ({
   loadHistoryActive: state.loadHistoryStatus.active,
   wallet: state.wallet,
+  safeBiometryEnabled: state.featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE],
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -284,34 +285,46 @@ class PinScreen extends React.Component {
       );
     };
 
-    const renderPinDigits = () => (
+    const renderPinDigits = () => {
+      if (this.props.safeBiometryEnabled) {
+        return null;
+      }
+
+      return (
+        <div>
+          <View
+            style={{
+              marginVertical: 16,
+              alignItems: 'center',
+              height: 21,
+              width: 120,
+            }}
+          >
+            <Logo style={{ height: 21, width: 120 }} />
+          </View>
+          <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
+          <PinInput
+            maxLength={PIN_SIZE}
+            color={this.state.pinColor}
+            value={this.state.pin}
+            onChangeText={this.onChangeText}
+            error={this.state.error}
+          />
+        </div>
+      );
+    };
+
+    const renderPinScreen = () => {
       <View
         style={{
           flex: 1,
           alignItems: 'center',
         }}
       >
-        <View
-          style={{
-            marginVertical: 16,
-            alignItems: 'center',
-            height: 21,
-            width: 120,
-          }}
-        >
-          <Logo style={{ height: 21, width: 120 }} />
-        </View>
-        <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
-        <PinInput
-          maxLength={PIN_SIZE}
-          color={this.state.pinColor}
-          value={this.state.pin}
-          onChangeText={this.onChangeText}
-          error={this.state.error}
-        />
-        {renderButton()}
+      {renderPinDigits()}
+      {renderButton()}
       </View>
-    );
+    };
 
     return (
       <View
@@ -322,7 +335,7 @@ class PinScreen extends React.Component {
           backgroundColor: baseStyle.container.backgroundColor,
         }}
       >
-        {renderPinDigits()}
+        {renderPinScreen()}
       </View>
     );
   }

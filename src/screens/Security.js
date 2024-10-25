@@ -17,11 +17,18 @@ import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import {
-  isBiometryEnabled, setBiometryEnabled, getSupportedBiometry,
+  isBiometryEnabled, setBiometryEnabled, getSupportedBiometry, changePin, generateRandomPassword
 } from '../utils';
+import { SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen } from '../actions';
 import { COLORS } from '../styles/themes';
+import { STORE } from '../store';
+
+const mapStateToProps = (state) => ({
+  wallet: state.wallet,
+  safeBiometryEnabled: state.featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE],
+});
 
 const mapDispatchToProps = (dispatch) => ({
   lockScreen: () => dispatch(lockScreen()),
@@ -64,6 +71,69 @@ export class Security extends React.Component {
     setBiometryEnabled(value);
   }
 
+  onSafeBiometrySwitchChange = (value) => {
+    if (value) {
+      this.onBiometryEnabled();
+    } else {
+      this.onBiometryDisabled();
+    }
+  }
+
+  executeSafeBiometryEnable = (pin) => {
+    const password = generateRandomPassword();
+    changePin(
+      this.props.wallet,
+      pin,
+      password,
+    ).then((success) => {
+      if (success) {
+        STORE.enableSafeBiometry(pin, password);
+        this.setState({ biometryEnabled: true });
+      } else {
+        // Should never get here because we've done all the validations before
+        // XXX: prepare error message?
+      }
+    });
+  }
+
+  executeSafeBiometryDisable = (password) => {
+    const pin = STORE.disableSafeBiometry(password);
+    changePin(
+      this.props.wallet,
+      password,
+      pin,
+    ).then((success) => {
+      if (success) {
+        this.setState({ biometryEnabled: false });
+      } else {
+        // Should never get here because we've done all the validations before
+        // XXX: prepare error message?
+      }
+    });
+  }
+
+  onSafeBiometryDisabled = () => {
+    const params = {
+      cb: this.executeBiometryDisable,
+      canCancel: true,
+      screenText: t`Enter your 6-digit pin to disable biometry`,
+      biometryText: t`Disable biometry`,
+    };
+    this.props.navigation.navigate('PinScreen', params);
+  }
+
+  /**
+   * Executed when user clicks to enable the biometry
+   */
+  onSafeBiometryEnabled = () => {
+    const params = {
+      cb: this.executeBiometryEnable,
+      canCancel: true,
+      screenText: t`Enter your 6-digit pin to enable biometry`,
+    };
+    this.props.navigation.navigate('PinScreen', params);
+  }
+
   onLockWallet = () => {
     this.props.lockScreen();
   }
@@ -85,7 +155,7 @@ export class Security extends React.Component {
             titleStyle={!switchDisabled ? { color: COLORS.textColor } : null}
             text={(
               <Switch
-                onValueChange={this.onBiometrySwitchChange}
+                onValueChange={this.props.safeBiometryEnabled ? this.onSafeBiometrySwitchChange : this.onBiometrySwitchChange}
                 value={this.state.biometryEnabled}
                 disabled={switchDisabled}
               />
@@ -107,4 +177,4 @@ export class Security extends React.Component {
   }
 }
 
-export default connect(null, mapDispatchToProps)(Security);
+export default connect(mapStateToProps, mapDispatchToProps)(Security);

@@ -57,11 +57,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:429
+#: src/models.js:107 src/utils.js:436
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:164
+#: src/utils.js:171
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 
@@ -654,24 +654,36 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr "Nulstil wallet"
 
-#: src/screens/Security.js:73
+#: src/screens/Security.js:113
+msgid "Enter your 6-digit pin to disable biometry"
+msgstr "Indtast din 6-cifrede pin for at deaktivere biometri"
+
+#: src/screens/Security.js:114
+msgid "Disable biometry"
+msgstr "Deaktiver biometri"
+
+#: src/screens/Security.js:126
+msgid "Enter your 6-digit pin to enable biometry"
+msgstr "Indtast din 6-cifrede pin for at aktivere biometri"
+
+#: src/screens/Security.js:137
 msgid "No biometry supported"
 msgstr "Ingen biometri understøttet"
 
-#: src/screens/Security.js:73
+#: src/screens/Security.js:137
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr "Brug ${ this.supportedBiometry }"
 
-#: src/screens/Security.js:77
+#: src/screens/Security.js:141
 msgid "SECURITY"
 msgstr "SIKKERHED"
 
-#: src/screens/Security.js:96
+#: src/screens/Security.js:160
 msgid "Change PIN"
 msgstr "Skift pinkode"
 
-#: src/screens/Security.js:100
+#: src/screens/Security.js:164
 msgid "Lock wallet"
 msgstr "Lås wallet"
 
@@ -1109,11 +1121,11 @@ msgstr "Transaktion"
 msgid "Open"
 msgstr "Åben"
 
-#: src/sagas/tokens.js:40
+#: src/sagas/tokens.js:44
 msgid "Wallet is not ready yet."
 msgstr ""
 
-#: src/sagas/tokens.js:41
+#: src/sagas/tokens.js:45
 msgid "Error loading the details of some tokens."
 msgstr ""
 
