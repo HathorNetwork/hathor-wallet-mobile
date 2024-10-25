@@ -155,7 +155,9 @@ export class Security extends React.Component {
             titleStyle={!switchDisabled ? { color: COLORS.textColor } : null}
             text={(
               <Switch
-                onValueChange={this.props.safeBiometryEnabled ? this.onSafeBiometrySwitchChange : this.onBiometrySwitchChange}
+                onValueChange={this.props.safeBiometryEnabled
+                  ? this.onSafeBiometrySwitchChange
+                  : this.onBiometrySwitchChange}
                 value={this.state.biometryEnabled}
                 disabled={switchDisabled}
               />

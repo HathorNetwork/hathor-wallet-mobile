@@ -270,6 +270,10 @@ class PinScreen extends React.Component {
 
   render() {
     const renderButton = () => {
+      if ((!this.state.biometryFailed) && this.props.safeBiometryEnabled && this.biometryEnabled) {
+        // Biometry has not failed, so we should not show a cancellation button.
+        return null;
+      }
       let title;
       let onPress;
       if (this.canCancel) {
@@ -295,22 +299,19 @@ class PinScreen extends React.Component {
       );
     };
 
-    const safeBiometryMessage = () => {
-      return (
-        <View
-          style={{
-            flex: 1,
-            width: '100%',
-            justifyContent: 'space-between',
-          }}
-        >
+    const safeBiometryMessage = () => (
+      <View
+        style={{
+          flex: 1,
+          width: '100%',
+          justifyContent: 'space-between',
+        }}
+      >
         { this.state.biometryFailed
-          ? <Text>{"Biometry failed or canceled."}</Text>
-          : <Spinner size={48} animating />
-        }
-        </View>
-      );
-    };
+          ? <Text>{ t`Biometry failed or canceled.` }</Text>
+          : <Spinner size={48} animating />}
+      </View>
+    );
 
     const renderPinDigits = () => {
       if (this.props.safeBiometryEnabled && this.biometryEnabled) {
