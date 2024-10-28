@@ -167,11 +167,12 @@ export class Security extends React.Component {
           />
           { safeBiometryActive
             ? null
-            : <ListMenu
+            : (
+              <ListMenu
                 title={t`Change PIN`}
                 onPress={() => this.props.navigation.navigate('ChangePin')}
               />
-          }
+            )}
           <ListMenu
             title={t`Lock wallet`}
             onPress={this.onLockWallet}
