@@ -8,14 +8,19 @@
 import hathorLib from '@hathor/wallet-lib';
 import * as Keychain from 'react-native-keychain';
 import React from 'react';
+import { isEmpty } from 'lodash';
 import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
+import moment from 'moment';
 import baseStyle from './styles/init';
-import { KEYCHAIN_USER } from './constants';
+import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE } from './constants';
 import { STORE } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
+import { logger } from './logger';
+
+const log = logger('utils');
 
 export const Strong = (props) => <Text style={[{ fontWeight: 'bold' }, props.style]}>{props.children}</Text>;
 
@@ -29,6 +34,19 @@ export const Link = (props) => (
 
 export const getShortHash = (hash, length = 4) => (
   `${hash.substring(0, length)}...${hash.substring(64 - length, 64)}`
+);
+
+/**
+ * It short any string content without length bound.
+ * @param {string} content Content to be sliced in two parts
+ * @param {string} length Size of the substrigs in both sides of `...`
+ *
+ * @example
+ * getShortContent('00c30fc8a1b9a326a766ab0351faf3635297d316fd039a0eda01734d9de40185', 3)
+ * // output: '00c...185'
+ */
+export const getShortContent = (content, length = 4) => (
+  `${content.substring(0, length)}...${content.substring(content.length - length, content.length)}`
 );
 
 /**
@@ -329,22 +347,16 @@ export const changePin = async (wallet, oldPin, newPin) => {
 };
 
 /**
- * Map history element to expected TxHistory model object
+ * Curry function that maps a raw history element to an expected TxHistory model object.
  *
- * element {Object} Tx history element with {txId, timestamp, balance, voided?}
- * token {string} Token uid
+ * @param {string} tokenUid - Token uid
+ *
+ * @returns {(rawTxHistory: Object) => TxHistory} A function that maps a raw
+ * transaction history element to a TxHistory object
  */
-export const mapTokenHistory = (element, token) => {
-  const data = {
-    txId: element.txId,
-    timestamp: element.timestamp,
-    balance: element.balance,
-    // in wallet service this comes as 0/1 and in the full node comes with true/false
-    isVoided: Boolean(element.voided),
-    tokenUid: token
-  };
-  return new TxHistory(data);
-};
+export const mapToTxHistory = (tokenUid) => (rawTxHistory) => (
+  TxHistory.from(rawTxHistory, tokenUid)
+);
 
 /**
  * Select the push notification settings from redux state
@@ -383,7 +395,17 @@ export function combineURLs(baseURL, relativeURL) {
  * @returns {Boolean} true if available, false otherwise.
  */
 export const isPushNotificationAvailableForUser = (state) => (
-  state.pushNotification.available && state.pushNotification.deviceRegistered
+  state.pushNotification.available
+    // On iOS a simulator can't register a device token on APNS
+    && state.pushNotification.deviceRegistered
+    // TODO: We should drop this condition when we add support other networks
+    // XXX: We don't have support in this app to generate device tokens
+    // to the FCM testnet app. Currently we embbed only the mainnet
+    // configuration file during the build.
+    && state.networkSettings.network === NETWORK_MAINNET
+    // If Wallet Service URLs are empty it makes impossible to use the
+    // Wallet Service API to register the device's token.
+    && !isEmpty(state.networkSettings.walletServiceUrl)
 );
 
 /**
@@ -429,3 +451,135 @@ export const verifySesEnabled = () => {
 
   return prototypes.every(Object.isFrozen);
 };
+
+/*
+ * Get Nano Contract feature toggle state from redux.
+ *
+ * @param {Object} state Redux store state
+ *
+ * @returns {boolean} the Nano Contract feature toggle state.
+ */
+export const getNanoContractFeatureToggle = (state) => (
+  state.featureToggles[NANO_CONTRACT_FEATURE_TOGGLE]
+);
+
+/**
+ * Get timestamp in specific format.
+ *
+ * @param {number} timestamp
+ *
+ * @returns {string} formatted timestamp
+ */
+export const getTimestampFormat = (timestamp) => moment.unix(timestamp).format(t`DD MMM YYYY [•] HH:mm`)
+
+/**
+ * Extract all the items of an async iterator/generator.
+ *
+ * @returns {Promise<unknown[]>} A promise of an array of unkown object.
+ * @async
+ */
+export const consumeAsyncIterator = async (asyncIterator) => {
+  const list = [];
+  for (;;) {
+    /* eslint-disable no-await-in-loop */
+    const objYielded = await asyncIterator.next();
+    const { value, done } = objYielded;
+
+    if (done) {
+      break;
+    }
+
+    list.push(value);
+  }
+  return [...list];
+};
+
+/**
+ * Return all addresses of the wallet with info of each of them.
+ *
+ * @param {Object} wallet
+ *
+ * @returns {Promise<{
+ *   address: string;
+ *   index: number;
+ *   transactions: number;
+ * }[]>} a list of addres info.
+ *
+ * @throws {Error} either wallet not ready or other http request error if using wallet service.
+ * @async
+ */
+export const getAllAddresses = async (wallet) => {
+  const iterator = await wallet.getAllAddresses();
+  return consumeAsyncIterator(iterator);
+}
+
+/**
+ * Return the first wallet's address.
+ *
+ * @param {Object} wallet
+ *
+ * @returns {Promise<string>}
+ * @throws {Error} either wallet not ready or other http request error if using wallet service.
+ * @async
+ */
+export const getFirstAddress = async (wallet) => wallet.getAddressAtIndex(0);
+
+/**
+ * Verifies if the invalidModel of the form has an error message.
+ */
+export function hasError(invalidModel) {
+  return Object
+    .values({ ...invalidModel })
+    .reduce((_hasError, currValue) => _hasError || !isEmpty(currValue), false);
+}
+
+/**
+ * Parses a script data to return an instance of script type.
+ *
+ * @example
+ * parseScriptData('P2PKH or P2SH script', networkObj);
+ * >>> { address, timelock }
+ *
+ * @example
+ * parseScriptData('Data script', networkObj);
+ * >>> { data }
+ *
+ * @param {string} scriptData A script in its hexadecimal format
+ * @param {Object} network A network object
+ *
+ * @return {P2PKH | P2SH | ScriptData | null} Parsed script object
+ */
+export const parseScriptData = (scriptData, network) => {
+  try {
+    const script = hathorLib.bufferUtils.hexToBuffer(scriptData);
+    return hathorLib.scriptsUtils.parseScript(script, network);
+  } catch (error) {
+    log.error('Error parsing script data.', error);
+    // Avoid throwing exception when we can't parse the script no matter the reason
+    return null;
+  }
+}
+
+/**
+ * Split a list in a list of groups defined by group size.
+ *
+ * @param {[]} list An array object.
+ * @param {number} groupSize The size of a group, which determines the final number of groups.
+ *
+ * @returns {[][]} Returns an array of grouped itens in array.
+ *
+ * @example
+ * splitInGroups(['a','b'], 1);
+ * // outputs: [['a'], ['b']]
+ */
+export function splitInGroups(list, groupSize) {
+  if (groupSize === 0) {
+    return list;
+  }
+
+  const groups = [];
+  for (let i = 0; i < list.length; i += groupSize) {
+    groups.push(list.slice(i, i + groupSize));
+  }
+  return groups;
+}

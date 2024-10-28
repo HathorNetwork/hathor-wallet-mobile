@@ -31,11 +31,13 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { getUniqueId } from 'react-native-device-info';
-import { get } from 'lodash';
+import { get, isEmpty } from 'lodash';
+import { t } from 'ttag';
 import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
+  networkSettingsKeyMap,
 } from '../constants';
 import { STORE } from '../store';
 import {
@@ -63,6 +65,11 @@ import {
   resetWalletSuccess,
   setTokens,
   onExceptionCaptured,
+  networkSettingsUpdateState,
+  selectAddressAddressesSuccess,
+  selectAddressAddressesFailure,
+  firstAddressFailure,
+  firstAddressSuccess,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -75,7 +82,14 @@ import {
   getRegisteredTokenUids,
   progressiveRetryRequest,
 } from './helpers';
-import { setKeychainPin } from '../utils';
+import {
+  getAllAddresses,
+  getFirstAddress,
+  setKeychainPin
+} from '../utils';
+import { logger } from '../logger';
+
+const log = logger('wallet');
 
 export const WALLET_STATUS = {
   NOT_STARTED: 'not_started',
@@ -112,7 +126,7 @@ export function* isWalletServiceEnabled() {
     const delta = now - shouldIgnoreFlagTs;
 
     if (delta < EXPIRE_WS_IGNORE_FLAG) {
-      console.log(`Still ignoring wallet-service, will expire in ${EXPIRE_WS_IGNORE_FLAG - delta}ms`);
+      log.log(`Still ignoring wallet-service, will expire in ${EXPIRE_WS_IGNORE_FLAG - delta}ms`);
       return false;
     }
   } else {
@@ -120,7 +134,17 @@ export function* isWalletServiceEnabled() {
     yield call(() => AsyncStorage.removeItem(IGNORE_WS_TOGGLE_FLAG));
   }
 
-  const walletServiceEnabled = yield call(checkForFeatureFlag, WALLET_SERVICE_FEATURE_TOGGLE);
+  let walletServiceEnabled = yield call(checkForFeatureFlag, WALLET_SERVICE_FEATURE_TOGGLE);
+
+  // At this point, the networkSettings have already been set by startWallet.
+  const networkSettings = yield select(getNetworkSettings);
+  if (walletServiceEnabled && isEmpty(networkSettings.walletServiceUrl)) {
+    // In case of an empty value for walletServiceUrl, it means the user
+    // doesn't intend to use the Wallet Service. Therefore, we need to force
+    // a disable on it.
+    walletServiceEnabled = false;
+    yield put(setUseWalletService(false));
+  }
 
   return walletServiceEnabled;
 }
@@ -131,6 +155,35 @@ export function* startWallet(action) {
     pin,
   } = action.payload;
 
+  // clean memory storage and metadata before starting the wallet.
+  // This should be cleaned when stopping the wallet,
+  // but the wallet may be closed unexpectedly
+  const storage = STORE.getStorage();
+  yield call([storage.store, storage.store.cleanMetadata]); // clean metadata on memory
+  yield call([storage, storage.cleanStorage], true); // clean transaction history
+
+  // As this is a core setting for the wallet, it should be loaded first.
+  // Network settings either from store or redux state
+  let networkSettings;
+  // Custom network settings are persisted in the app storage
+  const customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
+  if (customNetwork) {
+    networkSettings = customNetwork;
+    // On custom network settings one may use a different
+    // URL for the services from the ones registered by default
+    // for mainnet and testnet in the lib, and the wallet must
+    // behave consistently to the URLs set
+    config.setExplorerServiceBaseUrl(networkSettings.explorerServiceUrl);
+    config.setServerUrl(networkSettings.nodeUrl);
+    config.setTxMiningUrl(networkSettings.txMiningServiceUrl);
+
+    // If the wallet is initialized from quit state it must
+    // update the network settings on redux state
+    yield put(networkSettingsUpdateState(networkSettings));
+  } else {
+    networkSettings = yield select(getNetworkSettings);
+  }
+
   const uniqueDeviceId = getUniqueId();
   const useWalletService = yield call(isWalletServiceEnabled);
   const usePushNotification = yield call(isPushNotificationEnabled);
@@ -138,23 +191,14 @@ export function* startWallet(action) {
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
 
-  // clean storage and metadata before starting the wallet
-  // this should be cleaned when stopping the wallet,
-  // but the wallet may be closed unexpectedly
-  const storage = STORE.getStorage();
-  yield storage.store.cleanMetadata();
-  yield storage.cleanStorage(true);
-
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
   yield put((_dispatch) => {
     dispatch = _dispatch;
   });
 
-  const networkSettings = yield select(getNetworkSettings);
-
   let wallet;
-  if (useWalletService) {
+  if (useWalletService && !isEmpty(networkSettings.walletServiceUrl)) {
     const network = new Network(networkSettings.network);
 
     // Set urls for wallet service
@@ -186,6 +230,10 @@ export function* startWallet(action) {
     };
     wallet = new HathorWallet(walletConfig);
   }
+
+  // Extra wallet configuration based on customNetwork
+  config.setExplorerServiceBaseUrl(networkSettings.explorerServiceUrl);
+  config.setTxMiningUrl(networkSettings.txMiningServiceUrl);
 
   yield put(setWallet(wallet));
 
@@ -255,7 +303,7 @@ export function* startWallet(action) {
   try {
     yield call(loadTokens);
   } catch (e) {
-    console.error('Tokens load failed: ', e);
+    log.error('Tokens load failed: ', e);
     yield put(onExceptionCaptured(e, false));
     yield put(startWalletFailed());
     return;
@@ -295,7 +343,7 @@ export function* startWallet(action) {
  */
 export function* loadTokens() {
   const customTokenUid = DEFAULT_TOKEN.uid;
-  const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
+  const htrUid = hathorLibConstants.NATIVE_TOKEN_UID;
 
   // fetchTokenData will throw an error if the download failed, we should just
   // let it crash as throwing an error is the default behavior for loadTokens
@@ -326,6 +374,8 @@ export function* loadTokens() {
   // to asynchronously load the balances of each one. The `put` effect will just dispatch
   // and continue, loading the tokens asynchronously
   for (const token of registeredUids) {
+    // Skip the native token, once it has its balance loaded already
+    if (token === htrUid) continue;
     yield put(tokenFetchBalanceRequested(token));
   }
 
@@ -337,7 +387,6 @@ export function* loadTokens() {
  * So we fetch the tokens metadata and store on redux
  */
 export function* fetchTokensMetadata(tokens) {
-  // No tokens to load
   if (!tokens.length) {
     return;
   }
@@ -363,8 +412,7 @@ export function* fetchTokensMetadata(tokens) {
   const tokenMetadatas = {};
   for (const response of responses) {
     if (response.type === types.TOKEN_FETCH_METADATA_FAILED) {
-      // eslint-disable-next-line
-      console.log('Error downloading metadata of token', response.tokenId);
+      log.error(`Error downloading metadata of token ${response.tokenId}.`);
     } else if (response.type === types.TOKEN_FETCH_METADATA_SUCCESS) {
       // When the request returns null, it means that we have no metadata for this token
       if (response.data) {
@@ -377,7 +425,7 @@ export function* fetchTokensMetadata(tokens) {
 }
 
 export function* onWalletServiceDisabled() {
-  console.debug('We are currently in the wallet-service and the feature-flag is disabled, reloading.');
+  log.debug('We are currently in the wallet-service and the feature-flag is disabled, reloading.');
   yield put(reloadWalletRequested());
 }
 
@@ -521,7 +569,7 @@ export function* handleTx(action) {
   for (const tokenUid of tokensToDownload) {
     yield put(tokenFetchBalanceRequested(tokenUid, true));
 
-    if (tokenUid === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid
+    if (tokenUid === hathorLibConstants.NATIVE_TOKEN_UID
         || tokenUid === DEFAULT_TOKEN.uid) {
       yield put(tokenFetchHistoryRequested(tokenUid, true));
     } else {
@@ -614,7 +662,7 @@ export function* bestBlockUpdate({ payload }) {
   }
 
   if (currentHeight !== payload) {
-    yield put(tokenFetchBalanceRequested(hathorLibConstants.HATHOR_TOKEN_CONFIG.uid));
+    yield put(tokenFetchBalanceRequested(hathorLibConstants.NATIVE_TOKEN_UID));
   }
 }
 
@@ -644,7 +692,7 @@ export function* onWalletReloadData() {
     const registeredTokens = yield call(loadTokens);
 
     const customTokenUid = DEFAULT_TOKEN.uid;
-    const htrUid = hathorLibConstants.HATHOR_TOKEN_CONFIG.uid;
+    const htrUid = hathorLibConstants.NATIVE_TOKEN_UID;
 
     // We might have lost transactions during the reload, so we must invalidate the
     // token histories:
@@ -672,7 +720,7 @@ export function* onWalletReloadData() {
     // Finally, set the wallet to READY by dispatching startWalletSuccess
     yield put(startWalletSuccess());
   } catch (e) {
-    console.log('Wallet reload data failed: ', e);
+    log.error('Wallet reload data failed: ', e);
     yield put(onExceptionCaptured(e, false));
     yield put(startWalletFailed());
   }
@@ -724,6 +772,58 @@ export function* refreshSharedAddress() {
   yield put(sharedAddressUpdate(address, index));
 }
 
+export function* fetchAllWalletAddresses() {
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet.isReady()) {
+    const errorMsg = 'Fail fetching all wallet addresses because wallet is not ready yet.';
+    log.error(errorMsg);
+    const feedbackErrorMsg = t`Wallet is not ready to load addresses.`;
+    // This will show the message in the feedback content at SelectAddressModal
+    yield put(selectAddressAddressesFailure({ error: feedbackErrorMsg }));
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(errorMsg), false));
+    return;
+  }
+
+  try {
+    const addresses = yield call(getAllAddresses, wallet);
+    log.log('All wallet addresses loaded with success.');
+    yield put(selectAddressAddressesSuccess({ addresses }));
+  } catch (error) {
+    log.error('Error while fetching all wallet addresses.', error);
+    // This will show the message in the feedback content at SelectAddressModal
+    yield put(selectAddressAddressesFailure({
+      error: t`There was an error while loading wallet addresses. Try again.`
+    }));
+  }
+}
+
+export function* fetchFirstWalletAddress() {
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet.isReady()) {
+    const errorMsg = 'Fail fetching first wallet address because wallet is not ready yet.';
+    log.error(errorMsg);
+    const feedbackErrorMsg = t`Wallet is not ready to load the first address.`;
+    // This will show the message in the feedback content
+    yield put(firstAddressFailure({ error: feedbackErrorMsg }));
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(errorMsg), false));
+    return;
+  }
+
+  try {
+    const address = yield call(getFirstAddress, wallet);
+    log.log('First wallet address loaded with success.');
+    yield put(firstAddressSuccess({ address }));
+  } catch (error) {
+    log.error('Error while fetching first wallet address.', error);
+    // This will show the message in the feedback content
+    yield put(firstAddressFailure({
+      error: t`There was an error while loading first wallet address. Try again.`
+    }));
+  }
+}
+
 export function* saga() {
   yield all([
     takeLatest('START_WALLET_REQUESTED', errorHandler(startWallet, startWalletFailed())),
@@ -736,5 +836,7 @@ export function* saga() {
     takeEvery('WALLET_BEST_BLOCK_UPDATE', bestBlockUpdate),
     takeEvery('WALLET_PARTIAL_UPDATE', loadPartialUpdate),
     takeEvery(types.WALLET_REFRESH_SHARED_ADDRESS, refreshSharedAddress),
+    takeEvery(types.SELECTADDRESS_ADDRESSES_REQUEST, fetchAllWalletAddresses),
+    takeEvery(types.FIRSTADDRESS_REQUEST, fetchFirstWalletAddress),
   ]);
 }

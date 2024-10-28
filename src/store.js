@@ -41,6 +41,7 @@ class HybridStore extends MemoryStore {
    * @returns {Promise<void>}
    */
   async saveAccessData(data) {
+    await super.saveAccessData(data);
     STORE.setItem(ACCESS_DATA_KEY, data);
   }
 
@@ -75,6 +76,7 @@ class HybridStore extends MemoryStore {
    * @returns {Promise<void>}
    */
   async registerToken(token) {
+    await super.registerToken(token);
     const registeredTokens = STORE.getItem(REGISTERED_TOKENS_KEY) || {};
     registeredTokens[token.uid] = token;
     STORE.setItem(REGISTERED_TOKENS_KEY, registeredTokens);
@@ -88,6 +90,7 @@ class HybridStore extends MemoryStore {
    * @returns {Promise<void>}
    */
   async unregisterToken(tokenUid) {
+    await super.unregisterToken(tokenUid);
     const registeredTokens = STORE.getItem(REGISTERED_TOKENS_KEY) || {};
     if (tokenUid in registeredTokens) {
       delete registeredTokens[tokenUid];
@@ -139,9 +142,70 @@ class HybridStore extends MemoryStore {
    * @async
    */
   async registerNanoContract(ncId, ncValue) {
+    await super.registerNanoContract(ncId, ncValue);
     const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
     contracts[ncId] = ncValue;
-    STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts)
+    STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts);
+  }
+
+  /**
+   * Unregister a nano contract.
+   *
+   * @param {string} ncId Nano Contract ID.
+   * @returns {Promise<void>}
+   * @async
+   */
+  async unregisterNanoContract(ncId) {
+    await super.unregisterNanoContract(ncId);
+    const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
+    delete contracts[ncId];
+    STORE.setItem(REGISTERED_NANO_CONTRACTS_KEY, contracts);
+  }
+
+  /**
+   * Iterate on registered nano contract.
+   *
+   * @async
+   * @returns {AsyncGenerator<INcData>}
+   */
+  async* registeredNanoContractsIter() {
+    const contracts = STORE.getItem(REGISTERED_NANO_CONTRACTS_KEY) || {};
+    for (const contract of Object.values(contracts)) {
+      yield { ...contract };
+    }
+  }
+
+  /**
+   * Clean the storage.
+   * @param {boolean} cleanHistory if we should clean the transaction history.
+   * @param {boolean} cleanAddresses if we should clean the addresses.
+   * @param {boolean} cleanTokens if we should clean the registered tokens.
+   * @async
+   * @returns {Promise<void>}
+   */
+  async cleanStorage(cleanHistory = false, cleanAddresses = false, cleanTokens = false) {
+    await super.cleanStorage(cleanHistory, cleanAddresses, cleanTokens);
+    if (cleanTokens) {
+      // Remove from the cache
+      STORE.removeItem(REGISTERED_TOKENS_KEY);
+      STORE.removeItem(REGISTERED_NANO_CONTRACTS_KEY);
+    }
+  }
+
+  /**
+   * Update nano contract registered address.
+   * @param {string} ncId Nano Contract ID.
+   * @param {string} address Nano Contract registered address.
+   * @async
+   * @returns {Promise<void>}
+   */
+  async updateNanoContractRegisteredAddress(ncId, address) {
+    await super.updateNanoContractRegisteredAddress(ncId, address);
+    const contract = await this.getNanoContract(ncId);
+    if (contract) {
+      const newContract = { ...contract, address };
+      await this.registerNanoContract(ncId, newContract);
+    }
   }
 }
 /* eslint-enable class-methods-use-this */

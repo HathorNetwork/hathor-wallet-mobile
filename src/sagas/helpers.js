@@ -35,6 +35,7 @@ import {
 } from '../constants';
 import { STORE } from '../store';
 import { logger } from '../logger';
+import { consumeAsyncIterator } from '../utils';
 
 const log = logger('helper');
 
@@ -169,7 +170,7 @@ export function isUnlockScreen(action) {
  * }>}
  */
 export async function getRegisteredTokens(wallet, excludeHTR = false) {
-  const htrUid = hathorLib.constants.HATHOR_TOKEN_CONFIG.uid;
+  const htrUid = hathorLib.constants.NATIVE_TOKEN_UID;
   const tokens = {};
 
   // redux-saga generator magic does not work well with the "for await..of" syntax
@@ -192,6 +193,16 @@ export async function getRegisteredTokens(wallet, excludeHTR = false) {
   }
 
   return tokens;
+}
+
+/**
+ * Retrieve registered Nano Contracts persisted on App's storage.
+ * @param {Object} wallet Wallet instance
+ * @return {Promise<Object[]>}
+ * @async
+ */
+export async function getRegisteredNanoContracts(wallet) {
+  return consumeAsyncIterator(wallet.storage.getRegisteredNanoContracts());
 }
 
 /**
@@ -332,4 +343,33 @@ export function* progressiveRetryRequest(request, maxRetries = MAX_RETRIES) {
 
   // throw last error after retries exhausted
   throw lastError;
+}
+
+export function* retryHandler(retryAction, dismissAction) {
+  const { retry } = yield race({
+    retry: take(retryAction),
+    dismiss: take(dismissAction),
+  });
+
+  return retry != null;
+}
+
+/**
+ * A wrapper effect to catch unexpected error and provide a binding
+ * for the desired handling behavior.
+ *
+ * @param {Object} effect The targeted effect.
+ * @param {(error) => void} onError The error handling effect,
+ *    which receives the error object as first argument.
+ *
+ * @returns An anonymous effect.
+ */
+export function safeEffect(effect, onError) {
+  return function* _safeEffect(payload) {
+    try {
+      yield call(effect, payload);
+    } catch (error) {
+      yield call(onError, error);
+    }
+  }
 }

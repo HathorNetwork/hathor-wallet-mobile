@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) Hathor Labs and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import { t } from 'ttag';
 import { NETWORKSETTINGS_STATUS } from '../../constants';
 
@@ -10,7 +17,7 @@ export const feedbackFailedText = t`There was an error while customizing network
  * @param {object} networkSettingsStatus - status from redux store
  * @returns {boolean} - true if the status is successful, false otherwise
  */
-export function hasSucceed(networkSettingsStatus) {
+export function hasSucceeded(networkSettingsStatus) {
   return networkSettingsStatus === NETWORKSETTINGS_STATUS.SUCCESSFUL;
 }
 

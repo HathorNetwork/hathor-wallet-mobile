@@ -1,18 +1,17 @@
 import { all, takeEvery, put, call, race, delay, select } from 'redux-saga/effects';
-import { config } from '@hathor/wallet-lib';
+import { config, helpersUtils } from '@hathor/wallet-lib';
 import { isEmpty } from 'lodash';
 import { t } from 'ttag';
 import {
   networkSettingsPersistStore,
   networkSettingsUpdateInvalid,
   networkSettingsUpdateFailure,
-  networkSettingsUpdateState,
   networkSettingsUpdateSuccess,
   networkSettingsUpdateWaiting,
   types,
   reloadWalletRequested,
   onExceptionCaptured,
-  networkSettingsUpdateReady
+  networkSettingsUpdateReady,
 } from '../actions';
 import {
   NETWORK_MAINNET,
@@ -23,7 +22,6 @@ import {
   STAGE_DEV_PRIVNET,
   STAGE_TESTNET,
   WALLET_SERVICE_REQUEST_TIMEOUT,
-  NETWORK_PRIVATENET
 } from '../constants';
 import {
   getFullnodeNetwork,
@@ -39,11 +37,6 @@ const log = logger('network-settings-saga');
  * Initialize the network settings saga when the wallet starts successfully.
  */
 export function* initNetworkSettings() {
-  const customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
-  if (customNetwork) {
-    yield put(networkSettingsUpdateState(customNetwork));
-  }
-
   const status = yield select((state) => state.networkSettingsStatus);
   if (status === NETWORKSETTINGS_STATUS.WAITING) {
     // This branch completes the network update by delivering
@@ -63,13 +56,14 @@ export function* initNetworkSettings() {
  *
  * @param {{
  *    payload: {
- *      stage: string,
- *      network: string,
- *      nodeUrl: string,
- *      explorerUrl: string,
- *      explorerServiceUrl: string,
- *      walletServiceUrl?: string
- *      walletServiceWsUrl?: string
+ *      stage: string;
+ *      network: string;
+ *      nodeUrl: string;
+ *      explorerUrl: string;
+ *      explorerServiceUrl: string;
+ *      txMiningServiceUrl: string;
+ *      walletServiceUrl?: string;
+ *      walletServiceWsUrl?: string;
  *    }
  * }} action contains the payload with the new
  * network settings requested by the user to be processd.
@@ -152,15 +146,14 @@ export function* updateNetworkSettings(action) {
     txMiningServiceUrl: networkSettings.txMiningServiceUrl,
   };
 
+  config.setTxMiningUrl(txMiningServiceUrl);
   config.setExplorerServiceBaseUrl(explorerServiceUrl);
   config.setServerUrl(nodeUrl);
-  config.setTxMiningUrl(txMiningServiceUrl);
 
   // - walletServiceUrl has precedence
   // - nodeUrl as fallback
   let potentialNetwork;
-  let network;
-  if (walletServiceUrl && useWalletService) {
+  if (useWalletService && !isEmpty(walletServiceUrl)) {
     log.debug('Configuring wallet-service on custom network settings.');
     config.setWalletServiceBaseUrl(walletServiceUrl);
     config.setWalletServiceBaseWsUrl(walletServiceWsUrl);
@@ -199,18 +192,7 @@ export function* updateNetworkSettings(action) {
     return;
   }
 
-  // Validates the potential network and set the network accordingly
-  if (potentialNetwork === NETWORK_MAINNET) {
-    network = NETWORK_MAINNET;
-  } else if (potentialNetwork.startsWith(NETWORK_TESTNET)) {
-    network = NETWORK_TESTNET;
-  } else if (potentialNetwork.startsWith(NETWORK_PRIVATENET)) {
-    network = NETWORK_PRIVATENET;
-  } else {
-    log.debug('The network informed is not allowed. Make sure your network is either "mainnet", "testnet" or "privatenet", or starts with "testnet" or "privatenet".');
-    yield put(networkSettingsUpdateFailure());
-    return;
-  }
+  const network = helpersUtils.getNetworkFromFullNodeNetwork(potentialNetwork);
 
   let stage;
   if (network === NETWORK_MAINNET) {
@@ -227,6 +209,7 @@ export function* updateNetworkSettings(action) {
     nodeUrl,
     explorerUrl,
     explorerServiceUrl,
+    txMiningServiceUrl,
     walletServiceUrl,
     walletServiceWsUrl,
   };
@@ -300,7 +283,7 @@ export function* persistNetworkSettings(action) {
   }
 
   // Stop wallet and clean its storage without clean its access data.
-  wallet.stop({ cleanStorage: true, cleanAddresses: true });
+  wallet.stop({ cleanStorage: true, cleanAddresses: true, cleanTokens: true });
   // This action should clean the tokens history on redux.
   // In addition, the reload also clean the inmemory storage.
   yield put(reloadWalletRequested());

@@ -79,7 +79,6 @@ export function* fetchTogglesRoutine() {
 }
 
 export function* handleToggleUpdate() {
-  console.log('Handling feature toggle update');
   const unleashClient = yield select((state) => state.unleashClient);
   const networkSettings = yield select((state) => state.networkSettings);
 

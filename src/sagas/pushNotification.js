@@ -46,6 +46,7 @@ import {
   pushNotificationKey,
   PUSH_CHANNEL_TRANSACTION,
   PUSH_ACTION,
+  TX_DETAILS_TIMEOUT,
 } from '../constants';
 import { getPushNotificationSettings } from '../utils';
 import { STORE } from '../store';
@@ -55,6 +56,17 @@ import { WALLET_STATUS } from './wallet';
 import { logger } from '../logger';
 
 const log = logger('push-notification-saga');
+log.haltingTxDetailsLoading = () => log.debug('Halting tx details loading.');
+log.timeoutTxDetailsLoading = () => {
+  const msg = 'Timeout during tx details loading.';
+  log.error(msg);
+  return msg;
+};
+log.errorTxDetailsLoading = () => {
+  const msg = 'Error loading tx details during wallet loading.'
+  log.error(msg);
+  return msg;
+};
 
 const TRANSACTION_CHANNEL_NAME = t`Transaction`;
 const PUSH_ACTION_TITLE = t`Open`;
@@ -616,16 +628,53 @@ export function* loadTxDetails(action) {
   const { txId } = action.payload;
   const isLocked = yield select((state) => state.lockScreen);
   if (isLocked) {
+    log.debug('Awaiting wallet unlock to resume tx details loading.');
     const { resetWallet } = yield race({
-      // Wait for the unlock screen to be dismissed, and wallet to be loaded
-      unlockWallet: all([take(isUnlockScreen), take(types.START_WALLET_SUCCESS)]),
+      // Wait for the unlock screen to be dismissed
+      unlockWallet: take(isUnlockScreen),
       resetWallet: take(types.RESET_WALLET)
     });
+
     if (resetWallet) {
-      log.debug('Halting loadTxDetails.');
+      log.debug('User has chosen to reset wallet during tx details loading.');
+      log.haltingTxDetailsLoading();
       return;
     }
-    log.debug('Continuing loadTxDetails after unlock screen.');
+
+    // Halt if wallet loading has already failed
+    const walletStatus = yield select((state) => state.walletStartState);
+    if (walletStatus === WALLET_STATUS.FAILED) {
+      // It shouldn't happen because this very effect is invoked only after
+      // wallet load succeeds.
+      log.error('Error loading tx details while wallet has failed.');
+      log.haltingTxDetailsLoading();
+      return;
+    }
+
+    // Await wallet load if wallet is not ready yet, otherwise continue
+    if (walletStatus !== WALLET_STATUS.READY) {
+      // Await wallet load until timeout or error.
+      const { error, timeout } = yield race({
+        ready: take(types.START_WALLET_SUCCESS),
+        error: take(types.WALLET_STATE_ERROR),
+        timeout: delay(TX_DETAILS_TIMEOUT),
+      });
+
+      // It doesn't make sense to await more than that for a notification.
+      if (timeout) {
+        yield put(onExceptionCaptured(log.timeoutTxDetailsLoading()));
+        log.haltingTxDetailsLoading();
+        return;
+      }
+
+      if (error) {
+        yield put(onExceptionCaptured(log.errorTxDetailsLoading()));
+        log.haltingTxDetailsLoading();
+        return;
+      }
+    }
+
+    log.debug('Continuing tx details loading after unlock screen.');
   }
 
   try {

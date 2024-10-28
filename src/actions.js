@@ -12,8 +12,10 @@ import {
 } from '@hathor/wallet-lib';
 import {
   METADATA_CONCURRENT_DOWNLOAD,
+  WALLETCONNECT_CREATE_TOKEN_STATUS,
+  WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS,
 } from './constants';
-import { mapTokenHistory } from './utils';
+import { mapToTxHistory } from './utils';
 
 // TODO: We should apply the agreed taxonomy to all the actions.
 // See: https://github.com/HathorNetwork/hathor-wallet-mobile/issues/334
@@ -113,6 +115,9 @@ export const types = {
   SET_WALLET_CONNECT: 'SET_WALLET_CONNECT',
   SET_WALLET_CONNECT_MODAL: 'SET_WALLET_CONNECT_MODAL',
   SET_WALLET_CONNECT_SESSIONS: 'SET_WALLET_CONNECT_SESSIONS',
+  WALLET_CONNECT_ACCEPT: 'WALLET_CONNECT_ACCEPT',
+  WALLET_CONNECT_REJECT: 'WALLET_CONNECT_REJECT',
+  SET_NEW_NANO_CONTRACT_TRANSACTION: 'SET_NEW_NANO_CONTRACT_TRANSACTION',
   SET_UNLEASH_CLIENT: 'SET_UNLEASH_CLIENT',
   WC_URI_INPUTTED: 'WC_URI_INPUTTED',
   WC_CANCEL_SESSION: 'WC_CANCEL_SESSION',
@@ -137,12 +142,68 @@ export const types = {
   NETWORKSETTINGS_UPDATE_FAILURE: 'NETWORK_SETTINGS_UPDATE_FAILURE',
   /* It updates the redux state of network settings status. */
   NETWORKSETTINGS_UPDATE_READY: 'NETWORK_SETTINGS_UPDATE_READY',
-  /* It initiates a registration process of a Nano Contract.  */
+  /* It signals Nano Contract initialization. */
+  NANOCONTRACT_INIT: 'NANOCONTRACT_INIT',
+  /* It initiates a registration process of a Nano Contract. */
   NANOCONTRACT_REGISTER_REQUEST: 'NANOCONTRACT_REGISTER_REQUEST',
-  /* It indicates a Nano Contract registration is couldn't complete.  */
+  /* It indicates a Nano Contract registration is couldn't complete. */
   NANOCONTRACT_REGISTER_FAILURE: 'NANOCONTRACT_REGISTER_FAILURE',
-  /* It indicates a Nano Contract registration is complete.  */
+  /* It indicates a Nano Contract registration is complete. */
   NANOCONTRACT_REGISTER_SUCCESS: 'NANOCONTRACT_REGISTER_SUCCESS',
+  /* It updates the redux state of nano contract register status to ready. */
+  NANOCONTRACT_REGISTER_READY: 'NANOCONTRACT_REGISTER_READY',
+  /* It indicates a Nano Contract hitory was requested to load. */
+  NANOCONTRACT_HISTORY_REQUEST: 'NANOCONTRACT_HISTORY_REQUEST',
+  /* It indicates a Nano Contract history is processing. */
+  NANOCONTRACT_HISTORY_LOADING: 'NANOCONTRACT_HISTORY_LOADING',
+  /* It indicates a Nano Contract history was successfully loaded. */
+  NANOCONTRACT_HISTORY_SUCCESS: 'NANOCONTRACT_HISTORY_SUCCESS',
+  /* It indicates a Nano Contract history failed to load. */
+  NANOCONTRACT_HISTORY_FAILURE: 'NANOCONTRACT_HISTORY_FAILURE',
+  /* It indicates a Nano Contract history clean. */
+  NANOCONTRACT_HISTORY_CLEAN: 'NANOCONTRACT_HISTORY_CLEAN',
+  /* It initiates an unregistration process of a Nano Contract. */
+  NANOCONTRACT_UNREGISTER_REQUEST: 'NANOCONTRACT_UNREGISTER_REQUEST',
+  /* It signals a successful completion of unregistration process. */
+  NANOCONTRACT_UNREGISTER_SUCCESS: 'NANOCONTRACT_UNREGISTER_SUCCESS',
+  /* It initiates a process to change the address on registered Nano Contract. */
+  NANOCONTRACT_ADDRESS_CHANGE_REQUEST: 'NANOCONTRACT_ADDRESS_CHANGE_REQUEST',
+  /* It triggers a process to fetch blueprint info. */
+  NANOCONTRACT_BLUEPRINTINFO_REQUEST: 'NANOCONTRACT_BLUEPRINTINFO_REQUEST',
+  /* It signals a failure on fetch blueprint info. */
+  NANOCONTRACT_BLUEPRINTINFO_FAILURE: 'NANOCONTRACT_BLUEPRINTINFO_FAILURE',
+  /* It signals a success on fetch blueprint info. */
+  NANOCONTRACT_BLUEPRINTINFO_SUCCESS: 'NANOCONTRACT_BLUEPRINTINFO_SUCCESS',
+  /* It triggers a process to fetch all wallet addresses. */
+  SELECTADDRESS_ADDRESSES_REQUEST: 'SELECTADDRESS_ADDRESSES_REQUEST',
+  /* It signals the fetch has loaded all the addresses with success. */
+  SELECTADDRESS_ADDRESSES_SUCCESS: 'SELECTADDRESS_ADDRESSES_SUCCESS',
+  /* It signals a fetch failure due to an error. */
+  SELECTADDRESS_ADDRESSES_FAILURE: 'SELECTADDRESS_ADDRESSES_FAILURE',
+  /* It triggers a process to fetch the first wallet address. */
+  FIRSTADDRESS_REQUEST: 'FIRSTADDRESS_REQUEST',
+  /* It signals the fetch has loaded the first address with success. */
+  FIRSTADDRESS_SUCCESS: 'FIRSTADDRESS_SUCCESS',
+  /* It signals a fetch failure due to an error. */
+  FIRSTADDRESS_FAILURE: 'FIRSTADDRESS_FAILURE',
+  /* It updates the redux state of new nano contract transaction status on wallet connect register. */
+  WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
+  /* It triggers a process to fetch token details for a list of unregistered tokens. */
+  UNREGISTEREDTOKENS_DOWNLOAD_REQUEST: 'UNREGISTEREDTOKENS_DOWNLOAD_REQUEST',
+  /* It signals the process has loaded at least one token details with success. */
+  UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS: 'UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS',
+  /* It signals the process has failed to load at least one token details. */
+  UNREGISTEREDTOKENS_DOWNLOAD_FAILURE: 'UNREGISTEREDTOKENS_DOWNLOAD_FAILURE',
+  /* It signals the end of the process. */
+  UNREGISTEREDTOKENS_DOWNLOAD_END: 'UNREGISTEREDTOKENS_DOWNLOAD_END',
+  WALLETCONNECT_NEW_NANOCONTRACT_RETRY: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY',
+  WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS: 'WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS',
+  SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
+  SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL',
+  SHOW_CREATE_TOKEN_REQUEST_MODAL: 'SHOW_CREATE_TOKEN_REQUEST_MODAL',
+  WALLETCONNECT_CREATE_TOKEN_STATUS: 'WALLETCONNECT_CREATE_TOKEN_STATUS',
+  WALLETCONNECT_CREATE_TOKEN_RETRY: 'WALLETCONNECT_CREATE_TOKEN_RETRY',
+  WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS: 'WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS',
 };
 
 export const featureToggleInitialized = () => ({
@@ -201,6 +262,30 @@ export const hideWalletConnectModal = () => ({
 export const walletConnectCancelSession = (sessionKey) => ({
   type: types.WC_CANCEL_SESSION,
   payload: sessionKey,
+});
+
+/**
+ * @param {Object} data Data that the user has accepted.
+ */
+export const walletConnectAccept = (data) => ({
+  type: types.WALLET_CONNECT_ACCEPT,
+  payload: data,
+});
+
+export const walletConnectReject = () => ({
+  type: types.WALLET_CONNECT_REJECT,
+});
+
+/**
+ * @param {Object} ncRequest
+ * @param {boolean} ncRequest.show
+ * @param {Object} ncRequest.data
+ * @param {Object} ncRequest.data.nc
+ * @param {Object} ncRequest.data.dapp
+ */
+export const setNewNanoContractTransaction = (ncRequest) => ({
+  type: types.SET_NEW_NANO_CONTRACT_TRANSACTION,
+  payload: ncRequest
 });
 
 /**
@@ -350,7 +435,7 @@ export const fetchHistoryAndBalance = async (wallet) => {
     const tokenBalance = balance[0].balance;
     tokensBalance[token] = { available: tokenBalance.unlocked, locked: tokenBalance.locked };
     const history = await wallet.getTxHistory({ token_id: token });
-    tokensHistory[token] = history.map((element) => mapTokenHistory(element, token));
+    tokensHistory[token] = history.map(mapToTxHistory(token));
     /* eslint-enable no-await-in-loop */
   }
 
@@ -366,7 +451,7 @@ export const fetchHistoryAndBalance = async (wallet) => {
  */
 export const fetchMoreHistory = async (wallet, token, history) => {
   const newHistory = await wallet.getTxHistory({ token_id: token, skip: history.length });
-  const newHistoryObjects = newHistory.map((element) => mapTokenHistory(element, token));
+  const newHistoryObjects = newHistory.map(mapToTxHistory(token));
 
   return newHistoryObjects;
 };
@@ -388,7 +473,7 @@ export const fetchTokensMetadata = async (tokens, network) => {
   for (const tokenChunk of tokenChunks) {
     /* eslint-disable no-await-in-loop */
     await Promise.all(tokenChunk.map(async (token) => {
-      if (token === hathorLibConstants.HATHOR_TOKEN_CONFIG.uid) {
+      if (token === hathorLibConstants.NATIVE_TOKEN_UID) {
         return;
       }
 
@@ -459,7 +544,7 @@ export const fetchTokenBalance = async (wallet, uid) => {
  * wallet {HathorWallet | HathorWalletServiceWallet} wallet object
  */
 export const fetchNewHTRBalance = async (wallet) => {
-  const { uid } = hathorLibConstants.HATHOR_TOKEN_CONFIG;
+  const uid = hathorLibConstants.NATIVE_TOKEN_UID;
   return fetchTokenBalance(wallet, uid);
 };
 
@@ -540,8 +625,8 @@ export const tokenFetchHistoryRequested = (tokenId, force) => ({
 });
 
 /**
- * tokenId: The tokenId to store history data
- * data: The downloaded history data
+ * @param {string} tokenId: The tokenId to store history data
+ * @param {TxHistory} data: The downloaded history data
  */
 export const tokenFetchHistorySuccess = (tokenId, data) => ({
   type: types.TOKEN_FETCH_HISTORY_SUCCESS,
@@ -919,8 +1004,8 @@ export const networkSettingsUpdateState = (customNetwork) => ({
  *   network: string,
  *   nodeUrl: string,
  *   explorerUrl: string,
- *   txMiningServiceUrl: string,
  *   explorerServiceUrl: string,
+ *   txMiningServiceUrl: string,
  *   walletServiceUrl?: string
  *   walletServiceWsUrl?: string
  * }} customNetwork Settings to persist
@@ -983,6 +1068,13 @@ export const networkSettingsUpdateReady = () => ({
 });
 
 /**
+ * It signals Nano Contract initialization.
+ */
+export const nanoContractInit = () => ({
+  type: types.NANOCONTRACT_INIT,
+});
+
+/**
  * Request a Nano Contract to be registered.
  * @param {{
  *   address: string,
@@ -1006,11 +1098,366 @@ export const nanoContractRegisterFailure = (error) => ({
 /**
  * Nano Contract registration has finished with success.
  * @param {{
- *   entryKey: string,
- *   entryValue: Object,
+ *   entryKey: string;
+ *   entryValue: Object;
+ *   hasFeedback?: boolean;
  * }} ncEntry basic information of Nano Contract registered.
  */
 export const nanoContractRegisterSuccess = (ncEntry) => ({
   type: types.NANOCONTRACT_REGISTER_SUCCESS,
   payload: ncEntry,
+});
+
+/**
+ * Request a change on Nano Contract register status to ready.
+ */
+export const nanoContractRegisterReady = () => ({
+  type: types.NANOCONTRACT_REGISTER_READY,
+});
+
+/**
+ * Nano Contract request fetch history.
+ * @param {{
+ *   ncId: string;
+ *   after: string;
+ * }} ncEntry Basic information of Nano Contract registered.
+ */
+export const nanoContractHistoryRequest = (ncEntry) => ({
+  type: types.NANOCONTRACT_HISTORY_REQUEST,
+  payload: ncEntry,
+});
+
+/**
+ * Nano Contract fetch history is loading.
+ * @param {{
+ *   ncId: string;
+ * }}
+ */
+export const nanoContractHistoryLoading = (ncEntry) => ({
+  type: types.NANOCONTRACT_HISTORY_LOADING,
+  payload: ncEntry,
+});
+
+/**
+ * Nano Contract history has loaded success.
+ * @param {Object} payload
+ * @param {string} payload.ncId Nano Contract ID.
+ * @param {Object[]?} payload.history A chunk of txs to initialize history
+ * @param {Object[]?} payload.beforeHistory A chunk of newer txs.
+ * @param {Object[]?} payload.afterHistory A chunk of older txs.
+ *
+ * @description
+ * The history options are mutually exclusive.
+ */
+export const nanoContractHistorySuccess = (payload) => ({
+  type: types.NANOCONTRACT_HISTORY_SUCCESS,
+  payload,
+});
+
+/**
+ * Nano Contract history clean signal.
+ * @param {Object} payload
+ * @param {string} payload.ncId Nano Contract ID.
+ */
+export const nanoContractHistoryClean = (payload) => ({
+  type: types.NANOCONTRACT_HISTORY_CLEAN,
+  payload,
+});
+
+/**
+ * Nano Contract history has failed.
+ * @param {Object} payload
+ * @param {string} payload.ncId Nano Contract ID.
+ * @param {string} payload.error History failure reason.
+ */
+export const nanoContractHistoryFailure = (payload) => ({
+  type: types.NANOCONTRACT_HISTORY_FAILURE,
+  payload,
+});
+
+/**
+ * Request unregistration of a Nano Contract by its key.
+ * @param {{
+ *   ncId: string,
+ * }} Nano Contract ID to unregister.
+ */
+export const nanoContractUnregisterRequest = (unregisterRequest) => ({
+  type: types.NANOCONTRACT_UNREGISTER_REQUEST,
+  payload: unregisterRequest,
+});
+
+/**
+ * Unregistration of a Nano Contract has finished with success.
+ * @param {{
+ *   ncId: string,
+ * }} Nano Contract ID unregistered.
+ */
+export const nanoContractUnregisterSuccess = (unregistered) => ({
+  type: types.NANOCONTRACT_UNREGISTER_SUCCESS,
+  payload: unregistered,
+});
+
+/**
+ * Request a change on the Nano Contract registered.
+ * @param {{
+ *   ncId: string;
+ *   newAddress: string;
+ * }} changeAddressRequest
+ */
+export const nanoContractAddressChangeRequest = (changeAddressRequest) => ({
+  type: types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST,
+  payload: changeAddressRequest,
+});
+
+/**
+ * Request to load all wallet addresses.
+ */
+export const selectAddressAddressesRequest = () => ({
+  type: types.SELECTADDRESS_ADDRESSES_REQUEST,
+});
+
+/**
+ * Signals all wallet addresses were loaded with success.
+ * @param {Object} successPayload
+ * @param {string[]} successPayload.addresses
+ */
+export const selectAddressAddressesSuccess = (successPayload) => ({
+  type: types.SELECTADDRESS_ADDRESSES_SUCCESS,
+  payload: successPayload,
+});
+
+/**
+ * Signals a failure on wallet addresses loading due to an error.
+ * @param {Object} failurePayload
+ * @param {string} failurePayload.error
+ */
+export const selectAddressAddressesFailure = (failurePayload) => ({
+  type: types.SELECTADDRESS_ADDRESSES_FAILURE,
+  payload: failurePayload,
+});
+
+/**
+ * Request to load first wallet address.
+ */
+export const firstAddressRequest = () => ({
+  type: types.FIRSTADDRESS_REQUEST,
+});
+
+/**
+ * Signals first wallet address was loaded with success.
+ * @param {Object} successPayload
+ * @param {string} successPayload.address
+ */
+export const firstAddressSuccess = (successPayload) => ({
+  type: types.FIRSTADDRESS_SUCCESS,
+  payload: successPayload,
+});
+
+/**
+ * Signals a failure on first wallet address loading due to an error.
+ * @param {Object} failurePayload
+ * @param {string} failurePayload.error
+ */
+export const firstAddressFailure = (failurePayload) => ({
+  type: types.FIRSTADDRESS_FAILURE,
+  payload: failurePayload,
+});
+
+/**
+ * Signals that the user wants to attempt to retry the nano contract tx send
+ */
+export const newNanoContractRetry = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY,
+});
+
+/**
+ * Signals that the user doesn't want to retry the new nano contract tx send
+ */
+export const newNanoContractRetryDismiss = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS,
+});
+
+/**
+ * Signals update on new nano contract status to ready.
+ */
+export const setNewNanoContractStatusReady = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
+  payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.READY,
+});
+
+/**
+ * Signals update on new nano contract status to loading.
+ */
+export const setNewNanoContractStatusLoading = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
+  payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING,
+});
+
+/**
+ * Signals update on new nano contract status to failed.
+ */
+export const setNewNanoContractStatusFailure = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
+  payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.FAILED,
+});
+
+/**
+ * Signals update on new nano contract status to successful.
+ */
+export const setNewNanoContractStatusSuccess = () => ({
+  type: types.WALLETCONNECT_NEW_NANOCONTRACT_STATUS,
+  payload: WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL,
+});
+
+/**
+ * Signals that the user wants to attempt to retry the create token request
+ */
+export const createTokenRetry = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_RETRY,
+});
+
+/**
+ * Signals that the user doesn't want to retry the create token request
+ */
+export const createTokenRetryDismiss = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
+});
+
+/**
+ * Signals update on create token status to ready.
+ */
+export const setCreateTokenStatusReady = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
+  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.READY,
+});
+
+/**
+ * Signals update on create token status to loading.
+ */
+export const setCreateTokenStatusLoading = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
+  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.LOADING,
+});
+
+/**
+ * Signals update on create token status to failed.
+ */
+export const setCreateTokenStatusFailed = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
+  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.FAILED,
+});
+
+/**
+ * Signals update on create token status to successful.
+ */
+export const setCreateTokenStatusSuccessful = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
+  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.SUCCESSFUL,
+});
+
+/**
+ * Blueprint Info request in the context of a Nano Contract.
+ * @param {string} id Blueprint ID.
+ */
+export const nanoContractBlueprintInfoRequest = (id) => ({
+  type: types.NANOCONTRACT_BLUEPRINTINFO_REQUEST,
+  payload: { id },
+});
+
+/**
+ * Signals the bluprint info request has failed.
+ * @param {string} id Blueprint ID.
+ * @param {string} error Request failure reason.
+ */
+export const nanoContractBlueprintInfoFailure = (id, error) => ({
+  type: types.NANOCONTRACT_BLUEPRINTINFO_FAILURE,
+  payload: { id, error },
+});
+
+/**
+ * Signals the blueprint info was fetched with success.
+ * @param {string} id Blueprint ID.
+ * @param {{
+ *   id: string;
+ *   name: string;
+ *   public_methods: {
+ *     [methodName: string]: {
+ *       args: {
+ *         type: string;
+ *         name: string;
+ *       }[];
+ *     };
+ *   };
+ * }} blueprintInfo Raw data response from fullnode.
+ */
+export const nanoContractBlueprintInfoSuccess = (id, blueprintInfo) => ({
+  type: types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS,
+  payload: { id, data: { ...blueprintInfo } },
+});
+
+/**
+ * Signals a request to load a collection of token data by a collection of token UID.
+ * @param {Object} payload
+ * @param {string[]} payload.uids A list of token UID.
+ */
+export const unregisteredTokensDownloadRequest = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_DOWNLOAD_REQUEST,
+  payload,
+});
+
+/**
+ * Signals the success of unregistered tokens request.
+ * @param {Object} payload
+ * @param {Object} payload.tokens A map of token data by its UID.
+ */
+export const unregisteredTokensDownloadSuccess = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS,
+  payload,
+});
+
+/**
+ * Signals a failure on unregistered tokens request.
+ * @param {Object} payload
+ * @param {string} payload.error The error message as feedback to user
+ */
+export const unregisteredTokensDownloadFailure = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_DOWNLOAD_FAILURE,
+  payload,
+});
+
+/**
+ * Signals the unregistered tokens request has ended.
+ */
+export const unregisteredTokensDownloadEnd = () => ({
+  type: types.UNREGISTEREDTOKENS_DOWNLOAD_END,
+});
+
+export const showSignMessageWithAddressModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_SIGN_MESSAGE_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+    dapp,
+  },
+});
+
+export const showNanoContractSendTxModal = (accept, deny, nc, dapp) => ({
+  type: types.SHOW_NANO_CONTRACT_SEND_TX_MODAL,
+  payload: {
+    accept,
+    deny,
+    nc,
+    dapp,
+  },
+});
+
+export const showCreateTokenModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_CREATE_TOKEN_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+    dapp,
+  },
 });

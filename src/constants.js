@@ -204,7 +204,7 @@ export const PRE_SETTINGS_TESTNET = {
 
 export const NODE_SERVER_MAINNET_URL = 'https://mobile.wallet.hathor.network/v1a/';
 export const EXPLORER_MAINNET_URL = 'https://explorer.hathor.network/';
-export const EXPLORER_SERVICE_MAINNET_URL = 'https://explorer-service.hathor.network';
+export const EXPLORER_SERVICE_MAINNET_URL = 'https://explorer-service.hathor.network/';
 export const TX_MINING_SERVICE_MAINNET_URL = 'https://txmining.mainnet.hathor.network/';
 
 export const PRE_SETTINGS_MAINNET = {
@@ -226,12 +226,32 @@ export const networkSettingsKeyMap = {
   networkSettings: 'networkSettings:networkSettings'
 };
 
-export const NETWORKSETTINGS_STATUS = {
+export const BASE_STATUS = {
   READY: 'ready',
   FAILED: 'failed',
   LOADING: 'loading',
-  WAITING: 'waiting',
   SUCCESSFUL: 'successful',
+};
+
+export const NETWORKSETTINGS_STATUS = {
+  ...BASE_STATUS,
+  WAITING: 'waiting',
+};
+
+export const WALLETCONNECT_CREATE_TOKEN_STATUS = {
+  ...BASE_STATUS,
+};
+
+export const NANOCONTRACT_REGISTER_STATUS = {
+  ...BASE_STATUS,
+};
+
+export const WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS = {
+  ...BASE_STATUS,
+};
+
+export const NANOCONTRACT_BLUEPRINTINFO_STATUS = {
+  ...BASE_STATUS,
 };
 
 /**
@@ -261,3 +281,34 @@ export const LATENCY_MULTIPLIER = 30; // multiplier per iteration
 // patches/react-native+0.72.5.patch), to decide whether to activate SES (secure
 // ecmascript)
 export const SHOULD_ENABLE_SES_STORAGE_KEY = 'should-enable-ses';
+
+/**
+ * Timeout for await wallet load in the context of tx details loading.
+ * It awaits 5 minutes.
+ */
+export const TX_DETAILS_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Nano Contract's transaction history list size.
+ */
+export const NANO_CONTRACT_TX_HISTORY_SIZE = 20;
+/**
+ * Nano Contract documentation URL.
+ */
+export const NANO_CONTRACT_INFO_URL = 'https://docs.hathor.network/explanations/features/nano-contracts/';
+
+/**
+ * Nano Contract Action Enum
+ */
+export const NANO_CONTRACT_ACTION = {
+  withdrawal: 'withdrawal',
+  deposit: 'deposit',
+};
+
+export const NODE_RATE_LIMIT_CONF = {
+  thin_wallet_token: {
+    perSecond: 3,
+    burst: 10,
+    delay: 3,
+  }
+};

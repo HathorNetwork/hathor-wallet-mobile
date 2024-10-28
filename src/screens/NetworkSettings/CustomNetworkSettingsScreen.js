@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, KeyboardAvoidingView } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { isEmpty } from 'lodash';
@@ -11,14 +11,14 @@ import SimpleInput from '../../components/SimpleInput';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import Spinner from '../../components/Spinner';
-import { hasSucceed, hasFailed, isLoading } from './helper';
+import { hasSucceeded, hasFailed, isLoading } from './helper';
 import { AlertUI } from '../../styles/themes';
 import { WALLET_SERVICE_FEATURE_TOGGLE } from '../../constants';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
 const warningText = t`Any token outside mainnet network bear no value. Only change if you know what you are doing.`;
 const feedbackLoadingText = t`Updating custom network settings...`;
-const feedbackSucceedText = t`Network settings successfully customized.`;
+const feedbackSucceededText = t`Network settings successfully customized.`;
 const feedbackFailedText = t`There was an error while customizing network settings. Please try again later.`;
 
 /**
@@ -53,26 +53,44 @@ function validate(formModel) {
     invalidModel.txMiningServiceUrl = t`txMiningServiceUrl is required.`;
   }
 
+  // if any wallet-service fields have a value, then evaluate, otherwise pass
+  if (formModel.walletServiceUrl || formModel.walletServiceWsUrl) {
+    // if not both wallet-service fields have a value, then evaluate, otherwise pass
+    if (!(formModel.walletServiceUrl && formModel.walletServiceWsUrl)) {
+      // invalidade the one that don't have a value
+      if (!formModel.walletServiceUrl) {
+        invalidModel.walletServiceUrl = t`walletServiceUrl is required when walletServiceWsUrl is filled.`;
+      }
+      if (!formModel.walletServiceWsUrl) {
+        invalidModel.walletServiceWsUrl = t`walletServiceWsUrl is required when walletServiceUrl is filled.`;
+      }
+    }
+  }
+
   return invalidModel;
 }
 
 const styles = StyleSheet.create({
-  container: {
+  wrapper: {
     flex: 1,
   },
-  content: {
+  keyboardWrapper: {
     flex: 1,
-    padding: 16,
-    paddingBottom: 48,
+  },
+  container: {
+    paddingHorizontal: 16,
   },
   feedbackModalIcon: {
     height: 105,
     width: 105
   },
-  warningContainer: {
+  warningWrapper: {
+    paddingVertical: 16,
+  },
+  warningCard: {
+    flexShrink: 1,
     borderRadius: 8,
     backgroundColor: AlertUI.lightColor,
-    marginBottom: 32,
     borderWidth: 1,
     borderColor: AlertUI.baseHslColor.addLightness(4).toString(),
   },
@@ -81,12 +99,11 @@ const styles = StyleSheet.create({
     color: AlertUI.darkColor,
     padding: 12,
   },
+  formWrapper: {
+    paddingBottom: 16,
+  },
   input: {
     marginBottom: 24,
-  },
-  buttonContainer: {
-    alignSelf: 'stretch',
-    marginTop: 'auto',
   },
 });
 
@@ -104,18 +121,18 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     nodeUrl: networkSettings.nodeUrl,
     explorerUrl: networkSettings.explorerUrl,
     explorerServiceUrl: networkSettings.explorerServiceUrl,
+    txMiningServiceUrl: networkSettings.txMiningServiceUrl || '',
     walletServiceUrl: networkSettings.walletServiceUrl || '',
     walletServiceWsUrl: networkSettings.walletServiceWsUrl || '',
-    txMiningServiceUrl: networkSettings.txMiningServiceUrl || '',
   });
 
   const [invalidModel, setInvalidModel] = useState({
     nodeUrl: networkSettingsInvalid?.nodeUrl || '',
     explorerUrl: networkSettingsInvalid?.explorerUrl || '',
     explorerServiceUrl: networkSettingsInvalid?.explorerServiceUrl || '',
+    txMiningServiceUrl: networkSettingsInvalid.txMiningServiceUrl || '',
     walletServiceUrl: networkSettingsInvalid?.walletServiceUrl || '',
     walletServiceWsUrl: networkSettingsInvalid?.walletServiceWsUrl || '',
-    txMiningServiceUrl: networkSettingsInvalid.txMiningServiceUrl || '',
   });
 
   // eslint-disable-next-line max-len
@@ -167,104 +184,115 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <HathorHeader
-        title={customNetworkSettingsTitleText}
-        onBackPress={() => navigation.goBack()}
-      />
-
-      {isLoading(networkSettingsStatus) && (
-        <FeedbackModal
-          icon={<Spinner />}
-          text={feedbackLoadingText}
-        />
-      )}
-
-      {hasSucceed(networkSettingsStatus) && (
-        <FeedbackModal
-          icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
-          text={feedbackSucceedText}
-          onDismiss={handleFeedbackModalDismiss}
-        />
-      )}
-
-      {hasFailed(networkSettingsStatus) && (
-        <FeedbackModal
-          icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
-          text={feedbackFailedText}
-          onDismiss={handleFeedbackModalDismiss}
-        />
-      )}
-
-      <View style={styles.content}>
-        <View style={styles.warningContainer}>
-          <Text style={styles.warningMessage}>{warningText}</Text>
-        </View>
-        <SimpleInput
-          containerStyle={styles.input}
-          label={t`Node URL`}
-          autoFocus
-          onChangeText={handleInputChange('nodeUrl')}
-          error={invalidModel.nodeUrl}
-          value={formModel.nodeUrl}
+    <KeyboardAvoidingView
+      behavior='padding'
+      style={styles.keyboardWrapper}
+      keyboardVerticalOffset={48} /* some size for padding bottom on formWrapper */
+    >
+      <View style={styles.wrapper}>
+        <HathorHeader
+          title={customNetworkSettingsTitleText}
+          onBackPress={() => navigation.goBack()}
         />
 
-        <SimpleInput
-          containerStyle={styles.input}
-          label={t`Explorer URL`}
-          autoFocus
-          onChangeText={handleInputChange('explorerUrl')}
-          error={invalidModel.explorerUrl}
-          value={formModel.explorerUrl}
-        />
-
-        <SimpleInput
-          containerStyle={styles.input}
-          label={t`Explorer Service URL`}
-          autoFocus
-          onChangeText={handleInputChange('explorerServiceUrl')}
-          error={invalidModel.explorerServiceUrl}
-          value={formModel.explorerServiceUrl}
-        />
-
-        <SimpleInput
-          containerStyle={styles.input}
-          label={t`Transaction Mining Service URL`}
-          autoFocus
-          onChangeText={handleInputChange('txMiningServiceUrl')}
-          error={invalidModel.txMiningServiceUrl}
-          value={formModel.txMiningServiceUrl}
-        />
-
-        {walletServiceEnabled && (
-          <>
-            <SimpleInput
-              containerStyle={styles.input}
-              label={t`Wallet Service URL (optional)`}
-              autoFocus
-              onChangeText={handleInputChange('walletServiceUrl')}
-              error={invalidModel.walletServiceUrl}
-              value={formModel.walletServiceUrl}
-            />
-            <SimpleInput
-              containerStyle={styles.input}
-              label={t`Wallet Service WS URL (optional)`}
-              autoFocus
-              onChangeText={handleInputChange('walletServiceWsUrl')}
-              error={invalidModel.walletServiceWsUrl}
-              value={formModel.walletServiceWsUrl}
-            />
-          </>
+        {isLoading(networkSettingsStatus) && (
+          <FeedbackModal
+            icon={<Spinner />}
+            text={feedbackLoadingText}
+          />
         )}
 
-        <View style={styles.buttonContainer}>
-          <NewHathorButton
-            disabled={hasError(invalidModel)}
-            onPress={handleSubmit}
-            title={t`Send`}
+        {hasSucceeded(networkSettingsStatus) && (
+          <FeedbackModal
+            icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+            text={feedbackSucceededText}
+            onDismiss={handleFeedbackModalDismiss}
           />
+        )}
+
+        {hasFailed(networkSettingsStatus) && (
+          <FeedbackModal
+            icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+            text={feedbackFailedText}
+            onDismiss={handleFeedbackModalDismiss}
+          />
+        )}
+
+        <View style={[styles.container, styles.warningWrapper]}>
+          <View style={styles.warningCard}>
+            <Text style={styles.warningMessage}>{warningText}</Text>
+          </View>
         </View>
+
+        <ScrollView>
+          <View style={[styles.container, styles.formWrapper]}>
+            <SimpleInput
+              keyboardType='url'
+              containerStyle={styles.input}
+              label={t`Node URL`}
+              autoFocus
+              onChangeText={handleInputChange('nodeUrl')}
+              error={invalidModel.nodeUrl}
+              value={formModel.nodeUrl}
+            />
+
+            <SimpleInput
+              keyboardType='url'
+              containerStyle={styles.input}
+              label={t`Explorer URL`}
+              onChangeText={handleInputChange('explorerUrl')}
+              error={invalidModel.explorerUrl}
+              value={formModel.explorerUrl}
+            />
+
+            <SimpleInput
+              keyboardType='url'
+              containerStyle={styles.input}
+              label={t`Explorer Service URL`}
+              onChangeText={handleInputChange('explorerServiceUrl')}
+              error={invalidModel.explorerServiceUrl}
+              value={formModel.explorerServiceUrl}
+            />
+
+            <SimpleInput
+              keyboardType='url'
+              containerStyle={styles.input}
+              label={t`Transaction Mining Service URL`}
+              onChangeText={handleInputChange('txMiningServiceUrl')}
+              error={invalidModel.txMiningServiceUrl}
+              value={formModel.txMiningServiceUrl}
+            />
+
+            {walletServiceEnabled && (
+            <>
+              <SimpleInput
+                keyboardType='url'
+                containerStyle={styles.input}
+                label={t`Wallet Service URL (optional)`}
+                onChangeText={handleInputChange('walletServiceUrl')}
+                error={invalidModel.walletServiceUrl}
+                value={formModel.walletServiceUrl}
+              />
+
+              <SimpleInput
+                keyboardType='url'
+                containerStyle={styles.input}
+                label={t`Wallet Service WS URL (optional)`}
+                onChangeText={handleInputChange('walletServiceWsUrl')}
+                error={invalidModel.walletServiceWsUrl}
+                value={formModel.walletServiceWsUrl}
+              />
+            </>
+            )}
+
+            <NewHathorButton
+              disabled={hasError(invalidModel)}
+              onPress={handleSubmit}
+              title={t`Send`}
+            />
+          </View>
+        </ScrollView>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };

@@ -14,12 +14,14 @@ import {
   take,
   all,
   put,
+  join,
 } from 'redux-saga/effects';
+import { t } from 'ttag';
 import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
 import { specificTypeAndPayload, dispatchAndWait, getRegisteredTokenUids } from './helpers';
-import { mapTokenHistory } from '../utils';
+import { mapToTxHistory, splitInGroups } from '../utils';
 import {
   types,
   tokenFetchBalanceRequested,
@@ -28,11 +30,25 @@ import {
   tokenFetchHistoryRequested,
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
+  onExceptionCaptured,
+  unregisteredTokensDownloadSuccess,
+  unregisteredTokensDownloadEnd,
+  unregisteredTokensDownloadFailure,
 } from '../actions';
 import { logger } from '../logger';
+import { NODE_RATE_LIMIT_CONF } from '../constants';
 
 const log = logger('tokens-saga');
 
+const failureMessage = {
+  walletNotReadyError: t`Wallet is not ready yet.`,
+  someTokensNotLoaded: t`Error loading the details of some tokens.`,
+};
+
+/**
+ * @readonly
+ * @enum {string}
+ */
 export const TOKEN_DOWNLOAD_STATUS = {
   READY: 'ready',
   FAILED: 'failed',
@@ -92,6 +108,8 @@ function* fetchTokenBalance(action) {
     const tokenBalance = yield select((state) => get(state.tokensBalance, tokenId));
 
     if (!force && tokenBalance && tokenBalance.oldStatus === TOKEN_DOWNLOAD_STATUS.READY) {
+      log.debug(`Token download status READY.`);
+      log.debug(`Token balance already downloaded for token ${tokenId}. Skipping download.`);
       // The data is already loaded, we should dispatch success
       yield put(tokenFetchBalanceSuccess(tokenId, tokenBalance.data));
       return;
@@ -110,7 +128,7 @@ function* fetchTokenBalance(action) {
       locked: token.balance.locked,
     };
 
-    log.debug('Success fetching token balance.');
+    log.debug(`Success fetching token balance for token ${tokenId}.`);
     yield put(tokenFetchBalanceSuccess(tokenId, balance));
   } catch (e) {
     log.error('Error while fetching token balance.', e);
@@ -127,15 +145,15 @@ function* fetchTokenHistory(action) {
 
     if (!force && tokenHistory && tokenHistory.oldStatus === TOKEN_DOWNLOAD_STATUS.READY) {
       // The data is already loaded, we should dispatch success
-      log.debug('Success fetching token history from store.');
+      log.debug(`Token history already downloaded for token ${tokenId}. Skipping download.`);
       yield put(tokenFetchHistorySuccess(tokenId, tokenHistory.data));
       return;
     }
 
-    const response = yield call(wallet.getTxHistory.bind(wallet), { token_id: tokenId });
-    const data = response.map((txHistory) => mapTokenHistory(txHistory, tokenId));
+    const response = yield call([wallet, wallet.getTxHistory], { token_id: tokenId });
+    const data = response.map(mapToTxHistory(tokenId));
 
-    log.debug('Success fetching token history.');
+    log.debug(`Success fetching token history for token ${tokenId}.`);
     yield put(tokenFetchHistorySuccess(tokenId, data));
   } catch (e) {
     log.error('Error while fetching token history.', e);
@@ -158,10 +176,12 @@ function* routeTokenChange(action) {
 
   switch (action.type) {
     case 'NEW_TOKEN':
+      log.debug('[routeTokenChange] fetching token balance on NEW_TOKEN event');
       yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: action.payload.uid });
       break;
     case 'SET_TOKENS':
     default:
+      log.debug('[routeTokenChange] fetching token balance on SET_TOKENS event');
       for (const uid of getRegisteredTokenUids({ tokens: action.payload })) {
         yield put({ type: types.TOKEN_FETCH_BALANCE_REQUESTED, tokenId: uid });
       }
@@ -248,8 +268,7 @@ export function* fetchTokenMetadata({ tokenId }) {
       type: types.TOKEN_FETCH_METADATA_FAILED,
       tokenId,
     });
-    // eslint-disable-next-line
-    log.log('Error downloading metadata of token', tokenId);
+    log.log(`Error downloading metadata of token ${tokenId}`);
   }
 }
 
@@ -280,6 +299,80 @@ export function* fetchTokenData(tokenId, force = false) {
   }
 }
 
+/**
+ * Get token details from wallet.
+ *
+ * @param {Object} wallet The application wallet.
+ * @param {string} uid Token UID.
+ *
+ * @description
+ * The token endpoint has 3r/s with 10r of burst and 3s of delay.
+ */
+export function* getTokenDetails(wallet, uid) {
+  try {
+    const { tokenInfo: { symbol, name } } = yield call([wallet, wallet.getTokenDetails], uid);
+    yield put(unregisteredTokensDownloadSuccess({ tokens: { [uid]: { uid, symbol, name } } }));
+  } catch (e) {
+    log.error(`Fail getting token data for token ${uid}.`, e);
+    yield put(unregisteredTokensDownloadFailure({ error: failureMessage.someTokensNotLoaded }));
+  }
+}
+
+/**
+ * Request token details of unregistered tokens to feed new
+ * nano contract request actions.
+ *
+ * @description
+ * It optimizes for burst because we need the data as soon as possible,
+ * at the same time we should avoid request denials from the endpoint,
+ * which justifies a delay from burst to burst.
+ *
+ * @param {Object} action
+ * @param {Object} action.payload
+ * @param {string[]} action.payload.uids
+ */
+export function* requestUnregisteredTokensDownload(action) {
+  const { uids } = action.payload;
+
+  if (uids.length === 0) {
+    log.debug('No uids to request token details.');
+    yield put(unregisteredTokensDownloadEnd());
+    return;
+  }
+
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet.isReady()) {
+    log.error('Fail updating loading tokens data because wallet is not ready yet.');
+    // This will show user an error modal with the option to send the error to sentry.
+    yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), true));
+    return;
+  }
+
+  /**
+   * NOTE: We can improve the follwoing strategy by adopting a more robust
+   * rate-limit algorithm, like the sliding window or token bucket.
+   */
+
+  // These are the default values configured in the nginx conf public nodes.
+  const perBurst = NODE_RATE_LIMIT_CONF.thin_wallet_token.burst;
+  const burstDelay = NODE_RATE_LIMIT_CONF.thin_wallet_token.delay;
+  const uidGroups = splitInGroups(uids, perBurst);
+  for (const group of uidGroups) {
+    // Fork is a non-blocking effect, it doesn't cause the caller suspension.
+    const tasks = yield all(group.map((uid) => fork(getTokenDetails, wallet, uid)));
+    // Awaits a group to finish before burst the next group
+    yield join(tasks);
+    // Skip delay if there is only one group or is the last group
+    if (uidGroups.length === 1 || group === uidGroups.at(-1)) {
+      continue;
+    }
+    // This is a quick request, we should give a break before next burst
+    yield delay(burstDelay * 1000);
+  }
+  log.log('Success getting tokens data to feed unregisteredTokens.');
+  yield put(unregisteredTokensDownloadEnd());
+}
+
 export function* saga() {
   yield all([
     fork(fetchTokenBalanceQueue),
@@ -287,5 +380,6 @@ export function* saga() {
     takeEvery(types.TOKEN_FETCH_HISTORY_REQUESTED, fetchTokenHistory),
     takeEvery(types.NEW_TOKEN, routeTokenChange),
     takeEvery(types.SET_TOKENS, routeTokenChange),
+    takeEvery(types.UNREGISTEREDTOKENS_DOWNLOAD_REQUEST, requestUnregisteredTokensDownload),
   ]);
 }

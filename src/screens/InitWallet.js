@@ -326,6 +326,14 @@ class LoadWordsScreen extends React.Component {
                   autoFocus
                   onSubmitEditing={this.loadClicked}
                   blurOnSubmit
+                  inputMode='text'
+                  secureTextEntry
+                  autoCorrect={false}
+                  autoComplete='off'
+                  // ios only
+                  spellCheck={false}
+                  // android only
+                  importantForAutofill='no'
                 />
                 <Text style={this.style.label}>
                   {this.state.words.length}
