@@ -141,6 +141,7 @@ export class Security extends React.Component {
   render() {
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? t`No biometry supported` : t`Use ${this.supportedBiometry}`);
+    const safeBiometryActive = this.state.biometryEnabled && this.props.safeBiometryEnabled;
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <HathorHeader
@@ -164,10 +165,13 @@ export class Security extends React.Component {
             )}
             isFirst
           />
-          <ListMenu
-            title={t`Change PIN`}
-            onPress={() => this.props.navigation.navigate('ChangePin')}
-          />
+          { safeBiometryActive
+            ? null
+            : <ListMenu
+                title={t`Change PIN`}
+                onPress={() => this.props.navigation.navigate('ChangePin')}
+              />
+          }
           <ListMenu
             title={t`Lock wallet`}
             onPress={this.onLockWallet}

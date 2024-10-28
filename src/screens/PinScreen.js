@@ -303,6 +303,7 @@ class PinScreen extends React.Component {
       <View
         style={{
           flex: 1,
+          alignItems: 'center',
           width: '100%',
           justifyContent: 'space-between',
           marginTop: 32,
