@@ -91,7 +91,7 @@ export class Security extends React.Component {
         this.setState({ biometryEnabled: true });
       } else {
         // Should never get here because we've done all the validations before
-        // XXX: prepare error message?
+        throw new Error('Could not change the pin when trying to enable biometry');
       }
     });
   }
@@ -107,7 +107,8 @@ export class Security extends React.Component {
         this.setState({ biometryEnabled: false });
       } else {
         // Should never get here because we've done all the validations before
-        // XXX: prepare error message?
+        STORE.enableSafeBiometry(pin, password);
+        throw new Error('Could not change the pin when trying to disable biometry');
       }
     });
   }
@@ -116,7 +117,6 @@ export class Security extends React.Component {
     const params = {
       cb: this.executeSafeBiometryDisable,
       canCancel: true,
-      screenText: t`Enter your 6-digit pin to disable biometry`,
       biometryText: t`Disable biometry`,
     };
     this.props.navigation.navigate('PinScreen', params);

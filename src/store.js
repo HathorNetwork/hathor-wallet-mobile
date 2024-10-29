@@ -526,13 +526,14 @@ class AsyncStorageStore {
 
   /**
    * @param {string} password
+   * @returns {string}
    */
   disableSafeBiometry(password) {
     // decrypt pin with password and remove backup
     const encryptedPin = this.getItem(PIN_BACKUP_KEY);
     const pin = cryptoUtils.decryptData(encryptedPin, password);
     this.removeItem(PIN_BACKUP_KEY);
-    // Disable biometry?
+    // Disable biometry
     this.setItem(IS_BIOMETRY_ENABLED_KEY, false);
     return pin;
   }
