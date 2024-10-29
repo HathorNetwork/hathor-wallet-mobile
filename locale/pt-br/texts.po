@@ -57,11 +57,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Última] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:446
+#: src/models.js:107 src/utils.js:445
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:181
+#: src/utils.js:180
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
@@ -575,7 +575,7 @@ msgstr "Desbloqueie sua Hathor Wallet"
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:311
+#: src/screens/PinScreen.js:314
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 
@@ -674,10 +674,6 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr "Resetar Wallet"
 
-#: src/screens/Security.js:119
-msgid "Enter your 6-digit pin to disable biometry"
-msgstr "Digite seu PIN de 6 dígitos para desativar a biometria"
-
 #: src/screens/Security.js:120
 msgid "Disable biometry"
 msgstr "Desabilitar biometria"
@@ -695,15 +691,15 @@ msgstr "Nenhuma biometria suportada"
 msgid "Use ${ this.supportedBiometry }"
 msgstr "Usar ${ this.supportedBiometry }"
 
-#: src/screens/Security.js:147
+#: src/screens/Security.js:148
 msgid "SECURITY"
 msgstr "SEGURANÇA"
 
-#: src/screens/Security.js:168
+#: src/screens/Security.js:172
 msgid "Change PIN"
 msgstr "Mudar PIN"
 
-#: src/screens/Security.js:172
+#: src/screens/Security.js:177
 msgid "Lock wallet"
 msgstr "Bloquear a wallet"
 
@@ -1799,6 +1795,3 @@ msgstr "Confirma que deseja desregistrar este Nano Contract?"
 #: src/components/NanoContract/UnregisterNanoContractModal.js:44
 msgid "Yes, unregister contract"
 msgstr "Sim, desregistrar"
-
-#~ msgid "Title"
-#~ msgstr "Título"

@@ -58,11 +58,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:446
+#: src/models.js:107 src/utils.js:445
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:181
+#: src/utils.js:180
 msgid "Invalid address"
 msgstr "Неправильный адрес"
 
@@ -564,7 +564,7 @@ msgstr "Разблокировать Hathor Wallet"
 msgid "Cancel"
 msgstr "Отмена"
 
-#: src/screens/PinScreen.js:311
+#: src/screens/PinScreen.js:314
 msgid "Biometry failed or canceled."
 msgstr "Биометрия не удалась или была отменена."
 
@@ -659,10 +659,6 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr "Сбросить Кошелек"
 
-#: src/screens/Security.js:119
-msgid "Enter your 6-digit pin to disable biometry"
-msgstr "Введите 6-значный PIN-код, чтобы отключить биометрию"
-
 #: src/screens/Security.js:120
 msgid "Disable biometry"
 msgstr "Отключить биометрию"
@@ -680,15 +676,15 @@ msgstr "Биометрия не поддерживается"
 msgid "Use ${ this.supportedBiometry }"
 msgstr "Использовать ${ this.supportedBiometry }"
 
-#: src/screens/Security.js:147
+#: src/screens/Security.js:148
 msgid "SECURITY"
 msgstr "БЕЗОПАСНОСТЬ"
 
-#: src/screens/Security.js:168
+#: src/screens/Security.js:172
 msgid "Change PIN"
 msgstr "Изменить PIN-код"
 
-#: src/screens/Security.js:172
+#: src/screens/Security.js:177
 msgid "Lock wallet"
 msgstr "Заблокировать кошелек"
 

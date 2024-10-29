@@ -57,11 +57,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:446
+#: src/models.js:107 src/utils.js:445
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:181
+#: src/utils.js:180
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 
@@ -562,7 +562,7 @@ msgstr "Lås Hathor-wallet op"
 msgid "Cancel"
 msgstr "Annuller"
 
-#: src/screens/PinScreen.js:311
+#: src/screens/PinScreen.js:314
 msgid "Biometry failed or canceled."
 msgstr "Biometri mislykkedes eller blev annulleret."
 
@@ -658,10 +658,6 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr "Nulstil wallet"
 
-#: src/screens/Security.js:119
-msgid "Enter your 6-digit pin to disable biometry"
-msgstr "Indtast din 6-cifrede pin for at deaktivere biometri"
-
 #: src/screens/Security.js:120
 msgid "Disable biometry"
 msgstr "Deaktiver biometri"
@@ -679,15 +675,15 @@ msgstr "Ingen biometri understøttet"
 msgid "Use ${ this.supportedBiometry }"
 msgstr "Brug ${ this.supportedBiometry }"
 
-#: src/screens/Security.js:147
+#: src/screens/Security.js:148
 msgid "SECURITY"
 msgstr "SIKKERHED"
 
-#: src/screens/Security.js:168
+#: src/screens/Security.js:172
 msgid "Change PIN"
 msgstr "Skift pinkode"
 
-#: src/screens/Security.js:172
+#: src/screens/Security.js:177
 msgid "Lock wallet"
 msgstr "Lås wallet"
 

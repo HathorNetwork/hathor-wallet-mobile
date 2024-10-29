@@ -48,12 +48,12 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
 #: src/models.js:107
-#: src/utils.js:446
+#: src/utils.js:445
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src/utils.js:181
+#: src/utils.js:180
 msgid "Invalid address"
 msgstr ""
 
@@ -557,7 +557,7 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:311
+#: src/screens/PinScreen.js:314
 msgid "Biometry failed or canceled."
 msgstr ""
 
@@ -650,10 +650,6 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr ""
 
-#: src/screens/Security.js:119
-msgid "Enter your 6-digit pin to disable biometry"
-msgstr ""
-
 #: src/screens/Security.js:120
 msgid "Disable biometry"
 msgstr ""
@@ -671,15 +667,15 @@ msgstr ""
 msgid "Use ${ this.supportedBiometry }"
 msgstr ""
 
-#: src/screens/Security.js:147
+#: src/screens/Security.js:148
 msgid "SECURITY"
 msgstr ""
 
-#: src/screens/Security.js:168
+#: src/screens/Security.js:172
 msgid "Change PIN"
 msgstr ""
 
-#: src/screens/Security.js:172
+#: src/screens/Security.js:177
 msgid "Lock wallet"
 msgstr ""
 
