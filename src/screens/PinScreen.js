@@ -302,12 +302,8 @@ class PinScreen extends React.Component {
     const safeBiometryMessage = () => (
       <View
         style={{
-          flex: 1,
           alignItems: 'center',
-          width: '100%',
-          justifyContent: 'space-between',
-          marginTop: 32,
-          marginBottom: 16,
+          justifyContent: 'center',
         }}
       >
         { this.state.biometryFailed
@@ -323,7 +319,12 @@ class PinScreen extends React.Component {
       }
 
       return (
-        <>
+        <View
+          style={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
           <PinInput
             maxLength={PIN_SIZE}
@@ -332,7 +333,7 @@ class PinScreen extends React.Component {
             onChangeText={this.onChangeText}
             error={this.state.error}
           />
-        </>
+        </View>
       );
     };
 
@@ -343,10 +344,12 @@ class PinScreen extends React.Component {
           alignItems: 'center',
           paddingHorizontal: 16, // Padding ensures a homogeneous background color
           backgroundColor: baseStyle.container.backgroundColor,
+          justifyContent: 'space-between',
         }}
       >
         <View
           style={{
+            flex: 0.1,
             marginVertical: 16,
             alignItems: 'center',
             height: 21,
@@ -355,8 +358,24 @@ class PinScreen extends React.Component {
         >
           <Logo style={{ height: 21, width: 120 }} />
         </View>
-        {renderPinDigits()}
-        {renderButton()}
+        <View
+          style={{
+            flex: 2,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {renderPinDigits()}
+        </View>
+        <View
+          style={{
+            flex: 0.2,
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+          }}
+        >
+          {renderButton()}
+        </View>
       </View>
     );
   }
