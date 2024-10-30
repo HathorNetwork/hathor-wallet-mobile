@@ -214,7 +214,7 @@ msgstr "Os PINs estão diferentes. Tente novamente."
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
-#: src/screens/CreateTokenAmount.js:120 src/screens/CreateTokenConfirm.js:163
+#: src/screens/CreateTokenAmount.js:120 src/screens/CreateTokenConfirm.js:164
 #: src/screens/CreateTokenDepositNotice.js:42 src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
@@ -254,29 +254,33 @@ msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
 msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
+#: src/screens/CreateTokenConfirm.js:119 src/screens/SendConfirmScreen.js:106
+msgid "Building transaction"
+msgstr "Criando transação"
+
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:182
+#: src/screens/CreateTokenConfirm.js:183
 #, javascript-format
 msgid "**${ this.name }** created successfully"
 msgstr "**${ this.name }** criado com sucesso"
 
-#: src/screens/CreateTokenConfirm.js:195
+#: src/screens/CreateTokenConfirm.js:196
 msgid "Amount of ${ this.name }"
 msgstr "Quantidade de ${ this.name }"
 
-#: src/screens/CreateTokenConfirm.js:203
+#: src/screens/CreateTokenConfirm.js:204
 msgid "Token name"
 msgstr "Nome do token"
 
-#: src/screens/CreateTokenConfirm.js:209 src/screens/CreateTokenSymbol.js:69
+#: src/screens/CreateTokenConfirm.js:210 src/screens/CreateTokenSymbol.js:69
 msgid "Token symbol"
 msgstr "Símbolo do token"
 
-#: src/screens/CreateTokenConfirm.js:215
+#: src/screens/CreateTokenConfirm.js:216
 msgid "Deposit"
 msgstr "Depósito"
 
-#: src/screens/CreateTokenConfirm.js:222
+#: src/screens/CreateTokenConfirm.js:223
 msgid "Create token"
 msgstr "Criar um token"
 
@@ -469,7 +473,7 @@ msgstr "**${ loadedData.addresses } endereços** encontrados"
 msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
-#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:283
+#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:284
 #: src/screens/Settings.js:161
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
@@ -555,7 +559,7 @@ msgstr "Recebido"
 msgid "Waiting confirmation"
 msgstr "Aguardando confirmação"
 
-#: src/screens/PinScreen.js:264
+#: src/screens/PinScreen.js:265
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
@@ -570,12 +574,12 @@ msgstr "Desbloqueie sua Hathor Wallet"
 #: src/components/WalletConnect/CreateTokenModal.js:60
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:64
 #: src/components/WalletConnect/SignMessageModal.js:72
-#: src/screens/PinScreen.js:280
+#: src/screens/PinScreen.js:281
 #: src/screens/WalletConnect/WalletConnectList.js:125
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:314
+#: src/screens/PinScreen.js:311
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 
@@ -676,30 +680,34 @@ msgstr "Resetar Wallet"
 
 #: src/screens/Security.js:120
 msgid "Disable biometry"
-msgstr "Desabilitar biometria"
+msgstr "Desativar biometria"
 
-#: src/screens/Security.js:132
+#: src/screens/Security.js:121
+msgid "Disabling biometry"
+msgstr "Desativando biometria"
+
+#: src/screens/Security.js:133
 msgid "Enter your 6-digit pin to enable biometry"
 msgstr "Digite seu PIN de 6 dígitos para habilitar biometria"
 
-#: src/screens/Security.js:143
+#: src/screens/Security.js:144
 msgid "No biometry supported"
 msgstr "Nenhuma biometria suportada"
 
-#: src/screens/Security.js:143
+#: src/screens/Security.js:144
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr "Usar ${ this.supportedBiometry }"
 
-#: src/screens/Security.js:148
+#: src/screens/Security.js:149
 msgid "SECURITY"
 msgstr "SEGURANÇA"
 
-#: src/screens/Security.js:172
+#: src/screens/Security.js:173
 msgid "Change PIN"
 msgstr "Mudar PIN"
 
-#: src/screens/Security.js:177
+#: src/screens/Security.js:178
 msgid "Lock wallet"
 msgstr "Bloquear a wallet"
 
@@ -715,14 +723,14 @@ msgstr "Endereço para enviar"
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:141 src/screens/SendConfirmScreen.js:125
+#: src/screens/SendAmountInput.js:141 src/screens/SendConfirmScreen.js:126
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:154 src/screens/SendConfirmScreen.js:133
+#: src/screens/SendAmountInput.js:154 src/screens/SendConfirmScreen.js:134
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
@@ -739,19 +747,19 @@ msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
-#: src/screens/SendConfirmScreen.js:142
+#: src/screens/SendConfirmScreen.js:143
 msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ this.amountAndToken }** foi confirmada"
 
 #: src/components/NanoContract/EditAddressModal.js:60
 #: src/components/NanoContract/SelectAddressModal.js:117
 #: src/components/WalletConnect/SignMessageRequest.js:40
-#: src/screens/SendConfirmScreen.js:161
+#: src/screens/SendConfirmScreen.js:162
 msgid "Address"
 msgstr "Endereço"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:291
-#: src/screens/SendConfirmScreen.js:168
+#: src/screens/SendConfirmScreen.js:169
 msgid "Send"
 msgstr "Enviar"
 
