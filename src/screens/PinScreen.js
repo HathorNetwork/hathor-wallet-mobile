@@ -371,7 +371,7 @@ class PinScreen extends React.Component {
           style={{
             flex: 0.2,
             alignItems: 'flex-end',
-            justifyContent: 'center',
+            justifyContent: 'flex-end',
           }}
         >
           {renderButton()}
