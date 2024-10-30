@@ -101,7 +101,7 @@
     1. [ ] Check the Wallet Service fields do not appear
 
 1. **Check Wallet Service fields disable Push Notification when they are empty**
-    1. [ ] Go to Unleash and enables the Wallet Service for the wallet
+    1. [ ] Go to Unleash and enable the Wallet Service for the wallet
         1. You should set this configuration on `wallet-service-mobile.rollout`
     1. [ ] Close and reopens the App
     1. [ ] Navigate Custom Network Settings screen on Network Settings feature
@@ -111,7 +111,7 @@
     1. [ ] Check the Push Notification option didn't appear
 
 1. **Check Wallet Service fields can't be empty unilaterally**
-    1. [ ] Go to Unleash and enables the Wallet Service for the wallet
+    1. [ ] Go to Unleash and enable the Wallet Service for the wallet
         1. You should set this configuration on `wallet-service-mobile.rollout`
     1. [ ] Close and reopens the App
     1. [ ] Navigate Custom Network Settings screen on Network Settings feature
@@ -127,11 +127,11 @@
     1. [ ] Check Push Notification didn't appear
 
 1. **Check Push Notification aren't being received on Testnet**
-    1. [ ] Go to Unleash and enables the Wallet Service for the wallet
+    1. [ ] Go to Unleash and enable the Wallet Service for the wallet
         1. You should set this configuration on `wallet-service-mobile.rollout`
     1. [ ] Navigate to Network Pre-Settings screen
     1. [ ] Select Mainnet pre-settings
-    1. [ ] Enables Push Notification
+    1. [ ] Enable Push Notification
     1. [ ] Send a transaction to your wallet from another wallet
         1. You should receive a push notification
     1. [ ] Navigate to Network Pre-Settings screen

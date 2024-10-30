@@ -50,23 +50,23 @@ It's a second custom NFT token to test.
     1. [ ] Go to the **Push Notification** page
     1. [ ] Turn on the `Enable Push Notification`
     1. [ ] Turn on the `Show amounts on notification`
-    1. [ ] Turn off the `Enabled Push Notification`
+    1. [ ] Turn off the `Enable Push Notification`
     1. [ ] Try to turn on the `Show amounts on notification`
         1. it should not be possible
-    1. [ ] Turn on the `Enabled Push Notification`
+    1. [ ] Turn on the `Enable Push Notification`
         1. `Show amounts on notification` should be on
     1. [ ] Turn off the `Show amounts on notification`
-    1. [ ] Turn off the `Enabled Push Notification`
+    1. [ ] Turn off the `Enable Push Notification`
 
 1. **Try to send a notification with `push-notification` feature toggle turned off**
     1. [ ] Go to the **Settings** page
-    1. [ ] Turn **off** the `push-notifiation` feature toggle
+    1. [ ] Turn **off** the `push-notification` feature toggle
     1. [ ] Send HTR to this wallet
         1. Wait some minutes to guarantee you won't receive any notifications for this tx
 
 1. **Try to send a notification with `push-notification` feature toggle turned on**
     1. [ ] Go to the **Settings** page
-    1. [ ] Turn **on** the `push-notifiation` feature toggle
+    1. [ ] Turn **on** the `push-notification` feature toggle
     1. [ ] Send HTR to this wallet
         1. Wait some minutes to guarantee you won't receive any notifications for this tx (because the settings `Enable Push Notification` is disabled)
 

@@ -43,11 +43,11 @@
     1. Click on any transaction and check the details.
 
 1. **Settings Tests**
-    1. Go to the Settings Screen. Check that you are connected to our `testnet`.
+    1. Go to the Settings Screen. Take note of the network you're connected to ( `testnet` or `mainnet` ).
     1. Test Security > Lock Wallet.
-        1. Enable TouchID (iOS only).
-        1. Lock wallet and use TouchID (iOS only).
-        1. Disable TouchID (iOS only).
+        1. Enable biometry
+        1. Lock wallet and use biometry.
+        1. Disable biometry.
         1. Lock wallet, and it must require you to type your PIN Code.
     1. Test Security > Change PIN.
         1. Close and open the app and check whether the wallet unlocks correctly.
@@ -97,8 +97,8 @@
     1. Click on Register Token, and check that the Test Token is back and your balance is 99 TEST.
 
 1. **Reload data**
-    1. Turn wifi off until you see the message 'No internet connection.'.
-    1. Turn on wifi and check if the wallet reloads the transactions correctly.
+    1. Turn Wi-Fi off until you see the message 'No internet connection.'.
+    1. Turn on Wi-Fi and check if the wallet reloads the transactions correctly.
 
 1. **Reset Wallet**
     1. Go to Settings and Reset your wallet.
