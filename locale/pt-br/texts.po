@@ -452,6 +452,7 @@ msgstr "Digite suas palavras separadas por espaços"
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:295
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
+#: src/screens/PinScreen.js:271
 msgid "Try again"
 msgstr "Tente novamente"
 
@@ -473,7 +474,7 @@ msgstr "**${ loadedData.addresses } endereços** encontrados"
 msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
-#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:284
+#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:299
 #: src/screens/Settings.js:161
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
@@ -559,27 +560,27 @@ msgstr "Recebido"
 msgid "Waiting confirmation"
 msgstr "Aguardando confirmação"
 
-#: src/screens/PinScreen.js:265
+#: src/screens/PinScreen.js:260
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
-#: src/screens/PinScreen.js:70
+#: src/screens/PinScreen.js:72
 msgid "Enter your PIN Code "
 msgstr "Digite seu PIN "
 
-#: src/screens/PinScreen.js:71
+#: src/screens/PinScreen.js:73
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
 #: src/components/WalletConnect/CreateTokenModal.js:60
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:64
 #: src/components/WalletConnect/SignMessageModal.js:72
-#: src/screens/PinScreen.js:281
+#: src/screens/PinScreen.js:296
 #: src/screens/WalletConnect/WalletConnectList.js:125
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:311
+#: src/screens/PinScreen.js:330 src/screens/PinScreen.js:334
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 

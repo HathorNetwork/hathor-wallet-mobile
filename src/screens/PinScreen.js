@@ -268,7 +268,7 @@ class PinScreen extends React.Component {
     const renderBiometryRetryButton = () => {
       return <SimpleButton
           onPress={() => this.askBiometricId()}
-          title={t`Try Again`}
+          title={t`Try again`}
           textStyle={{
             textAlign: 'center',
             textTransform: 'uppercase',
@@ -327,7 +327,6 @@ class PinScreen extends React.Component {
 
     const renderBiometryErrorMessage = () => {
       if (this.props.isLockScreen) {
-        // This is the lock screen, we
         return (<Text>{ t`Biometry failed or canceled.` }</Text>);
       } else {
         return (

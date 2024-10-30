@@ -247,7 +247,6 @@ msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
 #: src/screens/CreateTokenConfirm.js:119 src/screens/SendConfirmScreen.js:106
-#, fuzzy
 msgid "Building transaction"
 msgstr ""
 
@@ -442,6 +441,7 @@ msgstr "Indtast dine seed-ord adskilt med mellemrum"
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:295
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
+#: src/screens/PinScreen.js:271
 msgid "Try again"
 msgstr ""
 
@@ -463,7 +463,7 @@ msgstr "**${ props.loadedData.addresses } adresser** fundet"
 msgid "There's been an error connecting to the server."
 msgstr ""
 
-#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:284
+#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:299
 #: src/screens/Settings.js:161
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
@@ -547,27 +547,27 @@ msgstr "Modtaget"
 msgid "Waiting confirmation"
 msgstr "Venter på bekræftelse"
 
-#: src/screens/PinScreen.js:265
+#: src/screens/PinScreen.js:260
 msgid "Incorrect PIN Code. Try again."
 msgstr "Forkert PIN-kode. Prøv igen."
 
-#: src/screens/PinScreen.js:70
+#: src/screens/PinScreen.js:72
 msgid "Enter your PIN Code "
 msgstr "Indtast din pinkode "
 
-#: src/screens/PinScreen.js:71
+#: src/screens/PinScreen.js:73
 msgid "Unlock Hathor Wallet"
 msgstr "Lås Hathor-wallet op"
 
 #: src/components/WalletConnect/CreateTokenModal.js:60
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:64
 #: src/components/WalletConnect/SignMessageModal.js:72
-#: src/screens/PinScreen.js:281
+#: src/screens/PinScreen.js:296
 #: src/screens/WalletConnect/WalletConnectList.js:125
 msgid "Cancel"
 msgstr "Annuller"
 
-#: src/screens/PinScreen.js:311
+#: src/screens/PinScreen.js:330 src/screens/PinScreen.js:334
 msgid "Biometry failed or canceled."
 msgstr "Biometri mislykkedes eller blev annulleret."
 
