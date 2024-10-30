@@ -103,6 +103,7 @@ class SendConfirmScreen extends React.Component {
       canCancel: true,
       screenText: t`Enter your 6-digit pin to authorize operation`,
       biometryText: t`Authorize operation`,
+      biometryLoadingText: t`Building transaction`,
     };
     this.props.navigation.navigate('PinScreen', params);
   }

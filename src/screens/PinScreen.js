@@ -73,6 +73,7 @@ class PinScreen extends React.Component {
       this.canCancel = props.route.params.canCancel ?? this.canCancel;
       this.screenText = props.route.params.screenText ?? this.screenText;
       this.biometryText = props.route.params.biometryText ?? this.biometryText;
+      this.biometryLoadingText = props.route.params.biometryLoadingText ?? '';
     }
     this.biometryEnabled = isBiometryEnabled();
 
@@ -308,7 +309,10 @@ class PinScreen extends React.Component {
       >
         { this.state.biometryFailed
           ? <Text>{ t`Biometry failed or canceled.` }</Text>
-          : <Spinner size={48} animating />}
+          : <>
+              <Text style={{ marginBottom: 16 }}>{ this.biometryLoadingText }</Text>
+              <Spinner size={48} animating />
+            </>}
       </View>
     );
 

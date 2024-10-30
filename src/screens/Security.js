@@ -118,6 +118,7 @@ export class Security extends React.Component {
       cb: this.executeSafeBiometryDisable,
       canCancel: true,
       biometryText: t`Disable biometry`,
+      biometryLoadingText: t`Disabling biometry`,
     };
     this.props.navigation.navigate('PinScreen', params);
   }
