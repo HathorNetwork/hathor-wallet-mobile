@@ -265,31 +265,32 @@ class PinScreen extends React.Component {
   };
 
   render() {
-    const renderBiometryRetryButton = () => {
-      return <SimpleButton
-          onPress={() => this.askBiometricId()}
-          title={t`Try again`}
-          textStyle={{
-            textAlign: 'center',
-            textTransform: 'uppercase',
-            color: COLORS.textColorShadow,
-            letterSpacing: 1,
-            padding: 4,
-          }}
-          containerStyle={{
-            marginTop: 16,
-            marginBottom: 16,
-          }}
-        />
-    };
-
+    const renderBiometryRetryButton = () => (
+      <SimpleButton
+        onPress={() => this.askBiometricId()}
+        title={t`Try again`}
+        textStyle={{
+          textAlign: 'center',
+          textTransform: 'uppercase',
+          color: COLORS.textColorShadow,
+          letterSpacing: 1,
+          padding: 4,
+        }}
+        containerStyle={{
+          marginTop: 16,
+          marginBottom: 16,
+        }}
+      />
+    );
 
     const renderButton = () => {
       if ((!this.state.biometryFailed) && this.props.safeBiometryEnabled && this.biometryEnabled) {
         // Biometry has not failed, so we should not show a cancellation button.
         return null;
       }
-      const biometryFailed = this.state.biometryFailed && this.props.safeBiometryEnabled && this.biometryEnabled;
+      const biometryFailed = this.state.biometryFailed
+        && this.props.safeBiometryEnabled
+        && this.biometryEnabled;
       let title;
       let onPress;
       if (this.canCancel) {
@@ -308,19 +309,19 @@ class PinScreen extends React.Component {
             textAlign: 'center',
           }}
         >
-        {biometryFailed ? renderBiometryRetryButton() : null}
-        <SimpleButton
-          onPress={onPress}
-          title={title}
-          textStyle={{
-            textAlign: 'center',
-            textTransform: 'uppercase',
-            color: COLORS.textColorShadow,
-            letterSpacing: 1,
-            padding: 4,
-          }}
-          containerStyle={{ marginTop: 16, marginBottom: 32 }}
-        />
+          {biometryFailed ? renderBiometryRetryButton() : null}
+          <SimpleButton
+            onPress={onPress}
+            title={title}
+            textStyle={{
+              textAlign: 'center',
+              textTransform: 'uppercase',
+              color: COLORS.textColorShadow,
+              letterSpacing: 1,
+              padding: 4,
+            }}
+            containerStyle={{ marginTop: 16, marginBottom: 32 }}
+          />
         </View>
       );
     };
@@ -328,15 +329,14 @@ class PinScreen extends React.Component {
     const renderBiometryErrorMessage = () => {
       if (this.props.isLockScreen) {
         return (<Text>{ t`Biometry failed or canceled.` }</Text>);
-      } else {
-        return (
-          <FeedbackModal
-            text={ t`Biometry failed or canceled.` }
-            onDismiss={() => this.props.navigation.goBack()}
-            icon=<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />
-          />
-        );
       }
+      return (
+        <FeedbackModal
+          text={t`Biometry failed or canceled.`}
+          onDismiss={() => this.props.navigation.goBack()}
+          icon=<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />
+        />
+      );
     };
 
     const safeBiometryMessage = () => (
@@ -348,10 +348,12 @@ class PinScreen extends React.Component {
       >
         { this.state.biometryFailed
           ? renderBiometryErrorMessage()
-          : <>
+          : (
+            <>
               <Text style={{ marginBottom: 16 }}>{ this.biometryLoadingText }</Text>
               <Spinner size={48} animating />
-            </>}
+            </>
+          )}
       </View>
     );
 
