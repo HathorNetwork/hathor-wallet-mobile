@@ -16,7 +16,7 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import moment from 'moment';
 import baseStyle from './styles/init';
 import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE } from './constants';
-import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY } from './store';
+import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_BIOMETRY_KEY } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
 import { logger } from './logger';
@@ -97,10 +97,10 @@ export function generateRandomPassword() {
 }
 
 export const setSupportedBiometry = (type) => {
-  STORE.setItem('mobile:supportedBiometry', type);
+  STORE.setItem(SUPPORTED_BIOMETRY_KEY, type);
 };
 
-export const getSupportedBiometry = () => STORE.getItem('mobile:supportedBiometry');
+export const getSupportedBiometry = () => STORE.getItem(SUPPORTED_BIOMETRY_KEY);
 
 /**
  * Old biometry mode does not require aditional data to be activated

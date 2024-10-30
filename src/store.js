@@ -17,6 +17,7 @@ export const REGISTERED_NANO_CONTRACTS_KEY = 'asyncstorage:registeredNanoContrac
 export const PIN_BACKUP_KEY = 'asyncstorage:pinBackup';
 export const IS_OLD_BIOMETRY_ENABLED_KEY = 'mobile:isBiometryEnabled';
 export const IS_BIOMETRY_ENABLED_KEY = 'mobile:isSafeBiometryEnabled';
+export const SUPPORTED_BIOMETRY_KEY = 'mobile:supportedBiometry';
 
 export const walletKeys = [
   ACCESS_DATA_KEY,
@@ -526,7 +527,7 @@ class AsyncStorageStore {
 
   /**
    * @param {string} password
-   * @returns {string}
+   * @returns {string} original wallet pin
    */
   disableSafeBiometry(password) {
     // decrypt pin with password and remove backup
