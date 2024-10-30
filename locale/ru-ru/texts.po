@@ -669,7 +669,6 @@ msgid "Disable biometry"
 msgstr "Отключить биометрию"
 
 #: src/screens/Security.js:121
-#, fuzzy
 msgid "Disabling biometry"
 msgstr "Отключение биометрии"
 
