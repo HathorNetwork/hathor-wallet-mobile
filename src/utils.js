@@ -6,6 +6,7 @@
  */
 
 import hathorLib from '@hathor/wallet-lib';
+import CryptoJS from 'crypto-js';
 import * as Keychain from 'react-native-keychain';
 import React from 'react';
 import { isEmpty } from 'lodash';
@@ -15,7 +16,7 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import moment from 'moment';
 import baseStyle from './styles/init';
 import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE } from './constants';
-import { STORE } from './store';
+import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_BIOMETRY_KEY } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
 import { logger } from './logger';
@@ -90,17 +91,32 @@ export const getAmountParsed = (text) => {
 
 export const getTokenLabel = (token) => `${token.name} (${token.symbol})`;
 
+export function generateRandomPassword() {
+  const seed = CryptoJS.lib.WordArray.random(32).toString();
+  return CryptoJS.PBKDF2(seed, seed, { iterations: 10000 }).toString();
+}
+
 export const setSupportedBiometry = (type) => {
-  STORE.setItem('mobile:supportedBiometry', type);
+  STORE.setItem(SUPPORTED_BIOMETRY_KEY, type);
 };
 
-export const getSupportedBiometry = () => STORE.getItem('mobile:supportedBiometry');
+export const getSupportedBiometry = () => STORE.getItem(SUPPORTED_BIOMETRY_KEY);
 
+/**
+ * Old biometry mode does not require aditional data to be activated
+ * @deprecated
+ *
+ * @param {bool} value
+ */
 export const setBiometryEnabled = (value) => {
-  STORE.setItem('mobile:isBiometryEnabled', value);
+  STORE.setItem(IS_OLD_BIOMETRY_ENABLED_KEY, value);
 };
 
-export const isBiometryEnabled = () => STORE.getItem('mobile:isBiometryEnabled') || false;
+export const isBiometryEnabled = () => {
+  const oldBiometry = STORE.getItem(IS_OLD_BIOMETRY_ENABLED_KEY);
+  const safeBiometry = STORE.getItem(IS_BIOMETRY_ENABLED_KEY);
+  return oldBiometry || safeBiometry || false;
+}
 
 /**
  * Convert a string into a JSX. It receives a text and a map of functions. The text

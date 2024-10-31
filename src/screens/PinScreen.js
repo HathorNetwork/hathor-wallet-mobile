@@ -9,7 +9,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
-import { BackHandler, Keyboard, Text, View } from 'react-native';
+import { BackHandler, Keyboard, Text, View, Image } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import { walletUtils, cryptoUtils } from '@hathor/wallet-lib';
 import SimpleButton from '../components/SimpleButton';
@@ -24,11 +24,15 @@ import {
   onStartWalletLock,
   startWalletRequested,
   resetOnLockScreen,
+  onExceptionCaptured,
 } from '../actions';
-import { PIN_SIZE } from '../constants';
+import { PIN_SIZE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import baseStyle from '../styles/init';
+import Spinner from '../components/Spinner';
+import FeedbackModal from '../components/FeedbackModal';
+import errorIcon from '../assets/images/icErrorBig.png';
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
@@ -36,6 +40,7 @@ import baseStyle from '../styles/init';
 const mapStateToProps = (state) => ({
   loadHistoryActive: state.loadHistoryStatus.active,
   wallet: state.wallet,
+  safeBiometryEnabled: state.featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE],
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -46,6 +51,7 @@ const mapDispatchToProps = (dispatch) => ({
   setTempPin: (pin) => dispatch(setTempPin(pin)),
   onStartWalletLock: () => dispatch(onStartWalletLock()),
   startWalletRequested: (payload) => dispatch(startWalletRequested(payload)),
+  onExceptionCaptured: (error, isFatal) => dispatch(onExceptionCaptured(error, isFatal)),
 });
 
 class PinScreen extends React.Component {
@@ -61,6 +67,7 @@ class PinScreen extends React.Component {
       pin: '',
       pinColor: COLORS.textColor,
       error: null,
+      biometryFailed: false,
     };
 
     this.canCancel = false;
@@ -70,7 +77,9 @@ class PinScreen extends React.Component {
       this.canCancel = props.route.params.canCancel ?? this.canCancel;
       this.screenText = props.route.params.screenText ?? this.screenText;
       this.biometryText = props.route.params.biometryText ?? this.biometryText;
+      this.biometryLoadingText = props.route.params.biometryLoadingText ?? '';
     }
+    this.biometryEnabled = isBiometryEnabled();
 
     this.focusEvent = null;
   }
@@ -130,7 +139,7 @@ class PinScreen extends React.Component {
         this.dismiss(credentials.password);
       }
     } catch (e) {
-      // No need to do anything here as the user can type his PIN
+      this.setState({ biometryFailed: true });
     }
   };
 
@@ -258,7 +267,32 @@ class PinScreen extends React.Component {
   };
 
   render() {
+    const renderBiometryRetryButton = () => (
+      <SimpleButton
+        onPress={() => this.askBiometricId()}
+        title={t`Try again`}
+        textStyle={{
+          textAlign: 'center',
+          textTransform: 'uppercase',
+          color: COLORS.textColorShadow,
+          letterSpacing: 1,
+          padding: 4,
+        }}
+        containerStyle={{
+          marginTop: 16,
+          marginBottom: 16,
+        }}
+      />
+    );
+
     const renderButton = () => {
+      if ((!this.state.biometryFailed) && this.props.safeBiometryEnabled && this.biometryEnabled) {
+        // Biometry has not failed, so we should not show a cancellation button.
+        return null;
+      }
+      const biometryFailed = this.state.biometryFailed
+        && this.props.safeBiometryEnabled
+        && this.biometryEnabled;
       let title;
       let onPress;
       if (this.canCancel) {
@@ -270,48 +304,85 @@ class PinScreen extends React.Component {
       }
 
       return (
-        <SimpleButton
-          onPress={onPress}
-          title={title}
-          textStyle={{
-            textTransform: 'uppercase',
-            color: COLORS.textColorShadow,
-            letterSpacing: 1,
-            padding: 4,
+        <View
+          style={{
+            alignContent: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
           }}
-          containerStyle={{ marginTop: 16, marginBottom: 8 }}
+        >
+          {biometryFailed ? renderBiometryRetryButton() : null}
+          <SimpleButton
+            onPress={onPress}
+            title={title}
+            textStyle={{
+              textAlign: 'center',
+              textTransform: 'uppercase',
+              color: COLORS.textColorShadow,
+              letterSpacing: 1,
+              padding: 4,
+            }}
+            containerStyle={{ marginTop: 16, marginBottom: 32 }}
+          />
+        </View>
+      );
+    };
+
+    const renderBiometryErrorMessage = () => {
+      if (this.props.isLockScreen) {
+        return (<Text>{ t`Biometry failed or canceled.` }</Text>);
+      }
+      return (
+        <FeedbackModal
+          text={t`Biometry failed or canceled.`}
+          onDismiss={() => this.props.navigation.goBack()}
+          icon=<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />
         />
       );
     };
 
-    const renderPinDigits = () => (
+    const safeBiometryMessage = () => (
       <View
         style={{
-          flex: 1,
           alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
-        <View
-          style={{
-            marginVertical: 16,
-            alignItems: 'center',
-            height: 21,
-            width: 120,
-          }}
-        >
-          <Logo style={{ height: 21, width: 120 }} />
-        </View>
-        <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
-        <PinInput
-          maxLength={PIN_SIZE}
-          color={this.state.pinColor}
-          value={this.state.pin}
-          onChangeText={this.onChangeText}
-          error={this.state.error}
-        />
-        {renderButton()}
+        { this.state.biometryFailed
+          ? renderBiometryErrorMessage()
+          : (
+            <>
+              <Text style={{ marginBottom: 16 }}>{ this.biometryLoadingText }</Text>
+              <Spinner size={48} animating />
+            </>
+          )}
       </View>
     );
+
+    const renderBody = () => {
+      if (this.props.safeBiometryEnabled && this.biometryEnabled) {
+        // Safe biometry mode is enabled, we should not render the pin input.
+        return safeBiometryMessage();
+      }
+
+      return (
+        <View
+          style={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Text style={{ marginTop: 32, marginBottom: 16 }}>{this.screenText}</Text>
+          <PinInput
+            maxLength={PIN_SIZE}
+            color={this.state.pinColor}
+            value={this.state.pin}
+            onChangeText={this.onChangeText}
+            error={this.state.error}
+          />
+        </View>
+      );
+    };
 
     return (
       <View
@@ -320,9 +391,38 @@ class PinScreen extends React.Component {
           alignItems: 'center',
           paddingHorizontal: 16, // Padding ensures a homogeneous background color
           backgroundColor: baseStyle.container.backgroundColor,
+          justifyContent: 'space-between',
         }}
       >
-        {renderPinDigits()}
+        <View
+          style={{
+            flex: 0.1,
+            marginVertical: 16,
+            alignItems: 'center',
+            height: 21,
+            width: 120,
+          }}
+        >
+          <Logo style={{ height: 21, width: 120 }} />
+        </View>
+        <View
+          style={{
+            flex: 2,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {renderBody()}
+        </View>
+        <View
+          style={{
+            flex: 0.2,
+            alignItems: 'flex-end',
+            justifyContent: 'flex-end',
+          }}
+        >
+          {renderButton()}
+        </View>
       </View>
     );
   }

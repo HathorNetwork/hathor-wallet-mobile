@@ -48,12 +48,12 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
 #: src/models.js:107
-#: src/utils.js:429
+#: src/utils.js:445
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src/utils.js:164
+#: src/utils.js:180
 msgid "Invalid address"
 msgstr ""
 
@@ -198,7 +198,7 @@ msgid "Start the Wallet"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:120
-#: src/screens/CreateTokenConfirm.js:163
+#: src/screens/CreateTokenConfirm.js:164
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
@@ -242,30 +242,35 @@ msgstr ""
 msgid "Authorize token creation"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:182
+#: src/screens/CreateTokenConfirm.js:119
+#: src/screens/SendConfirmScreen.js:106
+msgid "Building transaction"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:183
 #.  eslint-disable-next-line react/jsx-indent
 #, javascript-format
 msgid "**${ this.name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:195
+#: src/screens/CreateTokenConfirm.js:196
 msgid "Amount of ${ this.name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:203
+#: src/screens/CreateTokenConfirm.js:204
 msgid "Token name"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:209
+#: src/screens/CreateTokenConfirm.js:210
 #: src/screens/CreateTokenSymbol.js:69
 msgid "Token symbol"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:215
+#: src/screens/CreateTokenConfirm.js:216
 msgid "Deposit"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:222
+#: src/screens/CreateTokenConfirm.js:223
 msgid "Create token"
 msgstr ""
 
@@ -427,6 +432,7 @@ msgstr ""
 #: src/screens/LoadHistoryScreen.js:51
 #: src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
+#: src/screens/PinScreen.js:271
 msgid "Try again"
 msgstr ""
 
@@ -449,7 +455,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:21
-#: src/screens/PinScreen.js:268
+#: src/screens/PinScreen.js:299
 #: src/screens/Settings.js:161
 msgid "Reset wallet"
 msgstr ""
@@ -537,24 +543,29 @@ msgstr ""
 msgid "Waiting confirmation"
 msgstr ""
 
-#: src/screens/PinScreen.js:253
+#: src/screens/PinScreen.js:260
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
-#: src/screens/PinScreen.js:67
+#: src/screens/PinScreen.js:72
 msgid "Enter your PIN Code "
 msgstr ""
 
-#: src/screens/PinScreen.js:68
+#: src/screens/PinScreen.js:73
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
 #: src/components/WalletConnect/CreateTokenModal.js:60
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:64
 #: src/components/WalletConnect/SignMessageModal.js:72
-#: src/screens/PinScreen.js:265
+#: src/screens/PinScreen.js:296
 #: src/screens/WalletConnect/WalletConnectList.js:125
 msgid "Cancel"
+msgstr ""
+
+#: src/screens/PinScreen.js:330
+#: src/screens/PinScreen.js:334
+msgid "Biometry failed or canceled."
 msgstr ""
 
 #: src/screens/PushNotification.js:58
@@ -646,24 +657,36 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr ""
 
-#: src/screens/Security.js:73
+#: src/screens/Security.js:120
+msgid "Disable biometry"
+msgstr ""
+
+#: src/screens/Security.js:121
+msgid "Disabling biometry"
+msgstr ""
+
+#: src/screens/Security.js:133
+msgid "Enter your 6-digit pin to enable biometry"
+msgstr ""
+
+#: src/screens/Security.js:144
 msgid "No biometry supported"
 msgstr ""
 
-#: src/screens/Security.js:73
+#: src/screens/Security.js:144
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr ""
 
-#: src/screens/Security.js:77
+#: src/screens/Security.js:149
 msgid "SECURITY"
 msgstr ""
 
-#: src/screens/Security.js:96
+#: src/screens/Security.js:173
 msgid "Change PIN"
 msgstr ""
 
-#: src/screens/Security.js:100
+#: src/screens/Security.js:178
 msgid "Lock wallet"
 msgstr ""
 
@@ -681,7 +704,7 @@ msgid "Insufficient funds"
 msgstr ""
 
 #: src/screens/SendAmountInput.js:141
-#: src/screens/SendConfirmScreen.js:125
+#: src/screens/SendConfirmScreen.js:126
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
@@ -689,7 +712,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: src/screens/SendAmountInput.js:154
-#: src/screens/SendConfirmScreen.js:133
+#: src/screens/SendConfirmScreen.js:134
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
@@ -708,19 +731,19 @@ msgstr ""
 msgid "Authorize operation"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:142
+#: src/screens/SendConfirmScreen.js:143
 msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr ""
 
 #: src/components/NanoContract/EditAddressModal.js:60
 #: src/components/NanoContract/SelectAddressModal.js:117
 #: src/components/WalletConnect/SignMessageRequest.js:40
-#: src/screens/SendConfirmScreen.js:161
+#: src/screens/SendConfirmScreen.js:162
 msgid "Address"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:291
-#: src/screens/SendConfirmScreen.js:168
+#: src/screens/SendConfirmScreen.js:169
 msgid "Send"
 msgstr ""
 
@@ -1105,11 +1128,11 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: src/sagas/tokens.js:40
+#: src/sagas/tokens.js:44
 msgid "Wallet is not ready yet."
 msgstr ""
 
-#: src/sagas/tokens.js:41
+#: src/sagas/tokens.js:45
 msgid "Error loading the details of some tokens."
 msgstr ""
 
