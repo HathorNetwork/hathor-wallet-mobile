@@ -19,7 +19,6 @@ import baseStyle from '../styles/init';
 import {
   isBiometryEnabled, setBiometryEnabled, getSupportedBiometry, changePin, generateRandomPassword
 } from '../utils';
-import { SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen, onExceptionCaptured } from '../actions';
 import { COLORS } from '../styles/themes';
@@ -27,7 +26,7 @@ import { STORE } from '../store';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
-  safeBiometryEnabled: state.featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE],
+  safeBiometryEnabled: state.safeBiometryEnabled,
 });
 
 const mapDispatchToProps = (dispatch) => ({
