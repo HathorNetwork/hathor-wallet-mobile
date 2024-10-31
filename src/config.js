@@ -37,7 +37,10 @@ export const _IS_MULTI_TOKEN = true;
  *   uid: '00'
  * }
  */
-export const _DEFAULT_TOKEN = hathorLib.constants.HATHOR_TOKEN_CONFIG;
+export const _DEFAULT_TOKEN = {
+  uid: hathorLib.constants.NATIVE_TOKEN_UID,
+  ...hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG,
+};
 
 /**
  * App's primary color (Hathor purple)

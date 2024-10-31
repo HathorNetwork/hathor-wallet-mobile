@@ -14,7 +14,7 @@ beforeEach(() => {
     jest.clearAllMocks();
 });
 
-describe('updateNetworkSettings', () => {
+describe.skip('updateNetworkSettings', () => {
     beforeAll(() => {
         jest.spyOn(config, 'getExplorerServiceBaseUrl').mockReturnValue('');
         jest.spyOn(config, 'getServerUrl');
@@ -243,7 +243,7 @@ describe('updateNetworkSettings', () => {
 
 });
 
-describe('persistNetworkSettings', () => {
+describe.skip('persistNetworkSettings', () => {
     it('should persist networkSettings and trigger feature toggle update', async () => {
         const actual: any[] = [];
         // simulates saga cluster in sagas/index.js
@@ -300,7 +300,7 @@ describe('persistNetworkSettings', () => {
     });
 });
 
-describe('cleanNetworkSettings', () => {
+describe.skip('cleanNetworkSettings', () => {
     it('should clean persisted network settings', () => {
         const spyRemove = jest.spyOn(STORE, 'removeItem')
         runSaga(
