@@ -32,7 +32,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   lockScreen: () => dispatch(lockScreen()),
-  onExceptionCaptured: (error, isFatal) => dispatch(onExceptionCaptured(error,isFatal)),
+  onExceptionCaptured: (error, isFatal) => dispatch(onExceptionCaptured(error, isFatal)),
 });
 
 export class Security extends React.Component {
