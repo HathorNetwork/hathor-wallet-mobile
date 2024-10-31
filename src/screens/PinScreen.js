@@ -24,6 +24,7 @@ import {
   onStartWalletLock,
   startWalletRequested,
   resetOnLockScreen,
+  onExceptionCaptured,
 } from '../actions';
 import { PIN_SIZE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
 import { COLORS } from '../styles/themes';
@@ -50,6 +51,7 @@ const mapDispatchToProps = (dispatch) => ({
   setTempPin: (pin) => dispatch(setTempPin(pin)),
   onStartWalletLock: () => dispatch(onStartWalletLock()),
   startWalletRequested: (payload) => dispatch(startWalletRequested(payload)),
+  onExceptionCaptured: (error, isFatal) => dispatch(onExceptionCaptured(error, isFatal)),
 });
 
 class PinScreen extends React.Component {

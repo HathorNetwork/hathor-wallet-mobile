@@ -21,7 +21,7 @@ import {
 } from '../utils';
 import { SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
-import { lockScreen } from '../actions';
+import { lockScreen, onExceptionCaptured } from '../actions';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 
@@ -32,6 +32,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   lockScreen: () => dispatch(lockScreen()),
+  onExceptionCaptured: (error, isFatal) => dispatch(onExceptionCaptured(error,isFatal)),
 });
 
 export class Security extends React.Component {
@@ -91,7 +92,12 @@ export class Security extends React.Component {
         this.setState({ biometryEnabled: true });
       } else {
         // Should never get here because we've done all the validations before
-        throw new Error('Could not change the pin when trying to enable biometry');
+        this.props.onExceptionCaptured(
+          new Error(
+            'Could not change the pin when trying to enable biometry',
+          ),
+          false,
+        );
       }
     });
   }
@@ -108,7 +114,12 @@ export class Security extends React.Component {
       } else {
         // Should never get here because we've done all the validations before
         STORE.enableSafeBiometry(pin, password);
-        throw new Error('Could not change the pin when trying to disable biometry');
+        this.props.onExceptionCaptured(
+          new Error(
+            'Could not change the pin when trying to enable biometry',
+          ),
+          false,
+        );
       }
     });
   }
