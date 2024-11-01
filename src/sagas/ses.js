@@ -20,10 +20,12 @@ import { logger } from '../logger';
 import { onExceptionCaptured } from '../actions';
 import { verifySesEnabled } from '../utils';
 
+const log = logger('ses');
+
 const storage = new MMKV();
 
 function disableSes(restart = true) {
-  logger.debug('Disabling SAS');
+  log.debug('Disabling SAS');
   storage.set(SHOULD_ENABLE_SES_STORAGE_KEY, false);
 
   if (restart) {
@@ -55,6 +57,7 @@ function* init() {
   }
 
   if (!unleashEnabled && storageEnabled) {
+    log.debug('Unleash is disabled and storage is not, disabling SES!');
     // SES was enabled, we should disable it in storage which gets read in the
     // react-native initialization (more on this in patches/react-native+0.72.5.patch)
     // and restart the react-native bundle.
@@ -62,6 +65,7 @@ function* init() {
   }
 
   if (unleashEnabled && !storageEnabled) {
+    log.debug('Unleash is enabled and storage is not, enabling SES!');
     enableSes();
   }
 }
