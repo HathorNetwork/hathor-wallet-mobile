@@ -2,7 +2,7 @@
 #import <Foundation/Foundation.h>
 #import <React/RCTHTTPRequestHandler.h>
 
-@implementation RCTHTTPRequestHandler (YourExtension)
+@implementation RCTHTTPRequestHandler (AuthenticationChallengeExtension)
 
 /* The load method is called by the Objective-C runtime when the class is loaded into memory,
  * it happens early in the application's lifecycle.
