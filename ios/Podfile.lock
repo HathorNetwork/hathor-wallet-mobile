@@ -359,9 +359,8 @@ PODS:
   - React-jsinspector (0.72.5)
   - React-logger (0.72.5):
     - glog
-  - react-native-mmkv (2.12.2):
-    - MMKV (>= 1.3.3)
-    - RCT-Folly (= 2021.07.22.00)
+  - react-native-mmkv (2.11.0):
+    - MMKV (>= 1.2.13)
     - React-Core
   - react-native-pager-view (5.4.25):
     - React-Core
@@ -799,7 +798,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: f32f98d8ddbdfd97dea286af90381a731d68c505
   React-jsinspector: aef73cbd43b70675f572214d10fa438c89bf11ba
   React-logger: 2e4aee3e11b3ec4fa6cfd8004610bbb3b8d6cca4
-  react-native-mmkv: b738e135cc27fc8ed25b39ec451b2e3e0ae9ce1b
+  react-native-mmkv: e97c0c79403fb94577e5d902ab1ebd42b0715b43
   react-native-pager-view: da490aa1f902c9a5aeecf0909cc975ad0e92e53e
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
