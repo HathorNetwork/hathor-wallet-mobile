@@ -47,7 +47,7 @@ function enableSes(restart = true) {
  */
 function* init() {
   const storageEnabled = storage.getBoolean('should-enable-ses');
-  const unleashEnabled = yield call(checkForFeatureFlag, SES_FEATURE_TOGGLE);
+  const unleashEnabled = yield call(isSESEnabled);
   const sesEnabled = verifySesEnabled();
 
   if (unleashEnabled && storageEnabled && !sesEnabled) {
