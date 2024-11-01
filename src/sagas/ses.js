@@ -58,9 +58,11 @@ function* init() {
 
   if (!unleashEnabled && storageEnabled) {
     log.debug('Unleash is disabled and storage is not, disabling SES!');
-    // SES was enabled, we should disable it in storage which gets read in the
-    // react-native initialization (more on this in patches/react-native+0.72.5.patch)
-    // and restart the react-native bundle.
+    // SES was disabled in Unleash and is enabled in the storage,
+    // meaning that it will be loaded in the next boot we should disable it in
+    // storage which gets read in the react-native initialization
+    // (more on this in patches/react-native+0.72.5.patch) and restart the
+    // react-native bundle.
     disableSes();
   }
 
