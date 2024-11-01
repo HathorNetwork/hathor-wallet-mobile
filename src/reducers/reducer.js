@@ -499,6 +499,8 @@ const initialState = {
     address: null,
     error: null,
   },
+
+  safeBiometryEnabled: false,
 };
 
 export const reducer = (state = initialState, action) => {
@@ -715,6 +717,8 @@ export const reducer = (state = initialState, action) => {
       return onNewNanoContractTransactionRetry(state);
     case types.WALLETCONNECT_NEW_NANOCONTRACT_RETRY_DISMISS:
       return onNewNanoContractTransactionRetryDismiss(state);
+    case types.SET_USE_SAFE_BIOMETRY_MODE:
+      return onSetUseSafeBiometryMode(state, action);
     default:
       return state;
   }
@@ -912,15 +916,22 @@ const onSetUseWalletService = (state, action) => ({
   useWalletService: action.payload,
 });
 
+const onSetUseSafeBiometryMode = (state, action) => ({
+  ...state,
+  safeBiometryEnabled: action.payload,
+});
+
 const onResetWalletSuccess = (state) => {
   const oldUnleashClient = state.unleashClient;
   const oldFeatureTogglesInitialized = state.featureTogglesInitialized;
   const oldFeatureToggles = state.featureToggles;
+  const oldSafeBiometryEnabled = state.safeBiometryEnabled;
   return {
     ...initialState,
     unleashClient: oldUnleashClient,
     featureTogglesInitialized: oldFeatureTogglesInitialized,
     featureToggles: oldFeatureToggles,
+    safeBiometryEnabled: oldSafeBiometryEnabled,
   };
 };
 
