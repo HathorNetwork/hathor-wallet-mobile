@@ -25,7 +25,7 @@ const log = logger('ses');
 const storage = new MMKV();
 
 function disableSes(restart = true) {
-  log.debug('Disabling SAS');
+  log.debug('Disabling SES');
   storage.set(SHOULD_ENABLE_SES_STORAGE_KEY, false);
 
   if (restart) {
