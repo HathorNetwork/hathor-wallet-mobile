@@ -1,0 +1,45 @@
+diff --git a/node_modules/intl/lib/core.js b/node_modules/intl/lib/core.js
+index 9334cfc..78e7f06 100644
+--- a/node_modules/intl/lib/core.js
++++ b/node_modules/intl/lib/core.js
+@@ -591,7 +591,8 @@ function createRegExpRestore() {
+ 
+         // Set the lastIndex of the generated expression to ensure that the match
+         // is found in the correct index.
+-        expr.lastIndex = regExpCache.leftContext.length;
++        const leftContext = regExpCache.leftContext || '';
++        expr.lastIndex = leftContext.length;
+ 
+         expr.exec(regExpCache.input);
+     };
+@@ -4291,13 +4292,26 @@ defineProperty(Intl, '__applyLocaleSensitivePrototypes', {
+     writable: true,
+     configurable: true,
+     value: function value() {
+-        defineProperty(Number.prototype, 'toLocaleString', { writable: true, configurable: true, value: ls.Number.toLocaleString });
+-        // Need this here for IE 8, to avoid the _DontEnum_ bug
+-        defineProperty(Date.prototype, 'toLocaleString', { writable: true, configurable: true, value: ls.Date.toLocaleString });
++        // Create wrapper functions for locale operations
++        const localeHelpers = {
++            formatNumber: function(num) {
++                return ls.Number.toLocaleString.call(num);
++            },
++            formatDate: function(date) {
++                return ls.Date.toLocaleString.call(date);
++            }
++        };
+ 
++        // Add other Date methods from ls.Date
+         for (var k in ls.Date) {
+-            if (hop.call(ls.Date, k)) defineProperty(Date.prototype, k, { writable: true, configurable: true, value: ls.Date[k] });
++            if (hop.call(ls.Date, k)) {
++                localeHelpers[`date_${k}`] = function(date) {
++                    return ls.Date[k].call(date);
++                };
++            }
+         }
++
++        return localeHelpers;
+     }
+ });
+ 
