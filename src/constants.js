@@ -202,6 +202,20 @@ export const PRE_SETTINGS_TESTNET = {
   explorerServiceUrl: EXPLORER_SERVICE_TESTNET_URL,
   txMiningServiceUrl: TX_MINING_SERVICE_TESTNET_URL,
 };
+// Nano testnet settings:
+export const NETWORK_NANO_TESTNET = 'testnet';
+export const NODE_SERVER_NANO_TESTNET_URL = 'https://node1.nano-testnet.hathor.network/v1a/';
+export const EXPLORER_NANO_TESTNET_URL = 'https://explorer.alpha.nano-testnet.hathor.network/';
+export const TX_MINING_SERVICE_NANO_TESTNET_URL = 'https://txmining.nano-testnet.hathor.network/';
+
+export const PRE_SETTINGS_NANO_TESTNET = {
+  stage: STAGE_TESTNET,
+  network: NETWORK_NANO_TESTNET,
+  nodeUrl: NODE_SERVER_NANO_TESTNET_URL,
+  explorerUrl: EXPLORER_NANO_TESTNET_URL,
+  explorerServiceUrl: EXPLORER_SERVICE_TESTNET_URL,
+  txMiningServiceUrl: TX_MINING_SERVICE_NANO_TESTNET_URL,
+};
 
 export const NODE_SERVER_MAINNET_URL = 'https://mobile.wallet.hathor.network/v1a/';
 export const EXPLORER_MAINNET_URL = 'https://explorer.hathor.network/';
