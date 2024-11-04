@@ -613,6 +613,7 @@ export function splitInGroups(list, groupSize) {
   return groups;
 }
 
+/*
  * Verifies if all critical built-in object prototypes are frozen, indicating a secure
  * ECMAScript (SES) environment. This check ensures that the execution context remains
  * immutable by preventing modifications to built-in prototypes, a common target for
