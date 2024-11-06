@@ -152,9 +152,6 @@
       "@lavamoat/preinstall-always-fail": false,
       "@sentry/react-native>@sentry/cli": false,
       "ttag-cli": false
-    },
-    "testMatch": [
-      "**/*.test.js"
-    ]
+    }
   }
 }
