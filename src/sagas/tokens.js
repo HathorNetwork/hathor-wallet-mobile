@@ -299,7 +299,7 @@ export function* fetchTokenData(tokenId, force = false) {
   }
 }
 
-/**
+/*
  * Get token details from wallet.
  *
  * @param {Object} wallet The application wallet.
@@ -319,14 +319,7 @@ export function* getTokenDetails(wallet, uid) {
 }
 
 /**
- * Request token details of unregistered tokens to feed new
- * nano contract request actions.
- *
- * @description
- * It optimizes for burst because we need the data as soon as possible,
- * at the same time we should avoid request denials from the endpoint,
- * which justifies a delay from burst to burst.
- *
+ * Request tokens data to feed reown's tokens.
  * @param {Object} action
  * @param {Object} action.payload
  * @param {string[]} action.payload.uids

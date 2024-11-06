@@ -20,7 +20,6 @@ import {
   spawn,
   takeEvery,
 } from 'redux-saga/effects';
-import { getUniqueId } from 'react-native-device-info';
 import {
   types,
   setUnleashClient,
@@ -95,7 +94,7 @@ export function* monitorFeatureFlags(currentRetry = 0) {
   const { appVersion } = VersionNumber;
 
   const options = {
-    userId: getUniqueId(),
+    userId: 'HathorDemo',
     properties: {
       platform: Platform.OS,
       stage: STAGE,

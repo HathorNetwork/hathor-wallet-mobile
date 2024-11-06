@@ -10,7 +10,7 @@ import {
   StyleSheet,
   Text,
 } from 'react-native';
-import { commonStyles } from './WalletConnect/theme';
+import { commonStyles } from './Reown/theme';
 
 /**
  * @param {Object} props

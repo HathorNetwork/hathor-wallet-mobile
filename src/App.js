@@ -29,6 +29,7 @@ import IconTabBar from './icon-font';
 import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
+  appStateUpdate,
   lockScreen,
   onExceptionCaptured,
   pushTxDetailsRequested,
@@ -78,11 +79,11 @@ import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
-import WalletConnectList from './screens/WalletConnect/WalletConnectList';
-import WalletConnectManual from './screens/WalletConnect/WalletConnectManual';
-import WalletConnectScan from './screens/WalletConnect/WalletConnectScan';
+import ReownList from './screens/Reown/ReownList';
+import ReownManual from './screens/Reown/ReownManual';
+import ReownScan from './screens/Reown/ReownScan';
 import baseStyle from './styles/init';
-import WalletConnectModal from './components/WalletConnect/WalletConnectModal';
+import ReownModal from './components/Reown/ReownModal';
 import { COLORS, HathorTheme } from './styles/themes';
 import { NetworkSettingsFlowNav, NetworkSettingsFlowStack } from './screens/NetworkSettings';
 import { NetworkStatusBar } from './components/NetworkSettings/NetworkStatusBar';
@@ -90,10 +91,12 @@ import ShowPushNotificationTxDetails from './components/ShowPushNotificationTxDe
 import { NanoContractDetailsScreen } from './screens/NanoContract/NanoContractDetailsScreen';
 import { NanoContractTransactionScreen } from './screens/NanoContract/NanoContractTransactionScreen';
 import { NanoContractRegisterScreen } from './screens/NanoContract/NanoContractRegisterScreen';
-import { NewNanoContractTransactionScreen } from './screens/WalletConnect/NewNanoContractTransactionScreen';
+import { NewNanoContractTransactionScreen } from './screens/Reown/NewNanoContractTransactionScreen';
 import { NanoContractRegisterQrCodeScreen } from './screens/NanoContractRegisterQrCodeScreen';
-import { SignMessageRequestScreen } from './screens/WalletConnect/SignMessageRequestScreen';
-import { CreateTokenRequestScreen } from './screens/WalletConnect/CreateTokenScreen';
+import { SignMessageRequestScreen } from './screens/Reown/SignMessageRequestScreen';
+import { SignOracleDataRequestScreen } from './screens/Reown/SignOracleDataRequestScreen';
+import { CreateTokenRequestScreen } from './screens/Reown/CreateTokenScreen';
+import { SuccessFeedbackScreen } from './screens/Reown/SuccessFeedbackScreen';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -455,11 +458,14 @@ const AppStack = () => {
         <Stack.Screen name='NanoContractRegisterScreen' component={NanoContractRegisterScreen} />
         <Stack.Screen name='About' component={About} />
         <Stack.Screen name='Security' component={Security} />
-        <Stack.Screen name='WalletConnectList' component={WalletConnectList} />
-        <Stack.Screen name='WalletConnectManual' component={WalletConnectManual} />
-        <Stack.Screen name='WalletConnectScan' component={WalletConnectScan} />
+        <Stack.Screen name='ReownList' component={ReownList} />
+        <Stack.Screen name='ReownManual' component={ReownManual} />
+        <Stack.Screen name='ReownScan' component={ReownScan} />
         <Stack.Screen name='NewNanoContractTransactionScreen' component={NewNanoContractTransactionScreen} />
         <Stack.Screen name='SignMessageRequest' component={SignMessageRequestScreen} />
+        <Stack.Screen name='SignOracleDataRequestScreen' component={SignOracleDataRequestScreen} />
+        <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
+        <Stack.Screen name='SuccessFeedbackScreen' component={SuccessFeedbackScreen} />
         <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
         <Stack.Screen name='PushNotification' component={PushNotification} />
         <Stack.Screen name='ChangePin' component={ChangePin} />
@@ -504,6 +510,7 @@ const mapDispatchToProps = (dispatch) => ({
   resetData: () => dispatch(resetData()),
   loadTxDetails: (txId) => dispatch(pushTxDetailsRequested(txId)),
   captureError: (error) => dispatch(onExceptionCaptured(error)),
+  appStateUpdate: (oldState, newState) => dispatch(appStateUpdate(oldState, newState)),
 });
 
 class _AppStackWrapper extends React.Component {
@@ -645,6 +652,8 @@ class _AppStackWrapper extends React.Component {
       console.warn(`App transition from ${this.appState} to ${nextAppState}. This should never happen.`);
       return;
     }
+
+    this.props.appStateUpdate(this.appState, nextAppState);
 
     if (nextAppState === 'active') {
       if (this.appState === 'inactive') {
@@ -809,7 +818,7 @@ const App = () => (
           <ShowPushNotificationTxDetails />
           <NetworkStatusBar />
           <RootStack />
-          <WalletConnectModal />
+          <ReownModal />
         </NavigationContainer>
         <GlobalErrorHandler />
       </SafeAreaView>
