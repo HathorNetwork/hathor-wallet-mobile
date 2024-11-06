@@ -25,6 +25,7 @@ import {
   setUnleashClient,
   setFeatureToggles,
   featureToggleInitialized,
+  setUseSafeBiometryMode,
 } from '../actions';
 import {
   UNLEASH_URL,
@@ -32,6 +33,7 @@ import {
   UNLEASH_POLLING_INTERVAL,
   STAGE,
   FEATURE_TOGGLE_DEFAULTS,
+  SAFE_BIOMETRY_MODE_FEATURE_TOGGLE,
 } from '../constants';
 import { disableFeaturesIfNeeded } from './helpers';
 
@@ -122,6 +124,7 @@ export function* monitorFeatureFlags(currentRetry = 0) {
     const featureToggles = mapFeatureToggles(unleashClient.getToggles());
 
     yield put(setFeatureToggles(featureToggles));
+    yield put(setUseSafeBiometryMode(featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE]));
     yield put(featureToggleInitialized());
   } catch (e) {
     yield put(setUnleashClient(null));

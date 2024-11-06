@@ -499,6 +499,8 @@ const initialState = {
     address: null,
     error: null,
   },
+
+  safeBiometryEnabled: false,
 };
 
 export const reducer = (state = initialState, action) => {
@@ -705,14 +707,20 @@ export const reducer = (state = initialState, action) => {
       return onNanoContractBlueprintInfoFailure(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS:
       return onNanoContractBlueprintInfoSuccess(state, action);
-    case types.UNREGISTEREDTOKENS_REQUEST:
-      return onUnregisteredTokensRequest(state);
-    case types.UNREGISTEREDTOKENS_UPDATE:
-      return onUnregisteredTokensUpdate(state, action);
+    case types.UNREGISTEREDTOKENS_DOWNLOAD_REQUEST:
+      return onUnregisteredTokensDownloadRequest(state);
+    case types.UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS:
+      return onUnregisteredTokensDownloadSuccess(state, action);
+    case types.UNREGISTEREDTOKENS_DOWNLOAD_FAILURE:
+      return onUnregisteredTokensDownloadFailure(state, action);
+    case types.UNREGISTEREDTOKENS_DOWNLOAD_END:
+      return onUnregisteredTokensDownloadEnd(state);
     case types.REOWN_NEW_NANOCONTRACT_RETRY:
       return onNewNanoContractTransactionRetry(state);
     case types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS:
       return onNewNanoContractTransactionRetryDismiss(state);
+    case types.SET_USE_SAFE_BIOMETRY_MODE:
+      return onSetUseSafeBiometryMode(state, action);
     default:
       return state;
   }
@@ -910,15 +918,22 @@ const onSetUseWalletService = (state, action) => ({
   useWalletService: action.payload,
 });
 
+const onSetUseSafeBiometryMode = (state, action) => ({
+  ...state,
+  safeBiometryEnabled: action.payload,
+});
+
 const onResetWalletSuccess = (state) => {
   const oldUnleashClient = state.unleashClient;
   const oldFeatureTogglesInitialized = state.featureTogglesInitialized;
   const oldFeatureToggles = state.featureToggles;
+  const oldSafeBiometryEnabled = state.safeBiometryEnabled;
   return {
     ...initialState,
     unleashClient: oldUnleashClient,
     featureTogglesInitialized: oldFeatureTogglesInitialized,
     featureToggles: oldFeatureToggles,
+    safeBiometryEnabled: oldSafeBiometryEnabled,
   };
 };
 
@@ -1936,6 +1951,28 @@ export const onNewNanoContractTransactionRetryDismiss = (state) => ({
   },
 });
 
+export const onNewNanoContractTransactionRetry = (state) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    newNanoContractTransaction: {
+      ...state.walletConnect.newNanoContractTransaction,
+      retrying: true,
+    },
+  },
+});
+
+export const onNewNanoContractTransactionRetryDismiss = (state) => ({
+  ...state,
+  walletConnect: {
+    ...state.walletConnect,
+    newNanoContractTransaction: {
+      ...state.walletConnect.newNanoContractTransaction,
+      retrying: false,
+    },
+  },
+});
+
 export const onSetNewNanoContractTransactionStatus = (state, { payload }) => ({
   ...state,
   reown: {
@@ -2067,7 +2104,7 @@ export const onNanoContractBlueprintInfoSuccess = (state, { payload }) => ({
  * Remarks
  * This reducer aims to clean error feedback message before processing the request.
  */
-export const onUnregisteredTokensRequest = (state) => ({
+export const onUnregisteredTokensDownloadRequest = (state) => ({
   ...state,
   unregisteredTokens: {
     ...state.unregisteredTokens,
@@ -2083,15 +2120,41 @@ export const onUnregisteredTokensRequest = (state) => ({
  * @param {Object} state
  * @param {Object} action
  * @param {Object} action.payload
- * @param {Object} action.payload.tokens A map of token data by its UID.
  * @param {string} action.payload.error The error message as feedback to user
  */
-export const onUnregisteredTokensUpdate = (state, { payload }) => ({
+export const onUnregisteredTokensDownloadSuccess = (state, { payload }) => ({
   ...state,
   unregisteredTokens: {
     ...state.unregisteredTokens,
     ...payload.tokens,
-    isLoading: false,
+  },
+});
+
+/**
+ * Set error message as a user feedback.
+ *
+ * @param {Object} state
+ * @param {Object} action
+ * @param {Object} action.payload
+ * @param {string} action.payload.error The error message as feedback to user
+ */
+export const onUnregisteredTokensDownloadFailure = (state, { payload }) => ({
+  ...state,
+  unregisteredTokens: {
+    ...state.unregisteredTokens,
     error: payload.error || null,
   },
-})
+});
+
+/**
+ * Change state of isLoading to false while keeping tokens state.
+ *
+ * @param {Object} state
+ */
+export const onUnregisteredTokensDownloadEnd = (state) => ({
+  ...state,
+  unregisteredTokens: {
+    ...state.unregisteredTokens,
+    isLoading: false,
+  },
+});

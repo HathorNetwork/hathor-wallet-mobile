@@ -189,20 +189,28 @@ export const types = {
   /* It signals a fetch failure due to an error. */
   FIRSTADDRESS_FAILURE: 'FIRSTADDRESS_FAILURE',
   /* It updates the redux state of new nano contract transaction status on wallet connect register. */
-  REOWN_NEW_NANOCONTRACT_STATUS: 'REOWN_NEW_NANOCONTRACT_STATUS',
-  UNREGISTEREDTOKENS_REQUEST: 'UNREGISTEREDTOKENS_REQUEST',
-  UNREGISTEREDTOKENS_UPDATE: 'UNREGISTEREDTOKENS_UPDATE',
+  WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
+  /* It triggers a process to fetch token details for a list of unregistered tokens. */
+  UNREGISTEREDTOKENS_DOWNLOAD_REQUEST: 'UNREGISTEREDTOKENS_DOWNLOAD_REQUEST',
+  /* It signals the process has loaded at least one token details with success. */
+  UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS: 'UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS',
+  /* It signals the process has failed to load at least one token details. */
+  UNREGISTEREDTOKENS_DOWNLOAD_FAILURE: 'UNREGISTEREDTOKENS_DOWNLOAD_FAILURE',
+  /* It signals the end of the process. */
+  UNREGISTEREDTOKENS_DOWNLOAD_END: 'UNREGISTEREDTOKENS_DOWNLOAD_END',
   REOWN_NEW_NANOCONTRACT_RETRY: 'REOWN_NEW_NANOCONTRACT_RETRY',
   REOWN_NEW_NANOCONTRACT_RETRY_DISMISS: 'REOWN_NEW_NANOCONTRACT_RETRY_DISMISS',
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
   SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL',
-  SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
   SHOW_CREATE_TOKEN_REQUEST_MODAL: 'SHOW_CREATE_TOKEN_REQUEST_MODAL',
+  REOWN_NEW_NANOCONTRACT_STATUS: 'REOWN_NEW_NANOCONTRACT_STATUS',
   REOWN_CREATE_TOKEN_STATUS: 'REOWN_CREATE_TOKEN_STATUS',
   REOWN_CREATE_TOKEN_RETRY: 'REOWN_CREATE_TOKEN_RETRY',
   REOWN_CREATE_TOKEN_RETRY_DISMISS: 'REOWN_CREATE_TOKEN_RETRY_DISMISS',
   NETWORK_CHANGED: 'NETWORK_CHANGED',
   APPSTATE_UPDATED: 'APPSTATE_UPDATED',
+  SET_USE_SAFE_BIOMETRY_MODE: 'SET_USE_SAFE_BIOMETRY_MODE',
+  SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
 };
 
 export const featureToggleInitialized = () => ({
@@ -370,6 +378,11 @@ export const setLoadHistoryStatus = (active, error) => (
 
 export const setUseWalletService = (data) => ({
   type: types.SET_USE_WALLET_SERVICE,
+  payload: data,
+});
+
+export const setUseSafeBiometryMode = (data) => ({
+  type: types.SET_USE_SAFE_BIOMETRY_MODE,
   payload: data,
 });
 
@@ -1359,6 +1372,52 @@ export const setCreateTokenStatusSuccessful = () => ({
 });
 
 /**
+ * Signals that the user wants to attempt to retry the create token request
+ */
+export const createTokenRetry = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_RETRY,
+});
+
+/**
+ * Signals that the user doesn't want to retry the create token request
+ */
+export const createTokenRetryDismiss = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
+});
+
+/**
+ * Signals update on create token status to ready.
+ */
+export const setCreateTokenStatusReady = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
+  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.READY,
+});
+
+/**
+ * Signals update on create token status to loading.
+ */
+export const setCreateTokenStatusLoading = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
+  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.LOADING,
+});
+
+/**
+ * Signals update on create token status to failed.
+ */
+export const setCreateTokenStatusFailed = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
+  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.FAILED,
+});
+
+/**
+ * Signals update on create token status to successful.
+ */
+export const setCreateTokenStatusSuccessful = () => ({
+  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
+  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.SUCCESSFUL,
+});
+
+/**
  * Blueprint Info request in the context of a Nano Contract.
  * @param {string} id Blueprint ID.
  */
@@ -1403,19 +1462,18 @@ export const nanoContractBlueprintInfoSuccess = (id, blueprintInfo) => ({
  * @param {Object} payload
  * @param {string[]} payload.uids A list of token UID.
  */
-export const unregisteredTokensRequest = (payload) => ({
-  type: types.UNREGISTEREDTOKENS_REQUEST,
+export const unregisteredTokensDownloadRequest = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_DOWNLOAD_REQUEST,
   payload,
 });
 
 /**
- * Signals an update to unregistered tokens state.
+ * Signals the success of unregistered tokens request.
  * @param {Object} payload
  * @param {Object} payload.tokens A map of token data by its UID.
- * @param {string} payload.error The error message as feedback to user
  */
-export const unregisteredTokensUpdate = (payload) => ({
-  type: types.UNREGISTEREDTOKENS_UPDATE,
+export const unregisteredTokensDownloadSuccess = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS,
   payload,
 });
 
@@ -1427,6 +1485,23 @@ export const showSignOracleDataModal = (accept, deny, data, dapp) => ({
     data,
     dapp,
   },
+});
+
+/**
+ * Signals a failure on unregistered tokens request.
+ * @param {Object} payload
+ * @param {string} payload.error The error message as feedback to user
+ */
+export const unregisteredTokensDownloadFailure = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_DOWNLOAD_FAILURE,
+  payload,
+});
+
+/**
+ * Signals the unregistered tokens request has ended.
+ */
+export const unregisteredTokensDownloadEnd = () => ({
+  type: types.UNREGISTEREDTOKENS_DOWNLOAD_END,
 });
 
 export const showSignMessageWithAddressModal = (accept, deny, data, dapp) => ({

@@ -10,6 +10,8 @@ set -e  # Exit on any command failure.
 set -u  # Exit on unset variables.
 set -v # Verbose mode for better debugging
 
+git log -n1
+
 rm -rf node_modules/
 
 rm -f ./android/app/google-services.json

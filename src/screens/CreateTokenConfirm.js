@@ -116,6 +116,7 @@ class CreateTokenConfirm extends React.Component {
       screenText: t`Enter your 6-digit pin to create your token`,
       biometryText: t`Authorize token creation`,
       canCancel: true,
+      biometryLoadingText: t`Building transaction`,
     };
     this.props.navigation.navigate('PinScreen', params);
   }

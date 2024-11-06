@@ -14,13 +14,14 @@ import {
   take,
   all,
   put,
+  join,
 } from 'redux-saga/effects';
 import { t } from 'ttag';
 import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
 import { specificTypeAndPayload, dispatchAndWait, getRegisteredTokenUids } from './helpers';
-import { mapToTxHistory } from '../utils';
+import { mapToTxHistory, splitInGroups } from '../utils';
 import {
   types,
   tokenFetchBalanceRequested,
@@ -30,9 +31,12 @@ import {
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
   onExceptionCaptured,
-  unregisteredTokensUpdate,
+  unregisteredTokensDownloadSuccess,
+  unregisteredTokensDownloadEnd,
+  unregisteredTokensDownloadFailure,
 } from '../actions';
 import { logger } from '../logger';
+import { NODE_RATE_LIMIT_CONF } from '../constants';
 
 const log = logger('tokens-saga');
 
@@ -295,14 +299,39 @@ export function* fetchTokenData(tokenId, force = false) {
   }
 }
 
+/*
+ * Get token details from wallet.
+ *
+ * @param {Object} wallet The application wallet.
+ * @param {string} uid Token UID.
+ *
+ * @description
+ * The token endpoint has 3r/s with 10r of burst and 3s of delay.
+ */
+export function* getTokenDetails(wallet, uid) {
+  try {
+    const { tokenInfo: { symbol, name } } = yield call([wallet, wallet.getTokenDetails], uid);
+    yield put(unregisteredTokensDownloadSuccess({ tokens: { [uid]: { uid, symbol, name } } }));
+  } catch (e) {
+    log.error(`Fail getting token data for token ${uid}.`, e);
+    yield put(unregisteredTokensDownloadFailure({ error: failureMessage.someTokensNotLoaded }));
+  }
+}
+
 /**
  * Request tokens data to feed reown's tokens.
  * @param {Object} action
  * @param {Object} action.payload
  * @param {string[]} action.payload.uids
  */
-export function* requestUnregisteredTokens(action) {
+export function* requestUnregisteredTokensDownload(action) {
   const { uids } = action.payload;
+
+  if (uids.length === 0) {
+    log.debug('No uids to request token details.');
+    yield put(unregisteredTokensDownloadEnd());
+    return;
+  }
 
   const wallet = yield select((state) => state.wallet);
   if (!wallet.isReady()) {
@@ -312,29 +341,29 @@ export function* requestUnregisteredTokens(action) {
     return;
   }
 
-  const tokens = {};
-  let someError = false;
-  for (const uid of uids) {
-    try {
-      const { tokenInfo: { symbol, name } } = yield call([wallet, wallet.getTokenDetails], uid);
-      const token = { uid, symbol, name };
-      tokens[uid] = token;
-    } catch (e) {
-      log.error(`Fail getting token data for token ${uid}.`, e);
-      someError = true;
-      // continue download of tokens
-    }
-  }
+  /**
+   * NOTE: We can improve the follwoing strategy by adopting a more robust
+   * rate-limit algorithm, like the sliding window or token bucket.
+   */
 
-  if (someError) {
-    log.log('There was a failure while getting tokens data to feed unregisteredTokens.');
-    yield put(
-      unregisteredTokensUpdate({ tokens, error: failureMessage.someTokensNotLoaded })
-    );
-    return;
+  // These are the default values configured in the nginx conf public nodes.
+  const perBurst = NODE_RATE_LIMIT_CONF.thin_wallet_token.burst;
+  const burstDelay = NODE_RATE_LIMIT_CONF.thin_wallet_token.delay;
+  const uidGroups = splitInGroups(uids, perBurst);
+  for (const group of uidGroups) {
+    // Fork is a non-blocking effect, it doesn't cause the caller suspension.
+    const tasks = yield all(group.map((uid) => fork(getTokenDetails, wallet, uid)));
+    // Awaits a group to finish before burst the next group
+    yield join(tasks);
+    // Skip delay if there is only one group or is the last group
+    if (uidGroups.length === 1 || group === uidGroups.at(-1)) {
+      continue;
+    }
+    // This is a quick request, we should give a break before next burst
+    yield delay(burstDelay * 1000);
   }
   log.log('Success getting tokens data to feed unregisteredTokens.');
-  yield put(unregisteredTokensUpdate({ tokens }));
+  yield put(unregisteredTokensDownloadEnd());
 }
 
 export function* saga() {
@@ -344,6 +373,6 @@ export function* saga() {
     takeEvery(types.TOKEN_FETCH_HISTORY_REQUESTED, fetchTokenHistory),
     takeEvery(types.NEW_TOKEN, routeTokenChange),
     takeEvery(types.SET_TOKENS, routeTokenChange),
-    takeEvery(types.UNREGISTEREDTOKENS_REQUEST, requestUnregisteredTokens),
+    takeEvery(types.UNREGISTEREDTOKENS_DOWNLOAD_REQUEST, requestUnregisteredTokensDownload),
   ]);
 }
