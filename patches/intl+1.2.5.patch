@@ -1,0 +1,34 @@
+diff --git a/node_modules/intl/lib/core.js b/node_modules/intl/lib/core.js
+index 9334cfc..552a228 100644
+--- a/node_modules/intl/lib/core.js
++++ b/node_modules/intl/lib/core.js
+@@ -540,7 +540,7 @@ function createRegExpRestore() {
+ 
+     var regExpCache = {
+         lastMatch: RegExp.lastMatch || '',
+-        leftContext: RegExp.leftContext,
++        leftContext: RegExp.leftContext || '',
+         multiline: RegExp.multiline,
+         input: RegExp.input
+     },
+@@ -4291,6 +4291,12 @@ defineProperty(Intl, '__applyLocaleSensitivePrototypes', {
+     writable: true,
+     configurable: true,
+     value: function value() {
++        return null;
++        /*
++        XXX: These are mutating Number and Date prototypes which is blocked by SES, causing the app to crash.
++        Since we're not using toLocaleString anywhere in our code, I'm just returning `null` here.
++        */
++        /*
+         defineProperty(Number.prototype, 'toLocaleString', { writable: true, configurable: true, value: ls.Number.toLocaleString });
+         // Need this here for IE 8, to avoid the _DontEnum_ bug
+         defineProperty(Date.prototype, 'toLocaleString', { writable: true, configurable: true, value: ls.Date.toLocaleString });
+@@ -4298,6 +4304,7 @@ defineProperty(Intl, '__applyLocaleSensitivePrototypes', {
+         for (var k in ls.Date) {
+             if (hop.call(ls.Date, k)) defineProperty(Date.prototype, k, { writable: true, configurable: true, value: ls.Date[k] });
+         }
++        */
+     }
+ });
+ 

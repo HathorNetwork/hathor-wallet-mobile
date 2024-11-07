@@ -1,0 +1,66 @@
+diff --git a/node_modules/react-native/Libraries/Core/InitializeCore.js b/node_modules/react-native/Libraries/Core/InitializeCore.js
+index 25377f6..cd13707 100644
+--- a/node_modules/react-native/Libraries/Core/InitializeCore.js
++++ b/node_modules/react-native/Libraries/Core/InitializeCore.js
+@@ -26,6 +26,9 @@
+ 
+ const start = Date.now();
+ 
++// setUpSES should be imported after setUpXHR because setUpXHR adds AbortController:
++require('./setUpXHR');
++require('./setUpSES');
+ require('./setUpGlobals');
+ require('./setUpDOM');
+ require('./setUpPerformance');
+@@ -33,7 +36,6 @@ require('./setUpErrorHandling');
+ require('./polyfillPromise');
+ require('./setUpRegeneratorRuntime');
+ require('./setUpTimers');
+-require('./setUpXHR');
+ require('./setUpAlert');
+ require('./setUpNavigator');
+ require('./setUpBatchedBridge');
+diff --git a/node_modules/react-native/Libraries/Core/setUpSES.js b/node_modules/react-native/Libraries/Core/setUpSES.js
+new file mode 100644
+index 0000000..6f3dbbf
+--- /dev/null
++++ b/node_modules/react-native/Libraries/Core/setUpSES.js
+@@ -0,0 +1,38 @@
++import { MMKV } from 'react-native-mmkv';
++import { SHOULD_ENABLE_SES_STORAGE_KEY } from '../../../../src/constants';
++
++const storage = new MMKV();
++
++let isSesEnabled = storage.getBoolean(SHOULD_ENABLE_SES_STORAGE_KEY);
++
++// Enable SES by default
++if (isSesEnabled === undefined) {
++  isSesEnabled = true;
++  storage.set(SHOULD_ENABLE_SES_STORAGE_KEY, true);
++}
++
++// This piece of code was taken from this PR: https://github.com/MetaMask/metamask-mobile/pull/6586/files
++// which is the reference implementation of SES On react-native
++if (isSesEnabled && !global?.HermesInternal) {
++  require('../../../../lockdown.umd.js');
++
++  /**
++   * Without consoleTaming: 'unsafe' causes:
++   * - Attempting to define property on object that is not extensible.
++   * Without errorTrapping 'none' causes:
++   * - TypeError: undefined is not a function (near '...globalThis.process.on...')
++   * Without unhandledRejectionTrapping 'none' causes:
++   * - TypeError: globalThis.process.on is not a function. (In 'globalThis.process.on('unhandledRejection', h.unhandledRejectionHandler)', 'globalThis.process.on' is undefined)
++   * overrideTaming 'severe' is ideal (default override?)
++   * Nb: global.process is only partially shimmed, which confuses SES
++   * Nb: All are Unhandled JS Exceptions, since we call lockdown before setUpErrorHandling
++  */
++  repairIntrinsics({
++    consoleTaming: 'unsafe',
++    errorTrapping: 'none',
++    unhandledRejectionTrapping: 'none',
++    overrideTaming: 'severe',
++  });
++
++  hardenIntrinsics();
++}
