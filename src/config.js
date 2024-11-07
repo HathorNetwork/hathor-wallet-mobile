@@ -42,17 +42,11 @@ export const _DEFAULT_TOKEN = {
   ...hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG,
 };
 
-export const DEFAULT_EVENT_TOKEN = {
-  uid: '00000008ff7c8af2f3ea120b7a3bab5788f917d320ccc98098445bc1ef78ecca',
-  name: 'EventCoin',
-  symbol: 'EVC',
-};
-
 /**
  * Whether we should skip the words confirmation screen during
  * new wallet creation
  */
-export const SKIP_SEED_CONFIRMATION = true;
+export const SKIP_SEED_CONFIRMATION = false;
 
 /**
  * App's primary color (Hathor purple)
@@ -67,4 +61,4 @@ export const _SENTRY_DSN = 'https://c1ebae9159f741e8937abdbfbeba8e8a@o239606.ing
 /**
  * Whether we should skip the initial modal on reown requests
  */
-export const REOWN_SKIP_CONFIRMATION_MODAL = true;
+export const REOWN_SKIP_CONFIRMATION_MODAL = false;
