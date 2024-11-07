@@ -74,13 +74,13 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.hathordemo"
+    namespace "network.hathor.wallet"
     defaultConfig {
-        applicationId "com.hathordemo"
+        applicationId "network.hathor.wallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 78
-        versionName "0.28.5"
+        versionCode 74
+        versionName "0.28.0-rc.2"
         missingDimensionStrategy "react-native-camera", "general"
     }
     signingConfigs {
