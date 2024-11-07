@@ -161,7 +161,8 @@
       "@hathor/wallet-lib>level>classic-level": false,
       "@lavamoat/preinstall-always-fail": false,
       "@sentry/react-native>@sentry/cli": false,
-      "ttag-cli": false
+      "ttag-cli": false,
+      "@walletconnect/core>@walletconnect/keyvaluestorage>unstorage>listhen>@parcel/watcher": false
     }
   }
 }

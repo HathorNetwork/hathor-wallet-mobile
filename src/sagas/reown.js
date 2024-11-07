@@ -72,7 +72,7 @@ import {
   CreateTokenError,
   SendNanoContractTxError,
 } from '@hathor/hathor-rpc-handler';
-import { isWalletServiceEnabled, WALLET_STATUS } from './wallet';
+import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
   REOWN_PROJECT_ID,
@@ -130,12 +130,15 @@ function* isReownEnabled() {
 }
 
 function* init() {
-  const walletStartState = yield select((state) => state.walletStartState);
+  log.debug('Wallet not ready yet, waiting for START_WALLET_SUCCESS.');
+  yield take(types.START_WALLET_SUCCESS);
+  log.debug('Starting reown.');
 
-  if (walletStartState !== WALLET_STATUS.READY) {
-    log.debug('Wallet not ready yet, waiting for START_WALLET_SUCCESS.');
-    yield take(types.START_WALLET_SUCCESS);
-    log.debug('Starting reown.');
+  // We should check if nano contracts are enabled in this network:
+  const nanoContractsEnabled = yield select((state) => get(state.serverInfo, 'nano_contracts_enabled', false));
+  if (!nanoContractsEnabled) {
+    log.debug('Nano contracts are not enabled, skipping reown init.');
+    return;
   }
 
   try {
@@ -178,11 +181,14 @@ function* init() {
     // Pass extend = true so session expiration date get renewed
     yield call(refreshActiveSessions, true);
     yield fork(listenForAppStateChange);
-    yield fork(listenForNetworkChange);
     yield fork(requestsListener);
 
     // If the wallet is reset, we should cancel all listeners
-    yield take(types.RESET_WALLET);
+    yield take([
+      types.RESET_WALLET,
+      // If network changed, init will be called again, so clear.
+      types.NETWORK_CHANGED,
+    ]);
 
     yield call(clearSessions);
 
@@ -198,8 +204,8 @@ export function* listenForNetworkChange() {
     // XXX: We should check the fullnode's genesisHash and only reset
     // the sessions if it changed.
     yield take(types.NETWORK_CHANGED);
-    log.debug('Network changed, resetting all sessions.');
-    yield call(clearSessions);
+    log.debug('Network changed.');
+    yield fork(init);
   }
 }
 
@@ -972,6 +978,7 @@ export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
     fork(init),
+    fork(listenForNetworkChange),
     takeLatest(types.SHOW_NANO_CONTRACT_SEND_TX_MODAL, onSendNanoContractTxRequest),
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
     takeLatest(types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL, onSignOracleDataRequest),
