@@ -217,8 +217,24 @@ export function* listenForAppStateChange() {
   }
 }
 
+export function* getReownClient() {
+  const reownClient = yield select((state) => state.reown.client);
+
+  if (!reownClient) {
+    return null;
+  }
+
+  return reownClient;
+}
+
 export function* checkForPendingRequests() {
-  const { walletKit } = yield select((state) => state.reown.client);
+  const reownClient = yield call(getReownClient);
+  if (!reownClient) {
+    // Do nothing, client might not yet have been initialized.
+    log.debug('Tried to get reown client in checkForPendingRequests but it is undefined.');
+    return;
+  }
+  const { walletKit } = reownClient;
 
   yield call([walletKit, walletKit.getPendingAuthRequests]);
   yield call([walletKit, walletKit.getPendingSessionRequests]);
@@ -226,7 +242,13 @@ export function* checkForPendingRequests() {
 
 export function* refreshActiveSessions(extend = false) {
   log.debug('Refreshing active sessions.');
-  const { walletKit } = yield select((state) => state.reown.client);
+  const reownClient = yield call(getReownClient);
+  if (!reownClient) {
+    // Do nothing, client might not yet have been initialized.
+    log.debug('Tried to get reown client in refreshActiveSessions but it is undefined.');
+    return;
+  }
+  const { walletKit } = reownClient;
 
   const activeSessions = yield call(() => walletKit.getActiveSessions());
   yield put(setReownSessions(activeSessions));
@@ -312,7 +334,15 @@ export function* setupListeners(walletKit) {
  * the current client.
  */
 export function* clearSessions() {
-  const { walletKit } = yield select((state) => state.reown.client);
+  const reownClient = yield call(getReownClient);
+  if (!reownClient) {
+    // Do nothing, client might not yet have been initialized.
+    log.debug('Tried to get reown client in clearSessions but it is undefined.');
+    return;
+  }
+
+  const { walletKit } = reownClient;
+
   const activeSessions = yield call(() => walletKit.getActiveSessions());
 
   for (const key of Object.keys(activeSessions)) {
@@ -351,9 +381,15 @@ export function* processRequest(action) {
   const { payload } = action;
   const { params } = payload;
 
+  const reownClient = yield call(getReownClient);
+  if (!reownClient) {
+    // Do nothing, client might not yet have been initialized.
+    log.debug('Tried to get reown client in clearSessions but it is undefined.');
+    return;
+  }
+  const { walletKit } = reownClient;
   const wallet = yield select((state) => state.wallet);
 
-  const { walletKit } = yield select((state) => state.reown.client);
   const activeSessions = yield call(() => walletKit.getActiveSessions());
   const requestSession = activeSessions[payload.topic];
 
@@ -773,8 +809,15 @@ export function* onWalletReset() {
  */
 export function* onSessionProposal(action) {
   const { id, params } = action.payload;
-  const { walletKit } = yield select((state) => state.reown.client);
+  const reownClient = yield call(getReownClient);
+  console.log('REOWN CLIENT: ', reownClient);
+  if (!reownClient) {
+    // Do nothing, client might not yet have been initialized.
+    log.debug('Tried to get reown client in onSessionProposal but it is undefined.');
+    return;
+  }
 
+  const { walletKit } = reownClient;
   const wallet = yield select((state) => state.wallet);
   const firstAddress = yield call(() => wallet.getAddressAtIndex(0));
 
@@ -858,11 +901,15 @@ export function* onSessionProposal(action) {
  * a QR Code
  */
 export function* onUriInputted(action) {
-  const { walletKit, core } = yield select((state) => state.reown.client);
+  const reownClient = yield call(getReownClient);
 
-  if (!walletKit) {
-    throw new Error('Wallet connect instance is new and QRCode was read');
+  if (!reownClient) {
+    // Do nothing, client might not yet have been initialized.
+    log.debug('Tried to get reown client in onSessionProposal but it is undefined.');
+    return;
   }
+
+  const { core } = reownClient;
 
   const { payload } = action;
 
