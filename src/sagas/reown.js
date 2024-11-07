@@ -321,6 +321,8 @@ export function* setupListeners(walletKit) {
         payload: message.data,
       });
     }
+  } catch (e) {
+    log.error(e);
   } finally {
     if (yield cancelled()) {
       // When we close the channel, it will remove the event listener
