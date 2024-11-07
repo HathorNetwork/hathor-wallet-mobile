@@ -27,7 +27,7 @@ import {
   setNewNanoContractStatusReady,
   reownAccept,
   reownReject,
-  unregisteredTokensRequest,
+  unregisteredTokensDownloadRequest,
   nanoContractRegisterRequest,
   nanoContractRegisterReady,
   firstAddressRequest,
@@ -160,7 +160,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
         unknownTokensUid.push(uid);
       }
     });
-    dispatch(unregisteredTokensRequest({ uids: unknownTokensUid }));
+    dispatch(unregisteredTokensDownloadRequest({ uids: unknownTokensUid }));
 
     // Unmount
     return () => {

@@ -17,7 +17,8 @@ import {
   REOWN_NEW_NANOCONTRACT_TX_STATUS,
   NANOCONTRACT_BLUEPRINTINFO_STATUS,
   PRE_SETTINGS_NANO_TESTNET,
-  REOWN_CREATE_TOKEN_STATUS
+  REOWN_CREATE_TOKEN_STATUS,
+  PRE_SETTINGS_MAINNET
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -312,7 +313,7 @@ const initialState = {
    *  walletServiceWsUrl: string;
    * }}
    */
-  networkSettings: PRE_SETTINGS_NANO_TESTNET,
+  networkSettings: PRE_SETTINGS_MAINNET,
   networkSettingsInvalid: {},
   networkSettingsStatus: NETWORKSETTINGS_STATUS.READY,
   nanoContract: {
