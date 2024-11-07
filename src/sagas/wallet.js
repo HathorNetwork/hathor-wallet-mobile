@@ -254,7 +254,7 @@ export function* startWallet(action) {
   yield put(setUniqueDeviceId(uniqueDeviceId));
 
   try {
-    // XXX: This comes as undefined when the facede is the wallet-service.
+    // XXX: This comes as undefined when the facade is the wallet-service.
     // We need to update this when we start returning something there.
     const serverInfo = yield call(wallet.start.bind(wallet), {
       pinCode: pin,

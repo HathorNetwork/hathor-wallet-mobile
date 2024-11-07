@@ -307,9 +307,28 @@ export const setIsShowingPinScreen = (isShowingPinScreen) => ({
 export const setIsOnline = (status) => ({ type: types.SET_IS_ONLINE, payload: status });
 
 /**
- * version {str} version of the connected server (e.g., 0.26.0-beta)
- * network {str} network of the connected server (e.g., mainnet, testnet)
- * */
+ * payload {{
+ *   decimal_places {number} Number of decimal places for token amounts (e.g., 2 means 0.01 is minimum unit)
+ *   genesis_block_hash {string} hash of the network's genesis block
+ *   genesis_tx1_hash {string} hash of the first genesis transaction
+ *   genesis_tx2_hash {string} hash of the second genesis transaction
+ *   max_number_inputs {number} Maximum number of inputs allowed in a transaction (default 255)
+ *   max_number_outputs {number} Maximum number of outputs allowed in a transaction (default 255)
+ *   min_tx_weight {number} Minimum transaction weight allowed (8)
+ *   min_tx_weight_coefficient {number} Coefficient for transaction weight calculation (0)
+ *   min_tx_weight_k {number} K parameter for transaction weight calculation (0)
+ *   min_weight {number} Minimum weight allowed for any operation (8)
+ *   nano_contracts_enabled {boolean} Whether nano contracts feature is enabled
+ *   native_token {{
+ *     name {string} Full name of the native token ("Hathor")
+ *     symbol {string} Trading symbol of the native token ("HTR")
+ *   }} Native token information
+ *   network {string} Name of the network ("nano-testnet-alpha")
+ *   reward_spend_min_blocks {number} Minimum number of blocks before rewards can be spent (300)
+ *   token_deposit_percentage {number} Required deposit percentage for new tokens (0.01 = 1%)
+ *   version {string} Version of the node software
+ * } | null}
+ */
 export const setServerInfo = (payload) => (
   { type: types.SET_SERVER_INFO, payload }
 );

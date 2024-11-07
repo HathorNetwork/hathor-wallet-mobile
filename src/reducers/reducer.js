@@ -45,10 +45,6 @@ import { WALLET_STATUS } from '../sagas/wallet';
  * invoicePayment {Object} null if not paid or the tx that settles latestInvoice
  * selectedToken {Object} token currently selected by the user
  * isOnline {bool} Indicates whether the wallet is connected to the fullnode's websocket
- * serverInfo {Object} {
- *   version {str} version of the connected server (e.g., 0.26.0-beta)
- *   network {str} network of the connected server (e.g., mainnet, testnet)
- * }
  * lockScreen {bool} Indicates screen is locked
  *
  * useWalletService {boolean} if should use wallet service facade
@@ -135,7 +131,30 @@ const initialState = {
    */
   selectedToken: DEFAULT_TOKEN,
   isOnline: false,
-  serverInfo: { version: '', network: '' },
+  /**
+   * serverInfo {{
+   *   decimal_places: number;
+   *   genesis_block_hash: string;
+   *   genesis_tx1_hash: string;
+   *   genesis_tx2_hash: string;
+   *   max_number_inputs: number;
+   *   max_number_outputs: number;
+   *   min_tx_weight: number;
+   *   min_tx_weight_coefficient: number;
+   *   min_tx_weight_k: number;
+   *   min_weight: number;
+   *   nano_contracts_enabled: boolean;
+   *   native_token: {
+   *     name: string;
+   *     symbol: string;
+   *   };
+   *   network: string;
+   *   reward_spend_min_blocks: number;
+   *   token_deposit_percentage: number;
+   *   version: string;
+   * }} | null
+   */
+  serverInfo: null,
   lockScreen: true,
   resetOnLockScreen: false,
   height: 0,

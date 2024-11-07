@@ -72,7 +72,7 @@ import {
   CreateTokenError,
   SendNanoContractTxError,
 } from '@hathor/hathor-rpc-handler';
-import { isWalletServiceEnabled, WALLET_STATUS } from './wallet';
+import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
   REOWN_PROJECT_ID,
@@ -181,7 +181,6 @@ function* init() {
     // Pass extend = true so session expiration date get renewed
     yield call(refreshActiveSessions, true);
     yield fork(listenForAppStateChange);
-    // yield fork(listenForNetworkChange);
     yield fork(requestsListener);
 
     // If the wallet is reset, we should cancel all listeners
