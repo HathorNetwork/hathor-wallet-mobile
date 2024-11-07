@@ -8,53 +8,61 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { StyleSheet } from 'react-native';
-import { hideWalletConnectModal } from '../../actions';
+import { hideReownModal } from '../../actions';
 import SignMessageModal from './SignMessageModal';
 import ConnectModal from './ConnectModal';
 import { COLORS } from '../../styles/themes';
 import { NewNanoContractTransactionModal } from './NanoContract/NewNanoContractTransactionModal';
+import SignOracleDataModal from './NanoContract/SignOracleDataModal';
 import CreateTokenModal from './CreateTokenModal';
 
 export default () => {
   const dispatch = useDispatch();
-  const walletConnectModal = useSelector((state) => state.walletConnect.modal);
+  const reownModal = useSelector((state) => state.reown.modal);
 
-  if (!walletConnectModal.show) {
+  if (!reownModal.show) {
     return null;
   }
 
   const onDismiss = () => {
-    dispatch(hideWalletConnectModal());
+    dispatch(hideReownModal());
   };
 
   const getModal = (type) => {
     switch (type) {
-      case WalletConnectModalTypes.CONNECT:
+      case ReownModalTypes.CONNECT:
         return (
           <ConnectModal
-            {...walletConnectModal}
+            {...reownModal}
             onDismiss={onDismiss}
             baseStyles={baseStyles}
           />
         );
-      case WalletConnectModalTypes.SIGN_MESSAGE:
+      case ReownModalTypes.SIGN_MESSAGE:
         return (
           <SignMessageModal
-            {...walletConnectModal}
+            {...reownModal}
             onDismiss={onDismiss}
           />
         );
-      case WalletConnectModalTypes.SEND_NANO_CONTRACT_TX:
+      case ReownModalTypes.SIGN_ORACLE_DATA:
+        return (
+          <SignOracleDataModal
+            {...reownModal}
+            onDismiss={onDismiss}
+          />
+        );
+      case ReownModalTypes.SEND_NANO_CONTRACT_TX:
         return (
           <NewNanoContractTransactionModal
-            {...walletConnectModal}
+            {...reownModal}
             onDismiss={onDismiss}
           />
         );
-      case WalletConnectModalTypes.CREATE_TOKEN:
+      case ReownModalTypes.CREATE_TOKEN:
         return (
           <CreateTokenModal
-            {...walletConnectModal}
+            {...reownModal}
             onDismiss={onDismiss}
           />
         );
@@ -63,7 +71,7 @@ export default () => {
     }
   };
 
-  return getModal(walletConnectModal.type);
+  return getModal(reownModal.type);
 };
 
 const baseStyles = StyleSheet.create({
@@ -112,9 +120,10 @@ const baseStyles = StyleSheet.create({
   },
 });
 
-export const WalletConnectModalTypes = {
+export const ReownModalTypes = {
   CONNECT: 'CONNECT',
   SIGN_MESSAGE: 'SIGN_MESSAGE',
   SEND_NANO_CONTRACT_TX: 'SEND_NANO_CONTRACT_TX',
+  SIGN_ORACLE_DATA: 'SIGN_ORACLE_DATA',
   CREATE_TOKEN: 'CREATE_TOKEN',
 };

@@ -38,10 +38,8 @@ It's a second custom NFT token to test.
 1. **Turn on the `push-notification` feature toggle**
     1. [ ] Go to the settings page
     1. [ ] Get the `deviceId` and add it in the `UserIDs` for the stage and platform mobile in the unleash **`push-notification.rollout`** feature toggle.
-    1. [ ] Wait until the **Push Notification** item shows up in the Settings page
-    1. [ ] You should see a modal to opt-in the push notification
-    1. [ ] Click on **Yes, enable**
-        1. You should be redirected to **Push Notification** page
+    1. [ ] Close the app and open again.
+    1. The **Push Notification** item now shows up in the Settings page
 1. **Turn off the `push-notification` feature toggle**
     1. [ ] **Go to the Settings page**
     1. [ ] Remove your `deviceId` from the unleash **`push-notification.rollout`** feature toggle
@@ -52,23 +50,23 @@ It's a second custom NFT token to test.
     1. [ ] Go to the **Push Notification** page
     1. [ ] Turn on the `Enable Push Notification`
     1. [ ] Turn on the `Show amounts on notification`
-    1. [ ] Turn off the `Enabled Push Notification`
+    1. [ ] Turn off the `Enable Push Notification`
     1. [ ] Try to turn on the `Show amounts on notification`
         1. it should not be possible
-    1. [ ] Turn on the `Enabled Push Notification`
+    1. [ ] Turn on the `Enable Push Notification`
         1. `Show amounts on notification` should be on
     1. [ ] Turn off the `Show amounts on notification`
-    1. [ ] Turn off the `Enabled Push Notification`
+    1. [ ] Turn off the `Enable Push Notification`
 
 1. **Try to send a notification with `push-notification` feature toggle turned off**
     1. [ ] Go to the **Settings** page
-    1. [ ] Turn **off** the `push-notifiation` feature toggle
+    1. [ ] Turn **off** the `push-notification` feature toggle
     1. [ ] Send HTR to this wallet
         1. Wait some minutes to guarantee you won't receive any notifications for this tx
 
 1. **Try to send a notification with `push-notification` feature toggle turned on**
     1. [ ] Go to the **Settings** page
-    1. [ ] Turn **on** the `push-notifiation` feature toggle
+    1. [ ] Turn **on** the `push-notification` feature toggle
     1. [ ] Send HTR to this wallet
         1. Wait some minutes to guarantee you won't receive any notifications for this tx (because the settings `Enable Push Notification` is disabled)
 
@@ -115,7 +113,7 @@ It's a second custom NFT token to test.
         1. Wait until the notification arrives
         1. You should receive a notification of new transaction without show amounts
             > There is a new transaction in your wallet.
-    1. [ ] Click on the notification
+    1. [ ] Click on the notification, open the app with your PIN
     1. [ ] Wait until the modal with tx details open
         1. The `HTR - HATHOR` name should be in the primary color (purple)
     1. [ ] Click on the `HTR - HATHOR` item

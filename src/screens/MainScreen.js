@@ -37,6 +37,7 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from '../components/HathorFlatList';
 import { ActionDot } from '../components/Icons/ActionDot.icon';
+import { getNetworkSettings } from '../sagas/helpers';
 
 /**
  * txList {Array} array with transactions of the selected token
@@ -52,7 +53,7 @@ const mapStateToProps = (state) => ({
   balance: get(state.tokensBalance, `${state.selectedToken.uid}.data`, { available: 0, locked: 0 }),
   selectedToken: state.selectedToken,
   isOnline: state.isOnline,
-  network: state.serverInfo.network,
+  network: getNetworkSettings(state).network,
   wallet: state.wallet,
   tokenMetadata: state.tokenMetadata,
 });

@@ -12,8 +12,10 @@ import { saga as pushNotificationSaga } from './pushNotification';
 import { saga as errorHandlerSagas } from './errorHandler';
 import { saga as featureToggleSagas } from './featureToggle';
 import { saga as permissionsSagas } from './permissions';
-import { saga as walletConnectSagas } from './walletConnect';
+import { saga as reownSagas } from './reown';
 import { saga as networkSettingsSagas } from './networkSettings';
+import { saga as sesSagas } from './ses';
+
 import { saga as nanoContractSagas } from './nanoContract';
 import { onExceptionCaptured } from '../actions';
 import { logger } from '../logger';
@@ -30,8 +32,9 @@ const sagas = {
   errorHandlerSagas: { saga: errorHandlerSagas, retryCount: 0, critical: true },
   featureToggleSagas: { saga: featureToggleSagas, retryCount: 0, critical: true },
   permissionsSagas: { saga: permissionsSagas, retryCount: 0, critical: true },
-  walletConnectSagas: { saga: walletConnectSagas, retryCount: 0, critical: false },
+  reownSagas: { saga: reownSagas, retryCount: 0, critical: false },
   nanoContractSagas: { saga: nanoContractSagas, retryCount: 0, critical: true },
+  sesSagas: { saga: sesSagas, retryCount: 0, critical: true },
 };
 
 function* rootSaga() {

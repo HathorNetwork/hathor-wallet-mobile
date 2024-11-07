@@ -14,19 +14,20 @@ import {
   Text,
   View,
 } from 'react-native';
-import { isEmpty } from 'lodash';
+import { isEmpty, get } from 'lodash';
 import OfflineBar from '../components/OfflineBar';
 import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import {
   IS_MULTI_TOKEN,
   NETWORK_SETTINGS_FEATURE_TOGGLE,
-  WALLET_CONNECT_FEATURE_TOGGLE,
+  REOWN_FEATURE_TOGGLE,
 } from '../constants';
 import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
 import { NetworkSettingsFlowNav } from './NetworkSettings';
 import { isPushNotificationAvailableForUser } from '../utils';
+import { getNetworkSettings } from '../sagas/helpers';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -46,11 +47,11 @@ const mapStateToProps = (state) => {
   return {
     selectedToken: state.selectedToken,
     isOnline: state.isOnline,
-    network: state.serverInfo.network,
+    network: getNetworkSettings(state).network,
     uniqueDeviceId: state.uniqueDeviceId,
     server,
     isPushNotificationAvailable: isPushNotificationAvailableForUser(state),
-    walletConnectEnabled: state.featureToggles[WALLET_CONNECT_FEATURE_TOGGLE],
+    reownEnabled: state.featureToggles[REOWN_FEATURE_TOGGLE] && get(state.serverInfo, 'nano_contracts_enabled', false),
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
   };
 };
@@ -150,11 +151,11 @@ export class Settings extends React.Component {
                   onPress={() => this.props.navigation.navigate('RegisterToken')}
                 />
               )}
-            {this.props.walletConnectEnabled
+            {this.props.reownEnabled
               && (
                 <ListMenu
-                  title='Wallet Connect'
-                  onPress={() => this.props.navigation.navigate('WalletConnectList')}
+                  title='Reown'
+                  onPress={() => this.props.navigation.navigate('ReownList')}
                 />
               )}
             <ListMenu

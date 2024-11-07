@@ -1,0 +1,26 @@
+diff --git a/node_modules/react/cjs/react-jsx-dev-runtime.development.js b/node_modules/react/cjs/react-jsx-dev-runtime.development.js
+index 3fe63ac..415fb06 100644
+--- a/node_modules/react/cjs/react-jsx-dev-runtime.development.js
++++ b/node_modules/react/cjs/react-jsx-dev-runtime.development.js
+@@ -369,7 +369,9 @@ function describeNativeComponentFrame(fn, construct) {
+   reentry = true;
+   var previousPrepareStackTrace = Error.prepareStackTrace; // $FlowFixMe It does accept undefined.
+ 
+-  Error.prepareStackTrace = undefined;
++  // XXX: SES blocks this, it shouldn't. This will cause us to have less information on dev logs.
++  // We should remove this comment after this is fixed on SES side.
++  // Error.prepareStackTrace = undefined;
+   var previousDispatcher;
+ 
+   {
+@@ -495,7 +497,9 @@ function describeNativeComponentFrame(fn, construct) {
+       reenableLogs();
+     }
+ 
+-    Error.prepareStackTrace = previousPrepareStackTrace;
++    // XXX: SES blocks this, it shouldn't. This will cause us to have less information on dev logs.
++    // We should remove this comment after this is fixed on SES side.
++    // Error.prepareStackTrace = previousPrepareStackTrace;
+   } // Fallback to just using the name if we couldn't make it throw.
+ 
+ 

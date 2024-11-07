@@ -18,17 +18,17 @@ import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
 import SimpleInput from '../../components/SimpleInput';
 import NewHathorButton from '../../components/NewHathorButton';
-import { walletConnectUriInputted } from '../../actions';
+import { reownUriInputted } from '../../actions';
 import { getKeyboardAvoidingViewTopDistance } from '../../utils';
 
-export default function WalletConnectList({ navigation }) {
+export default function ReownList({ navigation }) {
   const [configString, setConfigString] = useState('');
 
   const dispatch = useDispatch();
 
   const onButtonPress = () => {
-    dispatch(walletConnectUriInputted(configString));
-    navigation.navigate('WalletConnectList');
+    dispatch(reownUriInputted(configString));
+    navigation.navigate('ReownList');
   };
 
   return (
@@ -42,7 +42,7 @@ export default function WalletConnectList({ navigation }) {
         <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
           <View>
             <SimpleInput
-              label={t`Wallet Connect URI`}
+              label={t`Reown URI`}
               autoFocus
               multiline
               onChangeText={setConfigString}

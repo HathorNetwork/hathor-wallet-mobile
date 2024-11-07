@@ -14,6 +14,10 @@ export const ACCESS_DATA_KEY = 'asyncstorage:access';
 export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
 export const STORE_VERSION_KEY = 'asyncstorage:version';
 export const REGISTERED_NANO_CONTRACTS_KEY = 'asyncstorage:registeredNanoContracts';
+export const PIN_BACKUP_KEY = 'asyncstorage:pinBackup';
+export const IS_OLD_BIOMETRY_ENABLED_KEY = 'mobile:isBiometryEnabled';
+export const IS_BIOMETRY_ENABLED_KEY = 'mobile:isSafeBiometryEnabled';
+export const SUPPORTED_BIOMETRY_KEY = 'mobile:supportedBiometry';
 
 export const walletKeys = [
   ACCESS_DATA_KEY,
@@ -507,6 +511,32 @@ class AsyncStorageStore {
     }
     // We have finished the migration so we can set the storage version to the most recent one.
     this.updateStorageVersion();
+  }
+
+  /**
+   * @param {string} pin
+   * @param {string} password
+   */
+  enableSafeBiometry(pin, password) {
+    // encrypt pin with password and save encrypted
+    const encryptedData = cryptoUtils.encryptData(pin, password);
+    this.setItem(PIN_BACKUP_KEY, encryptedData);
+    // Enable biometry
+    this.setItem(IS_BIOMETRY_ENABLED_KEY, true);
+  }
+
+  /**
+   * @param {string} password
+   * @returns {string} original wallet pin
+   */
+  disableSafeBiometry(password) {
+    // decrypt pin with password and remove backup
+    const encryptedPin = this.getItem(PIN_BACKUP_KEY);
+    const pin = cryptoUtils.decryptData(encryptedPin, password);
+    this.removeItem(PIN_BACKUP_KEY);
+    // Disable biometry
+    this.setItem(IS_BIOMETRY_ENABLED_KEY, false);
+    return pin;
   }
 }
 

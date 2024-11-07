@@ -6,6 +6,7 @@
  */
 
 import hathorLib from '@hathor/wallet-lib';
+import CryptoJS from 'crypto-js';
 import * as Keychain from 'react-native-keychain';
 import React from 'react';
 import { isEmpty } from 'lodash';
@@ -15,7 +16,7 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import moment from 'moment';
 import baseStyle from './styles/init';
 import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE } from './constants';
-import { STORE } from './store';
+import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_BIOMETRY_KEY } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
 import { logger } from './logger';
@@ -90,17 +91,72 @@ export const getAmountParsed = (text) => {
 
 export const getTokenLabel = (token) => `${token.name} (${token.symbol})`;
 
+/**
+ * Migrate the biometry configuration state if needed.
+ *
+ * @param {string} currentPassword
+ * @param {bool} safeBiometryEnabled
+ */
+export async function biometricsMigration(currentPassword, safeBiometryEnabled) {
+  const oldBiometry = STORE.getItem(IS_OLD_BIOMETRY_ENABLED_KEY);
+  const safeBiometry = STORE.getItem(IS_BIOMETRY_ENABLED_KEY);
+
+  if (safeBiometryEnabled) {
+    // Safe biometry mode, need to migrate if old biometry is enabled.
+    if (oldBiometry) {
+      // currentPassword is the pin, we need to generate a new random password
+      // and encrypt the pin.
+      const password = generateRandomPassword();
+      const storage = STORE.getStorage();
+      await changePinOnAccessData(storage, currentPassword, password);
+      STORE.enableSafeBiometry(currentPassword, password);
+      STORE.removeItem(IS_OLD_BIOMETRY_ENABLED_KEY);
+    }
+  } else {
+    // Old biometry mode, need to migrate if safe biometry is enabled.
+    // eslint-disable-next-line no-lonely-if
+    if (safeBiometry) {
+      // currentPassword is the random password, we need to decrypt the pin and
+      // toggle the old biometry key
+      const pin = STORE.disableSafeBiometry(currentPassword);
+      const storage = STORE.getStorage();
+      await changePinOnAccessData(storage, currentPassword, pin);
+      STORE.removeItem(IS_BIOMETRY_ENABLED_KEY);
+      STORE.setItem(IS_OLD_BIOMETRY_ENABLED_KEY, true);
+    }
+  }
+}
+
+/**
+ * Generate a 32 byte random password encoded in hex
+ * @returns {string}
+ */
+export function generateRandomPassword() {
+  const seed = CryptoJS.lib.WordArray.random(32).toString();
+  return CryptoJS.PBKDF2(seed, seed, { iterations: 10000 }).toString();
+}
+
 export const setSupportedBiometry = (type) => {
-  STORE.setItem('mobile:supportedBiometry', type);
+  STORE.setItem(SUPPORTED_BIOMETRY_KEY, type);
 };
 
-export const getSupportedBiometry = () => STORE.getItem('mobile:supportedBiometry');
+export const getSupportedBiometry = () => STORE.getItem(SUPPORTED_BIOMETRY_KEY);
 
+/**
+ * Old biometry mode does not require aditional data to be activated
+ * @deprecated
+ *
+ * @param {bool} value
+ */
 export const setBiometryEnabled = (value) => {
-  STORE.setItem('mobile:isBiometryEnabled', value);
+  STORE.setItem(IS_OLD_BIOMETRY_ENABLED_KEY, value);
 };
 
-export const isBiometryEnabled = () => STORE.getItem('mobile:isBiometryEnabled') || false;
+export const isBiometryEnabled = () => {
+  const oldBiometry = STORE.getItem(IS_OLD_BIOMETRY_ENABLED_KEY);
+  const safeBiometry = STORE.getItem(IS_BIOMETRY_ENABLED_KEY);
+  return oldBiometry || safeBiometry || false;
+}
 
 /**
  * Convert a string into a JSX. It receives a text and a map of functions. The text
@@ -325,26 +381,43 @@ export const setKeychainPin = (pin) => {
  * @param {string} oldPin
  * @param {string} newPin
  *
- * @return {boolean} Wether the change password was successful
+ * @return {Promise<boolean>} Wether the change password was successful
  */
-export const changePin = async (wallet, oldPin, newPin) => {
-  const isPinValid = await wallet.checkPinAndPassword(oldPin, oldPin);
-  if (!isPinValid) {
+export const changePin = async (wallet, oldPin, newPin) => (
+  changePinOnAccessData(wallet.storage, oldPin, newPin)
+);
+
+/**
+ * @param {hathorLib.Storage} storage
+ * @param {string} oldPin
+ * @param {string} newPin
+ *
+ * @return {Promise<boolean>} Wether the change password was successful
+ */
+export async function changePinOnAccessData(storage, oldPin, newPin) {
+  // Run checkPin and checkPassword
+  // pinValid will be true if both return true, false otherwise.
+  const pinValid = (await Promise.all([
+    storage.checkPin(oldPin),
+    storage.checkPassword(oldPin),
+  ])).every((x) => x);
+
+  if (!pinValid) {
     return false;
   }
 
   try {
     // All of these are checked above so it should not fail
-    await wallet.storage.changePin(oldPin, newPin);
+    await storage.changePin(oldPin, newPin);
     // Will throw if the access data does not have the seed.
-    await wallet.storage.changePassword(oldPin, newPin);
+    await storage.changePassword(oldPin, newPin);
   } catch (err) {
     return false;
   }
 
   setKeychainPin(newPin);
   return true;
-};
+}
 
 /**
  * Curry function that maps a raw history element to an expected TxHistory model object.
@@ -409,6 +482,50 @@ export const isPushNotificationAvailableForUser = (state) => (
 );
 
 /**
+ * Verifies if all critical built-in object prototypes are frozen, indicating a secure
+ * ECMAScript (SES) environment. This check ensures that the execution context remains
+ * immutable by preventing modifications to built-in prototypes, a common target for
+ * tampering in JavaScript environments.
+ *
+ * By freezing prototypes, SES aims to prevent malicious or accidental interference
+ * that could compromise application integrity or lead to security vulnerabilities.
+ *
+ * @returns {boolean} Returns true if all specified built-in prototypes are frozen
+ * indicating a secure and immutable execution environment. Returns false if any
+ * prototype is not frozen, suggesting potential security risks.
+ */
+export const verifySesEnabled = () => {
+  const prototypes = [
+    Array.prototype,
+    ArrayBuffer.prototype,
+    Boolean.prototype,
+    Date.prototype,
+    Error.prototype,
+    Function.prototype,
+    Map.prototype,
+    Number.prototype,
+    Object.prototype,
+    RegExp.prototype,
+    Set.prototype,
+    String.prototype,
+    Symbol.prototype,
+    WeakMap.prototype,
+    WeakSet.prototype,
+    Float32Array.prototype,
+    Float64Array.prototype,
+    Int8Array.prototype,
+    Int16Array.prototype,
+    Int32Array.prototype,
+    Uint8Array.prototype,
+    Uint8ClampedArray.prototype,
+    Uint16Array.prototype,
+    Uint32Array.prototype,
+  ];
+
+  return prototypes.every(Object.isFrozen);
+};
+
+/*
  * Get Nano Contract feature toggle state from redux.
  *
  * @param {Object} state Redux store state

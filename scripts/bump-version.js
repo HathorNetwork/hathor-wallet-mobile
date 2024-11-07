@@ -36,7 +36,7 @@ function updateAndroidBuildVersion() {
  * @returns {{rcVersion: number, updatedVersionString: string, mainVersionString: string}}
  */
 function calculateNewVersion(_updateType, currentVersionString) {
-  const versionNameRegex = /(\d+)\.(\d+)\.(\d+)(-rc)?(\d+)?/;
+  const versionNameRegex = /(\d+)\.(\d+)\.(\d+)(-rc\.)?(\d+)?/;
   const versionNameMatch = currentVersionString.match(versionNameRegex);
   let major = parseInt(versionNameMatch[1], 10);
   let minor = parseInt(versionNameMatch[2], 10);
@@ -75,7 +75,7 @@ function calculateNewVersion(_updateType, currentVersionString) {
 
   const mainVersionString = `${major}.${minor}.${patch}`;
   const rcVersion = rc;
-  const updatedVersionString = `${mainVersionString}${rc ? `-rc${rc}` : ''}`;
+  const updatedVersionString = `${mainVersionString}${rc ? `-rc.${rc}` : ''}`;
   return {
     mainVersionString,
     rcVersion,
