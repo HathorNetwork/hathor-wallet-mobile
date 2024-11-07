@@ -57,11 +57,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Última] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:445
+#: src/models.js:107 src/utils.js:502
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:180
+#: src/utils.js:220
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
@@ -452,7 +452,7 @@ msgstr "Digite suas palavras separadas por espaços"
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionRequest.js:295
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
-#: src/screens/PinScreen.js:271
+#: src/screens/PinScreen.js:274
 msgid "Try again"
 msgstr "Tente novamente"
 
@@ -474,7 +474,7 @@ msgstr "**${ loadedData.addresses } endereços** encontrados"
 msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
-#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:299
+#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:303
 #: src/screens/Settings.js:161
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
@@ -560,27 +560,27 @@ msgstr "Recebido"
 msgid "Waiting confirmation"
 msgstr "Aguardando confirmação"
 
-#: src/screens/PinScreen.js:260
+#: src/screens/PinScreen.js:263
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
-#: src/screens/PinScreen.js:72
+#: src/screens/PinScreen.js:74
 msgid "Enter your PIN Code "
 msgstr "Digite seu PIN "
 
-#: src/screens/PinScreen.js:73
+#: src/screens/PinScreen.js:75
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
 #: src/components/WalletConnect/CreateTokenModal.js:60
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:64
 #: src/components/WalletConnect/SignMessageModal.js:72
-#: src/screens/PinScreen.js:296
+#: src/screens/PinScreen.js:300
 #: src/screens/WalletConnect/WalletConnectList.js:125
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:330 src/screens/PinScreen.js:334
+#: src/screens/PinScreen.js:334 src/screens/PinScreen.js:338
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 
@@ -679,36 +679,36 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr "Resetar Wallet"
 
-#: src/screens/Security.js:120
+#: src/screens/Security.js:130
 msgid "Disable biometry"
 msgstr "Desativar biometria"
 
-#: src/screens/Security.js:121
+#: src/screens/Security.js:131
 msgid "Disabling biometry"
 msgstr "Desativando biometria"
 
-#: src/screens/Security.js:133
+#: src/screens/Security.js:143
 msgid "Enter your 6-digit pin to enable biometry"
 msgstr "Digite seu PIN de 6 dígitos para habilitar biometria"
 
-#: src/screens/Security.js:144
+#: src/screens/Security.js:154
 msgid "No biometry supported"
 msgstr "Nenhuma biometria suportada"
 
-#: src/screens/Security.js:144
+#: src/screens/Security.js:154
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr "Usar ${ this.supportedBiometry }"
 
-#: src/screens/Security.js:149
+#: src/screens/Security.js:159
 msgid "SECURITY"
 msgstr "SEGURANÇA"
 
-#: src/screens/Security.js:173
+#: src/screens/Security.js:183
 msgid "Change PIN"
 msgstr "Mudar PIN"
 
-#: src/screens/Security.js:178
+#: src/screens/Security.js:188
 msgid "Lock wallet"
 msgstr "Bloquear a wallet"
 
@@ -998,7 +998,7 @@ msgstr "Wallet Service WS URL (opcional)"
 msgid "Network Pre-Settings"
 msgstr "Pré-Configurações de Rede"
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:127
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:131
 msgid "Customize"
 msgstr "Personalizar"
 
@@ -1167,21 +1167,21 @@ msgstr "A wallet não está pronta ainda."
 msgid "Error loading the details of some tokens."
 msgstr "Ocorreu um erro durante o carregamento de detalhes de alguns tokens."
 
-#: src/sagas/wallet.js:780
+#: src/sagas/wallet.js:804
 msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:796
+#: src/sagas/wallet.js:820
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
-#: src/sagas/wallet.js:806
+#: src/sagas/wallet.js:830
 msgid "Wallet is not ready to load the first address."
 msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:822
+#: src/sagas/wallet.js:846
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
