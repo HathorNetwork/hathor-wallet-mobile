@@ -612,3 +612,47 @@ export function splitInGroups(list, groupSize) {
   }
   return groups;
 }
+
+/*
+ * Verifies if all critical built-in object prototypes are frozen, indicating a secure
+ * ECMAScript (SES) environment. This check ensures that the execution context remains
+ * immutable by preventing modifications to built-in prototypes, a common target for
+ * tampering in JavaScript environments.
+ *
+ * By freezing prototypes, SES aims to prevent malicious or accidental interference
+ * that could compromise application integrity or lead to security vulnerabilities.
+ *
+ * @returns {boolean} Returns true if all specified built-in prototypes are frozen
+ * indicating a secure and immutable execution environment. Returns false if any
+ * prototype is not frozen, suggesting potential security risks.
+ */
+export const verifySesEnabled = () => {
+  const prototypes = [
+    Array.prototype,
+    ArrayBuffer.prototype,
+    Boolean.prototype,
+    Date.prototype,
+    Error.prototype,
+    Function.prototype,
+    Map.prototype,
+    Number.prototype,
+    Object.prototype,
+    RegExp.prototype,
+    Set.prototype,
+    String.prototype,
+    Symbol.prototype,
+    WeakMap.prototype,
+    WeakSet.prototype,
+    Float32Array.prototype,
+    Float64Array.prototype,
+    Int8Array.prototype,
+    Int16Array.prototype,
+    Int32Array.prototype,
+    Uint8Array.prototype,
+    Uint8ClampedArray.prototype,
+    Uint16Array.prototype,
+    Uint32Array.prototype,
+  ];
+
+  return prototypes.every(Object.isFrozen);
+};

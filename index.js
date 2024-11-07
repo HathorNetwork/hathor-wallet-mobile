@@ -11,6 +11,7 @@ import { setJSExceptionHandler } from 'react-native-exception-handler';
 import App from './src/App';
 import { name as appName } from './app.json';
 import { errorHandler } from './src/errorHandler';
+
 import {
   setBackgroundMessageListener,
   setNotifeeBackgroundListener,

@@ -48,12 +48,12 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
 #: src/models.js:107
-#: src/utils.js:445
+#: src/utils.js:502
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src/utils.js:180
+#: src/utils.js:220
 msgid "Invalid address"
 msgstr ""
 
@@ -432,7 +432,7 @@ msgstr ""
 #: src/screens/LoadHistoryScreen.js:51
 #: src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
-#: src/screens/PinScreen.js:271
+#: src/screens/PinScreen.js:274
 msgid "Try again"
 msgstr ""
 
@@ -455,7 +455,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:21
-#: src/screens/PinScreen.js:299
+#: src/screens/PinScreen.js:303
 #: src/screens/Settings.js:161
 msgid "Reset wallet"
 msgstr ""
@@ -543,28 +543,28 @@ msgstr ""
 msgid "Waiting confirmation"
 msgstr ""
 
-#: src/screens/PinScreen.js:260
+#: src/screens/PinScreen.js:263
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
-#: src/screens/PinScreen.js:72
+#: src/screens/PinScreen.js:74
 msgid "Enter your PIN Code "
 msgstr ""
 
-#: src/screens/PinScreen.js:73
+#: src/screens/PinScreen.js:75
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
 #: src/components/WalletConnect/CreateTokenModal.js:60
 #: src/components/WalletConnect/NanoContract/NewNanoContractTransactionModal.js:64
 #: src/components/WalletConnect/SignMessageModal.js:72
-#: src/screens/PinScreen.js:296
+#: src/screens/PinScreen.js:300
 #: src/screens/WalletConnect/WalletConnectList.js:125
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:330
 #: src/screens/PinScreen.js:334
+#: src/screens/PinScreen.js:338
 msgid "Biometry failed or canceled."
 msgstr ""
 
@@ -657,36 +657,36 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr ""
 
-#: src/screens/Security.js:120
+#: src/screens/Security.js:130
 msgid "Disable biometry"
 msgstr ""
 
-#: src/screens/Security.js:121
+#: src/screens/Security.js:131
 msgid "Disabling biometry"
 msgstr ""
 
-#: src/screens/Security.js:133
+#: src/screens/Security.js:143
 msgid "Enter your 6-digit pin to enable biometry"
 msgstr ""
 
-#: src/screens/Security.js:144
+#: src/screens/Security.js:154
 msgid "No biometry supported"
 msgstr ""
 
-#: src/screens/Security.js:144
+#: src/screens/Security.js:154
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr ""
 
-#: src/screens/Security.js:149
+#: src/screens/Security.js:159
 msgid "SECURITY"
 msgstr ""
 
-#: src/screens/Security.js:173
+#: src/screens/Security.js:183
 msgid "Change PIN"
 msgstr ""
 
-#: src/screens/Security.js:178
+#: src/screens/Security.js:188
 msgid "Lock wallet"
 msgstr ""
 
@@ -971,7 +971,7 @@ msgstr ""
 msgid "Network Pre-Settings"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:127
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:131
 msgid "Customize"
 msgstr ""
 
@@ -1136,20 +1136,20 @@ msgstr ""
 msgid "Error loading the details of some tokens."
 msgstr ""
 
-#: src/sagas/wallet.js:780
+#: src/sagas/wallet.js:804
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:796
+#: src/sagas/wallet.js:820
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:806
+#: src/sagas/wallet.js:830
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:822
+#: src/sagas/wallet.js:846
 #.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
