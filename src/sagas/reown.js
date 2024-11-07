@@ -810,7 +810,7 @@ export function* onWalletReset() {
 export function* onSessionProposal(action) {
   const { id, params } = action.payload;
   const reownClient = yield call(getReownClient);
-  console.log('REOWN CLIENT: ', reownClient);
+
   if (!reownClient) {
     // Do nothing, client might not yet have been initialized.
     log.debug('Tried to get reown client in onSessionProposal but it is undefined.');
