@@ -466,7 +466,6 @@ const AppStack = () => {
         <Stack.Screen name='SignOracleDataRequestScreen' component={SignOracleDataRequestScreen} />
         <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
         <Stack.Screen name='SuccessFeedbackScreen' component={SuccessFeedbackScreen} />
-        <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
         <Stack.Screen name='PushNotification' component={PushNotification} />
         <Stack.Screen name='ChangePin' component={ChangePin} />
         <Stack.Screen

@@ -1372,52 +1372,6 @@ export const setCreateTokenStatusSuccessful = () => ({
 });
 
 /**
- * Signals that the user wants to attempt to retry the create token request
- */
-export const createTokenRetry = () => ({
-  type: types.WALLETCONNECT_CREATE_TOKEN_RETRY,
-});
-
-/**
- * Signals that the user doesn't want to retry the create token request
- */
-export const createTokenRetryDismiss = () => ({
-  type: types.WALLETCONNECT_CREATE_TOKEN_RETRY_DISMISS,
-});
-
-/**
- * Signals update on create token status to ready.
- */
-export const setCreateTokenStatusReady = () => ({
-  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
-  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.READY,
-});
-
-/**
- * Signals update on create token status to loading.
- */
-export const setCreateTokenStatusLoading = () => ({
-  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
-  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.LOADING,
-});
-
-/**
- * Signals update on create token status to failed.
- */
-export const setCreateTokenStatusFailed = () => ({
-  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
-  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.FAILED,
-});
-
-/**
- * Signals update on create token status to successful.
- */
-export const setCreateTokenStatusSuccessful = () => ({
-  type: types.WALLETCONNECT_CREATE_TOKEN_STATUS,
-  payload: WALLETCONNECT_CREATE_TOKEN_STATUS.SUCCESSFUL,
-});
-
-/**
  * Blueprint Info request in the context of a Nano Contract.
  * @param {string} id Blueprint ID.
  */

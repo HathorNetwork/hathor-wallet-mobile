@@ -1951,28 +1951,6 @@ export const onNewNanoContractTransactionRetryDismiss = (state) => ({
   },
 });
 
-export const onNewNanoContractTransactionRetry = (state) => ({
-  ...state,
-  walletConnect: {
-    ...state.walletConnect,
-    newNanoContractTransaction: {
-      ...state.walletConnect.newNanoContractTransaction,
-      retrying: true,
-    },
-  },
-});
-
-export const onNewNanoContractTransactionRetryDismiss = (state) => ({
-  ...state,
-  walletConnect: {
-    ...state.walletConnect,
-    newNanoContractTransaction: {
-      ...state.walletConnect.newNanoContractTransaction,
-      retrying: false,
-    },
-  },
-});
-
 export const onSetNewNanoContractTransactionStatus = (state, { payload }) => ({
   ...state,
   reown: {
