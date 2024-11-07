@@ -4,6 +4,8 @@
 
 @implementation RCTHTTPRequestHandler (AuthenticationChallengeExtension)
 
+static NSSet *_cachedAllowedDomains = nil;
+
 /* The load method is called by the Objective-C runtime when the class is loaded into memory,
  * it happens early in the application's lifecycle.
  */
@@ -47,7 +49,7 @@
                        didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
                          completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler {
   // Set of allowed domains
-  NSSet *allowedDomains = [self getAllowedDomains];
+  NSSet *allowedDomains = [self getCachedAllowedDomains];
   // Check if the challenge is of type ServerTrust
   if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
     // Check if the host is an allowed domain
@@ -94,10 +96,28 @@
   return isValid;
 }
 
+- (NSSet *)getCachedAllowedDomains {
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+      _cachedAllowedDomains = [self getAllowedDomains];
+  });
+  return _cachedAllowedDomains;
+}
+
 - (NSSet *)getAllowedDomains {
   NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
   NSDictionary *appTransportSecurity = [infoDictionary objectForKey:@"NSAppTransportSecurity"];
+  if (!appTransportSecurity) {
+    @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                   reason:@"NSAppTransportSecurity not found in Info.plist"
+                                 userInfo:nil];
+  }
   NSDictionary *pinnedDomains = [appTransportSecurity objectForKey:@"NSPinnedDomains"];
+  if (!pinnedDomains) {
+    @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                   reason:@"NSPinnedDomains not found in NSAppTransportSecurity in Info.plist"
+                                 userInfo:nil];
+  }
   
   NSMutableSet *allowedDomains = [NSMutableSet set];
   
@@ -107,7 +127,7 @@
      * addition we don't want to allow a broader domain, quite the opposity.
      */
     if (domain.length == 0) {
-      NSString *errorMessage = @"Error: Empty domain found in NSPinnedDomains";
+      NSString *errorMessage = @"Error: Empty domain found in NSPinnedDomains in Info.plist";
       NSLog(@"%@", errorMessage);
       // It intentionally breaks the application
       // It must be catched in the QA or during development
