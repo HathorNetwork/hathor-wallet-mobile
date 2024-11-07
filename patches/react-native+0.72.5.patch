@@ -1,18 +1,23 @@
 diff --git a/node_modules/react-native/Libraries/Core/InitializeCore.js b/node_modules/react-native/Libraries/Core/InitializeCore.js
-index 25377f6..cd13707 100644
+index 25377f6..a209fa9 100644
 --- a/node_modules/react-native/Libraries/Core/InitializeCore.js
 +++ b/node_modules/react-native/Libraries/Core/InitializeCore.js
-@@ -26,6 +26,9 @@
+@@ -26,6 +26,14 @@
  
  const start = Date.now();
  
++if (global.window === undefined) {
++  // If we don't do this here, there will be a race condition in node_modules/react-native-crypto because setUpSES blocks the execution with react-native-mmkv causing `window` to not be available and getRandomValues won't be added to it, causing a crash.
++  global.window = global;
++}
++
 +// setUpSES should be imported after setUpXHR because setUpXHR adds AbortController:
 +require('./setUpXHR');
 +require('./setUpSES');
  require('./setUpGlobals');
  require('./setUpDOM');
  require('./setUpPerformance');
-@@ -33,7 +36,6 @@ require('./setUpErrorHandling');
+@@ -33,7 +41,6 @@ require('./setUpErrorHandling');
  require('./polyfillPromise');
  require('./setUpRegeneratorRuntime');
  require('./setUpTimers');

@@ -13,9 +13,8 @@
     "start:clean": "react-native start --reset-cache",
     "lint": "eslint .",
     "test": "jest",
-    "setup": "npm install && ./node_modules/.bin/allow-scripts && npm run postinstall",
-    "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/",
-    "postinstall": "rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack && npx patch-package"
+    "setup": "npm install && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack && npx patch-package",
+    "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "1.2.36",
@@ -25,7 +24,7 @@
     "@hathor/hathor-rpc-handler": "0.0.1-experimental-alpha",
     "@hathor/unleash-client": "0.1.0",
     "@hathor/wallet-lib": "1.10.0",
-    "@lavamoat/preinstall-always-fail": "2.0.0",
+    "@lavamoat/preinstall-always-fail": "2.1.0",
     "@notifee/react-native": "5.7.0",
     "@react-native-async-storage/async-storage": "1.19.0",
     "@react-native-firebase/app": "16.7.0",
@@ -86,7 +85,7 @@
     "@babel/preset-env": "7.22.7",
     "@babel/runtime": "7.22.6",
     "@jest/globals": "29.7.0",
-    "@lavamoat/allow-scripts": "3.0.1",
+    "@lavamoat/allow-scripts": "3.3.0",
     "@react-native/eslint-config": "0.72.2",
     "@react-native/metro-config": "0.72.11",
     "@tsconfig/react-native": "3.0.2",
