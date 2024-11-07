@@ -19,7 +19,7 @@ import NewHathorButton from '../../components/NewHathorButton';
 import Spinner from '../../components/Spinner';
 import FeedbackModal from '../../components/FeedbackModal';
 import { networkSettingsPersistStore, networkSettingsUpdateReady } from '../../actions';
-import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
+import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_NANO_TESTNET, PRE_SETTINGS_TESTNET } from '../../constants';
 import { CustomNetworkSettingsNav } from './CustomNetworkSettingsScreen';
 import { feedbackSucceedText, feedbackFailedText, feedbackLoadingText, hasFailed, isLoading, hasSucceeded } from './helper';
 import errorIcon from '../../assets/images/icErrorBig.png';
@@ -80,6 +80,9 @@ export function NetworkPreSettingsScreen({ navigation }) {
   const networkSettingsStatus = useSelector((state) => state.networkSettingsStatus);
   const setMainnetNetwork = () => dispatch(networkSettingsPersistStore(PRE_SETTINGS_MAINNET));
   const setTestnetNetwork = () => dispatch(networkSettingsPersistStore(PRE_SETTINGS_TESTNET));
+  const setNanoTestnetNetwork = () => dispatch(
+    networkSettingsPersistStore(PRE_SETTINGS_NANO_TESTNET),
+  );
   const setCustomNetwork = () => {
     navigation.push(CustomNetworkSettingsNav);
   };
@@ -121,6 +124,7 @@ export function NetworkPreSettingsScreen({ navigation }) {
       <View style={styles.content}>
         <CustomNetwork title='Mainnet' url={PRE_SETTINGS_MAINNET.nodeUrl} onPress={setMainnetNetwork} />
         <CustomNetwork title='Testnet' url={PRE_SETTINGS_TESTNET.nodeUrl} onPress={setTestnetNetwork} />
+        <CustomNetwork title='Nano Testnet' url={PRE_SETTINGS_NANO_TESTNET.nodeUrl} onPress={setNanoTestnetNetwork} />
         <View style={styles.buttonContainer}>
           <NewHathorButton
             onPress={setCustomNetwork}

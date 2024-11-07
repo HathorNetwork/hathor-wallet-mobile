@@ -160,8 +160,8 @@ export const PUSH_NOTIFICATION_FEATURE_TOGGLE = 'push-notification.rollout';
 export const WALLET_CONNECT_FEATURE_TOGGLE = 'wallet-connect-mobile.rollout';
 export const NETWORK_SETTINGS_FEATURE_TOGGLE = 'network-settings.rollout';
 export const NANO_CONTRACT_FEATURE_TOGGLE = 'nano-contract.rollout';
-export const SES_FEATURE_TOGGLE = 'ses-mobile.rollout';
 export const SAFE_BIOMETRY_MODE_FEATURE_TOGGLE = 'safe-biometry-mode.rollout'
+export const SES_FEATURE_TOGGLE = 'ses-mobile.rollout';
 
 /**
  * Default feature toggle values.
@@ -202,6 +202,20 @@ export const PRE_SETTINGS_TESTNET = {
   explorerUrl: EXPLORER_TESTNET_URL,
   explorerServiceUrl: EXPLORER_SERVICE_TESTNET_URL,
   txMiningServiceUrl: TX_MINING_SERVICE_TESTNET_URL,
+};
+// Nano testnet settings:
+export const NETWORK_NANO_TESTNET = 'testnet';
+export const NODE_SERVER_NANO_TESTNET_URL = 'https://node1.nano-testnet.hathor.network/v1a/';
+export const EXPLORER_NANO_TESTNET_URL = 'https://explorer.alpha.nano-testnet.hathor.network/';
+export const TX_MINING_SERVICE_NANO_TESTNET_URL = 'https://txmining.nano-testnet.hathor.network/';
+
+export const PRE_SETTINGS_NANO_TESTNET = {
+  stage: STAGE_TESTNET,
+  network: NETWORK_NANO_TESTNET,
+  nodeUrl: NODE_SERVER_NANO_TESTNET_URL,
+  explorerUrl: EXPLORER_NANO_TESTNET_URL,
+  explorerServiceUrl: EXPLORER_SERVICE_TESTNET_URL,
+  txMiningServiceUrl: TX_MINING_SERVICE_NANO_TESTNET_URL,
 };
 
 export const NODE_SERVER_MAINNET_URL = 'https://mobile.wallet.hathor.network/v1a/';
@@ -279,11 +293,6 @@ export const MAX_RETRIES = 8;
 export const INITIAL_RETRY_LATENCY = 300; // ms
 export const LATENCY_MULTIPLIER = 30; // multiplier per iteration
 
-// This key is read during the react-native initialization (read the patch in
-// patches/react-native+0.72.5.patch), to decide whether to activate SES (secure
-// ecmascript)
-export const SHOULD_ENABLE_SES_STORAGE_KEY = 'should-enable-ses';
-
 /**
  * Timeout for await wallet load in the context of tx details loading.
  * It awaits 5 minutes.
@@ -314,3 +323,8 @@ export const NODE_RATE_LIMIT_CONF = {
     delay: 3,
   }
 };
+
+// This key is read during the react-native initialization (read the patch in
+// patches/react-native+0.72.5.patch), to decide whether to activate SES (secure
+// ecmascript)
+export const SHOULD_ENABLE_SES_STORAGE_KEY = 'should-enable-ses';
