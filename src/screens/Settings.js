@@ -14,7 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { isEmpty } from 'lodash';
+import { isEmpty, get } from 'lodash';
 import OfflineBar from '../components/OfflineBar';
 import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
@@ -27,6 +27,7 @@ import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
 import { NetworkSettingsFlowNav } from './NetworkSettings';
 import { isPushNotificationAvailableForUser } from '../utils';
+import { getNetworkSettings } from '../sagas/helpers';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -46,11 +47,11 @@ const mapStateToProps = (state) => {
   return {
     selectedToken: state.selectedToken,
     isOnline: state.isOnline,
-    network: state.serverInfo.network,
+    network: getNetworkSettings(state).network,
     uniqueDeviceId: state.uniqueDeviceId,
     server,
     isPushNotificationAvailable: isPushNotificationAvailableForUser(state),
-    reownEnabled: state.featureToggles[REOWN_FEATURE_TOGGLE],
+    reownEnabled: state.featureToggles[REOWN_FEATURE_TOGGLE] && get(state.serverInfo, 'nano_contracts_enabled', false),
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
   };
 };

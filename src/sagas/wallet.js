@@ -254,10 +254,14 @@ export function* startWallet(action) {
   yield put(setUniqueDeviceId(uniqueDeviceId));
 
   try {
-    yield call(wallet.start.bind(wallet), {
+    // XXX: This comes as undefined when the facede is the wallet-service.
+    // We need to update this when we start returning something there.
+    const serverInfo = yield call(wallet.start.bind(wallet), {
       pinCode: pin,
       password: pin,
     });
+
+    yield put(setServerInfo(serverInfo));
   } catch (e) {
     // WalletRequestError can either be a network error making the request
     // fail or the wallet might have failed to start and returned status: error.
@@ -284,11 +288,6 @@ export function* startWallet(action) {
   }
 
   setKeychainPin(pin);
-
-  yield put(setServerInfo({
-    version: null,
-    network: networkSettings.network,
-  }));
 
   // Wallet might be already ready at this point
   if (!wallet.isReady()) {

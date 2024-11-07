@@ -747,10 +747,7 @@ const onSetUnleashClient = (state, { payload }) => ({
 
 const onSetServerInfo = (state, action) => ({
   ...state,
-  serverInfo: {
-    network: action.payload.network,
-    version: action.payload.version,
-  },
+  serverInfo: action.payload,
 });
 
 const onSetIsOnline = (state, action) => ({

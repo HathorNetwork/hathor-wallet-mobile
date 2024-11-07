@@ -310,8 +310,8 @@ export const setIsOnline = (status) => ({ type: types.SET_IS_ONLINE, payload: st
  * version {str} version of the connected server (e.g., 0.26.0-beta)
  * network {str} network of the connected server (e.g., mainnet, testnet)
  * */
-export const setServerInfo = ({ version, network }) => (
-  { type: types.SET_SERVER_INFO, payload: { version, network } }
+export const setServerInfo = (payload) => (
+  { type: types.SET_SERVER_INFO, payload }
 );
 
 /**
