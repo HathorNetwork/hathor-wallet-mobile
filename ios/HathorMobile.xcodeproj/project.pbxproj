@@ -516,19 +516,18 @@
 				DEVELOPMENT_TEAM = 55SHY647CG;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = HathorMobile/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Hathor Play";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.28.5;
+				MARKETING_VERSION = 0.28.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = network.hathor.nanodemo;
+				PRODUCT_BUNDLE_IDENTIFIER = network.hathor.wallet;
 				PRODUCT_NAME = HathorMobile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -546,19 +545,18 @@
 				CURRENT_PROJECT_VERSION = 0.2.0;
 				DEVELOPMENT_TEAM = 55SHY647CG;
 				INFOPLIST_FILE = HathorMobile/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Hathor Play";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.28.5;
+				MARKETING_VERSION = 0.28.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = network.hathor.nanodemo;
+				PRODUCT_BUNDLE_IDENTIFIER = network.hathor.wallet;
 				PRODUCT_NAME = HathorMobile;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -640,13 +638,7 @@
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-Wl",
-					"-ld_classic",
-					"-Wl",
-					"-ld_classic",
-					"-Wl",
-					"-ld_classic",
-					"-Wl -ld_classic ",
+					" ",
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
@@ -724,13 +716,7 @@
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-Wl",
-					"-ld_classic",
-					"-Wl",
-					"-ld_classic",
-					"-Wl",
-					"-ld_classic",
-					"-Wl -ld_classic ",
+					" ",
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
