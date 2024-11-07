@@ -46,15 +46,12 @@ export const SignOracleDataRequestData = ({ data }) => (
 
 export const SignOracleDataRequest = ({ signOracleData }) => {
   const { dapp, data } = signOracleData;
-  const { message, address } = data;
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
   const onAcceptSignOracleDataRequest = () => {
-    const acceptedData = { address, message };
-
     // Signal the user has accepted the current request and pass the accepted data.
-    dispatch(reownAccept(acceptedData));
+    dispatch(reownAccept());
     navigation.goBack();
   };
 
