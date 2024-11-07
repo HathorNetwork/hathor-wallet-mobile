@@ -391,6 +391,7 @@ export function* loadTokens() {
  */
 export function* fetchTokensMetadata(tokens) {
   if (!tokens.length) {
+    yield put(tokenMetadataUpdated({}));
     return;
   }
 

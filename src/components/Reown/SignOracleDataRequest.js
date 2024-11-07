@@ -16,8 +16,8 @@ import { useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
-  walletConnectAccept,
-  walletConnectReject
+  reownAccept,
+  reownReject
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
 import NewHathorButton from '../NewHathorButton';
@@ -25,46 +25,38 @@ import { DappContainer } from './NanoContract/DappContainer';
 import { commonStyles } from './theme';
 import { NanoContractIcon } from '../Icons/NanoContract.icon';
 
-export const SignMessageRequestData = ({ data }) => (
+export const SignOracleDataRequestData = ({ data }) => (
   <View style={[commonStyles.card, commonStyles.cardSplit]}>
     <View style={commonStyles.cardSplitIcon}>
       <NanoContractIcon type='fill' color={COLORS.white} />
     </View>
     <View style={commonStyles.cardSplitContent}>
       <View>
-        <Text style={styles.property}>{t`Message to sign`}</Text>
-        <Text style={styles.value}>{data.message}</Text>
+        <Text style={styles.property}>{t`Oracle data to sign`}</Text>
+        <Text style={styles.value}>{data.data}</Text>
       </View>
       <View style={commonStyles.cardSeparator} />
       <View>
-        <Text style={styles.property}>{t`Address`}</Text>
-        <Text style={styles.value}>{data.address.address}</Text>
-      </View>
-      <View style={commonStyles.cardSeparator} />
-      <View>
-        <Text style={styles.property}>{t`Address Path`}</Text>
-        <Text style={[styles.value, styles.bold]}>{data.address.addressPath}</Text>
+        <Text style={styles.property}>{t`Oracle`}</Text>
+        <Text style={styles.value}>{data.oracle}</Text>
       </View>
     </View>
   </View>
 );
 
-export const SignMessageRequest = ({ signMessageRequest }) => {
-  const { dapp, data } = signMessageRequest;
-  const { message, address } = data;
+export const SignOracleDataRequest = ({ signOracleData }) => {
+  const { dapp, data } = signOracleData;
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
-  const onAcceptSignMessageRequest = () => {
-    const acceptedReq = { address, message };
-
+  const onAcceptSignOracleDataRequest = () => {
     // Signal the user has accepted the current request and pass the accepted data.
-    dispatch(walletConnectAccept(acceptedReq));
+    dispatch(reownAccept());
     navigation.goBack();
   };
 
   const onDeclineTransaction = () => {
-    dispatch(walletConnectReject());
+    dispatch(reownReject());
     navigation.goBack();
   };
 
@@ -74,12 +66,12 @@ export const SignMessageRequest = ({ signMessageRequest }) => {
         <View style={styles.wrapper}>
           <View style={styles.content}>
             <DappContainer dapp={dapp} />
-            <SignMessageRequestData data={data} />
+            <SignOracleDataRequestData data={data} />
             {/* User actions */}
             <View style={styles.actionContainer}>
               <NewHathorButton
                 title={t`Accept Request`}
-                onPress={onAcceptSignMessageRequest}
+                onPress={onAcceptSignOracleDataRequest}
               />
               <NewHathorButton
                 title={t`Decline Request`}
