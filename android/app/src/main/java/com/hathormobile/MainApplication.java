@@ -1,4 +1,4 @@
-package com.hathordemo;
+package network.hathor.wallet;
 
 import android.app.Application;
 import com.facebook.react.PackageList;
