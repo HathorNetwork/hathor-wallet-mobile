@@ -1,6 +1,6 @@
 {
   "name": "HathorMobile",
-  "version": "0.28.0-rc.3",
+  "version": "0.28.0",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
@@ -13,31 +13,40 @@
     "start:clean": "react-native start --reset-cache",
     "lint": "eslint .",
     "test": "jest",
-    "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/",
-    "postinstall": "rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack"
+    "setup": "npm install && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack && npx patch-package",
+    "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/"
   },
   "dependencies": {
+    "@ethersproject/shims": "5.7.0",
     "@fortawesome/fontawesome-svg-core": "1.2.36",
     "@fortawesome/free-regular-svg-icons": "6.4.0",
     "@fortawesome/free-solid-svg-icons": "6.4.0",
     "@fortawesome/react-native-fontawesome": "0.2.7",
-    "@hathor/hathor-rpc-handler": "0.0.1-experimental-alpha",
+    "@hathor/hathor-rpc-handler": "0.0.3-experimental-alpha",
     "@hathor/unleash-client": "0.1.0",
     "@hathor/wallet-lib": "1.10.0",
+    "@json-rpc-tools/utils": "1.7.6",
+    "@lavamoat/preinstall-always-fail": "2.1.0",
     "@notifee/react-native": "5.7.0",
     "@react-native-async-storage/async-storage": "1.19.0",
+    "@react-native-community/netinfo": "11.4.1",
     "@react-native-firebase/app": "16.7.0",
     "@react-native-firebase/messaging": "16.7.0",
     "@react-navigation/bottom-tabs": "6.5.8",
     "@react-navigation/native": "6.1.7",
     "@react-navigation/stack": "6.3.17",
+    "@reown/walletkit": "1.1.0",
     "@sentry/react-native": "5.31.0",
+    "@walletconnect/core": "2.17.0",
+    "@walletconnect/react-native-compat": "2.17.0",
     "assert": "2.0.0",
     "buffer": "4.9.2",
     "console-browserify": "1.2.0",
     "crypto-js": "4.1.1",
     "deprecated-react-native-prop-types": "2.3.0",
-    "events": "1.1.1",
+    "ethers": "6.13.3",
+    "events": "3.3.0",
+    "fast-text-encoding": "1.0.6",
     "intl": "1.2.5",
     "lodash": "4.17.21",
     "metro-config": "0.70.4",
@@ -52,19 +61,23 @@
     "react-native-device-info": "8.7.1",
     "react-native-exception-handler": "2.10.10",
     "react-native-gesture-handler": "2.13.1",
+    "react-native-get-random-values": "1.11.0",
     "react-native-keychain": "8.1.1",
     "react-native-localize": "2.2.6",
+    "react-native-mmkv": "2.12.2",
     "react-native-modal": "13.0.1",
     "react-native-pager-view": "5.4.25",
     "react-native-permissions": "3.8.3",
     "react-native-qrcode-svg": "6.2.0",
     "react-native-randombytes": "3.6.1",
     "react-native-reanimated": "3.5.4",
+    "react-native-restart": "0.0.27",
     "react-native-safe-area-context": "4.6.4",
     "react-native-screens": "3.22.1",
     "react-native-status-bar-height": "2.6.0",
     "react-native-svg": "13.10.0",
     "react-native-tab-view": "3.5.2",
+    "react-native-url-polyfill": "2.0.0",
     "react-native-vector-icons": "9.2.0",
     "react-native-version-number": "0.3.6",
     "react-redux": "7.2.9",
@@ -73,8 +86,8 @@
     "redux-saga": "1.2.3",
     "redux-thunk": "2.4.2",
     "stream-browserify": "1.0.0",
+    "text-encoding": "0.7.0",
     "ttag": "1.7.24",
-    "unleash-proxy-client": "1.11.0",
     "url": "0.11.1"
   },
   "devDependencies": {
@@ -83,6 +96,7 @@
     "@babel/preset-env": "7.22.7",
     "@babel/runtime": "7.22.6",
     "@jest/globals": "29.7.0",
+    "@lavamoat/allow-scripts": "3.3.0",
     "@react-native/eslint-config": "0.72.2",
     "@react-native/metro-config": "0.72.11",
     "@tsconfig/react-native": "3.0.2",
@@ -97,6 +111,7 @@
     "eslint-plugin-react": "7.32.2",
     "jest": "29.7.0",
     "metro-react-native-babel-preset": "0.76.8",
+    "patch-package": "8.0.0",
     "react-test-renderer": "18.1.0",
     "rn-nodeify": "10.3.0",
     "ttag-cli": "1.10.5",
@@ -132,9 +147,22 @@
     "setupFiles": [
       "<rootDir>/jestMockSetup.js"
     ],
-    "cacheDirectory": ".jest/cache",
-    "testMatch": [
-      "**/*.test.js"
-    ]
+    "cacheDirectory": ".jest/cache"
+  },
+  "lavamoat": {
+    "allowScripts": {
+      "$root$": false,
+      "@fortawesome/fontawesome-svg-core": false,
+      "@fortawesome/fontawesome-svg-core>@fortawesome/fontawesome-common-types": false,
+      "@fortawesome/free-regular-svg-icons": false,
+      "@fortawesome/free-regular-svg-icons>@fortawesome/fontawesome-common-types": false,
+      "@fortawesome/free-solid-svg-icons": false,
+      "@fortawesome/free-solid-svg-icons>@fortawesome/fontawesome-common-types": false,
+      "@hathor/wallet-lib>level>classic-level": false,
+      "@lavamoat/preinstall-always-fail": false,
+      "@sentry/react-native>@sentry/cli": false,
+      "ttag-cli": false,
+      "@walletconnect/core>@walletconnect/keyvaluestorage>unstorage>listhen>@parcel/watcher": false
+    }
   }
 }

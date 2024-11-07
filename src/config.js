@@ -43,6 +43,12 @@ export const _DEFAULT_TOKEN = {
 };
 
 /**
+ * Whether we should skip the words confirmation screen during
+ * new wallet creation
+ */
+export const SKIP_SEED_CONFIRMATION = false;
+
+/**
  * App's primary color (Hathor purple)
  */
 export const _PRIMARY_COLOR = '#8C46FF';
@@ -51,3 +57,8 @@ export const _PRIMARY_COLOR = '#8C46FF';
  * Sentry DSN to send errors
  */
 export const _SENTRY_DSN = 'https://c1ebae9159f741e8937abdbfbeba8e8a@o239606.ingest.sentry.io/5304101';
+
+/**
+ * Whether we should skip the initial modal on reown requests
+ */
+export const REOWN_SKIP_CONFIRMATION_MODAL = false;

@@ -13,18 +13,17 @@ import {
 import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
 import OfflineBar from '../../components/OfflineBar';
-import { SignMessageRequest } from '../../components/WalletConnect/SignMessageRequest';
+import { NewNanoContractTransactionRequest } from '../../components/Reown/NanoContract/NewNanoContractTransactionRequest';
 import { COLORS } from '../../styles/themes';
 
-export function SignMessageRequestScreen({ route }) {
-  const { signMessageRequest } = route.params;
-
+export function NewNanoContractTransactionScreen({ route }) {
+  const { ncTxRequest } = route.params;
   return (
     <Wrapper>
       <HathorHeader
-        title={t`Sign Message Request`.toUpperCase()}
+        title={t`New Nano Contract Transaction`.toUpperCase()}
       />
-      <SignMessageRequest signMessageRequest={signMessageRequest} />
+      <NewNanoContractTransactionRequest ncTxRequest={ncTxRequest} />
       <OfflineBar />
     </Wrapper>
   );
@@ -40,6 +39,6 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: COLORS.lowContrastDetail,
+    backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
   },
 });

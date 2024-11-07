@@ -4,6 +4,7 @@
     1. Load the last release of the app and start a wallet. You can confirm the version on Settings -> About.
     1. Update the code to run the latest version, without resetting the wallet.
     1. You should be shown the PIN screen. Unlock the wallet and confirm load succeeded.
+    1. Check if the Wallet Service is active for this device. This will be important to understand the context in which the following tests in this guide will be executed
     1. Reset the wallet.
 
 1. **Simple Initialization**
@@ -29,7 +30,7 @@
     1. Go to the Send Screen and check whether the camera loads correctly.
     1. Click on Manual Info.
     1. Type any random text and click Next. It must show an error message.
-    1. Enter the address WZ7pDnkPnxbs14GHdUFivFzPbzitwNtvZo and click Next.
+    1. Enter the address `WZ7pDnkPnxbs14GHdUFivFzPbzitwNtvZo` and click Next.
     1. Click on the HTR to change the token. Then, select HTR.
     1. Type 100 HTR, click Next, and check the insufficient funds error.
     1. Type 2 HTR, click Next, and check the send summary.
@@ -42,18 +43,22 @@
     1. Click on any transaction and check the details.
 
 1. **Settings Tests**
-    1. Go to the Settings Screen. Check that you are connected to our `testnet`.
+    1. Go to the Settings Screen. Take note of the network you're connected to ( `testnet` or `mainnet` ).
     1. Test Security > Lock Wallet.
-        1. Enable TouchID (iOS only).
-        1. Lock wallet and use TouchID (iOS only).
-        1. Disable TouchID (iOS only).
-        1. Lock wallet and it must require you to type your PIN Code.
+        1. Enable biometry
+        1. Lock wallet and use biometry.
+        1. Disable biometry.
+        1. Lock wallet, and it must require you to type your PIN Code.
     1. Test Security > Change PIN.
-        1. Close and open the app and check wether the wallet unlocks correctly.
+        1. Close and open the app and check whether the wallet unlocks correctly.
     1. Open About and go back.
     1. Click on Register a Token and check whether the camera loads correctly.
-    1. Go to Manual Info, type anything and get a Invalid Configuration string.
-    1. Test Biometry (Only close the app on the steps required, this is important)
+    1. Go to Manual Info, type anything and get an Invalid Configuration string.
+
+1. **Biometry tests (Only close the app on the steps required, this is important)**
+    1. Test old Biometry mode
+        1. Go to unleash and disable the `safe-biometry-mode.rollout` for this wallet.
+        1. Close the app and open, navigate to Settings > Security.
         1. Enable biometry (either Fingerprint, FaceID or TouchID depending on the device)
         1. Send 1 HTR to your own address (it will ask for the biometry instead of pin)
         1. Change the pin
@@ -61,7 +66,33 @@
         1. Close the app and open, it should ask for biometry instead of pin when opening the wallet.
         1. Send 1 HTR to your own address (it will ask for the biometry again)
         1. Disable biometry
+        1. Lock wallet, and it must require you to type your PIN Code.
+    1. Test safe Biometry mode
+        1. Go to unleash and enable the `safe-biometry-mode.rollout` for this wallet.
+        1. Enable biometry (either Fingerprint, FaceID or TouchID depending on the device, it will require your pin)
+        1. Check that the "Change PIN" option is no longer on the list.
+        1. Create a transaction to send 1 HTR to your own address, when prompted for the biometry press cancel.
+        1. It should show an error message, press anywhere outside to close the message.
+        1. Try again but this time actually send the 1 HTR.
+        1. Close the app and open, it should ask for biometry instead of pin when opening the wallet.
+        1. When prompted for the biometry, press cancel, it should show a message that biometry failed.
+        1. At the bottom of the screen there should be a "try again" and a "reset wallet" buttons.
+        1. Press "try again" and actually unlock the wallet.
+        1. Send 1 HTR to your own address (it will ask for the biometry again)
+        1. Disable biometry (it will ask for the biometry)
+        1. Check that the "Change PIN" option appears on the list.
         1. Lock wallet and it must require you to type your PIN Code.
+    1. Test biometry mode migration
+        1. Go to unleash and disable the `safe-biometry-mode.rollout` for this wallet.
+        1. Close the app and open, navigate to Settings > Security.
+        1. Enable biometry (either Fingerprint, FaceID or TouchID depending on the device)
+        1. Close the app and open, it should ask for biometry instead of pin when opening the wallet.
+        1. Go to unleash and enable the `safe-biometry-mode.rollout` for this wallet.
+        1. After some moments the app should lock by itself and request biometry to open.
+        1. Unlock the wallet and check that the history loads properly.
+        1. Go to unleash and disable the `safe-biometry-mode.rollout` for this wallet.
+        1. After some moments the wallet should lock by itself and request a biometry to open.
+        1. Unlock the wallet and check that the history loads properly.
 
 1. **Create a new token Tests**
     1. Click on Create a new token.
@@ -96,8 +127,8 @@
     1. Click on Register Token, and check that the Test Token is back and your balance is 99 TEST.
 
 1. **Reload data**
-    1. Turn wifi off until you see the message 'No internet connection.'.
-    1. Turn on wifi and check if the wallet reloads the transactions correctly.
+    1. Turn Wi-Fi off until you see the message 'No internet connection.'.
+    1. Turn on Wi-Fi and check if the wallet reloads the transactions correctly.
 
 1. **Reset Wallet**
     1. Go to Settings and Reset your wallet.

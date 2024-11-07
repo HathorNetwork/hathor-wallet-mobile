@@ -77,6 +77,7 @@ const style = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: COLORS.textColor,
     alignSelf: 'stretch',
+    padding: 16,
   },
   wrapperDisabled: {
     backgroundColor: COLORS.textColorShadowOpacity005,

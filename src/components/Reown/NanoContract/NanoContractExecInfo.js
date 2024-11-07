@@ -67,10 +67,7 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
                                  && blueprintInfo?.status === STATUS.FAILED;
 
   const hasCaller = nc.caller != null;
-  const hasFirstAddressFailed = !hasCaller && isInitialize && firstAddress.error;
-  const isFirstAddressLoading = !hasCaller
-                                && isInitialize
-                                && !hasFirstAddressFailed;
+  const hasFirstAddressFailed = !hasCaller || firstAddress.error;
 
   return (
     <View style={[commonStyles.card, commonStyles.cardSplit]}>
@@ -122,11 +119,6 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
             <View style={styles.contentEditableValue}>
               <TextValue label>
                 {t`Caller`}
-                {isFirstAddressLoading && (
-                  <WarnTextValue>
-                    {' '}<Spinner size={14} />
-                  </WarnTextValue>
-                )}
                 {(hasFirstAddressFailed) && (
                   <WarnTextValue>
                     {' '}<CircleError size={14} />
@@ -135,9 +127,6 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
               </TextValue>
               {hasCaller && (
                 <FrozenTextValue>{nc.caller || firstAddress.address}</FrozenTextValue>
-              )}
-              {isFirstAddressLoading && (
-                <WarnTextValue>{t`Loading...`}</WarnTextValue>
               )}
               {hasFirstAddressFailed && (
                 <WarnTextValue>{t`Couldn't determine address, select one`}</WarnTextValue>

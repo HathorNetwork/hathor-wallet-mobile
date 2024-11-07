@@ -37,6 +37,7 @@ import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
+  SAFE_BIOMETRY_MODE_FEATURE_TOGGLE,
   networkSettingsKeyMap,
 } from '../constants';
 import { STORE } from '../store';
@@ -70,6 +71,7 @@ import {
   selectAddressAddressesFailure,
   firstAddressFailure,
   firstAddressSuccess,
+  setUseSafeBiometryMode,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -85,7 +87,8 @@ import {
 import {
   getAllAddresses,
   getFirstAddress,
-  setKeychainPin
+  setKeychainPin,
+  isBiometryEnabled,
 } from '../utils';
 import { logger } from '../logger';
 
@@ -251,10 +254,14 @@ export function* startWallet(action) {
   yield put(setUniqueDeviceId(uniqueDeviceId));
 
   try {
-    yield call(wallet.start.bind(wallet), {
+    // XXX: This comes as undefined when the facade is the wallet-service.
+    // We need to update this when we start returning something there.
+    const serverInfo = yield call(wallet.start.bind(wallet), {
       pinCode: pin,
       password: pin,
     });
+
+    yield put(setServerInfo(serverInfo));
   } catch (e) {
     // WalletRequestError can either be a network error making the request
     // fail or the wallet might have failed to start and returned status: error.
@@ -281,11 +288,6 @@ export function* startWallet(action) {
   }
 
   setKeychainPin(pin);
-
-  yield put(setServerInfo({
-    version: null,
-    network: networkSettings.network,
-  }));
 
   // Wallet might be already ready at this point
   if (!wallet.isReady()) {
@@ -388,6 +390,7 @@ export function* loadTokens() {
  */
 export function* fetchTokensMetadata(tokens) {
   if (!tokens.length) {
+    yield put(tokenMetadataUpdated({}));
     return;
   }
 
@@ -433,6 +436,11 @@ export function* onPushNotificationDisabled() {
   yield put(setAvailablePushNotification(false));
 }
 
+export function* onSafeBiometryToggleChanged() {
+  log.debug('Safe biometry mode feature toggle changed state, reloading wallet.');
+  yield put(reloadWalletRequested());
+}
+
 /**
  * This saga will wait for feature toggle updates and react when a toggle state
  * transition is done
@@ -446,6 +454,22 @@ export function* featureToggleUpdateListener() {
 
     const oldPushNotificationToggle = yield select((state) => state.pushNotification.available);
     const newPushNotificationToggle = yield call(isPushNotificationEnabled);
+
+    const oldSafeBiometryEnabled = yield select(({ safeBiometryEnabled }) => safeBiometryEnabled);
+    const newSafeBiometryEnabled = yield call(
+      checkForFeatureFlag,
+      SAFE_BIOMETRY_MODE_FEATURE_TOGGLE,
+    );
+
+    if (oldSafeBiometryEnabled !== newSafeBiometryEnabled) {
+      // Safe biometry feature changed, need to update the state.
+      yield put(setUseSafeBiometryMode(newSafeBiometryEnabled));
+      if (isBiometryEnabled()) {
+        // Since biometry is enabled, a migration is required, this means the wallet
+        // needs to restart and the migration will fix the next time it opens.
+        yield call(onSafeBiometryToggleChanged);
+      }
+    }
 
     // WalletService is currently ON and the featureToggle is now OFF
     if (!newWalletServiceToggle && oldWalletServiceToggle) {

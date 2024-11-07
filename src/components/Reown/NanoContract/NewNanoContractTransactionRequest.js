@@ -25,19 +25,21 @@ import {
   newNanoContractRetry,
   newNanoContractRetryDismiss,
   setNewNanoContractStatusReady,
-  walletConnectAccept,
-  walletConnectReject,
-  unregisteredTokensDownloadRequest
+  reownAccept,
+  reownReject,
+  unregisteredTokensDownloadRequest,
+  nanoContractRegisterRequest,
+  nanoContractRegisterReady,
+  firstAddressRequest,
 } from '../../../actions';
 import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
 import { SelectAddressModal } from '../../NanoContract/SelectAddressModal';
 import { FeedbackContent } from '../../FeedbackContent';
-import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS, WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS } from '../../../constants';
+import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS, NANOCONTRACT_REGISTER_STATUS, REOWN_NEW_NANOCONTRACT_TX_STATUS } from '../../../constants';
 import Spinner from '../../Spinner';
 import FeedbackModal from '../../FeedbackModal';
 import errorIcon from '../../../assets/images/icErrorBig.png';
-import checkIcon from '../../../assets/images/icCheckBig.png';
 import { DappContainer } from './DappContainer';
 import { NanoContractExecInfo } from './NanoContractExecInfo';
 import { NanoContractActions } from './NanoContractActions';
@@ -63,13 +65,19 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const { data: nc, dapp } = ncTxRequest;
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const newTxStatus = useSelector((state) => state.walletConnect.newNanoContractTransaction.status);
+  const newTxStatus = useSelector((state) => state.reown.newNanoContractTransaction.status);
   const firstAddress = useSelector((state) => state.firstAddress);
   // Nullable if the nano contract method is 'initialize'
   const registeredNc = useSelector((state) => state.nanoContract.registered[nc.ncId]);
   const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.unregisteredTokens }));
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[nc.blueprintId]);
-
+  const registerStatus = useSelector((state) => state.nanoContract.registerStatus);
+  const isNcRegistering = (
+    registerStatus === NANOCONTRACT_REGISTER_STATUS.LOADING
+  );
+  const hasNcRegisterFailed = (
+    registerStatus === NANOCONTRACT_REGISTER_STATUS.FAILED
+  );
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   /**
@@ -97,7 +105,14 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     // Update the caller with the address selected by the user.
     const acceptedNc = { ...nc, caller: ncAddress };
     // Signal the user has accepted the current request and pass the accepted data.
-    dispatch(walletConnectAccept(acceptedNc));
+    dispatch(reownAccept(acceptedNc));
+  };
+
+  const onRegisterNanoContract = () => {
+    dispatch(nanoContractRegisterRequest({
+      address: firstAddress.address,
+      ncId: ncToAccept.ncId
+    }));
   };
 
   const onDeclineTransaction = () => {
@@ -105,7 +120,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   };
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
-    dispatch(walletConnectReject());
+    dispatch(reownReject());
     navigation.goBack();
   };
   const onDismissDeclineModal = () => {
@@ -117,23 +132,16 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   // and only let user decline the transaction to get out the page, otherwise interaction
   // content is showed.
   const notInitialize = ncToAccept.method !== 'initialize';
-  const notRegistered = notInitialize && registeredNc == null;
+  const notRegistered = useMemo(() => (
+    notInitialize && registeredNc == null
+  ), [notInitialize, registeredNc]);
   // It results in true for registered nc and initialize request
   const showRequest = !notRegistered;
 
-  // This effect should run at most twice:
-  // 1. when in the construct phase
-  // 2. after firstAddress is set on store after a request to load it
-  // The mentioned load request at (2) can happen for 'initialize' transaction,
-  // it is requested from a child component, NanoContractExecInfo.
   useEffect(() => {
-    if (ncToAccept.method === 'initialize' && firstAddress.address) {
-      setNcAddress(firstAddress.address);
-    }
-  }, [firstAddress]);
+    // This component should always start with ready state.
+    dispatch(setNewNanoContractStatusReady());
 
-  // This effect runs only once in the construct phase
-  useEffect(() => {
     // Do nothing if nano contract is not registered and don't call initialize method.
     if (notRegistered) return undefined;
 
@@ -154,18 +162,57 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     });
     dispatch(unregisteredTokensDownloadRequest({ uids: unknownTokensUid }));
 
+    // Unmount
     return () => {
+      // Restore ready status to Nano Contract registration state if
+      // we have had a registration while handling a new transaction request
+      dispatch(nanoContractRegisterReady());
+      // Restore ready status to New Nano Contract Transaction state
       dispatch(setNewNanoContractStatusReady());
+      // Dismiss the retry condition to New Nano Contract Transaction
       dispatch(newNanoContractRetryDismiss());
     };
   }, []);
 
+  // When nano contract is registered it should set the caller address
+  useEffect(() => {
+    if (!ncAddress && registeredNc?.address) {
+      setNcAddress(registeredNc.address);
+    }
+  }, [registeredNc])
+
+  // This effect should run at most twice:
+  // 1. when in the construct phase
+  // 2. after firstAddress is set on store after a request to load it
+  // The mentioned load request at (2) can happen for 'initialize' transaction,
+  // it is requested from a child component, NanoContractExecInfo.
+  useEffect(() => {
+    // When initialize it doesn't have a registered address
+    if (!ncAddress && firstAddress.address) {
+      setNcAddress(firstAddress.address);
+    }
+
+    if (notRegistered && !isNcRegistering && !firstAddress.address && !firstAddress.error) {
+      dispatch(firstAddressRequest());
+    }
+  }, [firstAddress]);
+
+  useEffect(() => {
+    if (newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL) {
+      navigation.navigate(
+        'SuccessFeedbackScreen',
+        {
+          title: t`Success!`,
+          message: t`Transaction successfully sent.`,
+        }
+      );
+      // Restore ready status to New Nano Contract Transaction state
+      dispatch(setNewNanoContractStatusReady());
+    }
+  }, [newTxStatus]);
+
   const onFeedbackModalDismiss = () => {
     navigation.goBack();
-  };
-
-  const onNavigateToDashboard = () => {
-    navigation.navigate('Dashboard');
   };
 
   const onTryAgain = () => {
@@ -182,87 +229,111 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     || blueprintInfo.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING
   );
   const isTxInfoLoaded = () => (
-    !isTxInfoLoading() && newTxStatus !== WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
+    !isTxInfoLoading() && newTxStatus !== REOWN_NEW_NANOCONTRACT_TX_STATUS.LOADING
   );
   const isTxProcessing = () => (
-    !isTxInfoLoading() && newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.LOADING
+    !isTxInfoLoading() && newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.LOADING
   );
-  const isTxSuccessful = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL;
-  const isTxFailed = () => newTxStatus === WALLETCONNECT_NEW_NANOCONTRACT_TX_STATUS.FAILED;
+  const isTxFailed = () => newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.FAILED;
 
   return (
     <>
-      {notRegistered && (
+      {notRegistered && isNcRegistering && (
+        <FeedbackContent
+          title={t`Loading`}
+          message={t`Registering Nano Contract.`}
+          icon={<Spinner size={48} animating />}
+          offmargin
+          offcard
+          offbackground
+        />
+      )}
+      {notRegistered && !isNcRegistering && (
         <FeedbackContent
           title={t`Nano Contract Not Found`}
           message={t`The Nano Contract requested is not registered. First register the Nano Contract to interact with it.`}
           action={(
-            <NewHathorButton
-              title={t`Decline Transaction`}
-              onPress={onDeclineTransaction}
-              secondary
-              danger
-            />
+            <View style={styles.feedbackActionContainer}>
+              {/* Doesn't show up if an error happens in first address request */}
+              {!firstAddress.error && (
+                <NewHathorButton
+                  title={t`Register Nano Contract`}
+                  onPress={onRegisterNanoContract}
+                />
+              )}
+              <NewHathorButton
+                title={t`Decline Transaction`}
+                onPress={onDeclineTransaction}
+                secondary
+                danger
+              />
+            </View>
           )}
         />
       )}
-      {showRequest && (
+      {notRegistered && hasNcRegisterFailed && (
+        <FeedbackModal
+          icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+          text={t`Error while registering Nano Contract.`}
+          onDismiss={onDeclineConfirmation}
+          action={(<NewHathorButton discrete title={t`Decline Transaction`} onPress={onDeclineConfirmation} />)}
+        />
+      )}
+      {showRequest && isTxInfoLoading() && (
+        <FeedbackContent
+          title={t`Loading`}
+          message={t`Loading transaction information.`}
+          icon={<Spinner size={48} animating />}
+          offmargin
+          offcard
+          offbackground
+        />
+      )}
+      {showRequest && isTxProcessing() && (
+        <FeedbackContent
+          title={t`Sending transaction`}
+          message={t`Please wait.`}
+          icon={<Spinner size={48} animating />}
+          offmargin
+          offcard
+          offbackground
+        />
+      )}
+      {showRequest && isTxInfoLoaded() && (
         <ScrollView style={styles.wide}>
           <TouchableWithoutFeedback>
             <View style={styles.wrapper}>
-              {isTxInfoLoading() && (
-                <FeedbackContent
-                  title={t`Loading`}
-                  message={t`Loading transaction information.`}
-                  icon={<Spinner size={48} animating />}
-                  offmargin
-                  offcard
-                  offbackground
+              <View style={styles.content}>
+                <DappContainer dapp={dapp} />
+                <NanoContractExecInfo
+                  nc={ncToAccept}
+                  onSelectAddress={toggleSelectAddressModal}
                 />
-              )}
-              {isTxInfoLoaded() && (
-                <View style={styles.content}>
-                  <DappContainer dapp={dapp} />
-                  <NanoContractExecInfo
-                    nc={ncToAccept}
-                    onSelectAddress={toggleSelectAddressModal}
-                  />
-                  <NanoContractActions
-                    ncActions={nc.actions}
-                    tokens={knownTokens}
-                    error={knownTokens.error}
-                  />
-                  <NanoContractMethodArgs
-                    blueprintId={nc.blueprintId}
-                    method={nc.method}
-                    ncArgs={nc.args}
-                  />
+                <NanoContractActions
+                  ncActions={nc.actions}
+                  tokens={knownTokens}
+                  error={knownTokens.error}
+                />
+                <NanoContractMethodArgs
+                  blueprintId={nc.blueprintId}
+                  method={nc.method}
+                  ncArgs={nc.args}
+                />
 
-                  {/* User actions */}
-                  <View style={styles.actionContainer}>
-                    <NewHathorButton
-                      title={t`Accept Transaction`}
-                      onPress={onAcceptTransaction}
-                    />
-                    <NewHathorButton
-                      title={t`Decline Transaction`}
-                      onPress={onDeclineTransaction}
-                      secondary
-                      danger
-                    />
-                  </View>
+                {/* User actions */}
+                <View style={styles.actionContainer}>
+                  <NewHathorButton
+                    title={t`Accept Transaction`}
+                    onPress={onAcceptTransaction}
+                  />
+                  <NewHathorButton
+                    title={t`Decline Transaction`}
+                    onPress={onDeclineTransaction}
+                    secondary
+                    danger
+                  />
                 </View>
-              )}
-              {isTxProcessing() && (
-                <FeedbackContent
-                  title={t`Sending transaction`}
-                  message={t`Please wait.`}
-                  icon={<Spinner size={48} animating />}
-                  offmargin
-                  offcard
-                  offbackground
-                />
-              )}
+              </View>
             </View>
           </TouchableWithoutFeedback>
         </ScrollView>
@@ -279,14 +350,6 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
         onDismiss={toggleSelectAddressModal}
         onSelectAddress={handleAddressSelection}
       />
-      {isTxSuccessful() && (
-        <FeedbackModal
-          icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
-          text={t`Transaction successfully sent.`}
-          onDismiss={onFeedbackModalDismiss}
-          action={(<NewHathorButton discrete title={t`Ok, close`} onPress={onNavigateToDashboard} />)}
-        />
-      )}
       {isTxFailed() && (
         <FeedbackModal
           icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
@@ -301,7 +364,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
 
 const styles = StyleSheet.create({
   wide: {
-    width: '100%'
+    width: '100%',
   },
   wrapper: {
     flex: 1,
@@ -317,6 +380,11 @@ const styles = StyleSheet.create({
   balanceReceived: {
     color: 'hsla(180, 85%, 34%, 1)',
     fontWeight: 'bold',
+  },
+  feedbackActionContainer: {
+    flexDirection: 'column',
+    gap: 8,
+    paddingTop: 32,
   },
   actionContainer: {
     flexDirection: 'column',

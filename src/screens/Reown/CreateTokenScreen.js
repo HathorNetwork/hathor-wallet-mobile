@@ -13,17 +13,18 @@ import {
 import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
 import OfflineBar from '../../components/OfflineBar';
-import { NewNanoContractTransactionRequest } from '../../components/WalletConnect/NanoContract/NewNanoContractTransactionRequest';
+import { CreateTokenRequest } from '../../components/Reown/CreateTokenRequest';
 import { COLORS } from '../../styles/themes';
 
-export function NewNanoContractTransactionScreen({ route }) {
-  const { ncTxRequest } = route.params;
+export function CreateTokenRequestScreen({ route }) {
+  const { createTokenRequest } = route.params;
+
   return (
     <Wrapper>
       <HathorHeader
-        title={t`New Nano Contract Transaction`.toUpperCase()}
+        title={t`Create Token Request`.toUpperCase()}
       />
-      <NewNanoContractTransactionRequest ncTxRequest={ncTxRequest} />
+      <CreateTokenRequest createTokenRequest={createTokenRequest} />
       <OfflineBar />
     </Wrapper>
   );
