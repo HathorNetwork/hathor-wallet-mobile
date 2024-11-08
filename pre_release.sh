@@ -18,7 +18,7 @@ rm -f ./android/app/google-services.json
 rm -f ./android/app/GoogleService-Info.plist
 rm -f ./notifications/GoogleService-Info.plist
 
-npm ci
+npm run setup:release
 
 (cd ios/ && pod install)
 

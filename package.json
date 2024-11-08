@@ -14,6 +14,7 @@
     "lint": "eslint .",
     "test": "jest",
     "setup": "npm install && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack && npx patch-package",
+    "setup:release": "npm ci && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack && npx patch-package",
     "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/"
   },
   "dependencies": {
