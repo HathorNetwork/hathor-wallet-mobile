@@ -33,6 +33,9 @@ import baseStyle from '../styles/init';
 import Spinner from '../components/Spinner';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
+import { logger } from '../logger';
+
+const log = logger('PIN_SCREEN');
 
 /**
  * loadHistoryActive {bool} whether we still need to load history
@@ -147,17 +150,25 @@ class PinScreen extends React.Component {
     if (this.props.isLockScreen) {
       // in case it's the lock screen, we just have to execute the data migration
       // method an change redux state. No need to execute callback or go back on navigation
-      await STORE.handleDataMigration(pin);
-      await biometricsMigration(pin, this.props.safeBiometryEnabled);
-      if (!this.props.wallet) {
-        // We have already made sure we have an available accessData
-        // The handleDataMigration method ensures we have already migrated if necessary
-        // This means the wallet is loaded and the access data is ready to be used.
+      try {
+        await STORE.handleDataMigration(pin);
+        const newPin = await biometricsMigration(pin, this.props.safeBiometryEnabled);
+        if (!this.props.wallet) {
+          // We have already made sure we have an available accessData
+          // The handleDataMigration method ensures we have already migrated if necessary
+          // This means the wallet is loaded and the access data is ready to be used.
 
-        const words = await STORE.getWalletWords(pin);
-        this.props.startWalletRequested({ words, pin });
+          const words = await STORE.getWalletWords(newPin);
+          this.props.startWalletRequested({ words, pin: newPin });
+        }
+        this.props.unlockScreen();
+      } catch (e) {
+        log.debug(e);
+        this.props.onExceptionCaptured(
+          new Error('Error during wallet initialization.'),
+          true, // Fatal since we can't start the wallet
+        );
       }
-      this.props.unlockScreen();
     } else {
       // dismiss the pin screen first because doing it after the callback can
       // end up dismissing the wrong screen
