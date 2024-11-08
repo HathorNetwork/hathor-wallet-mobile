@@ -29,7 +29,6 @@ export const cleanOnWalletReset = [
   PIN_BACKUP_KEY,
   IS_BIOMETRY_ENABLED_KEY,
   IS_OLD_BIOMETRY_ENABLED_KEY,
-  SUPPORTED_BIOMETRY_KEY,
 ];
 
 /* eslint-disable class-methods-use-this */

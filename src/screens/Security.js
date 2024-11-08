@@ -153,8 +153,6 @@ export class Security extends React.Component {
   render() {
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? t`No biometry supported` : t`Use ${this.supportedBiometry}`);
-    console.log(`Security biometryEnabled ${this.state.biometryEnabled}`);
-    console.log(`Security safeBiometryEnabled ${this.props.safeBiometryEnabled}`);
     const safeBiometryActive = this.state.biometryEnabled && this.props.safeBiometryEnabled;
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
