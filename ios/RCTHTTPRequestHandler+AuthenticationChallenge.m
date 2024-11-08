@@ -1,23 +1,35 @@
 #import <objc/runtime.h>
 #import <Foundation/Foundation.h>
 #import <React/RCTHTTPRequestHandler.h>
+#import <Security/Security.h>
 
+/**
+ * There will be only one instance of this class on runtime accordinly the React Native code.
+ * This provides a good opportunity to cache data on the class itself.
+ */
 @implementation RCTHTTPRequestHandler (AuthenticationChallengeExtension)
 
+// Cache allocated certificates on memory to hold them through the class lifecycle.
+static NSMutableDictionary<NSString *, id> *_certificateCache = nil;
+// Cache a set of allowed domains
 static NSSet *_cachedAllowedDomains = nil;
 
-/* The load method is called by the Objective-C runtime when the class is loaded into memory,
+/**
+ * The load method is called by the Objective-C runtime when the class is loaded into memory,
  * it happens early in the application's lifecycle.
  */
 + (void)load {
   // dispatch_once avoids the load method to run twice
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    NSLog(@"[RCTHTTPRequestHandler extension] It will swizzle authentication challenge on this data delegate.");
     Class class = [RCTHTTPRequestHandler class];
     
-    SEL originalSelector = @selector(URLSession:task:didReceiveChallenge:completionHandler:);
-    SEL swizzledSelector = @selector(authenticationChallenge_URLSession:task:didReceiveChallenge:completionHandler:);
+    NSLog(@"[RCTHTTPRequestHandler (AuthenticationChallengeExtension)] Initializing _certificateCache.");
+    _certificateCache = [NSMutableDictionary new];
+
+    NSLog(@"[RCTHTTPRequestHandler (AuthenticationChallengeExtension)] Swizzling authentication challenge handler on session scope.");
+    SEL originalSelector = @selector(URLSession:didReceiveChallenge:completionHandler:);
+    SEL swizzledSelector = @selector(authenticationChallenge_URLSession:didReceiveChallenge:completionHandler:);
     
     Method originalMethod = class_getInstanceMethod(class, originalSelector);
     Method swizzledMethod = class_getInstanceMethod(class, swizzledSelector);
@@ -29,10 +41,24 @@ static NSSet *_cachedAllowedDomains = nil;
     } else {
       method_exchangeImplementations(originalMethod, swizzledMethod);
     }
+
+    NSLog(@"[RCTHTTPRequestHandler (AuthenticationChallengeExtension)] Swizzling the dealloc method.");
+    SEL deallocOriginalSelector = NSSelectorFromString(@"dealloc");
+    SEL deallocSwizzledSelector = @selector(swizzled_dealloc);
+    
+    Method deallocOriginalMethod = class_getInstanceMethod(class, deallocOriginalSelector);
+    Method deallocSwizzledMethod = class_getInstanceMethod(class, deallocSwizzledSelector);
+    
+    if (!class_addMethod(class, deallocOriginalSelector, method_getImplementation(deallocSwizzledMethod), method_getTypeEncoding(deallocSwizzledMethod))) {
+      method_exchangeImplementations(deallocOriginalMethod, deallocSwizzledMethod);
+    } else {
+      class_replaceMethod(class, deallocSwizzledSelector, method_getImplementation(deallocOriginalMethod), method_getTypeEncoding(deallocOriginalMethod));
+    }
   });
 }
 
-/* This method extends the RCTHTTPRequestHandler by intercepting the authentication challenge,
+/**
+ * This method extends the RCTHTTPRequestHandler by intercepting the authentication challenge,
  * and gives to it a custom behavior regarding allowing or denying connections.
  * The current implementation of RCTHTTPRequestHandler doesn't provide an implementation for
  * the authentication challenge event, therefore we don't risk to interfere with React Native behavior.
@@ -45,30 +71,46 @@ static NSSet *_cachedAllowedDomains = nil;
  * In React Native, when a session is created, this delegate is injected in.
  */
 - (void)authenticationChallenge_URLSession:(NSURLSession *)session
-                                      task:(NSURLSessionTask *)task
                        didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
                          completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler {
-  // Set of allowed domains
-  NSSet *allowedDomains = [self getCachedAllowedDomains];
-  // Check if the challenge is of type ServerTrust
+  static int _counter = 0;
+  NSLog(@"Session handler call %i, host %@.", _counter, challenge.protectionSpace.host);
+  _counter++;
+  
   if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
-    // Check if the host is an allowed domain
-    if ([self checkValidityOfHost:challenge.protectionSpace.host allowedInDomains:allowedDomains]) {
-      // Check if proceed with the original authentication handling
-      if ([self checkValidityOfTrust:challenge.protectionSpace.serverTrust]) {
-        // The challenge is of type ServerTrust, the host is allowed and the certificate is trust worthy
-        // Create the credential and completes the delegate
-        NSURLCredential *credential = [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust];
-        completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
+    NSArray *anchorCertificates = [self getAnchorCertificates];
+    // Set resource certificates to the trust entity to be evaluated
+    OSStatus status = SecTrustSetAnchorCertificates(challenge.protectionSpace.serverTrust, (__bridge CFArrayRef)anchorCertificates);
+    if (status == errSecSuccess) {
+      /* The following method signs to the evalution if the system bundle certificates must be taken in consideration
+       * when evaluating the trust entity. The second param determines this behavior, set YES to constrain the evaluation
+       * to the resource certificates only, and NO to allow system bundle certificates.
+       */
+      SecTrustSetAnchorCertificatesOnly(challenge.protectionSpace.serverTrust, YES);
+      // A set of allowed domains
+      NSSet *allowedDomains = [self getCachedAllowedDomains];
+      // Check if the host is an allowed domain
+      if ([self checkValidityOfHost:challenge.protectionSpace.host allowedInDomains:allowedDomains]) {
+        // Check if proceed with the original authentication handling
+        if ([self checkValidityOfTrust:challenge.protectionSpace.serverTrust]) {
+          // The challenge is of type ServerTrust, the host is allowed and the certificate is trust worthy
+          // Create the credential and completes the delegate
+          NSURLCredential *credential = [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust];
+          completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
+        } else {
+          // Certificate is invalid, cancelling authentication
+          NSLog(@"Invalid certificate for Domain %@. Cancelling authentication.", challenge.protectionSpace.host);
+          // Cancel the authentication challenge
+          completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
+        }
       } else {
-        // Certificate is invalid, cancelling authentication
-        NSLog(@"Invalid certificate for Domain %@. Cancelling authentication.", challenge.protectionSpace.host);
+        // Host is not allowed, cancelling authentication
+        NSLog(@"Host domain %@ is not allowed. Cancelling authentication.", challenge.protectionSpace.host);
         // Cancel the authentication challenge
         completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
       }
     } else {
-      // Host is not allowed, cancelling authentication
-      NSLog(@"Host domain %@ is not allowed. Cancelling authentication.", challenge.protectionSpace.host);
+      NSLog(@"Certificate not set.");
       // Cancel the authentication challenge
       completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
     }
@@ -76,7 +118,52 @@ static NSSet *_cachedAllowedDomains = nil;
     // Trust is not of type ServerTrust, proceeding with default challenge, if any
     NSLog(@"Not ServerTrust challenge. Calling default authentication challenge.");
     // For other authentication methods, call the original implementation
-    [self authenticationChallenge_URLSession:session task:task didReceiveChallenge:challenge completionHandler:completionHandler];
+    [self authenticationChallenge_URLSession:session didReceiveChallenge:challenge completionHandler:completionHandler];
+  }
+}
+
+/**
+ * Fetch anchor certificates either from the resources or the cache.
+ */
+- (NSArray *)getAnchorCertificates {
+  // Load root certificates from resources in the first run and from the cache afterwards
+  SecCertificateRef hathor_root_ca_1 = [self getCert:@"hathor_network_root_ca_1"];
+  SecCertificateRef hathor_root_ca_2 = [self getCert:@"hathor_network_root_ca_2"];
+  
+  // Create an NSArray with the certificates
+  NSArray *certArray = @[(__bridge id)hathor_root_ca_1, (__bridge id)hathor_root_ca_2];
+  
+  return certArray;
+}
+
+/**
+ * The certificate must be of type .der and should be in DER encoding.
+ */
+- (SecCertificateRef)getCert:(NSString *)certFilename {
+  @synchronized (_certificateCache) {
+    id cachedCert = [_certificateCache objectForKey:certFilename];;
+    if (cachedCert) {
+      return (__bridge SecCertificateRef)cachedCert;
+    }
+    
+    NSString *certPath = [[NSBundle mainBundle] pathForResource:certFilename ofType:@"der"];
+    NSData *certData = [NSData dataWithContentsOfFile:certPath];
+    
+    if (!certData) {
+      @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                     reason:[NSString stringWithFormat:@"%@ not found", certFilename]
+                                   userInfo:nil];
+    }
+    
+    SecCertificateRef cert = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)certData);
+    if (!cert) {
+      @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                     reason:[NSString stringWithFormat:@"Error on parsing the %@ certificate", certFilename]
+                                   userInfo:nil];
+    }
+    
+    [_certificateCache setObject:(__bridge id)cert forKey:certFilename];
+    return cert;
   }
 }
 
@@ -204,6 +291,29 @@ static NSSet *_cachedAllowedDomains = nil;
     }
   }
   return NO;
+}
+
+/**
+ * Release each allocated certificate in memory and clean the cache dictionary in a thread safe manner.
+ */
+- (void)clearCertificateCache {
+  NSLog(@"[RCTHTTPRequestHandler (AuthenticationChallengeExtension)] Clearing the certificate cache.");
+  @synchronized(_certificateCache) {
+    for (id cert in _certificateCache.allValues) {
+      CFRelease((__bridge SecCertificateRef)cert);
+    }
+    [_certificateCache removeAllObjects];
+  }
+}
+
+/**
+ * As this class has only one instance and it will probably live until the user quits the app,
+ * it will probably never be called. However, we shouldn't worry much about it because
+ * the app memory will be released anyway after quit.
+ */
+- (void)swizzled_dealloc {
+    [self clearCertificateCache];
+    [self swizzled_dealloc]; // This will call the original dealloc method
 }
 
 @end
