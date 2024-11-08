@@ -147,15 +147,18 @@ class PinScreen extends React.Component {
     if (this.props.isLockScreen) {
       // in case it's the lock screen, we just have to execute the data migration
       // method an change redux state. No need to execute callback or go back on navigation
+      console.log('inside dismiss');
       await STORE.handleDataMigration(pin);
-      await biometricsMigration(pin, this.props.safeBiometryEnabled);
+      console.log('Will call biometricsMigration');
+      const newPin = await biometricsMigration(pin, this.props.safeBiometryEnabled);
+      console.log('Done migrating biometrics.');
       if (!this.props.wallet) {
         // We have already made sure we have an available accessData
         // The handleDataMigration method ensures we have already migrated if necessary
         // This means the wallet is loaded and the access data is ready to be used.
 
-        const words = await STORE.getWalletWords(pin);
-        this.props.startWalletRequested({ words, pin });
+        const words = await STORE.getWalletWords(newPin);
+        this.props.startWalletRequested({ words, pin: newPin });
       }
       this.props.unlockScreen();
     } else {

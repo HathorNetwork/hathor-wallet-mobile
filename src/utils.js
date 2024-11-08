@@ -102,29 +102,44 @@ export async function biometricsMigration(currentPassword, safeBiometryEnabled) 
   const safeBiometry = STORE.getItem(IS_BIOMETRY_ENABLED_KEY);
 
   if (safeBiometryEnabled) {
+    console.log('Safe biometry enabled.');
     // Safe biometry mode, need to migrate if old biometry is enabled.
     if (oldBiometry) {
+      console.log('old biometry');
       // currentPassword is the pin, we need to generate a new random password
       // and encrypt the pin.
       const password = generateRandomPassword();
       const storage = STORE.getStorage();
       await changePinOnAccessData(storage, currentPassword, password);
+      console.log('Changed pin on access data.');
       STORE.enableSafeBiometry(currentPassword, password);
       STORE.removeItem(IS_OLD_BIOMETRY_ENABLED_KEY);
+
+      return password;
     }
   } else {
+    console.log('Safe biometry disabled');
     // Old biometry mode, need to migrate if safe biometry is enabled.
     // eslint-disable-next-line no-lonely-if
     if (safeBiometry) {
+      console.log('Will migrate to safe biometry');
       // currentPassword is the random password, we need to decrypt the pin and
       // toggle the old biometry key
       const pin = STORE.disableSafeBiometry(currentPassword);
+      console.log('got pin', pin);
       const storage = STORE.getStorage();
+      console.log('got storage');
       await changePinOnAccessData(storage, currentPassword, pin);
+      console.log('Changed pin on access data.');
       STORE.removeItem(IS_BIOMETRY_ENABLED_KEY);
       STORE.setItem(IS_OLD_BIOMETRY_ENABLED_KEY, true);
+
+      return pin;
     }
   }
+
+  console.log('Done.');
+  return currentPassword;
 }
 
 /**

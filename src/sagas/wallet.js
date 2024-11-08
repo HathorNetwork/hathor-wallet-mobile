@@ -72,6 +72,7 @@ import {
   firstAddressFailure,
   firstAddressSuccess,
   setUseSafeBiometryMode,
+  lockScreen,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -437,8 +438,8 @@ export function* onPushNotificationDisabled() {
 }
 
 export function* onSafeBiometryToggleChanged() {
-  log.debug('Safe biometry mode feature toggle changed state, reloading wallet.');
-  yield put(reloadWalletRequested());
+  log.debug('Safe biometry mode feature toggle changed state, locking wallet.');
+  yield put(lockScreen());
 }
 
 /**
