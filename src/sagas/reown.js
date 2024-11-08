@@ -899,7 +899,7 @@ export function* onSessionProposal(action) {
       }));
     } catch (e) {
       // Only if this fails, send the exception to Sentry
-      yield put(onExceptionCaptured(error));
+      yield put(onExceptionCaptured(e));
     }
   }
 }
