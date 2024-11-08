@@ -20,7 +20,7 @@ import { t } from 'ttag';
 import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
-import { specificTypeAndPayload, dispatchAndWait, getRegisteredTokenUids } from './helpers';
+import { specificTypeAndPayload, dispatchAndWait, getRegisteredTokenUids, getNetworkSettings } from './helpers';
 import { mapToTxHistory, splitInGroups } from '../utils';
 import {
   types,
@@ -241,7 +241,7 @@ function* fetchTokenMetadataConsumer(fetchTokenMetadataChannel) {
  * @inner
  */
 export function* fetchTokenMetadata({ tokenId }) {
-  const { network } = yield select((state) => state.serverInfo);
+  const { network } = yield select((state) => getNetworkSettings(state));
 
   try {
     // Retry mechanism
