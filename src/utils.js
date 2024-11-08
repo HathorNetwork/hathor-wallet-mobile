@@ -96,6 +96,7 @@ export const getTokenLabel = (token) => `${token.name} (${token.symbol})`;
  *
  * @param {string} currentPassword
  * @param {bool} safeBiometryEnabled
+ * @return {string} The actual pin/password for the application.
  */
 export async function biometricsMigration(currentPassword, safeBiometryEnabled) {
   const oldBiometry = STORE.getItem(IS_OLD_BIOMETRY_ENABLED_KEY);
