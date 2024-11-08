@@ -941,13 +941,11 @@ const onResetWalletSuccess = (state) => {
   const oldUnleashClient = state.unleashClient;
   const oldFeatureTogglesInitialized = state.featureTogglesInitialized;
   const oldFeatureToggles = state.featureToggles;
-  const oldSafeBiometryEnabled = state.safeBiometryEnabled;
-  return {
+ return {
     ...initialState,
     unleashClient: oldUnleashClient,
     featureTogglesInitialized: oldFeatureTogglesInitialized,
     featureToggles: oldFeatureToggles,
-    safeBiometryEnabled: oldSafeBiometryEnabled,
   };
 };
 

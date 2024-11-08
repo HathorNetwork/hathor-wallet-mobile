@@ -25,6 +25,13 @@ export const walletKeys = [
   REGISTERED_NANO_CONTRACTS_KEY,
 ];
 
+export const cleanOnWalletReset = [
+  PIN_BACKUP_KEY,
+  IS_BIOMETRY_ENABLED_KEY,
+  IS_OLD_BIOMETRY_ENABLED_KEY,
+  SUPPORTED_BIOMETRY_KEY,
+];
+
 /* eslint-disable class-methods-use-this */
 /**
  * The hybrid store will use the mobile native AsyncStorage to persist data and
@@ -280,6 +287,10 @@ class AsyncStorageStore {
     }
     // This will delete any wallet data of the legacy storage
     await this.clearItems(true);
+    AsyncStorage.multiRemove(cleanOnWalletReset);
+    for (const key of cleanOnWalletReset) {
+      delete this.hathorMemoryStorage[key];
+    }
   }
 
   /**
