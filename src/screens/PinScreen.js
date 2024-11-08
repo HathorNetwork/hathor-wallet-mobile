@@ -163,9 +163,9 @@ class PinScreen extends React.Component {
         }
         this.props.unlockScreen();
       } catch (e) {
-        log.debug(e);
+        log.error(e);
         this.props.onExceptionCaptured(
-          new Error('Error during wallet initialization.'),
+          e,
           true, // Fatal since we can't start the wallet
         );
       }
