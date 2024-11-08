@@ -241,9 +241,11 @@ function* fetchTokenMetadataConsumer(fetchTokenMetadataChannel) {
  * @inner
  */
 export function* fetchTokenMetadata({ tokenId }) {
-  const { network } = yield select((state) => state.serverInfo);
-
-  try {
+  const { network } = yield select((state) => state.networkSettings);
+  if (!network) {
+    log.error('Network not found in networkSettings');
+    throw new Error('Network not found in networkSettings');
+  }
     // Retry mechanism
     for (let i = 0; i <= METADATA_MAX_RETRIES; i += 1) {
       try {
