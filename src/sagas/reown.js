@@ -242,7 +242,7 @@ export function* checkForPendingRequests() {
   }
   const { walletKit } = reownClient;
 
-  yield call([walletKit, walletKit.getPendingAuthRequests]);
+  yield call([walletKit, walletKit.getPendingSessionProposals]);
   yield call([walletKit, walletKit.getPendingSessionRequests]);
 }
 
