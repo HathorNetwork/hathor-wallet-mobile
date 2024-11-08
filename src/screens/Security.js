@@ -23,10 +23,11 @@ import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen, onExceptionCaptured } from '../actions';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
+import { SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
-  safeBiometryEnabled: state.safeBiometryEnabled,
+  safeBiometryEnabled: state.featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE],
 });
 
 const mapDispatchToProps = (dispatch) => ({

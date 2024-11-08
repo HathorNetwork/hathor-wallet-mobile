@@ -26,7 +26,7 @@ import {
   resetOnLockScreen,
   onExceptionCaptured,
 } from '../actions';
-import { PIN_SIZE } from '../constants';
+import { PIN_SIZE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import baseStyle from '../styles/init';
@@ -43,7 +43,7 @@ const log = logger('PIN_SCREEN');
 const mapStateToProps = (state) => ({
   loadHistoryActive: state.loadHistoryStatus.active,
   wallet: state.wallet,
-  safeBiometryEnabled: state.safeBiometryEnabled,
+  safeBiometryEnabled: state.featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE],
 });
 
 const mapDispatchToProps = (dispatch) => ({
