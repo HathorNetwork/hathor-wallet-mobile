@@ -79,6 +79,7 @@
     "react-native-svg": "13.10.0",
     "react-native-tab-view": "3.5.2",
     "react-native-url-polyfill": "2.0.0",
+    "react-native-v8": "^2.5.1",
     "react-native-vector-icons": "9.2.0",
     "react-native-version-number": "0.3.6",
     "react-redux": "7.2.9",
@@ -89,7 +90,8 @@
     "stream-browserify": "1.0.0",
     "text-encoding": "0.7.0",
     "ttag": "1.7.24",
-    "url": "0.11.1"
+    "url": "0.11.1",
+    "v8-android-jit": "^11.1000.4"
   },
   "devDependencies": {
     "@babel/core": "7.22.8",

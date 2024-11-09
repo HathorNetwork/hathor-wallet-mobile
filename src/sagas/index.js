@@ -22,6 +22,8 @@ import { logger } from '../logger';
 
 const MAX_RETRIES = 5;
 
+console.log(`V8 version is ${global._v8runtime().version}`);
+
 const log = logger('rootSaga');
 
 const sagas = {
