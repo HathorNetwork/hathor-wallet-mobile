@@ -12,6 +12,7 @@ import {
   reloadWalletRequested,
   onExceptionCaptured,
   networkSettingsUpdateReady,
+  networkChanged,
 } from '../actions';
 import {
   NETWORK_MAINNET,
@@ -281,6 +282,10 @@ export function* persistNetworkSettings(action) {
     yield put(onExceptionCaptured(errMsg, /* isFatal */ true));
     return;
   }
+
+  // Dispatch network changed so listeners can use it in other sagas
+  // e.g. the Reown saga uses this to clear sessions
+  yield put(networkChanged());
 
   // Stop wallet and clean its storage without clean its access data.
   wallet.stop({ cleanStorage: true, cleanAddresses: true, cleanTokens: true });
