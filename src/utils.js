@@ -96,6 +96,7 @@ export const getTokenLabel = (token) => `${token.name} (${token.symbol})`;
  *
  * @param {string} currentPassword
  * @param {bool} safeBiometryEnabled
+ * @return {Promise<string>} The actual pin/password for the application.
  */
 export async function biometricsMigration(currentPassword, safeBiometryEnabled) {
   const oldBiometry = STORE.getItem(IS_OLD_BIOMETRY_ENABLED_KEY);
@@ -111,6 +112,8 @@ export async function biometricsMigration(currentPassword, safeBiometryEnabled) 
       await changePinOnAccessData(storage, currentPassword, password);
       STORE.enableSafeBiometry(currentPassword, password);
       STORE.removeItem(IS_OLD_BIOMETRY_ENABLED_KEY);
+
+      return password;
     }
   } else {
     // Old biometry mode, need to migrate if safe biometry is enabled.
@@ -123,8 +126,12 @@ export async function biometricsMigration(currentPassword, safeBiometryEnabled) 
       await changePinOnAccessData(storage, currentPassword, pin);
       STORE.removeItem(IS_BIOMETRY_ENABLED_KEY);
       STORE.setItem(IS_OLD_BIOMETRY_ENABLED_KEY, true);
+
+      return pin;
     }
   }
+
+  return currentPassword;
 }
 
 /**

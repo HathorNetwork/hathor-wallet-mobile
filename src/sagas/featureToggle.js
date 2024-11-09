@@ -37,12 +37,15 @@ import {
   SAFE_BIOMETRY_MODE_FEATURE_TOGGLE,
 } from '../constants';
 import { disableFeaturesIfNeeded } from './helpers';
+import { logger } from '../logger';
 
 const MAX_RETRIES = 5;
 
+const log = logger('featureToggle');
+
 export function* handleInitFailed(currentRetry) {
   if (currentRetry >= MAX_RETRIES) {
-    console.error('Max retries reached while trying to create the unleash-proxy client.');
+    log.error('Max retries reached while trying to create the unleash-proxy client.');
     const unleashClient = yield select((state) => state.unleashClient);
 
     if (unleashClient) {
@@ -75,7 +78,7 @@ export function* fetchTogglesRoutine() {
     } catch (e) {
       // No need to do anything here as it will try again automatically in
       // UNLEASH_POLLING_INTERVAL. Just prevent it from crashing the saga.
-      console.error('Erroed fetching feature toggles');
+      log.error('Erroed fetching feature toggles', e);
     }
   }
 }
@@ -128,6 +131,7 @@ export function* monitorFeatureFlags(currentRetry = 0) {
     yield put(setUseSafeBiometryMode(featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE]));
     yield put(featureToggleInitialized());
   } catch (e) {
+    log.error(e);
     yield put(setUnleashClient(null));
 
     // Wait 500ms before retrying
