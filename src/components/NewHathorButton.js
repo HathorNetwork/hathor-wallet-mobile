@@ -8,7 +8,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-  StyleSheet, Text, TouchableOpacity, View,
+  StyleSheet, Text, TouchableOpacity
 } from 'react-native';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 import { COLORS } from '../styles/themes';
@@ -45,11 +45,23 @@ const NewHathorButton = (props) => {
   }
 
   return (
-    <View style={[...wrapperViewStyle, props.wrapperStyle, props.style]}>
-      <TouchableOpacity onPress={props.onPress} style={style.touchable} disabled={props.disabled}>
-        <Text style={[...textStyle, props.textStyle]}>{props.title}</Text>
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity
+      onPress={props.onPress}
+      disabled={props.disabled}
+      style={[
+        ...wrapperViewStyle,
+        props.wrapperStyle,
+        props.style
+      ]}
+    >
+      <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        style={[...textStyle, props.textStyle]}
+      >
+        {props.title}
+      </Text>
+    </TouchableOpacity>
   );
 };
 
@@ -77,7 +89,9 @@ const style = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: COLORS.textColor,
     alignSelf: 'stretch',
-    padding: 16,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   wrapperDisabled: {
     backgroundColor: COLORS.textColorShadowOpacity005,
@@ -97,12 +111,6 @@ const style = StyleSheet.create({
   },
   wrapperSecondaryDanger: {
     borderColor: COLORS.errorBgColor,
-  },
-  touchable: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   text: {
     fontWeight: 'bold',
