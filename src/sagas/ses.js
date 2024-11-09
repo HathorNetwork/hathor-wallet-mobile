@@ -7,6 +7,7 @@
 
 import { MMKV } from 'react-native-mmkv';
 import RNRestart from 'react-native-restart';
+import { Platform } from 'react-native';
 import {
   call,
   fork,
@@ -46,6 +47,11 @@ function enableSes(restart = true) {
  *
  */
 function* init() {
+  if (Platform.OS === 'android') {
+    log.debug('Platform is android, skipping SES');
+    return;
+  }
+
   const storageEnabled = storage.getBoolean('should-enable-ses');
   const unleashEnabled = yield call(isSESEnabled);
   const sesEnabled = verifySesEnabled();
