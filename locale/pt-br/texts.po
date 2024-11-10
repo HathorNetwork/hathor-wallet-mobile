@@ -57,11 +57,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Última] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:546
+#: src/models.js:107 src/utils.js:553
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:220
+#: src/utils.js:227
 msgid "Invalid address"
 msgstr "Endereço inválido"
 
@@ -452,7 +452,7 @@ msgstr "Digite suas palavras separadas por espaços"
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:358
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
-#: src/screens/PinScreen.js:274
+#: src/screens/PinScreen.js:285
 msgid "Try again"
 msgstr "Tente novamente"
 
@@ -474,52 +474,53 @@ msgstr "**${ loadedData.addresses } endereços** encontrados"
 msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
-#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:303
-#: src/screens/Settings.js:161
+#: src/screens/LoadWalletErrorScreen.js:21 src/screens/PinScreen.js:314
+#: src/screens/Settings.js:162
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
 
-#: src/screens/MainScreen.js:126
+#: src/screens/MainScreen.js:127
 msgid "No transactions"
 msgstr "Nenhuma transação"
 
-#: src/screens/MainScreen.js:129
+#: src/screens/MainScreen.js:130
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 "|share:Compartilhe seu endereço| com seus amigos e comece a trocar seus "
 "tokens"
 
-#: src/screens/MainScreen.js:146
+#: src/screens/MainScreen.js:147
 msgid "Loading transactions"
 msgstr "Carregando transações"
 
-#: src/screens/MainScreen.js:155
+#: src/screens/MainScreen.js:156
 msgid "There was an error loading your transaction history"
 msgstr "Ocorreu um erro ao carregar seu histórico de transações"
 
-#: src/screens/MainScreen.js:158
+#: src/screens/MainScreen.js:159
 msgid "Please |tryAgain:try again|"
 msgstr "Por favor |tryAgain:tente novamente|"
 
-#: src/screens/MainScreen.js:535 src/screens/MainScreen.js:567
+#: src/screens/MainScreen.js:536 src/screens/MainScreen.js:568
 msgid "Available Balance"
 msgstr "Saldo Disponível"
 
-#: src/screens/MainScreen.js:544
+#: src/screens/MainScreen.js:545
 msgid "Locked"
 msgstr "Bloqueado"
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/NanoContractRegisterQrCodeScreen.js:26
-#: src/screens/RegisterToken.js:27 src/screens/SendScanQRCode.js:87
-msgid "Manual info"
+#: src/screens/Reown/ReownScan.js:41
+msgid "Manual"
 msgstr "Digitar"
 
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:251
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:260
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:233
 #: src/screens/NanoContractRegisterQrCodeScreen.js:48
-msgid "Nano Contract Registration"
-msgstr "Registro do Nano Contract"
+msgid "Register Nano Contract"
+msgstr "Registrar Nano Contract"
 
 #: src/screens/NanoContractRegisterQrCodeScreen.js:63
 msgid "Scan the nano contract ID QR code"
@@ -559,31 +560,31 @@ msgstr "Recebido"
 msgid "Waiting confirmation"
 msgstr "Aguardando confirmação"
 
-#: src/screens/PinScreen.js:263
+#: src/screens/PinScreen.js:274
 msgid "Incorrect PIN Code. Try again."
 msgstr "PIN incorreto. Tente novamente."
 
-#: src/screens/PinScreen.js:74
+#: src/screens/PinScreen.js:77
 msgid "Enter your PIN Code "
 msgstr "Digite seu PIN "
 
-#: src/screens/PinScreen.js:75
+#: src/screens/PinScreen.js:78
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
 #: src/components/Reown/CreateTokenModal.js:60
 #: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:65
 #: src/components/Reown/NanoContract/SignOracleDataModal.js:79
-#: src/components/Reown/SignMessageModal.js:79 src/screens/PinScreen.js:300
+#: src/components/Reown/SignMessageModal.js:79 src/screens/PinScreen.js:311
 #: src/screens/Reown/ReownList.js:125
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:334 src/screens/PinScreen.js:338
+#: src/screens/PinScreen.js:345 src/screens/PinScreen.js:349
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 
-#: src/screens/PushNotification.js:58 src/screens/Settings.js:135
+#: src/screens/PushNotification.js:58 src/screens/Settings.js:136
 msgid "Push Notification"
 msgstr "Notificação"
 
@@ -617,6 +618,12 @@ msgstr "Requisição de Pagamento"
 #: src/screens/Receive.js:107
 msgid "RECEIVE"
 msgstr "RECEBER"
+
+#.  translator: Used when the QR Code Scanner is opened, and user will manually
+#.  enter the information.
+#: src/screens/RegisterToken.js:27 src/screens/SendScanQRCode.js:87
+msgid "Manual info"
+msgstr "Digitar"
 
 #: src/screens/RegisterToken.js:42 src/screens/RegisterTokenManual.js:126
 msgid "REGISTER TOKEN"
@@ -678,36 +685,36 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr "Resetar Wallet"
 
-#: src/screens/Security.js:130
+#: src/screens/Security.js:131
 msgid "Disable biometry"
 msgstr "Desativar biometria"
 
-#: src/screens/Security.js:131
+#: src/screens/Security.js:132
 msgid "Disabling biometry"
 msgstr "Desativando biometria"
 
-#: src/screens/Security.js:143
+#: src/screens/Security.js:144
 msgid "Enter your 6-digit pin to enable biometry"
 msgstr "Digite seu PIN de 6 dígitos para habilitar biometria"
 
-#: src/screens/Security.js:154
+#: src/screens/Security.js:155
 msgid "No biometry supported"
 msgstr "Nenhuma biometria suportada"
 
-#: src/screens/Security.js:154
+#: src/screens/Security.js:155
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr "Usar ${ this.supportedBiometry }"
 
-#: src/screens/Security.js:159
+#: src/screens/Security.js:160
 msgid "SECURITY"
 msgstr "SEGURANÇA"
 
-#: src/screens/Security.js:183
+#: src/screens/Security.js:184
 msgid "Change PIN"
 msgstr "Mudar PIN"
 
-#: src/screens/Security.js:188
+#: src/screens/Security.js:189
 msgid "Lock wallet"
 msgstr "Bloquear a wallet"
 
@@ -780,43 +787,43 @@ msgstr "Você não tem o token requisitado [${ tokenLabel }]"
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
-#: src/screens/Settings.js:104
+#: src/screens/Settings.js:105
 msgid "You are connected to"
 msgstr "Você está conectado à"
 
-#: src/screens/Settings.js:112
+#: src/screens/Settings.js:113
 msgid "General Settings"
 msgstr "Configurações Gerais"
 
-#: src/screens/Settings.js:116
+#: src/screens/Settings.js:117
 msgid "Connected to"
 msgstr "Conectado ao servidor"
 
-#: src/screens/Settings.js:129
+#: src/screens/Settings.js:130
 msgid "Security"
 msgstr "Segurança"
 
-#: src/screens/Settings.js:142
+#: src/screens/Settings.js:143
 msgid "Create a new token"
 msgstr "Criar um novo token"
 
-#: src/screens/Settings.js:149
+#: src/screens/Settings.js:150
 msgid "Register a token"
 msgstr "Registrar um token"
 
-#: src/screens/Settings.js:165
+#: src/screens/Settings.js:166
 msgid "About"
 msgstr "Sobre"
 
-#: src/screens/Settings.js:172
+#: src/screens/Settings.js:173
 msgid "Unique app identifier"
 msgstr "Identificador único do aplicativo"
 
-#: src/screens/Settings.js:186
+#: src/screens/Settings.js:187
 msgid "Developer Settings"
 msgstr "Configurações do Desenvolvedor"
 
-#: src/screens/Settings.js:188
+#: src/screens/Settings.js:189
 msgid "Network Settings"
 msgstr "Configurações de Rede"
 
@@ -899,12 +906,6 @@ msgstr ""
 #: src/screens/Reown/ReownManual.js:57 src/screens/Reown/ReownScan.js:34
 msgid "Connect"
 msgstr "Conectar"
-
-#.  translator: Used when the QR Code Scanner is opened, and user will manually
-#.  enter the information.
-#: src/screens/Reown/ReownScan.js:41
-msgid "Manual"
-msgstr "Digitar"
 
 #: src/screens/Reown/SignMessageRequestScreen.js:25
 msgid "Sign Message Request"
@@ -1070,10 +1071,9 @@ msgstr "Se deseja alterar o endereço de assinatura, você pode alterar"
 msgid "after the contract is registered."
 msgstr "depois do contrato ser registrado."
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:260
-#: src/screens/NanoContract/NanoContractRegisterScreen.js:233
-msgid "Register Nano Contract"
-msgstr "Registrar Nano Contract"
+#: src/screens/NanoContract/NanoContractRegisterScreen.js:251
+msgid "Nano Contract Registration"
+msgstr "Registro do Nano Contract"
 
 #: src/screens/NanoContract/NanoContractTransactionScreen.js:39
 msgid "Nano Contract Transaction"
@@ -1701,8 +1701,7 @@ msgstr "Nova Solicitação de Assinatura do Oracle"
 
 #: src/components/Reown/NanoContract/SignOracleDataModal.js:67
 msgid "You have received a new Sign Oracle Data Request. Please"
-msgstr ""
-"Você recebeu uma nova Solicitação de Assinatura do Oracle. Por favor,"
+msgstr "Você recebeu uma nova Solicitação de Assinatura do Oracle. Por favor,"
 
 #: src/components/Reown/NanoContract/SignOracleDataModal.js:75
 msgid "Review Sign Oracle Data Request details"

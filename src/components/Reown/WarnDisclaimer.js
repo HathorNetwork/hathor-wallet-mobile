@@ -71,13 +71,17 @@ const styles = StyleSheet.create({
     marginRight: 'auto',
   },
   learnMoreContainer: {
-    justifyContent: 'flex-start',
-    borderBottomWidth: 1,
+    minHeight: 'auto',
+    padding: 0,
+    paddingHorizontal: 0,
+    alignItems: 'flex-start',
   },
   learnMoreText: {
     fontSize: 12,
     lineHeight: 16,
     fontWeight: 'bold',
     color: 'hsla(0, 0%, 25%, 1)',
+    textAlign: 'left',
+    textDecorationLine: 'underline',
   },
 });
