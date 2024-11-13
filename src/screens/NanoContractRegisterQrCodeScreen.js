@@ -23,7 +23,7 @@ export const NanoContractRegisterQrCodeScreen = ({ navigation }) => {
     <SimpleButton
       // translator: Used when the QR Code Scanner is opened, and user will manually
       // enter the information.
-      title={t`Manual info`}
+      title={t`Manual`}
       onPress={() => navigation.navigate('NanoContractRegisterScreen')}
     />
   );
@@ -45,7 +45,7 @@ export const NanoContractRegisterQrCodeScreen = ({ navigation }) => {
       }}
       >
         <HathorHeader
-          title={t`Nano Contract Registration`.toUpperCase()}
+          title={t`Register Nano Contract`.toUpperCase()}
           onBackPress={() => navigation.pop()}
           rightElement={renderHeaderRightElement()}
         />
