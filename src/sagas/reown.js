@@ -455,8 +455,8 @@ export function* processRequest(action) {
 
         const retry = yield call(
           retryHandler,
-          types.REOWN_CREATE_TOKEN_RETRY,
-          types.REOWN_CREATE_TOKEN_RETRY_DISMISS,
+          types.REOWN_NEW_NANOCONTRACT_RETRY,
+          types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
         );
 
         if (retry) {
