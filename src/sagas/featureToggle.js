@@ -38,10 +38,28 @@ import {
 } from '../constants';
 import { disableFeaturesIfNeeded } from './helpers';
 import { logger } from '../logger';
+import { STORE, IS_BIOMETRY_ENABLED_KEY } from '../store';
 
 const MAX_RETRIES = 5;
 
 const log = logger('featureToggle');
+
+export function* handleInitWithoutUnleash() {
+  const safeBiometry = STORE.getItem(IS_BIOMETRY_ENABLED_KEY);
+  if (safeBiometry) {
+    // If the STORE has safeBiometry enabled we will also enable it before starting.
+    // This makes it so we do not unnecessarily migrate the STORE state if unleash failed.
+    const featureToggles = yield select((state) => state.featureToggles);
+    featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE] = true;
+    yield put(setFeatureToggles(featureToggles));
+    yield put(setUseSafeBiometryMode(true));
+  }
+
+  // Even if unleash failed, we should allow the app to continue as it
+  // has defaults set for all feature toggles. Emit featureToggleInitialized
+  // so sagas waiting for it will resume.
+  yield put(featureToggleInitialized());
+}
 
 export function* handleInitFailed(currentRetry) {
   if (currentRetry >= MAX_RETRIES) {
@@ -53,10 +71,7 @@ export function* handleInitFailed(currentRetry) {
       yield put(setUnleashClient(null));
     }
 
-    // Even if unleash failed, we should allow the app to continue as it
-    // has defaults set for all feature toggles. Emit featureToggleInitialized
-    // so sagas waiting for it will resume.
-    yield put(featureToggleInitialized());
+    yield call(handleInitWithoutUnleash);
     return;
   }
 
