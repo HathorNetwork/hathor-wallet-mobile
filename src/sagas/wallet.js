@@ -73,6 +73,7 @@ import {
   firstAddressSuccess,
   setUseSafeBiometryMode,
   lockScreen,
+  firstAddressRequest,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -313,7 +314,7 @@ export function* startWallet(action) {
   }
 
   yield put(walletRefreshSharedAddress());
-
+  yield put(firstAddressRequest());
   yield put(startWalletSuccess());
 
   // The way the redux-saga fork model works is that if a saga has `forked`
