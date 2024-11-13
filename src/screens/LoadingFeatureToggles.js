@@ -9,17 +9,17 @@ import { View, Text } from 'react-native';
 import { t } from 'ttag';
 import Spinner from '../components/Spinner';
 
- export function LoadingFeatureToggles() {
-   return (
-     <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-     >
-       <Text>{t`Loading...`}</Text>
+export function LoadingFeatureToggles() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Text>{t`Loading...`}</Text>
       <Spinner size={48} animating />
-     </View>
-   );
- }
+    </View>
+  );
+}
