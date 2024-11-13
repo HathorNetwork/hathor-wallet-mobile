@@ -97,6 +97,7 @@ import { SignMessageRequestScreen } from './screens/Reown/SignMessageRequestScre
 import { SignOracleDataRequestScreen } from './screens/Reown/SignOracleDataRequestScreen';
 import { CreateTokenRequestScreen } from './screens/Reown/CreateTokenScreen';
 import { SuccessFeedbackScreen } from './screens/Reown/SuccessFeedbackScreen';
+import { LoadingFeatureToggles } from './screens/LoadingFeatureToggles';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -501,6 +502,7 @@ const mapStateToProps = (state) => ({
   isResetOnScreenLocked: state.resetOnLockScreen,
   walletStartState: state.walletStartState,
   wallet: state.wallet,
+  featureTogglesInitialized: state.featureTogglesInitialized,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -685,6 +687,9 @@ class _AppStackWrapper extends React.Component {
       let screen = null;
 
       if (this.props.isScreenLocked) {
+        if (!this.props.featureTogglesInitialized) {
+          screen = <LoadingFeatureToggles />;
+        } else if (this.props.isResetOnScreenLocked) {
         /**
          * NOTE:
          * This approach shows the ResetWallet screen as an auxiliar view,
@@ -694,7 +699,6 @@ class _AppStackWrapper extends React.Component {
          * This approach also keeps the navigation stack unchanged,
          * therefore increasing the convinience for the user.
          */
-        if (this.props.isResetOnScreenLocked) {
           screen = <ResetWallet navigation={this.props.navigation} />;
         } else {
           screen = <PinScreen isLockScreen navigation={this.props.navigation} />;
