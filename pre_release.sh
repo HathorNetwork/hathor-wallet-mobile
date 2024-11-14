@@ -13,6 +13,7 @@ set -v # Verbose mode for better debugging
 git log -n1
 
 rm -rf node_modules/
+rm -rf ios/Pods/
 
 rm -f ./android/app/google-services.json
 rm -f ./android/app/GoogleService-Info.plist

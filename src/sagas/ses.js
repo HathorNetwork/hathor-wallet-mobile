@@ -89,6 +89,11 @@ export function* isSESEnabled() {
  * the react-native bundle if the feature was enabled and is now disabled.
  */
 export function* featureToggleUpdateListener() {
+  if (Platform.OS === 'android') {
+    log.debug('Platform is android, skipping SES');
+    return;
+  }
+
   while (true) {
     const oldSesEnabled = yield call(isSESEnabled);
     yield take('FEATURE_TOGGLE_UPDATED');
