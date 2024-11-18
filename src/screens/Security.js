@@ -26,6 +26,10 @@ import { SAFE_BIOMETRY_FEATURE_FLAG_KEY, STORE } from '../store';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
+// XXX: DO NOT REMOVE
+  // this is not used but it is required to trigger a re-render when the screen
+  // is locked and unlocked since some (non-redux) values may have changed.
+  lock: state.lockScreen,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -63,20 +67,19 @@ export class Security extends React.Component {
     this.state = {
       biometryEnabled: this.supportedBiometry && isBiometryEnabled(),
     };
-
-    this.useSafeBiometryFeature = STORE.getItem(SAFE_BIOMETRY_FEATURE_FLAG_KEY);
   }
 
-  onBiometrySwitchChange = (value) => {
-    this.setState({ biometryEnabled: value });
-    setBiometryEnabled(value);
-  }
-
-  onSafeBiometrySwitchChange = (value) => {
-    if (value) {
-      this.onSafeBiometryEnabled();
+  onBiometrySwitchChange(value) {
+    const useSafeBiometryFeature = STORE.getItem(SAFE_BIOMETRY_FEATURE_FLAG_KEY);
+    if (useSafeBiometryFeature) {
+      if (value) {
+        this.onSafeBiometryEnabled();
+      } else {
+        this.onSafeBiometryDisabled();
+      }
     } else {
-      this.onSafeBiometryDisabled();
+      this.setState({ biometryEnabled: value });
+      setBiometryEnabled(value);
     }
   }
 
@@ -153,7 +156,10 @@ export class Security extends React.Component {
   render() {
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? t`No biometry supported` : t`Use ${this.supportedBiometry}`);
-    const safeBiometryActive = this.state.biometryEnabled && this.useSafeBiometryFeature;
+
+    const useSafeBiometryFeature = STORE.getItem(SAFE_BIOMETRY_FEATURE_FLAG_KEY);
+    const safeBiometryActive = this.state.biometryEnabled && useSafeBiometryFeature;
+
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <HathorHeader
@@ -168,9 +174,7 @@ export class Security extends React.Component {
             titleStyle={!switchDisabled ? { color: COLORS.textColor } : null}
             text={(
               <Switch
-                onValueChange={this.useSafeBiometryFeature
-                  ? this.onSafeBiometrySwitchChange
-                  : this.onBiometrySwitchChange}
+                onValueChange={this.onBiometrySwitchChange.bind(this)}
                 value={this.state.biometryEnabled}
                 disabled={switchDisabled}
               />
