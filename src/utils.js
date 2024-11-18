@@ -15,8 +15,8 @@ import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import moment from 'moment';
 import baseStyle from './styles/init';
-import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE } from './constants';
-import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_BIOMETRY_KEY } from './store';
+import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from './constants';
+import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_BIOMETRY_KEY, SAFE_BIOMETRY_FEATURE_FLAG_KEY, FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
 import { logger } from './logger';
@@ -94,17 +94,28 @@ export const getTokenLabel = (token) => `${token.name} (${token.symbol})`;
 /**
  * Migrate the biometry configuration state if needed.
  *
- * @param {string} currentPassword
- * @param {bool} safeBiometryEnabled
+ * @param {string} currentPassword - The password returned from the system keychain.
  * @return {Promise<string>} The actual pin/password for the application.
  */
-export async function biometricsMigration(currentPassword, safeBiometryEnabled) {
-  const oldBiometry = STORE.getItem(IS_OLD_BIOMETRY_ENABLED_KEY);
-  const safeBiometry = STORE.getItem(IS_BIOMETRY_ENABLED_KEY);
+export async function biometricsMigration(currentPassword) {
+  const storeSafeBiometryFeature = !!STORE.getItem(SAFE_BIOMETRY_FEATURE_FLAG_KEY);
+  const unleashToggles = STORE.getItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY) ?? {};
+  const unleashSafeBiometryFeature = !!unleashToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE];
 
-  if (safeBiometryEnabled) {
-    // Safe biometry mode, need to migrate if old biometry is enabled.
-    if (oldBiometry) {
+  if (storeSafeBiometryFeature === unleashSafeBiometryFeature) {
+    // No migration is required since the store and unleash flags are the same
+    return currentPassword;
+  }
+
+  STORE.setItem(SAFE_BIOMETRY_FEATURE_FLAG_KEY, unleashSafeBiometryFeature);
+  // The safe biometry feature flag has changed, we need to check if a migration is required.
+
+  if (unleashSafeBiometryFeature) {
+    // Unleash flag is enabling safe biometry
+    // if we have the old mode active a migration is required.
+    // else we can ignore migration since the use is not using biometry.
+    const oldBiometryActive = STORE.getItem(IS_OLD_BIOMETRY_ENABLED_KEY);
+    if (oldBiometryActive) {
       // currentPassword is the pin, we need to generate a new random password
       // and encrypt the pin.
       const password = generateRandomPassword();
@@ -116,9 +127,12 @@ export async function biometricsMigration(currentPassword, safeBiometryEnabled) 
       return password;
     }
   } else {
-    // Old biometry mode, need to migrate if safe biometry is enabled.
+    // Unleash flag is disabling safe biometry
+    // if we have safe mode active a migration is required.
+    // else we can ignore migration since the use is not using biometry.
+    const safeBiometryActive = STORE.getItem(IS_BIOMETRY_ENABLED_KEY);
     // eslint-disable-next-line no-lonely-if
-    if (safeBiometry) {
+    if (safeBiometryActive) {
       // currentPassword is the random password, we need to decrypt the pin and
       // toggle the old biometry key
       const pin = STORE.disableSafeBiometry(currentPassword);

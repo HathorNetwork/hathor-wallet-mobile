@@ -26,9 +26,9 @@ import {
   resetOnLockScreen,
   onExceptionCaptured,
 } from '../actions';
-import { PIN_SIZE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
+import { PIN_SIZE } from '../constants';
 import { COLORS } from '../styles/themes';
-import { STORE } from '../store';
+import { SAFE_BIOMETRY_FEATURE_FLAG_KEY, STORE } from '../store';
 import baseStyle from '../styles/init';
 import Spinner from '../components/Spinner';
 import FeedbackModal from '../components/FeedbackModal';
@@ -43,7 +43,6 @@ const log = logger('PIN_SCREEN');
 const mapStateToProps = (state) => ({
   loadHistoryActive: state.loadHistoryStatus.active,
   wallet: state.wallet,
-  safeBiometryEnabled: state.featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE],
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -82,6 +81,7 @@ class PinScreen extends React.Component {
       this.biometryText = props.route.params.biometryText ?? this.biometryText;
       this.biometryLoadingText = props.route.params.biometryLoadingText ?? '';
     }
+    this.useSafeBiometryFeature = STORE.getItem(SAFE_BIOMETRY_FEATURE_FLAG_KEY);
     this.biometryEnabled = isBiometryEnabled();
 
     this.focusEvent = null;
@@ -152,14 +152,14 @@ class PinScreen extends React.Component {
       // method an change redux state. No need to execute callback or go back on navigation
       try {
         await STORE.handleDataMigration(pin);
-        const newPin = await biometricsMigration(pin, this.props.safeBiometryEnabled);
+        const actualPin = await biometricsMigration(pin);
         if (!this.props.wallet) {
           // We have already made sure we have an available accessData
           // The handleDataMigration method ensures we have already migrated if necessary
           // This means the wallet is loaded and the access data is ready to be used.
 
-          const words = await STORE.getWalletWords(newPin);
-          this.props.startWalletRequested({ words, pin: newPin });
+          const words = await STORE.getWalletWords(actualPin);
+          this.props.startWalletRequested({ words, pin: actualPin });
         }
         this.props.unlockScreen();
       } catch (e) {
@@ -298,12 +298,12 @@ class PinScreen extends React.Component {
     );
 
     const renderButton = () => {
-      if ((!this.state.biometryFailed) && this.props.safeBiometryEnabled && this.biometryEnabled) {
+      if ((!this.state.biometryFailed) && this.useSafeBiometryFeature && this.biometryEnabled) {
         // Biometry has not failed, so we should not show a cancellation button.
         return null;
       }
       const biometryFailed = this.state.biometryFailed
-        && this.props.safeBiometryEnabled
+        && this.useSafeBiometryFeature
         && this.biometryEnabled;
       let title;
       let onPress;
@@ -372,7 +372,7 @@ class PinScreen extends React.Component {
     );
 
     const renderBody = () => {
-      if (this.props.safeBiometryEnabled && this.biometryEnabled) {
+      if (this.useSafeBiometryFeature && this.biometryEnabled) {
         // Safe biometry mode is enabled, we should not render the pin input.
         return safeBiometryMessage();
       }

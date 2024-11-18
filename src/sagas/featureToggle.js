@@ -26,7 +26,6 @@ import {
   setUnleashClient,
   setFeatureToggles,
   featureToggleInitialized,
-  setUseSafeBiometryMode,
 } from '../actions';
 import {
   UNLEASH_URL,
@@ -34,32 +33,14 @@ import {
   UNLEASH_POLLING_INTERVAL,
   STAGE,
   FEATURE_TOGGLE_DEFAULTS,
-  SAFE_BIOMETRY_MODE_FEATURE_TOGGLE,
 } from '../constants';
 import { disableFeaturesIfNeeded } from './helpers';
 import { logger } from '../logger';
-import { STORE, IS_BIOMETRY_ENABLED_KEY } from '../store';
+import { STORE, FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY } from '../store';
 
 const MAX_RETRIES = 5;
 
 const log = logger('featureToggle');
-
-export function* handleInitWithoutUnleash() {
-  const safeBiometry = STORE.getItem(IS_BIOMETRY_ENABLED_KEY);
-  if (safeBiometry) {
-    // If the STORE has safeBiometry enabled we will also enable it before starting.
-    // This makes it so we do not unnecessarily migrate the STORE state if unleash failed.
-    const featureToggles = yield select((state) => state.featureToggles);
-    featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE] = true;
-    yield put(setFeatureToggles(featureToggles));
-    yield put(setUseSafeBiometryMode(true));
-  }
-
-  // Even if unleash failed, we should allow the app to continue as it
-  // has defaults set for all feature toggles. Emit featureToggleInitialized
-  // so sagas waiting for it will resume.
-  yield put(featureToggleInitialized());
-}
 
 export function* handleInitFailed(currentRetry) {
   if (currentRetry >= MAX_RETRIES) {
@@ -71,7 +52,10 @@ export function* handleInitFailed(currentRetry) {
       yield put(setUnleashClient(null));
     }
 
-    yield call(handleInitWithoutUnleash);
+    // Even if unleash failed, we should allow the app to continue as it
+    // has defaults set for all feature toggles. Emit featureToggleInitialized
+    // so sagas waiting for it will resume.
+    yield put(featureToggleInitialized());
     return;
   }
 
@@ -104,6 +88,7 @@ export function* handleToggleUpdate() {
 
   const toggles = unleashClient.getToggles();
   const featureToggles = disableFeaturesIfNeeded(networkSettings, mapFeatureToggles(toggles));
+  STORE.setItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, featureToggles);
 
   yield put(setFeatureToggles(featureToggles));
   yield put({ type: types.FEATURE_TOGGLE_UPDATED });
@@ -141,9 +126,9 @@ export function* monitorFeatureFlags(currentRetry = 0) {
     // At this point, unleashClient.fetchToggles() already fetched the toggles
     // (this will throw if it hasn't)
     const featureToggles = mapFeatureToggles(unleashClient.getToggles());
+    STORE.setItem(FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY, featureToggles);
 
     yield put(setFeatureToggles(featureToggles));
-    yield put(setUseSafeBiometryMode(featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE]));
     yield put(featureToggleInitialized());
   } catch (e) {
     log.error(e);

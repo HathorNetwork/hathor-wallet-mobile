@@ -18,6 +18,8 @@ export const PIN_BACKUP_KEY = 'asyncstorage:pinBackup';
 export const IS_OLD_BIOMETRY_ENABLED_KEY = 'mobile:isBiometryEnabled';
 export const IS_BIOMETRY_ENABLED_KEY = 'mobile:isSafeBiometryEnabled';
 export const SUPPORTED_BIOMETRY_KEY = 'mobile:supportedBiometry';
+export const SAFE_BIOMETRY_FEATURE_FLAG_KEY = 'asyncstorage:featureFlagSafeBiometryMode';
+export const FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY = 'asyncstorage:featureTogglesLastKnownValues';
 
 export const walletKeys = [
   ACCESS_DATA_KEY,

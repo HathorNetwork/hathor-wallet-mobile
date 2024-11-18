@@ -22,12 +22,10 @@ import {
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen, onExceptionCaptured } from '../actions';
 import { COLORS } from '../styles/themes';
-import { STORE } from '../store';
-import { SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
+import { SAFE_BIOMETRY_FEATURE_FLAG_KEY, STORE } from '../store';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
-  safeBiometryEnabled: state.featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE],
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -65,6 +63,8 @@ export class Security extends React.Component {
     this.state = {
       biometryEnabled: this.supportedBiometry && isBiometryEnabled(),
     };
+
+    this.useSafeBiometryFeature = STORE.getItem(SAFE_BIOMETRY_FEATURE_FLAG_KEY);
   }
 
   onBiometrySwitchChange = (value) => {
@@ -153,7 +153,7 @@ export class Security extends React.Component {
   render() {
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? t`No biometry supported` : t`Use ${this.supportedBiometry}`);
-    const safeBiometryActive = this.state.biometryEnabled && this.props.safeBiometryEnabled;
+    const safeBiometryActive = this.state.biometryEnabled && this.useSafeBiometryFeature;
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <HathorHeader
@@ -168,7 +168,7 @@ export class Security extends React.Component {
             titleStyle={!switchDisabled ? { color: COLORS.textColor } : null}
             text={(
               <Switch
-                onValueChange={this.props.safeBiometryEnabled
+                onValueChange={this.useSafeBiometryFeature
                   ? this.onSafeBiometrySwitchChange
                   : this.onBiometrySwitchChange}
                 value={this.state.biometryEnabled}
