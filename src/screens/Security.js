@@ -26,10 +26,6 @@ import { SAFE_BIOMETRY_FEATURE_FLAG_KEY, STORE } from '../store';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
-// XXX: DO NOT REMOVE
-  // this is not used but it is required to trigger a re-render when the screen
-  // is locked and unlocked since some (non-redux) values may have changed.
-  lock: state.lockScreen,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -150,6 +146,8 @@ export class Security extends React.Component {
   }
 
   onLockWallet = () => {
+    // After the screen is unlocked the Home screen will be shown
+    this.props.navigation.navigate('Home');
     this.props.lockScreen();
   }
 
