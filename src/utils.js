@@ -113,7 +113,7 @@ export async function biometricsMigration(currentPassword) {
   if (unleashSafeBiometryFeature) {
     // Unleash flag is enabling safe biometry
     // if we have the old mode active a migration is required.
-    // else we can ignore migration since the use is not using biometry.
+    // else we can ignore migration since the user is not using biometry.
     const oldBiometryActive = STORE.getItem(IS_OLD_BIOMETRY_ENABLED_KEY);
     if (oldBiometryActive) {
       // currentPassword is the pin, we need to generate a new random password
