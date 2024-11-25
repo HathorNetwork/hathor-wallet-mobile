@@ -4,7 +4,7 @@
 #import <Security/Security.h>
 
 /**
- * There will be only one instance of this class on runtime accordinly the React Native code.
+ * There will be only one instance of this class at runtime according to the React Native code.
  * This provides a good opportunity to cache data on the class itself.
  */
 @implementation RCTHTTPRequestHandler (AuthenticationChallengeExtension)
@@ -110,15 +110,15 @@ static NSSet *_cachedAllowedDomains = nil;
         completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
       }
     } else {
-      NSLog(@"Certificate not set.");
+      CFStringRef errorMessage = SecCopyErrorMessageString(status, NULL);
+      NSLog(@"Certificate not set to the trust entity. Reason: %@", (__bridge NSString *)errorMessage);
       // Cancel the authentication challenge
       completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
     }
   } else {
     // Trust is not of type ServerTrust, proceeding with default challenge, if any
     NSLog(@"Not ServerTrust challenge. Calling default authentication challenge.");
-    // For other authentication methods, call the original implementation
-    [self authenticationChallenge_URLSession:session didReceiveChallenge:challenge completionHandler:completionHandler];
+    completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
   }
 }
 
@@ -151,7 +151,7 @@ static NSSet *_cachedAllowedDomains = nil;
     
     if (!certData) {
       @throw [NSException exceptionWithName:NSInternalInconsistencyException
-                                     reason:[NSString stringWithFormat:@"%@ not found", certFilename]
+                                     reason:[NSString stringWithFormat:@"Certificate file %@.der not found", certFilename]
                                    userInfo:nil];
     }
     
