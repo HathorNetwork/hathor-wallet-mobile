@@ -398,11 +398,6 @@ export const setUseWalletService = (data) => ({
   payload: data,
 });
 
-export const setUseSafeBiometryMode = (data) => ({
-  type: types.SET_USE_SAFE_BIOMETRY_MODE,
-  payload: data,
-});
-
 export const setUniqueDeviceId = (uniqueId) => ({
   type: types.SET_UNIQUE_DEVICE_ID,
   payload: uniqueId,

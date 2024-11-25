@@ -15,9 +15,18 @@ export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
 export const STORE_VERSION_KEY = 'asyncstorage:version';
 export const REGISTERED_NANO_CONTRACTS_KEY = 'asyncstorage:registeredNanoContracts';
 export const PIN_BACKUP_KEY = 'asyncstorage:pinBackup';
+// Wheather old biometry mode is active (by the user request)
 export const IS_OLD_BIOMETRY_ENABLED_KEY = 'mobile:isBiometryEnabled';
+// Wheather safe biometry is active (by the user request)
 export const IS_BIOMETRY_ENABLED_KEY = 'mobile:isSafeBiometryEnabled';
+// Which type of biometry the device can handle.
 export const SUPPORTED_BIOMETRY_KEY = 'mobile:supportedBiometry';
+// This key determines under which biometry mode the wallet is operating on.
+// The value here only changes during a migration (when the user unlocks the wallet)
+export const SAFE_BIOMETRY_FEATURE_FLAG_KEY = 'asyncstorage:featureFlagSafeBiometryMode';
+// These are the last known values of the unleash feature toggles
+// These are updated on every call to unleash
+export const FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY = 'asyncstorage:featureTogglesLastKnownValues';
 
 export const walletKeys = [
   ACCESS_DATA_KEY,

@@ -37,7 +37,6 @@ import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
-  SAFE_BIOMETRY_MODE_FEATURE_TOGGLE,
   networkSettingsKeyMap,
 } from '../constants';
 import { STORE } from '../store';
@@ -71,8 +70,6 @@ import {
   selectAddressAddressesFailure,
   firstAddressFailure,
   firstAddressSuccess,
-  setUseSafeBiometryMode,
-  lockScreen,
   firstAddressRequest,
 } from '../actions';
 import { fetchTokenData } from './tokens';
@@ -90,7 +87,6 @@ import {
   getAllAddresses,
   getFirstAddress,
   setKeychainPin,
-  isBiometryEnabled,
 } from '../utils';
 import { logger } from '../logger';
 
@@ -438,11 +434,6 @@ export function* onPushNotificationDisabled() {
   yield put(setAvailablePushNotification(false));
 }
 
-export function* onSafeBiometryToggleChanged() {
-  log.debug('Safe biometry mode feature toggle changed state, locking wallet.');
-  yield put(lockScreen());
-}
-
 /**
  * This saga will wait for feature toggle updates and react when a toggle state
  * transition is done
@@ -456,22 +447,6 @@ export function* featureToggleUpdateListener() {
 
     const oldPushNotificationToggle = yield select((state) => state.pushNotification.available);
     const newPushNotificationToggle = yield call(isPushNotificationEnabled);
-
-    const oldSafeBiometryEnabled = yield select(({ safeBiometryEnabled }) => safeBiometryEnabled);
-    const newSafeBiometryEnabled = yield call(
-      checkForFeatureFlag,
-      SAFE_BIOMETRY_MODE_FEATURE_TOGGLE,
-    );
-
-    if (oldSafeBiometryEnabled !== newSafeBiometryEnabled) {
-      // Safe biometry feature changed, need to update the state.
-      yield put(setUseSafeBiometryMode(newSafeBiometryEnabled));
-      if (isBiometryEnabled()) {
-        // Since biometry is enabled, a migration is required, this means the wallet
-        // needs to restart and the migration will fix the next time it opens.
-        yield call(onSafeBiometryToggleChanged);
-      }
-    }
 
     // WalletService is currently ON and the featureToggle is now OFF
     if (!newWalletServiceToggle && oldWalletServiceToggle) {
