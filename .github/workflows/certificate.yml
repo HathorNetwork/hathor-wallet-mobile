@@ -2,7 +2,9 @@ name: Certificate Validation and PIN Verification
 
 on:
   push:
-    branches: [ poc/ci-certificate-check ]
+    branches: [ master, release-candidate, release ]
+  pull_request:
+    branches: [ main, release-candidate, release ]
 
 jobs:
   validate-certificates:
