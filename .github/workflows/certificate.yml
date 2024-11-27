@@ -14,14 +14,21 @@ jobs:
       - name: Download and unzip certificates
         run: |
           mkdir -p ./certs
+          echo "Directory ./certs created"
+
           curl -L -o ./certs/certificate.zip https://github.com/alexruzenhack/certificates-test/archive/refs/tags/v0.1.zip
-          unzip ./certs/certificate.zip -d ./certs
+          echo "Certificates downloaded to ./certs/certificate.zip file"
+
+          unzip -j ./certs/certificate.zip -d ./certs
+          echo "Certificates unzipped to ./certs directory"
+
           rm ./certs/certificate.zip
+          echo "Zip file ./certs/certificate.zip removed"
 
       - name: Validate intermediate certificates in PEM
         run: |
-          for cert in ./certs/intermediate/*.pem; do
-            openssl verify -CAfile ./certs/root/hathor-network-root-ca-1.pem $cert || {
+          for cert in ./certs/hathor-network-trust*.pem; do
+            openssl verify -CAfile ./certs/hathor-network-root-ca-1.pem $cert || {
               echo "Error: Intermediate certificate signature do not match with root certificate"
               exit 1
             }
@@ -29,8 +36,8 @@ jobs:
 
       - name: Validate intermediate certificates in DER
         run: |
-          for cert in ./certs/intermediate/*.der; do
-            openssl verify -CAfile ./certs/root/hathor-network-root-ca-1.der $cert || {
+          for cert in ./certs/hathor-network-trust*.der; do
+            openssl verify -CAfile ./certs/hathor-network-root-ca-1.der $cert || {
               echo "Error: Intermediate certificate signature do not match with root certificate"
               exit 1
             }
@@ -38,26 +45,29 @@ jobs:
 
       - name: Compare root certificates
         run: |
-          if [ ! -f ./certs/root/hathor-network-root-ca-1.pem ]; then
-            echo "Error: ./certs/root/hathor-network-root-ca-1.pem does not exist"
+          # Check existence of the downloaed certificates in PEM encoding
+          if [ ! -f ./certs/hathor-network-root-ca-1.pem ]; then
+            echo "Error: ./certs/hathor-network-root-ca-1.pem does not exist"
             exit 1
           fi
 
-          if [ ! -f ./certs/root/hathor-network-root-ca-2.pem ]; then
-            echo "Error: ./certs/root/hathor-network-root-ca-2.pem does not exist"
+          if [ ! -f ./certs/hathor-network-root-ca-2.pem ]; then
+            echo "Error: ./certs/hathor-network-root-ca-2.pem does not exist"
             exit 1
           fi
 
-          if [ ! -f ./certs/root/hathor-network-root-ca-1.der ]; then
-            echo "Error: ./certs/root/hathor-network-root-ca-1.der does not exist"
+          # Check existence of the downloaed certificates in DER encoding
+          if [ ! -f ./certs/hathor-network-root-ca-1.der ]; then
+            echo "Error: ./certs/hathor-network-root-ca-1.der does not exist"
             exit 1
           fi
 
-          if [ ! -f ./certs/root/hathor-network-root-ca-2.der ]; then
-            echo "Error: ./certs/root/hathor-network-root-ca-2.der does not exist"
+          if [ ! -f ./certs/hathor-network-root-ca-2.der ]; then
+            echo "Error: ./certs/hathor-network-root-ca-2.der does not exist"
             exit 1
           fi
 
+          # Check existence of installed certificates for iOS
           if [ ! -f ./ios/hathor-network-root-ca-1.der ]; then
             echo "Error: ./ios/hathor-network-root-ca-1.der does not exist"
             exit 1
@@ -68,6 +78,7 @@ jobs:
             exit 1
           fi
 
+          # Check existence of installed certificates for Android
           if [ ! -f ./android/hathor-network-root-ca-1.pem ]; then
             echo "Error: ./android/hathor-network-root-ca-1.pem does not exist"
             exit 1
@@ -78,22 +89,23 @@ jobs:
             exit 1
           fi
 
-          diff -q ./certs/root/hathor-network-root-ca-1.pem ./android/hathor-network-root-ca-1.pem || {
+          # Check equality between the certificates
+          diff -q ./certs/hathor-network-root-ca-1.pem ./android/hathor-network-root-ca-1.pem || {
             echo "Error: hathor-network-root-ca-1.pem do not match on Android"
             exit 1
           }
 
-          diff -q ./certs/root/hathor-network-root-ca-2.pem ./android/hathor-network-root-ca-2.pem || {
+          diff -q ./certs/hathor-network-root-ca-2.pem ./android/hathor-network-root-ca-2.pem || {
             echo "Error: hathor-network-root-ca-2.pem do not match on Android"
             exit 1
           }
 
-          diff -q ./certs/root/hathor-network-root-ca-1.der ./ios/hathor-network-root-ca-1.der || {
+          diff -q ./certs/hathor-network-root-ca-1.der ./ios/hathor-network-root-ca-1.der || {
             echo "Error: hathor-network-root-ca-1.der do not match on iOS"
             exit 1
           }
 
-          diff -q ./certs/root/hathor-network-root-ca-2.der ./ios/hathor-network-root-ca-2.der || {
+          diff -q ./certs/hathor-network-root-ca-2.der ./ios/hathor-network-root-ca-2.der || {
             echo "Error: hathor-network-root-ca-2.der do not match on iOS"
             exit 1
           }
