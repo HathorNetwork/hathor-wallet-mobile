@@ -16,7 +16,7 @@ jobs:
           mkdir -p ./certs
           echo "Directory ./certs created"
 
-          curl -L -o ./certs/certificate.zip https://github.com/alexruzenhack/certificates-test/archive/refs/tags/v0.1.zip
+          curl -L -o ./certs/certificate.zip https://github.com/HathorNetwork/hathor-wallet-mobile/archive/refs/tags/v1.zip
           echo "Certificates downloaded to ./certs/certificate.zip file"
 
           unzip -j ./certs/certificate.zip -d ./certs
@@ -34,14 +34,14 @@ jobs:
             }
           done
 
-      # - name: Validate intermediate certificates in DER
-      #   run: |
-      #     for cert in ./certs/hathor-network-trust*.der; do
-      #       openssl verify -CAfile ./certs/hathor-network-root-ca-1.der $cert || {
-      #         echo "Error: Intermediate certificate signature do not match with root certificate"
-      #         exit 1
-      #       }
-      #     done
+      - name: Validate intermediate certificates in DER
+        run: |
+          for cert in ./certs/hathor-network-trust*.der; do
+            openssl verify -CAfile ./certs/hathor-network-root-ca-1.der $cert || {
+              echo "Error: Intermediate certificate signature do not match with root certificate"
+              exit 1
+            }
+          done
 
       - name: Compare root certificates
         run: |
