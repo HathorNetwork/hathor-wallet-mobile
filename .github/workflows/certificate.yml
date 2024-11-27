@@ -13,7 +13,7 @@ jobs:
       - name: Download and unzip certificates
         run: |
           mkdir -p ./certs
-          curl -L -o ./certs/certificate.zip https://github.com/HathorNetwork/certificates/releases/latest/download/certificate.zip
+          curl -L -o ./certs/certificate.zip https://github.com/alexruzenhack/certificates-test/archive/refs/tags/v0.1.zip
           unzip ./certs/certificate.zip -d ./certs
           rm ./certs/certificate.zip
 
