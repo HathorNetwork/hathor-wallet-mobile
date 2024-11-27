@@ -1,7 +1,8 @@
 name: Certificate Validation and PIN Verification
 
 on:
-  workflow_dispatch:  # Manual trigger for now, can be changed later
+  push:
+    branches: [ poc/ci-certificate-check ]
 
 jobs:
   validate-certificates:
