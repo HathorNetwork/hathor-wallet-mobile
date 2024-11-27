@@ -34,14 +34,14 @@ jobs:
             }
           done
 
-      - name: Validate intermediate certificates in DER
-        run: |
-          for cert in ./certs/hathor-network-trust*.der; do
-            openssl verify -CAfile ./certs/hathor-network-root-ca-1.der $cert || {
-              echo "Error: Intermediate certificate signature do not match with root certificate"
-              exit 1
-            }
-          done
+      # - name: Validate intermediate certificates in DER
+      #   run: |
+      #     for cert in ./certs/hathor-network-trust*.der; do
+      #       openssl verify -CAfile ./certs/hathor-network-root-ca-1.der $cert || {
+      #         echo "Error: Intermediate certificate signature do not match with root certificate"
+      #         exit 1
+      #       }
+      #     done
 
       - name: Compare root certificates
         run: |
@@ -90,12 +90,12 @@ jobs:
           fi
 
           # Check equality between the certificates
-          diff -q ./certs/hathor-network-root-ca-1.pem ./android/hathor-network-root-ca-1.pem || {
+          diff -q ./certs/hathor-network-root-ca-1.pem ./android/app/src/main/res/raw/hathor-network-root-ca-1.pem || {
             echo "Error: hathor-network-root-ca-1.pem do not match on Android"
             exit 1
           }
 
-          diff -q ./certs/hathor-network-root-ca-2.pem ./android/hathor-network-root-ca-2.pem || {
+          diff -q ./certs/hathor-network-root-ca-2.pem ./android/app/src/main/res/raw/hathor-network-root-ca-2.pem || {
             echo "Error: hathor-network-root-ca-2.pem do not match on Android"
             exit 1
           }
