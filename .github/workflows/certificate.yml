@@ -1,0 +1,117 @@
+name: Certificate Validation and PIN Verification
+
+on:
+  workflow_dispatch:  # Manual trigger for now, can be changed later
+
+jobs:
+  validate-certificates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download and unzip certificates
+        run: |
+          mkdir -p ./certs
+          curl -L -o ./certs/certificate.zip https://github.com/HathorNetwork/certificates/releases/latest/download/certificate.zip
+          unzip ./certs/certificate.zip -d ./certs
+          rm ./certs/certificate.zip
+
+      - name: Validate intermediate certificates in PEM
+        run: |
+          for cert in ./certs/intermediate/*.pem; do
+            openssl verify -CAfile ./certs/root/hathor-network-root-ca-1.pem $cert || {
+              echo "Error: Intermediate certificate signature do not match with root certificate"
+              exit 1
+            }
+          done
+
+      - name: Validate intermediate certificates in DER
+        run: |
+          for cert in ./certs/intermediate/*.der; do
+            openssl verify -CAfile ./certs/root/hathor-network-root-ca-1.der $cert || {
+              echo "Error: Intermediate certificate signature do not match with root certificate"
+              exit 1
+            }
+          done
+
+      - name: Compare root certificates
+        run: |
+          if [ ! -f ./certs/root/hathor-network-root-ca-1.pem ]; then
+            echo "Error: ./certs/root/hathor-network-root-ca-1.pem does not exist"
+            exit 1
+          fi
+
+          if [ ! -f ./certs/root/hathor-network-root-ca-2.pem ]; then
+            echo "Error: ./certs/root/hathor-network-root-ca-2.pem does not exist"
+            exit 1
+          fi
+
+          if [ ! -f ./certs/root/hathor-network-root-ca-1.der ]; then
+            echo "Error: ./certs/root/hathor-network-root-ca-1.der does not exist"
+            exit 1
+          fi
+
+          if [ ! -f ./certs/root/hathor-network-root-ca-2.der ]; then
+            echo "Error: ./certs/root/hathor-network-root-ca-2.der does not exist"
+            exit 1
+          fi
+
+          if [ ! -f ./ios/hathor-network-root-ca-1.der ]; then
+            echo "Error: ./ios/hathor-network-root-ca-1.der does not exist"
+            exit 1
+          fi
+
+          if [ ! -f ./ios/hathor-network-root-ca-2.der ]; then
+            echo "Error: ./ios/hathor-network-root-ca-2.der does not exist"
+            exit 1
+          fi
+
+          if [ ! -f ./android/hathor-network-root-ca-1.pem ]; then
+            echo "Error: ./android/hathor-network-root-ca-1.pem does not exist"
+            exit 1
+          fi
+
+          if [ ! -f ./android/hathor-network-root-ca-2.pem ]; then
+            echo "Error: ./android/hathor-network-root-ca-2.pem does not exist"
+            exit 1
+          fi
+
+          diff -q ./certs/root/hathor-network-root-ca-1.pem ./android/hathor-network-root-ca-1.pem || {
+            echo "Error: hathor-network-root-ca-1.pem do not match on Android"
+            exit 1
+          }
+
+          diff -q ./certs/root/hathor-network-root-ca-2.pem ./android/hathor-network-root-ca-2.pem || {
+            echo "Error: hathor-network-root-ca-2.pem do not match on Android"
+            exit 1
+          }
+
+          diff -q ./certs/root/hathor-network-root-ca-1.der ./ios/hathor-network-root-ca-1.der || {
+            echo "Error: hathor-network-root-ca-1.der do not match on iOS"
+            exit 1
+          }
+
+          diff -q ./certs/root/hathor-network-root-ca-2.der ./ios/hathor-network-root-ca-2.der || {
+            echo "Error: hathor-network-root-ca-2.der do not match on iOS"
+            exit 1
+          }
+
+      - name: Generate PINs and verify Android manifest
+        run: |
+          for cert in ./certs/intermediate/*.pem; do
+            PIN=$(openssl x509 -in $cert -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64)
+            grep -q "$PIN" ./android/app/src/main/AndroidManifest.xml || {
+              echo "Error: PIN $PIN not found in AndroidManifest.xml"
+              exit 1
+            }
+          done
+
+      - name: Generate PINs and verify iOS Info.plist
+        run: |
+          for cert in ./certs/intermediate/*.pem; do
+            PIN=$(openssl x509 -in $cert -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64)
+            grep -q "$PIN" ./ios/HathorNetwork/Info.plist || {
+              echo "Error: PIN $PIN not found in Info.plist"
+            }
+          done
