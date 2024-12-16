@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="@raw/trusted_roots"/>
+        </trust-anchors>
+    </base-config>
+    <!-- Allow connection with Metro bundler -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+    <!-- Pin hathor.network domain and subdomains -->
+<!--    <domain-config>-->
+<!--        <domain includeSubdomains="false">node1.mainnet.hathor.network</domain>-->
+<!--        <pin-set>-->
+<!--            <pin digest="SHA-256">tB0BVCFOjnyWg68j9R3rLC1BfehsTHb3CTfZQlU1QeM=</pin>-->
+<!--        </pin-set>-->
+<!--    </domain-config>-->
+<!--    <domain-config>-->
+<!--        <domain includeSubdomains="false">unleash-proxy.b7e6a7f52ee9fefaf0c53e300cfcb014.hathor.network</domain>-->
+<!--        <pin-set>-->
+<!--            <pin digest="SHA-256">F2lRDyV9lrZPK4SZPWrCUkSmmIBZDwiuRqwU8QxGjWA=</pin>-->
+<!--        </pin-set>-->
+<!--    </domain-config>-->
+</network-security-config>
