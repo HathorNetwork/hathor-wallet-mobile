@@ -31,7 +31,7 @@
           ];
           packages = with pkgs; [
             nixpkgs-fmt
-            nodejs_20
+            nodejs_20 // TODO?
             ruby
             gnumake
             gettext
