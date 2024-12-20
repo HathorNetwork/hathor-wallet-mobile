@@ -6,16 +6,14 @@
         </trust-anchors>
     </base-config>
     <!-- Allow connection with Metro bundler -->
-    <!-- <domain-config cleartextTrafficPermitted="true"> -->
-    <!--     <domain includeSubdomains="true">localhost</domain> -->
-    <!--     <domain includeSubdomains="true">10.0.2.2</domain> -->
-    <!-- </domain-config> -->
-    <!-- Pin hathor.network domain and subdomains -->
-   <domain-config>
-       <domain includeSubdomains="true">trust.hathor.network</domain>
-       <pin-set>
-            <!-- Hathor Network Trust CA 1 -->
-           <pin digest="SHA-256">GeKKl76tI0ZgnY1mM6PfsCLT7OenVQ3R5sD5Qx+HlPE=</pin>
-       </pin-set>
-   </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">trust.hathor.network</domain>
+        <pin-set>
+            <pin digest="SHA-256">GeKKl76tI0ZgnY1mM6PfsCLT7OenVQ3R5sD5Qx+HlPE=</pin>
+        </pin-set>
+    </domain-config>
 </network-security-config>
