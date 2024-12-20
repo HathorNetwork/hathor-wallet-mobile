@@ -13,6 +13,7 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2B26E85A2CCC190300E0263B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2B26E8592CCC190300E0263B /* GoogleService-Info.plist */; };
 		2BAF414D2CD2FC9700127167 /* RCTHTTPRequestHandler+AuthenticationChallenge.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BAF414C2CD2FC9700127167 /* RCTHTTPRequestHandler+AuthenticationChallenge.m */; };
+		2BCC07B42D13806000A5B969 /* hathor_network_root_ca_1.der in Resources */ = {isa = PBXBuildFile; fileRef = 2BCC07B32D13806000A5B969 /* hathor_network_root_ca_1.der */; };
 		512DF3F1282094CE00AC3758 /* tabbar.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 512DF3F0282094CE00AC3758 /* tabbar.ttf */; };
 		51AAD4F12824677600ED7B78 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 51AAD4F02824677600ED7B78 /* LaunchScreen.xib */; };
 		BF298768130CF0D38FBB9000 /* Pods_HathorMobile_HathorMobileTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70A879C6979260DF2537941A /* Pods_HathorMobile_HathorMobileTests.framework */; };
@@ -125,6 +126,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				2BCC07B32D13806000A5B969 /* hathor_network_root_ca_1.der */,
 				2B26E8592CCC190300E0263B /* GoogleService-Info.plist */,
 				512DF3F0282094CE00AC3758 /* tabbar.ttf */,
 				13B07FAE1A68108700A75B9A /* HathorMobile */,
@@ -254,6 +256,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2BCC07B42D13806000A5B969 /* hathor_network_root_ca_1.der in Resources */,
 				51AAD4F12824677600ED7B78 /* LaunchScreen.xib in Resources */,
 				2B26E85A2CCC190300E0263B /* GoogleService-Info.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
