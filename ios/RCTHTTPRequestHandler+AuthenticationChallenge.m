@@ -91,22 +91,16 @@ static NSSet *_cachedAllowedDomains = nil;
       NSSet *allowedDomains = [self getCachedAllowedDomains];
       // Check if the host is an allowed domain
       if ([self checkValidityOfHost:challenge.protectionSpace.host allowedInDomains:allowedDomains]) {
-        // Custom certificate PIN check
-        if ([self checkCertificatePinForHost:challenge.protectionSpace.host withTrust:challenge.protectionSpace.serverTrust]) {
-          // Check if proceed with the original authentication handling
-          if ([self checkValidityOfTrust:challenge.protectionSpace.serverTrust]) {
-            // The challenge is of type ServerTrust, the host is allowed and the certificate is trust worthy
-            // Create the credential and completes the delegate
-            NSURLCredential *credential = [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust];
-            completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
-          } else {
-            // Certificate is invalid, cancelling authentication
-            NSLog(@"Invalid certificate for Domain %@. Cancelling authentication.", challenge.protectionSpace.host);
-            // Cancel the authentication challenge
-            completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
-          }
+        // Check if proceed with the original authentication handling
+        if ([self checkValidityOfTrust:challenge.protectionSpace.serverTrust]) {
+          // The challenge is of type ServerTrust, the host is allowed and the certificate is trust worthy
+          // Create the credential and completes the delegate
+          NSURLCredential *credential = [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust];
+          completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
         } else {
-          NSLog(@"Certificate PIN mismatch for Domain %@. Cancelling authentication.", challenge.protectionSpace.host);
+          // Certificate is invalid, cancelling authentication
+          NSLog(@"Invalid certificate for Domain %@. Cancelling authentication.", challenge.protectionSpace.host);
+          // Cancel the authentication challenge
           completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
         }
       } else {
@@ -171,47 +165,6 @@ static NSSet *_cachedAllowedDomains = nil;
     [_certificateCache setObject:(__bridge id)cert forKey:certFilename];
     return cert;
   }
-}
-
-- (BOOL)checkCertificatePinForHost:(NSString *)host withTrust:(SecTrustRef)trust {
-    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    NSDictionary *pinningConfig = infoDictionary[@"CertificatePinning"];
-    NSString *configuredPin = pinningConfig[host];
-    
-    if (!configuredPin) {
-        NSLog(@"No PIN configured for host: %@", host);
-        return NO;
-    }
-    
-    SecTrustResultType result;
-    OSStatus status = SecTrustEvaluate(trust, &result);
-    if (status != errSecSuccess) {
-        NSLog(@"Failed to evaluate trust");
-        return NO;
-    }
-    
-    CFIndex certCount = SecTrustGetCertificateCount(trust);
-    if (certCount < 2) {
-        NSLog(@"Certificate chain too short");
-        return NO;
-    }
-    
-    SecCertificateRef intermediateCert = SecTrustGetCertificateAtIndex(trust, 1);
-    NSData *intermediateCertData = (__bridge_transfer NSData *)SecCertificateCopyData(intermediateCert);
-    NSString *evaluatedPin = [self calculateSHA256ForData:intermediateCertData];
-    
-    return [configuredPin isEqualToString:evaluatedPin];
-}
-
-- (NSString *)calculateSHA256ForData:(NSData *)data {
-    uint8_t digest[CC_SHA256_DIGEST_LENGTH];
-    CC_SHA256(data.bytes, (CC_LONG)data.length, digest);
-    
-    NSMutableString *output = [NSMutableString stringWithCapacity:CC_SHA256_DIGEST_LENGTH * 2];
-    for (int i = 0; i < CC_SHA256_DIGEST_LENGTH; i++) {
-        [output appendFormat:@"%02x", digest[i]];
-    }
-    return output;
 }
 
 - (BOOL)checkValidityOfTrust:(SecTrustRef)serverTrust {
