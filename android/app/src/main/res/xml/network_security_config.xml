@@ -5,11 +5,6 @@
             <certificates src="@raw/trusted_roots"/>
         </trust-anchors>
     </base-config>
-    <!-- Allow connection with Metro bundler -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">localhost</domain>
-        <domain includeSubdomains="true">10.0.2.2</domain>
-    </domain-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">trust.hathor.network</domain>
         <pin-set>
