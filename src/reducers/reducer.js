@@ -734,6 +734,8 @@ export const reducer = (state = initialState, action) => {
       return onNewNanoContractTransactionRetry(state);
     case types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS:
       return onNewNanoContractTransactionRetryDismiss(state);
+    case types.SET_NETWORK_NAME:
+      return onSetNetworkName(state, action);
     default:
       return state;
   }
@@ -886,7 +888,6 @@ const onSetTokens = (state, { payload }) => {
     selectedToken,
   };
 };
-
 /**
  * Set loadHistoryStatus
  */
@@ -2130,4 +2131,9 @@ export const onUnregisteredTokensDownloadEnd = (state) => ({
     ...state.unregisteredTokens,
     isLoading: false,
   },
+});
+
+export const onSetNetworkName = (state, action) => ({
+  ...state,
+  networkName: action.payload,
 });

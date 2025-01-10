@@ -209,6 +209,7 @@ export const types = {
   APPSTATE_UPDATED: 'APPSTATE_UPDATED',
   SET_USE_SAFE_BIOMETRY_MODE: 'SET_USE_SAFE_BIOMETRY_MODE',
   SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
+  SET_NETWORK_NAME: 'SET_NETWORK_NAME',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1506,4 +1507,14 @@ export const appStateUpdate = (oldState, newState) => ({
     oldState,
     newState,
   }
+});
+
+/**
+ * Network name, which is used in the network bar
+ */
+export const SET_NETWORK_NAME = 'SET_NETWORK_NAME';
+
+export const setNetworkName = (networkName) => ({
+  type: SET_NETWORK_NAME,
+  payload: networkName,
 });
