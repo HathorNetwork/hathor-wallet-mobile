@@ -174,7 +174,7 @@ const DashBoardHeader = ({ children }) => {
       <View style={styles.toggleContainer}>
         {children}
       </View>
-      <SimpleButton onPress={() => navigation.navigate('RegisterToken')}>
+      <SimpleButton onPress={() => navigation.navigate('UnifiedQRScanner')}>
         <FontAwesomeIcon icon={faQrcode} size={20} color={COLORS.textColorShadow} />
       </SimpleButton>
     </View>
