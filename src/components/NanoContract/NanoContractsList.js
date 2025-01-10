@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     lineHeight: 24,
     fontWeight: 'bold',
   },
