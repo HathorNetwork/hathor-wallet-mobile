@@ -57,11 +57,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:553
+#: src/models.js:107 src/utils.js:567
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:227
+#: src/utils.js:241
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 
@@ -438,7 +438,7 @@ msgstr "Indtast dine seed-ord adskilt med mellemrum"
 
 #: src/components/NanoContract/NanoContractDetails.js:238
 #: src/components/Reown/CreateTokenRequest.js:197
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:358
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:399
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
 #: src/screens/PinScreen.js:285
@@ -503,7 +503,7 @@ msgstr "Låst"
 msgid "Manual"
 msgstr ""
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:260
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:289
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:233
 #: src/screens/NanoContractRegisterQrCodeScreen.js:48
 msgid "Register Nano Contract"
@@ -551,11 +551,11 @@ msgstr "Venter på bekræftelse"
 msgid "Incorrect PIN Code. Try again."
 msgstr "Forkert PIN-kode. Prøv igen."
 
-#: src/screens/PinScreen.js:77
+#: src/screens/PinScreen.js:76
 msgid "Enter your PIN Code "
 msgstr "Indtast din pinkode "
 
-#: src/screens/PinScreen.js:78
+#: src/screens/PinScreen.js:77
 msgid "Unlock Hathor Wallet"
 msgstr "Lås Hathor-wallet op"
 
@@ -669,36 +669,36 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr "Nulstil wallet"
 
-#: src/screens/Security.js:131
+#: src/screens/Security.js:130
 msgid "Disable biometry"
 msgstr "Deaktiver biometri"
 
-#: src/screens/Security.js:132
+#: src/screens/Security.js:131
 msgid "Disabling biometry"
 msgstr "Deaktiverer biometri"
 
-#: src/screens/Security.js:144
+#: src/screens/Security.js:143
 msgid "Enter your 6-digit pin to enable biometry"
 msgstr "Indtast din 6-cifrede pin for at aktivere biometri"
 
-#: src/screens/Security.js:155
+#: src/screens/Security.js:156
 msgid "No biometry supported"
 msgstr "Ingen biometri understøttet"
 
-#: src/screens/Security.js:155
+#: src/screens/Security.js:156
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr "Brug ${ this.supportedBiometry }"
 
-#: src/screens/Security.js:160
+#: src/screens/Security.js:164
 msgid "SECURITY"
 msgstr "SIKKERHED"
 
-#: src/screens/Security.js:184
+#: src/screens/Security.js:186
 msgid "Change PIN"
 msgstr "Skift pinkode"
 
-#: src/screens/Security.js:189
+#: src/screens/Security.js:191
 msgid "Lock wallet"
 msgstr "Lås wallet"
 
@@ -1012,8 +1012,8 @@ msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.js:202
 #: src/components/NanoContract/SelectAddressModal.js:105
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:243
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:284
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:272
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:313
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:184
 msgid "Loading"
 msgstr ""
@@ -1145,21 +1145,21 @@ msgstr ""
 msgid "Error loading the details of some tokens."
 msgstr ""
 
-#: src/sagas/wallet.js:805
+#: src/sagas/wallet.js:781
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:821
+#: src/sagas/wallet.js:797
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:831
+#: src/sagas/wallet.js:807
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:847
+#: src/sagas/wallet.js:823
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
@@ -1466,12 +1466,12 @@ msgid "Decline Request"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:172
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:294
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:323
 msgid "Sending transaction"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:173
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:295
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:324
 msgid "Please wait."
 msgstr ""
 
@@ -1610,47 +1610,57 @@ msgstr ""
 msgid "Review transaction details"
 msgstr ""
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:205
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:234
 msgid "Success!"
 msgstr ""
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:206
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:235
 msgid "Transaction successfully sent."
 msgstr ""
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:244
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:273
 msgid "Registering Nano Contract."
 msgstr ""
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:253
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:282
 msgid "Nano Contract Not Found"
 msgstr ""
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:254
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:283
 msgid ""
 "The Nano Contract requested is not registered. First register the Nano "
 "Contract to interact with it."
 msgstr ""
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:265
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:279
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:330
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:294
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:308
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:371
 msgid "Decline Transaction"
 msgstr ""
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:277
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:306
 msgid "Error while registering Nano Contract."
 msgstr ""
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:285
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:314
 msgid "Loading transaction information."
 msgstr ""
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:326
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:358
+msgid "Insufficient Funds"
+msgstr ""
+
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:359
+msgid ""
+"Ensure your wallet balance covers the required amount to accept this "
+"transaction."
+msgstr ""
+
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:364
 msgid "Accept Transaction"
 msgstr ""
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:356
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:397
 msgid "Error while sending transaction."
 msgstr ""
 
