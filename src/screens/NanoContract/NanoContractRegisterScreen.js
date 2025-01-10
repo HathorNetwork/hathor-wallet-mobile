@@ -192,7 +192,7 @@ export function NanoContractRegisterScreen({ navigation, route }) {
           <SimpleInput
             containerStyle={styles.input}
             label={t`Nano Contract ID`}
-            autoFocus
+            autoFocus={!route.params?.ncId}
             onChangeText={handleInputChange('ncId')}
             error={invalidModel.ncId}
             value={formModel.ncId}

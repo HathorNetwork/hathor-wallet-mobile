@@ -15,7 +15,7 @@ import { COLORS } from '../styles/themes';
 const RegisterOptionsScreen = ({ navigation }) => (
   <View style={styles.container}>
     <HathorHeader
-      title={t`REGISTER`}
+      title={t`Register`}
       onBackPress={() => navigation.goBack()}
     />
     <View style={styles.content}>
@@ -24,17 +24,17 @@ const RegisterOptionsScreen = ({ navigation }) => (
       </Text>
       <View style={styles.buttonContainer}>
         <NewHathorButton
-          title={t`REGISTER NANO CONTRACT`}
+          title={t`Register Nano Contract`}
           onPress={() => navigation.navigate('NanoContractRegisterScreen')}
           style={styles.button}
         />
         <NewHathorButton
-          title={t`REGISTER TOKEN`}
+          title={t`Register Token`}
           onPress={() => navigation.navigate('RegisterTokenManual')}
           style={styles.button}
         />
         <NewHathorButton
-          title={t`REOWN CONNECTION`}
+          title={t`Reown Connection`}
           onPress={() => navigation.navigate('ReownManual')}
           style={styles.button}
         />

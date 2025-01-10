@@ -130,7 +130,7 @@ class RegisterTokenManual extends React.Component {
             <View>
               <SimpleInput
                 label={t`Configuration string`}
-                autoFocus
+                autoFocus={!this.props.route.params?.configurationString}
                 multiline
                 onChangeText={this.onConfigStringChange}
                 error={this.state.errorMessage}

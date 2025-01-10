@@ -74,9 +74,6 @@ const Header = () => (
     <HathorHeader.Left>
       <Text style={[styles.headerTitle]}>{t`Nano Contracts`}</Text>
     </HathorHeader.Left>
-    <HathorHeader.Right>
-      <RegisterNanoContract />
-    </HathorHeader.Right>
   </HathorHeader>
 );
 

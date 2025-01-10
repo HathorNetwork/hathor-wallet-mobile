@@ -11,8 +11,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
 import { useNavigation } from '@react-navigation/native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faQrcode } from '@fortawesome/free-solid-svg-icons';
 
 import AskForPushNotification from '../components/AskForPushNotification';
 import HathorHeader from '../components/HathorHeader';
@@ -20,6 +18,7 @@ import TokenSelect from '../components/TokenSelect';
 import SimpleButton from '../components/SimpleButton';
 import OfflineBar from '../components/OfflineBar';
 import { TwoOptionsToggle } from '../components/TwoOptionsToggle';
+import QRCodeIcon from '../components/Icons/QRCodeIcon';
 import { tokenFetchBalanceRequested, updateSelectedToken } from '../actions';
 import AskForPushNotificationRefresh from '../components/AskForPushNotificationRefresh';
 import { COLORS } from '../styles/themes';
@@ -174,8 +173,8 @@ const DashBoardHeader = ({ children }) => {
       <View style={styles.toggleContainer}>
         {children}
       </View>
-      <SimpleButton onPress={() => navigation.navigate('UnifiedQRScanner')}>
-        <FontAwesomeIcon icon={faQrcode} size={20} color={COLORS.textColorShadow} />
+      <SimpleButton onPress={() => navigation.navigate('UnifiedQRScanner')} style={{ marginLeft: 16 }}>
+        <QRCodeIcon size={24} color={COLORS.primary} />
       </SimpleButton>
     </View>
   );
@@ -192,6 +191,7 @@ const TokensHeader = () => (
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
+    marginTop: 8,
   },
   headerWrapper: {
     flexDirection: 'row',
@@ -204,6 +204,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     flexDirection: 'row',
+    justifyContent: 'center',
+    paddingLeft: 8,
   },
   headerTitle: {
     fontSize: 24,
