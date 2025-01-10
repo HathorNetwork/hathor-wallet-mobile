@@ -14,8 +14,6 @@ import { connect, Provider, useDispatch, useSelector } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
 import notifee, { EventType } from '@notifee/react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faQrcode } from '@fortawesome/free-solid-svg-icons';
 
 import hathorLib from '@hathor/wallet-lib';
 

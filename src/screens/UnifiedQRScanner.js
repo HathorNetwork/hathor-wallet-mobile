@@ -102,4 +102,4 @@ const UnifiedQRScanner = ({ navigation }) => {
   );
 };
 
-export default UnifiedQRScanner; 
+export default UnifiedQRScanner;
