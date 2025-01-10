@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Alert } from 'react-native';
 import { t } from 'ttag';
 import { useSelector } from 'react-redux';
 import { get } from 'lodash';
@@ -22,16 +22,43 @@ const RegisterOptionsScreen = ({ navigation }) => {
   const isNanoContractEnabled = featureToggles[NANO_CONTRACT_FEATURE_TOGGLE] && get(serverInfo, 'nano_contracts_enabled', false);
 
   const getDescriptionText = () => {
-    const options = ['Tokens'];
-    if (isNanoContractEnabled) options.push('Nano Contracts');
-    if (isReownEnabled) options.push('Reown');
-
-    if (options.length === 1) {
+    if (!isNanoContractEnabled && !isReownEnabled) {
       return t`You can register Tokens manually.`;
     }
 
-    const lastOption = options.pop();
-    return t`You can choose to register manually ${options.join(', ')} or ${lastOption}.`;
+    if (isNanoContractEnabled && !isReownEnabled) {
+      return t`You can register Tokens and Nano Contracts manually.`;
+    }
+
+    if (!isNanoContractEnabled && isReownEnabled) {
+      return t`You can register Tokens and use Reown manually.`;
+    }
+
+    return t`You can register Tokens, Nano Contracts or Reown manually.`;
+  };
+
+  const handleNanoContractNavigation = () => {
+    if (!isNanoContractEnabled) {
+      Alert.alert(
+        t`Feature Not Available`,
+        t`The nano contract feature is not enabled.`,
+        [{ text: t`OK` }]
+      );
+      return;
+    }
+    navigation.navigate('NanoContractRegisterScreen');
+  };
+
+  const handleReownNavigation = () => {
+    if (!isReownEnabled) {
+      Alert.alert(
+        t`Feature Not Available`,
+        t`The reown feature is not enabled.`,
+        [{ text: t`OK` }]
+      );
+      return;
+    }
+    navigation.navigate('ReownManual');
   };
 
   return (
@@ -48,7 +75,7 @@ const RegisterOptionsScreen = ({ navigation }) => {
           {isNanoContractEnabled && (
             <NewHathorButton
               title={t`Register Nano Contract`}
-              onPress={() => navigation.navigate('NanoContractRegisterScreen')}
+              onPress={handleNanoContractNavigation}
               style={styles.button}
             />
           )}
@@ -60,7 +87,7 @@ const RegisterOptionsScreen = ({ navigation }) => {
           {isReownEnabled && (
             <NewHathorButton
               title={t`Reown Connection`}
-              onPress={() => navigation.navigate('ReownManual')}
+              onPress={handleReownNavigation}
               style={styles.button}
             />
           )}
