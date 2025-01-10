@@ -11,6 +11,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
 import { useNavigation } from '@react-navigation/native';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faQrcode } from '@fortawesome/free-solid-svg-icons';
 
 import AskForPushNotification from '../components/AskForPushNotification';
 import HathorHeader from '../components/HathorHeader';
@@ -165,19 +167,17 @@ const Wrapper = ({ children }) => (
   </View>
 );
 
-const DashBoardHeader = ({ children }) => (
-  <View style={[styles.headerWrapper]}>
-    {children}
-  </View>
-);
-
-const RegisterToken = () => {
+const DashBoardHeader = ({ children }) => {
   const navigation = useNavigation();
   return (
-    <SimpleButton
-      title={t`Register token`}
-      onPress={() => navigation.navigate('RegisterToken')}
-    />
+    <View style={[styles.headerWrapper]}>
+      <View style={styles.toggleContainer}>
+        {children}
+      </View>
+      <SimpleButton onPress={() => navigation.navigate('RegisterToken')}>
+        <FontAwesomeIcon icon={faQrcode} size={20} color={COLORS.textColorShadow} />
+      </SimpleButton>
+    </View>
   );
 };
 
@@ -186,9 +186,6 @@ const TokensHeader = () => (
     <HathorHeader.Left>
       <Text style={[styles.headerTitle]}>{t`Tokens`}</Text>
     </HathorHeader.Left>
-    <HathorHeader.Right>
-      <RegisterToken />
-    </HathorHeader.Right>
   </HathorHeader>
 );
 
@@ -197,10 +194,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerWrapper: {
-    display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: COLORS.lowContrastDetail,
+    paddingHorizontal: 16,
+    height: 48,
+  },
+  toggleContainer: {
+    flex: 1,
+    alignItems: 'center',
+    flexDirection: 'row',
   },
   headerTitle: {
     fontSize: 24,

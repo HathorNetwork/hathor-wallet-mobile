@@ -14,6 +14,8 @@ import { connect, Provider, useDispatch, useSelector } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
 import notifee, { EventType } from '@notifee/react-native';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faQrcode } from '@fortawesome/free-solid-svg-icons';
 
 import hathorLib from '@hathor/wallet-lib';
 
@@ -362,6 +364,7 @@ const RegisterNanoContractStack = ({ navigation }) => {
 const tabBarIconMap = {
   Home: 'icDashboard',
   Send: 'icSend',
+  QRCode: 'icQrCode',
   Receive: 'icReceive',
   Settings: 'icSettings',
 };
@@ -370,6 +373,7 @@ const tabBarIconMap = {
  * Visible navigator to the user, with a bottom tab selector containing:
  * - Dashboard
  * - Send Tokens
+ * - QR Code Scanner
  * - Receive Tokens
  * - Settings
  */
@@ -401,6 +405,19 @@ const TabNavigator = () => {
         component={IS_MULTI_TOKEN ? DashboardStack : MainScreen}
       />
       <Tab.Screen name='Send' component={SendStack} />
+      <Tab.Screen
+        name='QRCode'
+        component={RegisterTokenStack}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <FontAwesomeIcon
+              icon={faQrcode}
+              size={24}
+              color={focused ? COLORS.primary : COLORS.textColorShadow}
+            />
+          ),
+        }}
+      />
       <Tab.Screen name='Receive' component={ReceiveScreen} />
       <Tab.Screen name='Settings' component={Settings} />
     </Tab.Navigator>
