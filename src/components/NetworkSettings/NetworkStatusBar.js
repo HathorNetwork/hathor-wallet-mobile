@@ -48,9 +48,12 @@ const style = {
 };
 
 export const NetworkStatusBar = () => {
-  const getStatusText = (networkName) => `${customNetworkText}: ${networkName}`;
-  const networkSettings = useSelector((state) => state.networkSettings);
-  const networkName = useSelector((state) => state.networkName);
+  const { networkSettings, networkName } = useSelector((state) => ({
+    networkSettings: state.networkSettings,
+    networkName: state.networkName,
+  }));
+
+  const getStatusText = (name) => `${customNetworkText}: ${name}`;
 
   // Only show the bar if we have a network name and we're not on mainnet
   return networkName && notMainnet(networkSettings) && (
