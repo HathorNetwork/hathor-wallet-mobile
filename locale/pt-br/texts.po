@@ -885,7 +885,7 @@ msgstr "QR code inválido"
 #.  If none of the patterns match, show an error or handle accordingly
 #: src/screens/UnifiedQRScanner.js:77
 msgid "The scanned QR code is not in a recognized format."
-msgstr ""
+msgstr "O QR code escaneado não está em um formato reconhecível."
 
 #: src/screens/UnifiedQRScanner.js:83
 msgid "Scan QR Code"
