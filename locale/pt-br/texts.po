@@ -618,7 +618,7 @@ msgstr "RECEBER"
 
 #: src/screens/RegisterOptionsScreen.js:26
 msgid "You can register Tokens manually."
-msgstr ""
+msgstr "Você pode registrar Tokens manualmente."
 
 #: src/screens/RegisterOptionsScreen.js:30
 msgid "You can register Tokens and Nano Contracts manually."
@@ -626,17 +626,17 @@ msgstr "Você pode registrar Tokens e Nano Contracts manualmente."
 
 #: src/screens/RegisterOptionsScreen.js:34
 msgid "You can register Tokens and use Reown manually."
-msgstr ""
+msgstr "Você pode registrar Tokens e usar o Reown manualmente."
 
 #: src/screens/RegisterOptionsScreen.js:37
 msgid "You can register Tokens, Nano Contracts or Reown manually."
-msgstr ""
+msgstr "Você pode registrar Tokens, Nano Contracts ou o Reown manualmente."
 
 #: src/screens/RegisterOptionsScreen.js:43
 #: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:52
 #: src/screens/UnifiedQRScanner.js:69
 msgid "Feature Not Available"
-msgstr ""
+msgstr "Funcionalidade não disponível."
 
 #: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:69
 msgid "The nano contract feature is not enabled."
@@ -650,7 +650,7 @@ msgstr "OK"
 
 #: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:52
 msgid "The reown feature is not enabled."
-msgstr ""
+msgstr "Reown não está habilitado."
 
 #: src/screens/RegisterOptionsScreen.js:67
 msgid "Register"
