@@ -525,7 +525,7 @@ const initialState = {
    * @type {null|string} null if uninitialized, string after user it's set in
    * the wallet saga.
    */
-  networkName: null,
+  fullNodeNetworkName: null,
 };
 
 export const reducer = (state = initialState, action) => {
@@ -742,8 +742,8 @@ export const reducer = (state = initialState, action) => {
       return onNewNanoContractTransactionRetry(state);
     case types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS:
       return onNewNanoContractTransactionRetryDismiss(state);
-    case types.SET_NETWORK_NAME:
-      return onSetNetworkName(state, action);
+    case types.SET_FULLNODE_NETWORK_NAME:
+      return onSetFullNodeNetworkName(state, action);
     default:
       return state;
   }
@@ -2148,7 +2148,7 @@ export const onUnregisteredTokensDownloadEnd = (state) => ({
  * @param {string} action.payload Name of the connected network. This should be
  * the full network name (e.g. testnet-golf instead of just testnet).
  */
-export const onSetNetworkName = (state, { payload }) => ({
+export const onSetFullNodeNetworkName = (state, { payload }) => ({
   ...state,
-  networkName: payload,
+  fullNodeNetworkName: payload,
 });

@@ -13,7 +13,7 @@ import {
   onExceptionCaptured,
   networkSettingsUpdateReady,
   networkChanged,
-  setNetworkName,
+  setFullNodeNetworkName,
 } from '../actions';
 import {
   NETWORK_MAINNET,
@@ -285,7 +285,7 @@ export function* persistNetworkSettings(action) {
   }
 
   // Reset network name when changing networks
-  yield put(setNetworkName(''));
+  yield put(setFullNodeNetworkName(''));
 
   // Dispatch network changed so listeners can use it in other sagas
   // e.g. the Reown saga uses this to clear sessions

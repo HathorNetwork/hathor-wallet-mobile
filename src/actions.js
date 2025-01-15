@@ -209,7 +209,7 @@ export const types = {
   APPSTATE_UPDATED: 'APPSTATE_UPDATED',
   SET_USE_SAFE_BIOMETRY_MODE: 'SET_USE_SAFE_BIOMETRY_MODE',
   SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
-  SET_NETWORK_NAME: 'SET_NETWORK_NAME',
+  SET_FULLNODE_NETWORK_NAME: 'SET_FULLNODE_NETWORK_NAME',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1510,13 +1510,9 @@ export const appStateUpdate = (oldState, newState) => ({
 });
 
 /**
- * Sets the network name, which might be different from the one stored in
- * networkSettings, as this should include the full name (e.g. testnet-golf
- * instead of just testnet)
- *
- * @param {string} networkName The name of the connected network.
+ * @param {string} fullNodeNetworkName The name of the connected network.
  */
-export const setNetworkName = (networkName) => ({
-  type: types.SET_NETWORK_NAME,
-  payload: networkName,
+export const setFullNodeNetworkName = (fullNodeNetworkName) => ({
+  type: types.SET_FULLNODE_NETWORK_NAME,
+  payload: fullNodeNetworkName,
 });
