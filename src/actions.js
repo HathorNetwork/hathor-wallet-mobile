@@ -1510,11 +1510,13 @@ export const appStateUpdate = (oldState, newState) => ({
 });
 
 /**
- * Network name, which is used in the network bar
+ * Sets the network name, which might be different from the one stored in
+ * networkSettings, as this should include the full name (e.g. testnet-golf
+ * instead of just testnet)
+ *
+ * @param {string} networkName The name of the connected network.
  */
-export const SET_NETWORK_NAME = 'SET_NETWORK_NAME';
-
 export const setNetworkName = (networkName) => ({
-  type: SET_NETWORK_NAME,
+  type: types.SET_NETWORK_NAME,
   payload: networkName,
 });
