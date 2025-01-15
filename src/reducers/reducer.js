@@ -518,6 +518,14 @@ const initialState = {
     address: null,
     error: null,
   },
+  /**
+   * The full network name of the connected server (e.g. testnet-golf instead
+   * of only testnet).
+   *
+   * @type {null|string} null if uninitialized, string after user it's set in
+   * the wallet saga.
+   */
+  networkName: null,
 };
 
 export const reducer = (state = initialState, action) => {
@@ -2133,7 +2141,14 @@ export const onUnregisteredTokensDownloadEnd = (state) => ({
   },
 });
 
-export const onSetNetworkName = (state, action) => ({
+/**
+ * Handle network name changes
+ *
+ * @param {Object} state
+ * @param {string} action.payload Name of the connected network. This should be
+ * the full network name (e.g. testnet-golf instead of just testnet).
+ */
+export const onSetNetworkName = (state, { payload }) => ({
   ...state,
-  networkName: action.payload,
+  networkName: payload,
 });
