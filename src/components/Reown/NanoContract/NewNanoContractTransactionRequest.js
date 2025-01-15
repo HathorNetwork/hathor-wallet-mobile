@@ -15,7 +15,8 @@ import {
   View,
   ScrollView,
   TouchableWithoutFeedback,
-  Image
+  Image,
+  Text
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -70,6 +71,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   // Nullable if the nano contract method is 'initialize'
   const registeredNc = useSelector((state) => state.nanoContract.registered[nc.ncId]);
   const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.unregisteredTokens }));
+  const tokensBalance = useSelector((state) => state.tokensBalance);
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[nc.blueprintId]);
   const registerStatus = useSelector((state) => state.nanoContract.registerStatus);
   const isNcRegistering = (
@@ -93,6 +95,33 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     ...nc,
     caller: ncAddress,
   }), [ncAddress])
+
+  // Check if we have enough balance for deposit actions
+  const hasInsufficientBalance = useMemo(() => {
+    if (!nc.actions) return false;
+
+    // Track running balance per token
+    const tokenBalances = {};
+
+    for (const { type, token, amount } of nc.actions) {
+      if (type === 'deposit') {
+        // Initialize token balance if first time seeing this token
+        if (!(token in tokenBalances)) {
+          const balance = tokensBalance[token]?.data?.available || 0;
+          tokenBalances[token] = balance;
+        }
+
+        tokenBalances[token] -= amount;
+
+        if (tokenBalances[token] < 0) {
+          // Early exit if we go negative
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }, [nc.actions, tokensBalance]);
 
   const toggleSelectAddressModal = () => setShowSelectAddressModal(!showSelectAddressModal);
   const handleAddressSelection = (newAddress) => {
@@ -322,9 +351,21 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
 
                 {/* User actions */}
                 <View style={styles.actionContainer}>
+                  {hasInsufficientBalance && (
+                    <View style={styles.warningContainer}>
+                      <Text style={styles.warningIcon}>⚠</Text>
+                      <Text style={styles.warningText}>
+                        <Text style={styles.warningTextBold}>{t`Insufficient Funds`}. </Text>
+                        {t`Ensure your wallet balance covers the required amount to accept this transaction.`}
+                      </Text>
+                    </View>
+                  )}
                   <NewHathorButton
                     title={t`Accept Transaction`}
                     onPress={onAcceptTransaction}
+                    disabled={hasInsufficientBalance}
+                    style={hasInsufficientBalance && styles.disabledButton}
+                    textStyle={hasInsufficientBalance && styles.disabledButtonText}
                   />
                   <NewHathorButton
                     title={t`Decline Transaction`}
@@ -377,10 +418,6 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingVertical: 16,
   },
-  balanceReceived: {
-    color: 'hsla(180, 85%, 34%, 1)',
-    fontWeight: 'bold',
-  },
   feedbackActionContainer: {
     flexDirection: 'column',
     gap: 8,
@@ -391,16 +428,36 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingBottom: 48,
   },
-  declineModalBody: {
-    paddingBottom: 24,
-  },
-  text: {
-    fontSize: 16,
-    lineHeight: 20,
-    textAlign: 'center',
-  },
   feedbackModalIcon: {
     height: 105,
     width: 105
+  },
+  warningContainer: {
+    backgroundColor: '#F2C3BE',
+    borderRadius: 8,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  warningIcon: {
+    color: '#991300',
+    marginRight: 8,
+    fontSize: 16,
+  },
+  warningText: {
+    color: '#000000',
+    fontSize: 14,
+    lineHeight: 20,
+    flex: 1,
+  },
+  warningTextBold: {
+    fontWeight: 'bold',
+  },
+  disabledButton: {
+    backgroundColor: '#E5E5E5',
+  },
+  disabledButtonText: {
+    color: '#737373',
   },
 });
