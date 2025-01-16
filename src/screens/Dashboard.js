@@ -18,6 +18,7 @@ import TokenSelect from '../components/TokenSelect';
 import SimpleButton from '../components/SimpleButton';
 import OfflineBar from '../components/OfflineBar';
 import { TwoOptionsToggle } from '../components/TwoOptionsToggle';
+import QRCodeIcon from '../components/Icons/QRCodeIcon';
 import { tokenFetchBalanceRequested, updateSelectedToken } from '../actions';
 import AskForPushNotificationRefresh from '../components/AskForPushNotificationRefresh';
 import { COLORS } from '../styles/themes';
@@ -165,19 +166,17 @@ const Wrapper = ({ children }) => (
   </View>
 );
 
-const DashBoardHeader = ({ children }) => (
-  <View style={[styles.headerWrapper]}>
-    {children}
-  </View>
-);
-
-const RegisterToken = () => {
+const DashBoardHeader = ({ children }) => {
   const navigation = useNavigation();
   return (
-    <SimpleButton
-      title={t`Register token`}
-      onPress={() => navigation.navigate('RegisterToken')}
-    />
+    <View style={[styles.headerWrapper]}>
+      <View style={styles.toggleContainer}>
+        {children}
+      </View>
+      <SimpleButton onPress={() => navigation.navigate('UnifiedQRScanner')} style={{ marginLeft: 16 }}>
+        <QRCodeIcon size={24} color={COLORS.primary} />
+      </SimpleButton>
+    </View>
   );
 };
 
@@ -186,24 +185,30 @@ const TokensHeader = () => (
     <HathorHeader.Left>
       <Text style={[styles.headerTitle]}>{t`Tokens`}</Text>
     </HathorHeader.Left>
-    <HathorHeader.Right>
-      <RegisterToken />
-    </HathorHeader.Right>
   </HathorHeader>
 );
 
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
+    marginTop: 8,
   },
   headerWrapper: {
-    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.lowContrastDetail,
+    paddingHorizontal: 16,
+    height: 48,
+  },
+  toggleContainer: {
+    flex: 1,
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: COLORS.lowContrastDetail,
+    paddingLeft: 8,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     lineHeight: 24,
     fontWeight: 'bold',
   },

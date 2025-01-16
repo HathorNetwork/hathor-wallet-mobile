@@ -349,19 +349,15 @@ msgid "E.g. HTR"
 msgstr "Por exemplo, HTR"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
-#: src/screens/Dashboard.js:130 src/screens/Dashboard.js:187
+#: src/screens/Dashboard.js:131 src/screens/Dashboard.js:186
 msgid "Tokens"
 msgstr "Tokens"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
 #: src/components/NanoContract/NanoContractsList.js:75
-#: src/screens/Dashboard.js:131
+#: src/screens/Dashboard.js:132
 msgid "Nano Contracts"
 msgstr "Nano Contracts"
-
-#: src/screens/Dashboard.js:178 src/screens/RegisterTokenManual.js:147
-msgid "Register token"
-msgstr "Registrar um token"
 
 #: src/screens/InitWallet.js:62
 msgid "Welcome to Hathor Wallet!"
@@ -512,13 +508,14 @@ msgstr "Bloqueado"
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/NanoContractRegisterQrCodeScreen.js:26
-#: src/screens/Reown/ReownScan.js:41
+#: src/screens/Reown/ReownScan.js:41 src/screens/UnifiedQRScanner.js:88
 msgid "Manual"
 msgstr "Digitar"
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:289
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:233
 #: src/screens/NanoContractRegisterQrCodeScreen.js:48
+#: src/screens/RegisterOptionsScreen.js:77
 msgid "Register Nano Contract"
 msgstr "Registrar Nano Contract"
 
@@ -619,6 +616,54 @@ msgstr "Requisição de Pagamento"
 msgid "RECEIVE"
 msgstr "RECEBER"
 
+#: src/screens/RegisterOptionsScreen.js:26
+msgid "You can register Tokens manually."
+msgstr "Você pode registrar Tokens manualmente."
+
+#: src/screens/RegisterOptionsScreen.js:30
+msgid "You can register Tokens and Nano Contracts manually."
+msgstr "Você pode registrar Tokens e Nano Contracts manualmente."
+
+#: src/screens/RegisterOptionsScreen.js:34
+msgid "You can register Tokens and use Reown manually."
+msgstr "Você pode registrar Tokens e usar o Reown manualmente."
+
+#: src/screens/RegisterOptionsScreen.js:37
+msgid "You can register Tokens, Nano Contracts or Reown manually."
+msgstr "Você pode registrar Tokens, Nano Contracts ou o Reown manualmente."
+
+#: src/screens/RegisterOptionsScreen.js:43
+#: src/screens/RegisterOptionsScreen.js:55 src/screens/UnifiedQRScanner.js:52
+#: src/screens/UnifiedQRScanner.js:69
+msgid "Feature Not Available"
+msgstr "Funcionalidade não disponível."
+
+#: src/screens/RegisterOptionsScreen.js:44 src/screens/UnifiedQRScanner.js:69
+msgid "The nano contract feature is not enabled."
+msgstr "Nano Contracts não estão habilitados."
+
+#: src/screens/RegisterOptionsScreen.js:45
+#: src/screens/RegisterOptionsScreen.js:57 src/screens/SendScanQRCode.js:39
+#: src/screens/UnifiedQRScanner.js:36
+msgid "OK"
+msgstr "OK"
+
+#: src/screens/RegisterOptionsScreen.js:56 src/screens/UnifiedQRScanner.js:52
+msgid "The reown feature is not enabled."
+msgstr "Reown não está habilitado."
+
+#: src/screens/RegisterOptionsScreen.js:67
+msgid "Register"
+msgstr "Registrar"
+
+#: src/screens/RegisterOptionsScreen.js:83
+msgid "Register Token"
+msgstr "Registrar um token"
+
+#: src/screens/RegisterOptionsScreen.js:89
+msgid "Reown Connection"
+msgstr "Reown"
+
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 #: src/screens/RegisterToken.js:27 src/screens/SendScanQRCode.js:87
@@ -648,6 +693,10 @@ msgstr "Símbolo: "
 #: src/screens/RegisterTokenManual.js:132
 msgid "Configuration string"
 msgstr "Configuração"
+
+#: src/screens/RegisterTokenManual.js:147
+msgid "Register token"
+msgstr "Registrar um token"
 
 #: src/screens/ResetWallet.js:104
 msgid "RESET WALLET"
@@ -774,16 +823,13 @@ msgstr "Enviar"
 msgid "Invalid QR code"
 msgstr "QR code inválido"
 
-#: src/screens/SendScanQRCode.js:39
-msgid "OK"
-msgstr "OK"
-
 #: src/screens/SendScanQRCode.js:71
 #, javascript-format
 msgid "You don't have the requested token [${ tokenLabel }]"
 msgstr "Você não tem o token requisitado [${ tokenLabel }]"
 
 #: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:103
+#: src/screens/UnifiedQRScanner.js:96
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
@@ -830,6 +876,20 @@ msgstr "Configurações de Rede"
 #: src/screens/TokenDetail.js:38
 msgid "Unregister"
 msgstr "Desregistrar"
+
+#.  If none of the patterns match, show an error or handle accordingly
+#: src/screens/UnifiedQRScanner.js:77
+msgid "Invalid QR Code"
+msgstr "QR code inválido"
+
+#.  If none of the patterns match, show an error or handle accordingly
+#: src/screens/UnifiedQRScanner.js:77
+msgid "The scanned QR code is not in a recognized format."
+msgstr "O QR code escaneado não está em um formato reconhecível."
+
+#: src/screens/UnifiedQRScanner.js:83
+msgid "Scan QR Code"
+msgstr "Leia o QR code"
 
 #: src/screens/UnregisterToken.js:108
 msgid "UNREGISTER TOKEN"
@@ -1808,11 +1868,11 @@ msgstr "Desta wallet"
 msgid "See transaction details"
 msgstr "Ver detalhes"
 
-#: src/components/NanoContract/NanoContractsList.js:85
+#: src/components/NanoContract/NanoContractsList.js:82
 msgid "No Nano Contracts"
 msgstr "Nenhum Nano Contract"
 
-#: src/components/NanoContract/NanoContractsList.js:86
+#: src/components/NanoContract/NanoContractsList.js:83
 msgid ""
 "You can keep track of your registered Nano Contracts here once you have "
 "registered them."
