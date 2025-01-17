@@ -97,6 +97,8 @@ import { SignMessageRequestScreen } from './screens/Reown/SignMessageRequestScre
 import { SignOracleDataRequestScreen } from './screens/Reown/SignOracleDataRequestScreen';
 import { CreateTokenRequestScreen } from './screens/Reown/CreateTokenScreen';
 import { SuccessFeedbackScreen } from './screens/Reown/SuccessFeedbackScreen';
+import UnifiedQRScanner from './screens/UnifiedQRScanner';
+import RegisterOptionsScreen from './screens/RegisterOptionsScreen';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -430,6 +432,9 @@ const AppStack = () => {
       case 'CreateTokenStack':
       case 'About':
       case 'ResetWallet':
+      case 'UnifiedQRScanner':
+      case 'RegisterOptions':
+      case 'RegisterTokenManual':
         newEdges = ['bottom'];
         break;
       default:
@@ -453,6 +458,9 @@ const AppStack = () => {
           initialParams={{ hName: 'Main' }}
           component={TabNavigator}
         />
+        <Stack.Screen name='UnifiedQRScanner' component={UnifiedQRScanner} />
+        <Stack.Screen name='RegisterOptions' component={RegisterOptionsScreen} />
+        <Stack.Screen name='RegisterTokenManual' component={RegisterTokenManual} />
         <Stack.Screen name='NanoContractDetailsScreen' component={NanoContractDetailsScreen} />
         <Stack.Screen name='NanoContractTransactionScreen' component={NanoContractTransactionScreen} />
         <Stack.Screen name='NanoContractRegisterScreen' component={NanoContractRegisterScreen} />

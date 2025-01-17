@@ -74,9 +74,6 @@ const Header = () => (
     <HathorHeader.Left>
       <Text style={[styles.headerTitle]}>{t`Nano Contracts`}</Text>
     </HathorHeader.Left>
-    <HathorHeader.Right>
-      <RegisterNanoContract />
-    </HathorHeader.Right>
   </HathorHeader>
 );
 
@@ -96,7 +93,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     lineHeight: 24,
     fontWeight: 'bold',
   },
