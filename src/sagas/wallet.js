@@ -71,6 +71,7 @@ import {
   firstAddressFailure,
   firstAddressSuccess,
   firstAddressRequest,
+  setFullNodeNetworkName,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -260,6 +261,17 @@ export function* startWallet(action) {
     });
 
     yield put(setServerInfo(serverInfo));
+
+    let network = get(serverInfo, 'network');
+    if (useWalletService) {
+      // In the wallet-service facade, serverInfo is null, so we need to get
+      // version data
+      const versionData = yield call([wallet, wallet.getVersionData]);
+      network = versionData.network;
+    }
+
+    // Set the network name in redux
+    yield put(setFullNodeNetworkName(network));
   } catch (e) {
     // WalletRequestError can either be a network error making the request
     // fail or the wallet might have failed to start and returned status: error.

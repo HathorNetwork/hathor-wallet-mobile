@@ -518,6 +518,14 @@ const initialState = {
     address: null,
     error: null,
   },
+  /**
+   * The full network name of the connected server (e.g. testnet-golf instead
+   * of only testnet).
+   *
+   * @type {null|string} null if uninitialized, string after it's set in
+   * the wallet saga.
+   */
+  fullNodeNetworkName: null,
 };
 
 export const reducer = (state = initialState, action) => {
@@ -734,6 +742,8 @@ export const reducer = (state = initialState, action) => {
       return onNewNanoContractTransactionRetry(state);
     case types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS:
       return onNewNanoContractTransactionRetryDismiss(state);
+    case types.SET_FULLNODE_NETWORK_NAME:
+      return onSetFullNodeNetworkName(state, action);
     default:
       return state;
   }
@@ -886,7 +896,6 @@ const onSetTokens = (state, { payload }) => {
     selectedToken,
   };
 };
-
 /**
  * Set loadHistoryStatus
  */
@@ -2130,4 +2139,16 @@ export const onUnregisteredTokensDownloadEnd = (state) => ({
     ...state.unregisteredTokens,
     isLoading: false,
   },
+});
+
+/**
+ * Handle network name changes
+ *
+ * @param {Object} state
+ * @param {string} action.payload Name of the connected network. This should be
+ * the full network name (e.g. testnet-golf instead of just testnet).
+ */
+export const onSetFullNodeNetworkName = (state, { payload }) => ({
+  ...state,
+  fullNodeNetworkName: payload,
 });
