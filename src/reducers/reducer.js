@@ -522,7 +522,7 @@ const initialState = {
    * The full network name of the connected server (e.g. testnet-golf instead
    * of only testnet).
    *
-   * @type {null|string} null if uninitialized, string after user it's set in
+   * @type {null|string} null if uninitialized, string after it's set in
    * the wallet saga.
    */
   fullNodeNetworkName: null,
