@@ -62,7 +62,9 @@ _touch_pot:
 	fi
 	touch $@
 
-# Usage: make bump updateType=patch
+# Usage:
+# make bump updateType=patch
+# make bump updateType=patch bumpRc=true
 .PHONY: bump
 bump:
-	node scripts/bump-version.js $(updateType)
+	node scripts/bump-version.js $(updateType) $(if $(bumpRc),--bumpRc)
