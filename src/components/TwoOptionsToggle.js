@@ -58,18 +58,15 @@ const Option = ({ optionValue, isActive, onTap }) => (
 
 const styles = StyleSheet.create({
   wrapper: {
-    display: 'flex',
     flexDirection: 'row',
-    width: '80%',
-    marginTop: 16,
+    alignItems: 'center',
     borderRadius: 24,
     backgroundColor: 'hsla(220, 10%, 94%, 1)',
   },
   button: {
     width: '50%',
     borderRadius: 24,
-    paddingTop: 9,
-    paddingBottom: 10,
+    paddingVertical: 12,
     color: COLORS.textColor,
   },
   buttonFocus: {
@@ -82,5 +79,5 @@ const styles = StyleSheet.create({
   },
   textFocus: {
     fontWeight: 'bold',
-  },
+  }
 });

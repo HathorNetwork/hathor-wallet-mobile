@@ -209,6 +209,7 @@ export const types = {
   APPSTATE_UPDATED: 'APPSTATE_UPDATED',
   SET_USE_SAFE_BIOMETRY_MODE: 'SET_USE_SAFE_BIOMETRY_MODE',
   SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
+  SET_FULLNODE_NETWORK_NAME: 'SET_FULLNODE_NETWORK_NAME',
 };
 
 export const featureToggleInitialized = () => ({
@@ -395,11 +396,6 @@ export const setLoadHistoryStatus = (active, error) => (
 
 export const setUseWalletService = (data) => ({
   type: types.SET_USE_WALLET_SERVICE,
-  payload: data,
-});
-
-export const setUseSafeBiometryMode = (data) => ({
-  type: types.SET_USE_SAFE_BIOMETRY_MODE,
   payload: data,
 });
 
@@ -1511,4 +1507,12 @@ export const appStateUpdate = (oldState, newState) => ({
     oldState,
     newState,
   }
+});
+
+/**
+ * @param {string} fullNodeNetworkName The name of the connected network.
+ */
+export const setFullNodeNetworkName = (fullNodeNetworkName) => ({
+  type: types.SET_FULLNODE_NETWORK_NAME,
+  payload: fullNodeNetworkName,
 });

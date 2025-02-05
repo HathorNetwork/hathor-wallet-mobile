@@ -22,12 +22,10 @@ import {
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen, onExceptionCaptured } from '../actions';
 import { COLORS } from '../styles/themes';
-import { STORE } from '../store';
-import { SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from '../constants';
+import { SAFE_BIOMETRY_FEATURE_FLAG_KEY, STORE } from '../store';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
-  safeBiometryEnabled: state.featureToggles[SAFE_BIOMETRY_MODE_FEATURE_TOGGLE],
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -67,16 +65,17 @@ export class Security extends React.Component {
     };
   }
 
-  onBiometrySwitchChange = (value) => {
-    this.setState({ biometryEnabled: value });
-    setBiometryEnabled(value);
-  }
-
-  onSafeBiometrySwitchChange = (value) => {
-    if (value) {
-      this.onSafeBiometryEnabled();
+  onBiometrySwitchChange(value) {
+    const useSafeBiometryFeature = STORE.getItem(SAFE_BIOMETRY_FEATURE_FLAG_KEY);
+    if (useSafeBiometryFeature) {
+      if (value) {
+        this.onSafeBiometryEnabled();
+      } else {
+        this.onSafeBiometryDisabled();
+      }
     } else {
-      this.onSafeBiometryDisabled();
+      this.setState({ biometryEnabled: value });
+      setBiometryEnabled(value);
     }
   }
 
@@ -147,13 +146,18 @@ export class Security extends React.Component {
   }
 
   onLockWallet = () => {
+    // After the screen is unlocked the Home screen will be shown
+    this.props.navigation.navigate('Home');
     this.props.lockScreen();
   }
 
   render() {
     const switchDisabled = !this.supportedBiometry;
     const biometryText = (switchDisabled ? t`No biometry supported` : t`Use ${this.supportedBiometry}`);
-    const safeBiometryActive = this.state.biometryEnabled && this.props.safeBiometryEnabled;
+
+    const useSafeBiometryFeature = STORE.getItem(SAFE_BIOMETRY_FEATURE_FLAG_KEY);
+    const safeBiometryActive = this.state.biometryEnabled && useSafeBiometryFeature;
+
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <HathorHeader
@@ -168,9 +172,7 @@ export class Security extends React.Component {
             titleStyle={!switchDisabled ? { color: COLORS.textColor } : null}
             text={(
               <Switch
-                onValueChange={this.props.safeBiometryEnabled
-                  ? this.onSafeBiometrySwitchChange
-                  : this.onBiometrySwitchChange}
+                onValueChange={this.onBiometrySwitchChange.bind(this)}
                 value={this.state.biometryEnabled}
                 disabled={switchDisabled}
               />
