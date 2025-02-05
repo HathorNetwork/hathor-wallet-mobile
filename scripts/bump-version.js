@@ -208,7 +208,7 @@ const updateType = process.argv[2];
 // and exit processing with an error
 if (!['major', 'minor', 'patch', 'rc', 'release'].includes(updateType)) {
   console.error(`Invalid update type: ${updateType}`);
-  console.log('Usage: node scripts/bump-version.js <updateType>');
+  console.log('Usage: node scripts/bump-version.js <updateType> [--bumpRc]');
   console.log('Where <updateType> can be "major", "minor", "patch", "rc" or "release"');
   process.exit(1);
 }
