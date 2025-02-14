@@ -141,7 +141,7 @@ class CreateTokenAmount extends React.Component {
                       {hathorLib.numberUtils.prettyValue(this.state.deposit)} HTR
                     </Strong></Text>,
                     <Text>
-                      {jt`You have ${amountAvailableText} HTR available`}
+                      {jt`You have ${amountAvailableText} available`}
                     </Text>
                   ]}
                 />
