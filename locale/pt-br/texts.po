@@ -1755,9 +1755,8 @@ msgstr "Saldo insuficiente"
 msgid ""
 "Ensure your wallet balance covers the required amount to accept this "
 "transaction."
-msgstr ""
-"Certifique-se de que o saldo da sua carteira cubra o valor necessáriopara "
-"aceitar esta transação."
+msgstr "Certifique-se de que o saldo da sua carteira cubra o valor necessário"
+"para aceitar esta transação."
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:364
 msgid "Accept Transaction"
