@@ -68,7 +68,7 @@ msgstr "Endereço inválido"
 #. *
 #.          * @example
 #.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
-#.          
+#.
 #: src/workers/pushNotificationHandler.js:92
 #, javascript-format
 msgid ""
@@ -87,7 +87,7 @@ msgstr[1] ""
 #. *
 #.          * @example
 #.          * You have received 10 T2 and 5 T1 on a new transaction.
-#.          
+#.
 #: src/workers/pushNotificationHandler.js:105
 #, javascript-format
 msgid ""
@@ -99,7 +99,7 @@ msgstr ""
 #. *
 #.          * @example
 #.          * You have received 10 T2 on a new transaction.
-#.          
+#.
 #: src/workers/pushNotificationHandler.js:113
 msgid "You have received ${ _firstToken2 } on a new transaction."
 msgstr "Você recebeu ${ _firstToken2 } em uma nova transação."
@@ -230,9 +230,9 @@ msgid "Deposit:"
 msgstr "Depósito:"
 
 #: src/screens/CreateTokenAmount.js:144
-#, javascript-format
-msgid "You have ${ amountAvailableText } HTR available"
-msgstr "Você tem ${ amountAvailableText } HTR disponíveis"
+#, fuzzy, javascript-format
+msgid "You have ${ amountAvailableText } available"
+msgstr "Você tem ${ amountAvailableText } disponíveis"
 
 #: src/screens/CreateTokenAmount.js:149 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:229
@@ -313,7 +313,7 @@ msgstr "DETALHES DO TOKEN"
 
 #. *
 #.    * name {string} token name
-#.    
+#.
 #: src/screens/CreateTokenName.js:26
 msgid "0/30 characters"
 msgstr "0/30 caracteres"
@@ -605,7 +605,7 @@ msgstr ""
 
 #. *
 #.      * index {number} Selected index of the tab bar
-#.      
+#.
 #.  eslint thinks routes is not used, but TabView uses it
 #.  eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:31
@@ -1183,37 +1183,37 @@ msgstr "Nano Contract não registrado."
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr "Error ao fazer download do histórico de transações do Nano Contract."
 
-#: src/sagas/networkSettings.js:86
+#: src/sagas/networkSettings.js:87
 msgid "Custom Network Settings cannot be empty."
 msgstr "As Configurações de Rede não podem estar vazias."
 
-#: src/sagas/networkSettings.js:93
+#: src/sagas/networkSettings.js:94
 msgid "explorerUrl should be a valid URL."
 msgstr "explorerUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:100
+#: src/sagas/networkSettings.js:101
 msgid "explorerServiceUrl should be a valid URL."
 msgstr "explorerServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:107
+#: src/sagas/networkSettings.js:108
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr "txMiningServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:114
+#: src/sagas/networkSettings.js:115
 msgid "nodeUrl should be a valid URL."
 msgstr "nodeUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:121
+#: src/sagas/networkSettings.js:122
 msgid "walletServiceUrl should be a valid URL."
 msgstr "walletServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:128
+#: src/sagas/networkSettings.js:129
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr "walletServiceWsUrl deve ser uma URL válida."
 
 #.  If we fall into this situation, the app should be killed
 #.  for the custom new network settings take effect.
-#: src/sagas/networkSettings.js:280
+#: src/sagas/networkSettings.js:281
 msgid "Wallet not found while trying to persist the custom network settings."
 msgstr ""
 "Wallet não encontrada ao persistir a configuração personalizada da rede."
@@ -1234,21 +1234,21 @@ msgstr "A wallet não está pronta ainda."
 msgid "Error loading the details of some tokens."
 msgstr "Ocorreu um erro durante o carregamento de detalhes de alguns tokens."
 
-#: src/sagas/wallet.js:781
+#: src/sagas/wallet.js:793
 msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:797
+#: src/sagas/wallet.js:809
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
-#: src/sagas/wallet.js:807
+#: src/sagas/wallet.js:819
 msgid "Wallet is not ready to load the first address."
 msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:823
+#: src/sagas/wallet.js:835
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
@@ -1755,8 +1755,9 @@ msgstr "Saldo insuficiente"
 msgid ""
 "Ensure your wallet balance covers the required amount to accept this "
 "transaction."
-msgstr "Certifique-se de que o saldo da sua carteira cubra o valor necessário"
-"para aceitar esta transação."
+msgstr ""
+"Certifique-se de que o saldo da sua carteira cubra o valor necessáriopara "
+"aceitar esta transação."
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:364
 msgid "Accept Transaction"
