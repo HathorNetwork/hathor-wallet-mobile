@@ -223,7 +223,6 @@ msgid "Deposit:"
 msgstr "Депозит:"
 
 #: src/screens/CreateTokenAmount.js:144
-#, fuzzy, javascript-format
 msgid "You have ${ amountAvailableText } available"
 msgstr "У вас ${ amountAvailableText }"
 
