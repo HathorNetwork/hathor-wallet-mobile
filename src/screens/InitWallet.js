@@ -321,10 +321,10 @@ class LoadWordsScreen extends React.Component {
   loadClicked = () => {
     Keyboard.dismiss();
     const { rawWords } = this.state;
-    const { isValid, errorMessage } = handleValidWords(rawWords);
+    const { isValid, errorMessage, words } = handleValidWords(rawWords);
 
     if (isValid) {
-      this.props.navigation.navigate('ChoosePinScreen', { words: rawWords });
+      this.props.navigation.navigate('ChoosePinScreen', { words: words.join(' ') });
     } else {
       this.setState({ errorMessage });
     }
