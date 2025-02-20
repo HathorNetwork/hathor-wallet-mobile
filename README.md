@@ -1,6 +1,6 @@
 # Hathor Wallet Mobile
 
-See the instructions to run on (Windows)[./WINDOWS.md].
+See the instructions to run on [Windows](./WINDOWS.md).
 
 ## Install
 
