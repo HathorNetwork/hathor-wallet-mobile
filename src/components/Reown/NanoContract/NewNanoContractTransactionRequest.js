@@ -94,7 +94,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const ncToAccept = useMemo(() => ({
     ...nc,
     caller: ncAddress,
-  }), [ncAddress])
+  }), [ncAddress, nc]);
 
   // Check if we have enough balance for deposit actions
   const hasInsufficientBalance = useMemo(() => {
