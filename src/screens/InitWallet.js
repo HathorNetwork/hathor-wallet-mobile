@@ -235,9 +235,53 @@ class NewWordsScreen extends React.Component {
   }
 }
 
+/**
+ * Handles the validation of the raw seed words input
+ * @param {string} rawWords String containing all the words written by the user
+ * @returns {{words: string[], errorMessage: string, isValid: boolean}}
+ */
+function handleValidWords(rawWords) {
+  let trimmedWordsStr = rawWords.trim(/\s+/);
+  let errorMessage = '';
+  let isValid = false;
+
+  try {
+    const { valid, words } = walletUtils.wordsValid(trimmedWordsStr);
+    trimmedWordsStr = words;
+    isValid = valid;
+  } catch (e) {
+    // Handling unknown errors
+    if (!(e instanceof hathorErrors.InvalidWords)) {
+      throw e;
+    }
+
+    // Handling Invalid Words errors
+    isValid = false;
+    errorMessage = e.message;
+    const listOfInvalidWords = e.invalidWords.filter((word) => word.length !== 0);
+    if (listOfInvalidWords.length > 0) {
+      errorMessage = `${errorMessage} List of invalid words: ${e.invalidWords.join(', ')}.`;
+    }
+  }
+  const wordsArr = trimmedWordsStr.split(/\s+/);
+  const nonEmptyWords = wordsArr.filter((word) => word.length !== 0);
+  const lowercaseWords = nonEmptyWords.map((word) => word.toLowerCase());
+
+  return {
+    words: lowercaseWords,
+    errorMessage,
+    isValid,
+  }
+}
+
 class LoadWordsScreen extends React.Component {
+  /**
+   * State for the import wallet words screen
+   * @type {{rawWords: '', words: string[], errorMessage: string, isValid: boolean}}
+   */
   state = {
-    words: '',
+    rawWords: '',
+    words: [],
     errorMessage: '',
     isValid: false,
   };
@@ -265,30 +309,10 @@ class LoadWordsScreen extends React.Component {
     }) });
 
   onChangeText = (text) => {
-    const words = text.trim(/\s+/);
-    let errorMessage = '';
-    let isValid = false;
-    if (words) {
-      try {
-        walletUtils.wordsValid(words);
-        isValid = true;
-      } catch (e) {
-        if (e instanceof hathorErrors.InvalidWords) {
-          errorMessage = e.message;
-          if (e.invalidWords && e.invalidWords.length > 0) {
-            errorMessage = `${errorMessage} List of invalid words: ${e.invalidWords.join(', ')}.`;
-          }
-        } else {
-          throw e;
-        }
-      }
-    }
-
-    const wordsArr = words.split(/\s+/);
-    const nonEmptyWords = wordsArr.filter((value) => value.length !== 0);
-    const nonEmptyWordsLowerCase = nonEmptyWords.map((value) => value.toLowerCase());
+    const { words, isValid, errorMessage } = handleValidWords(text);
     this.setState({
-      words: nonEmptyWordsLowerCase,
+      rawWords: text,
+      words,
       errorMessage,
       isValid,
     });
@@ -296,13 +320,13 @@ class LoadWordsScreen extends React.Component {
 
   loadClicked = () => {
     Keyboard.dismiss();
-    const words = this.state.words.join(' ');
-    this.setState({ errorMessage: '' });
-    const result = walletUtils.wordsValid(words);
-    if (result.valid) {
-      this.props.navigation.navigate('ChoosePinScreen', { words });
+    const { rawWords } = this.state;
+    const { isValid, errorMessage, words } = handleValidWords(rawWords);
+
+    if (isValid) {
+      this.props.navigation.navigate('ChoosePinScreen', { words: words.join(' ') });
     } else {
-      this.setState({ errorMessage: result.message });
+      this.setState({ errorMessage });
     }
   }
 
