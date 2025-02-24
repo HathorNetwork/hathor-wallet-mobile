@@ -85,7 +85,7 @@ export const PIN_SIZE = 6;
 /**
  * Unleash constants
  */
-export const UNLEASH_URL = 'https://unleash-proxy.b7e6a7f52ee9fefaf0c53e300cfcb014.hathor.network/proxy';
+export const UNLEASH_URL = 'https://unleash.trust.hathor.network/proxy';
 export const UNLEASH_CLIENT_KEY = 'wKNhpEXKa39aTRgIjcNsO4Im618bRGTq';
 export const UNLEASH_POLLING_INTERVAL = 15 * 1000; // 15s
 export const unleashStorageKey = {
@@ -98,8 +98,8 @@ export const unleashStorageKey = {
 export const METADATA_CONCURRENT_DOWNLOAD = 5;
 
 // Wallet service URLs
-export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://wallet-service.hathor.network/';
-export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://ws.wallet-service.hathor.network/';
+export const WALLET_SERVICE_MAINNET_BASE_URL = 'https://mobile-wallet-service.trust.hathor.network/';
+export const WALLET_SERVICE_MAINNET_BASE_WS_URL = 'wss://mobile-ws-wallet-service.trust.hathor.network/';
 
 /**
  * Push notification storage keys.
@@ -221,7 +221,7 @@ export const PRE_SETTINGS_TESTNET = {
   txMiningServiceUrl: TX_MINING_SERVICE_TESTNET_URL,
 };
 
-export const NODE_SERVER_MAINNET_URL = 'https://mobile.wallet.hathor.network/v1a/';
+export const NODE_SERVER_MAINNET_URL = 'https://mobile-wallet.trust.hathor.network/v1a/';
 export const EXPLORER_MAINNET_URL = 'https://explorer.hathor.network/';
 export const EXPLORER_SERVICE_MAINNET_URL = 'https://explorer-service.hathor.network/';
 export const TX_MINING_SERVICE_MAINNET_URL = 'https://txmining.mainnet.hathor.network/';
