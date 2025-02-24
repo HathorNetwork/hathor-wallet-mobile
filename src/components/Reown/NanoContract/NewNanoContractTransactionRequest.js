@@ -91,10 +91,10 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
    * transaction.
    */
   const [ncAddress, setNcAddress] = useState(registeredNc?.address || firstAddress.address);
-  const ncToAccept = {
+  const ncToAccept = useMemo(() => ({
     ...nc,
     caller: ncAddress,
-  };
+  }), [ncAddress, nc]);
 
   // Check if we have enough balance for deposit actions
   const hasInsufficientBalance = useMemo(() => {
