@@ -20,6 +20,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
 import { getIntegerAmount, getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 import { COLORS } from '../styles/themes';
+import { _DEFAULT_TOKEN } from '../config';
 
 /**
  * balance {Object} object with token balance {'available', 'locked'}
@@ -109,7 +110,7 @@ class CreateTokenAmount extends React.Component {
     );
     const amountAvailableText = (
       <Strong style={amountStyle}>
-        {hathorLib.numberUtils.prettyValue(this.props.balance.available)} HTR
+        {hathorLib.numberUtils.prettyValue(this.props.balance.available)} {_DEFAULT_TOKEN.symbol}
       </Strong>
     );
 
@@ -138,7 +139,7 @@ class CreateTokenAmount extends React.Component {
                 <InfoBox
                   items={[
                     <Text>{t`Deposit:`} <Strong style={amountStyle}>
-                      {hathorLib.numberUtils.prettyValue(this.state.deposit)} HTR
+                      {hathorLib.numberUtils.prettyValue(this.state.deposit)} {_DEFAULT_TOKEN.symbol}
                     </Strong></Text>,
                     <Text>
                       {jt`You have ${amountAvailableText} available`}

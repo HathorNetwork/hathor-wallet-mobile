@@ -25,6 +25,7 @@ import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackM
 import TextFmt from '../components/TextFmt';
 import { newToken, updateSelectedToken } from '../actions';
 import errorIcon from '../assets/images/icErrorBig.png';
+import { _DEFAULT_TOKEN } from '../config';
 
 /**
  * wallet {HathorWallet} HathorWallet lib object
@@ -215,7 +216,7 @@ class CreateTokenConfirm extends React.Component {
             <SimpleInput
               label={t`Deposit`}
               editable={false}
-              value={`${hathorLib.numberUtils.prettyValue(hathorLib.tokensUtils.getDepositAmount(this.amount))} HTR`}
+              value={`${hathorLib.numberUtils.prettyValue(hathorLib.tokensUtils.getDepositAmount(this.amount))} ${_DEFAULT_TOKEN.symbol}`}
               containerStyle={{ marginTop: 32 }}
             />
           </View>
