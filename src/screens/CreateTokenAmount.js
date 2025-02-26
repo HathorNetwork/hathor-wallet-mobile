@@ -139,7 +139,9 @@ class CreateTokenAmount extends React.Component {
                 <InfoBox
                   items={[
                     <Text>{t`Deposit:`} <Strong style={amountStyle}>
-                      {hathorLib.numberUtils.prettyValue(this.state.deposit)} {_DEFAULT_TOKEN.symbol}
+                      {hathorLib.numberUtils.prettyValue(
+                        this.state.deposit
+                      )} {_DEFAULT_TOKEN.symbol}
                     </Strong></Text>,
                     <Text>
                       {jt`You have ${amountAvailableText} available`}

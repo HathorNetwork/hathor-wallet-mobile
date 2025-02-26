@@ -6,10 +6,7 @@
  */
 
 import React from 'react';
-import {
-  Image,
-  View,
-} from 'react-native';
+import { Image, View, } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
@@ -216,7 +213,9 @@ class CreateTokenConfirm extends React.Component {
             <SimpleInput
               label={t`Deposit`}
               editable={false}
-              value={`${hathorLib.numberUtils.prettyValue(hathorLib.tokensUtils.getDepositAmount(this.amount))} ${_DEFAULT_TOKEN.symbol}`}
+              value={`${hathorLib.numberUtils.prettyValue(
+                hathorLib.tokensUtils.getDepositAmount(this.amount)
+              )} ${_DEFAULT_TOKEN.symbol}`}
               containerStyle={{ marginTop: 32 }}
             />
           </View>
