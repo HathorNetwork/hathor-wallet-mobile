@@ -24,6 +24,10 @@ export const _IS_MULTI_TOKEN = true;
 
 /**
  * Default token.
+ * Deprecation notice: This used to be configured on the client side, but now this information is
+ * obtained directly from the connected fullnode through the `wallet.storage.getNativeTokenData()`
+ * interface, or from the `serverInfo` redux state.
+ * Soon this constant will be removed.
  * @constant
  * @type {{
  *   uid: string;
@@ -36,6 +40,7 @@ export const _IS_MULTI_TOKEN = true;
  *   symbol: 'HTR',
  *   uid: '00'
  * }
+ * @deprecated
  */
 export const _DEFAULT_TOKEN = {
   uid: hathorLib.constants.NATIVE_TOKEN_UID,

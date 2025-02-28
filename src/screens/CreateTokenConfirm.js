@@ -22,7 +22,6 @@ import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackM
 import TextFmt from '../components/TextFmt';
 import { newToken, updateSelectedToken } from '../actions';
 import errorIcon from '../assets/images/icErrorBig.png';
-import { _DEFAULT_TOKEN } from '../config';
 
 /**
  * wallet {HathorWallet} HathorWallet lib object
@@ -57,6 +56,7 @@ class CreateTokenConfirm extends React.Component {
     this.amount = this.props.route.params.amount;
     this.name = this.props.route.params.name;
     this.symbol = this.props.route.params.symbol;
+    this.nativeSymbol = this.props.wallet.storage.getNativeTokenData().symbol;
   }
 
   /**
@@ -215,7 +215,7 @@ class CreateTokenConfirm extends React.Component {
               editable={false}
               value={`${hathorLib.numberUtils.prettyValue(
                 hathorLib.tokensUtils.getDepositAmount(this.amount)
-              )} ${_DEFAULT_TOKEN.symbol}`}
+              )} ${this.nativeSymbol}`}
               containerStyle={{ marginTop: 32 }}
             />
           </View>
