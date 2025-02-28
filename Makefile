@@ -62,7 +62,13 @@ _touch_pot:
 	fi
 	touch $@
 
-# Usage: make bump updateType=patch
+# Usage:
+#`3.0.1` -> make bump updateType=major -> `4.0.0`
+#`3.0.1` -> make bump updateType=major bumpRc=true -> `4.0.0-rc.1`
+#`3.0.1` -> make bump updateType=minor bumpRc=true -> `3.1.0-rc.1`
+#`3.2.1` -> make bump updateType=patch -> `3.2.2`
+#`3.2.1` -> make bump updateType=rc -> `3.2.1-rc.1`
+#`3.2.1-rc.3` -> make bump updateType=release -> `3.2.1`
 .PHONY: bump
 bump:
-	node scripts/bump-version.js $(updateType)
+	node scripts/bump-version.js $(updateType) $(if $(bumpRc),--bumpRc)
