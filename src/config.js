@@ -24,6 +24,11 @@ export const _IS_MULTI_TOKEN = true;
 
 /**
  * Default token.
+ * This token is used for white-labeling the app, and used as the default custom token if configured
+ *
+ * Do not confuse with the network's native token, that should be obtained directly from the
+ * connected fullnode through the `wallet.storage.getNativeTokenData()` interface, or from the
+ * `serverInfo` redux state.
  * @constant
  * @type {{
  *   uid: string;

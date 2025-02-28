@@ -33,6 +33,7 @@ const mapStateToProps = (state) => ({
       locked: 0,
     }
   ),
+  wallet: state.wallet,
 });
 
 /**
@@ -56,6 +57,7 @@ class CreateTokenAmount extends React.Component {
     this.focusEvent = null;
     this.name = this.props.route.params.name;
     this.symbol = this.props.route.params.symbol;
+    this.nativeSymbol = this.props.wallet.storage.getNativeTokenData().symbol;
   }
 
   componentDidMount() {
@@ -109,7 +111,7 @@ class CreateTokenAmount extends React.Component {
     );
     const amountAvailableText = (
       <Strong style={amountStyle}>
-        {hathorLib.numberUtils.prettyValue(this.props.balance.available)} HTR
+        {hathorLib.numberUtils.prettyValue(this.props.balance.available)} {this.nativeSymbol}
       </Strong>
     );
 
@@ -138,10 +140,12 @@ class CreateTokenAmount extends React.Component {
                 <InfoBox
                   items={[
                     <Text>{t`Deposit:`} <Strong style={amountStyle}>
-                      {hathorLib.numberUtils.prettyValue(this.state.deposit)} HTR
+                      {hathorLib.numberUtils.prettyValue(
+                        this.state.deposit
+                      )} {this.nativeSymbol}
                     </Strong></Text>,
                     <Text>
-                      {jt`You have ${amountAvailableText} HTR available`}
+                      {jt`You have ${amountAvailableText} available`}
                     </Text>
                   ]}
                 />

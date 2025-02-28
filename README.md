@@ -118,11 +118,14 @@ To install Flipper, [download it on the official website](https://fbflipper.com/
 
 We use the `ttag` lib for i18n. Check out the docs [here](https://ttag.js.org/docs/quickstart.html).
 
-Run `npm run locale-update-pot` to update the pot file (`locale/texts.pot`).
+Run `npm run locale-update-pot` to update the root "pot" file (`locale/texts.pot`).
 
-Run `msgmerge pt-br/texts.po texts.pot -o pt-br/texts.po` to merge a pot file with a po file.
+Navigate to the `/locale` folder and execute the following commands:
+For each of the languages, run `msgmerge [lang]/texts.po texts.pot -o [lang]/texts.po` to merge the root pot file with a localized po file. For example, for the Portuguese language, run `msgmerge pt-br/texts.po texts.pot -o pt-br/texts.po`.
 
-Finally, run `make i18n` to compile all po files to json files.
+After each merged file, edit it and look for `fuzzy, javascript-format` messages. Those indicate translations that were executed automatically and need to be reviewed. Remove the whole `fuzzy` line and adjust the translation if necessary.
+
+Finally, navigate back to the root folder and run `make i18n` to compile all po files to json files.
 
 ## License
 
