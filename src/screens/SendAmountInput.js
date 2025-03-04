@@ -18,6 +18,8 @@ import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
+// Import the bigIntCoercibleSchema from wallet-lib
+import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 
 import { IS_MULTI_TOKEN } from '../constants';
 import { getIntegerAmount, renderValue, isTokenNFT } from '../utils';
@@ -138,7 +140,18 @@ class SendAmountInput extends React.Component {
       });
       const { available } = balance;
       const amountAndToken = `${renderValue(available, this.isNFT())} ${this.state.token.symbol}`;
-      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);
+      
+      // Use the bigIntCoercibleSchema to safely convert to a number for ngettext
+      // This will handle both regular numbers and BigInt values
+      try {
+        // Parse the available value to a BigInt first, then convert to Number
+        const availableNumber = Number(bigIntCoercibleSchema.parse(available));
+        return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, availableNumber);
+      } catch (e) {
+        // Fallback to the original value if conversion fails
+        console.warn('Failed to convert available balance for ngettext:', e);
+        return `${amountAndToken} available`;
+      }
     };
 
     const renderGhostElement = () => (
