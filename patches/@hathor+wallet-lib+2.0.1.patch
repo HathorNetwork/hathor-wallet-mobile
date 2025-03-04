@@ -1,0 +1,55 @@
+diff --git a/node_modules/@hathor/wallet-lib/lib/utils/bigint.js b/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
+index 3c19856..6927880 100644
+--- a/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
++++ b/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
+@@ -27,33 +27,28 @@ var _types = require("../types");
+ const JSONBigInt = exports.JSONBigInt = {
+   /* eslint-disable @typescript-eslint/no-explicit-any */
+   parse(text) {
+-    // @ts-expect-error TypeScript hasn't been updated with the `context` argument from Node v22.
++    // Modified to work with React Native's JavaScript engine
+     return JSON.parse(text, this.bigIntReviver);
+   },
+   stringify(value, space) {
+     return JSON.stringify(value, this.bigIntReplacer, space);
+   },
+-  bigIntReviver(_key, value, context) {
++  bigIntReviver(key, value) {
+     if (typeof value !== 'number') {
+       // No special handling needed for non-number values.
+       return value;
+     }
+     try {
+-      const bigIntValue = BigInt(context.source);
+-      if (bigIntValue < Number.MIN_SAFE_INTEGER || bigIntValue > Number.MAX_SAFE_INTEGER) {
++      // React Native compatible approach - check if the number is in the unsafe range
++      if (value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER) {
+         // We only return the value as a BigInt if it's in the unsafe range.
+-        return bigIntValue;
++        return BigInt(value);
+       }
+ 
+       // Otherwise, we can keep it as a Number.
+       return value;
+     } catch (e) {
+-      if (e instanceof SyntaxError && e.message === `Cannot convert ${context.source} to a BigInt`) {
+-        // When this error happens, it means the number cannot be converted to a BigInt,
+-        // so it's a double, for example '123.456' or '1e2'.
+-        return value;
+-      }
+-      // This should never happen, any other error thrown by BigInt() is unexpected.
++      // This should never happen, any error thrown is unexpected.
+       const logger = (0, _types.getDefaultLogger)();
+       logger.error(`unexpected error in bigIntReviver: ${e}`);
+       throw e;
+@@ -61,8 +56,8 @@ const JSONBigInt = exports.JSONBigInt = {
+   },
+   bigIntReplacer(_key, value_) {
+     // If the value is a BigInt, we simply return its string representation.
+-    // @ts-expect-error TypeScript hasn't been updated with the `rawJSON` function from Node v22.
+-    return typeof value_ === 'bigint' ? JSON.rawJSON(value_.toString()) : value_;
++    // Modified to work with React Native's JavaScript engine
++    return typeof value_ === 'bigint' ? value_.toString() : value_;
+   }
+   /* eslint-enable @typescript-eslint/no-explicit-any */
+ };
