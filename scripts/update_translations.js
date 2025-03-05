@@ -74,13 +74,21 @@ function checkForChanges() {
   }
 }
 
-runLocaleUpdatePot();
-mergeTranslations();
-const hasFuzzyTags = checkFuzzyTags();
-const translationFilesChanged = checkForChanges();
+try {
+  runLocaleUpdatePot();
+  mergeTranslations();
+  const hasFuzzyTags = checkFuzzyTags();
+  const translationFilesChanged = checkForChanges();
 
-// If this script was called with the "--ci-validation" argument, it will fail if there are any
-// changes in the translation files or if there are any fuzzy tags
-if (process.argv.includes('--ci-validation') && (hasFuzzyTags || translationFilesChanged)) {
+  // If this script was called with the "--ci-validation" argument, it will fail if there are any
+  // changes in the translation files or if there are any fuzzy tags
+  if (process.argv.includes('--ci-validation') && (hasFuzzyTags || translationFilesChanged)) {
+    process.exit(1);
+  }
+
+  // Translations upgraded successfully
+  process.exit(0);
+} catch (error) {
+  console.error('Error updating translations:', error);
   process.exit(1);
 }
