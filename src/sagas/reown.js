@@ -71,7 +71,9 @@ import {
   handleRpcRequest,
   CreateTokenError,
   SendNanoContractTxError,
-} from '@hathor/hathor-rpc-handler';
+  SendTransactionError,
+  InsufficientFundsError,
+} from 'hathor-rpc-handler-test';
 import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
@@ -97,6 +99,11 @@ import {
   setCreateTokenStatusReady,
   setCreateTokenStatusSuccessful,
   setCreateTokenStatusFailed,
+  setSendTxStatusSuccess,
+  setSendTxStatusFailure,
+  setSendTxStatusLoading,
+  setSendTxStatusReady,
+  showSendTransactionModal,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -108,8 +115,15 @@ const AVAILABLE_METHODS = {
   HATHOR_SEND_NANO_TX: 'htr_sendNanoContractTx',
   HATHOR_SIGN_ORACLE_DATA: 'htr_signOracleData',
   HATHOR_CREATE_TOKEN: 'htr_createToken',
+  HATHOR_SEND_TRANSACTION: 'htr_sendTransaction',
 };
 const AVAILABLE_EVENTS = [];
+
+// Modal types for global modals
+const MODAL_TYPES = {
+  REOWN: 'reown',
+  TRANSACTION_FEEDBACK: 'transaction_feedback',
+};
 
 /**
  * Those are the only ones we are currently using, extracted from
@@ -386,8 +400,13 @@ function* requestsListener() {
  * is requested from a dApp
  */
 export function* processRequest(action) {
+  console.log('=== PROCESS REQUEST CALLED ===');
+  console.log('Action:', action);
+  
   const { payload } = action;
   const { params } = payload;
+  
+  console.log('Payload params:', params);
 
   const reownClient = yield call(getReownClient);
   if (!reownClient) {
@@ -413,6 +432,9 @@ export function* processRequest(action) {
     description: get(requestSession.peer, 'metadata.description', ''),
     chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
+  
+  console.log('Session data:', data);
+  console.log('Request method:', params.request.method);
 
   try {
     let dispatch;
@@ -420,6 +442,7 @@ export function* processRequest(action) {
       dispatch = _dispatch;
     });
 
+    console.log('Calling handleRpcRequest with:', params.request);
     const response = yield call(
       handleRpcRequest,
       params.request,
@@ -427,18 +450,33 @@ export function* processRequest(action) {
       data,
       promptHandler(dispatch),
     );
+    
+    console.log('RPC response:', response);
 
     switch (response.type) {
       case RpcResponseTypes.SendNanoContractTxResponse:
+        console.log('Handling SendNanoContractTxResponse');
         yield put(setNewNanoContractStatusSuccess());
         break;
       case RpcResponseTypes.CreateTokenResponse:
+        console.log('Handling CreateTokenResponse');
         yield put(setCreateTokenStatusSuccessful());
         break;
+      case RpcResponseTypes.SendTransactionResponse:
+        console.log('Handling SendTransactionResponse');
+        yield put(setSendTxStatusSuccess());
+        yield put(setReownModal({
+          show: true,
+          type: MODAL_TYPES.TRANSACTION_FEEDBACK,
+          data: { isLoading: false, isError: false }
+        }));
+        break;
       default:
+        console.log('Unknown response type:', response.type);
         break;
     }
 
+    console.log('Responding to session request');
     yield call(() => walletKit.respondSessionRequest({
       topic: payload.topic,
       response: {
@@ -448,9 +486,11 @@ export function* processRequest(action) {
       }
     }));
   } catch (e) {
+    console.log('Error in processRequest:', e.message);
     let shouldAnswer = true;
     switch (e.constructor) {
       case SendNanoContractTxError: {
+        console.log('Handling SendNanoContractTxError');
         yield put(setNewNanoContractStatusFailure());
 
         const retry = yield call(
@@ -466,6 +506,7 @@ export function* processRequest(action) {
         }
       } break;
       case CreateTokenError: {
+        console.log('Handling CreateTokenError');
         yield put(setCreateTokenStatusFailed());
 
         // User might try again, wait for it.
@@ -481,12 +522,61 @@ export function* processRequest(action) {
           yield* processRequest(action);
         }
       } break;
+      case SendTransactionError: {
+        console.log('Handling SendTransactionError');
+        yield put(setSendTxStatusFailure());
+        yield put(setReownModal({
+          show: true,
+          type: MODAL_TYPES.TRANSACTION_FEEDBACK,
+          data: {
+            isLoading: false,
+            isError: true
+          }
+        }));
+
+        const retry = yield call(
+          retryHandler,
+          types.REOWN_SEND_TX_RETRY,
+          types.REOWN_SEND_TX_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
+          yield* processRequest(action);
+        }
+      } break;
+      case InsufficientFundsError: {
+        console.log('Handling InsufficientFundsError');
+        yield put(setSendTxStatusFailure());
+        yield put(setReownModal({
+          show: true,
+          type: MODAL_TYPES.TRANSACTION_FEEDBACK,
+          data: {
+            isLoading: false,
+            isError: true,
+            errorMessage: 'Insufficient funds to complete the transaction.'
+          }
+        }));
+
+        const retry = yield call(
+          retryHandler,
+          types.REOWN_SEND_TX_RETRY,
+          types.REOWN_SEND_TX_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
+          yield* processRequest(action);
+        }
+      } break;
       default:
+        console.log('Unknown error type:', e.constructor.name);
         break;
     }
 
     if (shouldAnswer) {
       try {
+        console.log('Responding with error to session request');
         yield call(() => walletKit.respondSessionRequest({
           topic: payload.topic,
           response: {
@@ -545,8 +635,15 @@ export function* processRequest(action) {
 const promptHandler = (dispatch) => (request, requestMetadata) =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
+    console.log('=== PROMPT HANDLER CALLED ===');
+    console.log('Got prompt: ', request);
+    console.log('TriggerTypes values:', Object.keys(TriggerTypes).map(key => `${key}: ${TriggerTypes[key]}`));
+    console.log('Request type:', request.type);
+    console.log('Request metadata:', requestMetadata);
+    
     switch (request.type) {
       case TriggerTypes.SignOracleDataConfirmationPrompt: {
+        console.log('Handling SignOracleDataConfirmationPrompt');
         const signOracleDataResponseTemplate = (accepted) => () => resolve({
           type: TriggerResponseTypes.SignOracleDataConfirmationResponse,
           data: accepted,
@@ -560,6 +657,7 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ));
       } break;
       case TriggerTypes.CreateTokenConfirmationPrompt: {
+        console.log('Handling CreateTokenConfirmationPrompt');
         const createTokenResponseTemplate = (accepted) => (data) => resolve({
           type: TriggerResponseTypes.CreateTokenConfirmationResponse,
           data: {
@@ -575,6 +673,7 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ))
       } break;
       case TriggerTypes.SignMessageWithAddressConfirmationPrompt: {
+        console.log('Handling SignMessageWithAddressConfirmationPrompt');
         const signMessageResponseTemplate = (accepted) => () => resolve({
           type: TriggerResponseTypes.SignMessageWithAddressConfirmationResponse,
           data: accepted,
@@ -587,6 +686,7 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ));
       } break;
       case TriggerTypes.SendNanoContractTxConfirmationPrompt: {
+        console.log('Handling SendNanoContractTxConfirmationPrompt');
         const sendNanoContractTxResponseTemplate = (accepted) => (data) => resolve({
           type: TriggerResponseTypes.SendNanoContractTxConfirmationResponse,
           data: {
@@ -602,23 +702,69 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           requestMetadata,
         ));
       } break;
+      case TriggerTypes.SendTransactionConfirmationPrompt: {
+        console.log('Handling SendTransactionConfirmationPrompt');
+        const sendTransactionResponseTemplate = (accepted) => () => {
+          console.log('SendTransaction response template called with accepted:', accepted);
+          dispatch(hideReownModal());
+          resolve({
+            type: TriggerResponseTypes.SendTransactionConfirmationResponse,
+            data: {
+              accepted,
+            }
+          });
+        };
+
+        console.log('Dispatching setReownModal with SendTransaction');
+        dispatch(setReownModal({
+          show: true,
+          type: ReownModalTypes.SEND_TRANSACTION,
+          data: {
+            data: request.data,
+            dapp: requestMetadata,
+          },
+          onAcceptAction: sendTransactionResponseTemplate(true),
+          onRejectAction: sendTransactionResponseTemplate(false),
+        }));
+      } break;
+      case TriggerTypes.SendTransactionLoadingTrigger:
+        console.log('Handling SendTransactionLoadingTrigger');
+        dispatch(setSendTxStatusLoading());
+        dispatch(setReownModal({
+          show: true,
+          type: MODAL_TYPES.TRANSACTION_FEEDBACK,
+          data: { isLoading: true }
+        }));
+        resolve();
+        break;
+      case TriggerTypes.SendTransactionLoadingFinishedTrigger:
+        console.log('Handling SendTransactionLoadingFinishedTrigger');
+        dispatch(setSendTxStatusReady());
+        dispatch(hideReownModal());
+        resolve();
+        break;
       case TriggerTypes.SendNanoContractTxLoadingTrigger:
+        console.log('Handling SendNanoContractTxLoadingTrigger');
         dispatch(setNewNanoContractStatusLoading());
         resolve();
         break;
       case TriggerTypes.CreateTokenLoadingTrigger:
+        console.log('Handling CreateTokenLoadingTrigger');
         dispatch(setCreateTokenStatusLoading());
         resolve();
         break;
       case TriggerTypes.CreateTokenLoadingFinishedTrigger:
+        console.log('Handling CreateTokenLoadingFinishedTrigger');
         dispatch(setCreateTokenStatusReady());
         resolve();
         break;
       case TriggerTypes.SendNanoContractTxLoadingFinishedTrigger:
+        console.log('Handling SendNanoContractTxLoadingFinishedTrigger');
         dispatch(setNewNanoContractStatusReady());
         resolve();
         break;
       case TriggerTypes.PinConfirmationPrompt: {
+        console.log('Handling PinConfirmationPrompt');
         const pinCode = await showPinScreenForResult(dispatch);
 
         resolve({
@@ -629,7 +775,45 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           }
         });
       } break;
-      default: reject(new Error('Invalid request'));
+      case 18: {
+        // Special case for type 18 which might be SendTransactionConfirmationPrompt
+        console.log('=== HANDLING SPECIAL CASE FOR TYPE 18 ===');
+        console.log('Request data:', request.data);
+        
+        const sendTransactionResponseTemplate = (accepted) => () => {
+          console.log('SendTransaction response template called with accepted:', accepted);
+          dispatch(hideReownModal());
+          resolve({
+            type: TriggerResponseTypes.SendTransactionConfirmationResponse,
+            data: {
+              accepted,
+            }
+          });
+        };
+
+        console.log('Dispatching setReownModal with SendTransaction for type 18');
+        console.log('Modal data:', {
+          type: ReownModalTypes.SEND_TRANSACTION,
+          data: {
+            data: request.data,
+            dapp: requestMetadata,
+          }
+        });
+        
+        dispatch(setReownModal({
+          show: true,
+          type: ReownModalTypes.SEND_TRANSACTION,
+          data: {
+            data: request.data,
+            dapp: requestMetadata,
+          },
+          onAcceptAction: sendTransactionResponseTemplate(true),
+          onRejectAction: sendTransactionResponseTemplate(false),
+        }));
+      } break;
+      default: 
+        console.log('Unknown request type:', request.type);
+        reject(new Error('Invalid request'));
     }
   });
 
@@ -650,69 +834,11 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
  * has been denied.
  */
 export function* onSignMessageRequest({ payload }) {
-  const { accept, deny: denyCb, data, dapp } = payload;
-
-  const wallet = yield select((state) => state.wallet);
-
-  if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring.');
-    return;
-  }
-
-  yield put(setReownModal({
-    show: true,
-    type: ReownModalTypes.SIGN_MESSAGE,
-    data: {
-      data,
-      dapp,
-    },
-  }));
-
-  const { deny } = yield race({
-    accept: take(types.REOWN_ACCEPT),
-    deny: take(types.REOWN_REJECT),
-  });
-
-  if (deny) {
-    denyCb();
-
-    return;
-  }
-
-  accept();
+  yield* handleDAppRequest(payload, ReownModalTypes.SIGN_MESSAGE, { passAcceptAction: false });
 }
 
 export function* onSignOracleDataRequest({ payload }) {
-  const { accept, deny: denyCb, data, dapp } = payload;
-
-  const wallet = yield select((state) => state.wallet);
-
-  if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring..');
-    return;
-  }
-
-  yield put(setReownModal({
-    show: true,
-    type: ReownModalTypes.SIGN_ORACLE_DATA,
-    data: {
-      data,
-      dapp,
-    },
-  }));
-
-  const { deny } = yield race({
-    accept: take(types.REOWN_ACCEPT),
-    deny: take(types.REOWN_REJECT),
-  });
-
-  if (deny) {
-    denyCb();
-
-    return;
-  }
-
-  accept();
+  yield* handleDAppRequest(payload, ReownModalTypes.SIGN_ORACLE_DATA, { passAcceptAction: false });
 }
 
 /**
@@ -732,70 +858,89 @@ export function* onSignOracleDataRequest({ payload }) {
  * has been denied.
  */
 export function* onSendNanoContractTxRequest({ payload }) {
-  const { accept: acceptCb, deny: denyCb, nc, dapp } = payload;
-
-  const wallet = yield select((state) => state.wallet);
-
-  if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring.');
-    return;
-  }
-
-  yield put(setReownModal({
-    show: true,
-    type: ReownModalTypes.SEND_NANO_CONTRACT_TX,
-    data: {
-      dapp,
-      data: nc,
-    },
-  }));
-
-  const { deny, accept } = yield race({
-    accept: take(types.REOWN_ACCEPT),
-    deny: take(types.REOWN_REJECT),
-  });
-
-  if (deny) {
-    denyCb();
-
-    return;
-  }
-
-  acceptCb(accept);
+  yield* handleDAppRequest(payload, ReownModalTypes.SEND_NANO_CONTRACT_TX, { passAcceptAction: true });
 }
 
 export function* onCreateTokenRequest({ payload }) {
-  const { accept: acceptCb, deny: denyCb, data, dapp } = payload;
+  yield* handleDAppRequest(payload, ReownModalTypes.CREATE_TOKEN, { passAcceptAction: true });
+}
+
+/**
+ * This saga will be called when a send transaction request is received from a dApp
+ *
+ * @param {Object} payload The payload containing the transaction data and callbacks
+ * @param {Function} payload.accept Callback to accept the transaction
+ * @param {Function} payload.deny Callback to deny the transaction
+ * @param {Object} payload.data Transaction data
+ * @param {Object} payload.dapp Information about the dApp
+ */
+export function* onSendTransactionRequest({ payload }) {
+  yield* handleDAppRequest(payload, ReownModalTypes.SEND_TRANSACTION);
+}
+
+/**
+ * Generic handler for dApp requests
+ *
+ * @param {Object} payload The payload containing the request data and callbacks
+ * @param {String} modalType The type of modal to show
+ * @param {Object} options Additional options for handling the request
+ * @param {Boolean} options.passAcceptAction Whether to pass the accept action to the callback
+ */
+export function* handleDAppRequest(payload, modalType, options = {}) {
+  console.log('=== HANDLE DAPP REQUEST CALLED ===');
+  console.log('Payload:', payload);
+  console.log('Modal type:', modalType);
+  console.log('Options:', options);
+  
+  const { accept: acceptCb, deny: denyCb, data, dapp, nc } = payload;
+  const { passAcceptAction = false } = options;
 
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring.');
+    log.error('Got a session request but wallet is not ready.');
     return;
   }
 
+  // Determine the data to pass to the modal
+  const modalData = {
+    data: nc || data, // Some requests use 'nc' instead of 'data'
+    dapp,
+  };
+  
+  console.log('Modal data:', modalData);
+
+  console.log('Using reown modal');
   yield put(setReownModal({
     show: true,
-    type: ReownModalTypes.CREATE_TOKEN,
-    data: {
-      dapp,
-      data,
-    },
+    type: modalType,
+    data: modalData,
+    onAcceptAction: acceptCb,
+    onRejectAction: denyCb,
   }));
 
+  console.log('Waiting for user action (accept/deny)');
   const { deny, accept } = yield race({
     accept: take(types.REOWN_ACCEPT),
     deny: take(types.REOWN_REJECT),
   });
 
   if (deny) {
+    console.log('User denied the request');
     denyCb();
-
     return;
   }
 
-  acceptCb(accept);
+  console.log('User accepted the request');
+  if (passAcceptAction) {
+    console.log('Passing accept action to callback');
+    acceptCb(accept);
+  } else {
+    console.log('Calling accept callback without parameters');
+    acceptCb();
+  }
 }
+
 /**
  * Listens for the wallet reset action, dispatched from the wallet sagas so we
  * can clear all current sessions.
@@ -983,6 +1128,7 @@ export function* saga() {
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
     takeLatest(types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL, onSignOracleDataRequest),
     takeLatest(types.SHOW_CREATE_TOKEN_REQUEST_MODAL, onCreateTokenRequest),
+    takeLatest(types.SHOW_SEND_TRANSACTION_REQUEST_MODAL, onSendTransactionRequest),
     takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),

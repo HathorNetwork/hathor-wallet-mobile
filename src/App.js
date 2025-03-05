@@ -99,6 +99,7 @@ import { CreateTokenRequestScreen } from './screens/Reown/CreateTokenScreen';
 import { SuccessFeedbackScreen } from './screens/Reown/SuccessFeedbackScreen';
 import UnifiedQRScanner from './screens/UnifiedQRScanner';
 import RegisterOptionsScreen from './screens/RegisterOptionsScreen';
+import { SendTransactionRequestScreen } from './screens/Reown/SendTransactionRequestScreen';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -471,6 +472,7 @@ const AppStack = () => {
         <Stack.Screen name='ReownScan' component={ReownScan} />
         <Stack.Screen name='NewNanoContractTransactionScreen' component={NewNanoContractTransactionScreen} />
         <Stack.Screen name='SignMessageRequest' component={SignMessageRequestScreen} />
+        <Stack.Screen name='SendTransactionRequest' component={SendTransactionRequestScreen} />
         <Stack.Screen name='SignOracleDataRequestScreen' component={SignOracleDataRequestScreen} />
         <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
         <Stack.Screen name='SuccessFeedbackScreen' component={SuccessFeedbackScreen} />
