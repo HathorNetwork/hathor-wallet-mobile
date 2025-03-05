@@ -1,0 +1,15 @@
+diff --git a/node_modules/@hathor/wallet-lib/lib/utils/bigint.js b/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
+index 3c19856..f7f76e0 100644
+--- a/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
++++ b/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
+@@ -48,7 +48,9 @@ const JSONBigInt = exports.JSONBigInt = {
+       // Otherwise, we can keep it as a Number.
+       return value;
+     } catch (e) {
+-      if (e instanceof SyntaxError && e.message === `Cannot convert ${context.source} to a BigInt`) {
++      if (e instanceof SyntaxError
++          && (e.message === `Cannot convert ${context.source} to a BigInt`
++          || (e.message === `Failed to parse String to BigInt`))) {
+         // When this error happens, it means the number cannot be converted to a BigInt,
+         // so it's a double, for example '123.456' or '1e2'.
+         return value;
