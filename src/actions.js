@@ -210,6 +210,16 @@ export const types = {
   SET_USE_SAFE_BIOMETRY_MODE: 'SET_USE_SAFE_BIOMETRY_MODE',
   SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
   SET_FULLNODE_NETWORK_NAME: 'SET_FULLNODE_NETWORK_NAME',
+  // Send transaction actions
+  REOWN_SEND_TX_STATUS_LOADING: 'REOWN_SEND_TX_STATUS_LOADING',
+  REOWN_SEND_TX_STATUS_READY: 'REOWN_SEND_TX_STATUS_READY',
+  REOWN_SEND_TX_STATUS_SUCCESS: 'REOWN_SEND_TX_STATUS_SUCCESS',
+  REOWN_SEND_TX_STATUS_FAILURE: 'REOWN_SEND_TX_STATUS_FAILURE',
+  REOWN_SEND_TX_RETRY: 'REOWN_SEND_TX_RETRY',
+  REOWN_SEND_TX_RETRY_DISMISS: 'REOWN_SEND_TX_RETRY_DISMISS',
+  SHOW_SEND_TRANSACTION_REQUEST_MODAL: 'SHOW_SEND_TRANSACTION_REQUEST_MODAL',
+  SHOW_GLOBAL_MODAL: 'SHOW_GLOBAL_MODAL',
+  HIDE_GLOBAL_MODAL: 'HIDE_GLOBAL_MODAL',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1515,4 +1525,43 @@ export const appStateUpdate = (oldState, newState) => ({
 export const setFullNodeNetworkName = (fullNodeNetworkName) => ({
   type: types.SET_FULLNODE_NETWORK_NAME,
   payload: fullNodeNetworkName,
+});
+
+// Send transaction action creators
+export const setSendTxStatusLoading = () => ({
+  type: types.REOWN_SEND_TX_STATUS_LOADING,
+});
+
+export const setSendTxStatusReady = () => ({
+  type: types.REOWN_SEND_TX_STATUS_READY,
+});
+
+export const setSendTxStatusSuccess = () => ({
+  type: types.REOWN_SEND_TX_STATUS_SUCCESS,
+});
+
+export const setSendTxStatusFailure = () => ({
+  type: types.REOWN_SEND_TX_STATUS_FAILURE,
+});
+
+export const sendTxRetry = () => ({
+  type: types.REOWN_SEND_TX_RETRY,
+});
+
+export const sendTxRetryDismiss = () => ({
+  type: types.REOWN_SEND_TX_RETRY_DISMISS,
+});
+
+export const showSendTransactionModal = (onAccept, onReject, data, metadata) => ({
+  type: types.SHOW_SEND_TRANSACTION_REQUEST_MODAL,
+  payload: { accept: onAccept, deny: onReject, data, dapp: metadata },
+});
+
+export const showGlobalModal = (modalType, modalProps = {}) => ({
+  type: types.SHOW_GLOBAL_MODAL,
+  payload: { modalType, modalProps }
+});
+
+export const hideGlobalModal = () => ({
+  type: types.HIDE_GLOBAL_MODAL
 });

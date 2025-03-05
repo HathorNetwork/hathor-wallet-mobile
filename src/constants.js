@@ -261,6 +261,10 @@ export const REOWN_CREATE_TOKEN_STATUS = {
   ...BASE_STATUS,
 };
 
+export const REOWN_SEND_TX_STATUS = {
+  ...BASE_STATUS,
+};
+
 export const NANOCONTRACT_REGISTER_STATUS = {
   ...BASE_STATUS,
 };
