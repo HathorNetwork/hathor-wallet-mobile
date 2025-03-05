@@ -15,6 +15,7 @@ import { COLORS } from '../../styles/themes';
 import { NewNanoContractTransactionModal } from './NanoContract/NewNanoContractTransactionModal';
 import SignOracleDataModal from './NanoContract/SignOracleDataModal';
 import CreateTokenModal from './CreateTokenModal';
+import SendTransactionModal from './SendTransactionModal';
 
 export default () => {
   const dispatch = useDispatch();
@@ -62,6 +63,13 @@ export default () => {
       case ReownModalTypes.CREATE_TOKEN:
         return (
           <CreateTokenModal
+            {...reownModal}
+            onDismiss={onDismiss}
+          />
+        );
+      case ReownModalTypes.SEND_TRANSACTION:
+        return (
+          <SendTransactionModal
             {...reownModal}
             onDismiss={onDismiss}
           />
@@ -126,4 +134,5 @@ export const ReownModalTypes = {
   SEND_NANO_CONTRACT_TX: 'SEND_NANO_CONTRACT_TX',
   SIGN_ORACLE_DATA: 'SIGN_ORACLE_DATA',
   CREATE_TOKEN: 'CREATE_TOKEN',
+  SEND_TRANSACTION: 'SEND_TRANSACTION',
 };

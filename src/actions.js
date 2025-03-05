@@ -218,8 +218,6 @@ export const types = {
   REOWN_SEND_TX_RETRY: 'REOWN_SEND_TX_RETRY',
   REOWN_SEND_TX_RETRY_DISMISS: 'REOWN_SEND_TX_RETRY_DISMISS',
   SHOW_SEND_TRANSACTION_REQUEST_MODAL: 'SHOW_SEND_TRANSACTION_REQUEST_MODAL',
-  SHOW_GLOBAL_MODAL: 'SHOW_GLOBAL_MODAL',
-  HIDE_GLOBAL_MODAL: 'HIDE_GLOBAL_MODAL',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1555,13 +1553,4 @@ export const sendTxRetryDismiss = () => ({
 export const showSendTransactionModal = (onAccept, onReject, data, metadata) => ({
   type: types.SHOW_SEND_TRANSACTION_REQUEST_MODAL,
   payload: { accept: onAccept, deny: onReject, data, dapp: metadata },
-});
-
-export const showGlobalModal = (modalType, modalProps = {}) => ({
-  type: types.SHOW_GLOBAL_MODAL,
-  payload: { modalType, modalProps }
-});
-
-export const hideGlobalModal = () => ({
-  type: types.HIDE_GLOBAL_MODAL
 });
