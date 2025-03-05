@@ -71,6 +71,8 @@ import {
   handleRpcRequest,
   CreateTokenError,
   SendNanoContractTxError,
+  SendTransactionError,
+  InsufficientFundsError,
 } from '@hathor/hathor-rpc-handler';
 import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
@@ -97,6 +99,13 @@ import {
   setCreateTokenStatusReady,
   setCreateTokenStatusSuccessful,
   setCreateTokenStatusFailed,
+  setSendTxStatusSuccess,
+  setSendTxStatusFailure,
+  setSendTxStatusLoading,
+  setSendTxStatusReady,
+  showGlobalModal,
+  hideGlobalModal,
+  showSendTransactionModal,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -108,8 +117,15 @@ const AVAILABLE_METHODS = {
   HATHOR_SEND_NANO_TX: 'htr_sendNanoContractTx',
   HATHOR_SIGN_ORACLE_DATA: 'htr_signOracleData',
   HATHOR_CREATE_TOKEN: 'htr_createToken',
+  HATHOR_SEND_TRANSACTION: 'htr_sendTransaction',
 };
 const AVAILABLE_EVENTS = [];
+
+// Modal types for global modals
+const MODAL_TYPES = {
+  REOWN: 'reown',
+  TRANSACTION_FEEDBACK: 'transaction_feedback',
+};
 
 /**
  * Those are the only ones we are currently using, extracted from
@@ -435,6 +451,13 @@ export function* processRequest(action) {
       case RpcResponseTypes.CreateTokenResponse:
         yield put(setCreateTokenStatusSuccessful());
         break;
+      case RpcResponseTypes.SendTransactionResponse:
+        yield put(setSendTxStatusSuccess());
+        yield put(showGlobalModal(
+          MODAL_TYPES.TRANSACTION_FEEDBACK,
+          { isLoading: false, isError: false }
+        ));
+        break;
       default:
         break;
     }
@@ -478,6 +501,49 @@ export function* processRequest(action) {
         if (retry) {
           shouldAnswer = false;
           // Retry the action, exactly as it came:
+          yield* processRequest(action);
+        }
+      } break;
+      case SendTransactionError: {
+        yield put(setSendTxStatusFailure());
+        yield put(showGlobalModal(
+          MODAL_TYPES.TRANSACTION_FEEDBACK,
+          {
+            isLoading: false,
+            isError: true
+          }
+        ));
+
+        const retry = yield call(
+          retryHandler,
+          types.REOWN_SEND_TX_RETRY,
+          types.REOWN_SEND_TX_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
+          yield* processRequest(action);
+        }
+      } break;
+      case InsufficientFundsError: {
+        yield put(setSendTxStatusFailure());
+        yield put(showGlobalModal(
+          MODAL_TYPES.TRANSACTION_FEEDBACK,
+          {
+            isLoading: false,
+            isError: true,
+            errorMessage: 'Insufficient funds to complete the transaction.'
+          }
+        ));
+
+        const retry = yield call(
+          retryHandler,
+          types.REOWN_SEND_TX_RETRY,
+          types.REOWN_SEND_TX_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
           yield* processRequest(action);
         }
       } break;
@@ -545,6 +611,7 @@ export function* processRequest(action) {
 const promptHandler = (dispatch) => (request, requestMetadata) =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
+    console.log('Got prompt: ', request);
     switch (request.type) {
       case TriggerTypes.SignOracleDataConfirmationPrompt: {
         const signOracleDataResponseTemplate = (accepted) => () => resolve({
@@ -602,6 +669,37 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           requestMetadata,
         ));
       } break;
+      case TriggerTypes.SendTransactionConfirmationPrompt: {
+        const sendTransactionResponseTemplate = (accepted) => () => {
+          dispatch(hideGlobalModal());
+          resolve({
+            type: TriggerResponseTypes.SendTransactionConfirmationResponse,
+            data: {
+              accepted,
+            }
+          });
+        };
+
+        dispatch(showGlobalModal(MODAL_TYPES.REOWN, {
+          type: ReownModalTypes.SEND_TRANSACTION,
+          data: {
+            data: request.data,
+            dapp: requestMetadata,
+          },
+          onAcceptAction: sendTransactionResponseTemplate(true),
+          onRejectAction: sendTransactionResponseTemplate(false),
+        }));
+      } break;
+      case TriggerTypes.SendTransactionLoadingTrigger:
+        dispatch(setSendTxStatusLoading());
+        dispatch(showGlobalModal(MODAL_TYPES.TRANSACTION_FEEDBACK, { isLoading: true }));
+        resolve();
+        break;
+      case TriggerTypes.SendTransactionLoadingFinishedTrigger:
+        dispatch(setSendTxStatusReady());
+        dispatch(hideGlobalModal());
+        resolve();
+        break;
       case TriggerTypes.SendNanoContractTxLoadingTrigger:
         dispatch(setNewNanoContractStatusLoading());
         resolve();
@@ -650,69 +748,11 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
  * has been denied.
  */
 export function* onSignMessageRequest({ payload }) {
-  const { accept, deny: denyCb, data, dapp } = payload;
-
-  const wallet = yield select((state) => state.wallet);
-
-  if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring.');
-    return;
-  }
-
-  yield put(setReownModal({
-    show: true,
-    type: ReownModalTypes.SIGN_MESSAGE,
-    data: {
-      data,
-      dapp,
-    },
-  }));
-
-  const { deny } = yield race({
-    accept: take(types.REOWN_ACCEPT),
-    deny: take(types.REOWN_REJECT),
-  });
-
-  if (deny) {
-    denyCb();
-
-    return;
-  }
-
-  accept();
+  yield* handleDAppRequest(payload, ReownModalTypes.SIGN_MESSAGE, { useGlobalModal: false });
 }
 
 export function* onSignOracleDataRequest({ payload }) {
-  const { accept, deny: denyCb, data, dapp } = payload;
-
-  const wallet = yield select((state) => state.wallet);
-
-  if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring..');
-    return;
-  }
-
-  yield put(setReownModal({
-    show: true,
-    type: ReownModalTypes.SIGN_ORACLE_DATA,
-    data: {
-      data,
-      dapp,
-    },
-  }));
-
-  const { deny } = yield race({
-    accept: take(types.REOWN_ACCEPT),
-    deny: take(types.REOWN_REJECT),
-  });
-
-  if (deny) {
-    denyCb();
-
-    return;
-  }
-
-  accept();
+  yield* handleDAppRequest(payload, ReownModalTypes.SIGN_ORACLE_DATA, { useGlobalModal: false });
 }
 
 /**
@@ -732,56 +772,72 @@ export function* onSignOracleDataRequest({ payload }) {
  * has been denied.
  */
 export function* onSendNanoContractTxRequest({ payload }) {
-  const { accept: acceptCb, deny: denyCb, nc, dapp } = payload;
-
-  const wallet = yield select((state) => state.wallet);
-
-  if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring.');
-    return;
-  }
-
-  yield put(setReownModal({
-    show: true,
-    type: ReownModalTypes.SEND_NANO_CONTRACT_TX,
-    data: {
-      dapp,
-      data: nc,
-    },
-  }));
-
-  const { deny, accept } = yield race({
-    accept: take(types.REOWN_ACCEPT),
-    deny: take(types.REOWN_REJECT),
+  yield* handleDAppRequest(payload, ReownModalTypes.SEND_NANO_CONTRACT_TX, { 
+    useGlobalModal: false,
+    passAcceptAction: true
   });
-
-  if (deny) {
-    denyCb();
-
-    return;
-  }
-
-  acceptCb(accept);
 }
 
 export function* onCreateTokenRequest({ payload }) {
-  const { accept: acceptCb, deny: denyCb, data, dapp } = payload;
+  yield* handleDAppRequest(payload, ReownModalTypes.CREATE_TOKEN, { 
+    useGlobalModal: false,
+    passAcceptAction: true
+  });
+}
 
+/**
+ * This saga will be called when a send transaction request is received from a dApp
+ *
+ * @param {Object} payload The payload containing the transaction data and callbacks
+ * @param {Function} payload.accept Callback to accept the transaction
+ * @param {Function} payload.deny Callback to deny the transaction
+ * @param {Object} payload.data Transaction data
+ * @param {Object} payload.dapp Information about the dApp
+ */
+export function* onSendTransactionRequest({ payload }) {
+  yield* handleDAppRequest(payload, ReownModalTypes.SEND_TRANSACTION, { useGlobalModal: true });
+}
+
+/**
+ * Generic handler for dApp requests
+ *
+ * @param {Object} payload The payload containing the request data and callbacks
+ * @param {String} modalType The type of modal to show
+ * @param {Object} options Additional options for handling the request
+ * @param {Boolean} options.useGlobalModal Whether to use showGlobalModal (true) or setReownModal (false)
+ * @param {Boolean} options.passAcceptAction Whether to pass the accept action to the callback
+ */
+export function* handleDAppRequest(payload, modalType, options = {}) {
+  const { accept: acceptCb, deny: denyCb, data, dapp, nc } = payload;
+  const { useGlobalModal = true, passAcceptAction = false } = options;
+  
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring.');
+    log.error('Got a session request but wallet is not ready.');
     return;
   }
 
-  yield put(setReownModal({
-    show: true,
-    type: ReownModalTypes.CREATE_TOKEN,
-    data: {
-      dapp,
-      data,
-    },
-  }));
+  // Determine the data to pass to the modal
+  const modalData = {
+    data: nc || data, // Some requests use 'nc' instead of 'data'
+    dapp,
+  };
+
+  if (useGlobalModal) {
+    yield put(showGlobalModal(MODAL_TYPES.REOWN, {
+      type: modalType,
+      data: modalData,
+      onAcceptAction: acceptCb,
+      onRejectAction: denyCb,
+    }));
+  } else {
+    yield put(setReownModal({
+      show: true,
+      type: modalType,
+      data: modalData,
+    }));
+  }
 
   const { deny, accept } = yield race({
     accept: take(types.REOWN_ACCEPT),
@@ -790,12 +846,16 @@ export function* onCreateTokenRequest({ payload }) {
 
   if (deny) {
     denyCb();
-
     return;
   }
 
-  acceptCb(accept);
+  if (passAcceptAction) {
+    acceptCb(accept);
+  } else {
+    acceptCb();
+  }
 }
+
 /**
  * Listens for the wallet reset action, dispatched from the wallet sagas so we
  * can clear all current sessions.
@@ -983,6 +1043,7 @@ export function* saga() {
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
     takeLatest(types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL, onSignOracleDataRequest),
     takeLatest(types.SHOW_CREATE_TOKEN_REQUEST_MODAL, onCreateTokenRequest),
+    takeLatest(types.SHOW_SEND_TRANSACTION_REQUEST_MODAL, onSendTransactionRequest),
     takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),
