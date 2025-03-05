@@ -20,7 +20,7 @@ import { t } from 'ttag';
 import { get } from 'lodash';
 
 import moment from 'moment';
-import { constants as hathorConstants } from '@hathor/wallet-lib';
+import hathorLib from '@hathor/wallet-lib';
 import IconTabBar from '../icon-font';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
@@ -38,6 +38,9 @@ import { COLORS } from '../styles/themes';
 import { HathorFlatList } from '../components/HathorFlatList';
 import { ActionDot } from '../components/Icons/ActionDot.icon';
 import { getNetworkSettings } from '../sagas/helpers';
+
+// Declare BigInt for ESLint
+/* global BigInt */
 
 /**
  * txList {Array} array with transactions of the selected token
@@ -111,7 +114,7 @@ class MainScreen extends React.Component {
   }
 
   tokenInfo = () => {
-    if (this.props.selectedToken.uid !== hathorConstants.NATIVE_TOKEN_UID) {
+    if (this.props.selectedToken.uid !== hathorLib.NATIVE_TOKEN_UID) {
       this.props.navigation.navigate('TokenDetail');
     }
   }
@@ -200,7 +203,7 @@ class MainScreen extends React.Component {
     };
 
     const renderRightElement = () => {
-      if (this.props.selectedToken.uid !== hathorConstants.NATIVE_TOKEN_UID) {
+      if (this.props.selectedToken.uid !== hathorLib.NATIVE_TOKEN_UID) {
         return (
           <SimpleButton onPress={this.tokenInfo}>
             <ActionDot />
@@ -379,16 +382,21 @@ class TxListItem extends React.Component {
   }
 
   getImage = (item) => {
-    if (item.balance === 0) {
+    // Convert balance to BigInt if it's not already
+    const balance = typeof item.balance === 'bigint' ? item.balance : BigInt(item.balance || 0);
+
+    if (balance === BigInt(0)) {
       return <View style={this.style.icon} />;
     }
-    let name; let
-      color;
+
+    let name;
+    let color;
     const style = [this.style.icon];
-    if (item.balance > 0) {
+
+    if (balance > BigInt(0)) {
       name = 'icReceive';
       color = COLORS.positiveBalanceColor;
-    } else if (item.balance < 0) {
+    } else if (balance < BigInt(0)) {
       name = 'icSend';
       color = COLORS.textColor;
     } else {
@@ -406,7 +414,12 @@ class TxListItem extends React.Component {
   getStyle(item) {
     if (item.isVoided) {
       return this.styleVoided;
-    } if (item.balance > 0) {
+    }
+
+    // Convert balance to BigInt if it's not already
+    const balance = typeof item.balance === 'bigint' ? item.balance : BigInt(item.balance || 0);
+
+    if (balance > BigInt(0)) {
       return this.stylePositive;
     }
     return this.style;

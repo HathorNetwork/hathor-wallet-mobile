@@ -11,6 +11,7 @@ import { connect } from 'react-redux';
 import { t, ngettext, msgid } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
+import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
@@ -66,6 +67,7 @@ class SendConfirmScreen extends React.Component {
    * @param {String} pin User PIN already validated
    */
   executeSend = async (pin) => {
+    // The amount is already a BigInt from the previous screen
     const outputs = [{ address: this.address, value: this.amount, token: this.token.uid }];
     let sendTransaction;
 
@@ -123,7 +125,7 @@ class SendConfirmScreen extends React.Component {
       const balance = this.props.tokensBalance[this.token.uid].data;
       const available = balance ? balance.available : 0;
       const amountAndToken = `${renderValue(available, this.isNFT)} ${this.token.symbol}`;
-      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);
+      return `${amountAndToken} available`;
     };
 
     const tokenNameUpperCase = this.token.name.toUpperCase();
