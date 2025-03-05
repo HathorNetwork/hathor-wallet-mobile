@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { t } from 'ttag';
+import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import { NANO_CONTRACT_ACTION } from '../../constants';
 import { COLORS } from '../../styles/themes';
 import { getShortHash, isTokenNFT, renderValue } from '../../utils';
@@ -129,7 +130,6 @@ const ContentWrapper = ({ tokenSymbol, type }) => {
  */
 const TokenAmount = ({ amount, isNft, type }) => {
   const isReceivingToken = type === NANO_CONTRACT_ACTION.withdrawal;
-
   // Convert to BigInt if not already (required by renderValue -> prettyValue)
   const amountBigInt = typeof amount === 'bigint' ? amount : BigInt(amount || 0);
   const amountToRender = renderValue(amountBigInt, isNft);
