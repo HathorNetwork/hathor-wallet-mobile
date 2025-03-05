@@ -9,10 +9,16 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * Runs the `npm run locale-update-pot` script to update the root `.pot` file with the new strings
+ */
 function runLocaleUpdatePot() {
   execSync('npm run locale-update-pot', { stdio: 'inherit' });
 }
 
+/**
+ * Merges the `.pot` file with the translations in the `.po` files in each of the `locale` folders
+ */
 function mergeTranslations() {
   const localeDir = 'locale';
   const potFile = path.join(localeDir, 'texts.pot');
@@ -26,6 +32,11 @@ function mergeTranslations() {
   });
 }
 
+/**
+ * Checks for any fuzzy tags in the `.po` files, as they indicate human review is necessary
+ * @see https://www.gnu.org/software/gettext/manual/html_node/Fuzzy-Entries.html
+ * @returns {boolean} True if any fuzzy tags were found
+ */
 function checkFuzzyTags() {
   const localeDir = 'locale';
   const subfolders = fs.readdirSync(localeDir)
@@ -50,7 +61,7 @@ function checkFuzzyTags() {
 
 /**
  * Checks for filesystem changes using `git status`. If any changes are found, it means the
- * translation has changed, and this may trigger a CI fail in running inside the CI.
+ * translation files have changed, and this may trigger a CI fail when running inside the CI.
  * @returns {boolean} True if changes were found, or if an error happened
  */
 function checkForChanges() {
