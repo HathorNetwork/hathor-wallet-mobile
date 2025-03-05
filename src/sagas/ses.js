@@ -47,6 +47,7 @@ function enableSes(restart = true) {
  *
  */
 function* init() {
+  return;
   if (Platform.OS === 'android') {
     log.debug('Platform is android, skipping SES');
     return;
