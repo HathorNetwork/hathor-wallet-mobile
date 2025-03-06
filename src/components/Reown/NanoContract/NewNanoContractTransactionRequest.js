@@ -17,7 +17,6 @@ import {
   TouchableWithoutFeedback,
   Image,
   Text,
-  BackHandler
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
