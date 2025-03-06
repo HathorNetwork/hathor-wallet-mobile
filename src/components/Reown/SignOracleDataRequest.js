@@ -24,6 +24,7 @@ import NewHathorButton from '../NewHathorButton';
 import { DappContainer } from './NanoContract/DappContainer';
 import { commonStyles } from './theme';
 import { NanoContractIcon } from '../Icons/NanoContract.icon';
+import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 
 export const SignOracleDataRequestData = ({ data }) => (
   <View style={[commonStyles.card, commonStyles.cardSplit]}>
@@ -49,15 +50,22 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
+  const { navigateBack } = useBackButtonHandler(
+    () => {
+      dispatch(reownReject());
+      navigation.goBack();
+    }
+  );
+
   const onAcceptSignOracleDataRequest = () => {
     // Signal the user has accepted the current request and pass the accepted data.
     dispatch(reownAccept());
-    navigation.goBack();
+    navigateBack();
   };
 
   const onDeclineTransaction = () => {
     dispatch(reownReject());
-    navigation.goBack();
+    navigateBack();
   };
 
   return (

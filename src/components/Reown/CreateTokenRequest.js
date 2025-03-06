@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -34,6 +34,7 @@ import FeedbackModal from '../FeedbackModal';
 import Spinner from '../Spinner';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
+import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 
 const condRenderData = (
   attribute,
@@ -123,8 +124,16 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
 
   const onDeclineTransaction = () => {
     dispatch(reownReject());
-    navigation.goBack();
+    navigateBack();
   };
+
+  const { navigateBack } = useBackButtonHandler(
+    () => {
+      dispatch(reownReject());
+      navigation.goBack();
+    },
+    status === REOWN_CREATE_TOKEN_STATUS.SUCCESSFUL
+  );
 
   const isTxReady = status === REOWN_CREATE_TOKEN_STATUS.READY;
   const isTxProcessing = status === REOWN_CREATE_TOKEN_STATUS.LOADING;
@@ -133,7 +142,7 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
 
   const onFeedbackModalDismiss = () => {
     dispatch(createTokenRetryDismiss());
-    navigation.goBack();
+    navigateBack();
   };
 
   const onNavigateToDashboard = () => {

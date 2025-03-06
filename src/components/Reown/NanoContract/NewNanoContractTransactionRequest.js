@@ -47,6 +47,7 @@ import { NanoContractExecInfo } from './NanoContractExecInfo';
 import { NanoContractActions } from './NanoContractActions';
 import { NanoContractMethodArgs } from './NanoContractMethodArgs';
 import { DeclineModal } from './DeclineModal';
+import { useBackButtonHandler } from '../../../hooks/useBackButtonHandler';
 
 /**
  * @param {Object} props
@@ -83,8 +84,6 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   );
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
-  // Add a state to track when we're intentionally navigating back
-  const [isIntentionallyNavigatingBack, setIsIntentionallyNavigatingBack] = useState(false);
   /**
    * If nano-contract's method is 'initialize' then the expression
    * should be resolved to firstAddress value by default.
@@ -150,16 +149,18 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const onDeclineTransaction = () => {
     setShowDeclineModal(true);
   };
+
+  const { navigateBack } = useBackButtonHandler(
+    onDeclineTransaction,
+    newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL
+  );
+
   const onDeclineConfirmation = () => {
-    setIsIntentionallyNavigatingBack(true);
     setShowDeclineModal(false);
     dispatch(reownReject());
-    // We need to give time for the modal to close
-    // before navigating back
-    setTimeout(() => {
-      navigation.goBack();
-    }, 0);
+    navigateBack();
   };
+
   const onDismissDeclineModal = () => {
     setShowDeclineModal(false);
   };
@@ -215,42 +216,6 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
     };
   }, []);
 
-  // Separate useEffect for back handlers with isIntentionallyNavigatingBack as a dependency
-  useEffect(() => {
-    // Add back button handler to intercept Android back button and gesture
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      // If we're intentionally navigating back, allow the default back behavior
-      if (isIntentionallyNavigatingBack) {
-        return false;
-      }
-      // Show decline modal instead of going back directly
-      onDeclineTransaction();
-      // Return true to prevent default back behavior
-      return true;
-    });
-
-    // Add navigation event listener to handle iOS swipe back gesture
-    const beforeRemoveListener = navigation.addListener('beforeRemove', (e) => {
-      // If the transaction was successful or we're intentionally navigating back, allow navigation
-      if (
-        newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL
-        || isIntentionallyNavigatingBack
-      ) {
-        return;
-      }
-      // Prevent default navigation behavior
-      e.preventDefault();
-      // Show decline modal instead
-      onDeclineTransaction();
-    });
-
-    // Cleanup function to remove event listeners
-    return () => {
-      backHandler.remove();
-      beforeRemoveListener();
-    };
-  }, [isIntentionallyNavigatingBack, newTxStatus, navigation, onDeclineTransaction]);
-
   // When nano contract is registered it should set the caller address
   useEffect(() => {
     if (!ncAddress && registeredNc?.address) {
@@ -276,7 +241,6 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
 
   useEffect(() => {
     if (newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL) {
-      setIsIntentionallyNavigatingBack(true);
       navigation.navigate(
         'SuccessFeedbackScreen',
         {
@@ -290,8 +254,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   }, [newTxStatus]);
 
   const onFeedbackModalDismiss = () => {
-    setIsIntentionallyNavigatingBack(true);
-    navigation.goBack();
+    navigateBack();
   };
 
   const onTryAgain = () => {
