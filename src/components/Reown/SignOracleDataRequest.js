@@ -48,14 +48,6 @@ export const SignOracleDataRequestData = ({ data }) => (
 export const SignOracleDataRequest = ({ signOracleData }) => {
   const { dapp, data } = signOracleData;
   const dispatch = useDispatch();
-  const navigation = useNavigation();
-
-  const { navigateBack } = useBackButtonHandler(
-    () => {
-      dispatch(reownReject());
-      navigation.goBack();
-    }
-  );
 
   const onAcceptSignOracleDataRequest = () => {
     // Signal the user has accepted the current request and pass the accepted data.
@@ -67,6 +59,10 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
     dispatch(reownReject());
     navigateBack();
   };
+
+  const { navigateBack } = useBackButtonHandler(
+    onDeclineTransaction,
+  );
 
   return (
     <ScrollView style={styles.wide}>

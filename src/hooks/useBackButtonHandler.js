@@ -55,8 +55,6 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
     };
   }, [
     isIntentionallyNavigatingBack,
-    allowNavigationCondition,
-    navigation,
     showConfirmationModal
   ]);
 
