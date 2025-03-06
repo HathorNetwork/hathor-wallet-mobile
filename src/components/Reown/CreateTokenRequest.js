@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -35,6 +35,7 @@ import Spinner from '../Spinner';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
+import { DeclineModal } from './NanoContract/DeclineModal';
 
 const condRenderData = (
   attribute,
@@ -111,6 +112,7 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
   const { status } = useSelector((state) => state.reown.createToken);
   const dispatch = useDispatch();
   const navigation = useNavigation();
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
 
   useEffect(() => () => {
     dispatch(setCreateTokenStatusReady());
@@ -123,14 +125,23 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
   };
 
   const onDeclineTransaction = () => {
-    dispatch(reownReject());
-    navigateBack();
+    setShowDeclineModal(true);
   };
 
   const { navigateBack } = useBackButtonHandler(
     onDeclineTransaction,
     status === REOWN_CREATE_TOKEN_STATUS.SUCCESSFUL
   );
+
+  const onDeclineConfirmation = () => {
+    setShowDeclineModal(false);
+    dispatch(reownReject());
+    navigateBack();
+  };
+
+  const onDismissDeclineModal = () => {
+    setShowDeclineModal(false);
+  };
 
   const isTxReady = status === REOWN_CREATE_TOKEN_STATUS.READY;
   const isTxProcessing = status === REOWN_CREATE_TOKEN_STATUS.LOADING;
@@ -185,6 +196,12 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
           )}
         </View>
       </ScrollView>
+
+      <DeclineModal
+        show={showDeclineModal}
+        onDecline={onDeclineConfirmation}
+        onDismiss={onDismissDeclineModal}
+      />
 
       {isTxSuccessful && (
         <FeedbackModal
