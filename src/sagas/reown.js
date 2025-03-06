@@ -84,6 +84,7 @@ import {
   types,
   setReown,
   setReownModal,
+  hideReownModal,
   setReownSessions,
   onExceptionCaptured,
   setWCConnectionFailed,
@@ -465,11 +466,7 @@ export function* processRequest(action) {
       case RpcResponseTypes.SendTransactionResponse:
         console.log('Handling SendTransactionResponse');
         yield put(setSendTxStatusSuccess());
-        yield put(setReownModal({
-          show: true,
-          type: MODAL_TYPES.TRANSACTION_FEEDBACK,
-          data: { isLoading: false, isError: false }
-        }));
+        // The modal state will be updated by the SendTransactionLoadingFinishedTrigger
         break;
       default:
         console.log('Unknown response type:', response.type);
@@ -525,12 +522,19 @@ export function* processRequest(action) {
       case SendTransactionError: {
         console.log('Handling SendTransactionError');
         yield put(setSendTxStatusFailure());
+        
+        // Get the current reown state to preserve data and handlers
+        const currentStateError = yield select(state => state.reown.modal);
+        
         yield put(setReownModal({
           show: true,
-          type: MODAL_TYPES.TRANSACTION_FEEDBACK,
+          type: ReownModalTypes.SEND_TRANSACTION,
           data: {
+            ...currentStateError.data, // Preserve original data, dapp, and action handlers
             isLoading: false,
-            isError: true
+            isSuccess: false,
+            isError: true,
+            errorMessage: e.message
           }
         }));
 
@@ -548,11 +552,17 @@ export function* processRequest(action) {
       case InsufficientFundsError: {
         console.log('Handling InsufficientFundsError');
         yield put(setSendTxStatusFailure());
+        
+        // Get the current reown state to preserve data and handlers
+        const currentStateInsufficientFunds = yield select(state => state.reown.modal);
+        
         yield put(setReownModal({
           show: true,
-          type: MODAL_TYPES.TRANSACTION_FEEDBACK,
+          type: ReownModalTypes.SEND_TRANSACTION,
           data: {
+            ...currentStateInsufficientFunds.data, // Preserve original data, dapp, and action handlers
             isLoading: false,
+            isSuccess: false,
             isError: true,
             errorMessage: 'Insufficient funds to complete the transaction.'
           }
@@ -706,7 +716,13 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         console.log('Handling SendTransactionConfirmationPrompt');
         const sendTransactionResponseTemplate = (accepted) => () => {
           console.log('SendTransaction response template called with accepted:', accepted);
-          dispatch(hideReownModal());
+          
+          if (!accepted) {
+            // If rejected, hide the modal
+            dispatch(hideReownModal());
+          }
+          // If accepted, don't modify the modal - the loading trigger will handle it
+          
           resolve({
             type: TriggerResponseTypes.SendTransactionConfirmationResponse,
             data: {
@@ -722,25 +738,50 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           data: {
             data: request.data,
             dapp: requestMetadata,
-          },
-          onAcceptAction: sendTransactionResponseTemplate(true),
-          onRejectAction: sendTransactionResponseTemplate(false),
+            onAcceptAction: sendTransactionResponseTemplate(true),
+            onRejectAction: sendTransactionResponseTemplate(false),
+            isLoading: false,
+            isSuccess: false,
+            isError: false
+          }
         }));
       } break;
       case TriggerTypes.SendTransactionLoadingTrigger:
         console.log('Handling SendTransactionLoadingTrigger');
         dispatch(setSendTxStatusLoading());
+        
+        // Get the current reown state to preserve data and handlers
+        const currentState = yield select(state => state.reown.modal);
+        
         dispatch(setReownModal({
           show: true,
-          type: MODAL_TYPES.TRANSACTION_FEEDBACK,
-          data: { isLoading: true }
+          type: ReownModalTypes.SEND_TRANSACTION,
+          data: { 
+            ...currentState.data, // Preserve original data, dapp, and action handlers
+            isLoading: true,
+            isSuccess: false,
+            isError: false
+          }
         }));
         resolve();
         break;
       case TriggerTypes.SendTransactionLoadingFinishedTrigger:
         console.log('Handling SendTransactionLoadingFinishedTrigger');
         dispatch(setSendTxStatusReady());
-        dispatch(hideReownModal());
+        
+        // Get the current reown state to preserve data and handlers
+        const currentStateFinished = yield select(state => state.reown.modal);
+        
+        dispatch(setReownModal({
+          show: true,
+          type: ReownModalTypes.SEND_TRANSACTION,
+          data: { 
+            ...currentStateFinished.data, // Preserve original data, dapp, and action handlers
+            isLoading: false,
+            isSuccess: true,
+            isError: false
+          }
+        }));
         resolve();
         break;
       case TriggerTypes.SendNanoContractTxLoadingTrigger:
@@ -782,7 +823,13 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         
         const sendTransactionResponseTemplate = (accepted) => () => {
           console.log('SendTransaction response template called with accepted:', accepted);
-          dispatch(hideReownModal());
+          
+          if (!accepted) {
+            // If rejected, hide the modal
+            dispatch(hideReownModal());
+          }
+          // If accepted, don't modify the modal - the loading trigger will handle it
+          
           resolve({
             type: TriggerResponseTypes.SendTransactionConfirmationResponse,
             data: {
@@ -797,6 +844,11 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           data: {
             data: request.data,
             dapp: requestMetadata,
+            onAcceptAction: sendTransactionResponseTemplate(true),
+            onRejectAction: sendTransactionResponseTemplate(false),
+            isLoading: false,
+            isSuccess: false,
+            isError: false
           }
         });
         
@@ -806,9 +858,12 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           data: {
             data: request.data,
             dapp: requestMetadata,
-          },
-          onAcceptAction: sendTransactionResponseTemplate(true),
-          onRejectAction: sendTransactionResponseTemplate(false),
+            onAcceptAction: sendTransactionResponseTemplate(true),
+            onRejectAction: sendTransactionResponseTemplate(false),
+            isLoading: false,
+            isSuccess: false,
+            isError: false
+          }
         }));
       } break;
       default: 

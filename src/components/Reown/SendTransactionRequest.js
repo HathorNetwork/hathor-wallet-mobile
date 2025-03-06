@@ -7,74 +7,90 @@
 
 import React from 'react';
 import { t } from 'ttag';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard } from 'react-native';
 import { constants, numberUtils } from '@hathor/wallet-lib';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { COLORS } from '../../styles/themes';
-import SimpleButton from '../SimpleButton';
-import CopyClipboard from '../CopyClipboard';
+import NewHathorButton from '../NewHathorButton';
 import { WarnDisclaimer } from './WarnDisclaimer';
+import { DappContainer } from './NanoContract/DappContainer';
+import { hideReownModal } from '../../actions';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.backgroundColor,
-    padding: 16,
+  wide: {
+    width: '100%',
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
+  wrapper: {
+    flex: 1,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.lowContrastDetail,
+  },
+  content: {
+    flex: 1,
+    rowGap: 24,
+    width: '100%',
+    paddingVertical: 16,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   itemContainer: {
-    backgroundColor: COLORS.lightGray,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
+    backgroundColor: COLORS.backgroundColor,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   itemHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 12,
+    alignItems: 'center',
   },
   itemTitle: {
     fontWeight: 'bold',
+    fontSize: 16,
+  },
+  valueText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  labelText: {
+    fontSize: 14,
+    color: 'hsla(0, 0%, 38%, 1)',
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  valueContainer: {
+    backgroundColor: COLORS.lowContrastDetail,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
   },
   monospace: {
     fontFamily: 'Courier',
-    fontSize: 12,
+    fontSize: 14,
   },
-  addressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  copyButton: {
+    color: 'hsla(263, 100%, 64%, 1)',
     marginTop: 4,
   },
-  dappInfo: {
-    marginBottom: 16,
+  addressContainer: {
+    backgroundColor: COLORS.lowContrastDetail,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
   },
-  dappName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  dappUrl: {
-    fontSize: 12,
-    color: COLORS.textColorShadow,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-  },
-  truncatedText: {
-    maxWidth: '80%',
-  },
-  warningContainer: {
-    marginBottom: 16,
+  actionContainer: {
+    flexDirection: 'column',
+    gap: 8,
+    paddingBottom: 48,
   },
 });
 
@@ -83,20 +99,20 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   const { tokens: registeredTokens } = useSelector((state) => ({
     tokens: state.tokens,
   }));
+  const dispatch = useDispatch();
 
   const getTokenSymbol = (tokenId) => {
     if (!tokenId) {
       return constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
     }
 
-    const token = registeredTokens.find((t) => t.uid === tokenId);
+    const token = registeredTokens[tokenId];
     if (token) {
       return token.symbol;
     }
 
     return '?';
   };
-
 
   const formatValue = (value) => {
     if (value == null) {
@@ -106,12 +122,14 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     return numberUtils.prettyValue(value);
   };
 
-
   const truncateTxId = (txId) => {
     if (!txId) return '-';
-    return `${txId.slice(0, 8)}...${txId.slice(-8)}`;
+    return `${txId.slice(0, 12)}...${txId.slice(-12)}`;
   };
 
+  const copyToClipboard = (text) => {
+    Clipboard.setString(text);
+  };
 
   const renderInputs = () => {
     if (!data?.inputs || data.inputs.length === 0) {
@@ -119,7 +137,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     }
 
     return (
-      <View style={{ marginBottom: 16 }}>
+      <View>
         <Text style={styles.sectionTitle}>{t`Inputs`}</Text>
         {data.inputs.map((input, index) => {
           const inputKey = `input-${input.txId || ''}-${input.index || ''}-${index}`;
@@ -130,24 +148,30 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
             >
               <View style={styles.itemHeader}>
                 <Text style={styles.itemTitle}>{t`Input ${index + 1}`}</Text>
-                <Text>{formatValue(input?.value)} {getTokenSymbol(input?.token)}</Text>
+                <Text style={styles.valueText}>
+                  {formatValue(input?.value)} {getTokenSymbol(input?.token)}
+                </Text>
               </View>
-              <View>
+              <Text style={styles.labelText}>{t`ID da Transação`}</Text>
+              <View style={styles.valueContainer}>
                 <Text style={styles.monospace}>
                   {truncateTxId(input?.txId)} ({input?.index})
                 </Text>
                 {input?.txId && (
-                  <CopyClipboard textToCopy={input.txId} />
+                  <TouchableOpacity onPress={() => copyToClipboard(input.txId)}>
+                    <Text style={styles.copyButton}>{t`Copy ID`}</Text>
+                  </TouchableOpacity>
                 )}
               </View>
-              <View style={styles.addressContainer}>
-                <Text style={[styles.monospace, styles.truncatedText]} numberOfLines={1}>
+              <Text style={styles.labelText}>{t`Endereço`}</Text>
+              <TouchableOpacity
+                style={styles.addressContainer}
+                onPress={() => copyToClipboard(input?.address)}
+              >
+                <Text style={styles.monospace} numberOfLines={1}>
                   {input?.address}
                 </Text>
-                {input?.address && (
-                  <CopyClipboard textToCopy={input.address} />
-                )}
-              </View>
+              </TouchableOpacity>
             </View>
           );
         })}
@@ -155,14 +179,13 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     );
   };
 
-
   const renderOutputs = () => {
     if (!data?.outputs || data.outputs.length === 0) {
       return null;
     }
 
     return (
-      <View style={{ marginBottom: 16 }}>
+      <View>
         <Text style={styles.sectionTitle}>{t`Outputs`}</Text>
         {data.outputs.map((output, index) => {
           const outputKey = `output-${output.address || ''}-${index}`;
@@ -173,20 +196,27 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
             >
               <View style={styles.itemHeader}>
                 <Text style={styles.itemTitle}>{t`Output ${index + 1}`}</Text>
-                <Text>{formatValue(output?.value)} {getTokenSymbol(output?.token)}</Text>
+                <Text style={styles.valueText}>
+                  {formatValue(output?.value)} {getTokenSymbol(output?.token)}
+                </Text>
               </View>
-              <View style={styles.addressContainer}>
-                <Text style={[styles.monospace, styles.truncatedText]} numberOfLines={1}>
+              <Text style={styles.labelText}>{t`Endereço`}</Text>
+              <TouchableOpacity
+                style={styles.addressContainer}
+                onPress={() => copyToClipboard(output?.address)}
+              >
+                <Text style={styles.monospace} numberOfLines={1}>
                   {output?.address}
                 </Text>
-                <CopyClipboard textToCopy={output?.address} />
-              </View>
+              </TouchableOpacity>
               {output?.data && (
-                <View style={{ marginTop: 8 }}>
-                  <Text style={{ fontSize: 12 }}>{t`Data field:`}</Text>
-                  <Text style={styles.monospace}>
-                    {output.data.join(',')}
-                  </Text>
+                <View>
+                  <Text style={styles.labelText}>{t`Data field`}</Text>
+                  <View style={styles.valueContainer}>
+                    <Text style={styles.monospace}>
+                      {output.data.join(',')}
+                    </Text>
+                  </View>
                 </View>
               )}
             </View>
@@ -196,75 +226,71 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     );
   };
 
-
   const renderChangeAddress = () => {
     if (!data?.changeAddress) {
       return null;
     }
 
     return (
-      <View style={{ marginBottom: 16 }}>
+      <View>
         <Text style={styles.sectionTitle}>{t`Change Address`}</Text>
         <View style={styles.itemContainer}>
-          <View style={styles.addressContainer}>
-            <Text style={[styles.monospace, styles.truncatedText]} numberOfLines={1}>
+          <Text style={styles.labelText}>{t`Endereço`}</Text>
+          <TouchableOpacity
+            style={styles.addressContainer}
+            onPress={() => copyToClipboard(data.changeAddress)}
+          >
+            <Text style={styles.monospace} numberOfLines={1}>
               {data.changeAddress}
             </Text>
-            <CopyClipboard textToCopy={data.changeAddress} />
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
     );
   };
 
-
   const onAcceptTransaction = () => {
     if (onAccept) {
       onAccept(data);
     }
+    dispatch(hideReownModal());
   };
-
 
   const onRejectTransaction = () => {
     if (onReject) {
       onReject();
     }
+    dispatch(hideReownModal());
   };
 
-
   return (
-    <View style={styles.container}>
-      <ScrollView>
-        <Text style={styles.title}>{t`Transaction Request`}</Text>
+    <ScrollView style={styles.wide}>
+      <View style={styles.wrapper}>
+        <View style={styles.content}>
+          <DappContainer dapp={dapp} />
 
-        <View style={styles.warningContainer}>
-          <WarnDisclaimer />
+          <View>
+            <WarnDisclaimer />
+          </View>
+
+          {renderInputs()}
+          {renderOutputs()}
+          {renderChangeAddress()}
+
+          <View style={styles.actionContainer}>
+            <NewHathorButton
+              title={t`Accept Transaction`}
+              onPress={onAcceptTransaction}
+            />
+            <NewHathorButton
+              title={t`Decline Transaction`}
+              onPress={onRejectTransaction}
+              secondary
+              danger
+            />
+          </View>
         </View>
-
-        <View style={styles.dappInfo}>
-          <Text style={styles.dappName}>{dapp?.proposer}</Text>
-          <Text style={styles.dappUrl}>{dapp?.url}</Text>
-        </View>
-
-        {renderInputs()}
-        {renderOutputs()}
-        {renderChangeAddress()}
-
-        <View style={styles.buttonContainer}>
-          <SimpleButton
-            title={t`Reject`}
-            onPress={onRejectTransaction}
-            style={{ backgroundColor: COLORS.lightGray }}
-            textStyle={{ color: COLORS.textColor }}
-          />
-          <SimpleButton
-            title={t`Accept`}
-            onPress={onAcceptTransaction}
-            style={{ backgroundColor: COLORS.primary }}
-            textStyle={{ color: COLORS.white }}
-          />
-        </View>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 };
