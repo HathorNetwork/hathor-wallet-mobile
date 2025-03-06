@@ -128,10 +128,7 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
   };
 
   const { navigateBack } = useBackButtonHandler(
-    () => {
-      dispatch(reownReject());
-      navigation.goBack();
-    },
+    onDeclineTransaction,
     status === REOWN_CREATE_TOKEN_STATUS.SUCCESSFUL
   );
 
