@@ -14,7 +14,6 @@ import {
   Text,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
-import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
   reownAccept,
@@ -52,12 +51,6 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
   const dispatch = useDispatch();
   const [showDeclineModal, setShowDeclineModal] = useState(false);
 
-  const onAcceptSignOracleDataRequest = () => {
-    // Signal the user has accepted the current request and pass the accepted data.
-    dispatch(reownAccept());
-    navigateBack();
-  };
-
   const onDeclineTransaction = () => {
     setShowDeclineModal(true);
   };
@@ -65,6 +58,11 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
   const { navigateBack } = useBackButtonHandler(
     onDeclineTransaction,
   );
+
+  const onAcceptSignOracleDataRequest = () => {
+    // Signal the user has accepted the current request and pass the accepted data.
+    dispatch(reownAccept());
+  };
 
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
