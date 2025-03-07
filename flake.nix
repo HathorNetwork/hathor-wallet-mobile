@@ -18,13 +18,13 @@
           commands = [
             {
               category = "i18n";
-              name = "mkpot";
+              name = "i18n";
               help = "Update translation template";
               command = "make i18n";
             }
             {
               category = "i18n";
-              name = "mkpo";
+              name = "check_i18n";
               help = "Validate translations";
               command = "make check_i18n";
             }

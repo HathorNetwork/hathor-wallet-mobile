@@ -1,10 +1,10 @@
 .PHONY: all
 all:
 	@echo Available make targets:
+	@echo - bump - Bumps the version number of the project
 	@echo - check_version - Validates all version numbers in the project
 	@echo - i18n - Updates all translation files based on the source files
 	@echo - check_i18n - Validates the current translation files
-	@echo - bump - Bumps the version number of the project
 	@echo
 
 .PHONY: check_version
