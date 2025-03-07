@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -13,7 +14,6 @@ import {
   Text,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
-import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
   reownAccept,
@@ -24,6 +24,8 @@ import NewHathorButton from '../NewHathorButton';
 import { DappContainer } from './NanoContract/DappContainer';
 import { commonStyles } from './theme';
 import { NanoContractIcon } from '../Icons/NanoContract.icon';
+import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
+import { DeclineModal } from './NanoContract/DeclineModal';
 
 export const SignOracleDataRequestData = ({ data }) => (
   <View style={[commonStyles.card, commonStyles.cardSplit]}>
@@ -47,43 +49,62 @@ export const SignOracleDataRequestData = ({ data }) => (
 export const SignOracleDataRequest = ({ signOracleData }) => {
   const { dapp, data } = signOracleData;
   const dispatch = useDispatch();
-  const navigation = useNavigation();
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+
+  const onDeclineTransaction = () => {
+    setShowDeclineModal(true);
+  };
+
+  const { navigateBack } = useBackButtonHandler(
+    onDeclineTransaction,
+  );
 
   const onAcceptSignOracleDataRequest = () => {
     // Signal the user has accepted the current request and pass the accepted data.
     dispatch(reownAccept());
-    navigation.goBack();
   };
 
-  const onDeclineTransaction = () => {
+  const onDeclineConfirmation = () => {
+    setShowDeclineModal(false);
     dispatch(reownReject());
-    navigation.goBack();
+    navigateBack();
+  };
+
+  const onDismissDeclineModal = () => {
+    setShowDeclineModal(false);
   };
 
   return (
-    <ScrollView style={styles.wide}>
-      <TouchableWithoutFeedback>
-        <View style={styles.wrapper}>
-          <View style={styles.content}>
-            <DappContainer dapp={dapp} />
-            <SignOracleDataRequestData data={data} />
-            {/* User actions */}
-            <View style={styles.actionContainer}>
-              <NewHathorButton
-                title={t`Accept Request`}
-                onPress={onAcceptSignOracleDataRequest}
-              />
-              <NewHathorButton
-                title={t`Decline Request`}
-                onPress={onDeclineTransaction}
-                secondary
-                danger
-              />
+    <>
+      <ScrollView style={styles.wide}>
+        <TouchableWithoutFeedback>
+          <View style={styles.wrapper}>
+            <View style={styles.content}>
+              <DappContainer dapp={dapp} />
+              <SignOracleDataRequestData data={data} />
+              {/* User actions */}
+              <View style={styles.actionContainer}>
+                <NewHathorButton
+                  title={t`Accept Request`}
+                  onPress={onAcceptSignOracleDataRequest}
+                />
+                <NewHathorButton
+                  title={t`Decline Request`}
+                  onPress={onDeclineTransaction}
+                  secondary
+                  danger
+                />
+              </View>
             </View>
           </View>
-        </View>
-      </TouchableWithoutFeedback>
-    </ScrollView>
+        </TouchableWithoutFeedback>
+      </ScrollView>
+      <DeclineModal
+        show={showDeclineModal}
+        onDecline={onDeclineConfirmation}
+        onDismiss={onDismissDeclineModal}
+      />
+    </>
   );
 };
 
@@ -115,4 +136,5 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   value: [commonStyles.text, commonStyles.value],
+  property: [commonStyles.text, commonStyles.field, commonStyles.bold, commonStyles.mb4],
 });
