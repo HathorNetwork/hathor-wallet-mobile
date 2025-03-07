@@ -69,7 +69,7 @@ msgstr "Неправильный адрес"
 #. *
 #.          * @example
 #.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
-#.
+#.          
 #: src/workers/pushNotificationHandler.js:92
 #, javascript-format
 msgid ""
@@ -85,7 +85,7 @@ msgstr[2] ""
 #. *
 #.          * @example
 #.          * You have received 10 T2 and 5 T1 on a new transaction.
-#.
+#.          
 #: src/workers/pushNotificationHandler.js:105
 #, javascript-format
 msgid ""
@@ -96,7 +96,7 @@ msgstr ""
 #. *
 #.          * @example
 #.          * You have received 10 T2 on a new transaction.
-#.
+#.          
 #: src/workers/pushNotificationHandler.js:113
 msgid "You have received ${ _firstToken2 } on a new transaction."
 msgstr ""
@@ -207,68 +207,69 @@ msgstr "PIN-коды не совпадают. Попробуйте еще раз
 msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
-#: src/screens/CreateTokenAmount.js:120 src/screens/CreateTokenConfirm.js:164
+#: src/screens/CreateTokenAmount.js:122 src/screens/CreateTokenConfirm.js:162
 #: src/screens/CreateTokenDepositNotice.js:42 src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
 msgstr "СОЗДАТЬ ТОКЕН"
 
-#: src/screens/CreateTokenAmount.js:128
+#: src/screens/CreateTokenAmount.js:130
 #, javascript-format
 msgid "Amount of ${ this.name } (${ this.symbol })"
 msgstr "Количество ${ this.name } (${ this.symbol })"
 
-#: src/screens/CreateTokenAmount.js:140
+#: src/screens/CreateTokenAmount.js:142
 msgid "Deposit:"
 msgstr "Депозит:"
 
-#: src/screens/CreateTokenAmount.js:144
+#: src/screens/CreateTokenAmount.js:148
+#, javascript-format
 msgid "You have ${ amountAvailableText } available"
 msgstr "У вас ${ amountAvailableText }"
 
-#: src/screens/CreateTokenAmount.js:149 src/screens/CreateTokenName.js:64
+#: src/screens/CreateTokenAmount.js:153 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:229
-#: src/screens/InitWallet.js:358 src/screens/SendAddressInput.js:66
+#: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:185
 msgid "Next"
 msgstr "Далее"
 
 #.  show loading modal
-#: src/screens/CreateTokenConfirm.js:100
+#: src/screens/CreateTokenConfirm.js:98
 msgid "Creating token"
 msgstr "Создать токен"
 
-#: src/screens/CreateTokenConfirm.js:116
+#: src/screens/CreateTokenConfirm.js:114
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Введите 6-значный PIN-код для создания токена"
 
-#: src/screens/CreateTokenConfirm.js:117
+#: src/screens/CreateTokenConfirm.js:115
 msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
-#: src/screens/CreateTokenConfirm.js:119 src/screens/SendConfirmScreen.js:106
+#: src/screens/CreateTokenConfirm.js:117 src/screens/SendConfirmScreen.js:106
 msgid "Building transaction"
 msgstr ""
 
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:183
+#: src/screens/CreateTokenConfirm.js:181
 #, javascript-format
 msgid "**${ this.name }** created successfully"
 msgstr "**${ this.name }** успешно создан"
 
-#: src/screens/CreateTokenConfirm.js:196
+#: src/screens/CreateTokenConfirm.js:194
 msgid "Amount of ${ this.name }"
 msgstr "Количество ${ this.name }"
 
-#: src/screens/CreateTokenConfirm.js:204
+#: src/screens/CreateTokenConfirm.js:202
 msgid "Token name"
 msgstr "Имя токена"
 
-#: src/screens/CreateTokenConfirm.js:210 src/screens/CreateTokenSymbol.js:69
+#: src/screens/CreateTokenConfirm.js:208 src/screens/CreateTokenSymbol.js:69
 msgid "Token symbol"
 msgstr "Символ токена"
 
-#: src/screens/CreateTokenConfirm.js:216
+#: src/screens/CreateTokenConfirm.js:214
 msgid "Deposit"
 msgstr "Депозит"
 
@@ -305,7 +306,7 @@ msgstr "ДЕТАЛИ ТОКЕНА"
 
 #. *
 #.    * name {string} token name
-#.
+#.    
 #: src/screens/CreateTokenName.js:26
 msgid "0/30 characters"
 msgstr "0/30 символов"
@@ -412,11 +413,11 @@ msgstr ""
 "Вы должны **сделать резервную копию** и сохранить слова ниже **в том же "
 "порядке, в котором они появились**."
 
-#: src/screens/InitWallet.js:319
+#: src/screens/InitWallet.js:343
 msgid "To import a wallet,"
 msgstr "Чтобы импортировать кошелек,"
 
-#: src/screens/InitWallet.js:321
+#: src/screens/InitWallet.js:345
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
@@ -424,11 +425,11 @@ msgid ""
 msgstr ""
 "Вам нужно **записать ${ this.numberOfWords } seed-фразу** вашего кошелька."
 
-#: src/screens/InitWallet.js:324
+#: src/screens/InitWallet.js:348
 msgid "Words"
 msgstr "Слова"
 
-#: src/screens/InitWallet.js:329
+#: src/screens/InitWallet.js:353
 msgid "Enter your seed words separated by space"
 msgstr "Введите seed-фразу"
 
@@ -591,7 +592,7 @@ msgstr ""
 
 #. *
 #.      * index {number} Selected index of the tab bar
-#.
+#.      
 #.  eslint thinks routes is not used, but TabView uses it
 #.  eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:31

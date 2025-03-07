@@ -197,76 +197,76 @@ msgstr ""
 msgid "Start the Wallet"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:120
-#: src/screens/CreateTokenConfirm.js:164
+#: src/screens/CreateTokenAmount.js:122
+#: src/screens/CreateTokenConfirm.js:162
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:128
+#: src/screens/CreateTokenAmount.js:130
 #, javascript-format
 msgid "Amount of ${ this.name } (${ this.symbol })"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:140
+#: src/screens/CreateTokenAmount.js:142
 msgid "Deposit:"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:144
+#: src/screens/CreateTokenAmount.js:148
 #, javascript-format
 msgid "You have ${ amountAvailableText } available"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:149
+#: src/screens/CreateTokenAmount.js:153
 #: src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84
 #: src/screens/InitWallet.js:229
-#: src/screens/InitWallet.js:358
+#: src/screens/InitWallet.js:382
 #: src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:185
 msgid "Next"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:100
+#: src/screens/CreateTokenConfirm.js:98
 #.  show loading modal
 msgid "Creating token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:116
+#: src/screens/CreateTokenConfirm.js:114
 msgid "Enter your 6-digit pin to create your token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:117
+#: src/screens/CreateTokenConfirm.js:115
 msgid "Authorize token creation"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:119
+#: src/screens/CreateTokenConfirm.js:117
 #: src/screens/SendConfirmScreen.js:106
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:183
+#: src/screens/CreateTokenConfirm.js:181
 #.  eslint-disable-next-line react/jsx-indent
 #, javascript-format
 msgid "**${ this.name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:196
+#: src/screens/CreateTokenConfirm.js:194
 msgid "Amount of ${ this.name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:204
+#: src/screens/CreateTokenConfirm.js:202
 msgid "Token name"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:210
+#: src/screens/CreateTokenConfirm.js:208
 #: src/screens/CreateTokenSymbol.js:69
 msgid "Token symbol"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:216
+#: src/screens/CreateTokenConfirm.js:214
 msgid "Deposit"
 msgstr ""
 
@@ -402,22 +402,22 @@ msgid ""
 "appear**."
 msgstr ""
 
-#: src/screens/InitWallet.js:319
+#: src/screens/InitWallet.js:343
 msgid "To import a wallet,"
 msgstr ""
 
-#: src/screens/InitWallet.js:321
+#: src/screens/InitWallet.js:345
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
 "wallet, separated by space."
 msgstr ""
 
-#: src/screens/InitWallet.js:324
+#: src/screens/InitWallet.js:348
 msgid "Words"
 msgstr ""
 
-#: src/screens/InitWallet.js:329
+#: src/screens/InitWallet.js:353
 msgid "Enter your seed words separated by space"
 msgstr ""
 
