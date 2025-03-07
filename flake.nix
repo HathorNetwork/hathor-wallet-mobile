@@ -18,15 +18,15 @@
           commands = [
             {
               category = "i18n";
-              name = "mkpot";
+              name = "i18n";
               help = "Update translation template";
-              command = "make update_pot";
+              command = "make i18n";
             }
             {
               category = "i18n";
-              name = "mkpo";
-              help = "Build translations";
-              command = "make i18n";
+              name = "check_i18n";
+              help = "Validate translations";
+              command = "make check_i18n";
             }
           ];
           packages = with pkgs; [

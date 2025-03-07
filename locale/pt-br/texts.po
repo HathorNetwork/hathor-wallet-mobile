@@ -68,7 +68,7 @@ msgstr "Endereço inválido"
 #. *
 #.          * @example
 #.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
-#.
+#.          
 #: src/workers/pushNotificationHandler.js:92
 #, javascript-format
 msgid ""
@@ -87,7 +87,7 @@ msgstr[1] ""
 #. *
 #.          * @example
 #.          * You have received 10 T2 and 5 T1 on a new transaction.
-#.
+#.          
 #: src/workers/pushNotificationHandler.js:105
 #, javascript-format
 msgid ""
@@ -99,7 +99,7 @@ msgstr ""
 #. *
 #.          * @example
 #.          * You have received 10 T2 on a new transaction.
-#.
+#.          
 #: src/workers/pushNotificationHandler.js:113
 msgid "You have received ${ _firstToken2 } on a new transaction."
 msgstr "Você recebeu ${ _firstToken2 } em uma nova transação."
@@ -214,68 +214,69 @@ msgstr "Os PINs estão diferentes. Tente novamente."
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
-#: src/screens/CreateTokenAmount.js:120 src/screens/CreateTokenConfirm.js:164
+#: src/screens/CreateTokenAmount.js:122 src/screens/CreateTokenConfirm.js:162
 #: src/screens/CreateTokenDepositNotice.js:42 src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
 msgstr "CRIAR TOKEN"
 
-#: src/screens/CreateTokenAmount.js:128
+#: src/screens/CreateTokenAmount.js:130
 #, javascript-format
 msgid "Amount of ${ this.name } (${ this.symbol })"
 msgstr "Quantidade de ${ this.name } (${ this.symbol })"
 
-#: src/screens/CreateTokenAmount.js:140
+#: src/screens/CreateTokenAmount.js:142
 msgid "Deposit:"
 msgstr "Depósito:"
 
-#: src/screens/CreateTokenAmount.js:144
+#: src/screens/CreateTokenAmount.js:148
+#, javascript-format
 msgid "You have ${ amountAvailableText } available"
 msgstr "Você tem ${ amountAvailableText } disponíveis"
 
-#: src/screens/CreateTokenAmount.js:149 src/screens/CreateTokenName.js:64
+#: src/screens/CreateTokenAmount.js:153 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:229
-#: src/screens/InitWallet.js:358 src/screens/SendAddressInput.js:66
+#: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:185
 msgid "Next"
 msgstr "Próximo"
 
 #.  show loading modal
-#: src/screens/CreateTokenConfirm.js:100
+#: src/screens/CreateTokenConfirm.js:98
 msgid "Creating token"
 msgstr "Criando um token"
 
-#: src/screens/CreateTokenConfirm.js:116
+#: src/screens/CreateTokenConfirm.js:114
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
 
-#: src/screens/CreateTokenConfirm.js:117
+#: src/screens/CreateTokenConfirm.js:115
 msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
-#: src/screens/CreateTokenConfirm.js:119 src/screens/SendConfirmScreen.js:106
+#: src/screens/CreateTokenConfirm.js:117 src/screens/SendConfirmScreen.js:106
 msgid "Building transaction"
 msgstr "Criando transação"
 
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:183
+#: src/screens/CreateTokenConfirm.js:181
 #, javascript-format
 msgid "**${ this.name }** created successfully"
 msgstr "**${ this.name }** criado com sucesso"
 
-#: src/screens/CreateTokenConfirm.js:196
+#: src/screens/CreateTokenConfirm.js:194
 msgid "Amount of ${ this.name }"
 msgstr "Quantidade de ${ this.name }"
 
-#: src/screens/CreateTokenConfirm.js:204
+#: src/screens/CreateTokenConfirm.js:202
 msgid "Token name"
 msgstr "Nome do token"
 
-#: src/screens/CreateTokenConfirm.js:210 src/screens/CreateTokenSymbol.js:69
+#: src/screens/CreateTokenConfirm.js:208 src/screens/CreateTokenSymbol.js:69
 msgid "Token symbol"
 msgstr "Símbolo do token"
 
-#: src/screens/CreateTokenConfirm.js:216
+#: src/screens/CreateTokenConfirm.js:214
 msgid "Deposit"
 msgstr "Depósito"
 
@@ -312,7 +313,7 @@ msgstr "DETALHES DO TOKEN"
 
 #. *
 #.    * name {string} token name
-#.
+#.    
 #: src/screens/CreateTokenName.js:26
 msgid "0/30 characters"
 msgstr "0/30 caracteres"
@@ -421,11 +422,11 @@ msgstr ""
 "Você deve **realizar o backup** e salvar as palavras abaixo **na mesma ordem "
 "em que elas aparecem**."
 
-#: src/screens/InitWallet.js:319
+#: src/screens/InitWallet.js:343
 msgid "To import a wallet,"
 msgstr "Para importar sua wallet,"
 
-#: src/screens/InitWallet.js:321
+#: src/screens/InitWallet.js:345
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
@@ -434,11 +435,11 @@ msgstr ""
 "Você precisa **digitar as ${ this.numberOfWords } palavras** da sua wallet, "
 "separadas por espaço."
 
-#: src/screens/InitWallet.js:324
+#: src/screens/InitWallet.js:348
 msgid "Words"
 msgstr "Palavras"
 
-#: src/screens/InitWallet.js:329
+#: src/screens/InitWallet.js:353
 msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
@@ -604,7 +605,7 @@ msgstr ""
 
 #. *
 #.      * index {number} Selected index of the tab bar
-#.
+#.      
 #.  eslint thinks routes is not used, but TabView uses it
 #.  eslint-disable-next-line react/no-unused-state
 #: src/screens/Receive.js:31
@@ -1754,8 +1755,9 @@ msgstr "Saldo insuficiente"
 msgid ""
 "Ensure your wallet balance covers the required amount to accept this "
 "transaction."
-msgstr "Certifique-se de que o saldo da sua carteira cubra o valor necessário"
-"para aceitar esta transação."
+msgstr ""
+"Certifique-se de que o saldo da sua carteira cubra o valor necessário para "
+"aceitar esta transação."
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:364
 msgid "Accept Transaction"
