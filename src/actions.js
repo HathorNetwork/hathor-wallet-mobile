@@ -218,6 +218,7 @@ export const types = {
   REOWN_SEND_TX_RETRY: 'REOWN_SEND_TX_RETRY',
   REOWN_SEND_TX_RETRY_DISMISS: 'REOWN_SEND_TX_RETRY_DISMISS',
   SHOW_SEND_TRANSACTION_REQUEST_MODAL: 'SHOW_SEND_TRANSACTION_REQUEST_MODAL',
+  SHOW_INSUFFICIENT_FUNDS_MODAL: 'SHOW_INSUFFICIENT_FUNDS_MODAL',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1553,4 +1554,11 @@ export const sendTxRetryDismiss = () => ({
 export const showSendTransactionModal = (onAccept, onReject, data, metadata) => ({
   type: types.SHOW_SEND_TRANSACTION_REQUEST_MODAL,
   payload: { accept: onAccept, deny: onReject, data, dapp: metadata },
+});
+
+/**
+ * Show insufficient funds error modal
+ */
+export const showInsufficientFundsModal = () => ({
+  type: types.SHOW_INSUFFICIENT_FUNDS_MODAL,
 });

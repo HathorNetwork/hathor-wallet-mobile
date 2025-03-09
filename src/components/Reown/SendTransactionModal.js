@@ -145,32 +145,6 @@ export default ({
     tokens: state.tokens,
   }));
 
-  useEffect(() => {
-    // Check for unregistered tokens, but we don't need to store them
-    const unregisteredTokenUIDs = [];
-
-    // Check inputs
-    if (data?.data?.inputs) {
-      for (const input of data.data.inputs) {
-        if (input.token && !registeredTokens[input.token]) {
-          unregisteredTokenUIDs.push(input.token);
-        }
-      }
-    }
-
-    // Check outputs
-    if (data?.data?.outputs) {
-      for (const output of data.data.outputs) {
-        if (output.token && !registeredTokens[output.token]) {
-          unregisteredTokenUIDs.push(output.token);
-        }
-      }
-    }
-
-    // We're not using the unregistered tokens for now
-    // but keeping the check for future implementation
-  }, [data, registeredTokens]);
-
   const getTokenSymbol = (tokenId) => {
     if (!tokenId) {
       return constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;

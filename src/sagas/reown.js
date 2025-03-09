@@ -105,6 +105,7 @@ import {
   setSendTxStatusLoading,
   setSendTxStatusReady,
   showSendTransactionModal,
+  showInsufficientFundsModal,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -505,59 +506,16 @@ export function* processRequest(action) {
       } break;
       case SendTransactionError: {
         yield put(setSendTxStatusFailure());
-
-        // Get the current reown state to preserve data and handlers
-        const currentStateError = yield select((state) => state.reown.modal);
-
-        yield put(setReownModal({
-          show: true,
-          type: ReownModalTypes.SEND_TRANSACTION,
-          data: {
-            ...currentStateError.data, // Preserve original data, dapp, and action handlers
-            isLoading: false,
-            isSuccess: false,
-            isError: true,
-            errorMessage: e.message
-          }
-        }));
-
-        const retry = yield call(
-          retryHandler,
-          types.REOWN_SEND_TX_RETRY,
-          types.REOWN_SEND_TX_RETRY_DISMISS,
-        );
-
-        if (retry) {
-          shouldAnswer = false;
-          yield* processRequest(action);
-        }
       } break;
       case InsufficientFundsError: {
         yield put(setSendTxStatusFailure());
-        // Get the current reown state to preserve data and handlers
-        const currentStateInsufficientFunds = yield select((state) => state.reown.modal);
+        // Show the insufficient funds modal
         yield put(setReownModal({
           show: true,
-          type: ReownModalTypes.SEND_TRANSACTION,
-          data: {
-            ...currentStateInsufficientFunds.data, // Preserve original data, dapp, and action handlers
-            isLoading: false,
-            isSuccess: false,
-            isError: true,
-            errorMessage: 'Insufficient funds to complete the transaction.'
-          }
+          type: ReownModalTypes.INSUFFICIENT_FUNDS
         }));
 
-        const retry = yield call(
-          retryHandler,
-          types.REOWN_SEND_TX_RETRY,
-          types.REOWN_SEND_TX_RETRY_DISMISS,
-        );
-
-        if (retry) {
-          shouldAnswer = false;
-          yield* processRequest(action);
-        }
+        shouldAnswer = true;
       } break;
       default:
         console.log('Unknown error type:', e.constructor.name);
