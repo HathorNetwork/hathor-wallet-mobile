@@ -16,6 +16,7 @@ import { NewNanoContractTransactionModal } from './NanoContract/NewNanoContractT
 import SignOracleDataModal from './NanoContract/SignOracleDataModal';
 import CreateTokenModal from './CreateTokenModal';
 import SendTransactionModal from './SendTransactionModal';
+import InsufficientFundsModal from './InsufficientFundsModal';
 
 export default () => {
   const dispatch = useDispatch();
@@ -74,6 +75,10 @@ export default () => {
             onDismiss={onDismiss}
           />
         );
+      case ReownModalTypes.INSUFFICIENT_FUNDS:
+        return (
+          <InsufficientFundsModal />
+        );
       default:
         return null;
     }
@@ -130,9 +135,10 @@ const baseStyles = StyleSheet.create({
 
 export const ReownModalTypes = {
   CONNECT: 'CONNECT',
-  SIGN_MESSAGE: 'SIGN_MESSAGE',
-  SEND_NANO_CONTRACT_TX: 'SEND_NANO_CONTRACT_TX',
-  SIGN_ORACLE_DATA: 'SIGN_ORACLE_DATA',
-  CREATE_TOKEN: 'CREATE_TOKEN',
-  SEND_TRANSACTION: 'SEND_TRANSACTION',
+  SIGN_MESSAGE: 'SignMessage',
+  SIGN_ORACLE_DATA: 'SignOracleData',
+  SEND_NANO_CONTRACT_TX: 'SendNanoContractTx',
+  CREATE_TOKEN: 'CreateToken',
+  SEND_TRANSACTION: 'SendTransaction',
+  INSUFFICIENT_FUNDS: 'InsufficientFunds',
 };
