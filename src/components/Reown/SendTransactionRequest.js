@@ -5,9 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { t } from 'ttag';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, Image } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, ActivityIndicator, Image } from 'react-native';
 import { constants, numberUtils } from '@hathor/wallet-lib';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -15,12 +15,14 @@ import { COLORS } from '../../styles/themes';
 import NewHathorButton from '../NewHathorButton';
 import { WarnDisclaimer } from './WarnDisclaimer';
 import { DappContainer } from './NanoContract/DappContainer';
-import { hideReownModal, setSendTxStatusReady, unregisteredTokensDownloadRequest } from '../../actions';
+import { hideReownModal, setSendTxStatusReady, unregisteredTokensDownloadRequest, reownReject } from '../../actions';
 import { REOWN_SEND_TX_STATUS, DEFAULT_TOKEN } from '../../constants';
 import FeedbackModal from '../FeedbackModal';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import { FeedbackContent } from '../FeedbackContent';
 import Spinner from '../Spinner';
+import { DeclineModal } from './NanoContract/DeclineModal';
+import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 
 const styles = StyleSheet.create({
   wide: {
@@ -145,9 +147,23 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   // Track tokens we've already requested to prevent duplicate requests
   const requestedTokensRef = useRef(new Set());
 
+  // State for decline modal
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+
   // Get transaction status from Redux
   const sendTxStatus = reown.sendTransaction?.status || REOWN_SEND_TX_STATUS.READY;
   const sendTxRetrying = reown.sendTransaction?.retrying || false;
+
+  // Show decline confirmation modal
+  const onDeclineTransaction = () => {
+    setShowDeclineModal(true);
+  };
+
+  // Use back button handler
+  const { navigateBack } = useBackButtonHandler(
+    onDeclineTransaction,
+    sendTxStatus === REOWN_SEND_TX_STATUS.SUCCESSFUL
+  );
 
   // Request information for any unknown tokens
   useEffect(() => {
@@ -334,20 +350,29 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     );
   };
 
+  // Accept transaction
   const onAcceptTransaction = () => {
     if (onAccept && typeof onAccept === 'function') {
       onAccept(data);
+    } else {
+      console.warn('Accept callback missing or not a function');
     }
-
-    dispatch(hideReownModal());
+    // No need to hide modal here since we'll show loading state
   };
-
-  const onRejectTransaction = () => {
+ 
+  // Confirm decline
+  const onDeclineConfirmation = () => {
+    setShowDeclineModal(false);
     if (onReject && typeof onReject === 'function') {
       onReject();
     }
-
-    dispatch(hideReownModal());
+    dispatch(reownReject());
+    navigateBack();
+  };
+  
+  // Dismiss decline modal without taking action
+  const onDismissDeclineModal = () => {
+    setShowDeclineModal(false);
   };
 
   // Status check functions
@@ -355,11 +380,6 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   const isTxProcessing = () => sendTxStatus === REOWN_SEND_TX_STATUS.LOADING || isTxDataLoading();
   const isTxFailed = () => sendTxStatus === REOWN_SEND_TX_STATUS.FAILED;
   const isTxSuccessful = () => sendTxStatus === REOWN_SEND_TX_STATUS.SUCCESSFUL;
-
-  // Navigate back or close modal
-  const navigateBack = () => {
-    dispatch(hideReownModal());
-  };
 
   // Handle retry logic
   const onTryAgain = () => {
@@ -428,7 +448,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
                     />
                     <NewHathorButton
                       title={t`Decline Transaction`}
-                      onPress={onRejectTransaction}
+                      onPress={onDeclineTransaction}
                       secondary
                       danger
                     />
@@ -449,6 +469,13 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
           action={<NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />}
         />
       )}
+
+      {/* Decline confirmation modal */}
+      <DeclineModal
+        show={showDeclineModal}
+        onDecline={onDeclineConfirmation}
+        onDismiss={onDismissDeclineModal}
+      />
     </>
   );
 };
