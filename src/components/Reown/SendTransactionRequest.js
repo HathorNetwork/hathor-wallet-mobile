@@ -385,7 +385,6 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
 
   // Handle retry logic
   const onTryAgain = () => {
-    console.log('ON TRY AGAIN');
     dispatch(setSendTxStatusReady());
     dispatch(sendTxRetry());
   };
