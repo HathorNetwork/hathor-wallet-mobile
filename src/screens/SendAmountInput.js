@@ -16,9 +16,8 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
-import { t, ngettext, msgid } from 'ttag';
+import { t } from 'ttag';
 import { get } from 'lodash';
-// Import the bigIntCoercibleSchema from wallet-lib
 import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 
 import { IS_MULTI_TOKEN } from '../constants';
@@ -148,7 +147,7 @@ class SendAmountInput extends React.Component {
       const { available } = balance;
       const amountAndToken = `${renderValue(available, this.isNFT())} ${this.state.token.symbol}`;
       // Just use the string directly for display
-      return `${amountAndToken} available`;
+      return t`${amountAndToken} available`;
     };
 
     const renderGhostElement = () => (
