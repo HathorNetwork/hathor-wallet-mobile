@@ -2017,19 +2017,16 @@ export const onSetCreateTokenStatus = (state, { payload }) => ({
   },
 });
 
-export const onSetSendTxStatus = (state, { payload }) => {
-  console.log('SET SEND TX STATUS: ', payload);
-  return {
-    ...state,
-    reown: {
-      ...state.reown,
-      sendTransaction: {
-        ...state.reown.sendTransaction,
-        status: payload,
-      },
+export const onSetSendTxStatus = (state, { payload }) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    sendTransaction: {
+      ...state.reown.sendTransaction,
+      status: payload,
     },
-  };
-};
+  },
+});
 
 export const onSetSendTxRetry = (state) => ({
   ...state,
