@@ -5,9 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { t } from 'ttag';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, ActivityIndicator, Image } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, Image } from 'react-native';
 import { constants, numberUtils } from '@hathor/wallet-lib';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -15,8 +15,8 @@ import { COLORS } from '../../styles/themes';
 import NewHathorButton from '../NewHathorButton';
 import { WarnDisclaimer } from './WarnDisclaimer';
 import { DappContainer } from './NanoContract/DappContainer';
-import { hideReownModal, setSendTxStatusReady } from '../../actions';
-import { REOWN_SEND_TX_STATUS } from '../../constants';
+import { hideReownModal, setSendTxStatusReady, unregisteredTokensDownloadRequest } from '../../actions';
+import { REOWN_SEND_TX_STATUS, DEFAULT_TOKEN } from '../../constants';
 import FeedbackModal from '../FeedbackModal';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import { FeedbackContent } from '../FeedbackContent';
@@ -130,23 +130,68 @@ const styles = StyleSheet.create({
 
 export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onReject }) => {
   const { dapp = {}, data = {} } = sendTransactionRequest || {};
-  const { tokens: registeredTokens, reown } = useSelector((state) => ({
+  const { tokens: registeredTokens, unregisteredTokens, reown } = useSelector((state) => ({
     tokens: state.tokens,
+    unregisteredTokens: state.unregisteredTokens,
     reown: state.reown
   }));
+
+  // Combine registered and unregistered tokens
+  const knownTokens = { ...registeredTokens, ...unregisteredTokens };
+
   const dispatch = useDispatch();
   const navigation = useNavigation();
+
+  // Track tokens we've already requested to prevent duplicate requests
+  const requestedTokensRef = useRef(new Set());
 
   // Get transaction status from Redux
   const sendTxStatus = reown.sendTransaction?.status || REOWN_SEND_TX_STATUS.READY;
   const sendTxRetrying = reown.sendTransaction?.retrying || false;
 
+  // Request information for any unknown tokens
+  useEffect(() => {
+    // Only process if we have data and it hasn't been processed yet
+    if (data && data.inputs?.length > 0) {
+      // Collect all token UIDs from both inputs and outputs
+      const unknownTokensUid = [];
+
+      // Check tokens in inputs
+      const inputTokenIds = data.inputs?.map((input) => input.token).filter(Boolean) || [];
+      // Check tokens in outputs
+      const outputTokenIds = data.outputs?.map((output) => output.token).filter(Boolean) || [];
+
+      // Combine all token IDs
+      const allTokenIds = [...new Set([...inputTokenIds, ...outputTokenIds])];
+
+      // Find unknown tokens that we haven't requested yet
+      allTokenIds.forEach((uid) => {
+        if (uid !== DEFAULT_TOKEN.uid && 
+            !(uid in registeredTokens) && 
+            !(uid in unregisteredTokens) && 
+            !requestedTokensRef.current.has(uid)) {
+          unknownTokensUid.push(uid);
+          requestedTokensRef.current.add(uid);
+        }
+      });
+
+      // Request download of unknown tokens
+      if (unknownTokensUid.length > 0) {
+        dispatch(unregisteredTokensDownloadRequest({ uids: unknownTokensUid }));
+      }
+    }
+  }, [data, registeredTokens, unregisteredTokens, dispatch]);
+
+  // Check if tokens are still loading
+  const isTokenDataLoading = () => unregisteredTokens.isLoading;
+
+  // Update the getTokenSymbol function to use knownTokens
   const getTokenSymbol = (tokenId) => {
     if (!tokenId) {
       return constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
     }
 
-    const token = registeredTokens[tokenId];
+    const token = knownTokens[tokenId];
     if (token) {
       return token.symbol;
     }
@@ -290,35 +335,32 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   };
 
   const onAcceptTransaction = () => {
-    console.log('On accept transaction!');
     if (onAccept && typeof onAccept === 'function') {
       onAccept(data);
-    } else {
-      console.warn('Accept callback missing or not a function');
     }
+
     dispatch(hideReownModal());
   };
 
   const onRejectTransaction = () => {
     if (onReject && typeof onReject === 'function') {
       onReject();
-    } else {
-      console.warn('Reject callback missing or not a function');
     }
+
     dispatch(hideReownModal());
   };
 
   // Status check functions
-  const isTxProcessing = () => sendTxStatus === REOWN_SEND_TX_STATUS.LOADING;
+  const isTxDataLoading = () => isTokenDataLoading();
+  const isTxProcessing = () => sendTxStatus === REOWN_SEND_TX_STATUS.LOADING || isTxDataLoading();
   const isTxFailed = () => sendTxStatus === REOWN_SEND_TX_STATUS.FAILED;
   const isTxSuccessful = () => sendTxStatus === REOWN_SEND_TX_STATUS.SUCCESSFUL;
-  console.log('SEND TX STATUS: ', sendTxStatus);
 
   // Navigate back or close modal
   const navigateBack = () => {
     dispatch(hideReownModal());
   };
-  
+
   // Handle retry logic
   const onTryAgain = () => {
     dispatch(setSendTxStatusReady());
@@ -331,7 +373,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   const onFeedbackModalDismiss = () => {
     navigateBack();
   };
-  
+
   // Navigate to success screen on successful transaction
   useEffect(() => {
     if (isTxSuccessful()) {
@@ -360,7 +402,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
           offbackground
         />
       )}
-      
+
       {/* Main content - only show when not in processing state */}
       {!isTxProcessing() && (
         <ScrollView style={styles.wide}>
