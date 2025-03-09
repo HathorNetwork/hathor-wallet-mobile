@@ -164,7 +164,8 @@
       "@lavamoat/preinstall-always-fail": false,
       "@sentry/react-native>@sentry/cli": false,
       "ttag-cli": false,
-      "@walletconnect/core>@walletconnect/keyvaluestorage>unstorage>listhen>@parcel/watcher": false
+      "@walletconnect/core>@walletconnect/keyvaluestorage>unstorage>listhen>@parcel/watcher": false,
+      "core-js-pure": false
     }
   }
 }
