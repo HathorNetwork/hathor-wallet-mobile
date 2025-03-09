@@ -96,8 +96,6 @@ const CreateTokenAmount = (props) => {
 
   // Handle button press
   const onButtonPress = () => {
-    const { route, navigation } = props;
-
     navigation.navigate('CreateTokenConfirm', {
       name: route.params.name,
       symbol: route.params.symbol,
@@ -108,8 +106,6 @@ const CreateTokenAmount = (props) => {
 
   // Check if the button should be disabled
   const isButtonDisabled = () => {
-    const { route } = props;
-
     if (!route.params.name || !route.params.symbol) {
       return true;
     }
