@@ -25,7 +25,7 @@
     "@fortawesome/react-native-fontawesome": "0.2.7",
     "@hathor/hathor-rpc-handler": "0.0.3-experimental-alpha",
     "@hathor/unleash-client": "0.1.0",
-    "@hathor/wallet-lib": "1.10.0",
+    "@hathor/wallet-lib": "2.0.1",
     "@json-rpc-tools/utils": "1.7.6",
     "@lavamoat/preinstall-always-fail": "2.1.0",
     "@notifee/react-native": "5.7.0",
@@ -43,6 +43,7 @@
     "assert": "2.0.0",
     "buffer": "4.9.2",
     "console-browserify": "1.2.0",
+    "core-js-pure": "^3.41.0",
     "crypto-js": "4.1.1",
     "deprecated-react-native-prop-types": "2.3.0",
     "ethers": "6.13.3",
@@ -163,7 +164,8 @@
       "@lavamoat/preinstall-always-fail": false,
       "@sentry/react-native>@sentry/cli": false,
       "ttag-cli": false,
-      "@walletconnect/core>@walletconnect/keyvaluestorage>unstorage>listhen>@parcel/watcher": false
+      "@walletconnect/core>@walletconnect/keyvaluestorage>unstorage>listhen>@parcel/watcher": false,
+      "core-js-pure": false
     }
   }
 }
