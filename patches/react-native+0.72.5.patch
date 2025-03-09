@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native/Libraries/Core/InitializeCore.js b/node_modules/react-native/Libraries/Core/InitializeCore.js
-index 25377f6..002e55d 100644
+index 25377f6..cc8d4af 100644
 --- a/node_modules/react-native/Libraries/Core/InitializeCore.js
 +++ b/node_modules/react-native/Libraries/Core/InitializeCore.js
-@@ -26,6 +26,14 @@
+@@ -26,6 +26,28 @@
  
  const start = Date.now();
  
@@ -13,11 +13,25 @@ index 25377f6..002e55d 100644
 +
 +// setUpSES should be imported after setUpXHR because setUpXHR adds AbortController:
 +require('./setUpXHR');
++
++// Force eager loading of setTimeout before SES runs
++// This ensures it's available even after SES locks down the environment
++(function forceTimerInitialization() {
++  // Access the timer functions to force them to be eagerly loaded
++  if (!global.setTimeout) {
++    // Load timers module but don't change the import order
++    const timerFunctions = require('./Timers/JSTimers');
++    if (timerFunctions && timerFunctions.setTimeout) {
++      global.setTimeout = timerFunctions.setTimeout;
++    }
++  }
++})();
++
 +require('./setUpSES');
  require('./setUpGlobals');
  require('./setUpDOM');
  require('./setUpPerformance');
-@@ -33,7 +41,6 @@ require('./setUpErrorHandling');
+@@ -33,7 +55,6 @@ require('./setUpErrorHandling');
  require('./polyfillPromise');
  require('./setUpRegeneratorRuntime');
  require('./setUpTimers');
