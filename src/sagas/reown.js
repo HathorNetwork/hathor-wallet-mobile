@@ -452,7 +452,6 @@ export function* processRequest(action) {
         yield put(setCreateTokenStatusSuccessful());
         break;
       case RpcResponseTypes.SendTransactionResponse:
-        console.log('Send Transaction response', response);
         yield put(setSendTxStatusSuccess());
         // The modal state will be updated by the SendTransactionLoadingFinishedTrigger
         break;
@@ -470,7 +469,6 @@ export function* processRequest(action) {
       }
     }));
   } catch (e) {
-    console.log('Error in processRequest:', e.message);
     let shouldAnswer = true;
     switch (e.constructor) {
       case SendNanoContractTxError: {
@@ -505,9 +503,25 @@ export function* processRequest(action) {
         }
       } break;
       case SendTransactionError: {
+        // If the transaction is invalid, we don't receive a
+        // SendTransactionConfirmationPrompt, so we need to check if the modal
+        // is visible and just reject it if it's not.
         yield put(setSendTxStatusFailure());
+
+        // User might try again, wait for it.
+        const retry = yield call(
+          retryHandler,
+          types.REOWN_SEND_TX_RETRY,
+          types.REOWN_SEND_TX_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
+          // Retry the action, exactly as it came:
+          yield* processRequest(action);
+        }
       } break;
-      case InsufficientFundsError: {
+      case InsufficientFundsError:
         yield put(setSendTxStatusFailure());
         // Show the insufficient funds modal
         yield put(setReownModal({
@@ -516,7 +530,7 @@ export function* processRequest(action) {
         }));
 
         shouldAnswer = true;
-      } break;
+        break;
       default:
         console.log('Unknown error type:', e.constructor.name);
         break;
@@ -712,7 +726,7 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           }
         });
       } break;
-      default: 
+      default:
         console.log('Unknown request type:', request.type);
         reject(new Error('Invalid request'));
     }

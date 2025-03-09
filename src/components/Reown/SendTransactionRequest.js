@@ -7,7 +7,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { t } from 'ttag';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, ActivityIndicator, Image } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, Image } from 'react-native';
 import { constants, numberUtils } from '@hathor/wallet-lib';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -15,7 +15,13 @@ import { COLORS } from '../../styles/themes';
 import NewHathorButton from '../NewHathorButton';
 import { WarnDisclaimer } from './WarnDisclaimer';
 import { DappContainer } from './NanoContract/DappContainer';
-import { hideReownModal, setSendTxStatusReady, unregisteredTokensDownloadRequest, reownReject } from '../../actions';
+import {
+  setSendTxStatusReady,
+  unregisteredTokensDownloadRequest,
+  reownReject,
+  sendTxRetry,
+  sendTxRetryDismiss
+} from '../../actions';
 import { REOWN_SEND_TX_STATUS, DEFAULT_TOKEN } from '../../constants';
 import FeedbackModal from '../FeedbackModal';
 import errorIcon from '../../assets/images/icErrorBig.png';
@@ -182,10 +188,11 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
 
       // Find unknown tokens that we haven't requested yet
       allTokenIds.forEach((uid) => {
-        if (uid !== DEFAULT_TOKEN.uid && 
-            !(uid in registeredTokens) && 
-            !(uid in unregisteredTokens) && 
-            !requestedTokensRef.current.has(uid)) {
+        if (uid !== DEFAULT_TOKEN.uid
+          && !(uid in registeredTokens)
+          && !(uid in unregisteredTokens)
+          && !requestedTokensRef.current.has(uid)
+        ) {
           unknownTokensUid.push(uid);
           requestedTokensRef.current.add(uid);
         }
@@ -352,14 +359,9 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
 
   // Accept transaction
   const onAcceptTransaction = () => {
-    if (onAccept && typeof onAccept === 'function') {
-      onAccept(data);
-    } else {
-      console.warn('Accept callback missing or not a function');
-    }
-    // No need to hide modal here since we'll show loading state
+    onAccept(data);
   };
- 
+
   // Confirm decline
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
@@ -369,10 +371,10 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     dispatch(reownReject());
     navigateBack();
   };
-  
+
   // Dismiss decline modal without taking action
   const onDismissDeclineModal = () => {
-    setShowDeclineModal(false);
+    onDeclineConfirmation();
   };
 
   // Status check functions
@@ -383,16 +385,26 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
 
   // Handle retry logic
   const onTryAgain = () => {
+    console.log('ON TRY AGAIN');
     dispatch(setSendTxStatusReady());
-    if (onAccept && typeof onAccept === 'function') {
-      onAccept(data);
-    }
+    dispatch(sendTxRetry());
   };
 
   // Handle dismiss modal
   const onFeedbackModalDismiss = () => {
     navigateBack();
   };
+
+  // Clean up when component unmounts
+  useEffect(
+    () => () => {
+      // Dismiss any retry condition
+      dispatch(sendTxRetryDismiss());
+      // Restore ready status
+      dispatch(setSendTxStatusReady());
+    },
+    []
+  );
 
   // Navigate to success screen on successful transaction
   useEffect(() => {

@@ -11,7 +11,7 @@ import { useDispatch } from 'react-redux';
 import { t } from 'ttag';
 import FeedbackModal from '../FeedbackModal';
 import NewHathorButton from '../NewHathorButton';
-import { hideReownModal, reownReject } from '../../actions';
+import { hideReownModal } from '../../actions';
 import errorIcon from '../../assets/images/icErrorBig.png';
 
 /**
@@ -41,4 +41,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default InsufficientFundsModal; 
+export default InsufficientFundsModal;

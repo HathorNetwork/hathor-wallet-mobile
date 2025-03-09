@@ -755,7 +755,7 @@ export const reducer = (state = initialState, action) => {
     case types.REOWN_SEND_TX_STATUS_SUCCESS:
       return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.SUCCESSFUL });
     case types.REOWN_SEND_TX_STATUS_FAILURE:
-      return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.ERROR });
+      return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.FAILED });
     case types.REOWN_SEND_TX_RETRY:
       return onSetSendTxRetry(state);
     case types.REOWN_SEND_TX_RETRY_DISMISS:
