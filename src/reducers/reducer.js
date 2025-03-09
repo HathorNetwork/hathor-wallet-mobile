@@ -753,7 +753,7 @@ export const reducer = (state = initialState, action) => {
     case types.REOWN_SEND_TX_STATUS_READY:
       return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.READY });
     case types.REOWN_SEND_TX_STATUS_SUCCESS:
-      return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.SUCCESS });
+      return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.SUCCESSFUL });
     case types.REOWN_SEND_TX_STATUS_FAILURE:
       return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.ERROR });
     case types.REOWN_SEND_TX_RETRY:
@@ -2017,16 +2017,19 @@ export const onSetCreateTokenStatus = (state, { payload }) => ({
   },
 });
 
-export const onSetSendTxStatus = (state, { payload }) => ({
-  ...state,
-  reown: {
-    ...state.reown,
-    sendTransaction: {
-      ...state.reown.sendTransaction,
-      status: payload,
+export const onSetSendTxStatus = (state, { payload }) => {
+  console.log('SET SEND TX STATUS: ', payload);
+  return {
+    ...state,
+    reown: {
+      ...state.reown,
+      sendTransaction: {
+        ...state.reown.sendTransaction,
+        status: payload,
+      },
     },
-  },
-});
+  };
+};
 
 export const onSetSendTxRetry = (state) => ({
   ...state,

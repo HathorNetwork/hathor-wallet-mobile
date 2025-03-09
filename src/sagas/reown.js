@@ -401,13 +401,8 @@ function* requestsListener() {
  * is requested from a dApp
  */
 export function* processRequest(action) {
-  console.log('=== PROCESS REQUEST CALLED ===');
-  console.log('Action:', action);
-  
   const { payload } = action;
   const { params } = payload;
-  
-  console.log('Payload params:', params);
 
   const reownClient = yield call(getReownClient);
   if (!reownClient) {
@@ -433,9 +428,6 @@ export function* processRequest(action) {
     description: get(requestSession.peer, 'metadata.description', ''),
     chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
-  
-  console.log('Session data:', data);
-  console.log('Request method:', params.request.method);
 
   try {
     let dispatch;
@@ -443,7 +435,6 @@ export function* processRequest(action) {
       dispatch = _dispatch;
     });
 
-    console.log('Calling handleRpcRequest with:', params.request);
     const response = yield call(
       handleRpcRequest,
       params.request,
@@ -451,20 +442,16 @@ export function* processRequest(action) {
       data,
       promptHandler(dispatch),
     );
-    
-    console.log('RPC response:', response);
 
     switch (response.type) {
       case RpcResponseTypes.SendNanoContractTxResponse:
-        console.log('Handling SendNanoContractTxResponse');
         yield put(setNewNanoContractStatusSuccess());
         break;
       case RpcResponseTypes.CreateTokenResponse:
-        console.log('Handling CreateTokenResponse');
         yield put(setCreateTokenStatusSuccessful());
         break;
       case RpcResponseTypes.SendTransactionResponse:
-        console.log('Handling SendTransactionResponse');
+        console.log('Send Transaction response', response);
         yield put(setSendTxStatusSuccess());
         // The modal state will be updated by the SendTransactionLoadingFinishedTrigger
         break;
@@ -473,7 +460,6 @@ export function* processRequest(action) {
         break;
     }
 
-    console.log('Responding to session request');
     yield call(() => walletKit.respondSessionRequest({
       topic: payload.topic,
       response: {
@@ -487,7 +473,6 @@ export function* processRequest(action) {
     let shouldAnswer = true;
     switch (e.constructor) {
       case SendNanoContractTxError: {
-        console.log('Handling SendNanoContractTxError');
         yield put(setNewNanoContractStatusFailure());
 
         const retry = yield call(
@@ -503,7 +488,6 @@ export function* processRequest(action) {
         }
       } break;
       case CreateTokenError: {
-        console.log('Handling CreateTokenError');
         yield put(setCreateTokenStatusFailed());
 
         // User might try again, wait for it.
@@ -520,12 +504,11 @@ export function* processRequest(action) {
         }
       } break;
       case SendTransactionError: {
-        console.log('Handling SendTransactionError');
         yield put(setSendTxStatusFailure());
-        
+
         // Get the current reown state to preserve data and handlers
-        const currentStateError = yield select(state => state.reown.modal);
-        
+        const currentStateError = yield select((state) => state.reown.modal);
+
         yield put(setReownModal({
           show: true,
           type: ReownModalTypes.SEND_TRANSACTION,
@@ -550,12 +533,9 @@ export function* processRequest(action) {
         }
       } break;
       case InsufficientFundsError: {
-        console.log('Handling InsufficientFundsError');
         yield put(setSendTxStatusFailure());
-        
         // Get the current reown state to preserve data and handlers
-        const currentStateInsufficientFunds = yield select(state => state.reown.modal);
-        
+        const currentStateInsufficientFunds = yield select((state) => state.reown.modal);
         yield put(setReownModal({
           show: true,
           type: ReownModalTypes.SEND_TRANSACTION,
@@ -586,7 +566,6 @@ export function* processRequest(action) {
 
     if (shouldAnswer) {
       try {
-        console.log('Responding with error to session request');
         yield call(() => walletKit.respondSessionRequest({
           topic: payload.topic,
           response: {
@@ -645,15 +624,8 @@ export function* processRequest(action) {
 const promptHandler = (dispatch) => (request, requestMetadata) =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
-    console.log('=== PROMPT HANDLER CALLED ===');
-    console.log('Got prompt: ', request);
-    console.log('TriggerTypes values:', Object.keys(TriggerTypes).map(key => `${key}: ${TriggerTypes[key]}`));
-    console.log('Request type:', request.type);
-    console.log('Request metadata:', requestMetadata);
-    
     switch (request.type) {
       case TriggerTypes.SignOracleDataConfirmationPrompt: {
-        console.log('Handling SignOracleDataConfirmationPrompt');
         const signOracleDataResponseTemplate = (accepted) => () => resolve({
           type: TriggerResponseTypes.SignOracleDataConfirmationResponse,
           data: accepted,
@@ -667,7 +639,6 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ));
       } break;
       case TriggerTypes.CreateTokenConfirmationPrompt: {
-        console.log('Handling CreateTokenConfirmationPrompt');
         const createTokenResponseTemplate = (accepted) => (data) => resolve({
           type: TriggerResponseTypes.CreateTokenConfirmationResponse,
           data: {
@@ -683,7 +654,6 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ))
       } break;
       case TriggerTypes.SignMessageWithAddressConfirmationPrompt: {
-        console.log('Handling SignMessageWithAddressConfirmationPrompt');
         const signMessageResponseTemplate = (accepted) => () => resolve({
           type: TriggerResponseTypes.SignMessageWithAddressConfirmationResponse,
           data: accepted,
@@ -696,7 +666,6 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ));
       } break;
       case TriggerTypes.SendNanoContractTxConfirmationPrompt: {
-        console.log('Handling SendNanoContractTxConfirmationPrompt');
         const sendNanoContractTxResponseTemplate = (accepted) => (data) => resolve({
           type: TriggerResponseTypes.SendNanoContractTxConfirmationResponse,
           data: {
@@ -713,51 +682,29 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ));
       } break;
       case TriggerTypes.SendTransactionConfirmationPrompt: {
-        console.log('Handling SendTransactionConfirmationPrompt');
-        const sendTransactionResponseTemplate = (accepted) => () => {
-          console.log('SendTransaction response template called with accepted:', accepted);
-          
-          if (!accepted) {
-            // If rejected, hide the modal
-            dispatch(hideReownModal());
+        const sendTransactionResponseTemplate = (accepted) => (data) => resolve({
+          type: TriggerResponseTypes.SendTransactionConfirmationResponse,
+          data: {
+            accepted,
+            payload: data,
           }
-          // If accepted, don't modify the modal - the loading trigger will handle it
-          
-          resolve({
-            type: TriggerResponseTypes.SendTransactionConfirmationResponse,
-            data: {
-              accepted,
-            }
-          });
-        };
+        });
 
-        console.log('Dispatching setReownModal with SendTransaction');
+        dispatch(showSendTransactionModal(
+          sendTransactionResponseTemplate(true),
+          sendTransactionResponseTemplate(false),
+          request.data,
+          requestMetadata
+        ));
+      } break;
+      case TriggerTypes.SendTransactionLoadingTrigger:
+        dispatch(setSendTxStatusLoading());
+        // Use the data from the request instead of getting current state
         dispatch(setReownModal({
           show: true,
           type: ReownModalTypes.SEND_TRANSACTION,
           data: {
-            data: request.data,
-            dapp: requestMetadata,
-            onAcceptAction: sendTransactionResponseTemplate(true),
-            onRejectAction: sendTransactionResponseTemplate(false),
-            isLoading: false,
-            isSuccess: false,
-            isError: false
-          }
-        }));
-      } break;
-      case TriggerTypes.SendTransactionLoadingTrigger:
-        console.log('Handling SendTransactionLoadingTrigger');
-        dispatch(setSendTxStatusLoading());
-        
-        // Get the current reown state to preserve data and handlers
-        const currentState = yield select(state => state.reown.modal);
-        
-        dispatch(setReownModal({
-          show: true,
-          type: ReownModalTypes.SEND_TRANSACTION,
-          data: { 
-            ...currentState.data, // Preserve original data, dapp, and action handlers
+            ...(request.data || {}), // Use data from the request
             isLoading: true,
             isSuccess: false,
             isError: false
@@ -766,17 +713,13 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         resolve();
         break;
       case TriggerTypes.SendTransactionLoadingFinishedTrigger:
-        console.log('Handling SendTransactionLoadingFinishedTrigger');
         dispatch(setSendTxStatusReady());
-        
-        // Get the current reown state to preserve data and handlers
-        const currentStateFinished = yield select(state => state.reown.modal);
-        
+        // Use the data from the request instead of getting current state
         dispatch(setReownModal({
           show: true,
           type: ReownModalTypes.SEND_TRANSACTION,
-          data: { 
-            ...currentStateFinished.data, // Preserve original data, dapp, and action handlers
+          data: {
+            ...(request.data || {}), // Use data from the request
             isLoading: false,
             isSuccess: true,
             isError: false
@@ -785,27 +728,22 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         resolve();
         break;
       case TriggerTypes.SendNanoContractTxLoadingTrigger:
-        console.log('Handling SendNanoContractTxLoadingTrigger');
         dispatch(setNewNanoContractStatusLoading());
         resolve();
         break;
       case TriggerTypes.CreateTokenLoadingTrigger:
-        console.log('Handling CreateTokenLoadingTrigger');
         dispatch(setCreateTokenStatusLoading());
         resolve();
         break;
       case TriggerTypes.CreateTokenLoadingFinishedTrigger:
-        console.log('Handling CreateTokenLoadingFinishedTrigger');
         dispatch(setCreateTokenStatusReady());
         resolve();
         break;
       case TriggerTypes.SendNanoContractTxLoadingFinishedTrigger:
-        console.log('Handling SendNanoContractTxLoadingFinishedTrigger');
         dispatch(setNewNanoContractStatusReady());
         resolve();
         break;
       case TriggerTypes.PinConfirmationPrompt: {
-        console.log('Handling PinConfirmationPrompt');
         const pinCode = await showPinScreenForResult(dispatch);
 
         resolve({
@@ -815,56 +753,6 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
             pinCode,
           }
         });
-      } break;
-      case 18: {
-        // Special case for type 18 which might be SendTransactionConfirmationPrompt
-        console.log('=== HANDLING SPECIAL CASE FOR TYPE 18 ===');
-        console.log('Request data:', request.data);
-        
-        const sendTransactionResponseTemplate = (accepted) => () => {
-          console.log('SendTransaction response template called with accepted:', accepted);
-          
-          if (!accepted) {
-            // If rejected, hide the modal
-            dispatch(hideReownModal());
-          }
-          // If accepted, don't modify the modal - the loading trigger will handle it
-          
-          resolve({
-            type: TriggerResponseTypes.SendTransactionConfirmationResponse,
-            data: {
-              accepted,
-            }
-          });
-        };
-
-        console.log('Dispatching setReownModal with SendTransaction for type 18');
-        console.log('Modal data:', {
-          type: ReownModalTypes.SEND_TRANSACTION,
-          data: {
-            data: request.data,
-            dapp: requestMetadata,
-            onAcceptAction: sendTransactionResponseTemplate(true),
-            onRejectAction: sendTransactionResponseTemplate(false),
-            isLoading: false,
-            isSuccess: false,
-            isError: false
-          }
-        });
-        
-        dispatch(setReownModal({
-          show: true,
-          type: ReownModalTypes.SEND_TRANSACTION,
-          data: {
-            data: request.data,
-            dapp: requestMetadata,
-            onAcceptAction: sendTransactionResponseTemplate(true),
-            onRejectAction: sendTransactionResponseTemplate(false),
-            isLoading: false,
-            isSuccess: false,
-            isError: false
-          }
-        }));
       } break;
       default: 
         console.log('Unknown request type:', request.type);
@@ -942,11 +830,7 @@ export function* onSendTransactionRequest({ payload }) {
  * @param {Boolean} options.passAcceptAction Whether to pass the accept action to the callback
  */
 export function* handleDAppRequest(payload, modalType, options = {}) {
-  console.log('=== HANDLE DAPP REQUEST CALLED ===');
-  console.log('Payload:', payload);
-  console.log('Modal type:', modalType);
-  console.log('Options:', options);
-  
+
   const { accept: acceptCb, deny: denyCb, data, dapp, nc } = payload;
   const { passAcceptAction = false } = options;
 
@@ -962,10 +846,7 @@ export function* handleDAppRequest(payload, modalType, options = {}) {
     data: nc || data, // Some requests use 'nc' instead of 'data'
     dapp,
   };
-  
-  console.log('Modal data:', modalData);
 
-  console.log('Using reown modal');
   yield put(setReownModal({
     show: true,
     type: modalType,
@@ -974,24 +855,19 @@ export function* handleDAppRequest(payload, modalType, options = {}) {
     onRejectAction: denyCb,
   }));
 
-  console.log('Waiting for user action (accept/deny)');
   const { deny, accept } = yield race({
     accept: take(types.REOWN_ACCEPT),
     deny: take(types.REOWN_REJECT),
   });
 
   if (deny) {
-    console.log('User denied the request');
     denyCb();
     return;
   }
 
-  console.log('User accepted the request');
   if (passAcceptAction) {
-    console.log('Passing accept action to callback');
     acceptCb(accept);
   } else {
-    console.log('Calling accept callback without parameters');
     acceptCb();
   }
 }

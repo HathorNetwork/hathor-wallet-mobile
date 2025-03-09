@@ -5,16 +5,22 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { t } from 'ttag';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, ActivityIndicator, Image } from 'react-native';
 import { constants, numberUtils } from '@hathor/wallet-lib';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../../styles/themes';
 import NewHathorButton from '../NewHathorButton';
 import { WarnDisclaimer } from './WarnDisclaimer';
 import { DappContainer } from './NanoContract/DappContainer';
-import { hideReownModal } from '../../actions';
+import { hideReownModal, setSendTxStatusReady } from '../../actions';
+import { REOWN_SEND_TX_STATUS } from '../../constants';
+import FeedbackModal from '../FeedbackModal';
+import errorIcon from '../../assets/images/icErrorBig.png';
+import { FeedbackContent } from '../FeedbackContent';
+import Spinner from '../Spinner';
 
 const styles = StyleSheet.create({
   wide: {
@@ -92,14 +98,48 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingBottom: 48,
   },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  successContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+  },
+  successText: {
+    fontSize: 16,
+    marginBottom: 16,
+    textAlign: 'center',
+    color: 'green',
+  },
+  errorIcon: {
+    fontSize: 48,
+  },
+  feedbackModalIcon: {
+    width: 48,
+    height: 48,
+  },
 });
 
 export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onReject }) => {
-  const { dapp, data } = sendTransactionRequest;
-  const { tokens: registeredTokens } = useSelector((state) => ({
+  const { dapp = {}, data = {} } = sendTransactionRequest || {};
+  const { tokens: registeredTokens, reown } = useSelector((state) => ({
     tokens: state.tokens,
+    reown: state.reown
   }));
   const dispatch = useDispatch();
+  const navigation = useNavigation();
+
+  // Get transaction status from Redux
+  const sendTxStatus = reown.sendTransaction?.status || REOWN_SEND_TX_STATUS.READY;
+  const sendTxRetrying = reown.sendTransaction?.retrying || false;
 
   const getTokenSymbol = (tokenId) => {
     if (!tokenId) {
@@ -250,47 +290,123 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   };
 
   const onAcceptTransaction = () => {
-    if (onAccept) {
+    console.log('On accept transaction!');
+    if (onAccept && typeof onAccept === 'function') {
       onAccept(data);
+    } else {
+      console.warn('Accept callback missing or not a function');
     }
     dispatch(hideReownModal());
   };
 
   const onRejectTransaction = () => {
-    if (onReject) {
+    if (onReject && typeof onReject === 'function') {
       onReject();
+    } else {
+      console.warn('Reject callback missing or not a function');
     }
     dispatch(hideReownModal());
   };
 
+  // Status check functions
+  const isTxProcessing = () => sendTxStatus === REOWN_SEND_TX_STATUS.LOADING;
+  const isTxFailed = () => sendTxStatus === REOWN_SEND_TX_STATUS.FAILED;
+  const isTxSuccessful = () => sendTxStatus === REOWN_SEND_TX_STATUS.SUCCESSFUL;
+  console.log('SEND TX STATUS: ', sendTxStatus);
+
+  // Navigate back or close modal
+  const navigateBack = () => {
+    dispatch(hideReownModal());
+  };
+  
+  // Handle retry logic
+  const onTryAgain = () => {
+    dispatch(setSendTxStatusReady());
+    if (onAccept && typeof onAccept === 'function') {
+      onAccept(data);
+    }
+  };
+
+  // Handle dismiss modal
+  const onFeedbackModalDismiss = () => {
+    navigateBack();
+  };
+  
+  // Navigate to success screen on successful transaction
+  useEffect(() => {
+    if (isTxSuccessful()) {
+      navigation.navigate(
+        'SuccessFeedbackScreen',
+        {
+          title: t`Success!`,
+          message: t`Transaction successfully sent.`,
+        }
+      );
+      // Restore ready status
+      dispatch(setSendTxStatusReady());
+    }
+  }, [sendTxStatus]);
+
   return (
-    <ScrollView style={styles.wide}>
-      <View style={styles.wrapper}>
-        <View style={styles.content}>
-          <DappContainer dapp={dapp} />
+    <>
+      {/* Loading state */}
+      {isTxProcessing() && (
+        <FeedbackContent
+          title={t`Sending transaction`}
+          message={t`Please wait.`}
+          icon={<Spinner size={48} animating />}
+          offmargin
+          offcard
+          offbackground
+        />
+      )}
+      
+      {/* Main content - only show when not in processing state */}
+      {!isTxProcessing() && (
+        <ScrollView style={styles.wide}>
+          <View style={styles.wrapper}>
+            <View style={styles.content}>
+              {dapp && <DappContainer dapp={dapp} />}
 
-          <View>
-            <WarnDisclaimer />
+              <View>
+                <WarnDisclaimer />
+              </View>
+
+              {renderInputs()}
+              {renderOutputs()}
+              {renderChangeAddress()}
+
+              <View style={styles.actionContainer}>
+                {/* Hide action buttons when in success state */}
+                {!isTxSuccessful() && !isTxFailed() && (
+                  <>
+                    <NewHathorButton
+                      title={t`Accept Transaction`}
+                      onPress={onAcceptTransaction}
+                    />
+                    <NewHathorButton
+                      title={t`Decline Transaction`}
+                      onPress={onRejectTransaction}
+                      secondary
+                      danger
+                    />
+                  </>
+                )}
+              </View>
+            </View>
           </View>
+        </ScrollView>
+      )}
 
-          {renderInputs()}
-          {renderOutputs()}
-          {renderChangeAddress()}
-
-          <View style={styles.actionContainer}>
-            <NewHathorButton
-              title={t`Accept Transaction`}
-              onPress={onAcceptTransaction}
-            />
-            <NewHathorButton
-              title={t`Decline Transaction`}
-              onPress={onRejectTransaction}
-              secondary
-              danger
-            />
-          </View>
-        </View>
-      </View>
-    </ScrollView>
+      {/* Error modal */}
+      {isTxFailed() && (
+        <FeedbackModal
+          icon={<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />}
+          text={t`Error while sending transaction.`}
+          onDismiss={onFeedbackModalDismiss}
+          action={<NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />}
+        />
+      )}
+    </>
   );
 };
