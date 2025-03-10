@@ -214,73 +214,75 @@ msgstr "Os PINs estão diferentes. Tente novamente."
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
-#: src/screens/CreateTokenAmount.js:122 src/screens/CreateTokenConfirm.js:162
+#: src/screens/CreateTokenAmount.js:90
+msgid "Invalid amount"
+msgstr "Quantidade inválida"
+
+#: src/screens/CreateTokenAmount.js:143 src/screens/CreateTokenConfirm.js:168
 #: src/screens/CreateTokenDepositNotice.js:42 src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
 msgstr "CRIAR TOKEN"
 
-#: src/screens/CreateTokenAmount.js:130
-#, javascript-format
-msgid "Amount of ${ this.name } (${ this.symbol })"
-msgstr "Quantidade de ${ this.name } (${ this.symbol })"
+#: src/screens/CreateTokenAmount.js:151
+msgid "Amount of ${ name } (${ symbol })"
+msgstr "Quantidade de ${ name } (${ symbol })"
 
-#: src/screens/CreateTokenAmount.js:142
+#: src/screens/CreateTokenAmount.js:168
 msgid "Deposit:"
 msgstr "Depósito:"
 
-#: src/screens/CreateTokenAmount.js:148
-#, javascript-format
-msgid "You have ${ amountAvailableText } available"
-msgstr "Você tem ${ amountAvailableText } disponíveis"
+#: src/screens/CreateTokenAmount.js:172
+msgid "You have ${ amountAvailableText } ${ nativeSymbol } available"
+msgstr "Você tem ${ amountAvailableText } ${ nativeSymbol } disponíveis"
 
-#: src/screens/CreateTokenAmount.js:153 src/screens/CreateTokenName.js:64
+#: src/screens/CreateTokenAmount.js:177 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:185
+#: src/screens/SendAmountInput.js:194
 msgid "Next"
 msgstr "Próximo"
 
 #.  show loading modal
-#: src/screens/CreateTokenConfirm.js:98
+#: src/screens/CreateTokenConfirm.js:104
 msgid "Creating token"
 msgstr "Criando um token"
 
-#: src/screens/CreateTokenConfirm.js:114
+#: src/screens/CreateTokenConfirm.js:120
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
 
-#: src/screens/CreateTokenConfirm.js:115
+#: src/screens/CreateTokenConfirm.js:121
 msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
-#: src/screens/CreateTokenConfirm.js:117 src/screens/SendConfirmScreen.js:106
+#: src/screens/CreateTokenConfirm.js:123 src/screens/SendConfirmScreen.js:105
 msgid "Building transaction"
 msgstr "Criando transação"
 
 #.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:181
+#: src/screens/CreateTokenConfirm.js:187
 #, javascript-format
 msgid "**${ this.name }** created successfully"
 msgstr "**${ this.name }** criado com sucesso"
 
-#: src/screens/CreateTokenConfirm.js:194
+#: src/screens/CreateTokenConfirm.js:200
 msgid "Amount of ${ this.name }"
 msgstr "Quantidade de ${ this.name }"
 
-#: src/screens/CreateTokenConfirm.js:202
+#: src/screens/CreateTokenConfirm.js:208
 msgid "Token name"
 msgstr "Nome do token"
 
-#: src/screens/CreateTokenConfirm.js:208 src/screens/CreateTokenSymbol.js:69
+#: src/screens/CreateTokenConfirm.js:214 src/screens/CreateTokenSymbol.js:69
 msgid "Token symbol"
 msgstr "Símbolo do token"
 
-#: src/screens/CreateTokenConfirm.js:214
+#: src/screens/CreateTokenConfirm.js:220
 msgid "Deposit"
 msgstr "Depósito"
 
-#: src/screens/CreateTokenConfirm.js:223
+#: src/screens/CreateTokenConfirm.js:229
 msgid "Create token"
 msgstr "Criar um token"
 
@@ -475,33 +477,33 @@ msgstr "Ocorreu um erro ao conectar com o servidor."
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
 
-#: src/screens/MainScreen.js:127
+#: src/screens/MainScreen.js:130
 msgid "No transactions"
 msgstr "Nenhuma transação"
 
-#: src/screens/MainScreen.js:130
+#: src/screens/MainScreen.js:133
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 "|share:Compartilhe seu endereço| com seus amigos e comece a trocar seus "
 "tokens"
 
-#: src/screens/MainScreen.js:147
+#: src/screens/MainScreen.js:150
 msgid "Loading transactions"
 msgstr "Carregando transações"
 
-#: src/screens/MainScreen.js:156
+#: src/screens/MainScreen.js:159
 msgid "There was an error loading your transaction history"
 msgstr "Ocorreu um erro ao carregar seu histórico de transações"
 
-#: src/screens/MainScreen.js:159
+#: src/screens/MainScreen.js:162
 msgid "Please |tryAgain:try again|"
 msgstr "Por favor |tryAgain:tente novamente|"
 
-#: src/screens/MainScreen.js:536 src/screens/MainScreen.js:568
+#: src/screens/MainScreen.js:549 src/screens/MainScreen.js:581
 msgid "Available Balance"
 msgstr "Saldo Disponível"
 
-#: src/screens/MainScreen.js:545
+#: src/screens/MainScreen.js:558
 msgid "Locked"
 msgstr "Bloqueado"
 
@@ -775,47 +777,49 @@ msgstr "ENVIAR"
 msgid "Address to send"
 msgstr "Endereço para enviar"
 
-#: src/screens/SendAmountInput.js:110
+#: src/screens/SendAmountInput.js:111
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:141 src/screens/SendConfirmScreen.js:126
-#, javascript-format
-msgid "${ amountAndToken } available"
-msgid_plural "${ amountAndToken } available"
-msgstr[0] "${ amountAndToken } disponível"
-msgstr[1] "${ amountAndToken } disponíveis"
+#: src/screens/SendAmountInput.js:121
+msgid "Error processing amount"
+msgstr ""
 
-#: src/screens/SendAmountInput.js:154 src/screens/SendConfirmScreen.js:134
+#.  Just use the string directly for display
+#: src/screens/SendAmountInput.js:150 src/screens/SendConfirmScreen.js:125
+msgid "${ amountAndToken } available"
+msgstr "${ amountAndToken } disponível"
+
+#: src/screens/SendAmountInput.js:163 src/screens/SendConfirmScreen.js:133
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:90
+#: src/screens/SendConfirmScreen.js:89
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:103
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
-#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:105
+#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:104
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
-#: src/screens/SendConfirmScreen.js:143
+#: src/screens/SendConfirmScreen.js:142
 msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ this.amountAndToken }** foi confirmada"
 
 #: src/components/NanoContract/EditAddressModal.js:60
 #: src/components/NanoContract/SelectAddressModal.js:117
 #: src/components/Reown/SignMessageRequest.js:40
-#: src/screens/SendConfirmScreen.js:162
+#: src/screens/SendConfirmScreen.js:161
 msgid "Address"
 msgstr "Endereço"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:291
-#: src/screens/SendConfirmScreen.js:169
+#: src/screens/SendConfirmScreen.js:168
 msgid "Send"
 msgstr "Enviar"
 
@@ -1847,12 +1851,12 @@ msgstr "Nenhuma Action"
 msgid "See full transaction details on Public Explorer."
 msgstr "Ver detalhes completos da transação no Explorer Público."
 
-#: src/components/NanoContract/NanoContractTransactionActionListItem.js:108
+#: src/components/NanoContract/NanoContractTransactionActionListItem.js:111
 #, javascript-format
 msgid "Deposit ${ tokenSymbol }"
 msgstr "Depósito ${ tokenSymbol }"
 
-#: src/components/NanoContract/NanoContractTransactionActionListItem.js:109
+#: src/components/NanoContract/NanoContractTransactionActionListItem.js:112
 msgid "Withdrawal ${ tokenSymbol }"
 msgstr "Saque ${ tokenSymbol }"
 
