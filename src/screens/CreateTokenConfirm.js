@@ -6,11 +6,15 @@
  */
 
 import React from 'react';
-import { Image, View, } from 'react-native';
+import {
+  Image,
+  View,
+} from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
+import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
@@ -53,9 +57,11 @@ class CreateTokenConfirm extends React.Component {
 
   constructor(props) {
     super(props);
-    this.amount = this.props.route.params.amount;
-    this.name = this.props.route.params.name;
-    this.symbol = this.props.route.params.symbol;
+    const { amount, name, symbol } = this.props.route.params;
+    // Ensure amount is a BigInt
+    this.amount = typeof amount === 'bigint' ? amount : bigIntCoercibleSchema.parse(amount);
+    this.name = name;
+    this.symbol = symbol;
     this.nativeSymbol = this.props.wallet.storage.getNativeTokenData().symbol;
   }
 
@@ -168,9 +174,9 @@ class CreateTokenConfirm extends React.Component {
           this.state.modalType === 'FeedbackModal' ? (
             // eslint-disable-next-line react/jsx-indent
             <FeedbackModal
-              icon={this.modal.icon}
-              text={this.modal.message}
-              onDismiss={this.modal.onDismiss}
+              icon={this.state.modal.icon}
+              text={this.state.modal.text}
+              onDismiss={this.state.modal.onDismiss}
             />
           ) : (
             // eslint-disable-next-line react/jsx-indent

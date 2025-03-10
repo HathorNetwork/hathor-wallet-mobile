@@ -8,8 +8,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { connect } from 'react-redux';
-import { t, ngettext, msgid } from 'ttag';
-
+import { t } from 'ttag';
 import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
@@ -123,7 +122,7 @@ class SendConfirmScreen extends React.Component {
       const balance = this.props.tokensBalance[this.token.uid].data;
       const available = balance ? balance.available : 0;
       const amountAndToken = `${renderValue(available, this.isNFT)} ${this.token.symbol}`;
-      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);
+      return t`${amountAndToken} available`;
     };
 
     const tokenNameUpperCase = this.token.name.toUpperCase();

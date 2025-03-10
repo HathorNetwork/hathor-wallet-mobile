@@ -20,6 +20,9 @@ import { getShortHash, isTokenNFT, renderValue } from '../../utils';
 import { ReceivedIcon } from '../Icons/Received.icon';
 import { SentIcon } from '../Icons/Sent.icon';
 
+// Declare BigInt for ESLint
+/* global BigInt */
+
 /**
  * Retrieves token symbol, otherwise returns a shortened token hash.
  *
@@ -120,13 +123,16 @@ const ContentWrapper = ({ tokenSymbol, type }) => {
  * It presents the token's amount using the right style.
  *
  * @param {Object} props
- * @param {number} props.amount Action amount as integer
+ * @param {number|bigint} props.amount Action amount as integer or BigInt
  * @param {boolean} props.isNft True when it is an NFT, false otherwise
  * @param {'deposit'|'withdrawal'} props.type An action type
  */
 const TokenAmount = ({ amount, isNft, type }) => {
   const isReceivingToken = type === NANO_CONTRACT_ACTION.withdrawal;
-  const amountToRender = renderValue(amount, isNft);
+
+  // Convert to BigInt if not already (required by renderValue -> prettyValue)
+  const amountBigInt = typeof amount === 'bigint' ? amount : BigInt(amount || 0);
+  const amountToRender = renderValue(amountBigInt, isNft);
 
   return (
     <View style={styles.amountWrapper}>
@@ -138,7 +144,7 @@ const TokenAmount = ({ amount, isNft, type }) => {
         {amountToRender}
       </Text>
     </View>
-  )
+  );
 };
 
 const styles = StyleSheet.create({

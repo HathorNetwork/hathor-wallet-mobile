@@ -16,8 +16,9 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
-import { t, ngettext, msgid } from 'ttag';
+import { t } from 'ttag';
 import { get } from 'lodash';
+import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 
 import { IS_MULTI_TOKEN } from '../constants';
 import { getIntegerAmount, renderValue, isTokenNFT } from '../utils';
@@ -109,9 +110,16 @@ class SendAmountInput extends React.Component {
     if (available < amount) {
       this.setState({ error: t`Insufficient funds` });
     } else {
-      // forward the address we got from the last screen to the next one
-      const { address } = this.props.route.params;
-      this.props.navigation.navigate('SendConfirmScreen', { address, amount, token: this.state.token });
+      // Convert amount to BigInt before passing it to the next screen
+      try {
+        const amountBigInt = bigIntCoercibleSchema.parse(amount);
+        // forward the address we got from the last screen to the next one
+        const { address } = this.props.route.params;
+        this.props.navigation.navigate('SendConfirmScreen', { address, amount: amountBigInt, token: this.state.token });
+      } catch (e) {
+        console.error('Failed to convert amount to BigInt:', e);
+        this.setState({ error: t`Error processing amount` });
+      }
     }
   }
 
@@ -138,7 +146,8 @@ class SendAmountInput extends React.Component {
       });
       const { available } = balance;
       const amountAndToken = `${renderValue(available, this.isNFT())} ${this.state.token.symbol}`;
-      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);
+      // Just use the string directly for display
+      return t`${amountAndToken} available`;
     };
 
     const renderGhostElement = () => (
