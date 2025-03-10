@@ -200,61 +200,17 @@ C:\Program Files (x86)\Poedit\GettextTools\bin\msgmerge.exe: erro de escrita
 ```
 ## i18n compilation
 
-Update the pot file at `locale\texts.pot`
-```powershell
-npm run locale-update-pot
-```
-
-Navigate to `locale` directory
-```
-cd locale
-```
-
-Merge a `pot` file to `po` file:
-```powershell
-msgmerge -D <any-subdirectory>\hathor-wallet-mobile\locale\ pt-br\texts.po texts.pot -o <any-subdirectory>\hathor-wallet-mobile\locale\pt-br\texts.po
-```
-for `pt-br`
-
-```powershell
-msgmerge -D <any-subdirectory>\hathor-wallet-mobile\locale\ da\texts.po texts.pot -o <any-subdirectory>\hathor-wallet-mobile\locale\da\texts.po
-```
-for `da`
-
-```powershell
-msgmerge -D <any-subdirectory>\hathor-wallet-mobile\locale\ ru-ru\texts.po texts.pot -o <any-subdirectory>\hathor-wallet-mobile\locale\ru-ru\texts.po
-```
-for `ru-ru`
-
-Create the directory of compiled translations into `src\locale\<locale>` for each locale
-```powershell
-mkdir src\locale\pt-br || mkdir src\locale\da || mkdir src\locale\ru-ru
-```
-
-Run `i18n` function to compile translations for each locale
-
+Update the i18n files with:
 ```powershell
 make i18n
 ```
 
 If you get an error like this:
 ```
-make: *** [Makefile:34: src/locale/pt-br/texts.po.json] Error 1
+make: *** [src/locale/pt-br/texts.po.json] Error 1
 ```
-then comment the line 34 from `Makefile` file and run again.
-
-If you get an error like this:
-```
-npx ttag po2json locale/pt-br/texts.po > src/locale/pt-br/texts.po.json
-if [  = 1 ]; then \
-        msgcmp locale/da/texts.po locale/texts.pot; \
-else \
-        msgcmp --use-untranslated locale/da/texts.po locale/texts.pot; \
-fi
-...
-make: *** [Makefile:57: locale/da/texts.po] Error 255
-```
-then copy the file `src\pt-br\texts.po.json` to `src\da\` and `src\ru-ru\`, just to make the android build pass.
+This is related to failures in the JSON compilation. Investigate any changes in the translations that may have incorrect
+syntax.
 
 ## Add a mobile device in the emulator
 
@@ -269,9 +225,8 @@ then copy the file `src\pt-br\texts.po.json` to `src\da\` and `src\ru-ru\`, just
 
 ## Run
 
-1. Open 2 terminals
-2. On terminal (1) run `npm start`
-3. On terminal (2) run `npm run android`
+1. On a new terminal run `npm start`
+2. Follow the instructions on screen to open the Android app, probably by pressing `a` for Android
 
 ## Play with Hathor mobile wallet
 
