@@ -31,6 +31,7 @@ const { tmpdir } = require('node:os');
  */
 
 const existingTranslations = ['pt-br', 'da', 'ru-ru'];
+const temporaryDirs = [];
 
 /**
  * Runs the script to update the root `.pot` file with the new strings
@@ -61,6 +62,7 @@ function checkPotOutdated() {
 
   let isPotOutdated = false;
   const myTmpDir = fs.mkdtempSync(path.join(tmpdir(), 'check_pot-'));
+  temporaryDirs.push(myTmpDir); // Cleanup will be done on process.exit()
   try {
     // Extract the strings from the source code
     execSync(`npx ttag extract -o ${myTmpDir}/pot ./src/`, { stdio: 'inherit' });
@@ -71,8 +73,6 @@ function checkPotOutdated() {
   } catch (error) {
     isPotOutdated = true;
     console.error('❌ Error checking pot file, or pot file outdated:', error);
-  } finally {
-    fs.rmSync(myTmpDir, { recursive: true, force: true });
   }
 
   return isPotOutdated;
@@ -213,6 +213,16 @@ function generateJsonFromPos() {
     }
   });
 }
+
+/**
+ * Cleanup function, removing any temporary files or folders created during the execution
+ */
+process.on('exit', (code) => {
+  console.log(`🧹 Cleaning up on exit code ${code}...`);
+  temporaryDirs.forEach((dirName) => {
+    fs.rmSync(dirName, { recursive: true, force: true });
+  });
+});
 
 try {
   const isCiValidationRun = process.argv.includes('--ci-validation');
