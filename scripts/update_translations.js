@@ -173,17 +173,20 @@ function checkFuzzyTags() {
  */
 function checkForChanges() {
   console.log(`⏳ Checking for filesystem changes after i18n execution...`);
+  let statusResult = '';
   let hasChanges = false;
   try {
-    const result = execSync('git status --porcelain', { encoding: 'utf-8' });
-    hasChanges = result.trim().length > 0;
+    statusResult = execSync('git status --porcelain', { encoding: 'utf-8' });
+    hasChanges = statusResult.trim().length > 0;
   } catch (error) {
     console.error('❌ Error checking for changes:', error);
     return true;
   }
 
   if (hasChanges) {
-    console.warn('❗ Changes found in the translation files. Please review them.');
+    // Print the full diff to the console
+    console.warn(`❗ Changes found in the translation files. Please review them.`);
+    execSync('git  --no-pager diff', { stdio: 'inherit' });
   }
   return hasChanges;
 }
