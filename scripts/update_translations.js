@@ -245,10 +245,10 @@ try {
   if (invalidPot || invalidPos || hasFuzzyTags || translationFilesChanged) {
     console.log(`❌ Translations are not up-to-date. Please review the changes.`);
     process.exit(1);
-  } else {
-    console.log(`✅ Translations validated successfully.`);
-    process.exit(0);
   }
+
+  console.log(`✅ Translations validated successfully.`);
+  process.exit(0);
 } catch (error) {
   console.error('Error updating translations:', error);
   process.exit(1);
