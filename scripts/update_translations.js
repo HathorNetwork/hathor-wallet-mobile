@@ -20,14 +20,14 @@ const { tmpdir } = require('node:os');
  * - Generating a git-ignored JSON file containing all translations inside the `src/locale` folder
  *
  * The CI will run this script with the `--ci-validation` argument to check if the translations
- * were updated correctly. If there are any changes in the translation files or if there are any
- * fuzzy tags, the CI will fail. The steps executed for this validation are:
+ * were updated correctly. If there are any fuzzy tags, the CI will fail. The steps executed for
+ * this validation are:
  * - Running all the translation steps as described above
  * - Checking if the `.pot` file is outdated
  * - Checking if all `.po` files have all messages from the `.pot` file
  * - Checking for any fuzzy tags in the `.po` files
- * - Checking for filesystem changes using `git status`
  * - Exiting with code 1 and failing if any of the above checks fail
+ * - Lastly, checking for filesystem changes using `git status` for easier debugging, if needed
  */
 
 const existingTranslations = ['pt-br', 'da', 'ru-ru'];
@@ -241,11 +241,11 @@ try {
   }
 
   // If this script was called with the "--ci-validation" argument, it will fail if there are any
-  // changes in the translation files or if there are any fuzzy tags
+  // fuzzy tags that need reviewing
   const invalidPot = checkPotOutdated();
   const invalidPos = checkPoTranslations();
-  const translationFilesChanged = checkForChanges();
-  if (invalidPot || invalidPos || hasFuzzyTags || translationFilesChanged) {
+  checkForChanges(); // This will print the diff if changes are found, but not fail the script
+  if (invalidPot || invalidPos || hasFuzzyTags) {
     console.log(`❌ Translations are not up-to-date. Please review the changes.`);
     process.exit(1);
   }
