@@ -162,10 +162,7 @@ export function* startWallet(action) {
   // but the wallet may be closed unexpectedly
   const storage = STORE.getStorage();
   yield call([storage.store, storage.store.cleanMetadata]); // clean metadata on memory
-  // clean transaction history, addresses, token and nano-contract indexes
-  // XXX: It would be better to keep registered tokens and nano contracts
-  // if the network has same genesis
-  yield call([storage, storage.cleanStorage], true, true, true);
+  yield call([storage, storage.cleanStorage], true); // clean transaction history
 
   // As this is a core setting for the wallet, it should be loaded first.
   // Network settings either from store or redux state
