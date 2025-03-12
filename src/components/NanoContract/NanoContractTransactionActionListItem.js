@@ -20,9 +20,6 @@ import { getShortHash, isTokenNFT, renderValue } from '../../utils';
 import { ReceivedIcon } from '../Icons/Received.icon';
 import { SentIcon } from '../Icons/Sent.icon';
 
-// Declare BigInt for ESLint
-/* global BigInt */
-
 /**
  * Retrieves token symbol, otherwise returns a shortened token hash.
  *
