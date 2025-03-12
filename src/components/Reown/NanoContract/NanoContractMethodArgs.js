@@ -22,9 +22,6 @@ import { FeedbackContent } from '../../FeedbackContent';
 import Spinner from '../../Spinner';
 import { getTimestampFormat, parseScriptData, renderValue } from '../../../utils';
 
-// Declare BigInt for ESLint
-/* global BigInt */
-
 /**
  * Get method info from registered blueprint data.
  *
