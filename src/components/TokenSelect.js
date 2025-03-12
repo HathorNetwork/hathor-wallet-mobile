@@ -12,8 +12,6 @@ import {
 import { get } from 'lodash';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
-import { t } from 'ttag';
-import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 
 import chevronRight from '../assets/icons/chevron-right.png';
 import Spinner from './Spinner';
@@ -21,9 +19,6 @@ import { renderValue, isTokenNFT } from '../utils';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from './HathorFlatList';
-
-// Declare BigInt for ESLint
-/* global BigInt */
 
 /**
  * @typedef TokenBalance
@@ -70,7 +65,7 @@ const TokenSelect = (props) => {
             <Text style={[styles.text, styles.rightText]}>
               {tokenState === TOKEN_DOWNLOAD_STATUS.READY && (
                 renderValue(
-                  bigIntCoercibleSchema.parse(balance),
+                  balance,
                   isTokenNFT(item.uid, props.tokenMetadata)
                 )
               )}
