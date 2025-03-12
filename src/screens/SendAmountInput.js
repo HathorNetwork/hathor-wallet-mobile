@@ -16,12 +16,12 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
-import { t } from 'ttag';
+import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
 import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 
 import { IS_MULTI_TOKEN } from '../constants';
-import { getIntegerAmount, renderValue, isTokenNFT } from '../utils';
+import { renderValue, isTokenNFT } from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -149,8 +149,10 @@ class SendAmountInput extends React.Component {
       });
       const { available } = balance;
       const amountAndToken = `${renderValue(available, this.isNFT())} ${this.state.token.symbol}`;
-      // Just use the string directly for display
-      return t`${amountAndToken} available`;
+      // The last parameter is a BigInt and ngettext expects a Number, since it's only used to
+      // decide whether to use the singular or plural form, it's ok to convert it to Number even
+      // if it's a large number
+      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, Number(available));
     };
 
     const renderGhostElement = () => (

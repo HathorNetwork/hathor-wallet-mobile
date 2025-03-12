@@ -20,7 +20,7 @@ import { t } from 'ttag';
 import { get } from 'lodash';
 
 import moment from 'moment';
-import hathorLib from '@hathor/wallet-lib';
+import { constants as hathorConstants } from '@hathor/wallet-lib';
 import IconTabBar from '../icon-font';
 import HathorHeader from '../components/HathorHeader';
 import SimpleButton from '../components/SimpleButton';
@@ -39,9 +39,6 @@ import { HathorFlatList } from '../components/HathorFlatList';
 import { ActionDot } from '../components/Icons/ActionDot.icon';
 import { getNetworkSettings } from '../sagas/helpers';
 
-// Declare BigInt for ESLint
-/* global BigInt */
-
 /**
  * txList {Array} array with transactions of the selected token
  * balance {Object} object with token balance {'available', 'locked'}
@@ -53,7 +50,7 @@ const mapStateToProps = (state) => ({
   }),
   // If we are on this screen, we can be sure that the balance is loaded since we don't navigate
   // to it if the status is `failed`
-  balance: get(state.tokensBalance, `${state.selectedToken.uid}.data`, { available: 0, locked: 0 }),
+  balance: get(state.tokensBalance, `${state.selectedToken.uid}.data`, { available: 0n, locked: 0n }),
   selectedToken: state.selectedToken,
   isOnline: state.isOnline,
   network: getNetworkSettings(state).network,
@@ -114,7 +111,7 @@ class MainScreen extends React.Component {
   }
 
   tokenInfo = () => {
-    if (this.props.selectedToken.uid !== hathorLib.NATIVE_TOKEN_UID) {
+    if (this.props.selectedToken.uid !== hathorConstants.NATIVE_TOKEN_UID) {
       this.props.navigation.navigate('TokenDetail');
     }
   }
@@ -203,7 +200,7 @@ class MainScreen extends React.Component {
     };
 
     const renderRightElement = () => {
-      if (this.props.selectedToken.uid !== hathorLib.NATIVE_TOKEN_UID) {
+      if (this.props.selectedToken.uid !== hathorConstants.NATIVE_TOKEN_UID) {
         return (
           <SimpleButton onPress={this.tokenInfo}>
             <ActionDot />
@@ -382,10 +379,10 @@ class TxListItem extends React.Component {
   }
 
   getImage = (item) => {
-    // Convert balance to BigInt if it's not already
-    const balance = typeof item.balance === 'bigint' ? item.balance : BigInt(item.balance || 0);
+    // Balance should already be a BigInt
+    const { balance } = item;
 
-    if (balance === BigInt(0)) {
+    if (balance === 0n) {
       return <View style={this.style.icon} />;
     }
 
@@ -393,10 +390,10 @@ class TxListItem extends React.Component {
     let color;
     const style = [this.style.icon];
 
-    if (balance > BigInt(0)) {
+    if (balance > 0n) {
       name = 'icReceive';
       color = COLORS.positiveBalanceColor;
-    } else if (balance < BigInt(0)) {
+    } else if (balance < 0n) {
       name = 'icSend';
       color = COLORS.textColor;
     } else {
@@ -416,10 +413,10 @@ class TxListItem extends React.Component {
       return this.styleVoided;
     }
 
-    // Convert balance to BigInt if it's not already
-    const balance = typeof item.balance === 'bigint' ? item.balance : BigInt(item.balance || 0);
+    // Balance should already be a BigInt
+    const { balance } = item;
 
-    if (balance > BigInt(0)) {
+    if (balance > 0n) {
       return this.stylePositive;
     }
     return this.style;
