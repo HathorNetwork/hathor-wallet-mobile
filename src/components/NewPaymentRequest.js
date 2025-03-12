@@ -19,7 +19,7 @@ import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
 import TokenBox from './TokenBox';
 import { newInvoice } from '../actions';
-import { isTokenNFT } from '../utils';
+import { isTokenNFT, getIntegerAmount } from '../utils';
 import OfflineBar from './OfflineBar';
 
 /* global BigInt */
@@ -98,29 +98,29 @@ class NewPaymentRequest extends React.Component {
   createPaymentRequest = async () => {
     const { address } = await this.props.wallet.getCurrentAddress();
 
-    try {
-      // Use the amountValue from state
-      const amount = this.state.amountValue;
-
-      if (!amount) {
-        console.error('Invalid amount value');
-        return;
-      }
-
-      this.props.dispatch(newInvoice(address, amount, this.state.token));
-      this.modalOpened = true;
-      this.props.navigation.navigate('PaymentRequestDetail');
-    } catch (e) {
-      console.error('Failed to create payment request:', e);
-      // Handle error if needed
+    let amount;
+    if (isTokenNFT(this.getTokenUID(), this.props.tokenMetadata)) {
+      amount = parseInt(this.state.amount, 10);
+    } else {
+      amount = getIntegerAmount(this.state.amount);
     }
+
+    this.props.dispatch(newInvoice(address, amount, this.state.token));
+    this.modalOpened = true;
+    this.props.navigation.navigate('PaymentRequestDetail');
   }
 
-  isButtonDisabled = () => (
-    !this.state.amount
-    || !this.state.amountValue
-    || this.state.amountValue === 0n
-  );
+  isButtonDisabled = () => {
+    if (this.state.amount === '') {
+      return true;
+    }
+
+    if (getIntegerAmount(this.state.amount) === 0) {
+      return true;
+    }
+
+    return false;
+  }
 
   onAmountUpdate = (text, value) => {
     this.setState({
@@ -159,6 +159,8 @@ class NewPaymentRequest extends React.Component {
       <View style={{ width: 80, height: 40 }} />
     );
 
+    const isNFT = isTokenNFT(this.getTokenUID(), this.props.tokenMetadata);
+
     return (
       <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={topDistance}>
         <View style={{
@@ -175,7 +177,7 @@ class NewPaymentRequest extends React.Component {
               onAmountUpdate={this.onAmountUpdate}
               value={this.state.amount}
               style={{ flex: 1 }}
-              allowOnlyInteger={isTokenNFT(this.getTokenUID(), this.props.tokenMetadata)}
+              allowOnlyInteger={isNFT}
             />
             {IS_MULTI_TOKEN
               ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />
