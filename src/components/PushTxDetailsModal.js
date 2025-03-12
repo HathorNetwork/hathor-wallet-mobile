@@ -6,19 +6,17 @@
  */
 
 import React from 'react';
-import { Button, Image, Modal, StyleSheet, Text, TouchableHighlight, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
-import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import { getShortHash, isTokenNFT, renderValue } from '../utils';
-import { NavigationMenuButton } from './NavigationMenuButton';
 import { TxHistory } from '../models';
-import { navigateToTokenDetail } from '../actions';
+import { updateSelectedToken } from '../actions';
 import HathorModal from './HathorModal';
+import SlideIndicatorBar from './SlideIndicatorBar';
+import { ListButton, ListItem } from './HathorList';
+import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
-
-// Declare BigInt for ESLint
-/* global BigInt */
 
 const style = StyleSheet.create({
   modal: {
@@ -40,17 +38,7 @@ const getTimestampFormat = (tx) => {
 };
 
 const getTokenTitle = (token) => `${token.symbol} - ${token.name}`;
-const getTokenBalance = (token, isNFT) => {
-  // Ensure balance is passed as BigInt to renderValue
-  try {
-    const balanceBigInt = bigIntCoercibleSchema.parse(token.balance);
-    return renderValue(balanceBigInt, isNFT);
-  } catch (e) {
-    console.error('Failed to parse token balance to BigInt:', e);
-    // Fallback to directly converting to BigInt
-    return renderValue(BigInt(token.balance || 0), isNFT);
-  }
-};
+const getTokenBalance = (token, isNFT) => renderValue(token.balance, isNFT);
 
 export default function PushTxDetailsModal(props) {
   const { tx, tokens } = props;
