@@ -789,7 +789,7 @@ msgstr ""
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
-msgstr[1] "${ amountAndToken } disponível"
+msgstr[1] "${ amountAndToken } disponíveis"
 
 #: src/screens/SendAmountInput.js:168 src/screens/SendConfirmScreen.js:136
 msgid "SEND ${ tokenNameUpperCase }"
