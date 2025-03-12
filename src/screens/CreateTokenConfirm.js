@@ -5,12 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Image,
   View,
 } from 'react-native';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { t } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
@@ -27,45 +27,33 @@ import { newToken, updateSelectedToken } from '../actions';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { useNavigation, useParams } from '../hooks/navigation';
 
-/* global BigInt */
-
 /**
- * wallet {HathorWallet} HathorWallet lib object
- */
-const mapStateToProps = (state) => ({
-  wallet: state.wallet,
-  useWalletService: state.useWalletService,
-  isShowingPinScreen: state.isShowingPinScreen,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  newToken: (token) => dispatch(newToken(token)),
-  updateSelectedToken: (token) => dispatch(updateSelectedToken(token)),
-});
-
-/**
- * This screen expect the following parameters on the navigation:
+ * This component expects the following parameters in navigation:
  * name {string} token name
  * symbol {string} token symbol
  * amount {bigint} amount of tokens to create
  */
-class CreateTokenConfirm extends React.Component {
-  /**
-   * modal {FeedbackModal} modal to display. If null, do not display
-   */
-  state = {
-    modal: null,
-  };
+const CreateTokenConfirm = () => {
+  // Hooks to replace mapStateToProps and mapDispatchToProps
+  const wallet = useSelector((state) => state.wallet);
+  const useWalletService = useSelector((state) => state.useWalletService);
+  const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
 
-  constructor(props) {
-    super(props);
-    // The BigInt values are already deserialized by the useParams hook
-    const { amount, name, symbol } = props.params;
-    this.amount = amount;
-    this.name = name;
-    this.symbol = symbol;
-    this.nativeSymbol = this.props.wallet.storage.getNativeTokenData().symbol;
-  }
+  const dispatch = useDispatch();
+  const dispatchNewToken = (token) => dispatch(newToken(token));
+  const dispatchUpdateSelectedToken = (token) => dispatch(updateSelectedToken(token));
+
+  // Navigation and params hooks
+  const navigation = useNavigation();
+  const params = useParams();
+
+  // Parse and store navigation params
+  const { amount, name, symbol } = params;
+  const nativeSymbol = wallet.storage.getNativeTokenData().symbol;
+
+  // Component state
+  const [modal, setModal] = useState(null);
+  const [modalType, setModalType] = useState(null);
 
   /**
    * Prepare data and execute create token
@@ -73,178 +61,163 @@ class CreateTokenConfirm extends React.Component {
    *
    * @param {String} pinCode User PIN
    */
-  executeCreate = async (pin) => {
-    if (this.props.useWalletService) {
-      await this.props.wallet.validateAndRenewAuthToken(pin);
+  const executeCreate = async (pin) => {
+    if (useWalletService) {
+      await wallet.validateAndRenewAuthToken(pin);
     }
 
-    const { address } = await this.props.wallet.getCurrentAddress({ markAsUsed: true });
-    this.props.wallet.prepareCreateNewToken(
-      this.name,
-      this.symbol,
-      this.amount,
+    const { address } = await wallet.getCurrentAddress({ markAsUsed: true });
+    wallet.prepareCreateNewToken(
+      name,
+      symbol,
+      amount,
       { address, pinCode: pin }
     ).then((tx) => {
       let sendTransaction;
-      if (this.props.useWalletService) {
+      if (useWalletService) {
         sendTransaction = new hathorLib.SendTransactionWalletService(
-          this.props.wallet,
+          wallet,
           { transaction: tx }
         );
       } else {
         sendTransaction = new hathorLib.SendTransaction(
-          { storage: this.props.wallet.storage, transaction: tx, pin }
+          { storage: wallet.storage, transaction: tx, pin }
         );
       }
 
       const promise = sendTransaction.runFromMining();
 
       // show loading modal
-      this.setState({
-        modalType: 'SendTransactionFeedbackModal',
-        modal: {
-          text: t`Creating token`,
-          sendTransaction,
-          promise,
-        },
+      setModalType('SendTransactionFeedbackModal');
+      setModal({
+        text: t`Creating token`,
+        sendTransaction,
+        promise,
       });
     }, (err) => {
-      this.onError(err.message);
+      onError(err.message);
     });
-  }
+  };
 
   /**
    * Executed when user clicks to create the token and opens the PIN screen
    */
-  onSendPress = () => {
-    const params = {
-      cb: this.executeCreate,
+  const onSendPress = () => {
+    const pinParams = {
+      cb: executeCreate,
       screenText: t`Enter your 6-digit pin to create your token`,
       biometryText: t`Authorize token creation`,
       canCancel: true,
       biometryLoadingText: t`Building transaction`,
     };
-    this.props.navigation.navigate('PinScreen', params);
-  }
+    navigation.navigate('PinScreen', pinParams);
+  };
 
   /**
    * Method execute after creating the token with success
    *
    * @param {Object} tx Create token tx data
    */
-  onTxSuccess = (tx) => {
-    const token = { uid: tx.hash, name: this.name, symbol: this.symbol };
-    this.props.newToken(token);
-    this.props.updateSelectedToken(token);
-    this.props.wallet.storage.registerToken(token);
-  }
+  const onTxSuccess = (tx) => {
+    const token = { uid: tx.hash, name, symbol };
+    dispatchNewToken(token);
+    dispatchUpdateSelectedToken(token);
+    wallet.storage.registerToken(token);
+  };
 
   /**
    * Show error message if there is one while creating the token
    *
    * @param {String} message Error message
    */
-  onError = (message) => {
-    this.setState({
-      modalType: 'FeedbackModal',
-      modal: {
-        icon: <Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />,
-        text: message,
-        onDismiss: () => this.setState({ modal: null }),
-      },
+  const onError = (message) => {
+    setModalType('FeedbackModal');
+    setModal({
+      icon: <Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />,
+      text: message,
+      onDismiss: () => setModal(null),
     });
-  }
+  };
 
   /**
    * Method executed after dismiss success modal
    */
-  exitScreen = () => {
-    this.setState({ modal: null });
-    this.props.navigation.navigate('CreateTokenDetail');
-  }
+  const exitScreen = () => {
+    setModal(null);
+    navigation.navigate('CreateTokenDetail');
+  };
 
-  render() {
-    return (
-      <View style={{ flex: 1 }}>
-        <HathorHeader
-          title={t`CREATE TOKEN`}
-          onBackPress={() => this.props.navigation.goBack()}
-          onCancel={() => this.props.navigation.getParent().goBack()}
-        />
+  return (
+    <View style={{ flex: 1 }}>
+      <HathorHeader
+        title={t`CREATE TOKEN`}
+        onBackPress={() => navigation.goBack()}
+        onCancel={() => navigation.getParent().goBack()}
+      />
 
-        { this.state.modal && (
-          this.state.modalType === 'FeedbackModal' ? (
-            // eslint-disable-next-line react/jsx-indent
-            <FeedbackModal
-              icon={this.state.modal.icon}
-              text={this.state.modal.text}
-              onDismiss={this.state.modal.onDismiss}
-            />
-          ) : (
-            // eslint-disable-next-line react/jsx-indent
-            <SendTransactionFeedbackModal
-              text={this.state.modal.text}
-              sendTransaction={this.state.modal.sendTransaction}
-              promise={this.state.modal.promise}
-              successText={<TextFmt>{t`**${this.name}** created successfully`}</TextFmt>}
-              onTxSuccess={this.onTxSuccess}
-              onDismissSuccess={this.exitScreen}
-              onDismissError={() => this.setState({ modal: null })}
-              hide={this.props.isShowingPinScreen}
-            />
-          )
-        )}
+      {modal && (
+        modalType === 'FeedbackModal' ? (
+          <FeedbackModal
+            icon={modal.icon}
+            text={modal.text}
+            onDismiss={modal.onDismiss}
+          />
+        ) : (
+          <SendTransactionFeedbackModal
+            text={modal.text}
+            sendTransaction={modal.sendTransaction}
+            promise={modal.promise}
+            successText={<TextFmt>{t`**${name}** created successfully`}</TextFmt>}
+            onTxSuccess={onTxSuccess}
+            onDismissSuccess={exitScreen}
+            onDismissError={() => setModal(null)}
+            hide={isShowingPinScreen}
+          />
+        )
+      )}
 
-        <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-          <View>
-            <View style={{ alignItems: 'center', marginTop: 40 }}>
-              <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
-                {t`Amount of ${this.name}`}
-              </InputLabel>
-              <AmountTextInput
-                editable={false}
-                value={hathorLib.numberUtils.prettyValue(this.amount)}
-              />
-            </View>
-            <SimpleInput
-              label={t`Token name`}
+      <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
+        <View>
+          <View style={{ alignItems: 'center', marginTop: 40 }}>
+            <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
+              {t`Amount of ${name}`}
+            </InputLabel>
+            <AmountTextInput
               editable={false}
-              value={this.name}
-              containerStyle={{ marginTop: 48 }}
-            />
-            <SimpleInput
-              label={t`Token symbol`}
-              editable={false}
-              value={this.symbol}
-              containerStyle={{ marginTop: 32 }}
-            />
-            <SimpleInput
-              label={t`Deposit`}
-              editable={false}
-              value={`${hathorLib.numberUtils.prettyValue(
-                hathorLib.tokensUtils.getDepositAmount(this.amount)
-              )} ${this.nativeSymbol}`}
-              containerStyle={{ marginTop: 32 }}
+              value={hathorLib.numberUtils.prettyValue(amount)}
             />
           </View>
-          <NewHathorButton
-            title={t`Create token`}
-            onPress={this.onSendPress}
-            // disable while modal is visible
-            disabled={this.state.modal !== null}
+          <SimpleInput
+            label={t`Token name`}
+            editable={false}
+            value={name}
+            containerStyle={{ marginTop: 48 }}
+          />
+          <SimpleInput
+            label={t`Token symbol`}
+            editable={false}
+            value={symbol}
+            containerStyle={{ marginTop: 32 }}
+          />
+          <SimpleInput
+            label={t`Deposit`}
+            editable={false}
+            value={`${hathorLib.numberUtils.prettyValue(
+              hathorLib.tokensUtils.getDepositAmount(amount)
+            )} ${nativeSymbol}`}
+            containerStyle={{ marginTop: 32 }}
           />
         </View>
-        <OfflineBar />
+        <NewHathorButton
+          title={t`Create token`}
+          onPress={onSendPress}
+          // disable while modal is visible
+          disabled={modal !== null}
+        />
       </View>
-    );
-  }
-}
-
-const CreateTokenConfirmWrapper = (props) => {
-  const navigation = useNavigation();
-  const params = useParams();
-  const ConnectedComponent = connect(mapStateToProps, mapDispatchToProps)(CreateTokenConfirm);
-  return <ConnectedComponent {...props} navigation={navigation} params={params} />;
+      <OfflineBar />
+    </View>
+  );
 };
 
-export default CreateTokenConfirmWrapper;
+export default CreateTokenConfirm;
