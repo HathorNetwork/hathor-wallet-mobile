@@ -8,7 +8,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { connect } from 'react-redux';
-import { t } from 'ttag';
+import { msgid, ngettext, t } from 'ttag';
 import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
@@ -122,7 +122,10 @@ class SendConfirmScreen extends React.Component {
       const balance = this.props.tokensBalance[this.token.uid].data;
       const available = balance ? balance.available : 0;
       const amountAndToken = `${renderValue(available, this.isNFT)} ${this.token.symbol}`;
-      return t`${amountAndToken} available`;
+      // `available` is a BigInt and ngettext expects a Number, since it's only used to
+      // decide whether to use the singular or plural form, it's ok to convert it to Number even
+      // if it's a large number
+      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, Number(available));
     };
 
     const tokenNameUpperCase = this.token.name.toUpperCase();
