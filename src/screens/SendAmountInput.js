@@ -108,7 +108,7 @@ class SendAmountInput extends React.Component {
       // Ensure available is a BigInt for comparison
       const availableBigInt = bigIntCoercibleSchema.parse(available);
 
-      // We already have the amountValue as BigInt from AmountTextInput
+      // Use amountValue from state
       const amount = this.state.amountValue;
 
       if (!amount) {

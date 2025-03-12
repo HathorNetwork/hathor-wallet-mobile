@@ -11,6 +11,8 @@ import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import { getAmountParsed, getIntegerAmount } from '../utils';
 import { COLORS } from '../styles/themes';
 
+/* global BigInt */
+
 class AmountTextInput extends React.Component {
   constructor(props) {
     super(props);
@@ -63,7 +65,7 @@ class AmountTextInput extends React.Component {
     if (text === '') {
       // Need to handle empty string separately
       this.setState({ text: '' });
-      this.props.onAmountUpdate('', null);
+      this.props.onAmountUpdate(text, null);
       return;
     }
 
@@ -103,7 +105,7 @@ class AmountTextInput extends React.Component {
 
     if (isValid) {
       this.setState({ text: parsedText });
-      // Pass both the text representation and BigInt value to parent
+      // Pass both text and BigInt value to parent
       this.props.onAmountUpdate(parsedText, bigIntValue);
     }
   }
@@ -112,8 +114,8 @@ class AmountTextInput extends React.Component {
     const placeholder = this.props.allowOnlyInteger ? '0' : '0.00';
     const { style: customStyle, ...props } = this.props;
 
-    // Filter out value as we're managing it internally
-    const { value, onAmountUpdate, allowOnlyInteger, ...otherProps } = props;
+    // Only destructure the props you don't need to pass down
+    const { ...otherProps } = props;
 
     return (
       <TextInput

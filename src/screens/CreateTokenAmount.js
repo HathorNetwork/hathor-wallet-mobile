@@ -21,8 +21,8 @@ import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
 import { getIntegerAmount, getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 import { COLORS } from '../styles/themes';
+import { useNavigation, useParams } from '../hooks/navigation';
 
-// Declare BigInt for ESLint
 /* global BigInt */
 
 /**
@@ -37,6 +37,10 @@ const CreateTokenAmount = (props) => {
   const [deposit, setDeposit] = useState(bigIntCoercibleSchema.parse(0));
   const [error, setError] = useState(null);
   const wallet = useSelector((state) => state.wallet);
+  const navigation = useNavigation();
+
+  // Get route params with BigInt support
+  const { name, symbol } = props.route.params;
 
   const nativeSymbol = wallet.storage.getNativeTokenData().symbol;
 
@@ -49,10 +53,6 @@ const CreateTokenAmount = (props) => {
       locked: bigIntCoercibleSchema.parse(0),
     }
   ));
-
-  // Get name and symbol from navigation params
-  const { route, navigation } = props;
-  const { name, symbol } = route.params;
 
   // Focus the input when the screen is focused
   useEffect(() => {
@@ -71,7 +71,6 @@ const CreateTokenAmount = (props) => {
 
     try {
       if (bigIntValue !== null) {
-        // Use the BigInt value directly from AmountTextInput
         setAmount(bigIntValue);
 
         // Calculate deposit (1% of amount)
@@ -99,19 +98,19 @@ const CreateTokenAmount = (props) => {
     }
   };
 
-  // Handle button press
+  // Handle button press - BigInt values are automatically serialized
   const onButtonPress = () => {
     navigation.navigate('CreateTokenConfirm', {
-      name: route.params.name,
-      symbol: route.params.symbol,
-      amount,
-      deposit,
+      name: props.route.params.name,
+      symbol: props.route.params.symbol,
+      amount, // BigInt value - will be automatically serialized
+      deposit // BigInt value - will be automatically serialized
     });
   };
 
   // Check if the button should be disabled
   const isButtonDisabled = () => {
-    if (!route.params.name || !route.params.symbol) {
+    if (!props.route.params.name || !props.route.params.symbol) {
       return true;
     }
 

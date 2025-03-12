@@ -13,15 +13,16 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
-import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 
 import { IS_MULTI_TOKEN } from '../constants';
 import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
 import TokenBox from './TokenBox';
 import { newInvoice } from '../actions';
-import { getIntegerAmount, isTokenNFT } from '../utils';
+import { isTokenNFT } from '../utils';
 import OfflineBar from './OfflineBar';
+
+/* global BigInt */
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -80,7 +81,7 @@ class NewPaymentRequest extends React.Component {
   }
 
   focus = () => {
-    this.setState({ amount: '', token: this.props.selectedToken });
+    this.setState({ amount: '', amountValue: null, token: this.props.selectedToken });
     this.focusInput();
   }
 
@@ -98,7 +99,7 @@ class NewPaymentRequest extends React.Component {
     const { address } = await this.props.wallet.getCurrentAddress();
 
     try {
-      // Use the amountValue from state, which is already a BigInt
+      // Use the amountValue from state
       const amount = this.state.amountValue;
 
       if (!amount) {

@@ -26,6 +26,9 @@ import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackM
 import TextFmt from '../components/TextFmt';
 import { newToken, updateSelectedToken } from '../actions';
 import errorIcon from '../assets/images/icErrorBig.png';
+import { useNavigation, useParams } from '../hooks/navigation';
+
+/* global BigInt */
 
 /**
  * wallet {HathorWallet} HathorWallet lib object
@@ -45,7 +48,7 @@ const mapDispatchToProps = (dispatch) => ({
  * This screen expect the following parameters on the navigation:
  * name {string} token name
  * symbol {string} token symbol
- * amount {int} amount of tokens to create
+ * amount {bigint} amount of tokens to create
  */
 class CreateTokenConfirm extends React.Component {
   /**
@@ -57,9 +60,9 @@ class CreateTokenConfirm extends React.Component {
 
   constructor(props) {
     super(props);
-    const { amount, name, symbol } = this.props.route.params;
-    // Ensure amount is a BigInt
-    this.amount = typeof amount === 'bigint' ? amount : bigIntCoercibleSchema.parse(amount);
+    // The BigInt values are already deserialized by the useParams hook
+    const { amount, name, symbol } = props.params;
+    this.amount = amount;
     this.name = name;
     this.symbol = symbol;
     this.nativeSymbol = this.props.wallet.storage.getNativeTokenData().symbol;
@@ -238,4 +241,11 @@ class CreateTokenConfirm extends React.Component {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(CreateTokenConfirm);
+const CreateTokenConfirmWrapper = (props) => {
+  const navigation = useNavigation();
+  const params = useParams();
+  const ConnectedComponent = connect(mapStateToProps, mapDispatchToProps)(CreateTokenConfirm);
+  return <ConnectedComponent {...props} navigation={navigation} params={params} />;
+};
+
+export default CreateTokenConfirmWrapper;

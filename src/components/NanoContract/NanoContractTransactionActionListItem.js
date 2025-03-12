@@ -129,8 +129,6 @@ const ContentWrapper = ({ tokenSymbol, type }) => {
  */
 const TokenAmount = ({ amount, isNft, type }) => {
   const isReceivingToken = type === NANO_CONTRACT_ACTION.withdrawal;
-
-  // No need to convert, directly use the BigInt amount
   const amountToRender = renderValue(amount, isNft);
 
   return (
