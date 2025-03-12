@@ -114,9 +114,6 @@ class AmountTextInput extends React.Component {
     const placeholder = this.props.allowOnlyInteger ? '0' : '0.00';
     const { style: customStyle, ...props } = this.props;
 
-    // Only destructure the props you don't need to pass down
-    const { ...otherProps } = props;
-
     return (
       <TextInput
         ref={this.inputRef}
@@ -129,7 +126,7 @@ class AmountTextInput extends React.Component {
         keyboardType='numeric'
         placeholder={placeholder}
         placeholderTextColor={COLORS.midContrastDetail}
-        {...otherProps}
+        {...props}
       />
     );
   }
