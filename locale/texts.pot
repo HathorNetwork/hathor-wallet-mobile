@@ -48,12 +48,12 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
 #: src/models.js:107
-#: src/utils.js:567
+#: src/utils.js:584
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
 
-#: src/utils.js:241
+#: src/utils.js:253
 msgid "Invalid address"
 msgstr ""
 
@@ -197,84 +197,84 @@ msgstr ""
 msgid "Start the Wallet"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:90
+#: src/screens/CreateTokenAmount.js:84
+#: src/screens/CreateTokenAmount.js:96
+#: src/screens/SendAmountInput.js:115
 msgid "Invalid amount"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:143
-#: src/screens/CreateTokenConfirm.js:168
+#: src/screens/CreateTokenAmount.js:146
+#: src/screens/CreateTokenConfirm.js:153
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:151
+#: src/screens/CreateTokenAmount.js:154
 #, javascript-format
 msgid "Amount of ${ name } (${ symbol })"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:168
+#: src/screens/CreateTokenAmount.js:171
 msgid "Deposit:"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:172
+#: src/screens/CreateTokenAmount.js:175
 #, javascript-format
 msgid "You have ${ amountAvailableText } ${ nativeSymbol } available"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:177
+#: src/screens/CreateTokenAmount.js:180
 #: src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84
 #: src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382
 #: src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:194
+#: src/screens/SendAmountInput.js:199
 msgid "Next"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:104
-#.  show loading modal
+#: src/screens/CreateTokenConfirm.js:93
 msgid "Creating token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:120
+#: src/screens/CreateTokenConfirm.js:108
 msgid "Enter your 6-digit pin to create your token"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:121
+#: src/screens/CreateTokenConfirm.js:109
 msgid "Authorize token creation"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:123
+#: src/screens/CreateTokenConfirm.js:111
 #: src/screens/SendConfirmScreen.js:105
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:187
-#.  eslint-disable-next-line react/jsx-indent
+#: src/screens/CreateTokenConfirm.js:170
 #, javascript-format
-msgid "**${ this.name }** created successfully"
+msgid "**${ name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:200
-msgid "Amount of ${ this.name }"
+#: src/screens/CreateTokenConfirm.js:183
+msgid "Amount of ${ name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:208
+#: src/screens/CreateTokenConfirm.js:191
 msgid "Token name"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:214
+#: src/screens/CreateTokenConfirm.js:197
 #: src/screens/CreateTokenSymbol.js:69
 msgid "Token symbol"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:220
+#: src/screens/CreateTokenConfirm.js:203
 msgid "Deposit"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:229
+#: src/screens/CreateTokenConfirm.js:212
 msgid "Create token"
 msgstr ""
 
@@ -459,32 +459,32 @@ msgstr ""
 msgid "Reset wallet"
 msgstr ""
 
-#: src/screens/MainScreen.js:130
+#: src/screens/MainScreen.js:127
 msgid "No transactions"
 msgstr ""
 
-#: src/screens/MainScreen.js:133
+#: src/screens/MainScreen.js:130
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 
-#: src/screens/MainScreen.js:150
+#: src/screens/MainScreen.js:147
 msgid "Loading transactions"
 msgstr ""
 
-#: src/screens/MainScreen.js:159
+#: src/screens/MainScreen.js:156
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:162
+#: src/screens/MainScreen.js:159
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:549
-#: src/screens/MainScreen.js:581
+#: src/screens/MainScreen.js:546
+#: src/screens/MainScreen.js:578
 msgid "Available Balance"
 msgstr ""
 
-#: src/screens/MainScreen.js:558
+#: src/screens/MainScreen.js:555
 msgid "Locked"
 msgstr ""
 
@@ -764,23 +764,24 @@ msgstr ""
 msgid "Address to send"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:111
+#: src/screens/SendAmountInput.js:121
 msgid "Insufficient funds"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:121
+#: src/screens/SendAmountInput.js:129
 msgid "Error processing amount"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:150
-#: src/screens/SendConfirmScreen.js:125
-#.  Just use the string directly for display
+#: src/screens/SendAmountInput.js:155
+#: src/screens/SendConfirmScreen.js:128
 #, javascript-format
 msgid "${ amountAndToken } available"
-msgstr ""
+msgid_plural "${ amountAndToken } available"
+msgstr[0] ""
+msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:163
-#: src/screens/SendConfirmScreen.js:133
+#: src/screens/SendAmountInput.js:168
+#: src/screens/SendConfirmScreen.js:136
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
@@ -799,19 +800,19 @@ msgstr ""
 msgid "Authorize operation"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:142
+#: src/screens/SendConfirmScreen.js:145
 msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr ""
 
 #: src/components/NanoContract/EditAddressModal.js:60
 #: src/components/NanoContract/SelectAddressModal.js:117
 #: src/components/Reown/SignMessageRequest.js:40
-#: src/screens/SendConfirmScreen.js:161
+#: src/screens/SendConfirmScreen.js:164
 msgid "Address"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:291
-#: src/screens/SendConfirmScreen.js:168
+#: src/screens/SendConfirmScreen.js:171
 msgid "Send"
 msgstr ""
 
@@ -1313,7 +1314,7 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: src/components/NewPaymentRequest.js:174
+#: src/components/NewPaymentRequest.js:189
 msgid "Create payment request"
 msgstr ""
 
