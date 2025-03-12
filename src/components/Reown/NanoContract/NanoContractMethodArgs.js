@@ -164,8 +164,7 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
  */
 const ArgValue = ({ type, value, network, tokens }) => {
   if (type === 'Amount') {
-    // Convert amount to BigInt before rendering
-    return renderValue(BigInt(value || 0), false);
+    return renderValue(value);
   }
 
   if (type === 'Timestamp') {
