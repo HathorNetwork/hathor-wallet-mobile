@@ -22,6 +22,9 @@ import { FeedbackContent } from '../../FeedbackContent';
 import Spinner from '../../Spinner';
 import { getTimestampFormat, parseScriptData, renderValue } from '../../../utils';
 
+// Declare BigInt for ESLint
+/* global BigInt */
+
 /**
  * Get method info from registered blueprint data.
  *
@@ -161,7 +164,8 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
  */
 const ArgValue = ({ type, value, network, tokens }) => {
   if (type === 'Amount') {
-    return renderValue(value);
+    // Convert amount to BigInt before rendering
+    return renderValue(BigInt(value || 0), false);
   }
 
   if (type === 'Timestamp') {

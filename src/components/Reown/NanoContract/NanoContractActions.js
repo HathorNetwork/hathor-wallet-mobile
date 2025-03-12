@@ -176,7 +176,7 @@ const Icon = ({ type }) => {
  * It renders an amount with the right format.
  *
  * @param {Object} props
- * @param {number} props.amount
+ * @param {bigint} props.amount The token amount as BigInt
  * @param {boolean} props.isNft
  */
 const Amount = ({ amount, isNft }) => {

@@ -66,31 +66,36 @@ const CreateTokenAmount = (props) => {
   }, [navigation]);
 
   // Handle amount text change
-  const onAmountChange = (text) => {
+  const onAmountChange = (text, bigIntValue) => {
     setAmountText(text);
 
     try {
-      // Convert to integer considering the decimal places
-      const integerAmount = getIntegerAmount(text);
-      // Parse to BigInt
-      const parsedAmount = bigIntCoercibleSchema.parse(integerAmount);
-      setAmount(parsedAmount);
+      if (bigIntValue !== null) {
+        // Use the BigInt value directly from AmountTextInput
+        setAmount(bigIntValue);
 
-      // Calculate deposit (1% of amount)
-      const calculatedDeposit = parsedAmount / BigInt(100);
-      setDeposit(calculatedDeposit);
+        // Calculate deposit (1% of amount)
+        const calculatedDeposit = bigIntValue / BigInt(100);
+        setDeposit(calculatedDeposit);
 
-      setError(null);
-    } catch (e) {
-      // If invalid input, set amount and deposit to 0
-      setAmount(bigIntCoercibleSchema.parse(0));
-      setDeposit(bigIntCoercibleSchema.parse(0));
-
-      if (text) {
+        setError(null);
+      } else if (text) {
+        // If text is not empty but no valid BigInt was provided, show error
+        setAmount(bigIntCoercibleSchema.parse(0));
+        setDeposit(bigIntCoercibleSchema.parse(0));
         setError(t`Invalid amount`);
       } else {
+        // Text is empty
+        setAmount(bigIntCoercibleSchema.parse(0));
+        setDeposit(bigIntCoercibleSchema.parse(0));
         setError(null);
       }
+    } catch (e) {
+      // Handle any unexpected errors
+      console.error('Error processing amount:', e);
+      setAmount(bigIntCoercibleSchema.parse(0));
+      setDeposit(bigIntCoercibleSchema.parse(0));
+      setError(t`Invalid amount`);
     }
   };
 

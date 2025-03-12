@@ -13,6 +13,7 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 import { get } from 'lodash';
+import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 
 import { IS_MULTI_TOKEN } from '../constants';
 import NewHathorButton from './NewHathorButton';
@@ -37,11 +38,13 @@ class NewPaymentRequest extends React.Component {
     super(props);
 
     /**
-     * amount {string} Amount for the payment request
+     * amount {string} Amount text for the payment request
+     * amountValue {BigInt} BigInt value of the amount
      * token {Object} Selected token config
      */
     this.state = {
       amount: '',
+      amountValue: null,
       token: this.props.selectedToken,
     };
 
@@ -93,27 +96,36 @@ class NewPaymentRequest extends React.Component {
 
   createPaymentRequest = async () => {
     const { address } = await this.props.wallet.getCurrentAddress();
-    let amount;
-    if (isTokenNFT(this.getTokenUID(), this.props.tokenMetadata)) {
-      amount = parseInt(this.state.amount, 10);
-    } else {
-      amount = getIntegerAmount(this.state.amount);
+
+    try {
+      // Use the amountValue from state, which is already a BigInt
+      const amount = this.state.amountValue;
+
+      if (!amount) {
+        console.error('Invalid amount value');
+        return;
+      }
+
+      this.props.dispatch(newInvoice(address, amount, this.state.token));
+      this.modalOpened = true;
+      this.props.navigation.navigate('PaymentRequestDetail');
+    } catch (e) {
+      console.error('Failed to create payment request:', e);
+      // Handle error if needed
     }
-    this.props.dispatch(newInvoice(address, amount, this.state.token));
-    this.modalOpened = true;
-    this.props.navigation.navigate('PaymentRequestDetail');
   }
 
-  isButtonDisabled = () => {
-    if (this.state.amount === '') {
-      return true;
-    }
+  isButtonDisabled = () => (
+    !this.state.amount
+    || !this.state.amountValue
+    || this.state.amountValue === 0n
+  );
 
-    if (getIntegerAmount(this.state.amount) === 0) {
-      return true;
-    }
-
-    return false;
+  onAmountUpdate = (text, value) => {
+    this.setState({
+      amount: text,
+      amountValue: value,
+    });
   }
 
   onTokenBoxPress = () => {
@@ -159,7 +171,7 @@ class NewPaymentRequest extends React.Component {
             {renderGhostElement()}
             <AmountTextInput
               ref={this.inputRef}
-              onAmountUpdate={(amount) => this.setState({ amount })}
+              onAmountUpdate={this.onAmountUpdate}
               value={this.state.amount}
               style={{ flex: 1 }}
               allowOnlyInteger={isTokenNFT(this.getTokenUID(), this.props.tokenMetadata)}
