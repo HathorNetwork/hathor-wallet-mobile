@@ -122,10 +122,10 @@ class SendConfirmScreen extends React.Component {
       const balance = this.props.tokensBalance[this.token.uid].data;
       const available = balance ? balance.available : 0;
       const amountAndToken = `${renderValue(available, this.isNFT)} ${this.token.symbol}`;
-      // `available` is a BigInt and ngettext expects a Number, since it's only used to
-      // decide whether to use the singular or plural form, it's ok to convert it to Number even
-      // if it's a large number
-      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, Number(available));
+      // Convert BigInt to Number for ngettext - extract as variable for ttag compatibility
+      // This is only used for pluralization so precision loss is acceptable
+      const availableCount = Number(available);
+      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, availableCount);
     };
 
     const tokenNameUpperCase = this.token.name.toUpperCase();
