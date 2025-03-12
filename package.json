@@ -1,6 +1,6 @@
 {
   "name": "HathorMobile",
-  "version": "0.30.1",
+  "version": "0.31.0",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
@@ -15,7 +15,7 @@
     "test": "jest",
     "setup": "npm install && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack && npx patch-package",
     "setup:release": "npm ci && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack && npx patch-package",
-    "locale-update-pot": "ttag extract -o ./locale/texts.pot ./src/"
+    "i18n": "make i18n"
   },
   "dependencies": {
     "@ethersproject/shims": "5.7.0",
