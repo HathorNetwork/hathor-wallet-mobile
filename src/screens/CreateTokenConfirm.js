@@ -14,7 +14,6 @@ import { connect } from 'react-redux';
 import { t } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
-import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
