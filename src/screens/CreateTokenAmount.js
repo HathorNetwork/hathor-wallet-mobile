@@ -12,16 +12,15 @@ import { useSelector } from 'react-redux';
 import { t, jt } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
-import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import AmountTextInput from '../components/AmountTextInput';
 import HathorHeader from '../components/HathorHeader';
 import InfoBox from '../components/InfoBox';
 import InputLabel from '../components/InputLabel';
 import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
-import { getIntegerAmount, getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
+import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 import { COLORS } from '../styles/themes';
-import { useNavigation, useParams } from '../hooks/navigation';
+import { useNavigation } from '../hooks/navigation';
 
 /* global BigInt */
 
@@ -33,8 +32,8 @@ import { useNavigation, useParams } from '../hooks/navigation';
 const CreateTokenAmount = (props) => {
   const inputRef = useRef(null);
   const [amountText, setAmountText] = useState('');
-  const [amount, setAmount] = useState(bigIntCoercibleSchema.parse(0));
-  const [deposit, setDeposit] = useState(bigIntCoercibleSchema.parse(0));
+  const [amount, setAmount] = useState(0n);
+  const [deposit, setDeposit] = useState(0n);
   const [error, setError] = useState(null);
   const wallet = useSelector((state) => state.wallet);
   const navigation = useNavigation();
@@ -49,8 +48,8 @@ const CreateTokenAmount = (props) => {
     state.tokensBalance,
     `[${hathorLib.constants.NATIVE_TOKEN_UID}].data`,
     {
-      available: bigIntCoercibleSchema.parse(0),
-      locked: bigIntCoercibleSchema.parse(0),
+      available: 0n,
+      locked: 0n,
     }
   ));
 
@@ -66,34 +65,34 @@ const CreateTokenAmount = (props) => {
   }, [navigation]);
 
   // Handle amount text change
-  const onAmountChange = (text, bigIntValue) => {
+  const onAmountChange = (text, value) => {
     setAmountText(text);
 
     try {
-      if (bigIntValue !== null) {
-        setAmount(bigIntValue);
+      if (value !== null) {
+        setAmount(value);
 
         // Calculate deposit (1% of amount)
-        const calculatedDeposit = bigIntValue / BigInt(100);
+        const calculatedDeposit = value / BigInt(100);
         setDeposit(calculatedDeposit);
 
         setError(null);
       } else if (text) {
         // If text is not empty but no valid BigInt was provided, show error
-        setAmount(bigIntCoercibleSchema.parse(0));
-        setDeposit(bigIntCoercibleSchema.parse(0));
+        setAmount(0n);
+        setDeposit(0n);
         setError(t`Invalid amount`);
       } else {
         // Text is empty
-        setAmount(bigIntCoercibleSchema.parse(0));
-        setDeposit(bigIntCoercibleSchema.parse(0));
+        setAmount(0n);
+        setDeposit(0n);
         setError(null);
       }
     } catch (e) {
       // Handle any unexpected errors
       console.error('Error processing amount:', e);
-      setAmount(bigIntCoercibleSchema.parse(0));
-      setDeposit(bigIntCoercibleSchema.parse(0));
+      setAmount(0n);
+      setDeposit(0n);
       setError(t`Invalid amount`);
     }
   };
@@ -114,7 +113,7 @@ const CreateTokenAmount = (props) => {
       return true;
     }
 
-    if (amount <= BigInt(0)) {
+    if (amount <= 0n) {
       return true;
     }
 
