@@ -5,13 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Image } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { t } from 'ttag';
 import FeedbackModal from '../FeedbackModal';
 import NewHathorButton from '../NewHathorButton';
-import { hideReownModal } from '../../actions';
+import { hideReownModal, setSendTxStatusReady } from '../../actions';
 import errorIcon from '../../assets/images/icErrorBig.png';
 
 /**
@@ -20,7 +20,14 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 export const InsufficientFundsModal = () => {
   const dispatch = useDispatch();
 
+  // Reset transaction status when component unmounts
+  useEffect(() => () => {
+    dispatch(setSendTxStatusReady());
+  }, []);
+
   const handleDismiss = () => {
+    // Reset the transaction status to prevent it from affecting future transactions
+    dispatch(setSendTxStatusReady());
     dispatch(hideReownModal());
   };
 

@@ -85,7 +85,6 @@ import {
   types,
   setReown,
   setReownModal,
-  hideReownModal,
   setReownSessions,
   onExceptionCaptured,
   setWCConnectionFailed,
@@ -106,7 +105,6 @@ import {
   setSendTxStatusLoading,
   setSendTxStatusReady,
   showSendTransactionModal,
-  showInsufficientFundsModal,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -543,8 +541,17 @@ export function* processRequest(action) {
           show: true,
           type: ReownModalTypes.INSUFFICIENT_FUNDS
         }));
-
-        shouldAnswer = true;
+        yield call(() => walletKit.respondSessionRequest({
+          topic: payload.topic,
+          response: {
+            id: payload.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.INVALID_PAYLOAD,
+              message: 'Insufficient funds for transaction',
+            },
+          },
+        }));
         break;
       default:
         console.log('Unknown error type:', e.constructor.name);
