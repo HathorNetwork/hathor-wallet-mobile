@@ -71,4 +71,19 @@ export const commonStyles = StyleSheet.create({
     color: COLORS.black,
     marginBottom: 24,
   },
+  // Modal styles
+  body: {
+    paddingBottom: 24,
+  },
+  selectionContainer: {
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.freeze100,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
 });
