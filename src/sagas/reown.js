@@ -73,6 +73,7 @@ import {
   SendNanoContractTxError,
   SendTransactionError,
   InsufficientFundsError,
+  PrepareSendTransactionError,
 } from 'hathor-rpc-handler-test';
 import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
@@ -502,6 +503,20 @@ export function* processRequest(action) {
           yield* processRequest(action);
         }
       } break;
+      case PrepareSendTransactionError:
+        shouldAnswer = false;
+
+        yield call(() => walletKit.respondSessionRequest({
+          topic: payload.topic,
+          response: {
+            id: payload.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.INVALID_PAYLOAD,
+              message: 'Transaction failed validation',
+            },
+          },
+        })); break;
       case SendTransactionError: {
         // If the transaction is invalid, we don't receive a
         // SendTransactionConfirmationPrompt, so we need to check if the modal
