@@ -134,7 +134,7 @@ const baseStyles = StyleSheet.create({
 });
 
 export const ReownModalTypes = {
-  CONNECT: 'CONNECT',
+  CONNECT: 'Connect',
   SIGN_MESSAGE: 'SignMessage',
   SIGN_ORACLE_DATA: 'SignOracleData',
   SEND_NANO_CONTRACT_TX: 'SendNanoContractTx',
