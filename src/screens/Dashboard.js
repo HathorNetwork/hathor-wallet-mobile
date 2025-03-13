@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
@@ -26,6 +26,10 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
 import { getNanoContractFeatureToggle } from '../utils';
 import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
+import { logger } from '../logger';
+import Performance from '../utils/performance';
+
+const log = logger('dashboard');
 
 /**
  * State filter to retrieve token-related data from root state.
@@ -99,6 +103,11 @@ export const Dashboard = () => {
   const [currList, selectList] = useState(listOption.tokens);
   const navigation = useNavigation();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    Performance.end('WALLET_TOTAL_STARTUP_TO_DASHBOARD');
+    log.log('🔍 PROFILING: Dashboard component mounted successfully');
+  }, []);
 
   const onTokenPress = (token) => {
     const status = getTokensBalanceStatus(tokensBalance, token);
