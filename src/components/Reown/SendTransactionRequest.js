@@ -260,7 +260,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
                   {formatValue(input?.value)} {getTokenSymbol(input?.token)}
                 </Text>
               </View>
-              <Text style={styles.labelText}>{t`ID da Transação`}</Text>
+              <Text style={styles.labelText}>{t`Transaction ID`}</Text>
               <View style={styles.valueContainer}>
                 <Text style={styles.monospace}>
                   {truncateTxId(input?.txId)} ({input?.index})
@@ -271,7 +271,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
                   </TouchableOpacity>
                 )}
               </View>
-              <Text style={styles.labelText}>{t`Endereço`}</Text>
+              <Text style={styles.labelText}>{t`Address`}</Text>
               <TouchableOpacity
                 style={styles.addressContainer}
                 onPress={() => copyToClipboard(input?.address)}
@@ -308,7 +308,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
                   {formatValue(output?.value)} {getTokenSymbol(output?.token)}
                 </Text>
               </View>
-              <Text style={styles.labelText}>{t`Endereço`}</Text>
+              <Text style={styles.labelText}>{t`Address`}</Text>
               <TouchableOpacity
                 style={styles.addressContainer}
                 onPress={() => copyToClipboard(output?.address)}
@@ -343,7 +343,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
       <View>
         <Text style={styles.sectionTitle}>{t`Change Address`}</Text>
         <View style={styles.itemContainer}>
-          <Text style={styles.labelText}>{t`Endereço`}</Text>
+          <Text style={styles.labelText}>{t`Address`}</Text>
           <TouchableOpacity
             style={styles.addressContainer}
             onPress={() => copyToClipboard(data.changeAddress)}
