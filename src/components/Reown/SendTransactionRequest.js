@@ -343,7 +343,6 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
       <View>
         <Text style={styles.sectionTitle}>{t`Change Address`}</Text>
         <View style={styles.itemContainer}>
-          <Text style={styles.labelText}>{t`Address`}</Text>
           <TouchableOpacity
             style={styles.addressContainer}
             onPress={() => copyToClipboard(data.changeAddress)}
