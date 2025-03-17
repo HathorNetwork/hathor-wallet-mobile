@@ -378,17 +378,11 @@ export const getLightBackground = (alpha) => {
  * @return {string} Formatted value for display
  */
 export const renderValue = (amount, isInteger) => {
-  try {
-    if (isInteger) {
-      return hathorLib.numberUtils.prettyIntegerValue(amount);
-    }
-
-    return hathorLib.numberUtils.prettyValue(amount);
-  } catch (e) {
-    console.error('Failed to render value:', e);
-    // Return a fallback string in case of error
-    return '0';
+  if (isInteger) {
+    return hathorLib.numberUtils.prettyIntegerValue(amount);
   }
+
+  return hathorLib.numberUtils.prettyValue(amount);
 };
 
 /**
