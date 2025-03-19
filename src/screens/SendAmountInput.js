@@ -104,29 +104,20 @@ class SendAmountInput extends React.Component {
     });
     const { available } = balance.data;
 
-    try {
-      // Ensure available is a BigInt for comparison
-      const availableBigInt = bigIntCoercibleSchema.parse(available);
+    // Use amountValue from state
+    const amount = this.state.amountValue;
 
-      // Use amountValue from state
-      const amount = this.state.amountValue;
+    if (!amount) {
+      this.setState({ error: t`Invalid amount` });
+      return;
+    }
 
-      if (!amount) {
-        this.setState({ error: t`Invalid amount` });
-        return;
-      }
-
-      // Compare BigInt values
-      if (availableBigInt < amount) {
-        this.setState({ error: t`Insufficient funds` });
-      } else {
-        // forward the address we got from the last screen to the next one
-        const { address } = this.props.route.params;
-        this.props.navigation.navigate('SendConfirmScreen', { address, amount, token: this.state.token });
-      }
-    } catch (e) {
-      console.error('Failed to process amounts:', e);
-      this.setState({ error: t`Error processing amount` });
+    if (available < amount) {
+      this.setState({ error: t`Insufficient funds` });
+    } else {
+      // forward the address we got from the last screen to the next one
+      const { address } = this.props.route.params;
+      this.props.navigation.navigate('SendConfirmScreen', { address, amount, token: this.state.token });
     }
   }
 
