@@ -53,6 +53,7 @@ class AmountTextInput extends React.Component {
     }
 
     let parsedText = text;
+    let bigIntValue;
     if (this.props.allowOnlyInteger) {
       // We allow only integers for NFT
       parsedText = parsedText.replace(/[^0-9]/g, '');
@@ -60,30 +61,19 @@ class AmountTextInput extends React.Component {
 
     parsedText = getAmountParsed(parsedText);
 
-    let bigIntValue = null;
+    // There is no NaN in BigInt, it either returns a valid bigint or throws
+    // an error.
     let isValid = true;
+    try {
+      bigIntValue = getIntegerAmount(parsedText);
 
-    if (!this.props.allowOnlyInteger) {
-      try {
-        // Parse to BigInt and validate
-        bigIntValue = getIntegerAmount(parsedText);
-        // Convert to Number only for validation
-        const amountNumber = Number(bigIntValue);
-        if (Number.isNaN(amountNumber) || amountNumber < 0) {
+      if (!this.props.allowOnlyInteger) {
+        if (bigIntValue < 0n) {
           isValid = false;
         }
-      } catch (e) {
-        console.error('Failed to validate amount:', e);
-        isValid = false;
       }
-    } else {
-      try {
-        // For integers (NFTs), directly parse to BigInt
-        bigIntValue = bigIntCoercibleSchema.parse(parseInt(parsedText, 10) || 0);
-      } catch (e) {
-        console.error('Failed to parse integer amount to BigInt:', e);
-        isValid = false;
-      }
+    } catch (e) {
+      isValid = false;
     }
 
     if (isValid) {

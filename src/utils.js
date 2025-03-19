@@ -62,28 +62,24 @@ export const getShortContent = (content, length = 4) => (
  *
  * @param {string} value - The amount as a string
  * @return {BigInt} The integer value as a BigInt
+ * @throws {Error} When the input value cannot be parsed to a BigInt
  */
 export const getIntegerAmount = (value) => {
-  try {
-    // Remove any whitespace and standardize decimal separator
-    const cleanValue = value.trim().replace(',', '.');
+  // Remove any whitespace and standardize decimal separator
+  const cleanValue = value.trim().replace(',', '.');
 
-    // Split into integer and decimal parts
-    const [integerPart, decimalPart = ''] = cleanValue.split('.');
+  // Split into integer and decimal parts
+  const [integerPart, decimalPart = ''] = cleanValue.split('.');
 
-    // Pad decimal part with zeros if needed
-    const decimalPlaces = hathorLib.constants.DECIMAL_PLACES;
-    const paddedDecimal = (decimalPart + '0'.repeat(decimalPlaces)).slice(0, decimalPlaces);
+  // Pad decimal part with zeros if needed
+  const decimalPlaces = hathorLib.constants.DECIMAL_PLACES;
+  const paddedDecimal = (decimalPart + '0'.repeat(decimalPlaces)).slice(0, decimalPlaces);
 
-    // Combine string parts without decimal point
-    const fullNumberStr = integerPart + paddedDecimal;
+  // Combine string parts without decimal point
+  const fullNumberStr = integerPart + paddedDecimal;
 
-    // Convert to BigInt
-    return bigIntCoercibleSchema.parse(fullNumberStr);
-  } catch (e) {
-    console.error('Failed to convert amount to BigInt:', e);
-    return 0n;
-  }
+  // Convert to BigInt
+  return bigIntCoercibleSchema.parse(fullNumberStr);
 };
 
 export const getAmountParsed = (text) => {
