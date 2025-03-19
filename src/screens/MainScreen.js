@@ -379,7 +379,6 @@ class TxListItem extends React.Component {
   }
 
   getImage = (item) => {
-    // Balance should already be a BigInt
     const { balance } = item;
 
     if (balance === 0n) {
@@ -413,7 +412,6 @@ class TxListItem extends React.Component {
       return this.styleVoided;
     }
 
-    // Balance should already be a BigInt
     const { balance } = item;
 
     if (balance > 0n) {
