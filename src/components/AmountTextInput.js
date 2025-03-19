@@ -44,23 +44,6 @@ class AmountTextInput extends React.Component {
     }, 50);
   }
 
-  // Parse text to BigInt
-  parseAmount = (text) => {
-    if (!text) return null;
-
-    try {
-      if (this.props.allowOnlyInteger) {
-        // For NFTs, directly parse as integer then to BigInt
-        return bigIntCoercibleSchema.parse(parseInt(text, 10));
-      }
-      // For regular tokens, use getIntegerAmount which returns BigInt
-      return getIntegerAmount(text);
-    } catch (e) {
-      console.error('Failed to parse amount to BigInt:', e);
-      return null;
-    }
-  }
-
   onChangeText = (text) => {
     if (text === '') {
       // Need to handle empty string separately

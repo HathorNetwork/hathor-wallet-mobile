@@ -52,7 +52,7 @@ export const getShortContent = (content, length = 4) => (
 );
 
 /**
- * Get amount text value and transform in its integer value
+ * Get amount text value and transform it into its integer value as BigInt
  *
  * "10" => 1000n
  * "10.00" => 1000n
@@ -60,18 +60,28 @@ export const getShortContent = (content, length = 4) => (
  * "1000" => 100000n
  * "1000.00" => 100000n
  *
+ * @param {string} value - The amount as a string
  * @return {BigInt} The integer value as a BigInt
  */
 export const getIntegerAmount = (value) => {
-  const parsedValue = parseFloat(value.replace(',', '.'));
-  const rawAmount = Math.round(parsedValue * (10 ** hathorLib.constants.DECIMAL_PLACES));
-
   try {
-    // Convert to BigInt using the schema from wallet-lib
-    return bigIntCoercibleSchema.parse(rawAmount);
+    // Remove any whitespace and standardize decimal separator
+    const cleanValue = value.trim().replace(',', '.');
+
+    // Split into integer and decimal parts
+    const [integerPart, decimalPart = ''] = cleanValue.split('.');
+
+    // Pad decimal part with zeros if needed
+    const decimalPlaces = hathorLib.constants.DECIMAL_PLACES;
+    const paddedDecimal = (decimalPart + '0'.repeat(decimalPlaces)).slice(0, decimalPlaces);
+
+    // Combine string parts without decimal point
+    const fullNumberStr = integerPart + paddedDecimal;
+
+    // Convert to BigInt
+    return bigIntCoercibleSchema.parse(fullNumberStr);
   } catch (e) {
     console.error('Failed to convert amount to BigInt:', e);
-    // Return 0n as fallback
     return 0n;
   }
 };
