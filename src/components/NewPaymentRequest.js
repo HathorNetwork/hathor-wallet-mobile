@@ -22,8 +22,6 @@ import { newInvoice } from '../actions';
 import { isTokenNFT, getIntegerAmount } from '../utils';
 import OfflineBar from './OfflineBar';
 
-/* global BigInt */
-
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
  * tokenMetadata {Object} metadata of tokens
