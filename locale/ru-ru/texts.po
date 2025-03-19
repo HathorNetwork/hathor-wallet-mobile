@@ -58,11 +58,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:588
+#: src/models.js:107 src/utils.js:584
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:263
+#: src/utils.js:259
 msgid "Invalid address"
 msgstr "Неправильный адрес"
 
@@ -1311,7 +1311,7 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: src/components/NewPaymentRequest.js:189
+#: src/components/NewPaymentRequest.js:187
 msgid "Create payment request"
 msgstr "Создать запрос на получение средств"
 
