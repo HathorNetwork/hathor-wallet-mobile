@@ -199,7 +199,7 @@ msgstr ""
 
 #: src/screens/CreateTokenAmount.js:84
 #: src/screens/CreateTokenAmount.js:96
-#: src/screens/SendAmountInput.js:115
+#: src/screens/SendAmountInput.js:111
 msgid "Invalid amount"
 msgstr ""
 
@@ -231,7 +231,7 @@ msgstr ""
 #: src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382
 #: src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:199
+#: src/screens/SendAmountInput.js:190
 msgid "Next"
 msgstr ""
 
@@ -479,12 +479,12 @@ msgstr ""
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:546
-#: src/screens/MainScreen.js:578
+#: src/screens/MainScreen.js:544
+#: src/screens/MainScreen.js:576
 msgid "Available Balance"
 msgstr ""
 
-#: src/screens/MainScreen.js:555
+#: src/screens/MainScreen.js:553
 msgid "Locked"
 msgstr ""
 
@@ -764,15 +764,11 @@ msgstr ""
 msgid "Address to send"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:121
+#: src/screens/SendAmountInput.js:116
 msgid "Insufficient funds"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:129
-msgid "Error processing amount"
-msgstr ""
-
-#: src/screens/SendAmountInput.js:155
+#: src/screens/SendAmountInput.js:146
 #: src/screens/SendConfirmScreen.js:128
 #, javascript-format
 msgid "${ amountAndToken } available"
@@ -780,7 +776,7 @@ msgid_plural "${ amountAndToken } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:168
+#: src/screens/SendAmountInput.js:159
 #: src/screens/SendConfirmScreen.js:136
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""

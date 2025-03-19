@@ -208,7 +208,7 @@ msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
 #: src/screens/CreateTokenAmount.js:84 src/screens/CreateTokenAmount.js:96
-#: src/screens/SendAmountInput.js:115
+#: src/screens/SendAmountInput.js:111
 msgid "Invalid amount"
 msgstr ""
 
@@ -235,7 +235,7 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:180 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:199
+#: src/screens/SendAmountInput.js:190
 msgid "Next"
 msgstr "Далее"
 
@@ -489,11 +489,11 @@ msgstr ""
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:546 src/screens/MainScreen.js:578
+#: src/screens/MainScreen.js:544 src/screens/MainScreen.js:576
 msgid "Available Balance"
 msgstr "Доступный Баланс"
 
-#: src/screens/MainScreen.js:555
+#: src/screens/MainScreen.js:553
 msgid "Locked"
 msgstr "Заблокированный"
 
@@ -763,15 +763,11 @@ msgstr "ОТПРАВИТЬ"
 msgid "Address to send"
 msgstr "Адрес отправки"
 
-#: src/screens/SendAmountInput.js:121
+#: src/screens/SendAmountInput.js:116
 msgid "Insufficient funds"
 msgstr "Недостаточно средств"
 
-#: src/screens/SendAmountInput.js:129
-msgid "Error processing amount"
-msgstr ""
-
-#: src/screens/SendAmountInput.js:155 src/screens/SendConfirmScreen.js:128
+#: src/screens/SendAmountInput.js:146 src/screens/SendConfirmScreen.js:128
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
@@ -779,7 +775,7 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendAmountInput.js:168 src/screens/SendConfirmScreen.js:136
+#: src/screens/SendAmountInput.js:159 src/screens/SendConfirmScreen.js:136
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 

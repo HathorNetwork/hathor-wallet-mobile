@@ -215,7 +215,7 @@ msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
 #: src/screens/CreateTokenAmount.js:84 src/screens/CreateTokenAmount.js:96
-#: src/screens/SendAmountInput.js:115
+#: src/screens/SendAmountInput.js:111
 msgid "Invalid amount"
 msgstr "Quantidade inválida"
 
@@ -242,7 +242,7 @@ msgstr "Você tem ${ amountAvailableText } ${ nativeSymbol } disponíveis"
 #: src/screens/CreateTokenAmount.js:180 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:199
+#: src/screens/SendAmountInput.js:190
 msgid "Next"
 msgstr "Próximo"
 
@@ -500,11 +500,11 @@ msgstr "Ocorreu um erro ao carregar seu histórico de transações"
 msgid "Please |tryAgain:try again|"
 msgstr "Por favor |tryAgain:tente novamente|"
 
-#: src/screens/MainScreen.js:546 src/screens/MainScreen.js:578
+#: src/screens/MainScreen.js:544 src/screens/MainScreen.js:576
 msgid "Available Balance"
 msgstr "Saldo Disponível"
 
-#: src/screens/MainScreen.js:555
+#: src/screens/MainScreen.js:553
 msgid "Locked"
 msgstr "Bloqueado"
 
@@ -778,22 +778,18 @@ msgstr "ENVIAR"
 msgid "Address to send"
 msgstr "Endereço para enviar"
 
-#: src/screens/SendAmountInput.js:121
+#: src/screens/SendAmountInput.js:116
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:129
-msgid "Error processing amount"
-msgstr "Erro ao processar a quantidade"
-
-#: src/screens/SendAmountInput.js:155 src/screens/SendConfirmScreen.js:128
+#: src/screens/SendAmountInput.js:146 src/screens/SendConfirmScreen.js:128
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:168 src/screens/SendConfirmScreen.js:136
+#: src/screens/SendAmountInput.js:159 src/screens/SendConfirmScreen.js:136
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
@@ -1925,3 +1921,6 @@ msgstr "Confirma que deseja desregistrar este Nano Contract?"
 #: src/components/NanoContract/UnregisterNanoContractModal.js:44
 msgid "Yes, unregister contract"
 msgstr "Sim, desregistrar"
+
+#~ msgid "Error processing amount"
+#~ msgstr "Erro ao processar a quantidade"
