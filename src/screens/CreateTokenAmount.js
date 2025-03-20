@@ -20,7 +20,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
 import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 import { COLORS } from '../styles/themes';
-import { useNavigation } from '../hooks/navigation';
+import { useNavigation, useParams } from '../hooks/navigation';
 
 /* global BigInt */
 
@@ -29,7 +29,7 @@ import { useNavigation } from '../hooks/navigation';
  * name {string} token name
  * symbol {string} token symbol
  */
-const CreateTokenAmount = (props) => {
+const CreateTokenAmount = () => {
   const inputRef = useRef(null);
   const [amountText, setAmountText] = useState('');
   const [amount, setAmount] = useState(0n);
@@ -37,9 +37,10 @@ const CreateTokenAmount = (props) => {
   const [error, setError] = useState(null);
   const wallet = useSelector((state) => state.wallet);
   const navigation = useNavigation();
+  const params = useParams();
 
   // Get route params with BigInt support
-  const { name, symbol } = props.route.params;
+  const { name, symbol } = params;
 
   const nativeSymbol = wallet.storage.getNativeTokenData().symbol;
 
@@ -100,8 +101,8 @@ const CreateTokenAmount = (props) => {
   // Handle button press - BigInt values are automatically serialized
   const onButtonPress = () => {
     navigation.navigate('CreateTokenConfirm', {
-      name: props.route.params.name,
-      symbol: props.route.params.symbol,
+      name: params.name,
+      symbol: params.symbol,
       amount, // BigInt value - will be automatically serialized
       deposit // BigInt value - will be automatically serialized
     });
@@ -109,7 +110,7 @@ const CreateTokenAmount = (props) => {
 
   // Check if the button should be disabled
   const isButtonDisabled = () => {
-    if (!props.route.params.name || !props.route.params.symbol) {
+    if (!params.name || !params.symbol) {
       return true;
     }
 
