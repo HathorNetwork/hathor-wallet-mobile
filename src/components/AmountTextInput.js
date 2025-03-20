@@ -10,6 +10,19 @@ import { StyleSheet, TextInput } from 'react-native';
 import { getAmountParsed, getIntegerAmount } from '../utils';
 import { COLORS } from '../styles/themes';
 
+/**
+ * Text input component specifically for handling token amounts with BigInt validation.
+ *
+ * @param {Object} props
+ * @param {string} [props.value] - Initial input value
+ * @param {Function} props.onAmountUpdate - Callback when amount changes: (text, bigIntValue) => void
+ *                                          where text is the formatted string and bigIntValue is the parsed BigInt
+ * @param {boolean} [props.allowOnlyInteger=false] - If true, only allow integer values (no decimals)
+ * @param {Object} [props.style] - Additional styles for the TextInput
+ * @param {boolean} [props.autoFocus] - Whether the input should be focused on mount
+ * @param {React.Ref} ref - Forwarded ref, exposes the focus() method
+ * @returns {React.ReactElement} A formatted amount input component
+ */
 const AmountTextInput = forwardRef((props, ref) => {
   const inputRef = useRef(null);
   const [text, setText] = useState(props.value || '');
