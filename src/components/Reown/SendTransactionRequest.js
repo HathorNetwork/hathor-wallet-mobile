@@ -29,6 +29,7 @@ import { FeedbackContent } from '../FeedbackContent';
 import Spinner from '../Spinner';
 import { DeclineModal } from './NanoContract/DeclineModal';
 import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
+import { isTokenNFT } from '../../utils';
 
 const styles = StyleSheet.create({
   wide: {
@@ -239,7 +240,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
       return '-';
     }
 
-    const isNFT = tokenId && helpersUtils.isTokenNFT(tokenId, tokenMetadata);
+    const isNFT = tokenId && isTokenNFT(tokenId, tokenMetadata);
 
     return numberUtils.prettyValue(value, isNFT ? 0 : constants.DECIMAL_PLACES);
   };
@@ -271,7 +272,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
               <View style={styles.itemHeader}>
                 <Text style={styles.itemTitle}>{t`Input`} {index + 1}</Text>
                 <Text style={styles.valueText}>
-                  {formatValue(input?.value)} {getTokenSymbol(input?.token)}
+                  {formatValue(input?.value, input?.token)} {getTokenSymbol(input?.token)}
                 </Text>
               </View>
               <Text style={styles.labelText}>{t`Transaction ID`}</Text>
@@ -319,7 +320,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
               <View style={styles.itemHeader}>
                 <Text style={styles.itemTitle}>{t`Output`} {index + 1}</Text>
                 <Text style={styles.valueText}>
-                  {formatValue(output?.value)} {getTokenSymbol(output?.token)}
+                  {formatValue(output?.value, output?.token)} {getTokenSymbol(output?.token)}
                 </Text>
               </View>
               {output?.address && (
