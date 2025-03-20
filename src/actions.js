@@ -1510,6 +1510,18 @@ export const showCreateTokenModal = (accept, deny, data, dapp) => ({
   },
 });
 
+export const showSendTransactionModal = (onAccept, onReject, data, metadata) => ({
+  type: types.SHOW_SEND_TRANSACTION_REQUEST_MODAL,
+  payload: { accept: onAccept, deny: onReject, data, dapp: metadata },
+});
+
+/**
+ * Show insufficient funds error modal
+ */
+export const showInsufficientFundsModal = () => ({
+  type: types.SHOW_INSUFFICIENT_FUNDS_MODAL,
+});
+
 export const appStateUpdate = (oldState, newState) => ({
   type: types.APPSTATE_UPDATED,
   payload: {
@@ -1549,16 +1561,4 @@ export const sendTxRetry = () => ({
 
 export const sendTxRetryDismiss = () => ({
   type: types.REOWN_SEND_TX_RETRY_DISMISS,
-});
-
-export const showSendTransactionModal = (onAccept, onReject, data, metadata) => ({
-  type: types.SHOW_SEND_TRANSACTION_REQUEST_MODAL,
-  payload: { accept: onAccept, deny: onReject, data, dapp: metadata },
-});
-
-/**
- * Show insufficient funds error modal
- */
-export const showInsufficientFundsModal = () => ({
-  type: types.SHOW_INSUFFICIENT_FUNDS_MODAL,
 });
