@@ -19,7 +19,7 @@ import NewHathorButton from './NewHathorButton';
 import AmountTextInput from './AmountTextInput';
 import TokenBox from './TokenBox';
 import { newInvoice } from '../actions';
-import { getIntegerAmount, isTokenNFT } from '../utils';
+import { isTokenNFT, getIntegerAmount } from '../utils';
 import OfflineBar from './OfflineBar';
 
 /**
@@ -37,11 +37,13 @@ class NewPaymentRequest extends React.Component {
     super(props);
 
     /**
-     * amount {string} Amount for the payment request
+     * amount {string} Amount text for the payment request
+     * amountValue {BigInt} BigInt value of the amount
      * token {Object} Selected token config
      */
     this.state = {
       amount: '',
+      amountValue: null,
       token: this.props.selectedToken,
     };
 
@@ -77,7 +79,7 @@ class NewPaymentRequest extends React.Component {
   }
 
   focus = () => {
-    this.setState({ amount: '', token: this.props.selectedToken });
+    this.setState({ amount: '', amountValue: null, token: this.props.selectedToken });
     this.focusInput();
   }
 
@@ -93,12 +95,14 @@ class NewPaymentRequest extends React.Component {
 
   createPaymentRequest = async () => {
     const { address } = await this.props.wallet.getCurrentAddress();
+
     let amount;
     if (isTokenNFT(this.getTokenUID(), this.props.tokenMetadata)) {
       amount = parseInt(this.state.amount, 10);
     } else {
       amount = getIntegerAmount(this.state.amount);
     }
+
     this.props.dispatch(newInvoice(address, amount, this.state.token));
     this.modalOpened = true;
     this.props.navigation.navigate('PaymentRequestDetail');
@@ -114,6 +118,13 @@ class NewPaymentRequest extends React.Component {
     }
 
     return false;
+  }
+
+  onAmountUpdate = (text, value) => {
+    this.setState({
+      amount: text,
+      amountValue: value,
+    });
   }
 
   onTokenBoxPress = () => {
@@ -146,6 +157,8 @@ class NewPaymentRequest extends React.Component {
       <View style={{ width: 80, height: 40 }} />
     );
 
+    const isNFT = isTokenNFT(this.getTokenUID(), this.props.tokenMetadata);
+
     return (
       <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={topDistance}>
         <View style={{
@@ -159,10 +172,10 @@ class NewPaymentRequest extends React.Component {
             {renderGhostElement()}
             <AmountTextInput
               ref={this.inputRef}
-              onAmountUpdate={(amount) => this.setState({ amount })}
+              onAmountUpdate={this.onAmountUpdate}
               value={this.state.amount}
               style={{ flex: 1 }}
-              allowOnlyInteger={isTokenNFT(this.getTokenUID(), this.props.tokenMetadata)}
+              allowOnlyInteger={isNFT}
             />
             {IS_MULTI_TOKEN
               ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />

@@ -64,7 +64,10 @@ const TokenSelect = (props) => {
           <View style={styles.itemLeftWrapper}>
             <Text style={[styles.text, styles.rightText]}>
               {tokenState === TOKEN_DOWNLOAD_STATUS.READY && (
-                renderValue(balance, isTokenNFT(item.uid, props.tokenMetadata))
+                renderValue(
+                  balance,
+                  isTokenNFT(item.uid, props.tokenMetadata)
+                )
               )}
 
               {tokenState === TOKEN_DOWNLOAD_STATUS.FAILED && (

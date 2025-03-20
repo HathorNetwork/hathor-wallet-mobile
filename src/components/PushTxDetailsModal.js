@@ -6,16 +6,16 @@
  */
 
 import React from 'react';
-import { Text, StyleSheet, View } from 'react-native';
-import { t } from 'ttag';
+import { StyleSheet, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { t } from 'ttag';
 import { getShortHash, isTokenNFT, renderValue } from '../utils';
-import { ListButton, ListItem } from './HathorList';
-import SlideIndicatorBar from './SlideIndicatorBar';
 import { TxHistory } from '../models';
-import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { updateSelectedToken } from '../actions';
 import HathorModal from './HathorModal';
+import SlideIndicatorBar from './SlideIndicatorBar';
+import { ListButton, ListItem } from './HathorList';
+import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
 
 const style = StyleSheet.create({

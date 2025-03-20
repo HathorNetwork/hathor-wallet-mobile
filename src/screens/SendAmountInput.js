@@ -20,7 +20,7 @@ import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
 
 import { IS_MULTI_TOKEN } from '../constants';
-import { getIntegerAmount, renderValue, isTokenNFT } from '../utils';
+import { renderValue, isTokenNFT } from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -45,12 +45,14 @@ const mapStateToProps = (state) => ({
 
 class SendAmountInput extends React.Component {
   /**
-   * amount {string} amount to send
+   * amount {string} amount to send as text representation
+   * amountValue {BigInt} amount to send as BigInt value
    * token {Object} which token to send
    * error {string} error validating amount
    */
   state = {
     amount: '',
+    amountValue: null,
     token: this.props.selectedToken,
     error: null,
   };
@@ -82,8 +84,8 @@ class SendAmountInput extends React.Component {
     }
   }
 
-  onAmountChange = (text) => {
-    this.setState({ amount: text, error: null });
+  onAmountChange = (text, value) => {
+    this.setState({ amount: text, amountValue: value, error: null });
   }
 
   onTokenBoxPress = () => {
@@ -100,12 +102,15 @@ class SendAmountInput extends React.Component {
       status: TOKEN_DOWNLOAD_STATUS.LOADING,
     });
     const { available } = balance.data;
-    let amount;
-    if (this.isNFT()) {
-      amount = parseInt(this.state.amount, 10);
-    } else {
-      amount = getIntegerAmount(this.state.amount);
+
+    // Use amountValue from state
+    const amount = this.state.amountValue;
+
+    if (!amount) {
+      this.setState({ error: t`Invalid amount` });
+      return;
     }
+
     if (available < amount) {
       this.setState({ error: t`Insufficient funds` });
     } else {
@@ -115,15 +120,11 @@ class SendAmountInput extends React.Component {
     }
   }
 
-  isButtonDisabled = () => {
-    if (this.state.amount === '') {
-      return true;
-    }
-    if (getIntegerAmount(this.state.amount) === 0) {
-      return true;
-    }
-    return false;
-  }
+  isButtonDisabled = () => (
+    !this.state.amount
+    || !this.state.amountValue
+    || this.state.amountValue === 0n
+  );
 
   isNFT = () => (
     isTokenNFT(get(this.state, 'token.uid'), this.props.tokenMetadata)
@@ -138,7 +139,10 @@ class SendAmountInput extends React.Component {
       });
       const { available } = balance;
       const amountAndToken = `${renderValue(available, this.isNFT())} ${this.state.token.symbol}`;
-      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);
+      // Convert BigInt to Number for ngettext - extract as variable for ttag compatibility
+      // This is only used for pluralization so precision loss is acceptable
+      const availableCount = Number(available);
+      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, availableCount);
     };
 
     const renderGhostElement = () => (

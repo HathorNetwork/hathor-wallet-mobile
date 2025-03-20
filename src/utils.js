@@ -6,6 +6,7 @@
  */
 
 import hathorLib from '@hathor/wallet-lib';
+import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import CryptoJS from 'crypto-js';
 import * as Keychain from 'react-native-keychain';
 import React from 'react';
@@ -51,17 +52,34 @@ export const getShortContent = (content, length = 4) => (
 );
 
 /**
- * Get amount text value and transform in its integer value
+ * Get amount text value and transform it into its integer value as BigInt
  *
- * "10" => 1000
- * "10.00" => 1000
- * "10,01" => 1001
- * "1000" => 100000
- * "1000.00" => 100000
+ * "10" => 1000n
+ * "10.00" => 1000n
+ * "10,01" => 1001n
+ * "1000" => 100000n
+ * "1000.00" => 100000n
+ *
+ * @param {string} value - The amount as a string
+ * @return {BigInt} The integer value as a BigInt
+ * @throws {Error} When the input value cannot be parsed to a BigInt
  */
 export const getIntegerAmount = (value) => {
-  const parsedValue = parseFloat(value.replace(',', '.'));
-  return Math.round(parsedValue * (10 ** hathorLib.constants.DECIMAL_PLACES));
+  // Remove any whitespace and standardize decimal separator
+  const cleanValue = value.trim().replace(',', '.');
+
+  // Split into integer and decimal parts
+  const [integerPart, decimalPart = ''] = cleanValue.split('.');
+
+  // Pad decimal part with zeros if needed
+  const decimalPlaces = hathorLib.constants.DECIMAL_PLACES;
+  const paddedDecimal = (decimalPart + '0'.repeat(decimalPlaces)).slice(0, decimalPlaces);
+
+  // Combine string parts without decimal point
+  const fullNumberStr = integerPart + paddedDecimal;
+
+  // Convert to BigInt
+  return bigIntCoercibleSchema.parse(fullNumberStr);
 };
 
 export const getAmountParsed = (text) => {
@@ -359,12 +377,11 @@ export const getLightBackground = (alpha) => {
 };
 
 /**
- * Render value to integer or decimal
+ * Render value in a formatted way for display
  *
- * @params {number} amount Amount to render
- * @params {boolean} isInteger If it's an integer or decimal
- *
- * @return {string} rendered value
+ * @param {bigint} amount The token amount as BigInt
+ * @param {boolean} isInteger Whether the token is an NFT or regular token
+ * @return {string} Formatted value for display
  */
 export const renderValue = (amount, isInteger) => {
   if (isInteger) {
