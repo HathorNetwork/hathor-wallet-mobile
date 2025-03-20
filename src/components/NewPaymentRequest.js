@@ -30,6 +30,7 @@ const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
   wallet: state.wallet,
   tokenMetadata: state.tokenMetadata,
+  decimalPlaces: state.serverInfo.decimal_places,
 });
 
 class NewPaymentRequest extends React.Component {
@@ -100,7 +101,7 @@ class NewPaymentRequest extends React.Component {
     if (isTokenNFT(this.getTokenUID(), this.props.tokenMetadata)) {
       amount = parseInt(this.state.amount, 10);
     } else {
-      amount = getIntegerAmount(this.state.amount);
+      amount = getIntegerAmount(this.state.amount, this.props.decimalPlaces);
     }
 
     this.props.dispatch(newInvoice(address, amount, this.state.token));
