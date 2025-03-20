@@ -214,35 +214,35 @@ msgstr "Os PINs estão diferentes. Tente novamente."
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
-#: src/screens/CreateTokenAmount.js:84 src/screens/CreateTokenAmount.js:96
-#: src/screens/SendAmountInput.js:111
+#: src/screens/CreateTokenAmount.js:85 src/screens/CreateTokenAmount.js:97
+#: src/screens/SendAmountInput.js:110
 msgid "Invalid amount"
 msgstr "Quantidade inválida"
 
-#: src/screens/CreateTokenAmount.js:146 src/screens/CreateTokenConfirm.js:153
+#: src/screens/CreateTokenAmount.js:147 src/screens/CreateTokenConfirm.js:153
 #: src/screens/CreateTokenDepositNotice.js:42 src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
 msgstr "CRIAR TOKEN"
 
-#: src/screens/CreateTokenAmount.js:154
+#: src/screens/CreateTokenAmount.js:155
 #, javascript-format
 msgid "Amount of ${ name } (${ symbol })"
 msgstr "Quantidade de ${ name } (${ symbol })"
 
-#: src/screens/CreateTokenAmount.js:171
+#: src/screens/CreateTokenAmount.js:172
 msgid "Deposit:"
 msgstr "Depósito:"
 
-#: src/screens/CreateTokenAmount.js:175
+#: src/screens/CreateTokenAmount.js:176
 #, javascript-format
 msgid "You have ${ amountAvailableText } ${ nativeSymbol } available"
 msgstr "Você tem ${ amountAvailableText } ${ nativeSymbol } disponíveis"
 
-#: src/screens/CreateTokenAmount.js:180 src/screens/CreateTokenName.js:64
+#: src/screens/CreateTokenAmount.js:181 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:190
+#: src/screens/SendAmountInput.js:189
 msgid "Next"
 msgstr "Próximo"
 
@@ -778,18 +778,18 @@ msgstr "ENVIAR"
 msgid "Address to send"
 msgstr "Endereço para enviar"
 
-#: src/screens/SendAmountInput.js:116
+#: src/screens/SendAmountInput.js:115
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:146 src/screens/SendConfirmScreen.js:128
+#: src/screens/SendAmountInput.js:145 src/screens/SendConfirmScreen.js:128
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:159 src/screens/SendConfirmScreen.js:136
+#: src/screens/SendAmountInput.js:158 src/screens/SendConfirmScreen.js:136
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
