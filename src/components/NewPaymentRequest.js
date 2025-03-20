@@ -174,6 +174,7 @@ class NewPaymentRequest extends React.Component {
             <AmountTextInput
               ref={this.inputRef}
               onAmountUpdate={this.onAmountUpdate}
+              decimalPlaces={this.props.decimalPlaces}
               value={this.state.amount}
               style={{ flex: 1 }}
               allowOnlyInteger={isNFT}
