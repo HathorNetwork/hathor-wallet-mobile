@@ -314,21 +314,25 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
                   {formatValue(output?.value)} {getTokenSymbol(output?.token)}
                 </Text>
               </View>
-              <Text style={styles.labelText}>{t`Address`}</Text>
-              <TouchableOpacity
-                style={styles.addressContainer}
-                onPress={() => copyToClipboard(output?.address)}
-              >
-                <Text style={styles.monospace} numberOfLines={1}>
-                  {output?.address}
-                </Text>
-              </TouchableOpacity>
+              {output?.address && (
+                <>
+                  <Text style={styles.labelText}>{t`Address`}</Text>
+                  <TouchableOpacity
+                    style={styles.addressContainer}
+                    onPress={() => copyToClipboard(output?.address)}
+                  >
+                    <Text style={styles.monospace} numberOfLines={1}>
+                      {output?.address}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
               {output?.data && (
                 <View>
                   <Text style={styles.labelText}>{t`Data field`}</Text>
                   <View style={styles.valueContainer}>
                     <Text style={styles.monospace}>
-                      {output.data.join(',')}
+                      {output.data}
                     </Text>
                   </View>
                 </View>
