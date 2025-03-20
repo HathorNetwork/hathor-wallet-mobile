@@ -210,7 +210,8 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
 
   // Update the getTokenSymbol function to use knownTokens
   const getTokenSymbol = (tokenId) => {
-    if (!tokenId) {
+    // Check if it's explicitly the native token UID
+    if (tokenId === constants.NATIVE_TOKEN_UID) {
       return constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
     }
 
@@ -219,7 +220,12 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
       return token.symbol;
     }
 
-    return '?';
+    // We return an empty string as a fallback for tokens that are not yet
+    // loaded or recognized
+    // This should be temporary until the token details are fetched
+    // The unregisteredTokensDownloadRequested action should be loading these
+    // details
+    return '';
   };
 
   const formatValue = (value) => {
