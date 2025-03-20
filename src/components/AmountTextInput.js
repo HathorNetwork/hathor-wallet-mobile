@@ -7,6 +7,7 @@
 
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
+import { constants } from '@hathor/wallet-lib';
 import { getAmountParsed, getIntegerAmount } from '../utils';
 import { COLORS } from '../styles/themes';
 
@@ -20,12 +21,15 @@ import { COLORS } from '../styles/themes';
  * @param {boolean} [props.allowOnlyInteger=false] - If true, only allow integer values (no decimals)
  * @param {Object} [props.style] - Additional styles for the TextInput
  * @param {boolean} [props.autoFocus] - Whether the input should be focused on mount
+ * @param {number} [props.decimalPlaces] - Number of decimal places to use (optional)
  * @param {React.Ref} ref - Forwarded ref, exposes the focus() method
  * @returns {React.ReactElement} A formatted amount input component
  */
 const AmountTextInput = forwardRef((props, ref) => {
   const inputRef = useRef(null);
   const [text, setText] = useState(props.value || '');
+  const decimalPlaces = props.decimalPlaces == null ?
+    constants.DECIMAL_PLACES : props.decimalPlaces;
 
   // Expose the focus method to parent components
   useImperativeHandle(ref, () => ({
@@ -67,13 +71,13 @@ const AmountTextInput = forwardRef((props, ref) => {
       parsedText = parsedText.replace(/[^0-9]/g, '');
     }
 
-    parsedText = getAmountParsed(parsedText);
+    parsedText = getAmountParsed(parsedText, decimalPlaces);
 
     // There is no NaN in BigInt, it either returns a valid bigint or throws
     // an error.
     let isValid = true;
     try {
-      bigIntValue = getIntegerAmount(parsedText);
+      bigIntValue = getIntegerAmount(parsedText, decimalPlaces);
 
       if (bigIntValue < 0n) {
         isValid = false;
@@ -89,7 +93,14 @@ const AmountTextInput = forwardRef((props, ref) => {
     }
   };
 
-  const placeholder = props.allowOnlyInteger ? '0' : '0.00';
+  let placeholder;
+  if (props.allowOnlyInteger) {
+    placeholder = '0';
+  } else {
+    const zeros = '0'.repeat(decimalPlaces);
+    placeholder = `0.${zeros}`;
+  }
+
   const { style: customStyle, ...restProps } = props;
 
   return (
