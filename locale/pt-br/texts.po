@@ -1490,7 +1490,7 @@ msgid ""
 "You have received a new Create Token Request. Please carefully review the "
 "details before deciding to accept or decline."
 msgstr ""
-"Você recebeu uma nova Solicitação de Criação de Token. Por favor,revise "
+"Você recebeu uma nova Solicitação de Criação de Token. Por favor, revise "
 "cuidadosamente os detalhes antes de decidir em aceitar ou rejeitar."
 
 #: src/components/Reown/CreateTokenModal.js:21
@@ -1588,13 +1588,14 @@ msgstr "Erro ao enviar transação de criação de token."
 
 #: src/components/Reown/InsufficientFundsModal.js:37
 msgid "Insufficient funds to complete the transaction."
-msgstr ""
+msgstr "Saldo insuficiente para completar a transação."
 
 #: src/components/Reown/RequestConfirmationModal.js:39
 msgid ""
 "You have received a new request. Please carefully review the details before "
 "deciding to accept or decline."
-msgstr ""
+msgstr "Você recebeu uma nova solicitação. Por favor revise cuidadosamente os "
+"detalhes antes de decidir aceitar ou rejeitar."
 
 #: src/components/Reown/RequestConfirmationModal.js:40
 msgid "Review details"
@@ -1604,7 +1605,8 @@ msgstr "Revisar detalhes"
 msgid ""
 "You have received a new transaction request. Please carefully review the "
 "details before deciding to accept or decline."
-msgstr ""
+msgstr "Você recebeu uma solicitação de criação de transação. Por favor revise
+cuidadosamente os detalhes antes de decidir aceitar ou rejeitar."
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:21
 #: src/components/Reown/SendTransactionModal.js:23
@@ -1621,7 +1623,7 @@ msgstr ""
 
 #: src/components/Reown/SendTransactionRequest.js:285
 msgid "Copy ID"
-msgstr ""
+msgstr "Copiar ID"
 
 #: src/components/Reown/SendTransactionRequest.js:312
 msgid "Outputs"
@@ -1633,7 +1635,7 @@ msgstr ""
 
 #: src/components/Reown/SendTransactionRequest.js:341
 msgid "Data field"
-msgstr ""
+msgstr "Campo de dados"
 
 #: src/components/Reown/SendTransactionRequest.js:363
 msgid "Change Address"
