@@ -18,7 +18,6 @@ import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
-import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 
 import { IS_MULTI_TOKEN } from '../constants';
 import { renderValue, isTokenNFT } from '../utils';
