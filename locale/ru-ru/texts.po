@@ -439,7 +439,7 @@ msgstr "Введите seed-фразу"
 #: src/components/NanoContract/NanoContractDetails.js:238
 #: src/components/Reown/CreateTokenRequest.js:220
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:411
-#: src/components/Reown/SendTransactionRequest.js:489
+#: src/components/Reown/SendTransactionRequest.js:498
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
 #: src/screens/PinScreen.js:285
@@ -797,8 +797,8 @@ msgstr "Ваш перевод **${ this.amountAndToken }** был подтвер
 
 #: src/components/NanoContract/EditAddressModal.js:60
 #: src/components/NanoContract/SelectAddressModal.js:117
-#: src/components/Reown/SendTransactionRequest.js:280
-#: src/components/Reown/SendTransactionRequest.js:319
+#: src/components/Reown/SendTransactionRequest.js:289
+#: src/components/Reown/SendTransactionRequest.js:328
 #: src/components/Reown/SignMessageRequest.js:40
 #: src/screens/SendConfirmScreen.js:164
 msgid "Address"
@@ -1391,7 +1391,7 @@ msgid "Description"
 msgstr "Описание"
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
-#: src/components/Reown/SendTransactionRequest.js:269
+#: src/components/Reown/SendTransactionRequest.js:278
 #: src/components/TxDetailsModal.js:104
 msgid "Transaction ID"
 msgstr ""
@@ -1515,13 +1515,13 @@ msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:189
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:335
-#: src/components/Reown/SendTransactionRequest.js:437
+#: src/components/Reown/SendTransactionRequest.js:446
 msgid "Sending transaction"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:190
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:336
-#: src/components/Reown/SendTransactionRequest.js:438
+#: src/components/Reown/SendTransactionRequest.js:447
 msgid "Please wait."
 msgstr ""
 
@@ -1562,58 +1562,58 @@ msgstr ""
 msgid "Review transaction details"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:255
+#: src/components/Reown/SendTransactionRequest.js:264
 msgid "Inputs"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:264
+#: src/components/Reown/SendTransactionRequest.js:273
 msgid "Input"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:276
+#: src/components/Reown/SendTransactionRequest.js:285
 msgid "Copy ID"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:303
+#: src/components/Reown/SendTransactionRequest.js:312
 msgid "Outputs"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:312
+#: src/components/Reown/SendTransactionRequest.js:321
 msgid "Output"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:332
+#: src/components/Reown/SendTransactionRequest.js:341
 msgid "Data field"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:354
+#: src/components/Reown/SendTransactionRequest.js:363
 msgid "Change Address"
 msgstr ""
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:246
-#: src/components/Reown/SendTransactionRequest.js:423
+#: src/components/Reown/SendTransactionRequest.js:432
 msgid "Success!"
 msgstr ""
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:247
-#: src/components/Reown/SendTransactionRequest.js:424
+#: src/components/Reown/SendTransactionRequest.js:433
 msgid "Transaction successfully sent."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:376
-#: src/components/Reown/SendTransactionRequest.js:466
+#: src/components/Reown/SendTransactionRequest.js:475
 msgid "Accept Transaction"
 msgstr ""
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:306
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:320
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:383
-#: src/components/Reown/SendTransactionRequest.js:470
+#: src/components/Reown/SendTransactionRequest.js:479
 msgid "Decline Transaction"
 msgstr ""
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:409
-#: src/components/Reown/SendTransactionRequest.js:487
+#: src/components/Reown/SendTransactionRequest.js:496
 msgid "Error while sending transaction."
 msgstr ""
 
