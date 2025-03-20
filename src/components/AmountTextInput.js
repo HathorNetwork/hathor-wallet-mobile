@@ -7,7 +7,6 @@
 
 import React from 'react';
 import { StyleSheet, TextInput } from 'react-native';
-import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import { getAmountParsed, getIntegerAmount } from '../utils';
 import { COLORS } from '../styles/themes';
 
@@ -67,10 +66,8 @@ class AmountTextInput extends React.Component {
     try {
       bigIntValue = getIntegerAmount(parsedText);
 
-      if (!this.props.allowOnlyInteger) {
-        if (bigIntValue < 0n) {
-          isValid = false;
-        }
+      if (bigIntValue < 0n) {
+        isValid = false;
       }
     } catch (e) {
       isValid = false;
