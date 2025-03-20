@@ -61,10 +61,11 @@ export const getShortContent = (content, length = 4) => (
  * "1000.00" => 100000n
  *
  * @param {string} value - The amount as a string
+ * @param {number} decimalPlaces - Number of decimal places
  * @return {BigInt} The integer value as a BigInt
  * @throws {Error} When the input value cannot be parsed to a BigInt
  */
-export const getIntegerAmount = (value) => {
+export const getIntegerAmount = (value, decimalPlaces = hathorLib.constants.DECIMAL_PLACES) => {
   // Remove any whitespace and standardize decimal separator
   const cleanValue = value.trim().replace(',', '.');
 
@@ -72,7 +73,6 @@ export const getIntegerAmount = (value) => {
   const [integerPart, decimalPart = ''] = cleanValue.split('.');
 
   // Pad decimal part with zeros if needed
-  const decimalPlaces = hathorLib.constants.DECIMAL_PLACES;
   const paddedDecimal = (decimalPart + '0'.repeat(decimalPlaces)).slice(0, decimalPlaces);
 
   // Combine string parts without decimal point
@@ -82,7 +82,7 @@ export const getIntegerAmount = (value) => {
   return bigIntCoercibleSchema.parse(fullNumberStr);
 };
 
-export const getAmountParsed = (text) => {
+export const getAmountParsed = (text, decimalPlaces = hathorLib.constants.DECIMAL_PLACES) => {
   let parts = [];
   let separator = '';
   if (text.indexOf('.') > -1) {
@@ -99,8 +99,8 @@ export const getAmountParsed = (text) => {
   parts = parts.slice(0, 2);
 
   if (parts[1]) {
-    if (parts[1].length > hathorLib.constants.DECIMAL_PLACES) {
-      return `${parts[0]}${separator}${parts[1].slice(0, 2)}`;
+    if (parts[1].length > decimalPlaces) {
+      return `${parts[0]}${separator}${parts[1].slice(0, decimalPlaces)}`;
     }
   }
 
