@@ -41,6 +41,7 @@ const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
   tokensBalance: state.tokensBalance,
   tokenMetadata: state.tokenMetadata,
+  decimalPlaces: state.serverInfo?.decimal_places,
 });
 
 class SendAmountInput extends React.Component {
@@ -172,6 +173,7 @@ class SendAmountInput extends React.Component {
                     onAmountUpdate={this.onAmountChange}
                     value={this.state.amount}
                     allowOnlyInteger={this.isNFT()}
+                    decimalPlaces={this.props.decimalPlaces}
                     style={{ flex: 1 }} // we need this so the placeholder doesn't break in android
                                         // devices after erasing the text
                                         // https://github.com/facebook/react-native/issues/30666
