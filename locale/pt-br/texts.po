@@ -449,6 +449,7 @@ msgstr "Digite suas palavras separadas por espaços"
 #: src/components/NanoContract/NanoContractDetails.js:238
 #: src/components/Reown/CreateTokenRequest.js:220
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:411
+#: src/components/Reown/SendTransactionRequest.js:489
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
 #: src/screens/PinScreen.js:285
@@ -572,11 +573,9 @@ msgstr "Digite seu PIN "
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
-#: src/components/Reown/CreateTokenModal.js:60
-#: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:65
 #: src/components/Reown/NanoContract/SignOracleDataModal.js:79
-#: src/components/Reown/SignMessageModal.js:79 src/screens/PinScreen.js:311
-#: src/screens/Reown/ReownList.js:125
+#: src/components/Reown/RequestConfirmationModal.js:104
+#: src/screens/PinScreen.js:311 src/screens/Reown/ReownList.js:125
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -812,6 +811,8 @@ msgstr "Sua transferência de **${ this.amountAndToken }** foi confirmada"
 
 #: src/components/NanoContract/EditAddressModal.js:60
 #: src/components/NanoContract/SelectAddressModal.js:117
+#: src/components/Reown/SendTransactionRequest.js:280
+#: src/components/Reown/SendTransactionRequest.js:319
 #: src/components/Reown/SignMessageRequest.js:40
 #: src/screens/SendConfirmScreen.js:164
 msgid "Address"
@@ -926,7 +927,7 @@ msgstr "Desregistrar token"
 msgid "Create Token Request"
 msgstr "Requisição de Criação de Token"
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:49
+#: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:19
 #: src/screens/Reown/NewNanoContractTransactionScreen.js:24
 msgid "New Nano Contract Transaction"
 msgstr "Nova Transação de Nano Contract"
@@ -969,6 +970,11 @@ msgstr ""
 #: src/screens/Reown/ReownManual.js:57 src/screens/Reown/ReownScan.js:34
 msgid "Connect"
 msgstr "Conectar"
+
+#: src/components/Reown/SendTransactionModal.js:21
+#: src/screens/Reown/SendTransactionRequestScreen.js:25
+msgid "Transaction Request"
+msgstr "Solicitação de Transação"
 
 #: src/screens/Reown/SignMessageRequestScreen.js:25
 msgid "Sign Message Request"
@@ -1347,6 +1353,7 @@ msgid "Report error"
 msgstr "Reportar erro"
 
 #: src/components/GlobalErrorModal.js:123
+#: src/components/Reown/InsufficientFundsModal.js:39
 msgid "Close"
 msgstr "Fechar"
 
@@ -1427,6 +1434,7 @@ msgid "Description"
 msgstr "Descrição"
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
+#: src/components/Reown/SendTransactionRequest.js:269
 #: src/components/TxDetailsModal.js:104
 msgid "Transaction ID"
 msgstr "ID da Transação"
@@ -1473,29 +1481,19 @@ msgstr ""
 "importante de segurança para proteger seus dados de potenciais riscos de "
 "phishing."
 
-#: src/components/Reown/CreateTokenModal.js:44
+#: src/components/Reown/CreateTokenModal.js:19
 msgid "New Create Token Request"
 msgstr "Nova Requisição de Criação de Token"
 
-#: src/components/Reown/CreateTokenModal.js:48
-msgid "You have received a new Create Token Request. Please"
-msgstr "Você recebeu uma nova Solicitação de Criação de Token. Por favor,"
+#: src/components/Reown/CreateTokenModal.js:20
+msgid ""
+"You have received a new Create Token Request. Please carefully review the "
+"details before deciding to accept or decline."
+msgstr ""
+"Você recebeu uma nova Solicitação de Criação de Token. Por favor,revise "
+"cuidadosamente os detalhes antes de decidir em aceitar ou rejeitar."
 
-#: src/components/Reown/CreateTokenModal.js:50
-#: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:55
-#: src/components/Reown/NanoContract/SignOracleDataModal.js:69
-#: src/components/Reown/SignMessageModal.js:69
-msgid "carefully review the details"
-msgstr "revise os detalhes com cuidado"
-
-#: src/components/Reown/CreateTokenModal.js:52
-#: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:57
-#: src/components/Reown/NanoContract/SignOracleDataModal.js:71
-#: src/components/Reown/SignMessageModal.js:71
-msgid "before deciding to accept or decline."
-msgstr "antes de decidir aceitar ou recusar."
-
-#: src/components/Reown/CreateTokenModal.js:56
+#: src/components/Reown/CreateTokenModal.js:21
 msgid "Review Create Token Request details"
 msgstr "Revisar detalhes da Solicitação de Criação de Token"
 
@@ -1566,11 +1564,13 @@ msgstr "Recusar Solicitação"
 
 #: src/components/Reown/CreateTokenRequest.js:189
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:335
+#: src/components/Reown/SendTransactionRequest.js:437
 msgid "Sending transaction"
 msgstr "Enviando transação"
 
 #: src/components/Reown/CreateTokenRequest.js:190
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:336
+#: src/components/Reown/SendTransactionRequest.js:438
 msgid "Please wait."
 msgstr "Por favor, espere."
 
@@ -1586,16 +1586,99 @@ msgstr "Ok, fechar"
 msgid "Error while sending create token transaction."
 msgstr "Erro ao enviar transação de criação de token."
 
-#: src/components/Reown/SignMessageModal.js:63
+#: src/components/Reown/InsufficientFundsModal.js:37
+msgid "Insufficient funds to complete the transaction."
+msgstr ""
+
+#: src/components/Reown/RequestConfirmationModal.js:39
+msgid ""
+"You have received a new request. Please carefully review the details before "
+"deciding to accept or decline."
+msgstr ""
+
+#: src/components/Reown/RequestConfirmationModal.js:40
+msgid "Review details"
+msgstr "Revisar detalhes"
+
+#: src/components/Reown/SendTransactionModal.js:22
+msgid ""
+"You have received a new transaction request. Please carefully review the "
+"details before deciding to accept or decline."
+msgstr ""
+
+#: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:21
+#: src/components/Reown/SendTransactionModal.js:23
+msgid "Review transaction details"
+msgstr "Revisar detalhes da transação"
+
+#: src/components/Reown/SendTransactionRequest.js:255
+msgid "Inputs"
+msgstr ""
+
+#: src/components/Reown/SendTransactionRequest.js:264
+msgid "Input"
+msgstr ""
+
+#: src/components/Reown/SendTransactionRequest.js:276
+msgid "Copy ID"
+msgstr ""
+
+#: src/components/Reown/SendTransactionRequest.js:303
+msgid "Outputs"
+msgstr ""
+
+#: src/components/Reown/SendTransactionRequest.js:312
+msgid "Output"
+msgstr ""
+
+#: src/components/Reown/SendTransactionRequest.js:332
+msgid "Data field"
+msgstr ""
+
+#: src/components/Reown/SendTransactionRequest.js:354
+msgid "Change Address"
+msgstr "Alterar Endereço"
+
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:246
+#: src/components/Reown/SendTransactionRequest.js:423
+msgid "Success!"
+msgstr "Sucesso!"
+
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:247
+#: src/components/Reown/SendTransactionRequest.js:424
+msgid "Transaction successfully sent."
+msgstr "Transação enviada com sucesso."
+
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:376
+#: src/components/Reown/SendTransactionRequest.js:466
+msgid "Accept Transaction"
+msgstr "Aceitar transação"
+
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:306
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:320
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:383
+#: src/components/Reown/SendTransactionRequest.js:470
+msgid "Decline Transaction"
+msgstr "Recusar transação"
+
+#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:409
+#: src/components/Reown/SendTransactionRequest.js:487
+msgid "Error while sending transaction."
+msgstr "Ocorreu um erro durante o envio da transação."
+
+#: src/components/Reown/SignMessageModal.js:19
 msgid "New Sign Message Request"
 msgstr "Nova Solicitação de Assinatura de Mensagem"
 
-#: src/components/Reown/SignMessageModal.js:67
-msgid "You have received a new Sign Message Request. Please"
+#: src/components/Reown/SignMessageModal.js:20
+msgid ""
+"You have received a new Sign Message Request. Please carefully review the "
+"details before deciding to accept or decline."
 msgstr ""
-"Você recebeu uma nova Solicitação de Assinatura de Mensagem. Por favor,"
+"Você recebeu uma nova Solicitação de Assinatura de Mensagem. Por favor, "
+"revisecuidadosamente os detalhes antes de decidir aceitar ou rejeitar."
 
-#: src/components/Reown/SignMessageModal.js:75
+#: src/components/Reown/SignMessageModal.js:21
 msgid "Review Sign Message Request details"
 msgstr "Revisar detalhes da Solicitação de Assinatura de Mensagem"
 
@@ -1703,22 +1786,13 @@ msgstr "Argumentos"
 msgid "Loading arguments."
 msgstr "Carregando argumentos."
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:53
-msgid "You have received a new Nano Contract Transaction. Please"
+#: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:20
+msgid ""
+"You have received a new Nano Contract Transaction. Please carefully review "
+"the details before deciding to accept or decline."
 msgstr ""
-"Você recebeu um pedido para criar uma transação de Nano Contract. Por favor,"
-
-#: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:61
-msgid "Review transaction details"
-msgstr "Revisar detalhes da transação"
-
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:246
-msgid "Success!"
-msgstr "Sucesso!"
-
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:247
-msgid "Transaction successfully sent."
-msgstr "Transação enviada com sucesso."
+"Você recebeu um pedido para criar uma nova transação de Nano Contract. Por "
+"favor,revise cuidadosamente os detalhes antes de decidir aceitar ou rejeitar."
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:285
 msgid "Registering Nano Contract."
@@ -1735,12 +1809,6 @@ msgid ""
 msgstr ""
 "O Nano Contract solicitado não está registrado. Primeiro registre o Nano "
 "Contract para interagir com ele."
-
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:306
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:320
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:383
-msgid "Decline Transaction"
-msgstr "Recusar transação"
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:318
 msgid "Error while registering Nano Contract."
@@ -1762,14 +1830,6 @@ msgstr ""
 "Certifique-se de que o saldo da sua carteira cubra o valor necessário para "
 "aceitar esta transação."
 
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:376
-msgid "Accept Transaction"
-msgstr "Aceitar transação"
-
-#: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:409
-msgid "Error while sending transaction."
-msgstr "Ocorreu um erro durante o envio da transação."
-
 #: src/components/Reown/NanoContract/SignOracleDataModal.js:63
 msgid "New Sign Oracle Data Request"
 msgstr "Nova Solicitação de Assinatura do Oracle"
@@ -1777,6 +1837,14 @@ msgstr "Nova Solicitação de Assinatura do Oracle"
 #: src/components/Reown/NanoContract/SignOracleDataModal.js:67
 msgid "You have received a new Sign Oracle Data Request. Please"
 msgstr "Você recebeu uma nova Solicitação de Assinatura do Oracle. Por favor,"
+
+#: src/components/Reown/NanoContract/SignOracleDataModal.js:69
+msgid "carefully review the details"
+msgstr "revise os detalhes com cuidado"
+
+#: src/components/Reown/NanoContract/SignOracleDataModal.js:71
+msgid "before deciding to accept or decline."
+msgstr "antes de decidir aceitar ou recusar."
 
 #: src/components/Reown/NanoContract/SignOracleDataModal.js:75
 msgid "Review Sign Oracle Data Request details"
