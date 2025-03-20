@@ -120,12 +120,6 @@ const AVAILABLE_METHODS = {
 };
 const AVAILABLE_EVENTS = [];
 
-// Modal types for global modals
-const MODAL_TYPES = {
-  REOWN: 'reown',
-  TRANSACTION_FEEDBACK: 'transaction_feedback',
-};
-
 /**
  * Those are the only ones we are currently using, extracted from
  * https://docs.walletconnect.com/2.0/specs/clients/sign/error-codes
