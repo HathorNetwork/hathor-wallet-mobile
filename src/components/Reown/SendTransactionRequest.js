@@ -8,7 +8,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { t } from 'ttag';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, Image } from 'react-native';
-import { constants, numberUtils } from '@hathor/wallet-lib';
+import { constants, helpersUtils, numberUtils } from '@hathor/wallet-lib';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../../styles/themes';
@@ -138,8 +138,14 @@ const styles = StyleSheet.create({
 
 export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onReject }) => {
   const { dapp = {}, data = {} } = sendTransactionRequest || {};
-  const { tokens: registeredTokens, unregisteredTokens, reown } = useSelector((state) => ({
+  const {
+    tokens: registeredTokens,
+    unregisteredTokens,
+    reown,
+    tokenMetadata,
+  } = useSelector((state) => ({
     tokens: state.tokens,
+    tokenMetadata: state.tokenMetadata,
     unregisteredTokens: state.unregisteredTokens,
     reown: state.reown
   }));
@@ -228,12 +234,14 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     return '';
   };
 
-  const formatValue = (value) => {
+  const formatValue = (value, tokenId) => {
     if (value == null) {
       return '-';
     }
 
-    return numberUtils.prettyValue(value);
+    const isNFT = tokenId && helpersUtils.isTokenNFT(tokenId, tokenMetadata);
+
+    return numberUtils.prettyValue(value, isNFT ? 0 : constants.DECIMAL_PLACES);
   };
 
   const truncateTxId = (txId) => {
