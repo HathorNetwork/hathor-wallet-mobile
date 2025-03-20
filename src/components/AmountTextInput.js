@@ -10,8 +10,6 @@ import { StyleSheet, TextInput } from 'react-native';
 import { getAmountParsed, getIntegerAmount } from '../utils';
 import { COLORS } from '../styles/themes';
 
-/* global BigInt */
-
 class AmountTextInput extends React.Component {
   constructor(props) {
     super(props);
