@@ -261,7 +261,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
               style={styles.itemContainer}
             >
               <View style={styles.itemHeader}>
-                <Text style={styles.itemTitle}>{t`Input ${index + 1}`}</Text>
+                <Text style={styles.itemTitle}>{t`Input`} {index + 1}</Text>
                 <Text style={styles.valueText}>
                   {formatValue(input?.value)} {getTokenSymbol(input?.token)}
                 </Text>
@@ -309,7 +309,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
               style={styles.itemContainer}
             >
               <View style={styles.itemHeader}>
-                <Text style={styles.itemTitle}>{t`Output ${index + 1}`}</Text>
+                <Text style={styles.itemTitle}>{t`Output`} {index + 1}</Text>
                 <Text style={styles.valueText}>
                   {formatValue(output?.value)} {getTokenSymbol(output?.token)}
                 </Text>
