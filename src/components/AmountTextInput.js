@@ -16,9 +16,11 @@ import { COLORS } from '../styles/themes';
  *
  * @param {Object} props
  * @param {string} [props.value] - Initial input value
- * @param {Function} props.onAmountUpdate - Callback when amount changes: (text, bigIntValue) => void
- *                                          where text is the formatted string and bigIntValue is the parsed BigInt
- * @param {boolean} [props.allowOnlyInteger=false] - If true, only allow integer values (no decimals)
+ * @param {Function} props.onAmountUpdate - Callback when amount changes:
+ *                                          (text, bigIntValue) => void where text is the
+ *                                          formatted string and bigIntValue is the parsed BigInt
+ * @param {boolean} [props.allowOnlyInteger=false] - If true, only allow integer values
+ *                                                   (no decimals)
  * @param {Object} [props.style] - Additional styles for the TextInput
  * @param {boolean} [props.autoFocus] - Whether the input should be focused on mount
  * @param {number} [props.decimalPlaces] - Number of decimal places to use (optional)
@@ -28,8 +30,9 @@ import { COLORS } from '../styles/themes';
 const AmountTextInput = forwardRef((props, ref) => {
   const inputRef = useRef(null);
   const [text, setText] = useState(props.value || '');
-  const decimalPlaces = props.decimalPlaces == null ?
-    constants.DECIMAL_PLACES : props.decimalPlaces;
+  const decimalPlaces = props.decimalPlaces == null
+    ? constants.DECIMAL_PLACES
+    : props.decimalPlaces;
 
   // Expose the focus method to parent components
   useImperativeHandle(ref, () => ({
