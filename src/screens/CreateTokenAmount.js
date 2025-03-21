@@ -37,7 +37,7 @@ const CreateTokenAmount = () => {
   const [error, setError] = useState(null);
   const { wallet, decimalPlaces } = useSelector((state) => ({
     wallet: state.wallet,
-    decimalPlaces: state.serverInfo?.decimalPlaces
+    decimalPlaces: state.serverInfo?.decimal_places
   }));
   const navigation = useNavigation();
   const params = useParams();

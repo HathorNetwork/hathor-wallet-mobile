@@ -114,7 +114,7 @@ class NewPaymentRequest extends React.Component {
       return true;
     }
 
-    if (getIntegerAmount(this.state.amount) === 0) {
+    if (getIntegerAmount(this.state.amount, this.props.decimalPlaces) === 0) {
       return true;
     }
 

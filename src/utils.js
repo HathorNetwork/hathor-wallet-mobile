@@ -65,7 +65,13 @@ export const getShortContent = (content, length = 4) => (
  * @return {BigInt} The integer value as a BigInt
  * @throws {Error} When the input value cannot be parsed to a BigInt
  */
-export const getIntegerAmount = (value, decimalPlaces = hathorLib.constants.DECIMAL_PLACES) => {
+export const getIntegerAmount = (value, decimalPlaces) => {
+  let finalDecimalPlaces = decimalPlaces;
+  if (decimalPlaces == null) { // matches null and undefined
+    console.warn('Decimal places is null in getIntegerAmount! Please check if there is something wrong in serverInfo. Defaulting to 2.');
+    finalDecimalPlaces = 2;
+  }
+
   // Remove any whitespace and standardize decimal separator
   const cleanValue = value.trim().replace(',', '.');
 
@@ -73,7 +79,7 @@ export const getIntegerAmount = (value, decimalPlaces = hathorLib.constants.DECI
   const [integerPart, decimalPart = ''] = cleanValue.split('.');
 
   // Pad decimal part with zeros if needed
-  const paddedDecimal = (decimalPart + '0'.repeat(decimalPlaces)).slice(0, decimalPlaces);
+  const paddedDecimal = (decimalPart + '0'.repeat(finalDecimalPlaces)).slice(0, finalDecimalPlaces);
 
   // Combine string parts without decimal point
   const fullNumberStr = integerPart + paddedDecimal;
@@ -82,7 +88,13 @@ export const getIntegerAmount = (value, decimalPlaces = hathorLib.constants.DECI
   return bigIntCoercibleSchema.parse(fullNumberStr);
 };
 
-export const getAmountParsed = (text, decimalPlaces = hathorLib.constants.DECIMAL_PLACES) => {
+export const getAmountParsed = (text, decimalPlaces) => {
+  let finalDecimalPlaces = decimalPlaces;
+  if (decimalPlaces == null) { // matches null and undefined
+    console.warn('Decimal places is null in getAmountParsed! Please check if there is something wrong in serverInfo. Defaulting to 2.');
+    finalDecimalPlaces = 2;
+  }
+
   let parts = [];
   let separator = '';
   if (text.indexOf('.') > -1) {
@@ -100,7 +112,7 @@ export const getAmountParsed = (text, decimalPlaces = hathorLib.constants.DECIMA
 
   if (parts[1]) {
     if (parts[1].length > decimalPlaces) {
-      return `${parts[0]}${separator}${parts[1].slice(0, decimalPlaces)}`;
+      return `${parts[0]}${separator}${parts[1].slice(0, finalDecimalPlaces)}`;
     }
   }
 
