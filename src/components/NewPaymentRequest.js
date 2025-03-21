@@ -30,7 +30,7 @@ const mapStateToProps = (state) => ({
   selectedToken: state.selectedToken,
   wallet: state.wallet,
   tokenMetadata: state.tokenMetadata,
-  decimalPlaces: state.serverInfo.decimal_places,
+  decimalPlaces: state.serverInfo?.decimal_places,
 });
 
 class NewPaymentRequest extends React.Component {

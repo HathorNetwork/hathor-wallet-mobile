@@ -7,7 +7,6 @@
 
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
-import { constants } from '@hathor/wallet-lib';
 import { getAmountParsed, getIntegerAmount } from '../utils';
 import { COLORS } from '../styles/themes';
 
@@ -23,16 +22,14 @@ import { COLORS } from '../styles/themes';
  *                                                   (no decimals)
  * @param {Object} [props.style] - Additional styles for the TextInput
  * @param {boolean} [props.autoFocus] - Whether the input should be focused on mount
- * @param {number} [props.decimalPlaces] - Number of decimal places to use (optional)
+ * @param {number} props.decimalPlaces - Number of decimal places to use
  * @param {React.Ref} ref - Forwarded ref, exposes the focus() method
  * @returns {React.ReactElement} A formatted amount input component
  */
 const AmountTextInput = forwardRef((props, ref) => {
   const inputRef = useRef(null);
   const [text, setText] = useState(props.value || '');
-  const decimalPlaces = props.decimalPlaces == null
-    ? constants.DECIMAL_PLACES
-    : props.decimalPlaces;
+  const { decimalPlaces } = props;
 
   // Expose the focus method to parent components
   useImperativeHandle(ref, () => ({
