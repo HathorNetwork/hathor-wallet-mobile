@@ -38,6 +38,7 @@ const CreateTokenConfirm = () => {
   const wallet = useSelector((state) => state.wallet);
   const useWalletService = useSelector((state) => state.useWalletService);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
 
   const dispatch = useDispatch();
   const dispatchNewToken = (token) => dispatch(newToken(token));
@@ -184,6 +185,7 @@ const CreateTokenConfirm = () => {
             </InputLabel>
             <AmountTextInput
               editable={false}
+              decimalPlaces={decimalPlaces}
               value={hathorLib.numberUtils.prettyValue(amount)}
             />
           </View>
