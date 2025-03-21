@@ -22,7 +22,7 @@ import { COLORS } from '../styles/themes';
  *                                                   (no decimals)
  * @param {Object} [props.style] - Additional styles for the TextInput
  * @param {boolean} [props.autoFocus] - Whether the input should be focused on mount
- * @param {number} props.decimalPlaces - Number of decimal places to use
+ * @param {number} [props.decimalPlaces] - Number of decimal places to use
  * @param {React.Ref} ref - Forwarded ref, exposes the focus() method
  * @returns {React.ReactElement} A formatted amount input component
  */
