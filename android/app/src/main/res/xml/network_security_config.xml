@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="@raw/trusted_roots"/>
+        </trust-anchors>
+    </base-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">trust.hathor.network</domain>
+        <pin-set>
+            <pin digest="SHA-256">GeKKl76tI0ZgnY1mM6PfsCLT7OenVQ3R5sD5Qx+HlPE=</pin>
+        </pin-set>
+    </domain-config>
+</network-security-config>

@@ -11,7 +11,9 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		2BD1886029E9891800DF34C4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2BD1885F29E9891800DF34C4 /* GoogleService-Info.plist */; };
+		2B26E85A2CCC190300E0263B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2B26E8592CCC190300E0263B /* GoogleService-Info.plist */; };
+		2BAF414D2CD2FC9700127167 /* RCTHTTPRequestHandler+AuthenticationChallenge.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BAF414C2CD2FC9700127167 /* RCTHTTPRequestHandler+AuthenticationChallenge.m */; };
+		2BCC07B42D13806000A5B969 /* hathor_network_root_ca_1.der in Resources */ = {isa = PBXBuildFile; fileRef = 2BCC07B32D13806000A5B969 /* hathor_network_root_ca_1.der */; };
 		512DF3F1282094CE00AC3758 /* tabbar.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 512DF3F0282094CE00AC3758 /* tabbar.ttf */; };
 		51AAD4F12824677600ED7B78 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 51AAD4F02824677600ED7B78 /* LaunchScreen.xib */; };
 		BF298768130CF0D38FBB9000 /* Pods_HathorMobile_HathorMobileTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70A879C6979260DF2537941A /* Pods_HathorMobile_HathorMobileTests.framework */; };
@@ -38,7 +40,8 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = HathorMobile/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = HathorMobile/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = HathorMobile/main.m; sourceTree = "<group>"; };
-		2BD1885F29E9891800DF34C4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../notifications/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		2B26E8592CCC190300E0263B /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../GoogleService-Info.plist"; sourceTree = "<group>"; };
+		2BAF414C2CD2FC9700127167 /* RCTHTTPRequestHandler+AuthenticationChallenge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "RCTHTTPRequestHandler+AuthenticationChallenge.m"; sourceTree = "<group>"; };
 		2BF6F88629E44EAC00FAA6D6 /* HathorMobile.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = HathorMobile.entitlements; path = HathorMobile/HathorMobile.entitlements; sourceTree = "<group>"; };
 		2F7D974852BBECDABFD1C78A /* Pods_HathorMobile.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HathorMobile.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		34A0740550FD0E49928F13F0 /* Pods-HathorMobile-HathorMobileTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HathorMobile-HathorMobileTests.release.xcconfig"; path = "Target Support Files/Pods-HathorMobile-HathorMobileTests/Pods-HathorMobile-HathorMobileTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -98,6 +101,7 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				51AAD4F02824677600ED7B78 /* LaunchScreen.xib */,
 				13B07FB71A68108700A75B9A /* main.m */,
+				2BAF414C2CD2FC9700127167 /* RCTHTTPRequestHandler+AuthenticationChallenge.m */,
 			);
 			name = HathorMobile;
 			sourceTree = "<group>";
@@ -122,7 +126,8 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				2BD1885F29E9891800DF34C4 /* GoogleService-Info.plist */,
+				2BCC07B32D13806000A5B969 /* hathor_network_root_ca_1.der */,
+				2B26E8592CCC190300E0263B /* GoogleService-Info.plist */,
 				512DF3F0282094CE00AC3758 /* tabbar.ttf */,
 				13B07FAE1A68108700A75B9A /* HathorMobile */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -207,14 +212,16 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1540;
 				LastUpgradeCheck = 1210;
 				TargetAttributes = {
 					00E356ED1AD99517003FC87E = {
 						CreatedOnToolsVersion = 6.2;
+						LastSwiftMigration = 1540;
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 1540;
 					};
 				};
 			};
@@ -249,8 +256,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2BCC07B42D13806000A5B969 /* hathor_network_root_ca_1.der in Resources */,
 				51AAD4F12824677600ED7B78 /* LaunchScreen.xib in Resources */,
-				2BD1886029E9891800DF34C4 /* GoogleService-Info.plist in Resources */,
+				2B26E85A2CCC190300E0263B /* GoogleService-Info.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				512DF3F1282094CE00AC3758 /* tabbar.ttf in Resources */,
 			);
@@ -399,6 +407,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
+				2BAF414D2CD2FC9700127167 /* RCTHTTPRequestHandler+AuthenticationChallenge.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -419,6 +428,7 @@
 			baseConfigurationReference = 94A4C1E194F954C69FAA6CC1 /* Pods-HathorMobile-HathorMobileTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				DEVELOPMENT_TEAM = 55SHY647CG;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -448,6 +458,7 @@
 			baseConfigurationReference = 34A0740550FD0E49928F13F0 /* Pods-HathorMobile-HathorMobileTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				COPY_PHASE_STRIP = NO;
 				DEVELOPMENT_TEAM = 55SHY647CG;
@@ -586,7 +597,7 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
 				);
 				INFOPLIST_KEY_NSContactsUsageDescription = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -665,7 +676,7 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
 				);
 				INFOPLIST_KEY_NSContactsUsageDescription = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
