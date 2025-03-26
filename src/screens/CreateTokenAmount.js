@@ -35,7 +35,10 @@ const CreateTokenAmount = () => {
   const [amount, setAmount] = useState(0n);
   const [deposit, setDeposit] = useState(0n);
   const [error, setError] = useState(null);
-  const wallet = useSelector((state) => state.wallet);
+  const { wallet, decimalPlaces } = useSelector((state) => ({
+    wallet: state.wallet,
+    decimalPlaces: state.serverInfo?.decimal_places
+  }));
   const navigation = useNavigation();
   const params = useParams();
 
@@ -103,8 +106,8 @@ const CreateTokenAmount = () => {
     navigation.navigate('CreateTokenConfirm', {
       name: params.name,
       symbol: params.symbol,
-      amount, // BigInt value - will be automatically serialized
-      deposit // BigInt value - will be automatically serialized
+      amount,
+      deposit,
     });
   };
 
@@ -157,6 +160,7 @@ const CreateTokenAmount = () => {
               <AmountTextInput
                 ref={inputRef}
                 autoFocus
+                decimalPlaces={decimalPlaces}
                 onAmountUpdate={onAmountChange}
                 value={amountText}
               />

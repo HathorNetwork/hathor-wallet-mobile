@@ -32,6 +32,7 @@ const mapStateToProps = (state) => ({
   useWalletService: state.useWalletService,
   tokenMetadata: state.tokenMetadata,
   isShowingPinScreen: state.isShowingPinScreen,
+  decimalPlaces: state.serverInfo?.decimal_places,
 });
 
 class SendConfirmScreen extends React.Component {
@@ -155,6 +156,7 @@ class SendConfirmScreen extends React.Component {
               <AmountTextInput
                 editable={false}
                 value={this.amountAndToken}
+                decimalPlaces={this.props.decimalPlaces}
               />
               <InputLabel style={{ marginTop: 8 }}>
                 {getAvailableString()}
