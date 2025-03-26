@@ -50,7 +50,7 @@ const mapStateToProps = (state) => ({
   }),
   // If we are on this screen, we can be sure that the balance is loaded since we don't navigate
   // to it if the status is `failed`
-  balance: get(state.tokensBalance, `${state.selectedToken.uid}.data`, { available: 0, locked: 0 }),
+  balance: get(state.tokensBalance, `${state.selectedToken.uid}.data`, { available: 0n, locked: 0n }),
   selectedToken: state.selectedToken,
   isOnline: state.isOnline,
   network: getNetworkSettings(state).network,
@@ -379,16 +379,20 @@ class TxListItem extends React.Component {
   }
 
   getImage = (item) => {
-    if (item.balance === 0) {
+    const { balance } = item;
+
+    if (balance === 0n) {
       return <View style={this.style.icon} />;
     }
-    let name; let
-      color;
+
+    let name;
+    let color;
     const style = [this.style.icon];
-    if (item.balance > 0) {
+
+    if (balance > 0n) {
       name = 'icReceive';
       color = COLORS.positiveBalanceColor;
-    } else if (item.balance < 0) {
+    } else if (balance < 0n) {
       name = 'icSend';
       color = COLORS.textColor;
     } else {
@@ -406,7 +410,11 @@ class TxListItem extends React.Component {
   getStyle(item) {
     if (item.isVoided) {
       return this.styleVoided;
-    } if (item.balance > 0) {
+    }
+
+    const { balance } = item;
+
+    if (balance > 0n) {
       return this.stylePositive;
     }
     return this.style;

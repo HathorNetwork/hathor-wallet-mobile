@@ -57,11 +57,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:567
+#: src/models.js:107 src/utils.js:584
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:241
+#: src/utils.js:259
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 
@@ -206,73 +206,76 @@ msgstr "PIN-koder stemmer ikke overens. Prøv igen."
 msgid "Start the Wallet"
 msgstr "Start Wallet"
 
-#: src/screens/CreateTokenAmount.js:122 src/screens/CreateTokenConfirm.js:162
+#: src/screens/CreateTokenAmount.js:85 src/screens/CreateTokenAmount.js:97
+#: src/screens/SendAmountInput.js:110
+msgid "Invalid amount"
+msgstr ""
+
+#: src/screens/CreateTokenAmount.js:147 src/screens/CreateTokenConfirm.js:153
 #: src/screens/CreateTokenDepositNotice.js:42 src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
 msgstr "OPRET TOKEN"
 
-#: src/screens/CreateTokenAmount.js:130
+#: src/screens/CreateTokenAmount.js:155
 #, javascript-format
-msgid "Amount of ${ this.name } (${ this.symbol })"
-msgstr "Antal ${ this.name } (${ this.symbol })"
+msgid "Amount of ${ name } (${ symbol })"
+msgstr ""
 
-#: src/screens/CreateTokenAmount.js:142
+#: src/screens/CreateTokenAmount.js:172
 msgid "Deposit:"
 msgstr "Indsæt:"
 
-#: src/screens/CreateTokenAmount.js:148
+#: src/screens/CreateTokenAmount.js:176
 #, javascript-format
-msgid "You have ${ amountAvailableText } available"
-msgstr "Du har ${ amountAvailableText } tilgængelig"
+msgid "You have ${ amountAvailableText } ${ nativeSymbol } available"
+msgstr ""
 
-#: src/screens/CreateTokenAmount.js:153 src/screens/CreateTokenName.js:64
+#: src/screens/CreateTokenAmount.js:181 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:185
+#: src/screens/SendAmountInput.js:189
 msgid "Next"
 msgstr "Næste"
 
-#.  show loading modal
-#: src/screens/CreateTokenConfirm.js:98
+#: src/screens/CreateTokenConfirm.js:93
 msgid "Creating token"
 msgstr "Opretter token"
 
-#: src/screens/CreateTokenConfirm.js:114
+#: src/screens/CreateTokenConfirm.js:108
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Indtast din 6-cifrede pin for at oprette din token"
 
-#: src/screens/CreateTokenConfirm.js:115
+#: src/screens/CreateTokenConfirm.js:109
 msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
-#: src/screens/CreateTokenConfirm.js:117 src/screens/SendConfirmScreen.js:106
+#: src/screens/CreateTokenConfirm.js:111 src/screens/SendConfirmScreen.js:105
 msgid "Building transaction"
 msgstr ""
 
-#.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:181
+#: src/screens/CreateTokenConfirm.js:170
 #, javascript-format
-msgid "**${ this.name }** created successfully"
-msgstr "**${ this.name }** oprettet korrekt"
+msgid "**${ name }** created successfully"
+msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:194
-msgid "Amount of ${ this.name }"
-msgstr "Antal af ${ this.name }"
+#: src/screens/CreateTokenConfirm.js:183
+msgid "Amount of ${ name }"
+msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:202
+#: src/screens/CreateTokenConfirm.js:191
 msgid "Token name"
 msgstr "Token navn"
 
-#: src/screens/CreateTokenConfirm.js:208 src/screens/CreateTokenSymbol.js:69
+#: src/screens/CreateTokenConfirm.js:197 src/screens/CreateTokenSymbol.js:69
 msgid "Token symbol"
 msgstr "Token symbol"
 
-#: src/screens/CreateTokenConfirm.js:214
+#: src/screens/CreateTokenConfirm.js:203
 msgid "Deposit"
 msgstr "Indsæt"
 
-#: src/screens/CreateTokenConfirm.js:223
+#: src/screens/CreateTokenConfirm.js:212
 msgid "Create token"
 msgstr "Opret token"
 
@@ -484,11 +487,11 @@ msgstr ""
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:536 src/screens/MainScreen.js:568
+#: src/screens/MainScreen.js:544 src/screens/MainScreen.js:576
 msgid "Available Balance"
 msgstr "Tilgængelig saldo"
 
-#: src/screens/MainScreen.js:545
+#: src/screens/MainScreen.js:553
 msgid "Locked"
 msgstr "Låst"
 
@@ -519,28 +522,28 @@ msgstr "Du har lige modtaget **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "BETALINGSANMODNING"
 
-#: src/components/TxDetailsModal.js:101 src/screens/PaymentRequestDetail.js:123
+#: src/components/TxDetailsModal.js:101 src/screens/PaymentRequestDetail.js:129
 msgid "Token"
 msgstr "Token"
 
 #: src/components/Reown/CreateTokenRequest.js:84
-#: src/components/TxDetailsModal.js:165 src/screens/PaymentRequestDetail.js:127
+#: src/components/TxDetailsModal.js:165 src/screens/PaymentRequestDetail.js:133
 msgid "Amount"
 msgstr "Antal"
 
-#: src/screens/PaymentRequestDetail.js:135 src/screens/Receive.js:30
+#: src/screens/PaymentRequestDetail.js:141 src/screens/Receive.js:30
 msgid "My Address"
 msgstr "Min adresse"
 
-#: src/screens/PaymentRequestDetail.js:139
+#: src/screens/PaymentRequestDetail.js:145
 msgid "Status"
 msgstr "Status"
 
-#: src/screens/PaymentRequestDetail.js:140
+#: src/screens/PaymentRequestDetail.js:146
 msgid "Received"
 msgstr "Modtaget"
 
-#: src/screens/PaymentRequestDetail.js:140
+#: src/screens/PaymentRequestDetail.js:146
 msgid "Waiting confirmation"
 msgstr "Venter på bekræftelse"
 
@@ -759,47 +762,47 @@ msgstr "SEND"
 msgid "Address to send"
 msgstr "Adresse, der skal sendes til"
 
-#: src/screens/SendAmountInput.js:110
+#: src/screens/SendAmountInput.js:115
 msgid "Insufficient funds"
 msgstr "Utilstrækkelige midler"
 
-#: src/screens/SendAmountInput.js:141 src/screens/SendConfirmScreen.js:126
+#: src/screens/SendAmountInput.js:145 src/screens/SendConfirmScreen.js:128
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
-msgstr[0] "${ amountAndToken } tilgængelig"
-msgstr[1] "${ amountAndToken } tilgængelig"
+msgstr[0] ""
+msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:154 src/screens/SendConfirmScreen.js:134
+#: src/screens/SendAmountInput.js:158 src/screens/SendConfirmScreen.js:136
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:90
+#: src/screens/SendConfirmScreen.js:89
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
-#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:103
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
-#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:105
+#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:104
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
-#: src/screens/SendConfirmScreen.js:143
+#: src/screens/SendConfirmScreen.js:145
 msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr "Din overførsel af **${ _this.amountAndToken }** er bekræftet"
 
 #: src/components/NanoContract/EditAddressModal.js:60
 #: src/components/NanoContract/SelectAddressModal.js:117
 #: src/components/Reown/SignMessageRequest.js:40
-#: src/screens/SendConfirmScreen.js:162
+#: src/screens/SendConfirmScreen.js:164
 msgid "Address"
 msgstr "Adresse"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:291
-#: src/screens/SendConfirmScreen.js:169
+#: src/screens/SendConfirmScreen.js:171
 msgid "Send"
 msgstr "Send"
 
@@ -1314,7 +1317,7 @@ msgstr "Rapporter fejl"
 msgid "Close"
 msgstr "Luk"
 
-#: src/components/NewPaymentRequest.js:174
+#: src/components/NewPaymentRequest.js:187
 msgid "Create payment request"
 msgstr "Opret betalingsanmodning"
 

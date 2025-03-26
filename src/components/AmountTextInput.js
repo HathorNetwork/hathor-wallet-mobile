@@ -15,6 +15,20 @@ class AmountTextInput extends React.Component {
     super(props);
 
     this.inputRef = React.createRef();
+
+    // Store the text value
+    this.state = {
+      text: props.value || '',
+    };
+  }
+
+  componentDidUpdate(prevProps) {
+    // Update internal state if value prop changes externally
+    if (prevProps.value !== this.props.value && this.props.value !== this.state.text) {
+      this.setState({
+        text: this.props.value || '',
+      });
+    }
   }
 
   focus = () => {
@@ -30,11 +44,13 @@ class AmountTextInput extends React.Component {
   onChangeText = (text) => {
     if (text === '') {
       // Need to handle empty string separately
-      this.props.onAmountUpdate(text);
+      this.setState({ text: '' });
+      this.props.onAmountUpdate(text, null);
       return;
     }
 
     let parsedText = text;
+    let bigIntValue;
     if (this.props.allowOnlyInteger) {
       // We allow only integers for NFT
       parsedText = parsedText.replace(/[^0-9]/g, '');
@@ -42,24 +58,36 @@ class AmountTextInput extends React.Component {
 
     parsedText = getAmountParsed(parsedText);
 
-    if (!this.props.allowOnlyInteger) {
-      const amount = getIntegerAmount(parsedText);
-      if (Number.isNaN(amount) || amount < 0) {
-        return;
+    // There is no NaN in BigInt, it either returns a valid bigint or throws
+    // an error.
+    let isValid = true;
+    try {
+      bigIntValue = getIntegerAmount(parsedText);
+
+      if (bigIntValue < 0n) {
+        isValid = false;
       }
+    } catch (e) {
+      isValid = false;
     }
 
-    this.props.onAmountUpdate(parsedText);
+    if (isValid) {
+      this.setState({ text: parsedText });
+      // Pass both text and BigInt value to parent
+      this.props.onAmountUpdate(parsedText, bigIntValue);
+    }
   }
 
   render() {
     const placeholder = this.props.allowOnlyInteger ? '0' : '0.00';
     const { style: customStyle, ...props } = this.props;
+
     return (
       <TextInput
         ref={this.inputRef}
         style={[style.input, customStyle]}
         onChangeText={this.onChangeText}
+        value={this.state.text}
         textAlign='center'
         textAlignVertical='bottom'
         keyboardAppearance='dark'
