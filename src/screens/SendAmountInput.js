@@ -147,7 +147,9 @@ const SendAmountInput = () => {
                   onAmountUpdate={onAmountChange}
                   value={amount}
                   allowOnlyInteger={isNFT()}
-                  style={{ flex: 1 }}
+                  style={{ flex: 1 }} // we need this so the placeholder doesn't break in android
+                                      // devices after erasing the text
+                                      // https://github.com/facebook/react-native/issues/30666
                 />
                 {IS_MULTI_TOKEN
                   ? <TokenBox onPress={onTokenBoxPress} label={token.symbol} />
