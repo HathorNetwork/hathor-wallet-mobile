@@ -26,11 +26,7 @@ function serialize(data) {
   }
 
   if (typeof data === 'object') {
-    const result = {};
-    Object.keys(data).forEach((key) => {
-      result[key] = serialize(data[key]);
-    });
-    return result;
+    return Object.fromEntries(serialize(Object.entries(data)));
   }
 
   return data;
@@ -48,11 +44,7 @@ function deserialize(data) {
   }
 
   if (typeof data === 'object') {
-    const result = {};
-    Object.keys(data).forEach((key) => {
-      result[key] = deserialize(data[key]);
-    });
-    return result;
+    return Object.fromEntries(deserialize(Object.entries(data)));
   }
 
   return data;
