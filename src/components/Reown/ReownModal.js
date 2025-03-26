@@ -30,58 +30,27 @@ export default () => {
     dispatch(hideReownModal());
   };
 
+  const ModalComponent = {
+    [ReownModalTypes.CONNECT]: ConnectModal,
+    [ReownModalTypes.SIGN_MESSAGE]: SignMessageModal,
+    [ReownModalTypes.SIGN_ORACLE_DATA]: SignOracleDataModal,
+    [ReownModalTypes.SEND_NANO_CONTRACT_TX]: NewNanoContractTransactionModal,
+    [ReownModalTypes.CREATE_TOKEN]: CreateTokenModal,
+    [ReownModalTypes.SEND_TRANSACTION]: SendTransactionModal,
+    [ReownModalTypes.INSUFFICIENT_FUNDS]: InsufficientFundsModal,
+  };
+
   const getModal = (type) => {
-    switch (type) {
-      case ReownModalTypes.CONNECT:
-        return (
-          <ConnectModal
-            {...reownModal}
-            onDismiss={onDismiss}
-            baseStyles={baseStyles}
-          />
-        );
-      case ReownModalTypes.SIGN_MESSAGE:
-        return (
-          <SignMessageModal
-            {...reownModal}
-            onDismiss={onDismiss}
-          />
-        );
-      case ReownModalTypes.SIGN_ORACLE_DATA:
-        return (
-          <SignOracleDataModal
-            {...reownModal}
-            onDismiss={onDismiss}
-          />
-        );
-      case ReownModalTypes.SEND_NANO_CONTRACT_TX:
-        return (
-          <NewNanoContractTransactionModal
-            {...reownModal}
-            onDismiss={onDismiss}
-          />
-        );
-      case ReownModalTypes.CREATE_TOKEN:
-        return (
-          <CreateTokenModal
-            {...reownModal}
-            onDismiss={onDismiss}
-          />
-        );
-      case ReownModalTypes.SEND_TRANSACTION:
-        return (
-          <SendTransactionModal
-            {...reownModal}
-            onDismiss={onDismiss}
-          />
-        );
-      case ReownModalTypes.INSUFFICIENT_FUNDS:
-        return (
-          <InsufficientFundsModal />
-        );
-      default:
-        return null;
-    }
+    const Component = ModalComponent[type];
+    if (!Component) return null;
+
+    return (
+      <Component
+        {...reownModal}
+        onDismiss={onDismiss}
+        {...(type === ReownModalTypes.CONNECT ? { baseStyles } : {})}
+      />
+    );
   };
 
   return getModal(reownModal.type);
