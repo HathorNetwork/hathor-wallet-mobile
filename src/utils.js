@@ -385,7 +385,7 @@ export const getLightBackground = (alpha) => {
  */
 export const renderValue = (amount, isInteger) => {
   if (isInteger) {
-    return hathorLib.numberUtils.prettyIntegerValue(amount);
+    return hathorLib.numberUtils.prettyValue(amount, 0);
   }
 
   return hathorLib.numberUtils.prettyValue(amount);
