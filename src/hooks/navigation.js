@@ -18,6 +18,9 @@ const BIG_INT_PREFIX = '__BIGINT__:';
 function serialize(data) {
   if (data === null || data === undefined) return data;
 
+  // Skip serialization for functions
+  if (typeof data === 'function') return data;
+
   // Create a defensive copy of the data
   const clonedData = cloneDeep(data);
 
@@ -38,6 +41,9 @@ function serialize(data) {
 
 function deserialize(data) {
   if (data === null || data === undefined) return data;
+
+  // Skip deserialization for functions
+  if (typeof data === 'function') return data;
 
   // Create a defensive copy of the data
   const clonedData = cloneDeep(data);
