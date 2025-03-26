@@ -8,7 +8,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { t } from 'ttag';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, Image } from 'react-native';
-import { constants, helpersUtils, numberUtils } from '@hathor/wallet-lib';
+import { constants, numberUtils } from '@hathor/wallet-lib';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../../styles/themes';

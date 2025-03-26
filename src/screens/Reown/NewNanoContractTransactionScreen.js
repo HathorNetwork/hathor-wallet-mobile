@@ -16,6 +16,8 @@ import OfflineBar from '../../components/OfflineBar';
 import { NewNanoContractTransactionRequest } from '../../components/Reown/NanoContract/NewNanoContractTransactionRequest';
 import { COLORS } from '../../styles/themes';
 
+export const SCREEN_NAME = 'NewNanoContractTransactionRequest';
+
 export function NewNanoContractTransactionScreen({ route }) {
   const { ncTxRequest } = route.params;
   return (

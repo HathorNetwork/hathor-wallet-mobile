@@ -8,6 +8,7 @@
 import React from 'react';
 import { t } from 'ttag';
 import RequestConfirmationModal from './RequestConfirmationModal';
+import { SCREEN_NAME as CREATE_TOKEN_REQUEST_SCREEN } from '../../screens/Reown/CreateTokenScreen';
 
 export default ({
   onDismiss,
@@ -19,7 +20,7 @@ export default ({
     title={t`New Create Token Request`}
     message={t`You have received a new Create Token Request. Please carefully review the details before deciding to accept or decline.`}
     reviewButtonText={t`Review Create Token Request details`}
-    destinationScreen='CreateTokenRequest'
+    destinationScreen={CREATE_TOKEN_REQUEST_SCREEN}
     navigationParamName='createTokenRequest'
     retryingStateSelector='reown.createToken.retrying'
   />
