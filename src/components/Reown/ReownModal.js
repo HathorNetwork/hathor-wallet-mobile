@@ -7,11 +7,9 @@
 
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { StyleSheet } from 'react-native';
 import { hideReownModal } from '../../actions';
 import SignMessageModal from './SignMessageModal';
 import ConnectModal from './ConnectModal';
-import { COLORS } from '../../styles/themes';
 import { NewNanoContractTransactionModal } from './NanoContract/NewNanoContractTransactionModal';
 import SignOracleDataModal from './NanoContract/SignOracleDataModal';
 import CreateTokenModal from './CreateTokenModal';
@@ -42,65 +40,18 @@ export default () => {
 
   const getModal = (type) => {
     const Component = ModalComponent[type];
-    if (!Component) return null;
+    if (!Component) {
+      console.warn(`Tried to render modal ${type}, but it does not exist, ignoring.`);
+      return null;
+    }
 
     return (
-      <Component
-        {...reownModal}
-        onDismiss={onDismiss}
-        {...(type === ReownModalTypes.CONNECT ? { baseStyles } : {})}
-      />
+      <Component {...reownModal} onDismiss={onDismiss} />
     );
   };
 
   return getModal(reownModal.type);
 };
-
-const baseStyles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    backgroundColor: COLORS.textColorShadow,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalBox: {
-    backgroundColor: COLORS.backgroundColor,
-    borderRadius: 8,
-    padding: 20,
-    alignItems: 'center',
-    width: 300,
-  },
-  modalImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginBottom: 10,
-  },
-  modalUrl: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  modalProposer: {
-    fontSize: 12,
-    marginBottom: 16,
-  },
-  modalHeader: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  modalText: {
-    fontSize: 12,
-    marginBottom: 14,
-    textAlign: 'center',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
 
 export const ReownModalTypes = {
   CONNECT: 'Connect',
