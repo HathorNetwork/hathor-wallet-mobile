@@ -5,61 +5,22 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigation } from '@react-navigation/native';
+import React from 'react';
 import { t } from 'ttag';
-import { Text } from 'react-native';
-import { ModalBase } from '../ModalBase';
-import { WarnDisclaimer } from './WarnDisclaimer';
-import { reownReject } from '../../actions';
-import { commonStyles } from './theme';
+import RequestConfirmationModal from './RequestConfirmationModal';
 
 export default ({
   onDismiss,
   data,
-}) => {
-  const navigation = useNavigation();
-  const dispatch = useDispatch();
-  const isRetrying = useSelector((state) => state.reown.createToken.retrying);
-
-  const onReject = () => {
-    onDismiss();
-    dispatch(reownReject());
-  };
-
-  const navigateToCreateTokenRequestScreen = () => {
-    onDismiss();
-    navigation.navigate('CreateTokenRequest', { createTokenRequest: data });
-  };
-
-  useEffect(() => {
-    if (isRetrying) {
-      navigateToCreateTokenRequestScreen();
-    }
-  }, [isRetrying]);
-
-  return (
-    <ModalBase show onDismiss={onReject}>
-      <ModalBase.Title>{t`New Create Token Request`}</ModalBase.Title>
-      <ModalBase.Body style={commonStyles.body}>
-        <WarnDisclaimer />
-        <Text style={commonStyles.text}>
-          {t`You have received a new Create Token Request. Please`}
-          <Text style={commonStyles.bold}>
-            {' '}{t`carefully review the details`}{' '}
-          </Text>
-          {t`before deciding to accept or decline.`}
-        </Text>
-      </ModalBase.Body>
-      <ModalBase.Button
-        title={t`Review Create Token Request details`}
-        onPress={navigateToCreateTokenRequestScreen}
-      />
-      <ModalBase.DiscreteButton
-        title={t`Cancel`}
-        onPress={onReject}
-      />
-    </ModalBase>
-  );
-};
+}) => (
+  <RequestConfirmationModal
+    onDismiss={onDismiss}
+    data={data}
+    title={t`New Create Token Request`}
+    message={t`You have received a new Create Token Request. Please carefully review the details before deciding to accept or decline.`}
+    reviewButtonText={t`Review Create Token Request details`}
+    destinationScreen='CreateTokenRequest'
+    navigationParamName='createTokenRequest'
+    retryingStateSelector='reown.createToken.retrying'
+  />
+);
