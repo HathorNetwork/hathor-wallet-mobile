@@ -25,6 +25,7 @@ const { tmpdir } = require('node:os');
  * - Running all the translation steps as described above
  * - Checking if the `.pot` file is outdated
  * - Checking if all `.po` files have all messages from the `.pot` file
+ * - Checking if the mandatory languages have all translations in place in their `.po` files
  * - Checking for any fuzzy tags in the `.po` files
  * - Exiting with code 1 and failing if any of the above checks fail
  * - Lastly, checking for filesystem changes using `git status` for easier debugging, if needed
