@@ -261,9 +261,27 @@ function getCliParameters() {
     parameters[key.replace('--', '')] = value || true;
   });
 
+  // Sanitize ci validation input
+  const ciValidationParam = parameters['ci-validation'];
+  if (ciValidationParam && (typeof ciValidationParam !== 'boolean')) {
+    console.warn(`❌ Must not offer any value for --ci-validation.`);
+    process.exit(1);
+  }
+
+  // Sanitize languages input, removing empty strings and using the default value if none provided
+  const strictLanguagesParam = parameters['strict-languages'];
+  if (strictLanguagesParam && (typeof strictLanguagesParam !== 'string')) {
+    console.warn(`❌ Invalid value for --strict-languages. Usage: node update_translations.js --ci-validation --strict-languages=ru-ru,da`);
+    process.exit(1);
+  }
+  const sanitizedLanguagesInput = strictLanguagesParam?.split(',').filter((lang) => lang) || [];
+  const treatedLanguagesParam = sanitizedLanguagesInput?.length
+    ? sanitizedLanguagesInput
+    : mandatoryTranslations;
+
   return {
-    isCiValidationRun: parameters['ci-validation'] || false,
-    strictLanguages: parameters['strict-languages']?.split(',') || mandatoryTranslations,
+    isCiValidationRun: ciValidationParam || false,
+    strictLanguages: treatedLanguagesParam,
   }
 }
 
