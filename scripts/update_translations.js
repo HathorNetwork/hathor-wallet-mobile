@@ -31,6 +31,13 @@ const { tmpdir } = require('node:os');
  * - Lastly, checking for filesystem changes using `git status` for easier debugging, if needed
  */
 
+/*
+ * Usage:
+ * node scripts/update_translations.js
+ * node scripts/update_translations.js --ci-validation
+ * node scripts/update_translations.js --ci-validation --strict-languages=pt-br,ru-ru
+ */
+
 /**
  * All translations that should exist in the `locale` folder. Some of those may be incomplete.
  * @type {string[]}
