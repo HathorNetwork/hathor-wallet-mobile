@@ -191,7 +191,6 @@ const TokensHeader = () => (
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    marginTop: 8,
   },
   headerWrapper: {
     flexDirection: 'row',
