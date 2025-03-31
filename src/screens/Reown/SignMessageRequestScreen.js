@@ -16,6 +16,7 @@ import OfflineBar from '../../components/OfflineBar';
 import { SignMessageRequest } from '../../components/Reown/SignMessageRequest';
 import { COLORS } from '../../styles/themes';
 
+export const SCREEN_NAME = 'SignMessageRequest';
 export function SignMessageRequestScreen({ route }) {
   const { signMessageRequest } = route.params;
 

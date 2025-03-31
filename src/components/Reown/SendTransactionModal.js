@@ -8,6 +8,7 @@
 import React from 'react';
 import { t } from 'ttag';
 import RequestConfirmationModal from './RequestConfirmationModal';
+import { SCREEN_NAME } from '../../screens/Reown/SendTransactionRequestScreen';
 
 export default ({
   onDismiss,
@@ -21,7 +22,7 @@ export default ({
     title={t`Transaction Request`}
     message={t`You have received a new transaction request. Please carefully review the details before deciding to accept or decline.`}
     reviewButtonText={t`Review transaction details`}
-    destinationScreen='SendTransactionRequest'
+    destinationScreen={SCREEN_NAME}
     navigationParamName='sendTransactionRequest'
     onAcceptAction={onAcceptAction}
     onRejectAction={onRejectAction}

@@ -16,6 +16,8 @@ import OfflineBar from '../../components/OfflineBar';
 import { SendTransactionRequest } from '../../components/Reown/SendTransactionRequest';
 import { COLORS } from '../../styles/themes';
 
+export const SCREEN_NAME = 'SendTransactionRequest';
+
 export function SendTransactionRequestScreen({ route }) {
   const { sendTransactionRequest, onAccept, onReject } = route.params;
 

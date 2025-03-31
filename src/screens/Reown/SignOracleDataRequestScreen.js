@@ -16,6 +16,8 @@ import OfflineBar from '../../components/OfflineBar';
 import { SignOracleDataRequest } from '../../components/Reown/SignOracleDataRequest';
 import { COLORS } from '../../styles/themes';
 
+export const SCREEN_NAME = 'SignOracleDataRequest';
+
 export function SignOracleDataRequestScreen({ route }) {
   const { signOracleData } = route.params;
 

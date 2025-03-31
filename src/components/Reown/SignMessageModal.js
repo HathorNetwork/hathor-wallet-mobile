@@ -8,6 +8,7 @@
 import React from 'react';
 import { t } from 'ttag';
 import RequestConfirmationModal from './RequestConfirmationModal';
+import { SCREEN_NAME } from '../../screens/Reown/SignMessageRequestScreen';
 
 export default ({
   onDismiss,
@@ -19,7 +20,7 @@ export default ({
     title={t`New Sign Message Request`}
     message={t`You have received a new Sign Message Request. Please carefully review the details before deciding to accept or decline.`}
     reviewButtonText={t`Review Sign Message Request details`}
-    destinationScreen='SignMessageRequest'
+    destinationScreen={SCREEN_NAME}
     navigationParamName='signMessageRequest'
   />
 );

@@ -18,6 +18,8 @@ import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 import checkIcon from '../../assets/images/icCheckBig.png';
 
+export const SCREEN_NAME = 'SuccessFeedback';
+
 export function SuccessFeedbackScreen({ navigation, route }) {
   const { title, message } = route.params;
 
