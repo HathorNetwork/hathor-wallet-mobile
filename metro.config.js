@@ -11,9 +11,9 @@ const blacklist = require('metro-config/src/defaults/exclusionList');
 
 /**
  * Metro configuration
- * https://facebook.github.io/metro/docs/configuration
+ * https://reactnative.dev/docs/metro
  *
- * @type {import('metro-config').MetroConfig}
+ * @type {import('@react-native/metro-config').MetroConfig}
  */
 const config = {
   resolver: {
