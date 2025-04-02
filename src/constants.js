@@ -328,6 +328,6 @@ export const NODE_RATE_LIMIT_CONF = {
 };
 
 // This key is read during the react-native initialization (read the patch in
-// patches/react-native+0.72.17.patch), to decide whether to activate SES (secure
+// patches/react-native+0.77.2.patch), to decide whether to activate SES (secure
 // ecmascript)
 export const SHOULD_ENABLE_SES_STORAGE_KEY = 'should-enable-ses';
