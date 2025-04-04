@@ -58,11 +58,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:567
+#: src/models.js:107 src/utils.js:584
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:241
+#: src/utils.js:259
 msgid "Invalid address"
 msgstr "Неправильный адрес"
 
@@ -207,73 +207,76 @@ msgstr "PIN-коды не совпадают. Попробуйте еще раз
 msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
-#: src/screens/CreateTokenAmount.js:122 src/screens/CreateTokenConfirm.js:162
+#: src/screens/CreateTokenAmount.js:85 src/screens/CreateTokenAmount.js:97
+#: src/screens/SendAmountInput.js:110
+msgid "Invalid amount"
+msgstr ""
+
+#: src/screens/CreateTokenAmount.js:147 src/screens/CreateTokenConfirm.js:153
 #: src/screens/CreateTokenDepositNotice.js:42 src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
 msgstr "СОЗДАТЬ ТОКЕН"
 
-#: src/screens/CreateTokenAmount.js:130
+#: src/screens/CreateTokenAmount.js:155
 #, javascript-format
-msgid "Amount of ${ this.name } (${ this.symbol })"
-msgstr "Количество ${ this.name } (${ this.symbol })"
+msgid "Amount of ${ name } (${ symbol })"
+msgstr ""
 
-#: src/screens/CreateTokenAmount.js:142
+#: src/screens/CreateTokenAmount.js:172
 msgid "Deposit:"
 msgstr "Депозит:"
 
-#: src/screens/CreateTokenAmount.js:148
+#: src/screens/CreateTokenAmount.js:176
 #, javascript-format
-msgid "You have ${ amountAvailableText } available"
-msgstr "У вас ${ amountAvailableText }"
+msgid "You have ${ amountAvailableText } ${ nativeSymbol } available"
+msgstr ""
 
-#: src/screens/CreateTokenAmount.js:153 src/screens/CreateTokenName.js:64
+#: src/screens/CreateTokenAmount.js:181 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:185
+#: src/screens/SendAmountInput.js:189
 msgid "Next"
 msgstr "Далее"
 
-#.  show loading modal
-#: src/screens/CreateTokenConfirm.js:98
+#: src/screens/CreateTokenConfirm.js:93
 msgid "Creating token"
 msgstr "Создать токен"
 
-#: src/screens/CreateTokenConfirm.js:114
+#: src/screens/CreateTokenConfirm.js:108
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Введите 6-значный PIN-код для создания токена"
 
-#: src/screens/CreateTokenConfirm.js:115
+#: src/screens/CreateTokenConfirm.js:109
 msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
-#: src/screens/CreateTokenConfirm.js:117 src/screens/SendConfirmScreen.js:106
+#: src/screens/CreateTokenConfirm.js:111 src/screens/SendConfirmScreen.js:105
 msgid "Building transaction"
 msgstr ""
 
-#.  eslint-disable-next-line react/jsx-indent
-#: src/screens/CreateTokenConfirm.js:181
+#: src/screens/CreateTokenConfirm.js:170
 #, javascript-format
-msgid "**${ this.name }** created successfully"
-msgstr "**${ this.name }** успешно создан"
+msgid "**${ name }** created successfully"
+msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:194
-msgid "Amount of ${ this.name }"
-msgstr "Количество ${ this.name }"
+#: src/screens/CreateTokenConfirm.js:183
+msgid "Amount of ${ name }"
+msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:202
+#: src/screens/CreateTokenConfirm.js:191
 msgid "Token name"
 msgstr "Имя токена"
 
-#: src/screens/CreateTokenConfirm.js:208 src/screens/CreateTokenSymbol.js:69
+#: src/screens/CreateTokenConfirm.js:197 src/screens/CreateTokenSymbol.js:69
 msgid "Token symbol"
 msgstr "Символ токена"
 
-#: src/screens/CreateTokenConfirm.js:214
+#: src/screens/CreateTokenConfirm.js:203
 msgid "Deposit"
 msgstr "Депозит"
 
-#: src/screens/CreateTokenConfirm.js:223
+#: src/screens/CreateTokenConfirm.js:212
 msgid "Create token"
 msgstr "Создать токен"
 
@@ -486,11 +489,11 @@ msgstr ""
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:536 src/screens/MainScreen.js:568
+#: src/screens/MainScreen.js:544 src/screens/MainScreen.js:576
 msgid "Available Balance"
 msgstr "Доступный Баланс"
 
-#: src/screens/MainScreen.js:545
+#: src/screens/MainScreen.js:553
 msgid "Locked"
 msgstr "Заблокированный"
 
@@ -521,28 +524,28 @@ msgstr "Вы только что получили **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "ЗАПРОС СРЕДСТВ"
 
-#: src/components/TxDetailsModal.js:101 src/screens/PaymentRequestDetail.js:123
+#: src/components/TxDetailsModal.js:101 src/screens/PaymentRequestDetail.js:129
 msgid "Token"
 msgstr "Токен"
 
 #: src/components/Reown/CreateTokenRequest.js:84
-#: src/components/TxDetailsModal.js:165 src/screens/PaymentRequestDetail.js:127
+#: src/components/TxDetailsModal.js:165 src/screens/PaymentRequestDetail.js:133
 msgid "Amount"
 msgstr "Количество"
 
-#: src/screens/PaymentRequestDetail.js:135 src/screens/Receive.js:30
+#: src/screens/PaymentRequestDetail.js:141 src/screens/Receive.js:30
 msgid "My Address"
 msgstr "Мой Адрес"
 
-#: src/screens/PaymentRequestDetail.js:139
+#: src/screens/PaymentRequestDetail.js:145
 msgid "Status"
 msgstr "Статус"
 
-#: src/screens/PaymentRequestDetail.js:140
+#: src/screens/PaymentRequestDetail.js:146
 msgid "Received"
 msgstr "Получено"
 
-#: src/screens/PaymentRequestDetail.js:140
+#: src/screens/PaymentRequestDetail.js:146
 msgid "Waiting confirmation"
 msgstr "Ожидание подтверждения"
 
@@ -760,48 +763,48 @@ msgstr "ОТПРАВИТЬ"
 msgid "Address to send"
 msgstr "Адрес отправки"
 
-#: src/screens/SendAmountInput.js:110
+#: src/screens/SendAmountInput.js:115
 msgid "Insufficient funds"
 msgstr "Недостаточно средств"
 
-#: src/screens/SendAmountInput.js:141 src/screens/SendConfirmScreen.js:126
+#: src/screens/SendAmountInput.js:145 src/screens/SendConfirmScreen.js:128
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
-msgstr[0] "${ amountAndToken } доступно"
-msgstr[1] "${ amountAndToken } доступно"
-msgstr[2] "${ amountAndToken } доступно"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
-#: src/screens/SendAmountInput.js:154 src/screens/SendConfirmScreen.js:134
+#: src/screens/SendAmountInput.js:158 src/screens/SendConfirmScreen.js:136
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:90
+#: src/screens/SendConfirmScreen.js:89
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
-#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:103
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
-#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:105
+#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:104
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
-#: src/screens/SendConfirmScreen.js:143
+#: src/screens/SendConfirmScreen.js:145
 msgid "Your transfer of **${ this.amountAndToken }** has been confirmed"
 msgstr "Ваш перевод **${ this.amountAndToken }** был подтвержден"
 
 #: src/components/NanoContract/EditAddressModal.js:60
 #: src/components/NanoContract/SelectAddressModal.js:117
 #: src/components/Reown/SignMessageRequest.js:40
-#: src/screens/SendConfirmScreen.js:162
+#: src/screens/SendConfirmScreen.js:164
 msgid "Address"
 msgstr "Адрес"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:291
-#: src/screens/SendConfirmScreen.js:169
+#: src/screens/SendConfirmScreen.js:171
 msgid "Send"
 msgstr "Отправить"
 
@@ -1304,7 +1307,7 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: src/components/NewPaymentRequest.js:174
+#: src/components/NewPaymentRequest.js:187
 msgid "Create payment request"
 msgstr "Создать запрос на получение средств"
 
