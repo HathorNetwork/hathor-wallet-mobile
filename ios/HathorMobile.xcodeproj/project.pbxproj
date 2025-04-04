@@ -13,6 +13,7 @@
 		512DF3F1282094CE00AC3758 /* tabbar.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 512DF3F0282094CE00AC3758 /* tabbar.ttf */; };
 		51AAD4F12824677600ED7B78 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 51AAD4F02824677600ED7B78 /* LaunchScreen.xib */; };
 		6132EF182BDFF13200BBE14D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6132EF172BDFF13200BBE14D /* PrivacyInfo.xcprivacy */; };
+		CBF4F5972DA09D6B0058000F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBF4F5962DA09D6B0058000F /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +38,8 @@
 		512DF3F0282094CE00AC3758 /* tabbar.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = tabbar.ttf; path = ../src/assets/fonts/tabbar.ttf; sourceTree = "<group>"; };
 		51AAD4F02824677600ED7B78 /* LaunchScreen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LaunchScreen.xib; sourceTree = "<group>"; };
 		6132EF172BDFF13200BBE14D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = HathorMobile/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		CBF4F5962DA09D6B0058000F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = HathorMobile/AppDelegate.swift; sourceTree = "<group>"; };
+		CBF4F5982DA09D740058000F /* HathorMobile-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HathorMobile-Bridging-Header.h"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -78,10 +81,12 @@
 		13B07FAE1A68108700A75B9A /* HathorMobile */ = {
 			isa = PBXGroup;
 			children = (
+				CBF4F5962DA09D6B0058000F /* AppDelegate.swift */,
 				2BF6F88629E44EAC00FAA6D6 /* HathorMobile.entitlements */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				51AAD4F02824677600ED7B78 /* LaunchScreen.xib */,
+				CBF4F5982DA09D740058000F /* HathorMobile-Bridging-Header.h */,
 			);
 			name = HathorMobile;
 			sourceTree = "<group>";
@@ -188,7 +193,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 1620;
 					};
 				};
 			};
@@ -282,6 +287,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CBF4F5972DA09D6B0058000F /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -372,6 +378,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = network.hathor.wallet;
 				PRODUCT_NAME = HathorMobile;
+				SWIFT_OBJC_BRIDGING_HEADER = "HathorMobile-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -400,6 +407,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = network.hathor.wallet;
 				PRODUCT_NAME = HathorMobile;
+				SWIFT_OBJC_BRIDGING_HEADER = "HathorMobile-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
