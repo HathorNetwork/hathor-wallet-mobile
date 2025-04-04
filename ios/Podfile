@@ -1,12 +1,44 @@
-# Resolve react_native_pods.rb with node to allow for hoisting
-require Pod::Executable.execute_command('node', ['-p',
-  'require.resolve(
-    "react-native/scripts/react_native_pods.rb",
-    {paths: [process.argv[1]]},
-  )', __dir__]).strip
+# React-Native-Permissions helper function
+def node_require(script)
+  # Resolve script with node to allow for hoisting
+  require Pod::Executable.execute_command('node', ['-p',
+    "require.resolve(
+      '#{script}',
+      {paths: [process.argv[1]]},
+    )", __dir__]).strip
+end
 
+# Use the helper to require both react-native's and this package's scripts:
+node_require('react-native/scripts/react_native_pods.rb')
+node_require('react-native-permissions/scripts/setup.rb')
+
+min_ios_version_supported = '15.1'
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
+
+# Permissions needed from react-native-permissions
+setup_permissions([
+    # 'AppTrackingTransparency',
+    # 'Bluetooth',
+    # 'Calendars',
+    # 'CalendarsWriteOnly',
+    'Camera',
+    # 'Contacts',
+    # 'FaceID',
+    # 'LocationAccuracy',
+    # 'LocationAlways',
+    # 'LocationWhenInUse',
+    # 'MediaLibrary',
+    # 'Microphone',
+    # 'Motion',
+    'Notifications',
+    # 'PhotoLibrary',
+    # 'PhotoLibraryAddOnly',
+    # 'Reminders',
+    # 'Siri',
+    # 'SpeechRecognition',
+    # 'StoreKit',
+])
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
@@ -34,31 +66,8 @@ target 'HathorMobile' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  # react-native-permissions uses dynamic frameworks by default.
-  # However, we need the permissions right when the application initializes.
-  # To match this constraint we need the frameworks linked statically,
-  # which means they will be shiped in build time.
-  pre_install do |installer|
-    Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_no_static_framework_transitive_dependencies) {}
-    installer.pod_targets.each do |pod|
-      if pod.name.eql?('RNPermissions') || pod.name.start_with?('Permission-')
-        def pod.build_type;
-            Pod::BuildType.static_library
-        end
-      end
-    end
-  end
-
   # Instruct the build script to use the Firebase as an static framework.
   $RNFirebaseAsStaticFramework = true
-
-  # The react-native-qrcode-scanner requires installing react-native-permissions now
-  # https://github.com/moaazsidat/react-native-qrcode-scanner#react-native-permissions
-  # The two lines below are required by the installation of react-native-permissions
-  # https://github.com/zoontek/react-native-permissions#ios
-  permissions_path = '../node_modules/react-native-permissions/ios'
-  pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
-  pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
 
   # Firebase required dependency.
   # It contains native code to integrate with Google Services.
