@@ -1,0 +1,26 @@
+diff --git a/node_modules/browserify-sign/node_modules/readable-stream/lib/_stream_writable.js b/node_modules/browserify-sign/node_modules/readable-stream/lib/_stream_writable.js
+index e1e897f..1e2c65f 100644
+--- a/node_modules/browserify-sign/node_modules/readable-stream/lib/_stream_writable.js
++++ b/node_modules/browserify-sign/node_modules/readable-stream/lib/_stream_writable.js
+@@ -54,7 +54,10 @@ function CorkedRequest(state) {
+ /* </replacement> */
+ 
+ /*<replacement>*/
+-var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version.slice(0, 5)) > -1 ? setImmediate : pna.nextTick;
++if (!process.version) {
++  console.warn('Empty process version in browserify-sign/readable-stream/_stream_writable.js');
++}
++var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version?.slice(0, 5)) > -1 ? setImmediate : pna.nextTick;
+ /*</replacement>*/
+ 
+ /*<replacement>*/
+diff --git a/node_modules/browserify-sign/node_modules/readable-stream/readable.js b/node_modules/browserify-sign/node_modules/readable-stream/readable.js
+index ec89ec5..1c8ca1d 100644
+--- a/node_modules/browserify-sign/node_modules/readable-stream/readable.js
++++ b/node_modules/browserify-sign/node_modules/readable-stream/readable.js
+@@ -1,4 +1,4 @@
+-var Stream = require('stream');
++var Stream = global.StreamModule || require('stream')
+ if (process.env.READABLE_STREAM === 'disable' && Stream) {
+   module.exports = Stream;
+   exports = module.exports = Stream.Readable;
