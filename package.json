@@ -95,7 +95,7 @@
     "@babel/core": "7.22.8",
     "@babel/eslint-parser": "7.22.15",
     "@babel/preset-env": "7.22.7",
-    "@babel/runtime": "7.22.6",
+    "@babel/runtime": "7.27.0",
     "@jest/globals": "29.7.0",
     "@lavamoat/allow-scripts": "3.3.0",
     "@react-native/eslint-config": "0.72.2",
