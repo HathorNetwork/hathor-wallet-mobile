@@ -2,7 +2,7 @@ import UIKit
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
-import FirebaseCore
+import Firebase
 
 @main
 class AppDelegate: RCTAppDelegate {
