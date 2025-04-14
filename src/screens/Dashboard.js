@@ -198,6 +198,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lowContrastDetail,
     paddingHorizontal: 16,
     height: 48,
+    paddingTop: 8,
   },
   toggleContainer: {
     flex: 1,
