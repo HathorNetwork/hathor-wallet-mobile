@@ -961,7 +961,7 @@ msgstr "Digitar"
 
 #: src/screens/Reown/ReownManual.js:45
 msgid "Reown URI"
-msgstr ""
+msgstr "URI do Reown"
 
 #: src/screens/Reown/ReownManual.js:57 src/screens/Reown/ReownScan.js:34
 msgid "Connect"
@@ -1038,19 +1038,19 @@ msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:232
 msgid "Node URL"
-msgstr ""
+msgstr "URL do Fullnode"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:242
 msgid "Explorer URL"
-msgstr ""
+msgstr "URL do Explorer"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:251
 msgid "Explorer Service URL"
-msgstr ""
+msgstr "URL do Explorer Service"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:260
 msgid "Transaction Mining Service URL"
-msgstr ""
+msgstr "URL do Transaction Mining Service"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:271
 msgid "Wallet Service URL (optional)"
@@ -1610,7 +1610,7 @@ msgstr "Dados do Oracle para assinar"
 
 #: src/components/Reown/SignOracleDataRequest.js:42
 msgid "Oracle"
-msgstr ""
+msgstr "Oracle"
 
 #: src/components/Reown/WarnDisclaimer.js:27
 msgid ""
