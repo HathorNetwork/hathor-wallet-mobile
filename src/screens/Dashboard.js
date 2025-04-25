@@ -191,7 +191,6 @@ const TokensHeader = () => (
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    marginTop: 8,
   },
   headerWrapper: {
     flexDirection: 'row',
@@ -199,6 +198,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lowContrastDetail,
     paddingHorizontal: 16,
     height: 48,
+    paddingTop: 8,
   },
   toggleContainer: {
     flex: 1,
