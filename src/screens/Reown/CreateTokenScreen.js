@@ -16,6 +16,8 @@ import OfflineBar from '../../components/OfflineBar';
 import { CreateTokenRequest } from '../../components/Reown/CreateTokenRequest';
 import { COLORS } from '../../styles/themes';
 
+export const SCREEN_NAME = 'CreateTokenRequest';
+
 export function CreateTokenRequestScreen({ route }) {
   const { createTokenRequest } = route.params;
 
