@@ -74,7 +74,7 @@ import {
   SendTransactionError,
   InsufficientFundsError,
   PrepareSendTransactionError,
-} from 'hathor-rpc-handler-test';
+} from '@hathor/hathor-rpc-handler';
 import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
@@ -807,7 +807,6 @@ export function* onSendTransactionRequest({ payload }) {
  * @param {Boolean} options.passAcceptAction Whether to pass the accept action to the callback
  */
 export function* handleDAppRequest(payload, modalType, options = {}) {
-
   const { accept: acceptCb, deny: denyCb, data, dapp, nc } = payload;
   const { passAcceptAction = false } = options;
 
