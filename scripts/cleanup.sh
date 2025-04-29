@@ -30,7 +30,7 @@ done
 
 # Check if is in root folder by verifying the presence of the package.json file
 if [ ! -f "package.json" ]; then
-  echo "❌ Error: 'node_modules' folder not found in the current directory. Are you in the project root?"
+  echo "❌ Error: 'package.json' file not found in the current directory. Are you in the project root?"
   exit 1
 fi
 

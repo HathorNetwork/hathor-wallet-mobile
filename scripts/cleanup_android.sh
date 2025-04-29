@@ -24,7 +24,7 @@ echo "🧹 Cleaning and forcing re-download of global SDK/NDK caches..."
 rm -rf ~/Android/Sdk/ndk/*
 
 # Clear all leaking gradle processes
-# ⚠️ Warning! This will stop any ongoing Gradle processes! Use only if you aren't using any!
+# ⚠️ Warning! This will stop any ongoing Gradle processes! Run only if you aren't using any!
 echo "🧹 Killing all Gradle processes to avoid leaks..."
 ./gradlew --stop
 pkill -9 -f gradle

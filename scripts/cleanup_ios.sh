@@ -27,6 +27,8 @@ echo "🧹 Cleaning Xcode DerivedData..."
 rm -rf ~/Library/Developer/Xcode/DerivedData/*
 rm -rf ~/Library/Developer/Xcode/Archives/*
 
+# Deintegrating CocoaPods. This will cause all pods to be re-downloaded upon the next install
+# which will take a lot of bandwidth and processing time
 echo "🧹 Deintegrating and cleaning CocoaPods..."
 pod deintegrate
 
