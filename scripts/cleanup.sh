@@ -28,8 +28,8 @@ for arg in "$@"; do
   esac
 done
 
-# Check if the node_modules folder exists
-if [ ! -d "node_modules" ]; then
+# Check if is in root folder by verifying the presence of the package.json file
+if [ ! -f "package.json" ]; then
   echo "❌ Error: 'node_modules' folder not found in the current directory. Are you in the project root?"
   exit 1
 fi
