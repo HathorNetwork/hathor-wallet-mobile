@@ -24,8 +24,11 @@ rm -rf ~/Library/Caches/CocoaPods
 
 
 echo "🧹 Cleaning Xcode DerivedData..."
-rm -rf ~/Library/Developer/Xcode/DerivedData/*
-rm -rf ~/Library/Developer/Xcode/Archives/*
+# Retrieve the project name by listing the *.xcodeproj directory, removing the extension,
+# and handling errors if no match is found. That way, only the folders related to this project are cleaned up.
+PROJECT_NAME=$(ls -d *.xcodeproj 2>/dev/null | sed 's/\.xcodeproj$//')
+rm -rf ~/Library/Developer/Xcode/DerivedData/"$PROJECT_NAME"-*
+rm -rf ~/Library/Developer/Xcode/Archives/"$PROJECT_NAME"-*
 
 # Deintegrating CocoaPods. This will cause all pods to be re-downloaded upon the next install
 # which will take a lot of bandwidth and processing time
