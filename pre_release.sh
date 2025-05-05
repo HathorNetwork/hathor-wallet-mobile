@@ -12,19 +12,24 @@ set -v # Verbose mode for better debugging
 
 git log -n1
 
-rm -rf node_modules/
-rm -rf ios/Pods/
+echo "🧹 Major cache and dependency cleanup..."
+./scripts/cleanup.sh --ios --android
 
+echo "🧹 Cleaning old GoogleService files..."
 rm -f ./android/app/google-services.json
 rm -f ./android/app/GoogleService-Info.plist
 rm -f ./notifications/GoogleService-Info.plist
 
+echo "📦 Reinstalling dependencies for release..."
 npm run setup:release
 
+echo "📦 Reinstalling pods..."
 (cd ios/ && pod install)
 
+echo "📝 Updating i18n..."
 make i18n
 
+echo "⬇️ Retrieving latest GoogleService files..."
 source ./env
 mkdir -p ./notifications
 aws s3 cp ${HATHOR_WALLET_MOBILE_S3_PATH}/google-services.json ./android/app
