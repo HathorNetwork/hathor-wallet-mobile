@@ -5,10 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Keyboard, KeyboardAvoidingView, Pressable, Text, View } from 'react-native';
 import { get } from 'lodash';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { t, jt } from 'ttag';
 
 import hathorLib from '@hathor/wallet-lib';
@@ -18,150 +18,181 @@ import InfoBox from '../components/InfoBox';
 import InputLabel from '../components/InputLabel';
 import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
-import { getIntegerAmount, getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
+import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 import { COLORS } from '../styles/themes';
+import { useNavigation, useParams } from '../hooks/navigation';
+
+/* global BigInt */
 
 /**
- * balance {Object} object with token balance {'available', 'locked'}
- */
-const mapStateToProps = (state) => ({
-  balance: get(
-    state.tokensBalance,
-    `[${hathorLib.constants.NATIVE_TOKEN_UID}].data`,
-    {
-      available: 0,
-      locked: 0,
-    }
-  ),
-  wallet: state.wallet,
-});
-
-/**
- * This screen expect the following parameters on the navigation:
+ * This screen expects the following parameters on the navigation:
  * name {string} token name
  * symbol {string} token symbol
  */
-class CreateTokenAmount extends React.Component {
-  /**
-   * amount {string} amount of tokens to create
-   * deposit {number} HTR deposit required for creating the amount
-   */
-  state = {
-    amount: '',
-    deposit: 0,
+const CreateTokenAmount = () => {
+  const inputRef = useRef(null);
+  const [amountText, setAmountText] = useState('');
+  const [amount, setAmount] = useState(0n);
+  const [deposit, setDeposit] = useState(0n);
+  const [error, setError] = useState(null);
+  const { wallet, decimalPlaces } = useSelector((state) => ({
+    wallet: state.wallet,
+    decimalPlaces: state.serverInfo?.decimal_places
+  }));
+  const navigation = useNavigation();
+  const params = useParams();
+
+  // Get route params with BigInt support
+  const { name, symbol } = params;
+
+  const nativeSymbol = wallet.storage.getNativeTokenData().symbol;
+
+  // Get balance from Redux store
+  const balance = useSelector((state) => get(
+    state.tokensBalance,
+    `[${hathorLib.constants.NATIVE_TOKEN_UID}].data`,
+    {
+      available: 0n,
+      locked: 0n,
+    }
+  ));
+
+  // Focus the input when the screen is focused
+  useEffect(() => {
+    const focusListener = navigation.addListener('focus', () => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    });
+
+    return focusListener;
+  }, [navigation]);
+
+  // Handle amount text change
+  const onAmountChange = (text, value) => {
+    setAmountText(text);
+
+    try {
+      if (value !== null) {
+        setAmount(value);
+
+        // Calculate deposit (1% of amount)
+        const calculatedDeposit = value / BigInt(100);
+        setDeposit(calculatedDeposit);
+
+        setError(null);
+      } else if (text) {
+        // If text is not empty but no valid BigInt was provided, show error
+        setAmount(0n);
+        setDeposit(0n);
+        setError(t`Invalid amount`);
+      } else {
+        // Text is empty
+        setAmount(0n);
+        setDeposit(0n);
+        setError(null);
+      }
+    } catch (e) {
+      // Handle any unexpected errors
+      console.error('Error processing amount:', e);
+      setAmount(0n);
+      setDeposit(0n);
+      setError(t`Invalid amount`);
+    }
   };
 
-  constructor(props) {
-    super(props);
-    this.inputRef = React.createRef();
-    this.focusEvent = null;
-    this.name = this.props.route.params.name;
-    this.symbol = this.props.route.params.symbol;
-    this.nativeSymbol = this.props.wallet.storage.getNativeTokenData().symbol;
-  }
-
-  componentDidMount() {
-    this.focusEvent = this.props.navigation.addListener('focus', () => {
-      this.focusInput();
+  // Handle button press - BigInt values are automatically serialized
+  const onButtonPress = () => {
+    navigation.navigate('CreateTokenConfirm', {
+      name: params.name,
+      symbol: params.symbol,
+      amount,
+      deposit,
     });
-  }
+  };
 
-  componentWillUnmount() {
-    this.focusEvent();
-  }
-
-  focusInput = () => {
-    if (this.inputRef.current) {
-      this.inputRef.current.focus();
-    }
-  }
-
-  onAmountChange = (text) => {
-    const amount = getIntegerAmount(text);
-    const deposit = (amount ? hathorLib.tokensUtils.getDepositAmount(amount) : 0);
-    this.setState({ amount: text, deposit });
-  }
-
-  onButtonPress = () => {
-    const amount = getIntegerAmount(this.state.amount);
-    this.props.navigation.navigate('CreateTokenConfirm', { name: this.name, symbol: this.symbol, amount });
-  }
-
-  isButtonDisabled = () => {
-    if (this.state.amount === '') {
+  // Check if the button should be disabled
+  const isButtonDisabled = () => {
+    if (!params.name || !params.symbol) {
       return true;
     }
 
-    if (getIntegerAmount(this.state.amount) === 0) {
+    if (amount <= 0n) {
       return true;
     }
 
-    // disabled if we don't have required deposit
-    if (this.state.deposit > this.props.balance.available) {
+    if (deposit > balance.available) {
       return true;
     }
 
     return false;
-  }
+  };
 
-  render() {
-    const amountStyle = (this.state.deposit > this.props.balance.available
-      ? { color: COLORS.errorTextColor }
-      : {}
-    );
-    const amountAvailableText = (
-      <Strong style={amountStyle}>
-        {hathorLib.numberUtils.prettyValue(this.props.balance.available)} {this.nativeSymbol}
-      </Strong>
-    );
+  // Determine style for amount display
+  const getAmountStyle = () => {
+    if (deposit > balance.available) {
+      return { color: COLORS.errorTextColor };
+    }
+    return {};
+  };
 
-    return (
-      <View style={{ flex: 1 }}>
-        <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
-          <HathorHeader
-            title={t`CREATE TOKEN`}
-            onBackPress={() => this.props.navigation.goBack()}
-            onCancel={() => this.props.navigation.getParent().goBack()}
-          />
-          <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
-            <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-              <View style={{ marginTop: 24 }}>
-                <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
-                  {t`Amount of ${this.name} (${this.symbol})`}
-                </InputLabel>
-                <AmountTextInput
-                  ref={this.inputRef}
-                  autoFocus
-                  onAmountUpdate={this.onAmountChange}
-                  value={this.state.amount}
-                />
-              </View>
-              <View>
-                <InfoBox
-                  items={[
-                    <Text>{t`Deposit:`} <Strong style={amountStyle}>
-                      {hathorLib.numberUtils.prettyValue(
-                        this.state.deposit
-                      )} {this.nativeSymbol}
-                    </Strong></Text>,
-                    <Text>
-                      {jt`You have ${amountAvailableText} available`}
-                    </Text>
-                  ]}
-                />
-                <NewHathorButton
-                  title={t`Next`}
-                  disabled={this.isButtonDisabled()}
-                  onPress={this.onButtonPress}
-                />
-              </View>
+  const amountStyle = getAmountStyle();
+  const amountAvailableText = (
+    <Strong style={amountStyle}>
+      {hathorLib.numberUtils.prettyValue(balance.available)} {nativeSymbol}
+    </Strong>
+  );
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
+        <HathorHeader
+          title={t`CREATE TOKEN`}
+          onBackPress={() => navigation.goBack()}
+          onCancel={() => navigation.getParent().goBack()}
+        />
+        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
+          <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
+            <View style={{ marginTop: 24 }}>
+              <InputLabel style={{ textAlign: 'center', marginBottom: 16 }}>
+                {t`Amount of ${name} (${symbol})`}
+              </InputLabel>
+              <AmountTextInput
+                ref={inputRef}
+                autoFocus
+                decimalPlaces={decimalPlaces}
+                onAmountUpdate={onAmountChange}
+                value={amountText}
+              />
+              {error && (
+                <Text style={{ color: COLORS.errorTextColor, marginTop: 8, textAlign: 'center' }}>
+                  {error}
+                </Text>
+              )}
             </View>
-            <OfflineBar style={{ position: 'relative' }} />
-          </KeyboardAvoidingView>
-        </Pressable>
-      </View>
-    );
-  }
-}
+            <View>
+              <InfoBox
+                items={[
+                  <Text key='deposit'>{t`Deposit:`} <Strong style={amountStyle}>
+                    {hathorLib.numberUtils.prettyValue(deposit)} {nativeSymbol}
+                  </Strong></Text>,
+                  <Text key='available'>
+                    {jt`You have ${amountAvailableText} ${nativeSymbol} available`}
+                  </Text>
+                ]}
+              />
+              <NewHathorButton
+                title={t`Next`}
+                disabled={isButtonDisabled()}
+                onPress={onButtonPress}
+              />
+            </View>
+          </View>
+          <OfflineBar style={{ position: 'relative' }} />
+        </KeyboardAvoidingView>
+      </Pressable>
+    </View>
+  );
+};
 
-export default connect(mapStateToProps)(CreateTokenAmount);
+export default CreateTokenAmount;

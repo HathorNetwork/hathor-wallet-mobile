@@ -99,6 +99,7 @@ import { CreateTokenRequestScreen } from './screens/Reown/CreateTokenScreen';
 import { SuccessFeedbackScreen } from './screens/Reown/SuccessFeedbackScreen';
 import UnifiedQRScanner from './screens/UnifiedQRScanner';
 import RegisterOptionsScreen from './screens/RegisterOptionsScreen';
+import { NavigationSerializingProvider } from './hooks/navigation';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -822,10 +823,12 @@ const App = () => (
           theme={HathorTheme}
           ref={navigationRef}
         >
-          <ShowPushNotificationTxDetails />
-          <NetworkStatusBar />
-          <RootStack />
-          <ReownModal />
+          <NavigationSerializingProvider>
+            <ShowPushNotificationTxDetails />
+            <NetworkStatusBar />
+            <RootStack />
+            <ReownModal />
+          </NavigationSerializingProvider>
         </NavigationContainer>
         <GlobalErrorHandler />
       </SafeAreaView>
