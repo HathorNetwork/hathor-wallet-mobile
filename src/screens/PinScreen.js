@@ -85,6 +85,7 @@ class PinScreen extends React.Component {
     this.biometryEnabled = isBiometryEnabled();
 
     this.focusEvent = null;
+    this.backListener = null;
   }
 
   componentDidMount() {
@@ -99,7 +100,7 @@ class PinScreen extends React.Component {
 
     if (!this.canCancel) {
       // If can't cancel this screen, we must remove the hardware back from android
-      BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+      this.backListener = BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
     }
 
     this.focusEvent = this.props.navigation.addListener('focus', () => {
@@ -111,12 +112,9 @@ class PinScreen extends React.Component {
   }
 
   componentWillUnmount() {
-    if (!this.canCancel) {
+    if (!this.canCancel && this.backListener) {
       // Removing event listener
-      BackHandler.removeEventListener(
-        'hardwareBackPress',
-        this.handleBackButton,
-      );
+      this.backListener.remove();
     }
 
     // Removing focus event
@@ -348,9 +346,9 @@ class PinScreen extends React.Component {
         <FeedbackModal
           text={t`Biometry failed or canceled.`}
           onDismiss={() => this.props.navigation.goBack()}
-          icon=<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />
+          icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
         />
-      );
+      )
     };
 
     const safeBiometryMessage = () => (
