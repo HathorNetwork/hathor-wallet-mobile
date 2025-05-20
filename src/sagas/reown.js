@@ -144,7 +144,7 @@ function* init() {
   log.debug('Starting reown.');
 
   // We should check if nano contracts are enabled in this network:
-  const nanoContractsEnabled = yield select((state) => get(state.serverInfo, 'nano_contracts_enabled', false));
+  const nanoContractsEnabled = true; // yield select((state) => get(state.serverInfo, 'nano_contracts_enabled', false));
   if (!nanoContractsEnabled) {
     log.debug('Nano contracts are not enabled, skipping reown init.');
     return;
@@ -154,10 +154,11 @@ function* init() {
     const walletServiceEnabled = yield call(isWalletServiceEnabled);
     const reownEnabled = yield call(isReownEnabled);
 
+    /*
     if (walletServiceEnabled) {
       log.debug('Wallet Service enabled, skipping reown init.');
       return;
-    }
+    } */
 
     if (!reownEnabled) {
       log.debug('Reown is not enabled.');
@@ -462,6 +463,7 @@ export function* processRequest(action) {
       }
     }));
   } catch (e) {
+    console.log('Got error on prompt handler', e);
     let shouldAnswer = true;
     switch (e.constructor) {
       case SendNanoContractTxError: {
@@ -922,14 +924,17 @@ export function* onSessionProposal(action) {
   }
 
   const networkSettings = yield select(getNetworkSettings);
+
+  console.log('Network settings: ', networkSettings);
+
   try {
     yield call(() => walletKit.approveSession({
       id,
       relayProtocol: params.relays[0].protocol,
       namespaces: {
         hathor: {
-          accounts: [`hathor:${networkSettings.network}:${firstAddress}`],
-          chains: [`hathor:${networkSettings.network}`],
+          accounts: [`hathor:testnet:${firstAddress}`],
+          chains: [`hathor:testnet`],
           events: AVAILABLE_EVENTS,
           methods: values(AVAILABLE_METHODS),
         },
@@ -938,7 +943,7 @@ export function* onSessionProposal(action) {
 
     yield call(refreshActiveSessions);
   } catch (error) {
-    log.error('Error on sessionProposal: ', error);
+    console.error('Error on sessionProposal: ', error);
     try {
       // Attempt once more to reject the session, so it doesn't linger in the
       // message queue

@@ -121,6 +121,7 @@ export function* isWalletServiceEnabled() {
   // Users might have had issues with the wallet-service in the past, we can detect
   // old flags because they were booleans, new flags are integers (timestamps)
   const shouldIgnoreFlag = yield call(() => AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG));
+  AsyncStorage.removeItem(IGNORE_WS_TOGGLE_FLAG);
   const shouldIgnoreFlagTs = parseInt(shouldIgnoreFlag, 10);
 
   if (!Number.isNaN(shouldIgnoreFlagTs)) {
@@ -583,7 +584,7 @@ export function* handleTx(action) {
     yield put(tokenFetchBalanceRequested(tokenUid, true));
 
     if (tokenUid === hathorLibConstants.NATIVE_TOKEN_UID
-        || tokenUid === DEFAULT_TOKEN.uid) {
+      || tokenUid === DEFAULT_TOKEN.uid) {
       yield put(tokenFetchHistoryRequested(tokenUid, true));
     } else {
       // Invalidate the history so it will get requested the next time the user enters the history
@@ -712,7 +713,7 @@ export function* onWalletReloadData() {
     for (const tokenUid of registeredTokens) {
       // Skip customtoken and HTR since we already force-download the history on loadTokens
       if (tokenUid === htrUid
-          || tokenUid === customTokenUid) {
+        || tokenUid === customTokenUid) {
         continue;
       }
 
