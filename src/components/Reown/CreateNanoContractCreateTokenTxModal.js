@@ -27,4 +27,5 @@ export default ({
     onRejectAction={onRejectAction}
     retryingStateSelector='reown.createNanoContractCreateTokenTx.retrying'
   />
-); 
+);
+
