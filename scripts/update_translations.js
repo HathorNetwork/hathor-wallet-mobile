@@ -25,12 +25,31 @@ const { tmpdir } = require('node:os');
  * - Running all the translation steps as described above
  * - Checking if the `.pot` file is outdated
  * - Checking if all `.po` files have all messages from the `.pot` file
+ * - Checking if the mandatory languages have all translations in place in their `.po` files
  * - Checking for any fuzzy tags in the `.po` files
  * - Exiting with code 1 and failing if any of the above checks fail
  * - Lastly, checking for filesystem changes using `git status` for easier debugging, if needed
  */
 
+/*
+ * Usage:
+ * node scripts/update_translations.js
+ * node scripts/update_translations.js --ci-validation
+ * node scripts/update_translations.js --ci-validation --strict-languages=pt-br,ru-ru
+ */
+
+/**
+ * All translations that should exist in the `locale` folder. Some of those may be incomplete.
+ * @type {string[]}
+ */
 const existingTranslations = ['pt-br', 'da', 'ru-ru'];
+/**
+ * Translations that are mandatory to be complete. If any of those language files contain missing
+ * lines, the CI validation script will fail.
+ * Can be overridden by the `--strict-languages` argument.
+ * @type {string[]}
+ */
+const mandatoryTranslations = ['pt-br'];
 const temporaryDirs = [];
 
 /**
@@ -107,10 +126,10 @@ function mergeTranslations() {
 /**
  * Checks if all `.po` files have all messages from the `.pot` file.
  * Allows untranslated messages if `strict` is false.
- * @param {boolean} strict - If true, does not allow untranslated messages.
- * @returns {boolean} True if an error happened or if there are any differences
+ * @param {string[]} strictLanguages - Does not allow untranslated messages for those languages.
+ * @returns {boolean} True if an error happened or if there are any missing i18n lines
  */
-function checkPoTranslations(strict = false) {
+function checkPoTranslations(strictLanguages) {
   console.log(`⏳ Checking translations...`);
 
   const localeDir = 'locale';
@@ -121,7 +140,10 @@ function checkPoTranslations(strict = false) {
 
   subfolders.forEach((subfolder) => {
     const poFile = path.join(localeDir, subfolder, 'texts.po');
-    const cmd = strict ? `msgcmp ${poFile} ${potFile}` : `msgcmp --use-untranslated ${poFile} ${potFile}`;
+    const isStrictLanguage = strictLanguages.includes(subfolder);
+    const cmd = isStrictLanguage
+      ? `msgcmp ${poFile} ${potFile}`
+      : `msgcmp --use-untranslated ${poFile} ${potFile}`;
     try {
       // If there are any differences, the command will throw an error
       execSync(cmd, { stdio: 'inherit' });
@@ -227,8 +249,44 @@ process.on('exit', (code) => {
   });
 });
 
+/**
+ * Parses the command line arguments and returns an object with the parameters
+ * @returns {{isCiValidationRun: boolean, strictLanguages: string[]}}
+ */
+function getCliParameters() {
+  const args = process.argv.slice(2);
+  const parameters = {};
+  args.forEach((arg) => {
+    const [key, value] = arg.split('=');
+    parameters[key.replace('--', '')] = value || true;
+  });
+
+  // Sanitize ci validation input
+  const ciValidationParam = parameters['ci-validation'];
+  if (ciValidationParam && (typeof ciValidationParam !== 'boolean')) {
+    console.warn(`❌ Must not offer any value for --ci-validation.`);
+    process.exit(1);
+  }
+
+  // Sanitize languages input, removing empty strings and using the default value if none provided
+  const strictLanguagesParam = parameters['strict-languages'];
+  if (strictLanguagesParam && (typeof strictLanguagesParam !== 'string')) {
+    console.warn(`❌ Invalid value for --strict-languages. Usage: node update_translations.js --ci-validation --strict-languages=ru-ru,da`);
+    process.exit(1);
+  }
+  const sanitizedLanguagesInput = strictLanguagesParam?.split(',').filter((lang) => lang) || [];
+  const treatedLanguagesParam = sanitizedLanguagesInput?.length
+    ? sanitizedLanguagesInput
+    : mandatoryTranslations;
+
+  return {
+    isCiValidationRun: ciValidationParam || false,
+    strictLanguages: treatedLanguagesParam,
+  }
+}
+
 try {
-  const isCiValidationRun = process.argv.includes('--ci-validation');
+  const { isCiValidationRun, strictLanguages } = getCliParameters();
 
   runLocaleUpdatePot();
   mergeTranslations();
@@ -243,7 +301,7 @@ try {
   // If this script was called with the "--ci-validation" argument, it will fail if there are any
   // fuzzy tags that need reviewing
   const invalidPot = checkPotOutdated();
-  const invalidPos = checkPoTranslations();
+  const invalidPos = checkPoTranslations(strictLanguages);
   checkForChanges(); // This will print the diff if changes are found, but not fail the script
   if (invalidPot || invalidPos || hasFuzzyTags) {
     console.log(`❌ Translations are not up-to-date. Please review the changes.`);
