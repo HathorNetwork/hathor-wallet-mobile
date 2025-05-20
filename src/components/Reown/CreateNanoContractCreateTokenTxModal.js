@@ -9,11 +9,11 @@ import React from 'react';
 import { t } from 'ttag';
 import RequestConfirmationModal from './RequestConfirmationModal';
 
-export default ({
+export const CreateNanoContractCreateTokenTxModal = ({
   onDismiss,
   data,
-  onAcceptAction,
-  onRejectAction,
+  accept,
+  deny,
 }) => (
   <RequestConfirmationModal
     onDismiss={onDismiss}
@@ -23,9 +23,11 @@ export default ({
     reviewButtonText={t`Review request details`}
     destinationScreen='CreateNanoContractCreateTokenTxRequest'
     navigationParamName='createNanoContractCreateTokenTxRequest'
-    onAcceptAction={onAcceptAction}
-    onRejectAction={onRejectAction}
+    onAcceptAction={accept}
+    onRejectAction={deny}
     retryingStateSelector='reown.createNanoContractCreateTokenTx.retrying'
   />
 );
+
+export default CreateNanoContractCreateTokenTxModal;
 

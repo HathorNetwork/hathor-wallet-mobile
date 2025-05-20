@@ -17,14 +17,22 @@ import { CreateNanoContractCreateTokenTxRequest } from '../../components/Reown/C
 import { COLORS } from '../../styles/themes';
 
 export function CreateNanoContractCreateTokenTxScreen({ route }) {
-  const { createNanoContractCreateTokenTxRequest } = route.params;
+  const { createNanoContractCreateTokenTxRequest, onAccept, onReject } = route.params;
 
   return (
     <Wrapper>
       <HathorHeader
         title={t`Create Nano Contract & Token`.toUpperCase()}
       />
-      <CreateNanoContractCreateTokenTxRequest route={route} />
+      <CreateNanoContractCreateTokenTxRequest
+        route={{
+          params: {
+            createNanoContractCreateTokenTxRequest,
+            onAccept,
+            onReject
+          }
+        }}
+      />
       <OfflineBar />
     </Wrapper>
   );

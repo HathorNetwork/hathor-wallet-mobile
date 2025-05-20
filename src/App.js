@@ -96,12 +96,12 @@ import { NanoContractRegisterQrCodeScreen } from './screens/NanoContractRegister
 import { SignMessageRequestScreen } from './screens/Reown/SignMessageRequestScreen';
 import { SignOracleDataRequestScreen } from './screens/Reown/SignOracleDataRequestScreen';
 import { CreateTokenRequestScreen } from './screens/Reown/CreateTokenScreen';
+import { CreateNanoContractCreateTokenTxScreen } from './screens/Reown/CreateNanoContractCreateTokenTxScreen';
 import { SuccessFeedbackScreen } from './screens/Reown/SuccessFeedbackScreen';
 import UnifiedQRScanner from './screens/UnifiedQRScanner';
 import RegisterOptionsScreen from './screens/RegisterOptionsScreen';
 import { NavigationSerializingProvider } from './hooks/navigation';
 import { SendTransactionRequestScreen } from './screens/Reown/SendTransactionRequestScreen';
-import { CreateNanoContractCreateTokenTxScreen } from './screens/Reown/CreateNanoContractCreateTokenTxScreen';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
