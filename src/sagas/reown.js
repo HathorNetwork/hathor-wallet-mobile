@@ -74,7 +74,8 @@ import {
   SendTransactionError,
   InsufficientFundsError,
   PrepareSendTransactionError,
-} from '@hathor/hathor-rpc-handler';
+  CreateNanoContractCreateTokenTxError,
+} from 'hathor-rpc-handler-test';
 import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
@@ -105,6 +106,7 @@ import {
   setSendTxStatusLoading,
   setSendTxStatusReady,
   showSendTransactionModal,
+  showCreateNanoContractCreateTokenTxModal,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -449,6 +451,9 @@ export function* processRequest(action) {
         yield put(setSendTxStatusSuccess());
         // The modal state will be updated by the SendTransactionLoadingFinishedTrigger
         break;
+      case RpcResponseTypes.CreateNanoContractCreateTokenTxResponse:
+        yield put(setNewNanoContractStatusSuccess());
+        break;
       default:
         console.log('Unknown response type:', response.type);
         break;
@@ -548,6 +553,21 @@ export function* processRequest(action) {
           },
         }));
         break;
+      case CreateNanoContractCreateTokenTxError: {
+        yield put(setNewNanoContractStatusFailure());
+
+        const retry = yield call(
+          retryHandler,
+          types.REOWN_NEW_NANOCONTRACT_RETRY,
+          types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
+          // Retry the action, exactly as it came:
+          yield* processRequest(action);
+        }
+      } break;
       default:
         console.log('Unknown error type:', e.constructor.name);
         break;
@@ -614,6 +634,23 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
     switch (request.type) {
+      case TriggerTypes.CreateNanoContractCreateTokenTxConfirmationPrompt: {
+        const createNanoContractCreateTokenTxResponseTemplate = (accepted) => (data) => resolve({
+          type: TriggerResponseTypes.CreateNanoContractCreateTokenTxConfirmationResponse,
+          data: {
+            accepted,
+            nano: data?.payload?.nano || null,
+            token: data?.payload?.token || null,
+          }
+        });
+
+        dispatch(showCreateNanoContractCreateTokenTxModal(
+          createNanoContractCreateTokenTxResponseTemplate(true),
+          createNanoContractCreateTokenTxResponseTemplate(false),
+          request.data,
+          requestMetadata
+        ));
+      } break;
       case TriggerTypes.SignOracleDataConfirmationPrompt: {
         const signOracleDataResponseTemplate = (accepted) => () => resolve({
           type: TriggerResponseTypes.SignOracleDataConfirmationResponse,
