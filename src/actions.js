@@ -218,8 +218,8 @@ export const types = {
   REOWN_SEND_TX_RETRY: 'REOWN_SEND_TX_RETRY',
   REOWN_SEND_TX_RETRY_DISMISS: 'REOWN_SEND_TX_RETRY_DISMISS',
   SHOW_SEND_TRANSACTION_REQUEST_MODAL: 'SHOW_SEND_TRANSACTION_REQUEST_MODAL',
-  SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL: 'SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL',
   SHOW_INSUFFICIENT_FUNDS_MODAL: 'SHOW_INSUFFICIENT_FUNDS_MODAL',
+  SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL: 'SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1513,21 +1513,16 @@ export const showCreateTokenModal = (accept, deny, data, dapp) => ({
 
 export const showSendTransactionModal = (onAccept, onReject, data, metadata) => ({
   type: types.SHOW_SEND_TRANSACTION_REQUEST_MODAL,
-  payload: {
-    accept: onAccept,
-    deny: onReject,
-    data,
-    dapp: metadata,
-  },
+  payload: { accept: onAccept, deny: onReject, data, dapp: metadata },
 });
 
-export const showCreateNanoContractCreateTokenTxModal = (onAccept, onReject, data, metadata) => ({
+export const showCreateNanoContractCreateTokenTxModal = (accept, deny, data, dapp) => ({
   type: types.SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL,
   payload: {
-    accept: onAccept,
-    deny: onReject,
+    accept,
+    deny,
     data,
-    dapp: metadata,
+    dapp,
   },
 });
 
