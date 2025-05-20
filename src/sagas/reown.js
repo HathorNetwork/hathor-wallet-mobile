@@ -117,6 +117,7 @@ const AVAILABLE_METHODS = {
   HATHOR_SIGN_ORACLE_DATA: 'htr_signOracleData',
   HATHOR_CREATE_TOKEN: 'htr_createToken',
   HATHOR_SEND_TRANSACTION: 'htr_sendTransaction',
+  HATHOR_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: 'htr_createNanoContractCreateTokenTx',
 };
 const AVAILABLE_EVENTS = [];
 
@@ -1026,6 +1027,19 @@ export function* onSessionDelete(action) {
   yield call(onCancelSession, action);
 }
 
+/**
+ * This saga will be called when a create nano contract create token transaction request is received from a dApp
+ *
+ * @param {Object} payload The payload containing the transaction data and callbacks
+ * @param {Function} payload.accept Callback to accept the transaction
+ * @param {Function} payload.deny Callback to deny the transaction
+ * @param {Object} payload.data Transaction data
+ * @param {Object} payload.dapp Information about the dApp
+ */
+export function* onCreateNanoContractCreateTokenTxRequest({ payload }) {
+  yield* handleDAppRequest(payload, ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX, { passAcceptAction: true });
+}
+
 export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
@@ -1036,6 +1050,7 @@ export function* saga() {
     takeLatest(types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL, onSignOracleDataRequest),
     takeLatest(types.SHOW_CREATE_TOKEN_REQUEST_MODAL, onCreateTokenRequest),
     takeLatest(types.SHOW_SEND_TRANSACTION_REQUEST_MODAL, onSendTransactionRequest),
+    takeLatest(types.SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL, onCreateNanoContractCreateTokenTxRequest),
     takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),

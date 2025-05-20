@@ -15,6 +15,7 @@ import SignOracleDataModal from './NanoContract/SignOracleDataModal';
 import CreateTokenModal from './CreateTokenModal';
 import SendTransactionModal from './SendTransactionModal';
 import InsufficientFundsModal from './InsufficientFundsModal';
+import CreateNanoContractCreateTokenTxModal from './CreateNanoContractCreateTokenTxModal';
 
 export default () => {
   const dispatch = useDispatch();
@@ -36,6 +37,7 @@ export default () => {
     [ReownModalTypes.CREATE_TOKEN]: CreateTokenModal,
     [ReownModalTypes.SEND_TRANSACTION]: SendTransactionModal,
     [ReownModalTypes.INSUFFICIENT_FUNDS]: InsufficientFundsModal,
+    [ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX]: CreateNanoContractCreateTokenTxModal,
   };
 
   const getModal = (type) => {
@@ -61,4 +63,5 @@ export const ReownModalTypes = {
   CREATE_TOKEN: 'CreateToken',
   SEND_TRANSACTION: 'SendTransaction',
   INSUFFICIENT_FUNDS: 'InsufficientFunds',
+  CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: 'CreateNanoContractCreateTokenTx',
 };
