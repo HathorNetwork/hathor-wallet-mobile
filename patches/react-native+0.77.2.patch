@@ -3,9 +3,9 @@ index f01d96e..fdb9ad9 100644
 --- a/node_modules/react-native/Libraries/Core/InitializeCore.js
 +++ b/node_modules/react-native/Libraries/Core/InitializeCore.js
 @@ -28,6 +28,14 @@
-
+ 
  const start = Date.now();
-
+ 
 +if (global.window === undefined) {
 +  // If we don't do this here, there will be a race condition in node_modules/react-native-crypto because setUpSES blocks the execution with react-native-mmkv causing `window` to not be available and getRandomValues won't be added to it, causing a crash.
 +  global.window = global;
@@ -27,10 +27,10 @@ index f01d96e..fdb9ad9 100644
  require('./setUpBatchedBridge');
 diff --git a/node_modules/react-native/Libraries/Core/setUpSES.js b/node_modules/react-native/Libraries/Core/setUpSES.js
 new file mode 100644
-index 0000000..ddcdcb6
+index 0000000..359b7c8
 --- /dev/null
 +++ b/node_modules/react-native/Libraries/Core/setUpSES.js
-@@ -0,0 +1,40 @@
+@@ -0,0 +1,52 @@
 +import { MMKV } from 'react-native-mmkv';
 +import { SHOULD_ENABLE_SES_STORAGE_KEY } from '../../../../src/constants';
 +
@@ -46,9 +46,12 @@ index 0000000..ddcdcb6
 +
 +const Platform = require('../Utilities/Platform');
 +
-+// This piece of code was taken from this PR: https://github.com/MetaMask/metamask-mobile/pull/6586/files
++// This piece of code was taken from these PRs:
++// - https://github.com/MetaMask/metamask-mobile/pull/6586/files
++// - https://github.com/MetaMask/metamask-mobile/pull/13771
 +// which is the reference implementation of SES On react-native
-+if (Platform.OS === 'ios' && isSesEnabled && !global?.HermesInternal) {
++if (Platform.OS === 'ios' && isSesEnabled) {
++  console.log("🔒 Locking down SES...");
 +  require('../../../../lockdown.umd.js');
 +
 +  /**
@@ -62,12 +65,21 @@ index 0000000..ddcdcb6
 +   * Nb: global.process is only partially shimmed, which confuses SES
 +   * Nb: All are Unhandled JS Exceptions, since we call lockdown before setUpErrorHandling
 +  */
-+  repairIntrinsics({
-+    consoleTaming: 'unsafe',
-+    errorTrapping: 'none',
-+    unhandledRejectionTrapping: 'none',
-+    overrideTaming: 'severe',
-+  });
++  try {
++    repairIntrinsics({
++      errorTaming: 'unsafe',
++      consoleTaming: 'unsafe',
++      errorTrapping: 'none',
++      unhandledRejectionTrapping: 'none',
++      overrideTaming: 'severe',
++      stackFiltering: "verbose",
++      reporting: 'none',
++    });
 +
-+  hardenIntrinsics();
++    hardenIntrinsics();
++  }
++  catch (e) {
++    console.error("Error while repairing/hardening intrinsics on setUpSES", e);
++    throw e;
++  }
 +}
