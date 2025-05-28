@@ -7,6 +7,7 @@
 
 import React, { createContext } from 'react';
 import { useNavigation as useRNNavigation, useRoute } from '@react-navigation/native';
+import { cloneDeep } from 'lodash';
 
 /* global BigInt */
 
@@ -17,45 +18,49 @@ const BIG_INT_PREFIX = '__BIGINT__:';
 function serialize(data) {
   if (data === null || data === undefined) return data;
 
-  if (typeof data === 'bigint') {
-    return `${BIG_INT_PREFIX}${data.toString()}`;
+  // Skip serialization for functions
+  if (typeof data === 'function') return data;
+
+  // Create a defensive copy of the data
+  const clonedData = cloneDeep(data);
+
+  if (typeof clonedData === 'bigint') {
+    return `${BIG_INT_PREFIX}${clonedData.toString()}`;
   }
 
-  if (Array.isArray(data)) {
-    return data.map(serialize);
+  if (Array.isArray(clonedData)) {
+    return clonedData.map(serialize);
   }
 
-  if (typeof data === 'object') {
-    const result = {};
-    Object.keys(data).forEach((key) => {
-      result[key] = serialize(data[key]);
-    });
-    return result;
+  if (typeof clonedData === 'object') {
+    return Object.fromEntries(serialize(Object.entries(clonedData)));
   }
 
-  return data;
+  return clonedData;
 }
 
 function deserialize(data) {
   if (data === null || data === undefined) return data;
 
-  if (typeof data === 'string' && data.startsWith(BIG_INT_PREFIX)) {
-    return BigInt(data.substring(BIG_INT_PREFIX.length));
+  // Skip deserialization for functions
+  if (typeof data === 'function') return data;
+
+  // Create a defensive copy of the data
+  const clonedData = cloneDeep(data);
+
+  if (typeof clonedData === 'string' && clonedData.startsWith(BIG_INT_PREFIX)) {
+    return BigInt(clonedData.substring(BIG_INT_PREFIX.length));
   }
 
-  if (Array.isArray(data)) {
-    return data.map(deserialize);
+  if (Array.isArray(clonedData)) {
+    return clonedData.map(deserialize);
   }
 
-  if (typeof data === 'object') {
-    const result = {};
-    Object.keys(data).forEach((key) => {
-      result[key] = deserialize(data[key]);
-    });
-    return result;
+  if (typeof clonedData === 'object') {
+    return Object.fromEntries(deserialize(Object.entries(clonedData)));
   }
 
-  return data;
+  return clonedData;
 }
 
 // Custom navigation hook that handles BigInt automatically

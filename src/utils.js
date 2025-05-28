@@ -61,10 +61,17 @@ export const getShortContent = (content, length = 4) => (
  * "1000.00" => 100000n
  *
  * @param {string} value - The amount as a string
+ * @param {number} decimalPlaces - Number of decimal places
  * @return {BigInt} The integer value as a BigInt
  * @throws {Error} When the input value cannot be parsed to a BigInt
  */
-export const getIntegerAmount = (value) => {
+export const getIntegerAmount = (value, decimalPlaces) => {
+  let finalDecimalPlaces = decimalPlaces;
+  if (decimalPlaces == null) { // matches null and undefined
+    console.warn('Decimal places is null in getIntegerAmount! Please check if there is something wrong in serverInfo. Defaulting to 2.');
+    finalDecimalPlaces = 2;
+  }
+
   // Remove any whitespace and standardize decimal separator
   const cleanValue = value.trim().replace(',', '.');
 
@@ -72,8 +79,7 @@ export const getIntegerAmount = (value) => {
   const [integerPart, decimalPart = ''] = cleanValue.split('.');
 
   // Pad decimal part with zeros if needed
-  const decimalPlaces = hathorLib.constants.DECIMAL_PLACES;
-  const paddedDecimal = (decimalPart + '0'.repeat(decimalPlaces)).slice(0, decimalPlaces);
+  const paddedDecimal = (decimalPart + '0'.repeat(finalDecimalPlaces)).slice(0, finalDecimalPlaces);
 
   // Combine string parts without decimal point
   const fullNumberStr = integerPart + paddedDecimal;
@@ -82,7 +88,13 @@ export const getIntegerAmount = (value) => {
   return bigIntCoercibleSchema.parse(fullNumberStr);
 };
 
-export const getAmountParsed = (text) => {
+export const getAmountParsed = (text, decimalPlaces) => {
+  let finalDecimalPlaces = decimalPlaces;
+  if (decimalPlaces == null) { // matches null and undefined
+    console.warn('Decimal places is null in getAmountParsed! Please check if there is something wrong in serverInfo. Defaulting to 2.');
+    finalDecimalPlaces = 2;
+  }
+
   let parts = [];
   let separator = '';
   if (text.indexOf('.') > -1) {
@@ -99,8 +111,8 @@ export const getAmountParsed = (text) => {
   parts = parts.slice(0, 2);
 
   if (parts[1]) {
-    if (parts[1].length > hathorLib.constants.DECIMAL_PLACES) {
-      return `${parts[0]}${separator}${parts[1].slice(0, 2)}`;
+    if (parts[1].length > decimalPlaces) {
+      return `${parts[0]}${separator}${parts[1].slice(0, finalDecimalPlaces)}`;
     }
   }
 
@@ -385,7 +397,7 @@ export const getLightBackground = (alpha) => {
  */
 export const renderValue = (amount, isInteger) => {
   if (isInteger) {
-    return hathorLib.numberUtils.prettyIntegerValue(amount);
+    return hathorLib.numberUtils.prettyValue(amount, 0);
   }
 
   return hathorLib.numberUtils.prettyValue(amount);
