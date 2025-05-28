@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native/Libraries/Core/InitializeCore.js b/node_modules/react-native/Libraries/Core/InitializeCore.js
-index 25377f6..002e55d 100644
+index f01d96e..cf64e4c 100644
 --- a/node_modules/react-native/Libraries/Core/InitializeCore.js
 +++ b/node_modules/react-native/Libraries/Core/InitializeCore.js
-@@ -26,6 +26,14 @@
+@@ -28,6 +28,15 @@
  
  const start = Date.now();
  
@@ -14,10 +14,11 @@ index 25377f6..002e55d 100644
 +// setUpSES should be imported after setUpXHR because setUpXHR adds AbortController:
 +require('./setUpXHR');
 +require('./setUpSES');
++
  require('./setUpGlobals');
- require('./setUpDOM');
+ require('../../src/private/setup/setUpDOM').default();
  require('./setUpPerformance');
-@@ -33,7 +41,6 @@ require('./setUpErrorHandling');
+@@ -35,7 +44,6 @@ require('./setUpErrorHandling');
  require('./polyfillPromise');
  require('./setUpRegeneratorRuntime');
  require('./setUpTimers');
@@ -27,10 +28,10 @@ index 25377f6..002e55d 100644
  require('./setUpBatchedBridge');
 diff --git a/node_modules/react-native/Libraries/Core/setUpSES.js b/node_modules/react-native/Libraries/Core/setUpSES.js
 new file mode 100644
-index 0000000..ddcdcb6
+index 0000000..bab597a
 --- /dev/null
 +++ b/node_modules/react-native/Libraries/Core/setUpSES.js
-@@ -0,0 +1,40 @@
+@@ -0,0 +1,44 @@
 +import { MMKV } from 'react-native-mmkv';
 +import { SHOULD_ENABLE_SES_STORAGE_KEY } from '../../../../src/constants';
 +
@@ -46,7 +47,9 @@ index 0000000..ddcdcb6
 +
 +const Platform = require('../Utilities/Platform');
 +
-+// This piece of code was taken from this PR: https://github.com/MetaMask/metamask-mobile/pull/6586/files
++// This piece of code was taken from these PRs:
++// - https://github.com/MetaMask/metamask-mobile/pull/6586/files
++// - https://github.com/MetaMask/metamask-mobile/pull/13771
 +// which is the reference implementation of SES On react-native
 +if (Platform.OS === 'ios' && isSesEnabled && !global?.HermesInternal) {
 +  require('../../../../lockdown.umd.js');
@@ -61,13 +64,15 @@ index 0000000..ddcdcb6
 +   * overrideTaming 'severe' is ideal (default override?)
 +   * Nb: global.process is only partially shimmed, which confuses SES
 +   * Nb: All are Unhandled JS Exceptions, since we call lockdown before setUpErrorHandling
-+  */
++   */
 +  repairIntrinsics({
++    errorTaming: 'unsafe',
 +    consoleTaming: 'unsafe',
 +    errorTrapping: 'none',
 +    unhandledRejectionTrapping: 'none',
 +    overrideTaming: 'severe',
-+  });
++    stackFiltering: "verbose",
++});
 +
 +  hardenIntrinsics();
 +}
