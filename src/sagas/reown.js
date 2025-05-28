@@ -692,13 +692,20 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ));
       } break;
       case TriggerTypes.SendNanoContractTxConfirmationPrompt: {
-        const sendNanoContractTxResponseTemplate = (accepted) => (data) => resolve({
-          type: TriggerResponseTypes.SendNanoContractTxConfirmationResponse,
-          data: {
-            accepted,
-            nc: data?.payload,
-          }
-        });
+        const sendNanoContractTxResponseTemplate = (accepted) => (data) => {
+          console.log('sendNanoContractTxResponseTemplate called with:', { accepted, data });
+          console.log('data type:', typeof data);
+          console.log('data keys:', data ? Object.keys(data) : 'null/undefined');
+          console.log('data.payload:', data?.payload);
+
+          return resolve({
+            type: TriggerResponseTypes.SendNanoContractTxConfirmationResponse,
+            data: {
+              accepted,
+              nc: data?.payload,
+            }
+          });
+        };
 
         dispatch(showNanoContractSendTxModal(
           sendNanoContractTxResponseTemplate(true),
@@ -755,6 +762,14 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         resolve();
         break;
       case TriggerTypes.SendNanoContractTxLoadingFinishedTrigger:
+        dispatch(setNewNanoContractStatusReady());
+        resolve();
+        break;
+      case TriggerTypes.CreateNanoContractCreateTokenTxLoadingTrigger:
+        dispatch(setNewNanoContractStatusLoading());
+        resolve();
+        break;
+      case TriggerTypes.CreateNanoContractCreateTokenTxLoadingFinishedTrigger:
         dispatch(setNewNanoContractStatusReady());
         resolve();
         break;

@@ -108,13 +108,13 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
       if (type === 'deposit') {
         // Initialize token balance if first time seeing this token
         if (!(token in tokenBalances)) {
-          const balance = tokensBalance[token]?.data?.available || 0;
+          const balance = tokensBalance[token]?.data?.available || 0n;
           tokenBalances[token] = balance;
         }
 
         tokenBalances[token] -= amount;
 
-        if (tokenBalances[token] < 0) {
+        if (tokenBalances[token] < 0n) {
           // Early exit if we go negative
           return true;
         }

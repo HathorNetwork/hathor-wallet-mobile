@@ -25,7 +25,7 @@ import { CircleError } from '../../Icons/CircleError.icon';
 
 /**
  * It returns the title template for each action type,
- * which is either 'deposit' or 'withdrawal'.
+ * which includes 'deposit', 'withdrawal', 'grant_authority', and 'invoke_authority'.
  *
  * @param {string} tokenSymbol The token symbol fetched from metadata,
  * or a shortened token hash.
@@ -35,6 +35,8 @@ import { CircleError } from '../../Icons/CircleError.icon';
 const actionTitleMap = (tokenSymbol) => ({
   deposit: t`${tokenSymbol} Deposit`,
   withdrawal: t`${tokenSymbol} Withdrawal`,
+  grant_authority: t`${tokenSymbol} Grant Authority`,
+  invoke_authority: t`${tokenSymbol} Invoke Authority`,
 });
 
 /**
@@ -54,15 +56,23 @@ const actionTitleMap = (tokenSymbol) => ({
  */
 const getActionTitle = (tokens, action) => {
   const tokenMetadata = tokens[action.token];
+  let tokenSymbol;
+  
   if (tokenMetadata) {
-    return actionTitleMap(tokenMetadata.symbol)[action.type];
+    tokenSymbol = tokenMetadata.symbol;
+  } else if (action.token === DEFAULT_TOKEN.uid) {
+    tokenSymbol = DEFAULT_TOKEN.symbol;
+  } else {
+    tokenSymbol = getShortHash(action.token);
   }
 
-  if (action.token === DEFAULT_TOKEN.uid) {
-    return actionTitleMap(DEFAULT_TOKEN.symbol)[action.type]
+  // For authority actions, include the authority type in the title
+  if (action.type === 'grant_authority' || action.type === 'invoke_authority') {
+    const baseTitle = actionTitleMap(tokenSymbol)[action.type];
+    return action.authority ? `${baseTitle}: ${action.authority}` : baseTitle;
   }
 
-  return actionTitleMap(getShortHash(action.token))[action.type];
+  return actionTitleMap(tokenSymbol)[action.type];
 };
 
 /**
@@ -124,10 +134,12 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
 /**
  * @param {Object} props
  * @param {{
- *   type: 'deposit'|'withdrawal';
+ *   type: 'deposit'|'withdrawal'|'grant_authority'|'invoke_authority';
  *   token: string;
- *   amount: number;
- *   address: string;
+ *   amount?: number;
+ *   address?: string;
+ *   authority?: string;
+ *   authorityAddress?: string;
  * }} props.action A transaction's action object
  * @param {boolean} props.isNft A flag to inform if the token is an NFT or not
  * @param {string} props.title The card title for the action
@@ -135,38 +147,71 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
 const ActionItem = ({ action, title, isNft }) => {
   const styles = StyleSheet.create({
     action: [commonStyles.text, commonStyles.bold],
+    authorityRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    authorityTitle: [commonStyles.text, commonStyles.bold],
+    authorityType: [commonStyles.text, commonStyles.bold, { color: COLORS.textColorShadow }],
     valueLabel: [commonStyles.text, commonStyles.field, commonStyles.bold, commonStyles.mb4],
     value: [commonStyles.text, commonStyles.field],
   });
+
+  // For authority actions, split the title to show authority type on the right
+  const isAuthorityAction = action.type === 'grant_authority' || action.type === 'invoke_authority';
+  const titleParts = isAuthorityAction && title.includes(':') ? title.split(':') : null;
 
   return (
     <View style={[commonStyles.cardSplit, commonStyles.listItem]}>
       <Icon type={action.type} />
       <View style={commonStyles.cardSplitContent}>
-        <Text style={styles.action}>{title}</Text>
-        {action.address
-          && (
-            <View>
-              <Text style={styles.valueLabel}>{t`To Address:`}</Text>
-              <Text style={styles.value}>{action.address}</Text>
-            </View>
-          )}
+        {isAuthorityAction && titleParts ? (
+          <View style={styles.authorityRow}>
+            <Text style={styles.authorityTitle}>{titleParts[0].trim()}</Text>
+            <Text style={styles.authorityType}>{titleParts[1].trim()}</Text>
+          </View>
+        ) : (
+          <Text style={styles.action}>{title}</Text>
+        )}
+
+        {/* For grant_authority and invoke_authority actions, show address */}
+        {(action.type === 'grant_authority' || action.type === 'invoke_authority') && (action.authorityAddress || action.address) && (
+          <View>
+            <Text style={styles.valueLabel}>{t`Address:`}</Text>
+            <Text style={styles.value}>{action.authorityAddress || action.address}</Text>
+          </View>
+        )}
+
+        {/* For other actions, show address if present */}
+        {action.type !== 'grant_authority' && action.type !== 'invoke_authority' && action.address && (
+          <View>
+            <Text style={styles.valueLabel}>{t`To Address:`}</Text>
+            <Text style={styles.value}>{action.address}</Text>
+          </View>
+        )}
       </View>
-      <Amount amount={action.amount} isNft={isNft} />
+
+      {/* Show amount for deposit/withdrawal actions */}
+      {action.type !== 'grant_authority' && action.type !== 'invoke_authority' && action.amount != null && (
+        <Amount amount={action.amount} isNft={isNft} />
+      )}
     </View>
   )
 }
 
 /**
- * It renders an icon by action type, either 'deposit' or 'withdrawal'.
+ * It renders an icon by action type: 'deposit', 'withdrawal', or 'grant_authority'.
  *
  * @param {Object} props
- * @param {'deposit'|'withdrawal'} props.type Action type.
+ * @param {'deposit'|'withdrawal'|'grant_authority'|'invoke_authority'} props.type Action type.
  */
 const Icon = ({ type }) => {
   const iconMap = {
     deposit: SentIcon({ type: 'default' }),
     withdrawal: ReceivedIcon({ type: 'default' }),
+    grant_authority: SentIcon({ type: 'default' }),
+    invoke_authority: ReceivedIcon({ type: 'default' }),
   };
 
   return (iconMap[type]);

@@ -24,7 +24,6 @@ import { SelectAddressModal } from '../NanoContract/SelectAddressModal';
 import { DeclineModal } from './NanoContract/DeclineModal';
 import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 import errorIcon from '../../assets/images/icErrorBig.png';
-import checkIcon from '../../assets/images/icCheckBig.png';
 import {
   setNewNanoContractStatusLoading,
   setNewNanoContractStatusReady,
@@ -116,7 +115,6 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
   const firstAddress = useSelector((state) => state.firstAddress);
   const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.unregisteredTokens }));
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[nano.blueprintId]);
-  const addresses = useSelector((state) => state.selectAddressModal.addresses);
 
   const [ncAddress, setNcAddress] = useState('');
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
@@ -144,6 +142,21 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
       setNcAddress(firstAddress.address);
     }
   }, [firstAddress]);
+
+  // Handle successful transaction navigation - same pattern as NewNanoContractTransactionRequest
+  useEffect(() => {
+    if (newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL) {
+      navigation.navigate(
+        'SuccessFeedbackScreen',
+        {
+          title: t`Success!`,
+          message: t`Transaction successfully sent.`,
+        }
+      );
+      // Restore ready status to New Nano Contract Transaction state
+      dispatch(setNewNanoContractStatusReady());
+    }
+  }, [newTxStatus]);
 
   // Request blueprint info and token data when component mounts
   useEffect(() => {
@@ -235,10 +248,6 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
     navigateBack();
   };
 
-  const onNavigateToDashboard = () => {
-    navigation.navigate('Dashboard');
-  };
-
   const onTryAgain = () => {
     dispatch(newNanoContractRetry());
   };
@@ -250,11 +259,8 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
     || blueprintInfo?.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING
   );
 
-  const isTxReady = () => !isTxInfoLoading()
-    && newTxStatus !== REOWN_NEW_NANOCONTRACT_TX_STATUS.LOADING;
   const isTxProcessing = () => !isTxInfoLoading()
     && newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.LOADING;
-  const isTxSuccessful = () => newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL;
   const isTxFailed = () => newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.FAILED;
 
   if (isTxInfoLoading()) {
@@ -342,15 +348,6 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
         onDecline={onDeclineConfirmation}
         onDismiss={onDismissDeclineModal}
       />
-
-      {isTxSuccessful() && (
-        <FeedbackModal
-          icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
-          text={t`Transaction successfully sent.`}
-          onDismiss={onFeedbackModalDismiss}
-          action={(<NewHathorButton discrete title={t`Ok, close`} onPress={onNavigateToDashboard} />)}
-        />
-      )}
 
       {isTxFailed() && (
         <FeedbackModal
