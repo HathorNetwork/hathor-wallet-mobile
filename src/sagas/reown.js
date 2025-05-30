@@ -693,11 +693,6 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
       } break;
       case TriggerTypes.SendNanoContractTxConfirmationPrompt: {
         const sendNanoContractTxResponseTemplate = (accepted) => (data) => {
-          console.log('sendNanoContractTxResponseTemplate called with:', { accepted, data });
-          console.log('data type:', typeof data);
-          console.log('data keys:', data ? Object.keys(data) : 'null/undefined');
-          console.log('data.payload:', data?.payload);
-
           return resolve({
             type: TriggerResponseTypes.SendNanoContractTxConfirmationResponse,
             data: {
@@ -711,9 +706,10 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           sendNanoContractTxResponseTemplate(true),
           sendNanoContractTxResponseTemplate(false),
           request.data,
-          requestMetadata,
+          request.dapp,
         ));
-      } break;
+        break;
+      }
       case TriggerTypes.SendTransactionConfirmationPrompt: {
         const sendTransactionResponseTemplate = (accepted) => (data) => resolve({
           type: TriggerResponseTypes.SendTransactionConfirmationResponse,
