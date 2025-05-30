@@ -108,6 +108,7 @@ export const CreateTokenRequestData = ({ data }) => (
           true,
           renderBooleanFormatter,
         )}
+      {condRenderData(data.contractPaysTokenDeposit, t`Contract pays token deposit?`, true, renderBooleanFormatter)}
       {condRenderData(data.data, t`Token data`, true, (tokenData) => tokenData.join('\n'))}
     </View>
   </View>
