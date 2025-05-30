@@ -25,12 +25,12 @@ import { DeclineModal } from './NanoContract/DeclineModal';
 import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import {
-  setNewNanoContractStatusLoading,
-  setNewNanoContractStatusReady,
+  setCreateNanoContractCreateTokenTxStatusLoading,
+  setCreateNanoContractCreateTokenTxStatusReady,
   nanoContractBlueprintInfoRequest,
   unregisteredTokensDownloadRequest,
-  newNanoContractRetry,
-  newNanoContractRetryDismiss,
+  createNanoContractCreateTokenTxRetry,
+  createNanoContractCreateTokenTxRetryDismiss,
   firstAddressRequest,
   selectAddressAddressesRequest,
   reownAccept,
@@ -38,6 +38,7 @@ import {
 } from '../../actions';
 import {
   REOWN_NEW_NANOCONTRACT_TX_STATUS,
+  REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
   NANOCONTRACT_BLUEPRINTINFO_STATUS,
   DEFAULT_TOKEN
 } from '../../constants';
@@ -111,7 +112,7 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
 
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const newTxStatus = useSelector((state) => state.reown.newNanoContractTransaction.status);
+  const newTxStatus = useSelector((state) => state.reown.createNanoContractCreateTokenTx.status);
   const firstAddress = useSelector((state) => state.firstAddress);
   const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.unregisteredTokens }));
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[nano.blueprintId]);
@@ -145,7 +146,7 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
 
   // Handle successful transaction navigation - same pattern as NewNanoContractTransactionRequest
   useEffect(() => {
-    if (newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL) {
+    if (newTxStatus === REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.SUCCESSFUL) {
       navigation.navigate(
         'SuccessFeedbackScreen',
         {
@@ -154,7 +155,7 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
         }
       );
       // Restore ready status to New Nano Contract Transaction state
-      dispatch(setNewNanoContractStatusReady());
+      dispatch(setCreateNanoContractCreateTokenTxStatusReady());
     }
   }, [newTxStatus]);
 
@@ -180,7 +181,7 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
 
     // Clean up function to ensure everything is reset when component unmounts
     return () => {
-      dispatch(setNewNanoContractStatusReady());
+      dispatch(setCreateNanoContractCreateTokenTxStatusReady());
     };
   }, []);
 
@@ -199,7 +200,7 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
       return;
     }
 
-    dispatch(setNewNanoContractStatusLoading());
+    dispatch(setCreateNanoContractCreateTokenTxStatusLoading());
 
     // Create combined payload with nano contract and token data
     const acceptedData = {
@@ -222,7 +223,7 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
 
   const { navigateBack } = useBackButtonHandler(
     onDeclineTransaction,
-    newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL
+    newTxStatus === REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.SUCCESSFUL
   );
 
   const onDeclineConfirmation = () => {
@@ -244,12 +245,12 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
   };
 
   const onFeedbackModalDismiss = () => {
-    dispatch(newNanoContractRetryDismiss());
+    dispatch(createNanoContractCreateTokenTxRetryDismiss());
     navigateBack();
   };
 
   const onTryAgain = () => {
-    dispatch(newNanoContractRetry());
+    dispatch(createNanoContractCreateTokenTxRetry());
   };
 
   // Loading states
@@ -260,8 +261,8 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
   );
 
   const isTxProcessing = () => !isTxInfoLoading()
-    && newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.LOADING;
-  const isTxFailed = () => newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.FAILED;
+    && newTxStatus === REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.LOADING;
+  const isTxFailed = () => newTxStatus === REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.FAILED;
 
   if (isTxInfoLoading()) {
     return (

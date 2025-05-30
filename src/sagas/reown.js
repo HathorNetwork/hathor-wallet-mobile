@@ -107,6 +107,11 @@ import {
   setSendTxStatusReady,
   showSendTransactionModal,
   showCreateNanoContractCreateTokenTxModal,
+  showInsufficientFundsModal,
+  setCreateNanoContractCreateTokenTxStatusLoading,
+  setCreateNanoContractCreateTokenTxStatusReady,
+  setCreateNanoContractCreateTokenTxStatusFailure,
+  setCreateNanoContractCreateTokenTxStatusSuccess,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -452,7 +457,7 @@ export function* processRequest(action) {
         // The modal state will be updated by the SendTransactionLoadingFinishedTrigger
         break;
       case RpcResponseTypes.CreateNanoContractCreateTokenTxResponse:
-        yield put(setNewNanoContractStatusSuccess());
+        yield put(setCreateNanoContractCreateTokenTxStatusSuccess());
         break;
       default:
         console.log('Unknown response type:', response.type);
@@ -554,12 +559,12 @@ export function* processRequest(action) {
         }));
         break;
       case CreateNanoContractCreateTokenTxError: {
-        yield put(setNewNanoContractStatusFailure());
+        yield put(setCreateNanoContractCreateTokenTxStatusFailure());
 
         const retry = yield call(
           retryHandler,
-          types.REOWN_NEW_NANOCONTRACT_RETRY,
-          types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
+          types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY,
+          types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS,
         );
 
         if (retry) {
@@ -706,7 +711,7 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           sendNanoContractTxResponseTemplate(true),
           sendNanoContractTxResponseTemplate(false),
           request.data,
-          request.dapp,
+          requestMetadata,
         ));
         break;
       }
@@ -762,11 +767,11 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         resolve();
         break;
       case TriggerTypes.CreateNanoContractCreateTokenTxLoadingTrigger:
-        dispatch(setNewNanoContractStatusLoading());
+        dispatch(setCreateNanoContractCreateTokenTxStatusLoading());
         resolve();
         break;
       case TriggerTypes.CreateNanoContractCreateTokenTxLoadingFinishedTrigger:
-        dispatch(setNewNanoContractStatusReady());
+        dispatch(setCreateNanoContractCreateTokenTxStatusReady());
         resolve();
         break;
       case TriggerTypes.PinConfirmationPrompt: {
