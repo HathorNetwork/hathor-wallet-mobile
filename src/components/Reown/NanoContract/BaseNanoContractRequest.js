@@ -39,11 +39,9 @@ import {
   NANOCONTRACT_REGISTER_STATUS,
   DEFAULT_TOKEN
 } from '../../../constants';
-import { commonStyles } from '../theme';
 
 const styles = StyleSheet.create({
   wide: {
-    flex: 1,
     width: '100%',
   },
   wrapper: {
@@ -448,7 +446,11 @@ export const BaseNanoContractRequest = ({
 
   return (
     <>
-      <ScrollView style={styles.wide}>
+      <ScrollView
+        style={styles.wide}
+        automaticallyAdjustsScrollIndicatorInsets={false}
+        contentInsetAdjustmentBehavior='never'
+      >
         <View style={styles.wrapper}>
           <View style={styles.content}>
             <DappContainer dapp={dapp} />
