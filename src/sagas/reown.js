@@ -107,7 +107,6 @@ import {
   setSendTxStatusReady,
   showSendTransactionModal,
   showCreateNanoContractCreateTokenTxModal,
-  showInsufficientFundsModal,
   setCreateNanoContractCreateTokenTxStatusLoading,
   setCreateNanoContractCreateTokenTxStatusReady,
   setCreateNanoContractCreateTokenTxStatusFailure,
@@ -990,7 +989,6 @@ export function* onSessionProposal(action) {
 
     yield call(refreshActiveSessions);
   } catch (error) {
-    console.log('ERRO: ', error);
     log.error('Error on sessionProposal: ', error);
     try {
       // Attempt once more to reject the session, so it doesn't linger in the
