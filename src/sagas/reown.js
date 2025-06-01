@@ -697,15 +697,13 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ));
       } break;
       case TriggerTypes.SendNanoContractTxConfirmationPrompt: {
-        const sendNanoContractTxResponseTemplate = (accepted) => (data) => {
-          return resolve({
-            type: TriggerResponseTypes.SendNanoContractTxConfirmationResponse,
-            data: {
-              accepted,
-              nc: data?.payload,
-            }
-          });
-        };
+        const sendNanoContractTxResponseTemplate = (accepted) => (data) => resolve({
+          type: TriggerResponseTypes.SendNanoContractTxConfirmationResponse,
+          data: {
+            accepted,
+            nc: data?.payload,
+          }
+        });
 
         dispatch(showNanoContractSendTxModal(
           sendNanoContractTxResponseTemplate(true),
@@ -992,6 +990,7 @@ export function* onSessionProposal(action) {
 
     yield call(refreshActiveSessions);
   } catch (error) {
+    console.log('ERRO: ', error);
     log.error('Error on sessionProposal: ', error);
     try {
       // Attempt once more to reject the session, so it doesn't linger in the
