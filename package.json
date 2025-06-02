@@ -56,7 +56,6 @@
     "metro-config": "0.76.9",
     "moment": "2.29.4",
     "path-browserify": "1.0.1",
-    "postinstall": "^0.11.2",
     "process": "0.11.10",
     "prop-types": "15.8.1",
     "react": "18.2.0",
