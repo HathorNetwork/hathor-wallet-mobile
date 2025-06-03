@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { t } from 'ttag';
 import { useSelector } from 'react-redux';
+import { NanoContractActionType } from '@hathor/wallet-lib';
 import { HathorFlatList } from '../../HathorFlatList';
 import { commonStyles } from '../theme';
 import { getShortHash, isTokenNFT, renderValue } from '../../../utils';
@@ -33,10 +34,10 @@ import { CircleError } from '../../Icons/CircleError.icon';
  * @returns {string} A title template by action type.
  */
 const actionTitleMap = (tokenSymbol) => ({
-  deposit: t`${tokenSymbol} Deposit`,
-  withdrawal: t`${tokenSymbol} Withdrawal`,
-  grant_authority: t`${tokenSymbol} Grant Authority`,
-  invoke_authority: t`${tokenSymbol} Invoke Authority`,
+  [NanoContractActionType.DEPOSIT]: t`${tokenSymbol} Deposit`,
+  [NanoContractActionType.WITHDRAWAL]: t`${tokenSymbol} Withdrawal`,
+  [NanoContractActionType.GRANT_AUTHORITY]: t`${tokenSymbol} Grant Authority`,
+  [NanoContractActionType.INVOKE_AUTHORITY]: t`${tokenSymbol} Invoke Authority`,
 });
 
 /**
@@ -57,7 +58,7 @@ const actionTitleMap = (tokenSymbol) => ({
 const getActionTitle = (tokens, action) => {
   const tokenMetadata = tokens[action.token];
   let tokenSymbol;
-  
+
   if (tokenMetadata) {
     tokenSymbol = tokenMetadata.symbol;
   } else if (action.token === DEFAULT_TOKEN.uid) {
@@ -67,7 +68,8 @@ const getActionTitle = (tokens, action) => {
   }
 
   // For authority actions, include the authority type in the title
-  if (action.type === 'grant_authority' || action.type === 'invoke_authority') {
+  if (action.type === NanoContractActionType.GRANT_AUTHORITY
+    || action.type === NanoContractActionType.INVOKE_AUTHORITY) {
     const baseTitle = actionTitleMap(tokenSymbol)[action.type];
     return action.authority ? `${baseTitle}: ${action.authority}` : baseTitle;
   }
@@ -159,7 +161,8 @@ const ActionItem = ({ action, title, isNft }) => {
   });
 
   // For authority actions, split the title to show authority type on the right
-  const isAuthorityAction = action.type === 'grant_authority' || action.type === 'invoke_authority';
+  const isAuthorityAction = action.type === NanoContractActionType.GRANT_AUTHORITY
+    || action.type === NanoContractActionType.INVOKE_AUTHORITY;
   const titleParts = isAuthorityAction && title.includes(':') ? title.split(':') : null;
 
   return (
@@ -175,26 +178,40 @@ const ActionItem = ({ action, title, isNft }) => {
           <Text style={styles.action}>{title}</Text>
         )}
 
-        {/* For grant_authority and invoke_authority actions, show address */}
-        {(action.type === 'grant_authority' || action.type === 'invoke_authority') && (action.authorityAddress || action.address) && (
-          <View>
-            <Text style={styles.valueLabel}>{t`Address:`}</Text>
-            <Text style={styles.value}>{action.authorityAddress || action.address}</Text>
-          </View>
+        {/* Grant Authority */}
+        {action.type === NanoContractActionType.GRANT_AUTHORITY
+          && (action.authorityAddress || action.address) && (
+            <View>
+              <Text style={styles.valueLabel}>{t`Address to send a new Authority:`}</Text>
+              <Text style={styles.value}>{action.authorityAddress || action.address}</Text>
+            </View>
+        )}
+
+        {/* Invoke Authority */}
+        {action.type === NanoContractActionType.INVOKE_AUTHORITY
+          && (action.authorityAddress || action.address) && (
+            <View>
+              <Text style={styles.valueLabel}>{t`To Address:`}</Text>
+              <Text style={styles.value}>{action.authorityAddress || action.address}</Text>
+            </View>
         )}
 
         {/* For other actions, show address if present */}
-        {action.type !== 'grant_authority' && action.type !== 'invoke_authority' && action.address && (
-          <View>
-            <Text style={styles.valueLabel}>{t`To Address:`}</Text>
-            <Text style={styles.value}>{action.address}</Text>
-          </View>
+        {action.type !== NanoContractActionType.GRANT_AUTHORITY
+          && action.type !== NanoContractActionType.INVOKE_AUTHORITY
+          && action.address && (
+            <View>
+              <Text style={styles.valueLabel}>{t`To Address:`}</Text>
+              <Text style={styles.value}>{action.address}</Text>
+            </View>
         )}
       </View>
 
       {/* Show amount for deposit/withdrawal actions */}
-      {action.type !== 'grant_authority' && action.type !== 'invoke_authority' && action.amount != null && (
-        <Amount amount={action.amount} isNft={isNft} />
+      {action.type !== NanoContractActionType.GRANT_AUTHORITY
+        && action.type !== NanoContractActionType.INVOKE_AUTHORITY
+        && action.amount != null && (
+          <Amount amount={action.amount} isNft={isNft} />
       )}
     </View>
   )
@@ -208,10 +225,10 @@ const ActionItem = ({ action, title, isNft }) => {
  */
 const Icon = ({ type }) => {
   const iconMap = {
-    deposit: SentIcon({ type: 'default' }),
-    withdrawal: ReceivedIcon({ type: 'default' }),
-    grant_authority: SentIcon({ type: 'default' }),
-    invoke_authority: ReceivedIcon({ type: 'default' }),
+    [NanoContractActionType.DEPOSIT]: SentIcon({ type: 'default' }),
+    [NanoContractActionType.WITHDRAWAL]: ReceivedIcon({ type: 'default' }),
+    [NanoContractActionType.GRANT_AUTHORITY]: SentIcon({ type: 'default' }),
+    [NanoContractActionType.INVOKE_AUTHORITY]: ReceivedIcon({ type: 'default' }),
   };
 
   return (iconMap[type]);
