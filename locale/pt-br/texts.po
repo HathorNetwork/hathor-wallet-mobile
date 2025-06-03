@@ -1586,7 +1586,7 @@ msgstr "Permitir endereços externos de melt authority?"
 
 #: src/components/Reown/CreateTokenRequest.js:111
 msgid "Contract pays token deposit?"
-msgstr ""
+msgstr "Contrato paga pelo depósito?"
 
 #: src/components/Reown/CreateTokenRequest.js:112
 msgid "Token data"
