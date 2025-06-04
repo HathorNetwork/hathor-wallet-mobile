@@ -28,10 +28,10 @@ index f01d96e..cf64e4c 100644
  require('./setUpBatchedBridge');
 diff --git a/node_modules/react-native/Libraries/Core/setUpSES.js b/node_modules/react-native/Libraries/Core/setUpSES.js
 new file mode 100644
-index 0000000..693430f
+index 0000000..68f1c6b
 --- /dev/null
 +++ b/node_modules/react-native/Libraries/Core/setUpSES.js
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,54 @@
 +import { MMKV } from 'react-native-mmkv';
 +import { SHOULD_ENABLE_SES_STORAGE_KEY } from '../../../../src/constants';
 +
@@ -81,4 +81,8 @@ index 0000000..693430f
 +    console.log(`Intrinsics repaired on setUpSES.js`);
 +
 +    hardenIntrinsics();
++  } catch (e) {
++    console.error(`Error repairing/hardening intrinsics on setUpSES.js: ${ e.message }`);
++    throw e;
 +  }
++}
