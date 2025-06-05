@@ -347,6 +347,7 @@ export const BaseNanoContractRequest = ({
   };
 
   const onTryAgain = () => {
+    dispatch(statusConfig.setReadyAction());
     dispatch(statusConfig.retryAction());
   };
 
