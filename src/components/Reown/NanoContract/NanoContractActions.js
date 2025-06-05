@@ -142,6 +142,7 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
  *   address?: string;
  *   authority?: string;
  *   authorityAddress?: string;
+ *   changeAddress?: string;
  * }} props.action A transaction's action object
  * @param {boolean} props.isNft A flag to inform if the token is an NFT or not
  * @param {string} props.title The card title for the action
@@ -158,6 +159,9 @@ const ActionItem = ({ action, title, isNft }) => {
     authorityType: [commonStyles.text, commonStyles.bold, { color: COLORS.textColorShadow }],
     valueLabel: [commonStyles.text, commonStyles.field, commonStyles.bold, commonStyles.mb4],
     value: [commonStyles.text, commonStyles.field],
+    addressSection: {
+      marginTop: 8,
+    },
   });
 
   // For authority actions, split the title to show authority type on the right
@@ -178,32 +182,57 @@ const ActionItem = ({ action, title, isNft }) => {
           <Text style={styles.action}>{title}</Text>
         )}
 
-        {/* Grant Authority */}
-        {action.type === NanoContractActionType.GRANT_AUTHORITY
-          && (action.authorityAddress || action.address) && (
-            <View>
-              <Text style={styles.valueLabel}>{t`Address to send a new Authority:`}</Text>
-              <Text style={styles.value}>{action.authorityAddress || action.address}</Text>
-            </View>
-        )}
-
-        {/* Invoke Authority */}
-        {action.type === NanoContractActionType.INVOKE_AUTHORITY
-          && (action.authorityAddress || action.address) && (
-            <View>
-              <Text style={styles.valueLabel}>{t`To Address:`}</Text>
-              <Text style={styles.value}>{action.authorityAddress || action.address}</Text>
-            </View>
-        )}
-
-        {/* For other actions, show address if present */}
-        {action.type !== NanoContractActionType.GRANT_AUTHORITY
-          && action.type !== NanoContractActionType.INVOKE_AUTHORITY
+        {/* WITHDRAWAL: Show only address (address to send the amount and create the output) */}
+        {action.type === NanoContractActionType.WITHDRAWAL
           && action.address && (
-            <View>
-              <Text style={styles.valueLabel}>{t`To Address:`}</Text>
-              <Text style={styles.value}>{action.address}</Text>
-            </View>
+          <View style={styles.addressSection}>
+            <Text style={styles.valueLabel}>{t`Address to send amount:`}</Text>
+            <Text style={styles.value}>{action.address}</Text>
+          </View>
+        )}
+
+        {/* DEPOSIT: Show address (to filter UTXOs) and changeAddress (change address) */}
+        {action.type === NanoContractActionType.DEPOSIT && (
+          <View style={styles.addressSection}>
+            {action.address && (
+              <View style={{ marginBottom: 8 }}>
+                <Text style={styles.valueLabel}>{t`Address to filter UTXOs:`}</Text>
+                <Text style={styles.value}>{action.address}</Text>
+              </View>
+            )}
+            {action.changeAddress && (
+              <View>
+                <Text style={styles.valueLabel}>{t`Change address:`}</Text>
+                <Text style={styles.value}>{action.changeAddress}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* GRANT_AUTHORITY: Show address (filter UTXOs) and authorityAddress (send authority) */}
+        {action.type === NanoContractActionType.GRANT_AUTHORITY && (
+          <View style={styles.addressSection}>
+            {action.address && (
+              <View style={{ marginBottom: 8 }}>
+                <Text style={styles.valueLabel}>{t`Address to filter UTXOs:`}</Text>
+                <Text style={styles.value}>{action.address}</Text>
+              </View>
+            )}
+            {action.authorityAddress && (
+              <View>
+                <Text style={styles.valueLabel}>{t`Address to send new authority:`}</Text>
+                <Text style={styles.value}>{action.authorityAddress}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* INVOKE_AUTHORITY: Show only address (send the authority and create the output) */}
+        {action.type === NanoContractActionType.INVOKE_AUTHORITY && action.address && (
+          <View style={styles.addressSection}>
+            <Text style={styles.valueLabel}>{t`Address to send authority:`}</Text>
+            <Text style={styles.value}>{action.address}</Text>
+          </View>
         )}
       </View>
 
