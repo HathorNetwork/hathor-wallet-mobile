@@ -185,10 +185,10 @@ const ActionItem = ({ action, title, isNft }) => {
         {/* WITHDRAWAL: Show only address (address to send the amount and create the output) */}
         {action.type === NanoContractActionType.WITHDRAWAL
           && action.address && (
-          <View style={styles.addressSection}>
-            <Text style={styles.valueLabel}>{t`Address to send amount:`}</Text>
-            <Text style={styles.value}>{action.address}</Text>
-          </View>
+            <View style={styles.addressSection}>
+              <Text style={styles.valueLabel}>{t`Address to send amount:`}</Text>
+              <Text style={styles.value}>{action.address}</Text>
+            </View>
         )}
 
         {/* DEPOSIT: Show address (to filter UTXOs) and changeAddress (change address) */}

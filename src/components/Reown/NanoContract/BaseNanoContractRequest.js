@@ -32,7 +32,6 @@ import {
   reownReject,
   nanoContractRegisterRequest,
   nanoContractRegisterReady,
-  newNanoContractRetryDismiss,
 } from '../../../actions';
 import {
   NANOCONTRACT_BLUEPRINTINFO_STATUS,
@@ -275,7 +274,7 @@ export const BaseNanoContractRequest = ({
       dispatch(nanoContractRegisterReady());
       dispatch(statusConfig.setReadyAction());
       // Dismiss the retry condition to New Nano Contract Transaction
-      dispatch(newNanoContractRetryDismiss());
+      dispatch(statusConfig.retryDismissAction());
       // If the user leaves without accepting or declining, we should decline the transaction
       if (status !== statusConfig.statusConstants.SUCCESSFUL) {
         dispatch(reownReject());
@@ -358,6 +357,10 @@ export const BaseNanoContractRequest = ({
     || blueprintInfo?.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING
   );
 
+  const isTxInfoLoaded = () => (
+    !isTxInfoLoading() && status !== statusConfig.statusConstants.LOADING
+  );
+
   const isTxProcessing = () => !isTxInfoLoading()
     && status === statusConfig.statusConstants.LOADING;
 
@@ -366,82 +369,117 @@ export const BaseNanoContractRequest = ({
   // Handle nano contract not registered state
   if (notRegistered && isNcRegistering) {
     return (
-      <FeedbackContent
-        title={t`Loading`}
-        message={t`Registering Nano Contract.`}
-        icon={<Spinner size={48} animating />}
-        offmargin
-        offcard
-        offbackground
-      />
+      <>
+        <FeedbackContent
+          title={t`Loading`}
+          message={t`Registering Nano Contract.`}
+          icon={<Spinner size={48} animating />}
+          offmargin
+          offcard
+          offbackground
+        />
+        <DeclineModal
+          show={showDeclineModal}
+          onDecline={onDeclineConfirmation}
+          onDismiss={onDismissDeclineModal}
+        />
+      </>
     );
   }
 
   if (notRegistered && !isNcRegistering) {
     return (
-      <FeedbackContent
-        title={t`Nano Contract Not Found`}
-        message={t`The Nano Contract requested is not registered. First register the Nano Contract to interact with it.`}
-        action={(
-          <View style={styles.feedbackActionContainer}>
-            {/* Doesn't show up if an error happens in first address request */}
-            {!firstAddress.error && (
+      <>
+        <FeedbackContent
+          title={t`Nano Contract Not Found`}
+          message={t`The Nano Contract requested is not registered. First register the Nano Contract to interact with it.`}
+          action={(
+            <View style={styles.feedbackActionContainer}>
+              {/* Doesn't show up if an error happens in first address request */}
+              {!firstAddress.error && (
+                <NewHathorButton
+                  title={t`Register Nano Contract`}
+                  onPress={onRegisterNanoContract}
+                />
+              )}
               <NewHathorButton
-                title={t`Register Nano Contract`}
-                onPress={onRegisterNanoContract}
+                title={t`Decline Transaction`}
+                onPress={onDeclineTransaction}
+                secondary
+                danger
               />
-            )}
-            <NewHathorButton
-              title={t`Decline Transaction`}
-              onPress={onDeclineTransaction}
-              secondary
-              danger
-            />
-          </View>
-        )}
-      />
+            </View>
+          )}
+        />
+        <DeclineModal
+          show={showDeclineModal}
+          onDecline={onDeclineConfirmation}
+          onDismiss={onDismissDeclineModal}
+        />
+      </>
     );
   }
 
   if (notRegistered && hasNcRegisterFailed) {
     return (
-      <FeedbackModal
-        icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
-        text={t`Error while registering Nano Contract.`}
-        onDismiss={onDeclineConfirmation}
-        action={(<NewHathorButton discrete title={t`Decline Transaction`} onPress={onDeclineConfirmation} />)}
-      />
+      <>
+        <FeedbackModal
+          icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+          text={t`Error while registering Nano Contract.`}
+          onDismiss={onDeclineConfirmation}
+          action={(<NewHathorButton discrete title={t`Decline Transaction`} onPress={onDeclineConfirmation} />)}
+        />
+        <DeclineModal
+          show={showDeclineModal}
+          onDecline={onDeclineConfirmation}
+          onDismiss={onDismissDeclineModal}
+        />
+      </>
     );
   }
 
   if (showRequest && isTxInfoLoading()) {
     return (
-      <FeedbackContent
-        title={t`Loading`}
-        message={t`Loading transaction information.`}
-        icon={<Spinner size={48} animating />}
-        offmargin
-        offcard
-        offbackground
-      />
+      <>
+        <FeedbackContent
+          title={t`Loading`}
+          message={t`Loading transaction information.`}
+          icon={<Spinner size={48} animating />}
+          offmargin
+          offcard
+          offbackground
+        />
+        <DeclineModal
+          show={showDeclineModal}
+          onDecline={onDeclineConfirmation}
+          onDismiss={onDismissDeclineModal}
+        />
+      </>
     );
   }
 
   if (showRequest && isTxProcessing()) {
     return (
-      <FeedbackContent
-        title={t`Sending transaction`}
-        message={t`Please wait.`}
-        icon={<Spinner size={48} animating />}
-        offmargin
-        offcard
-        offbackground
-      />
+      <>
+        <FeedbackContent
+          title={t`Sending transaction`}
+          message={t`Please wait.`}
+          icon={<Spinner size={48} animating />}
+          offmargin
+          offcard
+          offbackground
+        />
+        <DeclineModal
+          show={showDeclineModal}
+          onDecline={onDeclineConfirmation}
+          onDismiss={onDismissDeclineModal}
+        />
+      </>
     );
   }
 
-  if (!showRequest) {
-    return null; // This shouldn't happen, but just in case
+  if (!showRequest || !isTxInfoLoaded()) {
+    return null;
   }
 
   return (
@@ -474,13 +512,13 @@ export const BaseNanoContractRequest = ({
 
             <View style={styles.actionContainer}>
               {hasInsufficientBalance && (
-                <View style={styles.warningContainer}>
-                  <Text style={styles.warningIcon}>⚠</Text>
-                  <Text style={styles.warningText}>
-                    <Text style={styles.warningTextBold}>{t`Insufficient Funds`}. </Text>
-                    {t`Ensure your wallet balance covers the required amount to accept this transaction.`}
-                  </Text>
-                </View>
+              <View style={styles.warningContainer}>
+                <Text style={styles.warningIcon}>⚠</Text>
+                <Text style={styles.warningText}>
+                  <Text style={styles.warningTextBold}>{t`Insufficient Funds`}. </Text>
+                  {t`Ensure your wallet balance covers the required amount to accept this transaction.`}
+                </Text>
+              </View>
               )}
               <NewHathorButton
                 title={acceptButtonText}
@@ -514,12 +552,12 @@ export const BaseNanoContractRequest = ({
       />
 
       {isTxFailed() && (
-        <FeedbackModal
-          icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
-          text={t`Error while sending transaction.`}
-          onDismiss={onFeedbackModalDismiss}
-          action={(<NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />)}
-        />
+      <FeedbackModal
+        icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+        text={t`Error while sending transaction.`}
+        onDismiss={onFeedbackModalDismiss}
+        action={(<NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />)}
+      />
       )}
     </>
   );
