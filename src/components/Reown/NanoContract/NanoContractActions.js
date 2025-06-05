@@ -151,6 +151,7 @@ const ActionItem = ({ action, title, isNft }) => {
   const styles = StyleSheet.create({
     action: [commonStyles.text, commonStyles.bold],
     authorityRow: {
+      width: '100%',
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -193,7 +194,7 @@ const ActionItem = ({ action, title, isNft }) => {
 
         {/* DEPOSIT: Show address (to filter UTXOs) and changeAddress (change address) */}
         {action.type === NanoContractActionType.DEPOSIT && (
-          <View style={styles.addressSection}>
+          <View style={[(action.address || action.changeAddress) && styles.addressSection]}>
             {action.address && (
               <View style={{ marginBottom: 8 }}>
                 <Text style={styles.valueLabel}>{t`Address to filter UTXOs:`}</Text>
@@ -211,7 +212,7 @@ const ActionItem = ({ action, title, isNft }) => {
 
         {/* GRANT_AUTHORITY: Show address (filter UTXOs) and authorityAddress (send authority) */}
         {action.type === NanoContractActionType.GRANT_AUTHORITY && (
-          <View style={styles.addressSection}>
+          <View style={[(action.address || action.authorityAddress) && styles.addressSection]}>
             {action.address && (
               <View style={{ marginBottom: 8 }}>
                 <Text style={styles.valueLabel}>{t`Address to filter UTXOs:`}</Text>
