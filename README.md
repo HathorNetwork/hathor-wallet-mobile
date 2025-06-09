@@ -74,7 +74,7 @@ Alex’s ... (16.3.1) (3198...)
 ...
 ```
 
-The code inside the last parenteses is your UDID. Then, deploy the app to your device with:
+The code inside the last parentheses is your UDID. Then, deploy the app to your device with:
 
 ```bash
 npm run ios -- --udid=3198...
@@ -104,7 +104,7 @@ Obs: To run on your device some configuration may need to be done (see [running 
 The Firebase package uses the credentials of `google-services.json` to initialize the device in the FCM automatically. You should generate and install this resource in your Android Studio environment. Read [Generating Android credentials](https://rnfirebase.io/#generating-android-credentials).
 
 ### Debugging
-The preferred way of debugging the Wallet Mobile is through the Flipper Desktop application, as the Chromium-based debugger has multiple conflics with the app's dependencies. It's also [being deprecated as of React Native v0.72](https://github.com/facebook/react-native/issues/38311#issuecomment-1731456182) due to incompatibilites with React Native's _New Architecture_.
+The preferred way of debugging the Wallet Mobile is through the Flipper Desktop application, as the Chromium-based debugger has multiple conflicts with the app's dependencies. It's also [being deprecated as of React Native v0.72](https://github.com/facebook/react-native/issues/38311#issuecomment-1731456182) due to incompatibilities with React Native's _New Architecture_.
 
 On MacOS environments Safari debugging will continue to be supported, and is a viable alternative.
 
@@ -118,11 +118,9 @@ To install Flipper, [download it on the official website](https://fbflipper.com/
 
 We use the `ttag` lib for i18n. Check out the docs [here](https://ttag.js.org/docs/quickstart.html).
 
-Run `npm run locale-update-pot` to update the pot file (`locale/texts.pot`).
+Run `make i18n` to update the root "pot" file, all the localized "po" files and their JSON compilations.
 
-Run `msgmerge pt-br/texts.po texts.pot -o pt-br/texts.po` to merge a pot file with a po file.
-
-Finally, run `make i18n` to compile all po files to json files.
+To validate all changes made to translation strings, run `make check_i18n`.
 
 ## License
 

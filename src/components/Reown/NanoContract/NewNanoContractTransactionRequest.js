@@ -16,7 +16,7 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Image,
-  Text
+  Text,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -46,6 +46,7 @@ import { NanoContractExecInfo } from './NanoContractExecInfo';
 import { NanoContractActions } from './NanoContractActions';
 import { NanoContractMethodArgs } from './NanoContractMethodArgs';
 import { DeclineModal } from './DeclineModal';
+import { useBackButtonHandler } from '../../../hooks/useBackButtonHandler';
 
 /**
  * @param {Object} props
@@ -94,7 +95,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const ncToAccept = useMemo(() => ({
     ...nc,
     caller: ncAddress,
-  }), [ncAddress])
+  }), [ncAddress, nc]);
 
   // Check if we have enough balance for deposit actions
   const hasInsufficientBalance = useMemo(() => {
@@ -147,11 +148,18 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   const onDeclineTransaction = () => {
     setShowDeclineModal(true);
   };
+
+  const { navigateBack } = useBackButtonHandler(
+    onDeclineTransaction,
+    newTxStatus === REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL
+  );
+
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
     dispatch(reownReject());
-    navigation.goBack();
+    navigateBack();
   };
+
   const onDismissDeclineModal = () => {
     setShowDeclineModal(false);
   };
@@ -200,6 +208,10 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
       dispatch(setNewNanoContractStatusReady());
       // Dismiss the retry condition to New Nano Contract Transaction
       dispatch(newNanoContractRetryDismiss());
+      // If the user leaves without accepting or declining, we should decline the transaction
+      if (newTxStatus !== REOWN_NEW_NANOCONTRACT_TX_STATUS.SUCCESSFUL) {
+        dispatch(reownReject());
+      }
     };
   }, []);
 
@@ -241,7 +253,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
   }, [newTxStatus]);
 
   const onFeedbackModalDismiss = () => {
-    navigation.goBack();
+    navigateBack();
   };
 
   const onTryAgain = () => {
