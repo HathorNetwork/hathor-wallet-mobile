@@ -18,11 +18,13 @@ The SES lockdown file should match the commited sha256 sum
 
 Cocoapods is an iOS package manager. Sentry needs to add some native codes, so we must install an iOS native lib of Sentry.
 
-Actually Apple already released a new package manager 'Swift Package Manager' but it's not supported for the React native version we use.
+Actually Apple already released a new package manager 'Swift Package Manager' but it's not supported for the React native version we use. Due to our use of SES/Lavamoat, we also [deactivate the React Native New Architecture](https://reactnative.dev/blog/2024/10/23/the-new-architecture-is-here#opt-out) for iOS.
 
-`sudo gem install cocoapods`
-
-`cd ios && pod install`
+```sh
+sudo gem install cocoapods
+cd ios
+RCT_NEW_ARCH_ENABLED=0 pod install
+```
 
 ### Sentry configuration
 

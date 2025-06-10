@@ -57,7 +57,7 @@ if $REINSTALL; then
   if $CLEAN_IOS; then
     echo "🛠️ Rebuilding iOS artifacts..."
     cd ios
-    pod install
+    RCT_NEW_ARCH_ENABLED=0 pod install
     cd ..
   fi
 fi
