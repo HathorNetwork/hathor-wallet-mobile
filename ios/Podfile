@@ -65,6 +65,9 @@ target 'HathorMobile' do
   use_react_native!(
     :path => config[:reactNativePath],
 
+    # Disables hermes due to SES
+    :hermes_enabled => false,
+
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
