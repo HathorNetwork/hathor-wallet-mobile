@@ -111,7 +111,7 @@ const InitStack = () => {
       style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
     >
       <Stack.Navigator
-        initialRouteName='Welcome'
+        initialRouteName='WelcomeScreen'
         screenOptions={{
           headerShown: false,
         }}

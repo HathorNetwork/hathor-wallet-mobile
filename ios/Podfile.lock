@@ -1302,8 +1302,27 @@ PODS:
     - Yoga
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-pager-view (5.4.25):
+  - react-native-pager-view (6.8.1):
+    - DoubleConversion
+    - glog
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-randombytes (3.6.1):
     - React-Core
   - react-native-restart (0.0.27):
@@ -2300,7 +2319,7 @@ SPEC CHECKSUMS:
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-mmkv: 07004510f82c8fe29207a09fdb30175153c7e9f4
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
-  react-native-pager-view: 873aef831fb4fe6e1a2e1ba7a79857e240dea380
+  react-native-pager-view: 9d6e3a98dc5a85490eb7b424e22dba38fb09493f
   react-native-randombytes: 3c8f3e89d12487fd03a2f966c288d495415fc116
   react-native-restart: 0bc732f4461709022a742bb29bcccf6bbc5b4863
   react-native-safe-area-context: aa83adb930d87ff2b482accd0254295a42a0c02b
