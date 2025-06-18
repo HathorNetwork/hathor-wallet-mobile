@@ -65,7 +65,7 @@ target 'HathorMobile' do
   use_react_native!(
     :path => config[:reactNativePath],
 
-    # Disables hermes due to SES
+    # We can't use Hermes with SES (https://github.com/facebook/hermes/issues/957)
     :hermes_enabled => false,
 
     # An absolute path to your application root.
