@@ -78,8 +78,8 @@ const SendAmountInput = () => {
   const onButtonPress = () => {
     const balance = get(tokensBalance, token.uid, {
       data: {
-        available: 0,
-        locked: 0,
+        available: 0n,
+        locked: 0n,
       },
       status: TOKEN_DOWNLOAD_STATUS.LOADING,
     });
@@ -110,8 +110,8 @@ const SendAmountInput = () => {
 
   const getAvailableString = () => {
     const balance = get(tokensBalance, `${token.uid}.data`, {
-      available: 0,
-      locked: 0,
+      available: 0n,
+      locked: 0n,
     });
     const { available } = balance;
     const amountAndToken = `${renderValue(available, isNFT())} ${token.symbol}`;
@@ -148,8 +148,8 @@ const SendAmountInput = () => {
                   value={amount}
                   allowOnlyInteger={isNFT()}
                   style={{ flex: 1 }} // we need this so the placeholder doesn't break in android
-                                      // devices after erasing the text
-                                      // https://github.com/facebook/react-native/issues/30666
+                // devices after erasing the text
+                // https://github.com/facebook/react-native/issues/30666
                 />
                 {IS_MULTI_TOKEN
                   ? <TokenBox onPress={onTokenBoxPress} label={token.symbol} />
