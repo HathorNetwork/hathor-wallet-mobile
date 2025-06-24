@@ -8,6 +8,7 @@ buildscript {
         targetSdkVersion = 34
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.0.21"
+        kotlin_version = kotlinVersion // Used by react-native-camera-kit
     }
     repositories {
         google()

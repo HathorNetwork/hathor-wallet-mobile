@@ -1279,7 +1279,7 @@ PODS:
     - Yoga
   - react-native-get-random-values (1.11.0):
     - React-Core
-  - react-native-mmkv (3.2.0):
+  - react-native-mmkv (3.3.0):
     - DoubleConversion
     - glog
     - RCT-Folly (= 2024.11.18.00)
@@ -1667,8 +1667,27 @@ PODS:
     - React-logger (= 0.77.2)
     - React-perflogger (= 0.77.2)
     - React-utils (= 0.77.2)
-  - ReactNativeCameraKit (13.0.0):
+  - ReactNativeCameraKit (15.1.0):
+    - DoubleConversion
+    - glog
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - ReactNativeExceptionHandler (2.10.10):
     - React-Core
   - RNCAsyncStorage (2.1.2):
@@ -2317,7 +2336,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: 6629d41bd1be3f5e76df92aba26dc5b890699b7d
   react-native-compat: 2b3e16d46648bba5128288b77dc214b5a29c95c7
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
-  react-native-mmkv: 07004510f82c8fe29207a09fdb30175153c7e9f4
+  react-native-mmkv: 000fb73b8f468a2ede9c90c3ef631c37f5841d94
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-pager-view: 9d6e3a98dc5a85490eb7b424e22dba38fb09493f
   react-native-randombytes: 3c8f3e89d12487fd03a2f966c288d495415fc116
@@ -2352,7 +2371,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: f334cebc0beed0a72490492e978007082c03d533
   ReactCodegen: 61a05405803e0739e86f180af0a15783cbfded15
   ReactCommon: c7015b7a01aa9d92794bbfbc513c7e726bef6e49
-  ReactNativeCameraKit: f058d47e0b1e55fd819bb55ee16505a2e0ca53db
+  ReactNativeCameraKit: aadaf796360a424596444eda4d2eec1ed960205b
   ReactNativeExceptionHandler: a23922ca00122b050ae9412f960061791c232c47
   RNCAsyncStorage: 02516518831d323a25a24300b37a429ff98552b6
   RNDeviceInfo: d3e91ffb33ee97a7982108476edb68cb3672efa6
@@ -2362,7 +2381,7 @@ SPEC CHECKSUMS:
   RNKeychain: 3a8b12f0fdd0b967811a48d9e83d582fc2e483eb
   RNLocalize: 8bf466de4c92d4721b254aabe1ff0a1456e7b9f4
   RNNotifee: 5e3b271e8ea7456a36eec994085543c9adca9168
-  RNPermissions: 7a2a555eba355f9e3984a5015834daaf2268a7cc
+  RNPermissions: 6c9e5f32f6bb4e2102aac9cbab649ddcc58996b6
   RNReanimated: a5ef17bf8b97678a24158a65703ccd784d558c66
   RNScreens: cb8aaea32de90c6e43530966cb5b13b76af44b34
   RNSentry: 04585078c7854f0826b784883d6845d3e2afe865
@@ -2372,6 +2391,6 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: fdc0542faa3ba87e56f2030b3f3f2e21bc3ba01c
 
-PODFILE CHECKSUM: 2dcb8771e7c17d7d28eb5bb7c5540549604fa622
+PODFILE CHECKSUM: 7389f16a87857304211bb25e1b753e4dbb613719
 
 COCOAPODS: 1.16.2
