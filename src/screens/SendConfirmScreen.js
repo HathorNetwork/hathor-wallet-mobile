@@ -5,9 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { View } from 'react-native';
-import { useSelector } from 'react-redux';
+import { connect } from 'react-redux';
 import { msgid, ngettext, t } from 'ttag';
 import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
@@ -20,24 +20,44 @@ import TextFmt from '../components/TextFmt';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import { renderValue, isTokenNFT } from '../utils';
 import NavigationService from '../NavigationService';
-import { useNavigation, useParams } from '../hooks/navigation';
 
-const SendConfirmScreen = () => {
-  const tokensBalance = useSelector((state) => state.tokensBalance);
-  const wallet = useSelector((state) => state.wallet);
-  const useWalletService = useSelector((state) => state.useWalletService);
-  const tokenMetadata = useSelector((state) => state.tokenMetadata);
-  const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
+/**
+ * tokensBalance {Object} dict with balance for each token
+ * wallet {HathorWallet} HathorWallet lib object
+ * tokenMetadata {Object} metadata of tokens
+ */
+const mapStateToProps = (state) => ({
+  tokensBalance: state.tokensBalance,
+  wallet: state.wallet,
+  useWalletService: state.useWalletService,
+  tokenMetadata: state.tokenMetadata,
+  isShowingPinScreen: state.isShowingPinScreen,
+  decimalPlaces: state.serverInfo?.decimal_places,
+});
 
-  const navigation = useNavigation();
-  const params = useParams();
+class SendConfirmScreen extends React.Component {
+  /**
+   * modal {FeedbackModal|SendTransactionFeedbackModal} modal to display. If null, do not display
+   * }
+   */
+  state = {
+    modal: null,
+  };
 
-  // Parse and store navigation params
-  const { amount, address, token } = params;
-  const isNFT = isTokenNFT(token.uid, tokenMetadata);
-  const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
-
-  const [modal, setModal] = useState(null);
+  /**
+   * amount {int} amount to send
+   * address {string} address to send to
+   * token {object} info about the selected token to send
+   */
+  constructor(props) {
+    super(props);
+    // we receive these 3 mandatory parameters from previous screens
+    this.amount = this.props.route.params?.amount;
+    this.address = this.props.route.params?.address;
+    this.token = this.props.route.params?.token;
+    this.isNFT = isTokenNFT(this.token.uid, this.props.tokenMetadata);
+    this.amountAndToken = `${renderValue(this.amount, this.isNFT)} ${this.token.symbol}`;
+  }
 
   /**
    * In case we can prepare the data, open send tx feedback modal (while sending the tx)
@@ -45,113 +65,121 @@ const SendConfirmScreen = () => {
    *
    * @param {String} pin User PIN already validated
    */
-  const executeSend = async (pin) => {
-    const outputs = [{ address, value: amount, token: token.uid }];
+  executeSend = async (pin) => {
+    const outputs = [{ address: this.address, value: this.amount, token: this.token.uid }];
     let sendTransaction;
 
-    if (useWalletService) {
-      await wallet.validateAndRenewAuthToken(pin);
+    if (this.props.useWalletService) {
+      await this.props.wallet.validateAndRenewAuthToken(pin);
 
-      sendTransaction = new hathorLib.SendTransactionWalletService(wallet, {
+      sendTransaction = new hathorLib.SendTransactionWalletService(this.props.wallet, {
         outputs,
         pin,
       });
     } else {
       sendTransaction = new hathorLib.SendTransaction(
-        { storage: wallet.storage, outputs, pin }
+        { storage: this.props.wallet.storage, outputs, pin }
       );
     }
 
     const promise = sendTransaction.run();
 
     // show loading modal
-    setModal({
-      text: t`Your transfer is being processed`,
-      sendTransaction,
-      promise,
+    this.setState({
+      modal: {
+        text: t`Your transfer is being processed`,
+        sendTransaction,
+        promise,
+      }
     });
-  };
+  }
 
   /**
    * Executed when user clicks to send the tx and opens PIN screen
    */
-  const onSendPress = () => {
-    const pinParams = {
-      cb: executeSend,
+  onSendPress = () => {
+    const params = {
+      cb: this.executeSend,
       canCancel: true,
       screenText: t`Enter your 6-digit pin to authorize operation`,
       biometryText: t`Authorize operation`,
       biometryLoadingText: t`Building transaction`,
     };
-    navigation.navigate('PinScreen', pinParams);
-  };
+    this.props.navigation.navigate('PinScreen', params);
+  }
 
   /**
    * Method executed after dismiss success modal
    */
-  const exitScreen = () => {
-    setModal(null);
+  exitScreen = () => {
+    this.setState({ modal: null });
     // Return to the dashboard, clean all navigation history
     NavigationService.resetToMain();
-  };
+  }
 
-  const getAvailableString = () => {
-    const balance = tokensBalance[token.uid].data;
-    const available = balance ? balance.available : 0;
-    const availableCount = Number(available);
-    return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, availableCount);
-  };
+  render() {
+    const getAvailableString = () => {
+      // eg: '23.56 HTR available'
+      const balance = this.props.tokensBalance[this.token.uid].data;
+      const available = balance ? balance.available : 0;
+      const amountAndToken = `${renderValue(available, this.isNFT)} ${this.token.symbol}`;
+      // Convert BigInt to Number for ngettext - extract as variable for ttag compatibility
+      // This is only used for pluralization so precision loss is acceptable
+      const availableCount = Number(available);
+      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, availableCount);
+    };
 
-  const tokenNameUpperCase = token.name.toUpperCase();
-
-  return (
-    <View style={{ flex: 1 }}>
-      <HathorHeader
-        withBorder
-        title={t`SEND ${tokenNameUpperCase}`}
-        onBackPress={() => navigation.goBack()}
-      />
-
-      {modal && (
-        <SendTransactionFeedbackModal
-          text={modal.text}
-          sendTransaction={modal.sendTransaction}
-          promise={modal.promise}
-          successText={<TextFmt>{t`Your transfer of **${amountAndToken}** has been confirmed`}</TextFmt>}
-          onDismissSuccess={exitScreen}
-          onDismissError={() => setModal(null)}
-          hide={isShowingPinScreen}
+    const tokenNameUpperCase = this.token.name.toUpperCase();
+    return (
+      <View style={{ flex: 1 }}>
+        <HathorHeader
+          withBorder
+          title={t`SEND ${tokenNameUpperCase}`}
+          onBackPress={() => this.props.navigation.goBack()}
         />
-      )}
 
-      <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-        <View>
-          <View style={{ alignItems: 'center', marginTop: 32 }}>
-            <AmountTextInput
+        {this.state.modal && (
+          <SendTransactionFeedbackModal
+            text={this.state.modal.text}
+            sendTransaction={this.state.modal.sendTransaction}
+            promise={this.state.modal.promise}
+            successText={<TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>}
+            onDismissSuccess={this.exitScreen}
+            onDismissError={() => this.setState({ modal: null })}
+            hide={this.props.isShowingPinScreen}
+          />
+        )}
+
+        <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
+          <View>
+            <View style={{ alignItems: 'center', marginTop: 32 }}>
+              <AmountTextInput
+                editable={false}
+                value={this.amountAndToken}
+                decimalPlaces={this.props.decimalPlaces}
+              />
+              <InputLabel style={{ marginTop: 8 }}>
+                {getAvailableString()}
+              </InputLabel>
+            </View>
+            <SimpleInput
+              label={t`Address`}
               editable={false}
-              value={amountAndToken}
+              value={this.address}
+              containerStyle={{ marginTop: 48 }}
             />
-            <InputLabel style={{ marginTop: 8 }}>
-              {getAvailableString()}
-            </InputLabel>
           </View>
-          <SimpleInput
-            label={t`Address`}
-            editable={false}
-            value={address}
-            containerStyle={{ marginTop: 48 }}
+          <NewHathorButton
+            title={t`Send`}
+            onPress={this.onSendPress}
+            // disable while modal is visible
+            disabled={this.state.modal !== null}
           />
         </View>
-        <NewHathorButton
-          title={t`Send`}
-          onPress={onSendPress}
-          // disable while modal is visible
-          disabled={modal !== null}
-        />
+        <OfflineBar />
       </View>
-      <OfflineBar />
-    </View>
-  );
-};
+    );
+  }
+}
 
-export default SendConfirmScreen;
+export default connect(mapStateToProps)(SendConfirmScreen);

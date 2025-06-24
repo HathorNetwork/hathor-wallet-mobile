@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -14,7 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useSelector } from 'react-redux';
+import { connect } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
@@ -29,54 +29,73 @@ import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
-import { useNavigation, useParams } from '../hooks/navigation';
 
-const SendAmountInput = () => {
-  const selectedToken = useSelector((state) => state.selectedToken);
-  const tokensBalance = useSelector((state) => state.tokensBalance);
-  const tokenMetadata = useSelector((state) => state.tokenMetadata);
+/**
+ * tokens {Object} array with all added tokens on this wallet
+ * selectedToken {Object} token currently selected by the user
+ * tokensBalance {Object} dict with balance for each token
+ * tokenMetadata {Object} metadata of tokens
+ */
+const mapStateToProps = (state) => ({
+  tokens: state.tokens,
+  selectedToken: state.selectedToken,
+  tokensBalance: state.tokensBalance,
+  tokenMetadata: state.tokenMetadata,
+  decimalPlaces: state.serverInfo?.decimal_places,
+});
 
-  const navigation = useNavigation();
-  const params = useParams();
+class SendAmountInput extends React.Component {
+  /**
+   * amount {string} amount to send as text representation
+   * amountValue {BigInt} amount to send as BigInt value
+   * token {Object} which token to send
+   * error {string} error validating amount
+   */
+  state = {
+    amount: '',
+    amountValue: null,
+    token: this.props.selectedToken,
+    error: null,
+  };
 
-  const [amount, setAmount] = useState('');
-  const [amountValue, setAmountValue] = useState(null);
-  const [token, setToken] = useState(selectedToken);
-  const [error, setError] = useState(null);
-  const inputRef = useRef(null);
+  inputRef = React.createRef();
 
-  useEffect(() => {
-    const focusEvent = navigation.addListener('focus', () => {
-      focusInput();
+  focusEvent = null;
+
+  componentDidMount() {
+    this.focusEvent = this.props.navigation.addListener('focus', () => {
+      this.focusInput();
     });
+  }
 
-    return () => {
-      focusEvent();
-    };
-  }, [navigation]);
+  componentWillUnmount() {
+    this.focusEvent();
+  }
 
-  useEffect(() => {
-    setToken(selectedToken);
-  }, [selectedToken]);
-
-  const focusInput = () => {
-    if (inputRef.current) {
-      inputRef.current.focus();
+  componentDidUpdate(prevProps) {
+    // Sync local state with the updated selected token, if it has changed
+    if (prevProps.selectedToken !== this.props.selectedToken) {
+      this.setState({ token: this.props.selectedToken });
     }
-  };
+  }
 
-  const onAmountChange = (text, value) => {
-    setAmount(text);
-    setAmountValue(value);
-    setError(null);
-  };
+  focusInput = () => {
+    if (this.inputRef.current) {
+      this.inputRef.current.focus();
+    }
+  }
 
-  const onTokenBoxPress = () => {
-    navigation.navigate('ChangeToken', { token });
-  };
+  onAmountChange = (text, value) => {
+    this.setState({ amount: text, amountValue: value, error: null });
+  }
 
-  const onButtonPress = () => {
-    const balance = get(tokensBalance, token.uid, {
+  onTokenBoxPress = () => {
+    // We will be informed of any token change by the redux `selectedToken` state
+    this.props.navigation.navigate('ChangeToken', { token: this.state.token });
+  }
+
+  onButtonPress = () => {
+    const balance = get(this.props.tokensBalance, this.state.token.uid, {
       data: {
         available: 0,
         locked: 0,
@@ -85,101 +104,111 @@ const SendAmountInput = () => {
     });
     const { available } = balance.data;
 
-    if (!amountValue) {
-      setError(t`Invalid amount`);
+    // Use amountValue from state
+    const amount = this.state.amountValue;
+
+    if (!amount) {
+      this.setState({ error: t`Invalid amount` });
       return;
     }
 
-    if (available < amountValue) {
-      setError(t`Insufficient funds`);
+    if (available < amount) {
+      this.setState({ error: t`Insufficient funds` });
     } else {
-      const { address } = params;
-      navigation.navigate('SendConfirmScreen', { address, amount: amountValue, token });
+      // forward the address we got from the last screen to the next one
+      const { address } = this.props.route.params;
+      this.props.navigation.navigate('SendConfirmScreen', { address, amount, token: this.state.token });
     }
-  };
+  }
 
-  const isButtonDisabled = () => (
-    !amount
-    || !amountValue
-    || amountValue === 0n
+  isButtonDisabled = () => (
+    !this.state.amount
+    || !this.state.amountValue
+    || this.state.amountValue === 0n
   );
 
-  const isNFT = () => (
-    isTokenNFT(get(token, 'uid'), tokenMetadata)
-  );
+  isNFT = () => (
+    isTokenNFT(get(this.state, 'token.uid'), this.props.tokenMetadata)
+  )
 
-  const getAvailableString = () => {
-    const balance = get(tokensBalance, `${token.uid}.data`, {
-      available: 0,
-      locked: 0,
-    });
-    const { available } = balance;
-    const amountAndToken = `${renderValue(available, isNFT())} ${token.symbol}`;
-    const availableCount = Number(available);
-    return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, availableCount);
-  };
+  render() {
+    const getAvailableString = () => {
+      // eg: '23.56 HTR available'
+      const balance = get(this.props.tokensBalance, `${this.state.token.uid}.data`, {
+        available: 0,
+        locked: 0,
+      });
+      const { available } = balance;
+      const amountAndToken = `${renderValue(available, this.isNFT())} ${this.state.token.symbol}`;
+      // Convert BigInt to Number for ngettext - extract as variable for ttag compatibility
+      // This is only used for pluralization so precision loss is acceptable
+      const availableCount = Number(available);
+      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, availableCount);
+    };
 
-  const renderGhostElement = () => (
-    <View style={{ width: 80, height: 40 }} />
-  );
+    const renderGhostElement = () => (
+      <View style={{ width: 80, height: 40 }} />
+    );
 
-  const tokenNameUpperCase = token.name.toUpperCase();
-
-  return (
-    <View style={{ flex: 1 }}>
-      <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
-        <HathorHeader
-          withBorder
-          title={t`SEND ${tokenNameUpperCase}`}
-          onBackPress={() => navigation.goBack()}
-        />
-        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
-          <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-            <View>
-              <View style={{
-                flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 40,
-              }}
-              >
-                {renderGhostElement()}
-                <AmountTextInput
-                  ref={inputRef}
-                  autoFocus
-                  onAmountUpdate={onAmountChange}
-                  value={amount}
-                  allowOnlyInteger={isNFT()}
-                  style={{ flex: 1 }} // we need this so the placeholder doesn't break in android
-                                      // devices after erasing the text
-                                      // https://github.com/facebook/react-native/issues/30666
-                />
-                {IS_MULTI_TOKEN
-                  ? <TokenBox onPress={onTokenBoxPress} label={token.symbol} />
-                  : renderGhostElement()}
+    const tokenNameUpperCase = this.state.token.name.toUpperCase();
+    return (
+      <View style={{ flex: 1 }}>
+        <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
+          <HathorHeader
+            withBorder
+            title={t`SEND ${tokenNameUpperCase}`}
+            onBackPress={() => this.props.navigation.goBack()}
+          />
+          <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
+            <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
+              <View>
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 40,
+                }}
+                >
+                  {renderGhostElement()}
+                  <AmountTextInput
+                    ref={this.inputRef}
+                    autoFocus
+                    onAmountUpdate={this.onAmountChange}
+                    value={this.state.amount}
+                    allowOnlyInteger={this.isNFT()}
+                    decimalPlaces={this.props.decimalPlaces}
+                    style={{ flex: 1 }} // we need this so the placeholder doesn't break in android
+                                        // devices after erasing the text
+                                        // https://github.com/facebook/react-native/issues/30666
+                  />
+                  {IS_MULTI_TOKEN
+                    ? <TokenBox onPress={this.onTokenBoxPress} label={this.state.token.symbol} />
+                    : renderGhostElement()}
+                </View>
+                <InputLabel style={{ textAlign: 'center', marginTop: 8 }}>
+                  {getAvailableString()}
+                </InputLabel>
+                <Text style={styles.error}>{this.state.error}</Text>
               </View>
-              <InputLabel style={{ textAlign: 'center', marginTop: 8 }}>
-                {getAvailableString()}
-              </InputLabel>
-              <Text style={styles.error}>{error}</Text>
+              <NewHathorButton
+                title={t`Next`}
+                disabled={this.isButtonDisabled()}
+                onPress={this.onButtonPress}
+              />
             </View>
-            <NewHathorButton
-              title={t`Next`}
-              disabled={isButtonDisabled()}
-              onPress={onButtonPress}
-            />
-          </View>
-          <OfflineBar style={{ position: 'relative' }} />
-        </KeyboardAvoidingView>
-      </Pressable>
-    </View>
-  );
-};
+            <OfflineBar style={{ position: 'relative' }} />
+          </KeyboardAvoidingView>
+        </Pressable>
+      </View>
+    );
+  }
+}
 
 const styles = StyleSheet.create({
   error: {
     marginTop: 12,
     fontSize: 12,
     textAlign: 'center',
+    // TODO Maybe also change underline color to red?
     color: COLORS.errorTextColor,
   },
 });
 
-export default SendAmountInput;
+export default connect(mapStateToProps)(SendAmountInput);
