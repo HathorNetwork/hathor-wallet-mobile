@@ -71,6 +71,9 @@ import {
   handleRpcRequest,
   CreateTokenError,
   SendNanoContractTxError,
+  SendTransactionError,
+  InsufficientFundsError,
+  PrepareSendTransactionError,
 } from '@hathor/hathor-rpc-handler';
 import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
@@ -97,6 +100,11 @@ import {
   setCreateTokenStatusReady,
   setCreateTokenStatusSuccessful,
   setCreateTokenStatusFailed,
+  setSendTxStatusSuccess,
+  setSendTxStatusFailure,
+  setSendTxStatusLoading,
+  setSendTxStatusReady,
+  showSendTransactionModal,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -108,6 +116,7 @@ const AVAILABLE_METHODS = {
   HATHOR_SEND_NANO_TX: 'htr_sendNanoContractTx',
   HATHOR_SIGN_ORACLE_DATA: 'htr_signOracleData',
   HATHOR_CREATE_TOKEN: 'htr_createToken',
+  HATHOR_SEND_TRANSACTION: 'htr_sendTransaction',
 };
 const AVAILABLE_EVENTS = [];
 
@@ -435,7 +444,12 @@ export function* processRequest(action) {
       case RpcResponseTypes.CreateTokenResponse:
         yield put(setCreateTokenStatusSuccessful());
         break;
+      case RpcResponseTypes.SendTransactionResponse:
+        yield put(setSendTxStatusSuccess());
+        // The modal state will be updated by the SendTransactionLoadingFinishedTrigger
+        break;
       default:
+        console.log('Unknown response type:', response.type);
         break;
     }
 
@@ -481,7 +495,60 @@ export function* processRequest(action) {
           yield* processRequest(action);
         }
       } break;
+      case PrepareSendTransactionError:
+        shouldAnswer = false;
+
+        yield call(() => walletKit.respondSessionRequest({
+          topic: payload.topic,
+          response: {
+            id: payload.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.INVALID_PAYLOAD,
+              message: 'Transaction failed validation',
+            },
+          },
+        })); break;
+      case SendTransactionError: {
+        // If the transaction is invalid, we don't receive a
+        // SendTransactionConfirmationPrompt, so we need to check if the modal
+        // is visible and just reject it if it's not.
+        yield put(setSendTxStatusFailure());
+
+        // User might try again, wait for it.
+        const retry = yield call(
+          retryHandler,
+          types.REOWN_SEND_TX_RETRY,
+          types.REOWN_SEND_TX_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
+          // Retry the action, exactly as it came:
+          yield* processRequest(action);
+        }
+      } break;
+      case InsufficientFundsError:
+        yield put(setSendTxStatusFailure());
+        // Show the insufficient funds modal
+        yield put(setReownModal({
+          show: true,
+          type: ReownModalTypes.INSUFFICIENT_FUNDS
+        }));
+        yield call(() => walletKit.respondSessionRequest({
+          topic: payload.topic,
+          response: {
+            id: payload.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.INVALID_PAYLOAD,
+              message: 'Insufficient funds for transaction',
+            },
+          },
+        }));
+        break;
       default:
+        console.log('Unknown error type:', e.constructor.name);
         break;
     }
 
@@ -602,6 +669,41 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           requestMetadata,
         ));
       } break;
+      case TriggerTypes.SendTransactionConfirmationPrompt: {
+        const sendTransactionResponseTemplate = (accepted) => (data) => resolve({
+          type: TriggerResponseTypes.SendTransactionConfirmationResponse,
+          data: {
+            accepted,
+            payload: data,
+          }
+        });
+
+        dispatch(showSendTransactionModal(
+          sendTransactionResponseTemplate(true),
+          sendTransactionResponseTemplate(false),
+          request.data,
+          requestMetadata
+        ));
+      } break;
+      case TriggerTypes.SendTransactionLoadingTrigger:
+        dispatch(setSendTxStatusLoading());
+        resolve();
+        break;
+      case TriggerTypes.SendTransactionLoadingFinishedTrigger:
+        dispatch(setSendTxStatusReady());
+        // Use the data from the request instead of getting current state
+        dispatch(setReownModal({
+          show: true,
+          type: ReownModalTypes.SEND_TRANSACTION,
+          data: {
+            ...(request.data || {}), // Use data from the request
+            isLoading: false,
+            isSuccess: true,
+            isError: false
+          }
+        }));
+        resolve();
+        break;
       case TriggerTypes.SendNanoContractTxLoadingTrigger:
         dispatch(setNewNanoContractStatusLoading());
         resolve();
@@ -629,7 +731,9 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           }
         });
       } break;
-      default: reject(new Error('Invalid request'));
+      default:
+        console.log('Unknown request type:', request.type);
+        reject(new Error('Invalid request'));
     }
   });
 
@@ -650,69 +754,11 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
  * has been denied.
  */
 export function* onSignMessageRequest({ payload }) {
-  const { accept, deny: denyCb, data, dapp } = payload;
-
-  const wallet = yield select((state) => state.wallet);
-
-  if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring.');
-    return;
-  }
-
-  yield put(setReownModal({
-    show: true,
-    type: ReownModalTypes.SIGN_MESSAGE,
-    data: {
-      data,
-      dapp,
-    },
-  }));
-
-  const { deny } = yield race({
-    accept: take(types.REOWN_ACCEPT),
-    deny: take(types.REOWN_REJECT),
-  });
-
-  if (deny) {
-    denyCb();
-
-    return;
-  }
-
-  accept();
+  yield* handleDAppRequest(payload, ReownModalTypes.SIGN_MESSAGE, { passAcceptAction: false });
 }
 
 export function* onSignOracleDataRequest({ payload }) {
-  const { accept, deny: denyCb, data, dapp } = payload;
-
-  const wallet = yield select((state) => state.wallet);
-
-  if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring..');
-    return;
-  }
-
-  yield put(setReownModal({
-    show: true,
-    type: ReownModalTypes.SIGN_ORACLE_DATA,
-    data: {
-      data,
-      dapp,
-    },
-  }));
-
-  const { deny } = yield race({
-    accept: take(types.REOWN_ACCEPT),
-    deny: take(types.REOWN_REJECT),
-  });
-
-  if (deny) {
-    denyCb();
-
-    return;
-  }
-
-  accept();
+  yield* handleDAppRequest(payload, ReownModalTypes.SIGN_ORACLE_DATA, { passAcceptAction: false });
 }
 
 /**
@@ -732,55 +778,57 @@ export function* onSignOracleDataRequest({ payload }) {
  * has been denied.
  */
 export function* onSendNanoContractTxRequest({ payload }) {
-  const { accept: acceptCb, deny: denyCb, nc, dapp } = payload;
-
-  const wallet = yield select((state) => state.wallet);
-
-  if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring.');
-    return;
-  }
-
-  yield put(setReownModal({
-    show: true,
-    type: ReownModalTypes.SEND_NANO_CONTRACT_TX,
-    data: {
-      dapp,
-      data: nc,
-    },
-  }));
-
-  const { deny, accept } = yield race({
-    accept: take(types.REOWN_ACCEPT),
-    deny: take(types.REOWN_REJECT),
-  });
-
-  if (deny) {
-    denyCb();
-
-    return;
-  }
-
-  acceptCb(accept);
+  yield* handleDAppRequest(payload, ReownModalTypes.SEND_NANO_CONTRACT_TX, { passAcceptAction: true });
 }
 
 export function* onCreateTokenRequest({ payload }) {
-  const { accept: acceptCb, deny: denyCb, data, dapp } = payload;
+  yield* handleDAppRequest(payload, ReownModalTypes.CREATE_TOKEN, { passAcceptAction: true });
+}
+
+/**
+ * This saga will be called when a send transaction request is received from a dApp
+ *
+ * @param {Object} payload The payload containing the transaction data and callbacks
+ * @param {Function} payload.accept Callback to accept the transaction
+ * @param {Function} payload.deny Callback to deny the transaction
+ * @param {Object} payload.data Transaction data
+ * @param {Object} payload.dapp Information about the dApp
+ */
+export function* onSendTransactionRequest({ payload }) {
+  yield* handleDAppRequest(payload, ReownModalTypes.SEND_TRANSACTION);
+}
+
+/**
+ * Generic handler for dApp requests
+ *
+ * @param {Object} payload The payload containing the request data and callbacks
+ * @param {String} modalType The type of modal to show
+ * @param {Object} options Additional options for handling the request
+ * @param {Boolean} options.passAcceptAction Whether to pass the accept action to the callback
+ */
+export function* handleDAppRequest(payload, modalType, options = {}) {
+  const { accept: acceptCb, deny: denyCb, data, dapp, nc } = payload;
+  const { passAcceptAction = false } = options;
 
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet.isReady()) {
-    log.error('Got a session request but wallet is not ready, ignoring.');
+    log.error('Got a session request but wallet is not ready.');
     return;
   }
 
+  // Determine the data to pass to the modal
+  const modalData = {
+    data: nc || data, // Some requests use 'nc' instead of 'data'
+    dapp,
+  };
+
   yield put(setReownModal({
     show: true,
-    type: ReownModalTypes.CREATE_TOKEN,
-    data: {
-      dapp,
-      data,
-    },
+    type: modalType,
+    data: modalData,
+    onAcceptAction: acceptCb,
+    onRejectAction: denyCb,
   }));
 
   const { deny, accept } = yield race({
@@ -790,12 +838,16 @@ export function* onCreateTokenRequest({ payload }) {
 
   if (deny) {
     denyCb();
-
     return;
   }
 
-  acceptCb(accept);
+  if (passAcceptAction) {
+    acceptCb(accept);
+  } else {
+    acceptCb();
+  }
 }
+
 /**
  * Listens for the wallet reset action, dispatched from the wallet sagas so we
  * can clear all current sessions.
@@ -983,6 +1035,7 @@ export function* saga() {
     takeLatest(types.SHOW_SIGN_MESSAGE_REQUEST_MODAL, onSignMessageRequest),
     takeLatest(types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL, onSignOracleDataRequest),
     takeLatest(types.SHOW_CREATE_TOKEN_REQUEST_MODAL, onCreateTokenRequest),
+    takeLatest(types.SHOW_SEND_TRANSACTION_REQUEST_MODAL, onSendTransactionRequest),
     takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),

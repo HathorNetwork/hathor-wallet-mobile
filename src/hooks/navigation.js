@@ -75,6 +75,8 @@ export function useNavigation() {
       // If this is a navigation method, wrap it to handle BigInt
       if (prop === 'navigate' || prop === 'push' || prop === 'replace') {
         return (...args) => {
+          // args[0]: routeName (string) - The name of the route to navigate to
+          // args[1]: params (object) - Navigation parameters that may contain BigInt values
           if (args.length >= 2 && args[1]) {
             // Serialize any BigInt in the params
             const newArgs = [...args];

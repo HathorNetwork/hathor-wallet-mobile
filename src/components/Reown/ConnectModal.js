@@ -10,17 +10,60 @@ import { useDispatch } from 'react-redux';
 import { t } from 'ttag';
 import { StyleSheet, Text } from 'react-native';
 import ApproveRejectModal from './ApproveRejectModal';
+import { COLORS } from '../../styles/themes';
 
-const modalStyle = StyleSheet.create({});
+const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    backgroundColor: COLORS.textColorShadow,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBox: {
+    backgroundColor: COLORS.backgroundColor,
+    borderRadius: 8,
+    padding: 20,
+    alignItems: 'center',
+    width: 300,
+  },
+  modalImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginBottom: 10,
+  },
+  modalUrl: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  modalProposer: {
+    fontSize: 12,
+    marginBottom: 16,
+  },
+  modalHeader: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  modalText: {
+    fontSize: 12,
+    marginBottom: 14,
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
 
 export default ({
   onAcceptAction,
   onRejectAction,
   onDismiss,
   data,
-  baseStyles,
 }) => {
-  const styles = { ...baseStyles, modalStyle };
   const dispatch = useDispatch();
 
   const onAccept = () => {
