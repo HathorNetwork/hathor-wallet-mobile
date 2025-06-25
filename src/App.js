@@ -111,7 +111,7 @@ const InitStack = () => {
       style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
     >
       <Stack.Navigator
-        initialRouteName='Welcome'
+        initialRouteName='WelcomeScreen'
         screenOptions={{
           headerShown: false,
         }}
@@ -811,6 +811,12 @@ const RootStack = () => {
 const navigationRef = React.createRef();
 NavigationService.setTopLevelNavigator(navigationRef);
 
+/*
+ * TODO: The NavigationContainer has the 'navigationInChildEnabled' prop set to true, which is a
+ *  deprecated way of using the navigator. This is being used only to facilitate the upgrade
+ *  to RN 77, but should be removed in the near future.
+ * @see https://reactnavigation.org/docs/upgrading-from-6.x#changes-to-the-navigate-action
+ */
 const App = () => (
   <SafeAreaProvider>
     <Provider store={store}>
@@ -821,6 +827,7 @@ const App = () => (
         <NavigationContainer
           theme={HathorTheme}
           ref={navigationRef}
+          navigationInChildEnabled
         >
           <ShowPushNotificationTxDetails />
           <NetworkStatusBar />

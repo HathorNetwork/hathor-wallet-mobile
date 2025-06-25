@@ -1,11 +1,11 @@
 diff --git a/node_modules/react-native/Libraries/Core/InitializeCore.js b/node_modules/react-native/Libraries/Core/InitializeCore.js
-index 25377f6..002e55d 100644
+index f01d96e..fdb9ad9 100644
 --- a/node_modules/react-native/Libraries/Core/InitializeCore.js
 +++ b/node_modules/react-native/Libraries/Core/InitializeCore.js
-@@ -26,6 +26,14 @@
- 
+@@ -28,6 +28,14 @@
+
  const start = Date.now();
- 
+
 +if (global.window === undefined) {
 +  // If we don't do this here, there will be a race condition in node_modules/react-native-crypto because setUpSES blocks the execution with react-native-mmkv causing `window` to not be available and getRandomValues won't be added to it, causing a crash.
 +  global.window = global;
@@ -15,9 +15,9 @@ index 25377f6..002e55d 100644
 +require('./setUpXHR');
 +require('./setUpSES');
  require('./setUpGlobals');
- require('./setUpDOM');
+ require('../../src/private/setup/setUpDOM').default();
  require('./setUpPerformance');
-@@ -33,7 +41,6 @@ require('./setUpErrorHandling');
+@@ -35,7 +43,6 @@ require('./setUpErrorHandling');
  require('./polyfillPromise');
  require('./setUpRegeneratorRuntime');
  require('./setUpTimers');
