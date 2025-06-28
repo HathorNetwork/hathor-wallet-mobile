@@ -37,7 +37,7 @@
     "@react-navigation/native": "7.1.11",
     "@react-navigation/stack": "7.3.4",
     "@reown/walletkit": "1.1.0",
-    "@sentry/react-native": "5.31.0",
+    "@sentry/react-native": "5.36.0",
     "@walletconnect/core": "2.17.0",
     "@walletconnect/react-native-compat": "2.17.0",
     "assert": "2.0.0",
