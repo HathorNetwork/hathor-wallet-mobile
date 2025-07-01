@@ -27,8 +27,8 @@ class ReceiveScreen extends React.Component {
       // eslint thinks routes is not used, but TabView uses it
       // eslint-disable-next-line react/no-unused-state
       routes: [
-        { key: 'address', title: t`My Address` },
-        { key: 'paymentRequest', title: t`Payment Request` },
+        { key: 'address', title: t`My Address`.toUpperCase() },
+        { key: 'paymentRequest', title: t`Payment Request`.toUpperCase() },
       ],
     };
 
@@ -67,18 +67,6 @@ class ReceiveScreen extends React.Component {
     }
   };
 
-  getLabelText = ({ route }) => {
-    // Need to set this method because the default method set the title to uppercase
-    switch (route.key) {
-      case 'address':
-        return route.title;
-      case 'paymentRequest':
-        return route.title;
-      default:
-        return null;
-    }
-  }
-
   handleIndexChange = (index) => {
     this.setState({ index }, () => {
       if (index === 0) {
@@ -95,8 +83,6 @@ class ReceiveScreen extends React.Component {
         {...props}
         indicatorStyle={{ backgroundColor: COLORS.tabBarBackground }}
         style={{ backgroundColor: COLORS.backgroundColor }}
-        labelStyle={{ color: COLORS.tabBarBackground }}
-        getLabelText={this.getLabelText}
       />
     );
 
@@ -113,6 +99,9 @@ class ReceiveScreen extends React.Component {
             renderScene={this.renderScene}
             onIndexChange={this.handleIndexChange}
             initialLayout={{ width: Dimensions.get('window').width }}
+            commonOptions={{
+              labelStyle: { color: COLORS.tabBarBackground }
+            }}
           />
           <OfflineBar />
         </Pressable>

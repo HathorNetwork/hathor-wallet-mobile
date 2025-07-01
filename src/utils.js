@@ -572,7 +572,23 @@ export const verifySesEnabled = () => {
     Uint32Array.prototype,
   ];
 
-  return prototypes.every(Object.isFrozen);
+  // Early exit in the best case scenario
+  const arePrototypesFrozen = prototypes.every(Object.isFrozen);
+  if (arePrototypesFrozen) {
+    return true;
+  }
+
+  // If the result is not positive, open the possibility for debugging
+  if (__DEV__) {
+    const nonFrozenPrototypes = [];
+    prototypes.forEach((prototype) => {
+      if (!Object.isFrozen(prototype)) {
+        nonFrozenPrototypes.push(prototype.constructor.name);
+      }
+    });
+    console.log(`The following prototypes are not frozen:`, nonFrozenPrototypes);
+  }
+  return false;
 };
 
 /*

@@ -1,22 +1,45 @@
-# Resolve react_native_pods.rb with node to allow for hoisting
-require Pod::Executable.execute_command('node', ['-p',
-  'require.resolve(
-    "react-native/scripts/react_native_pods.rb",
-    {paths: [process.argv[1]]},
-  )', __dir__]).strip
+# React-Native-Permissions helper function
+def node_require(script)
+  # Resolve script with node to allow for hoisting
+  require Pod::Executable.execute_command('node', ['-p',
+    "require.resolve(
+      '#{script}',
+      {paths: [process.argv[1]]},
+    )", __dir__]).strip
+end
 
+# Use the helper to require both react-native's and this package's scripts:
+node_require('react-native/scripts/react_native_pods.rb')
+node_require('react-native-permissions/scripts/setup.rb')
+
+min_ios_version_supported = '15.1'
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
-# If you are using a `react-native-flipper` your iOS build will fail when `NO_FLIPPER=1` is set.
-# because `react-native-flipper` depends on (FlipperKit,...) that will be excluded
-#
-# To fix this you can also exclude `react-native-flipper` using a `react-native.config.js`
-# ```js
-# module.exports = {
-#   dependencies: {
-#     ...(process.env.NO_FLIPPER ? { 'react-native-flipper': { platforms: { ios: null } } } : {}),
-# ```
-flipper_config = ENV['NO_FLIPPER'] == "1" ? FlipperConfiguration.disabled : FlipperConfiguration.enabled
+
+# Permissions needed from react-native-permissions
+setup_permissions([
+    # 'AppTrackingTransparency',
+    # 'Bluetooth',
+    # 'Calendars',
+    # 'CalendarsWriteOnly',
+    'Camera',
+    # 'Contacts',
+    'FaceID',
+    # 'LocationAccuracy',
+    # 'LocationAlways',
+    # 'LocationWhenInUse',
+    # 'MediaLibrary',
+    # 'Microphone',
+    # 'Motion',
+    'Notifications',
+    # 'PhotoLibrary',
+    # 'PhotoLibraryAddOnly',
+    # 'Reminders',
+    # 'Siri',
+    # 'SpeechRecognition',
+    # 'StoreKit',
+])
+
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -27,9 +50,6 @@ target 'HathorMobile' do
   # Don't change the order of any declaration!
   config = use_native_modules!
 
-  # Flags change depending on the env values.
-  flags = get_default_flags()
-
   # Firebase requires the usage of frameworks linked statically.
   # This means the firebase code will be compiled into the app binary.
   # A reason for this is to avoid compatibility issues with a 3rd paty dependency.
@@ -39,52 +59,18 @@ target 'HathorMobile' do
   # @see https://github.com/facebook/react-native/issues/36120#issuecomment-1425892304
   use_frameworks! :linkage => :static
 
-  use_react_native!(
-    :path => config[:reactNativePath],
-
-    # Hermes is now enabled by default. Disable by setting this flag to false.
-    # We can't use Hermes with SES (https://github.com/facebook/hermes/issues/957)
-    :hermes_enabled => false,
-    :fabric_enabled => flags[:fabric_enabled],
-    # Enables Flipper.
-    #
-    # Note that if you have use_frameworks! enabled, Flipper will not work and
-    # you should disable the next line.
-    # :flipper_configuration => flipper_config,
-    # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/.."
-  )
-
-  # react-native-permissions uses dynamic frameworks by default.
-  # However, we need the permissions right when the application initializes.
-  # To match this constraint we need the frameworks linked statically,
-  # which means they will be shiped in build time.
-  pre_install do |installer|
-    Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_no_static_framework_transitive_dependencies) {}
-    installer.pod_targets.each do |pod|
-      if pod.name.eql?('RNPermissions') || pod.name.start_with?('Permission-')
-        def pod.build_type;
-            Pod::BuildType.static_library
-        end
-      end
-    end
-  end
-
   # Instruct the build script to use the Firebase as an static framework.
   $RNFirebaseAsStaticFramework = true
 
-  target 'HathorMobileTests' do
-    inherit! :complete
-    # Pods for testing
-  end
+  use_react_native!(
+    :path => config[:reactNativePath],
 
-  # The react-native-qrcode-scanner requires installing react-native-permissions now
-  # https://github.com/moaazsidat/react-native-qrcode-scanner#react-native-permissions
-  # The two lines below are required by the installation of react-native-permissions
-  # https://github.com/zoontek/react-native-permissions#ios
-  permissions_path = '../node_modules/react-native-permissions/ios'
-  pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
-  pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
+    # We can't use Hermes with SES (https://github.com/facebook/hermes/issues/957)
+    :hermes_enabled => false,
+
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
 
   # Firebase required dependency.
   # It contains native code to integrate with Google Services.
@@ -97,8 +83,8 @@ target 'HathorMobile' do
     react_native_post_install(
       installer,
       config[:reactNativePath],
-      :mac_catalyst_enabled => false
+      :mac_catalyst_enabled => false,
+      # :ccache_enabled => true
     )
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
   end
 end
