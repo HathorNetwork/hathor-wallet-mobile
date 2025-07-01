@@ -135,17 +135,14 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
       const oracleBuffer = Buffer.from(data.oracle, 'hex');
       const network = wallet.getNetworkObject();
 
-      // Try to parse using available script parsing methods
-      if (hathorLib.scriptsUtils && hathorLib.scriptsUtils.parseScript) {
-        const parsedScript = hathorLib.scriptsUtils.parseScript(oracleBuffer, network);
-        if (parsedScript && parsedScript.address) {
-          return {
-            raw: data.oracle,
-            address: parsedScript.address.base58 || parsedScript.address,
-            isAddress: true,
-            scriptType: parsedScript.type
-          };
-        }
+      const parsedScript = hathorLib.scriptsUtils.parseScript(oracleBuffer, network);
+      if (parsedScript && parsedScript.address) {
+        return {
+          raw: data.oracle,
+          address: parsedScript.address.base58,
+          isAddress: true,
+          scriptType: parsedScript.type
+        };
       }
 
       return { raw: data.oracle, isAddress: false };

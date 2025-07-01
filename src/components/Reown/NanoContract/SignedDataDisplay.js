@@ -19,7 +19,6 @@ import CopyClipboard from '../../CopyClipboard';
  * Component for displaying signed data with value and signature
  */
 export const SignedDataDisplay = ({ value }) => {
-  // Ensure signature is displayed as a continuous string
   const getSignatureText = () => {
     if (Array.isArray(value.signature)) {
       return value.signature.join('');
