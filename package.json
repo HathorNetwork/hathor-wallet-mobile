@@ -13,8 +13,8 @@
     "start:clean": "react-native start --reset-cache",
     "lint": "eslint .",
     "test": "jest",
-    "setup": "npm install && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack && npx patch-package",
-    "setup:release": "npm ci && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer --hack && npx patch-package",
+    "setup": "npm install && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib --hack && npx patch-package",
+    "setup:release": "npm ci && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib --hack && npx patch-package",
     "i18n": "make i18n"
   },
   "dependencies": {
@@ -41,6 +41,7 @@
     "@walletconnect/core": "2.17.0",
     "@walletconnect/react-native-compat": "2.17.0",
     "assert": "2.0.0",
+    "browserify-zlib": "^0.1.4",
     "buffer": "4.9.2",
     "console-browserify": "1.2.0",
     "core-js-pure": "3.41.0",
@@ -128,7 +129,8 @@
     "_stream_writable": "readable-stream/writable",
     "_stream_duplex": "readable-stream/duplex",
     "_stream_passthrough": "readable-stream/passthrough",
-    "stream": "stream-browserify"
+    "stream": "stream-browserify",
+    "zlib": "browserify-zlib"
   },
   "browser": {
     "path": "path-browserify",
@@ -139,7 +141,8 @@
     "_stream_writable": "readable-stream/writable",
     "_stream_duplex": "readable-stream/duplex",
     "_stream_passthrough": "readable-stream/passthrough",
-    "stream": "stream-browserify"
+    "stream": "stream-browserify",
+    "zlib": "browserify-zlib"
   },
   "jest": {
     "preset": "react-native",

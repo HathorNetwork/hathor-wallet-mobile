@@ -974,6 +974,11 @@ export function* onSessionProposal(action) {
 
   const networkSettings = yield select(getNetworkSettings);
   try {
+    console.log({
+      accounts: [`hathor:${networkSettings.network}:${firstAddress}`],
+      chains: [`hathor:${networkSettings.network}`],
+      payload: action.payload,
+    });
     yield call(() => walletKit.approveSession({
       id,
       relayProtocol: params.relays[0].protocol,
