@@ -513,13 +513,13 @@ export const BaseNanoContractRequest = ({
 
             <View style={styles.actionContainer}>
               {hasInsufficientBalance && (
-              <View style={styles.warningContainer}>
-                <Text style={styles.warningIcon}>⚠</Text>
-                <Text style={styles.warningText}>
-                  <Text style={styles.warningTextBold}>{t`Insufficient Funds`}. </Text>
-                  {t`Ensure your wallet balance covers the required amount to accept this transaction.`}
-                </Text>
-              </View>
+                <View style={styles.warningContainer}>
+                  <Text style={styles.warningIcon}>⚠</Text>
+                  <Text style={styles.warningText}>
+                    <Text style={styles.warningTextBold}>{t`Insufficient Funds`}. </Text>
+                    {t`Ensure your wallet balance covers the required amount to accept this transaction.`}
+                  </Text>
+                </View>
               )}
               <NewHathorButton
                 title={acceptButtonText}
@@ -553,12 +553,12 @@ export const BaseNanoContractRequest = ({
       />
 
       {isTxFailed() && (
-      <FeedbackModal
-        icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
-        text={t`Error while sending transaction.`}
-        onDismiss={onFeedbackModalDismiss}
-        action={(<NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />)}
-      />
+        <FeedbackModal
+          icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+          text={t`Error while sending transaction.`}
+          onDismiss={onFeedbackModalDismiss}
+          action={(<NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />)}
+        />
       )}
     </>
   );

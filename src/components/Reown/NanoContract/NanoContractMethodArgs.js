@@ -21,6 +21,7 @@ import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS as STATUS } from '../.
 import { FeedbackContent } from '../../FeedbackContent';
 import Spinner from '../../Spinner';
 import { getTimestampFormat, parseScriptData, renderValue } from '../../../utils';
+import { SignedDataDisplay } from './SignedDataDisplay';
 
 /**
  * Get method info from registered blueprint data.
@@ -120,14 +121,12 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
                     <Text style={styles.argPositionText}>{argName}</Text>
                   </View>
                   <View style={styles.argValue}>
-                    <Text style={styles.argValueText}>
-                      <ArgValue
-                        type={argType}
-                        value={argValue}
-                        network={network}
-                        tokens={tokens}
-                      />
-                    </Text>
+                    <ArgValueRenderer
+                      type={argType}
+                      value={argValue}
+                      network={network}
+                      tokens={tokens}
+                    />
                   </View>
                 </View>
               ))}
@@ -159,37 +158,39 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
  * @param {Object} props.network A network object
  * @param {Object} props.tokens A map of registered tokens
  */
-const ArgValue = ({ type, value, network, tokens }) => {
+const ArgValueRenderer = ({ type, value, network, tokens }) => {
+  // Handle SignedData types with custom component
+  if (type && type.startsWith('SignedData')) {
+    return <SignedDataDisplay value={value} />;
+  }
+
+  // For all other types, render as text with proper styling
+  let displayValue = value;
+
   if (type === 'Amount') {
-    return renderValue(value);
-  }
-
-  if (type === 'Timestamp') {
-    return getTimestampFormat(value);
-  }
-
-  if (type === 'TxOutputScript') {
+    displayValue = renderValue(value);
+  } else if (type === 'Timestamp') {
+    displayValue = getTimestampFormat(value);
+  } else if (type === 'TxOutputScript') {
     const parsedScript = parseScriptData(value, network);
     if (parsedScript && parsedScript.getType() === 'data') {
-      return parsedScript.data;
+      displayValue = parsedScript.data;
+    } else if (parsedScript) {
+      displayValue = parsedScript.address.base58;
     }
-
-    if (parsedScript) {
-      return parsedScript.address.base58;
-    }
-  }
-
-  if (type === 'TokenUid') {
+  } else if (type === 'TokenUid') {
     if (value === DEFAULT_TOKEN.uid) {
-      return DEFAULT_TOKEN.symbol;
-    }
-
-    if (value in tokens) {
-      return tokens[value].symbol;
+      displayValue = DEFAULT_TOKEN.symbol;
+    } else if (value in tokens) {
+      displayValue = tokens[value].symbol;
     }
   }
 
-  return value;
+  return (
+    <Text style={styles.argValueText}>
+      {displayValue}
+    </Text>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -203,6 +204,7 @@ const styles = StyleSheet.create({
     commonStyles.bold
   ],
   argValue: {
+    flex: 1,
     maxWidth: '70%',
     backgroundColor: 'hsla(0, 0%, 96%, 1)',
     paddingVertical: 2,
