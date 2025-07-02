@@ -28,16 +28,25 @@ const HathorModal = (props) => {
   const [showChildren, setShowChildren] = useState(false);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const panY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
 
   const animateIn = useCallback(() => {
-    Animated.timing(slideAnim, {
-      toValue: 0,
-      duration: 300,
-      easing: Easing.out(Easing.ease),
-      useNativeDriver: true,
-    }).start(() => setShowChildren(true));
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(backdropOpacity, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      })
+    ]).start(() => setShowChildren(true));
     panY.setValue(0);
-  }, [slideAnim, panY]);
+  }, [slideAnim, panY, backdropOpacity]);
 
   useEffect(() => {
     animateIn();
@@ -45,15 +54,22 @@ const HathorModal = (props) => {
 
   const handleDismiss = useCallback(() => {
     setShowChildren(false);
-    Animated.timing(slideAnim, {
-      toValue: SCREEN_HEIGHT,
-      duration: 200,
-      useNativeDriver: true,
-    }).start(() => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: SCREEN_HEIGHT,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(backdropOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
       setVisible(false);
       if (props.onDismiss) props.onDismiss();
     });
-  }, [slideAnim, props]);
+  }, [slideAnim, props, backdropOpacity]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -84,7 +100,7 @@ const HathorModal = (props) => {
       onRequestClose={handleDismiss}
     >
       <TouchableWithoutFeedback onPress={handleDismiss}>
-        <View style={styles.backdrop} />
+        <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
       </TouchableWithoutFeedback>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
