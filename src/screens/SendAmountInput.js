@@ -35,6 +35,9 @@ const SendAmountInput = () => {
   const selectedToken = useSelector((state) => state.selectedToken);
   const tokensBalance = useSelector((state) => state.tokensBalance);
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
+  const { decimalPlaces } = useSelector((state) => ({
+    decimalPlaces: state.serverInfo?.decimal_places
+  }));
 
   const navigation = useNavigation();
   const params = useParams();
@@ -147,6 +150,7 @@ const SendAmountInput = () => {
                   onAmountUpdate={onAmountChange}
                   value={amount}
                   allowOnlyInteger={isNFT()}
+                  decimalPlaces={decimalPlaces}
                   style={{ flex: 1 }} // we need this so the placeholder doesn't break in android
                 // devices after erasing the text
                 // https://github.com/facebook/react-native/issues/30666
