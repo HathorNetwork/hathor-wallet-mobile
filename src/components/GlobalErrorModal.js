@@ -5,23 +5,32 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   Alert,
   StyleSheet,
   Text,
   View,
+  Modal,
+  TouchableWithoutFeedback,
+  Animated,
+  Dimensions,
 } from 'react-native';
-import Modal from 'react-native-modal';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 
 import { hideErrorModal } from '../actions';
 import { COLORS } from '../styles/themes';
 
+const { height: screenHeight } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
-  modal: {
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   innerModal: {
     backgroundColor: COLORS.backgroundColor,
@@ -54,6 +63,7 @@ const showErrorReportedMessage = () => (
 export const ErrorModal = () => {
   const dispatch = useDispatch();
   const errorHandler = useSelector((state) => state.errorHandler);
+  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
 
   const {
     showModal,
@@ -61,29 +71,64 @@ export const ErrorModal = () => {
     errorReported,
   } = errorHandler;
 
-  const hide = () => dispatch(hideErrorModal());
+  const hide = () => {
+    if (isFatal) {
+      // For fatal errors, don't animate - just close immediately
+      dispatch(hideErrorModal());
+      return;
+    }
+
+    Animated.timing(slideAnim, {
+      toValue: screenHeight,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      dispatch(hideErrorModal());
+    });
+  };
+
+  useEffect(() => {
+    if (showModal) {
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showModal, slideAnim]);
+
+  if (!showModal) {
+    return null;
+  }
 
   return (
     <Modal
-      isVisible={showModal}
-      {...(!isFatal && {
-        animationType: 'slide',
-        swipeDirection: ['down'],
-        onSwipeComplete: () => hide(),
-        onBackButtonPress: () => hide(),
-        onBackdropPress: () => hide(),
-      })}
-      style={styles.modal}
+      visible={showModal}
+      animationType='fade'
+      transparent
+      onRequestClose={isFatal ? undefined : hide}
     >
-      <View style={styles.innerModal}>
-        <Text style={styles.title}>
-          {t`Unexpected error`}
-        </Text>
-        {errorReported && showErrorReportedMessage()}
-        <Text style={styles.text}>
-          {t`Please restart your app to continue using the wallet.`}
-        </Text>
-      </View>
+      <TouchableWithoutFeedback onPress={isFatal ? undefined : hide}>
+        <View style={styles.backdrop}>
+          <TouchableWithoutFeedback>
+            <Animated.View
+              style={{
+                transform: [{ translateY: slideAnim }]
+              }}
+            >
+              <View style={styles.innerModal}>
+                <Text style={styles.title}>
+                  {t`Unexpected error`}
+                </Text>
+                {errorReported && showErrorReportedMessage()}
+                <Text style={styles.text}>
+                  {t`Please restart your app to continue using the wallet.`}
+                </Text>
+              </View>
+            </Animated.View>
+          </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };

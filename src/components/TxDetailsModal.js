@@ -6,8 +6,17 @@
  */
 
 import React, { Component } from 'react';
-import { Text, StyleSheet, View, ScrollView, TouchableWithoutFeedback } from 'react-native';
-import Modal from 'react-native-modal';
+import {
+  Text,
+  StyleSheet,
+  View,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Modal,
+  Animated,
+  Dimensions,
+  PanResponder
+} from 'react-native';
 import { t } from 'ttag';
 
 import { getShortContent, getShortHash, getTokenLabel, renderValue } from '../utils';
@@ -18,24 +27,79 @@ import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
 import { TransactionStatusLabel } from './TransactionStatusLabel';
 
+const { height: screenHeight } = Dimensions.get('window');
+
 class TxDetailsModal extends Component {
+  constructor(props) {
+    super(props);
+    this.slideAnim = new Animated.Value(screenHeight);
+    this.gestureAnim = new Animated.Value(0);
+    this.panResponder = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_evt, gestureState) => (
+        gestureState.dy > 10 && Math.abs(gestureState.dx) < Math.abs(gestureState.dy)
+      ),
+      onPanResponderMove: (_evt, gestureState) => {
+        if (gestureState.dy > 0) {
+          this.gestureAnim.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_evt, gestureState) => {
+        if (gestureState.dy > 100 || gestureState.vy > 0.5) {
+          // Threshold met - dismiss modal
+          this.handleDismiss();
+        } else {
+          // Snap back to original position
+          Animated.spring(this.gestureAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    });
+  }
+
+  componentDidMount() {
+    Animated.timing(this.slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }
+
+  handleDismiss = () => {
+    Animated.parallel([
+      Animated.timing(this.slideAnim, {
+        toValue: screenHeight,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(this.gestureAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      this.props.onRequestClose();
+    });
+  };
+
   style = StyleSheet.create({
-    modal: {
-      justifyContent: 'flex-end',
-      marginVertical: 0,
-      marginHorizontal: 0,
-    },
-    wrapper: {
+    backdrop: {
       flex: 1,
-      paddingTop: 96,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    container: {
+      flex: 1,
+      justifyContent: 'flex-end',
       paddingHorizontal: 8,
+      paddingTop: 96,
     },
     inner: {
-      flexShrink: 1,
-      marginTop: 'auto',
       borderRadius: 8,
       paddingBottom: 24,
       backgroundColor: COLORS.backgroundColor,
+      maxHeight: '80%',
     },
   });
 
@@ -80,49 +144,59 @@ class TxDetailsModal extends Component {
     const isNc = tx.isNanoContract();
     const hasFirstBlock = tx.hasFirstBlock();
 
+    const combinedTransform = Animated.add(this.slideAnim, this.gestureAnim);
+
     return (
       <Modal
-        isVisible
-        animationIn='slideInUp'
-        swipeDirection={['down']}
-        onSwipeComplete={this.props.onRequestClose}
-        onBackButtonPress={this.props.onRequestClose}
-        onBackdropPress={this.props.onRequestClose}
-        style={this.style.modal}
-        propagateSwipe
+        visible
+        animationType='fade'
+        transparent
+        onRequestClose={this.handleDismiss}
       >
-        <View style={this.style.wrapper}>
-          <View style={this.style.inner}>
-            <SlideIndicatorBar />
-            <BalanceView tx={tx} token={token} isNFT={isNFT} />
-            <ScrollView>
-              <TouchableWithoutFeedback>
-                <View>
-                  <ListItem title={t`Token`} text={fullTokenStr} />
-                  <ListItem title={t`Description`} text={description} />
-                  <ListItem title={t`Date & Time`} text={timestampStr} />
-                  <ListItem title={t`Transaction ID`} text={txIdComponent} />
-                  {isNc && (
-                    <ListItem
-                      title={t`Nano Contract Status`}
-                      text={(
-                        <TransactionStatusLabel
-                          isVoided={isVoided}
-                          hasFirstBlock={hasFirstBlock}
-                        />
-                      )}
-                    />
-                  )}
-                  {isNc && <ListItem title={t`Blueprint Method`} text={ncMethod} />}
-                  {isNc && <ListItem title={t`Nano Contract ID`} text={ncIdComponent} />}
-                  {isNc && <ListItem title={t`Nano Contract Caller`} text={ncCallerAddrComponent} />}
-                  {isNc && <PublicExplorerListButton txId={shortNcId} title={t`Nano Contract`} />}
-                  <PublicExplorerListButton txId={tx.txId} />
-                </View>
-              </TouchableWithoutFeedback>
-            </ScrollView>
+        <TouchableWithoutFeedback onPress={this.handleDismiss}>
+          <View style={this.style.backdrop}>
+            <Animated.View
+              style={[
+                this.style.container,
+                {
+                  transform: [{ translateY: combinedTransform }]
+                }
+              ]}
+            >
+              <View
+                style={this.style.inner}
+                {...this.panResponder.panHandlers}
+              >
+                <SlideIndicatorBar />
+                <BalanceView tx={tx} token={token} isNFT={isNFT} />
+                <ScrollView>
+                  <View>
+                    <ListItem title={t`Token`} text={fullTokenStr} />
+                    <ListItem title={t`Description`} text={description} />
+                    <ListItem title={t`Date & Time`} text={timestampStr} />
+                    <ListItem title={t`Transaction ID`} text={txIdComponent} />
+                    {isNc && (
+                      <ListItem
+                        title={t`Nano Contract Status`}
+                        text={(
+                          <TransactionStatusLabel
+                            isVoided={isVoided}
+                            hasFirstBlock={hasFirstBlock}
+                          />
+                        )}
+                      />
+                    )}
+                    {isNc && <ListItem title={t`Blueprint Method`} text={ncMethod} />}
+                    {isNc && <ListItem title={t`Nano Contract ID`} text={ncIdComponent} />}
+                    {isNc && <ListItem title={t`Nano Contract Caller`} text={ncCallerAddrComponent} />}
+                    {isNc && <PublicExplorerListButton txId={shortNcId} title={t`Nano Contract`} />}
+                    <PublicExplorerListButton txId={tx.txId} />
+                  </View>
+                </ScrollView>
+              </View>
+            </Animated.View>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     );
   }

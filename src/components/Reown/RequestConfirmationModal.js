@@ -87,6 +87,10 @@ export const RequestConfirmationModal = ({
     }
   }, [isRetrying]);
 
+  if (REOWN_SKIP_CONFIRMATION_MODAL) {
+    return null;
+  }
+
   return (
     <ModalBase show onDismiss={onModalDismiss}>
       <ModalBase.Title>{title}</ModalBase.Title>

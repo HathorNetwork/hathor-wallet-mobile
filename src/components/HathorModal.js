@@ -5,14 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
 import {
   StyleSheet,
   View,
   Modal,
-  TouchableWithoutFeedback,
-  Animated,
-  Dimensions,
 } from 'react-native';
 import PropTypes from 'prop-types';
 import { COLORS } from '../styles/themes';
