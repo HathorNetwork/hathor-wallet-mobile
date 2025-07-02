@@ -8,7 +8,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-  Clipboard, StyleSheet, Text,
+  Clipboard,
+  StyleSheet,
+  Text,
 } from 'react-native';
 import { t } from 'ttag';
 import { TextPropTypes } from 'deprecated-react-native-prop-types';
@@ -80,7 +82,7 @@ CopyClipboard.propTypes = {
 
 const style = StyleSheet.create({
   text: {
-    fontSize: 13,
+    fontSize: 12,
   },
   copied: {
     color: COLORS.primary,
