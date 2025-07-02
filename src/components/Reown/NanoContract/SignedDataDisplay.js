@@ -21,7 +21,7 @@ import CopyClipboard from '../../CopyClipboard';
 export const SignedDataDisplay = ({ value }) => {
   const getSignatureText = () => {
     if (Array.isArray(value.signature)) {
-      return value.signature.join('');
+      return value.signature.join(', ');
     }
     return value.signature;
   };
