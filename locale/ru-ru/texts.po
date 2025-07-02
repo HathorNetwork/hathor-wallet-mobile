@@ -793,7 +793,7 @@ msgstr "Авторизовать операцию"
 
 #: src/screens/SendConfirmScreen.js:120
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
-msgstr ""
+msgstr "Ваш перевод **${ amountAndToken }** был подтвержден"
 
 #: src/components/NanoContract/EditAddressModal.js:60
 #: src/components/NanoContract/SelectAddressModal.js:117
