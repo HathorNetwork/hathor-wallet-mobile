@@ -103,16 +103,13 @@ const SendConfirmScreen = () => {
       initialRoute = 'SendAddressInput';
     }
 
-    // Reset the send stack
-    navigation.reset({
-      index: 0,
-      routes: [{ name: initialRoute }],
-    });
+    NavigationService.navigate('Main', { screen: 'Home' });
 
-    // Then navigate to Home tab with a small delay to ensure stack reset completes
+    // Give enough time for the navigation to complete so the user doesn't see
+    // the SendStack reseting to the initial route.
     setTimeout(() => {
-      NavigationService.navigate('Main', { screen: 'Home' });
-    }, 0);
+      navigation.reset({ index: 0, routes: [{ name: initialRoute }] });
+    }, 500);
   };
 
   const getAvailableString = () => {
