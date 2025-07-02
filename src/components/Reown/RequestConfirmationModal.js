@@ -87,6 +87,8 @@ export const RequestConfirmationModal = ({
     }
   }, [isRetrying]);
 
+  // Without this, the modal would be briefly displayed to the
+  // user before being hidden by the useEffect.
   if (REOWN_SKIP_CONFIRMATION_MODAL) {
     return null;
   }

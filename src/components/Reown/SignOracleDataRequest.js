@@ -53,14 +53,11 @@ export const SignOracleDataRequestData = ({ oracle, data }) => {
 
               <View style={styles.valueContainer}>
                 <View style={styles.valueBox}>
-                  <Text style={styles.valueText}>
-                    {oracle.address}
-                  </Text>
+                  <CopyClipboard
+                    text={oracle.address}
+                    style={styles.copyButton}
+                  />
                 </View>
-                <CopyClipboard
-                  data={oracle.address}
-                  style={styles.copyButton}
-                />
               </View>
 
               {/* Collapsible raw oracle data */}
@@ -79,14 +76,11 @@ export const SignOracleDataRequestData = ({ oracle, data }) => {
               {showRawData && (
                 <View style={styles.valueContainer}>
                   <View style={styles.valueBox}>
-                    <Text style={styles.valueText}>
-                      {oracle.raw}
-                    </Text>
+                    <CopyClipboard
+                      text={oracle.raw}
+                      style={styles.copyButton}
+                    />
                   </View>
-                  <CopyClipboard
-                    data={oracle.raw}
-                    style={styles.copyButton}
-                  />
                 </View>
               )}
             </View>
@@ -98,7 +92,7 @@ export const SignOracleDataRequestData = ({ oracle, data }) => {
                 </Text>
               </View>
               <CopyClipboard
-                data={oracle.raw}
+                text={oracle.raw}
                 style={styles.copyButton}
               />
             </View>
@@ -269,10 +263,12 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontFamily: 'monospace',
-    fontSize: 16,
+    fontSize: 14,
     color: COLORS.textColor,
-    lineHeight: 24,
+    lineHeight: 20,
     textAlign: 'left',
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   copyButton: {
     padding: 4,
@@ -284,7 +280,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   toggleText: {
-    fontSize: 14,
+    fontSize: 12,
     color: COLORS.primary,
     fontWeight: '500',
   },
@@ -300,7 +296,7 @@ const styles = StyleSheet.create({
   },
   dataText: {
     fontFamily: 'monospace',
-    fontSize: 14,
+    fontSize: 12,
     color: COLORS.textColor,
     lineHeight: 20,
   },

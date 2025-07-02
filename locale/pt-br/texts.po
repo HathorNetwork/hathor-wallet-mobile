@@ -1734,11 +1734,11 @@ msgstr "Oracle"
 
 #: src/components/Reown/SignOracleDataRequest.js:72
 msgid "Hide raw oracle data"
-msgstr "Esconder dados brutos do oracle"
+msgstr "Esconder dados do oracle"
 
 #: src/components/Reown/SignOracleDataRequest.js:72
 msgid "Show raw oracle data"
-msgstr "Exibir dados brutos do oracle"
+msgstr "Exibir dados do oracle"
 
 #: src/components/Reown/SignOracleDataRequest.js:112
 msgid "Data"
@@ -1844,7 +1844,7 @@ msgstr "Endereço para enviar"
 #: src/components/Reown/NanoContract/NanoContractActions.js:200
 #: src/components/Reown/NanoContract/NanoContractActions.js:218
 msgid "Address to filter UTXOs:"
-msgstr "Endereço para filtrar UTXOs"
+msgstr "Endereço para filtrar UTXOs:"
 
 #: src/components/Reown/NanoContract/NanoContractActions.js:206
 msgid "Change address:"

@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
 import {
   StyleSheet,
   View,
@@ -21,7 +20,7 @@ import CopyClipboard from '../../CopyClipboard';
 export const SignedDataDisplay = ({ value }) => {
   const getSignatureText = () => {
     if (Array.isArray(value.signature)) {
-      return value.signature.join('');
+      return value.signature.join(', ');
     }
     return value.signature;
   };
@@ -40,13 +39,8 @@ export const SignedDataDisplay = ({ value }) => {
 
       <Text style={styles.signatureLabel}>{t`Signature`}</Text>
       <View style={styles.signatureContainer}>
-        <View style={styles.signatureBox}>
-          <Text style={styles.signatureText} selectable>
-            {getSignatureText()}
-          </Text>
-        </View>
         <CopyClipboard
-          data={getSignatureText()}
+          text={getSignatureText()}
           style={styles.copyButton}
         />
       </View>
@@ -84,7 +78,6 @@ const styles = StyleSheet.create({
   },
   signatureBox: {
     flex: 1,
-    backgroundColor: COLORS.white,
     padding: 8,
     borderRadius: 4,
     marginRight: 8,
@@ -101,4 +94,3 @@ const styles = StyleSheet.create({
     padding: 4,
   },
 });
-
