@@ -5,33 +5,21 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import {
   Alert,
   StyleSheet,
   Text,
   View,
-  Modal,
-  TouchableWithoutFeedback,
-  Animated,
-  Dimensions,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 
 import { hideErrorModal } from '../actions';
 import { COLORS } from '../styles/themes';
-
-const { height: screenHeight } = Dimensions.get('window');
+import BackdropModal from './BackdropModal';
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
   innerModal: {
     backgroundColor: COLORS.backgroundColor,
     borderRadius: 8,
@@ -63,7 +51,6 @@ const showErrorReportedMessage = () => (
 export const ErrorModal = () => {
   const dispatch = useDispatch();
   const errorHandler = useSelector((state) => state.errorHandler);
-  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
 
   const {
     showModal,
@@ -72,64 +59,31 @@ export const ErrorModal = () => {
   } = errorHandler;
 
   const hide = () => {
-    if (isFatal) {
-      // For fatal errors, don't animate - just close immediately
-      dispatch(hideErrorModal());
-      return;
-    }
-
-    Animated.timing(slideAnim, {
-      toValue: screenHeight,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      dispatch(hideErrorModal());
-    });
+    dispatch(hideErrorModal());
   };
-
-  useEffect(() => {
-    if (showModal) {
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [showModal, slideAnim]);
 
   if (!showModal) {
     return null;
   }
 
   return (
-    <Modal
+    <BackdropModal
       visible={showModal}
-      animationType='fade'
-      transparent
-      onRequestClose={isFatal ? undefined : hide}
+      animationType='slide'
+      position='bottom'
+      enableSwipeToDismiss={!isFatal}
+      enableBackdropPress={!isFatal}
+      onDismiss={isFatal ? undefined : hide}
+      contentStyle={styles.innerModal}
     >
-      <TouchableWithoutFeedback onPress={isFatal ? undefined : hide}>
-        <View style={styles.backdrop}>
-          <TouchableWithoutFeedback>
-            <Animated.View
-              style={{
-                transform: [{ translateY: slideAnim }]
-              }}
-            >
-              <View style={styles.innerModal}>
-                <Text style={styles.title}>
-                  {t`Unexpected error`}
-                </Text>
-                {errorReported && showErrorReportedMessage()}
-                <Text style={styles.text}>
-                  {t`Please restart your app to continue using the wallet.`}
-                </Text>
-              </View>
-            </Animated.View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+      <Text style={styles.title}>
+        {t`Unexpected error`}
+      </Text>
+      {errorReported && showErrorReportedMessage()}
+      <Text style={styles.text}>
+        {t`Please restart your app to continue using the wallet.`}
+      </Text>
+    </BackdropModal>
   );
 };
 

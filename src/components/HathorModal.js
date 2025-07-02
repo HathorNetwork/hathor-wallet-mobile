@@ -8,46 +8,40 @@
 import {
   StyleSheet,
   View,
-  Modal,
 } from 'react-native';
 import PropTypes from 'prop-types';
+import BackdropModal from './BackdropModal';
 import { COLORS } from '../styles/themes';
 
 const HathorModal = (props) => (
-  <Modal
-    isVisible
-    animationIn='slideInUp'
-    swipeDirection={['down']}
-    onSwipeComplete={props.onDismiss}
-    onBackButtonPress={props.onDismiss}
-    onBackdropPress={props.onDismiss}
-    style={styles.modal}
+  <BackdropModal
+    visible
+    animationType='slide'
+    position='bottom'
+    enableSwipeToDismiss
+    enableBackdropPress
+    onDismiss={props.onDismiss}
+    contentStyle={styles.view}
   >
-    <View style={StyleSheet.compose(styles.view, props.viewStyle)}>
+    <View style={StyleSheet.compose(styles.innerView, props.viewStyle)}>
       {props.children}
     </View>
-  </Modal>
+  </BackdropModal>
 );
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  container: {
-    justifyContent: 'flex-end',
-  },
   view: {
     backgroundColor: COLORS.backgroundColor,
     borderRadius: 8,
-    alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 24,
     paddingTop: 42,
     minHeight: 290,
+    alignItems: 'center',
+  },
+  innerView: {
+    width: '100%',
+    alignItems: 'center',
   },
 });
 
