@@ -10,13 +10,36 @@ import {
   StyleSheet,
   View,
   Text,
+  Modal,
+  TouchableWithoutFeedback,
+  Animated,
+  Dimensions,
 } from 'react-native';
-import Modal from 'react-native-modal';
 
 import { COLORS } from '../styles/themes';
 import NewHathorButton from './NewHathorButton';
 
+const { height: screenHeight } = Dimensions.get('window');
+
 const ModalBase = ({ styleModal, styleWrapper, show, onDismiss, children }) => {
+  const slideAnim = React.useRef(new Animated.Value(screenHeight)).current;
+
+  React.useEffect(() => {
+    if (show) {
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: screenHeight,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [show, slideAnim]);
+
   const hasChildren = children != null;
 
   const title = hasChildren && React.Children.toArray(children).find(
@@ -34,25 +57,31 @@ const ModalBase = ({ styleModal, styleWrapper, show, onDismiss, children }) => {
 
   return (
     <Modal
-      isVisible={show}
-      animationIn='slideInUp'
-      swipeDirection={['down']}
-      onSwipeComplete={onDismiss}
-      onBackButtonPress={onDismiss}
-      onBackdropPress={onDismiss}
-      style={styleModal}
-      propagateSwipe
+      visible={show}
+      animationType='fade'
+      transparent
+      onRequestClose={onDismiss}
+      onDismiss={onDismiss}
     >
-      <View style={[
-        styles.wrapper,
-        styleWrapper,
-      ]}
-      >
-        {title && title}
-        {body && body}
-        {button && button}
-        {discreteButton && discreteButton}
-      </View>
+      <TouchableWithoutFeedback onPress={onDismiss}>
+        <View style={[styles.backdrop, styleModal]}>
+          <TouchableWithoutFeedback>
+            <Animated.View style={[
+              styles.wrapper,
+              styleWrapper,
+              {
+                transform: [{ translateY: slideAnim }]
+              }
+            ]}
+            >
+              {title && title}
+              {body && body}
+              {button && button}
+              {discreteButton && discreteButton}
+            </Animated.View>
+          </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
@@ -110,6 +139,13 @@ const styles = StyleSheet.create({
   },
   discreteButton: {
     marginTop: 8,
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
   },
 });
 

@@ -7,10 +7,14 @@
 
 import React from 'react';
 import {
-  StyleSheet, View,
+  StyleSheet,
+  View,
+  Modal,
+  TouchableWithoutFeedback,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import PropTypes from 'prop-types';
-import Modal from 'react-native-modal';
 import { COLORS } from '../styles/themes';
 
 const HathorModal = (props) => (
@@ -30,7 +34,14 @@ const HathorModal = (props) => (
 );
 
 const styles = StyleSheet.create({
-  modal: {
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  container: {
     justifyContent: 'flex-end',
   },
   view: {
