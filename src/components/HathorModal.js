@@ -25,6 +25,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 const HathorModal = (props) => {
   const [visible, setVisible] = useState(true);
+  const [showChildren, setShowChildren] = useState(false);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const panY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
@@ -34,7 +35,7 @@ const HathorModal = (props) => {
       duration: 300,
       easing: Easing.out(Easing.ease),
       useNativeDriver: true,
-    }).start();
+    }).start(() => setShowChildren(true));
     panY.setValue(0);
   }, [slideAnim, panY]);
 
@@ -43,6 +44,7 @@ const HathorModal = (props) => {
   }, [animateIn]);
 
   const handleDismiss = useCallback(() => {
+    setShowChildren(false);
     Animated.timing(slideAnim, {
       toValue: SCREEN_HEIGHT,
       duration: 200,
@@ -100,7 +102,7 @@ const HathorModal = (props) => {
           ]}
           {...panResponder.panHandlers}
         >
-          {props.children}
+          {showChildren && props.children}
         </Animated.View>
       </KeyboardAvoidingView>
     </Modal>
