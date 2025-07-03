@@ -260,18 +260,22 @@ const BackdropModal = ({
           },
         ]}
       >
-        <TouchableWithoutFeedback
-          onPress={enableBackdropPress ? handleDismiss : undefined}
-        >
-          <View style={getContainerStyle()}>
-            <Animated.View
-              style={getContentStyle()}
-              {...(enableSwipeToDismiss ? panResponder.panHandlers : {})}
-            >
-              {showChildren && children}
-            </Animated.View>
-          </View>
-        </TouchableWithoutFeedback>
+        <View style={getContainerStyle()}>
+          {/* Backdrop touch areas */}
+          {enableBackdropPress && (
+            <TouchableWithoutFeedback onPress={handleDismiss}>
+              <View style={StyleSheet.absoluteFill} />
+            </TouchableWithoutFeedback>
+          )}
+
+          {/* Content area */}
+          <Animated.View
+            style={getContentStyle()}
+            {...(enableSwipeToDismiss ? panResponder.panHandlers : {})}
+          >
+            {showChildren && children}
+          </Animated.View>
+        </View>
       </Animated.View>
     </Modal>
   );
