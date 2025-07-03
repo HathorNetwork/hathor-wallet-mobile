@@ -1,0 +1,42 @@
+diff --git a/node_modules/@fortawesome/fontawesome-svg-core/index.js b/node_modules/@fortawesome/fontawesome-svg-core/index.js
+index ec31416..025f37c 100644
+--- a/node_modules/@fortawesome/fontawesome-svg-core/index.js
++++ b/node_modules/@fortawesome/fontawesome-svg-core/index.js
+@@ -90,31 +90,12 @@
+         return r;
+       }, Object.create(null));
+     }
+-    return _inherits(BabelRegExp, RegExp), BabelRegExp.prototype.exec = function (r) {
+-      var t = e.exec.call(this, r);
+-      if (t) {
+-        t.groups = buildGroups(t, this);
+-        var p = t.indices;
+-        p && (p.groups = buildGroups(p, this));
+-      }
+-      return t;
+-    }, BabelRegExp.prototype[Symbol.replace] = function (t, p) {
+-      if ("string" == typeof p) {
+-        var o = r.get(this);
+-        return e[Symbol.replace].call(this, t, p.replace(/\$<([^>]+)>/g, function (e, r) {
+-          var t = o[r];
+-          return "$" + (Array.isArray(t) ? t.join("$") : t);
+-        }));
+-      }
+-      if ("function" == typeof p) {
+-        var i = this;
+-        return e[Symbol.replace].call(this, t, function () {
+-          var e = arguments;
+-          return "object" != typeof e[e.length - 1] && (e = [].slice.call(e)).push(buildGroups(e, i)), p.apply(this, e);
+-        });
+-      }
+-      return e[Symbol.replace].call(this, t, p);
+-    }, _wrapRegExp.apply(this, arguments);
++    /*
++     * The original dependency overrides the RegExp prototype, which is not allowed under SES.
++     * This modified method returns only a regular RegExp object, without the prototype override.
++     * Issues may arise because of this change, but so far we have not encountered any.
++     */
++    return RegExp;
+   }
+ 
+   const noop = () => {};

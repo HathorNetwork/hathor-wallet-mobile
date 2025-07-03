@@ -94,6 +94,7 @@ export const GlobalErrorHandler = () => {
     showModal,
     showAlert,
     isFatal,
+    error,
   } = useSelector((state) => state.errorHandler);
 
   if (showModal) {
@@ -109,6 +110,10 @@ export const GlobalErrorHandler = () => {
   };
 
   if (showAlert) {
+    // Debugging helper for when React Native is running in development mode
+    if (__DEV__) {
+      console.debug('[GlobalErrorModal] Error modal data:', error);
+    }
     return (
       <>
         {Alert.alert(
