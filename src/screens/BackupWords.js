@@ -200,6 +200,11 @@ const BackupWords = ({ navigation, route }) => {
           text={<Text>{t`Words saved correctly`}</Text>}
           onDismiss={() => {
             setSuccessModal(false);
+            setTimeout(() => {
+              navigation.navigate('ChoosePinScreen', {
+                words: route.params.words
+              });
+            }, 0);
           }}
         />
       )}
