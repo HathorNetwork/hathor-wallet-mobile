@@ -28,6 +28,7 @@ const SendConfirmScreen = () => {
   const useWalletService = useSelector((state) => state.useWalletService);
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
+  const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
 
   const navigation = useNavigation();
   const params = useParams();
@@ -91,8 +92,24 @@ const SendConfirmScreen = () => {
    */
   const exitScreen = () => {
     setModal(null);
-    // Return to the dashboard, clean all navigation history
-    NavigationService.resetToMain();
+
+    // First reset the Send stack to its initial state so next time user starts fresh
+    // We need to determine the correct initial route based on camera permission
+    // This matches the logic in SendStack component
+    let initialRoute = 'CameraPermissionScreen';
+    if (isCameraAvailable) {
+      initialRoute = 'SendScanQRCode';
+    } else if (isCameraAvailable === false) { // might be null
+      initialRoute = 'SendAddressInput';
+    }
+
+    NavigationService.navigate('Main', { screen: 'Home' });
+
+    // Give enough time for the navigation to complete so the user doesn't see
+    // the SendStack reseting to the initial route.
+    setTimeout(() => {
+      navigation.reset({ index: 0, routes: [{ name: initialRoute }] });
+    }, 500);
   };
 
   const getAvailableString = () => {
