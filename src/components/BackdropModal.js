@@ -50,6 +50,14 @@ const BackdropModal = ({
   const gestureAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
+  // Store the latest onDismiss in a ref so PanResponder can access it
+  const onDismissRef = useRef(onDismiss);
+
+  // Update the ref whenever onDismiss changes
+  useEffect(() => {
+    onDismissRef.current = onDismiss;
+  }, [onDismiss]);
+
   // State to control delayed children rendering
   const [showChildren, setShowChildren] = useState(false);
 
@@ -69,38 +77,9 @@ const BackdropModal = ({
     return undefined;
   }, [visible]);
 
-  // Pan responder for swipe to dismiss
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => enableSwipeToDismiss,
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        if (!enableSwipeToDismiss) return false;
-
-        // Only respond to vertical swipes
-        const { dy, dx } = gestureState;
-        return Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10;
-      },
-      onPanResponderMove: (evt, gestureState) => {
-        if (gestureState.dy > 0) {
-          gestureAnim.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (evt, gestureState) => {
-        if (gestureState.dy > swipeThreshold || gestureState.vy > 0.5) {
-          handleDismiss();
-        } else {
-          // Snap back to original position
-          Animated.spring(gestureAnim, {
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    })
-  ).current;
-
   const handleDismiss = () => {
-    if (!onDismiss) return;
+    const currentOnDismiss = onDismissRef.current;
+    if (!currentOnDismiss) return;
 
     // Animate out
     const animations = [
@@ -142,9 +121,41 @@ const BackdropModal = ({
 
     Animated.parallel(animations).start(() => {
       onHide?.();
-      onDismiss();
+      currentOnDismiss();
     });
   };
+
+  // Pan responder for swipe to dismiss
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => enableSwipeToDismiss,
+      onMoveShouldSetPanResponder: (_evt, gestureState) => {
+        if (!enableSwipeToDismiss) return false;
+
+        // Only respond to vertical swipes
+        const { dy, dx } = gestureState;
+        return Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10;
+      },
+      onPanResponderMove: (_evt, gestureState) => {
+        if (gestureState.dy > 0) {
+          gestureAnim.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_evt, gestureState) => {
+        if (gestureState.dy > swipeThreshold || gestureState.vy > 0.5) {
+          handleDismiss();
+        } else {
+          // Snap back to original position
+          Animated.spring(gestureAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 100,
+            friction: 8,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   useEffect(() => {
     if (visible) {
@@ -253,14 +264,12 @@ const BackdropModal = ({
           onPress={enableBackdropPress ? handleDismiss : undefined}
         >
           <View style={getContainerStyle()}>
-            <TouchableWithoutFeedback>
-              <Animated.View
-                style={getContentStyle()}
-                {...(enableSwipeToDismiss ? panResponder.panHandlers : {})}
-              >
-                {showChildren && children}
-              </Animated.View>
-            </TouchableWithoutFeedback>
+            <Animated.View
+              style={getContentStyle()}
+              {...(enableSwipeToDismiss ? panResponder.panHandlers : {})}
+            >
+              {showChildren && children}
+            </Animated.View>
           </View>
         </TouchableWithoutFeedback>
       </Animated.View>
