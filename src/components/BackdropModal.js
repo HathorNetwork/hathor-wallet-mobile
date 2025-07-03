@@ -107,7 +107,7 @@ const BackdropModal = ({
       Animated.timing(backdropOpacity, {
         toValue: 0,
         duration: 300,
-        useNativeDriver: false,
+        useNativeDriver: true,
       }),
     ];
 
@@ -153,7 +153,7 @@ const BackdropModal = ({
         Animated.timing(backdropOpacity, {
           toValue: 1,
           duration: 300,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
       ];
 

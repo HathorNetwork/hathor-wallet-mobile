@@ -208,8 +208,8 @@ const BackupWords = ({ navigation, route }) => {
           icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
           text={(
             <Text>
-              <Strong>Wrong word.</Strong>
-              Please double check the words you saved and start the process again.
+              <Strong>{t`Wrong word.`} </Strong>
+              {t`Please double check the words you saved and start the process again.`}
             </Text>
           )}
           onDismiss={() => {
