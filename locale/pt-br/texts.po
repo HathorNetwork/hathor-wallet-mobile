@@ -1845,7 +1845,7 @@ msgstr "Lista de Actions"
 
 #: src/components/Reown/NanoContract/NanoContractActions.js:190
 msgid "Address to send amount:"
-msgstr "Endereço para enviar"
+msgstr "Endereço para enviar:"
 
 #: src/components/Reown/NanoContract/NanoContractActions.js:200
 #: src/components/Reown/NanoContract/NanoContractActions.js:218
