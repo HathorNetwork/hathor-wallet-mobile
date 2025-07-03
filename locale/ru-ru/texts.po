@@ -136,19 +136,25 @@ msgid ""
 "Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-#.  Success
-#.  eslint-disable-next-line react/jsx-indent
-#: src/screens/BackupWords.js:147
-msgid "Words saved correctly"
-msgstr "Seed-фраза введена верно"
-
-#: src/screens/BackupWords.js:225
+#: src/screens/BackupWords.js:184
 msgid "To make sure you saved,"
 msgstr "Чтобы убедиться в том, что вы сохранили,"
 
-#: src/screens/BackupWords.js:227
+#: src/screens/BackupWords.js:186
 msgid "Please select the word that corresponds to the number below:"
 msgstr "Пожалуйста, выберите слово, которое соответствует номеру ниже:"
+
+#: src/screens/BackupWords.js:200
+msgid "Words saved correctly"
+msgstr "Seed-фраза введена верно"
+
+#: src/screens/BackupWords.js:216
+msgid "Wrong word."
+msgstr ""
+
+#: src/screens/BackupWords.js:217
+msgid "Please double check the words you saved and start the process again."
+msgstr ""
 
 #: src/screens/ChangePin.js:113
 msgid "Incorrect PIN code."
@@ -208,7 +214,7 @@ msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
 #: src/screens/CreateTokenAmount.js:88 src/screens/CreateTokenAmount.js:100
-#: src/screens/SendAmountInput.js:89
+#: src/screens/SendAmountInput.js:92
 msgid "Invalid amount"
 msgstr ""
 
@@ -235,7 +241,7 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:185 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:164
+#: src/screens/SendAmountInput.js:168
 msgid "Next"
 msgstr "Далее"
 
@@ -251,7 +257,7 @@ msgstr "Введите 6-значный PIN-код для создания то�
 msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
-#: src/screens/CreateTokenConfirm.js:112 src/screens/SendConfirmScreen.js:84
+#: src/screens/CreateTokenConfirm.js:112 src/screens/SendConfirmScreen.js:85
 msgid "Building transaction"
 msgstr ""
 
@@ -525,12 +531,12 @@ msgstr "Вы только что получили **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "ЗАПРОС СРЕДСТВ"
 
-#: src/components/TxDetailsModal.js:101 src/screens/PaymentRequestDetail.js:129
+#: src/components/TxDetailsModal.js:97 src/screens/PaymentRequestDetail.js:129
 msgid "Token"
 msgstr "Токен"
 
 #: src/components/Reown/CreateTokenRequest.js:90
-#: src/components/TxDetailsModal.js:165 src/screens/PaymentRequestDetail.js:133
+#: src/components/TxDetailsModal.js:158 src/screens/PaymentRequestDetail.js:133
 msgid "Amount"
 msgstr "Количество"
 
@@ -563,7 +569,7 @@ msgid "Unlock Hathor Wallet"
 msgstr "Разблокировать Hathor Wallet"
 
 #: src/components/Reown/NanoContract/SignOracleDataModal.js:79
-#: src/components/Reown/RequestConfirmationModal.js:104
+#: src/components/Reown/RequestConfirmationModal.js:110
 #: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:125
 msgid "Cancel"
 msgstr "Отмена"
@@ -762,11 +768,11 @@ msgstr "ОТПРАВИТЬ"
 msgid "Address to send"
 msgstr "Адрес отправки"
 
-#: src/screens/SendAmountInput.js:94
+#: src/screens/SendAmountInput.js:97
 msgid "Insufficient funds"
 msgstr "Недостаточно средств"
 
-#: src/screens/SendAmountInput.js:119 src/screens/SendConfirmScreen.js:102
+#: src/screens/SendAmountInput.js:122 src/screens/SendConfirmScreen.js:119
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
@@ -774,24 +780,24 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendAmountInput.js:133 src/screens/SendConfirmScreen.js:111
+#: src/screens/SendAmountInput.js:136 src/screens/SendConfirmScreen.js:128
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:69
+#: src/screens/SendConfirmScreen.js:70
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
-#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:82
+#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:83
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
-#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:83
+#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:84
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
-#: src/screens/SendConfirmScreen.js:120
+#: src/screens/SendConfirmScreen.js:137
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Ваш перевод **${ amountAndToken }** был подтвержден"
 
@@ -801,12 +807,12 @@ msgstr "Ваш перевод **${ amountAndToken }** был подтвержд�
 #: src/components/Reown/SendTransactionRequest.js:328
 #: src/components/Reown/SignMessageRequest.js:40
 #: src/components/Reown/SignOracleDataRequest.js:50
-#: src/screens/SendConfirmScreen.js:139
+#: src/screens/SendConfirmScreen.js:156
 msgid "Address"
 msgstr "Адрес"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:291
-#: src/screens/SendConfirmScreen.js:146
+#: src/screens/SendConfirmScreen.js:163
 msgid "Send"
 msgstr "Отправить"
 
@@ -1104,7 +1110,7 @@ msgstr ""
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:80
-#: src/components/TxDetailsModal.js:117
+#: src/components/TxDetailsModal.js:113
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:194
 msgid "Nano Contract ID"
 msgstr ""
@@ -1267,11 +1273,11 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
-#: src/components/CopyClipboard.js:53
+#: src/components/CopyClipboard.js:55
 msgid "Copied to clipboard!"
 msgstr "Скопировано в буфер обмена!"
 
-#: src/components/GlobalErrorModal.js:50
+#: src/components/GlobalErrorModal.js:47
 msgid ""
 "Thanks for reporting the error to the team. We will investigate it to "
 "prevent from happening again."
@@ -1285,7 +1291,7 @@ msgstr ""
 msgid "Please restart your app to continue using the wallet."
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:106
+#: src/components/GlobalErrorModal.js:105
 msgid ""
 "Unfortunately an unhandled error happened and you will need to restart your "
 "app.\n"
@@ -1296,7 +1302,7 @@ msgid ""
 "No sensitive data will be shared."
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:109
+#: src/components/GlobalErrorModal.js:108
 msgid ""
 "Unfortunately an unhandled error happened.\n"
 "\n"
@@ -1306,15 +1312,15 @@ msgid ""
 "No sensitive data will be shared."
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:120
+#: src/components/GlobalErrorModal.js:119
 msgid "Unexpected error occurred"
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:123
+#: src/components/GlobalErrorModal.js:122
 msgid "Report error"
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:128
+#: src/components/GlobalErrorModal.js:127
 #: src/components/Reown/InsufficientFundsModal.js:39
 msgid "Close"
 msgstr ""
@@ -1331,7 +1337,7 @@ msgstr "Нет соединения с интернетом"
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
-#: src/components/PushTxDetailsModal.js:76 src/components/TxDetailsModal.js:103
+#: src/components/PushTxDetailsModal.js:76 src/components/TxDetailsModal.js:99
 msgid "Date & Time"
 msgstr "Дата и Время"
 
@@ -1391,40 +1397,40 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:102
+#: src/components/TxDetailsModal.js:98
 msgid "Description"
 msgstr "Описание"
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:278
-#: src/components/TxDetailsModal.js:104
+#: src/components/TxDetailsModal.js:100
 msgid "Transaction ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:107
+#: src/components/TxDetailsModal.js:103
 msgid "Nano Contract Status"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:89
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:113
-#: src/components/TxDetailsModal.js:116
+#: src/components/TxDetailsModal.js:112
 msgid "Blueprint Method"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:118
+#: src/components/TxDetailsModal.js:114
 msgid "Nano Contract Caller"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:79
-#: src/components/TxDetailsModal.js:119
+#: src/components/TxDetailsModal.js:115
 msgid "Nano Contract"
 msgstr ""
 
-#: src/components/Reown/ApproveRejectModal.js:63
+#: src/components/Reown/ApproveRejectModal.js:70
 msgid "Reject"
 msgstr ""
 
-#: src/components/Reown/ApproveRejectModal.js:64
+#: src/components/Reown/ApproveRejectModal.js:71
 msgid "Approve"
 msgstr ""
 
@@ -1460,14 +1466,14 @@ msgstr ""
 #: src/components/Reown/CreateNanoContractCreateTokenTxRequest.js:70
 #: src/components/Reown/CreateTokenRequest.js:182
 #: src/components/Reown/SignMessageRequest.js:81
-#: src/components/Reown/SignOracleDataRequest.js:192
+#: src/components/Reown/SignOracleDataRequest.js:183
 msgid "Accept Request"
 msgstr ""
 
 #: src/components/Reown/CreateNanoContractCreateTokenTxRequest.js:71
 #: src/components/Reown/CreateTokenRequest.js:186
 #: src/components/Reown/SignMessageRequest.js:85
-#: src/components/Reown/SignOracleDataRequest.js:196
+#: src/components/Reown/SignOracleDataRequest.js:187
 msgid "Decline Request"
 msgstr ""
 
@@ -1674,15 +1680,15 @@ msgstr ""
 msgid "Oracle"
 msgstr ""
 
-#: src/components/Reown/SignOracleDataRequest.js:72
+#: src/components/Reown/SignOracleDataRequest.js:69
 msgid "Hide raw oracle data"
 msgstr ""
 
-#: src/components/Reown/SignOracleDataRequest.js:72
+#: src/components/Reown/SignOracleDataRequest.js:69
 msgid "Show raw oracle data"
 msgstr ""
 
-#: src/components/Reown/SignOracleDataRequest.js:112
+#: src/components/Reown/SignOracleDataRequest.js:106
 msgid "Data"
 msgstr ""
 
@@ -1857,11 +1863,11 @@ msgstr ""
 msgid "Review Sign Oracle Data Request details"
 msgstr ""
 
-#: src/components/Reown/NanoContract/SignedDataDisplay.js:39
+#: src/components/Reown/NanoContract/SignedDataDisplay.js:37
 msgid "Value"
 msgstr ""
 
-#: src/components/Reown/NanoContract/SignedDataDisplay.js:42
+#: src/components/Reown/NanoContract/SignedDataDisplay.js:40
 msgid "Signature"
 msgstr ""
 
