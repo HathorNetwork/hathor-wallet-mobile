@@ -5,15 +5,20 @@
  * @format
  */
 
-// eslint-disable-next-line import/no-extraneous-dependencies
+/*
+ * XXX: Metro config is able to fetch the default config from the react-native package just fine,
+ *      but the linter is not able to resolve these imports.
+ */
+/* eslint-disable import/no-extraneous-dependencies,import/no-unresolved */
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const blacklist = require('metro-config/src/defaults/exclusionList');
+/* eslint-enable import/no-extraneous-dependencies,import/no-unresolved */
 
 /**
  * Metro configuration
- * https://facebook.github.io/metro/docs/configuration
+ * https://reactnative.dev/docs/metro
  *
- * @type {import('metro-config').MetroConfig}
+ * @type {import('@react-native/metro-config').MetroConfig}
  */
 const config = {
   resolver: {

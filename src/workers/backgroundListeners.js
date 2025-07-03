@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import messaging from '@react-native-firebase/messaging';
+import { getMessaging, getToken, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
 import { onExceptionCaptured } from '../actions';
 import {
@@ -24,8 +24,10 @@ const log = logger('push-notification-bg');
 */
 const isRegisteredOnFirebase = () => {
   try {
+    const messaging = getMessaging();
+    const fcmToken = getToken(messaging);
     // Make sure deviceId is registered on the FCM
-    if (!messaging().isDeviceRegisteredForRemoteMessages) {
+    if (!fcmToken) {
       log.debug('The device is not registered on the firebase yet.');
       return false;
     }
@@ -57,7 +59,8 @@ export const setBackgroundMessageListener = () => {
   };
 
   try {
-    messaging().setBackgroundMessageHandler(onBackgroundMessage);
+    const messaging = getMessaging();
+    setBackgroundMessageHandler(messaging, onBackgroundMessage);
   } catch (error) {
     log.error('Error setting firebase background message listener.', error);
     store.dispatch(onExceptionCaptured(error));
