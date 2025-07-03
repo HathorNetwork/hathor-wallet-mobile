@@ -37,7 +37,6 @@ const ModalBase = ({ styleModal, styleWrapper, show, onDismiss, children }) => {
       visible={show}
       animationType='slide'
       position='center'
-      enableSwipeToDismiss={false}
       enableBackdropPress
       onDismiss={onDismiss}
       containerStyle={styleModal}
