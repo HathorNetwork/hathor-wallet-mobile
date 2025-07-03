@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import React from 'react';
 import {
   StyleSheet,
   View,
@@ -21,6 +22,8 @@ const HathorModal = (props) => (
     enableSwipeToDismiss
     enableBackdropPress
     onDismiss={props.onDismiss}
+    onShow={props.onShow}
+    onHide={props.onHide}
     contentStyle={styles.view}
   >
     <View style={StyleSheet.compose(styles.innerView, props.viewStyle)}>
@@ -54,6 +57,10 @@ HathorModal.propTypes = {
   // The inner view style
   // eslint-disable-next-line react/forbid-prop-types
   viewStyle: PropTypes.object,
+  // Callback when modal is shown (passed through to BackdropModal)
+  onShow: PropTypes.func,
+  // Callback when modal is hidden (passed through to BackdropModal)
+  onHide: PropTypes.func,
 };
 
 export default HathorModal;

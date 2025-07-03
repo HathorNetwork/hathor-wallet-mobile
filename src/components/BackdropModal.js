@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Modal,
   View,
@@ -27,6 +27,7 @@ const { height: screenHeight } = Dimensions.get('window');
  * - Swipe-to-dismiss functionality
  * - Touch outside to dismiss
  * - Flexible positioning and styling
+ * - Delayed children rendering to prevent flickering
  */
 const BackdropModal = ({
   visible,
@@ -48,6 +49,25 @@ const BackdropModal = ({
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const gestureAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
+
+  // State to control delayed children rendering
+  const [showChildren, setShowChildren] = useState(false);
+
+  // Control children visibility based on modal state
+  useEffect(() => {
+    if (visible) {
+      // Delay showing children until after animation completes
+      const timer = setTimeout(() => {
+        setShowChildren(true);
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+
+    // Hide children immediately when modal is dismissed
+    setShowChildren(false);
+    return undefined;
+  }, [visible]);
 
   // Pan responder for swipe to dismiss
   const panResponder = useRef(
@@ -238,7 +258,7 @@ const BackdropModal = ({
                 style={getContentStyle()}
                 {...(enableSwipeToDismiss ? panResponder.panHandlers : {})}
               >
-                {children}
+                {showChildren && children}
               </Animated.View>
             </TouchableWithoutFeedback>
           </View>
