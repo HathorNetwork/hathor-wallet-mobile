@@ -64,6 +64,9 @@ export const commonStyles = StyleSheet.create({
   mb4: {
     marginBottom: 4,
   },
+  mt8: {
+    marginTop: 8,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
