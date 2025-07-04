@@ -829,7 +829,11 @@ export function* onSignOracleDataRequest({ payload }) {
  * has been denied.
  */
 export function* onSendNanoContractTxRequest({ payload }) {
-  yield* handleDAppRequest(payload, ReownModalTypes.SEND_NANO_CONTRACT_TX, { passAcceptAction: true });
+  yield* handleDAppRequest(
+    payload,
+    ReownModalTypes.SEND_NANO_CONTRACT_TX,
+    { passAcceptAction: true },
+  );
 }
 
 export function* onCreateTokenRequest({ payload }) {
@@ -1083,7 +1087,8 @@ export function* onSessionDelete(action) {
 }
 
 /**
- * This saga will be called when a create nano contract create token transaction request is received from a dApp
+ * This saga will be called when a create nano contract create token transaction
+ * request is received from a dApp
  *
  * @param {Object} payload The payload containing the transaction data and callbacks
  * @param {Function} payload.accept Callback to accept the transaction
@@ -1092,7 +1097,11 @@ export function* onSessionDelete(action) {
  * @param {Object} payload.dapp Information about the dApp
  */
 export function* onCreateNanoContractCreateTokenTxRequest({ payload }) {
-  yield* handleDAppRequest(payload, ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX, { passAcceptAction: true });
+  yield* handleDAppRequest(
+    payload,
+    ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX,
+    { passAcceptAction: true },
+  );
 }
 
 export function* saga() {
@@ -1105,7 +1114,10 @@ export function* saga() {
     takeLatest(types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL, onSignOracleDataRequest),
     takeLatest(types.SHOW_CREATE_TOKEN_REQUEST_MODAL, onCreateTokenRequest),
     takeLatest(types.SHOW_SEND_TRANSACTION_REQUEST_MODAL, onSendTransactionRequest),
-    takeLatest(types.SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL, onCreateNanoContractCreateTokenTxRequest),
+    takeLatest(
+      types.SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL,
+      onCreateNanoContractCreateTokenTxRequest,
+    ),
     takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),

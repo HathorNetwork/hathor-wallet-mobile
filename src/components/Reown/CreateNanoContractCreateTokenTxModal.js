@@ -30,4 +30,3 @@ export const CreateNanoContractCreateTokenTxModal = ({
 );
 
 export default CreateNanoContractCreateTokenTxModal;
-
