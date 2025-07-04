@@ -11,11 +11,11 @@ import {
   Image,
   View,
   Text,
-  Modal,
   StyleSheet,
 } from 'react-native';
 import ModalButton from './ModalButton';
 import { COLORS } from '../../styles/themes';
+import BackdropModal from '../BackdropModal';
 
 const modalStyle = StyleSheet.create({
   signMessageText: {
@@ -36,6 +36,7 @@ export default ({
   onReject,
   data,
   baseStyles,
+  onDismiss,
 }) => {
   const styles = { ...baseStyles, modalStyle };
   const {
@@ -45,26 +46,30 @@ export default ({
   } = data;
 
   return (
-    <Modal animationType='fade' transparent visible>
-      <View style={styles.modalContainer}>
-        <View style={styles.modalBox}>
-          <Image style={styles.modalImage} source={{ uri: icon }} />
-          <Text style={styles.modalUrl}>
-            {url}
-          </Text>
-          <Text style={styles.modalProposer}>
-            {proposer}
-          </Text>
-          <Text style={styles.modalHeader}>
-            { headerText }
-          </Text>
-          { body }
-          <View style={styles.buttonContainer}>
-            <ModalButton title={t`Reject`} onPress={onReject} />
-            <ModalButton highlight title={t`Approve`} onPress={onAccept} />
-          </View>
-        </View>
+    <BackdropModal
+      visible
+      animationType='fade'
+      position='center'
+      enableSwipeToDismiss={false}
+      enableBackdropPress={false}
+      onDismiss={onDismiss}
+      contentStyle={styles.modalBox}
+    >
+      <Image style={styles.modalImage} source={{ uri: icon }} />
+      <Text style={styles.modalUrl}>
+        {url}
+      </Text>
+      <Text style={styles.modalProposer}>
+        {proposer}
+      </Text>
+      <Text style={styles.modalHeader}>
+        { headerText }
+      </Text>
+      { body }
+      <View style={styles.buttonContainer}>
+        <ModalButton title={t`Reject`} onPress={onReject} />
+        <ModalButton highlight title={t`Approve`} onPress={onAccept} />
       </View>
-    </Modal>
+    </BackdropModal>
   );
 };

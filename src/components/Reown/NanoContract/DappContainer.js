@@ -25,12 +25,16 @@ export const DappContainer = ({ dapp }) => (
   <View style={styles.container}>
     <View style={styles.header}>
       <View style={styles.avatar}>
-        <Image
-          source={{ uri: dapp.icon }}
-          width={48}
-          height={48}
-          style={styles.avatarIcon}
-        />
+        {dapp.icon ? (
+          <Image
+            source={{ uri: dapp.icon }}
+            width={48}
+            height={48}
+            style={styles.avatarIcon}
+          />
+        ) : (
+          <View style={[styles.avatarIcon, { backgroundColor: 'hsla(0, 0%, 85%, 1)' }]} />
+        )}
       </View>
       <View>
         <Text style={styles.proposer}>{dapp.proposer}</Text>

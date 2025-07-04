@@ -1,0 +1,39 @@
+diff --git a/node_modules/@hathor/wallet-lib/lib/utils/bigint.js b/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
+index 8c56ad2..c598604 100644
+--- a/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
++++ b/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
+@@ -9,6 +9,13 @@ exports.parseSchema = parseSchema;
+ exports.transformJsonBigIntResponse = transformJsonBigIntResponse;
+ var _zod = require("zod");
+ var _types = require("../types");
++
++// The wallet-lib implements a custom reviver in its bigint utils (which it uses
++// behind the scenes. The problem is that this custom reviver expects JSON.parse
++// to receive `context`, which is a new feature implemented in nodejs > 22 and
++// react-native doesn 't have it neither in Hermes or in JavascriptCore
++const corejsParser = require('core-js-pure/actual/json/parse');
++
+ /**
+  * Copyright (c) Hathor Labs and its affiliates.
+  *
+@@ -27,7 +34,7 @@ const JSONBigInt = exports.JSONBigInt = {
+   /* eslint-disable @typescript-eslint/no-explicit-any */
+   parse(text) {
+     // @ts-expect-error TypeScript hasn't been updated with the `context` argument from Node v22.
+-    return JSON.parse(text, this.bigIntReviver);
++    return corejsParser(text, this.bigIntReviver);
+   },
+   stringify(value, space) {
+     return JSON.stringify(value, this.bigIntReplacer, space);
+@@ -47,7 +54,10 @@ const JSONBigInt = exports.JSONBigInt = {
+       // Otherwise, we can keep it as a Number.
+       return value;
+     } catch (e) {
+-      if (e instanceof SyntaxError && (e.message === `Cannot convert ${context.source} to a BigInt` || e.message === `invalid BigInt syntax`)) {
++      if (e instanceof SyntaxError
++        && (e.message === `Cannot convert ${context.source} to a BigInt`
++          || (e.message === `Failed to parse String to BigInt`))) {
++
+         // When this error happens, it means the number cannot be converted to a BigInt,
+         // so it's a double, for example '123.456' or '1e2'.
+         return value;

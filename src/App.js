@@ -96,9 +96,12 @@ import { NanoContractRegisterQrCodeScreen } from './screens/NanoContractRegister
 import { SignMessageRequestScreen } from './screens/Reown/SignMessageRequestScreen';
 import { SignOracleDataRequestScreen } from './screens/Reown/SignOracleDataRequestScreen';
 import { CreateTokenRequestScreen } from './screens/Reown/CreateTokenScreen';
+import { CreateNanoContractCreateTokenTxScreen } from './screens/Reown/CreateNanoContractCreateTokenTxScreen';
 import { SuccessFeedbackScreen } from './screens/Reown/SuccessFeedbackScreen';
 import UnifiedQRScanner from './screens/UnifiedQRScanner';
 import RegisterOptionsScreen from './screens/RegisterOptionsScreen';
+import { NavigationSerializingProvider } from './hooks/navigation';
+import { SendTransactionRequestScreen } from './screens/Reown/SendTransactionRequestScreen';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -471,8 +474,10 @@ const AppStack = () => {
         <Stack.Screen name='ReownScan' component={ReownScan} />
         <Stack.Screen name='NewNanoContractTransactionScreen' component={NewNanoContractTransactionScreen} />
         <Stack.Screen name='SignMessageRequest' component={SignMessageRequestScreen} />
+        <Stack.Screen name='SendTransactionRequest' component={SendTransactionRequestScreen} />
         <Stack.Screen name='SignOracleDataRequestScreen' component={SignOracleDataRequestScreen} />
         <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
+        <Stack.Screen name='CreateNanoContractCreateTokenTxRequest' component={CreateNanoContractCreateTokenTxScreen} />
         <Stack.Screen name='SuccessFeedbackScreen' component={SuccessFeedbackScreen} />
         <Stack.Screen name='PushNotification' component={PushNotification} />
         <Stack.Screen name='ChangePin' component={ChangePin} />
@@ -829,10 +834,12 @@ const App = () => (
           ref={navigationRef}
           navigationInChildEnabled
         >
-          <ShowPushNotificationTxDetails />
-          <NetworkStatusBar />
-          <RootStack />
-          <ReownModal />
+          <NavigationSerializingProvider>
+            <ShowPushNotificationTxDetails />
+            <NetworkStatusBar />
+            <RootStack />
+            <ReownModal />
+          </NavigationSerializingProvider>
         </NavigationContainer>
         <GlobalErrorHandler />
       </SafeAreaView>

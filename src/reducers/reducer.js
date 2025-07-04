@@ -17,7 +17,9 @@ import {
   REOWN_NEW_NANOCONTRACT_TX_STATUS,
   NANOCONTRACT_BLUEPRINTINFO_STATUS,
   REOWN_CREATE_TOKEN_STATUS,
-  PRE_SETTINGS_MAINNET
+  PRE_SETTINGS_MAINNET,
+  REOWN_SEND_TX_STATUS,
+  REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -310,6 +312,15 @@ const initialState = {
     createToken: {
       status: REOWN_CREATE_TOKEN_STATUS.READY,
       retrying: false,
+    },
+    createNanoContractCreateTokenTx: {
+      status: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.READY,
+      retrying: false,
+    },
+    sendTransaction: {
+      status: REOWN_SEND_TX_STATUS.READY,
+      retrying: false,
+      data: null,
     },
     connectionFailed: false,
     sessions: {},
@@ -723,7 +734,7 @@ export const reducer = (state = initialState, action) => {
     case types.REOWN_CREATE_TOKEN_RETRY:
       return onSetCreateTokenRetry(state, action);
     case types.REOWN_CREATE_TOKEN_RETRY_DISMISS:
-      return onSetCreateTokenRetryDismiss(state, action);
+      return onSetCreateTokenRetryDismiss(state);
     case types.NANOCONTRACT_BLUEPRINTINFO_REQUEST:
       return onNanoContractBlueprintInfoRequest(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_FAILURE:
@@ -742,6 +753,24 @@ export const reducer = (state = initialState, action) => {
       return onNewNanoContractTransactionRetry(state);
     case types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS:
       return onNewNanoContractTransactionRetryDismiss(state);
+    case types.REOWN_SEND_TX_STATUS_LOADING:
+      return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.LOADING });
+    case types.REOWN_SEND_TX_STATUS_READY:
+      return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.READY });
+    case types.REOWN_SEND_TX_STATUS_SUCCESS:
+      return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.SUCCESSFUL });
+    case types.REOWN_SEND_TX_STATUS_FAILURE:
+      return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.FAILED });
+    case types.REOWN_SEND_TX_RETRY:
+      return onSetSendTxRetry(state);
+    case types.REOWN_SEND_TX_RETRY_DISMISS:
+      return onSetSendTxRetryDismiss(state);
+    case types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS:
+      return onSetCreateNanoContractCreateTokenTxStatus(state, action);
+    case types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY:
+      return onCreateNanoContractCreateTokenTxRetry(state);
+    case types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS:
+      return onCreateNanoContractCreateTokenTxRetryDismiss(state);
     case types.SET_FULLNODE_NETWORK_NAME:
       return onSetFullNodeNetworkName(state, action);
     default:
@@ -1995,6 +2024,38 @@ export const onSetCreateTokenStatus = (state, { payload }) => ({
     createToken: {
       ...state.reown.createToken,
       status: payload,
+    },
+  },
+});
+
+export const onSetSendTxStatus = (state, { payload }) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    sendTransaction: {
+      ...state.reown.sendTransaction,
+      status: payload,
+    },
+  },
+});
+
+export const onSetSendTxRetry = (state) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    sendTransaction: {
+      ...state.reown.sendTransaction,
+      retrying: true,
+    },
+  },
+});
+
+export const onSetSendTxRetryDismiss = (state) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    sendTransaction: {
+      ...state.reown.sendTransaction,
       retrying: false,
     },
   },
@@ -2151,4 +2212,37 @@ export const onUnregisteredTokensDownloadEnd = (state) => ({
 export const onSetFullNodeNetworkName = (state, { payload }) => ({
   ...state,
   fullNodeNetworkName: payload,
+});
+
+export const onCreateNanoContractCreateTokenTxRetry = (state) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    createNanoContractCreateTokenTx: {
+      ...state.reown.createNanoContractCreateTokenTx,
+      retrying: true,
+    },
+  },
+});
+
+export const onCreateNanoContractCreateTokenTxRetryDismiss = (state) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    createNanoContractCreateTokenTx: {
+      ...state.reown.createNanoContractCreateTokenTx,
+      retrying: false,
+    },
+  },
+});
+
+export const onSetCreateNanoContractCreateTokenTxStatus = (state, { payload }) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    createNanoContractCreateTokenTx: {
+      ...state.reown.createNanoContractCreateTokenTx,
+      status: payload,
+    },
+  },
 });

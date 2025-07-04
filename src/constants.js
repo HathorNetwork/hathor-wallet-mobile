@@ -197,9 +197,9 @@ export const TX_MINING_SERVICE_TESTNET_URL = 'https://txmining.testnet.hathor.ne
 
 // Nano testnet settings:
 export const NETWORK_NANO_TESTNET = 'testnet';
-export const NODE_SERVER_NANO_TESTNET_URL = 'https://node1.nano-testnet.hathor.network/v1a/';
-export const EXPLORER_NANO_TESTNET_URL = 'https://explorer.alpha.nano-testnet.hathor.network/';
-export const TX_MINING_SERVICE_NANO_TESTNET_URL = 'https://txmining.nano-testnet.hathor.network/';
+export const NODE_SERVER_NANO_TESTNET_URL = 'https://node1.bravo.nano-testnet.hathor.network/v1a/';
+export const EXPLORER_NANO_TESTNET_URL = 'https://explorer.bravo.nano-testnet.hathor.network/';
+export const TX_MINING_SERVICE_NANO_TESTNET_URL = 'https://txmining.bravo.nano-testnet.hathor.network/';
 
 export const PRE_SETTINGS_NANO_TESTNET = {
   stage: STAGE_TESTNET,
@@ -261,11 +261,19 @@ export const REOWN_CREATE_TOKEN_STATUS = {
   ...BASE_STATUS,
 };
 
+export const REOWN_SEND_TX_STATUS = {
+  ...BASE_STATUS,
+};
+
 export const NANOCONTRACT_REGISTER_STATUS = {
   ...BASE_STATUS,
 };
 
 export const REOWN_NEW_NANOCONTRACT_TX_STATUS = {
+  ...BASE_STATUS,
+};
+
+export const REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS = {
   ...BASE_STATUS,
 };
 

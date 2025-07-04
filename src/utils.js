@@ -6,6 +6,7 @@
  */
 
 import hathorLib from '@hathor/wallet-lib';
+import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import CryptoJS from 'crypto-js';
 import * as Keychain from 'react-native-keychain';
 import React from 'react';
@@ -51,20 +52,49 @@ export const getShortContent = (content, length = 4) => (
 );
 
 /**
- * Get amount text value and transform in its integer value
+ * Get amount text value and transform it into its integer value as BigInt
  *
- * "10" => 1000
- * "10.00" => 1000
- * "10,01" => 1001
- * "1000" => 100000
- * "1000.00" => 100000
+ * "10" => 1000n
+ * "10.00" => 1000n
+ * "10,01" => 1001n
+ * "1000" => 100000n
+ * "1000.00" => 100000n
+ *
+ * @param {string} value - The amount as a string
+ * @param {number} decimalPlaces - Number of decimal places
+ * @return {BigInt} The integer value as a BigInt
+ * @throws {Error} When the input value cannot be parsed to a BigInt
  */
-export const getIntegerAmount = (value) => {
-  const parsedValue = parseFloat(value.replace(',', '.'));
-  return Math.round(parsedValue * (10 ** hathorLib.constants.DECIMAL_PLACES));
+export const getIntegerAmount = (value, decimalPlaces) => {
+  let finalDecimalPlaces = decimalPlaces;
+  if (decimalPlaces == null) { // matches null and undefined
+    console.warn('Decimal places is null in getIntegerAmount! Please check if there is something wrong in serverInfo. Defaulting to 2.');
+    finalDecimalPlaces = 2;
+  }
+
+  // Remove any whitespace and standardize decimal separator
+  const cleanValue = value.trim().replace(',', '.');
+
+  // Split into integer and decimal parts
+  const [integerPart, decimalPart = ''] = cleanValue.split('.');
+
+  // Pad decimal part with zeros if needed
+  const paddedDecimal = (decimalPart + '0'.repeat(finalDecimalPlaces)).slice(0, finalDecimalPlaces);
+
+  // Combine string parts without decimal point
+  const fullNumberStr = integerPart + paddedDecimal;
+
+  // Convert to BigInt
+  return bigIntCoercibleSchema.parse(fullNumberStr);
 };
 
-export const getAmountParsed = (text) => {
+export const getAmountParsed = (text, decimalPlaces) => {
+  let finalDecimalPlaces = decimalPlaces;
+  if (decimalPlaces == null) { // matches null and undefined
+    console.warn('Decimal places is null in getAmountParsed! Please check if there is something wrong in serverInfo. Defaulting to 2.');
+    finalDecimalPlaces = 2;
+  }
+
   let parts = [];
   let separator = '';
   if (text.indexOf('.') > -1) {
@@ -81,8 +111,8 @@ export const getAmountParsed = (text) => {
   parts = parts.slice(0, 2);
 
   if (parts[1]) {
-    if (parts[1].length > hathorLib.constants.DECIMAL_PLACES) {
-      return `${parts[0]}${separator}${parts[1].slice(0, 2)}`;
+    if (parts[1].length > decimalPlaces) {
+      return `${parts[0]}${separator}${parts[1].slice(0, finalDecimalPlaces)}`;
     }
   }
 
@@ -359,16 +389,15 @@ export const getLightBackground = (alpha) => {
 };
 
 /**
- * Render value to integer or decimal
+ * Render value in a formatted way for display
  *
- * @params {number} amount Amount to render
- * @params {boolean} isInteger If it's an integer or decimal
- *
- * @return {string} rendered value
+ * @param {bigint} amount The token amount as BigInt
+ * @param {boolean} isInteger Whether the token is an NFT or regular token
+ * @return {string} Formatted value for display
  */
 export const renderValue = (amount, isInteger) => {
   if (isInteger) {
-    return hathorLib.numberUtils.prettyIntegerValue(amount);
+    return hathorLib.numberUtils.prettyValue(amount, 0);
   }
 
   return hathorLib.numberUtils.prettyValue(amount);

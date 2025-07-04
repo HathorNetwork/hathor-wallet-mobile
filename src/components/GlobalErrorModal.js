@@ -10,19 +10,15 @@ import {
   Alert,
   StyleSheet,
   Text,
-  View,
 } from 'react-native';
-import Modal from 'react-native-modal';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 
 import { hideErrorModal } from '../actions';
 import { COLORS } from '../styles/themes';
+import BackdropModal from './BackdropModal';
 
 const styles = StyleSheet.create({
-  modal: {
-    justifyContent: 'flex-end',
-  },
   innerModal: {
     backgroundColor: COLORS.backgroundColor,
     borderRadius: 8,
@@ -61,30 +57,32 @@ export const ErrorModal = () => {
     errorReported,
   } = errorHandler;
 
-  const hide = () => dispatch(hideErrorModal());
+  const hide = () => {
+    dispatch(hideErrorModal());
+  };
+
+  if (!showModal) {
+    return null;
+  }
 
   return (
-    <Modal
-      isVisible={showModal}
-      {...(!isFatal && {
-        animationType: 'slide',
-        swipeDirection: ['down'],
-        onSwipeComplete: () => hide(),
-        onBackButtonPress: () => hide(),
-        onBackdropPress: () => hide(),
-      })}
-      style={styles.modal}
+    <BackdropModal
+      visible={showModal}
+      animationType='slide'
+      position='bottom'
+      enableSwipeToDismiss={!isFatal}
+      enableBackdropPress={!isFatal}
+      onDismiss={isFatal ? undefined : hide}
+      contentStyle={styles.innerModal}
     >
-      <View style={styles.innerModal}>
-        <Text style={styles.title}>
-          {t`Unexpected error`}
-        </Text>
-        {errorReported && showErrorReportedMessage()}
-        <Text style={styles.text}>
-          {t`Please restart your app to continue using the wallet.`}
-        </Text>
-      </View>
-    </Modal>
+      <Text style={styles.title}>
+        {t`Unexpected error`}
+      </Text>
+      {errorReported && showErrorReportedMessage()}
+      <Text style={styles.text}>
+        {t`Please restart your app to continue using the wallet.`}
+      </Text>
+    </BackdropModal>
   );
 };
 

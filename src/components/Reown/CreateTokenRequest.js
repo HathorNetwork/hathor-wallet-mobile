@@ -46,8 +46,8 @@ const condRenderData = (
   if (attribute != null) {
     return (
       <>
-        { separator && <View style={commonStyles.cardSeparator} /> }
-        <View>
+        {separator && <View style={[commonStyles.cardSeparator, { alignSelf: 'stretch', width: '100%' }]} />}
+        <View style={{ width: '100%', alignSelf: 'stretch' }}>
           <Text style={[
             commonStyles.text,
             commonStyles.field,
@@ -55,10 +55,10 @@ const condRenderData = (
             commonStyles.mb4,
           ]}
           >
-            { title }
+            {title}
           </Text>
-          <Text style={[styles.value, styles.bold]}>
-            { formatter(attribute) }
+          <Text style={[styles.value, styles.bold, { flexShrink: 1, width: '100%' }]}>
+            {formatter(attribute)}
           </Text>
         </View>
       </>
@@ -78,31 +78,38 @@ function renderBooleanFormatter(bool) {
 
 export const CreateTokenRequestData = ({ data }) => (
   <View style={[commonStyles.card, commonStyles.cardSplit]}>
-    <View style={commonStyles.cardSplitContent}>
-      { condRenderData(data.name, t`Name`, false) }
-      { condRenderData(data.symbol, t`Symbol`, true) }
-      { condRenderData(data.amount, t`Amount`, true, numberUtils.prettyValue) }
-      { condRenderData(data.address, t`Address to send newly minted ${data.symbol}`, true) }
-      { condRenderData(data.changeAddress, t`Address to send change ${DEFAULT_TOKEN.uid}`, true) }
-      { condRenderData(data.createMint, t`Create mint authority?`, true, renderBooleanFormatter) }
-      { condRenderData(data.createMelt, t`Create melt authority?`, true, renderBooleanFormatter) }
-      { condRenderData(data.mintAuthorityAddress, t`Address to send the mint authority`, true) }
-      { condRenderData(data.meltAuthorityAddress, t`Address to send the melt authority`, true) }
-      { data.mintAuthorityAddress != null
-          && condRenderData(
-            data.allowExternalMintAuthorityAddress,
-            t`Allow external mint authority addresses?`,
-            true,
-            renderBooleanFormatter,
-          )}
-      { data.meltAuthorityAddress != null
-          && condRenderData(
-            data.allowExternalMeltAuthorityAddress,
-            t`Allow external melt authority addresses?`,
-            true,
-            renderBooleanFormatter,
-          )}
-      { condRenderData(data.data, t`Token data`, true, (tokenData) => tokenData.join('\n')) }
+    <View style={[{
+      flexDirection: 'column',
+      alignSelf: 'stretch',
+      gap: 8,
+      flex: 1
+    }]}
+    >
+      {condRenderData(data.name, t`Name`, false)}
+      {condRenderData(data.symbol, t`Symbol`, true)}
+      {condRenderData(data.amount, t`Amount`, true, numberUtils.prettyValue)}
+      {condRenderData(data.address, t`Address to send newly minted ${data.symbol}`, true)}
+      {condRenderData(data.changeAddress, t`Address to send change ${DEFAULT_TOKEN.symbol}`, true)}
+      {condRenderData(data.createMint, t`Create mint authority?`, true, renderBooleanFormatter)}
+      {condRenderData(data.createMelt, t`Create melt authority?`, true, renderBooleanFormatter)}
+      {condRenderData(data.mintAuthorityAddress, t`Address to send the mint authority`, true)}
+      {condRenderData(data.meltAuthorityAddress, t`Address to send the melt authority`, true)}
+      {data.mintAuthorityAddress != null
+        && condRenderData(
+          data.allowExternalMintAuthorityAddress,
+          t`Allow external mint authority addresses?`,
+          true,
+          renderBooleanFormatter,
+        )}
+      {data.meltAuthorityAddress != null
+        && condRenderData(
+          data.allowExternalMeltAuthorityAddress,
+          t`Allow external melt authority addresses?`,
+          true,
+          renderBooleanFormatter,
+        )}
+      {condRenderData(data.contractPaysTokenDeposit, t`Contract pays token deposit?`, true, renderBooleanFormatter)}
+      {condRenderData(data.data, t`Token data`, true, (tokenData) => tokenData.join('\n'))}
     </View>
   </View>
 );
@@ -243,6 +250,8 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: 8,
     paddingBottom: 48,
+    width: '100%',
   },
-  value: [commonStyles.text, commonStyles.value],
+  value: [commonStyles.text, commonStyles.value, { width: '100%' }],
+  bold: { fontWeight: 'bold' },
 });
