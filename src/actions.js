@@ -14,6 +14,7 @@ import {
   METADATA_CONCURRENT_DOWNLOAD,
   REOWN_CREATE_TOKEN_STATUS,
   REOWN_NEW_NANOCONTRACT_TX_STATUS,
+  REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
 } from './constants';
 import { mapToTxHistory } from './utils';
 
@@ -219,6 +220,10 @@ export const types = {
   REOWN_SEND_TX_RETRY_DISMISS: 'REOWN_SEND_TX_RETRY_DISMISS',
   SHOW_SEND_TRANSACTION_REQUEST_MODAL: 'SHOW_SEND_TRANSACTION_REQUEST_MODAL',
   SHOW_INSUFFICIENT_FUNDS_MODAL: 'SHOW_INSUFFICIENT_FUNDS_MODAL',
+  SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL: 'SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL',
+  REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS',
+  REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY',
+  REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1515,6 +1520,16 @@ export const showSendTransactionModal = (onAccept, onReject, data, metadata) => 
   payload: { accept: onAccept, deny: onReject, data, dapp: metadata },
 });
 
+export const showCreateNanoContractCreateTokenTxModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+    dapp,
+  },
+});
+
 /**
  * Show insufficient funds error modal
  */
@@ -1561,4 +1576,50 @@ export const sendTxRetry = () => ({
 
 export const sendTxRetryDismiss = () => ({
   type: types.REOWN_SEND_TX_RETRY_DISMISS,
+});
+
+/**
+ * Signals that the user wants to attempt to retry the create nano contract create token transaction request
+ */
+export const createNanoContractCreateTokenTxRetry = () => ({
+  type: types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY,
+});
+
+/**
+ * Signals that the user doesn't want to retry the create nano contract create token transaction request
+ */
+export const createNanoContractCreateTokenTxRetryDismiss = () => ({
+  type: types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS,
+});
+
+/**
+ * Signals update on create nano contract create token transaction status to ready.
+ */
+export const setCreateNanoContractCreateTokenTxStatusReady = () => ({
+  type: types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
+  payload: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.READY,
+});
+
+/**
+ * Signals update on create nano contract create token transaction status to loading.
+ */
+export const setCreateNanoContractCreateTokenTxStatusLoading = () => ({
+  type: types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
+  payload: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.LOADING,
+});
+
+/**
+ * Signals update on create nano contract create token transaction status to failed.
+ */
+export const setCreateNanoContractCreateTokenTxStatusFailure = () => ({
+  type: types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
+  payload: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.FAILED,
+});
+
+/**
+ * Signals update on create nano contract create token transaction status to successful.
+ */
+export const setCreateNanoContractCreateTokenTxStatusSuccess = () => ({
+  type: types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
+  payload: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.SUCCESSFUL,
 });

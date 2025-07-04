@@ -74,6 +74,7 @@ import {
   SendTransactionError,
   InsufficientFundsError,
   PrepareSendTransactionError,
+  CreateNanoContractCreateTokenTxError,
 } from '@hathor/hathor-rpc-handler';
 import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
@@ -105,6 +106,11 @@ import {
   setSendTxStatusLoading,
   setSendTxStatusReady,
   showSendTransactionModal,
+  showCreateNanoContractCreateTokenTxModal,
+  setCreateNanoContractCreateTokenTxStatusLoading,
+  setCreateNanoContractCreateTokenTxStatusReady,
+  setCreateNanoContractCreateTokenTxStatusFailure,
+  setCreateNanoContractCreateTokenTxStatusSuccess,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -117,6 +123,7 @@ const AVAILABLE_METHODS = {
   HATHOR_SIGN_ORACLE_DATA: 'htr_signOracleData',
   HATHOR_CREATE_TOKEN: 'htr_createToken',
   HATHOR_SEND_TRANSACTION: 'htr_sendTransaction',
+  HATHOR_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: 'htr_createNanoContractCreateTokenTx',
 };
 const AVAILABLE_EVENTS = [];
 
@@ -448,6 +455,9 @@ export function* processRequest(action) {
         yield put(setSendTxStatusSuccess());
         // The modal state will be updated by the SendTransactionLoadingFinishedTrigger
         break;
+      case RpcResponseTypes.CreateNanoContractCreateTokenTxResponse:
+        yield put(setCreateNanoContractCreateTokenTxStatusSuccess());
+        break;
       default:
         console.log('Unknown response type:', response.type);
         break;
@@ -547,6 +557,21 @@ export function* processRequest(action) {
           },
         }));
         break;
+      case CreateNanoContractCreateTokenTxError: {
+        yield put(setCreateNanoContractCreateTokenTxStatusFailure());
+
+        const retry = yield call(
+          retryHandler,
+          types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY,
+          types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
+          // Retry the action, exactly as it came:
+          yield* processRequest(action);
+        }
+      } break;
       default:
         console.log('Unknown error type:', e.constructor.name);
         break;
@@ -613,6 +638,23 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
     switch (request.type) {
+      case TriggerTypes.CreateNanoContractCreateTokenTxConfirmationPrompt: {
+        const createNanoContractCreateTokenTxResponseTemplate = (accepted) => (data) => resolve({
+          type: TriggerResponseTypes.CreateNanoContractCreateTokenTxConfirmationResponse,
+          data: {
+            accepted,
+            nano: data?.payload?.nano || null,
+            token: data?.payload?.token || null,
+          }
+        });
+
+        dispatch(showCreateNanoContractCreateTokenTxModal(
+          createNanoContractCreateTokenTxResponseTemplate(true),
+          createNanoContractCreateTokenTxResponseTemplate(false),
+          request.data,
+          requestMetadata
+        ));
+      } break;
       case TriggerTypes.SignOracleDataConfirmationPrompt: {
         const signOracleDataResponseTemplate = (accepted) => () => resolve({
           type: TriggerResponseTypes.SignOracleDataConfirmationResponse,
@@ -668,7 +710,8 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           request.data,
           requestMetadata,
         ));
-      } break;
+        break;
+      }
       case TriggerTypes.SendTransactionConfirmationPrompt: {
         const sendTransactionResponseTemplate = (accepted) => (data) => resolve({
           type: TriggerResponseTypes.SendTransactionConfirmationResponse,
@@ -718,6 +761,14 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         break;
       case TriggerTypes.SendNanoContractTxLoadingFinishedTrigger:
         dispatch(setNewNanoContractStatusReady());
+        resolve();
+        break;
+      case TriggerTypes.CreateNanoContractCreateTokenTxLoadingTrigger:
+        dispatch(setCreateNanoContractCreateTokenTxStatusLoading());
+        resolve();
+        break;
+      case TriggerTypes.CreateNanoContractCreateTokenTxLoadingFinishedTrigger:
+        dispatch(setCreateNanoContractCreateTokenTxStatusReady());
         resolve();
         break;
       case TriggerTypes.PinConfirmationPrompt: {
@@ -923,6 +974,11 @@ export function* onSessionProposal(action) {
 
   const networkSettings = yield select(getNetworkSettings);
   try {
+    console.log({
+      accounts: [`hathor:${networkSettings.network}:${firstAddress}`],
+      chains: [`hathor:${networkSettings.network}`],
+      payload: action.payload,
+    });
     yield call(() => walletKit.approveSession({
       id,
       relayProtocol: params.relays[0].protocol,
@@ -1026,6 +1082,19 @@ export function* onSessionDelete(action) {
   yield call(onCancelSession, action);
 }
 
+/**
+ * This saga will be called when a create nano contract create token transaction request is received from a dApp
+ *
+ * @param {Object} payload The payload containing the transaction data and callbacks
+ * @param {Function} payload.accept Callback to accept the transaction
+ * @param {Function} payload.deny Callback to deny the transaction
+ * @param {Object} payload.data Transaction data
+ * @param {Object} payload.dapp Information about the dApp
+ */
+export function* onCreateNanoContractCreateTokenTxRequest({ payload }) {
+  yield* handleDAppRequest(payload, ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX, { passAcceptAction: true });
+}
+
 export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
@@ -1036,6 +1105,7 @@ export function* saga() {
     takeLatest(types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL, onSignOracleDataRequest),
     takeLatest(types.SHOW_CREATE_TOKEN_REQUEST_MODAL, onCreateTokenRequest),
     takeLatest(types.SHOW_SEND_TRANSACTION_REQUEST_MODAL, onSendTransactionRequest),
+    takeLatest(types.SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL, onCreateNanoContractCreateTokenTxRequest),
     takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),

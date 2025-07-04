@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { t } from 'ttag';
 import { useSelector } from 'react-redux';
+import { NanoContractActionType } from '@hathor/wallet-lib';
 import { HathorFlatList } from '../../HathorFlatList';
 import { commonStyles } from '../theme';
 import { getShortHash, isTokenNFT, renderValue } from '../../../utils';
@@ -25,7 +26,7 @@ import { CircleError } from '../../Icons/CircleError.icon';
 
 /**
  * It returns the title template for each action type,
- * which is either 'deposit' or 'withdrawal'.
+ * which includes 'deposit', 'withdrawal', 'grant_authority', and 'invoke_authority'.
  *
  * @param {string} tokenSymbol The token symbol fetched from metadata,
  * or a shortened token hash.
@@ -33,8 +34,10 @@ import { CircleError } from '../../Icons/CircleError.icon';
  * @returns {string} A title template by action type.
  */
 const actionTitleMap = (tokenSymbol) => ({
-  deposit: t`${tokenSymbol} Deposit`,
-  withdrawal: t`${tokenSymbol} Withdrawal`,
+  [NanoContractActionType.DEPOSIT]: t`${tokenSymbol} Deposit`,
+  [NanoContractActionType.WITHDRAWAL]: t`${tokenSymbol} Withdrawal`,
+  [NanoContractActionType.GRANT_AUTHORITY]: t`${tokenSymbol} Grant Authority`,
+  [NanoContractActionType.INVOKE_AUTHORITY]: t`${tokenSymbol} Invoke Authority`,
 });
 
 /**
@@ -54,15 +57,24 @@ const actionTitleMap = (tokenSymbol) => ({
  */
 const getActionTitle = (tokens, action) => {
   const tokenMetadata = tokens[action.token];
+  let tokenSymbol;
+
   if (tokenMetadata) {
-    return actionTitleMap(tokenMetadata.symbol)[action.type];
+    tokenSymbol = tokenMetadata.symbol;
+  } else if (action.token === DEFAULT_TOKEN.uid) {
+    tokenSymbol = DEFAULT_TOKEN.symbol;
+  } else {
+    tokenSymbol = getShortHash(action.token);
   }
 
-  if (action.token === DEFAULT_TOKEN.uid) {
-    return actionTitleMap(DEFAULT_TOKEN.symbol)[action.type]
+  // For authority actions, include the authority type in the title
+  if (action.type === NanoContractActionType.GRANT_AUTHORITY
+    || action.type === NanoContractActionType.INVOKE_AUTHORITY) {
+    const baseTitle = actionTitleMap(tokenSymbol)[action.type];
+    return action.authority ? `${baseTitle}: ${action.authority}` : baseTitle;
   }
 
-  return actionTitleMap(getShortHash(action.token))[action.type];
+  return actionTitleMap(tokenSymbol)[action.type];
 };
 
 /**
@@ -124,10 +136,13 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
 /**
  * @param {Object} props
  * @param {{
- *   type: 'deposit'|'withdrawal';
+ *   type: 'deposit'|'withdrawal'|'grant_authority'|'invoke_authority';
  *   token: string;
- *   amount: number;
- *   address: string;
+ *   amount?: number;
+ *   address?: string;
+ *   authority?: string;
+ *   authorityAddress?: string;
+ *   changeAddress?: string;
  * }} props.action A transaction's action object
  * @param {boolean} props.isNft A flag to inform if the token is an NFT or not
  * @param {string} props.title The card title for the action
@@ -135,38 +150,115 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
 const ActionItem = ({ action, title, isNft }) => {
   const styles = StyleSheet.create({
     action: [commonStyles.text, commonStyles.bold],
+    authorityRow: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    authorityTitle: [commonStyles.text, commonStyles.bold],
+    authorityType: [commonStyles.text, commonStyles.bold, { color: COLORS.textColorShadow }],
     valueLabel: [commonStyles.text, commonStyles.field, commonStyles.bold, commonStyles.mb4],
     value: [commonStyles.text, commonStyles.field],
+    addressSection: {
+      marginTop: 8,
+    },
   });
+
+  // For authority actions, split the title to show authority type on the right
+  const isAuthorityAction = action.type === NanoContractActionType.GRANT_AUTHORITY
+    || action.type === NanoContractActionType.INVOKE_AUTHORITY;
+  const titleParts = isAuthorityAction && title.includes(':') ? title.split(':') : null;
 
   return (
     <View style={[commonStyles.cardSplit, commonStyles.listItem]}>
       <Icon type={action.type} />
       <View style={commonStyles.cardSplitContent}>
-        <Text style={styles.action}>{title}</Text>
-        {action.address
-          && (
-            <View>
-              <Text style={styles.valueLabel}>{t`To Address:`}</Text>
+        {isAuthorityAction && titleParts ? (
+          <View style={styles.authorityRow}>
+            <Text style={styles.authorityTitle}>{titleParts[0].trim()}</Text>
+            <Text style={styles.authorityType}>{titleParts[1].trim()}</Text>
+          </View>
+        ) : (
+          <Text style={styles.action}>{title}</Text>
+        )}
+
+        {/* WITHDRAWAL: Show only address (address to send the amount and create the output) */}
+        {action.type === NanoContractActionType.WITHDRAWAL
+          && action.address && (
+            <View style={styles.addressSection}>
+              <Text style={styles.valueLabel}>{t`Address to send amount:`}</Text>
               <Text style={styles.value}>{action.address}</Text>
             </View>
-          )}
+        )}
+
+        {/* DEPOSIT: Show address (to filter UTXOs) and changeAddress (change address) */}
+        {action.type === NanoContractActionType.DEPOSIT && (
+          <View style={[(action.address || action.changeAddress) && styles.addressSection]}>
+            {action.address && (
+              <View style={{ marginBottom: 8 }}>
+                <Text style={styles.valueLabel}>{t`Address to filter UTXOs:`}</Text>
+                <Text style={styles.value}>{action.address}</Text>
+              </View>
+            )}
+            {action.changeAddress && (
+              <View>
+                <Text style={styles.valueLabel}>{t`Change address:`}</Text>
+                <Text style={styles.value}>{action.changeAddress}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* GRANT_AUTHORITY: Show address (filter UTXOs) and authorityAddress (send authority) */}
+        {action.type === NanoContractActionType.GRANT_AUTHORITY && (
+          <View style={[(action.address || action.authorityAddress) && styles.addressSection]}>
+            {action.address && (
+              <View style={{ marginBottom: 8 }}>
+                <Text style={styles.valueLabel}>{t`Address to filter UTXOs:`}</Text>
+                <Text style={styles.value}>{action.address}</Text>
+              </View>
+            )}
+            {action.authorityAddress && (
+              <View>
+                <Text style={styles.valueLabel}>{t`Address to send new authority:`}</Text>
+                <Text style={styles.value}>{action.authorityAddress}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* INVOKE_AUTHORITY: Show only address (send the authority and create the output) */}
+        {action.type === NanoContractActionType.INVOKE_AUTHORITY && action.address && (
+          <View style={styles.addressSection}>
+            <Text style={styles.valueLabel}>{t`Address to send authority:`}</Text>
+            <Text style={styles.value}>{action.address}</Text>
+          </View>
+        )}
       </View>
-      <Amount amount={action.amount} isNft={isNft} />
+
+      {/* Show amount for deposit/withdrawal actions */}
+      {action.type !== NanoContractActionType.GRANT_AUTHORITY
+        && action.type !== NanoContractActionType.INVOKE_AUTHORITY
+        && action.amount != null && (
+          <Amount amount={action.amount} isNft={isNft} />
+      )}
     </View>
   )
 }
 
 /**
- * It renders an icon by action type, either 'deposit' or 'withdrawal'.
+ * It renders an icon by action type: 'deposit', 'withdrawal', or 'grant_authority'.
  *
  * @param {Object} props
- * @param {'deposit'|'withdrawal'} props.type Action type.
+ * @param {'deposit'|'withdrawal'|'grant_authority'|'invoke_authority'} props.type Action type.
  */
 const Icon = ({ type }) => {
   const iconMap = {
-    deposit: SentIcon({ type: 'default' }),
-    withdrawal: ReceivedIcon({ type: 'default' }),
+    [NanoContractActionType.DEPOSIT]: SentIcon({ type: 'default' }),
+    [NanoContractActionType.WITHDRAWAL]: ReceivedIcon({ type: 'default' }),
+    [NanoContractActionType.GRANT_AUTHORITY]: SentIcon({ type: 'default' }),
+    [NanoContractActionType.INVOKE_AUTHORITY]: ReceivedIcon({ type: 'default' }),
   };
 
   return (iconMap[type]);
