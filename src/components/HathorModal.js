@@ -5,42 +5,45 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
 import {
-  StyleSheet, View,
+  StyleSheet,
+  View,
 } from 'react-native';
 import PropTypes from 'prop-types';
-import Modal from 'react-native-modal';
+import BackdropModal from './BackdropModal';
 import { COLORS } from '../styles/themes';
 
 const HathorModal = (props) => (
-  <Modal
-    isVisible
-    animationIn='slideInUp'
-    swipeDirection={['down']}
-    onSwipeComplete={props.onDismiss}
-    onBackButtonPress={props.onDismiss}
-    onBackdropPress={props.onDismiss}
-    style={styles.modal}
+  <BackdropModal
+    visible
+    animationType='slide'
+    position='bottom'
+    enableSwipeToDismiss
+    enableBackdropPress
+    onDismiss={props.onDismiss}
+    onShow={props.onShow}
+    onHide={props.onHide}
+    contentStyle={styles.view}
   >
-    <View style={StyleSheet.compose(styles.view, props.viewStyle)}>
+    <View style={StyleSheet.compose(styles.innerView, props.viewStyle)}>
       {props.children}
     </View>
-  </Modal>
+  </BackdropModal>
 );
 
 const styles = StyleSheet.create({
-  modal: {
-    justifyContent: 'flex-end',
-  },
   view: {
     backgroundColor: COLORS.backgroundColor,
     borderRadius: 8,
-    alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 24,
     paddingTop: 42,
     minHeight: 290,
+    alignItems: 'center',
+  },
+  innerView: {
+    width: '100%',
+    alignItems: 'center',
   },
 });
 
@@ -53,6 +56,10 @@ HathorModal.propTypes = {
   // The inner view style
   // eslint-disable-next-line react/forbid-prop-types
   viewStyle: PropTypes.object,
+  // Callback when modal is shown (passed through to BackdropModal)
+  onShow: PropTypes.func,
+  // Callback when modal is hidden (passed through to BackdropModal)
+  onHide: PropTypes.func,
 };
 
 export default HathorModal;

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { t } from 'ttag';
 import _ from 'lodash';
 import {
@@ -25,21 +25,21 @@ import baseStyle from '../styles/init';
 import { Strong } from '../utils';
 import { COLORS } from '../styles/themes';
 
-class BackupWords extends React.Component {
-  /**
-   * step {number} Which validation step user is
-   * indexes {Array} Array of indexes that will be used to execute the validation
-   * wordsOptions {Array} For each step we have some options for the user to choose the correct word
-   * modal {FeedbackModal} modal to display. If null, do not display
-   */
-  state = {
-    step: 0,
-    indexes: [],
-    wordOptions: [],
-    modal: null,
-  };
+const BackupWords = ({ navigation, route }) => {
+  // State management
+  const [step, setStep] = useState(0);
+  const [indexes, setIndexes] = useState([]);
+  const [wordOptions, setWordOptions] = useState([]);
+  const [successModal, setSuccessModal] = useState(false);
+  const [failureModal, setFailureModal] = useState(false);
 
-  style = ({ ...baseStyle,
+  // Parse words from navigation parameters
+  const paramWords = route.params.words.split(' ') ?? [];
+  const words = paramWords.map((word, id) => ({ word, id }));
+
+  // Styles
+  const styles = {
+    ...baseStyle,
     ...StyleSheet.create({
       footerView: {
         width: 8,
@@ -63,30 +63,8 @@ class BackupWords extends React.Component {
       button: {
         marginBottom: 16,
       },
-    }) });
-
-  // Array of words shown on the previous screen
-  words = null;
-
-  /**
-   * Expects 'words' as navigation parameter with all generated words as a string separated by space
-   */
-  constructor(props) {
-    super(props);
-
-    const paramWords = this.props.route.params.words.split(' ') ?? [];
-
-    this.words = paramWords.map((word, id) => ({ word, id }));
-  }
-
-  componentDidMount() {
-    // Get 5 random indexes of word to check backup
-    const indexesArr = Array(24).fill().map((v, i) => i + 1);
-    const indexesToBackup = _.shuffle(indexesArr).slice(0, 5);
-    this.setState({ indexes: indexesToBackup }, () => {
-      this.updateWordsShownOnScreen();
-    });
-  }
+    }),
+  };
 
   /**
    * Update state with options to be shown to the user depending on the step
@@ -96,8 +74,8 @@ class BackupWords extends React.Component {
    * validate word in position 2, we must have 5 options.
    * Positions 1, 2, 3, 4, 5 (the position 0 is substituted by position 5)
    */
-  updateWordsShownOnScreen = () => {
-    const index = this.state.indexes[this.state.step] - 1;
+  const updateWordsShownOnScreen = (currentStep) => {
+    const index = indexes[currentStep] - 1;
     let optionsStartIndex = index - 2;
     let optionsEndIndex = index + 2;
 
@@ -110,15 +88,15 @@ class BackupWords extends React.Component {
 
     // If index is 22 or 23, endIndex would be greater than the max
     // So we set to the max and decrease the startIndex
-    const maxIndex = this.words.length - 1;
+    const maxIndex = words.length - 1;
     if (optionsEndIndex > maxIndex) {
       optionsEndIndex = maxIndex;
       optionsStartIndex = maxIndex - 4;
     }
 
-    const options = this.words.slice(optionsStartIndex, optionsEndIndex + 1);
-    this.setState({ wordOptions: _.shuffle(options) });
-  }
+    const options = words.slice(optionsStartIndex, optionsEndIndex + 1);
+    setWordOptions(_.shuffle(options));
+  };
 
   /**
    * Method called after user selects a word
@@ -128,116 +106,125 @@ class BackupWords extends React.Component {
    *
    * @param {String} word Word of the button clicked
    */
-  wordSelected = (word) => {
-    const index = this.state.indexes[this.state.step];
-    if (this.words[index - 1].word === word) {
-      if (this.state.step < 4) {
+  const wordSelected = (word) => {
+    const index = indexes[step];
+    if (words[index - 1].word === word) {
+      if (step < 4) {
         // Correct word was chosen, move one step
-        this.setState((prevState) => ({ step: prevState.step + 1 }), () => {
-          this.updateWordsShownOnScreen();
-        });
+        const nextStep = step + 1;
+        setStep(nextStep);
+        updateWordsShownOnScreen(nextStep);
       } else {
-        // Success
-        this.setState({
-          modal:
-            // eslint-disable-next-line react/jsx-indent
-            <FeedbackModal
-              icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-              text={
-                <Text>{t`Words saved correctly`}</Text>
-              }
-              onDismiss={() => {
-                this.setState({ modal: null }, () => {
-                  this.props.navigation.navigate('ChoosePinScreen', { words: this.props.route.params.words });
-                });
-              }}
-            />,
-        });
+        setSuccessModal(true);
       }
     } else {
       // Error, incorrect word was chosen
-      this.setState({
-        modal:
-          // eslint-disable-next-line react/jsx-indent
-          <FeedbackModal
-            icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
-            text={(
-              <Text>
-                <Strong>Wrong word.</Strong>
-                Please double check the words you saved and start the process again.
-              </Text>
-)}
-            onDismiss={() => {
-              this.setState({ modal: null }, () => {
-                this.props.navigation.goBack();
-              });
-            }}
-          />,
-      });
+      setFailureModal(true);
     }
-  }
+  };
 
-  render() {
-    const renderOptions = () => this.state.wordOptions.map(({ id, word }) => (
-      <NewHathorButton
-        key={id}
-        style={this.style.button}
-        secondary
-        title={word}
-        onPress={() => this.wordSelected(word)}
-      />
-    ));
+  // Initialize component on mount
+  useEffect(() => {
+    // Get 5 random indexes of word to check backup
+    const indexesArr = Array(24).fill().map((v, i) => i + 1);
+    const indexesToBackup = _.shuffle(indexesArr).slice(0, 5);
+    setIndexes(indexesToBackup);
+  }, []);
 
-    const renderFooter = () => {
-      const viewArr = [];
-      for (let i = 0; i < this.state.indexes.length; i += 1) {
-        const styles = [this.style.footerView];
-        if (i === this.state.step) {
-          styles.push(this.style.current);
-        } else if (i < this.state.step) {
-          styles.push(this.style.past);
-        } else {
-          styles.push(this.style.future);
-        }
+  // Update word options when indexes change
+  useEffect(() => {
+    if (indexes.length > 0) {
+      updateWordsShownOnScreen(step);
+    }
+  }, [indexes, step]);
 
-        if (i === this.state.indexes.length - 1) {
-          styles.push(this.style.lastView);
-        }
+  const renderOptions = () => wordOptions.map(({ id, word }) => (
+    <NewHathorButton
+      key={id}
+      style={styles.button}
+      secondary
+      title={word}
+      onPress={() => wordSelected(word)}
+    />
+  ));
 
-        viewArr.push(<View key={i} style={styles} />);
+  const renderFooter = () => {
+    const viewArr = [];
+    for (let i = 0; i < indexes.length; i += 1) {
+      const footerStyles = [styles.footerView];
+      if (i === step) {
+        footerStyles.push(styles.current);
+      } else if (i < step) {
+        footerStyles.push(styles.past);
+      } else {
+        footerStyles.push(styles.future);
       }
 
-      return (
-        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center' }}>
-          {viewArr}
-        </View>
-      );
-    };
+      if (i === indexes.length - 1) {
+        footerStyles.push(styles.lastView);
+      }
+
+      viewArr.push(<View key={i} style={footerStyles} />);
+    }
 
     return (
-      <View style={{ flex: 1 }}>
-        <HathorHeader
-          onBackPress={() => this.props.navigation.goBack()}
-        />
-        {this.state.modal}
-        <View style={[this.style.container, { flexDirection: 'column', justifyContent: 'space-between' }]}>
-          <View>
-            <Text style={this.style.title}>{t`To make sure you saved,`}</Text>
-            <Text style={this.style.text}>
-              {t`Please select the word that corresponds to the number below:`}
-            </Text>
-            <Text style={[this.style.title, { textAlign: 'center', fontSize: 24 }]}>
-              {this.state.indexes[this.state.step]}
-            </Text>
-          </View>
-          <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
-            {renderOptions()}
-          </View>
-          {renderFooter()}
-        </View>
+      <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center' }}>
+        {viewArr}
       </View>
     );
-  }
-}
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <HathorHeader
+        onBackPress={() => navigation.goBack()}
+      />
+      <View style={[styles.container, { flexDirection: 'column', justifyContent: 'space-between' }]}>
+        <View>
+          <Text style={styles.title}>{t`To make sure you saved,`}</Text>
+          <Text style={styles.text}>
+            {t`Please select the word that corresponds to the number below:`}
+          </Text>
+          <Text style={[styles.title, { textAlign: 'center', fontSize: 24 }]}>
+            {indexes[step]}
+          </Text>
+        </View>
+        <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
+          {renderOptions()}
+        </View>
+        {renderFooter()}
+      </View>
+      {successModal && (
+        <FeedbackModal
+          icon={<Image source={checkIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
+          text={<Text>{t`Words saved correctly`}</Text>}
+          onDismiss={() => {
+            setSuccessModal(false);
+            setTimeout(() => {
+              navigation.navigate('ChoosePinScreen', {
+                words: route.params.words
+              });
+            }, 0);
+          }}
+        />
+      )}
+      {failureModal && (
+        <FeedbackModal
+          icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
+          text={(
+            <Text>
+              <Strong>{t`Wrong word.`} </Strong>
+              {t`Please double check the words you saved and start the process again.`}
+            </Text>
+          )}
+          onDismiss={() => {
+            setFailureModal(false);
+            navigation.goBack();
+          }}
+        />
+      )}
+    </View>
+  );
+};
 
 export default BackupWords;

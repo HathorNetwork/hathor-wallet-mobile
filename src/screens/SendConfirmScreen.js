@@ -5,11 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
-import { connect } from 'react-redux';
-import { t, ngettext, msgid } from 'ttag';
-
+import { useSelector } from 'react-redux';
+import { msgid, ngettext, t } from 'ttag';
 import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
@@ -21,43 +20,25 @@ import TextFmt from '../components/TextFmt';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import { renderValue, isTokenNFT } from '../utils';
 import NavigationService from '../NavigationService';
+import { useNavigation, useParams } from '../hooks/navigation';
 
-/**
- * tokensBalance {Object} dict with balance for each token
- * wallet {HathorWallet} HathorWallet lib object
- * tokenMetadata {Object} metadata of tokens
- */
-const mapStateToProps = (state) => ({
-  tokensBalance: state.tokensBalance,
-  wallet: state.wallet,
-  useWalletService: state.useWalletService,
-  tokenMetadata: state.tokenMetadata,
-  isShowingPinScreen: state.isShowingPinScreen,
-});
+const SendConfirmScreen = () => {
+  const tokensBalance = useSelector((state) => state.tokensBalance);
+  const wallet = useSelector((state) => state.wallet);
+  const useWalletService = useSelector((state) => state.useWalletService);
+  const tokenMetadata = useSelector((state) => state.tokenMetadata);
+  const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
+  const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
 
-class SendConfirmScreen extends React.Component {
-  /**
-   * modal {FeedbackModal|SendTransactionFeedbackModal} modal to display. If null, do not display
-   * }
-   */
-  state = {
-    modal: null,
-  };
+  const navigation = useNavigation();
+  const params = useParams();
 
-  /**
-   * amount {int} amount to send
-   * address {string} address to send to
-   * token {object} info about the selected token to send
-   */
-  constructor(props) {
-    super(props);
-    // we receive these 3 mandatory parameters from previous screens
-    this.amount = this.props.route.params?.amount;
-    this.address = this.props.route.params?.address;
-    this.token = this.props.route.params?.token;
-    this.isNFT = isTokenNFT(this.token.uid, this.props.tokenMetadata);
-    this.amountAndToken = `${renderValue(this.amount, this.isNFT)} ${this.token.symbol}`;
-  }
+  // Parse and store navigation params
+  const { amount, address, token } = params;
+  const isNFT = isTokenNFT(token.uid, tokenMetadata);
+  const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
+
+  const [modal, setModal] = useState(null);
 
   /**
    * In case we can prepare the data, open send tx feedback modal (while sending the tx)
@@ -65,117 +46,129 @@ class SendConfirmScreen extends React.Component {
    *
    * @param {String} pin User PIN already validated
    */
-  executeSend = async (pin) => {
-    const outputs = [{ address: this.address, value: this.amount, token: this.token.uid }];
+  const executeSend = async (pin) => {
+    const outputs = [{ address, value: amount, token: token.uid }];
     let sendTransaction;
 
-    if (this.props.useWalletService) {
-      await this.props.wallet.validateAndRenewAuthToken(pin);
+    if (useWalletService) {
+      await wallet.validateAndRenewAuthToken(pin);
 
-      sendTransaction = new hathorLib.SendTransactionWalletService(this.props.wallet, {
+      sendTransaction = new hathorLib.SendTransactionWalletService(wallet, {
         outputs,
         pin,
       });
     } else {
       sendTransaction = new hathorLib.SendTransaction(
-        { storage: this.props.wallet.storage, outputs, pin }
+        { storage: wallet.storage, outputs, pin }
       );
     }
 
     const promise = sendTransaction.run();
 
     // show loading modal
-    this.setState({
-      modal: {
-        text: t`Your transfer is being processed`,
-        sendTransaction,
-        promise,
-      }
+    setModal({
+      text: t`Your transfer is being processed`,
+      sendTransaction,
+      promise,
     });
-  }
+  };
 
   /**
    * Executed when user clicks to send the tx and opens PIN screen
    */
-  onSendPress = () => {
-    const params = {
-      cb: this.executeSend,
+  const onSendPress = () => {
+    const pinParams = {
+      cb: executeSend,
       canCancel: true,
       screenText: t`Enter your 6-digit pin to authorize operation`,
       biometryText: t`Authorize operation`,
       biometryLoadingText: t`Building transaction`,
     };
-    this.props.navigation.navigate('PinScreen', params);
-  }
+    navigation.navigate('PinScreen', pinParams);
+  };
 
   /**
    * Method executed after dismiss success modal
    */
-  exitScreen = () => {
-    this.setState({ modal: null });
-    // Return to the dashboard, clean all navigation history
-    NavigationService.resetToMain();
-  }
+  const exitScreen = () => {
+    setModal(null);
 
-  render() {
-    const getAvailableString = () => {
-      // eg: '23.56 HTR available'
-      const balance = this.props.tokensBalance[this.token.uid].data;
-      const available = balance ? balance.available : 0;
-      const amountAndToken = `${renderValue(available, this.isNFT)} ${this.token.symbol}`;
-      return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, available);
-    };
+    // First reset the Send stack to its initial state so next time user starts fresh
+    // We need to determine the correct initial route based on camera permission
+    // This matches the logic in SendStack component
+    let initialRoute = 'CameraPermissionScreen';
+    if (isCameraAvailable) {
+      initialRoute = 'SendScanQRCode';
+    } else if (isCameraAvailable === false) { // might be null
+      initialRoute = 'SendAddressInput';
+    }
 
-    const tokenNameUpperCase = this.token.name.toUpperCase();
-    return (
-      <View style={{ flex: 1 }}>
-        <HathorHeader
-          withBorder
-          title={t`SEND ${tokenNameUpperCase}`}
-          onBackPress={() => this.props.navigation.goBack()}
+    NavigationService.navigate('Main', { screen: 'Home' });
+
+    // Give enough time for the navigation to complete so the user doesn't see
+    // the SendStack reseting to the initial route.
+    setTimeout(() => {
+      navigation.reset({ index: 0, routes: [{ name: initialRoute }] });
+    }, 500);
+  };
+
+  const getAvailableString = () => {
+    const balance = tokensBalance[token.uid].data;
+    const available = balance ? balance.available : 0;
+    const availableCount = Number(available);
+    return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, availableCount);
+  };
+
+  const tokenNameUpperCase = token.name.toUpperCase();
+
+  return (
+    <View style={{ flex: 1 }}>
+      <HathorHeader
+        withBorder
+        title={t`SEND ${tokenNameUpperCase}`}
+        onBackPress={() => navigation.goBack()}
+      />
+
+      {modal && (
+        <SendTransactionFeedbackModal
+          text={modal.text}
+          sendTransaction={modal.sendTransaction}
+          promise={modal.promise}
+          successText={<TextFmt>{t`Your transfer of **${amountAndToken}** has been confirmed`}</TextFmt>}
+          onDismissSuccess={exitScreen}
+          onDismissError={() => setModal(null)}
+          hide={isShowingPinScreen}
         />
+      )}
 
-        {this.state.modal && (
-          <SendTransactionFeedbackModal
-            text={this.state.modal.text}
-            sendTransaction={this.state.modal.sendTransaction}
-            promise={this.state.modal.promise}
-            successText={<TextFmt>{t`Your transfer of **${this.amountAndToken}** has been confirmed`}</TextFmt>}
-            onDismissSuccess={this.exitScreen}
-            onDismissError={() => this.setState({ modal: null })}
-            hide={this.props.isShowingPinScreen}
-          />
-        )}
-
-        <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-          <View>
-            <View style={{ alignItems: 'center', marginTop: 32 }}>
-              <AmountTextInput
-                editable={false}
-                value={this.amountAndToken}
-              />
-              <InputLabel style={{ marginTop: 8 }}>
-                {getAvailableString()}
-              </InputLabel>
-            </View>
-            <SimpleInput
-              label={t`Address`}
+      <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
+        <View>
+          <View style={{ alignItems: 'center', marginTop: 32 }}>
+            <AmountTextInput
               editable={false}
-              value={this.address}
-              containerStyle={{ marginTop: 48 }}
+              value={amountAndToken}
             />
+            <InputLabel style={{ marginTop: 8 }}>
+              {getAvailableString()}
+            </InputLabel>
           </View>
-          <NewHathorButton
-            title={t`Send`}
-            onPress={this.onSendPress}
-            // disable while modal is visible
-            disabled={this.state.modal !== null}
+          <SimpleInput
+            label={t`Address`}
+            editable={false}
+            value={address}
+            containerStyle={{ marginTop: 48 }}
           />
         </View>
-        <OfflineBar />
+        <NewHathorButton
+          title={t`Send`}
+          onPress={onSendPress}
+          // disable while modal is visible
+          disabled={modal !== null}
+        />
       </View>
-    );
-  }
-}
+      <OfflineBar />
+    </View>
+  );
+};
 
-export default connect(mapStateToProps)(SendConfirmScreen);
+export default SendConfirmScreen;

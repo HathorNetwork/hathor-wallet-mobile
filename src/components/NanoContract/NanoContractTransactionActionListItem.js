@@ -120,7 +120,7 @@ const ContentWrapper = ({ tokenSymbol, type }) => {
  * It presents the token's amount using the right style.
  *
  * @param {Object} props
- * @param {number} props.amount Action amount as integer
+ * @param {bigint} props.amount Action amount as BigInt
  * @param {boolean} props.isNft True when it is an NFT, false otherwise
  * @param {'deposit'|'withdrawal'} props.type An action type
  */
@@ -138,7 +138,7 @@ const TokenAmount = ({ amount, isNft, type }) => {
         {amountToRender}
       </Text>
     </View>
-  )
+  );
 };
 
 const styles = StyleSheet.create({

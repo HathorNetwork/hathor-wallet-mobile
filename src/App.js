@@ -96,9 +96,12 @@ import { NanoContractRegisterQrCodeScreen } from './screens/NanoContractRegister
 import { SignMessageRequestScreen } from './screens/Reown/SignMessageRequestScreen';
 import { SignOracleDataRequestScreen } from './screens/Reown/SignOracleDataRequestScreen';
 import { CreateTokenRequestScreen } from './screens/Reown/CreateTokenScreen';
+import { CreateNanoContractCreateTokenTxScreen } from './screens/Reown/CreateNanoContractCreateTokenTxScreen';
 import { SuccessFeedbackScreen } from './screens/Reown/SuccessFeedbackScreen';
 import UnifiedQRScanner from './screens/UnifiedQRScanner';
 import RegisterOptionsScreen from './screens/RegisterOptionsScreen';
+import { NavigationSerializingProvider } from './hooks/navigation';
+import { SendTransactionRequestScreen } from './screens/Reown/SendTransactionRequestScreen';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -111,7 +114,7 @@ const InitStack = () => {
       style={{ flex: 1, backgroundColor: baseStyle.container.backgroundColor }}
     >
       <Stack.Navigator
-        initialRouteName='Welcome'
+        initialRouteName='WelcomeScreen'
         screenOptions={{
           headerShown: false,
         }}
@@ -471,8 +474,10 @@ const AppStack = () => {
         <Stack.Screen name='ReownScan' component={ReownScan} />
         <Stack.Screen name='NewNanoContractTransactionScreen' component={NewNanoContractTransactionScreen} />
         <Stack.Screen name='SignMessageRequest' component={SignMessageRequestScreen} />
+        <Stack.Screen name='SendTransactionRequest' component={SendTransactionRequestScreen} />
         <Stack.Screen name='SignOracleDataRequestScreen' component={SignOracleDataRequestScreen} />
         <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
+        <Stack.Screen name='CreateNanoContractCreateTokenTxRequest' component={CreateNanoContractCreateTokenTxScreen} />
         <Stack.Screen name='SuccessFeedbackScreen' component={SuccessFeedbackScreen} />
         <Stack.Screen name='PushNotification' component={PushNotification} />
         <Stack.Screen name='ChangePin' component={ChangePin} />
@@ -811,6 +816,12 @@ const RootStack = () => {
 const navigationRef = React.createRef();
 NavigationService.setTopLevelNavigator(navigationRef);
 
+/*
+ * TODO: The NavigationContainer has the 'navigationInChildEnabled' prop set to true, which is a
+ *  deprecated way of using the navigator. This is being used only to facilitate the upgrade
+ *  to RN 77, but should be removed in the near future.
+ * @see https://reactnavigation.org/docs/upgrading-from-6.x#changes-to-the-navigate-action
+ */
 const App = () => (
   <SafeAreaProvider>
     <Provider store={store}>
@@ -821,11 +832,14 @@ const App = () => (
         <NavigationContainer
           theme={HathorTheme}
           ref={navigationRef}
+          navigationInChildEnabled
         >
-          <ShowPushNotificationTxDetails />
-          <NetworkStatusBar />
-          <RootStack />
-          <ReownModal />
+          <NavigationSerializingProvider>
+            <ShowPushNotificationTxDetails />
+            <NetworkStatusBar />
+            <RootStack />
+            <ReownModal />
+          </NavigationSerializingProvider>
         </NavigationContainer>
         <GlobalErrorHandler />
       </SafeAreaView>
