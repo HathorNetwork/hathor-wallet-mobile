@@ -1,0 +1,433 @@
+diff --git a/node_modules/@hathor/wallet-lib/lib/wallet/api/walletApi.js b/node_modules/@hathor/wallet-lib/lib/wallet/api/walletApi.js
+index 2506205..1a88977 100644
+--- a/node_modules/@hathor/wallet-lib/lib/wallet/api/walletApi.js
++++ b/node_modules/@hathor/wallet-lib/lib/wallet/api/walletApi.js
+@@ -44,6 +44,9 @@ const walletApi = {
+     throw new _errors.WalletRequestError('Error getting fullnode data.');
+   },
+   async createWallet(wallet, xpubkey, xpubkeySignature, authXpubkey, authXpubkeySignature, timestamp, firstAddress = null) {
++    console.log('🔍 PROFILING: [WALLET_API] Starting wallet API createWallet request...');
++    const startTime = Date.now();
++    
+     const data = {
+       xpubkey,
+       xpubkeySignature,
+@@ -54,15 +57,27 @@ const walletApi = {
+     if (firstAddress) {
+       data.firstAddress = firstAddress;
+     }
++    
++    console.log('🔍 PROFILING: [WALLET_API] Creating axios instance...');
++    const axiosStartTime = Date.now();
+     const axios = await (0, _walletServiceAxios.axiosInstance)(wallet, false);
++    console.log(`🔍 PROFILING: [WALLET_API] Axios instance created in ${Date.now() - axiosStartTime}ms`);
++    
++    console.log('🔍 PROFILING: [WALLET_API] Making POST request to wallet/init...');
++    const requestStartTime = Date.now();
+     const response = await axios.post('wallet/init', data);
++    console.log(`🔍 PROFILING: [WALLET_API] POST request completed in ${Date.now() - requestStartTime}ms with status: ${response.status}`);
++    
+     if (response.status === 200 && response.data.success) {
++      console.log(`🔍 PROFILING: [WALLET_API] createWallet succeeded in ${Date.now() - startTime}ms`);
+       return response.data;
+     }
+     if (response.status === 400 && response.data.error === 'wallet-already-loaded') {
+       // If it was already loaded, we have to check if it's ready
++      console.log(`🔍 PROFILING: [WALLET_API] Wallet already loaded, completed in ${Date.now() - startTime}ms`);
+       return response.data;
+     }
++    console.log(`🔍 PROFILING: [WALLET_API] createWallet failed in ${Date.now() - startTime}ms`);
+     throw new _errors.WalletRequestError('Error creating wallet.');
+   },
+   async getAddresses(wallet, index) {
+@@ -176,17 +191,32 @@ const walletApi = {
+     throw new _errors.WalletRequestError('Error deleting tx proposal.');
+   },
+   async createAuthToken(wallet, timestamp, xpub, sign) {
++    console.log('🔍 PROFILING: [AUTH_API] Starting createAuthToken API call...');
++    const startTime = Date.now();
++    
+     const data = {
+       ts: timestamp,
+       xpub,
+       sign,
+       walletId: wallet.walletId
+     };
++    
++    console.log('🔍 PROFILING: [AUTH_API] Creating axios instance...');
++    const axiosStart = Date.now();
+     const axios = await (0, _walletServiceAxios.axiosInstance)(wallet, false);
++    console.log(`🔍 PROFILING: [AUTH_API] Axios instance created in ${Date.now() - axiosStart}ms`);
++    
++    console.log('🔍 PROFILING: [AUTH_API] Making POST request to auth/token...');
++    const requestStart = Date.now();
+     const response = await axios.post('auth/token', data);
++    console.log(`🔍 PROFILING: [AUTH_API] POST request completed in ${Date.now() - requestStart}ms with status: ${response.status}`);
++    
+     if (response.status === 200 && response.data.success === true) {
++      console.log(`🔍 PROFILING: [AUTH_API] createAuthToken completed successfully in ${Date.now() - startTime}ms`);
+       return response.data;
+     }
++    
++    console.log(`🔍 PROFILING: [AUTH_API] createAuthToken failed in ${Date.now() - startTime}ms`);
+     throw new _errors.WalletRequestError('Error requesting auth token.');
+   },
+   async getTxById(wallet, txId) {
+diff --git a/node_modules/@hathor/wallet-lib/lib/wallet/api/walletServiceAxios.js b/node_modules/@hathor/wallet-lib/lib/wallet/api/walletServiceAxios.js
+index 266c2bf..7e1955a 100644
+--- a/node_modules/@hathor/wallet-lib/lib/wallet/api/walletServiceAxios.js
++++ b/node_modules/@hathor/wallet-lib/lib/wallet/api/walletServiceAxios.js
+@@ -27,6 +27,9 @@ function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e
+  * @param {number} timeout Timeout in milliseconds for the request
+  */
+ const axiosInstance = async (wallet, needsAuth, timeout = _constants.TIMEOUT) => {
++  console.log(`🔍 PROFILING: [AXIOS] Creating axios instance, needsAuth: ${needsAuth}`);
++  const startTime = Date.now();
++  
+   // TODO How to allow 'Retry' request?
+   const defaultOptions = {
+     baseURL: _config.default.getWalletServiceBaseUrl(),
+@@ -43,10 +46,16 @@ const axiosInstance = async (wallet, needsAuth, timeout = _constants.TIMEOUT) =>
+   };
+   if (needsAuth) {
+     // Then we need the auth token
++    console.log('🔍 PROFILING: [AXIOS] Validating and renewing auth token...');
++    const authStartTime = Date.now();
+     await wallet.validateAndRenewAuthToken();
++    console.log(`🔍 PROFILING: [AXIOS] Auth token validated in ${Date.now() - authStartTime}ms`);
+     defaultOptions.headers.Authorization = `Bearer ${wallet.getAuthToken()}`;
+   }
+-  return _axios.default.create(defaultOptions);
++  
++  const instance = _axios.default.create(defaultOptions);
++  console.log(`🔍 PROFILING: [AXIOS] Axios instance created in ${Date.now() - startTime}ms`);
++  return instance;
+ };
+ exports.axiosInstance = axiosInstance;
+ var _default = exports.default = axiosInstance;
+\ No newline at end of file
+diff --git a/node_modules/@hathor/wallet-lib/lib/wallet/wallet.js b/node_modules/@hathor/wallet-lib/lib/wallet/wallet.js
+index 3f627a0..8d4d90f 100644
+--- a/node_modules/@hathor/wallet-lib/lib/wallet/wallet.js
++++ b/node_modules/@hathor/wallet-lib/lib/wallet/wallet.js
+@@ -270,10 +270,16 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+     pinCode,
+     password
+   } = {}) {
++    const startTime = Date.now();
++    console.log('🔍 PROFILING: [WALLET_LIB_START] Starting wallet...');
++
+     if (!pinCode) {
+       throw new Error('Pin code is required when starting the wallet.');
+     }
+     this.setState(walletState.LOADING);
++    
++    const accessDataCheckTime = Date.now();
++    console.log('🔍 PROFILING: [WALLET_LIB_START] Checking access data...');
+     let hasAccessData;
+     try {
+       const accessData = await this.storage.getAccessData();
+@@ -285,7 +291,11 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+         throw err;
+       }
+     }
++    console.log(`🔍 PROFILING: [WALLET_LIB_START] Access data check completed in ${Date.now() - accessDataCheckTime}ms, hasAccessData: ${hasAccessData}`);
++
+     if (!hasAccessData) {
++      const createAccessDataTime = Date.now();
++      console.log('🔍 PROFILING: [WALLET_LIB_START] Creating access data...');
+       let accessData;
+       if (this.seed) {
+         if (!password) {
+@@ -311,7 +321,11 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+         throw new Error('WalletService facade initialized without seed or xprivkey');
+       }
+       await this.storage.saveAccessData(accessData);
++      console.log(`🔍 PROFILING: [WALLET_LIB_START] Created and saved access data in ${Date.now() - createAccessDataTime}ms`);
+     }
++
++    const authDataTime = Date.now();
++    console.log('🔍 PROFILING: [WALLET_LIB_START] Generating auth data...');
+     const {
+       xpub,
+       authXpub,
+@@ -321,6 +335,8 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+       firstAddress,
+       authDerivedPrivKey
+     } = await this.generateCreateWalletAuthData(pinCode);
++    console.log(`🔍 PROFILING: [WALLET_LIB_START] Generated auth data in ${Date.now() - authDataTime}ms`);
++
+     this.xpub = xpub;
+     this.authPrivKey = authDerivedPrivKey;
+     const handleCreate = async data => {
+@@ -328,7 +344,10 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+       if (data.status === 'creating') {
+         // If the wallet status is creating, we should wait until it is ready
+         // before continuing
++        console.log('🔍 PROFILING: [WALLET_LIB_START] Wallet is being created, polling for wallet status...');
++        const pollStartTime = Date.now();
+         await this.pollForWalletStatus();
++        console.log(`🔍 PROFILING: [WALLET_LIB_START] Polling completed in ${Date.now() - pollStartTime}ms`);
+       } else if (data.status !== 'ready') {
+         // At this stage, if the wallet is not `ready` or `creating` we should
+         // throw an error as there are only three states: `ready`, `creating` or `error`
+@@ -336,11 +355,25 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+           cause: data.status
+         });
+       }
++      
++      const walletReadyTime = Date.now();
++      console.log('🔍 PROFILING: [WALLET_LIB_START] Wallet is ready, calling onWalletReady...');
+       await this.onWalletReady();
++      console.log(`🔍 PROFILING: [WALLET_LIB_START] onWalletReady completed in ${Date.now() - walletReadyTime}ms`);
+     };
++    
++    const apiCallStartTime = Date.now();
++    console.log('🔍 PROFILING: [WALLET_LIB_START] Calling wallet API to create/initialize wallet...');
+     const data = await _walletApi.default.createWallet(this, xpub, xpubkeySignature, authXpub, authXpubkeySignature, timestampNow, firstAddress);
++    console.log(`🔍 PROFILING: [WALLET_LIB_START] Wallet API call completed in ${Date.now() - apiCallStartTime}ms with status: ${data.status?.status || data.status}`);
++    
++    const handleCreateTime = Date.now();
++    console.log('🔍 PROFILING: [WALLET_LIB_START] Handling wallet create response...');
+     await handleCreate(data.status);
++    console.log(`🔍 PROFILING: [WALLET_LIB_START] Handle create completed in ${Date.now() - handleCreateTime}ms`);
++    
+     this.clearSensitiveData();
++    console.log(`🔍 PROFILING: [WALLET_LIB_START] Wallet start completed in ${Date.now() - startTime}ms`);
+   }
+ 
+   /**
+@@ -360,6 +393,9 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+    * @inner
+    */
+   async generateCreateWalletAuthData(pinCode) {
++    console.log('🔍 PROFILING: [WALLET_AUTH] Starting generateCreateWalletAuthData...');
++    const startTime = Date.now();
++    
+     let xpub;
+     let authXpub;
+     let privKeyAccountPath;
+@@ -368,6 +404,9 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+     const timestampNow = Math.floor(now / 1000); // in seconds
+ 
+     if (this.seed) {
++      console.log('🔍 PROFILING: [WALLET_AUTH] Generating keys from seed...');
++      const keyGenStartTime = Date.now();
++      
+       // getXPrivKeyFromSeed returns a HDPrivateKey on the root path
+       const privKey = _wallet.default.getXPrivKeyFromSeed(this.seed, {
+         passphrase: this.passphrase,
+@@ -384,7 +423,12 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+       });
+       privKeyAccountPath = _wallet.default.deriveXpriv(privKey, "0'");
+       authDerivedPrivKey = HathorWalletServiceWallet.deriveAuthPrivateKey(privKey);
++      
++      console.log(`🔍 PROFILING: [WALLET_AUTH] Generated keys from seed in ${Date.now() - keyGenStartTime}ms`);
+     } else if (this.xpriv) {
++      console.log('🔍 PROFILING: [WALLET_AUTH] Generating keys from xpriv...');
++      const keyGenStartTime = Date.now();
++      
+       // this.xpriv is already on the account derivation path
+       privKeyAccountPath = _bitcoreLib.default.HDPrivateKey(this.xpriv);
+       xpub = privKeyAccountPath.xpubkey;
+@@ -392,9 +436,16 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+       // If the wallet is being loaded from the xpriv, we assume we already have the authXPriv on storage, so just fetch it
+       authDerivedPrivKey = _bitcoreLib.default.HDPrivateKey.fromString(await this.storage.getAuthPrivKey(pinCode));
+       authXpub = authDerivedPrivKey.xpubkey;
++      
++      console.log(`🔍 PROFILING: [WALLET_AUTH] Generated keys from xpriv in ${Date.now() - keyGenStartTime}ms`);
+     } else {
++      console.log('🔍 PROFILING: [WALLET_AUTH] Error: No seed or xpriv');
+       throw new Error('generateCreateWalletAuthData called without seed or xpriv in memory.');
+     }
++    
++    console.log('🔍 PROFILING: [WALLET_AUTH] Computing signatures...');
++    const signStartTime = Date.now();
++    
+     const walletId = HathorWalletServiceWallet.getWalletIdFromXPub(xpub);
+ 
+     // prove we own the xpubkey
+@@ -406,6 +457,10 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+     const {
+       base58: firstAddress
+     } = (0, _address.deriveAddressFromXPubP2PKH)(xpubChangeDerivation, 0, this.network.name);
++    
++    console.log(`🔍 PROFILING: [WALLET_AUTH] Computed signatures in ${Date.now() - signStartTime}ms`);
++    console.log(`🔍 PROFILING: [WALLET_AUTH] generateCreateWalletAuthData completed in ${Date.now() - startTime}ms`);
++    
+     return {
+       xpub,
+       xpubkeySignature,
+@@ -534,18 +589,34 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+    */
+   async pollForWalletStatus() {
+     return new Promise((resolve, reject) => {
++      let pollCount = 0;
++      const startTime = Date.now();
++      console.log('🔍 PROFILING: [WALLET_LIB_POLL] Starting to poll for wallet status...');
++      
+       const pollIntervalTimer = setInterval(async () => {
+-        const data = await _walletApi.default.getWalletStatus(this);
+-        if (data.status.status === 'ready') {
+-          clearInterval(pollIntervalTimer);
+-          resolve();
+-        } else if (data.status.status !== 'creating') {
+-          // Only possible states are 'ready', 'creating' and 'error', if status
+-          // is not ready or creating, we should reject the promise
+-          clearInterval(pollIntervalTimer);
+-          reject(new _errors.WalletRequestError('Error getting wallet status.', {
+-            cause: data.status
+-          }));
++        pollCount++;
++        const iterationStartTime = Date.now();
++        console.log(`🔍 PROFILING: [WALLET_LIB_POLL] Poll attempt #${pollCount}...`);
++        
++        try {
++          const data = await _walletApi.default.getWalletStatus(this);
++          console.log(`🔍 PROFILING: [WALLET_LIB_POLL] Poll attempt #${pollCount} completed in ${Date.now() - iterationStartTime}ms, status: ${data.status.status}`);
++          
++          if (data.status.status === 'ready') {
++            clearInterval(pollIntervalTimer);
++            console.log(`🔍 PROFILING: [WALLET_LIB_POLL] Polling complete after ${pollCount} attempts in ${Date.now() - startTime}ms`);
++            resolve();
++          } else if (data.status.status !== 'creating') {
++            // Only possible states are 'ready', 'creating' and 'error', if status
++            // is not ready or creating, we should reject the promise
++            clearInterval(pollIntervalTimer);
++            console.log(`🔍 PROFILING: [WALLET_LIB_POLL] Polling failed after ${pollCount} attempts in ${Date.now() - startTime}ms, status: ${data.status.status}`);
++            reject(new _errors.WalletRequestError('Error getting wallet status.', {
++              cause: data.status
++            }));
++          }
++        } catch (error) {
++          console.log(`🔍 PROFILING: [WALLET_LIB_POLL] Poll attempt #${pollCount} failed with error: ${error.message}`);
+         }
+       }, WALLET_STATUS_POLLING_INTERVAL);
+     });
+@@ -750,9 +821,15 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+    * @inner
+    */
+   signMessage(hdPrivKey, timestamp, walletId) {
++    const startTime = Date.now();
++    console.log('🔍 PROFILING: [WALLET_SIGN] Starting signMessage...');
++    
+     const address = hdPrivKey.publicKey.toAddress(this.network.getNetwork()).toString();
+     const message = String(timestamp).concat(walletId).concat(address);
+-    return (0, _crypto.signMessage)(message, hdPrivKey.privateKey);
++    const signature = (0, _crypto.signMessage)(message, hdPrivKey.privateKey);
++    
++    console.log(`🔍 PROFILING: [WALLET_SIGN] signMessage completed in ${Date.now() - startTime}ms`);
++    return signature;
+   }
+ 
+   /**
+@@ -766,40 +843,77 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+    * @inner
+    */
+   async validateAndRenewAuthToken(usePassword) {
++    console.log('🔍 PROFILING: [AUTH_TOKEN] Starting validateAndRenewAuthToken...');
++    const startTime = Date.now();
++    
+     if (!this.walletId) {
+       throw new Error('Wallet not ready yet.');
+     }
++    
++    console.log('🔍 PROFILING: [AUTH_TOKEN] Creating timestamp...');
++    const timestampStart = Date.now();
+     const now = new Date();
+     const timestampNow = Math.floor(now.getTime() / 1000);
++    console.log(`🔍 PROFILING: [AUTH_TOKEN] Created timestamp in ${Date.now() - timestampStart}ms`);
++    
++    console.log('🔍 PROFILING: [AUTH_TOKEN] Defining validateJWTExpireDate function...');
+     const validateJWTExpireDate = token => {
++      const jwtStart = Date.now();
+       const base64Url = token.split('.')[1];
+       const base64 = base64Url.replace('-', '+').replace('_', '/');
+       const decodedData = JSON.parse(Buffer.from(base64, 'base64').toString('binary'));
+ 
+       // If the token will expire in the next 60 seconds (or has already expired)
+       const delta = 60;
+-      if (timestampNow + delta > decodedData.exp) {
+-        return false;
+-      }
+-      return true;
++      const result = !(timestampNow + delta > decodedData.exp);
++      console.log(`🔍 PROFILING: [AUTH_TOKEN] JWT validation took ${Date.now() - jwtStart}ms, result: ${result}`);
++      return result;
+     };
+-    if (!this.authToken || !validateJWTExpireDate(this.authToken)) {
++    
++    console.log('🔍 PROFILING: [AUTH_TOKEN] Checking if token needs renewal...');
++    const checkStart = Date.now();
++    const needsRenewal = !this.authToken || !validateJWTExpireDate(this.authToken);
++    console.log(`🔍 PROFILING: [AUTH_TOKEN] Token check completed in ${Date.now() - checkStart}ms, needsRenewal: ${needsRenewal}`);
++    
++    if (needsRenewal) {
++      console.log('🔍 PROFILING: [AUTH_TOKEN] Token needs renewal, getting private key...');
++      const privKeyStart = Date.now();
+       let privKey = this.authPrivKey;
+       if (!privKey) {
++        console.log('🔍 PROFILING: [AUTH_TOKEN] No cached privKey, requesting password...');
++        const passwordStart = Date.now();
+         // Request the client for the PIN
+         const password = usePassword || (await this.requestPassword());
++        console.log(`🔍 PROFILING: [AUTH_TOKEN] Password request completed in ${Date.now() - passwordStart}ms`);
+ 
++        console.log('🔍 PROFILING: [AUTH_TOKEN] Getting authPrivKey from storage...');
++        const storageStart = Date.now();
+         // Use it to get the words from the storage
+         privKey = _bitcoreLib.default.HDPrivateKey.fromString(await this.storage.getAuthPrivKey(password));
++        console.log(`🔍 PROFILING: [AUTH_TOKEN] Got authPrivKey from storage in ${Date.now() - storageStart}ms`);
++      } else {
++        console.log('🔍 PROFILING: [AUTH_TOKEN] Using cached privKey');
+       }
++      console.log(`🔍 PROFILING: [AUTH_TOKEN] Private key preparation took ${Date.now() - privKeyStart}ms`);
++      
++      console.log('🔍 PROFILING: [AUTH_TOKEN] Calling renewAuthToken...');
++      const renewStart = Date.now();
+       await this.renewAuthToken(privKey, timestampNow);
++      console.log(`🔍 PROFILING: [AUTH_TOKEN] renewAuthToken completed in ${Date.now() - renewStart}ms`);
+     } else if (usePassword) {
++      console.log('🔍 PROFILING: [AUTH_TOKEN] Token valid but usePassword is true, renewing token anyway');
+       // If we have received the user PIN, we should renew the token anyway
+       // without blocking this method's promise
+-
++      const privKeyStart = Date.now();
+       const privKey = _bitcoreLib.default.HDPrivateKey.fromString(await this.storage.getAuthPrivKey(usePassword));
++      console.log(`🔍 PROFILING: [AUTH_TOKEN] Private key from storage took ${Date.now() - privKeyStart}ms`);
++      
+       this.renewAuthToken(privKey, timestampNow);
++    } else {
++      console.log('🔍 PROFILING: [AUTH_TOKEN] Token is valid, no renewal needed');
+     }
++    
++    console.log(`🔍 PROFILING: [AUTH_TOKEN] validateAndRenewAuthToken completed in ${Date.now() - startTime}ms`);
+   }
+ 
+   /**
+@@ -812,12 +926,25 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+    * @inner
+    */
+   async renewAuthToken(privKey, timestamp) {
++    console.log('🔍 PROFILING: [AUTH_RENEW] Starting renewAuthToken...');
++    const startTime = Date.now();
++    
+     if (!this.walletId) {
+       throw new Error('Wallet not ready yet.');
+     }
++    
++    console.log('🔍 PROFILING: [AUTH_RENEW] Signing message...');
++    const signStart = Date.now();
+     const sign = this.signMessage(privKey, timestamp, this.walletId);
++    console.log(`🔍 PROFILING: [AUTH_RENEW] Message signed in ${Date.now() - signStart}ms`);
++    
++    console.log('🔍 PROFILING: [AUTH_RENEW] Making API call to create auth token...');
++    const apiStart = Date.now();
+     const data = await _walletApi.default.createAuthToken(this, timestamp, privKey.xpubkey, sign);
++    console.log(`🔍 PROFILING: [AUTH_RENEW] API call completed in ${Date.now() - apiStart}ms`);
++    
+     this.authToken = data.token;
++    console.log(`🔍 PROFILING: [AUTH_RENEW] renewAuthToken completed in ${Date.now() - startTime}ms`);
+   }
+ 
+   /**

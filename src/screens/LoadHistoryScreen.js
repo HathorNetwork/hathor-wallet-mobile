@@ -20,7 +20,14 @@ import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';
 import { COLORS } from '../styles/themes';
+import { logger } from '../logger';
+import Performance from '../utils/performance';
 
+const log = logger('loadhistory');
+
+/**
+ * Screen shown while loading wallet history
+ */
 export default function LoadHistoryScreen() {
   const dispatch = useDispatch();
   /**
@@ -31,9 +38,29 @@ export default function LoadHistoryScreen() {
    */
   const loadHistoryStatus = useSelector((state) => state.loadHistoryStatus);
   const loadedData = useSelector((state) => state.loadedData);
+  const wallet = useSelector((state) => state.wallet);
+  const initWallet = useSelector((state) => state.initWallet);
 
   useEffect(() => {
     dispatch(resetLoadedData());
+
+    if (initWallet && initWallet.words && initWallet.pin) {
+      // We're now starting this measurement in the wallet saga for reliability
+      // Performance.start('WALLET_TOTAL_STARTUP_TO_DASHBOARD');
+      log.log('🔍 PROFILING: Starting wallet load from LoadHistoryScreen');
+
+      if (!wallet) {
+        // We've already set the initWallet redux store with the words
+        // we need to start the wallet
+        dispatch({
+          type: 'START_WALLET_REQUESTED',
+          payload: {
+            words: initWallet.words,
+            pin: initWallet.pin,
+          },
+        });
+      }
+    }
   }, []);
 
   const renderError = () => (

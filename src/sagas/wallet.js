@@ -90,6 +90,7 @@ import {
   setKeychainPin,
 } from '../utils';
 import { logger } from '../logger';
+import Performance from '../utils/performance';
 
 const log = logger('wallet');
 
@@ -157,15 +158,23 @@ export function* startWallet(action) {
     pin,
   } = action.payload;
 
+  Performance.start('WALLET_TOTAL_STARTUP');
+  // Also start the measurement for tracking time to Dashboard display
+  Performance.start('WALLET_TOTAL_STARTUP_TO_DASHBOARD');
+  log.log('🔍 PROFILING: Starting wallet initialization');
+
   // clean memory storage and metadata before starting the wallet.
   // This should be cleaned when stopping the wallet,
   // but the wallet may be closed unexpectedly
+  Performance.start('WALLET_CLEANUP');
   const storage = STORE.getStorage();
   yield call([storage.store, storage.store.cleanMetadata]); // clean metadata on memory
   yield call([storage, storage.cleanStorage], true); // clean transaction history
+  Performance.end('WALLET_CLEANUP');
 
   // As this is a core setting for the wallet, it should be loaded first.
   // Network settings either from store or redux state
+  Performance.start('WALLET_NETWORK_SETTINGS');
   let networkSettings;
   // Custom network settings are persisted in the app storage
   const customNetwork = STORE.getItem(networkSettingsKeyMap.networkSettings);
@@ -185,13 +194,16 @@ export function* startWallet(action) {
   } else {
     networkSettings = yield select(getNetworkSettings);
   }
+  Performance.end('WALLET_NETWORK_SETTINGS');
 
+  Performance.start('WALLET_FEATURE_FLAGS');
   const uniqueDeviceId = getUniqueId();
   const useWalletService = yield call(isWalletServiceEnabled);
   const usePushNotification = yield call(isPushNotificationEnabled);
 
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
+  Performance.end('WALLET_FEATURE_FLAGS');
 
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
@@ -199,8 +211,11 @@ export function* startWallet(action) {
     dispatch = _dispatch;
   });
 
+  Performance.start('WALLET_INITIALIZATION');
   let wallet;
   if (useWalletService && !isEmpty(networkSettings.walletServiceUrl)) {
+    Performance.start('WALLET_SERVICE_INIT');
+    log.log('🔍 PROFILING: Using wallet service facade');
     const network = new Network(networkSettings.network);
 
     // Set urls for wallet service
@@ -213,7 +228,10 @@ export function* startWallet(action) {
       network,
       storage,
     });
+    Performance.end('WALLET_SERVICE_INIT');
   } else {
+    Performance.start('WALLET_FULLNODE_INIT');
+    log.log('🔍 PROFILING: Using full node facade');
     const connection = new Connection({
       network: networkSettings.network,
       servers: [networkSettings.nodeUrl],
@@ -231,7 +249,9 @@ export function* startWallet(action) {
       },
     };
     wallet = new HathorWallet(walletConfig);
+    Performance.end('WALLET_FULLNODE_INIT');
   }
+  Performance.end('WALLET_INITIALIZATION');
 
   // Extra wallet configuration based on customNetwork
   config.setExplorerServiceBaseUrl(networkSettings.explorerServiceUrl);
@@ -240,11 +260,15 @@ export function* startWallet(action) {
   yield put(setWallet(wallet));
 
   // Setup listeners before starting the wallet so we don't lose messages
+  Performance.start('WALLET_SETUP_LISTENERS');
   yield fork(setupWalletListeners, wallet);
+  Performance.end('WALLET_SETUP_LISTENERS');
 
   // Create a channel to listen for the ready state and
   // wait until the wallet is ready
+  Performance.start('WALLET_READY_LISTENER');
   yield fork(listenForWalletReady, wallet);
+  Performance.end('WALLET_READY_LISTENER');
 
   // Thread to listen for feature flags from Unleash
   yield fork(featureToggleUpdateListener);
@@ -255,10 +279,14 @@ export function* startWallet(action) {
   try {
     // XXX: This comes as undefined when the facade is the wallet-service.
     // We need to update this when we start returning something there.
+    Performance.start('WALLET_START');
+    log.log('🔍 PROFILING: Starting wallet...');
     const serverInfo = yield call(wallet.start.bind(wallet), {
       pinCode: pin,
       password: pin,
     });
+    Performance.end('WALLET_START');
+    log.log('🔍 PROFILING: Wallet start completed');
 
     yield put(setServerInfo(serverInfo));
 
@@ -266,7 +294,9 @@ export function* startWallet(action) {
     if (useWalletService) {
       // In the wallet-service facade, serverInfo is null, so we need to get
       // version data
+      Performance.start('WALLET_GET_VERSION_DATA');
       const versionData = yield call([wallet, wallet.getVersionData]);
+      Performance.end('WALLET_GET_VERSION_DATA');
       network = versionData.network;
     }
 
@@ -294,13 +324,18 @@ export function* startWallet(action) {
     }
 
     yield put(startWalletFailed());
+    Performance.end('WALLET_TOTAL_STARTUP');
+    // Also end the dashboard timing on error
+    Performance.end('WALLET_TOTAL_STARTUP_TO_DASHBOARD');
     return;
   }
 
   setKeychainPin(pin);
 
   // Wallet might be already ready at this point
+  Performance.start('WALLET_WAIT_READY');
   if (!wallet.isReady()) {
+    log.log('🔍 PROFILING: Waiting for wallet to be ready...');
     const { error } = yield race({
       success: take(types.WALLET_STATE_READY),
       error: take(types.WALLET_STATE_ERROR),
@@ -308,22 +343,40 @@ export function* startWallet(action) {
 
     if (error) {
       yield put(startWalletFailed());
+      Performance.end('WALLET_WAIT_READY');
+      Performance.end('WALLET_TOTAL_STARTUP');
+      // Also end the dashboard timing on error
+      Performance.end('WALLET_TOTAL_STARTUP_TO_DASHBOARD');
       return;
     }
+  } else {
+    log.log('🔍 PROFILING: Wallet already ready!');
   }
+  Performance.end('WALLET_WAIT_READY');
 
   try {
+    Performance.start('WALLET_LOAD_TOKENS');
+    log.log('🔍 PROFILING: Loading tokens...');
     yield call(loadTokens);
+    Performance.end('WALLET_LOAD_TOKENS');
+    log.log('🔍 PROFILING: Tokens loaded');
   } catch (e) {
     log.error('Tokens load failed: ', e);
     yield put(onExceptionCaptured(e, false));
     yield put(startWalletFailed());
+    Performance.end('WALLET_TOTAL_STARTUP');
+    // Also end the dashboard timing on token loading failure
+    Performance.end('WALLET_TOTAL_STARTUP_TO_DASHBOARD');
     return;
   }
 
+  Performance.start('WALLET_FINAL_ACTIONS');
   yield put(walletRefreshSharedAddress());
   yield put(firstAddressRequest());
   yield put(startWalletSuccess());
+  Performance.end('WALLET_FINAL_ACTIONS');
+  Performance.end('WALLET_TOTAL_STARTUP');
+  log.log('🔍 PROFILING: Wallet started successfully');
 
   // The way the redux-saga fork model works is that if a saga has `forked`
   // another saga (using the `fork` effect), it will remain active until all
@@ -359,18 +412,24 @@ export function* loadTokens() {
 
   // fetchTokenData will throw an error if the download failed, we should just
   // let it crash as throwing an error is the default behavior for loadTokens
+  Performance.start('WALLET_FETCH_HTR_TOKEN');
   yield call(fetchTokenData, htrUid, true);
+  Performance.end('WALLET_FETCH_HTR_TOKEN');
 
   if (customTokenUid !== htrUid) {
     // custom tokens doesn't need to be forced to download because its history status
     // will be marked as invalidated, and history will get requested the next time a user
     // enters the history screen.
+    Performance.start('WALLET_FETCH_DEFAULT_TOKEN');
     yield call(fetchTokenData, customTokenUid);
+    Performance.end('WALLET_FETCH_DEFAULT_TOKEN');
   }
 
   const wallet = yield select((state) => state.wallet);
 
+  Performance.start('WALLET_GET_REGISTERED_TOKENS');
   const tokens = yield getRegisteredTokens(wallet);
+  Performance.end('WALLET_GET_REGISTERED_TOKENS');
 
   yield put(setTokens(tokens));
 
@@ -399,8 +458,10 @@ export function* loadTokens() {
  * So we fetch the tokens metadata and store on redux
  */
 export function* fetchTokensMetadata(tokens) {
+  Performance.start('WALLET_FETCH_TOKENS_METADATA');
   if (!tokens.length) {
     yield put(tokenMetadataUpdated({}));
+    Performance.end('WALLET_FETCH_TOKENS_METADATA');
     return;
   }
 
@@ -435,6 +496,7 @@ export function* fetchTokensMetadata(tokens) {
   }
 
   yield put(tokenMetadataUpdated(tokenMetadatas));
+  Performance.end('WALLET_FETCH_TOKENS_METADATA');
 }
 
 export function* onWalletServiceDisabled() {
@@ -494,7 +556,9 @@ export function* listenForWalletReady(wallet) {
         yield cancel();
       } else {
         if (wallet.isReady()) {
+          Performance.start('WALLET_STATE_READY_TO_REDUX');
           yield put(walletStateReady());
+          Performance.end('WALLET_STATE_READY_TO_REDUX');
           yield cancel();
         }
 

@@ -34,6 +34,7 @@ import Spinner from '../components/Spinner';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { logger } from '../logger';
+import Performance from '../utils/performance';
 
 const log = logger('PIN_SCREEN');
 
@@ -149,15 +150,23 @@ class PinScreen extends React.Component {
       // in case it's the lock screen, we just have to execute the data migration
       // method an change redux state. No need to execute callback or go back on navigation
       try {
+        Performance.start('PIN_DATA_MIGRATION');
         await STORE.handleDataMigration(pin);
         const actualPin = await biometricsMigration(pin);
+        Performance.end('PIN_DATA_MIGRATION');
+
         if (!this.props.wallet) {
           // We have already made sure we have an available accessData
           // The handleDataMigration method ensures we have already migrated if necessary
           // This means the wallet is loaded and the access data is ready to be used.
-
+          Performance.start('PIN_GET_WALLET_WORDS');
           const words = await STORE.getWalletWords(actualPin);
+          Performance.end('PIN_GET_WALLET_WORDS');
+
+          Performance.start('PIN_START_WALLET_REQUEST');
+          log.log('🔍 PROFILING: Dispatching startWalletRequested action');
           this.props.startWalletRequested({ words, pin: actualPin });
+          Performance.end('PIN_START_WALLET_REQUEST');
         }
         this.props.unlockScreen();
       } catch (e) {
@@ -192,13 +201,18 @@ class PinScreen extends React.Component {
 
   validatePin = async (pin) => {
     try {
+      Performance.start('PIN_VALIDATION_TO_WALLET_START');
+      log.log('🔍 PROFILING: Starting PIN validation');
+
       // Validate if we are able to decrypt the seed using this PIN
       // this will throw if the words are not able to be decoded with this
       // pin.
 
       // This will return either the old or the new access data.
       // We can ignore which one it is since we will only use the words which is present on both.
+      Performance.start('PIN_GET_ACCESS_DATA');
       const { accessData } = await STORE.getAvailableAccessData();
+      Performance.end('PIN_GET_ACCESS_DATA');
 
       if (!accessData) {
         // The wallet does not have an access data, we can't unlock it
@@ -213,6 +227,7 @@ class PinScreen extends React.Component {
         return;
       }
 
+      Performance.start('PIN_CHECK_PASSWORD');
       let wordsEncryptedData = accessData.words;
       if (!accessData.words.data) {
         // This is from a previous version
@@ -226,15 +241,21 @@ class PinScreen extends React.Component {
         };
       }
       const pinCorrect = cryptoUtils.checkPassword(wordsEncryptedData, pin);
+      Performance.end('PIN_CHECK_PASSWORD');
 
       if (!pinCorrect) {
         this.removeOneChar();
         return;
       }
 
+      Performance.start('PIN_DECRYPT_WORDS');
       const words = cryptoUtils.decryptData(wordsEncryptedData, pin);
       // Will throw InvalidWords if the seed is invalid
       walletUtils.wordsValid(words);
+      Performance.end('PIN_DECRYPT_WORDS');
+
+      Performance.end('PIN_VALIDATION_TO_WALLET_START');
+      log.log('🔍 PROFILING: PIN validated successfully, starting wallet');
     } catch (e) {
       this.props.onExceptionCaptured(
         new Error(
