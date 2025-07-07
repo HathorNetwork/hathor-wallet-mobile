@@ -7,7 +7,6 @@
 
 import {
   ncApi,
-  addressUtils,
   nanoUtils,
 } from '@hathor/wallet-lib';
 import {
