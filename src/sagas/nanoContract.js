@@ -271,7 +271,7 @@ export async function fetchHistory(req) {
   const transformedTxHistory = rawHistory.map(async (rawTx) => {
     const caller = rawTx.nc_address;
     const actions = rawTx.nc_context.actions.map((each) => ({
-      type: each.type, // 'deposit' or 'withdrawal'
+      type: each.type,
       uid: each.token_uid,
       amount: each.amount,
     }));
