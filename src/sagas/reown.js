@@ -734,17 +734,6 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         break;
       case TriggerTypes.SendTransactionLoadingFinishedTrigger:
         dispatch(setSendTxStatusReady());
-        // Use the data from the request instead of getting current state
-        dispatch(setReownModal({
-          show: true,
-          type: ReownModalTypes.SEND_TRANSACTION,
-          data: {
-            ...(request.data || {}), // Use data from the request
-            isLoading: false,
-            isSuccess: true,
-            isError: false
-          }
-        }));
         resolve();
         break;
       case TriggerTypes.SendNanoContractTxLoadingTrigger:
