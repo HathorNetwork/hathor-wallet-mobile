@@ -123,6 +123,7 @@ export const SelectAddressModal = ({
                   <Text style={styles.infoText}>{t`To change, select other address on the list below.`}</Text>
                   <Text>
                     <TextValue bold>{t`Address`}</TextValue>
+                    {/* the unicode character u00A0 means no-break space. */}
                     <TextValue>{`:${'\u00A0'}${address}`}</TextValue>
                   </Text>
                 </View>
