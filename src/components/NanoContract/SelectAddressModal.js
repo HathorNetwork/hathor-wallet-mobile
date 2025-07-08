@@ -34,11 +34,13 @@ import { selectAddressAddressesRequest } from '../../actions';
  * @param {string} props.address Current selected address
  * @param {boolean} props.show Whether the modal is visible
  * @param {() => void} props.onDismiss Function called to dismiss the modal
- * @param {(item: Object) => void} props.onEditAddress Function called when an address is selected for editing
+ * @param {(item: Object) => void} props.onEditAddress Function called when and
+ * is selected for editing
  * @param {string} props.modalStep Current step ('select' or 'edit')
  * @param {Object} props.selectedItem Currently selected address item
  * @param {() => void} props.onDismissEdit Function called to dismiss the edit view
- * @param {(address: string) => void} props.onAddressChange Function called when address change is confirmed
+ * @param {(address: string) => void} props.onAddressChange Function called when
+ * address change is confirmed
  *
  * @example
  * <SelectAddressModal

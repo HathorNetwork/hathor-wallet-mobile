@@ -40,10 +40,6 @@ export const EditAddressModal = ({ item, show, onAddressChange, onDismiss }) => 
   <ModalBase
     show={show}
     onDismiss={onDismiss}
-    styleModal={{
-      zIndex: 1000,
-      elevation: 1000
-    }}
   >
     <ModalBase.Title>{t`New Nano Contract Address`}</ModalBase.Title>
     <ModalBase.Body style={styles.body}>
