@@ -44,11 +44,14 @@ export const NanoContractDetailsHeader = ({ nc, address, onAddressChange }) => {
   const [isShrank, toggleShrank] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState(address);
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState({ address });
   const [showUnregisterNanoContractModal, setShowUnregisterNanoContractModal] = useState(false);
+  const [modalStep, setModalStep] = useState('select');
 
   const isExpanded = () => !isShrank;
 
   const onEditAddress = () => {
+    setModalStep('select');
     setShowSelectAddressModal(true);
   };
 
@@ -64,10 +67,27 @@ export const NanoContractDetailsHeader = ({ nc, address, onAddressChange }) => {
     setShowUnregisterNanoContractModal(!showUnregisterNanoContractModal);
   };
 
+  const handleEditAddress = (item) => {
+    setSelectedItem(item);
+    setModalStep('edit');
+  };
+
+  const onDismissEditAddressModal = () => {
+    // Reset to original address when dismissing edit modal
+    setSelectedItem({ address });
+    setModalStep('select');
+  };
+
   const handleSelectAddress = (pickedAddress) => {
     setSelectedAddress(pickedAddress);
     toggleSelectAddressModal();
     onAddressChange(pickedAddress);
+  };
+
+  const hookAddressChange = (newSelectedAddress) => {
+    setShowSelectAddressModal(false);
+    setModalStep('select');
+    handleSelectAddress(newSelectedAddress);
   };
 
   return (
@@ -81,12 +101,12 @@ export const NanoContractDetailsHeader = ({ nc, address, onAddressChange }) => {
               && <HeaderShrank />}
             {isExpanded()
               && (
-              <HeaderExpanded
-                nc={nc}
-                address={address}
-                onEditAddress={onEditAddress}
-                onUnregisterNanoContract={onUnregisterNanoContract}
-              />
+                <HeaderExpanded
+                  nc={nc}
+                  address={address}
+                  onEditAddress={onEditAddress}
+                  onUnregisterNanoContract={onUnregisterNanoContract}
+                />
               )}
           </View>
         </TouchableWithoutFeedback>
@@ -95,6 +115,11 @@ export const NanoContractDetailsHeader = ({ nc, address, onAddressChange }) => {
           show={showSelectAddressModal}
           onDismiss={toggleSelectAddressModal}
           onSelectAddress={handleSelectAddress}
+          onEditAddress={handleEditAddress}
+          modalStep={modalStep}
+          selectedItem={selectedItem}
+          onDismissEdit={onDismissEditAddressModal}
+          onAddressChange={hookAddressChange}
         />
         <UnregisterNanoContractModal
           ncId={nc.ncId}

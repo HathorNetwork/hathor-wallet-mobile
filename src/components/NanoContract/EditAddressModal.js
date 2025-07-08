@@ -37,7 +37,10 @@ import { TextValue } from '../TextValue';
  * />
  */
 export const EditAddressModal = ({ item, show, onAddressChange, onDismiss }) => (
-  <ModalBase show={show} onDismiss={onDismiss}>
+  <ModalBase
+    show={show}
+    onDismiss={onDismiss}
+  >
     <ModalBase.Title>{t`New Nano Contract Address`}</ModalBase.Title>
     <ModalBase.Body style={styles.body}>
       <View style={styles.infoContainer}>
