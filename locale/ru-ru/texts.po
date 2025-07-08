@@ -445,7 +445,7 @@ msgstr "Введите seed-фразу"
 #: src/components/NanoContract/NanoContractDetails.js:238
 #: src/components/Reown/CreateTokenRequest.js:227
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:560
-#: src/components/Reown/SendTransactionRequest.js:498
+#: src/components/Reown/SendTransactionRequest.js:497
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:20
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
 #: src/screens/PinScreen.js:283
@@ -638,7 +638,7 @@ msgid "The nano contract feature is not enabled."
 msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:45
-#: src/screens/RegisterOptionsScreen.js:57 src/screens/SendScanQRCode.js:39
+#: src/screens/RegisterOptionsScreen.js:57 src/screens/SendScanQRCode.js:40
 #: src/screens/UnifiedQRScanner.js:36
 msgid "OK"
 msgstr "OK"
@@ -661,7 +661,7 @@ msgstr ""
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
-#: src/screens/RegisterToken.js:27 src/screens/SendScanQRCode.js:87
+#: src/screens/RegisterToken.js:27 src/screens/SendScanQRCode.js:92
 msgid "Manual info"
 msgstr "Ручной ввод"
 
@@ -760,7 +760,7 @@ msgstr "Изменить PIN-код"
 msgid "Lock wallet"
 msgstr "Заблокировать кошелек"
 
-#: src/screens/SendAddressInput.js:53 src/screens/SendScanQRCode.js:95
+#: src/screens/SendAddressInput.js:53 src/screens/SendScanQRCode.js:100
 msgid "SEND"
 msgstr "ОТПРАВИТЬ"
 
@@ -772,7 +772,7 @@ msgstr "Адрес отправки"
 msgid "Insufficient funds"
 msgstr "Недостаточно средств"
 
-#: src/screens/SendAmountInput.js:122 src/screens/SendConfirmScreen.js:119
+#: src/screens/SendAmountInput.js:122
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
@@ -780,7 +780,7 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendAmountInput.js:136 src/screens/SendConfirmScreen.js:128
+#: src/screens/SendAmountInput.js:136 src/screens/SendConfirmScreen.js:129
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
@@ -797,35 +797,43 @@ msgstr "Введите 6-значный PIN-код для авторизации
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
-#: src/screens/SendConfirmScreen.js:137
+#: src/screens/SendConfirmScreen.js:120
+#, javascript-format
+msgid "${ availablePretty } available"
+msgid_plural "${ availablePretty } available"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: src/screens/SendConfirmScreen.js:138
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Ваш перевод **${ amountAndToken }** был подтвержден"
 
 #: src/components/NanoContract/EditAddressModal.js:60
 #: src/components/NanoContract/SelectAddressModal.js:117
-#: src/components/Reown/SendTransactionRequest.js:289
-#: src/components/Reown/SendTransactionRequest.js:328
+#: src/components/Reown/SendTransactionRequest.js:288
+#: src/components/Reown/SendTransactionRequest.js:327
 #: src/components/Reown/SignMessageRequest.js:40
 #: src/components/Reown/SignOracleDataRequest.js:50
-#: src/screens/SendConfirmScreen.js:156
+#: src/screens/SendConfirmScreen.js:157
 msgid "Address"
 msgstr "Адрес"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:291
-#: src/screens/SendConfirmScreen.js:163
+#: src/screens/SendConfirmScreen.js:164
 msgid "Send"
 msgstr "Отправить"
 
-#: src/screens/SendScanQRCode.js:36
+#: src/screens/SendScanQRCode.js:37
 msgid "Invalid QR code"
 msgstr "Неверный QR-код"
 
-#: src/screens/SendScanQRCode.js:71
+#: src/screens/SendScanQRCode.js:76
 #, javascript-format
 msgid "You don't have the requested token [${ tokenLabel }]"
 msgstr "У вас нет запрошенного токена [${ tokenLabel }]"
 
-#: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:103
+#: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:108
 #: src/screens/UnifiedQRScanner.js:96
 msgid "Scan the QR code"
 msgstr "Сканировать QR-код"
@@ -1139,43 +1147,43 @@ msgstr ""
 msgid "Contract successfully registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:45
+#: src/sagas/nanoContract.js:44
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:46
+#: src/sagas/nanoContract.js:45
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:47
+#: src/sagas/nanoContract.js:46
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:48
+#: src/sagas/nanoContract.js:47
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:49
+#: src/sagas/nanoContract.js:48
 msgid "Error while trying to register Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:50
+#: src/sagas/nanoContract.js:49
 msgid "Invalid transaction to register as Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:51
+#: src/sagas/nanoContract.js:50
 msgid "Blueprint not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:52
+#: src/sagas/nanoContract.js:51
 msgid "Couldn't get Blueprint info."
 msgstr ""
 
-#: src/sagas/nanoContract.js:53
+#: src/sagas/nanoContract.js:52
 msgid "Nano Contract not registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:54
+#: src/sagas/nanoContract.js:53
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr ""
 
@@ -1277,21 +1285,21 @@ msgstr ""
 msgid "Copied to clipboard!"
 msgstr "Скопировано в буфер обмена!"
 
-#: src/components/GlobalErrorModal.js:47
+#: src/components/GlobalErrorModal.js:46
 msgid ""
 "Thanks for reporting the error to the team. We will investigate it to "
 "prevent from happening again."
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:80
+#: src/components/GlobalErrorModal.js:79
 msgid "Unexpected error"
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:84
+#: src/components/GlobalErrorModal.js:83
 msgid "Please restart your app to continue using the wallet."
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:105
+#: src/components/GlobalErrorModal.js:104
 msgid ""
 "Unfortunately an unhandled error happened and you will need to restart your "
 "app.\n"
@@ -1302,7 +1310,7 @@ msgid ""
 "No sensitive data will be shared."
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:108
+#: src/components/GlobalErrorModal.js:107
 msgid ""
 "Unfortunately an unhandled error happened.\n"
 "\n"
@@ -1312,15 +1320,15 @@ msgid ""
 "No sensitive data will be shared."
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:119
+#: src/components/GlobalErrorModal.js:118
 msgid "Unexpected error occurred"
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:122
+#: src/components/GlobalErrorModal.js:121
 msgid "Report error"
 msgstr ""
 
-#: src/components/GlobalErrorModal.js:127
+#: src/components/GlobalErrorModal.js:126
 #: src/components/Reown/InsufficientFundsModal.js:39
 msgid "Close"
 msgstr ""
@@ -1402,7 +1410,7 @@ msgid "Description"
 msgstr "Описание"
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
-#: src/components/Reown/SendTransactionRequest.js:278
+#: src/components/Reown/SendTransactionRequest.js:277
 #: src/components/TxDetailsModal.js:100
 msgid "Transaction ID"
 msgstr ""
@@ -1550,13 +1558,13 @@ msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:196
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:466
-#: src/components/Reown/SendTransactionRequest.js:446
+#: src/components/Reown/SendTransactionRequest.js:445
 msgid "Sending transaction"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:197
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:467
-#: src/components/Reown/SendTransactionRequest.js:447
+#: src/components/Reown/SendTransactionRequest.js:446
 msgid "Please wait."
 msgstr ""
 
@@ -1597,47 +1605,47 @@ msgstr ""
 msgid "Review transaction details"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:264
+#: src/components/Reown/SendTransactionRequest.js:263
 msgid "Inputs"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:273
+#: src/components/Reown/SendTransactionRequest.js:272
 msgid "Input"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:285
+#: src/components/Reown/SendTransactionRequest.js:284
 msgid "Copy ID"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:312
+#: src/components/Reown/SendTransactionRequest.js:311
 msgid "Outputs"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:321
+#: src/components/Reown/SendTransactionRequest.js:320
 msgid "Output"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:341
+#: src/components/Reown/SendTransactionRequest.js:340
 msgid "Data field"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:363
+#: src/components/Reown/SendTransactionRequest.js:362
 msgid "Change Address"
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:237
-#: src/components/Reown/SendTransactionRequest.js:432
+#: src/components/Reown/SendTransactionRequest.js:431
 msgid "Success!"
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:238
-#: src/components/Reown/SendTransactionRequest.js:433
+#: src/components/Reown/SendTransactionRequest.js:432
 msgid "Transaction successfully sent."
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:133
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:52
-#: src/components/Reown/SendTransactionRequest.js:475
+#: src/components/Reown/SendTransactionRequest.js:474
 msgid "Accept Transaction"
 msgstr ""
 
@@ -1645,12 +1653,12 @@ msgstr ""
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:407
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:431
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:53
-#: src/components/Reown/SendTransactionRequest.js:479
+#: src/components/Reown/SendTransactionRequest.js:478
 msgid "Decline Transaction"
 msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:558
-#: src/components/Reown/SendTransactionRequest.js:496
+#: src/components/Reown/SendTransactionRequest.js:495
 msgid "Error while sending transaction."
 msgstr ""
 
