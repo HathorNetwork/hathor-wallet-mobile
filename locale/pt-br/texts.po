@@ -814,8 +814,8 @@ msgstr "Autorizar operação"
 #: src/screens/SendConfirmScreen.js:120
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
-msgstr[0] "Você tem ${ availablePretty } ${ nativeSymbol } disponível"
-msgstr[1] "Você tem ${ availablePretty } ${ nativeSymbol } disponíveis"
+msgstr[0] "Você tem ${ availablePretty } disponível"
+msgstr[1] "Você tem ${ availablePretty } disponíveis"
 
 #: src/screens/SendConfirmScreen.js:138
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
