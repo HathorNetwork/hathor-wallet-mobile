@@ -73,6 +73,7 @@ export const NanoContractDetailsHeader = ({ nc, address, onAddressChange }) => {
   };
 
   const onDismissEditAddressModal = () => {
+    // Reset to original address when dismissing edit modal
     setSelectedItem({ address });
     setModalStep('select');
   };
