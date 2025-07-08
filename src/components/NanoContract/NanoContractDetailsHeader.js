@@ -26,7 +26,6 @@ import { TextValue } from '../TextValue';
 import { TextLabel } from '../TextLabel';
 import { EditInfoContainer } from '../EditInfoContainer';
 import { SelectAddressModal } from './SelectAddressModal';
-import { EditAddressModal } from './EditAddressModal';
 import { UnregisterNanoContractModal } from './UnregisterNanoContractModal';
 
 /**
@@ -45,7 +44,6 @@ export const NanoContractDetailsHeader = ({ nc, address, onAddressChange }) => {
   const [isShrank, toggleShrank] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState(address);
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
-  const [showEditAddressModal, setShowEditAddressModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({ address });
   const [showUnregisterNanoContractModal, setShowUnregisterNanoContractModal] = useState(false);
   const [modalStep, setModalStep] = useState('select');
@@ -59,10 +57,6 @@ export const NanoContractDetailsHeader = ({ nc, address, onAddressChange }) => {
 
   const toggleSelectAddressModal = () => {
     setShowSelectAddressModal(!showSelectAddressModal);
-  };
-
-  const toggleEditAddressModal = () => {
-    setShowEditAddressModal(!showEditAddressModal);
   };
 
   const onUnregisterNanoContract = () => {
@@ -89,10 +83,10 @@ export const NanoContractDetailsHeader = ({ nc, address, onAddressChange }) => {
     onAddressChange(pickedAddress);
   };
 
-  const hookAddressChange = (selectedAddress) => {
+  const hookAddressChange = (newSelectedAddress) => {
     setShowSelectAddressModal(false);
     setModalStep('select');
-    handleSelectAddress(selectedAddress);
+    handleSelectAddress(newSelectedAddress);
   };
 
   return (
@@ -106,12 +100,12 @@ export const NanoContractDetailsHeader = ({ nc, address, onAddressChange }) => {
               && <HeaderShrank />}
             {isExpanded()
               && (
-              <HeaderExpanded
-                nc={nc}
-                address={address}
-                onEditAddress={onEditAddress}
-                onUnregisterNanoContract={onUnregisterNanoContract}
-              />
+                <HeaderExpanded
+                  nc={nc}
+                  address={address}
+                  onEditAddress={onEditAddress}
+                  onUnregisterNanoContract={onUnregisterNanoContract}
+                />
               )}
           </View>
         </TouchableWithoutFeedback>
