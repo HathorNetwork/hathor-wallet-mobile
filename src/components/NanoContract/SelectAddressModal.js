@@ -26,25 +26,30 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 import { selectAddressAddressesRequest } from '../../actions';
 
 /**
- * Use this modal to select an address from the wallet.
+ * A modal component that handles address selection and editing in two steps:
+ * 1. Address selection view - displays list of wallet addresses
+ * 2. Address edit view - shows confirmation screen for selected address
  *
  * @param {Object} props
- * @param {string} props.address It refers to the address selected
- * @param {boolean} props.show It determines if modal must show or hide
- * @param {(address:string) => {}} props.onSelectAddress
- * Callback function called when an address is selected
- * @param {() => {}} props.onDismiss
- * Callback function called to dismiss the modal
- * @param {(item: Object) => {}} props.onEditAddress
- * Callback function called when an address item is selected for editing
+ * @param {string} props.address Current selected address
+ * @param {boolean} props.show Whether the modal is visible
+ * @param {() => void} props.onDismiss Function called to dismiss the modal
+ * @param {(item: Object) => void} props.onEditAddress Function called when an address is selected for editing
+ * @param {string} props.modalStep Current step ('select' or 'edit')
+ * @param {Object} props.selectedItem Currently selected address item
+ * @param {() => void} props.onDismissEdit Function called to dismiss the edit view
+ * @param {(address: string) => void} props.onAddressChange Function called when address change is confirmed
  *
  * @example
  * <SelectAddressModal
  *   address={selectedAddress}
  *   show={showSelectAddressModal}
  *   onDismiss={toggleSelectAddressModal}
- *   onSelectAddress={handleSelectAddress}
  *   onEditAddress={handleEditAddress}
+ *   modalStep={modalStep}
+ *   selectedItem={selectedItem}
+ *   onDismissEdit={onDismissEditAddressModal}
+ *   onAddressChange={hookAddressChange}
  * />
  */
 export const SelectAddressModal = ({
@@ -137,16 +142,15 @@ export const SelectAddressModal = ({
 };
 
 /**
- * It renders and address as an item of the list, also it indicates a match
- * between the current address and the item's address.
+ * Renders an individual address item in the address list.
+ * Highlights the currently selected address and handles item selection.
  *
  * @param {Object} props
- * @param {string} props.currentAddress It refers to the address selected
- * @param {Object} props.item Address of the item
- * @param {string} props.item.address
- * @param {number} props.item.index
- * @param {(address:string) => void} props.onSelectItem
- * Callback function called when an address is selected
+ * @param {string} props.currentAddress Currently selected address
+ * @param {Object} props.item Address item data
+ * @param {string} props.item.address The wallet address
+ * @param {number} props.item.index The address index in the wallet
+ * @param {(item: Object) => void} props.onSelectItem Function called when item is selected
  */
 const AddressItem = ({ currentAddress, item, onSelectItem }) => {
   const onPress = () => {
