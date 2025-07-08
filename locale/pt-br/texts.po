@@ -812,7 +812,6 @@ msgid "Authorize operation"
 msgstr "Autorizar operação"
 
 #: src/screens/SendConfirmScreen.js:120
-#, fuzzy, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] "Você tem ${ availablePretty } ${ nativeSymbol } disponível"
