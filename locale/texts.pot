@@ -811,8 +811,8 @@ msgstr[1] ""
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.js:60
-#: src/components/NanoContract/SelectAddressModal.js:117
+#: src/components/NanoContract/EditAddressModal.js:63
+#: src/components/NanoContract/SelectAddressModal.js:127
 #: src/components/Reown/SendTransactionRequest.js:288
 #: src/components/Reown/SendTransactionRequest.js:327
 #: src/components/Reown/SignMessageRequest.js:40
@@ -1104,7 +1104,7 @@ msgid "Load First Addresses Error"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.js:202
-#: src/components/NanoContract/SelectAddressModal.js:105
+#: src/components/NanoContract/SelectAddressModal.js:115
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:375
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:446
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:184
@@ -1115,7 +1115,7 @@ msgstr ""
 msgid "Loading first wallet address."
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.js:142
+#: src/components/NanoContract/NanoContractDetailsHeader.js:167
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:80
@@ -1140,7 +1140,7 @@ msgstr ""
 msgid "Nano Contract Registration"
 msgstr ""
 
-#: src/screens/NanoContract/NanoContractTransactionScreen.js:39
+#: src/screens/NanoContract/NanoContractTransactionScreen.js:44
 msgid "Nano Contract Transaction"
 msgstr ""
 
@@ -1394,15 +1394,15 @@ msgstr ""
 msgid "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr ""
 
-#: src/components/TransactionStatusLabel.js:71
+#: src/components/TransactionStatusLabel.js:69
 msgid "Executed"
 msgstr ""
 
-#: src/components/TransactionStatusLabel.js:76
+#: src/components/TransactionStatusLabel.js:74
 msgid "Processing"
 msgstr ""
 
-#: src/components/TransactionStatusLabel.js:81
+#: src/components/TransactionStatusLabel.js:79
 msgid "Voided"
 msgstr ""
 
@@ -1430,7 +1430,7 @@ msgstr ""
 msgid "Nano Contract Caller"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.js:79
+#: src/components/NanoContract/NanoContractDetailsHeader.js:99
 #: src/components/TxDetailsModal.js:115
 msgid "Nano Contract"
 msgstr ""
@@ -1766,46 +1766,28 @@ msgstr ""
 msgid "No, go back"
 msgstr ""
 
-#: src/components/Reown/NanoContract/NanoContractActions.js:37
-#, javascript-format
-msgid "${ tokenSymbol } Deposit"
-msgstr ""
-
-#: src/components/Reown/NanoContract/NanoContractActions.js:38
-msgid "${ tokenSymbol } Withdrawal"
-msgstr ""
-
-#: src/components/Reown/NanoContract/NanoContractActions.js:39
-#, javascript-format
-msgid "${ tokenSymbol } Grant Authority"
-msgstr ""
-
-#: src/components/Reown/NanoContract/NanoContractActions.js:40
-msgid "${ tokenSymbol } Invoke Authority"
-msgstr ""
-
-#: src/components/Reown/NanoContract/NanoContractActions.js:113
+#: src/components/Reown/NanoContract/NanoContractActions.js:63
 msgid "Action List"
 msgstr ""
 
-#: src/components/Reown/NanoContract/NanoContractActions.js:190
+#: src/components/Reown/NanoContract/NanoContractActions.js:142
 msgid "Address to send amount:"
 msgstr ""
 
-#: src/components/Reown/NanoContract/NanoContractActions.js:200
-#: src/components/Reown/NanoContract/NanoContractActions.js:218
+#: src/components/Reown/NanoContract/NanoContractActions.js:152
+#: src/components/Reown/NanoContract/NanoContractActions.js:170
 msgid "Address to filter UTXOs:"
 msgstr ""
 
-#: src/components/Reown/NanoContract/NanoContractActions.js:206
+#: src/components/Reown/NanoContract/NanoContractActions.js:158
 msgid "Change address:"
 msgstr ""
 
-#: src/components/Reown/NanoContract/NanoContractActions.js:224
+#: src/components/Reown/NanoContract/NanoContractActions.js:176
 msgid "Address to send new authority:"
 msgstr ""
 
-#: src/components/Reown/NanoContract/NanoContractActions.js:234
+#: src/components/Reown/NanoContract/NanoContractActions.js:186
 msgid "Address to send authority:"
 msgstr ""
 
@@ -1813,7 +1795,7 @@ msgstr ""
 msgid "Blueprint ID"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.js:146
+#: src/components/NanoContract/NanoContractDetailsHeader.js:171
 #: src/components/NanoContract/NanoContractsListItem.js:59
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:90
 msgid "Blueprint Name"
@@ -1883,33 +1865,33 @@ msgstr ""
 msgid "Custom network"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.js:41
+#: src/components/NanoContract/EditAddressModal.js:44
 msgid "New Nano Contract Address"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.js:49
+#: src/components/NanoContract/EditAddressModal.js:52
 msgid ""
 "This address signs any transaction you create with Nano Contracts method. "
 "Switching to a new one means"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.js:51
+#: src/components/NanoContract/EditAddressModal.js:54
 msgid "all future transactions will use this address."
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.js:57
+#: src/components/NanoContract/EditAddressModal.js:60
 msgid "Selected Information"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.js:67
+#: src/components/NanoContract/EditAddressModal.js:70
 msgid "Index"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.js:74
+#: src/components/NanoContract/EditAddressModal.js:77
 msgid "Confirm new address"
 msgstr ""
 
-#: src/components/NanoContract/EditAddressModal.js:78
+#: src/components/NanoContract/EditAddressModal.js:81
 msgid "Go back"
 msgstr ""
 
@@ -1925,15 +1907,15 @@ msgstr ""
 msgid "Nano Contract Transactions Error"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.js:150
+#: src/components/NanoContract/NanoContractDetailsHeader.js:175
 msgid "Registered Address"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.js:153
+#: src/components/NanoContract/NanoContractDetailsHeader.js:178
 msgid "See status details"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetailsHeader.js:154
+#: src/components/NanoContract/NanoContractDetailsHeader.js:179
 msgid "Unregister contract"
 msgstr ""
 
@@ -1943,15 +1925,6 @@ msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionActionList.js:45
 msgid "See full transaction details on Public Explorer."
-msgstr ""
-
-#: src/components/NanoContract/NanoContractTransactionActionListItem.js:108
-#, javascript-format
-msgid "Deposit ${ tokenSymbol }"
-msgstr ""
-
-#: src/components/NanoContract/NanoContractTransactionActionListItem.js:109
-msgid "Withdrawal ${ tokenSymbol }"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:93
@@ -1981,23 +1954,23 @@ msgstr ""
 msgid "Register new"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.js:90
+#: src/components/NanoContract/SelectAddressModal.js:100
 msgid "Choose New Wallet Address"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.js:97
+#: src/components/NanoContract/SelectAddressModal.js:107
 msgid "Load Addresses Error"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.js:106
+#: src/components/NanoContract/SelectAddressModal.js:116
 msgid "Loading wallet addresses."
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.js:114
+#: src/components/NanoContract/SelectAddressModal.js:124
 msgid "Current Information"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.js:115
+#: src/components/NanoContract/SelectAddressModal.js:125
 msgid "To change, select other address on the list below."
 msgstr ""
 
@@ -2015,4 +1988,22 @@ msgstr ""
 
 #: src/components/NanoContract/UnregisterNanoContractModal.js:44
 msgid "Yes, unregister contract"
+msgstr ""
+
+#: src/components/NanoContract/common/NanoContractActionUtils.js:23
+#, javascript-format
+msgid "${ tokenSymbol } Deposit"
+msgstr ""
+
+#: src/components/NanoContract/common/NanoContractActionUtils.js:24
+msgid "${ tokenSymbol } Withdrawal"
+msgstr ""
+
+#: src/components/NanoContract/common/NanoContractActionUtils.js:25
+#, javascript-format
+msgid "${ tokenSymbol } Grant Authority"
+msgstr ""
+
+#: src/components/NanoContract/common/NanoContractActionUtils.js:26
+msgid "${ tokenSymbol } Acquire Authority"
 msgstr ""
