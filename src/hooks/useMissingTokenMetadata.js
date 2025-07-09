@@ -11,11 +11,11 @@ import { unregisteredTokensDownloadRequest } from '../actions';
 import { DEFAULT_TOKEN } from '../constants';
 
 /**
- * Custom hook to manage token metadata requests for nano contract actions
- * @param {Array} actions Array of action objects
+ * Custom hook to automatically fetch missing token metadata for unknown tokens
+ * @param {Array} actions Array of action objects with token UIDs
  * @returns {Object} Combined tokens object with registered and unregistered tokens
  */
-export const useNanoContractTokens = (actions) => {
+export const useMissingTokenMetadata = (actions) => {
   const dispatch = useDispatch();
   const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.unregisteredTokens }));
 
@@ -37,4 +37,3 @@ export const useNanoContractTokens = (actions) => {
 
   return knownTokens;
 };
-
