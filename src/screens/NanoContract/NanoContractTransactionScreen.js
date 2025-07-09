@@ -22,6 +22,7 @@ import { COLORS } from '../../styles/themes';
  */
 export function NanoContractTransactionScreen({ navigation, route }) {
   const { tx } = route.params;
+  
   return (
     <Wrapper>
       <NavigationHeader navigation={navigation} />

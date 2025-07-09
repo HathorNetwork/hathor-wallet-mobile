@@ -243,7 +243,7 @@ const ActionItem = ({ action, title, isNft }) => {
       {/* Show amount for deposit/withdrawal actions */}
       {action.type !== NanoContractActionType.GRANT_AUTHORITY
         && action.type !== NanoContractActionType.ACQUIRE_AUTHORITY
-        && action.amount != null && (
+        && action.amount != null && action.amount !== undefined && (
           <Amount amount={action.amount} isNft={isNft} />
         )}
     </View>

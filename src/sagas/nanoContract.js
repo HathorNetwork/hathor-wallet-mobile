@@ -270,12 +270,39 @@ export async function fetchHistory(req) {
   // Prouce a list ordered from newest to oldest
   const transformedTxHistory = rawHistory.map(async (rawTx) => {
     const caller = rawTx.nc_address;
-    const actions = rawTx.nc_context.actions.map((each) => ({
-      type: each.type,
-      uid: each.token_uid,
-      amount: each.amount,
-    }));
+    const actions = rawTx.nc_context.actions.map((each) => {
+      // For authority actions, determine the authority type from mint/melt flags
+      let authority = null;
+      if (each.type === 'grant_authority' || each.type === 'acquire_authority') {
+        if (each.mint && each.melt) {
+          authority = 'mint, melt';
+        } else if (each.mint) {
+          authority = 'mint';
+        } else if (each.melt) {
+          authority = 'melt';
+        }
+      }
+      
+      return {
+        type: each.type,
+        uid: each.token_uid,
+        amount: each.amount,
+        authority: authority,
+      };
+    });
     const isMine = await isAddressMine(wallet, caller, useWalletService);
+
+    // Extract token metadata if available (for create_token transactions)
+    const tokenMetadata = {};
+    if (rawTx.token_name && rawTx.token_symbol) {
+      // For create_token transactions, the token being created is the transaction hash
+      const tokenUid = rawTx.hash;
+      tokenMetadata[tokenUid] = {
+        uid: tokenUid,
+        name: rawTx.token_name,
+        symbol: rawTx.token_symbol,
+      };
+    }
 
     const tx = {
       txId: rawTx.hash,
@@ -289,6 +316,7 @@ export async function fetchHistory(req) {
       caller,
       actions,
       isMine,
+      tokenMetadata, // Add token metadata to the transaction
     };
     return tx;
   });
