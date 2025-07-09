@@ -270,11 +270,29 @@ export async function fetchHistory(req) {
   // Prouce a list ordered from newest to oldest
   const transformedTxHistory = rawHistory.map(async (rawTx) => {
     const caller = rawTx.nc_address;
-    const actions = rawTx.nc_context.actions.map((each) => ({
-      type: each.type,
-      uid: each.token_uid,
-      amount: each.amount,
-    }));
+
+    const actions = rawTx.nc_context.actions.map((each) => {
+      // For authority actions, determine the authority type from mint/melt flags
+      let authority = null;
+      if (each.type === 'grant_authority' || each.type === 'acquire_authority') {
+        if (each.mint && each.melt) {
+          authority = 'mint, melt';
+        } else if (each.mint) {
+          authority = 'mint';
+        } else if (each.melt) {
+          authority = 'melt';
+        }
+      }
+
+      const mappedAction = {
+        type: each.type,
+        uid: each.token_uid,
+        amount: each.amount,
+        authority,
+      };
+
+      return mappedAction;
+    });
     const isMine = await isAddressMine(wallet, caller, useWalletService);
 
     const tx = {
