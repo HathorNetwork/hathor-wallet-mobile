@@ -163,6 +163,9 @@ const ActionItem = ({ action, title, isNft }) => {
     addressSection: {
       marginTop: 8,
     },
+    contentWrapper: {
+      flex: 1,
+    },
   });
 
   // For authority actions, split the title to show authority type on the right
@@ -173,7 +176,7 @@ const ActionItem = ({ action, title, isNft }) => {
   return (
     <View style={[commonStyles.cardSplit, commonStyles.listItem]}>
       <Icon type={action.type} />
-      <View style={commonStyles.cardSplitContent}>
+      <View style={[commonStyles.cardSplitContent, styles.contentWrapper]}>
         {isAuthorityAction && titleParts ? (
           <View style={styles.authorityRow}>
             <Text style={styles.authorityTitle}>{titleParts[0].trim()}</Text>
@@ -190,7 +193,7 @@ const ActionItem = ({ action, title, isNft }) => {
               <Text style={styles.valueLabel}>{t`Address to send amount:`}</Text>
               <Text style={styles.value}>{action.address}</Text>
             </View>
-        )}
+          )}
 
         {/* DEPOSIT: Show address (to filter UTXOs) and changeAddress (change address) */}
         {action.type === NanoContractActionType.DEPOSIT && (
@@ -242,13 +245,14 @@ const ActionItem = ({ action, title, isNft }) => {
         && action.type !== NanoContractActionType.ACQUIRE_AUTHORITY
         && action.amount != null && (
           <Amount amount={action.amount} isNft={isNft} />
-      )}
+        )}
     </View>
   )
 }
 
 /**
- * It renders an icon by action type: 'deposit', 'withdrawal', 'grant_authority', or 'acquire_authority'.
+ * It renders an icon by action type: 'deposit', 'withdrawal', 'grant_authority'
+ * or 'acquire_authority'.
  *
  * @param {Object} props
  * @param {'deposit'|'withdrawal'|'grant_authority'|'acquire_authority'} props.type Action type.
@@ -277,11 +281,14 @@ const Amount = ({ amount, isNft }) => {
   const styles = StyleSheet.create({
     wrapper: {
       marginLeft: 'auto',
+      marginRight: 0,
+      paddingRight: 16,
     },
     amount: {
       fontSize: 16,
       lineHeight: 20,
       color: COLORS.black,
+      textAlign: 'right',
     },
   });
 
