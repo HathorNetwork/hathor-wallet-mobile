@@ -11,7 +11,6 @@ import { COLORS } from '../../styles/themes';
 import { NanoContractTransactionActionListItem } from './NanoContractTransactionActionListItem';
 import { HathorFlatList } from '../HathorFlatList';
 import { FeedbackContent } from '../FeedbackContent';
-import { useNanoContractTokens } from '../../hooks/useNanoContractTokens';
 
 /**
  * It presents a list of actions of a transaction.
@@ -20,9 +19,6 @@ import { useNanoContractTokens } from '../../hooks/useNanoContractTokens';
  * @param {Object} props.tx Transaction data
  */
 export const NanoContractTransactionActionList = ({ tx }) => {
-  // Use shared token manager to handle token requests
-  useNanoContractTokens(tx.actions);
-
   const isEmpty = () => tx.actions.length === 0;
   const notEmpty = () => !isEmpty();
 
@@ -35,10 +31,7 @@ export const NanoContractTransactionActionList = ({ tx }) => {
           <HathorFlatList
             data={tx.actions}
             renderItem={({ item }) => (
-              <NanoContractTransactionActionListItem
-                item={item}
-                txMetadata={tx.tokenMetadata || {}}
-              />
+              <NanoContractTransactionActionListItem item={item} />
             )}
           />
         )}

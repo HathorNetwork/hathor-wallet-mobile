@@ -295,18 +295,6 @@ export async function fetchHistory(req) {
     });
     const isMine = await isAddressMine(wallet, caller, useWalletService);
 
-    // Extract token metadata if available (for create_token transactions)
-    const tokenMetadata = {};
-    if (rawTx.token_name && rawTx.token_symbol) {
-      // For create_token transactions, the token being created is the transaction hash
-      const tokenUid = rawTx.hash;
-      tokenMetadata[tokenUid] = {
-        uid: tokenUid,
-        name: rawTx.token_name,
-        symbol: rawTx.token_symbol,
-      };
-    }
-
     const tx = {
       txId: rawTx.hash,
       timestamp: rawTx.timestamp,
@@ -319,7 +307,6 @@ export async function fetchHistory(req) {
       caller,
       actions,
       isMine,
-      tokenMetadata, // Add token metadata to the transaction
     };
     return tx;
   });

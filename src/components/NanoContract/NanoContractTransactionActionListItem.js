@@ -111,7 +111,7 @@ const ContentWrapper = ({ title, isAuthorityAction: isAuthority }) => {
  */
 const TokenAmount = ({ amount, isNft, type }) => {
   const isReceivingToken = type === NANO_CONTRACT_ACTION.withdrawal;
-  const amountToRender = renderValue(amount ?? 0, isNft);
+  const amountToRender = renderValue(amount, isNft);
 
   return (
     <View style={styles.amountWrapper}>

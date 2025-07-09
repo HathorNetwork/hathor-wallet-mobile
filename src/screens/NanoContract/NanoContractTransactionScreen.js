@@ -15,6 +15,7 @@ import HathorHeader from '../../components/HathorHeader';
 import { NanoContractTransactionHeader } from '../../components/NanoContract/NanoContractTransactionHeader';
 import { NanoContractTransactionActionList } from '../../components/NanoContract/NanoContractTransactionActionList';
 import OfflineBar from '../../components/OfflineBar';
+import { useNanoContractTokens } from '../../hooks/useNanoContractTokens';
 import { COLORS } from '../../styles/themes';
 
 /**
@@ -22,7 +23,10 @@ import { COLORS } from '../../styles/themes';
  */
 export function NanoContractTransactionScreen({ navigation, route }) {
   const { tx } = route.params;
-  
+
+  // Handle token metadata fetching for unknown tokens
+  useNanoContractTokens(tx.actions);
+
   return (
     <Wrapper>
       <NavigationHeader navigation={navigation} />
