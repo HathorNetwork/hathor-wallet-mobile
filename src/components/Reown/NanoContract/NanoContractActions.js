@@ -26,7 +26,7 @@ import { CircleError } from '../../Icons/CircleError.icon';
 
 /**
  * It returns the title template for each action type,
- * which includes 'deposit', 'withdrawal', 'grant_authority', and 'invoke_authority'.
+ * which includes 'deposit', 'withdrawal', 'grant_authority', and 'acquire_authority'.
  *
  * @param {string} tokenSymbol The token symbol fetched from metadata,
  * or a shortened token hash.
@@ -37,7 +37,7 @@ const actionTitleMap = (tokenSymbol) => ({
   [NanoContractActionType.DEPOSIT]: t`${tokenSymbol} Deposit`,
   [NanoContractActionType.WITHDRAWAL]: t`${tokenSymbol} Withdrawal`,
   [NanoContractActionType.GRANT_AUTHORITY]: t`${tokenSymbol} Grant Authority`,
-  [NanoContractActionType.INVOKE_AUTHORITY]: t`${tokenSymbol} Invoke Authority`,
+  [NanoContractActionType.ACQUIRE_AUTHORITY]: t`${tokenSymbol} Acquire Authority`,
 });
 
 /**
@@ -69,7 +69,7 @@ const getActionTitle = (tokens, action) => {
 
   // For authority actions, include the authority type in the title
   if (action.type === NanoContractActionType.GRANT_AUTHORITY
-    || action.type === NanoContractActionType.INVOKE_AUTHORITY) {
+    || action.type === NanoContractActionType.ACQUIRE_AUTHORITY) {
     const baseTitle = actionTitleMap(tokenSymbol)[action.type];
     return action.authority ? `${baseTitle}: ${action.authority}` : baseTitle;
   }
@@ -136,7 +136,7 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
 /**
  * @param {Object} props
  * @param {{
- *   type: 'deposit'|'withdrawal'|'grant_authority'|'invoke_authority';
+ *   type: 'deposit'|'withdrawal'|'grant_authority'|'acquire_authority';
  *   token: string;
  *   amount?: number;
  *   address?: string;
@@ -167,7 +167,7 @@ const ActionItem = ({ action, title, isNft }) => {
 
   // For authority actions, split the title to show authority type on the right
   const isAuthorityAction = action.type === NanoContractActionType.GRANT_AUTHORITY
-    || action.type === NanoContractActionType.INVOKE_AUTHORITY;
+    || action.type === NanoContractActionType.ACQUIRE_AUTHORITY;
   const titleParts = isAuthorityAction && title.includes(':') ? title.split(':') : null;
 
   return (
@@ -228,8 +228,8 @@ const ActionItem = ({ action, title, isNft }) => {
           </View>
         )}
 
-        {/* INVOKE_AUTHORITY: Show only address (send the authority and create the output) */}
-        {action.type === NanoContractActionType.INVOKE_AUTHORITY && action.address && (
+        {/* ACQUIRE_AUTHORITY: Show only address (send the authority and create the output) */}
+        {action.type === NanoContractActionType.ACQUIRE_AUTHORITY && action.address && (
           <View style={styles.addressSection}>
             <Text style={styles.valueLabel}>{t`Address to send authority:`}</Text>
             <Text style={styles.value}>{action.address}</Text>
@@ -239,7 +239,7 @@ const ActionItem = ({ action, title, isNft }) => {
 
       {/* Show amount for deposit/withdrawal actions */}
       {action.type !== NanoContractActionType.GRANT_AUTHORITY
-        && action.type !== NanoContractActionType.INVOKE_AUTHORITY
+        && action.type !== NanoContractActionType.ACQUIRE_AUTHORITY
         && action.amount != null && (
           <Amount amount={action.amount} isNft={isNft} />
       )}
@@ -248,17 +248,17 @@ const ActionItem = ({ action, title, isNft }) => {
 }
 
 /**
- * It renders an icon by action type: 'deposit', 'withdrawal', or 'grant_authority'.
+ * It renders an icon by action type: 'deposit', 'withdrawal', 'grant_authority', or 'acquire_authority'.
  *
  * @param {Object} props
- * @param {'deposit'|'withdrawal'|'grant_authority'|'invoke_authority'} props.type Action type.
+ * @param {'deposit'|'withdrawal'|'grant_authority'|'acquire_authority'} props.type Action type.
  */
 const Icon = ({ type }) => {
   const iconMap = {
     [NanoContractActionType.DEPOSIT]: SentIcon({ type: 'default' }),
     [NanoContractActionType.WITHDRAWAL]: ReceivedIcon({ type: 'default' }),
     [NanoContractActionType.GRANT_AUTHORITY]: SentIcon({ type: 'default' }),
-    [NanoContractActionType.INVOKE_AUTHORITY]: ReceivedIcon({ type: 'default' }),
+    [NanoContractActionType.ACQUIRE_AUTHORITY]: ReceivedIcon({ type: 'default' }),
   };
 
   return (iconMap[type]);
