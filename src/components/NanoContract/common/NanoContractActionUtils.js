@@ -79,4 +79,3 @@ export const isAuthorityAction = (actionType) => (
 export const splitAuthorityTitle = (title) => (
   title.includes(':') ? title.split(':').map((part) => part.trim()) : null
 );
-

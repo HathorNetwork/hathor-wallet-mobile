@@ -26,4 +26,3 @@ export const NanoContractActionIcon = ({ type }) => {
 
   return (iconMap[type]);
 };
-

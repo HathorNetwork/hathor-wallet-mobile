@@ -25,25 +25,6 @@ import {
 import { NanoContractActionIcon } from './common/NanoContractActionIcon';
 
 /**
- * Retrieves token symbol, otherwise returns a shortened token hash.
- *
- * @param {string} tokenUid Token hash
- * @returns {(state) => boolean} Callback that takes state as input
- *
- * Remarks:
- * This function should be used combined with `useSelector`.
- */
-function getTokenSymbol(tokenUid) {
-  return (state) => {
-    const tokens = state.tokens || {};
-    if (tokenUid in tokens) {
-      return tokens[tokenUid].symbol;
-    }
-    return getShortHash(tokenUid, 7);
-  };
-}
-
-/**
  * Checks if the referred token is an NFT.
  *
  * @param {string} tokenUid Token hash
@@ -80,10 +61,10 @@ export const NanoContractTransactionActionListItem = ({ item, txMetadata }) => {
     <Wrapper>
       <NanoContractActionIcon type={item.type} />
       <ContentWrapper title={title} type={item.type} isAuthorityAction={isAuthority} />
-      {(item.type === NanoContractActionType.deposit
+      {(item.type === NanoContractActionType.DEPOSIT
         || item.type === NanoContractActionType.WITHDRAWAL) && (
           <TokenAmount amount={item.amount} isNft={isNft} type={item.type} />
-        )}
+      )}
     </Wrapper>
   );
 };
@@ -103,12 +84,12 @@ const Wrapper = ({ children }) => (
  * props.type An action type
  * @property {boolean} props.isAuthorityAction Whether this is an authority action
  */
-const ContentWrapper = ({ title, isAuthorityAction }) => {
-  const titleParts = isAuthorityAction ? splitAuthorityTitle(title) : null;
+const ContentWrapper = ({ title, isAuthorityAction: isAuthority }) => {
+  const titleParts = isAuthority ? splitAuthorityTitle(title) : null;
 
   return (
-    <View style={[styles.contentWrapper, isAuthorityAction && styles.authorityContentWrapper]}>
-      {isAuthorityAction && titleParts ? (
+    <View style={[styles.contentWrapper, isAuthority && styles.authorityContentWrapper]}>
+      {isAuthority && titleParts ? (
         <View style={styles.authorityRow}>
           <Text style={[styles.text, styles.property]}>{titleParts[0]}</Text>
           <Text style={[styles.text, styles.property, styles.authorityType]}>{titleParts[1]}</Text>

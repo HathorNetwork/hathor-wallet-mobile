@@ -142,7 +142,7 @@ const ActionItem = ({ action, title, isNft }) => {
               <Text style={styles.valueLabel}>{t`Address to send amount:`}</Text>
               <Text style={styles.value}>{action.address}</Text>
             </View>
-          )}
+        )}
 
         {/* DEPOSIT: Show address (to filter UTXOs) and changeAddress (change address) */}
         {action.type === NanoContractActionType.DEPOSIT && (
@@ -194,7 +194,7 @@ const ActionItem = ({ action, title, isNft }) => {
         && action.type !== NanoContractActionType.ACQUIRE_AUTHORITY
         && action.amount != null && action.amount !== undefined && (
           <Amount amount={action.amount} isNft={isNft} />
-        )}
+      )}
     </View>
   )
 }
