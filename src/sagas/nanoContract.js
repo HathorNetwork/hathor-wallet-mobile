@@ -282,12 +282,12 @@ export async function fetchHistory(req) {
           authority = 'melt';
         }
       }
-      
+
       return {
         type: each.type,
         uid: each.token_uid,
         amount: each.amount,
-        authority: authority,
+        authority,
       };
     });
     const isMine = await isAddressMine(wallet, caller, useWalletService);

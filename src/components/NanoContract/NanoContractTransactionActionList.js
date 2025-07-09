@@ -6,15 +6,12 @@
  */
 
 import { StyleSheet, View } from 'react-native';
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { COLORS } from '../../styles/themes';
 import { NanoContractTransactionActionListItem } from './NanoContractTransactionActionListItem';
 import { HathorFlatList } from '../HathorFlatList';
 import { FeedbackContent } from '../FeedbackContent';
-import { unregisteredTokensDownloadRequest } from '../../actions';
-import { DEFAULT_TOKEN } from '../../constants';
+import { useNanoContractTokens } from '../../hooks/useNanoContractTokens';
 
 /**
  * It presents a list of actions of a transaction.
@@ -23,26 +20,11 @@ import { DEFAULT_TOKEN } from '../../constants';
  * @param {Object} props.tx Transaction data
  */
 export const NanoContractTransactionActionList = ({ tx }) => {
-  const dispatch = useDispatch();
-  const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.unregisteredTokens }));
-  
+  // Use shared token manager to handle token requests
+  useNanoContractTokens(tx.actions);
+
   const isEmpty = () => tx.actions.length === 0;
   const notEmpty = () => !isEmpty();
-  
-  // Request token data for unknown tokens
-  useEffect(() => {
-    const unknownTokensUid = [];
-    const actionTokensUid = tx.actions?.map((each) => each.uid) || [];
-    actionTokensUid.forEach((uid) => {
-      if (uid !== DEFAULT_TOKEN.uid && !(uid in knownTokens)) {
-        unknownTokensUid.push(uid);
-      }
-    });
-
-    if (unknownTokensUid.length > 0) {
-      dispatch(unregisteredTokensDownloadRequest({ uids: unknownTokensUid }));
-    }
-  }, [tx.actions, knownTokens, dispatch]);
 
   return (
     <Wrapper>
@@ -53,9 +35,9 @@ export const NanoContractTransactionActionList = ({ tx }) => {
           <HathorFlatList
             data={tx.actions}
             renderItem={({ item }) => (
-              <NanoContractTransactionActionListItem 
-                item={item} 
-                txMetadata={tx.tokenMetadata || {}} 
+              <NanoContractTransactionActionListItem
+                item={item}
+                txMetadata={tx.tokenMetadata || {}}
               />
             )}
           />

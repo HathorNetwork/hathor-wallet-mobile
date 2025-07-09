@@ -16,66 +16,16 @@ import { useSelector } from 'react-redux';
 import { NanoContractActionType } from '@hathor/wallet-lib';
 import { HathorFlatList } from '../../HathorFlatList';
 import { commonStyles } from '../theme';
-import { getShortHash, isTokenNFT, renderValue } from '../../../utils';
-import { ReceivedIcon } from '../../Icons/Received.icon';
-import { SentIcon } from '../../Icons/Sent.icon';
+import { isTokenNFT, renderValue } from '../../../utils';
 import { AlertUI, COLORS } from '../../../styles/themes';
-import { DEFAULT_TOKEN } from '../../../constants';
 import { WarnTextValue } from '../../WarnTextValue';
 import { CircleError } from '../../Icons/CircleError.icon';
-
-/**
- * It returns the title template for each action type,
- * which includes 'deposit', 'withdrawal', 'grant_authority', and 'acquire_authority'.
- *
- * @param {string} tokenSymbol The token symbol fetched from metadata,
- * or a shortened token hash.
- *
- * @returns {string} A title template by action type.
- */
-const actionTitleMap = (tokenSymbol) => ({
-  [NanoContractActionType.DEPOSIT]: t`${tokenSymbol} Deposit`,
-  [NanoContractActionType.WITHDRAWAL]: t`${tokenSymbol} Withdrawal`,
-  [NanoContractActionType.GRANT_AUTHORITY]: t`${tokenSymbol} Grant Authority`,
-  [NanoContractActionType.ACQUIRE_AUTHORITY]: t`${tokenSymbol} Acquire Authority`,
-});
-
-/**
- * Get action title depending on the action type.
- * @param {Object} tokens A map of token metadata by token uid
- * @param {Object} action An action object
- *
- * @returns {string} A formatted title to be used in the action card
- *
- * @example
- * getActionTitle({ '123': { ..., symbol: 'STR' }}, { ..., token: '123', type: 'deposit' })
- * >>> 'STR Deposit'
- *
- * @example
- * getActionTitle({}, { ..., token: '1234...5678', type: 'deposit' })
- * >>> '1234...5678 Deposit'
- */
-const getActionTitle = (tokens, action) => {
-  const tokenMetadata = tokens[action.token];
-  let tokenSymbol;
-
-  if (tokenMetadata) {
-    tokenSymbol = tokenMetadata.symbol;
-  } else if (action.token === DEFAULT_TOKEN.uid) {
-    tokenSymbol = DEFAULT_TOKEN.symbol;
-  } else {
-    tokenSymbol = getShortHash(action.token);
-  }
-
-  // For authority actions, include the authority type in the title
-  if (action.type === NanoContractActionType.GRANT_AUTHORITY
-    || action.type === NanoContractActionType.ACQUIRE_AUTHORITY) {
-    const baseTitle = actionTitleMap(tokenSymbol)[action.type];
-    return action.authority ? `${baseTitle}: ${action.authority}` : baseTitle;
-  }
-
-  return actionTitleMap(tokenSymbol)[action.type];
-};
+import {
+  getActionTitle,
+  isAuthorityAction,
+  splitAuthorityTitle,
+} from '../../NanoContract/common/NanoContractActionUtils';
+import { NanoContractActionIcon } from '../../NanoContract/common/NanoContractActionIcon';
 
 /**
  * It renders a list of actions with a proper title for each one.
@@ -169,18 +119,17 @@ const ActionItem = ({ action, title, isNft }) => {
   });
 
   // For authority actions, split the title to show authority type on the right
-  const isAuthorityAction = action.type === NanoContractActionType.GRANT_AUTHORITY
-    || action.type === NanoContractActionType.ACQUIRE_AUTHORITY;
-  const titleParts = isAuthorityAction && title.includes(':') ? title.split(':') : null;
+  const isAuthority = isAuthorityAction(action.type);
+  const titleParts = isAuthority ? splitAuthorityTitle(title) : null;
 
   return (
     <View style={[commonStyles.cardSplit, commonStyles.listItem]}>
-      <Icon type={action.type} />
+      <NanoContractActionIcon type={action.type} />
       <View style={[commonStyles.cardSplitContent, styles.contentWrapper]}>
-        {isAuthorityAction && titleParts ? (
+        {isAuthority && titleParts ? (
           <View style={styles.authorityRow}>
-            <Text style={styles.authorityTitle}>{titleParts[0].trim()}</Text>
-            <Text style={styles.authorityType}>{titleParts[1].trim()}</Text>
+            <Text style={styles.authorityTitle}>{titleParts[0]}</Text>
+            <Text style={styles.authorityType}>{titleParts[1]}</Text>
           </View>
         ) : (
           <Text style={styles.action}>{title}</Text>
@@ -249,24 +198,6 @@ const ActionItem = ({ action, title, isNft }) => {
     </View>
   )
 }
-
-/**
- * It renders an icon by action type: 'deposit', 'withdrawal', 'grant_authority'
- * or 'acquire_authority'.
- *
- * @param {Object} props
- * @param {'deposit'|'withdrawal'|'grant_authority'|'acquire_authority'} props.type Action type.
- */
-const Icon = ({ type }) => {
-  const iconMap = {
-    [NanoContractActionType.DEPOSIT]: SentIcon({ type: 'default' }),
-    [NanoContractActionType.WITHDRAWAL]: ReceivedIcon({ type: 'default' }),
-    [NanoContractActionType.GRANT_AUTHORITY]: SentIcon({ type: 'default' }),
-    [NanoContractActionType.ACQUIRE_AUTHORITY]: ReceivedIcon({ type: 'default' }),
-  };
-
-  return (iconMap[type]);
-};
 
 /**
  * It renders an amount with the right format.
