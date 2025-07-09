@@ -9,12 +9,11 @@ import * as React from 'react'
 import Svg, { Path } from 'react-native-svg'
 import { COLORS } from '../../styles/themes'
 import { DEFAULT_ICON_SIZE } from './constants'
-import { getScale, getViewBox } from './helper'
 
 /**
  * @param {object} props
  * @property {number} props.size
- * @property {StyleSheet} props.color
+ * @property {string} props.color
  *
  * @description
  * Svg converted from Figma using transaformer at https://react-svgr.com/playground/?native=true
@@ -24,8 +23,7 @@ export const CircleClock = ({ size = DEFAULT_ICON_SIZE, color = COLORS.black }) 
     xmlns='http://www.w3.org/2000/svg'
     width={size}
     height={size}
-    viewBox={getViewBox(size)}
-    transform={getScale(size, DEFAULT_ICON_SIZE)}
+    viewBox='0 0 24 24'
     fill='none'
   >
     <Path

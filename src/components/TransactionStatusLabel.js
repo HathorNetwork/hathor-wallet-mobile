@@ -56,9 +56,7 @@ const styles = StyleSheet.create({
  */
 const TransactionStatusBase = ({ label, style, children: icon }) => (
   <View style={[styles.wrapper, style]}>
-    <View>
-      {icon}
-    </View>
+    <View>{icon}</View>
     <View>
       <Text style={[styles.label, style]}>
         {label.toUpperCase()}
