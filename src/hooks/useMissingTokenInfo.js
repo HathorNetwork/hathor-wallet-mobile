@@ -11,11 +11,11 @@ import { unregisteredTokensDownloadRequest } from '../actions';
 import { DEFAULT_TOKEN } from '../constants';
 
 /**
- * Custom hook to automatically fetch missing token metadata for unknown tokens
+ * Custom hook to automatically fetch missing token info for unknown tokens
  * @param {Array} actions Array of action objects with token UIDs
  * @returns {Object} Combined tokens object with registered and unregistered tokens
  */
-export const useMissingTokenMetadata = (actions) => {
+export const useMissingTokenInfo = (actions) => {
   const dispatch = useDispatch();
   const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.unregisteredTokens }));
 

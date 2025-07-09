@@ -52,8 +52,7 @@ export const getActionTitle = (tokens, action) => {
   }
 
   // For authority actions, include the authority type in the title
-  if (action.type === NanoContractActionType.GRANT_AUTHORITY
-    || action.type === NanoContractActionType.ACQUIRE_AUTHORITY) {
+  if (isAuthorityAction(action.type)) {
     const baseTitle = actionTitleMap(tokenSymbol)[action.type];
     return action.authority ? `${baseTitle}: ${action.authority}` : baseTitle;
   }

@@ -2069,11 +2069,11 @@ msgstr "${ tokenSymbol } Saque"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:25
 #, javascript-format
 msgid "${ tokenSymbol } Grant Authority"
-msgstr "${ tokenSymbol } Grant Authority"
+msgstr "${ tokenSymbol } Conceder Authority"
 
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
-msgstr "${ tokenSymbol } Acquire Authority"
+msgstr "${ tokenSymbol } Obter Authority"
 
 #~ msgid "${ tokenSymbol } Invoke Authority"
 #~ msgstr "${ tokenSymbol } Invoke Authority"
