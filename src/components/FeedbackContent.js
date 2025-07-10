@@ -26,6 +26,7 @@ import { COLORS } from '../styles/themes';
  * if provided, it renders underneath the content
  * @param {boolean} props.offcard Renders a feedback without card style
  * @param {boolean} props.offmargin Renders a feedback without margins
+ * @param {Object?} props.contentStyle Custom styles for the content container
  *
  * @example
  * <FeedbackContent
@@ -42,7 +43,8 @@ export const FeedbackContent = ({
   action,
   offcard,
   offmargin,
-  offbackground
+  offbackground,
+  contentStyle
 }) => (
   <View style={[
     styles.container,
@@ -52,7 +54,7 @@ export const FeedbackContent = ({
   ]}
   >
     <View style={styles.wrapper}>
-      <View style={styles.content}>
+      <View style={[styles.content, contentStyle]}>
         {icon
           && (<View style={styles.icon}>{icon}</View>)}
         <Text style={styles.title}>{title}</Text>

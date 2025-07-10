@@ -82,6 +82,7 @@ export const NoNanoContracts = () => (
     title={t`No Nano Contracts`}
     message={t`You can keep track of your registered Nano Contracts here once you have registered them.`}
     action={<RegisterNanoContract />}
+    contentStyle={{ paddingHorizontal: 24 }}
   />
 );
 
