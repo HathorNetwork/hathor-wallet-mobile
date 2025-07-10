@@ -23,9 +23,9 @@ const HathorModal = (props) => (
     onDismiss={props.onDismiss}
     onShow={props.onShow}
     onHide={props.onHide}
-    contentStyle={styles.view}
+    contentStyle={StyleSheet.compose(styles.view, props.viewStyle)}
   >
-    <View style={StyleSheet.compose(styles.innerView, props.viewStyle)}>
+    <View style={styles.innerView}>
       {props.children}
     </View>
   </BackdropModal>
@@ -35,7 +35,6 @@ const styles = StyleSheet.create({
   view: {
     backgroundColor: COLORS.backgroundColor,
     borderRadius: 8,
-    paddingHorizontal: 16,
     paddingBottom: 24,
     paddingTop: 42,
     minHeight: 290,
