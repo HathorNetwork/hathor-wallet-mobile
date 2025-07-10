@@ -62,7 +62,7 @@ export default function PushTxDetailsModal(props) {
     <HathorModal onDismiss={props.onRequestClose} viewStyle={styles.wrapperView}>
       <SlideIndicatorBar />
       <NewTransactionTitle />
-      <View style={{ backgroundColor: 'red', width: '100%' }}>
+      <View style={{ width: '100%' }}>
         {tokens.map((token) => (
           <ListButton
             key={token.uid}
