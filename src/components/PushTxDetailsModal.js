@@ -18,7 +18,7 @@ import { ListButton, ListItem } from './HathorList';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
   modal: {
     justifyContent: 'flex-end',
   },
@@ -26,6 +26,7 @@ const style = StyleSheet.create({
     color: COLORS.primary,
   },
   wrapperView: {
+    paddingTop: 16,
     backgroundColor: COLORS.backgroundColor,
     borderRadius: 8,
   },
@@ -58,16 +59,16 @@ export default function PushTxDetailsModal(props) {
   };
 
   return (
-    <HathorModal onDismiss={props.onRequestClose} viewStyle={style.wrapperView}>
+    <HathorModal onDismiss={props.onRequestClose} viewStyle={styles.wrapperView}>
       <SlideIndicatorBar />
       <NewTransactionTitle />
-      <View>
+      <View style={{ width: '100%' }}>
         {tokens.map((token) => (
           <ListButton
             key={token.uid}
             onPress={() => navigateToTokenDetailPage(token)}
             title={getTokenTitle(token)}
-            titleStyle={token.isRegistered && style.registeredToken}
+            titleStyle={token.isRegistered && styles.registeredToken}
             button={(
               <Text>{getTokenBalance(token, isTokenNFT(token.uid, tokenMetadata))}</Text>
             )}
