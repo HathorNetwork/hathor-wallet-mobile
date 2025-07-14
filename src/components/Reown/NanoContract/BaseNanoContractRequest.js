@@ -286,8 +286,8 @@ export const BaseNanoContractRequest = ({
     setShowSelectAddressModal(!showSelectAddressModal);
   };
 
-  const handleAddressSelection = (newAddress) => {
-    setNcAddress(newAddress);
+  const handleAddressSelection = ({ address }) => {
+    setNcAddress(address);
     toggleSelectAddressModal();
   };
 
@@ -542,7 +542,7 @@ export const BaseNanoContractRequest = ({
       <SelectAddressModal
         address={ncAddress}
         show={showSelectAddressModal}
-        onSelectAddress={handleAddressSelection}
+        onEditAddress={handleAddressSelection}
         onDismiss={toggleSelectAddressModal}
       />
 

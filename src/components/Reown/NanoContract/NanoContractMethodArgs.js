@@ -201,19 +201,24 @@ const styles = StyleSheet.create({
   },
   argPositionText: [
     commonStyles.text,
-    commonStyles.bold
+    commonStyles.bold,
+    {
+      fontSize: 14,
+      color: COLORS.textColorShadow,
+    }
   ],
   argValue: {
     flex: 1,
     maxWidth: '70%',
     backgroundColor: 'hsla(0, 0%, 96%, 1)',
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
   },
   argValueText: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: COLORS.black,
+    fontSize: 14,
+    lineHeight: 20,
+    color: COLORS.textColor,
+    fontFamily: 'monospace',
   },
 });
