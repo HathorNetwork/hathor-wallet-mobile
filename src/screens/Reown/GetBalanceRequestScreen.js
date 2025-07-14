@@ -43,4 +43,3 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lowContrastDetail,
   },
 });
-
