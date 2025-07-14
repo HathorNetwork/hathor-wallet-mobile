@@ -202,6 +202,7 @@ export const types = {
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
   SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL',
   SHOW_CREATE_TOKEN_REQUEST_MODAL: 'SHOW_CREATE_TOKEN_REQUEST_MODAL',
+  SHOW_GET_BALANCE_REQUEST_MODAL: 'SHOW_GET_BALANCE_REQUEST_MODAL',
   REOWN_NEW_NANOCONTRACT_STATUS: 'REOWN_NEW_NANOCONTRACT_STATUS',
   REOWN_CREATE_TOKEN_STATUS: 'REOWN_CREATE_TOKEN_STATUS',
   REOWN_CREATE_TOKEN_RETRY: 'REOWN_CREATE_TOKEN_RETRY',
@@ -1522,6 +1523,16 @@ export const showSendTransactionModal = (onAccept, onReject, data, metadata) => 
 
 export const showCreateNanoContractCreateTokenTxModal = (accept, deny, data, dapp) => ({
   type: types.SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+    dapp,
+  },
+});
+
+export const showGetBalanceModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_GET_BALANCE_REQUEST_MODAL,
   payload: {
     accept,
     deny,

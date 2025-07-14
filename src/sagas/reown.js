@@ -111,6 +111,7 @@ import {
   setCreateNanoContractCreateTokenTxStatusReady,
   setCreateNanoContractCreateTokenTxStatusFailure,
   setCreateNanoContractCreateTokenTxStatusSuccess,
+  showGetBalanceModal,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -124,6 +125,7 @@ const AVAILABLE_METHODS = {
   HATHOR_CREATE_TOKEN: 'htr_createToken',
   HATHOR_SEND_TRANSACTION: 'htr_sendTransaction',
   HATHOR_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: 'htr_createNanoContractCreateTokenTx',
+  HATHOR_GET_BALANCE: 'htr_getBalance',
 };
 const AVAILABLE_EVENTS = [];
 
@@ -771,6 +773,19 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           }
         });
       } break;
+      case TriggerTypes.GetBalanceConfirmationPrompt: {
+        const getBalanceResponseTemplate = (accepted) => () => resolve({
+          type: TriggerResponseTypes.GetBalanceConfirmationResponse,
+          data: accepted,
+        });
+
+        dispatch(showGetBalanceModal(
+          getBalanceResponseTemplate(true),
+          getBalanceResponseTemplate(false),
+          request.data,
+          requestMetadata,
+        ));
+      } break;
       default:
         console.log('Unknown request type:', request.type);
         reject(new Error('Invalid request'));
@@ -1093,6 +1108,10 @@ export function* onCreateNanoContractCreateTokenTxRequest({ payload }) {
   );
 }
 
+export function* onGetBalanceRequest({ payload }) {
+  yield* handleDAppRequest(payload, ReownModalTypes.GET_BALANCE, { passAcceptAction: false });
+}
+
 export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
@@ -1107,6 +1126,7 @@ export function* saga() {
       types.SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL,
       onCreateNanoContractCreateTokenTxRequest,
     ),
+    takeLatest(types.SHOW_GET_BALANCE_REQUEST_MODAL, onGetBalanceRequest),
     takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),
