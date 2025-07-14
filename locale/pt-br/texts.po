@@ -1669,7 +1669,7 @@ msgstr "Token não registrado"
 
 #: src/components/Reown/GetBalanceRequest.js:75
 msgid "Available:"
-msgstr "Disponível"
+msgstr "Disponível:"
 
 #: src/components/Reown/GetBalanceRequest.js:82
 msgid "Locked:"
