@@ -441,7 +441,7 @@ msgstr "Ord"
 msgid "Enter your seed words separated by space"
 msgstr "Indtast dine seed-ord adskilt med mellemrum"
 
-#: src/components/NanoContract/NanoContractDetails.js:238
+#: src/components/NanoContract/NanoContractDetails.js:240
 #: src/components/Reown/CreateTokenRequest.js:227
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:560
 #: src/components/Reown/SendTransactionRequest.js:497
@@ -927,6 +927,10 @@ msgstr ""
 msgid "Create Token Request"
 msgstr ""
 
+#: src/screens/Reown/GetBalanceRequestScreen.js:25
+msgid "Get Balance Request"
+msgstr ""
+
 #: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:19
 #: src/screens/Reown/NewNanoContractTransactionScreen.js:24
 msgid "New Nano Contract Transaction"
@@ -1097,7 +1101,7 @@ msgstr ""
 msgid "Load First Addresses Error"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:202
+#: src/components/NanoContract/NanoContractDetails.js:204
 #: src/components/NanoContract/SelectAddressModal.js:115
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:375
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:446
@@ -1232,21 +1236,21 @@ msgstr ""
 msgid "Error loading the details of some tokens."
 msgstr ""
 
-#: src/sagas/wallet.js:793
+#: src/sagas/wallet.js:812
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:809
+#: src/sagas/wallet.js:828
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:819
+#: src/sagas/wallet.js:838
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:835
+#: src/sagas/wallet.js:854
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
@@ -1354,15 +1358,15 @@ msgstr "Ingen internetforbindelse"
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
-#: src/components/PushTxDetailsModal.js:76 src/components/TxDetailsModal.js:99
+#: src/components/PushTxDetailsModal.js:77 src/components/TxDetailsModal.js:99
 msgid "Date & Time"
 msgstr "Dato & Tid"
 
-#: src/components/PushTxDetailsModal.js:77
+#: src/components/PushTxDetailsModal.js:78
 msgid "ID"
 msgstr "ID"
 
-#: src/components/PushTxDetailsModal.js:101
+#: src/components/PushTxDetailsModal.js:102
 msgid "New Transaction"
 msgstr ""
 
@@ -1588,6 +1592,58 @@ msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:225
 msgid "Error while sending create token transaction."
+msgstr ""
+
+#: src/components/Reown/GetBalanceModal.js:19
+msgid "New Get Balance Request"
+msgstr ""
+
+#: src/components/Reown/GetBalanceModal.js:20
+msgid ""
+"You have received a new Get Balance Request. Please carefully review the "
+"details before deciding to accept or decline."
+msgstr ""
+
+#: src/components/Reown/GetBalanceModal.js:21
+msgid "Review Get Balance Request details"
+msgstr ""
+
+#: src/components/Reown/GetBalanceRequest.js:42
+msgid "Balance Request"
+msgstr ""
+
+#: src/components/Reown/GetBalanceRequest.js:44
+msgid "This app is requesting access to your token balances"
+msgstr ""
+
+#: src/components/Reown/GetBalanceRequest.js:57
+msgid "Tokens to be shared"
+msgstr ""
+
+#: src/components/Reown/GetBalanceRequest.js:62
+msgid "Unregistered token"
+msgstr ""
+
+#: src/components/Reown/GetBalanceRequest.js:75
+msgid "Available:"
+msgstr ""
+
+#: src/components/Reown/GetBalanceRequest.js:82
+msgid "Locked:"
+msgstr ""
+
+#: src/components/Reown/GetBalanceRequest.js:100
+msgid ""
+"The app will only receive your balance information. It cannot access your "
+"funds or make transactions."
+msgstr ""
+
+#: src/components/Reown/GetBalanceRequest.js:133
+msgid "Share Balance Information"
+msgstr ""
+
+#: src/components/Reown/GetBalanceRequest.js:137
+msgid "Decline"
 msgstr ""
 
 #: src/components/Reown/InsufficientFundsModal.js:37
@@ -1905,15 +1961,15 @@ msgstr ""
 msgid "Go back"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:177
+#: src/components/NanoContract/NanoContractDetails.js:179
 msgid "Load More"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:203
+#: src/components/NanoContract/NanoContractDetails.js:205
 msgid "Loading Nano Contract transactions."
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:217
+#: src/components/NanoContract/NanoContractDetails.js:219
 msgid "Nano Contract Transactions Error"
 msgstr ""
 
