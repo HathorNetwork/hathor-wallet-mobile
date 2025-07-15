@@ -98,28 +98,27 @@ class PaymentRequestDetail extends React.Component {
       />
     );
 
+    /**
+     * Fetches and treats the value to be used in the QR code.
+     * @returns {string}
+     */
     const fetchQrCodeValue = () => {
       let qrCodeValue = 'invalid-qr-code';
       try {
-        console.log(`Generating QR code value for props:`, {
-          address: this.props.address,
-          amount: this.props.amount,
-          token: this.props.token
-        });
-        console.log(`Is there a good environment?`, { json: JSON, isRawJson: JSON.isRawJson, jsonRaw: JSON.rawJSON });
+        const treatedToken = this.props.token;
+        delete treatedToken.balance;
 
         qrCodeValue = JSONBigInt.stringify({
           address: `hathor:${this.props.address}`,
           // amount is a bigint, so we need to stringify it as
           // it is not serializable
-          amount: this.props.amount,
-          token: this.props.token
+          amount: this.props.amount.toString(),
+          token: treatedToken
         });
       } catch (e) {
         console.warn('Error generating QR code value:', e);
         throw e;
       }
-      console.log(`QR code value generated: ${qrCodeValue}`);
       return qrCodeValue;
     }
 
