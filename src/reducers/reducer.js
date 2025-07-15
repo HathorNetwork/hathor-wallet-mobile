@@ -919,12 +919,24 @@ const onSetTokens = (state, { payload }) => {
     // We have unregistered this token
     selectedToken = DEFAULT_TOKEN;
   }
+
+  // Only allow name, uid and symbol keys for each token
+  const sanitizedTokens = Object.entries(payload).reduce((acc, [uid, token]) => {
+    acc[uid] = {
+      name: token?.name,
+      uid,
+      symbol: token?.symbol,
+    };
+    return acc;
+  }, {});
+
   return {
     ...state,
-    tokens: { ...payload },
+    tokens: sanitizedTokens,
     selectedToken,
   };
 };
+
 /**
  * Set loadHistoryStatus
  */
