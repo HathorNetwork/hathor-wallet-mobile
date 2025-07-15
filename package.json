@@ -1,6 +1,6 @@
 {
   "name": "HathorMobile",
-  "version": "0.32.0-rc.5",
+  "version": "0.32.0-rc.6",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=10.0.0"
