@@ -873,6 +873,7 @@ export function* handleDAppRequest(payload, modalType, options = {}) {
 
   if (!wallet.isReady()) {
     log.error('Got a session request but wallet is not ready.');
+    denyCb();
     return;
   }
 
