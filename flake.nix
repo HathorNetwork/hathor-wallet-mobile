@@ -35,6 +35,7 @@
             ruby
             gnumake
             gettext
+          ] ++ lib.optionals stdenv.isDarwin [
             cocoapods
           ];
         };

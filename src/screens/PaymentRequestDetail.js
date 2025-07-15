@@ -15,6 +15,7 @@ import { get } from 'lodash';
 
 import QRCode from 'react-native-qrcode-svg';
 
+import { JSONBigInt } from '@hathor/wallet-lib/lib/utils/bigint';
 import HathorHeader from '../components/HathorHeader';
 import ModalConfirmation from '../components/ModalConfirmation';
 import OfflineBar from '../components/OfflineBar';
@@ -97,6 +98,31 @@ class PaymentRequestDetail extends React.Component {
       />
     );
 
+    const fetchQrCodeValue = () => {
+      let qrCodeValue = 'invalid-qr-code';
+      try {
+        console.log(`Generating QR code value for props:`, {
+          address: this.props.address,
+          amount: this.props.amount,
+          token: this.props.token
+        });
+        console.log(`Is there a good environment?`, { json: JSON, isRawJson: JSON.isRawJson, jsonRaw: JSON.rawJSON });
+
+        qrCodeValue = JSONBigInt.stringify({
+          address: `hathor:${this.props.address}`,
+          // amount is a bigint, so we need to stringify it as
+          // it is not serializable
+          amount: this.props.amount,
+          token: this.props.token
+        });
+      } catch (e) {
+        console.warn('Error generating QR code value:', e);
+        throw e;
+      }
+      console.log(`QR code value generated: ${qrCodeValue}`);
+      return qrCodeValue;
+    }
+
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         {renderPaymentConfirm()}
@@ -114,13 +140,7 @@ class PaymentRequestDetail extends React.Component {
           }}
           >
             <QRCode
-              value={JSON.stringify({
-                address: `hathor:${this.props.address}`,
-                // amount is a bigint, so we need to stringify it as
-                // it is not serializable
-                amount: this.props.amount.toString(),
-                token: this.props.token
-              })}
+              value={fetchQrCodeValue()}
               size={200}
             />
           </View>
