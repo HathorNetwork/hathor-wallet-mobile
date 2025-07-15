@@ -99,12 +99,13 @@ class PaymentRequestDetail extends React.Component {
     );
 
     /**
-     * Fetches and treats the value to be used in the QR code.
+     * Processes inputs and generates the values to be used in the QR code.
      * @returns {string}
      */
-    const fetchQrCodeValue = () => {
+    const generateQrCodeValue = () => {
       let qrCodeValue = 'invalid-qr-code';
       try {
+        // Removing the unnecessary "balance" from the token object, as it contains bigint values
         const treatedToken = this.props.token;
         delete treatedToken.balance;
 
@@ -139,7 +140,7 @@ class PaymentRequestDetail extends React.Component {
           }}
           >
             <QRCode
-              value={fetchQrCodeValue()}
+              value={generateQrCodeValue()}
               size={200}
             />
           </View>
