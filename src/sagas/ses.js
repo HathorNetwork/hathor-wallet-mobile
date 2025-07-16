@@ -67,7 +67,7 @@ function* init() {
     // SES was disabled in Unleash and is enabled in the storage,
     // meaning that it will be loaded in the next boot we should disable it in
     // storage which gets read in the react-native initialization
-    // (more on this in patches/react-native+0.72.5.patch) and restart the
+    // (more on this in patches/react-native+0.77.2.patch) and restart the
     // react-native bundle.
     disableSes();
   }

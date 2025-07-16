@@ -114,7 +114,13 @@ class PaymentRequestDetail extends React.Component {
           }}
           >
             <QRCode
-              value={JSON.stringify({ address: `hathor:${this.props.address}`, amount: this.props.amount, token: this.props.token })}
+              value={JSON.stringify({
+                address: `hathor:${this.props.address}`,
+                // amount is a bigint, so we need to stringify it as
+                // it is not serializable
+                amount: this.props.amount.toString(),
+                token: this.props.token
+              })}
               size={200}
             />
           </View>

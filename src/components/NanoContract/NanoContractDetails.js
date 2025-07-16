@@ -167,10 +167,12 @@ const LoadMoreButton = ({ lastTx }) => {
    * This handling will dispatch an action to request for
    * older transactions after a txId.
    */
-  const handleLoadMore = () => useCallback(dispatch(nanoContractHistoryRequest({
-    ncId: lastTx.ncId,
-    after: lastTx.txId,
-  })), [lastTx]);
+  const handleLoadMore = useCallback(() => {
+    dispatch(nanoContractHistoryRequest({
+      ncId: lastTx.ncId,
+      after: lastTx.txId,
+    }));
+  }, [dispatch, lastTx]);
 
   return !isInitializeTx && (
     <NewHathorButton

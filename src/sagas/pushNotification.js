@@ -18,7 +18,13 @@ import {
   spawn,
   delay,
 } from 'redux-saga/effects';
-import messaging from '@react-native-firebase/messaging';
+import {
+  AuthorizationStatus, deleteToken,
+  getMessaging,
+  getToken,
+  hasPermission, onMessage,
+  registerDeviceForRemoteMessages, requestPermission
+} from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
 import { Linking, Platform } from 'react-native';
 import { t } from 'ttag';
@@ -146,10 +152,12 @@ function* createChannelIfNotExists() {
  */
 function* confirmDeviceRegistrationOnFirebase(showErrorModal = true) {
   try {
+    const messaging = getMessaging();
+    const fcmToken = getToken(messaging);
     // Make sure deviceId is registered on the FCM
-    if (!messaging().isDeviceRegisteredForRemoteMessages) {
+    if (!fcmToken) {
       log.debug('Device not registered on FCM. Registering device on FCM...');
-      yield call(messaging().registerDeviceForRemoteMessages);
+      yield call(registerDeviceForRemoteMessages(messaging));
     }
     yield put(pushDeviceRegistered(true));
     return true;
@@ -170,7 +178,7 @@ function* confirmDeviceRegistrationOnFirebase(showErrorModal = true) {
  */
 async function getDeviceId() {
   try {
-    const deviceId = await messaging().getToken();
+    const deviceId = await getToken(getMessaging());
     return deviceId;
   } catch (error) {
     log.error('Error getting deviceId from firebase.', error);
@@ -213,7 +221,8 @@ function* installForegroundListener() {
 
   try {
     // Add listeners for push notifications on foreground
-    messaging().onMessage(onForegroundMessage);
+    const messaging = getMessaging();
+    onMessage(messaging, onForegroundMessage);
     isForegroundListenerInstalled = true;
     return true;
   } catch (error) {
@@ -420,20 +429,21 @@ export function* loadWallet() {
  * @returns {boolean} true if has authorization to receive push notifications, false otherwise.
  */
 const hasPostNotificationAuthorization = async () => {
-  let status = await messaging().hasPermission();
-  if (status === messaging.AuthorizationStatus.DENIED) {
+  const messaging = getMessaging();
+  let status = await hasPermission(messaging);
+  if (status === AuthorizationStatus.DENIED) {
     log.debug('Device not authorized to send push notification and blocked to ask permission.');
     return false;
   }
 
-  if (status === messaging.AuthorizationStatus.NOT_DETERMINED
-  || status === messaging.AuthorizationStatus.EPHEMERAL
-  || status === messaging.AuthorizationStatus.PROVISIONAL) {
+  if (status === AuthorizationStatus.NOT_DETERMINED
+  || status === AuthorizationStatus.EPHEMERAL
+  || status === AuthorizationStatus.PROVISIONAL) {
     log.debug('Asking for permission to send push notification.');
-    status = await messaging().requestPermission();
+    status = await requestPermission(messaging);
   }
 
-  return status === messaging.AuthorizationStatus.AUTHORIZED;
+  return status === AuthorizationStatus.AUTHORIZED;
 };
 
 /**
@@ -694,7 +704,8 @@ export function* loadTxDetails(action) {
  * after a reset, even if the device is registered in the FCM or in the APNS.
  */
 const cleanToken = async () => {
-  await messaging().deleteToken();
+  const messaging = getMessaging();
+  await deleteToken(messaging);
 };
 
 /**

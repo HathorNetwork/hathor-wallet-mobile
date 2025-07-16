@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -26,50 +26,49 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 import { selectAddressAddressesRequest } from '../../actions';
 
 /**
- * Use this modal to select an address from the wallet.
+ * A modal component that handles address selection and editing in two steps:
+ * 1. Address selection view - displays list of wallet addresses
+ * 2. Address edit view - shows confirmation screen for selected address
  *
  * @param {Object} props
- * @param {string} props.address It refers to the address selected
- * @param {boolean} props.show It determines if modal must show or hide
- * @param {(address:string) => {}} props.onSelectAddress
- * Callback function called when an address is selected
- * @param {() => {}} props.onDismiss
- * Callback function called to dismiss the modal
+ * @param {string} props.address Current selected address
+ * @param {boolean} props.show Whether the modal is visible
+ * @param {() => void} props.onDismiss Function called to dismiss the modal
+ * @param {(item: Object) => void} props.onEditAddress Function called when and
+ * is selected for editing
+ * @param {string} props.modalStep Current step ('select' or 'edit')
+ * @param {Object} props.selectedItem Currently selected address item
+ * @param {() => void} props.onDismissEdit Function called to dismiss the edit view
+ * @param {(address: string) => void} props.onAddressChange Function called when
+ * address change is confirmed
  *
  * @example
  * <SelectAddressModal
  *   address={selectedAddress}
  *   show={showSelectAddressModal}
  *   onDismiss={toggleSelectAddressModal}
- *   onSelectAddress={handleSelectAddress}
+ *   onEditAddress={handleEditAddress}
+ *   modalStep={modalStep}
+ *   selectedItem={selectedItem}
+ *   onDismissEdit={onDismissEditAddressModal}
+ *   onAddressChange={hookAddressChange}
  * />
  */
-export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }) => {
+export const SelectAddressModal = ({
+  address,
+  show,
+  onDismiss,
+  onEditAddress,
+  modalStep,
+  selectedItem,
+  onDismissEdit,
+  onAddressChange
+}) => {
   const dispatch = useDispatch();
   const { addresses, error } = useSelector((state) => state.selectAddressModal);
 
-  const [selectedItem, setSelectedItem] = useState({ address });
-  const [showEditAddressModal, setShowEditAddressModal] = useState(false);
-
-  const toggleEditAddressModal = () => {
-    setShowEditAddressModal(!showEditAddressModal);
-  };
-
-  const onDismissEditAddressModal = () => {
-    setSelectedItem({ address });
-    toggleEditAddressModal();
-  };
-
-  // This method is only called by AddressItem if the selected address
-  // is different from the current one.
   const onSelectItem = (item) => {
-    setSelectedItem(item);
-    toggleEditAddressModal();
-  };
-
-  const hookAddressChange = (selectedAddress) => {
-    toggleEditAddressModal();
-    onSelectAddress(selectedAddress);
+    onEditAddress(item);
   };
 
   useEffect(() => {
@@ -79,6 +78,17 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
   const hasFailed = () => error;
   const isLoading = () => !error && addresses.length === 0;
   const hasLoaded = () => !error && addresses.length > 0;
+
+  if (modalStep === 'edit') {
+    return (
+      <EditAddressModal
+        show={show}
+        item={selectedItem}
+        onDismiss={onDismissEdit}
+        onAddressChange={onAddressChange}
+      />
+    );
+  }
 
   return (
     <ModalBase
@@ -92,20 +102,20 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
         <View style={styles.bodyWrapper}>
           {hasFailed()
             && (
-            <FeedbackContent
-              icon={(<Image source={errorIcon} style={styles.feedbackContentIcon} resizeMode='contain' />)}
-              title={t`Load Addresses Error`}
-              message={error}
-              offcard
-            />
+              <FeedbackContent
+                icon={(<Image source={errorIcon} style={styles.feedbackContentIcon} resizeMode='contain' />)}
+                title={t`Load Addresses Error`}
+                message={error}
+                offcard
+              />
             )}
           {isLoading()
             && (
-            <FeedbackContent
-              title={t`Loading`}
-              message={t`Loading wallet addresses.`}
-              offcard
-            />
+              <FeedbackContent
+                title={t`Loading`}
+                message={t`Loading wallet addresses.`}
+                offcard
+              />
             )}
           {hasLoaded()
             && (
@@ -129,31 +139,21 @@ export const SelectAddressModal = ({ address, show, onSelectAddress, onDismiss }
               </>
             )}
         </View>
-        {showEditAddressModal
-          && (
-          <EditAddressModal
-            show={showEditAddressModal}
-            item={selectedItem}
-            onDismiss={onDismissEditAddressModal}
-            onAddressChange={hookAddressChange}
-          />
-          )}
       </ModalBase.Body>
     </ModalBase>
   );
 };
 
 /**
- * It renders and address as an item of the list, also it indicates a match
- * between the current address and the item's address.
+ * Renders an individual address item in the address list.
+ * Highlights the currently selected address and handles item selection.
  *
  * @param {Object} props
- * @param {string} props.currentAddress It refers to the address selected
- * @param {Object} props.item Address of the item
- * @param {string} props.item.address
- * @param {number} props.item.index
- * @param {(address:string) => void} props.onSelectItem
- * Callback function called when an address is selected
+ * @param {string} props.currentAddress Currently selected address
+ * @param {Object} props.item Address item data
+ * @param {string} props.item.address The wallet address
+ * @param {number} props.item.index The address index in the wallet
+ * @param {(item: Object) => void} props.onSelectItem Function called when item is selected
  */
 const AddressItem = ({ currentAddress, item, onSelectItem }) => {
   const onPress = () => {
@@ -185,14 +185,17 @@ const AddressItem = ({ currentAddress, item, onSelectItem }) => {
 const styles = StyleSheet.create({
   modal: {
     justifyContent: 'flex-end',
-    marginHorizontal: 0,
+    alignItems: 'center',
+    paddingHorizontal: 10,
   },
   wrapper: {
     height: '90%',
+    minHeight: 500,
   },
   body: {
     flex: 1,
     paddingBottom: 20,
+    minHeight: 400,
   },
   bodyWrapper: {
     flex: 1,

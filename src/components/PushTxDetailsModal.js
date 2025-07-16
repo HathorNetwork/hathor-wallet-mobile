@@ -6,19 +6,19 @@
  */
 
 import React from 'react';
-import { Text, StyleSheet, View } from 'react-native';
-import { t } from 'ttag';
+import { StyleSheet, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { t } from 'ttag';
 import { getShortHash, isTokenNFT, renderValue } from '../utils';
-import { ListButton, ListItem } from './HathorList';
-import SlideIndicatorBar from './SlideIndicatorBar';
 import { TxHistory } from '../models';
-import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { updateSelectedToken } from '../actions';
 import HathorModal from './HathorModal';
+import SlideIndicatorBar from './SlideIndicatorBar';
+import { ListButton, ListItem } from './HathorList';
+import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
   modal: {
     justifyContent: 'flex-end',
   },
@@ -26,6 +26,7 @@ const style = StyleSheet.create({
     color: COLORS.primary,
   },
   wrapperView: {
+    paddingTop: 16,
     backgroundColor: COLORS.backgroundColor,
     borderRadius: 8,
   },
@@ -58,16 +59,16 @@ export default function PushTxDetailsModal(props) {
   };
 
   return (
-    <HathorModal onDismiss={props.onRequestClose} viewStyle={style.wrapperView}>
+    <HathorModal onDismiss={props.onRequestClose} viewStyle={styles.wrapperView}>
       <SlideIndicatorBar />
       <NewTransactionTitle />
-      <View>
+      <View style={{ width: '100%' }}>
         {tokens.map((token) => (
           <ListButton
             key={token.uid}
             onPress={() => navigateToTokenDetailPage(token)}
             title={getTokenTitle(token)}
-            titleStyle={token.isRegistered && style.registeredToken}
+            titleStyle={token.isRegistered && styles.registeredToken}
             button={(
               <Text>{getTokenBalance(token, isTokenNFT(token.uid, tokenMetadata))}</Text>
             )}

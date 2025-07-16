@@ -28,14 +28,15 @@ function updateAndroidBuildVersion() {
 /**
  * @typedef {'major'|'minor'|'patch'|'rc'|'release'} UpdateType
  */
-
 /**
  * Calculates the next version number based on the current version and the update type
  * @param {UpdateType} _updateType
  * @param {string} currentVersionString
+ * @param [options]
+ * @param {boolean} [options.addRc=false] Whether to also add an rc version to the other increment
  * @returns {{rcVersion: number, updatedVersionString: string, mainVersionString: string}}
  */
-function calculateNewVersion(_updateType, currentVersionString) {
+function calculateNewVersion(_updateType, currentVersionString, { addRc = false } = {}) {
   const versionNameRegex = /(\d+)\.(\d+)\.(\d+)(-rc\.)?(\d+)?/;
   const versionNameMatch = currentVersionString.match(versionNameRegex);
   let major = parseInt(versionNameMatch[1], 10);
@@ -48,16 +49,16 @@ function calculateNewVersion(_updateType, currentVersionString) {
       major += 1;
       minor = 0;
       patch = 0;
-      rc = null;
+      rc = addRc ? 1 : null;
       break;
     case 'minor':
       minor += 1;
       patch = 0;
-      rc = null;
+      rc = addRc ? 1 : null;
       break;
     case 'patch':
       patch += 1;
-      rc = null;
+      rc = addRc ? 1 : null;
       break;
     case 'rc':
       if (rc) {
@@ -87,9 +88,10 @@ function calculateNewVersion(_updateType, currentVersionString) {
  * Updates the version number on package.json and returns an object containing the updated values
  * to be used on other file updates
  * @param {UpdateType} _updateType
+ * @param {boolean} [forceRcBump=false] Whether to force the rc version to be bumped
  * @returns {{rcVersion: number, updatedVersionString: string, mainVersionString: string}}
  */
-function updatePackageJson(_updateType) {
+function updatePackageJson(_updateType, forceRcBump) {
   const packageJsonPath = path.join(__dirname, '..', 'package.json');
   const packageJsonFile = fs.readFileSync(packageJsonPath, 'utf8');
 
@@ -97,7 +99,11 @@ function updatePackageJson(_updateType) {
   const versionNameRegex = /"version": "(.+)"/;
   const versionNameMatch = packageJsonFile.match(versionNameRegex);
   const currentVersionString = versionNameMatch[1];
-  const updatedVersionObj = calculateNewVersion(_updateType, currentVersionString);
+  const updatedVersionObj = calculateNewVersion(
+    _updateType,
+    currentVersionString,
+    { addRc: forceRcBump }
+  );
 
   // Replace the version code on the file contents
   const updatedPackageJsonFile = packageJsonFile.replace(versionNameRegex, `"version": "${updatedVersionObj.updatedVersionString}"`);
@@ -202,16 +208,26 @@ const updateType = process.argv[2];
 // and exit processing with an error
 if (!['major', 'minor', 'patch', 'rc', 'release'].includes(updateType)) {
   console.error(`Invalid update type: ${updateType}`);
-  console.log('Usage: node scripts/bump-version.js <updateType>');
+  console.log('Usage: node scripts/bump-version.js <updateType> [--bumpRc]');
   console.log('Where <updateType> can be "major", "minor", "patch", "rc" or "release"');
+  console.log(`\nExamples using the Makefile syntax:
+'3.0.1' -> make bump updateType=major -> '4.0.0'
+'3.0.1' -> make bump updateType=major bumpRc=true -> '4.0.0-rc.1'
+'3.0.1' -> make bump updateType=minor bumpRc=true -> '3.1.0-rc.1'
+'3.2.1' -> make bump updateType=patch -> '3.2.2'
+'3.2.1' -> make bump updateType=rc -> '3.2.1-rc.1'
+'3.2.1-rc.3' -> make bump updateType=release -> '3.2.1'
+`)
   process.exit(1);
 }
+
+const forceRcBump = process.argv[3]?.toLowerCase() === '--bumprc';
 
 const {
   updatedVersionString,
   mainVersionString,
   rcVersion
-} = updatePackageJson(updateType);
+} = updatePackageJson(updateType, forceRcBump);
 updatePackageLockJson(updatedVersionString);
 updateAndroidBuildVersion();
 updateVersionAndroid(updatedVersionString);

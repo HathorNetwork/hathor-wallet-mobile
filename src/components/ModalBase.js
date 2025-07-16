@@ -11,10 +11,10 @@ import {
   View,
   Text,
 } from 'react-native';
-import Modal from 'react-native-modal';
 
 import { COLORS } from '../styles/themes';
 import NewHathorButton from './NewHathorButton';
+import BackdropModal from './BackdropModal';
 
 const ModalBase = ({ styleModal, styleWrapper, show, onDismiss, children }) => {
   const hasChildren = children != null;
@@ -33,27 +33,20 @@ const ModalBase = ({ styleModal, styleWrapper, show, onDismiss, children }) => {
   );
 
   return (
-    <Modal
-      isVisible={show}
-      animationIn='slideInUp'
-      swipeDirection={['down']}
-      onSwipeComplete={onDismiss}
-      onBackButtonPress={onDismiss}
-      onBackdropPress={onDismiss}
-      style={styleModal}
-      propagateSwipe
+    <BackdropModal
+      visible={show}
+      animationType='slide'
+      position='center'
+      enableBackdropPress
+      onDismiss={onDismiss}
+      containerStyle={styleModal}
+      contentStyle={StyleSheet.compose(styles.wrapper, styleWrapper)}
     >
-      <View style={[
-        styles.wrapper,
-        styleWrapper,
-      ]}
-      >
-        {title && title}
-        {body && body}
-        {button && button}
-        {discreteButton && discreteButton}
-      </View>
-    </Modal>
+      {title && title}
+      {body && body}
+      {button && button}
+      {discreteButton && discreteButton}
+    </BackdropModal>
   );
 };
 
