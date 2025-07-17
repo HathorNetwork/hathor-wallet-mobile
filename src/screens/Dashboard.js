@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
@@ -24,7 +24,7 @@ import AskForPushNotificationRefresh from '../components/AskForPushNotificationR
 import { COLORS } from '../styles/themes';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
-import { getNanoContractFeatureToggle } from '../utils';
+import { isNanoContractsEnabled } from '../utils';
 import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
 
 /**
@@ -94,7 +94,7 @@ export const Dashboard = () => {
     selectedToken,
     tokensMetadata,
   } = useSelector(getTokensState);
-  const isNanoContractEnabled = useSelector(getNanoContractFeatureToggle);
+  const isNanoEnabled = useSelector(isNanoContractsEnabled);
 
   const [currList, selectList] = useState(listOption.tokens);
   const navigation = useNavigation();
@@ -117,13 +117,21 @@ export const Dashboard = () => {
     navigation.navigate('MainScreen');
   }
 
+  useEffect(() => {
+    // User might have changed networks and nano contracts are now disabled,
+    // we must change the tab to the tokens tab.
+    if (!isNanoEnabled && currList === listOption.nanoContracts) {
+      selectList(listOption.tokens);
+    }
+  }, [isNanoEnabled]);
+
   return (
     <Wrapper>
       <ShowPushNotificationTxDetails navigation={navigation} />
       <AskForPushNotification navigation={navigation} />
       <AskForPushNotificationRefresh />
       { // Only show the toggle button when Nano Contract is enabled to the wallet
-        isNanoContractEnabled
+        isNanoEnabled
         && (
           <DashBoardHeader>
             <TwoOptionsToggle
@@ -140,7 +148,7 @@ export const Dashboard = () => {
         isTokensSelected(currList)
         && (
           <TokenSelect
-            header={<TokensHeader />}
+            header={<TokensHeader isNanoEnabled={isNanoEnabled} />}
             renderArrow
             onItemPress={onTokenPress}
             selectedToken={selectedToken}
@@ -151,7 +159,7 @@ export const Dashboard = () => {
         )
       }
       { // Only show if Nano Contract is enabled in the wallet
-        isNanoContractEnabled
+        isNanoEnabled
         && isNanoContractsSelected(currList)
         && <NanoContractsList />
       }
@@ -180,13 +188,24 @@ const DashBoardHeader = ({ children }) => {
   );
 };
 
-const TokensHeader = () => (
-  <HathorHeader>
-    <HathorHeader.Left>
-      <Text style={[styles.headerTitle]}>{t`Tokens`}</Text>
-    </HathorHeader.Left>
-  </HathorHeader>
-);
+const TokensHeader = ({ isNanoEnabled }) => {
+  const navigation = useNavigation();
+
+  return (
+    <HathorHeader>
+      <HathorHeader.Left>
+        <Text style={[styles.headerTitle]}>{t`Tokens`}</Text>
+      </HathorHeader.Left>
+      {!isNanoEnabled && (
+        <HathorHeader.Right>
+          <SimpleButton onPress={() => navigation.navigate('UnifiedQRScanner')} style={{ marginLeft: 16 }}>
+            <QRCodeIcon size={24} color={COLORS.primary} />
+          </SimpleButton>
+        </HathorHeader.Right>
+      )}
+    </HathorHeader>
+  )
+};
 
 const styles = StyleSheet.create({
   wrapper: {
