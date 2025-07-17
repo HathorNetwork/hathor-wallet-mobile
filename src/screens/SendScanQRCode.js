@@ -9,6 +9,7 @@ import React from 'react';
 import { Alert, View } from 'react-native';
 import { connect } from 'react-redux';
 import { t } from 'ttag';
+import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 
 import QRCodeReader from '../components/QRCodeReader';
 import OfflineBar from '../components/OfflineBar';
@@ -62,7 +63,11 @@ class SendScanQRCode extends React.Component {
         const params = {
           address: qrcode.address,
           token: qrcode.token,
-          amount: qrcode.amount,
+          // The SendConfirmScreen expects the amount as bigint already
+          // the qrcode.amount is a string with the amount already parsed
+          // i.e., the amount '1.23' already comes as '123', so we just need
+          // to parse the string to bigint
+          amount: bigIntCoercibleSchema.parse(qrcode.amount),
         };
         this.props.navigation.navigate('SendConfirmScreen', params);
       } else {

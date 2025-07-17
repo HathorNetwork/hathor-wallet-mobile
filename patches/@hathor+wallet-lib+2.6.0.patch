@@ -1,5 +1,5 @@
 diff --git a/node_modules/@hathor/wallet-lib/lib/utils/bigint.js b/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
-index 8c56ad2..c598604 100644
+index 8c56ad2..ce80a79 100644
 --- a/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
 +++ b/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
 @@ -9,6 +9,13 @@ exports.parseSchema = parseSchema;
@@ -25,13 +25,14 @@ index 8c56ad2..c598604 100644
    },
    stringify(value, space) {
      return JSON.stringify(value, this.bigIntReplacer, space);
-@@ -47,7 +54,10 @@ const JSONBigInt = exports.JSONBigInt = {
+@@ -47,7 +54,11 @@ const JSONBigInt = exports.JSONBigInt = {
        // Otherwise, we can keep it as a Number.
        return value;
      } catch (e) {
 -      if (e instanceof SyntaxError && (e.message === `Cannot convert ${context.source} to a BigInt` || e.message === `invalid BigInt syntax`)) {
 +      if (e instanceof SyntaxError
 +        && (e.message === `Cannot convert ${context.source} to a BigInt`
++          || (e.message === `can't convert string to bigint`)
 +          || (e.message === `Failed to parse String to BigInt`))) {
 +
          // When this error happens, it means the number cannot be converted to a BigInt,

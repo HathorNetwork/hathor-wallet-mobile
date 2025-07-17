@@ -265,8 +265,27 @@ export function* startWallet(action) {
     let network = get(serverInfo, 'network');
     if (useWalletService) {
       // In the wallet-service facade, serverInfo is null, so we need to get
-      // version data
+      // version data and convert it to what serverInfo expects:
       const versionData = yield call([wallet, wallet.getVersionData]);
+
+      yield put(setServerInfo({
+        version: versionData.version,
+        network: versionData.network,
+        decimal_places: versionData.decimalPlaces,
+        reward_spend_min_blocks: versionData.rewardSpendMinBlocks,
+        token_deposit_percentage: versionData.tokenDepositPercentage,
+        native_token: {
+          name: versionData.nativeTokenName,
+          symbol: versionData.nativeTokenSymbol,
+        },
+        max_number_outputs: versionData.maxNumberOutputs,
+        max_number_inputs: versionData.maxNumberInputs,
+        max_tx_weight: versionData.maxTxWeight,
+        min_weight: versionData.minWeight,
+        max_tx_weight_coefficient: versionData.minTxWeightCoefficient,
+        min_tx_weight_k: versionData.minTxWeightK,
+      }));
+
       network = versionData.network;
     }
 
@@ -583,7 +602,7 @@ export function* handleTx(action) {
     yield put(tokenFetchBalanceRequested(tokenUid, true));
 
     if (tokenUid === hathorLibConstants.NATIVE_TOKEN_UID
-        || tokenUid === DEFAULT_TOKEN.uid) {
+      || tokenUid === DEFAULT_TOKEN.uid) {
       yield put(tokenFetchHistoryRequested(tokenUid, true));
     } else {
       // Invalidate the history so it will get requested the next time the user enters the history
@@ -712,7 +731,7 @@ export function* onWalletReloadData() {
     for (const tokenUid of registeredTokens) {
       // Skip customtoken and HTR since we already force-download the history on loadTokens
       if (tokenUid === htrUid
-          || tokenUid === customTokenUid) {
+        || tokenUid === customTokenUid) {
         continue;
       }
 

@@ -116,7 +116,8 @@ const SendConfirmScreen = () => {
     const balance = tokensBalance[token.uid].data;
     const available = balance ? balance.available : 0;
     const availableCount = Number(available);
-    return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, availableCount);
+    const availablePretty = renderValue(available, isNFT);
+    return ngettext(msgid`${availablePretty} available`, `${availablePretty} available`, availableCount);
   };
 
   const tokenNameUpperCase = token.name.toUpperCase();
