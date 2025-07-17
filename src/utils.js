@@ -605,6 +605,9 @@ export const getNanoContractFeatureToggle = (state) => (
 /*
  * Checks if nano contracts should be enabled
  *
+ * Nano contracts should only be enabled if both the feature flag
+ * and the server info flag are enabled
+ *
  * @param {Object} state Redux store state
  *
  * @returns {boolean} Whether Nano Contracts should be enabled
