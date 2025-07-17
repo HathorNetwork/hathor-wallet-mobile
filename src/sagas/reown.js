@@ -432,6 +432,8 @@ export function* processRequest(action) {
     chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
 
+  console.log('REQ: ', params.request);
+
   try {
     let dispatch;
     yield put((_dispatch) => {
@@ -1110,6 +1112,7 @@ export function* onCreateNanoContractCreateTokenTxRequest({ payload }) {
 }
 
 export function* onGetBalanceRequest({ payload }) {
+  console.log('payload: ', payload);
   yield* handleDAppRequest(payload, ReownModalTypes.GET_BALANCE, { passAcceptAction: false });
 }
 

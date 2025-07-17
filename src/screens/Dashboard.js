@@ -24,7 +24,7 @@ import AskForPushNotificationRefresh from '../components/AskForPushNotificationR
 import { COLORS } from '../styles/themes';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
-import { getNanoContractFeatureToggle } from '../utils';
+import { isNanoContractsEnabled } from '../utils';
 import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
 
 /**
@@ -94,7 +94,7 @@ export const Dashboard = () => {
     selectedToken,
     tokensMetadata,
   } = useSelector(getTokensState);
-  const isNanoContractEnabled = useSelector(getNanoContractFeatureToggle);
+  const isNanoContractEnabled = useSelector(isNanoContractsEnabled);
 
   const [currList, selectList] = useState(listOption.tokens);
   const navigation = useNavigation();
