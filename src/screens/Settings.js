@@ -14,7 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { isEmpty, get } from 'lodash';
+import { isEmpty } from 'lodash';
 import OfflineBar from '../components/OfflineBar';
 import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
