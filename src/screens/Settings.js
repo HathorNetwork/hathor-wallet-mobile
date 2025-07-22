@@ -14,7 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { isEmpty, get } from 'lodash';
+import { isEmpty } from 'lodash';
 import OfflineBar from '../components/OfflineBar';
 import Logo from '../components/Logo';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
@@ -26,7 +26,7 @@ import {
 import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
 import { NetworkSettingsFlowNav } from './NetworkSettings';
-import { isPushNotificationAvailableForUser } from '../utils';
+import { isNanoContractsEnabled, isPushNotificationAvailableForUser } from '../utils';
 import { getNetworkSettings } from '../sagas/helpers';
 
 /**
@@ -51,7 +51,7 @@ const mapStateToProps = (state) => {
     uniqueDeviceId: state.uniqueDeviceId,
     server,
     isPushNotificationAvailable: isPushNotificationAvailableForUser(state),
-    reownEnabled: state.featureToggles[REOWN_FEATURE_TOGGLE] && get(state.serverInfo, 'nano_contracts_enabled', false),
+    reownEnabled: state.featureToggles[REOWN_FEATURE_TOGGLE] && isNanoContractsEnabled(state),
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
   };
 };
@@ -101,12 +101,12 @@ export class Settings extends React.Component {
           </View>
           {(this.props.isOnline
             && (
-            <View style={this.style.networkContainerView}>
-              <Text>{t`You are connected to`}</Text>
-              <View style={this.style.networkView}>
-                <Text style={this.style.networkText}>{this.props.network}</Text>
+              <View style={this.style.networkContainerView}>
+                <Text>{t`You are connected to`}</Text>
+                <View style={this.style.networkView}>
+                  <Text style={this.style.networkText}>{this.props.network}</Text>
+                </View>
               </View>
-            </View>
             )
           )}
 
@@ -132,10 +132,10 @@ export class Settings extends React.Component {
             />
             {this.props.isPushNotificationAvailable
               && (
-              <ListMenu
-                title={t`Push Notification`}
-                onPress={() => this.props.navigation.navigate('PushNotification')}
-              />
+                <ListMenu
+                  title={t`Push Notification`}
+                  onPress={() => this.props.navigation.navigate('PushNotification')}
+                />
               )}
             {IS_MULTI_TOKEN
               && (
