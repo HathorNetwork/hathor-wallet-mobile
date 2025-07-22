@@ -36,7 +36,7 @@ import {
 } from '../actions';
 import { logger } from '../logger';
 import { NANO_CONTRACT_TX_HISTORY_SIZE } from '../constants';
-import { getNanoContractFeatureToggle } from '../utils';
+import { isNanoContractsEnabled } from '../utils';
 
 const log = logger('nano-contract-saga');
 
@@ -73,7 +73,7 @@ export const isAddressMine = async (wallet, address, useWalletService) => {
 };
 
 export function* init() {
-  const isEnabled = yield select(getNanoContractFeatureToggle);
+  const isEnabled = yield select(isNanoContractsEnabled);
   if (!isEnabled) {
     log.debug('Halting nano contract initialization because the feature flag is disabled.');
     return;

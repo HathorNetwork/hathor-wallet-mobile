@@ -10,7 +10,7 @@ import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import CryptoJS from 'crypto-js';
 import * as Keychain from 'react-native-keychain';
 import React from 'react';
-import { isEmpty } from 'lodash';
+import { isEmpty, get } from 'lodash';
 import { t } from 'ttag';
 import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
@@ -519,16 +519,16 @@ export function combineURLs(baseURL, relativeURL) {
  */
 export const isPushNotificationAvailableForUser = (state) => (
   state.pushNotification.available
-    // On iOS a simulator can't register a device token on APNS
-    && state.pushNotification.deviceRegistered
-    // TODO: We should drop this condition when we add support other networks
-    // XXX: We don't have support in this app to generate device tokens
-    // to the FCM testnet app. Currently we embbed only the mainnet
-    // configuration file during the build.
-    && state.networkSettings.network === NETWORK_MAINNET
-    // If Wallet Service URLs are empty it makes impossible to use the
-    // Wallet Service API to register the device's token.
-    && !isEmpty(state.networkSettings.walletServiceUrl)
+  // On iOS a simulator can't register a device token on APNS
+  && state.pushNotification.deviceRegistered
+  // TODO: We should drop this condition when we add support other networks
+  // XXX: We don't have support in this app to generate device tokens
+  // to the FCM testnet app. Currently we embbed only the mainnet
+  // configuration file during the build.
+  && state.networkSettings.network === NETWORK_MAINNET
+  // If Wallet Service URLs are empty it makes impossible to use the
+  // Wallet Service API to register the device's token.
+  && !isEmpty(state.networkSettings.walletServiceUrl)
 );
 
 /**
@@ -602,6 +602,21 @@ export const getNanoContractFeatureToggle = (state) => (
   state.featureToggles[NANO_CONTRACT_FEATURE_TOGGLE]
 );
 
+/*
+ * Checks if nano contracts should be enabled
+ *
+ * Nano contracts should only be enabled if both the feature flag
+ * and the server info flag are enabled
+ *
+ * @param {Object} state Redux store state
+ *
+ * @returns {boolean} Whether Nano Contracts should be enabled
+ */
+export const isNanoContractsEnabled = (state) => (
+  getNanoContractFeatureToggle(state)
+  && get(state.serverInfo, 'nano_contracts_enabled', false)
+);
+
 /**
  * Get timestamp in specific format.
  *
@@ -619,7 +634,7 @@ export const getTimestampFormat = (timestamp) => moment.unix(timestamp).format(t
  */
 export const consumeAsyncIterator = async (asyncIterator) => {
   const list = [];
-  for (;;) {
+  for (; ;) {
     /* eslint-disable no-await-in-loop */
     const objYielded = await asyncIterator.next();
     const { value, done } = objYielded;
