@@ -71,10 +71,6 @@ export const SelectAddressModal = ({
     onEditAddress(item);
   };
 
-  useEffect(() => {
-    dispatch(selectAddressAddressesRequest());
-  }, []);
-
   const hasFailed = () => error;
   const isLoading = () => !error && addresses.length === 0;
   const hasLoaded = () => !error && addresses.length > 0;
