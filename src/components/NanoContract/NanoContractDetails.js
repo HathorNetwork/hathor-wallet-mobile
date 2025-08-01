@@ -17,7 +17,11 @@ import { t } from 'ttag';
 import { NanoContractDetailsHeader } from './NanoContractDetailsHeader';
 import { NanoContractTransactionsListItem } from './NanoContractTransactionsListItem';
 import { COLORS } from '../../styles/themes';
-import { nanoContractAddressChangeRequest, nanoContractHistoryRequest } from '../../actions';
+import {
+  nanoContractAddressChangeRequest,
+  nanoContractHistoryRequest,
+  selectAddressAddressesRequest,
+} from '../../actions';
 import { HathorFlatList } from '../HathorFlatList';
 import Spinner from '../Spinner';
 import errorIcon from '../../assets/images/icErrorBig.png';
@@ -79,6 +83,11 @@ export const NanoContractDetails = ({ nc }) => {
   const navigatesToNanoContractTransaction = (tx) => {
     navigation.navigate('NanoContractTransactionScreen', { tx });
   };
+
+  // Request addresses for selection in list when component mounts
+  useEffect(() => {
+    dispatch(selectAddressAddressesRequest());
+  }, []);
 
   // This effect runs only once when the component is first built.
   useEffect(() => {
