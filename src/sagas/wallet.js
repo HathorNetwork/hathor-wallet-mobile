@@ -812,8 +812,6 @@ export function* fetchAllWalletAddresses() {
     const feedbackErrorMsg = t`Wallet is not ready to load addresses.`;
     // This will show the message in the feedback content at SelectAddressModal
     yield put(selectAddressAddressesFailure({ error: feedbackErrorMsg }));
-    // This will show user an error modal with the option to send the error to sentry.
-    yield put(onExceptionCaptured(new Error(errorMsg), false));
     return;
   }
 
