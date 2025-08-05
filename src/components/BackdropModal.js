@@ -308,6 +308,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.backgroundColor,
     borderRadius: 8,
     padding: 16,
+    alignSelf: 'stretch',
   },
 });
 

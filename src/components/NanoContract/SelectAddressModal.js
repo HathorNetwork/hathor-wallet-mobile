@@ -23,6 +23,7 @@ import { TextLabel } from '../TextLabel';
 import { EditAddressModal } from './EditAddressModal';
 import { FeedbackContent } from '../FeedbackContent';
 import SimpleButton from '../SimpleButton';
+import Spinner from '../Spinner';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import { selectAddressAddressesRequest } from '../../actions';
 
@@ -114,6 +115,7 @@ export const SelectAddressModal = ({
           {isLoading()
             && (
               <FeedbackContent
+                icon={(<Spinner size={48} />)}
                 title={t`Loading`}
                 message={t`Loading wallet addresses.`}
                 offcard
