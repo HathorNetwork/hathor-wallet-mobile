@@ -22,6 +22,7 @@ import { TextValue } from '../TextValue';
 import { TextLabel } from '../TextLabel';
 import { EditAddressModal } from './EditAddressModal';
 import { FeedbackContent } from '../FeedbackContent';
+import SimpleButton from '../SimpleButton';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import { selectAddressAddressesRequest } from '../../actions';
 
@@ -67,6 +68,10 @@ export const SelectAddressModal = ({
   const dispatch = useDispatch();
   const { addresses, error } = useSelector((state) => state.selectAddressModal);
 
+  const onRetryLoadAddresses = () => {
+    dispatch(selectAddressAddressesRequest());
+  }
+
   const onSelectItem = (item) => {
     onEditAddress(item);
   };
@@ -102,6 +107,7 @@ export const SelectAddressModal = ({
                 icon={(<Image source={errorIcon} style={styles.feedbackContentIcon} resizeMode='contain' />)}
                 title={t`Load Addresses Error`}
                 message={error}
+                action={(<SimpleButton title={t`Retry`} onPress={onRetryLoadAddresses} />)}
                 offcard
               />
             )}
