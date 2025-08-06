@@ -95,7 +95,8 @@ export function* handleToggleUpdate() {
 }
 
 export function* monitorFeatureFlags(currentRetry = 0, createRoutine = true) {
-  let stage, fullNetwork;
+  let stage; let
+    fullNetwork;
   // We try to get the network settings from the storage (which is updated as soon
   // as we persist the networkSettings update) and if it's empty, we get the default state
   const networkSettingsStorage = STORE.getItem(networkSettingsKeyMap.networkSettings);
