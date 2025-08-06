@@ -188,6 +188,7 @@ export const REOWN_PROJECT_ID = '8264fff563181da658ce64ee80e80458';
 export const STAGE_DEV_PRIVNET = 'dev-privnet';
 export const STAGE_TESTNET = 'testnet';
 export const NETWORK_TESTNET = 'testnet';
+export const FULL_NETWORK_TESTNET = 'testnet';
 export const WALLET_SERVICE_TESTNET_BASE_URL = 'https://wallet-service.testnet.hathor.network/';
 export const WALLET_SERVICE_TESTNET_BASE_WS_URL = 'wss://ws.wallet-service.testnet.hathor.network/';
 export const NODE_SERVER_TESTNET_URL = 'https://node1.testnet.hathor.network/v1a/';
@@ -197,6 +198,7 @@ export const TX_MINING_SERVICE_TESTNET_URL = 'https://txmining.testnet.hathor.ne
 
 // Nano testnet settings:
 export const NETWORK_NANO_TESTNET = 'testnet';
+export const FULL_NETWORK_NANO_TESTNET = 'nano-testnet-bravo';
 export const NODE_SERVER_NANO_TESTNET_URL = 'https://node1.bravo.nano-testnet.hathor.network/v1a/';
 export const EXPLORER_NANO_TESTNET_URL = 'https://explorer.bravo.nano-testnet.hathor.network/';
 export const TX_MINING_SERVICE_NANO_TESTNET_URL = 'https://txmining.bravo.nano-testnet.hathor.network/';
@@ -204,6 +206,7 @@ export const TX_MINING_SERVICE_NANO_TESTNET_URL = 'https://txmining.bravo.nano-t
 export const PRE_SETTINGS_NANO_TESTNET = {
   stage: STAGE_TESTNET,
   network: NETWORK_NANO_TESTNET,
+  fullNetwork: FULL_NETWORK_NANO_TESTNET,
   nodeUrl: NODE_SERVER_NANO_TESTNET_URL,
   explorerUrl: EXPLORER_NANO_TESTNET_URL,
   explorerServiceUrl: EXPLORER_SERVICE_TESTNET_URL,
@@ -213,6 +216,7 @@ export const PRE_SETTINGS_NANO_TESTNET = {
 export const PRE_SETTINGS_TESTNET = {
   stage: STAGE_TESTNET,
   network: NETWORK_TESTNET,
+  fullNetwork: FULL_NETWORK_TESTNET,
   walletServiceUrl: WALLET_SERVICE_TESTNET_BASE_URL,
   walletServiceWsUrl: WALLET_SERVICE_TESTNET_BASE_WS_URL,
   nodeUrl: NODE_SERVER_TESTNET_URL,
@@ -221,6 +225,7 @@ export const PRE_SETTINGS_TESTNET = {
   txMiningServiceUrl: TX_MINING_SERVICE_TESTNET_URL,
 };
 
+export const FULL_NETWORK_MAINNET = 'mainnet';
 export const NODE_SERVER_MAINNET_URL = 'https://mobile.wallet.hathor.network/v1a/';
 export const EXPLORER_MAINNET_URL = 'https://explorer.hathor.network/';
 export const EXPLORER_SERVICE_MAINNET_URL = 'https://explorer-service.hathor.network/';
@@ -229,6 +234,7 @@ export const TX_MINING_SERVICE_MAINNET_URL = 'https://txmining.mainnet.hathor.ne
 export const PRE_SETTINGS_MAINNET = {
   stage: STAGE,
   network: NETWORK_MAINNET,
+  fullNetwork: FULL_NETWORK_MAINNET,
   walletServiceUrl: WALLET_SERVICE_MAINNET_BASE_URL,
   walletServiceWsUrl: WALLET_SERVICE_MAINNET_BASE_WS_URL,
   nodeUrl: NODE_SERVER_MAINNET_URL,
