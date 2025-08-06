@@ -14,6 +14,7 @@ import Spinner from '../../components/Spinner';
 import { hasSucceeded, hasFailed, isLoading } from './helper';
 import { AlertUI } from '../../styles/themes';
 import { WALLET_SERVICE_FEATURE_TOGGLE } from '../../constants';
+import NavigationService from '../../NavigationService';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
 const warningText = t`Any token outside mainnet network bear no value. Only change if you know what you are doing.`;
@@ -157,7 +158,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
   const handleFeedbackModalDismiss = (navigate) => {
     dispatch(networkSettingsUpdateReady());
     if (navigate) {
-      navigation.navigate('Dashboard');
+      NavigationService.resetToMain();
     }
   };
 
