@@ -154,8 +154,11 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     setInvalidModel(validate(form));
   };
 
-  const handleFeedbackModalDismiss = () => {
+  const handleFeedbackModalDismiss = (navigate) => {
     dispatch(networkSettingsUpdateReady());
+    if (navigate) {
+      navigation.navigate('Dashboard');
+    }
   };
 
   const handleSubmit = () => {
@@ -206,7 +209,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           <FeedbackModal
             icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
             text={feedbackSucceededText}
-            onDismiss={handleFeedbackModalDismiss}
+            onDismiss={() => handleFeedbackModalDismiss(true)}
           />
         )}
 
@@ -214,7 +217,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           <FeedbackModal
             icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
             text={feedbackFailedText}
-            onDismiss={handleFeedbackModalDismiss}
+            onDismiss={() => handleFeedbackModalDismiss(false)}
           />
         )}
 
