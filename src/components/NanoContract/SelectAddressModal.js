@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   View,
@@ -22,6 +22,8 @@ import { TextValue } from '../TextValue';
 import { TextLabel } from '../TextLabel';
 import { EditAddressModal } from './EditAddressModal';
 import { FeedbackContent } from '../FeedbackContent';
+import SimpleButton from '../SimpleButton';
+import Spinner from '../Spinner';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import { selectAddressAddressesRequest } from '../../actions';
 
@@ -67,13 +69,13 @@ export const SelectAddressModal = ({
   const dispatch = useDispatch();
   const { addresses, error } = useSelector((state) => state.selectAddressModal);
 
+  const onRetryLoadAddresses = () => {
+    dispatch(selectAddressAddressesRequest());
+  }
+
   const onSelectItem = (item) => {
     onEditAddress(item);
   };
-
-  useEffect(() => {
-    dispatch(selectAddressAddressesRequest());
-  }, []);
 
   const hasFailed = () => error;
   const isLoading = () => !error && addresses.length === 0;
@@ -106,12 +108,14 @@ export const SelectAddressModal = ({
                 icon={(<Image source={errorIcon} style={styles.feedbackContentIcon} resizeMode='contain' />)}
                 title={t`Load Addresses Error`}
                 message={error}
+                action={(<SimpleButton title={t`Retry`} onPress={onRetryLoadAddresses} />)}
                 offcard
               />
             )}
           {isLoading()
             && (
               <FeedbackContent
+                icon={(<Spinner size={48} />)}
                 title={t`Loading`}
                 message={t`Loading wallet addresses.`}
                 offcard

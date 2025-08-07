@@ -1028,6 +1028,7 @@ export const networkSettingsUpdateRequest = (customNetworkRequest) => ({
  * @param {{
  *   stage: string,
  *   network: string,
+ *   fullNetwork: string,
  *   nodeUrl: string,
  *   explorerUrl: string,
  *   txMiningServiceUrl: string,
@@ -1046,6 +1047,7 @@ export const networkSettingsUpdateState = (customNetwork) => ({
  * @param {{
  *   stage: string,
  *   network: string,
+ *   fullNetwork: string,
  *   nodeUrl: string,
  *   explorerUrl: string,
  *   explorerServiceUrl: string,

@@ -208,6 +208,7 @@ export function* updateNetworkSettings(action) {
   const customNetwork = {
     stage,
     network,
+    fullNetwork: potentialNetwork,
     nodeUrl,
     explorerUrl,
     explorerServiceUrl,

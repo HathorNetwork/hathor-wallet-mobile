@@ -334,6 +334,7 @@ const initialState = {
    * @param {{
    *  stage: string;
    *  network: string;
+   *  fullNetwork: string;
    *  nodeUrl: string;
    *  explorerUrl: string;
    *  explorerServiceUrl: string;
