@@ -31,7 +31,6 @@ import {
 } from './helpers';
 import { STORE } from '../store';
 import { isWalletServiceEnabled } from './wallet';
-import { monitorFeatureFlags } from './featureToggle';
 import { logger } from '../logger';
 
 const log = logger('network-settings-saga');
@@ -288,10 +287,6 @@ export function* persistNetworkSettings(action) {
 
   // Reset network name when changing networks
   yield put(setFullNodeNetworkName(''));
-
-  // After we persist the network settings, we must create a new unleash
-  // client because the network/stage might have changed
-  yield call(monitorFeatureFlags, 0, false);
 
   // Dispatch network changed so listeners can use it in other sagas
   // e.g. the Reown saga uses this to clear sessions

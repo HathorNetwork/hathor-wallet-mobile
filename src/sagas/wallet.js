@@ -84,6 +84,7 @@ import {
   getRegisteredTokenUids,
   progressiveRetryRequest,
 } from './helpers';
+import { monitorFeatureFlags } from './featureToggle';
 import {
   getAllAddresses,
   getFirstAddress,
@@ -182,6 +183,9 @@ export function* startWallet(action) {
     // If the wallet is initialized from quit state it must
     // update the network settings on redux state
     yield put(networkSettingsUpdateState(networkSettings));
+
+    // and we also must update the unleash client for the custom network settings
+    yield call(monitorFeatureFlags, 0, false);
   } else {
     networkSettings = yield select(getNetworkSettings);
   }
