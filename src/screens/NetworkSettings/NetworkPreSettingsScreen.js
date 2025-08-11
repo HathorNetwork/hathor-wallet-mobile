@@ -24,6 +24,7 @@ import { CustomNetworkSettingsNav } from './CustomNetworkSettingsScreen';
 import { feedbackSucceedText, feedbackFailedText, feedbackLoadingText, hasFailed, isLoading, hasSucceeded } from './helper';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
+import NavigationService from '../../NavigationService';
 
 const presettingsTitleText = t`Network Pre-Settings`.toUpperCase();
 
@@ -87,8 +88,11 @@ export function NetworkPreSettingsScreen({ navigation }) {
     navigation.push(CustomNetworkSettingsNav);
   };
 
-  const handleFeedbackModalDismiss = () => {
+  const handleFeedbackModalDismiss = (navigate) => {
     dispatch(networkSettingsUpdateReady());
+    if (navigate) {
+      NavigationService.resetToMain();
+    }
   };
 
   return (
@@ -109,7 +113,7 @@ export function NetworkPreSettingsScreen({ navigation }) {
         <FeedbackModal
           icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
           text={feedbackSucceedText}
-          onDismiss={handleFeedbackModalDismiss}
+          onDismiss={() => handleFeedbackModalDismiss(true)}
         />
       )}
 
@@ -117,7 +121,7 @@ export function NetworkPreSettingsScreen({ navigation }) {
         <FeedbackModal
           icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
           text={feedbackFailedText}
-          onDismiss={handleFeedbackModalDismiss}
+          onDismiss={() => handleFeedbackModalDismiss(false)}
         />
       )}
 

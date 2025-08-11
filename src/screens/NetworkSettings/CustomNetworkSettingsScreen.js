@@ -14,6 +14,7 @@ import Spinner from '../../components/Spinner';
 import { hasSucceeded, hasFailed, isLoading } from './helper';
 import { AlertUI } from '../../styles/themes';
 import { WALLET_SERVICE_FEATURE_TOGGLE } from '../../constants';
+import NavigationService from '../../NavigationService';
 
 const customNetworkSettingsTitleText = t`Custom Network Settings`.toUpperCase();
 const warningText = t`Any token outside mainnet network bear no value. Only change if you know what you are doing.`;
@@ -154,8 +155,11 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
     setInvalidModel(validate(form));
   };
 
-  const handleFeedbackModalDismiss = () => {
+  const handleFeedbackModalDismiss = (navigate) => {
     dispatch(networkSettingsUpdateReady());
+    if (navigate) {
+      NavigationService.resetToMain();
+    }
   };
 
   const handleSubmit = () => {
@@ -206,7 +210,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           <FeedbackModal
             icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
             text={feedbackSucceededText}
-            onDismiss={handleFeedbackModalDismiss}
+            onDismiss={() => handleFeedbackModalDismiss(true)}
           />
         )}
 
@@ -214,7 +218,7 @@ export const CustomNetworkSettingsScreen = ({ navigation }) => {
           <FeedbackModal
             icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
             text={feedbackFailedText}
-            onDismiss={handleFeedbackModalDismiss}
+            onDismiss={() => handleFeedbackModalDismiss(false)}
           />
         )}
 

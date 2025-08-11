@@ -28,10 +28,10 @@ import {
   featureToggleInitialized,
 } from '../actions';
 import {
+  networkSettingsKeyMap,
   UNLEASH_URL,
   UNLEASH_CLIENT_KEY,
   UNLEASH_POLLING_INTERVAL,
-  STAGE,
   FEATURE_TOGGLE_DEFAULTS,
 } from '../constants';
 import { disableFeaturesIfNeeded } from './helpers';
@@ -94,14 +94,26 @@ export function* handleToggleUpdate() {
   yield put({ type: types.FEATURE_TOGGLE_UPDATED });
 }
 
-export function* monitorFeatureFlags(currentRetry = 0) {
+export function* monitorFeatureFlags(currentRetry = 0, createRoutine = true) {
+  let stage; let
+    fullNetwork;
+  // We try to get the network settings from the storage (which is updated as soon
+  // as we persist the networkSettings update) and if it's empty, we get the default state
+  const networkSettingsStorage = STORE.getItem(networkSettingsKeyMap.networkSettings);
+  if (networkSettingsStorage) {
+    ({ stage, fullNetwork } = networkSettingsStorage);
+  } else {
+    const networkSettingsState = yield select((state) => state.networkSettings);
+    ({ stage, fullNetwork } = networkSettingsState);
+  }
   const { appVersion } = VersionNumber;
 
   const options = {
     userId: getUniqueId(),
     properties: {
       platform: Platform.OS,
-      stage: STAGE,
+      stage,
+      fullNetwork,
       appVersion,
     },
   };
@@ -120,8 +132,12 @@ export function* monitorFeatureFlags(currentRetry = 0) {
 
     yield call(() => unleashClient.fetchToggles());
 
-    // Fork the routine to download toggles.
-    yield fork(fetchTogglesRoutine);
+    // We need to fork it only once, so when we call this method
+    // after a network change, we don't need to create the routine again
+    if (createRoutine) {
+      // Fork the routine to download toggles.
+      yield fork(fetchTogglesRoutine);
+    }
 
     // At this point, unleashClient.fetchToggles() already fetched the toggles
     // (this will throw if it hasn't)
