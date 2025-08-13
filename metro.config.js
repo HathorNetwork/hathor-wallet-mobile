@@ -10,7 +10,7 @@
  *      but the linter is not able to resolve these imports.
  */
 /* eslint-disable import/no-extraneous-dependencies,import/no-unresolved */
-const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config')
 const blacklist = require('metro-config/src/defaults/exclusionList');
 const { lockdownSerializer } = require('@lavamoat/react-native-lockdown');
 
