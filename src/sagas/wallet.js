@@ -91,6 +91,7 @@ import {
   setKeychainPin,
 } from '../utils';
 import { logger } from '../logger';
+import Performance from '../utils/performance';
 
 const log = logger('wallet');
 
@@ -119,6 +120,7 @@ export function* isPushNotificationEnabled() {
  * @returns {Generator<unknown, boolean>}
  */
 export function* isWalletServiceEnabled() {
+  yield call(() => AsyncStorage.removeItem(IGNORE_WS_TOGGLE_FLAG));
   // Users might have had issues with the wallet-service in the past, we can detect
   // old flags because they were booleans, new flags are integers (timestamps)
   const shouldIgnoreFlag = yield call(() => AsyncStorage.getItem(IGNORE_WS_TOGGLE_FLAG));
@@ -204,6 +206,7 @@ export function* startWallet(action) {
   });
 
   let wallet;
+  Performance.start('WALLET_INIT');
   if (useWalletService && !isEmpty(networkSettings.walletServiceUrl)) {
     const network = new Network(networkSettings.network);
 
@@ -256,21 +259,28 @@ export function* startWallet(action) {
   // Store the unique device id on redux
   yield put(setUniqueDeviceId(uniqueDeviceId));
 
+  Performance.end('WALLET_INIT');
+
   try {
+    Performance.start('WALLET_START');
     // XXX: This comes as undefined when the facade is the wallet-service.
     // We need to update this when we start returning something there.
+    Performance.start('WALLET_INNER_START');
     const serverInfo = yield call(wallet.start.bind(wallet), {
       pinCode: pin,
       password: pin,
     });
+    Performance.end('WALLET_INNER_START');
 
     yield put(setServerInfo(serverInfo));
 
     let network = get(serverInfo, 'network');
     if (useWalletService) {
+      Performance.start('[wallet-service] get version data');
       // In the wallet-service facade, serverInfo is null, so we need to get
       // version data and convert it to what serverInfo expects:
       const versionData = yield call([wallet, wallet.getVersionData]);
+      Performance.end('[wallet-service] get version data');
 
       yield put(setServerInfo({
         version: versionData.version,
@@ -296,6 +306,7 @@ export function* startWallet(action) {
     // Set the network name in redux
     yield put(setFullNodeNetworkName(network));
   } catch (e) {
+    console.log(`AN ERROR HAPPENED STARTING THE WALLET ${e}`);
     // WalletRequestError can either be a network error making the request
     // fail or the wallet might have failed to start and returned status: error.
     // We don't need to send those to Sentry, so we'll capture all the others
@@ -318,6 +329,8 @@ export function* startWallet(action) {
 
     yield put(startWalletFailed());
     return;
+  } finally {
+    Performance.end('WALLET_START');
   }
 
   setKeychainPin(pin);

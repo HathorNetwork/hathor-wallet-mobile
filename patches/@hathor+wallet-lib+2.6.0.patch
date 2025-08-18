@@ -38,3 +38,145 @@ index 8c56ad2..ce80a79 100644
          // When this error happens, it means the number cannot be converted to a BigInt,
          // so it's a double, for example '123.456' or '1e2'.
          return value;
+diff --git a/node_modules/@hathor/wallet-lib/lib/wallet/wallet.js b/node_modules/@hathor/wallet-lib/lib/wallet/wallet.js
+index c6e32ac..b997df3 100644
+--- a/node_modules/@hathor/wallet-lib/lib/wallet/wallet.js
++++ b/node_modules/@hathor/wallet-lib/lib/wallet/wallet.js
+@@ -39,7 +39,16 @@ function _awaitAsyncGenerator(e) { return new _OverloadYield(e, 0); }
+ function _wrapAsyncGenerator(e) { return function () { return new AsyncGenerator(e.apply(this, arguments)); }; }
+ function AsyncGenerator(e) { var r, t; function resume(r, t) { try { var n = e[r](t), o = n.value, u = o instanceof _OverloadYield; Promise.resolve(u ? o.v : o).then(function (t) { if (u) { var i = "return" === r ? "return" : "next"; if (!o.k || t.done) return resume(i, t); t = e[i](t).value; } settle(n.done ? "return" : "normal", t); }, function (e) { resume("throw", e); }); } catch (e) { settle("throw", e); } } function settle(e, n) { switch (e) { case "return": r.resolve({ value: n, done: !0 }); break; case "throw": r.reject(n); break; default: r.resolve({ value: n, done: !1 }); } (r = r.next) ? resume(r.key, r.arg) : t = null; } this._invoke = function (e, n) { return new Promise(function (o, u) { var i = { key: e, arg: n, resolve: o, reject: u, next: null }; t ? t = t.next = i : (r = t = i, resume(e, n)); }); }, "function" != typeof e.return && (this.return = void 0); }
+ AsyncGenerator.prototype["function" == typeof Symbol && Symbol.asyncIterator || "@@asyncIterator"] = function () { return this; }, AsyncGenerator.prototype.next = function (e) { return this._invoke("next", e); }, AsyncGenerator.prototype.throw = function (e) { return this._invoke("throw", e); }, AsyncGenerator.prototype.return = function (e) { return this._invoke("return", e); };
+-function _OverloadYield(e, d) { this.v = e, this.k = d; } /**
++function _OverloadYield(e, d) { this.v = e, this.k = d; }
++
++const timerlabels = {};
++function startTimer(l) { timerlabels[l] = Date.now(); }
++function endTimer(l) {
++  const endTimer = Date.now();
++  console.log(`[${l}] ${endTimer - timerlabels[l]}ms`);
++}
++
++/**
+  * Copyright (c) Hathor Labs and its affiliates.
+  *
+  * This source code is licensed under the MIT license found in the
+@@ -312,6 +321,7 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+       }
+       await this.storage.saveAccessData(accessData);
+     }
++    startTimer(`generateCreateWalletAuthData`);
+     const {
+       xpub,
+       authXpub,
+@@ -321,6 +331,7 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+       firstAddress,
+       authDerivedPrivKey
+     } = await this.generateCreateWalletAuthData(pinCode);
++    endTimer(`generateCreateWalletAuthData`);
+     this.xpub = xpub;
+     this.authPrivKey = authDerivedPrivKey;
+     const handleCreate = async data => {
+@@ -328,7 +339,9 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+       if (data.status === 'creating') {
+         // If the wallet status is creating, we should wait until it is ready
+         // before continuing
++        startTimer(`polling for status`);
+         await this.pollForWalletStatus();
++        endTimer(`polling for status`);
+       } else if (data.status !== 'ready') {
+         // At this stage, if the wallet is not `ready` or `creating` we should
+         // throw an error as there are only three states: `ready`, `creating` or `error`
+@@ -338,8 +351,13 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+       }
+       await this.onWalletReady();
+     };
++    startTimer(`createWallet`);
+     const data = await _walletApi.default.createWallet(this, xpub, xpubkeySignature, authXpub, authXpubkeySignature, timestampNow, firstAddress);
++    endTimer(`createWallet`);
++
++    startTimer(`createWallet`);
+     await handleCreate(data.status);
++    endTimer(`createWallet`);
+     this.clearSensitiveData();
+   }
+
+@@ -369,21 +387,31 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+
+     if (this.seed) {
+       // getXPrivKeyFromSeed returns a HDPrivateKey on the root path
++      startTimer('seed - getxprivfromseed');
+       const privKey = _wallet.default.getXPrivKeyFromSeed(this.seed, {
+         passphrase: this.passphrase,
+         networkName: this.network.name
+       });
++      endTimer('seed - getxprivfromseed');
+       // getXPubKeyFromSeed returns a xpubkey on the account level path
++      startTimer('seed - getxpubfromseed');
+       xpub = _wallet.default.getXPubKeyFromSeed(this.seed, {
+         passphrase: this.passphrase,
+         networkName: this.network.name
+       });
++      endTimer('seed - getxpubfromseed');
++      startTimer('seed - getAuthXpubFromSeed');
+       authXpub = HathorWalletServiceWallet.getAuthXPubKeyFromSeed(this.seed, {
+         passphrase: this.passphrase,
+         networkName: this.network.name
+       });
++      endTimer('seed - getAuthXpubFromSeed');
++      startTimer('seed - derive account path');
+       privKeyAccountPath = _wallet.default.deriveXpriv(privKey, "0'");
++      endTimer('seed - derive account path');
++      startTimer('seed - derive auth privkey');
+       authDerivedPrivKey = HathorWalletServiceWallet.deriveAuthPrivateKey(privKey);
++      endTimer('seed - derive auth privkey');
+     } else if (this.xpriv) {
+       // this.xpriv is already on the account derivation path
+       privKeyAccountPath = _bitcoreLib.default.HDPrivateKey(this.xpriv);
+@@ -395,17 +423,27 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+     } else {
+       throw new Error('generateCreateWalletAuthData called without seed or xpriv in memory.');
+     }
++    startTimer('get walletid');
+     const walletId = HathorWalletServiceWallet.getWalletIdFromXPub(xpub);
++    endTimer('get walletid');
+
+     // prove we own the xpubkey
++    startTimer('sign xpub');
+     const xpubkeySignature = this.signMessage(privKeyAccountPath, timestampNow, walletId);
++    endTimer('sign xpub');
+
+     // prove we own the auth_xpubkey
++    startTimer('sign authxpub');
+     const authXpubkeySignature = this.signMessage(authDerivedPrivKey, timestampNow, walletId);
++    endTimer('sign authxpub');
++    startTimer('derive xpub change');
+     const xpubChangeDerivation = _wallet.default.xpubDeriveChild(xpub, 0);
++    endTimer('derive xpub change');
++    startTimer('get first address');
+     const {
+       base58: firstAddress
+     } = (0, _address.deriveAddressFromXPubP2PKH)(xpubChangeDerivation, 0, this.network.name);
++    endTimer('get first address');
+     return {
+       xpub,
+       xpubkeySignature,
+@@ -536,7 +574,9 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+   async pollForWalletStatus() {
+     return new Promise((resolve, reject) => {
+       const pollIntervalTimer = setInterval(async () => {
++        startTimer(`polling for status`);
+         const data = await _walletApi.default.getWalletStatus(this);
++        endTimer(`polling for status`);
+         if (data.status.status === 'ready') {
+           clearInterval(pollIntervalTimer);
+           resolve();
+@@ -572,7 +612,9 @@ class HathorWalletServiceWallet extends _events.EventEmitter {
+    */
+   async onWalletReady() {
+     // We should wait for new addresses before setting wallet to ready
++    startTimer(`onWalletReady getNewAddresses`);
+     await this.getNewAddresses(true);
++    endTimer(`onWalletReady getNewAddresses`);
+     if (this.isWsEnabled()) {
+       this.setupConnection();
+     }
