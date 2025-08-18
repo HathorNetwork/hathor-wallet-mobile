@@ -39,7 +39,7 @@ index 8c56ad2..ce80a79 100644
          // so it's a double, for example '123.456' or '1e2'.
          return value;
 diff --git a/node_modules/@hathor/wallet-lib/lib/wallet/wallet.js b/node_modules/@hathor/wallet-lib/lib/wallet/wallet.js
-index c6e32ac..b997df3 100644
+index c6e32ac..acad89b 100644
 --- a/node_modules/@hathor/wallet-lib/lib/wallet/wallet.js
 +++ b/node_modules/@hathor/wallet-lib/lib/wallet/wallet.js
 @@ -39,7 +39,16 @@ function _awaitAsyncGenerator(e) { return new _OverloadYield(e, 0); }
@@ -94,9 +94,9 @@ index c6e32ac..b997df3 100644
      const data = await _walletApi.default.createWallet(this, xpub, xpubkeySignature, authXpub, authXpubkeySignature, timestampNow, firstAddress);
 +    endTimer(`createWallet`);
 +
-+    startTimer(`createWallet`);
++    startTimer(`handleCreate`);
      await handleCreate(data.status);
-+    endTimer(`createWallet`);
++    endTimer(`handleCreate`);
      this.clearSensitiveData();
    }
 
