@@ -357,6 +357,8 @@ export function* startWallet(action) {
     return;
   }
 
+  Performance.end('REQUEST WALLET_START');
+
   yield put(walletRefreshSharedAddress());
   yield put(firstAddressRequest());
   yield put(startWalletSuccess());

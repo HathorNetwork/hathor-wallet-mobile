@@ -24,6 +24,7 @@ import { COLORS } from '../styles/themes';
 import baseStyle from '../styles/init';
 import { STORE } from '../store';
 import NavigationService from '../NavigationService';
+import Performance from '../utils/performance';
 
 const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
@@ -81,6 +82,7 @@ class ChoosePinScreen extends React.Component {
   }
 
   goToNextScreen = () => {
+    Performance.start('REQUEST WALLET_START');
     STORE.initStorage(this.words, this.state.pin1).then(() => {
       // we are just initializing the wallet, so make sure it's not locked when going to AppStack
       this.props.unlockScreen();

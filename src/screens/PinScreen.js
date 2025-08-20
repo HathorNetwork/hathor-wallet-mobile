@@ -34,6 +34,7 @@ import Spinner from '../components/Spinner';
 import FeedbackModal from '../components/FeedbackModal';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { logger } from '../logger';
+import Performance from '../utils/performance';
 
 const log = logger('PIN_SCREEN');
 
@@ -146,6 +147,7 @@ class PinScreen extends React.Component {
 
   dismiss = async (pin) => {
     if (this.props.isLockScreen) {
+      Performance.start('REQUEST WALLET_START');
       // in case it's the lock screen, we just have to execute the data migration
       // method an change redux state. No need to execute callback or go back on navigation
       try {
