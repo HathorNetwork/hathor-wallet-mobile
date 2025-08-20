@@ -10,6 +10,7 @@
  *      but the linter is not able to resolve these imports.
  */
 /* eslint-disable import/no-extraneous-dependencies,import/no-unresolved */
+const path = require('path');
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config')
 const blacklist = require('metro-config/src/defaults/exclusionList');
 const { lockdownSerializer } = require('@lavamoat/react-native-lockdown');
@@ -27,8 +28,11 @@ const config = {
     blacklistRE: blacklist([
       /node_modules\/.*\/node_modules\/react-native\/.*/,
     ]),
+    alias: {
+      'webpack-bundle': path.resolve(__dirname, 'dist/bundle.js')
+    }
   },
-  serializer: lockdownSerializer({ hermesRuntime: true }),
+  serializer: lockdownSerializer({ hermesRuntime: true }), // Re-enabled with LavaMoat webpack bundle
 };
 
 module.exports = mergeConfig(getDefaultConfig(__dirname), config);

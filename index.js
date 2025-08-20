@@ -12,6 +12,7 @@ import App from './src/App';
 import { name as appName } from './app.json';
 import { errorHandler } from './src/errorHandler';
 
+
 import {
   setBackgroundMessageListener,
   setNotifeeBackgroundListener,
