@@ -26,6 +26,7 @@ import {
 } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
+import { TokenSwapIcon } from './components/Icons/TokenSwap.icon';
 import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
 import { setSupportedBiometry } from './utils';
 import {
@@ -79,6 +80,7 @@ import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
+import TokenSwap from './screens/TokenSwap';
 import ReownList from './screens/Reown/ReownList';
 import ReownManual from './screens/Reown/ReownManual';
 import ReownScan from './screens/Reown/ReownScan';
@@ -368,6 +370,7 @@ const RegisterNanoContractStack = ({ navigation }) => {
 const tabBarIconMap = {
   Home: 'icDashboard',
   Send: 'icSend',
+  TokenSwap: 'TokenSwapIcon',
   Receive: 'icReceive',
   Settings: 'icSettings',
 };
@@ -389,6 +392,11 @@ const TabNavigator = () => {
           const { name } = route;
           const iconName = tabBarIconMap[name];
           const colorName = focused ? COLORS.primary : COLORS.textColorShadow;
+          
+          if (iconName === 'TokenSwapIcon') {
+            return (<TokenSwapIcon size={24} color={colorName} />);
+          }
+          
           return (<IconTabBar name={iconName} size={24} color={colorName} />);
         },
         tabBarStyle: {
@@ -407,6 +415,7 @@ const TabNavigator = () => {
         component={IS_MULTI_TOKEN ? DashboardStack : MainScreen}
       />
       <Tab.Screen name='Send' component={SendStack} />
+      <Tab.Screen name='TokenSwap' component={TokenSwap} />
       <Tab.Screen name='Receive' component={ReceiveScreen} />
       <Tab.Screen name='Settings' component={Settings} />
     </Tab.Navigator>
