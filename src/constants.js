@@ -163,7 +163,6 @@ export const REOWN_FEATURE_TOGGLE = 'reown.rollout';
 export const NETWORK_SETTINGS_FEATURE_TOGGLE = 'network-settings.rollout';
 export const NANO_CONTRACT_FEATURE_TOGGLE = 'nano-contract.rollout';
 export const SAFE_BIOMETRY_MODE_FEATURE_TOGGLE = 'safe-biometry-mode.rollout'
-export const SES_FEATURE_TOGGLE = 'ses-mobile.rollout';
 
 /**
  * Default feature toggle values.
@@ -340,8 +339,3 @@ export const NODE_RATE_LIMIT_CONF = {
     delay: 3,
   }
 };
-
-// This key is read during the react-native initialization (read the patch in
-// patches/react-native+0.77.2.patch), to decide whether to activate SES (secure
-// ecmascript)
-export const SHOULD_ENABLE_SES_STORAGE_KEY = 'should-enable-ses';
