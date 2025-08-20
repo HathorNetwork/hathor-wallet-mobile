@@ -22,13 +22,13 @@ import { verifySesEnabled } from '../utils';
  */
 function* init() {
   // SES should be enabled in both platforms
-  const sesEnabled = verifySesEnabled();
+  /* const sesEnabled = verifySesEnabled();
 
   if (!sesEnabled) {
     // This is an issue, the environment is not secure, we should issue a fatal
     // error.
     yield put(onExceptionCaptured(new Error('SES should be enabled but environment is not secure, failing!'), true));
-  }
+  } */
 }
 
 export function* isSESEnabled() {

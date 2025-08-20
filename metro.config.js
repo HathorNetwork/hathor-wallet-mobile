@@ -32,7 +32,7 @@ const config = {
       'webpack-bundle': path.resolve(__dirname, 'dist/bundle.js')
     }
   },
-  // serializer: lockdownSerializer({ hermesRuntime: true }), // Disabled for webpack bundle testing
+  serializer: lockdownSerializer({ hermesRuntime: true }), // Re-enabled with LavaMoat webpack bundle
 };
 
 module.exports = mergeConfig(getDefaultConfig(__dirname), config);
