@@ -87,6 +87,31 @@ export function* init() {
   log.debug('Registered Nano Contracts loaded.');
 }
 
+export async function getBlueprintId(ncId) {
+  try {
+    const response = await wallet.getFullTxById(ncId);
+    if (nanoUtils.isNanoContractCreateTx(response.tx)) {
+      return response.tx.nc_blueprint_id;
+    }
+  } catch {
+    // Empty catch block, we will try to get
+    // the blueprint id from the state API
+    // because the contracts created inside contracts
+    // won't be fetched by the getFullTxById API.
+    // We make the getFullTxById the priority fetch
+    // because it fetches contracts that don't have
+    // first block yet, even though it fetches only
+    // contracts that are also a DAG vertex
+  }
+
+  try {
+    const response = await ncApi.getNanoContractState(ncId, [], [], []);
+    return response.blueprint_id;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Process Nano Contract registration request.
  * @param {{
@@ -131,22 +156,13 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  let tx;
-  try {
-    const response = yield call([wallet, wallet.getFullTxById], ncId);
-    tx = response.tx;
-  } catch (error) {
+  const blueprintId = yield call(getBlueprintId, ncId);
+
+  if (!blueprintId) {
     log.debug('Fail registering Nano Contract while getting full transaction by ID.');
     yield put(nanoContractRegisterFailure(failureMessage.nanoContractFailure));
     return;
   }
-
-  if (!nanoUtils.isNanoContractCreateTx(tx)) {
-    log.debug('Fail registering Nano Contract because transaction is not calling initialize.');
-    yield put(nanoContractRegisterFailure(failureMessage.nanoContractInvalid));
-    return;
-  }
-  const { nc_blueprint_id: blueprintId } = tx;
 
   let blueprintName = null;
   try {
