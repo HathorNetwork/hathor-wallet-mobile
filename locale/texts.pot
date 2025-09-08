@@ -48,7 +48,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
 #: src/models.js:107
-#: src/utils.js:612
+#: src/utils.js:627
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
@@ -344,14 +344,14 @@ msgstr ""
 msgid "E.g. HTR"
 msgstr ""
 
-#: src/screens/Dashboard.js:131
-#: src/screens/Dashboard.js:186
+#: src/screens/Dashboard.js:139
+#: src/screens/Dashboard.js:197
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
 msgid "Tokens"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractsList.js:75
-#: src/screens/Dashboard.js:132
+#: src/screens/Dashboard.js:140
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
 msgid "Nano Contracts"
 msgstr ""
@@ -431,12 +431,12 @@ msgstr ""
 msgid "Enter your seed words separated by space"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:240
+#: src/components/NanoContract/NanoContractDetails.js:249
 #: src/components/Reown/CreateTokenRequest.js:227
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:560
 #: src/components/Reown/SendTransactionRequest.js:497
 #: src/screens/LoadHistoryScreen.js:51
-#: src/screens/LoadWalletErrorScreen.js:20
+#: src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
 #: src/screens/PinScreen.js:283
 msgid "Try again"
@@ -456,14 +456,18 @@ msgstr ""
 msgid "**${ loadedData.addresses } addresses** found"
 msgstr ""
 
-#: src/screens/LoadWalletErrorScreen.js:19
+#: src/screens/LoadWalletErrorScreen.js:26
 msgid "There's been an error connecting to the server."
 msgstr ""
 
-#: src/screens/LoadWalletErrorScreen.js:21
+#: src/screens/LoadWalletErrorScreen.js:28
 #: src/screens/PinScreen.js:312
 #: src/screens/Settings.js:162
 msgid "Reset wallet"
+msgstr ""
+
+#: src/screens/LoadWalletErrorScreen.js:29
+msgid "Connect to mainnet"
 msgstr ""
 
 #: src/screens/MainScreen.js:127
@@ -812,7 +816,7 @@ msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr ""
 
 #: src/components/NanoContract/EditAddressModal.js:63
-#: src/components/NanoContract/SelectAddressModal.js:127
+#: src/components/NanoContract/SelectAddressModal.js:131
 #: src/components/Reown/SendTransactionRequest.js:288
 #: src/components/Reown/SendTransactionRequest.js:327
 #: src/components/Reown/SignMessageRequest.js:40
@@ -821,7 +825,7 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:291
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
 #: src/screens/SendConfirmScreen.js:164
 msgid "Send"
 msgstr ""
@@ -997,86 +1001,86 @@ msgstr ""
 msgid "Back"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:18
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:19
 msgid "Custom Network Settings"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:19
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
 msgid ""
 "Any token outside mainnet network bear no value. Only change if you know "
 "what you are doing."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:20
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:21
 #: src/screens/NetworkSettings/helper.js:11
 msgid "Updating custom network settings..."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:21
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:22
 #: src/screens/NetworkSettings/helper.js:12
 msgid "Network settings successfully customized."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:22
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:23
 #: src/screens/NetworkSettings/helper.js:13
 msgid ""
 "There was an error while customizing network settings. Please try again "
 "later."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:41
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:42
 msgid "nodeUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:45
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:46
 msgid "explorerUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:49
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:50
 msgid "explorerServiceUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:53
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:54
 msgid "txMiningServiceUrl is required."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:62
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:63
 msgid "walletServiceUrl is required when walletServiceWsUrl is filled."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:65
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:66
 msgid "walletServiceWsUrl is required when walletServiceUrl is filled."
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:232
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:236
 msgid "Node URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:242
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:246
 msgid "Explorer URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:251
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:255
 msgid "Explorer Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:260
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:264
 msgid "Transaction Mining Service URL"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:271
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:275
 msgid "Wallet Service URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:280
+#: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:284
 msgid "Wallet Service WS URL (optional)"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:28
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:29
 msgid "Network Pre-Settings"
 msgstr ""
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:131
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:135
 msgid "Customize"
 msgstr ""
 
@@ -1107,8 +1111,8 @@ msgstr ""
 msgid "Load First Addresses Error"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:204
-#: src/components/NanoContract/SelectAddressModal.js:115
+#: src/components/NanoContract/NanoContractDetails.js:213
+#: src/components/NanoContract/SelectAddressModal.js:119
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:375
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:446
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:184
@@ -1220,12 +1224,6 @@ msgstr ""
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:281
-#.  If we fall into this situation, the app should be killed
-#.  for the custom new network settings take effect.
-msgid "Wallet not found while trying to persist the custom network settings."
-msgstr ""
-
 #: src/sagas/pushNotification.js:77
 msgid "Transaction"
 msgstr ""
@@ -1242,20 +1240,20 @@ msgstr ""
 msgid "Error loading the details of some tokens."
 msgstr ""
 
-#: src/sagas/wallet.js:812
+#: src/sagas/wallet.js:816
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:828
+#: src/sagas/wallet.js:830
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:838
+#: src/sagas/wallet.js:840
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:854
+#: src/sagas/wallet.js:856
 #.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
@@ -1389,6 +1387,7 @@ msgstr ""
 msgid "The transaction has not arrived yet in your wallet. Do you want to retry?"
 msgstr ""
 
+#: src/components/NanoContract/SelectAddressModal.js:111
 #: src/components/ShowPushNotificationTxDetails.js:18
 msgid "Retry"
 msgstr ""
@@ -1951,15 +1950,15 @@ msgstr ""
 msgid "Go back"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:179
+#: src/components/NanoContract/NanoContractDetails.js:188
 msgid "Load More"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:205
+#: src/components/NanoContract/NanoContractDetails.js:214
 msgid "Loading Nano Contract transactions."
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:219
+#: src/components/NanoContract/NanoContractDetails.js:228
 msgid "Nano Contract Transactions Error"
 msgstr ""
 
@@ -2010,27 +2009,27 @@ msgstr ""
 msgid "Register new"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.js:100
+#: src/components/NanoContract/SelectAddressModal.js:102
 msgid "Choose New Wallet Address"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.js:107
+#: src/components/NanoContract/SelectAddressModal.js:109
 msgid "Load Addresses Error"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.js:116
+#: src/components/NanoContract/SelectAddressModal.js:120
 msgid "Loading wallet addresses."
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.js:124
+#: src/components/NanoContract/SelectAddressModal.js:128
 msgid "Current Information"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.js:125
+#: src/components/NanoContract/SelectAddressModal.js:129
 msgid "To change, select other address on the list below."
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.js:178
+#: src/components/NanoContract/SelectAddressModal.js:182
 msgid "index"
 msgstr ""
 
