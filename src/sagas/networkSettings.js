@@ -10,7 +10,6 @@ import {
   networkSettingsUpdateWaiting,
   types,
   reloadWalletRequested,
-  onExceptionCaptured,
   networkSettingsUpdateReady,
   networkChanged,
   setFullNodeNetworkName,
