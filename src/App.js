@@ -99,6 +99,7 @@ import { SignOracleDataRequestScreen } from './screens/Reown/SignOracleDataReque
 import { CreateTokenRequestScreen } from './screens/Reown/CreateTokenScreen';
 import { CreateNanoContractCreateTokenTxScreen } from './screens/Reown/CreateNanoContractCreateTokenTxScreen';
 import { SuccessFeedbackScreen } from './screens/Reown/SuccessFeedbackScreen';
+import { RegisterTokenAfterSuccessScreen } from './screens/Reown/RegisterTokenAfterSuccess';
 import UnifiedQRScanner from './screens/UnifiedQRScanner';
 import RegisterOptionsScreen from './screens/RegisterOptionsScreen';
 import { NavigationSerializingProvider } from './hooks/navigation';
@@ -481,6 +482,7 @@ const AppStack = () => {
         <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
         <Stack.Screen name='CreateNanoContractCreateTokenTxRequest' component={CreateNanoContractCreateTokenTxScreen} />
         <Stack.Screen name='SuccessFeedbackScreen' component={SuccessFeedbackScreen} />
+        <Stack.Screen name='RegisterTokenAfterSuccess' component={RegisterTokenAfterSuccessScreen} />
         <Stack.Screen name='PushNotification' component={PushNotification} />
         <Stack.Screen name='ChangePin' component={ChangePin} />
         <Stack.Screen

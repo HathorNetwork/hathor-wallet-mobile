@@ -148,6 +148,7 @@ export const BaseNanoContractRequest = ({
   });
 
   const firstAddress = useSelector((state) => state.firstAddress);
+  const registeredTokens = useSelector((state) => state.tokens);
   const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.unregisteredTokens }));
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[nano.blueprintId]);
   const tokensBalance = useSelector((state) => state.tokensBalance);
@@ -202,6 +203,19 @@ export const BaseNanoContractRequest = ({
     return false;
   }, [checkInsufficientBalance, nano.actions, tokensBalance]);
 
+  const tokensToRegister = useMemo(() => {
+    const ret = [];
+    const actionTokensUid = nano.actions?.map((each) => each.token) || [];
+    actionTokensUid.forEach((uid) => {
+      if (!(uid in registeredTokens)) {
+        // We will ask if the user wants to register these tokens
+        // after the transaction is sent successfully
+        ret.push(uid);
+      }
+    });
+    return ret;
+  }, [nano.actions]);
+
   // Request first address and addresses for selection when component mounts
   useEffect(() => {
     if (!firstAddress.address && !firstAddress.error) {
@@ -231,13 +245,25 @@ export const BaseNanoContractRequest = ({
   // Handle successful transaction navigation
   useEffect(() => {
     if (status === statusConfig.statusConstants.SUCCESSFUL) {
-      navigation.navigate(
-        'SuccessFeedbackScreen',
-        {
-          title: t`Success!`,
-          message: t`Transaction successfully sent.`,
-        }
-      );
+      if (tokensToRegister.length > 0) {
+        const tokensToRegisterData = tokensToRegister.map(uid => {
+          return knownTokens[uid];
+        });
+        navigation.navigate(
+          'RegisterTokenAfterSuccess',
+          {
+            tokens: tokensToRegisterData
+          }
+        );
+      } else {
+        navigation.navigate(
+          'SuccessFeedbackScreen',
+          {
+            title: t`Success!`,
+            message: t`Transaction successfully sent.`
+          }
+        );
+      }
       dispatch(statusConfig.setReadyAction());
     }
   }, [status]);
