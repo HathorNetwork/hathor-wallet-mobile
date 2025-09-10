@@ -10,7 +10,8 @@ import {
   StyleSheet,
   View,
   Image,
-  Text
+  Text,
+  ScrollView
 } from 'react-native';
 import { t } from 'ttag';
 import { useDispatch, useSelector } from 'react-redux';
@@ -105,16 +106,19 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
 }
 
 const Wrapper = ({ children }) => (
-  <View style={styles.wrapper}>
+  <ScrollView style={styles.wrapper} contentContainerStyle={styles.scrollContent}>
     {children}
-  </View>
+  </ScrollView>
 );
 
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    alignItems: 'center',
     backgroundColor: COLORS.backgroundColor,
+  },
+  scrollContent: {
+    alignItems: 'center',
+    paddingVertical: 20,
   },
   feedbackModalIcon: {
     height: 48,
