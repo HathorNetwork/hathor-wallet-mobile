@@ -13,12 +13,12 @@ import {
   Text
 } from 'react-native';
 import { t } from 'ttag';
+import { useDispatch, useSelector } from 'react-redux';
 import { FeedbackContent } from '../../components/FeedbackContent';
 import NewHathorButton from '../../components/NewHathorButton';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 import checkIcon from '../../assets/images/icCheckBig.png';
-import { useDispatch, useSelector } from 'react-redux';
 import {
   newToken,
   fetchTokensMetadata,
@@ -40,12 +40,15 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
   }
 
   const onRegister = async () => {
-    for (const token of tokens) {
-      await wallet.storage.registerToken(token);
-      dispatch(newToken(token));
-    }
+    // Run token registration in parallel
+    await Promise.all(
+      tokens.map(async (token) => {
+        await wallet.storage.registerToken(token);
+        dispatch(newToken(token));
+      })
+    );
 
-    const uids = tokens.map(token => token.uid);
+    const uids = tokens.map((token) => token.uid);
     const networkName = wallet.getNetworkObject().name;
     // This will make the fetch metadata call to run async while we
     // already navigate to Dashboard without awaiting it
@@ -60,35 +63,31 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
     navigation.navigate('Dashboard');
   };
 
-  const renderTokens = () => {
-    return tokens.map(token => {
-      const tokenLabel = getTokenLabel(token);
-      const shortUid = getShortHash(token.uid);
-      return (
-        <View key={token.uid} style={styles.tokenItem}>
-          <Text style={styles.tokenLabel}>{tokenLabel}</Text>
-          <Text style={styles.tokenUid}>UID: {shortUid}</Text>
-        </View>
-      );
-    });
-  };
-
-  const renderTokensAndButtons = () => {
+  const renderTokens = () => tokens.map((token) => {
+    const tokenLabel = getTokenLabel(token);
+    const shortUid = getShortHash(token.uid);
     return (
-      <Wrapper>
-        {renderTokens()}
-        <NewHathorButton
-          title={t`Register`}
-          onPress={onRegister}
-        />
-        <NewHathorButton
-          title={t`Back`}
-          onPress={onBackHome}
-          discrete
-        />
-      </Wrapper>
+      <View key={token.uid} style={styles.tokenItem}>
+        <Text style={styles.tokenLabel}>{tokenLabel}</Text>
+        <Text style={styles.tokenUid}>UID: {shortUid}</Text>
+      </View>
     );
-  }
+  });
+
+  const renderTokensAndButtons = () => (
+    <Wrapper>
+      {renderTokens()}
+      <NewHathorButton
+        title={t`Register`}
+        onPress={onRegister}
+      />
+      <NewHathorButton
+        title={t`Back`}
+        onPress={onBackHome}
+        discrete
+      />
+    </Wrapper>
+  )
 
   return (
     <Wrapper>

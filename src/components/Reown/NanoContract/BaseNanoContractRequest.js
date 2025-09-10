@@ -246,9 +246,7 @@ export const BaseNanoContractRequest = ({
   useEffect(() => {
     if (status === statusConfig.statusConstants.SUCCESSFUL) {
       if (tokensToRegister.length > 0) {
-        const tokensToRegisterData = tokensToRegister.map(uid => {
-          return knownTokens[uid];
-        });
+        const tokensToRegisterData = tokensToRegister.map((uid) => knownTokens[uid]);
         navigation.navigate(
           'RegisterTokenAfterSuccess',
           {
