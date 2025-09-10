@@ -24,6 +24,7 @@ import {
   fetchTokensMetadata,
   tokenMetadataUpdated
 } from '../../actions';
+import { getTokenLabel, getShortHash } from '../../utils';
 
 export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
   const { tokens } = route.params;
@@ -33,9 +34,9 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
   let message = t`Transaction successfully sent.`;
 
   if (tokens.length > 1) {
-    message = `${message} There were ${tokens.length} unregistered tokens in this transaction. Do you want to register them?`;
+    message = `${message} There are ${tokens.length} unregistered tokens in this transaction. Do you want to register them?`;
   } else {
-    message = `${message} There was 1 unregistered token in this transaction. Do you want to register it?`;
+    message = `${message} There is 1 unregistered token in this transaction. Do you want to register it?`;
   }
 
   const onRegister = async () => {
@@ -61,7 +62,14 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
 
   const renderTokens = () => {
     return tokens.map(token => {
-      return <Text key={token.uid}>{token.uid}</Text>
+      const tokenLabel = getTokenLabel(token);
+      const shortUid = getShortHash(token.uid);
+      return (
+        <View key={token.uid} style={styles.tokenItem}>
+          <Text style={styles.tokenLabel}>{tokenLabel}</Text>
+          <Text style={styles.tokenUid}>UID: {shortUid}</Text>
+        </View>
+      );
     });
   };
 
@@ -107,11 +115,31 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
+    backgroundColor: COLORS.backgroundColor,
   },
   feedbackModalIcon: {
     height: 48,
     width: 48,
     marginBottom: 16,
+  },
+  tokenItem: {
+    backgroundColor: COLORS.backgroundColor,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    minWidth: 280,
+    borderWidth: 1,
+    borderColor: COLORS.borderColorLight,
+  },
+  tokenLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.textColor,
+    marginBottom: 4,
+  },
+  tokenUid: {
+    fontSize: 14,
+    color: COLORS.textColorShadow,
+    fontFamily: 'monospace',
   },
 });
