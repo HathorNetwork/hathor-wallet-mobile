@@ -7,7 +7,6 @@
 
 import {
   ncApi,
-  nanoUtils,
 } from '@hathor/wallet-lib';
 import {
   takeEvery,
@@ -98,16 +97,14 @@ export function* init() {
  * @returns A promise resolving to the blueprint ID or null if ncId is not a contract
  */
 export async function getBlueprintId(wallet, ncId) {
-  const [txError, txResponse] = (await getResultHelper(() =>
-    wallet.getFullTxById(ncId)
-  ));
+  const [txError, txResponse] = (await getResultHelper(() => wallet.getFullTxById(ncId)));
 
   if (!txError && txResponse.tx.nc_id && txResponse.tx.nc_blueprint_id) {
     return txResponse.tx.nc_blueprint_id;
   }
 
-  const [stateError, stateResponse] = await getResultHelper(() =>
-    ncApi.getNanoContractState(ncId, [], [], [])
+  const [stateError, stateResponse] = await getResultHelper(
+    () => ncApi.getNanoContractState(ncId, [], [], [])
   );
 
   if (stateError || !stateResponse.blueprint_id) {
