@@ -204,17 +204,14 @@ export const BaseNanoContractRequest = ({
   }, [checkInsufficientBalance, nano.actions, tokensBalance]);
 
   const tokensToRegister = useMemo(() => {
-    const ret = [];
-    const actionTokensUid = nano.actions?.map((each) => each.token) || [];
-    actionTokensUid.forEach((uid) => {
+    return (nano.actions || []).reduce((acc, each) => {
+      const uid = each.token;
       if (!(uid in registeredTokens)) {
-        // We will ask if the user wants to register these tokens
-        // after the transaction is sent successfully
-        ret.push(uid);
+        acc.push(uid);
       }
-    });
-    return ret;
-  }, [nano.actions]);
+      return acc;
+    }, []);
+  }, [nano.actions, registeredTokens]);
 
   // Request first address and addresses for selection when component mounts
   useEffect(() => {
