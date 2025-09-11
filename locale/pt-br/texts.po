@@ -972,7 +972,7 @@ msgstr "Voltar"
 
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:96
 msgid "Success"
-msgstr "Sucesso!"
+msgstr "Sucesso"
 
 #: src/screens/Reown/ReownList.js:33
 msgid "There was an error connecting. Please try again later."
