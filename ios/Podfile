@@ -66,7 +66,7 @@ target 'HathorMobile' do
     :path => config[:reactNativePath],
 
     # We can't use Hermes with SES (https://github.com/facebook/hermes/issues/957)
-    :hermes_enabled => false,
+    :hermes_enabled => true,
 
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."

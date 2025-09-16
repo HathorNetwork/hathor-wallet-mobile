@@ -25,7 +25,7 @@ function serialize(data) {
   const clonedData = cloneDeep(data);
 
   if (typeof clonedData === 'bigint') {
-    return `${BIG_INT_PREFIX}${clonedData.toString()}`;
+    return `${BIG_INT_PREFIX}${clonedData.toString(10)}`;
   }
 
   if (Array.isArray(clonedData)) {
