@@ -20,6 +20,7 @@ import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
 import TextFmt from '../components/TextFmt';
 import { COLORS } from '../styles/themes';
+import { LOADING_STATUS } from '../sagas/wallet';
 
 export default function LoadHistoryScreen() {
   const dispatch = useDispatch();
@@ -31,6 +32,8 @@ export default function LoadHistoryScreen() {
    */
   const loadHistoryStatus = useSelector((state) => state.loadHistoryStatus);
   const loadedData = useSelector((state) => state.loadedData);
+  const walletLoadingState = useSelector((state) => state.walletLoadingState);
+  const useWalletService = useSelector((state) => state.useWalletService);
 
   useEffect(() => {
     dispatch(resetLoadedData());
@@ -53,7 +56,24 @@ export default function LoadHistoryScreen() {
     </View>
   );
 
-  const renderLoading = () => (
+  const renderLoading = () => {
+    if (walletLoadingState !== LOADING_STATUS.LOADING) {
+      return renderMinLoading();
+    }
+    if (useWalletService) {
+      return renderWSLoading();
+    } else {
+      return renderWLoading();
+    }
+  };
+
+  const renderMinLoading = () => (
+    <View style={{ alignItems: 'center' }}>
+      <Spinner size={48} animating />
+    </View>
+  );
+
+  const renderWLoading = () => (
     <View style={{ alignItems: 'center' }}>
       <Spinner size={48} animating />
       <Text style={[styles.text, { marginTop: 32, color: COLORS.textColorShadow }]}>
@@ -65,6 +85,15 @@ export default function LoadHistoryScreen() {
       <TextFmt style={styles.text}>
         {t`**${loadedData.addresses} addresses** found`}
       </TextFmt>
+    </View>
+  );
+
+  const renderWSLoading = () => (
+    <View style={{ alignItems: 'center' }}>
+      <Spinner size={48} animating />
+      <Text style={[styles.text, { marginTop: 32, color: COLORS.textColorShadow }]}>
+        {t`Loading the wallet`}
+      </Text>
     </View>
   );
 

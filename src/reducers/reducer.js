@@ -23,7 +23,7 @@ import {
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
-import { WALLET_STATUS } from '../sagas/wallet';
+import { WALLET_STATUS, LOADING_STATUS } from '../sagas/wallet';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
@@ -268,6 +268,7 @@ const initialState = {
     deviceRegistered: false,
   },
   walletStartState: WALLET_STATUS.NOT_STARTED,
+  walletLoadingState: LOADING_STATUS.NOT_STARTED,
   lastSharedAddress: null,
   lastSharedIndex: null,
   reown: {
@@ -774,6 +775,8 @@ export const reducer = (state = initialState, action) => {
       return onCreateNanoContractCreateTokenTxRetryDismiss(state);
     case types.SET_FULLNODE_NETWORK_NAME:
       return onSetFullNodeNetworkName(state, action);
+    case types.SET_WALLET_LOADING_STATE:
+      return onSetWalletLoadingState(state, action);
     default:
       return state;
   }
@@ -1191,6 +1194,7 @@ export const onTokenFetchHistoryRequested = (state, action) => {
 export const onStartWalletNotStarted = (state) => ({
   ...state,
   walletStartState: WALLET_STATUS.NOT_STARTED,
+  walletLoadingState: WALLET_STATUS.NOT_STARTED,
 });
 
 export const onStartWalletFailed = (state) => ({
@@ -1201,6 +1205,7 @@ export const onStartWalletFailed = (state) => ({
 export const onStartWalletLock = (state) => ({
   ...state,
   walletStartState: WALLET_STATUS.NOT_STARTED,
+  walletLoadingState: WALLET_STATUS.NOT_STARTED,
 });
 
 /**
@@ -1210,6 +1215,7 @@ export const onStartWalletLock = (state) => ({
 export const onStartWalletRequested = (state) => ({
   ...state,
   walletStartState: WALLET_STATUS.LOADING,
+  walletLoadingState: WALLET_STATUS.PRELOADING,
 });
 
 export const onStartWalletSuccess = (state) => ({
@@ -1492,6 +1498,7 @@ export const onReloadWalletRequested = (state) => ({
 const onWalletReloading = (state) => ({
   ...state,
   walletStartState: WALLET_STATUS.LOADING,
+  walletLoadingState: WALLET_STATUS.PRELOADING,
 });
 
 /**
@@ -2258,4 +2265,9 @@ export const onSetCreateNanoContractCreateTokenTxStatus = (state, { payload }) =
       status: payload,
     },
   },
+});
+
+export const onSetWalletLoadingState = (state, { payload }) => ({
+  ...state,
+  walletLoadingState: payload,
 });

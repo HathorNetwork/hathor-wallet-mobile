@@ -225,6 +225,7 @@ export const types = {
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS',
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY',
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS',
+  SET_WALLET_LOADING_STATE: 'SET_WALLET_LOADING_STATE',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1635,4 +1636,12 @@ export const setCreateNanoContractCreateTokenTxStatusFailure = () => ({
 export const setCreateNanoContractCreateTokenTxStatusSuccess = () => ({
   type: types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
   payload: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.SUCCESSFUL,
+});
+
+/**
+ * Set the wallet loading status value.
+ */
+export const setWalletLoadingState = (payload) => ({
+  type: types.SET_WALLET_LOADING_STATE,
+  payload,
 });

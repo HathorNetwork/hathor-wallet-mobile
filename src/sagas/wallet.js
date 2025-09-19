@@ -72,6 +72,7 @@ import {
   firstAddressSuccess,
   firstAddressRequest,
   setFullNodeNetworkName,
+  setWalletLoadingState,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -98,6 +99,12 @@ export const WALLET_STATUS = {
   NOT_STARTED: 'not_started',
   READY: 'ready',
   FAILED: 'failed',
+  LOADING: 'loading',
+};
+
+export const LOADING_STATUS = {
+  NOT_STARTED: 'not_started',
+  PRELOADING: 'preloading',
   LOADING: 'loading',
 };
 
@@ -196,6 +203,7 @@ export function* startWallet(action) {
 
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
+  yield put(setWalletLoadingState(LOADING_STATUS.LOADING));
 
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
