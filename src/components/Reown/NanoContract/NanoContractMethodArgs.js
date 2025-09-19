@@ -13,44 +13,15 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { t } from 'ttag';
-import { get } from 'lodash';
 import { Network } from '@hathor/wallet-lib';
 import { COLORS } from '../../../styles/themes';
 import { commonStyles } from '../theme';
-import { DEFAULT_TOKEN, NANOCONTRACT_BLUEPRINTINFO_STATUS as STATUS } from '../../../constants';
+import { DEFAULT_TOKEN } from '../../../constants';
 import { FeedbackContent } from '../../FeedbackContent';
 import Spinner from '../../Spinner';
 import { getTimestampFormat, parseScriptData, renderValue } from '../../../utils';
 import { SignedDataDisplay } from './SignedDataDisplay';
 
-/**
- * Get method info from registered blueprint data.
- *
- * @param {{
- *   data: Object;
- * }} blueprint The blueprint info object
- * @param {string} method The method name to get info from blueprint public methods
- *
- * @returns {Object}
- */
-function getMethodInfoFromBlueprint(blueprint, method) {
-  return get(blueprint.data, `public_methods.${method}`, null);
-}
-
-/**
- * Get the fallback entries for the method arguments.
- *
- * @param {string[]} args A list of argument value
- *
- * @returns {[argName: string, value: string][]}
- *
- * @example
- * getFallbackArgEntries([...argValues])
- * >>> [['Position 0', 'abc'], ['Position 1', '00'], ['Position 2', 123]]
- */
-function getFallbackArgEntries(args) {
-  return args.map((arg, idx) => [t`Position ${idx}`, arg]);
-}
 
 /**
  * It renders a list of method arguments for when the Nano Contract executes.
@@ -58,40 +29,27 @@ function getFallbackArgEntries(args) {
  * @param {Object} props
  * @param {string} props.blueprintId ID of blueprint.
  * @param {string} props.method Method's name.
- * @param {string[]} props.ncArgs A list of method's argument.
+ * @param {Array<{name: string, type: string, field: {value: any}, parsed: any}>} props.ncArgs A list of parsed method arguments.
  */
 export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
   if (!ncArgs || ncArgs.length <= 0) {
     return null;
   }
 
+  console.log('nc args: ', ncArgs);
+
   const network = useSelector((state) => new Network(state.networkSettings.network));
   const tokens = useSelector((state) => state.tokens);
 
-  const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[blueprintId]);
-  // It results a in a list of entries like:
-  // >>>[
-  // >>>  ['oracle_script', 'abc', 'TxOutputScript'],
-  // >>>  ['token_uid', '00', 'TokenUid'],
-  // >>>  ['date_last_bet', 123, 'Timestamp']
-  // >>>]
-  // or a fallback like:
-  // >>> [['Position 0', 'abc'], ['Position 1', '00'], ['Position 2', 123]]
+  // ncArgs now comes already parsed with structure:
+  // { name, type, field: { value }, parsed }
+  // No need to fetch blueprint info or map arguments
   const argEntries = useMemo(() => {
-    if (blueprintInfo == null || blueprintInfo.status === STATUS.LOADING) {
-      return [];
-    }
+    return ncArgs.map((arg) => [arg.name, arg.parsed, arg.type]);
+  }, [ncArgs]);
 
-    const methodInfo = getMethodInfoFromBlueprint(blueprintInfo, method);
-    if (methodInfo) {
-      return ncArgs.map((arg, idx) => [methodInfo.args[idx].name, arg, methodInfo.args[idx].type]);
-    }
+  console.log('NC ARGS: ', ncArgs);
 
-    // Still render a fallback
-    return getFallbackArgEntries(ncArgs);
-  }, [method, ncArgs, blueprintInfo]);
-
-  // Empty while downloading the bleuprint details
   const isEmpty = argEntries.length === 0;
   const notEmpty = !isEmpty;
 
