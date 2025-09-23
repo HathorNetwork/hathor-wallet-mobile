@@ -56,10 +56,10 @@ export default ({
       contentStyle={styles.modalBox}
     >
       <Image style={styles.modalImage} source={{ uri: icon }} />
-      <Text style={styles.modalUrl}>
+      <Text style={styles.modalUrl} numberOfLines={2} ellipsizeMode="middle">
         {url}
       </Text>
-      <Text style={styles.modalProposer}>
+      <Text style={styles.modalProposer} numberOfLines={3} ellipsizeMode="tail">
         {proposer}
       </Text>
       <Text style={styles.modalHeader}>
