@@ -64,6 +64,7 @@ import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
 import { Core } from '@walletconnect/core';
 import { WalletKit } from '@reown/walletkit';
+import { ncApi } from '@hathor/wallet-lib';
 import {
   TriggerTypes,
   TriggerResponseTypes,
@@ -76,7 +77,6 @@ import {
   PrepareSendTransactionError,
   CreateNanoContractCreateTokenTxError,
 } from '@hathor/hathor-rpc-handler';
-import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
   REOWN_PROJECT_ID,
@@ -387,6 +387,39 @@ function* requestsListener() {
 }
 
 /**
+ * Enriches nano contract requests by fetching missing blueprint ID from the STATE API
+ * @param {Object} request - The original RPC request
+ * @returns {Object} - The enriched request with blueprint_id added
+ */
+function* enrichNanoContractRequest(request) {
+  const { nc_id: ncId } = request.params;
+
+  try {
+    // Fetch nano contract state using STATE API
+    const ncState = yield call([ncApi, ncApi.getNanoContractState], ncId, [], [], []);
+
+    // Extract blueprint ID - must be the actual blueprint_id, not the name
+    const blueprintId = ncState.blueprint_id;
+
+    if (blueprintId) {
+      // Return enriched request with blueprint_id
+      return {
+        ...request,
+        params: {
+          ...request.params,
+          blueprint_id: blueprintId,
+        },
+      };
+    }
+  } catch (error) {
+    log.error('Failed to enrich nano contract request with blueprint ID:', error);
+  }
+
+  // Return original request if enrichment fails
+  return request;
+}
+
+/**
  * This saga will be called (dispatched from the event listener) when a session
  * is requested from a dApp
  */
@@ -425,9 +458,15 @@ export function* processRequest(action) {
       dispatch = _dispatch;
     });
 
+    // Enrich nano contract requests with blueprint ID if missing
+    let enrichedRequest = params.request;
+    if (params.request.method === AVAILABLE_METHODS.HATHOR_SEND_NANO_TX && params.request.params?.nc_id && !params.request.params?.blueprint_id) {
+      enrichedRequest = yield call(enrichNanoContractRequest, params.request);
+    }
+
     const response = yield call(
       handleRpcRequest,
-      params.request,
+      enrichedRequest,
       wallet,
       data,
       promptHandler(dispatch),
