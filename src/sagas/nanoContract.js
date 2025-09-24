@@ -19,7 +19,6 @@ import {
 import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
 import { getRegisteredNanoContracts, safeEffect } from './helpers';
-import { isWalletServiceEnabled } from './wallet';
 import {
   nanoContractBlueprintInfoFailure,
   nanoContractBlueprintInfoSuccess,
@@ -514,8 +513,8 @@ export function* requestBlueprintInfoByNcId({ payload }) {
     return;
   }
 
-  // Extract blueprint ID from the state response (prefer blueprint_id over blueprint_name)
-  const blueprintId = ncState.blueprint_id || ncState.blueprint_name;
+  // Extract blueprint ID from the state response - must be the actual blueprint_id
+  const blueprintId = ncState.blueprint_id;
 
   if (!blueprintId) {
     yield put(nanoContractBlueprintInfoFailure(ncId, failureMessage.blueprintInfoNotFound));
@@ -534,10 +533,16 @@ export function* requestBlueprintInfoByNcId({ payload }) {
     blueprintInfo = yield call([ncApi, ncApi.getBlueprintInformation], blueprintId);
   } catch (error) {
     if (error instanceof NanoRequest404Error) {
-      yield put(nanoContractBlueprintInfoFailure(blueprintId, failureMessage.blueprintInfoNotFound));
+      yield put(nanoContractBlueprintInfoFailure(
+        blueprintId,
+        failureMessage.blueprintInfoNotFound
+      ));
     } else {
       log.error('Error while fetching blueprint info by ncId.', error);
-      yield put(nanoContractBlueprintInfoFailure(blueprintId, failureMessage.blueprintInfoFailure));
+      yield put(nanoContractBlueprintInfoFailure(
+        blueprintId,
+        failureMessage.blueprintInfoFailure
+      ));
     }
     return;
   }

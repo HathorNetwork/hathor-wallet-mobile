@@ -26,7 +26,7 @@ import {
 import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
 import { NetworkSettingsFlowNav } from './NetworkSettings';
-import { isNanoContractsEnabled, isPushNotificationAvailableForUser } from '../utils';
+import { isPushNotificationAvailableForUser } from '../utils';
 import { getNetworkSettings } from '../sagas/helpers';
 
 /**

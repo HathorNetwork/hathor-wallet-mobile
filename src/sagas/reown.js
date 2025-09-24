@@ -460,7 +460,11 @@ export function* processRequest(action) {
 
     // Enrich nano contract requests with blueprint ID if missing
     let enrichedRequest = params.request;
-    if (params.request.method === AVAILABLE_METHODS.HATHOR_SEND_NANO_TX && params.request.params?.nc_id && !params.request.params?.blueprint_id) {
+    if (
+      params.request.method === AVAILABLE_METHODS.HATHOR_SEND_NANO_TX
+      && params.request.params?.nc_id
+      && !params.request.params?.blueprint_id
+    ) {
       enrichedRequest = yield call(enrichNanoContractRequest, params.request);
     }
 

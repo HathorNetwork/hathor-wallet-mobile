@@ -22,14 +22,14 @@ import Spinner from '../../Spinner';
 import { getTimestampFormat, parseScriptData, renderValue } from '../../../utils';
 import { SignedDataDisplay } from './SignedDataDisplay';
 
-
 /**
  * It renders a list of method arguments for when the Nano Contract executes.
  *
  * @param {Object} props
  * @param {string} props.blueprintId ID of blueprint.
  * @param {string} props.method Method's name.
- * @param {Array<{name: string, type: string, field: {value: any}, parsed: any}>} props.ncArgs A list of parsed method arguments.
+ * @param {Array<{name: string, type: string, field: {value: any}, parsed: any}>} props.ncArgs
+ * A list of parsed method arguments.
  */
 export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
   if (!ncArgs || ncArgs.length <= 0) {
@@ -44,9 +44,7 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
   // ncArgs now comes already parsed with structure:
   // { name, type, field: { value }, parsed }
   // No need to fetch blueprint info or map arguments
-  const argEntries = useMemo(() => {
-    return ncArgs.map((arg) => [arg.name, arg.parsed, arg.type]);
-  }, [ncArgs]);
+  const argEntries = useMemo(() => ncArgs.map((arg) => [arg.name, arg.parsed, arg.type]), [ncArgs]);
 
   console.log('NC ARGS: ', ncArgs);
 

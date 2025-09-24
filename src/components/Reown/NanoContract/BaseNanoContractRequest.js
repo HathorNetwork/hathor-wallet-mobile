@@ -237,7 +237,6 @@ export const BaseNanoContractRequest = ({
     }
   }, [registeredNc, ncAddress]);
 
-
   // Handle successful transaction navigation
   useEffect(() => {
     if (status === statusConfig.statusConstants.SUCCESSFUL) {

@@ -152,13 +152,13 @@ export default function ReownList({ navigation }) {
                 <View style={style.buttonWrapper}>
                   <Image style={style.image} source={{ uri: icon }} />
                   <View style={style.dataWrapper}>
-                    <Text style={style.sessionName} numberOfLines={1} ellipsizeMode="tail">
+                    <Text style={style.sessionName} numberOfLines={1} ellipsizeMode='tail'>
                       {name}
                     </Text>
-                    <Text style={style.sessionData} numberOfLines={1} ellipsizeMode="tail">
+                    <Text style={style.sessionData} numberOfLines={1} ellipsizeMode='tail'>
                       {url}
                     </Text>
-                    <Text style={style.sessionData} numberOfLines={2} ellipsizeMode="tail">
+                    <Text style={style.sessionData} numberOfLines={2} ellipsizeMode='tail'>
                       {description}
                     </Text>
                   </View>
