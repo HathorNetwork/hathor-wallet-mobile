@@ -51,7 +51,7 @@ const mapStateToProps = (state) => {
     uniqueDeviceId: state.uniqueDeviceId,
     server,
     isPushNotificationAvailable: isPushNotificationAvailableForUser(state),
-    reownEnabled: state.featureToggles[REOWN_FEATURE_TOGGLE] && isNanoContractsEnabled(state),
+    reownEnabled: state.featureToggles[REOWN_FEATURE_TOGGLE],
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
   };
 };
