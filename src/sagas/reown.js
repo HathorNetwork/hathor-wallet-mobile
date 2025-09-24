@@ -152,21 +152,8 @@ function* init() {
   yield take(types.START_WALLET_SUCCESS);
   log.debug('Starting reown.');
 
-  // We should check if nano contracts are enabled in this network:
-  const nanoContractsEnabled = yield select((state) => get(state.serverInfo, 'nano_contracts_enabled', false));
-  if (!nanoContractsEnabled) {
-    log.debug('Nano contracts are not enabled, skipping reown init.');
-    return;
-  }
-
   try {
-    const walletServiceEnabled = yield call(isWalletServiceEnabled);
     const reownEnabled = yield call(isReownEnabled);
-
-    if (walletServiceEnabled) {
-      log.debug('Wallet Service enabled, skipping reown init.');
-      return;
-    }
 
     if (!reownEnabled) {
       log.debug('Reown is not enabled.');
