@@ -61,6 +61,7 @@ const style = StyleSheet.create({
     marginLeft: 16,
   },
   dataWrapper: {
+    flex: 1,
     flexDirection: 'column',
     marginLeft: 16,
     marginRight: 16,
@@ -151,13 +152,13 @@ export default function ReownList({ navigation }) {
                 <View style={style.buttonWrapper}>
                   <Image style={style.image} source={{ uri: icon }} />
                   <View style={style.dataWrapper}>
-                    <Text style={style.sessionName}>
+                    <Text style={style.sessionName} numberOfLines={1} ellipsizeMode="tail">
                       {name}
                     </Text>
-                    <Text style={style.sessionData}>
+                    <Text style={style.sessionData} numberOfLines={1} ellipsizeMode="tail">
                       {url}
                     </Text>
-                    <Text style={style.sessionData}>
+                    <Text style={style.sessionData} numberOfLines={2} ellipsizeMode="tail">
                       {description}
                     </Text>
                   </View>
