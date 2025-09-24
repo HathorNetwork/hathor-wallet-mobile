@@ -7,7 +7,6 @@
 
 import {
   ncApi,
-  nanoUtils,
 } from '@hathor/wallet-lib';
 import {
   takeEvery,
@@ -36,7 +35,7 @@ import {
 } from '../actions';
 import { logger } from '../logger';
 import { NANO_CONTRACT_TX_HISTORY_SIZE } from '../constants';
-import { isNanoContractsEnabled } from '../utils';
+import { isNanoContractsEnabled, getResultHelper } from '../utils';
 
 const log = logger('nano-contract-saga');
 
@@ -88,6 +87,35 @@ export function* init() {
 }
 
 /**
+ * Retrieves the blueprint ID for a nano contract by its ID.
+ *
+ * The priority is to get the data from the getFullTxById API because
+ * it gets contract txs that are still to be confirmed by a block. If it fails,
+ * the contract might have been created by another contract, so we fallback to the state
+ * API, which gets the information correctly in that case.
+ *
+ * @returns A promise resolving to the blueprint ID or null if ncId is not a contract
+ */
+export async function getBlueprintId(wallet, ncId) {
+  const [txError, txResponse] = (await getResultHelper(() => wallet.getFullTxById(ncId)));
+
+  if (!txError && txResponse.tx.nc_id && txResponse.tx.nc_blueprint_id) {
+    return txResponse.tx.nc_blueprint_id;
+  }
+
+  const [stateError, stateResponse] = await getResultHelper(
+    () => ncApi.getNanoContractState(ncId, [], [], [])
+  );
+
+  if (stateError || !stateResponse.blueprint_id) {
+    // The saga method will handle the error in this case
+    return null;
+  }
+
+  return stateResponse.blueprint_id;
+}
+
+/**
  * Process Nano Contract registration request.
  * @param {{
  *   payload: {
@@ -131,22 +159,13 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  let tx;
-  try {
-    const response = yield call([wallet, wallet.getFullTxById], ncId);
-    tx = response.tx;
-  } catch (error) {
+  const blueprintId = yield call(getBlueprintId, wallet, ncId);
+
+  if (!blueprintId) {
     log.debug('Fail registering Nano Contract while getting full transaction by ID.');
     yield put(nanoContractRegisterFailure(failureMessage.nanoContractFailure));
     return;
   }
-
-  if (!nanoUtils.isNanoContractCreateTx(tx)) {
-    log.debug('Fail registering Nano Contract because transaction is not calling initialize.');
-    yield put(nanoContractRegisterFailure(failureMessage.nanoContractInvalid));
-    return;
-  }
-  const { nc_blueprint_id: blueprintId } = tx;
 
   let blueprintName = null;
   try {

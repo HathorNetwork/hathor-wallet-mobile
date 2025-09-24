@@ -737,3 +737,17 @@ export function splitInGroups(list, groupSize) {
   }
   return groups;
 }
+
+/**
+ * Helper function to execute an async operation and return a tuple of [error, result].
+ * @param fn - The asynchronous function to execute.
+ * @returns A promise resolving to [null, result] on success or [error, null] on failure.
+ */
+export const getResultHelper = async (fn) => {
+  try {
+    const result = await fn();
+    return [null, result];
+  } catch (e) {
+    return [e, null];
+  }
+};
