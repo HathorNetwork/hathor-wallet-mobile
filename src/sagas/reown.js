@@ -1088,12 +1088,18 @@ export function* onSessionDelete(action) {
  * @param {Object} payload.data Transaction data
  * @param {Object} payload.dapp Information about the dApp
  */
-export function* onCreateNanoContractCreateTokenTxRequest({ payload }) {
-  yield* handleDAppRequest(
-    payload,
-    ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX,
-    { passAcceptAction: true },
-  );
+export function onCreateNanoContractCreateTokenTxRequest({ payload }) {
+  /* TODO: Restore this when we add back support for create nano contract create token tx
+   yield* handleDAppRequest(
+     payload,
+     ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX,
+     { passAcceptAction: true },
+   );
+  */
+
+  // Reject all create nano contract create token tx requests for now
+  const { deny } = payload;
+  deny();
 }
 
 export function* onGetBalanceRequest({ payload }) {
