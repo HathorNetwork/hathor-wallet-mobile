@@ -36,17 +36,10 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
     return null;
   }
 
-  console.log('nc args: ', ncArgs);
-
   const network = useSelector((state) => new Network(state.networkSettings.network));
   const tokens = useSelector((state) => state.tokens);
 
-  // ncArgs now comes already parsed with structure:
-  // { name, type, field: { value }, parsed }
-  // No need to fetch blueprint info or map arguments
   const argEntries = useMemo(() => ncArgs.map((arg) => [arg.name, arg.parsed, arg.type]), [ncArgs]);
-
-  console.log('NC ARGS: ', ncArgs);
 
   const isEmpty = argEntries.length === 0;
   const notEmpty = !isEmpty;
