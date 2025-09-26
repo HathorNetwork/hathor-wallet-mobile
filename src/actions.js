@@ -171,8 +171,6 @@ export const types = {
   NANOCONTRACT_ADDRESS_CHANGE_REQUEST: 'NANOCONTRACT_ADDRESS_CHANGE_REQUEST',
   /* It triggers a process to fetch blueprint info. */
   NANOCONTRACT_BLUEPRINTINFO_REQUEST: 'NANOCONTRACT_BLUEPRINTINFO_REQUEST',
-  /* It triggers a process to fetch blueprint info by nano contract ID. */
-  NANOCONTRACT_BLUEPRINTINFO_BY_NCID_REQUEST: 'NANOCONTRACT_BLUEPRINTINFO_BY_NCID_REQUEST',
   /* It signals a failure on fetch blueprint info. */
   NANOCONTRACT_BLUEPRINTINFO_FAILURE: 'NANOCONTRACT_BLUEPRINTINFO_FAILURE',
   /* It signals a success on fetch blueprint info. */
@@ -1410,16 +1408,6 @@ export const setCreateTokenStatusSuccessful = () => ({
 export const nanoContractBlueprintInfoRequest = (id) => ({
   type: types.NANOCONTRACT_BLUEPRINTINFO_REQUEST,
   payload: { id },
-});
-
-/**
- * Action for requesting blueprint info by nano contract ID.
- * This will fetch the transaction to get the blueprint ID, then fetch blueprint info.
- * @param {string} ncId Nano contract ID.
- */
-export const nanoContractBlueprintInfoByNcIdRequest = (ncId) => ({
-  type: types.NANOCONTRACT_BLUEPRINTINFO_BY_NCID_REQUEST,
-  payload: { ncId },
 });
 
 /**

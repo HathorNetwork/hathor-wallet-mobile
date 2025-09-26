@@ -487,68 +487,6 @@ export function* requestBlueprintInfo({ payload }) {
   yield put(nanoContractBlueprintInfoSuccess(id, blueprintInfo));
 }
 
-/**
- * Process request to fetch blueprint info by nano contract ID.
- * This saga fetches the transaction by ID to get the blueprint ID, then fetches the blueprint info.
- * @param {{
- *   payload: {
- *     ncId: string;
- *   }
- * }}
- */
-export function* requestBlueprintInfoByNcId({ payload }) {
-  const { ncId } = payload;
-
-  let ncState;
-  try {
-    // Fetch the nano contract state using STATE API with empty arrays for other parameters
-    ncState = yield call([ncApi, ncApi.getNanoContractState], ncId, [], [], []);
-  } catch (error) {
-    if (error instanceof NanoRequest404Error) {
-      yield put(nanoContractBlueprintInfoFailure(ncId, failureMessage.blueprintInfoNotFound));
-    } else {
-      log.error('Error while fetching nano contract state.', error);
-      yield put(nanoContractBlueprintInfoFailure(ncId, failureMessage.blueprintInfoFailure));
-    }
-    return;
-  }
-
-  // Extract blueprint ID from the state response - must be the actual blueprint_id
-  const blueprintId = ncState.blueprint_id;
-
-  if (!blueprintId) {
-    yield put(nanoContractBlueprintInfoFailure(ncId, failureMessage.blueprintInfoNotFound));
-    return;
-  }
-
-  // Check if we already have the blueprint info
-  const existingBlueprintInfo = yield select((state) => state.nanoContract.blueprint[blueprintId]);
-  if (existingBlueprintInfo && existingBlueprintInfo.data) {
-    return;
-  }
-
-  // Fetch the blueprint info
-  let blueprintInfo = null;
-  try {
-    blueprintInfo = yield call([ncApi, ncApi.getBlueprintInformation], blueprintId);
-  } catch (error) {
-    if (error instanceof NanoRequest404Error) {
-      yield put(nanoContractBlueprintInfoFailure(
-        blueprintId,
-        failureMessage.blueprintInfoNotFound
-      ));
-    } else {
-      log.error('Error while fetching blueprint info by ncId.', error);
-      yield put(nanoContractBlueprintInfoFailure(
-        blueprintId,
-        failureMessage.blueprintInfoFailure
-      ));
-    }
-    return;
-  }
-
-  yield put(nanoContractBlueprintInfoSuccess(blueprintId, blueprintInfo));
-}
 
 export function* saga() {
   yield all([
@@ -561,6 +499,5 @@ export function* saga() {
     takeEvery(types.NANOCONTRACT_UNREGISTER_REQUEST, unregisterNanoContract),
     takeEvery(types.NANOCONTRACT_ADDRESS_CHANGE_REQUEST, requestNanoContractAddressChange),
     takeEvery(types.NANOCONTRACT_BLUEPRINTINFO_REQUEST, requestBlueprintInfo),
-    takeEvery(types.NANOCONTRACT_BLUEPRINTINFO_BY_NCID_REQUEST, requestBlueprintInfoByNcId),
   ]);
 }
