@@ -26,7 +26,7 @@ import {
 import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
 import { NetworkSettingsFlowNav } from './NetworkSettings';
-import { isPushNotificationAvailableForUser } from '../utils';
+import { isNanoContractsEnabled, isPushNotificationAvailableForUser } from '../utils';
 import { getNetworkSettings } from '../sagas/helpers';
 
 /**
@@ -51,7 +51,7 @@ const mapStateToProps = (state) => {
     uniqueDeviceId: state.uniqueDeviceId,
     server,
     isPushNotificationAvailable: isPushNotificationAvailableForUser(state),
-    reownEnabled: state.featureToggles[REOWN_FEATURE_TOGGLE],
+    reownEnabled: state.featureToggles[REOWN_FEATURE_TOGGLE] && isNanoContractsEnabled(state),
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
   };
 };

@@ -152,6 +152,13 @@ function* init() {
   yield take(types.START_WALLET_SUCCESS);
   log.debug('Starting reown.');
 
+  // We should check if nano contracts are enabled in this network:
+  const nanoContractsEnabled = yield select((state) => get(state.serverInfo, 'nano_contracts_enabled', false));
+  if (!nanoContractsEnabled) {
+    log.debug('Nano contracts are not enabled, skipping reown init.');
+    return;
+  }
+
   try {
     const reownEnabled = yield call(isReownEnabled);
 
@@ -398,7 +405,7 @@ function* enrichNanoContractRequest(request) {
     // Fetch nano contract state using STATE API
     const ncState = yield call([ncApi, ncApi.getNanoContractState], ncId, [], [], []);
 
-    // Extract blueprint ID - must be the actual blueprint_id, not the name
+    // Extract blueprint ID - must be the actual blueprint_id
     const blueprintId = ncState.blueprint_id;
 
     if (blueprintId) {
