@@ -487,7 +487,6 @@ export function* requestBlueprintInfo({ payload }) {
   yield put(nanoContractBlueprintInfoSuccess(id, blueprintInfo));
 }
 
-
 export function* saga() {
   yield all([
     debounce(500, [[types.START_WALLET_SUCCESS, types.NANOCONTRACT_INIT]], init),
