@@ -1,0 +1,30 @@
+diff --git a/node_modules/@hathor/wallet-lib/lib/wallet/api/walletApi.js b/node_modules/@hathor/wallet-lib/lib/wallet/api/walletApi.js
+index ba89066..728a4c9 100644
+--- a/node_modules/@hathor/wallet-lib/lib/wallet/api/walletApi.js
++++ b/node_modules/@hathor/wallet-lib/lib/wallet/api/walletApi.js
+@@ -35,13 +35,18 @@ const walletApi = {
+     throw new _errors.WalletRequestError('Error getting wallet status.');
+   },
+   async getVersionData(wallet) {
+-    const axios = await (0, _walletServiceAxios.axiosInstance)(wallet, false);
+-    const response = await axios.get('version');
+-    const {
+-      data
+-    } = response;
+-    if (response.status === 200 && data.success) {
+-      return (0, _bigint.parseSchema)(data.data, _walletApi.fullNodeVersionDataSchema);
++    let response;
++    try {
++      const axios = await (0, _walletServiceAxios.axiosInstance)(wallet, false);
++      response = await axios.get('version');
++      const {
++        data
++      } = response;
++      if (response.status === 200 && data.success) {
++        return (0, _bigint.parseSchema)(data.data, _walletApi.fullNodeVersionDataSchema);
++      }
++    } catch (e) {
++      console.log('teta', e.response);
+     }
+     throw new _errors.WalletRequestError('Error getting fullnode data.');
+   },

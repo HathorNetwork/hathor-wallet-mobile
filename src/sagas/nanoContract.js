@@ -19,7 +19,6 @@ import {
 import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
 import { getRegisteredNanoContracts, safeEffect } from './helpers';
-import { isWalletServiceEnabled } from './wallet';
 import {
   nanoContractBlueprintInfoFailure,
   nanoContractBlueprintInfoSuccess,
@@ -144,14 +143,7 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  // XXX: Wallet Service doesn't implement isAddressMine.
-  // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
-  // Default to `false` if using Wallet Service.
-  let isAddrMine = false;
-  const useWalletService = yield call(isWalletServiceEnabled);
-  if (!useWalletService) {
-    isAddrMine = yield call([wallet, wallet.isAddressMine], address);
-  }
+  const isAddrMine = yield call([wallet, wallet.isAddressMine], address);
 
   if (!isAddrMine) {
     log.debug('Fail registering Nano Contract because address do not belongs to this wallet.');

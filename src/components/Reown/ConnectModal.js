@@ -24,7 +24,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 20,
     alignItems: 'center',
-    width: 300,
+    alignSelf: 'center',
+    width: '85%',
+    maxWidth: 300,
   },
   modalImage: {
     width: 50,
@@ -36,10 +38,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     marginBottom: 4,
+    textAlign: 'center',
   },
   modalProposer: {
     fontSize: 12,
     marginBottom: 16,
+    textAlign: 'center',
   },
   modalHeader: {
     fontWeight: 'bold',
