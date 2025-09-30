@@ -15,7 +15,7 @@ import { hideReownModal, setSendTxStatusReady } from '../../actions';
 import errorIcon from '../../assets/images/icErrorBig.png';
 
 /**
- * Modal displayed when there are insufficient funds for a transaction
+ * Modal displayed when the blueprint enrichment fails for a transaction
  */
 export const EnrichmentFailedModal = () => {
   const dispatch = useDispatch();

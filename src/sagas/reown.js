@@ -431,7 +431,7 @@ function* enrichNanoContractRequest(request) {
     log.error('Failed to enrich nano contract request with blueprint ID:', error);
   }
 
-  // We wasn't able to get the blueprint id from the ncId, throw
+  // We weren't able to get the blueprint id from the ncId, throw
   throw new NcEnrichmentFailedError();
 }
 
@@ -524,7 +524,7 @@ export function* processRequest(action) {
     switch (e.constructor) {
       case NcEnrichmentFailedError:
         yield put(setSendTxStatusFailure());
-        // Show the insufficient funds modal
+        // Show the enrichment failed modal
         yield put(setReownModal({
           show: true,
           type: ReownModalTypes.ENRICHMENT_FAILED,
