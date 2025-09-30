@@ -64,6 +64,7 @@ import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
 import { Core } from '@walletconnect/core';
 import { WalletKit } from '@reown/walletkit';
+import { ncApi } from '@hathor/wallet-lib';
 import {
   TriggerTypes,
   TriggerResponseTypes,
@@ -76,7 +77,6 @@ import {
   PrepareSendTransactionError,
   CreateNanoContractCreateTokenTxError,
 } from '@hathor/hathor-rpc-handler';
-import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
   REOWN_PROJECT_ID,
@@ -129,6 +129,13 @@ const AVAILABLE_METHODS = {
 };
 const AVAILABLE_EVENTS = [];
 
+class NcEnrichmentFailedError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'BlueprintEnrichmentFailedError';
+  }
+}
+
 /**
  * Those are the only ones we are currently using, extracted from
  * https://docs.walletconnect.com/2.0/specs/clients/sign/error-codes
@@ -139,6 +146,7 @@ const ERROR_CODES = {
   USER_REJECTED: 5000,
   USER_REJECTED_METHOD: 5002,
   INVALID_PAYLOAD: 5003,
+  INTERNAL_ERROR: 5004,
 };
 
 function* isReownEnabled() {
@@ -160,13 +168,7 @@ function* init() {
   }
 
   try {
-    const walletServiceEnabled = yield call(isWalletServiceEnabled);
     const reownEnabled = yield call(isReownEnabled);
-
-    if (walletServiceEnabled) {
-      log.debug('Wallet Service enabled, skipping reown init.');
-      return;
-    }
 
     if (!reownEnabled) {
       log.debug('Reown is not enabled.');
@@ -400,6 +402,40 @@ function* requestsListener() {
 }
 
 /**
+ * Enriches nano contract requests by fetching missing blueprint ID from the STATE API
+ * @param {Object} request - The original RPC request
+ * @returns {Object} - The enriched request with blueprint_id added
+ */
+function* enrichNanoContractRequest(request) {
+  const { nc_id: ncId } = request.params;
+
+  try {
+    // Fetch nano contract state using STATE API
+    const ncState = yield call([ncApi, ncApi.getNanoContractState], ncId, [], [], []);
+
+    // Extract blueprint ID - must be the actual blueprint_id
+    const blueprintId = ncState.blueprint_id;
+
+    if (blueprintId) {
+      // Return enriched request with blueprint_id
+      return {
+        ...request,
+        params: {
+          ...request.params,
+          blueprint_id: blueprintId,
+        },
+      };
+    }
+  } catch (error) {
+    // Throw a specific error so we can handle it properly
+    log.error('Failed to enrich nano contract request with blueprint ID:', error);
+  }
+
+  // We weren't able to get the blueprint id from the ncId, throw
+  throw new NcEnrichmentFailedError();
+}
+
+/**
  * This saga will be called (dispatched from the event listener) when a session
  * is requested from a dApp
  */
@@ -438,9 +474,19 @@ export function* processRequest(action) {
       dispatch = _dispatch;
     });
 
+    // Enrich nano contract requests with blueprint ID if missing
+    let enrichedRequest = params.request;
+    if (
+      params.request.method === AVAILABLE_METHODS.HATHOR_SEND_NANO_TX
+      && params.request.params?.nc_id
+      && !params.request.params?.blueprint_id
+    ) {
+      enrichedRequest = yield call(enrichNanoContractRequest, params.request);
+    }
+
     const response = yield call(
       handleRpcRequest,
-      params.request,
+      enrichedRequest,
       wallet,
       data,
       promptHandler(dispatch),
@@ -476,6 +522,25 @@ export function* processRequest(action) {
   } catch (e) {
     let shouldAnswer = true;
     switch (e.constructor) {
+      case NcEnrichmentFailedError:
+        yield put(setSendTxStatusFailure());
+        // Show the enrichment failed modal
+        yield put(setReownModal({
+          show: true,
+          type: ReownModalTypes.ENRICHMENT_FAILED,
+        }));
+        yield call(() => walletKit.respondSessionRequest({
+          topic: payload.topic,
+          response: {
+            id: payload.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.INTERNAL_ERROR,
+              message: 'Was not able to fetch blueprint_id',
+            },
+          },
+        }));
+        break;
       case SendNanoContractTxError: {
         yield put(setNewNanoContractStatusFailure());
 
@@ -1101,12 +1166,18 @@ export function* onSessionDelete(action) {
  * @param {Object} payload.data Transaction data
  * @param {Object} payload.dapp Information about the dApp
  */
-export function* onCreateNanoContractCreateTokenTxRequest({ payload }) {
-  yield* handleDAppRequest(
-    payload,
-    ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX,
-    { passAcceptAction: true },
-  );
+export function onCreateNanoContractCreateTokenTxRequest({ payload }) {
+  /* TODO: Restore this when we add back support for create nano contract create token tx
+   yield* handleDAppRequest(
+     payload,
+     ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX,
+     { passAcceptAction: true },
+   );
+  */
+
+  // Reject all create nano contract create token tx requests for now
+  const { deny } = payload;
+  deny();
 }
 
 export function* onGetBalanceRequest({ payload }) {

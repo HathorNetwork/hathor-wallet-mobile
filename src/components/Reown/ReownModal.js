@@ -17,6 +17,7 @@ import SendTransactionModal from './SendTransactionModal';
 import InsufficientFundsModal from './InsufficientFundsModal';
 import CreateNanoContractCreateTokenTxModal from './CreateNanoContractCreateTokenTxModal';
 import GetBalanceModal from './GetBalanceModal';
+import EnrichmentFailedModal from './EnrichmentFailedModal';
 
 export default () => {
   const dispatch = useDispatch();
@@ -38,6 +39,7 @@ export default () => {
     [ReownModalTypes.CREATE_TOKEN]: CreateTokenModal,
     [ReownModalTypes.SEND_TRANSACTION]: SendTransactionModal,
     [ReownModalTypes.INSUFFICIENT_FUNDS]: InsufficientFundsModal,
+    [ReownModalTypes.ENRICHMENT_FAILED]: EnrichmentFailedModal,
     [ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX]: CreateNanoContractCreateTokenTxModal,
     [ReownModalTypes.GET_BALANCE]: GetBalanceModal,
   };
@@ -67,4 +69,5 @@ export const ReownModalTypes = {
   INSUFFICIENT_FUNDS: 'InsufficientFunds',
   CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: 'CreateNanoContractCreateTokenTx',
   GET_BALANCE: 'GetBalance',
+  ENRICHMENT_FAILED: 'EnrichmentFailed',
 };

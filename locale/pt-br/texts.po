@@ -454,7 +454,7 @@ msgstr "Digite suas palavras separadas por espaços"
 
 #: src/components/NanoContract/NanoContractDetails.js:249
 #: src/components/Reown/CreateTokenRequest.js:227
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:586
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:579
 #: src/components/Reown/SendTransactionRequest.js:497
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
@@ -526,7 +526,7 @@ msgstr "Bloqueado"
 msgid "Manual"
 msgstr "Digitar"
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:428
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:421
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:233
 #: src/screens/NanoContractRegisterQrCodeScreen.js:48
 #: src/screens/RegisterOptionsScreen.js:77
@@ -585,7 +585,7 @@ msgstr "Desbloqueie sua Hathor Wallet"
 
 #: src/components/Reown/NanoContract/SignOracleDataModal.js:79
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:125
+#: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:126
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -665,7 +665,7 @@ msgid "The reown feature is not enabled."
 msgstr "Reown não está habilitado."
 
 #: src/screens/RegisterOptionsScreen.js:67
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:81
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:82
 msgid "Register"
 msgstr "Registrar"
 
@@ -959,13 +959,13 @@ msgstr "Requisição de Saldo"
 msgid "New Nano Contract Transaction"
 msgstr "Nova Transação de Nano Contract"
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:263
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:256
 #: src/components/Reown/SendTransactionRequest.js:432
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:34
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:35
 msgid "Transaction successfully sent."
 msgstr "Transação enviada com sucesso."
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:85
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:86
 #: src/screens/Reown/SuccessFeedbackScreen.js:36
 msgid "Back"
 msgstr "Voltar"
@@ -981,23 +981,23 @@ msgstr ""
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
-#: src/screens/Reown/ReownList.js:111
+#: src/screens/Reown/ReownList.js:112
 msgid "Add"
 msgstr "Adicionar"
 
-#: src/screens/Reown/ReownList.js:117
+#: src/screens/Reown/ReownList.js:118
 msgid "End session"
 msgstr "Encerrar sessão"
 
-#: src/screens/Reown/ReownList.js:117
+#: src/screens/Reown/ReownList.js:118
 msgid "This will disconnect the session."
 msgstr "Isso irá desconectar a sessão."
 
-#: src/screens/Reown/ReownList.js:119
+#: src/screens/Reown/ReownList.js:120
 msgid "End"
 msgstr "Encerrar"
 
-#: src/screens/Reown/ReownList.js:137
+#: src/screens/Reown/ReownList.js:138
 msgid "Reown Sessions"
 msgstr "Sessões do Reown"
 
@@ -1111,7 +1111,7 @@ msgstr "Wallet Service WS URL (opcional)"
 msgid "Network Pre-Settings"
 msgstr "Pré-Configurações de Rede"
 
-#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:135
+#: src/screens/NetworkSettings/NetworkPreSettingsScreen.js:131
 msgid "Customize"
 msgstr "Personalizar"
 
@@ -1147,8 +1147,8 @@ msgstr "Erro ao carregar primeiro endereço da wallet"
 
 #: src/components/NanoContract/NanoContractDetails.js:213
 #: src/components/NanoContract/SelectAddressModal.js:119
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:401
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:472
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:394
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:465
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:184
 msgid "Loading"
 msgstr "Carregando"
@@ -1190,43 +1190,43 @@ msgstr "Transação do Nano Contract"
 msgid "Contract successfully registered."
 msgstr "Nano Contract registrado com sucesso."
 
-#: src/sagas/nanoContract.js:44
+#: src/sagas/nanoContract.js:42
 msgid "Nano Contract already registered."
 msgstr "Nano Contract já registrado."
 
-#: src/sagas/nanoContract.js:45
+#: src/sagas/nanoContract.js:43
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr "A wallet não está pronta ainda para registrar Nano Contracts."
 
-#: src/sagas/nanoContract.js:46
+#: src/sagas/nanoContract.js:44
 msgid "The informed address does not belong to the wallet."
 msgstr "O endereço informado não pertence a esta carteira."
 
-#: src/sagas/nanoContract.js:47
+#: src/sagas/nanoContract.js:45
 msgid "Nano Contract not found."
 msgstr "Nano Contract não encontrado."
 
-#: src/sagas/nanoContract.js:48
+#: src/sagas/nanoContract.js:46
 msgid "Error while trying to register Nano Contract."
 msgstr "Erro ao tentar registrar o Nano Contract."
 
-#: src/sagas/nanoContract.js:49
+#: src/sagas/nanoContract.js:47
 msgid "Invalid transaction to register as Nano Contract."
 msgstr "Nano Contract inválido."
 
-#: src/sagas/nanoContract.js:50
+#: src/sagas/nanoContract.js:48
 msgid "Blueprint not found."
 msgstr "Blueprint não encontrado."
 
-#: src/sagas/nanoContract.js:51
+#: src/sagas/nanoContract.js:49
 msgid "Couldn't get Blueprint info."
 msgstr "Não foi possível carregar informações do Blueprint."
 
-#: src/sagas/nanoContract.js:52
+#: src/sagas/nanoContract.js:50
 msgid "Nano Contract not registered."
 msgstr "Nano Contract não registrado."
 
-#: src/sagas/nanoContract.js:53
+#: src/sagas/nanoContract.js:51
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr "Error ao fazer download do histórico de transações do Nano Contract."
 
@@ -1274,21 +1274,21 @@ msgstr "A wallet não está pronta ainda."
 msgid "Error loading the details of some tokens."
 msgstr "Ocorreu um erro durante o carregamento de detalhes de alguns tokens."
 
-#: src/sagas/wallet.js:816
+#: src/sagas/wallet.js:817
 msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:830
+#: src/sagas/wallet.js:831
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
-#: src/sagas/wallet.js:840
+#: src/sagas/wallet.js:841
 msgid "Wallet is not ready to load the first address."
 msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:856
+#: src/sagas/wallet.js:857
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
@@ -1384,6 +1384,7 @@ msgid "Report error"
 msgstr "Reportar erro"
 
 #: src/components/GlobalErrorModal.js:126
+#: src/components/Reown/EnrichmentFailedModal.js:39
 #: src/components/Reown/InsufficientFundsModal.js:39
 msgid "Close"
 msgstr "Fechar"
@@ -1498,11 +1499,11 @@ msgstr "Rejeitar"
 msgid "Approve"
 msgstr "Aprovar"
 
-#: src/components/Reown/ConnectModal.js:81
+#: src/components/Reown/ConnectModal.js:85
 msgid "Connect to this dApp?"
 msgstr "Conectar à esse dApp?"
 
-#: src/components/Reown/ConnectModal.js:84
+#: src/components/Reown/ConnectModal.js:88
 msgid ""
 "By clicking connect, you allow this dapp to receive your wallet's public "
 "address. Please validate the URL and the dApp name, this is an important "
@@ -1622,13 +1623,13 @@ msgid "Token data"
 msgstr "Dados do Token"
 
 #: src/components/Reown/CreateTokenRequest.js:196
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:492
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:485
 #: src/components/Reown/SendTransactionRequest.js:445
 msgid "Sending transaction"
 msgstr "Enviando transação"
 
 #: src/components/Reown/CreateTokenRequest.js:197
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:493
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:486
 #: src/components/Reown/SendTransactionRequest.js:446
 msgid "Please wait."
 msgstr "Por favor, espere."
@@ -1644,6 +1645,14 @@ msgstr "Ok, fechar"
 #: src/components/Reown/CreateTokenRequest.js:225
 msgid "Error while sending create token transaction."
 msgstr "Erro ao enviar transação de criação de token."
+
+#: src/components/Reown/EnrichmentFailedModal.js:37
+msgid ""
+"Received a Nano Contract Transaction request but was unable to fetch the "
+"blueprint information."
+msgstr ""
+"Uma requisição de Transação de Nano Contract foi recebida mas não foi "
+"possível buscar os dados do blueprint."
 
 #: src/components/Reown/GetBalanceModal.js:19
 msgid "New Get Balance Request"
@@ -1758,7 +1767,7 @@ msgstr "Campo de dados"
 msgid "Change Address"
 msgstr "Alterar Endereço"
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:262
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:255
 #: src/components/Reown/SendTransactionRequest.js:431
 msgid "Success!"
 msgstr "Sucesso!"
@@ -1770,14 +1779,14 @@ msgid "Accept Transaction"
 msgstr "Aceitar transação"
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:134
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:433
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:457
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:426
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:450
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:53
 #: src/components/Reown/SendTransactionRequest.js:478
 msgid "Decline Transaction"
 msgstr "Recusar transação"
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:584
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:577
 #: src/components/Reown/SendTransactionRequest.js:495
 msgid "Error while sending transaction."
 msgstr "Ocorreu um erro durante o envio da transação."
@@ -1832,15 +1841,15 @@ msgstr ""
 msgid "Read More."
 msgstr "Ler mais."
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:402
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:395
 msgid "Registering Nano Contract."
 msgstr "Registrando Nano Contract"
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:421
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:414
 msgid "Nano Contract Not Found"
 msgstr "Nano Contract não encontrado"
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:422
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:415
 msgid ""
 "The Nano Contract requested is not registered. First register the Nano "
 "Contract to interact with it."
@@ -1848,19 +1857,19 @@ msgstr ""
 "O Nano Contract solicitado não está registrado. Primeiro registre o Nano "
 "Contract para interagir com ele."
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:455
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:448
 msgid "Error while registering Nano Contract."
 msgstr "Erro ao tentar registrar o Nano Contract."
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:473
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:466
 msgid "Loading transaction information."
 msgstr "Carregando informações da transação."
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:545
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:538
 msgid "Insufficient Funds"
 msgstr "Saldo insuficiente"
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:546
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:539
 msgid ""
 "Ensure your wallet balance covers the required amount to accept this "
 "transaction."
@@ -1941,16 +1950,11 @@ msgstr "Caller"
 msgid "Couldn't determine address, select one"
 msgstr "Não foi possível determinar um endereço, selecione um"
 
-#: src/components/Reown/NanoContract/NanoContractMethodArgs.js:52
-#, javascript-format
-msgid "Position ${ idx }"
-msgstr "Posição ${ idx }"
-
-#: src/components/Reown/NanoContract/NanoContractMethodArgs.js:101
+#: src/components/Reown/NanoContract/NanoContractMethodArgs.js:50
 msgid "Arguments"
 msgstr "Argumentos"
 
-#: src/components/Reown/NanoContract/NanoContractMethodArgs.js:106
+#: src/components/Reown/NanoContract/NanoContractMethodArgs.js:55
 msgid "Loading arguments."
 msgstr "Carregando argumentos."
 
@@ -2139,6 +2143,10 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#, javascript-format
+#~ msgid "Position ${ idx }"
+#~ msgstr "Posição ${ idx }"
 
 #~ msgid ""
 #~ "Wallet not found while trying to persist the custom network settings."
