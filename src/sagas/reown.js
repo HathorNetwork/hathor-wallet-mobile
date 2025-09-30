@@ -129,6 +129,13 @@ const AVAILABLE_METHODS = {
 };
 const AVAILABLE_EVENTS = [];
 
+class NcEnrichmentFailedError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'BlueprintEnrichmentFailedError';
+  }
+}
+
 /**
  * Those are the only ones we are currently using, extracted from
  * https://docs.walletconnect.com/2.0/specs/clients/sign/error-codes
@@ -139,6 +146,7 @@ const ERROR_CODES = {
   USER_REJECTED: 5000,
   USER_REJECTED_METHOD: 5002,
   INVALID_PAYLOAD: 5003,
+  INTERNAL_ERROR: 5004,
 };
 
 function* isReownEnabled() {
@@ -419,11 +427,12 @@ function* enrichNanoContractRequest(request) {
       };
     }
   } catch (error) {
+    // Throw a specific error so we can handle it properly
     log.error('Failed to enrich nano contract request with blueprint ID:', error);
   }
 
-  // Return original request if enrichment fails
-  return request;
+  // We wasn't able to get the blueprint id from the ncId, throw
+  throw new NcEnrichmentFailedError();
 }
 
 /**
@@ -513,6 +522,25 @@ export function* processRequest(action) {
   } catch (e) {
     let shouldAnswer = true;
     switch (e.constructor) {
+      case NcEnrichmentFailedError:
+        yield put(setSendTxStatusFailure());
+        // Show the insufficient funds modal
+        yield put(setReownModal({
+          show: true,
+          type: ReownModalTypes.ENRICHMENT_FAILED,
+        }));
+        yield call(() => walletKit.respondSessionRequest({
+          topic: payload.topic,
+          response: {
+            id: payload.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.INTERNAL_ERROR,
+              message: 'Was not able to fetch blueprint_id',
+            },
+          },
+        }));
+        break;
       case SendNanoContractTxError: {
         yield put(setNewNanoContractStatusFailure());
 
