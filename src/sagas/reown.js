@@ -473,11 +473,27 @@ export function* processRequest(action) {
       case SendNanoContractTxError: {
         yield put(setNewNanoContractStatusFailure());
 
-        const retry = yield call(
-          retryHandler,
-          types.REOWN_NEW_NANOCONTRACT_RETRY,
-          types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
-        );
+        const dontRetryErrors = [
+          'Invalid blueprint ID',
+          'Error getting blueprint id with',
+        ];
+
+        let shouldIgnoreRetry = false;
+        for (let i = 0; i < dontRetryErrors.length; i += 1) {
+          if (e.message.indexOf(dontRetryErrors[i]) > -1) {
+            shouldIgnoreRetry = true;
+            break;
+          }
+        }
+
+        let retry = false;
+        if (!shouldIgnoreRetry) {
+          retry = yield call(
+            retryHandler,
+            types.REOWN_NEW_NANOCONTRACT_RETRY,
+            types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
+          );
+        }
 
         if (retry) {
           shouldAnswer = false;
