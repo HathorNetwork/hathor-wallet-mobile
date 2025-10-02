@@ -64,7 +64,6 @@ import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
 import { Core } from '@walletconnect/core';
 import { WalletKit } from '@reown/walletkit';
-import { ncApi } from '@hathor/wallet-lib';
 import {
   TriggerTypes,
   TriggerResponseTypes,
@@ -115,6 +114,7 @@ import {
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
+import { getBlueprintId } from './nanoContract';
 
 const log = logger('reown');
 
@@ -402,19 +402,18 @@ function* requestsListener() {
 }
 
 /**
- * Enriches nano contract requests by fetching missing blueprint ID from the STATE API
+ * Enriches nano contract requests by fetching missing blueprint ID
  * @param {Object} request - The original RPC request
+ *
+ * @throws {NcEnrichmentFailedError}
  * @returns {Object} - The enriched request with blueprint_id added
  */
 function* enrichNanoContractRequest(request) {
   const { nc_id: ncId } = request.params;
+  const wallet = yield select((state) => state.wallet);
 
   try {
-    // Fetch nano contract state using STATE API
-    const ncState = yield call([ncApi, ncApi.getNanoContractState], ncId, [], [], []);
-
-    // Extract blueprint ID - must be the actual blueprint_id
-    const blueprintId = ncState.blueprint_id;
+    const blueprintId = yield call(getBlueprintId, ncId, wallet);
 
     if (blueprintId) {
       // Return enriched request with blueprint_id
