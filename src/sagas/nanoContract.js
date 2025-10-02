@@ -9,6 +9,9 @@ import {
   ncApi,
 } from '@hathor/wallet-lib';
 import {
+  getBlueprintId as libGetBlueprintId,
+} from '@hathor/wallet-lib/lib/nano_contracts/utils';
+import {
   takeEvery,
   select,
   all,
@@ -96,22 +99,14 @@ export function* init() {
  * @returns A promise resolving to the blueprint ID or null if ncId is not a contract
  */
 export async function getBlueprintId(wallet, ncId) {
-  const [txError, txResponse] = (await getResultHelper(() => wallet.getFullTxById(ncId)));
+  const [txError, blueprintId] = (await getResultHelper(() => libGetBlueprintId(ncId, wallet)));
 
-  if (!txError && txResponse.tx.nc_id && txResponse.tx.nc_blueprint_id) {
-    return txResponse.tx.nc_blueprint_id;
-  }
-
-  const [stateError, stateResponse] = await getResultHelper(
-    () => ncApi.getNanoContractState(ncId, [], [], [])
-  );
-
-  if (stateError || !stateResponse.blueprint_id) {
+  if (txError || !blueprintId) {
     // The saga method will handle the error in this case
     return null;
   }
 
-  return stateResponse.blueprint_id;
+  return blueprintId;
 }
 
 /**
