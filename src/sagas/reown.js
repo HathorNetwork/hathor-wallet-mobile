@@ -114,7 +114,6 @@ import {
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
-import { getBlueprintId } from './nanoContract';
 
 const log = logger('reown');
 
@@ -402,39 +401,6 @@ function* requestsListener() {
 }
 
 /**
- * Enriches nano contract requests by fetching missing blueprint ID
- * @param {Object} request - The original RPC request
- *
- * @throws {NcEnrichmentFailedError}
- * @returns {Object} - The enriched request with blueprint_id added
- */
-function* enrichNanoContractRequest(request) {
-  const { nc_id: ncId } = request.params;
-  const wallet = yield select((state) => state.wallet);
-
-  try {
-    const blueprintId = yield call(getBlueprintId, ncId, wallet);
-
-    if (blueprintId) {
-      // Return enriched request with blueprint_id
-      return {
-        ...request,
-        params: {
-          ...request.params,
-          blueprint_id: blueprintId,
-        },
-      };
-    }
-  } catch (error) {
-    // Throw a specific error so we can handle it properly
-    log.error('Failed to enrich nano contract request with blueprint ID:', error);
-  }
-
-  // We weren't able to get the blueprint id from the ncId, throw
-  throw new NcEnrichmentFailedError();
-}
-
-/**
  * This saga will be called (dispatched from the event listener) when a session
  * is requested from a dApp
  */
@@ -473,19 +439,9 @@ export function* processRequest(action) {
       dispatch = _dispatch;
     });
 
-    // Enrich nano contract requests with blueprint ID if missing
-    let enrichedRequest = params.request;
-    if (
-      params.request.method === AVAILABLE_METHODS.HATHOR_SEND_NANO_TX
-      && params.request.params?.nc_id
-      && !params.request.params?.blueprint_id
-    ) {
-      enrichedRequest = yield call(enrichNanoContractRequest, params.request);
-    }
-
     const response = yield call(
       handleRpcRequest,
-      enrichedRequest,
+      params.request,
       wallet,
       data,
       promptHandler(dispatch),
