@@ -478,16 +478,16 @@ export function* processRequest(action) {
           'Error getting blueprint id with',
         ];
 
-        let shouldIgnoreRetry = false;
+        let shouldDisplayRetry = true;
         for (let i = 0; i < dontRetryErrors.length; i += 1) {
           if (e.message.indexOf(dontRetryErrors[i]) > -1) {
-            shouldIgnoreRetry = true;
+            shouldDisplayRetry = false;
             break;
           }
         }
 
         let retry = false;
-        if (!shouldIgnoreRetry) {
+        if (shouldDisplayRetry) {
           retry = yield call(
             retryHandler,
             types.REOWN_NEW_NANOCONTRACT_RETRY,
