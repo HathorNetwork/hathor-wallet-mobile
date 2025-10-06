@@ -538,6 +538,21 @@ const initialState = {
    * the wallet saga.
    */
   fullNodeNetworkName: null,
+  /**
+   * 
+   */
+  tokenSwap: {
+    allowedTokens: null,
+    // null | 'loading' | 'loaded' | 'error'
+    loadAllowedTokensStatus: null,
+    inputToken: null,
+    inputTokenAmount: 0,
+    outputToken: null,
+    outputTokenAmount: 0,
+    swapPathQuote: null,
+    // null | 'loading' | 'loaded' | 'error'
+    loadSwapPathQuoteStatus: null,
+  },
 };
 
 export const reducer = (state = initialState, action) => {
@@ -774,6 +789,20 @@ export const reducer = (state = initialState, action) => {
       return onCreateNanoContractCreateTokenTxRetryDismiss(state);
     case types.SET_FULLNODE_NETWORK_NAME:
       return onSetFullNodeNetworkName(state, action);
+    case types.TOKEN_SWAP_SET_ALLOWED_TOKENS:
+      return onTokenSwapSetAllowedTokens(state, action);
+    case types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS_ERROR:
+      return onTokenSwapFetchAllowedTokensError(state);
+    case types.TOKEN_SWAP_SET_INPUT_TOKEN:
+      return onTokenSwapSetInputToken(state, action);
+    case types.TOKEN_SWAP_SET_OUTPUT_TOKEN:
+      return onTokenSwapSetOutputToken(state, action);
+    case types.TOKEN_SWAP_FETCH_SWAP_QUOTE_SUCCESS:
+      return onTokenSwapFetchSwapQuoteSuccess(state, action);
+    case types.TOKEN_SWAP_FETCH_SWAP_DATA_ERROR:
+      return onTokenSwapFetchSwapDataError(state);
+    case types.TOKEN_SWAP_RESET_SWAP_DATA:
+      return onTokenSwapResetSwapData(state);
     default:
       return state;
   }
@@ -2257,5 +2286,73 @@ export const onSetCreateNanoContractCreateTokenTxStatus = (state, { payload }) =
       ...state.reown.createNanoContractCreateTokenTx,
       status: payload,
     },
+  },
+});
+
+export const onTokenSwapSetAllowedTokens = (state, { payload }) => ({
+  ...state,
+  tokenSwap: {
+    ...state.tokenSwap,
+    allowedTokens: payload,
+    loadAllowedTokensStatus: 'loaded',
+  },
+});
+
+export const onTokenSwapFetchAllowedTokensError = (state) => ({
+  ...state,
+  tokenSwap: {
+    ...state.tokenSwap,
+    allowedTokens: null,
+    loadAllowedTokensStatus: 'error',
+  },
+});
+
+export const onTokenSwapSetInputToken = (state, { payload }) => ({
+  ...state,
+  tokenSwap: {
+    ...state.tokenSwap,
+    inputToken: payload,
+    inputTokenAmount: 0,
+  },
+});
+
+export const onTokenSwapSetOutputToken = (state, { payload }) => ({
+  ...state,
+  tokenSwap: {
+    ...state.tokenSwap,
+    outputToken: payload,
+    outputTokenAmount: 0,
+  },
+});
+
+export const onTokenSwapFetchSwapQuoteSuccess = (state, { payload }) => ({
+  ...state,
+  tokenSwap: {
+    ...state.tokenSwap,
+    swapPathQuote: payload,
+    loadSwapPathQuoteStatus: 'loaded',
+  },
+});
+
+export const onTokenSwapFetchSwapDataError = (state) => ({
+  ...state,
+  tokenSwap: {
+    ...state.tokenSwap,
+    swapPathQuote: null,
+    loadSwapPathQuoteStatus: 'error',
+  },
+});
+
+export const onTokenSwapResetSwapData = (state) => ({
+  ...state,
+  tokenSwap: {
+    allowedTokens: null,
+    loadAllowedTokensStatus: null,
+    inputToken: null,
+    inputTokenAmount: 0,
+    outputToken: null,
+    outputTokenAmount: 0,
+    swapPathQuote: null,
+    loadSwapPathQuoteStatus: null,
   },
 });

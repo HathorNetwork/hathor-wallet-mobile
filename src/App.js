@@ -104,6 +104,9 @@ import UnifiedQRScanner from './screens/UnifiedQRScanner';
 import RegisterOptionsScreen from './screens/RegisterOptionsScreen';
 import { NavigationSerializingProvider } from './hooks/navigation';
 import { SendTransactionRequestScreen } from './screens/Reown/SendTransactionRequestScreen';
+import TokenSwap from './screens/TokenSwap';
+import TokenSwapLoadingScreen from './screens/TokenSwapLoadingScreen';
+import TokenSwapTokenList from './screens/TokenSwapTokenList';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -159,6 +162,38 @@ const DashboardStack = () => {
  * the permission is defined.
  */
 const CameraPermissionScreen = () => null;
+
+/**
+ * Stack of screens dedicated to the token swap process
+ */
+const SwapStack = ({ navigation }) => {
+  const Stack = createStackNavigator();
+  const [initialRoute, setInitialRoute] = useState('TokenSwapLoadingScreen');
+  /** @type {null|'loading'|'loaded'|'error'} */
+  const allowedTokensStatus = useSelector((state) => state.tokenSwap.loadAllowedTokensStatus);
+
+  useEffect(() => {
+    // When we load the tokens, move to the token swap main screen
+    if (allowedTokensStatus === 'loaded') {
+      setInitialRoute('TokenSwap');
+      navigation.replace('TokenSwap');
+    }
+  }, [allowedTokensStatus]);
+
+  return (
+    <Stack.Navigator
+      initialRouteName={initialRoute}
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name='TokenSwapLoadingScreen' component={TokenSwapLoadingScreen} />
+      <Stack.Screen name='TokenSwap' component={TokenSwap} />
+      <Stack.Screen name='TokenSwapListInputToken' component={TokenSwapTokenList('input')} />
+      <Stack.Screen name='TokenSwapListOutputToken' component={TokenSwapTokenList('output')} />
+    </Stack.Navigator>
+  );
+};
 
 /**
  * Stack of screens dedicated to the token sending process
@@ -369,6 +404,7 @@ const RegisterNanoContractStack = ({ navigation }) => {
 const tabBarIconMap = {
   Home: 'icDashboard',
   Send: 'icSend',
+  Swap: 'icSettings',
   Receive: 'icReceive',
   Settings: 'icSettings',
 };
@@ -407,6 +443,7 @@ const TabNavigator = () => {
         name='Home'
         component={IS_MULTI_TOKEN ? DashboardStack : MainScreen}
       />
+      <Tab.Screen name='Swap' component={SwapStack} />
       <Tab.Screen name='Send' component={SendStack} />
       <Tab.Screen name='Receive' component={ReceiveScreen} />
       <Tab.Screen name='Settings' component={Settings} />
