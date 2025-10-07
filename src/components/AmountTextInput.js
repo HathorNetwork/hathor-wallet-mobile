@@ -56,6 +56,12 @@ const AmountTextInput = forwardRef((props, ref) => {
     }
   }, [props.value]);
 
+  const onEndEditing = (event) => {
+    if (props.onEndEditing) {
+      props.onEndEditing(event.nativeEvent.text);
+    }
+  }
+  
   const onChangeText = (newText) => {
     if (newText === '') {
       // Need to handle empty string separately
@@ -108,6 +114,7 @@ const AmountTextInput = forwardRef((props, ref) => {
       ref={inputRef}
       style={[style.input, customStyle]}
       onChangeText={onChangeText}
+      onEndEditing={onEndEditing}
       value={text}
       textAlign='center'
       textAlignVertical='bottom'

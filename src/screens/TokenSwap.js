@@ -119,6 +119,7 @@ const TokenSwap = () => {
                 {renderGhostElement()}
                 <AmountTextInput
                   onAmountUpdate={onInputAmountChange}
+                  onEndEditing={onInputAmountEndEditing}
                   value={inputTokenAmountStr}
                   allowOnlyInteger={false}
                   decimalPlaces={decimalPlaces}
@@ -141,6 +142,7 @@ const TokenSwap = () => {
                 {renderGhostElement()}
                 <AmountTextInput
                   onAmountUpdate={onOutputAmountChange}
+                  onEndEditing={onOutputEndEditing}
                   value={outputTokenAmountStr}
                   allowOnlyInteger={false}
                   decimalPlaces={decimalPlaces}
