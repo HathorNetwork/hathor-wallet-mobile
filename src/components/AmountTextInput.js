@@ -29,6 +29,7 @@ import { COLORS } from '../styles/themes';
 const AmountTextInput = forwardRef((props, ref) => {
   const inputRef = useRef(null);
   const [text, setText] = useState(props.value || '');
+  const [value, setValue] = useState(props.value || 0n);
   const { decimalPlaces } = props;
 
   // Expose the focus method to parent components
@@ -56,9 +57,9 @@ const AmountTextInput = forwardRef((props, ref) => {
     }
   }, [props.value]);
 
-  const onEndEditing = (event) => {
+  const onEndEditing = () => {
     if (props.onEndEditing) {
-      props.onEndEditing(event.nativeEvent.text);
+      props.onEndEditing(text);
     }
   }
   

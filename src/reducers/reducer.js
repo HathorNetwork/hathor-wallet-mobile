@@ -543,6 +543,7 @@ const initialState = {
    */
   tokenSwap: {
     allowedTokens: null,
+    contractId: null,
     // null | 'loading' | 'loaded' | 'error'
     loadAllowedTokensStatus: null,
     inputToken: null,
@@ -2289,14 +2290,19 @@ export const onSetCreateNanoContractCreateTokenTxStatus = (state, { payload }) =
   },
 });
 
-export const onTokenSwapSetAllowedTokens = (state, { payload }) => ({
-  ...state,
-  tokenSwap: {
-    ...state.tokenSwap,
-    allowedTokens: payload,
-    loadAllowedTokensStatus: 'loaded',
-  },
-});
+export const onTokenSwapSetAllowedTokens = (state, { payload }) => {
+  return {
+    ...state,
+    tokenSwap: {
+      ...state.tokenSwap,
+      allowedTokens: payload.allowedTokens,
+      contractId: payload.contractId,
+      loadAllowedTokensStatus: 'loaded',
+      inputToken: payload.allowedTokens[0],
+      outputToken: payload.allowedTokens[1],
+    },
+  };
+};
 
 export const onTokenSwapFetchAllowedTokensError = (state) => ({
   ...state,
@@ -2307,23 +2313,39 @@ export const onTokenSwapFetchAllowedTokensError = (state) => ({
   },
 });
 
-export const onTokenSwapSetInputToken = (state, { payload }) => ({
-  ...state,
-  tokenSwap: {
-    ...state.tokenSwap,
-    inputToken: payload,
-    inputTokenAmount: 0,
-  },
-});
+export const onTokenSwapSetInputToken = (state, { payload }) => {
+  const newState = {
+    ...state,
+    tokenSwap: {
+      ...state.tokenSwap,
+    },
+  };
+  if (state.tokenSwap.outputToken.uid === payload.uid) {
+    // In this case the chosen token is the same as the other.
+    newState.tokenSwap.outputToken = {...newState.tokenSwap.inputToken};
+    newState.tokenSwap.outputTokenAmount = 0;
+  }
+  newState.tokenSwap.inputToken = payload;
+  newState.tokenSwap.inputTokenAmount = 0;
+  return newState;
+};
 
-export const onTokenSwapSetOutputToken = (state, { payload }) => ({
-  ...state,
-  tokenSwap: {
-    ...state.tokenSwap,
-    outputToken: payload,
-    outputTokenAmount: 0,
-  },
-});
+export const onTokenSwapSetOutputToken = (state, { payload }) => {
+  const newState = {
+    ...state,
+    tokenSwap: {
+      ...state.tokenSwap,
+    },
+  };
+  if (state.tokenSwap.inputToken.uid === payload.uid) {
+    // In this case the chosen token is the same as the other.
+    newState.tokenSwap.inputToken = {...newState.tokenSwap.outputToken};
+    newState.tokenSwap.inputTokenAmount = 0;
+  }
+  newState.tokenSwap.outputToken = payload;
+  newState.tokenSwap.outputTokenAmount = 0;
+  return newState;
+};
 
 export const onTokenSwapFetchSwapQuoteSuccess = (state, { payload }) => ({
   ...state,

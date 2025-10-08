@@ -1666,6 +1666,10 @@ export const setCreateNanoContractCreateTokenTxStatusSuccess = () => ({
   payload: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.SUCCESSFUL,
 });
 
+export const tokenSwapFetchAllowedTokens = () => ({
+  type: types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS,
+});
+
 export const tokenSwapSetAllowedTokens = (contractId, allowedTokens) => ({
   type: types.TOKEN_SWAP_SET_ALLOWED_TOKENS,
   payload: { allowedTokens, contractId },

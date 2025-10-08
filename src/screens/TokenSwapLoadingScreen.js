@@ -13,8 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 
 import {
-  onWalletReload,
-  resetLoadedData,
+  tokenSwapFetchAllowedTokens,
 } from '../actions';
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
@@ -25,10 +24,10 @@ export default function TokenSwapLoadingScreen() {
   /**
    * @type {null|'loading'|'loaded'|'error'} progress on loading tx history
    */
-  const loadTokenStatus = useSelector((state) => state.swapToken.loadTokenStatus);
+  const loadTokenStatus = useSelector((state) => state.tokenSwap.loadAllowedTokensStatus);
 
   useEffect(() => {
-    dispatch(resetLoadedData());
+    dispatch(tokenSwapFetchAllowedTokens());
   }, []);
 
   const renderError = () => (
@@ -42,7 +41,7 @@ export default function TokenSwapLoadingScreen() {
       <SimpleButton
         containerStyle={{ marginTop: 12 }}
         textStyle={{ fontSize: 18 }}
-        onPress={() => dispatch(onWalletReload())}
+        onPress={() => dispatch(tokenSwapFetchAllowedTokens())}
         title={t`Try again`}
       />
     </View>

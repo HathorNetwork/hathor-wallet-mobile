@@ -21,6 +21,7 @@ import {
 } from 'redux-saga/effects';
 import { get, isEmpty } from 'lodash';
 import {
+  types,
   tokenSwapFetchAllowedTokensError,
   tokenSwapSetAllowedTokens,
   tokenSwapFetchSwapDataError,
@@ -80,7 +81,7 @@ export function* handleFetchSwapQuoteRequest() {
 export function* saga() {
   yield all([
     takeLatest(types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS, handleFetchAllowedTokensRequest),
-    takeLatest(types.TOKEN_SWAP_FETCH_SWAP_QUOTE, handleFetchAllowedTokensRequest),
-    takeEvery(types.TOKEN_SWAP_START_SWAP, handleFetchAllowedTokensRequest),
+    // takeLatest(types.TOKEN_SWAP_FETCH_SWAP_QUOTE, handleFetchAllowedTokensRequest),
+    // takeEvery(types.TOKEN_SWAP_START_SWAP, handleFetchAllowedTokensRequest),
   ]);
 }
