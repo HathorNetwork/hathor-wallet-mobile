@@ -7,9 +7,22 @@
     1. Check if the Wallet Service is active for this device. This will be important to understand the context in which the following tests in this guide will be executed
     1. Reset the wallet.
 
-1. **Simple Initialization**
-    1. Initialize a new wallet (save your words, they will be used later).
-    1. When creating a PIN, type the wrong PIN during the confirmation step.
+1. **New Wallet Flow**
+    1. Launch the app for the first time
+    1. Tap on "New Wallet"
+    1. Verify the seed words screen appears. Note them elsewhere for later use.
+    1. Confirm one word correctly, miss the second word. Verify error message appears.
+    1. Verify app navigates back to seed words screen.
+    1. Confirm all 5 words correctly and tap "Next" to proceed to password creation
+    1. Enter a short password (e.g., "123"). Verify error message appears.
+    1. Enter a valid password (e.g., "StrongPass123!"), but miss the confirmation.
+    1. Re-enter the password correctly and tap "Next" to proceed to PIN creation
+    1. Enter a 6-digit PIN and miss the confirmation
+    1. Re-enter the PIN correctly and press "Next"
+    1. Verify wallet initializes successfully
+    1. Confirm Dashboard screen is displayed
+      - There should be no tokens listed except HTR
+      - Balance should be 0.00 HTR
 
 1. **Generate token error Tests**
     1. Go to Settings and Create a new Token.
@@ -23,6 +36,7 @@
     1. Click on the address to copy it.
     1. Click on New address and check that a new address was generated. The QRCode must update.
     1. Click on Share and Cancel.
+    1. Make sure the copied address, the shared address and the parsed QR Code image are the same.
     1. Click on Payment Request and generate a payment request of 10 HTR.
     1. Pay the Payment Request using another wallet and check the confirmation message.
 
@@ -30,7 +44,7 @@
     1. Go to the Send Screen and check whether the camera loads correctly.
     1. Click on Manual Info.
     1. Type any random text and click Next. It must show an error message.
-    1. Enter the address `WZ7pDnkPnxbs14GHdUFivFzPbzitwNtvZo` and click Next.
+    1. Enter the address `WZ7pDnkPnxbs14GHdUFivFzPbzitwNtvZo` (or an address from your other wallet) and click Next.
     1. Click on the HTR to change the token. Then, select HTR.
     1. Type 100 HTR, click Next, and check the insufficient funds error.
     1. Type 2 HTR, click Next, and check the send summary.
@@ -38,22 +52,36 @@
     1. Finally, type a correct PIN Code and check the confirmation.
 
 1. **Transaction History Tests**
-    1. Open HTR History. Your balance should be 8.00 HTR.
+    1. Verify Dashboard displays HTR token by default
+    1. Check balance display
+    1. Tap to expand balance details (Available and Locked when expanded)
+    1. Verify network name is shown
+    1. Tap again to collapse
+    1. See the HTR History. Your balance should be 8.00 HTR.
     1. Check that you have two transactions.
+    1. Verify positive balances are in green
+    1. Verify negative balances are in default color
     1. Click on any transaction and check the details.
+    1. Click on "Public Explorer" and see that the transaction opens in the browser.
 
 1. **Settings Tests**
-    1. Go to the Settings Screen. Take note of the network you're connected to ( `testnet` or `mainnet` ).
-    1. Test Security > Lock Wallet.
-        1. Enable biometry
-        1. Lock wallet and use biometry.
-        1. Disable biometry.
-        1. Lock wallet, and it must require you to type your PIN Code.
-    1. Test Security > Change PIN.
-        1. Close and open the app and check whether the wallet unlocks correctly.
+    1. Go to the Settings Screen.
+      1. Take note of the network you're connected to ( `testnet` or `mainnet` ).
+      1. Take note of the server URL you're connected to ( `node` or `wallet-service` ).
     1. Open About and go back.
+    1. Verify there is a "Unique app identifier" section
+      1. Tap to copy the identifier and verify the success message appears
     1. Click on Register a Token and check whether the camera loads correctly.
-    1. Go to Manual Info, type anything and get an Invalid Configuration string.
+      1. Go to Manual Info, type anything and get an Invalid Configuration string.
+    1. Test Security > Lock Wallet.
+      1. Enable biometry
+      1. Lock wallet and use biometry to reopen it.
+      1. Disable biometry.
+      1. Lock wallet, and it must require you to type your PIN Code.
+    1. Test Security > Change PIN.
+      1. Write the PIN confirmation incorrectly and check the error message.
+      1. Write the PIN and its confirmation to change it.
+      1. Close and open the app and check whether the wallet unlocks correctly.
 
 1. **Biometry tests (Only close the app on the steps required, this is important)**
     1. Test old Biometry mode
@@ -106,8 +134,7 @@
     1. Close the token details.
 
 1. **Send and receive the new token**
-    1. Go to the Send Screen and click on Manual Info.
-    1. Enter the address of another test wallet.
+    1. Go to the Send Screen and enter the address of another test wallet.
     1. Change the token to TEST and continue.
     1. Type 3 TEST and send it.
     1. Go to the Receive Screen and click on Payment Request.
@@ -118,13 +145,17 @@
     1. Generate a payment request requesting 1 HTR from another device
     1. Use the Mobile Wallet QR code scanner to read the QR code from this other device
     1. Pay the Payment Request, the transaction should be successful
+    1. Do the same with a TEST payment request
 
 1. **Register a token Tests**
     1. Go to the Dashboard Screen.
     1. Select the Test Token.
-    1. Click on the Token Info and unregister it.
+    1. Click on the Token Info on the upper right.
+    1. Copy its configuration string by clicking or sharing it.
+    1. Unregister the token. Check that the "I want to unregister" radio button is mandatory.
     1. Click on Register Token, click on Manual Info, and paste the Configuration string.
     1. Click on Register Token, and check that the Test Token is back and your balance is 99 TEST.
+    1. Unregister it again and now use the QR Code on the other device to register it.
 
 1. **Reload data**
     1. Turn Wi-Fi off until you see the message 'No internet connection.'.
@@ -140,10 +171,35 @@
     1. Use the words saved before.
     1. Click on Start the wallet, and wait for it to be initialized. Validate your transactions are loaded.
 
-1. **Wallet Service**
-    1. Go to Settings and copy the Unique app identifier
-    1. Go to the unleash dashboard and add it to the list of UserIDs
-    1. Repeat all steps, starting from step 2
+# Wallet Service
+
+1. Go to Settings screen and copy the Unique app identifier
+1. Go to the Unleash Dashboard
+  1. If the tests above were executed while connected to the Wallet Service, disable the `wallet-service.rollout` for this device
+  1. If the tests above were executed while NOT connected to the Wallet Service, enable it for this device
+1. Repeat all steps, starting from step 2
+
+# Custom Network
+
+Test the ability of the app to change networks and connect to custom nodes and wallet services.
+Follow the [Custom Network QA](./QA_CUSTOM_NETWORK.md) steps.
+
+# Push Notification
+
+Test the ability of the app to receive push notifications.
+Follow the [Push Notification QA](./QA_PUSH_NOTIFICATION.md) steps.
+
+# Nano Contracts
+Test the ability of the app to create and interact with nano contracts.
+Follow the [Nano Contracts QA](./QA_NANO_CONTRACTS.md) steps.
+
+# Reown
+
+Test the app interaction with the Reown platform.
+Follow the [Reown QA](./QA_REOWN.md) steps.
+
+# Development Environment tests
+The following tests are executed only if for the development environment, with access to source code and building.
 
 1. **Whitelabel app**
     1. Modify parameters on src/config.js. Set at least `_IS_MULTI_TOKEN = false` and a new `_DEFAULT_TOKEN`.
@@ -160,10 +216,3 @@
     1. We should never have any problems with pt-br translation. We should have all texts translated.
     1. Check if all untranslated texts are known.
 
-# Push Notification
-
-Follow the [Push Notification QA](./QA_PUSH_NOTIFICATION.md) steps.
-
-# Custom Network
-
-Follow the [Custom Network QA](./QA_CUSTOM_NETWORK.md) steps.
