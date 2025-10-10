@@ -1,26 +1,14 @@
 # Custom Network
 
-### Settings screen
-1. Go to Settings
-1. Check you see "General Settings" as the title for the first collection of settings
-1. Check you see "Developer Settings" as the title for the second collection of settings
-
-### Risk Disclaimer screen
-1. Go to Network Settings
+### Custom Network Pre-Settings
+1. Navigate to Settings -> "Developer Settings" -> "Network Settings"
 1. Ensure you see the `RISK DISCLAIMER` screen
-1. Verify that there is a disclaimer text on a yellow background
-1. Confirm there is a button at the bottom of the page to acknowledge the disclaimer
-
-### Network Pre-Settings Screen
-1. Click on "I UNDERSTAND"
-1. Check you see the `NETWORK PRE-SETTINGS` screen
 1. Check you see two pre-settings options: Mainnet and Testnet
 1. Check you see a button at the bottom of the page to customize the network
 
-### CUSTOM NETWORK SETTINGS Screen
+### Custom Network Settings
 1. Click on "CUSTOMIZE"
-1. Check you see the `CUSTOM NETWORK SETTINGS` screen
-1. Check you see a warning message text in a yellow background
+1. Check you see a warning message about token value in a yellow background
 1. Check you see a form with the following values:
     - Node URL
     - Explorer URL
@@ -29,16 +17,12 @@
     - Wallet Service URL (optional)
     - Wallet Service WS URL (optional)
 
-      >[!NOTE]
-      >Wallet Service fields only appear if the wallet is allowed on Wallet Service feature.
-
-1. Check you see a button at the bottom of the page to send the form
+>[!NOTE]
+> Wallet Service fields only appear if the wallet is allowed on Unleash for the Wallet Service.
 
 ### Send the default network settings
-1. Click on "SEND"
-1. Verify that the wallet has successfully reloaded
+1. Click on "SEND" and verify that the wallet has successfully reloaded
 1. Ensure that a success feedback modal appears following the reload
-1. Dismiss the success feedback modal
 
 ### Send an invalid Node URL
 1. Empty the Node URL field
