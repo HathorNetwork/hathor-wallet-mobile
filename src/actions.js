@@ -236,11 +236,14 @@ export const types = {
   // Mark the request to load the allowed tokens as failed
   TOKEN_SWAP_FETCH_ALLOWED_TOKENS_ERROR: 'TOKEN_SWAP_FETCH_ALLOWED_TOKENS_ERROR',
 
-  // Choose the input token on the swap
+  // Handle user choice of token on the swap.
+  TOKEN_SWAP_CHOOSE_INPUT_TOKEN: 'TOKEN_SWAP_CHOOSE_INPUT_TOKEN',
+  TOKEN_SWAP_CHOOSE_OUTPUT_TOKEN: 'TOKEN_SWAP_CHOOSE_OUTPUT_TOKEN',
+  // Set the tokens for the swap
   TOKEN_SWAP_SET_INPUT_TOKEN: 'TOKEN_SWAP_SET_INPUT_TOKEN',
-  // Choose the output token on the swap
   TOKEN_SWAP_SET_OUTPUT_TOKEN: 'TOKEN_SWAP_SET_OUTPUT_TOKEN',
-  //
+  TOKEN_SWAP_SWITCH_TOKENS: 'TOKEN_SWAP_SWITCH_TOKENS',
+  // Choose amount of swap tokens
   TOKEN_SWAP_SET_INPUT_TOKEN_AMOUNT: 'TOKEN_SWAP_SET_INPUT_TOKEN_AMOUNT',
   TOKEN_SWAP_SET_OUTPUT_TOKEN_AMOUNT: 'TOKEN_SWAP_SET_OUTPUT_TOKEN_AMOUNT',
 
@@ -1703,11 +1706,15 @@ export const tokenSwapResetSwapData = () => ({
 });
 
 export const tokenSwapSetInputTokenAmount = (value) => ({
-  types: types.TOKEN_SWAP_SET_INPUT_TOKEN_AMOUNT,
+  type: types.TOKEN_SWAP_SET_INPUT_TOKEN_AMOUNT,
   payload: value,
 });
 
 export const tokenSwapSetOutputTokenAmount = (value) => ({
-  types: types.TOKEN_SWAP_SET_OUTPUT_TOKEN_AMOUNT,
+  type: types.TOKEN_SWAP_SET_OUTPUT_TOKEN_AMOUNT,
   payload: value,
+});
+
+export const tokenSwapSwitchTokens = () => ({
+  type: types.TOKEN_SWAP_SWITCH_TOKENS,
 });

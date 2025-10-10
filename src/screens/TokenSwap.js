@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { numberUtils } from '@hathor/wallet-lib';
 import React, { useState, useEffect } from 'react';
 import {
   Keyboard,
@@ -34,6 +35,7 @@ import {
   tokenSwapSetOutputTokenAmount,
   tokenSwapSetInputToken,
   tokenSwapSetOutputToken,
+  tokenSwapSwitchTokens,
 } from '../actions';
 
 
@@ -85,6 +87,11 @@ const TokenSwap = () => {
   }, [reduxInputToken]);
 
   useEffect(() => {
+    const newText = numberUtils.prettyValue(reduxInputTokenAmount, decimalPlaces);
+    setInputTokenAmountStr(newText);
+  }, [reduxInputTokenAmount]);
+
+  useEffect(() => {
     if (!reduxOutputToken) {
       setOutputToken(allowedTokens[1]);
       dispatch(tokenSwapSetOutputToken(allowedTokens[1]));
@@ -93,31 +100,30 @@ const TokenSwap = () => {
     }
   }, [reduxOutputToken]);
 
+  useEffect(() => {
+    const newText = numberUtils.prettyValue(reduxOutputTokenAmount, decimalPlaces);
+    setOutputTokenAmountStr(newText);
+  }, [reduxOutputTokenAmount]);
+
   function onInputAmountChange(text, value) {
     setInputTokenAmountStr(text);
     setInputTokenAmount(value);
-    // setError(null);
     // dispatch event to update reduxInputTokenAmount
-    // The event should also reset outputTokenAmount
-    dispatch(tokenSwapSetInputTokenAmount(value));
+    // dispatch(tokenSwapSetInputTokenAmount(value));
   }
 
-  function onInputAmountEndEditing(text) {
-    console.log(JSON.stringify(text));
-    // console.log(`User added ${text} tokens on input`);
+  function onInputAmountEndEditing(text, value) {
+    console.log(`User added ${text} tokens on input`);
   }
 
-  function onOutputAmountEndEditing(text) {
-    console.log(JSON.stringify(text));
-    // console.log(`User added ${text} tokens on output`);
+  function onOutputAmountEndEditing(text, value) {
+    console.log(`User added ${text} tokens on output`);
   }
 
   function onOutputAmountChange(text, value) {
     setOutputTokenAmountStr(text);
     setOutputTokenAmount(value);
-    // setError(null);
     // dispatch event to update reduxOutputTokenAmount
-    // The event should also reset inputTokenAmount
     dispatch(tokenSwapSetOutputTokenAmount(value));
   }
 
@@ -130,14 +136,20 @@ const TokenSwap = () => {
   };
 
   const switchTokens = () => {
-    // XXX
-    // dispatch(tokenSwapSwitchTokens());
+    dispatch(tokenSwapSwitchTokens());
   };
 
   const isButtonDisabled = () => {
     // Check other things?
     // input and output should not be 0n
-    return (!inputTokenAmountStr || !inputTokenAmount || inputTokenAmount === 0n || !outputTokenAmountStr || !outputTokenAmount || outputTokenAmount === 0n)
+    return (
+      !inputTokenAmountStr
+      || !inputTokenAmount
+      || inputTokenAmount === 0n
+      || !outputTokenAmountStr
+      || !outputTokenAmount
+      || outputTokenAmount === 0n
+    );
   };
 
   const renderGhostElement = () => (
@@ -153,9 +165,8 @@ const TokenSwap = () => {
       locked: 0n,
     });
     const { available } = balance;
-    const amountAndToken = `${renderValue(available, false)} ${token.symbol}`;
-    const availableCount = Number(available);
-    return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, availableCount);
+    const amount = `${renderValue(available, false)}`;
+    return t`Balance: ${amount}`;
   };
 
   const onButtonPress = () => {
@@ -173,55 +184,59 @@ const TokenSwap = () => {
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
-            <View style={styles.card}>
-              <View style={styles.tokenRow}>
-                {renderGhostElement()}
-                <AmountTextInput
-                  onAmountUpdate={onInputAmountChange}
-                  onEndEditing={onInputAmountEndEditing}
-                  value={inputTokenAmountStr}
-                  allowOnlyInteger={false}
-                  decimalPlaces={decimalPlaces}
-                  style={{ flex: 1 }} // we need this so the placeholder doesn't break in android
-                  // devices after erasing the text
-                  // https://github.com/facebook/react-native/issues/30666
-                />
-                { inputToken ? (
-                  <TokenBox onPress={onInputTokenBoxPress} label={inputToken.symbol} />
-                ) : (
-                  <TokenBox label={""} />
-                )}
+              <View style={styles.card}>
+                <View style={styles.tokenCard}>
+                  {renderGhostElement()}
+                  <AmountTextInput
+                    onAmountUpdate={onInputAmountChange}
+                    onAmountEndEditing={onInputAmountEndEditing}
+                    value={inputTokenAmountStr}
+                    allowOnlyInteger={false}
+                    decimalPlaces={decimalPlaces}
+                    style={styles.amountInputText}
+                  />
+                  <View>
+                    <View style={styles.tokenSelectorWrapper}>
+                      { inputToken ? (
+                        <TokenBox onPress={onInputTokenBoxPress} label={inputToken.symbol} />
+                      ) : (
+                        <TokenBox label={""} />
+                      )}
+                    </View>
+                    <InputLabel style={styles.amountAvailable}>
+                      {getAvailableString(inputToken)}
+                    </InputLabel>
+                  </View>
+                </View>
               </View>
-              <InputLabel style={styles.amountAvailable}>
-                {getAvailableString(inputToken)}
-              </InputLabel>
-            </View>
 
-            <SwapDivider onPress={switchTokens} />
+              <SwapDivider onPress={switchTokens} />
 
-            <View style={styles.card}>
-              <View style={styles.tokenRow}>
-                {renderGhostElement()}
-                <AmountTextInput
-                  onAmountUpdate={onOutputAmountChange}
-                  onEndEditing={onOutputAmountEndEditing}
-                  value={outputTokenAmountStr}
-                  allowOnlyInteger={false}
-                  decimalPlaces={decimalPlaces}
-                  style={{ flex: 1 }} // we need this so the placeholder doesn't break in android
-                  // devices after erasing the text
-                  // https://github.com/facebook/react-native/issues/30666
-                />
-                { outputToken ? (
-                  <TokenBox onPress={onOutputTokenBoxPress} label={outputToken.symbol} />
-                ) : (
-                  <TokenBox label={""} />
-                )}
+              <View style={styles.card}>
+                <View style={styles.tokenCard}>
+                  {renderGhostElement()}
+                  <AmountTextInput
+                    onAmountUpdate={onOutputAmountChange}
+                    onAmountEndEditing={onOutputAmountEndEditing}
+                    value={outputTokenAmountStr}
+                    allowOnlyInteger={false}
+                    decimalPlaces={decimalPlaces}
+                    style={styles.amountInputText}
+                  />
+                  <View>
+                    <View style={styles.tokenSelectorWrapper}>
+                      { outputToken ? (
+                        <TokenBox onPress={onOutputTokenBoxPress} label={outputToken.symbol} />
+                      ) : (
+                        <TokenBox label={""} />
+                      )}
+                    </View>
+                    <InputLabel style={styles.amountAvailable}>
+                      {getAvailableString(outputToken)}
+                    </InputLabel>
+                  </View>
+                </View>
               </View>
-              <InputLabel style={styles.amountAvailable}>
-                {getAvailableString(outputToken)}
-              </InputLabel>
-            </View>
             </View>
 
             <NewHathorButton
@@ -246,17 +261,30 @@ const styles = StyleSheet.create({
   },
   screenContent: {
     flex: 1,
-    backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
+    backgroundColor: COLORS.lowContrastDetail,
   },
-  amountAvailable: { textAlign: 'center', marginTop: 8, marginBottom: 4 },
-  tokenRow: {
+  tokenSelectorWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  amountAvailable: {
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  amountInputText: { // https://github.com/facebook/react-native/issues/30666
+    flex: 1,
+    alignText: 'center',
+    marginBottom: 30,
+  },
+  tokenCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 40,
+    marginTop: 30,
     padding: 8,
   },
   card: {
+    zIndex: 1,
     borderRadius: 20,
     backgroundColor: COLORS.backgroundColor,
     // For IOS
@@ -267,31 +295,27 @@ const styles = StyleSheet.create({
     // For Android
     elevation: 5,
   },
-  // divider: {
-  //   width: '100%',
-  //   height: 1,
-  //   backgroundColor: '#ccc',
-  //   marginVertical: 15, // Space around the divider
-  // },
   dividerContainer: {
+    zIndex: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 20, // Adjust as needed for spacing
+    marginVertical: -10,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#ccc', // Color of the divider lines
+    // backgroundColor: '#ccc',
+    backgroundColor: COLORS.backgroundColor,
   },
   dividerButton: {
     paddingHorizontal: 15,
     paddingVertical: 8,
-    borderRadius: 20, // Rounded button
-    backgroundColor: COLORS.primary, // Button background color
-    marginHorizontal: 10, // Spacing between lines and button
+    borderRadius: 20,
+    backgroundColor: COLORS.primary,
+    marginHorizontal: 10,
   },
   dividerButtonText: {
-    color: '#fff', // Button text color
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },

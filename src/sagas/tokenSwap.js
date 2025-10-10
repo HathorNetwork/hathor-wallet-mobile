@@ -31,6 +31,16 @@ import {
 const ALLOWED_TOKENS_URL = 'https://httpbin.org/json'
 
 export function* handleFetchAllowedTokensRequest() {
+  yield put(tokenSwapSetAllowedTokens(
+    'fake-contract-id',
+    [
+      { symbol: 'HTR', name: 'Hathor', uid: '00' },
+      { symbol: 'CTHOR', name: 'Cathor', uid: '00000000f76262bb1cca969d952ac2f0e85f88ec34c31f26a13eb3c31e29d4ed' },
+    ]
+  ));
+  return;
+
+  
   // XXX: We could have an AbortionController for cancellation
   let allowedTokenContents;
   try {
