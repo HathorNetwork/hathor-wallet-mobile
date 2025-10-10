@@ -1,5 +1,8 @@
 # Custom Network
 
+Some of the tests in this section require the Wallet Service to be enabled or disabled for the wallet. You can set this configuration on `wallet-service-mobile.rollout` on Unleash.
+To make sure the settings were correctly applied, close the app and open it again after each enable/disable toggle on Unleash.
+
 ### Custom Network Pre-Settings
 1. Navigate to Settings -> "Developer Settings" -> "Network Settings"
 1. Ensure you see the `RISK DISCLAIMER` screen
@@ -32,21 +35,14 @@
 1. Check that an invalidation message appears under the field informing Node URL should be a valid URL
 
 ### Send a custom network
-1. Navigate back to Network Pre-Settings screen
-1. Click on "CUSTOMIZE" again
+1. Navigate back to Network Pre-Settings screen and start another customization
 1. Fill the "Node URL" field with the value "https://node1.mainnet.hathor.network/v1a/"
-1. Click on "SEND"
-1. Wait the wallet reload
-1. Check if a success feedback modal has appeared
-1. Dismiss the success feedback modal
+1. Click on "SEND", check if a success feedback modal has appeared
 1. Verify that a network status bar with a yellow background and the message "Custom network: mainnet" is visible at the top of the screen
 
 ### Restoring to mainnet
-1. Navigate back to Network Pre-Settings screen
-1. Click on "Mainnet" option
-1. Wait for the wallet to reload
+1. Navigate back to Network Pre-Settings screen and click on the "Mainnet" pre-setting option
 1. Check a success feedback modal has appeared
-1. Dismiss the success feedback modal
 1. Ensure that the network status bar at the top of the screen has disappeared
 
 ### Check testnet balance
@@ -54,14 +50,10 @@
 >[!NOTE]
 > In this test we want to check the difference of transaction history and balance between mainnet and testnet of the same wallet. Therefore, you should have some transactions also in your testnet wallet.
 
-1. Click on "Testnet" option
-1. Wait for the wallet to reload
-1. Check a success feedback modal has appeared
-1. Dismiss the success feedback modal
+1. Click on "Testnet" pre-setting option
 1. Verify that a network status bar with a yellow background and the message "Custom network: testnet" is visible at the top of the screen
 1. Go to the Home screen
-1. Check the balance of Hathor token
-1. Click on Hathor token
+1. Check you see different balance from "mainnet"
 1. Check you see different transactions from "mainnet"
 1. Click on a transaction
 1. Click on the "Public Explorer" item
@@ -72,53 +64,40 @@
 1. Navigate to Network Pre-Settings screen
 1. Select the Testnet network
 1. Navigate to Mainscreen
+1. Check there is only the HTR token in the dashboard
 1. Register a token on Testnet network
-1. Navigate to Network Pre-Settings screen
-1. Select the Mainnet network
+1. Switch back to the Mainnet network
 1. Check there is only the HTR token in the dashboard
 
-### Check Wallet Service fields didn't appear when Wallet Service is disabled for the wallet
-1. Go to Unleash and disables the Wallet Service for the wallet
-    1. You should set this configuration on `wallet-service-mobile.rollout`
-1. Close and reopens the App
+### Check some fields don't appear when Wallet Service is disabled for the wallet
+1. Ensure the Wallet Service is 🚫**disabled** for this device.
 1. Navigate Custom Network Settings screen on Network Settings feature
 1. Check the Wallet Service fields do not appear
 
 ### Check Wallet Service fields disable Push Notification when they are empty
-1. Go to Unleash and enable the Wallet Service for the wallet
-    1. You should set this configuration on `wallet-service-mobile.rollout`
-1. Close and reopens the App
-1. Navigate Custom Network Settings screen on Network Settings feature
-1. Check the Wallet Service fields do appear
-1. Make both Wallet Service fields empty
-1. Navigate to Settings screen
-1. Check the Push Notification option didn't appear
+1. Ensure the Wallet Service is ✅**enabled** for this device.
+1. Navigate to the Custom Network Settings screen on Network Settings feature
+1. Check that the Wallet Service fields do appear
+1. Make both Wallet Service fields empty and apply the changes.
+1. Navigate to Settings screen and check the Push Notification option isn't available
 
 ### Check Wallet Service fields can't be empty unilaterally
-1. Go to Unleash and enable the Wallet Service for the wallet
-    1. You should set this configuration on `wallet-service-mobile.rollout`
-1. Close and reopens the App
-1. Navigate Custom Network Settings screen on Network Settings feature
+1. Ensure the Wallet Service is ✅**enabled** for this device.
+1. Navigate to the Custom Network Settings screen on Network Settings feature
 1. Check the Wallet Service fields do appear
 1. Make one of the Wallet Service fields empty
-1. Send the custom settings
-    1. You should see an error message under the field
+1. Click "Send" and check the error message for that empty field
 
 ### Check Push Notification aren't available on Testnet
-1. Navigate to Network Pre-Settings screen
-1. Select Testnet pre-settings
-1. Navigate to Settings screen
+1. Switch to the Testnet network pre-settings
 1. Check Push Notification didn't appear
 
 ### Check Push Notification aren't being received on Testnet
-1. Go to Unleash and enable the Wallet Service for the wallet
-    1. You should set this configuration on `wallet-service-mobile.rollout`
-1. Navigate to Network Pre-Settings screen
-1. Select Mainnet pre-settings
+1. Ensure the Wallet Service is ✅**enabled** for this device.
+1. Switch to the Mainnet pre-settings
 1. Enable Push Notification
-1. Send a transaction to your wallet from another wallet
+1. Send a transaction from another wallet to your mobile wallet
     1. You should receive a push notification
-1. Navigate to Network Pre-Settings screen
-1. Select Testnet pre-settings
+1. Switch to the Testnet pre-settings
 1. Send a transaction to your wallet from another wallet
     1. You should **not** receive a push notification
