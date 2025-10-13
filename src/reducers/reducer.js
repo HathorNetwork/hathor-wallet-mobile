@@ -547,14 +547,10 @@ const initialState = {
     // null | 'loading' | 'loaded' | 'error'
     loadAllowedTokensStatus: null,
     inputToken: null,
-    inputTokenAmount: 0,
     outputToken: null,
-    outputTokenAmount: 0,
     swapPathQuote: null,
     // null | 'loading' | 'loaded' | 'error'
     loadSwapPathQuoteStatus: null,
-    // null | 'input' | 'output',
-    swapDirection: null,
   },
 };
 
@@ -800,12 +796,8 @@ export const reducer = (state = initialState, action) => {
 
     case types.TOKEN_SWAP_SET_INPUT_TOKEN:
       return onTokenSwapSetInputToken(state, action);
-    case types.TOKEN_SWAP_SET_INPUT_TOKEN_AMOUNT:
-      return onTokenSwapSetInputTokenAmount(state, action);
     case types.TOKEN_SWAP_SET_OUTPUT_TOKEN:
       return onTokenSwapSetOutputToken(state, action);
-    case types.TOKEN_SWAP_SET_OUTPUT_TOKEN_AMOUNT:
-      return onTokenSwapSetOutputTokenAmount(state, action);
     case types.TOKEN_SWAP_SWITCH_TOKENS:
       return onTokenSwapSwitchTokens(state);
 
@@ -2332,24 +2324,10 @@ export const onTokenSwapSetInputToken = (state, { payload }) => {
     },
   };
   if (state.tokenSwap.outputToken.uid === payload.uid) {
-    // In this case the chosen token is the same as the other.
+    // In this case the chosen token is the same as the other so we switch
     newState.tokenSwap.outputToken = {...newState.tokenSwap.inputToken};
-
-    // Handle amount changes on swap
-    if (state.tokenSwap.swapDirection === 'input') {
-      newState.tokenSwap.swapDirection = 'output';
-      // Input used to decide the swap value, not the output does
-      newState.tokenSwap.outputTokenAmount = state.tokenSwap.inputTokenAmount;
-      newState.tokenSwap.inputTokenAmount = 0;
-    } else if (state.tokenSwap.swapDirection === 'output') {
-      newState.tokenSwap.swapDirection = 'output';
-      // Output used to decide the swap value, not the input does
-      newState.tokenSwap.outputTokenAmount = 0;
-      newState.tokenSwap.inputTokenAmount = state.tokenSwap.outputTokenAmount;
-    }
-  } else {
-    newState.tokenSwap.inputTokenAmount = 0;
   }
+
   newState.tokenSwap.inputToken = payload;
   return newState;
 };
@@ -2364,10 +2342,8 @@ export const onTokenSwapSetOutputToken = (state, { payload }) => {
   if (state.tokenSwap.inputToken.uid === payload.uid) {
     // In this case the chosen token is the same as the other.
     newState.tokenSwap.inputToken = {...newState.tokenSwap.outputToken};
-    newState.tokenSwap.inputTokenAmount = 0;
   }
   newState.tokenSwap.outputToken = payload;
-  newState.tokenSwap.outputTokenAmount = 0;
   return newState;
 };
 
@@ -2395,32 +2371,9 @@ export const onTokenSwapResetSwapData = (state) => ({
     allowedTokens: null,
     loadAllowedTokensStatus: null,
     inputToken: null,
-    inputTokenAmount: 0,
     outputToken: null,
-    outputTokenAmount: 0,
     swapPathQuote: null,
     loadSwapPathQuoteStatus: null,
-    swapDirection: null,
-  },
-});
-
-export const onTokenSwapSetInputTokenAmount = (state, { payload }) => ({
-  ...state,
-  tokenSwap: {
-    ...state.tokenSwap,
-    inputTokenAmount: payload,
-    swapDirection: 'input',
-    outputTokenAmount: 0,
-  },
-});
-
-export const onTokenSwapSetOutputTokenAmount = (state, { payload }) => ({
-  ...state,
-  tokenSwap: {
-    ...state.tokenSwap,
-    outputTokenAmount: payload,
-    swapDirection: 'output',
-    inputTokenAmount: 0,
   },
 });
 
@@ -2429,9 +2382,6 @@ export const onTokenSwapSwitchTokens = (state) => ({
   tokenSwap: {
     ...state.tokenSwap,
     inputToken: state.tokenSwap.outputToken,
-    inputTokenAmount: state.tokenSwap.swapDirection === 'input' ? 0 : state.tokenSwap.outputTokenAmount,
     outputToken: state.tokenSwap.inputToken,
-    outputTokenAmount: state.tokenSwap.swapDirection === 'output' ? 0 : state.tokenSwap.inputTokenAmount,
-    swapDirection: state.tokenSwap.swapDirection && (state.tokenSwap.swapDirection === 'output' ? 'input' : 'output'),
   },
 });

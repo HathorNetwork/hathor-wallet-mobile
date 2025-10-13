@@ -16,6 +16,7 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
+import { SwapIcon } from '../components/Icons/Swap.icon';
 import { useDispatch, useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
@@ -31,8 +32,6 @@ import OfflineBar from '../components/OfflineBar';
 import { COLORS } from '../styles/themes';
 import { useNavigation } from '../hooks/navigation';
 import {
-  tokenSwapSetInputTokenAmount,
-  tokenSwapSetOutputTokenAmount,
   tokenSwapSetInputToken,
   tokenSwapSetOutputToken,
   tokenSwapSwitchTokens,
@@ -44,7 +43,7 @@ const SwapDivider = ({ onPress }) => {
     <View style={styles.dividerContainer}>
       <View style={styles.dividerLine} />
       <TouchableOpacity style={styles.dividerButton} onPress={onPress}>
-        <Text style={styles.dividerButtonText}>{"<icon>"}</Text>
+        <SwapIcon color={COLORS.white} />
       </TouchableOpacity>
       <View style={styles.dividerLine} />
     </View>
@@ -55,21 +54,18 @@ const TokenSwap = () => {
   const dispatch = useDispatch();
   const tokensBalance = useSelector((state) => state.tokensBalance);
 
-  const [inputToken, setInputToken] = useState(null);
-  const [outputToken, setOutputToken] = useState(null);
+  const [inputTokenAmountStr, setInputTokenAmountStr] = useState('0');
+  const [inputTokenAmount, setInputTokenAmount] = useState(0n);
 
-  const [inputTokenAmountStr, setInputTokenAmountStr] = useState();
-  const [inputTokenAmount, setInputTokenAmount] = useState();
+  const [outputTokenAmountStr, setOutputTokenAmountStr] = useState('0');
+  const [outputTokenAmount, setOutputTokenAmount] = useState(0n);
 
-  const [outputTokenAmountStr, setOutputTokenAmountStr] = useState();
-  const [outputTokenAmount, setOutputTokenAmount] = useState();
+  const [swapDirection, setSwapDirection] = useState(null);
 
   const {
     allowedTokens,
-    inputToken: reduxInputToken,
-    inputTokenAmount: reduxInputTokenAmount,
-    outputToken: reduxOutputToken,
-    outputTokenAmount: reduxOutputTokenAmount,
+    inputToken,
+    outputToken,
   } = useSelector((state) => state.tokenSwap);
   const { decimalPlaces } = useSelector((state) => ({
     decimalPlaces: state.serverInfo?.decimal_places
@@ -78,53 +74,41 @@ const TokenSwap = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (!reduxInputToken) {
-      setInputToken(allowedTokens[0]);
+    if (!inputToken) {
       dispatch(tokenSwapSetInputToken(allowedTokens[0]));
-    } else {
-      setInputToken(reduxInputToken);
+      return;
     }
-  }, [reduxInputToken]);
+  }, [inputToken]);
 
   useEffect(() => {
-    const newText = numberUtils.prettyValue(reduxInputTokenAmount, decimalPlaces);
-    setInputTokenAmountStr(newText);
-  }, [reduxInputTokenAmount]);
-
-  useEffect(() => {
-    if (!reduxOutputToken) {
-      setOutputToken(allowedTokens[1]);
-      dispatch(tokenSwapSetOutputToken(allowedTokens[1]));
-    } else {
-      setOutputToken(reduxOutputToken);
+    if (!outputToken) {
+      dispatch(tokenSwapSetOutputToken(allowedTokens[0]));
+      return;
     }
-  }, [reduxOutputToken]);
-
-  useEffect(() => {
-    const newText = numberUtils.prettyValue(reduxOutputTokenAmount, decimalPlaces);
-    setOutputTokenAmountStr(newText);
-  }, [reduxOutputTokenAmount]);
+  }, [outputToken]);
 
   function onInputAmountChange(text, value) {
     setInputTokenAmountStr(text);
     setInputTokenAmount(value);
-    // dispatch event to update reduxInputTokenAmount
-    // dispatch(tokenSwapSetInputTokenAmount(value));
   }
 
-  function onInputAmountEndEditing(text, value) {
-    console.log(`User added ${text} tokens on input`);
+  function onInputAmountEndEditing(_target) {
+    console.log(`User added ${inputTokenAmount} tokens on input`);
+    setOutputTokenAmountStr('0');
+    setOutputTokenAmount(0n);
+    setSwapDirection('input');
   }
 
-  function onOutputAmountEndEditing(text, value) {
-    console.log(`User added ${text} tokens on output`);
+  function onOutputAmountEndEditing(_target) {
+    console.log(`User added ${outputTokenAmount} tokens on output`);
+    setInputTokenAmountStr('0');
+    setInputTokenAmount(0n);
+    setSwapDirection('output');
   }
 
   function onOutputAmountChange(text, value) {
     setOutputTokenAmountStr(text);
     setOutputTokenAmount(value);
-    // dispatch event to update reduxOutputTokenAmount
-    dispatch(tokenSwapSetOutputTokenAmount(value));
   }
 
   const onInputTokenBoxPress = () => {
@@ -136,12 +120,25 @@ const TokenSwap = () => {
   };
 
   const switchTokens = () => {
+
+    setOutputTokenAmountStr(inputTokenAmountStr);
+    setOutputTokenAmount(inputTokenAmount);
+
+    setInputTokenAmountStr(outputTokenAmountStr);
+    setInputTokenAmount(outputTokenAmount);
+
+    // Also switch the direction of the swap
+    if (swapDirection === 'input') {
+      setSwapDirection('output');
+    } else if (swapDirection === 'output') {
+      setSwapDirection('input');
+    }
+
+    // switch the tokens being swapped
     dispatch(tokenSwapSwitchTokens());
   };
 
   const isButtonDisabled = () => {
-    // Check other things?
-    // input and output should not be 0n
     return (
       !inputTokenAmountStr
       || !inputTokenAmount
@@ -189,7 +186,7 @@ const TokenSwap = () => {
                   {renderGhostElement()}
                   <AmountTextInput
                     onAmountUpdate={onInputAmountChange}
-                    onAmountEndEditing={onInputAmountEndEditing}
+                    onEndEditing={onInputAmountEndEditing}
                     value={inputTokenAmountStr}
                     allowOnlyInteger={false}
                     decimalPlaces={decimalPlaces}
@@ -217,7 +214,7 @@ const TokenSwap = () => {
                   {renderGhostElement()}
                   <AmountTextInput
                     onAmountUpdate={onOutputAmountChange}
-                    onAmountEndEditing={onOutputAmountEndEditing}
+                    onEndEditing={onOutputAmountEndEditing}
                     value={outputTokenAmountStr}
                     allowOnlyInteger={false}
                     decimalPlaces={decimalPlaces}

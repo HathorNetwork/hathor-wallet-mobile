@@ -31,29 +31,6 @@ const AmountTextInput = forwardRef((props, ref) => {
   const [text, setText] = useState(props.value || '');
   const { decimalPlaces } = props;
 
-  const parseTextToValue = (valueStr) => {
-    let parsedText = valueStr;
-    let bigIntValue;
-    if (props.allowOnlyInteger) {
-      // We allow only integers for NFT
-      parsedText = parsedText.replace(/[^0-9]/g, '');
-    }
-
-    parsedText = getAmountParsed(parsedText, decimalPlaces);
-
-    // There is no NaN in BigInt, it either returns a valid bigint or throws an error.
-    try {
-      bigIntValue = getIntegerAmount(parsedText, decimalPlaces);
-
-      if (bigIntValue < 0n) {
-        return [false, parsedText, 0n];
-      }
-      return [true, parsedText, bigIntValue];
-    } catch (e) {
-      return [false, parsedText, 0n];
-    }
-  };
-
   // Expose the focus method to parent components
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -74,35 +51,11 @@ const AmountTextInput = forwardRef((props, ref) => {
 
   useEffect(() => {
     // Update internal state if value prop changes externally
-    console.log(`New value ${props.value} vs ${text}`);
     if (props.value !== text) {
-      setText(props.value || '');
-      if (!props.value) {
-        return;
-      }
-      const [isValid, parsedText, bigIntValue] = parseTextToValue(props.value);
-      console.log(`value updated ${isValid}, ${parsedText}, ${bigIntValue}`);
-      if (!isValid) {
-        return;
-      }
-      props.onAmountUpdate(parsedText, bigIntValue);
+      onChangeText(props.value);
     }
-  }, [props.value, props.onAmountUpdate, props.allowOnlyInteger, decimalPlaces]);
+  }, [props.value]);
 
-  const onEndEditing = (event) => {
-    if (!props.onAmountEndEditing) {
-      return
-    }
-
-    const [isValid, parsedText, bigIntValue] = parseTextToValue(event.nativeEvent.text);
-    console.log(`end edditing: ${isValid}, ${parsedText}, ${bigIntValue}`);
-    if (!isValid) {
-      return;
-    }
-    // Pass both text and BigInt value to parent
-    props.onAmountUpdate(parsedText, bigIntValue);
-  }
-  
   const onChangeText = (newText) => {
     if (newText === '') {
       // Need to handle empty string separately
@@ -111,13 +64,33 @@ const AmountTextInput = forwardRef((props, ref) => {
       return;
     }
 
-    const [isValid, parsedText, bigIntValue] = parseTextToValue(newText);
-    if (!isValid) {
-      return;
+    let parsedText = newText;
+    let bigIntValue;
+    if (props.allowOnlyInteger) {
+      // We allow only integers for NFT
+      parsedText = parsedText.replace(/[^0-9]/g, '');
     }
-    setText(parsedText);
-    // Pass both text and BigInt value to parent
-    props.onAmountUpdate(parsedText, bigIntValue);
+
+    parsedText = getAmountParsed(parsedText, decimalPlaces);
+
+    // There is no NaN in BigInt, it either returns a valid bigint or throws
+    // an error.
+    let isValid = true;
+    try {
+      bigIntValue = getIntegerAmount(parsedText, decimalPlaces);
+
+      if (bigIntValue < 0n) {
+        isValid = false;
+      }
+    } catch (e) {
+      isValid = false;
+    }
+
+    if (isValid) {
+      setText(parsedText);
+      // Pass both text and BigInt value to parent
+      props.onAmountUpdate(parsedText, bigIntValue);
+    }
   };
 
   let placeholder;
@@ -135,7 +108,6 @@ const AmountTextInput = forwardRef((props, ref) => {
       ref={inputRef}
       style={[style.input, customStyle]}
       onChangeText={onChangeText}
-      onEndEditing={onEndEditing}
       value={text}
       textAlign='center'
       textAlignVertical='bottom'

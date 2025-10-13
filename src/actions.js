@@ -228,7 +228,6 @@ export const types = {
   /**
    * Token Swap actions
    */
-
   // Start the request to load the allowed tokens list
   TOKEN_SWAP_FETCH_ALLOWED_TOKENS: 'TOKEN_SWAP_FETCH_ALLOWED_TOKENS',
   // Set the value of the allowed tokens list
@@ -243,9 +242,6 @@ export const types = {
   TOKEN_SWAP_SET_INPUT_TOKEN: 'TOKEN_SWAP_SET_INPUT_TOKEN',
   TOKEN_SWAP_SET_OUTPUT_TOKEN: 'TOKEN_SWAP_SET_OUTPUT_TOKEN',
   TOKEN_SWAP_SWITCH_TOKENS: 'TOKEN_SWAP_SWITCH_TOKENS',
-  // Choose amount of swap tokens
-  TOKEN_SWAP_SET_INPUT_TOKEN_AMOUNT: 'TOKEN_SWAP_SET_INPUT_TOKEN_AMOUNT',
-  TOKEN_SWAP_SET_OUTPUT_TOKEN_AMOUNT: 'TOKEN_SWAP_SET_OUTPUT_TOKEN_AMOUNT',
 
   // Fetch a quote for the current swap
   TOKEN_SWAP_FETCH_SWAP_QUOTE: 'TOKEN_SWAP_FETCH_SWAP_QUOTE',
@@ -1703,16 +1699,6 @@ export const tokenSwapFetchSwapDataError = () => ({
 
 export const tokenSwapResetSwapData = () => ({
   type: types.TOKEN_SWAP_RESET_SWAP_DATA,
-});
-
-export const tokenSwapSetInputTokenAmount = (value) => ({
-  type: types.TOKEN_SWAP_SET_INPUT_TOKEN_AMOUNT,
-  payload: value,
-});
-
-export const tokenSwapSetOutputTokenAmount = (value) => ({
-  type: types.TOKEN_SWAP_SET_OUTPUT_TOKEN_AMOUNT,
-  payload: value,
 });
 
 export const tokenSwapSwitchTokens = () => ({

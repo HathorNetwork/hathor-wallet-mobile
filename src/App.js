@@ -107,6 +107,7 @@ import { SendTransactionRequestScreen } from './screens/Reown/SendTransactionReq
 import TokenSwap from './screens/TokenSwap';
 import TokenSwapLoadingScreen from './screens/TokenSwapLoadingScreen';
 import TokenSwapTokenList from './screens/TokenSwapTokenList';
+import { SwapIcon } from './components/Icons/Swap.icon';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -404,7 +405,6 @@ const RegisterNanoContractStack = ({ navigation }) => {
 const tabBarIconMap = {
   Home: 'icDashboard',
   Send: 'icSend',
-  Swap: 'icSettings',
   Receive: 'icReceive',
   Settings: 'icSettings',
 };
@@ -426,6 +426,9 @@ const TabNavigator = () => {
           const { name } = route;
           const iconName = tabBarIconMap[name];
           const colorName = focused ? COLORS.primary : COLORS.textColorShadow;
+          if (name === 'Swap') {
+            return (<SwapIcon size={24} color={colorName} />)
+          }
           return (<IconTabBar name={iconName} size={24} color={colorName} />);
         },
         tabBarStyle: {
