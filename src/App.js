@@ -108,6 +108,7 @@ import TokenSwap from './screens/TokenSwap';
 import TokenSwapLoadingScreen from './screens/TokenSwapLoadingScreen';
 import TokenSwapTokenList from './screens/TokenSwapTokenList';
 import { SwapIcon } from './components/Icons/Swap.icon';
+import TokenSwapReview from './screens/TokenSwapReview';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -190,6 +191,7 @@ const SwapStack = ({ navigation }) => {
     >
       <Stack.Screen name='TokenSwapLoadingScreen' component={TokenSwapLoadingScreen} />
       <Stack.Screen name='TokenSwap' component={TokenSwap} />
+      <Stack.Screen name='TokenSwapReview' component={TokenSwapReview} />
       <Stack.Screen name='TokenSwapListInputToken' component={TokenSwapTokenList('input')} />
       <Stack.Screen name='TokenSwapListOutputToken' component={TokenSwapTokenList('output')} />
     </Stack.Navigator>

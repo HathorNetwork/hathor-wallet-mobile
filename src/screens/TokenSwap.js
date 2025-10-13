@@ -42,9 +42,9 @@ const SwapDivider = ({ onPress }) => {
   return (
     <View style={styles.dividerContainer}>
       <View style={styles.dividerLine} />
-      <TouchableOpacity style={styles.dividerButton} onPress={onPress}>
-        <SwapIcon color={COLORS.white} />
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.dividerButton} onPress={onPress}>
+          <SwapIcon color={COLORS.white} />
+        </TouchableOpacity>
       <View style={styles.dividerLine} />
     </View>
   );
@@ -61,6 +61,9 @@ const TokenSwap = () => {
   const [outputTokenAmount, setOutputTokenAmount] = useState(0n);
 
   const [swapDirection, setSwapDirection] = useState(null);
+
+  // XXX: this is a mock value to simulate fetching and showing the quote section
+  const [showQuote, setShowQuote] = useState(false);
 
   const {
     allowedTokens,
@@ -97,6 +100,11 @@ const TokenSwap = () => {
     setOutputTokenAmountStr('0');
     setOutputTokenAmount(0n);
     setSwapDirection('input');
+
+    // XXX here we should fetch the quote, but we will mock for now
+    setShowQuote(true);
+    setOutputTokenAmountStr('6.41');
+    setOutputTokenAmount(641n);
   }
 
   function onOutputAmountEndEditing(_target) {
@@ -104,6 +112,11 @@ const TokenSwap = () => {
     setInputTokenAmountStr('0');
     setInputTokenAmount(0n);
     setSwapDirection('output');
+
+    // XXX here we should fetch the quote, but we will mock for now
+    setShowQuote(true);
+    setInputTokenAmountStr('6.41');
+    setInputTokenAmount(641n);
   }
 
   function onOutputAmountChange(text, value) {
@@ -111,26 +124,41 @@ const TokenSwap = () => {
     setOutputTokenAmount(value);
   }
 
+  function onFocus() {
+    setShowQuote(false);
+  }
+
   const onInputTokenBoxPress = () => {
-    navigation.navigate('TokenSwapListInputToken', { token: inputToken.uid });
+    navigation.navigate('TokenSwapListInputToken', { token: inputToken });
   };
 
   const onOutputTokenBoxPress = () => {
-    navigation.navigate('TokenSwapListOutputToken', { token: outputToken.uid });
+    navigation.navigate('TokenSwapListOutputToken', { token: outputToken });
   };
 
   const switchTokens = () => {
 
-    setOutputTokenAmountStr(inputTokenAmountStr);
-    setOutputTokenAmount(inputTokenAmount);
-
-    setInputTokenAmountStr(outputTokenAmountStr);
-    setInputTokenAmount(outputTokenAmount);
+    const newOutputStr = inputTokenAmountStr;
+    const newOutput = inputTokenAmount;
+    const newInputStr = outputTokenAmountStr;
+    const newInput = outputTokenAmount;
 
     // Also switch the direction of the swap
     if (swapDirection === 'input') {
+      setInputTokenAmountStr(newInputStr);
+      setInputTokenAmount(newInput);
+
+      setOutputTokenAmountStr('0');
+      setOutputTokenAmount(0n);
+
       setSwapDirection('output');
     } else if (swapDirection === 'output') {
+      setOutputTokenAmountStr(newOutputStr);
+      setOutputTokenAmount(newOutput);
+
+      setInputTokenAmountStr('0');
+      setInputTokenAmount(0n);
+
       setSwapDirection('input');
     }
 
@@ -167,7 +195,13 @@ const TokenSwap = () => {
   };
 
   const onButtonPress = () => {
-    console.log(`Button pressed!`);
+    navigation.navigate('TokenSwapReview', {
+      inputToken,
+      inputAmount: inputTokenAmount,
+      outputToken,
+      outputAmount: outputTokenAmount,
+      swapDirection,
+    });
   };
 
   return (
@@ -187,6 +221,7 @@ const TokenSwap = () => {
                   <AmountTextInput
                     onAmountUpdate={onInputAmountChange}
                     onEndEditing={onInputAmountEndEditing}
+                    onFocus={onFocus}
                     value={inputTokenAmountStr}
                     allowOnlyInteger={false}
                     decimalPlaces={decimalPlaces}
@@ -215,6 +250,7 @@ const TokenSwap = () => {
                   <AmountTextInput
                     onAmountUpdate={onOutputAmountChange}
                     onEndEditing={onOutputAmountEndEditing}
+                    onFocus={onFocus}
                     value={outputTokenAmountStr}
                     allowOnlyInteger={false}
                     decimalPlaces={decimalPlaces}
@@ -234,10 +270,32 @@ const TokenSwap = () => {
                   </View>
                 </View>
               </View>
+
+              { showQuote && (
+                <View style={styles.quoteContainer}>
+                  <View style={styles.quoteRow}>
+                    <Text style={styles.quoteHeader}>{"Conversion rate"}</Text>
+                    <Text style={styles.quoteValue}>{"15.60 HTR = 1 CTHOR"}</Text>
+                  </View>
+                  <View style={styles.quoteRow}>
+                    <Text style={styles.quoteHeader}>{"Slippage"}</Text>
+                    <Text style={styles.quoteValue}>{"0.5%"}</Text>
+                  </View>
+                  <View style={styles.quoteRow}>
+                    <Text style={styles.quoteHeader}>{"Price impact"}</Text>
+                    <Text style={styles.quoteValue}>{"-0.4%"}</Text>
+                  </View>
+                  <View style={styles.quoteRow}>
+                    <Text style={styles.quoteHeader}>{"Minimum received"}</Text>
+                    <Text style={styles.quoteValue}>{"6.41 CTHOR"}</Text>
+                  </View>
+                </View>
+              )}
             </View>
 
+
             <NewHathorButton
-              title={t`Next`}
+              title={t`REVIEW`}
               disabled={isButtonDisabled()}
               onPress={onButtonPress}
             />
@@ -291,6 +349,21 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     // For Android
     elevation: 5,
+  },
+  quoteContainer: {
+    paddingTop: 40,
+    padding: 20,
+  },
+  quoteRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 4,
+  },
+  quoteHeader: {
+    fontWeight: 'bold',
+  },
+  quoteValue: {
+    fontWeight: 200,
   },
   dividerContainer: {
     zIndex: 2,

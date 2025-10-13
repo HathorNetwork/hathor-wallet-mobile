@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useParams } from '../hooks/navigation';
 
 import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
@@ -21,8 +21,8 @@ export default function TokenSwapTokenList(direction) {
   return () => {
     const dispatch = useDispatch();
     const navigation = useNavigation();
-    const route = useRoute();
-    const token = route.params.token ?? null;
+    const params = useParams();
+    const token = params.token ?? null;
 
     const tokenMetadata = useSelector(state => state.tokenMetadata);
     const tokensBalance = useSelector(state => state.tokensBalance);
@@ -49,6 +49,7 @@ export default function TokenSwapTokenList(direction) {
         tokens={allowedTokens}
         tokensBalance={tokensBalance}
         tokenMetadata={tokenMetadata}
+        ignoreLoading={true}
       />
     );
   };
