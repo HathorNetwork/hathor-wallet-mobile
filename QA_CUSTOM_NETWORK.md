@@ -70,30 +70,30 @@ To make sure the settings were correctly applied, close the app and open it agai
 1. Check there is only the HTR token in the dashboard
 
 ### Check some fields don't appear when Wallet Service is disabled for the wallet
-1. Ensure the Wallet Service Unleash Feature Toggle is 🚫**disabled** for this device.
+1. Ensure the **Wallet Service** Unleash Feature Toggle is 🚫**disabled** for this device.
 1. Navigate Custom Network Settings screen on Network Settings feature
 1. Check the Wallet Service fields do not appear
 
 ### Check Wallet Service fields disable Push Notification when they are empty
-1. Ensure the Wallet Service is ✅**enabled** for this device.
+1. Ensure the **Wallet Service** Unleash Feature Toggle is ✅**enabled** for this device.
 1. Navigate to the Custom Network Settings screen on Network Settings feature
 1. Check that the Wallet Service fields do appear
 1. Make both Wallet Service fields empty and apply the changes.
 1. Navigate to Settings screen and check the Push Notification option isn't available
 
 ### Check Wallet Service fields can't be empty unilaterally
-1. Ensure the Wallet Service Unleash Feature Toggle is ✅**enabled** for this device.
+1. Ensure the **Wallet Service** Unleash Feature Toggle is ✅**enabled** for this device.
 1. Navigate to the Custom Network Settings screen on Network Settings feature
 1. Check the Wallet Service fields do appear
 1. Make one of the Wallet Service fields empty
 1. Click "Send" and check the error message for that empty field
 
-### Check Push Notification aren't available on Testnet
+### Check Push Notifications aren't available on Testnet
 1. Switch to the Testnet network pre-settings
 1. Check Push Notification didn't appear
 
-### Check Push Notification aren't being received on Testnet
-1. Ensure the Wallet Service Unleash Feature Toggle is ✅**enabled** for this device.
+### Check Push Notifications aren't being received on Testnet
+1. Ensure the **Wallet Service** Unleash Feature Toggle is ✅**enabled** for this device.
 1. Switch to the Mainnet pre-settings
 1. Enable Push Notification
 1. Send a transaction from another wallet to your mobile wallet
