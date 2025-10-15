@@ -29,8 +29,8 @@ It's a second custom NFT token to test.
 ## Suggested test sequence
 
 ### Preparation
-1. Ensure the Push Notification Unleash Feature Toggle is 🚫**disabled** for this device.
-1. If testing the fullnode wallet, make sure the unleash `wallet-service` feature toggle is also disabled
+1. Ensure the **Push Notification** Unleash Feature Toggle is 🚫**disabled** for this device.
+1. If testing the fullnode wallet, make sure the unleash **Wallet Service** feature toggle is also disabled
 
 ### Initialize a new wallet with no push feature
 1. You should **not** see a modal to opt-in the push notification yet
@@ -40,18 +40,18 @@ It's a second custom NFT token to test.
   1. Wait some minutes to guarantee you won't receive any notifications for this tx
 
 ### Initialize a new wallet with push feature enabled
-1. Ensure the Push Notification Unleash Feature Toggle is ✅**enabled** for this device.
+1. Ensure the **Push Notification** Unleash Feature Toggle is ✅**enabled** for this device.
 1. Check the **Push Notification** item now shows up in the Settings page
 1. Stay in the "Settings" page and turn off the Unleash `push-notification` Feature Toggle for this device
 1. Do not close nor reload the app.
 1. Wait until the Push Notification item disappears from the Settings page
 
 ### Toggle push notification settings on/off
-1. Ensure the Push Notification Unleash Feature Toggle is ✅**enabled** for this device.
+1. Ensure the **Push Notification** Unleash Feature Toggle is ✅**enabled** for this device.
 1. Go to the **Settings -> Push Notification** page
 1. Turn on the `Enable Push Notification` and the `Show amounts on notification` options
 1. Turn off the `Enable Push Notification`
-1. Try to turn on the `Show amounts on notification`
+1. Try to turn off the `Show amounts on notification`
    1. It should not be possible: the component is disabled
    1. The value should stay on, as it was before
 1. Turn on the `Enable Push Notification`
@@ -60,7 +60,7 @@ It's a second custom NFT token to test.
 1. Turn off the `Enable Push Notification`. Both options must now be off.
 
 ### Receive a push notification for a new transaction
-1. Ensure the Push Notification Unleash Feature Toggle is ✅**enabled** for this device.
+1. Ensure the **Push Notification** Unleash Feature Toggle is ✅**enabled** for this device.
 1. Ensure the `Enable Push Notification` option is 🚫**off** 
 1. Send HTR to this wallet
    1. Wait some minutes to guarantee you will **not** receive any notifications for this tx
@@ -70,7 +70,7 @@ It's a second custom NFT token to test.
    1. You should receive a notification of new transaction without show amounts: "There is a new transaction in your wallet."
 
 ### Receive a push notification with amounts
-1. Ensure the Push Notification Unleash Feature Toggle is ✅**enabled** for this device.
+1. Ensure the **Push Notification** Unleash Feature Toggle is ✅**enabled** for this device.
 1. Ensure the `Enable Push Notification` option is ✅**on**
 1. Navigate to the **Settings -> Push Notification** page and turn on the `Show amounts on notification` option
 1. Send HTR to this wallet
