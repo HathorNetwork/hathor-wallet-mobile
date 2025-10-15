@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { t } from 'ttag';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, Image } from 'react-native';
 import { constants, numberUtils } from '@hathor/wallet-lib';
@@ -17,12 +17,11 @@ import { WarnDisclaimer } from './WarnDisclaimer';
 import { DappContainer } from './NanoContract/DappContainer';
 import {
   setSendTxStatusReady,
-  unregisteredTokensDownloadRequest,
   reownReject,
   sendTxRetry,
   sendTxRetryDismiss
 } from '../../actions';
-import { REOWN_SEND_TX_STATUS, DEFAULT_TOKEN } from '../../constants';
+import { REOWN_SEND_TX_STATUS } from '../../constants';
 import FeedbackModal from '../FeedbackModal';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import { FeedbackContent } from '../FeedbackContent';
@@ -157,9 +156,6 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
-  // Track tokens we've already requested to prevent duplicate requests
-  const requestedTokensRef = useRef(new Set());
-
   // State for decline modal
   const [showDeclineModal, setShowDeclineModal] = useState(false);
 
@@ -177,42 +173,8 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     sendTxStatus === REOWN_SEND_TX_STATUS.SUCCESSFUL
   );
 
-  // Request information for any unknown tokens
-  useEffect(() => {
-    // Only process if we have data and it hasn't been processed yet
-    if (data && data.inputs?.length > 0) {
-      // Collect all token UIDs from both inputs and outputs
-      const unknownTokensUid = [];
-
-      // Check tokens in inputs
-      const inputTokenIds = data.inputs?.map((input) => input.token).filter(Boolean) || [];
-      // Check tokens in outputs
-      const outputTokenIds = data.outputs?.map((output) => output.token).filter(Boolean) || [];
-
-      // Combine all token IDs
-      const allTokenIds = [...new Set([...inputTokenIds, ...outputTokenIds])];
-
-      // Find unknown tokens that we haven't requested yet
-      allTokenIds.forEach((uid) => {
-        if (uid !== DEFAULT_TOKEN.uid
-          && !(uid in registeredTokens)
-          && !(uid in unregisteredTokens)
-          && !requestedTokensRef.current.has(uid)
-        ) {
-          unknownTokensUid.push(uid);
-          requestedTokensRef.current.add(uid);
-        }
-      });
-
-      // Request download of unknown tokens
-      if (unknownTokensUid.length > 0) {
-        dispatch(unregisteredTokensDownloadRequest({ uids: unknownTokensUid }));
-      }
-    }
-  }, [data, registeredTokens, unregisteredTokens, dispatch]);
-
-  // Check if tokens are still loading
-  const isTokenDataLoading = () => unregisteredTokens.isLoading;
+  // Token details are now provided automatically by the RPC handler
+  // via the tokenDetails map, so no need to manually request them
 
   // Update the getTokenSymbol function to use knownTokens
   const getTokenSymbol = (tokenId) => {
@@ -228,9 +190,8 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
 
     // We return an empty string as a fallback for tokens that are not yet
     // loaded or recognized
-    // This should be temporary until the token details are fetched
-    // The unregisteredTokensDownloadRequested action should be loading these
-    // details
+    // This should be temporary until the token details are provided
+    // by the RPC handler
     return '';
   };
 
@@ -395,8 +356,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   };
 
   // Status check functions
-  const isTxDataLoading = () => isTokenDataLoading();
-  const isTxProcessing = () => sendTxStatus === REOWN_SEND_TX_STATUS.LOADING || isTxDataLoading();
+  const isTxProcessing = () => sendTxStatus === REOWN_SEND_TX_STATUS.LOADING;
   const isTxFailed = () => sendTxStatus === REOWN_SEND_TX_STATUS.FAILED;
   const isTxSuccessful = () => sendTxStatus === REOWN_SEND_TX_STATUS.SUCCESSFUL;
 

@@ -189,14 +189,6 @@ export const types = {
   FIRSTADDRESS_FAILURE: 'FIRSTADDRESS_FAILURE',
   /* It updates the redux state of new nano contract transaction status on wallet connect register. */
   WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
-  /* It triggers a process to fetch token details for a list of unregistered tokens. */
-  UNREGISTEREDTOKENS_DOWNLOAD_REQUEST: 'UNREGISTEREDTOKENS_DOWNLOAD_REQUEST',
-  /* It signals the process has loaded at least one token details with success. */
-  UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS: 'UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS',
-  /* It signals the process has failed to load at least one token details. */
-  UNREGISTEREDTOKENS_DOWNLOAD_FAILURE: 'UNREGISTEREDTOKENS_DOWNLOAD_FAILURE',
-  /* It signals the end of the process. */
-  UNREGISTEREDTOKENS_DOWNLOAD_END: 'UNREGISTEREDTOKENS_DOWNLOAD_END',
   REOWN_NEW_NANOCONTRACT_RETRY: 'REOWN_NEW_NANOCONTRACT_RETRY',
   REOWN_NEW_NANOCONTRACT_RETRY_DISMISS: 'REOWN_NEW_NANOCONTRACT_RETRY_DISMISS',
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
@@ -1441,26 +1433,6 @@ export const nanoContractBlueprintInfoSuccess = (id, blueprintInfo) => ({
   payload: { id, data: { ...blueprintInfo } },
 });
 
-/**
- * Signals a request to load a collection of token data by a collection of token UID.
- * @param {Object} payload
- * @param {string[]} payload.uids A list of token UID.
- */
-export const unregisteredTokensDownloadRequest = (payload) => ({
-  type: types.UNREGISTEREDTOKENS_DOWNLOAD_REQUEST,
-  payload,
-});
-
-/**
- * Signals the success of unregistered tokens request.
- * @param {Object} payload
- * @param {Object} payload.tokens A map of token data by its UID.
- */
-export const unregisteredTokensDownloadSuccess = (payload) => ({
-  type: types.UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS,
-  payload,
-});
-
 export const showSignOracleDataModal = (accept, deny, data, dapp) => ({
   type: types.SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL,
   payload: {
@@ -1469,23 +1441,6 @@ export const showSignOracleDataModal = (accept, deny, data, dapp) => ({
     data,
     dapp,
   },
-});
-
-/**
- * Signals a failure on unregistered tokens request.
- * @param {Object} payload
- * @param {string} payload.error The error message as feedback to user
- */
-export const unregisteredTokensDownloadFailure = (payload) => ({
-  type: types.UNREGISTEREDTOKENS_DOWNLOAD_FAILURE,
-  payload,
-});
-
-/**
- * Signals the unregistered tokens request has ended.
- */
-export const unregisteredTokensDownloadEnd = () => ({
-  type: types.UNREGISTEREDTOKENS_DOWNLOAD_END,
 });
 
 export const showSignMessageWithAddressModal = (accept, deny, data, dapp) => ({

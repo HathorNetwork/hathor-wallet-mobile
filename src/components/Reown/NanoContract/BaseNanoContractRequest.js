@@ -25,7 +25,6 @@ import { useBackButtonHandler } from '../../../hooks/useBackButtonHandler';
 import errorIcon from '../../../assets/images/icErrorBig.png';
 import {
   nanoContractBlueprintInfoRequest,
-  unregisteredTokensDownloadRequest,
   firstAddressRequest,
   selectAddressAddressesRequest,
   reownAccept,
@@ -36,7 +35,6 @@ import {
 import {
   NANOCONTRACT_BLUEPRINTINFO_STATUS,
   NANOCONTRACT_REGISTER_STATUS,
-  DEFAULT_TOKEN
 } from '../../../constants';
 
 const styles = StyleSheet.create({
@@ -273,18 +271,8 @@ export const BaseNanoContractRequest = ({
       dispatch(nanoContractBlueprintInfoRequest(nano.blueprintId));
     }
 
-    // Request token data for each unknown token present in actions
-    const unknownTokensUid = [];
-    const actionTokensUid = nano.actions?.map((each) => each.token) || [];
-    actionTokensUid.forEach((uid) => {
-      if (uid !== DEFAULT_TOKEN.uid && !(uid in knownTokens)) {
-        unknownTokensUid.push(uid);
-      }
-    });
-
-    if (unknownTokensUid.length > 0) {
-      dispatch(unregisteredTokensDownloadRequest({ uids: unknownTokensUid }));
-    }
+    // Token details are now provided by the RPC handler automatically
+    // via the tokenDetails map, so no need to manually download them
 
     // Clean up function
     return () => {
@@ -372,8 +360,7 @@ export const BaseNanoContractRequest = ({
 
   // Loading states
   const isTxInfoLoading = () => (
-    knownTokens.isLoading
-    || blueprintInfo == null
+    blueprintInfo == null
     || blueprintInfo?.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING
   );
 
