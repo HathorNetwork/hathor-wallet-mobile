@@ -184,7 +184,7 @@ function getTokenSwapMethod(direction, quote) {
  * @param {bigint} amount Amount to swap, may be the input or output amount depending on the direction
  * @param {string} tokenIn Token UID of the deposited token
  * @param {string} tokenOut Token UID of the withdrawn token
- * @returns {TokenSwapQuote}
+ * @returns {Promise<TokenSwapQuote>}
  */
 export async function findBestTokenSwap(direction, contractId, amount, tokenIn, tokenOut) {
   if (direction === 'input') {
