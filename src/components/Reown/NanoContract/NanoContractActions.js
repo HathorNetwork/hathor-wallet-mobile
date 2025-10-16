@@ -10,10 +10,13 @@ import {
   StyleSheet,
   View,
   Text,
+  TouchableOpacity,
 } from 'react-native';
 import { t } from 'ttag';
 import { useSelector } from 'react-redux';
 import { NanoContractActionType } from '@hathor/wallet-lib';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { HathorFlatList } from '../../HathorFlatList';
 import { commonStyles } from '../theme';
 import { isTokenNFT, renderValue } from '../../../utils';
@@ -35,13 +38,22 @@ import { NanoContractActionIcon } from '../../NanoContract/common/NanoContractAc
  * @param {Object[]} props.ncActions A list of Nano Contract actions.
  * @param {Object} props.tokens A map of token metadata by token uid.
  * @param {string} props.error A feedback error for tokens not loaded.
+ * @param {Function} props.isTokenRegistered Function to check if token is registered
+ * @param {Function} props.showTokenInfo Function to show token info modal
  */
-export const NanoContractActions = ({ ncActions, tokens, error }) => {
+export const NanoContractActions = ({
+  ncActions,
+  tokens,
+  error,
+  isTokenRegistered,
+  showTokenInfo,
+}) => {
   if (!ncActions || ncActions.length < 1) {
     return null;
   }
 
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
+
   // A callback to check if the action token is an NFT.
   const isNft = useCallback(
     (token) => isTokenNFT(token, tokenMetadata),
@@ -67,7 +79,14 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
         wrapperStyle={styles.wrapper}
         data={ncActions}
         renderItem={({ item }) => (
-          <ActionItem action={item} isNft={isNft(item.token)} title={getTitle(item)} />
+          <ActionItem
+            action={item}
+            isNft={isNft(item.token)}
+            title={getTitle(item)}
+            tokens={tokens}
+            isTokenRegistered={isTokenRegistered}
+            showTokenInfo={showTokenInfo}
+          />
         )}
         // If has error, shows the feedback error message in the list header.
         ListHeaderComponent={error && (
@@ -96,10 +115,22 @@ export const NanoContractActions = ({ ncActions, tokens, error }) => {
  * }} props.action A transaction's action object
  * @param {boolean} props.isNft A flag to inform if the token is an NFT or not
  * @param {string} props.title The card title for the action
+ * @param {Object} props.tokens Map of token metadata
+ * @param {Function} props.isTokenRegistered Function to check if token is registered
+ * @param {Function} props.showTokenInfo Function to show token info modal
  */
-const ActionItem = ({ action, title, isNft }) => {
+const ActionItem = ({ action, title, isNft, tokens, isTokenRegistered, showTokenInfo }) => {
+  const token = tokens[action.token];
+  const isRegistered = isTokenRegistered(action.token);
+  const tokenSymbol = token?.symbol || '';
+
   const styles = StyleSheet.create({
     action: [commonStyles.text, commonStyles.bold],
+    actionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
     authorityRow: {
       width: '100%',
       flexDirection: 'row',
@@ -132,7 +163,18 @@ const ActionItem = ({ action, title, isNft }) => {
             <Text style={styles.authorityType}>{titleParts[1]}</Text>
           </View>
         ) : (
-          <Text style={styles.action}>{title}</Text>
+          <View style={styles.actionRow}>
+            <Text style={styles.action}>{title}</Text>
+            {!isRegistered && tokenSymbol && (
+              <TouchableOpacity onPress={() => showTokenInfo(action.token)}>
+                <FontAwesomeIcon
+                  icon={faCircleInfo}
+                  size={16}
+                  color={COLORS.textColor}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
         )}
 
         {/* WITHDRAWAL: Show only address (address to send the amount and create the output) */}
@@ -194,7 +236,7 @@ const ActionItem = ({ action, title, isNft }) => {
         && action.type !== NanoContractActionType.ACQUIRE_AUTHORITY
         && action.amount != null && action.amount !== undefined && (
           <Amount amount={action.amount} isNft={isNft} />
-      )}
+        )}
     </View>
   )
 }

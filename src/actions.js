@@ -189,6 +189,8 @@ export const types = {
   FIRSTADDRESS_FAILURE: 'FIRSTADDRESS_FAILURE',
   /* It updates the redux state of new nano contract transaction status on wallet connect register. */
   WALLETCONNECT_NEW_NANOCONTRACT_STATUS: 'WALLETCONNECT_NEW_NANOCONTRACT_STATUS',
+  /* It stores token details from RPC handler in unregistered tokens state. */
+  UNREGISTEREDTOKENS_STORE: 'UNREGISTEREDTOKENS_STORE',
   REOWN_NEW_NANOCONTRACT_RETRY: 'REOWN_NEW_NANOCONTRACT_RETRY',
   REOWN_NEW_NANOCONTRACT_RETRY_DISMISS: 'REOWN_NEW_NANOCONTRACT_RETRY_DISMISS',
   SHOW_SIGN_MESSAGE_REQUEST_MODAL: 'SHOW_SIGN_MESSAGE_REQUEST_MODAL',
@@ -1431,6 +1433,16 @@ export const nanoContractBlueprintInfoFailure = (id, error) => ({
 export const nanoContractBlueprintInfoSuccess = (id, blueprintInfo) => ({
   type: types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS,
   payload: { id, data: { ...blueprintInfo } },
+});
+
+/**
+ * Stores token details from RPC handler in unregistered tokens state.
+ * @param {Object} payload
+ * @param {Object} payload.tokens A map of token data by its UID.
+ */
+export const unregisteredTokensStore = (payload) => ({
+  type: types.UNREGISTEREDTOKENS_STORE,
+  payload,
 });
 
 export const showSignOracleDataModal = (accept, deny, data, dapp) => ({

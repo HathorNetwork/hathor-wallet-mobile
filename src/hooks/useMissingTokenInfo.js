@@ -9,14 +9,10 @@ import { useSelector } from 'react-redux';
 
 /**
  * Custom hook to get combined token info from registered and unregistered tokens
- * Token details for unregistered tokens are now provided automatically by the RPC handler
  * @returns {Object} Combined tokens object with registered and unregistered tokens
  */
 export const useMissingTokenInfo = () => {
   const knownTokens = useSelector((state) => ({ ...state.tokens, ...state.unregisteredTokens }));
-
-  // Token details are now provided automatically by the RPC handler
-  // via the tokenDetails map, so no need to manually request them
 
   return knownTokens;
 };

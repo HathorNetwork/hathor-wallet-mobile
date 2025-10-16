@@ -5,16 +5,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { t } from 'ttag';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, Image } from 'react-native';
 import { constants, numberUtils } from '@hathor/wallet-lib';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { COLORS } from '../../styles/themes';
 import NewHathorButton from '../NewHathorButton';
 import { WarnDisclaimer } from './WarnDisclaimer';
 import { DappContainer } from './NanoContract/DappContainer';
+import TokenInfoModal from './TokenInfoModal';
+import { useTokenInfo } from '../../hooks/useTokenInfo';
 import {
   setSendTxStatusReady,
   reownReject,
@@ -134,6 +138,13 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
   },
+  tokenInfoIcon: {
+    marginLeft: 4,
+  },
+  valueWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 });
 
 export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onReject }) => {
@@ -157,10 +168,19 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   const navigation = useNavigation();
 
   // State for decline modal
-  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [showDeclineModal, setShowDeclineModal] = React.useState(false);
 
   // Get transaction status from Redux
   const sendTxStatus = reown.sendTransaction?.status || REOWN_SEND_TX_STATUS.READY;
+
+  // Use token info hook
+  const {
+    showTokenInfoModal,
+    selectedTokenInfo,
+    isTokenRegistered,
+    showTokenInfo,
+    closeTokenInfo,
+  } = useTokenInfo(registeredTokens, knownTokens);
 
   // Show decline confirmation modal
   const onDeclineTransaction = () => {
@@ -173,10 +193,6 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     sendTxStatus === REOWN_SEND_TX_STATUS.SUCCESSFUL
   );
 
-  // Token details are now provided automatically by the RPC handler
-  // via the tokenDetails map, so no need to manually request them
-
-  // Update the getTokenSymbol function to use knownTokens
   const getTokenSymbol = (tokenId) => {
     // Check if it's explicitly the native token UID
     if (tokenId === constants.NATIVE_TOKEN_UID) {
@@ -193,6 +209,30 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     // This should be temporary until the token details are provided
     // by the RPC handler
     return '';
+  };
+
+  // Render token value with info icon if unregistered
+  const renderTokenValue = (value, tokenId) => {
+    const symbol = getTokenSymbol(tokenId);
+    const isRegistered = isTokenRegistered(tokenId);
+
+    return (
+      <View style={styles.valueWithIcon}>
+        <Text style={styles.valueText}>
+          {formatValue(value, tokenId)} {symbol}
+        </Text>
+        {!isRegistered && symbol && (
+          <TouchableOpacity onPress={() => showTokenInfo(tokenId)}>
+            <FontAwesomeIcon
+              icon={faCircleInfo}
+              size={16}
+              color={COLORS.textColor}
+              style={styles.tokenInfoIcon}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+    );
   };
 
   const formatValue = (value, tokenId) => {
@@ -231,9 +271,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
             >
               <View style={styles.itemHeader}>
                 <Text style={styles.itemTitle}>{t`Input`} {index + 1}</Text>
-                <Text style={styles.valueText}>
-                  {formatValue(input?.value, input?.token)} {getTokenSymbol(input?.token)}
-                </Text>
+                {renderTokenValue(input?.value, input?.token)}
               </View>
               <Text style={styles.labelText}>{t`Transaction ID`}</Text>
               <View style={styles.valueContainer}>
@@ -279,9 +317,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
             >
               <View style={styles.itemHeader}>
                 <Text style={styles.itemTitle}>{t`Output`} {index + 1}</Text>
-                <Text style={styles.valueText}>
-                  {formatValue(output?.value, output?.token)} {getTokenSymbol(output?.token)}
-                </Text>
+                {renderTokenValue(output?.value, output?.token)}
               </View>
               {output?.address && (
                 <>
@@ -385,17 +421,51 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   // Navigate to success screen on successful transaction
   useEffect(() => {
     if (isTxSuccessful()) {
-      navigation.navigate(
-        'SuccessFeedbackScreen',
-        {
-          title: t`Success!`,
-          message: t`Transaction successfully sent.`,
-        }
-      );
+      // Check if there are unregistered tokens in the transaction
+      const tokensInTransaction = new Set();
+
+      // Collect all token UIDs from inputs and outputs
+      if (data?.inputs) {
+        data.inputs.forEach((input) => {
+          if (input.token && input.token !== constants.NATIVE_TOKEN_UID) {
+            tokensInTransaction.add(input.token);
+          }
+        });
+      }
+
+      if (data?.outputs) {
+        data.outputs.forEach((output) => {
+          if (output.token && output.token !== constants.NATIVE_TOKEN_UID) {
+            tokensInTransaction.add(output.token);
+          }
+        });
+      }
+
+      // Filter to get only unregistered tokens
+      const unregisteredTokensList = Array.from(tokensInTransaction)
+        .filter((tokenId) => !registeredTokens[tokenId] && unregisteredTokens[tokenId])
+        .map((tokenId) => unregisteredTokens[tokenId]);
+
+      if (unregisteredTokensList.length > 0) {
+        // Navigate to RegisterTokenAfterSuccess screen
+        navigation.navigate('RegisterTokenAfterSuccess', {
+          tokens: unregisteredTokensList,
+        });
+      } else {
+        // No unregistered tokens, just show success
+        navigation.navigate(
+          'SuccessFeedbackScreen',
+          {
+            title: t`Success!`,
+            message: t`Transaction successfully sent.`,
+          }
+        );
+      }
+
       // Restore ready status
       dispatch(setSendTxStatusReady());
     }
-  }, [sendTxStatus]);
+  }, [sendTxStatus, data, registeredTokens, unregisteredTokens]);
 
   return (
     <>
@@ -463,6 +533,13 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
         show={showDeclineModal}
         onDecline={onDeclineConfirmation}
         onDismiss={onDismissDeclineModal}
+      />
+
+      {/* Token info modal */}
+      <TokenInfoModal
+        visible={showTokenInfoModal}
+        tokenInfo={selectedTokenInfo}
+        onClose={closeTokenInfo}
       />
     </>
   );

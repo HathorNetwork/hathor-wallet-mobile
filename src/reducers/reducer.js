@@ -738,6 +738,8 @@ export const reducer = (state = initialState, action) => {
       return onNanoContractBlueprintInfoFailure(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS:
       return onNanoContractBlueprintInfoSuccess(state, action);
+    case types.UNREGISTEREDTOKENS_STORE:
+      return onUnregisteredTokensStore(state, action);
     case types.REOWN_NEW_NANOCONTRACT_RETRY:
       return onNewNanoContractTransactionRetry(state);
     case types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS:
@@ -2141,6 +2143,22 @@ export const onNanoContractBlueprintInfoSuccess = (state, { payload }) => ({
         error: null,
       },
     },
+  },
+});
+
+/**
+ * Store token details from RPC handler in unregistered tokens state.
+ *
+ * @param {Object} state
+ * @param {Object} action
+ * @param {Object} action.payload
+ * @param {Object} action.payload.tokens A map of token data by its UID
+ */
+export const onUnregisteredTokensStore = (state, { payload }) => ({
+  ...state,
+  unregisteredTokens: {
+    ...state.unregisteredTokens,
+    ...payload.tokens,
   },
 });
 
