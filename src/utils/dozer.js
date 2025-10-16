@@ -19,6 +19,8 @@ import { get } from 'lodash';
  */
 
 /**
+ * Parsed token swap quote.
+ *
  * @typedef {Object} TokenSwapQuote
  * @property {TokenSwapPathStep[]} path Path the token swap will take.
  * @property {string} pathStr Value returned by the contract before parsing.
@@ -195,11 +197,9 @@ export async function findBestTokenSwap(direction, contractId, amount, tokenIn, 
 }
 
 /**
- * Create a SendTransaction instance to execute the swap method call.
  * Will determine the correct swap method to execute and mount the data accordingly.
  *
  * @param {import('@hathor/wallet-lib').HathorWallet} wallet
- * @param {string} address Address that will send the tx
  * @param {'input'|'output'} direction Direction of the swap
  * @param {string} contractId The pool manager to find the swap
  * @param {TokenSwapQuote} quote Token swap quote
@@ -207,16 +207,16 @@ export async function findBestTokenSwap(direction, contractId, amount, tokenIn, 
  * @param {string} tokenIn Token UID of the deposited token
  * @param {string} tokenOut Token UID of the withdrawn token
  * @param {number} slippage
- * @returns {Promise<SendTransaction>}
+ * @returns {Promise<[string, Object]>} Method name and data required to execute the token swap.
  */
-export async function executeTokenSwap(wallet, address, direction, contractId, quote, amount, tokenIn, tokenOut, slippage) {
-  const actions = buildTokenSwapActions(wallet, direction, quote, amount, tokenIn, tokenOut, slippage);
+export async function buildTokenSwap(wallet, direction, contractId, quote, amount, tokenIn, tokenOut, slippage) {
+  const method = getTokenSwapMethod(direction, quote);
+  const actions = buildTokenSwapActions(direction, quote, amount, tokenIn, tokenOut, slippage);
   const data = {
     ncId: contractId,
     actions,
     args: [],
   };
-  const method = getTokenSwapMethod(direction, quote);
   if (quote.path.length > 1) {
     // The methods for multi stage paths expect the path string as argument
     data.args.push(quote.pathStr);
@@ -225,8 +225,6 @@ export async function executeTokenSwap(wallet, address, direction, contractId, q
     data.args.push(quote.path[0].fee);
   }
 
-  // Call `method` signed by `address` with the prepared `data`
-  // XXX: should pinCode be another argument?
-  // or should we have 1 method to build the data and the wallet call can be done in the screen?
-  return await wallet.createNanoContractTransaction(method, address, data, { pinCode: '1234' });
+  // Method and data required to make the token swap
+  return [method, data];
 }
