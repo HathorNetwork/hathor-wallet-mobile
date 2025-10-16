@@ -59,7 +59,7 @@ async function findBestTokenSwapPathIn(contractId, amount, tokenIn, tokenOut) {
   const response = await ncApi.getNanoContractState(contractId, [], [], [call]);
 
   if (!(response.calls && response.calls[call])) {
-    throw new Error();
+    throw new Error('Did not receive any return data');
   }
   const data = response.calls[call];
   return {
@@ -88,7 +88,7 @@ async function findBestTokenSwapPathOut(contractId, amount, tokenIn, tokenOut) {
   const response = await ncApi.getNanoContractState(contractId, [], [], [call]);
 
   if (!(response.calls && response.calls[call])) {
-    throw new Error();
+    throw new Error('Did not receive any return data');
   }
   const data = response.calls[call];
   return {
@@ -110,40 +110,33 @@ async function findBestTokenSwapPathOut(contractId, amount, tokenIn, tokenOut) {
  * @param {number} slippage
  */
 function buildTokenSwapActions(direction, quote, amount, tokenIn, tokenOut, slippage) {
-  // XXX: the address on the action means that we will filter for utxos on this address
-  // should we use this?
   const actions = [];
   if (direction === 'input') {
     actions.push({
       type: 'deposit',
       token: tokenIn,
       amount,
-      // address: '',
     });
     // Withdraw amount minus slippage
     actions.push({
       type: 'withdrawal',
       token: tokenOut,
       amount: quote.amount * (1 - (slippage/100)),
-      // address: '',
     });
   } else if (direction === 'output') {
     actions.push({
       type: 'withdrawal',
       token: tokenOut,
       amount,
-      // address: '',
     });
     // Deposit amount plus slippage
     actions.push({
       type: 'deposit',
       token: tokenIn,
       amount: quote.amount * (1 + (slippage/100)),
-      // address: '',
     });
   } else {
-    // XXX should not happen
-    throw new Error('');
+    throw new Error('Unknown token swap direction');
   }
 
   return actions;
@@ -177,34 +170,6 @@ function getTokenSwapMethod(direction, quote) {
     throw new Error('Could not determine which method to call.');
   }
   return method;
-
-  // This approach is leaner but we ignore the case of unknown direction or path.length === 0.
-  // This is also less readable and janky, if the method names change or we need to add we will need to rewrite this
-  // return `swap_${direction === 'input' ? 'exact_' : ''}tokens_for_${direction === 'output' ? 'exact_' : ''}tokens${quote.path.length > 1 ? '_through_path' : '' }`;
-
-  // More readable and direct, we treat all cases but there is too many blocks
-  // if (quote.path.length === 1) {
-  //   if (direction === 'input') {
-  //     return 'swap_exact_tokens_for_tokens';
-  //   } else if (direction === 'output') {
-  //     return 'swap_tokens_for_exact_tokens';
-  //   } else {
-  //     // Should never happen
-  //     throw new Error('');
-  //   }
-  // } else if (quote.length > 1) {
-  //   if (direction === 'input') {
-  //     return 'swap_exact_tokens_for_tokens_through_path';
-  //   } else if (direction === 'output') {
-  //     return 'swap_tokens_for_exact_tokens_through_path';
-  //   } else {
-  //     // Should never happen
-  //     throw new Error('');
-  //   }
-  // } else {
-  //   // Should never happen
-  //   throw new Error('');
-  // }
 }
 
 /**
@@ -225,8 +190,7 @@ export async function findBestTokenSwap(direction, contractId, amount, tokenIn, 
   } else if (direction === 'output') {
     return await findBestTokenSwapPathOut(contractId, amount, tokenIn, tokenOut);
   } else {
-    // XXX: This should not happen
-    throw new Error();
+    throw new Error('Unknown token swap direction');
   }
 }
 
