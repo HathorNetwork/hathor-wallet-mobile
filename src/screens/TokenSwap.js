@@ -166,7 +166,7 @@ const TokenSwap = () => {
     dispatch(tokenSwapSwitchTokens());
   };
 
-  const isButtonDisabled = () => {
+  const isReviewButtonDisabled = () => {
     return (
       !inputTokenAmountStr
       || !inputTokenAmount
@@ -194,7 +194,7 @@ const TokenSwap = () => {
     return t`Balance: ${amount}`;
   };
 
-  const onButtonPress = () => {
+  const onReviewButtonPress = () => {
     navigation.navigate('TokenSwapReview', {
       inputToken,
       inputAmount: inputTokenAmount,
@@ -296,8 +296,8 @@ const TokenSwap = () => {
 
             <NewHathorButton
               title={t`REVIEW`}
-              disabled={isButtonDisabled()}
-              onPress={onButtonPress}
+              disabled={isReviewButtonDisabled()}
+              onPress={onReviewButtonPress}
             />
           </View>
           <OfflineBar style={{ position: 'relative' }} />

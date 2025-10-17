@@ -539,7 +539,14 @@ const initialState = {
    */
   fullNodeNetworkName: null,
   /**
-   * 
+   * @type {Object}
+   * @property {TokenData[]|null} allowedTokens List of tokens that are allowed to be swapped
+   * @property {string|null} contractId Dozer Pool manager contract id of the current network
+   * @property {null|'loading'|'loaded'|'error'} loadAllowedTokensStatus Status of the allowed tokens request
+   * @property {null|TokenData} inputToken Token being traded in
+   * @property {null|TokenData} outputToken Token being swapped out
+   * @property {null|TokenSwapQuote} swapPathQuote Latest quote from the pool manager for the swap proposed
+   * @property {null|'loading'|'loaded'|'error'} loadSwapPathQuoteStatus Status of the quote request
    */
   tokenSwap: {
     allowedTokens: null,
@@ -2324,7 +2331,7 @@ export const onTokenSwapSetInputToken = (state, { payload }) => {
     },
   };
   if (state.tokenSwap.outputToken.uid === payload.uid) {
-    // In this case the chosen token is the same as the other so we switch
+    // In this case the chosen token is the same as the output token, so we switch them.
     newState.tokenSwap.outputToken = {...newState.tokenSwap.inputToken};
   }
 
@@ -2340,7 +2347,7 @@ export const onTokenSwapSetOutputToken = (state, { payload }) => {
     },
   };
   if (state.tokenSwap.inputToken.uid === payload.uid) {
-    // In this case the chosen token is the same as the other.
+    // In this case the chosen token is the same as the input token, so we switch them.
     newState.tokenSwap.inputToken = {...newState.tokenSwap.outputToken};
   }
   newState.tokenSwap.outputToken = payload;

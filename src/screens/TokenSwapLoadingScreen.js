@@ -36,7 +36,7 @@ export default function TokenSwapLoadingScreen() {
         fontSize: 18, lineHeight: 22, width: 200, textAlign: 'center'
       }}
       >
-        There&apos;s been an error loading the token swap protocol.
+        {t`There's been an error loading the token swap protocol.`}
       </Text>
       <SimpleButton
         containerStyle={{ marginTop: 12 }}

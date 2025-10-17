@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { numberUtils } from '@hathor/wallet-lib';
 import React, { useState, useEffect } from 'react';
 import {
   Keyboard,
@@ -26,6 +25,7 @@ import OfflineBar from '../components/OfflineBar';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import { COLORS } from '../styles/themes';
 import { useNavigation, useParams } from '../hooks/navigation';
+import NavigationService from '../NavigationService';
 import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
 
@@ -45,15 +45,10 @@ const TokenSwapReview = () => {
     inputAmount,
     outputToken,
     outputAmount,
-    swapDirection,
   } = useParams();
   const [modal, setModal] = useState(null);
 
   const navigation = useNavigation();
-
-  const renderGhostElement = () => (
-    <View style={{ width: 80, height: 40 }} />
-  );
 
   const renderTokenAndValue = (value, token) => {
     return `${renderValue(value)} ${token.symbol}`;
@@ -65,7 +60,7 @@ const TokenSwapReview = () => {
   const exitScreen = () => {
     setModal(null);
 
-    navigation.navigate('Main', { screen: 'Home' });
+    NavigationService.resetToMain();
   };
 
   const executeSend = async (pin) => {
@@ -98,7 +93,7 @@ const TokenSwapReview = () => {
     });
   };
 
-  const onButtonPress = () => {
+  const onSwapButtonPress = () => {
     const pinParams = {
       cb: executeSend,
       canCancel: true,
@@ -106,7 +101,7 @@ const TokenSwapReview = () => {
       biometryText: t`Authorize operation`,
       biometryLoadingText: t`Building transaction`,
     };
-    navigation.navigate('PinScreen', pinParams);
+    NavigationService.navigate('PinScreen', pinParams);
   };
 
   return (
@@ -170,7 +165,7 @@ const TokenSwapReview = () => {
 
             <NewHathorButton
               title={t`SWAP`}
-              onPress={onButtonPress}
+              onPress={onSwapButtonPress}
               disabled={modal !== null}
             />
           </View>

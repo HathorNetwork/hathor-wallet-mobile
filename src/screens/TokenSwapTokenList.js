@@ -8,6 +8,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation, useParams } from '../hooks/navigation';
+import { t } from 'ttag';
 
 import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
@@ -38,7 +39,7 @@ export default function TokenSwapTokenList(direction) {
     };
 
     const Header = () => {
-      <HathorHeader title='TOKENS' onBackPress={() => navigation.goBack()} />
+      <HathorHeader title={t`TOKENS`} onBackPress={() => navigation.goBack()} />
     }
 
     return (
