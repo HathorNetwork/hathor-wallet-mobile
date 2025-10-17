@@ -9,6 +9,9 @@ import {
   ncApi,
 } from '@hathor/wallet-lib';
 import {
+  getBlueprintId as libGetBlueprintId,
+} from '@hathor/wallet-lib/lib/nano_contracts/utils';
+import {
   takeEvery,
   select,
   all,
@@ -19,7 +22,6 @@ import {
 import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
 import { getRegisteredNanoContracts, safeEffect } from './helpers';
-import { isWalletServiceEnabled } from './wallet';
 import {
   nanoContractBlueprintInfoFailure,
   nanoContractBlueprintInfoSuccess,
@@ -97,22 +99,14 @@ export function* init() {
  * @returns A promise resolving to the blueprint ID or null if ncId is not a contract
  */
 export async function getBlueprintId(wallet, ncId) {
-  const [txError, txResponse] = (await getResultHelper(() => wallet.getFullTxById(ncId)));
+  const [txError, blueprintId] = (await getResultHelper(() => libGetBlueprintId(ncId, wallet)));
 
-  if (!txError && txResponse.tx.nc_id && txResponse.tx.nc_blueprint_id) {
-    return txResponse.tx.nc_blueprint_id;
-  }
-
-  const [stateError, stateResponse] = await getResultHelper(
-    () => ncApi.getNanoContractState(ncId, [], [], [])
-  );
-
-  if (stateError || !stateResponse.blueprint_id) {
+  if (txError || !blueprintId) {
     // The saga method will handle the error in this case
     return null;
   }
 
-  return stateResponse.blueprint_id;
+  return blueprintId;
 }
 
 /**
@@ -144,14 +138,7 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  // XXX: Wallet Service doesn't implement isAddressMine.
-  // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
-  // Default to `false` if using Wallet Service.
-  let isAddrMine = false;
-  const useWalletService = yield call(isWalletServiceEnabled);
-  if (!useWalletService) {
-    isAddrMine = yield call([wallet, wallet.isAddressMine], address);
-  }
+  const isAddrMine = yield call([wallet, wallet.isAddressMine], address);
 
   if (!isAddrMine) {
     log.debug('Fail registering Nano Contract because address do not belongs to this wallet.');

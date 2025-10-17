@@ -525,7 +525,7 @@ export const BaseNanoContractRequest = ({
               blueprintId={nano.blueprintId}
               blueprintName={blueprintInfo?.data?.name}
               method={nano.method}
-              ncArgs={nano.args}
+              ncArgs={nano.parsedArgs}
             />
 
             {renderAdditionalContent && renderAdditionalContent()}

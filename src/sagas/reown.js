@@ -76,7 +76,6 @@ import {
   PrepareSendTransactionError,
   CreateNanoContractCreateTokenTxError,
 } from '@hathor/hathor-rpc-handler';
-import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
   REOWN_PROJECT_ID,
@@ -139,6 +138,7 @@ const ERROR_CODES = {
   USER_REJECTED: 5000,
   USER_REJECTED_METHOD: 5002,
   INVALID_PAYLOAD: 5003,
+  INTERNAL_ERROR: 5004,
 };
 
 function* isReownEnabled() {
@@ -160,13 +160,7 @@ function* init() {
   }
 
   try {
-    const walletServiceEnabled = yield call(isWalletServiceEnabled);
     const reownEnabled = yield call(isReownEnabled);
-
-    if (walletServiceEnabled) {
-      log.debug('Wallet Service enabled, skipping reown init.');
-      return;
-    }
 
     if (!reownEnabled) {
       log.debug('Reown is not enabled.');
@@ -479,11 +473,27 @@ export function* processRequest(action) {
       case SendNanoContractTxError: {
         yield put(setNewNanoContractStatusFailure());
 
-        const retry = yield call(
-          retryHandler,
-          types.REOWN_NEW_NANOCONTRACT_RETRY,
-          types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
-        );
+        const dontRetryErrors = [
+          'Invalid blueprint ID',
+          'Error getting blueprint id with',
+        ];
+
+        let shouldDisplayRetry = true;
+        for (let i = 0; i < dontRetryErrors.length; i += 1) {
+          if (e.message.indexOf(dontRetryErrors[i]) > -1) {
+            shouldDisplayRetry = false;
+            break;
+          }
+        }
+
+        let retry = false;
+        if (shouldDisplayRetry) {
+          retry = yield call(
+            retryHandler,
+            types.REOWN_NEW_NANOCONTRACT_RETRY,
+            types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
+          );
+        }
 
         if (retry) {
           shouldAnswer = false;
@@ -1101,12 +1111,18 @@ export function* onSessionDelete(action) {
  * @param {Object} payload.data Transaction data
  * @param {Object} payload.dapp Information about the dApp
  */
-export function* onCreateNanoContractCreateTokenTxRequest({ payload }) {
-  yield* handleDAppRequest(
-    payload,
-    ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX,
-    { passAcceptAction: true },
-  );
+export function onCreateNanoContractCreateTokenTxRequest({ payload }) {
+  /* TODO: Restore this when we add back support for create nano contract create token tx
+   yield* handleDAppRequest(
+     payload,
+     ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX,
+     { passAcceptAction: true },
+   );
+  */
+
+  // Reject all create nano contract create token tx requests for now
+  const { deny } = payload;
+  deny();
 }
 
 export function* onGetBalanceRequest({ payload }) {
