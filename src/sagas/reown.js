@@ -76,7 +76,6 @@ import {
   PrepareSendTransactionError,
   CreateNanoContractCreateTokenTxError,
 } from '@hathor/hathor-rpc-handler';
-import { JSONBigInt } from '@hathor/wallet-lib/lib/utils/bigint';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
   REOWN_PROJECT_ID,
@@ -150,11 +149,14 @@ function* isReownEnabled() {
 }
 
 function* init() {
+  log.debug('Wallet not ready yet, waiting for START_WALLET_SUCCESS.');
   yield take(types.START_WALLET_SUCCESS);
+  log.debug('Starting reown.');
 
   // We should check if nano contracts are enabled in this network:
   const nanoContractsEnabled = yield select((state) => get(state.serverInfo, 'nano_contracts_enabled', false));
   if (!nanoContractsEnabled) {
+    log.debug('Nano contracts are not enabled, skipping reown init.');
     return;
   }
 
@@ -162,6 +164,7 @@ function* init() {
     const reownEnabled = yield call(isReownEnabled);
 
     if (!reownEnabled) {
+      log.debug('Reown is not enabled.');
       return;
     }
 
@@ -322,7 +325,6 @@ export function* setupListeners(walletKit) {
     addListener('session_delete');
     addListener('disconnect');
 
-
     return () => listenerMap.forEach((
       listener,
       eventName,
@@ -339,7 +341,7 @@ export function* setupListeners(walletKit) {
       });
     }
   } catch (e) {
-    log.error('[setupListeners] Error in setupListeners:', e);
+    log.error(e);
   } finally {
     if (yield cancelled()) {
       // When we close the channel, it will remove the event listener
@@ -386,7 +388,7 @@ function* requestsListener() {
       action = yield take(requestsChannel);
       yield call(processRequest, action);
     } catch (error) {
-      log.error('[requestsListener] Error processing request.', error);
+      log.error('Error processing request.', error);
       yield put(onExceptionCaptured(error));
     }
   }
@@ -400,9 +402,9 @@ export function* processRequest(action) {
   const { payload } = action;
   const { params } = payload;
 
-
   const reownClient = yield call(getReownClient);
   if (!reownClient) {
+    log.debug('Tried to get reown client in clearSessions but it is undefined.');
     // Do nothing, client might not yet have been initialized.
     return;
   }
@@ -424,7 +426,6 @@ export function* processRequest(action) {
     description: get(requestSession.peer, 'metadata.description', ''),
     chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
-
 
   try {
     let dispatch;
@@ -455,6 +456,7 @@ export function* processRequest(action) {
         yield put(setCreateNanoContractCreateTokenTxStatusSuccess());
         break;
       default:
+        log.debug('Unknown response type:', response.type);
         break;
     }
 
@@ -467,11 +469,7 @@ export function* processRequest(action) {
       }
     }));
   } catch (e) {
-    log.error('[processRequest] Error caught in processRequest');
-    log.error('[processRequest] Error type:', e.constructor?.name);
-    log.error('[processRequest] Error message:', e.message);
-    log.error('[processRequest] Error stack:', e.stack);
-    log.error('[processRequest] Full error object:', JSON.stringify(e, Object.getOwnPropertyNames(e)));
+    log.error('Error in processRequest:', e);
 
     let shouldAnswer = true;
     switch (e.constructor) {
@@ -523,12 +521,6 @@ export function* processRequest(action) {
         }
       } break;
       case PrepareSendTransactionError:
-        log.error('[processRequest] Handling PrepareSendTransactionError - Transaction failed validation');
-        log.error('[processRequest] PrepareSendTransactionError details:', {
-          message: e.message,
-          cause: e.cause,
-          stack: e.stack,
-        });
         shouldAnswer = false;
 
         yield call(() => walletKit.respondSessionRequest({
@@ -543,10 +535,6 @@ export function* processRequest(action) {
           },
         })); break;
       case SendTransactionError: {
-        log.error('[processRequest] SendTransactionError details:', {
-          message: e.message,
-          cause: e.cause,
-        });
         // If the transaction is invalid, we don't receive a
         // SendTransactionConfirmationPrompt, so we need to check if the modal
         // is visible and just reject it if it's not.
@@ -566,9 +554,6 @@ export function* processRequest(action) {
         }
       } break;
       case InsufficientFundsError:
-        log.error('[processRequest] InsufficientFundsError details:', {
-          message: e.message,
-        });
         yield put(setSendTxStatusFailure());
         // Show the insufficient funds modal
         yield put(setReownModal({
@@ -588,10 +573,6 @@ export function* processRequest(action) {
         }));
         break;
       case CreateNanoContractCreateTokenTxError: {
-        log.error('[processRequest] CreateNanoContractCreateTokenTxError details:', {
-          message: e.message,
-          cause: e.cause,
-        });
         yield put(setCreateNanoContractCreateTokenTxStatusFailure());
 
         const retry = yield call(
@@ -607,8 +588,6 @@ export function* processRequest(action) {
         }
       } break;
       default:
-        log.error('[processRequest] Unknown error type:', e.constructor?.name);
-        log.error('[processRequest] This error was not handled by any case');
         break;
     }
 
@@ -629,7 +608,6 @@ export function* processRequest(action) {
         log.error('[processRequest] Error rejecting response on sessionRequest', error);
       }
     }
-
   }
 }
 
@@ -732,11 +710,9 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ));
       } break;
       case TriggerTypes.SendNanoContractTxConfirmationPrompt: {
-
         // Convert Map to plain object for tokenDetails
         let tokenDetailsObj = {};
         if (request.data?.tokenDetails) {
-
           if (request.data.tokenDetails instanceof Map) {
             // Convert Map to plain object with simplified structure for the wallet
             request.data.tokenDetails.forEach((value, key) => {
@@ -753,14 +729,6 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
 
           dispatch(unregisteredTokensStore({ tokens: tokenDetailsObj }));
         }
-
-        // Convert BigInt values to strings using wallet-lib's JSONBigInt utility
-        // We stringify and parse to convert BigInts to strings for Redux serialization
-        const dataWithTokenDetails = {
-          ...request.data,
-          tokenDetails: tokenDetailsObj,
-        };
-        const serializableData = JSON.parse(JSONBigInt.stringify(dataWithTokenDetails));
 
         const sendNanoContractTxResponseTemplate = (accepted) => (data) => resolve({
           type: TriggerResponseTypes.SendNanoContractTxConfirmationResponse,
@@ -773,17 +741,18 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         dispatch(showNanoContractSendTxModal(
           sendNanoContractTxResponseTemplate(true),
           sendNanoContractTxResponseTemplate(false),
-          serializableData,
+          {
+            ...request.data,
+            tokenDetails: tokenDetailsObj,
+          },
           requestMetadata,
         ));
         break;
       }
       case TriggerTypes.SendTransactionConfirmationPrompt: {
-
         // Convert Map to plain object for tokenDetails
         let tokenDetailsObj = {};
         if (request.data?.tokenDetails) {
-
           if (request.data.tokenDetails instanceof Map) {
             // Convert Map to plain object with simplified structure for the wallet
             request.data.tokenDetails.forEach((value, key) => {
@@ -801,14 +770,6 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           dispatch(unregisteredTokensStore({ tokens: tokenDetailsObj }));
         }
 
-        // Convert BigInt values to strings using wallet-lib's JSONBigInt utility
-        // We stringify and parse to convert BigInts to strings for Redux serialization
-        const dataWithTokenDetails = {
-          ...request.data,
-          tokenDetails: tokenDetailsObj,
-        };
-        const serializableData = JSON.parse(JSONBigInt.stringify(dataWithTokenDetails));
-
         const sendTransactionResponseTemplate = (accepted) => (data) => resolve({
           type: TriggerResponseTypes.SendTransactionConfirmationResponse,
           data: {
@@ -820,7 +781,10 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         dispatch(showSendTransactionModal(
           sendTransactionResponseTemplate(true),
           sendTransactionResponseTemplate(false),
-          serializableData,
+          {
+            ...request.data,
+            tokenDetails: tokenDetailsObj,
+          },
           requestMetadata
         ));
       } break;
