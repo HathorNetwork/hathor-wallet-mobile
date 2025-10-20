@@ -163,6 +163,7 @@ export const REOWN_FEATURE_TOGGLE = 'reown.rollout';
 export const NETWORK_SETTINGS_FEATURE_TOGGLE = 'network-settings.rollout';
 export const NANO_CONTRACT_FEATURE_TOGGLE = 'nano-contract.rollout';
 export const SAFE_BIOMETRY_MODE_FEATURE_TOGGLE = 'safe-biometry-mode.rollout'
+export const TOKEN_SWAP_FEATURE_TOGGLE = 'token-swap.rollout';
 
 /**
  * Default feature toggle values.
@@ -179,6 +180,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [NETWORK_SETTINGS_FEATURE_TOGGLE]: false,
   [NANO_CONTRACT_FEATURE_TOGGLE]: false,
   [SAFE_BIOMETRY_MODE_FEATURE_TOGGLE]: false,
+  [TOKEN_SWAP_FEATURE_TOGGLE]: false,
 };
 
 // Project id configured in https://walletconnect.com
