@@ -46,7 +46,9 @@ export function* handleFetchAllowedTokensRequest() {
   try {
     const response = yield call(() => fetch(ALLOWED_TOKENS_URL));
     if (!response.ok) {
-      throw new Error();
+      console.error(`[allowed-tokens] request failed with ${response.status}`);
+      yield put(tokenSwapFetchAllowedTokensError());
+      return;
     }
 
     allowedTokenContents = response.json();
@@ -54,6 +56,7 @@ export function* handleFetchAllowedTokensRequest() {
     // Some error happened
     console.error(err);
     yield put(tokenSwapFetchAllowedTokensError());
+    return;
   }
 
   // Allowed tokens were fetched, we need to get the correct list from our current network
@@ -61,12 +64,19 @@ export function* handleFetchAllowedTokensRequest() {
   const networkConfig = get(allowedTokenContents, `networks.${network}`);
   if (!networkConfig) {
     // We do not have the current network configured
-    console.warn(`${network} network is not configured on the swap tokens file.`);
+    console.warn(`[allowed-tokens] ${network} network is not configured on the swap tokens file.`);
     yield put(tokenSwapFetchAllowedTokensError());
+    return;
   }
   
   const contractId = networkConfig['swap_contract'];
   const allowedTokens = networkConfig['tokens'];
+
+  if (!(allowedTokens instanceof Array && allowedTokens.length > 1)) {
+    console.warn(`[allowed-tokens] List does not have enough tokens to enable the feature.`);
+    yield put(tokenSwapFetchAllowedTokensError());
+    return;
+  }
 
   yield put(tokenSwapSetAllowedTokens(contractId, allowedTokens));
 }

@@ -101,7 +101,7 @@ const TokenSwapReview = () => {
       biometryText: t`Authorize operation`,
       biometryLoadingText: t`Building transaction`,
     };
-    NavigationService.navigate('PinScreen', pinParams);
+    navigation.navigate('PinScreen', pinParams);
   };
 
   return (
