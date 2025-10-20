@@ -449,7 +449,7 @@ const TabNavigator = () => {
         name='Home'
         component={IS_MULTI_TOKEN ? DashboardStack : MainScreen}
       />
-      { isSwapEnabled ? <Tab.Screen name='Swap' component={SwapStack} /> : null }
+      { isSwapEnabled && <Tab.Screen name='Swap' component={SwapStack} /> }
       <Tab.Screen name='Send' component={SendStack} />
       <Tab.Screen name='Receive' component={ReceiveScreen} />
       <Tab.Screen name='Settings' component={Settings} />
