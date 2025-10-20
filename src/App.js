@@ -27,7 +27,7 @@ import {
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
 import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
-import { setSupportedBiometry } from './utils';
+import { setSupportedBiometry, isTokenSwapEnabled } from './utils';
 import {
   appStateUpdate,
   lockScreen,
@@ -420,6 +420,7 @@ const tabBarIconMap = {
  */
 const TabNavigator = () => {
   const Tab = createBottomTabNavigator();
+  const isSwapEnabled = useSelector(isTokenSwapEnabled);
 
   return (
     <Tab.Navigator
@@ -448,7 +449,7 @@ const TabNavigator = () => {
         name='Home'
         component={IS_MULTI_TOKEN ? DashboardStack : MainScreen}
       />
-      <Tab.Screen name='Swap' component={SwapStack} />
+      { isSwapEnabled ? <Tab.Screen name='Swap' component={SwapStack} /> : null }
       <Tab.Screen name='Send' component={SendStack} />
       <Tab.Screen name='Receive' component={ReceiveScreen} />
       <Tab.Screen name='Settings' component={Settings} />

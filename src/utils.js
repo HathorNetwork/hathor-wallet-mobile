@@ -617,6 +617,21 @@ export const isNanoContractsEnabled = (state) => (
   && get(state.serverInfo, 'nano_contracts_enabled', false)
 );
 
+/*
+ * Checks if token swap should be enabled
+ *
+ * Token swap should only be enabled if both the feature flag
+ * and Nano contracts are enabled
+ *
+ * @param {Object} state Redux store state
+ *
+ * @returns {boolean} Whether Token swap should be enabled
+ */
+export const isTokenSwapEnabled = (state) => (
+  isNanoContractsEnabled(state)
+  && get(state.featureToggles, 'token_swap_ft', false)
+);
+
 /**
  * Get timestamp in specific format.
  *
