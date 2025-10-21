@@ -1688,6 +1688,10 @@ export const tokenSwapSetOutputToken = (token) => ({
   payload: token,
 });
 
+export const tokenSwapFetchSwapQuote = () => ({
+  type: types.TOKEN_SWAP_FETCH_SWAP_QUOTE,
+});
+
 export const tokenSwapFetchSwapQuoteSuccess = (swapQuote) => ({
   type: types.TOKEN_SWAP_FETCH_SWAP_QUOTE_SUCCESS,
   payload: swapQuote,

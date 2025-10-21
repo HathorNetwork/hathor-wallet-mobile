@@ -32,10 +32,12 @@ import OfflineBar from '../components/OfflineBar';
 import { COLORS } from '../styles/themes';
 import { useNavigation } from '../hooks/navigation';
 import {
+    tokenSwapResetSwapData,
   tokenSwapSetInputToken,
   tokenSwapSetOutputToken,
   tokenSwapSwitchTokens,
 } from '../actions';
+import NavigationService from '../NavigationService';
 
 
 const SwapDivider = ({ onPress }) => {
@@ -54,10 +56,10 @@ const TokenSwap = () => {
   const dispatch = useDispatch();
   const tokensBalance = useSelector((state) => state.tokensBalance);
 
-  const [inputTokenAmountStr, setInputTokenAmountStr] = useState('0');
+  const [inputTokenAmountStr, setInputTokenAmountStr] = useState(null);
   const [inputTokenAmount, setInputTokenAmount] = useState(0n);
 
-  const [outputTokenAmountStr, setOutputTokenAmountStr] = useState('0');
+  const [outputTokenAmountStr, setOutputTokenAmountStr] = useState(null);
   const [outputTokenAmount, setOutputTokenAmount] = useState(0n);
 
   const [swapDirection, setSwapDirection] = useState(null);
@@ -204,13 +206,21 @@ const TokenSwap = () => {
     });
   };
 
+  /**
+   * Method executed after dismiss success modal
+   */
+  const exitToMainScreen = () => {
+    dispatch(tokenSwapResetSwapData());
+    NavigationService.resetToMain();
+  };
+
   return (
     <View style={styles.screenContent}>
       <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
         <HathorHeader
           withBorder
           title={t`TOKEN SWAP`}
-          onBackPress={() => navigation.goBack()}
+          onBackPress={exitToMainScreen}
         />
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>

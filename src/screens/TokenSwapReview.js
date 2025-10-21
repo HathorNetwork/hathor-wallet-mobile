@@ -28,6 +28,7 @@ import { useNavigation, useParams } from '../hooks/navigation';
 import NavigationService from '../NavigationService';
 import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
+import { tokenSwapFetchSwapQuote, tokenSwapResetSwapData } from '../actions';
 
 
 const TokenSwapReview = () => {
@@ -45,6 +46,7 @@ const TokenSwapReview = () => {
     inputAmount,
     outputToken,
     outputAmount,
+    swapDirection,
   } = useParams();
   const [modal, setModal] = useState(null);
 
@@ -57,10 +59,19 @@ const TokenSwapReview = () => {
   /**
    * Method executed after dismiss success modal
    */
-  const exitScreen = () => {
+  const exitToMainScreen = () => {
     setModal(null);
-
+    dispatch(tokenSwapResetSwapData());
     NavigationService.resetToMain();
+  };
+
+  /**
+   * Method executed after dismiss success modal
+   */
+  const exitOnError = () => {
+    setModal(null);
+    dispatch(tokenSwapFetchSwapQuote());
+    navigation.goBack();
   };
 
   const executeSend = async (pin) => {
@@ -110,7 +121,7 @@ const TokenSwapReview = () => {
         <HathorHeader
           withBorder
           title={t`REVIEW TOKEN SWAP`}
-          onBackPress={() => navigation.goBack()}
+          onBackPress={exitToMainScreen}
         />
 
         {modal && (
@@ -119,8 +130,8 @@ const TokenSwapReview = () => {
             sendTransaction={modal.sendTransaction}
             promise={modal.promise}
             successText={<TextFmt>{t`Your swap was successful`}</TextFmt>}
-            onDismissSuccess={exitScreen}
-            onDismissError={() => setModal(null)}
+            onDismissSuccess={exitToMainScreen}
+            onDismissError={exitOnError}
             hide={isShowingPinScreen}
           />
         )}

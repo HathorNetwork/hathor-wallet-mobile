@@ -40,7 +40,6 @@ export function* handleFetchAllowedTokensRequest() {
   ));
   return;
 
-  
   // XXX: We could have an AbortionController for cancellation
   let allowedTokenContents;
   try {
