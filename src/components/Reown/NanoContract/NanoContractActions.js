@@ -236,7 +236,7 @@ const ActionItem = ({ action, title, isNft, tokens, isTokenRegistered, showToken
         && action.type !== NanoContractActionType.ACQUIRE_AUTHORITY
         && action.amount != null && action.amount !== undefined && (
           <Amount amount={action.amount} isNft={isNft} />
-        )}
+      )}
     </View>
   )
 }
