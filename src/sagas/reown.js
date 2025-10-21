@@ -142,6 +142,28 @@ const ERROR_CODES = {
   INTERNAL_ERROR: 5004,
 };
 
+/**
+ * Converts tokenDetails Map to plain object and stores unregistered tokens
+ * @param {Map} tokenDetailsMap - Map of token details from RPC handler
+ * @param {Function} dispatch - Redux dispatch function
+ * @returns {Object} Plain object with token details
+ */
+function convertAndStoreTokenDetails(tokenDetailsMap, dispatch) {
+  const tokenDetailsObj = Object.fromEntries(
+    Array.from(tokenDetailsMap.entries()).map(([key, value]) => [
+      key,
+      {
+        uid: value.tokenInfo.id,
+        name: value.tokenInfo.name,
+        symbol: value.tokenInfo.symbol,
+      },
+    ])
+  );
+
+  dispatch(unregisteredTokensStore({ tokens: tokenDetailsObj }));
+  return tokenDetailsObj;
+}
+
 function* isReownEnabled() {
   const reownEnabled = yield call(checkForFeatureFlag, REOWN_FEATURE_TOGGLE);
 
@@ -710,25 +732,7 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ));
       } break;
       case TriggerTypes.SendNanoContractTxConfirmationPrompt: {
-        // Convert Map to plain object for tokenDetails
-        let tokenDetailsObj = {};
-        if (request.data?.tokenDetails) {
-          if (request.data.tokenDetails instanceof Map) {
-            // Convert Map to plain object with simplified structure for the wallet
-            request.data.tokenDetails.forEach((value, key) => {
-              tokenDetailsObj[key] = {
-                uid: value.tokenInfo?.id || key,
-                name: value.tokenInfo?.name || '',
-                symbol: value.tokenInfo?.symbol || '',
-              };
-            });
-          } else {
-            // It's already an object
-            tokenDetailsObj = request.data.tokenDetails;
-          }
-
-          dispatch(unregisteredTokensStore({ tokens: tokenDetailsObj }));
-        }
+        const tokenDetailsObj = convertAndStoreTokenDetails(request.data.tokenDetails, dispatch);
 
         const sendNanoContractTxResponseTemplate = (accepted) => (data) => resolve({
           type: TriggerResponseTypes.SendNanoContractTxConfirmationResponse,
@@ -750,25 +754,7 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         break;
       }
       case TriggerTypes.SendTransactionConfirmationPrompt: {
-        // Convert Map to plain object for tokenDetails
-        let tokenDetailsObj = {};
-        if (request.data?.tokenDetails) {
-          if (request.data.tokenDetails instanceof Map) {
-            // Convert Map to plain object with simplified structure for the wallet
-            request.data.tokenDetails.forEach((value, key) => {
-              tokenDetailsObj[key] = {
-                uid: value.tokenInfo?.id || key,
-                name: value.tokenInfo?.name || '',
-                symbol: value.tokenInfo?.symbol || '',
-              };
-            });
-          } else {
-            // It's already an object
-            tokenDetailsObj = request.data.tokenDetails;
-          }
-
-          dispatch(unregisteredTokensStore({ tokens: tokenDetailsObj }));
-        }
+        const tokenDetailsObj = convertAndStoreTokenDetails(request.data.tokenDetails, dispatch);
 
         const sendTransactionResponseTemplate = (accepted) => (data) => resolve({
           type: TriggerResponseTypes.SendTransactionConfirmationResponse,
