@@ -17,18 +17,25 @@ import {
 } from '../actions';
 import SimpleButton from '../components/SimpleButton';
 import Spinner from '../components/Spinner';
+import { TOKEN_SWAP_ALLOWED_TOKEN_STATUS } from '../constants';
+import { useNavigation } from '../hooks/navigation';
 import { COLORS } from '../styles/themes';
 
 export default function TokenSwapLoadingScreen() {
   const dispatch = useDispatch();
-  /**
-   * @type {null|'loading'|'loaded'|'error'} progress on loading tx history
-   */
   const loadTokenStatus = useSelector((state) => state.tokenSwap.loadAllowedTokensStatus);
+
+  const navigation = useNavigation();
 
   useEffect(() => {
     dispatch(tokenSwapFetchAllowedTokens());
   }, []);
+
+  useEffect(() => {
+    if (loadTokenStatus === TOKEN_SWAP_ALLOWED_TOKEN_STATUS.SUCCESSFUL) {
+      navigation.replace('TokenSwap');
+    }
+  }, [loadTokenStatus]);
 
   const renderError = () => (
     <View style={{ alignItems: 'center' }}>
@@ -58,7 +65,7 @@ export default function TokenSwapLoadingScreen() {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      {loadTokenStatus === 'error' ? renderError() : renderLoading()}
+      {loadTokenStatus === TOKEN_SWAP_ALLOWED_TOKEN_STATUS.FAILED ? renderError() : renderLoading()}
     </View>
   );
 }

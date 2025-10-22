@@ -32,6 +32,7 @@ import OfflineBar from '../components/OfflineBar';
 import { COLORS } from '../styles/themes';
 import { useNavigation } from '../hooks/navigation';
 import {
+  tokenFetchBalanceRequested,
   tokenSwapResetSwapData,
   tokenSwapSetInputToken,
   tokenSwapSetOutputToken,
@@ -60,10 +61,10 @@ const TokenSwap = () => {
   const dispatch = useDispatch();
   const tokensBalance = useSelector((state) => state.tokensBalance);
 
-  const [inputTokenAmountStr, setInputTokenAmountStr] = useState(null);
+  const [inputTokenAmountStr, setInputTokenAmountStr] = useState('');
   const [inputTokenAmount, setInputTokenAmount] = useState(0n);
 
-  const [outputTokenAmountStr, setOutputTokenAmountStr] = useState(null);
+  const [outputTokenAmountStr, setOutputTokenAmountStr] = useState('');
   const [outputTokenAmount, setOutputTokenAmount] = useState(0n);
 
   const [swapDirection, setSwapDirection] = useState(null);
@@ -83,7 +84,7 @@ const TokenSwap = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    for (const tk of allowedTokens) {
+    for (let tk of allowedTokens) {
       dispatch(tokenFetchBalanceRequested(tk.uid));
     }
   }, [allowedTokens]);
@@ -97,7 +98,7 @@ const TokenSwap = () => {
 
   useEffect(() => {
     if (!outputToken) {
-      dispatch(tokenSwapSetOutputToken(allowedTokens[0]));
+      dispatch(tokenSwapSetOutputToken(allowedTokens[1]));
       return;
     }
   }, [outputToken]);

@@ -57,7 +57,7 @@ const AmountTextInput = forwardRef((props, ref) => {
   }, [props.value]);
 
   const onChangeText = (newText) => {
-    if (newText === '') {
+    if (newText === '' || newText == null) {
       // Need to handle empty string separately
       setText('');
       props.onAmountUpdate(newText, null);
