@@ -26,7 +26,7 @@ import {
 } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
-import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
+import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS, TOKEN_SWAP_ALLOWED_TOKEN_STATUS } from './constants';
 import { setSupportedBiometry, isTokenSwapEnabled } from './utils';
 import {
   appStateUpdate,
@@ -171,12 +171,11 @@ const CameraPermissionScreen = () => null;
 const SwapStack = ({ navigation }) => {
   const Stack = createStackNavigator();
   const [initialRoute, setInitialRoute] = useState('TokenSwapLoadingScreen');
-  /** @type {null|'loading'|'loaded'|'error'} */
   const allowedTokensStatus = useSelector((state) => state.tokenSwap.loadAllowedTokensStatus);
 
   useEffect(() => {
     // When we load the tokens, move to the token swap main screen
-    if (allowedTokensStatus === 'loaded') {
+    if (allowedTokensStatus === TOKEN_SWAP_ALLOWED_TOKEN_STATUS.SUCCESSFUL) {
       setInitialRoute('TokenSwap');
     }
   }, [allowedTokensStatus]);
