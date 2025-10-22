@@ -40,6 +40,10 @@ import {
 import NavigationService from '../NavigationService';
 
 
+function getAvailableAmount(token, tokensBalance) {
+  return get(tokensBalance, `${token.uid}.data.available`, 0n);
+}
+
 const SwapDivider = ({ onPress }) => {
   return (
     <View style={styles.dividerContainer}>
@@ -174,6 +178,8 @@ const TokenSwap = () => {
       || !outputTokenAmountStr
       || !outputTokenAmount
       || outputTokenAmount === 0n
+      || getAvailableAmount(inputToken, tokensBalance) < inputTokenAmount
+      || getAvailableAmount(outputToken, tokensBalance) < outputTokenAmount
     );
   };
 
@@ -185,11 +191,7 @@ const TokenSwap = () => {
     if (!token) {
       return;
     }
-    const balance = get(tokensBalance, `${token.uid}.data`, {
-      available: 0n,
-      locked: 0n,
-    });
-    const { available } = balance;
+    const available = getAvailableAmount(token, tokensBalance);
     const amount = `${renderValue(available, false)}`;
     return t`Balance: ${amount}`;
   };
