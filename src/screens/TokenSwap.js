@@ -98,7 +98,6 @@ const TokenSwap = () => {
   }
 
   function onInputAmountEndEditing(_target) {
-    console.log(`User added ${inputTokenAmount} tokens on input`);
     setOutputTokenAmountStr('0');
     setOutputTokenAmount(0n);
     setSwapDirection('input');
@@ -110,7 +109,6 @@ const TokenSwap = () => {
   }
 
   function onOutputAmountEndEditing(_target) {
-    console.log(`User added ${outputTokenAmount} tokens on output`);
     setInputTokenAmountStr('0');
     setInputTokenAmount(0n);
     setSwapDirection('output');

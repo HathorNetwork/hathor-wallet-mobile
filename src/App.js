@@ -178,7 +178,6 @@ const SwapStack = ({ navigation }) => {
     // When we load the tokens, move to the token swap main screen
     if (allowedTokensStatus === 'loaded') {
       setInitialRoute('TokenSwap');
-      navigation.replace('TokenSwap');
     }
   }, [allowedTokensStatus]);
 

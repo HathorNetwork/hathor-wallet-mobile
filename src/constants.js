@@ -271,6 +271,18 @@ export const NANOCONTRACT_BLUEPRINTINFO_STATUS = {
   ...BASE_STATUS,
 };
 
+export const TOKEN_SWAP_ALLOWED_TOKEN_STATUS = {
+  ...BASE_STATUS,
+};
+
+export const TOKEN_SWAP_QUOTE_STATUS = {
+  ...BASE_STATUS,
+};
+
+export const TOKEN_SWAP_STATUS = {
+  ...BASE_STATUS,
+};
+
 /**
  * Timeout in miliseconds to call wallet-service.
  */

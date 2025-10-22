@@ -250,7 +250,7 @@ export const types = {
   // Error happened during the fetch swap data
   TOKEN_SWAP_FETCH_SWAP_DATA_ERROR: 'TOKEN_SWAP_FETCH_SWAP_DATA_ERROR',
 
-  // Clean swap data when user does not confirm the swap?
+  // Clean swap data when user does not confirm the swap
   TOKEN_SWAP_RESET_SWAP_DATA: 'TOKEN_SWAP_RESET_SWAP_DATA',
   TOKEN_SWAP_START_SWAP: 'TOKEN_SWAP_START_SWAP',
 };

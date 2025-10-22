@@ -20,6 +20,8 @@ import {
   PRE_SETTINGS_MAINNET,
   REOWN_SEND_TX_STATUS,
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
+  TOKEN_SWAP_ALLOWED_TOKEN_STATUS,
+  TOKEN_SWAP_QUOTE_STATUS,
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -542,22 +544,20 @@ const initialState = {
    * @type {Object}
    * @property {TokenData[]|null} allowedTokens List of tokens that are allowed to be swapped
    * @property {string|null} contractId Dozer Pool manager contract id of the current network
-   * @property {null|'loading'|'loaded'|'error'} loadAllowedTokensStatus Status of the allowed tokens request
+   * @property {TOKEN_SWAP_ALLOWED_TOKEN_STATUS} loadAllowedTokensStatus Status of the allowed tokens request
    * @property {null|TokenData} inputToken Token being traded in
    * @property {null|TokenData} outputToken Token being swapped out
    * @property {null|TokenSwapQuote} swapPathQuote Latest quote from the pool manager for the swap proposed
-   * @property {null|'loading'|'loaded'|'error'} loadSwapPathQuoteStatus Status of the quote request
+   * @property {TOKEN_SWAP_QUOTE_STATUS} loadSwapPathQuoteStatus Status of the quote request
    */
   tokenSwap: {
     allowedTokens: null,
     contractId: null,
-    // null | 'loading' | 'loaded' | 'error'
-    loadAllowedTokensStatus: null,
+    loadAllowedTokensStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY,
     inputToken: null,
     outputToken: null,
     swapPathQuote: null,
-    // null | 'loading' | 'loaded' | 'error'
-    loadSwapPathQuoteStatus: null,
+    loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.READY,
   },
 };
 
@@ -2307,7 +2307,7 @@ export const onTokenSwapSetAllowedTokens = (state, { payload }) => {
       ...state.tokenSwap,
       allowedTokens: payload.allowedTokens,
       contractId: payload.contractId,
-      loadAllowedTokensStatus: 'loaded',
+      loadAllowedTokensStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.SUCCESSFUL,
       inputToken: payload.allowedTokens[0],
       outputToken: payload.allowedTokens[1],
     },
@@ -2318,8 +2318,12 @@ export const onTokenSwapFetchAllowedTokensError = (state) => ({
   ...state,
   tokenSwap: {
     ...state.tokenSwap,
+    contractId: null,
     allowedTokens: null,
-    loadAllowedTokensStatus: 'error',
+    loadAllowedTokensStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.FAILED,
+    inputToken: null,
+    outputToken: null,
+    swapPathQuote: null,
   },
 });
 
@@ -2359,7 +2363,7 @@ export const onTokenSwapFetchSwapQuoteSuccess = (state, { payload }) => ({
   tokenSwap: {
     ...state.tokenSwap,
     swapPathQuote: payload,
-    loadSwapPathQuoteStatus: 'loaded',
+    loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.SUCCESSFUL,
   },
 });
 
@@ -2368,7 +2372,7 @@ export const onTokenSwapFetchSwapDataError = (state) => ({
   tokenSwap: {
     ...state.tokenSwap,
     swapPathQuote: null,
-    loadSwapPathQuoteStatus: 'error',
+    loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.FAILED,
   },
 });
 
@@ -2376,11 +2380,11 @@ export const onTokenSwapResetSwapData = (state) => ({
   ...state,
   tokenSwap: {
     allowedTokens: null,
-    loadAllowedTokensStatus: null,
+    loadAllowedTokensStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY,
     inputToken: null,
     outputToken: null,
     swapPathQuote: null,
-    loadSwapPathQuoteStatus: null,
+    loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.READY,
   },
 });
 

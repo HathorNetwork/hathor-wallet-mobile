@@ -35,6 +35,7 @@ import { HathorFlatList } from './HathorFlatList';
  * @param {unknown} props.header
  * @param {boolean} props.renderArrow
  * @param {function} props.onItemPress
+ * @param {boolean} [props.ignoreLoading]
  */
 const TokenSelect = (props) => {
   const tokens = Object.values(props.tokens);
