@@ -179,7 +179,6 @@ const TokenSwap = () => {
       || !outputTokenAmount
       || outputTokenAmount === 0n
       || getAvailableAmount(inputToken, tokensBalance) < inputTokenAmount
-      || getAvailableAmount(outputToken, tokensBalance) < outputTokenAmount
     );
   };
 
