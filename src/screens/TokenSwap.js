@@ -32,7 +32,7 @@ import OfflineBar from '../components/OfflineBar';
 import { COLORS } from '../styles/themes';
 import { useNavigation } from '../hooks/navigation';
 import {
-    tokenSwapResetSwapData,
+  tokenSwapResetSwapData,
   tokenSwapSetInputToken,
   tokenSwapSetOutputToken,
   tokenSwapSwitchTokens,
@@ -81,6 +81,12 @@ const TokenSwap = () => {
   }));
 
   const navigation = useNavigation();
+
+  useEffect(() => {
+    for (const tk of allowedTokens) {
+      dispatch(tokenFetchBalanceRequested(tk.uid));
+    }
+  }, [allowedTokens]);
 
   useEffect(() => {
     if (!inputToken) {

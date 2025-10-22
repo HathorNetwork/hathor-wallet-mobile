@@ -50,7 +50,6 @@ export default function TokenSwapTokenList(direction) {
         tokens={allowedTokens}
         tokensBalance={tokensBalance}
         tokenMetadata={tokenMetadata}
-        ignoreLoading={true}
       />
     );
   };
