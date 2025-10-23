@@ -102,7 +102,7 @@ import { SuccessFeedbackScreen } from './screens/Reown/SuccessFeedbackScreen';
 import { RegisterTokenAfterSuccessScreen } from './screens/Reown/RegisterTokenAfterSuccess';
 import UnifiedQRScanner from './screens/UnifiedQRScanner';
 import RegisterOptionsScreen from './screens/RegisterOptionsScreen';
-import { NavigationSerializingProvider } from './hooks/navigation';
+import { NavigationSerializingProvider, useNavigation } from './hooks/navigation';
 import { SendTransactionRequestScreen } from './screens/Reown/SendTransactionRequestScreen';
 import TokenSwap from './screens/TokenSwap';
 import TokenSwapLoadingScreen from './screens/TokenSwapLoadingScreen';
@@ -157,13 +157,11 @@ const DashboardStack = () => {
   );
 };
 
-/**
- * This blank screen serves as a way to request the user permission to use the camera without
- * rendering anything on the main interface for a potentially very short time.
- * A listener should be set to the `isCameraAvailable` state variable to decide what to render after
- * the permission is defined.
- */
-const CameraPermissionScreen = () => null;
+const TokenSwapRedirect = () => {
+  const navigation = useNavigation();
+  navigation.replace('TokenSwap');
+  return null;
+}
 
 /**
  * Stack of screens dedicated to the token swap process
@@ -176,7 +174,7 @@ const SwapStack = ({ navigation }) => {
   useEffect(() => {
     // When we load the tokens, move to the token swap main screen
     if (allowedTokensStatus === TOKEN_SWAP_ALLOWED_TOKEN_STATUS.SUCCESSFUL) {
-      setInitialRoute('TokenSwap');
+      setInitialRoute('TokenSwapRedirect');
     }
   }, [allowedTokensStatus]);
 
@@ -188,13 +186,18 @@ const SwapStack = ({ navigation }) => {
       }}
     >
       <Stack.Screen name='TokenSwapLoadingScreen' component={TokenSwapLoadingScreen} />
-      <Stack.Screen name='TokenSwap' component={TokenSwap} />
-      <Stack.Screen name='TokenSwapReview' component={TokenSwapReview} />
-      <Stack.Screen name='TokenSwapListInputToken' component={TokenSwapTokenList('input')} />
-      <Stack.Screen name='TokenSwapListOutputToken' component={TokenSwapTokenList('output')} />
+      <Stack.Screen name='TokenSwapRedirect' component={TokenSwapRedirect} />
     </Stack.Navigator>
   );
 };
+
+/**
+ * This blank screen serves as a way to request the user permission to use the camera without
+ * rendering anything on the main interface for a potentially very short time.
+ * A listener should be set to the `isCameraAvailable` state variable to decide what to render after
+ * the permission is defined.
+ */
+const CameraPermissionScreen = () => null;
 
 /**
  * Stack of screens dedicated to the token sending process
@@ -544,6 +547,10 @@ const AppStack = () => {
         <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
         <Stack.Screen name='TokenDetail' component={TokenDetail} />
         <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
+        <Stack.Screen name='TokenSwap' component={TokenSwap} />
+        <Stack.Screen name='TokenSwapReview' component={TokenSwapReview} />
+        <Stack.Screen name='TokenSwapListInputToken' component={TokenSwapTokenList('input')} />
+        <Stack.Screen name='TokenSwapListOutputToken' component={TokenSwapTokenList('output')} />
       </Stack.Navigator>
     </SafeAreaView>
   );
