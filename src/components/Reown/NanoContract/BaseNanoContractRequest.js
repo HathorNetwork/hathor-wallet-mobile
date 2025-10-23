@@ -10,6 +10,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { constants } from '@hathor/wallet-lib';
+import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import { COLORS } from '../../../styles/themes';
 import NewHathorButton from '../../NewHathorButton';
 import { DappContainer } from './DappContainer';
@@ -21,11 +23,12 @@ import FeedbackModal from '../../FeedbackModal';
 import Spinner from '../../Spinner';
 import { SelectAddressModal } from '../../NanoContract/SelectAddressModal';
 import { DeclineModal } from './DeclineModal';
+import TokenInfoModal from '../TokenInfoModal';
+import { useTokenInfo } from '../../../hooks/useTokenInfo';
 import { useBackButtonHandler } from '../../../hooks/useBackButtonHandler';
 import errorIcon from '../../../assets/images/icErrorBig.png';
 import {
   nanoContractBlueprintInfoRequest,
-  unregisteredTokensDownloadRequest,
   firstAddressRequest,
   selectAddressAddressesRequest,
   reownAccept,
@@ -36,7 +39,6 @@ import {
 import {
   NANOCONTRACT_BLUEPRINTINFO_STATUS,
   NANOCONTRACT_REGISTER_STATUS,
-  DEFAULT_TOKEN
 } from '../../../constants';
 
 const styles = StyleSheet.create({
@@ -163,6 +165,15 @@ export const BaseNanoContractRequest = ({
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
 
+  // Use token info hook
+  const {
+    showTokenInfoModal,
+    selectedTokenInfo,
+    isTokenRegistered,
+    showTokenInfo,
+    closeTokenInfo,
+  } = useTokenInfo(registeredTokens, knownTokens);
+
   // Create a memoized object with the caller address
   const nanoWithCaller = useMemo(() => ({
     ...nano,
@@ -185,13 +196,20 @@ export const BaseNanoContractRequest = ({
 
     for (const { type, token, amount } of nano.actions) {
       if (type === 'deposit') {
+        // Skip balance check for unregistered tokens since we don't have their balances loaded
+        if (!registeredTokens[token] && token !== constants.NATIVE_TOKEN_UID) {
+          continue;
+        }
+
         // Initialize token balance if first time seeing this token
         if (!(token in tokenBalances)) {
           const balance = tokensBalance[token]?.data?.available || 0n;
           tokenBalances[token] = balance;
         }
 
-        tokenBalances[token] -= amount;
+        // Use wallet-lib's bigIntCoercibleSchema to safely convert amount to BigInt
+        const amountBigInt = bigIntCoercibleSchema.parse(amount);
+        tokenBalances[token] -= amountBigInt;
 
         if (tokenBalances[token] < 0n) {
           // Early exit if we go negative
@@ -201,15 +219,7 @@ export const BaseNanoContractRequest = ({
     }
 
     return false;
-  }, [checkInsufficientBalance, nano.actions, tokensBalance]);
-
-  const tokensToRegister = useMemo(() => (nano.actions || []).reduce((acc, each) => {
-    const uid = each.token;
-    if (!(uid in registeredTokens)) {
-      acc.push(uid);
-    }
-    return acc;
-  }, []), [nano.actions, registeredTokens]);
+  }, [checkInsufficientBalance, nano.actions, tokensBalance, registeredTokens]);
 
   // Request first address and addresses for selection when component mounts
   useEffect(() => {
@@ -240,15 +250,30 @@ export const BaseNanoContractRequest = ({
   // Handle successful transaction navigation
   useEffect(() => {
     if (status === statusConfig.statusConstants.SUCCESSFUL) {
-      if (tokensToRegister.length > 0) {
-        const tokensToRegisterData = tokensToRegister.map((uid) => knownTokens[uid]);
-        navigation.navigate(
-          'RegisterTokenAfterSuccess',
-          {
-            tokens: tokensToRegisterData
+      // Check if there are unregistered tokens in the transaction
+      const tokensInTransaction = new Set();
+
+      // Collect all token UIDs from nano contract actions
+      if (nano.actions) {
+        nano.actions.forEach((action) => {
+          if (action.token && action.token !== constants.NATIVE_TOKEN_UID) {
+            tokensInTransaction.add(action.token);
           }
-        );
+        });
+      }
+
+      // Filter to get only unregistered tokens
+      const unregisteredTokensList = Array.from(tokensInTransaction)
+        .filter((tokenId) => !registeredTokens[tokenId] && knownTokens[tokenId])
+        .map((tokenId) => knownTokens[tokenId]);
+
+      if (unregisteredTokensList.length > 0) {
+        // Navigate to RegisterTokenAfterSuccess screen
+        navigation.navigate('RegisterTokenAfterSuccess', {
+          tokens: unregisteredTokensList,
+        });
       } else {
+        // No unregistered tokens, just show success
         navigation.navigate(
           'SuccessFeedbackScreen',
           {
@@ -259,7 +284,7 @@ export const BaseNanoContractRequest = ({
       }
       dispatch(statusConfig.setReadyAction());
     }
-  }, [status]);
+  }, [status, nano.actions, registeredTokens, knownTokens]);
 
   // Request blueprint info and token data when component mounts
   useEffect(() => {
@@ -271,19 +296,6 @@ export const BaseNanoContractRequest = ({
 
     if (!blueprintInfo) {
       dispatch(nanoContractBlueprintInfoRequest(nano.blueprintId));
-    }
-
-    // Request token data for each unknown token present in actions
-    const unknownTokensUid = [];
-    const actionTokensUid = nano.actions?.map((each) => each.token) || [];
-    actionTokensUid.forEach((uid) => {
-      if (uid !== DEFAULT_TOKEN.uid && !(uid in knownTokens)) {
-        unknownTokensUid.push(uid);
-      }
-    });
-
-    if (unknownTokensUid.length > 0) {
-      dispatch(unregisteredTokensDownloadRequest({ uids: unknownTokensUid }));
     }
 
     // Clean up function
@@ -372,8 +384,7 @@ export const BaseNanoContractRequest = ({
 
   // Loading states
   const isTxInfoLoading = () => (
-    knownTokens.isLoading
-    || blueprintInfo == null
+    blueprintInfo == null
     || blueprintInfo?.status === NANOCONTRACT_BLUEPRINTINFO_STATUS.LOADING
   );
 
@@ -520,6 +531,8 @@ export const BaseNanoContractRequest = ({
               ncActions={nano.actions}
               tokens={knownTokens}
               error={knownTokens.error}
+              isTokenRegistered={isTokenRegistered}
+              showTokenInfo={showTokenInfo}
             />
             <NanoContractMethodArgs
               blueprintId={nano.blueprintId}
@@ -579,6 +592,13 @@ export const BaseNanoContractRequest = ({
           action={(<NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />)}
         />
       )}
+
+      {/* Token info modal */}
+      <TokenInfoModal
+        visible={showTokenInfoModal}
+        tokenInfo={selectedTokenInfo}
+        onClose={closeTokenInfo}
+      />
     </>
   );
 };
