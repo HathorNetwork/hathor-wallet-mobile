@@ -225,6 +225,34 @@ export const types = {
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS',
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY',
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS',
+  /**
+   * Token Swap actions
+   */
+  // Start the request to load the allowed tokens list
+  TOKEN_SWAP_FETCH_ALLOWED_TOKENS: 'TOKEN_SWAP_FETCH_ALLOWED_TOKENS',
+  // Set the value of the allowed tokens list
+  TOKEN_SWAP_SET_ALLOWED_TOKENS: 'TOKEN_SWAP_SET_ALLOWED_TOKENS',
+  // Mark the request to load the allowed tokens as failed
+  TOKEN_SWAP_FETCH_ALLOWED_TOKENS_ERROR: 'TOKEN_SWAP_FETCH_ALLOWED_TOKENS_ERROR',
+
+  // Handle user choice of token on the swap.
+  TOKEN_SWAP_CHOOSE_INPUT_TOKEN: 'TOKEN_SWAP_CHOOSE_INPUT_TOKEN',
+  TOKEN_SWAP_CHOOSE_OUTPUT_TOKEN: 'TOKEN_SWAP_CHOOSE_OUTPUT_TOKEN',
+  // Set the tokens for the swap
+  TOKEN_SWAP_SET_INPUT_TOKEN: 'TOKEN_SWAP_SET_INPUT_TOKEN',
+  TOKEN_SWAP_SET_OUTPUT_TOKEN: 'TOKEN_SWAP_SET_OUTPUT_TOKEN',
+  TOKEN_SWAP_SWITCH_TOKENS: 'TOKEN_SWAP_SWITCH_TOKENS',
+
+  // Fetch a quote for the current swap
+  TOKEN_SWAP_FETCH_SWAP_QUOTE: 'TOKEN_SWAP_FETCH_SWAP_QUOTE',
+  // Set the swap data confirmed by the user
+  TOKEN_SWAP_FETCH_SWAP_QUOTE_SUCCESS: 'TOKEN_SWAP_FETCH_SWAP_QUOTE_SUCCESS',
+  // Error happened during the fetch swap data
+  TOKEN_SWAP_FETCH_SWAP_DATA_ERROR: 'TOKEN_SWAP_FETCH_SWAP_DATA_ERROR',
+
+  // Clean swap data when user does not confirm the swap
+  TOKEN_SWAP_RESET_SWAP_DATA: 'TOKEN_SWAP_RESET_SWAP_DATA',
+  TOKEN_SWAP_START_SWAP: 'TOKEN_SWAP_START_SWAP',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1635,4 +1663,48 @@ export const setCreateNanoContractCreateTokenTxStatusFailure = () => ({
 export const setCreateNanoContractCreateTokenTxStatusSuccess = () => ({
   type: types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
   payload: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.SUCCESSFUL,
+});
+
+export const tokenSwapFetchAllowedTokens = () => ({
+  type: types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS,
+});
+
+export const tokenSwapSetAllowedTokens = (contractId, allowedTokens) => ({
+  type: types.TOKEN_SWAP_SET_ALLOWED_TOKENS,
+  payload: { allowedTokens, contractId },
+});
+
+export const tokenSwapFetchAllowedTokensError = () => ({
+  type: types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS_ERROR,
+});
+
+export const tokenSwapSetInputToken = (token) => ({
+  type: types.TOKEN_SWAP_SET_INPUT_TOKEN,
+  payload: token,
+});
+
+export const tokenSwapSetOutputToken = (token) => ({
+  type: types.TOKEN_SWAP_SET_OUTPUT_TOKEN,
+  payload: token,
+});
+
+export const tokenSwapFetchSwapQuote = () => ({
+  type: types.TOKEN_SWAP_FETCH_SWAP_QUOTE,
+});
+
+export const tokenSwapFetchSwapQuoteSuccess = (swapQuote) => ({
+  type: types.TOKEN_SWAP_FETCH_SWAP_QUOTE_SUCCESS,
+  payload: swapQuote,
+});
+
+export const tokenSwapFetchSwapDataError = () => ({
+  type: types.TOKEN_SWAP_FETCH_SWAP_DATA_ERROR,
+});
+
+export const tokenSwapResetSwapData = () => ({
+  type: types.TOKEN_SWAP_RESET_SWAP_DATA,
+});
+
+export const tokenSwapSwitchTokens = () => ({
+  type: types.TOKEN_SWAP_SWITCH_TOKENS,
 });
