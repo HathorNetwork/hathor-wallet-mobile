@@ -157,40 +157,6 @@ const DashboardStack = () => {
   );
 };
 
-const TokenSwapRedirect = () => {
-  const navigation = useNavigation();
-  navigation.replace('TokenSwap');
-  return null;
-}
-
-/**
- * Stack of screens dedicated to the token swap process
- */
-const SwapStack = ({ navigation }) => {
-  const Stack = createStackNavigator();
-  const [initialRoute, setInitialRoute] = useState('TokenSwapLoadingScreen');
-  const allowedTokensStatus = useSelector((state) => state.tokenSwap.loadAllowedTokensStatus);
-
-  useEffect(() => {
-    // When we load the tokens, move to the token swap main screen
-    if (allowedTokensStatus === TOKEN_SWAP_ALLOWED_TOKEN_STATUS.SUCCESSFUL) {
-      setInitialRoute('TokenSwapRedirect');
-    }
-  }, [allowedTokensStatus]);
-
-  return (
-    <Stack.Navigator
-      initialRouteName={initialRoute}
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen name='TokenSwapLoadingScreen' component={TokenSwapLoadingScreen} />
-      <Stack.Screen name='TokenSwapRedirect' component={TokenSwapRedirect} />
-    </Stack.Navigator>
-  );
-};
-
 /**
  * This blank screen serves as a way to request the user permission to use the camera without
  * rendering anything on the main interface for a potentially very short time.
@@ -450,7 +416,7 @@ const TabNavigator = () => {
         name='Home'
         component={IS_MULTI_TOKEN ? DashboardStack : MainScreen}
       />
-      { isSwapEnabled && <Tab.Screen name='Swap' component={SwapStack} /> }
+      { isSwapEnabled && <Tab.Screen name='Swap' component={TokenSwapLoadingScreen} /> }
       <Tab.Screen name='Send' component={SendStack} />
       <Tab.Screen name='Receive' component={ReceiveScreen} />
       <Tab.Screen name='Settings' component={Settings} />

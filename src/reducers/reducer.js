@@ -2281,7 +2281,7 @@ export const onTokenSwapSetInputToken = (state, { payload }) => {
       ...state.tokenSwap,
     },
   };
-  if (state.tokenSwap.outputToken.uid === payload.uid) {
+  if (state.tokenSwap.outputToken && state.tokenSwap.outputToken.uid === payload.uid) {
     // In this case the chosen token is the same as the output token, so we switch them.
     newState.tokenSwap.outputToken = {...newState.tokenSwap.inputToken};
   }
@@ -2297,7 +2297,7 @@ export const onTokenSwapSetOutputToken = (state, { payload }) => {
       ...state.tokenSwap,
     },
   };
-  if (state.tokenSwap.inputToken.uid === payload.uid) {
+  if (state.tokenSwap.inputToken && state.tokenSwap.inputToken.uid === payload.uid) {
     // In this case the chosen token is the same as the input token, so we switch them.
     newState.tokenSwap.inputToken = {...newState.tokenSwap.outputToken};
   }
@@ -2326,8 +2326,7 @@ export const onTokenSwapFetchSwapDataError = (state) => ({
 export const onTokenSwapResetSwapData = (state) => ({
   ...state,
   tokenSwap: {
-    allowedTokens: null,
-    loadAllowedTokensStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY,
+    ...state.tokenSwap,
     inputToken: null,
     outputToken: null,
     swapPathQuote: null,

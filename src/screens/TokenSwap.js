@@ -42,6 +42,9 @@ import NavigationService from '../NavigationService';
 
 
 function getAvailableAmount(token, tokensBalance) {
+  if (!token) {
+    return 0n;
+  }
   return get(tokensBalance, `${token.uid}.data.available`, 0n);
 }
 
@@ -148,7 +151,6 @@ const TokenSwap = () => {
   };
 
   const switchTokens = () => {
-
     const newOutputStr = inputTokenAmountStr;
     const newOutput = inputTokenAmount;
     const newInputStr = outputTokenAmountStr;
@@ -195,7 +197,7 @@ const TokenSwap = () => {
 
   const getAvailableString = (token) => {
     if (!token) {
-      return;
+      return '';
     }
     const available = getAvailableAmount(token, tokensBalance);
     const amount = `${renderValue(available, false)}`;
