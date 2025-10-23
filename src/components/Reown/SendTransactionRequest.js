@@ -206,8 +206,6 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
 
     // We return an empty string as a fallback for tokens that are not yet
     // loaded or recognized
-    // This should be temporary until the token details are provided
-    // by the RPC handler
     return '';
   };
 

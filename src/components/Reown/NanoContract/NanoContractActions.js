@@ -115,7 +115,7 @@ export const NanoContractActions = ({
  * }} props.action A transaction's action object
  * @param {boolean} props.isNft A flag to inform if the token is an NFT or not
  * @param {string} props.title The card title for the action
- * @param {Object} props.tokens Map of token metadata
+ * @param {Object} props.tokens Map of token details
  * @param {Function} props.isTokenRegistered Function to check if token is registered
  * @param {Function} props.showTokenInfo Function to show token info modal
  */
