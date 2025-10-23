@@ -536,20 +536,18 @@ const initialState = {
    * the wallet saga.
    */
   fullNodeNetworkName: null,
+  /** @type {TOKEN_SWAP_ALLOWED_TOKEN_STATUS} Status of the allowed tokens request */
+  tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY,
+  /** @type {TokenData[]|null} List of tokens that are allowed to be swapped */
+  tokenSwapAllowedTokens: null,
   /**
    * @type {Object}
-   * @property {TokenData[]|null} allowedTokens List of tokens that are allowed to be swapped
-   * @property {string|null} contractId Dozer Pool manager contract id of the current network
-   * @property {TOKEN_SWAP_ALLOWED_TOKEN_STATUS} loadAllowedTokensStatus Status of the allowed tokens request
    * @property {null|TokenData} inputToken Token being traded in
    * @property {null|TokenData} outputToken Token being swapped out
    * @property {null|TokenSwapQuote} swapPathQuote Latest quote from the pool manager for the swap proposed
    * @property {TOKEN_SWAP_QUOTE_STATUS} loadSwapPathQuoteStatus Status of the quote request
    */
   tokenSwap: {
-    allowedTokens: null,
-    contractId: null,
-    loadAllowedTokensStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY,
     inputToken: null,
     outputToken: null,
     swapPathQuote: null,
@@ -2250,11 +2248,10 @@ export const onSetCreateNanoContractCreateTokenTxStatus = (state, { payload }) =
 export const onTokenSwapSetAllowedTokens = (state, { payload }) => {
   return {
     ...state,
+    tokenSwapAllowedTokens: payload.allowedTokens,
+    tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.SUCCESSFUL,
     tokenSwap: {
       ...state.tokenSwap,
-      allowedTokens: payload.allowedTokens,
-      contractId: payload.contractId,
-      loadAllowedTokensStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.SUCCESSFUL,
       inputToken: payload.allowedTokens[0],
       outputToken: payload.allowedTokens[1],
     },
@@ -2263,11 +2260,10 @@ export const onTokenSwapSetAllowedTokens = (state, { payload }) => {
 
 export const onTokenSwapFetchAllowedTokensError = (state) => ({
   ...state,
+  tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.FAILED,
+  tokenSwapAllowedTokens: null,
   tokenSwap: {
     ...state.tokenSwap,
-    contractId: null,
-    allowedTokens: null,
-    loadAllowedTokensStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.FAILED,
     inputToken: null,
     outputToken: null,
     swapPathQuote: null,

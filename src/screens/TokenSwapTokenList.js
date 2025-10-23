@@ -13,6 +13,7 @@ import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
 import { tokenSwapSetInputToken, tokenSwapSetOutputToken } from '../actions';
+import { selectTokenSwapAllowedTokens } from '../utils';
 
 /**
  * @param {'input'|'output'} direction If the token chosen will be the swap input or output.
@@ -27,7 +28,7 @@ export default function TokenSwapTokenList(direction) {
 
     const tokenMetadata = useSelector(state => state.tokenMetadata);
     const tokensBalance = useSelector(state => state.tokensBalance);
-    const allowedTokens = useSelector(state => state.tokenSwap.allowedTokens);
+    const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
 
     const onItemPress = (item) => {
       if (direction === 'input') {
