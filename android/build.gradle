@@ -6,7 +6,7 @@ buildscript {
         minSdkVersion = 24
         compileSdkVersion = 35
         targetSdkVersion = 35
-        ndkVersion = "27.1.12297006"
+        ndkVersion = "29.0.14206865" // r29 for 16KB page size support
         kotlinVersion = "2.0.21"
         kotlin_version = kotlinVersion // Used by react-native-camera-kit
     }
