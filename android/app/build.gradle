@@ -88,6 +88,14 @@ android {
         versionName "0.33.0"
         missingDimensionStrategy "react-native-camera", "general"
     }
+
+    // Prevents compression of native libraries (.so files) to preserve 16KB page alignment
+    // from NDK r29. Compression would break the alignment even if NDK compiles it correctly.
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
