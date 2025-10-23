@@ -35,9 +35,9 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
   let message = t`Transaction successfully sent.`;
 
   if (tokens.length > 1) {
-    message = `${message} There are ${tokens.length} unregistered tokens in this transaction. Do you want to register them?`;
+    message = `${message} ${t`There are ${tokens.length} unregistered tokens in this transaction. Do you want to register them?`}`;
   } else {
-    message = `${message} There is 1 unregistered token in this transaction. Do you want to register it?`;
+    message = `${message} ${t`There is 1 unregistered token in this transaction. Do you want to register it?`}`;
   }
 
   const onRegister = async () => {
