@@ -21,6 +21,7 @@ import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
 import { logger } from './logger';
+import { getNetworkSettings } from './sagas/helpers';
 
 const log = logger('utils');
 
@@ -766,3 +767,15 @@ export const getResultHelper = async (fn) => {
     return [e, null];
   }
 };
+
+export function selectTokenSwapAllowedTokens(state) {
+  const networkSettings = getNetworkSettings(state);
+  const network = networkSettings.network;
+  if (!(state.tokenSwapAllowedTokens && state.tokenSwapAllowedTokens.networks)) {
+    return null;
+  }
+  if (!state.tokenSwapAllowedTokens.networks[network]) {
+    return null;
+  }
+  return state.tokenSwapAllowedTokens.networks[network].tokens;
+}

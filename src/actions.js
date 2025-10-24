@@ -1636,9 +1636,9 @@ export const tokenSwapFetchAllowedTokens = () => ({
   type: types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS,
 });
 
-export const tokenSwapSetAllowedTokens = (contractId, allowedTokens) => ({
+export const tokenSwapSetAllowedTokens = (allowedTokens) => ({
   type: types.TOKEN_SWAP_SET_ALLOWED_TOKENS,
-  payload: { allowedTokens, contractId },
+  payload: { allowedTokens },
 });
 
 export const tokenSwapFetchAllowedTokensError = () => ({

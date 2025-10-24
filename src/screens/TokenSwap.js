@@ -22,7 +22,7 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
 
-import { renderValue } from '../utils';
+import { renderValue, selectTokenSwapAllowedTokens } from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -42,6 +42,9 @@ import NavigationService from '../NavigationService';
 
 
 function getAvailableAmount(token, tokensBalance) {
+  if (!token) {
+    return 0n;
+  }
   return get(tokensBalance, `${token.uid}.data.available`, 0n);
 }
 
@@ -72,8 +75,8 @@ const TokenSwap = () => {
   // XXX: this is a mock value to simulate fetching and showing the quote section
   const [showQuote, setShowQuote] = useState(false);
 
+  const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
   const {
-    allowedTokens,
     inputToken,
     outputToken,
   } = useSelector((state) => state.tokenSwap);
@@ -148,7 +151,6 @@ const TokenSwap = () => {
   };
 
   const switchTokens = () => {
-
     const newOutputStr = inputTokenAmountStr;
     const newOutput = inputTokenAmount;
     const newInputStr = outputTokenAmountStr;
@@ -195,7 +197,7 @@ const TokenSwap = () => {
 
   const getAvailableString = (token) => {
     if (!token) {
-      return;
+      return '';
     }
     const available = getAvailableAmount(token, tokensBalance);
     const amount = `${renderValue(available, false)}`;

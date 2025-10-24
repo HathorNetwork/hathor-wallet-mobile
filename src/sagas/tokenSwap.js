@@ -31,13 +31,19 @@ import {
 const ALLOWED_TOKENS_URL = 'https://httpbin.org/json'
 
 export function* handleFetchAllowedTokensRequest() {
-  yield put(tokenSwapSetAllowedTokens(
-    'fake-contract-id',
-    [
+  const obj = {
+    pool_manager: 'fake-contract-id',
+    tokens: [
       { symbol: 'HTR', name: 'Hathor', uid: '00' },
       { symbol: 'CTHOR', name: 'Cathor', uid: '00000000f76262bb1cca969d952ac2f0e85f88ec34c31f26a13eb3c31e29d4ed' },
-    ]
-  ));
+    ],
+  };
+  yield put(tokenSwapSetAllowedTokens({
+    networks: {
+      testnet: obj,
+      mainnet: obj,
+    }
+  }));
   return;
 
   // XXX: We could have an AbortionController for cancellation
@@ -77,7 +83,7 @@ export function* handleFetchAllowedTokensRequest() {
     return;
   }
 
-  yield put(tokenSwapSetAllowedTokens(contractId, allowedTokens));
+  yield put(tokenSwapSetAllowedTokens(allowedTokenContents));
 }
 
 
