@@ -13,12 +13,20 @@ import {
 } from 'react-native';
 import { t } from 'ttag';
 import { useDispatch } from 'react-redux';
-import { onStartWalletLock, resetOnLockScreen, lockScreen } from '../actions';
+import {
+  networkSettingsPersistStore,
+  networkSettingsUpdateReady,
+  onStartWalletLock,
+  resetOnLockScreen,
+  lockScreen
+} from '../actions';
 import SimpleButton from '../components/SimpleButton';
+import { PRE_SETTINGS_MAINNET } from '../constants';
 
 const errorText = t`There's been an error connecting to the server.`;
 const tryAgainText = t`Try again`;
 const resetWalletText = t`Reset wallet`;
+const onConnectToMainnetText = t`Connect to mainnet`;
 
 const styles = StyleSheet.create({
   container: {
@@ -72,6 +80,16 @@ export default () => {
     // was set to true.
     dispatch(lockScreen());
   }, [dispatch]);
+  const onConnectToMainnet = useCallback(() => {
+    // Set the network settings as mainnet in the store
+    dispatch(networkSettingsPersistStore(PRE_SETTINGS_MAINNET));
+    // This will set the walletState to LOADING
+    dispatch(onStartWalletLock());
+    // Display the PinScreen
+    dispatch(lockScreen());
+    // No need to show a success feedback modal in this case
+    dispatch(networkSettingsUpdateReady());
+  }, [dispatch]);
 
   return (
     <View style={styles.container}>
@@ -82,6 +100,12 @@ export default () => {
           textStyle={styles.tryAgainText}
           onPress={onReload}
           title={tryAgainText}
+        />
+        <SimpleButton
+          containerStyle={styles.tryAgainButton}
+          textStyle={styles.tryAgainText}
+          onPress={onConnectToMainnet}
+          title={onConnectToMainnetText}
         />
       </View>
       <View style={styles.resetContainer}>
