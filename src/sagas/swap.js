@@ -16,7 +16,7 @@ import {
 import { SagaCancellationException } from 'redux-saga';
 import { get } from 'lodash';
 import { getNetworkSettings } from './helpers';
-import { findBestTokenSwap } from '../utils/dozer';
+import { findBestTokenSwap } from '../utils/tokenSwap';
 import {
   types,
   tokenSwapFetchQuoteSuccess,
