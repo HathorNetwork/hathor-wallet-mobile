@@ -102,7 +102,7 @@ import { SuccessFeedbackScreen } from './screens/Reown/SuccessFeedbackScreen';
 import { RegisterTokenAfterSuccessScreen } from './screens/Reown/RegisterTokenAfterSuccess';
 import UnifiedQRScanner from './screens/UnifiedQRScanner';
 import RegisterOptionsScreen from './screens/RegisterOptionsScreen';
-import { NavigationSerializingProvider, useNavigation } from './hooks/navigation';
+import { NavigationSerializingProvider } from './hooks/navigation';
 import { SendTransactionRequestScreen } from './screens/Reown/SendTransactionRequestScreen';
 import TokenSwap from './screens/TokenSwap';
 import TokenSwapLoadingScreen from './screens/TokenSwapLoadingScreen';

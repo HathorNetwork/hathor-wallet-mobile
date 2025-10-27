@@ -784,6 +784,8 @@ export const reducer = (state = initialState, action) => {
     case types.SET_FULLNODE_NETWORK_NAME:
       return onSetFullNodeNetworkName(state, action);
 
+    case types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS:
+      return onTokenSwapFetchAllowedTokens(state);
     case types.TOKEN_SWAP_SET_ALLOWED_TOKENS:
       return onTokenSwapSetAllowedTokens(state, action);
     case types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS_ERROR:
@@ -2244,6 +2246,13 @@ export const onSetCreateNanoContractCreateTokenTxStatus = (state, { payload }) =
     },
   },
 });
+
+export const onTokenSwapFetchAllowedTokens = (state) => {
+  return {
+    ...state,
+    tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.LOADING,
+  };
+};
 
 export const onTokenSwapSetAllowedTokens = (state, { payload }) => {
   return {

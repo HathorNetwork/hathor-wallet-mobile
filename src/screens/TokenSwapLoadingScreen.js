@@ -27,16 +27,20 @@ export default function TokenSwapLoadingScreen() {
   const loadTokenStatus = useSelector((state) => state.tokenSwapAllowedTokensRequestStatus);
   const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
   const navigation = useNavigation();
-  /** @type {'loading'|'loaded'|'success'|'error'} */
-  const [loadingState, setLoadingState] = useState('loading');
+  /** @type {'ready'|'loading'|'loaded'|'success'|'error'} */
+  const [loadingState, setLoadingState] = useState('ready');
   const [hasError, setError] = useState(false);
 
   useEffect(() => {
     // Only request to load if we are not already loading or loaded
     if (loadTokenStatus === TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY) {
+      dispatch(tokenSwapFetchAllowedTokens());
+    }
+
+    // If the request is on-going we show the loading screen
+    if (loadTokenStatus === TOKEN_SWAP_ALLOWED_TOKEN_STATUS.LOADING) {
       setError(false);
       setLoadingState('loading');
-      dispatch(tokenSwapFetchAllowedTokens());
     }
 
     // If the request is finished we set the state to `loaded` to start validation.
@@ -54,22 +58,20 @@ export default function TokenSwapLoadingScreen() {
   useEffect(() => {
     if (loadingState === 'loaded') {
       // Validate allowedTokens
-      if (!allowedTokens) {
-        setError(true);
-      } else {
+      if (allowedTokens && allowedTokens.length >= 2) {
         setError(false);
-        setLoadingState('ready');
+        setLoadingState('success');
+      } else {
+        setError(true);
       }
     }
 
-    if (loadingState === 'ready') {
+    if (loadingState === 'success') {
       navigation.replace('TokenSwap');
     }
   }, [loadingState, allowedTokens]);
 
   function requestReload() {
-    setError(false);
-    setLoadingState('loading');
     dispatch(tokenSwapFetchAllowedTokens());
   }
 
@@ -98,6 +100,15 @@ export default function TokenSwapLoadingScreen() {
       </Text>
     </View>
   );
+
+  /**
+   * The ready state indicates the initial load.
+   * We check the allowed token list, if it is present and valid we redirect to the token swap.
+   * If not we can either start loading it or display an error message.
+   */
+  if (loadingState === 'ready') {
+    return null;
+  }
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
