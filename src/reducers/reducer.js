@@ -538,7 +538,7 @@ const initialState = {
   fullNodeNetworkName: null,
   /** @type {TOKEN_SWAP_ALLOWED_TOKEN_STATUS} Status of the allowed tokens request */
   tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY,
-  /** @type {TokenData[]|null} List of tokens that are allowed to be swapped */
+  /** @type {Object|null} Token swap allowed tokens configuration file for all networks. */
   tokenSwapAllowedTokens: null,
   /**
    * @type {Object}
@@ -2286,7 +2286,7 @@ export const onTokenSwapSetInputToken = (state, { payload }) => {
       ...state.tokenSwap,
     },
   };
-  if (state.tokenSwap.outputToken && state.tokenSwap.outputToken.uid === payload.uid) {
+  if (state.tokenSwap.outputToken?.uid === payload.uid) {
     // In this case the chosen token is the same as the output token, so we switch them.
     newState.tokenSwap.outputToken = {...newState.tokenSwap.inputToken};
   }
@@ -2302,7 +2302,7 @@ export const onTokenSwapSetOutputToken = (state, { payload }) => {
       ...state.tokenSwap,
     },
   };
-  if (state.tokenSwap.inputToken && state.tokenSwap.inputToken.uid === payload.uid) {
+  if (state.tokenSwap.inputToken?.uid === payload.uid) {
     // In this case the chosen token is the same as the input token, so we switch them.
     newState.tokenSwap.inputToken = {...newState.tokenSwap.outputToken};
   }
