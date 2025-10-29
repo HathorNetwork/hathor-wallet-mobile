@@ -130,17 +130,17 @@
 
 ### Create a Bet nano contract
 1. On the Bet dApp hotsite, create a simple Bet nano contract with:
-  1. Random results
-  1. Two different possible outcomes
+  - Random results
+  - Two different possible outcomes
 1. A screen should be opened on the wallet to confirm the creation of the Bet nano contract
-  1. Check that the screen has all the information about the nano contract
-    1. Blueprint Id
-    1. Contract name
-    1. Method "initialize"
-    1. Caller address ( actionable )
-    1. Argument "oracle_script"
-    1. Argument "token_uid" as HTR
-    1. Date last bet in a human readable date and time
+1. Check that the screen has all the information about the nano contract
+   - Blueprint Id
+   - Contract name
+   - Method "initialize"
+   - Caller address ( actionable )
+   - Argument "oracle_script"
+   - Argument "token_uid" as HTR
+   - Date last bet in a human readable date and time
 1. Click "Decline Transaction" and then "No, Go Back"
 1. Check that the user is still on the reviewing screen
 1. Click "Decline Transaction" and then confirm. Check the wallet navigates to the Dashboard
@@ -191,3 +191,20 @@ The objective of this test is to try and send a custom token using a Nano Contra
 1. Send the custom tokens again using the Nano Contract
 1. Accept the registration and check the tokens are registered
 
+### Create a custom token
+1. Using a RPC source ( dApp or direct RPC calls ), fill all mandatory fields to create a custom token
+2. Check that the request confirmation screen shows all token information correctly
+3. Confirm the transaction request and check the custom token now exists on the Explorer
+
+#### External addresses and data output
+1. Try again to create a custom token, but this time with:
+  - No mint authority
+  - A melt authority to an external address ( not from the wallet )
+  - Make sure the "Allow External Melt Authority" is disabled
+1. The request should appear correctly to the Mobile Wallet App
+1. The "Allow External Melt Authority" option should be `false` in the request details
+1. Confirm the transaction request
+1. Check that the transaction fails
+1. Try again to create the custom token, but this time enabling the "Allow External Melt Authority" option
+1. Also add a data output with the string "Sample Data Output"
+1. Confirm the transaction succeeds and that the token appears on the Explorer 
