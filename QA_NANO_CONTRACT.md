@@ -1,6 +1,7 @@
 # QA Nano Contract
 
 - CTA: call-to-action
+- Bet Hotsite: https://staging.betting.hathor.network/ or a local dApp like the [Bet dApp](https://github.com/hathornetwork/bet-dapp)
 
 ### Hidden tab when disabled
 1. Make sure the nano-contract feature is 🚫**disabled** for the device
