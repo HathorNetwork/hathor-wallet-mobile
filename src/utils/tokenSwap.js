@@ -185,6 +185,13 @@ export async function findBestTokenSwap(direction, contractId, amount, tokenIn, 
   if (!method) {
     throw new TokenSwapMethodError();
   }
+  /**
+   * The last parameter is the maximum number of internal pools the swap can traverse
+   * (i.e. the max number of steps allowed in the path).
+   *
+   * The blueprint seemed to indicate that 3 is the default value so I kept it hardcoded for now.
+   * If later we understand that this should change we can update the value or make it an argument
+   */
   const call = `${method}(${amount},"${tokenIn}","${tokenOut}",3)`;
 
   try {
