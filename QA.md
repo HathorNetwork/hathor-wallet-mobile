@@ -13,10 +13,7 @@
 1. Verify the seed words screen appears. Note them elsewhere for later use.
 1. Confirm one word correctly, miss the second word. Verify error message appears.
 1. Verify app navigates back to seed words screen.
-1. Confirm all 5 words correctly and tap "Next" to proceed to password creation
-1. Enter a short password (e.g., "123"). Verify error message appears.
-1. Enter a valid password (e.g., "StrongPass123!"), but miss the confirmation.
-1. Re-enter the password correctly and tap "Next" to proceed to PIN creation
+1. Confirm all 5 words correctly and tap "Next" to proceed to PIN creation
 1. Enter a 6-digit PIN and miss the confirmation
 1. Re-enter the PIN correctly and press "Next"
 1. Verify wallet initializes successfully
