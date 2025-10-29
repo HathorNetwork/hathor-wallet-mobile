@@ -31,13 +31,19 @@ import {
 const ALLOWED_TOKENS_URL = 'https://httpbin.org/json'
 
 export function* handleFetchAllowedTokensRequest() {
-  yield put(tokenSwapSetAllowedTokens(
-    'fake-contract-id',
-    [
+  const obj = {
+    pool_manager: 'fake-contract-id',
+    tokens: [
       { symbol: 'HTR', name: 'Hathor', uid: '00' },
       { symbol: 'CTHOR', name: 'Cathor', uid: '00000000f76262bb1cca969d952ac2f0e85f88ec34c31f26a13eb3c31e29d4ed' },
-    ]
-  ));
+    ],
+  };
+  yield put(tokenSwapSetAllowedTokens({
+    networks: {
+      testnet: obj,
+      mainnet: obj,
+    }
+  }));
   return;
 
   // XXX: We could have an AbortionController for cancellation
@@ -58,26 +64,7 @@ export function* handleFetchAllowedTokensRequest() {
     return;
   }
 
-  // Allowed tokens were fetched, we need to get the correct list from our current network
-  const network = 'testnet'; // XXX: get network from wallet?
-  const networkConfig = get(allowedTokenContents, `networks.${network}`);
-  if (!networkConfig) {
-    // We do not have the current network configured
-    console.warn(`[allowed-tokens] ${network} network is not configured on the swap tokens file.`);
-    yield put(tokenSwapFetchAllowedTokensError());
-    return;
-  }
-  
-  const contractId = networkConfig['swap_contract'];
-  const allowedTokens = networkConfig['tokens'];
-
-  if (!(allowedTokens instanceof Array && allowedTokens.length > 1)) {
-    console.warn(`[allowed-tokens] List does not have enough tokens to enable the feature.`);
-    yield put(tokenSwapFetchAllowedTokensError());
-    return;
-  }
-
-  yield put(tokenSwapSetAllowedTokens(contractId, allowedTokens));
+  yield put(tokenSwapSetAllowedTokens(allowedTokenContents));
 }
 
 

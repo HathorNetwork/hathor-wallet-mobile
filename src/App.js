@@ -166,37 +166,6 @@ const DashboardStack = () => {
 const CameraPermissionScreen = () => null;
 
 /**
- * Stack of screens dedicated to the token swap process
- */
-const SwapStack = ({ navigation }) => {
-  const Stack = createStackNavigator();
-  const [initialRoute, setInitialRoute] = useState('TokenSwapLoadingScreen');
-  const allowedTokensStatus = useSelector((state) => state.tokenSwap.loadAllowedTokensStatus);
-
-  useEffect(() => {
-    // When we load the tokens, move to the token swap main screen
-    if (allowedTokensStatus === TOKEN_SWAP_ALLOWED_TOKEN_STATUS.SUCCESSFUL) {
-      setInitialRoute('TokenSwap');
-    }
-  }, [allowedTokensStatus]);
-
-  return (
-    <Stack.Navigator
-      initialRouteName={initialRoute}
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen name='TokenSwapLoadingScreen' component={TokenSwapLoadingScreen} />
-      <Stack.Screen name='TokenSwap' component={TokenSwap} />
-      <Stack.Screen name='TokenSwapReview' component={TokenSwapReview} />
-      <Stack.Screen name='TokenSwapListInputToken' component={TokenSwapTokenList('input')} />
-      <Stack.Screen name='TokenSwapListOutputToken' component={TokenSwapTokenList('output')} />
-    </Stack.Navigator>
-  );
-};
-
-/**
  * Stack of screens dedicated to the token sending process
  */
 const SendStack = ({ navigation }) => {
@@ -447,7 +416,7 @@ const TabNavigator = () => {
         name='Home'
         component={IS_MULTI_TOKEN ? DashboardStack : MainScreen}
       />
-      { isSwapEnabled && <Tab.Screen name='Swap' component={SwapStack} /> }
+      { isSwapEnabled && <Tab.Screen name='Swap' component={TokenSwapLoadingScreen} /> }
       <Tab.Screen name='Send' component={SendStack} />
       <Tab.Screen name='Receive' component={ReceiveScreen} />
       <Tab.Screen name='Settings' component={Settings} />
@@ -544,6 +513,10 @@ const AppStack = () => {
         <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
         <Stack.Screen name='TokenDetail' component={TokenDetail} />
         <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
+        <Stack.Screen name='TokenSwap' component={TokenSwap} />
+        <Stack.Screen name='TokenSwapReview' component={TokenSwapReview} />
+        <Stack.Screen name='TokenSwapListInputToken' component={TokenSwapTokenList('input')} />
+        <Stack.Screen name='TokenSwapListOutputToken' component={TokenSwapTokenList('output')} />
       </Stack.Navigator>
     </SafeAreaView>
   );

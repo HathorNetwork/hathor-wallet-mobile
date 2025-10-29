@@ -536,20 +536,18 @@ const initialState = {
    * the wallet saga.
    */
   fullNodeNetworkName: null,
+  /** @type {TOKEN_SWAP_ALLOWED_TOKEN_STATUS} Status of the allowed tokens request */
+  tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY,
+  /** @type {Object|null} Token swap allowed tokens configuration file for all networks. */
+  tokenSwapAllowedTokens: null,
   /**
    * @type {Object}
-   * @property {TokenData[]|null} allowedTokens List of tokens that are allowed to be swapped
-   * @property {string|null} contractId Dozer Pool manager contract id of the current network
-   * @property {TOKEN_SWAP_ALLOWED_TOKEN_STATUS} loadAllowedTokensStatus Status of the allowed tokens request
    * @property {null|TokenData} inputToken Token being traded in
    * @property {null|TokenData} outputToken Token being swapped out
    * @property {null|TokenSwapQuote} swapPathQuote Latest quote from the pool manager for the swap proposed
    * @property {TOKEN_SWAP_QUOTE_STATUS} loadSwapPathQuoteStatus Status of the quote request
    */
   tokenSwap: {
-    allowedTokens: null,
-    contractId: null,
-    loadAllowedTokensStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY,
     inputToken: null,
     outputToken: null,
     swapPathQuote: null,
@@ -786,6 +784,8 @@ export const reducer = (state = initialState, action) => {
     case types.SET_FULLNODE_NETWORK_NAME:
       return onSetFullNodeNetworkName(state, action);
 
+    case types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS:
+      return onTokenSwapFetchAllowedTokens(state);
     case types.TOKEN_SWAP_SET_ALLOWED_TOKENS:
       return onTokenSwapSetAllowedTokens(state, action);
     case types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS_ERROR:
@@ -2247,14 +2247,20 @@ export const onSetCreateNanoContractCreateTokenTxStatus = (state, { payload }) =
   },
 });
 
+export const onTokenSwapFetchAllowedTokens = (state) => {
+  return {
+    ...state,
+    tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.LOADING,
+  };
+};
+
 export const onTokenSwapSetAllowedTokens = (state, { payload }) => {
   return {
     ...state,
+    tokenSwapAllowedTokens: payload.allowedTokens,
+    tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.SUCCESSFUL,
     tokenSwap: {
       ...state.tokenSwap,
-      allowedTokens: payload.allowedTokens,
-      contractId: payload.contractId,
-      loadAllowedTokensStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.SUCCESSFUL,
       inputToken: payload.allowedTokens[0],
       outputToken: payload.allowedTokens[1],
     },
@@ -2263,11 +2269,10 @@ export const onTokenSwapSetAllowedTokens = (state, { payload }) => {
 
 export const onTokenSwapFetchAllowedTokensError = (state) => ({
   ...state,
+  tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.FAILED,
+  tokenSwapAllowedTokens: null,
   tokenSwap: {
     ...state.tokenSwap,
-    contractId: null,
-    allowedTokens: null,
-    loadAllowedTokensStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.FAILED,
     inputToken: null,
     outputToken: null,
     swapPathQuote: null,
@@ -2281,7 +2286,7 @@ export const onTokenSwapSetInputToken = (state, { payload }) => {
       ...state.tokenSwap,
     },
   };
-  if (state.tokenSwap.outputToken.uid === payload.uid) {
+  if (state.tokenSwap.outputToken?.uid === payload.uid) {
     // In this case the chosen token is the same as the output token, so we switch them.
     newState.tokenSwap.outputToken = {...newState.tokenSwap.inputToken};
   }
@@ -2297,7 +2302,7 @@ export const onTokenSwapSetOutputToken = (state, { payload }) => {
       ...state.tokenSwap,
     },
   };
-  if (state.tokenSwap.inputToken.uid === payload.uid) {
+  if (state.tokenSwap.inputToken?.uid === payload.uid) {
     // In this case the chosen token is the same as the input token, so we switch them.
     newState.tokenSwap.inputToken = {...newState.tokenSwap.outputToken};
   }
@@ -2326,8 +2331,7 @@ export const onTokenSwapFetchSwapDataError = (state) => ({
 export const onTokenSwapResetSwapData = (state) => ({
   ...state,
   tokenSwap: {
-    allowedTokens: null,
-    loadAllowedTokensStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY,
+    ...state.tokenSwap,
     inputToken: null,
     outputToken: null,
     swapPathQuote: null,
