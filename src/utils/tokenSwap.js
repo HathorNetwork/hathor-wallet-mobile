@@ -32,6 +32,36 @@ import { get } from 'lodash';
  */
 
 /**
+ * Error class for issues during token swap validation or execution.
+ * All token swap errors will derive from this.
+ */
+export class TokenSwapError extends Error {}
+
+export class TokenSwapPathError extends TokenSwapError {
+  constructor() {
+    super('Path cannot have zero length');
+  }
+}
+
+export class TokenSwapMethodError extends TokenSwapError {
+  constructor() {
+    super('Could not determine which method to call.');
+  }
+}
+
+export class TokenSwapCallError extends TokenSwapError {
+  constructor() {
+    super('Call to token swap method was invalid.');
+  }
+}
+
+export class TokenSwapDirectionError extends TokenSwapError {
+  constructor() {
+    super('Unknown token swap direction');
+  }
+}
+
+/**
  * Parse a quote path step from the string value.
  * @param {string} pathStep
  * @returns {TokenSwapPathStep}
@@ -98,7 +128,7 @@ function buildTokenSwapActions(quote, tokenIn, tokenOut, slippage) {
       amount: quote.amount_in * (1 + (slippage/100)),
     });
   } else {
-    throw new Error('Unknown token swap direction');
+    throw new TokenSwapDirectionError();
   }
 
   return actions;
@@ -122,13 +152,13 @@ function getTokenSwapMethod(quote) {
   };
 
   if (quote.path.length === 0) {
-    throw new Error('Path cannot have zero length');
+    throw new TokenSwapPathError();
   }
   
   const pathN = quote.path.length > 1 ? 'multi' : 'single';
   const method = get(methods, `${quote.direction}.${pathN}`, null);
   if (method === null) {
-    throw new Error('Could not determine which method to call.');
+    throw new TokenSwapMethodError();
   }
   return method;
 }
@@ -153,27 +183,32 @@ export async function findBestTokenSwap(direction, contractId, amount, tokenIn, 
   };
   const method = get(methodByDirection, direction, null);
   if (!method) {
-    throw new Error();
+    throw new TokenSwapMethodError();
   }
   const call = `${method}(${amount},"${tokenIn}","${tokenOut}",3)`;
 
-  // Call the view method to calculate the best token swap path
-  const response = await ncApi.getNanoContractState(contractId, [], [], [call]);
+  try {
+    // Call the view method to calculate the best token swap path
+    const response = await ncApi.getNanoContractState(contractId, [], [], [call]);
 
-  if (!(response.calls && response.calls[call])) {
-    throw new Error('Did not receive any return data');
+    if (!(response.calls && response.calls[call])) {
+      throw new TokenSwapCallError();
+    }
+    const data = response.calls[call];
+
+    return {
+      direction,
+      path: data.path.split(',').map(step => parseQuotePathStep(step)),
+      pathStr: data.path,
+      amounts: data.amounts,
+      amount_out: direction === 'input' ? data.amount_out : amount,
+      amount_in: direction === 'output' ? data.amount_in : amount,
+      price_impact: data.price_impact,
+    };
+  } catch (_err) {
+    // Any error from the call or returned values is considered a call error.
+    throw new TokenSwapCallError();
   }
-  const data = response.calls[call];
-
-  return {
-    direction,
-    path: data.path.split(',').map(step => parseQuotePathStep(step)),
-    pathStr: data.path,
-    amounts: data.amounts,
-    amount_out: direction === 'input' ? data.amount_out : amount,
-    amount_in: direction === 'output' ? data.amount_in : amount,
-    price_impact: data.price_impact,
-  };
 }
 
 /**
