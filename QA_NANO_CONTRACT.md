@@ -176,10 +176,16 @@
 1. Accept the transaction and check the wallet has received the correct amount
 
 ### Register tokens on Nano Contract send
-( This test is pending a better description on how to create its scenario )
-1. Using Reown, create a Nano Contract that holds some custom tokens
-1. Unregister the custom tokens from this wallet
-1. Send those custom tokens using the Nano Contract
+The objective of this test is to try and send a custom token using a Nano Contract when the token is unregistered in the wallet, and check the flow to register it after the transaction. The suggested steps below are just one of the ways to test this.
+
+1. Take note of the custom token UIDs created on the main QA tests
+1. Unregister one of them from this wallet
+1. Using a RPC source ( dApp or direct RPC calls ), initialize a Bet Blueprint with this custom token
+1. Check that the request confirmation screen does not show the token name, just the UID, so no registration is offered
+1. Now try to bet, depositing 1 unit of the custom token (you can unselect the "Push Tx" parameter to just experiment without sending tokens)
+1. In the action list of the Request confirmation screen, check that the symbol of the custom token appears, with a tooltip to click on
+1. Click the tooltip and check that the full token information is shown, with a "Tap to copy" link.
+1. Confirm the transaction request
 1. Check that a screen is displayed on transaction success asking the user if they want to register the unregistered tokens
 1. Reject the registration and check the tokens are not registered
 1. Send the custom tokens again using the Nano Contract
