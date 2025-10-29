@@ -189,7 +189,7 @@ Follow the [Custom Network QA](./QA_CUSTOM_NETWORK.md) steps.
 Test the ability of the app to receive push notifications. Follow the [Push Notification QA](./QA_PUSH_NOTIFICATION.md) steps.
 
 # Nano Contracts
-Test the ability of the app to create and interact with nano contracts. Follow the [Nano Contracts QA](./QA_NANO_CONTRACTS.md) steps.
+Test the ability of the app to create and interact with nano contracts. Follow the [Nano Contracts QA](./QA_NANO_CONTRACT.md) steps.
 
 These will also test the ReOwn integration.
 

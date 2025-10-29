@@ -122,7 +122,7 @@
 ## Reown tests
 
 ### Connect to a dApp using ReOwn
-1. Open the Hathor Network [Bet dApp hotsite](https://staging.betting.hathor.network/)
+1. Open the Hathor Network [Bet dApp hotsite](https://staging.betting.hathor.network/) or other source of RPC requests
 1. Start the process to connect your wallet using the WalletConnect/ReOwn option
 1. Reject the connection and check the hotsite just closes the QR Code modal
 1. Start again but this time connect your wallet
@@ -162,13 +162,13 @@
 
 ### Set the bet result
 1. On the HotSite click on "Set Result" and follow the instructions there
-1. The wallet should open a screen asking to confirm the *request*, with:
+1. The wallet should open a screen asking to confirm the *Sign Oracle Request*, with:
   1. the oracle data unencrypted ( ex.: "Brazil Wins" )
   1. an option to show encrypted data ( ex.: "76a914db6fe378a8af070b332104c66c0a83dcb2d03e8b88ac" )
-1. Accept the *request*
-1. A new screen is shown asking to confirm the transaction
+1. Accept the *Sign Oracle Request*
+1. A new screen is shown requesting to confirm the transaction _Set Result Request*.
   1. This contains the blueprint method, caller address, value and raw signature
-1. Accept the transaction
+1. Accept request and validate that the transaction is successful
 
 ### Withdraw the prize
 1. On the HotSite of the winning wallet session, click on "Collect your prize"
