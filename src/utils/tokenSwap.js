@@ -22,10 +22,12 @@ import { get } from 'lodash';
  * Parsed token swap quote.
  *
  * @typedef {Object} TokenSwapQuote
+ * @property {'input'|'output'} direction If the user decided the deposit (input) or withdraw (output) amount.
  * @property {TokenSwapPathStep[]} path Path the token swap will take.
  * @property {string} pathStr Value returned by the contract before parsing.
  * @property {number[]} amounts Value of the swap at each step.
- * @property {number} amount Amount to be withdrawn or deposited, depending on the direction.
+ * @property {number} amount_in Amount to deposited.
+ * @property {number} amount_out Amount to be withdrawn.
  * @property {number} price_impact percentage value of how the swap will affect the price (with precision).
  */
 
@@ -36,7 +38,6 @@ import { get } from 'lodash';
  */
 function parseQuotePathStep(pathStep) {
   const step = pathStep.split('/');
-  step[2] = Number(step[2]);
   return {
     tokenIn: step[0],
     tokenOut: step[1],
@@ -45,97 +46,56 @@ function parseQuotePathStep(pathStep) {
 }
 
 /**
- * Fetch the token swap information for the proposed swap.
- * The swap being proposed will deposit `amount` of `tokenIn` to the `contractId`.
- * This method will find the best path and value of `tokenOut` we can withdraw given the amount deposited.
- *
- * @param {string} contractId The pool manager to find the swap
- * @param {bigint} amount Amount to withdraw from the contract
- * @param {string} tokenIn Token UID of the deposited token
- * @param {string} tokenOut Token UID of the withdrawn token
- * @returns {Promise<TokenSwapQuote>}
- */
-async function findBestTokenSwapPathIn(contractId, amount, tokenIn, tokenOut) {
-  const call = `find_best_swap_path(${amount},"${tokenIn}","${tokenOut}",3)`;
-
-  const response = await ncApi.getNanoContractState(contractId, [], [], [call]);
-
-  if (!(response.calls && response.calls[call])) {
-    throw new Error('Did not receive any return data');
-  }
-  const data = response.calls[call];
-  return {
-    path: data.path.split(',').map(step => parseQuotePathStep(step)),
-    pathStr: data.path,
-    amounts: data.amounts,
-    amount: data.amount_out,
-    price_impact: data.price_impact,
-  };
-}
-
-/**
- * Fetch the token swap information for the proposed swap.
- * The swap being proposed will withdraw `amount` of `tokenOut` from the `contractId`.
- * This method will find the best path and value to deposit of `tokenIn` to make it happen.
- *
- * @param {string} contractId The pool manager to find the swap
- * @param {bigint} amount Amount to withdraw from the contract
- * @param {string} tokenIn Token UID of the deposited token
- * @param {string} tokenOut Token UID of the withdrawn token
- * @returns {Promise<TokenSwapQuote>}
- */
-async function findBestTokenSwapPathOut(contractId, amount, tokenIn, tokenOut) {
-  const call = `find_best_swap_path_exact_output(${amount},"${tokenIn}","${tokenOut}",3)`;
-
-  const response = await ncApi.getNanoContractState(contractId, [], [], [call]);
-
-  if (!(response.calls && response.calls[call])) {
-    throw new Error('Did not receive any return data');
-  }
-  const data = response.calls[call];
-  return {
-    path: data.path.map(step => parseQuotePathStep(step)),
-    amounts: data.amounts,
-    amount: data.amount_in,
-    price_impact: data.price_impact,
-  };
-}
-
-/**
  * Build the NanoContractAction array required to call the token swap method.
  *
- * @param {'input'|'output'} direction Direction of the swap
  * @param {TokenSwapQuote} quote Token swap quote
- * @param {bigint} amount Amount to swap, may be the input or output amount depending on the direction
  * @param {string} tokenIn Token UID of the deposited token
  * @param {string} tokenOut Token UID of the withdrawn token
  * @param {number} slippage
  */
-function buildTokenSwapActions(direction, quote, amount, tokenIn, tokenOut, slippage) {
+function buildTokenSwapActions(quote, tokenIn, tokenOut, slippage) {
   const actions = [];
-  if (direction === 'input') {
+  if (quote.direction === 'input') {
+    /**
+     * For input direction the deposit (amount_in) was decided by the user so it MUST be exact.
+     *
+     * The withdrawn amount (amount_out) is determined by the contract and may be subject
+     * to unforseen changes (other calls befor ours may change the price, such is the market).
+     * We set that the acceptable amount to be withdrawn can never be lower than `slippage`%
+     * If the amount did not change the remaining tokens will be left as balance to be
+     * withdrawn later by the user.
+     */
     actions.push({
       type: 'deposit',
       token: tokenIn,
-      amount,
+      amount: quote.amount_in,
     });
     // Withdraw amount minus slippage
     actions.push({
       type: 'withdrawal',
       token: tokenOut,
-      amount: quote.amount * (1 - (slippage/100)),
+      amount: quote.amount_out * (1 - (slippage/100)),
     });
-  } else if (direction === 'output') {
+  } else if (quote.direction === 'output') {
+    /**
+     * For output direction the withdraw (amount_out) was decided by the user so it MUST be exact.
+     *
+     * The deposit amount (amount_in) is determined by the contract and may be subject to
+     * unforseen changes (other calls befor ours may change the price, such is the market).
+     * We will deposit the `amount_out` plus `slippage`% to account for these changes.
+     * If the required deposit was not enough the call will fail, if it was enough any remaining
+     * tokens will be left as balance to be withdrawn later by the user.
+     */
     actions.push({
       type: 'withdrawal',
       token: tokenOut,
-      amount,
+      amount: quote.amount_out,
     });
     // Deposit amount plus slippage
     actions.push({
       type: 'deposit',
       token: tokenIn,
-      amount: quote.amount * (1 + (slippage/100)),
+      amount: quote.amount_in * (1 + (slippage/100)),
     });
   } else {
     throw new Error('Unknown token swap direction');
@@ -147,10 +107,9 @@ function buildTokenSwapActions(direction, quote, amount, tokenIn, tokenOut, slip
 /**
  * Get the correct swap method on the dozer protocol to execute based on the arguments given.
  *
- * @param {'input'|'output'} direction Direction of the swap
  * @param {TokenSwapQuote} quote Token swap quote
  */
-function getTokenSwapMethod(direction, quote) {
+function getTokenSwapMethod(quote) {
   const methods = {
     'input': {
       'single': 'swap_exact_tokens_for_tokens',
@@ -167,7 +126,7 @@ function getTokenSwapMethod(direction, quote) {
   }
   
   const pathN = quote.path.length > 1 ? 'multi' : 'single';
-  const method = get(methods, `${direction}.${pathN}`, null);
+  const method = get(methods, `${quote.direction}.${pathN}`, null);
   if (method === null) {
     throw new Error('Could not determine which method to call.');
   }
@@ -176,8 +135,9 @@ function getTokenSwapMethod(direction, quote) {
 
 /**
  * Fetch the token swap information for the proposed swap.
- * If `direction` is 'input' then `amount` is the value to be deposited on the swap.
- * If `direction` is 'output' then `amount` is the value to be withdrawn from the swap.
+ * The swap being proposed will deposit `tokenIn` and withdraw `tokenOut` from the `contractId`.
+ * Depending on the direction the `amount` the user chose can either be for deposit (input) or withdraw (output).
+ * This method will find the best path and value of the tokens to make the swap happen.
  *
  * @param {'input'|'output'} direction Direction of the swap
  * @param {string} contractId The pool manager to find the swap
@@ -187,31 +147,48 @@ function getTokenSwapMethod(direction, quote) {
  * @returns {Promise<TokenSwapQuote>}
  */
 export async function findBestTokenSwap(direction, contractId, amount, tokenIn, tokenOut) {
-  if (direction === 'input') {
-    return await findBestTokenSwapPathIn(contractId, amount, tokenIn, tokenOut);
-  } else if (direction === 'output') {
-    return await findBestTokenSwapPathOut(contractId, amount, tokenIn, tokenOut);
-  } else {
-    throw new Error('Unknown token swap direction');
+  const methodByDirection = {
+    input: 'find_best_swap_path',
+    output: 'find_best_swap_path_exact_output',
+  };
+  const method = get(methodByDirection, direction, null);
+  if (!method) {
+    throw new Error();
   }
+  const call = `${method}(${amount},"${tokenIn}","${tokenOut}",3)`;
+
+  // Call the view method to calculate the best token swap path
+  const response = await ncApi.getNanoContractState(contractId, [], [], [call]);
+
+  if (!(response.calls && response.calls[call])) {
+    throw new Error('Did not receive any return data');
+  }
+  const data = response.calls[call];
+
+  return {
+    direction,
+    path: data.path.split(',').map(step => parseQuotePathStep(step)),
+    pathStr: data.path,
+    amounts: data.amounts,
+    amount_out: direction === 'input' ? data.amount_out : amount,
+    amount_in: direction === 'output' ? data.amount_in : amount,
+    price_impact: data.price_impact,
+  };
 }
 
 /**
  * Will determine the correct swap method to execute and mount the data accordingly.
  *
- * @param {import('@hathor/wallet-lib').HathorWallet} wallet
- * @param {'input'|'output'} direction Direction of the swap
  * @param {string} contractId The pool manager to find the swap
  * @param {TokenSwapQuote} quote Token swap quote
- * @param {bigint} amount Amount to swap, may be the input or output amount depending on the direction
  * @param {string} tokenIn Token UID of the deposited token
  * @param {string} tokenOut Token UID of the withdrawn token
- * @param {number} slippage
+ * @param {number} slippage Acceptable slippage on the swap amount
  * @returns {Promise<[string, Object]>} Method name and data required to execute the token swap.
  */
-export async function buildTokenSwap(wallet, direction, contractId, quote, amount, tokenIn, tokenOut, slippage) {
-  const method = getTokenSwapMethod(direction, quote);
-  const actions = buildTokenSwapActions(direction, quote, amount, tokenIn, tokenOut, slippage);
+export async function buildTokenSwap(contractId, quote, tokenIn, tokenOut, slippage) {
+  const method = getTokenSwapMethod(quote);
+  const actions = buildTokenSwapActions(quote, tokenIn, tokenOut, slippage);
   const data = {
     ncId: contractId,
     actions,

@@ -77,8 +77,12 @@ export function* handleFetchAllowedTokensRequest() {
 
 export function* saga() {
   yield all([
-    // takeLatest will cancel any ongoing requests if a new one arrives
-    // this resolves the issue of stale quote requests.
+    /**
+     * `takeLatest` will cancel any ongoing requests if a new one arrives.
+     * If the user changes any details of the swap (amounts, tokens, etc) a new request will
+     * be made, this makes the last request "stale", and if it was still on-going it will be
+     * cancelled by `takeLatest` so we do not show a stale quote to the user.
+     */
     takeLatest(types.TOKEN_SWAP_FETCH_QUOTE, fetchTokenSwapQuote),
     takeEvery(types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS, handleFetchAllowedTokensRequest),
   ]);
