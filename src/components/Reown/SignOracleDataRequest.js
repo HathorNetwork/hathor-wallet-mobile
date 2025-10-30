@@ -16,6 +16,7 @@ import {
   Text,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
   reownAccept,
@@ -32,7 +33,6 @@ import CopyClipboard from '../CopyClipboard';
 
 export const SignOracleDataRequestData = ({ oracle, data }) => {
   const [showRawData, setShowRawData] = useState(false);
-
   return (
     <View style={[commonStyles.card, commonStyles.cardSplit]}>
       <View style={commonStyles.cardSplitIcon}>
@@ -59,41 +59,12 @@ export const SignOracleDataRequestData = ({ oracle, data }) => {
                   />
                 </View>
               </View>
-
-              {/* Collapsible raw oracle data */}
-              <TouchableOpacity
-                style={styles.toggleContainer}
-                onPress={() => setShowRawData(!showRawData)}
-              >
-                <Text style={styles.toggleText}>
-                  {showRawData ? t`Hide raw oracle data` : t`Show raw oracle data`}
-                </Text>
-                <Text style={styles.toggleIcon}>
-                  {showRawData ? '▼' : '▶'}
-                </Text>
-              </TouchableOpacity>
-
-              {showRawData && (
-                <View style={styles.valueContainer}>
-                  <View style={styles.valueBox}>
-                    <CopyClipboard
-                      text={oracle.raw}
-                      style={styles.copyButton}
-                    />
-                  </View>
-                </View>
-              )}
             </View>
           ) : (
-            <View style={styles.valueContainer}>
-              <View style={styles.valueBox}>
-                <Text style={styles.valueText}>
-                  {oracle.raw}
-                </Text>
-              </View>
+            <View style={[styles.dataContainer, styles.oracleDataContainer]}>
               <CopyClipboard
                 text={oracle.raw}
-                style={styles.copyButton}
+                textStyle={styles.dataText}
               />
             </View>
           )}
@@ -116,6 +87,7 @@ export const SignOracleDataRequestData = ({ oracle, data }) => {
 export const SignOracleDataRequest = ({ signOracleData }) => {
   const { dapp, data } = signOracleData;
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const wallet = useSelector((state) => state.wallet);
 
@@ -125,17 +97,16 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
         return { raw: data.oracle, isAddress: false };
       }
 
-      // Convert hex string to Buffer
-      const oracleBuffer = Buffer.from(data.oracle, 'hex');
       const network = wallet.getNetworkObject();
+      const address = new hathorLib.Address(data.oracle, { network });
 
-      const parsedScript = hathorLib.scriptsUtils.parseScript(oracleBuffer, network);
-      if (parsedScript && parsedScript.address) {
+      if (address.isValid()) {
+        const outputScriptType = address.getType();
         return {
           raw: data.oracle,
-          address: parsedScript.address.base58,
+          address: data.oracle,
           isAddress: true,
-          scriptType: parsedScript.type
+          scriptType: outputScriptType
         };
       }
 
@@ -150,19 +121,16 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
     setShowDeclineModal(true);
   };
 
-  const { navigateBack } = useBackButtonHandler(
-    onDeclineTransaction,
-  );
-
   const onAcceptSignOracleDataRequest = () => {
     // Signal the user has accepted the current request and pass the accepted data.
     dispatch(reownAccept());
+    navigation.goBack();
   };
 
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
     dispatch(reownReject());
-    navigateBack();
+    navigation.goBack();
   };
 
   const onDismissDeclineModal = () => {
@@ -273,6 +241,10 @@ const styles = StyleSheet.create({
   copyButton: {
     padding: 4,
   },
+  copyContainer: {
+    alignItems: 'flex-end',
+    marginTop: 8,
+  },
   toggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -293,6 +265,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lowContrastDetail,
     padding: 12,
     borderRadius: 8,
+  },
+  oracleDataContainer: {
+    marginBottom: 12,
   },
   dataText: {
     fontFamily: 'monospace',
