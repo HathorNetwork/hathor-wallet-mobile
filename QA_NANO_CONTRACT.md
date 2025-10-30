@@ -1,7 +1,7 @@
 # QA Nano Contract
 
 - CTA: call-to-action
-- Bet Hotsite: https://staging.betting.hathor.network/ or a local dApp like the [Bet dApp](https://github.com/hathornetwork/bet-dapp)
+- Bet Hotsite: https://staging.betting.hathor.network/ or a locally ran dApp like the [Bet dApp](https://github.com/hathornetwork/bet-dapp)
 
 ### Hidden tab when disabled
 1. Make sure the nano-contract feature is 🚫**disabled** for the device
@@ -12,7 +12,7 @@
 ### Activation
 1. Make sure the **wallet-service** feature is 🚫**disabled** for the device
 1. Make sure the **nano-contract** feature is ✅**enabled** for the device
-1. Make sure to connect to a network that supports Nano Contracts, like `testnet-hotel` or `nano-testnet`
+1. Make sure to connect to a network that supports Nano Contracts, like `testnet-india`
 1. Check a toggle button with two options appear in the dashboard head
 	1. Tokens
 	1. Nano
@@ -40,9 +40,11 @@
 
 ### Register Nano Contract using the right network
 1. Click the "Nano Contracts" tab on the dashboard
+1. Tap on "Register new" and type an invalid Nano Contract ID for the current network ( such as `00005e2f39f2f7a0997338da89e76e638ef3ee80b1b9fb2bcd5b494750792d21` )
+  - Check that an error is shown.
 1. Tap on "Register new" and type a valid Nano Contract ID for the current network
   1. You can check "Nano" tab in the Explorer for the connected network for valid Nano Contract IDs
-  1. For `testnet-hotel` network, you can use the Nano Contract ID `00004c19c4d78758d23da6dd0722c1e9cda7526c0cc4fa4438e932f4ec8e64c6`
+  1. For `testnet-india` network, you can use the Nano Contract ID `00000c1957be0e981f24cbf9699a15184de724e1c40d54c74930b8a5cb18de3e`
 1. Tap on "REGISTER NANO CONTRACT" button
 1. Check for a success feedback modal to appear
 	1. If a failure feedback modal appear with the message "The informed address does not belong to the wallet", this may indicate a problem with the backend, especially the Wallet Service. In this case, please report the issue to the development team for further investigation.
@@ -85,7 +87,7 @@
 	1. It shows title "No Nano Contracts"
 
 ### Inspect Nano Contract Transaction
-1. Register a valid Nano Contract with many transaction such as `000014d0b810bde1e598a311e4229cfc74690be03acb4181e5efd74e763153ff`
+1. Register a valid Nano Contract with many transaction such as `00000c1957be0e981f24cbf9699a15184de724e1c40d54c74930b8a5cb18de3e`
 1. Go the *Nano Contract Details* screen
 1. Check there are many transactions
 1. Check a transaction item has:
@@ -117,7 +119,7 @@
 
 ### Change network and reset registered Nano Contracts
 1. Switch to the `mainnet` network
-1. If it has a "Nano Contracts" tab, select it. If not, switch back to `testnet-hotel`
+1. If it has a "Nano Contracts" tab, select it. If not, switch back to `testnet`
 1. Check there is no Nano Contract registered
 
 ## Reown tests
