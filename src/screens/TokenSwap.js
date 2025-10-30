@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { numberUtils } from '@hathor/wallet-lib';
 import React, { useState, useEffect } from 'react';
 import {
   Keyboard,
@@ -19,7 +18,7 @@ import {
 import { SwapIcon } from '../components/Icons/Swap.icon';
 import { useDispatch, useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
-import { t, ngettext, msgid } from 'ttag';
+import { t } from 'ttag';
 import { get } from 'lodash';
 
 import { renderValue, selectTokenSwapAllowedTokens } from '../utils';
@@ -33,6 +32,7 @@ import { COLORS } from '../styles/themes';
 import { useNavigation } from '../hooks/navigation';
 import {
   tokenFetchBalanceRequested,
+  tokenSwapFetchSwapQuote,
   tokenSwapResetSwapData,
   tokenSwapSetInputToken,
   tokenSwapSetOutputToken,
@@ -72,13 +72,13 @@ const TokenSwap = () => {
 
   const [swapDirection, setSwapDirection] = useState(null);
 
-  // XXX: this is a mock value to simulate fetching and showing the quote section
   const [showQuote, setShowQuote] = useState(false);
 
   const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
   const {
     inputToken,
     outputToken,
+    swapPathQuote: quote,
   } = useSelector((state) => state.tokenSwap);
   const { decimalPlaces } = useSelector((state) => ({
     decimalPlaces: state.serverInfo?.decimal_places
@@ -106,6 +106,10 @@ const TokenSwap = () => {
     }
   }, [outputToken]);
 
+  useEffect(() => {
+    setShowQuote(!!quote);
+  }, [quote]);
+
   function onInputAmountChange(text, value) {
     setInputTokenAmountStr(text);
     setInputTokenAmount(value);
@@ -116,10 +120,7 @@ const TokenSwap = () => {
     setOutputTokenAmount(0n);
     setSwapDirection('input');
 
-    // XXX here we should fetch the quote, but we will mock for now
-    setShowQuote(true);
-    setOutputTokenAmountStr('6.41');
-    setOutputTokenAmount(641n);
+    dispatch(tokenSwapFetchSwapQuote());
   }
 
   function onOutputAmountEndEditing(_target) {
@@ -127,10 +128,7 @@ const TokenSwap = () => {
     setInputTokenAmount(0n);
     setSwapDirection('output');
 
-    // XXX here we should fetch the quote, but we will mock for now
-    setShowQuote(true);
-    setInputTokenAmountStr('6.41');
-    setInputTokenAmount(641n);
+    dispatch(tokenSwapFetchSwapQuote());
   }
 
   function onOutputAmountChange(text, value) {
@@ -204,13 +202,29 @@ const TokenSwap = () => {
     return t`Balance: ${amount}`;
   };
 
-  const onReviewButtonPress = () => {
+  const getAmountWithSlippage = (amount, direction) => {
+    if (direction === 'input') {
+      return amount * (1 - (slippage/100));
+    } else if (direction === 'output') {
+      return amount * (1 + (slippage/100));
+    } else {
+      return 0n;
+    }
+  };
+
+  const getAmountString = (amount, token) => {
+    return `${renderValue(amount, false)} ${token.symbol}`;
+  };
+
+  const getConversionRate = (swapQuote) => {
+    return `${getAmountString(swapQuote.amount_out/swapQuote.amount_in, swapQuote.token_out)} = ${getAmountString(1, swapQuote.token_in)}}`
+  };
+
+  const onReviewButtonPress = (quote, tokenIn, tokenOut) => {
     navigation.navigate('TokenSwapReview', {
-      inputToken,
-      inputAmount: inputTokenAmount,
-      outputToken,
-      outputAmount: outputTokenAmount,
-      swapDirection,
+      quote,
+      tokenIn,
+      tokenOut,
     });
   };
 
@@ -293,7 +307,7 @@ const TokenSwap = () => {
                 <View style={styles.quoteContainer}>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>{"Conversion rate"}</Text>
-                    <Text style={styles.quoteValue}>{"15.60 HTR = 1 CTHOR"}</Text>
+                    <Text style={styles.quoteValue}>{`${getConversionRate(quote)}`}</Text>
                   </View>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>{"Slippage"}</Text>
@@ -301,12 +315,20 @@ const TokenSwap = () => {
                   </View>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>{"Price impact"}</Text>
-                    <Text style={styles.quoteValue}>{"-0.4%"}</Text>
+                    <Text style={styles.quoteValue}>{`${quote.price_impact/100}%`}</Text>
                   </View>
-                  <View style={styles.quoteRow}>
-                    <Text style={styles.quoteHeader}>{"Minimum received"}</Text>
-                    <Text style={styles.quoteValue}>{"6.41 CTHOR"}</Text>
-                  </View>
+                  { quote.direction === 'input' && (
+                    <View style={styles.quoteRow}>
+                      <Text style={styles.quoteHeader}>{"Minimum received"}</Text>
+                      <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_out, 'input'), quote.token_out)}</Text>
+                    </View>
+                  )}
+                  { quote.direction === 'output' && (
+                    <View style={styles.quoteRow}>
+                      <Text style={styles.quoteHeader}>{"Maximum to deposit"}</Text>
+                      <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_in, 'output'), quote.token_in)}</Text>
+                    </View>
+                  )}
                 </View>
               )}
             </View>
@@ -315,7 +337,7 @@ const TokenSwap = () => {
             <NewHathorButton
               title={t`REVIEW`}
               disabled={isReviewButtonDisabled()}
-              onPress={onReviewButtonPress}
+              onPress={() => onReviewButtonPress(quote, inputToken.uid, outputToken.uid)}
             />
           </View>
           <OfflineBar style={{ position: 'relative' }} />

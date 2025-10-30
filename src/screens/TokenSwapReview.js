@@ -18,7 +18,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
 
-import { renderValue } from '../utils';
+import { renderValue, selectTokenSwapContractId } from '../utils';
+import { buildTokenSwap } from '../utils/tokenSwap';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
@@ -29,6 +30,7 @@ import NavigationService from '../NavigationService';
 import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
 import { tokenSwapFetchSwapQuote, tokenSwapResetSwapData } from '../actions';
+import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 
 
 const TokenSwapReview = () => {
@@ -37,16 +39,12 @@ const TokenSwapReview = () => {
   const wallet = useSelector((state) => state.wallet);
   const useWalletService = useSelector((state) => state.useWalletService);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
-  const { decimalPlaces } = useSelector((state) => ({
-    decimalPlaces: state.serverInfo?.decimal_places
-  }));
+  const contractId = useSelector(selectTokenSwapContractId);
 
   const {
-    inputToken,
-    inputAmount,
-    outputToken,
-    outputAmount,
-    swapDirection,
+    quote,
+    tokenIn,
+    tokenOut,
   } = useParams();
   const [modal, setModal] = useState(null);
 
@@ -75,26 +73,13 @@ const TokenSwapReview = () => {
   };
 
   const executeSend = async (pin) => {
-    // const outputs = [{ address, value: amount, token: token.uid }];
-    let sendTransaction = {
-      on: () => {}, // ignore event listeners in mock
+    const [method, data] = buildTokenSwap(contractId, quote, tokenIn, tokenOut, TOKEN_SWAP_SLIPPAGE);
+    if (useWalletService) {
+      await wallet.validateAndRenewAuthToken(pin);
     }
-
-    // if (useWalletService) {
-    //   // await wallet.validateAndRenewAuthToken(pin);
-
-    //   // XXX: call nano contract
-    //   sendTransaction = {};
-    // } else {
-    //   // XXX: call nano contract
-    //   sendTransaction = {};
-    // }
-
-    // const promise = sendTransaction.run();
-    // XXX: mock resolving tx in 5s
-    const promise = new Promise(resolve => {
-      setTimeout(() => resolve(), 1000);
-    });
+    const address = await wallet.getAddressAtIndex(0);
+    const sendTransaction = wallet.createNanoContractTransaction(method, address, data, { pinCode: pin });
+    const promise = sendTransaction.run();
 
     // show loading modal
     setModal({

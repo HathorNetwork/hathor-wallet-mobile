@@ -226,9 +226,9 @@ export async function findBestTokenSwap(direction, contractId, amount, tokenIn, 
  * @param {string} tokenIn Token UID of the deposited token
  * @param {string} tokenOut Token UID of the withdrawn token
  * @param {number} slippage Acceptable slippage on the swap amount
- * @returns {Promise<[string, Object]>} Method name and data required to execute the token swap.
+ * @returns {[string, Object]} Method name and data required to execute the token swap.
  */
-export async function buildTokenSwap(contractId, quote, tokenIn, tokenOut, slippage) {
+export function buildTokenSwap(contractId, quote, tokenIn, tokenOut, slippage) {
   const method = getTokenSwapMethod(quote);
   const actions = buildTokenSwapActions(quote, tokenIn, tokenOut, slippage);
   const data = {
