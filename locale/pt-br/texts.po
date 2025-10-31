@@ -1981,7 +1981,7 @@ msgid ""
 "You have received a new Sign Oracle Data Request. Please carefully review "
 "the details before deciding to accept or decline."
 msgstr ""
-"Você recebeu uma nova Solicitação de Assinatura de Mensagem. Por favor, "
+"Você recebeu uma nova Solicitação de Assinatura de Oracle. Por favor, "
 "revise cuidadosamente os detalhes antes de decidir aceitar ou rejeitar."
 
 #: src/components/Reown/NanoContract/SignOracleDataModal.js:21
