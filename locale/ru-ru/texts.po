@@ -132,8 +132,8 @@ msgstr ""
 
 #: src/screens/About.js:107
 msgid ""
-"For further information, check out the |link1:Terms of Service| and |link2:"
-"Privacy Policy|, or our website |link3:https://hathor.network/|."
+"For further information, check out the |link1:Terms of Service| and |"
+"link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
 #: src/screens/BackupWords.js:184
@@ -366,8 +366,8 @@ msgstr "Добро пожаловать в Hathor Wallet!"
 
 #: src/screens/InitWallet.js:73
 msgid ""
-"For further information, check out our website |link:https://hathor."
-"network/|."
+"For further information, check out our website |link:https://"
+"hathor.network/|."
 msgstr ""
 "Для получения дополнительной информации, посетите наш веб-сайт |link:https://"
 "hathor.network/|."
@@ -572,7 +572,6 @@ msgstr "Введите свой PIN-код "
 msgid "Unlock Hathor Wallet"
 msgstr "Разблокировать Hathor Wallet"
 
-#: src/components/Reown/NanoContract/SignOracleDataModal.js:79
 #: src/components/Reown/RequestConfirmationModal.js:110
 #: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:126
 msgid "Cancel"
@@ -819,7 +818,7 @@ msgstr "Ваш перевод **${ amountAndToken }** был подтвержд�
 #: src/components/Reown/SendTransactionRequest.js:285
 #: src/components/Reown/SendTransactionRequest.js:322
 #: src/components/Reown/SignMessageRequest.js:40
-#: src/components/Reown/SignOracleDataRequest.js:50
+#: src/components/Reown/SignOracleDataRequest.js:47
 #: src/screens/SendConfirmScreen.js:157
 msgid "Address"
 msgstr "Адрес"
@@ -1495,14 +1494,14 @@ msgstr ""
 #: src/components/Reown/CreateNanoContractCreateTokenTxRequest.js:70
 #: src/components/Reown/CreateTokenRequest.js:182
 #: src/components/Reown/SignMessageRequest.js:81
-#: src/components/Reown/SignOracleDataRequest.js:183
+#: src/components/Reown/SignOracleDataRequest.js:148
 msgid "Accept Request"
 msgstr ""
 
 #: src/components/Reown/CreateNanoContractCreateTokenTxRequest.js:71
 #: src/components/Reown/CreateTokenRequest.js:186
 #: src/components/Reown/SignMessageRequest.js:85
-#: src/components/Reown/SignOracleDataRequest.js:187
+#: src/components/Reown/SignOracleDataRequest.js:152
 msgid "Decline Request"
 msgstr ""
 
@@ -1755,19 +1754,11 @@ msgstr ""
 msgid "Address Path"
 msgstr ""
 
-#: src/components/Reown/SignOracleDataRequest.js:44
+#: src/components/Reown/SignOracleDataRequest.js:41
 msgid "Oracle"
 msgstr ""
 
-#: src/components/Reown/SignOracleDataRequest.js:69
-msgid "Hide raw oracle data"
-msgstr ""
-
-#: src/components/Reown/SignOracleDataRequest.js:69
-msgid "Show raw oracle data"
-msgstr ""
-
-#: src/components/Reown/SignOracleDataRequest.js:106
+#: src/components/Reown/SignOracleDataRequest.js:74
 msgid "Data"
 msgstr ""
 
@@ -1911,23 +1902,17 @@ msgid ""
 "the details before deciding to accept or decline."
 msgstr ""
 
-#: src/components/Reown/NanoContract/SignOracleDataModal.js:63
+#: src/components/Reown/NanoContract/SignOracleDataModal.js:19
 msgid "New Sign Oracle Data Request"
 msgstr ""
 
-#: src/components/Reown/NanoContract/SignOracleDataModal.js:67
-msgid "You have received a new Sign Oracle Data Request. Please"
+#: src/components/Reown/NanoContract/SignOracleDataModal.js:20
+msgid ""
+"You have received a new Sign Oracle Data Request. Please carefully review "
+"the details before deciding to accept or decline."
 msgstr ""
 
-#: src/components/Reown/NanoContract/SignOracleDataModal.js:69
-msgid "carefully review the details"
-msgstr ""
-
-#: src/components/Reown/NanoContract/SignOracleDataModal.js:71
-msgid "before deciding to accept or decline."
-msgstr ""
-
-#: src/components/Reown/NanoContract/SignOracleDataModal.js:75
+#: src/components/Reown/NanoContract/SignOracleDataModal.js:21
 msgid "Review Sign Oracle Data Request details"
 msgstr ""
 
