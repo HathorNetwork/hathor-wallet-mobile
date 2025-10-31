@@ -29,57 +29,55 @@ import { NanoContractIcon } from '../Icons/NanoContract.icon';
 import { DeclineModal } from './NanoContract/DeclineModal';
 import CopyClipboard from '../CopyClipboard';
 
-export const SignOracleDataRequestData = ({ oracle, data }) => {
-  return (
-    <View style={[commonStyles.card, commonStyles.cardSplit]}>
-      <View style={commonStyles.cardSplitIcon}>
-        <NanoContractIcon type='fill' color={COLORS.white} />
-      </View>
-      <View style={styles.oracleSection}>
-        {/* Oracle Section */}
-        <View>
-          <Text style={styles.property}>{t`Oracle`}</Text>
+export const SignOracleDataRequestData = ({ oracle, data }) => (
+  <View style={[commonStyles.card, commonStyles.cardSplit]}>
+    <View style={commonStyles.cardSplitIcon}>
+      <NanoContractIcon type='fill' color={COLORS.white} />
+    </View>
+    <View style={styles.oracleSection}>
+      {/* Oracle Section */}
+      <View>
+        <Text style={styles.property}>{t`Oracle`}</Text>
 
-          {oracle.isAddress ? (
-            <View>
-              <View style={[styles.labelContainer]}>
-                <Text style={styles.subLabel}>
-                  {t`Address`} {oracle.scriptType && `(${oracle.scriptType})`}
-                </Text>
-              </View>
+        {oracle.isAddress ? (
+          <View>
+            <View style={[styles.labelContainer]}>
+              <Text style={styles.subLabel}>
+                {t`Address`} {oracle.scriptType && `(${oracle.scriptType})`}
+              </Text>
+            </View>
 
-              <View style={styles.valueContainer}>
-                <View style={styles.valueBox}>
-                  <CopyClipboard
-                    text={oracle.address}
-                    style={styles.copyButton}
-                  />
-                </View>
+            <View style={styles.valueContainer}>
+              <View style={styles.valueBox}>
+                <CopyClipboard
+                  text={oracle.address}
+                  style={styles.copyButton}
+                />
               </View>
             </View>
-          ) : (
-            <View style={[styles.dataContainer, styles.oracleDataContainer]}>
-              <CopyClipboard
-                text={oracle.raw}
-                textStyle={styles.dataText}
-              />
-            </View>
-          )}
-        </View>
-
-        <View style={commonStyles.cardSeparator} />
-
-        {/* Data Section */}
-        <View>
-          <Text style={styles.property}>{t`Data`}</Text>
-          <View style={styles.dataContainer}>
-            <Text style={styles.dataText}>{data}</Text>
           </View>
+        ) : (
+          <View style={[styles.dataContainer, styles.oracleDataContainer]}>
+            <CopyClipboard
+              text={oracle.raw}
+              textStyle={styles.dataText}
+            />
+          </View>
+        )}
+      </View>
+
+      <View style={commonStyles.cardSeparator} />
+
+      {/* Data Section */}
+      <View>
+        <Text style={styles.property}>{t`Data`}</Text>
+        <View style={styles.dataContainer}>
+          <Text style={styles.dataText}>{data}</Text>
         </View>
       </View>
     </View>
-  );
-};
+  </View>
+);
 
 export const SignOracleDataRequest = ({ signOracleData }) => {
   const { dapp, data } = signOracleData;
