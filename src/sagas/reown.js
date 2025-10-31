@@ -153,7 +153,7 @@ function convertAndStoreTokenDetails(tokenDetailsMap, dispatch) {
     Array.from(tokenDetailsMap.entries()).map(([key, value]) => [
       key,
       {
-        uid: value.tokenInfo.id,
+        uid: key,
         name: value.tokenInfo.name,
         symbol: value.tokenInfo.symbol,
       },
