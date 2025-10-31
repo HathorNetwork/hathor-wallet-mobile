@@ -12,7 +12,6 @@ import {
   View,
   ScrollView,
   TouchableWithoutFeedback,
-  TouchableOpacity,
   Text,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -27,12 +26,10 @@ import NewHathorButton from '../NewHathorButton';
 import { DappContainer } from './NanoContract/DappContainer';
 import { commonStyles } from './theme';
 import { NanoContractIcon } from '../Icons/NanoContract.icon';
-import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 import { DeclineModal } from './NanoContract/DeclineModal';
 import CopyClipboard from '../CopyClipboard';
 
 export const SignOracleDataRequestData = ({ oracle, data }) => {
-  const [showRawData, setShowRawData] = useState(false);
   return (
     <View style={[commonStyles.card, commonStyles.cardSplit]}>
       <View style={commonStyles.cardSplitIcon}>
