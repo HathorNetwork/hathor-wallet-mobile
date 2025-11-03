@@ -424,14 +424,12 @@ export const BaseNanoContractRequest = ({
 
   if (notRegistered && hasNcRegisterFailed) {
     return (
-      <>
-        <FeedbackModal
-          icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
-          text={t`Error while registering Nano Contract.`}
-          onDismiss={onDeclineConfirmation}
-          action={(<NewHathorButton discrete title={t`Decline Transaction`} onPress={onDeclineConfirmation} />)}
-        />
-      </>
+      <FeedbackModal
+        icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+        text={t`Error while registering Nano Contract.`}
+        onDismiss={onDeclineConfirmation}
+        action={(<NewHathorButton discrete title={t`Decline Transaction`} onPress={onDeclineConfirmation} />)}
+      />
     );
   }
 
