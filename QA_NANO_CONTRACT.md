@@ -10,7 +10,7 @@
 	1. Nano
 
 ### Activation
-1. Make sure the **wallet-service** feature is 🚫**disabled** for the device
+1. Take note if the **wallet-service** feature is ✅**enabled** OR 🚫**disabled** for the device. This will be necessary later.
 1. Make sure the **nano-contract** feature is ✅**enabled** for the device
 1. Make sure to connect to a network that supports Nano Contracts, like `testnet-india`
 1. Check a toggle button with two options appear in the dashboard head
@@ -210,4 +210,10 @@ The objective of this test is to try and send a custom token using a Nano Contra
 1. Check that the transaction fails
 1. Try again to create the custom token, but this time enabling the "Allow External Melt Authority" option
 1. Also add a data output with the string "Sample Data Output"
-1. Confirm the transaction succeeds and that the token appears on the Explorer 
+1. Confirm the transaction succeeds and that the token appears on the Explorer
+
+#### Testing the other facade
+1. If the tests above were executed in the **Wallet Service**, disable it for the device and try again using the **Full Node** facade
+1. If the tests above were executed in the **Full Node**, enable the **Wallet Service** for the device and try again using it
+
+Note: A simple way to activate and deactivate the Wallet Service for the device is using the **Custom Network Settings** feature, populating or removing the two Wallet Service fields there.
