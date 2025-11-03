@@ -21,6 +21,7 @@ export const RegisterNanoContract = () => {
     <SimpleButton
       title={t`Register new`}
       onPress={navigatesToRegisterNanoContract}
+      adjustsFontSizeToFit={false}
     />
   );
 };
