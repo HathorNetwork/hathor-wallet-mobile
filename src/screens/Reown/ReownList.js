@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { StackActions } from '@react-navigation/native';
 import { t } from 'ttag';
 import { get } from 'lodash';
 import {
@@ -131,12 +132,17 @@ export default function ReownList({ navigation }) {
     ]);
   };
 
+  const onBackPress = () => {
+    const popToAction = StackActions.popTo('Main');
+    navigation.dispatch(popToAction);
+  }
+
   return (
     <View style={style.componentWrapper}>
       <SafeAreaView style={style.safeAreaView}>
         <HathorHeader
           title={t`Reown Sessions`}
-          onBackPress={() => navigation.pop()}
+          onBackPress={onBackPress}
           rightElement={renderHeaderRightElement()}
         />
         <View style={style.sessionListWrapper}>
