@@ -21,6 +21,7 @@ import { PRIMARY_COLOR } from '../constants';
  * @property {Object} [containerStyle] - The style object for the container of the button.
  * @property {Function} onPress - The function to be called when the button is pressed.
  * @property {Object} children - The children component to be rendered.
+ * @property {boolean} [adjustsFontSizeToFit=true] - Whether the font size should automatically adjust to fit.
  *
  * @param {Props} props - The props for the SimpleButton component.
  */
@@ -32,7 +33,8 @@ const SimpleButton = ({
   iconStyle,
   containerStyle,
   onPress,
-  children
+  children,
+  adjustsFontSizeToFit = true
 }) => {
   const renderTitle = () => {
     if (title) {
@@ -43,7 +45,7 @@ const SimpleButton = ({
       return (
         <Text
           numberOfLines={1}
-          adjustsFontSizeToFit
+          adjustsFontSizeToFit={adjustsFontSizeToFit}
           minimumFontScale={0.8}
           style={textStyles}
         >
