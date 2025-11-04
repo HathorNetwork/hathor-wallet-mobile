@@ -7,7 +7,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Modal,
   View,
   StyleSheet,
   TouchableWithoutFeedback,
@@ -21,13 +20,14 @@ import { COLORS } from '../styles/themes';
 const { height: screenHeight } = Dimensions.get('window');
 
 /**
- * A custom modal component that extends React Native's Modal with:
+ * A custom modal component using pure View (no native Modal) with:
  * - Fade backdrop animation (never slides)
  * - Configurable content animation (slide, fade, none)
  * - Swipe-to-dismiss functionality
  * - Touch outside to dismiss
  * - Flexible positioning and styling
  * - Delayed children rendering to prevent flickering
+ * - No native Modal issues (ghost modals, timing problems, etc.)
  */
 const BackdropModal = ({
   visible,
@@ -96,7 +96,7 @@ const BackdropModal = ({
           toValue: screenHeight,
           duration: 300,
           useNativeDriver: true,
-        })
+        }),
       );
     } else if (animationType === 'fade') {
       animations.push(
@@ -104,7 +104,7 @@ const BackdropModal = ({
           toValue: 0.8,
           duration: 300,
           useNativeDriver: true,
-        })
+        }),
       );
     }
 
@@ -115,7 +115,7 @@ const BackdropModal = ({
           toValue: 0,
           duration: 300,
           useNativeDriver: true,
-        })
+        }),
       );
     }
 
@@ -154,7 +154,7 @@ const BackdropModal = ({
           }).start();
         }
       },
-    })
+    }),
   ).current;
 
   useEffect(() => {
@@ -174,7 +174,7 @@ const BackdropModal = ({
             toValue: 0,
             duration: 300,
             useNativeDriver: true,
-          })
+          }),
         );
       } else if (animationType === 'fade') {
         animations.push(
@@ -182,7 +182,7 @@ const BackdropModal = ({
             toValue: 1,
             duration: 300,
             useNativeDriver: true,
-          })
+          }),
         );
       }
 
@@ -196,7 +196,15 @@ const BackdropModal = ({
       scaleAnim.setValue(0.8);
       gestureAnim.setValue(0);
     }
-  }, [visible, animationType, backdropOpacity, slideAnim, scaleAnim, gestureAnim, onShow]);
+  }, [
+    visible,
+    animationType,
+    backdropOpacity,
+    slideAnim,
+    scaleAnim,
+    gestureAnim,
+    onShow,
+  ]);
 
   const getContainerStyle = () => {
     const baseStyle = [styles.container];
@@ -244,12 +252,9 @@ const BackdropModal = ({
   };
 
   return (
-    <Modal
-      transparent
-      visible={visible}
-      animationType='none' // We handle animations manually
-      onRequestClose={onDismiss}
-      {...modalProps}
+    <View
+      style={styles.modalContainer}
+      pointerEvents='box-none' // Allow touches to pass through to backdrop/content
     >
       <Animated.View
         style={[
@@ -268,20 +273,31 @@ const BackdropModal = ({
             </TouchableWithoutFeedback>
           )}
 
-          {/* Content area */}
-          <Animated.View
-            style={getContentStyle()}
-            {...(enableSwipeToDismiss ? panResponder.panHandlers : {})}
-          >
-            {showChildren && children}
-          </Animated.View>
+          {/* Content area - only show when visible AND children ready */}
+          {visible && showChildren && (
+            <Animated.View
+              style={getContentStyle()}
+              {...(enableSwipeToDismiss ? panResponder.panHandlers : {})}
+            >
+              {children}
+            </Animated.View>
+          )}
         </View>
       </Animated.View>
-    </Modal>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 9999, // Extremely high z-index to ensure modal is always on top
+    elevation: 9999, // Android elevation
+  },
   backdrop: {
     flex: 1,
   },
