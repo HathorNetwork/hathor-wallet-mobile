@@ -254,7 +254,7 @@ const BackdropModal = ({
   return (
     <View
       style={styles.modalContainer}
-      pointerEvents="box-none" // Allow touches to pass through to backdrop/content
+      pointerEvents='box-none' // Allow touches to pass through to backdrop/content
     >
       <Animated.View
         style={[
@@ -263,7 +263,8 @@ const BackdropModal = ({
             backgroundColor: backdropColor,
             opacity: backdropOpacity,
           },
-        ]}>
+        ]}
+      >
         <View style={getContainerStyle()}>
           {/* Backdrop touch areas */}
           {enableBackdropPress && (
@@ -276,7 +277,8 @@ const BackdropModal = ({
           {visible && showChildren && (
             <Animated.View
               style={getContentStyle()}
-              {...(enableSwipeToDismiss ? panResponder.panHandlers : {})}>
+              {...(enableSwipeToDismiss ? panResponder.panHandlers : {})}
+            >
               {children}
             </Animated.View>
           )}
