@@ -444,6 +444,10 @@ export function* requestNanoContractAddressChange({ payload }) {
     return;
   }
 
+  // TODO: We should remove this when we refactor the wallet-lib to properly
+  // implement this method
+  wallet.storage.isAddressMine = wallet.isAddressMine.bind(wallet);
+
   yield call(
     [
       wallet.storage,
