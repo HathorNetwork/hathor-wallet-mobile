@@ -444,6 +444,14 @@ export function* requestNanoContractAddressChange({ payload }) {
     return;
   }
 
+  const useWalletService = yield select((state) => state.useWalletService);
+
+  if (useWalletService) {
+    // TODO: We should remove this when we refactor the wallet-lib to properly
+    // implement this method when on the wallet-service
+    wallet.storage.isAddressMine = wallet.isAddressMine.bind(wallet);
+  }
+
   yield call(
     [
       wallet.storage,
