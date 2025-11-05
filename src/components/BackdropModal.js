@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 import { COLORS } from '../styles/themes';
+import { Portal } from './Portal';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -251,40 +252,46 @@ const BackdropModal = ({
     return baseStyle;
   };
 
-  return (
-    <View
-      style={styles.modalContainer}
-      pointerEvents='box-none' // Allow touches to pass through to backdrop/content
-    >
-      <Animated.View
-        style={[
-          styles.backdrop,
-          {
-            backgroundColor: backdropColor,
-            opacity: backdropOpacity,
-          },
-        ]}
-      >
-        <View style={getContainerStyle()}>
-          {/* Backdrop touch areas */}
-          {enableBackdropPress && (
-            <TouchableWithoutFeedback onPress={handleDismiss}>
-              <View style={StyleSheet.absoluteFill} />
-            </TouchableWithoutFeedback>
-          )}
+  if (!visible) {
+    return null;
+  }
 
-          {/* Content area - only show when visible AND children ready */}
-          {visible && showChildren && (
-            <Animated.View
-              style={getContentStyle()}
-              {...(enableSwipeToDismiss ? panResponder.panHandlers : {})}
-            >
-              {children}
-            </Animated.View>
-          )}
-        </View>
-      </Animated.View>
-    </View>
+  return (
+    <Portal>
+      <View
+        style={styles.modalContainer}
+        pointerEvents='box-none' // Allow touches to pass through to backdrop/content
+      >
+        <Animated.View
+          style={[
+            styles.backdrop,
+            {
+              backgroundColor: backdropColor,
+              opacity: backdropOpacity,
+            },
+          ]}
+        >
+          <View style={getContainerStyle()}>
+            {/* Backdrop touch areas */}
+            {enableBackdropPress && (
+              <TouchableWithoutFeedback onPress={handleDismiss}>
+                <View style={StyleSheet.absoluteFill} />
+              </TouchableWithoutFeedback>
+            )}
+
+            {/* Content area - only show when visible AND children ready */}
+            {showChildren && (
+              <Animated.View
+                style={getContentStyle()}
+                {...(enableSwipeToDismiss ? panResponder.panHandlers : {})}
+              >
+                {children}
+              </Animated.View>
+            )}
+          </View>
+        </Animated.View>
+      </View>
+    </Portal>
   );
 };
 

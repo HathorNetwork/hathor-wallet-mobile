@@ -39,6 +39,7 @@ import {
 } from './actions';
 import { store } from './reducers/reducer.init';
 import { GlobalErrorHandler } from './components/GlobalErrorModal';
+import { PortalProvider } from './components/Portal';
 import {
   InitialScreen,
   LoadWordsScreen,
@@ -829,24 +830,26 @@ NavigationService.setTopLevelNavigator(navigationRef);
 const App = () => (
   <SafeAreaProvider>
     <Provider store={store}>
-      <SafeAreaView
-        edges={['top', 'right', 'left']}
-        style={{ flex: 1, backgroundColor: COLORS.backgroundColor }}
-      >
-        <NavigationContainer
-          theme={HathorTheme}
-          ref={navigationRef}
-          navigationInChildEnabled
+      <PortalProvider>
+        <SafeAreaView
+          edges={['top', 'right', 'left']}
+          style={{ flex: 1, backgroundColor: COLORS.backgroundColor }}
         >
-          <NavigationSerializingProvider>
-            <ShowPushNotificationTxDetails />
-            <NetworkStatusBar />
-            <RootStack />
-            <ReownModal />
-          </NavigationSerializingProvider>
-        </NavigationContainer>
-        <GlobalErrorHandler />
-      </SafeAreaView>
+          <NavigationContainer
+            theme={HathorTheme}
+            ref={navigationRef}
+            navigationInChildEnabled
+          >
+            <NavigationSerializingProvider>
+              <ShowPushNotificationTxDetails />
+              <NetworkStatusBar />
+              <RootStack />
+              <ReownModal />
+            </NavigationSerializingProvider>
+          </NavigationContainer>
+          <GlobalErrorHandler />
+        </SafeAreaView>
+      </PortalProvider>
     </Provider>
   </SafeAreaProvider>
 );
