@@ -131,7 +131,7 @@
 1. Start again but this time connect your wallet
 1. Check the Bet dApp is now connected to your wallet through the "Hathor Bet" ReOwn session on the Wallet
 
-### Create a Bet nano contract
+### Initialize a Bet nano contract
 1. On the Bet dApp hotsite, create a simple Bet nano contract with:
   - Random results
   - Two different possible outcomes
