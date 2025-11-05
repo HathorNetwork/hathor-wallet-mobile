@@ -576,6 +576,11 @@ export function* handleTx(action) {
 
   let txWalletAddresses = null;
   try {
+    if (txAddresses.size === 0) {
+      // This might be a nano contract transaction with no inputs or outputs.
+      return;
+    }
+
     const request = async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses]);
     txWalletAddresses = yield call(progressiveRetryRequest, request);
   } catch (error) {
