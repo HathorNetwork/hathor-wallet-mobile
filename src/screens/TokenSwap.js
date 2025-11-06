@@ -350,7 +350,7 @@ const TokenSwap = () => {
             <NewHathorButton
               title={t`REVIEW`}
               disabled={isReviewButtonDisabled()}
-              onPress={() => onReviewButtonPress(quote, inputToken.uid, outputToken.uid)}
+              onPress={() => onReviewButtonPress(quote, inputToken, outputToken)}
             />
           </View>
           <OfflineBar style={{ position: 'relative' }} />
