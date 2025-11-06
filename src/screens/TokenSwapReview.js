@@ -68,7 +68,7 @@ const TokenSwapReview = () => {
    */
   const exitOnError = () => {
     setModal(null);
-    dispatch(tokenSwapFetchSwapQuote());
+    dispatch(tokenSwapFetchSwapQuote(quote.direction, quote.direction === 'input' ? quote.amount_in : quote.amount_out, tokenIn, tokenOut));
     navigation.goBack();
   };
 

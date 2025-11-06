@@ -76,6 +76,38 @@ function parseQuotePathStep(pathStep) {
 }
 
 /**
+ * Calculate the actual value to deposit/withdraw with slippage applied.
+ * Some special considerations must be made since slippage calculation is inherently fractional
+ * and amount should be expressed as bigint values which cannot be fractional.
+ * @param {'input'|'output'} direction
+ * @param {number|bigint} amount
+ * @param {number} slippage
+ * @returns {bigint}
+ */
+export function calcAmountWithSlippage(direction, amount, slippage) {
+  if (direction === 'input') {
+    // amount - slippage% but
+    // amount (1 - slippage/100) = amount (1000 - slippage*10) / 1000
+    // We use slippage*10 because it can be a fraction (e.g. 0.5)
+    // The floor value will automatically be used since BigInt cannot be fractional.
+    return (BigInt(amount) * (1000n - BigInt(Math.ceil(slippage*10)))) / 1000n;
+  } else if (direction === 'output') {
+    // amount + slippage% but
+    // Same reasoning as input direction, but when a fractional value remains
+    // we have to use the ceiling value.
+    const numerator = (BigInt(amount) * (1000n + BigInt(Math.ceil(slippage*10))));
+    const remainder = numerator % 1000n;
+    let value = numerator / 1000n;
+    if (remainder !== 0n) {
+      value += 1n;
+    }
+    return value;
+  } else {
+    throw TokenSwapDirectionError();
+  }
+}
+
+/**
  * Build the NanoContractAction array required to call the token swap method.
  *
  * @param {TokenSwapQuote} quote Token swap quote
@@ -104,7 +136,7 @@ function buildTokenSwapActions(quote, tokenIn, tokenOut, slippage) {
     actions.push({
       type: 'withdrawal',
       token: tokenOut,
-      amount: quote.amount_out * (1 - (slippage/100)),
+      amount: calcAmountWithSlippage('input', quote.amount_out, slippage),
     });
   } else if (quote.direction === 'output') {
     /**
@@ -125,7 +157,7 @@ function buildTokenSwapActions(quote, tokenIn, tokenOut, slippage) {
     actions.push({
       type: 'deposit',
       token: tokenIn,
-      amount: quote.amount_in * (1 + (slippage/100)),
+      amount: calcAmountWithSlippage('output', quote.amount_in, slippage),
     });
   } else {
     throw new TokenSwapDirectionError();

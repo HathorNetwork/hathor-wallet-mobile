@@ -22,6 +22,7 @@ import { t } from 'ttag';
 import { get } from 'lodash';
 
 import { renderValue, selectTokenSwapAllowedTokens } from '../utils';
+import { calcAmountWithSlippage } from '../utils/tokenSwap';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -39,6 +40,7 @@ import {
   tokenSwapSwitchTokens,
 } from '../actions';
 import NavigationService from '../NavigationService';
+import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 
 
 function getAvailableAmount(token, tokensBalance) {
@@ -93,21 +95,37 @@ const TokenSwap = () => {
   }, [allowedTokens]);
 
   useEffect(() => {
+    setShowQuote(false);
     if (!inputToken) {
       dispatch(tokenSwapSetInputToken(allowedTokens[0]));
       return;
     }
+    if (swapDirection === 'input') {
+      // Input has changed
+      setOutputTokenAmount(0n);
+      setOutputTokenAmountStr('');
+    }
   }, [inputToken]);
 
   useEffect(() => {
+    setShowQuote(false);
     if (!outputToken) {
       dispatch(tokenSwapSetOutputToken(allowedTokens[1]));
       return;
+    }
+    if (swapDirection === 'output') {
+      // output has changed
+      setInputTokenAmount(0n);
+      setInputTokenAmountStr('');
     }
   }, [outputToken]);
 
   useEffect(() => {
     setShowQuote(!!quote);
+    if (!!quote) {
+      setInputTokenAmountStr(renderValue(quote.amount_in));
+      setOutputTokenAmountStr(renderValue(quote.amount_out));
+    }
   }, [quote]);
 
   function onInputAmountChange(text, value) {
@@ -116,19 +134,23 @@ const TokenSwap = () => {
   }
 
   function onInputAmountEndEditing(_target) {
-    setOutputTokenAmountStr('0');
+    setOutputTokenAmountStr('');
     setOutputTokenAmount(0n);
     setSwapDirection('input');
 
-    dispatch(tokenSwapFetchSwapQuote());
+    if (inputTokenAmount) {
+      dispatch(tokenSwapFetchSwapQuote('input', inputTokenAmount.toString(10), inputToken.uid, outputToken.uid));
+    }
   }
 
   function onOutputAmountEndEditing(_target) {
-    setInputTokenAmountStr('0');
+    setInputTokenAmountStr('');
     setInputTokenAmount(0n);
     setSwapDirection('output');
 
-    dispatch(tokenSwapFetchSwapQuote());
+    if (outputTokenAmount) {
+      dispatch(tokenSwapFetchSwapQuote('output', outputTokenAmount.toString(10), inputToken.uid, outputToken.uid));
+    }
   }
 
   function onOutputAmountChange(text, value) {
@@ -136,8 +158,15 @@ const TokenSwap = () => {
     setOutputTokenAmount(value);
   }
 
-  function onFocus() {
+  function onFocus(dirClicked) {
     setShowQuote(false);
+    if (dirClicked === 'input') {
+      setOutputTokenAmount(0n);
+      setOutputTokenAmountStr('');
+    } else if (dirClicked === 'output') {
+      setInputTokenAmount(0n);
+      setInputTokenAmountStr('');
+    }
   }
 
   const onInputTokenBoxPress = () => {
@@ -149,27 +178,14 @@ const TokenSwap = () => {
   };
 
   const switchTokens = () => {
-    const newOutputStr = inputTokenAmountStr;
-    const newOutput = inputTokenAmount;
-    const newInputStr = outputTokenAmountStr;
-    const newInput = outputTokenAmount;
-
+    setInputTokenAmountStr('');
+    setInputTokenAmount(0n);
+    setOutputTokenAmountStr('');
+    setOutputTokenAmount(0n);
     // Also switch the direction of the swap
     if (swapDirection === 'input') {
-      setInputTokenAmountStr(newInputStr);
-      setInputTokenAmount(newInput);
-
-      setOutputTokenAmountStr('0');
-      setOutputTokenAmount(0n);
-
       setSwapDirection('output');
     } else if (swapDirection === 'output') {
-      setOutputTokenAmountStr(newOutputStr);
-      setOutputTokenAmount(newOutput);
-
-      setInputTokenAmountStr('0');
-      setInputTokenAmount(0n);
-
       setSwapDirection('input');
     }
 
@@ -203,13 +219,7 @@ const TokenSwap = () => {
   };
 
   const getAmountWithSlippage = (amount, direction) => {
-    if (direction === 'input') {
-      return amount * (1 - (slippage/100));
-    } else if (direction === 'output') {
-      return amount * (1 + (slippage/100));
-    } else {
-      return 0n;
-    }
+    return calcAmountWithSlippage(direction, amount, TOKEN_SWAP_SLIPPAGE);
   };
 
   const getAmountString = (amount, token) => {
@@ -217,7 +227,10 @@ const TokenSwap = () => {
   };
 
   const getConversionRate = (swapQuote) => {
-    return `${getAmountString(swapQuote.amount_out/swapQuote.amount_in, swapQuote.token_out)} = ${getAmountString(1, swapQuote.token_in)}}`
+    if (!swapQuote) {
+      return null;
+    }
+    return `${getAmountString(100*Number(swapQuote.amount_out)/Number(swapQuote.amount_in), outputToken)} = ${getAmountString(100, inputToken)}`;
   };
 
   const onReviewButtonPress = (quote, tokenIn, tokenOut) => {
@@ -253,7 +266,7 @@ const TokenSwap = () => {
                   <AmountTextInput
                     onAmountUpdate={onInputAmountChange}
                     onEndEditing={onInputAmountEndEditing}
-                    onFocus={onFocus}
+                    onFocus={() => onFocus('input')}
                     value={inputTokenAmountStr}
                     allowOnlyInteger={false}
                     decimalPlaces={decimalPlaces}
@@ -282,7 +295,7 @@ const TokenSwap = () => {
                   <AmountTextInput
                     onAmountUpdate={onOutputAmountChange}
                     onEndEditing={onOutputAmountEndEditing}
-                    onFocus={onFocus}
+                    onFocus={() => onFocus('output')}
                     value={outputTokenAmountStr}
                     allowOnlyInteger={false}
                     decimalPlaces={decimalPlaces}
@@ -303,11 +316,11 @@ const TokenSwap = () => {
                 </View>
               </View>
 
-              { showQuote && (
+              { showQuote && quote && (
                 <View style={styles.quoteContainer}>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>{"Conversion rate"}</Text>
-                    <Text style={styles.quoteValue}>{`${getConversionRate(quote)}`}</Text>
+                    <Text style={styles.quoteValue}>{getConversionRate(quote)}</Text>
                   </View>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>{"Slippage"}</Text>
@@ -320,13 +333,13 @@ const TokenSwap = () => {
                   { quote.direction === 'input' && (
                     <View style={styles.quoteRow}>
                       <Text style={styles.quoteHeader}>{"Minimum received"}</Text>
-                      <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_out, 'input'), quote.token_out)}</Text>
+                      <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_out, 'input'), outputToken)}</Text>
                     </View>
                   )}
                   { quote.direction === 'output' && (
                     <View style={styles.quoteRow}>
                       <Text style={styles.quoteHeader}>{"Maximum to deposit"}</Text>
-                      <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_in, 'output'), quote.token_in)}</Text>
+                      <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_in, 'output'), inputToken)}</Text>
                     </View>
                   )}
                 </View>
