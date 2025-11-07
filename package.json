@@ -1,6 +1,6 @@
 {
   "name": "HathorMobile",
-  "version": "0.33.0",
+  "version": "0.34.1",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=10.0.0"
@@ -23,7 +23,7 @@
     "@fortawesome/free-regular-svg-icons": "6.7.2",
     "@fortawesome/free-solid-svg-icons": "6.7.2",
     "@fortawesome/react-native-fontawesome": "0.3.2",
-    "@hathor/hathor-rpc-handler": "3.4.1",
+    "@hathor/hathor-rpc-handler": "3.4.2",
     "@hathor/unleash-client": "0.1.0",
     "@hathor/wallet-lib": "2.9.0",
     "@json-rpc-tools/utils": "1.7.6",

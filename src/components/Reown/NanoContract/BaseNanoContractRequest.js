@@ -300,16 +300,7 @@ export const BaseNanoContractRequest = ({
 
     // Clean up function
     return () => {
-      // Restore ready status to Nano Contract registration state if
-      // we have had a registration while handling a new transaction request
-      dispatch(nanoContractRegisterReady());
-      dispatch(statusConfig.setReadyAction());
-      // Dismiss the retry condition to New Nano Contract Transaction
-      dispatch(statusConfig.retryDismissAction());
-      // If the user leaves without accepting or declining, we should decline the transaction
-      if (status !== statusConfig.statusConstants.SUCCESSFUL) {
-        dispatch(reownReject());
-      }
+      cleanup();
     };
   }, [notRegistered]);
 
@@ -357,9 +348,22 @@ export const BaseNanoContractRequest = ({
     status === statusConfig.statusConstants.SUCCESSFUL
   );
 
+  const cleanup = () => {
+    // Restore ready status to Nano Contract registration state if
+    // we have had a registration while handling a new transaction request
+    dispatch(nanoContractRegisterReady());
+    dispatch(statusConfig.setReadyAction());
+    // Dismiss the retry condition to New Nano Contract Transaction
+    dispatch(statusConfig.retryDismissAction());
+    // If the user leaves without accepting or declining, we should decline the transaction
+    if (status !== statusConfig.statusConstants.SUCCESSFUL) {
+      dispatch(reownReject());
+    }
+  }
+
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
-    dispatch(reownReject());
+    cleanup();
 
     if (typeof onReject === 'function') {
       onReject();
@@ -418,6 +422,17 @@ export const BaseNanoContractRequest = ({
     );
   }
 
+  if (notRegistered && hasNcRegisterFailed) {
+    return (
+      <FeedbackModal
+        icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
+        text={t`Error while registering Nano Contract.`}
+        onDismiss={onDeclineConfirmation}
+        action={(<NewHathorButton discrete title={t`Decline Transaction`} onPress={onDeclineConfirmation} />)}
+      />
+    );
+  }
+
   if (notRegistered && !isNcRegistering) {
     return (
       <>
@@ -441,24 +456,6 @@ export const BaseNanoContractRequest = ({
               />
             </View>
           )}
-        />
-        <DeclineModal
-          show={showDeclineModal}
-          onDecline={onDeclineConfirmation}
-          onDismiss={onDismissDeclineModal}
-        />
-      </>
-    );
-  }
-
-  if (notRegistered && hasNcRegisterFailed) {
-    return (
-      <>
-        <FeedbackModal
-          icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
-          text={t`Error while registering Nano Contract.`}
-          onDismiss={onDeclineConfirmation}
-          action={(<NewHathorButton discrete title={t`Decline Transaction`} onPress={onDeclineConfirmation} />)}
         />
         <DeclineModal
           show={showDeclineModal}

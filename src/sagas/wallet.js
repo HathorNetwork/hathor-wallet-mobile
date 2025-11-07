@@ -576,8 +576,11 @@ export function* handleTx(action) {
 
   let txWalletAddresses = null;
   try {
-    const request = async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses]);
-    txWalletAddresses = yield call(progressiveRetryRequest, request);
+    // This might be a nano contract transaction with no inputs or outputs.
+    if (txAddresses.size > 0) {
+      const request = async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses]);
+      txWalletAddresses = yield call(progressiveRetryRequest, request);
+    }
   } catch (error) {
     // Emmit a fatal error feedback to user and halts tx processing.
     yield put(onExceptionCaptured(error, true));
