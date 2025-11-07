@@ -12,6 +12,8 @@
 /* eslint-disable import/no-extraneous-dependencies,import/no-unresolved */
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const blacklist = require('metro-config/src/defaults/exclusionList');
+const { lockdownSerializer } = require('@lavamoat/react-native-lockdown');
+
 /* eslint-enable import/no-extraneous-dependencies,import/no-unresolved */
 
 /**
@@ -26,6 +28,7 @@ const config = {
       /node_modules\/.*\/node_modules\/react-native\/.*/,
     ]),
   },
+  serializer: lockdownSerializer({ hermesRuntime: true }),
 };
 
 module.exports = mergeConfig(getDefaultConfig(__dirname), config);

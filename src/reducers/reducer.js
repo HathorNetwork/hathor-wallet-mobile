@@ -102,6 +102,7 @@ const initialState = {
    * Remarks
    * We use the map of tokens to collect token details for tokens
    * used in actions but not registered by the user.
+   * Token details are provided by the RPC handler.
    *
    * @example
    * {
@@ -110,14 +111,9 @@ const initialState = {
    *     symbol: 'YAN',
    *     uid: '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824',
    *   },
-   *   isLoading: false,
-   *   error: null,
    * }
    */
-  unregisteredTokens: {
-    isLoading: false,
-    error: null,
-  },
+  unregisteredTokens: {},
   /**
    * selectedToken {{
    *  uid: string;
@@ -742,14 +738,8 @@ export const reducer = (state = initialState, action) => {
       return onNanoContractBlueprintInfoFailure(state, action);
     case types.NANOCONTRACT_BLUEPRINTINFO_SUCCESS:
       return onNanoContractBlueprintInfoSuccess(state, action);
-    case types.UNREGISTEREDTOKENS_DOWNLOAD_REQUEST:
-      return onUnregisteredTokensDownloadRequest(state);
-    case types.UNREGISTEREDTOKENS_DOWNLOAD_SUCCESS:
-      return onUnregisteredTokensDownloadSuccess(state, action);
-    case types.UNREGISTEREDTOKENS_DOWNLOAD_FAILURE:
-      return onUnregisteredTokensDownloadFailure(state, action);
-    case types.UNREGISTEREDTOKENS_DOWNLOAD_END:
-      return onUnregisteredTokensDownloadEnd(state);
+    case types.UNREGISTEREDTOKENS_STORE:
+      return onUnregisteredTokensStore(state, action);
     case types.REOWN_NEW_NANOCONTRACT_RETRY:
       return onNewNanoContractTransactionRetry(state);
     case types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS:
@@ -2157,61 +2147,18 @@ export const onNanoContractBlueprintInfoSuccess = (state, { payload }) => ({
 });
 
 /**
- * Remarks
- * This reducer aims to clean error feedback message before processing the request.
- */
-export const onUnregisteredTokensDownloadRequest = (state) => ({
-  ...state,
-  unregisteredTokens: {
-    ...state.unregisteredTokens,
-    isLoading: true,
-    error: null,
-  },
-});
-
-/**
- * Update reown.tokens with some tokens data needed to feed UI components
- * without the need to register them, also update an error feedback message if present.
+ * Store token details from RPC handler in unregistered tokens state.
  *
  * @param {Object} state
  * @param {Object} action
  * @param {Object} action.payload
- * @param {string} action.payload.error The error message as feedback to user
+ * @param {Object} action.payload.tokens A map of token data by its UID
  */
-export const onUnregisteredTokensDownloadSuccess = (state, { payload }) => ({
+export const onUnregisteredTokensStore = (state, { payload }) => ({
   ...state,
   unregisteredTokens: {
     ...state.unregisteredTokens,
     ...payload.tokens,
-  },
-});
-
-/**
- * Set error message as a user feedback.
- *
- * @param {Object} state
- * @param {Object} action
- * @param {Object} action.payload
- * @param {string} action.payload.error The error message as feedback to user
- */
-export const onUnregisteredTokensDownloadFailure = (state, { payload }) => ({
-  ...state,
-  unregisteredTokens: {
-    ...state.unregisteredTokens,
-    error: payload.error || null,
-  },
-});
-
-/**
- * Change state of isLoading to false while keeping tokens state.
- *
- * @param {Object} state
- */
-export const onUnregisteredTokensDownloadEnd = (state) => ({
-  ...state,
-  unregisteredTokens: {
-    ...state.unregisteredTokens,
-    isLoading: false,
   },
 });
 

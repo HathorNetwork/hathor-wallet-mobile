@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { StackActions } from '@react-navigation/native';
 import { t } from 'ttag';
 import { get } from 'lodash';
 import {
@@ -61,6 +62,7 @@ const style = StyleSheet.create({
     marginLeft: 16,
   },
   dataWrapper: {
+    flex: 1,
     flexDirection: 'column',
     marginLeft: 16,
     marginRight: 16,
@@ -130,12 +132,17 @@ export default function ReownList({ navigation }) {
     ]);
   };
 
+  const onBackPress = () => {
+    const popToAction = StackActions.popTo('Main');
+    navigation.dispatch(popToAction);
+  }
+
   return (
     <View style={style.componentWrapper}>
       <SafeAreaView style={style.safeAreaView}>
         <HathorHeader
           title={t`Reown Sessions`}
-          onBackPress={() => navigation.pop()}
+          onBackPress={onBackPress}
           rightElement={renderHeaderRightElement()}
         />
         <View style={style.sessionListWrapper}>
@@ -151,13 +158,13 @@ export default function ReownList({ navigation }) {
                 <View style={style.buttonWrapper}>
                   <Image style={style.image} source={{ uri: icon }} />
                   <View style={style.dataWrapper}>
-                    <Text style={style.sessionName}>
+                    <Text style={style.sessionName} numberOfLines={1} ellipsizeMode='tail'>
                       {name}
                     </Text>
-                    <Text style={style.sessionData}>
+                    <Text style={style.sessionData} numberOfLines={1} ellipsizeMode='tail'>
                       {url}
                     </Text>
-                    <Text style={style.sessionData}>
+                    <Text style={style.sessionData} numberOfLines={2} ellipsizeMode='tail'>
                       {description}
                     </Text>
                   </View>
