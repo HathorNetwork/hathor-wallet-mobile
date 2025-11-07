@@ -39,6 +39,7 @@ import {
 } from './actions';
 import { store } from './reducers/reducer.init';
 import { GlobalErrorHandler } from './components/GlobalErrorModal';
+import { PortalProvider } from './components/Portal';
 import {
   InitialScreen,
   LoadWordsScreen,
@@ -99,6 +100,7 @@ import { SignOracleDataRequestScreen } from './screens/Reown/SignOracleDataReque
 import { CreateTokenRequestScreen } from './screens/Reown/CreateTokenScreen';
 import { CreateNanoContractCreateTokenTxScreen } from './screens/Reown/CreateNanoContractCreateTokenTxScreen';
 import { SuccessFeedbackScreen } from './screens/Reown/SuccessFeedbackScreen';
+import { RegisterTokenAfterSuccessScreen } from './screens/Reown/RegisterTokenAfterSuccess';
 import UnifiedQRScanner from './screens/UnifiedQRScanner';
 import RegisterOptionsScreen from './screens/RegisterOptionsScreen';
 import { NavigationSerializingProvider } from './hooks/navigation';
@@ -481,6 +483,7 @@ const AppStack = () => {
         <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
         <Stack.Screen name='CreateNanoContractCreateTokenTxRequest' component={CreateNanoContractCreateTokenTxScreen} />
         <Stack.Screen name='SuccessFeedbackScreen' component={SuccessFeedbackScreen} />
+        <Stack.Screen name='RegisterTokenAfterSuccess' component={RegisterTokenAfterSuccessScreen} />
         <Stack.Screen name='PushNotification' component={PushNotification} />
         <Stack.Screen name='ChangePin' component={ChangePin} />
         <Stack.Screen
@@ -827,24 +830,26 @@ NavigationService.setTopLevelNavigator(navigationRef);
 const App = () => (
   <SafeAreaProvider>
     <Provider store={store}>
-      <SafeAreaView
-        edges={['top', 'right', 'left']}
-        style={{ flex: 1, backgroundColor: COLORS.backgroundColor }}
-      >
-        <NavigationContainer
-          theme={HathorTheme}
-          ref={navigationRef}
-          navigationInChildEnabled
+      <PortalProvider>
+        <SafeAreaView
+          edges={['top', 'right', 'left']}
+          style={{ flex: 1, backgroundColor: COLORS.backgroundColor }}
         >
-          <NavigationSerializingProvider>
-            <ShowPushNotificationTxDetails />
-            <NetworkStatusBar />
-            <RootStack />
-            <ReownModal />
-          </NavigationSerializingProvider>
-        </NavigationContainer>
-        <GlobalErrorHandler />
-      </SafeAreaView>
+          <NavigationContainer
+            theme={HathorTheme}
+            ref={navigationRef}
+            navigationInChildEnabled
+          >
+            <NavigationSerializingProvider>
+              <ShowPushNotificationTxDetails />
+              <NetworkStatusBar />
+              <RootStack />
+              <ReownModal />
+            </NavigationSerializingProvider>
+          </NavigationContainer>
+          <GlobalErrorHandler />
+        </SafeAreaView>
+      </PortalProvider>
     </Provider>
   </SafeAreaProvider>
 );

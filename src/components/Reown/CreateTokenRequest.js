@@ -165,6 +165,7 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
   };
 
   const onTryAgain = () => {
+    dispatch(setCreateTokenStatusReady());
     dispatch(createTokenRetry());
   };
 

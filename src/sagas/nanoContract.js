@@ -7,8 +7,10 @@
 
 import {
   ncApi,
-  nanoUtils,
 } from '@hathor/wallet-lib';
+import {
+  getBlueprintId as libGetBlueprintId,
+} from '@hathor/wallet-lib/lib/nano_contracts/utils';
 import {
   takeEvery,
   select,
@@ -20,7 +22,6 @@ import {
 import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
 import { getRegisteredNanoContracts, safeEffect } from './helpers';
-import { isWalletServiceEnabled } from './wallet';
 import {
   nanoContractBlueprintInfoFailure,
   nanoContractBlueprintInfoSuccess,
@@ -36,7 +37,7 @@ import {
 } from '../actions';
 import { logger } from '../logger';
 import { NANO_CONTRACT_TX_HISTORY_SIZE } from '../constants';
-import { isNanoContractsEnabled } from '../utils';
+import { isNanoContractsEnabled, getResultHelper } from '../utils';
 
 const log = logger('nano-contract-saga');
 
@@ -88,6 +89,27 @@ export function* init() {
 }
 
 /**
+ * Retrieves the blueprint ID for a nano contract by its ID.
+ *
+ * The priority is to get the data from the getFullTxById API because
+ * it gets contract txs that are still to be confirmed by a block. If it fails,
+ * the contract might have been created by another contract, so we fallback to the state
+ * API, which gets the information correctly in that case.
+ *
+ * @returns A promise resolving to the blueprint ID or null if ncId is not a contract
+ */
+export async function getBlueprintId(wallet, ncId) {
+  const [txError, blueprintId] = (await getResultHelper(() => libGetBlueprintId(ncId, wallet)));
+
+  if (txError || !blueprintId) {
+    // The saga method will handle the error in this case
+    return null;
+  }
+
+  return blueprintId;
+}
+
+/**
  * Process Nano Contract registration request.
  * @param {{
  *   payload: {
@@ -116,14 +138,7 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  // XXX: Wallet Service doesn't implement isAddressMine.
-  // See issue: https://github.com/HathorNetwork/hathor-wallet-lib/issues/732
-  // Default to `false` if using Wallet Service.
-  let isAddrMine = false;
-  const useWalletService = yield call(isWalletServiceEnabled);
-  if (!useWalletService) {
-    isAddrMine = yield call([wallet, wallet.isAddressMine], address);
-  }
+  const isAddrMine = yield call([wallet, wallet.isAddressMine], address);
 
   if (!isAddrMine) {
     log.debug('Fail registering Nano Contract because address do not belongs to this wallet.');
@@ -131,22 +146,13 @@ export function* registerNanoContract({ payload }) {
     return;
   }
 
-  let tx;
-  try {
-    const response = yield call([wallet, wallet.getFullTxById], ncId);
-    tx = response.tx;
-  } catch (error) {
+  const blueprintId = yield call(getBlueprintId, wallet, ncId);
+
+  if (!blueprintId) {
     log.debug('Fail registering Nano Contract while getting full transaction by ID.');
     yield put(nanoContractRegisterFailure(failureMessage.nanoContractFailure));
     return;
   }
-
-  if (!nanoUtils.isNanoContractCreateTx(tx)) {
-    log.debug('Fail registering Nano Contract because transaction is not calling initialize.');
-    yield put(nanoContractRegisterFailure(failureMessage.nanoContractInvalid));
-    return;
-  }
-  const { nc_blueprint_id: blueprintId } = tx;
 
   let blueprintName = null;
   try {
@@ -436,6 +442,14 @@ export function* requestNanoContractAddressChange({ payload }) {
     // This will show user an error modal with the option to send the error to sentry.
     yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), true));
     return;
+  }
+
+  const useWalletService = yield select((state) => state.useWalletService);
+
+  if (useWalletService) {
+    // TODO: We should remove this when we refactor the wallet-lib to properly
+    // implement this method when on the wallet-service
+    wallet.storage.isAddressMine = wallet.isAddressMine.bind(wallet);
   }
 
   yield call(

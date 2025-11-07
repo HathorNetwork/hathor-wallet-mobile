@@ -288,6 +288,7 @@ export function* startWallet(action) {
         min_weight: versionData.minWeight,
         max_tx_weight_coefficient: versionData.minTxWeightCoefficient,
         min_tx_weight_k: versionData.minTxWeightK,
+        nano_contracts_enabled: versionData.nanoContractsEnabled,
       }));
 
       network = versionData.network;
@@ -575,8 +576,11 @@ export function* handleTx(action) {
 
   let txWalletAddresses = null;
   try {
-    const request = async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses]);
-    txWalletAddresses = yield call(progressiveRetryRequest, request);
+    // This might be a nano contract transaction with no inputs or outputs.
+    if (txAddresses.size > 0) {
+      const request = async () => wallet.checkAddressesMine.bind(wallet)([...txAddresses]);
+      txWalletAddresses = yield call(progressiveRetryRequest, request);
+    }
   } catch (error) {
     // Emmit a fatal error feedback to user and halts tx processing.
     yield put(onExceptionCaptured(error, true));

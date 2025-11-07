@@ -76,7 +76,6 @@ import {
   PrepareSendTransactionError,
   CreateNanoContractCreateTokenTxError,
 } from '@hathor/hathor-rpc-handler';
-import { isWalletServiceEnabled } from './wallet';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
   REOWN_PROJECT_ID,
@@ -112,6 +111,7 @@ import {
   setCreateNanoContractCreateTokenTxStatusFailure,
   setCreateNanoContractCreateTokenTxStatusSuccess,
   showGetBalanceModal,
+  unregisteredTokensStore,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -139,7 +139,30 @@ const ERROR_CODES = {
   USER_REJECTED: 5000,
   USER_REJECTED_METHOD: 5002,
   INVALID_PAYLOAD: 5003,
+  INTERNAL_ERROR: 5004,
 };
+
+/**
+ * Converts tokenDetails Map to plain object and stores unregistered tokens
+ * @param {Map} tokenDetailsMap - Map of token details from RPC handler
+ * @param {Function} dispatch - Redux dispatch function
+ * @returns {Object} Plain object with token details
+ */
+function convertAndStoreTokenDetails(tokenDetailsMap, dispatch) {
+  const tokenDetailsObj = Object.fromEntries(
+    Array.from(tokenDetailsMap.entries()).map(([key, value]) => [
+      key,
+      {
+        uid: key,
+        name: value.tokenInfo.name,
+        symbol: value.tokenInfo.symbol,
+      },
+    ])
+  );
+
+  dispatch(unregisteredTokensStore({ tokens: tokenDetailsObj }));
+  return tokenDetailsObj;
+}
 
 function* isReownEnabled() {
   const reownEnabled = yield call(checkForFeatureFlag, REOWN_FEATURE_TOGGLE);
@@ -160,13 +183,7 @@ function* init() {
   }
 
   try {
-    const walletServiceEnabled = yield call(isWalletServiceEnabled);
     const reownEnabled = yield call(isReownEnabled);
-
-    if (walletServiceEnabled) {
-      log.debug('Wallet Service enabled, skipping reown init.');
-      return;
-    }
 
     if (!reownEnabled) {
       log.debug('Reown is not enabled.');
@@ -409,8 +426,8 @@ export function* processRequest(action) {
 
   const reownClient = yield call(getReownClient);
   if (!reownClient) {
-    // Do nothing, client might not yet have been initialized.
     log.debug('Tried to get reown client in clearSessions but it is undefined.');
+    // Do nothing, client might not yet have been initialized.
     return;
   }
   const { walletKit } = reownClient;
@@ -461,7 +478,7 @@ export function* processRequest(action) {
         yield put(setCreateNanoContractCreateTokenTxStatusSuccess());
         break;
       default:
-        console.log('Unknown response type:', response.type);
+        log.debug('Unknown response type:', response.type);
         break;
     }
 
@@ -474,16 +491,34 @@ export function* processRequest(action) {
       }
     }));
   } catch (e) {
+    log.error('Error in processRequest:', e);
+
     let shouldAnswer = true;
     switch (e.constructor) {
       case SendNanoContractTxError: {
         yield put(setNewNanoContractStatusFailure());
 
-        const retry = yield call(
-          retryHandler,
-          types.REOWN_NEW_NANOCONTRACT_RETRY,
-          types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
-        );
+        const dontRetryErrors = [
+          'Invalid blueprint ID',
+          'Error getting blueprint id with',
+        ];
+
+        let shouldDisplayRetry = true;
+        for (let i = 0; i < dontRetryErrors.length; i += 1) {
+          if (e.message.indexOf(dontRetryErrors[i]) > -1) {
+            shouldDisplayRetry = false;
+            break;
+          }
+        }
+
+        let retry = false;
+        if (shouldDisplayRetry) {
+          retry = yield call(
+            retryHandler,
+            types.REOWN_NEW_NANOCONTRACT_RETRY,
+            types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
+          );
+        }
 
         if (retry) {
           shouldAnswer = false;
@@ -575,7 +610,6 @@ export function* processRequest(action) {
         }
       } break;
       default:
-        console.log('Unknown error type:', e.constructor.name);
         break;
     }
 
@@ -593,7 +627,7 @@ export function* processRequest(action) {
           },
         }));
       } catch (error) {
-        log.error('Error rejecting response on sessionRequest', error);
+        log.error('[processRequest] Error rejecting response on sessionRequest', error);
       }
     }
   }
@@ -698,6 +732,8 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ));
       } break;
       case TriggerTypes.SendNanoContractTxConfirmationPrompt: {
+        const tokenDetailsObj = convertAndStoreTokenDetails(request.data.tokenDetails, dispatch);
+
         const sendNanoContractTxResponseTemplate = (accepted) => (data) => resolve({
           type: TriggerResponseTypes.SendNanoContractTxConfirmationResponse,
           data: {
@@ -709,12 +745,17 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         dispatch(showNanoContractSendTxModal(
           sendNanoContractTxResponseTemplate(true),
           sendNanoContractTxResponseTemplate(false),
-          request.data,
+          {
+            ...request.data,
+            tokenDetails: tokenDetailsObj,
+          },
           requestMetadata,
         ));
         break;
       }
       case TriggerTypes.SendTransactionConfirmationPrompt: {
+        const tokenDetailsObj = convertAndStoreTokenDetails(request.data.tokenDetails, dispatch);
+
         const sendTransactionResponseTemplate = (accepted) => (data) => resolve({
           type: TriggerResponseTypes.SendTransactionConfirmationResponse,
           data: {
@@ -726,7 +767,10 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         dispatch(showSendTransactionModal(
           sendTransactionResponseTemplate(true),
           sendTransactionResponseTemplate(false),
-          request.data,
+          {
+            ...request.data,
+            tokenDetails: tokenDetailsObj,
+          },
           requestMetadata
         ));
       } break;
@@ -787,7 +831,6 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         ));
       } break;
       default:
-        console.log('Unknown request type:', request.type);
         reject(new Error('Invalid request'));
     }
   });
@@ -983,11 +1026,6 @@ export function* onSessionProposal(action) {
 
   const networkSettings = yield select(getNetworkSettings);
   try {
-    console.log({
-      accounts: [`hathor:${networkSettings.network}:${firstAddress}`],
-      chains: [`hathor:${networkSettings.network}`],
-      payload: action.payload,
-    });
     yield call(() => walletKit.approveSession({
       id,
       relayProtocol: params.relays[0].protocol,
@@ -1101,12 +1139,18 @@ export function* onSessionDelete(action) {
  * @param {Object} payload.data Transaction data
  * @param {Object} payload.dapp Information about the dApp
  */
-export function* onCreateNanoContractCreateTokenTxRequest({ payload }) {
-  yield* handleDAppRequest(
-    payload,
-    ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX,
-    { passAcceptAction: true },
-  );
+export function onCreateNanoContractCreateTokenTxRequest({ payload }) {
+  /* TODO: Restore this when we add back support for create nano contract create token tx
+   yield* handleDAppRequest(
+     payload,
+     ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX,
+     { passAcceptAction: true },
+   );
+  */
+
+  // Reject all create nano contract create token tx requests for now
+  const { deny } = payload;
+  deny();
 }
 
 export function* onGetBalanceRequest({ payload }) {

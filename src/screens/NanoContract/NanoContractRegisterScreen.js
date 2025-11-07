@@ -127,7 +127,13 @@ export function NanoContractRegisterScreen({ navigation, route }) {
 
   const navigatesToNanoContractTransactions = () => {
     dispatch(nanoContractRegisterReady());
-    navigation.replace('NanoContractDetailsScreen', { ncId: formModel.ncId });
+    navigation.reset({
+      index: 1,
+      routes: [
+        { name: 'Main', params: { screen: 'Home' } },
+        { name: 'NanoContractDetailsScreen', params: { ncId: formModel.ncId } },
+      ],
+    });
   };
 
   useEffect(() => {
@@ -154,7 +160,7 @@ export function NanoContractRegisterScreen({ navigation, route }) {
           <FeedbackModal
             icon={(<Image source={checkIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
             text={feedbackSucceedText}
-            onDismiss={handleFeedbackModalDismiss}
+            onDismiss={navigatesToNanoContractTransactions}
             action={(<NewHathorButton discrete title={t`See contract`} onPress={navigatesToNanoContractTransactions} />)}
           />
         )}

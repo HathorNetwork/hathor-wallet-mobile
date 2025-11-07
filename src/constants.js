@@ -163,7 +163,6 @@ export const REOWN_FEATURE_TOGGLE = 'reown.rollout';
 export const NETWORK_SETTINGS_FEATURE_TOGGLE = 'network-settings.rollout';
 export const NANO_CONTRACT_FEATURE_TOGGLE = 'nano-contract.rollout';
 export const SAFE_BIOMETRY_MODE_FEATURE_TOGGLE = 'safe-biometry-mode.rollout'
-export const SES_FEATURE_TOGGLE = 'ses-mobile.rollout';
 
 /**
  * Default feature toggle values.
@@ -195,23 +194,6 @@ export const NODE_SERVER_TESTNET_URL = 'https://node1.testnet.hathor.network/v1a
 export const EXPLORER_TESTNET_URL = 'https://explorer.testnet.hathor.network/';
 export const EXPLORER_SERVICE_TESTNET_URL = 'https://explorer-service.testnet.hathor.network/';
 export const TX_MINING_SERVICE_TESTNET_URL = 'https://txmining.testnet.hathor.network/';
-
-// Nano testnet settings:
-export const NETWORK_NANO_TESTNET = 'testnet';
-export const FULL_NETWORK_NANO_TESTNET = 'nano-testnet-bravo';
-export const NODE_SERVER_NANO_TESTNET_URL = 'https://node1.bravo.nano-testnet.hathor.network/v1a/';
-export const EXPLORER_NANO_TESTNET_URL = 'https://explorer.bravo.nano-testnet.hathor.network/';
-export const TX_MINING_SERVICE_NANO_TESTNET_URL = 'https://txmining.bravo.nano-testnet.hathor.network/';
-
-export const PRE_SETTINGS_NANO_TESTNET = {
-  stage: STAGE_TESTNET,
-  network: NETWORK_NANO_TESTNET,
-  fullNetwork: FULL_NETWORK_NANO_TESTNET,
-  nodeUrl: NODE_SERVER_NANO_TESTNET_URL,
-  explorerUrl: EXPLORER_NANO_TESTNET_URL,
-  explorerServiceUrl: EXPLORER_SERVICE_TESTNET_URL,
-  txMiningServiceUrl: TX_MINING_SERVICE_NANO_TESTNET_URL,
-};
 
 export const PRE_SETTINGS_TESTNET = {
   stage: STAGE_TESTNET,
@@ -340,8 +322,3 @@ export const NODE_RATE_LIMIT_CONF = {
     delay: 3,
   }
 };
-
-// This key is read during the react-native initialization (read the patch in
-// patches/react-native+0.77.2.patch), to decide whether to activate SES (secure
-// ecmascript)
-export const SHOULD_ENABLE_SES_STORAGE_KEY = 'should-enable-ses';

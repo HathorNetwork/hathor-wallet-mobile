@@ -12,10 +12,10 @@ import {
   View,
   ScrollView,
   TouchableWithoutFeedback,
-  TouchableOpacity,
   Text,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
   reownAccept,
@@ -26,96 +26,63 @@ import NewHathorButton from '../NewHathorButton';
 import { DappContainer } from './NanoContract/DappContainer';
 import { commonStyles } from './theme';
 import { NanoContractIcon } from '../Icons/NanoContract.icon';
-import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 import { DeclineModal } from './NanoContract/DeclineModal';
 import CopyClipboard from '../CopyClipboard';
 
-export const SignOracleDataRequestData = ({ oracle, data }) => {
-  const [showRawData, setShowRawData] = useState(false);
+export const SignOracleDataRequestData = ({ oracle, data }) => (
+  <View style={[commonStyles.card, commonStyles.cardSplit]}>
+    <View style={commonStyles.cardSplitIcon}>
+      <NanoContractIcon type='fill' color={COLORS.white} />
+    </View>
+    <View style={styles.oracleSection}>
+      {/* Oracle Section */}
+      <View>
+        <Text style={styles.property}>{t`Oracle`}</Text>
 
-  return (
-    <View style={[commonStyles.card, commonStyles.cardSplit]}>
-      <View style={commonStyles.cardSplitIcon}>
-        <NanoContractIcon type='fill' color={COLORS.white} />
-      </View>
-      <View style={styles.oracleSection}>
-        {/* Oracle Section */}
-        <View>
-          <Text style={styles.property}>{t`Oracle`}</Text>
-
-          {oracle.isAddress ? (
-            <View>
-              <View style={[styles.labelContainer]}>
-                <Text style={styles.subLabel}>
-                  {t`Address`} {oracle.scriptType && `(${oracle.scriptType})`}
-                </Text>
-              </View>
-
-              <View style={styles.valueContainer}>
-                <View style={styles.valueBox}>
-                  <CopyClipboard
-                    text={oracle.address}
-                    style={styles.copyButton}
-                  />
-                </View>
-              </View>
-
-              {/* Collapsible raw oracle data */}
-              <TouchableOpacity
-                style={styles.toggleContainer}
-                onPress={() => setShowRawData(!showRawData)}
-              >
-                <Text style={styles.toggleText}>
-                  {showRawData ? t`Hide raw oracle data` : t`Show raw oracle data`}
-                </Text>
-                <Text style={styles.toggleIcon}>
-                  {showRawData ? '▼' : '▶'}
-                </Text>
-              </TouchableOpacity>
-
-              {showRawData && (
-                <View style={styles.valueContainer}>
-                  <View style={styles.valueBox}>
-                    <CopyClipboard
-                      text={oracle.raw}
-                      style={styles.copyButton}
-                    />
-                  </View>
-                </View>
-              )}
+        {oracle.isAddress ? (
+          <View>
+            <View style={[styles.labelContainer]}>
+              <Text style={styles.subLabel}>
+                {t`Address`} {oracle.scriptType && `(${oracle.scriptType})`}
+              </Text>
             </View>
-          ) : (
+
             <View style={styles.valueContainer}>
               <View style={styles.valueBox}>
-                <Text style={styles.valueText}>
-                  {oracle.raw}
-                </Text>
+                <CopyClipboard
+                  text={oracle.address}
+                  style={styles.copyButton}
+                />
               </View>
-              <CopyClipboard
-                text={oracle.raw}
-                style={styles.copyButton}
-              />
             </View>
-          )}
-        </View>
-
-        <View style={commonStyles.cardSeparator} />
-
-        {/* Data Section */}
-        <View>
-          <Text style={styles.property}>{t`Data`}</Text>
-          <View style={styles.dataContainer}>
-            <Text style={styles.dataText}>{data}</Text>
           </View>
+        ) : (
+          <View style={[styles.dataContainer, styles.oracleDataContainer]}>
+            <CopyClipboard
+              text={oracle.raw}
+              textStyle={styles.dataText}
+            />
+          </View>
+        )}
+      </View>
+
+      <View style={commonStyles.cardSeparator} />
+
+      {/* Data Section */}
+      <View>
+        <Text style={styles.property}>{t`Data`}</Text>
+        <View style={styles.dataContainer}>
+          <Text style={styles.dataText}>{data}</Text>
         </View>
       </View>
     </View>
-  );
-};
+  </View>
+);
 
 export const SignOracleDataRequest = ({ signOracleData }) => {
   const { dapp, data } = signOracleData;
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const wallet = useSelector((state) => state.wallet);
 
@@ -125,17 +92,16 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
         return { raw: data.oracle, isAddress: false };
       }
 
-      // Convert hex string to Buffer
-      const oracleBuffer = Buffer.from(data.oracle, 'hex');
       const network = wallet.getNetworkObject();
+      const address = new hathorLib.Address(data.oracle, { network });
 
-      const parsedScript = hathorLib.scriptsUtils.parseScript(oracleBuffer, network);
-      if (parsedScript && parsedScript.address) {
+      if (address.isValid()) {
+        const outputScriptType = address.getType();
         return {
           raw: data.oracle,
-          address: parsedScript.address.base58,
+          address: data.oracle,
           isAddress: true,
-          scriptType: parsedScript.type
+          scriptType: outputScriptType
         };
       }
 
@@ -150,19 +116,16 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
     setShowDeclineModal(true);
   };
 
-  const { navigateBack } = useBackButtonHandler(
-    onDeclineTransaction,
-  );
-
   const onAcceptSignOracleDataRequest = () => {
     // Signal the user has accepted the current request and pass the accepted data.
     dispatch(reownAccept());
+    navigation.goBack();
   };
 
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
     dispatch(reownReject());
-    navigateBack();
+    navigation.goBack();
   };
 
   const onDismissDeclineModal = () => {
@@ -273,6 +236,10 @@ const styles = StyleSheet.create({
   copyButton: {
     padding: 4,
   },
+  copyContainer: {
+    alignItems: 'flex-end',
+    marginTop: 8,
+  },
   toggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -293,6 +260,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lowContrastDetail,
     padding: 12,
     borderRadius: 8,
+  },
+  oracleDataContainer: {
+    marginBottom: 12,
   },
   dataText: {
     fontFamily: 'monospace',

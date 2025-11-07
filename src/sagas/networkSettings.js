@@ -10,7 +10,6 @@ import {
   networkSettingsUpdateWaiting,
   types,
   reloadWalletRequested,
-  onExceptionCaptured,
   networkSettingsUpdateReady,
   networkChanged,
   setFullNodeNetworkName,
@@ -276,14 +275,6 @@ export function* persistNetworkSettings(action) {
   }
 
   const wallet = yield select((state) => state.wallet);
-  if (!wallet) {
-    // If we fall into this situation, the app should be killed
-    // for the custom new network settings take effect.
-    const errMsg = t`Wallet not found while trying to persist the custom network settings.`;
-    console.warn(errMsg);
-    yield put(onExceptionCaptured(errMsg, /* isFatal */ true));
-    return;
-  }
 
   // Reset network name when changing networks
   yield put(setFullNodeNetworkName(''));
@@ -293,7 +284,11 @@ export function* persistNetworkSettings(action) {
   yield put(networkChanged());
 
   // Stop wallet and clean its storage without clean its access data.
-  wallet.stop({ cleanStorage: true, cleanAddresses: true, cleanTokens: true });
+  // We might not have a wallet object because this method can be called to connect
+  // to mainnet after a network loading error (before the wallet object is created)
+  if (wallet) {
+    wallet.stop({ cleanStorage: true, cleanAddresses: true, cleanTokens: true });
+  }
 
   // Clean transaction history, addresses and registered tokens from local storage as well
   const storage = STORE.getStorage();
