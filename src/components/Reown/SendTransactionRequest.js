@@ -386,7 +386,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
 
   // Dismiss decline modal without taking action
   const onDismissDeclineModal = () => {
-    onDeclineConfirmation();
+    setShowDeclineModal(false);
   };
 
   // Status check functions
