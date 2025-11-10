@@ -64,7 +64,7 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
               {argEntries.map(([argName, argValue, argType]) => (
                 <View
                   key={argName}
-                  style={commonStyles.cardStackItem}
+                  style={styles.argContainer}
                 >
                   <View style={styles.argPosition}>
                     <Text style={styles.argPositionText}>{argName}</Text>
@@ -129,9 +129,9 @@ const ArgValueRenderer = ({ type, value, network, tokens }) => {
     }
   } else if (type === 'TokenUid') {
     if (value === DEFAULT_TOKEN.uid) {
-      displayValue = DEFAULT_TOKEN.symbol;
+      displayValue = `${DEFAULT_TOKEN.symbol} (${value})`;
     } else if (value in tokens) {
-      displayValue = tokens[value].symbol;
+      displayValue = `${tokens[value].symbol} (${value})`;
     }
   }
 
@@ -143,10 +143,13 @@ const ArgValueRenderer = ({ type, value, network, tokens }) => {
 };
 
 const styles = StyleSheet.create({
+  argContainer: {
+    flexDirection: 'column',
+    gap: 8,
+    marginBottom: 24,
+  },
   argPosition: {
-    flexShrink: 10,
-    width: '30%',
-    paddingRight: 8,
+    width: '100%',
   },
   argPositionText: [
     commonStyles.text,
@@ -157,8 +160,7 @@ const styles = StyleSheet.create({
     }
   ],
   argValue: {
-    flex: 1,
-    maxWidth: '70%',
+    width: '100%',
     backgroundColor: 'hsla(0, 0%, 96%, 1)',
     paddingVertical: 8,
     paddingHorizontal: 12,
