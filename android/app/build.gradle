@@ -89,11 +89,12 @@ android {
         missingDimensionStrategy "react-native-camera", "general"
     }
 
-    // Prevents compression of native libraries (.so files) to preserve 16KB page alignment
-    // from NDK r29. Compression would break the alignment even if NDK compiles it correctly.
+    // Enable legacy packaging to keep native libraries (.so files) compressed in the APK.
+    // This preserves 16KB page alignment required by Google Play for Android 15+ devices.
+    // NDK r29 compiles with proper alignment, and this packaging option maintains it.
     packagingOptions {
         jniLibs {
-            useLegacyPackaging = false
+            useLegacyPackaging = true
         }
     }
     signingConfigs {
