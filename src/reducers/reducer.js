@@ -800,8 +800,8 @@ export const reducer = (state = initialState, action) => {
 
     case types.TOKEN_SWAP_FETCH_SWAP_QUOTE_SUCCESS:
       return onTokenSwapFetchSwapQuoteSuccess(state, action);
-    case types.TOKEN_SWAP_FETCH_SWAP_DATA_ERROR:
-      return onTokenSwapFetchSwapDataError(state);
+    case types.TOKEN_SWAP_FETCH_SWAP_QUOTE_ERROR:
+      return onTokenSwapFetchQuoteError(state);
     case types.TOKEN_SWAP_RESET_SWAP_DATA:
       return onTokenSwapResetSwapData(state);
     default:
@@ -2319,7 +2319,7 @@ export const onTokenSwapFetchSwapQuoteSuccess = (state, { payload }) => ({
   },
 });
 
-export const onTokenSwapFetchSwapDataError = (state) => ({
+export const onTokenSwapFetchQuoteError = (state) => ({
   ...state,
   tokenSwap: {
     ...state.tokenSwap,

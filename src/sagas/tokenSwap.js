@@ -5,89 +5,84 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { bigIntUtils } from '@hathor/wallet-lib';
 import {
   takeLatest,
   takeEvery,
   select,
-  cancel,
-  cancelled,
   all,
   put,
   call,
-  race,
-  take,
-  fork,
-  spawn,
+  cancelled,
 } from 'redux-saga/effects';
-import { get, isEmpty } from 'lodash';
 import {
   types,
   tokenSwapFetchAllowedTokensError,
   tokenSwapSetAllowedTokens,
-  tokenSwapFetchSwapDataError,
-  tokenSwapFetchSwapQuoteSuccess,
+  tokenSwapFetchQuoteSuccess,
+  tokenSwapFetchQuoteFailed,
 } from '../actions';
+import { logger } from '../logger';
+import { selectTokenSwapContractId } from '../utils';
+import { findBestTokenSwap } from '../utils/tokenSwap';
 
-const ALLOWED_TOKENS_URL = 'https://httpbin.org/json'
+const log = logger('token-swap-saga');
+
+const ALLOWED_TOKENS_URL = 'https://wallet.swap.allowed-tokens.hathor.network'
 
 export function* handleFetchAllowedTokensRequest() {
-  const obj = {
-    pool_manager: 'fake-contract-id',
-    tokens: [
-      { symbol: 'HTR', name: 'Hathor', uid: '00' },
-      { symbol: 'CTHOR', name: 'Cathor', uid: '00000000f76262bb1cca969d952ac2f0e85f88ec34c31f26a13eb3c31e29d4ed' },
-    ],
-  };
-  yield put(tokenSwapSetAllowedTokens({
-    networks: {
-      testnet: obj,
-      mainnet: obj,
-    }
-  }));
-  return;
-
-  // XXX: We could have an AbortionController for cancellation
-  let allowedTokenContents;
+  const abortController = new AbortController();
   try {
-    const response = yield call(() => fetch(ALLOWED_TOKENS_URL));
+    const response = yield call(fetch, ALLOWED_TOKENS_URL, { signal: abortController.signal });
     if (!response.ok) {
-      console.error(`[allowed-tokens] request failed with ${response.status}`);
+      log.error(`[allowed-tokens] request failed with ${response.status}`);
       yield put(tokenSwapFetchAllowedTokensError());
       return;
     }
 
-    allowedTokenContents = response.json();
+    const allowedTokenContents = yield call(() => response.json());
+    yield put(tokenSwapSetAllowedTokens(allowedTokenContents));
   } catch (err) {
     // Some error happened
-    console.error(err);
+    log.error(err);
     yield put(tokenSwapFetchAllowedTokensError());
     return;
-  }
-
-  yield put(tokenSwapSetAllowedTokens(allowedTokenContents));
-}
-
-
-export function* handleFetchSwapQuoteRequest() {
-  try {
-    const swapQuote = yield call(getSwapQuote);
-    // put swap quote and calculate amount?
-    yield put(tokenSwapFetchSwapQuoteSuccess(swapQuote));
-  } catch (err) {
-    // Some error happened
-    console.error(err);
-    yield put(tokenSwapFetchSwapDataError());
   } finally {
     if (yield cancelled()) {
-      // This task has been cancelled, we should just ignore changes?
+      abortController.abort();
+    }
+  }
+}
+
+function* fetchTokenSwapQuote(action) {
+  const { direction, amountStr, tokenIn, tokenOut } = action.payload;
+  const amount = BigInt(amountStr);
+
+  try {
+    const contractId = yield select(selectTokenSwapContractId);
+    const quote = yield call(findBestTokenSwap, direction, contractId, amount, tokenIn, tokenOut);
+
+    log.debug(`Success fetching token swap quote.`);
+    yield put(tokenSwapFetchQuoteSuccess(quote));
+  } catch (e) {
+    log.error('Error while fetching token swap quote.', e);
+    yield put(tokenSwapFetchQuoteFailed());
+  } finally {
+    if (yield cancelled()) {
+      log.debug('token swap quote saga cancelled.');
     }
   }
 }
 
 export function* saga() {
   yield all([
-    takeLatest(types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS, handleFetchAllowedTokensRequest),
-    // takeLatest(types.TOKEN_SWAP_FETCH_SWAP_QUOTE, handleFetchAllowedTokensRequest),
-    // takeEvery(types.TOKEN_SWAP_START_SWAP, handleFetchAllowedTokensRequest),
+    /**
+     * `takeLatest` will cancel any ongoing requests if a new one arrives.
+     * If the user changes any details of the swap (amounts, tokens, etc) a new request will
+     * be made, this makes the last request "stale", and if it was still on-going it will be
+     * cancelled by `takeLatest` so we do not show a stale quote to the user.
+     */
+    takeLatest(types.TOKEN_SWAP_FETCH_SWAP_QUOTE, fetchTokenSwapQuote),
+    takeEvery(types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS, handleFetchAllowedTokensRequest),
   ]);
 }

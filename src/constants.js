@@ -336,3 +336,8 @@ export const NODE_RATE_LIMIT_CONF = {
     delay: 3,
   }
 };
+
+/**
+ * Accepted slippage (in %) when swapping tokens.
+ */
+export const TOKEN_SWAP_SLIPPAGE = 0.5;

@@ -242,7 +242,7 @@ export const types = {
   // Set the swap data confirmed by the user
   TOKEN_SWAP_FETCH_SWAP_QUOTE_SUCCESS: 'TOKEN_SWAP_FETCH_SWAP_QUOTE_SUCCESS',
   // Error happened during the fetch swap data
-  TOKEN_SWAP_FETCH_SWAP_DATA_ERROR: 'TOKEN_SWAP_FETCH_SWAP_DATA_ERROR',
+  TOKEN_SWAP_FETCH_SWAP_QUOTE_ERROR: 'TOKEN_SWAP_FETCH_SWAP_QUOTE_ERROR',
 
   // Clean swap data when user does not confirm the swap
   TOKEN_SWAP_RESET_SWAP_DATA: 'TOKEN_SWAP_RESET_SWAP_DATA',
@@ -1655,17 +1655,23 @@ export const tokenSwapSetOutputToken = (token) => ({
   payload: token,
 });
 
-export const tokenSwapFetchSwapQuote = () => ({
+export const tokenSwapFetchSwapQuote = (direction, amountStr, tokenIn, tokenOut) => ({
   type: types.TOKEN_SWAP_FETCH_SWAP_QUOTE,
+  payload: {
+    direction,
+    amountStr,
+    tokenIn,
+    tokenOut,
+  }
 });
 
-export const tokenSwapFetchSwapQuoteSuccess = (swapQuote) => ({
+export const tokenSwapFetchQuoteSuccess = (swapQuote) => ({
   type: types.TOKEN_SWAP_FETCH_SWAP_QUOTE_SUCCESS,
   payload: swapQuote,
 });
 
-export const tokenSwapFetchSwapDataError = () => ({
-  type: types.TOKEN_SWAP_FETCH_SWAP_DATA_ERROR,
+export const tokenSwapFetchQuoteFailed = () => ({
+  type: types.TOKEN_SWAP_FETCH_SWAP_QUOTE_ERROR,
 });
 
 export const tokenSwapResetSwapData = () => ({
