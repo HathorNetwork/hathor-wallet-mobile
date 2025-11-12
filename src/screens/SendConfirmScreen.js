@@ -103,7 +103,7 @@ const SendConfirmScreen = () => {
       initialRoute = 'SendAddressInput';
     }
 
-    NavigationService.navigate('Main', { screen: 'Home' });
+    NavigationService.resetToMain();
 
     // Give enough time for the navigation to complete so the user doesn't see
     // the SendStack reseting to the initial route.
