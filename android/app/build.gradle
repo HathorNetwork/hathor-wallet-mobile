@@ -90,8 +90,11 @@ android {
     }
 
     // Prevents compression of native libraries (.so files) to preserve 16KB page alignment
-    // from NDK r29. Compression would break the alignment even if NDK compiles it correctly.
-    packagingOptions {
+    // from NDK r29. Setting useLegacyPackaging = false (or leaving null) ensures .so files
+    // are stored UNCOMPRESSED and page-aligned, which is required for 16KB page size support.
+    // Note: "legacy" refers to pre-API23 behavior which compressed .so files.
+    // Required for Google Play 16KB page size support (mandatory from Nov 1, 2025).
+    packaging {
         jniLibs {
             useLegacyPackaging = false
         }
