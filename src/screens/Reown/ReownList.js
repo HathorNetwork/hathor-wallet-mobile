@@ -30,6 +30,7 @@ import {
   setWCConnectionFailed,
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
+import NavigationService from '../../NavigationService';
 
 const connectFailedText = t`There was an error connecting. Please try again later.`;
 
@@ -133,8 +134,7 @@ export default function ReownList({ navigation }) {
   };
 
   const onBackPress = () => {
-    const popToAction = StackActions.popTo('Main');
-    navigation.dispatch(popToAction);
+    NavigationService.resetToMain();
   }
 
   return (
