@@ -10,7 +10,6 @@ on:
   pull_request:
     branches:
     - master
-    - feat/token-swap-base
     - release
     - release-candidate
 jobs:
