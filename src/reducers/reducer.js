@@ -20,6 +20,8 @@ import {
   PRE_SETTINGS_MAINNET,
   REOWN_SEND_TX_STATUS,
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
+  TOKEN_SWAP_ALLOWED_TOKEN_STATUS,
+  TOKEN_SWAP_QUOTE_STATUS,
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -534,6 +536,23 @@ const initialState = {
    * the wallet saga.
    */
   fullNodeNetworkName: null,
+  /** @type {TOKEN_SWAP_ALLOWED_TOKEN_STATUS} Status of the allowed tokens request */
+  tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.READY,
+  /** @type {Object|null} Token swap allowed tokens configuration file for all networks. */
+  tokenSwapAllowedTokens: null,
+  /**
+   * @type {Object}
+   * @property {null|TokenData} inputToken Token being traded in
+   * @property {null|TokenData} outputToken Token being swapped out
+   * @property {null|TokenSwapQuote} swapPathQuote Latest quote from the pool manager for the swap
+   * @property {TOKEN_SWAP_QUOTE_STATUS} loadSwapPathQuoteStatus Status of the quote request
+   */
+  tokenSwap: {
+    inputToken: null,
+    outputToken: null,
+    swapPathQuote: null,
+    loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.READY,
+  },
 };
 
 export const reducer = (state = initialState, action) => {
@@ -764,6 +783,27 @@ export const reducer = (state = initialState, action) => {
       return onCreateNanoContractCreateTokenTxRetryDismiss(state);
     case types.SET_FULLNODE_NETWORK_NAME:
       return onSetFullNodeNetworkName(state, action);
+
+    case types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS:
+      return onTokenSwapFetchAllowedTokens(state);
+    case types.TOKEN_SWAP_SET_ALLOWED_TOKENS:
+      return onTokenSwapSetAllowedTokens(state, action);
+    case types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS_ERROR:
+      return onTokenSwapFetchAllowedTokensError(state);
+
+    case types.TOKEN_SWAP_SET_INPUT_TOKEN:
+      return onTokenSwapSetInputToken(state, action);
+    case types.TOKEN_SWAP_SET_OUTPUT_TOKEN:
+      return onTokenSwapSetOutputToken(state, action);
+    case types.TOKEN_SWAP_SWITCH_TOKENS:
+      return onTokenSwapSwitchTokens(state);
+
+    case types.TOKEN_SWAP_FETCH_SWAP_QUOTE_SUCCESS:
+      return onTokenSwapFetchSwapQuoteSuccess(state, action);
+    case types.TOKEN_SWAP_FETCH_SWAP_QUOTE_ERROR:
+      return onTokenSwapFetchQuoteError(state);
+    case types.TOKEN_SWAP_RESET_SWAP_DATA:
+      return onTokenSwapResetSwapData(state);
     default:
       return state;
   }
@@ -2204,5 +2244,102 @@ export const onSetCreateNanoContractCreateTokenTxStatus = (state, { payload }) =
       ...state.reown.createNanoContractCreateTokenTx,
       status: payload,
     },
+  },
+});
+
+export const onTokenSwapFetchAllowedTokens = (state) => ({
+  ...state,
+  tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.LOADING,
+});
+
+export const onTokenSwapSetAllowedTokens = (state, { payload }) => ({
+  ...state,
+  tokenSwapAllowedTokens: payload.allowedTokens,
+  tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.SUCCESSFUL,
+  tokenSwap: {
+    ...state.tokenSwap,
+    inputToken: payload.allowedTokens[0],
+    outputToken: payload.allowedTokens[1],
+  },
+});
+
+export const onTokenSwapFetchAllowedTokensError = (state) => ({
+  ...state,
+  tokenSwapAllowedTokensRequestStatus: TOKEN_SWAP_ALLOWED_TOKEN_STATUS.FAILED,
+  tokenSwapAllowedTokens: null,
+  tokenSwap: {
+    ...state.tokenSwap,
+    inputToken: null,
+    outputToken: null,
+    swapPathQuote: null,
+  },
+});
+
+export const onTokenSwapSetInputToken = (state, { payload }) => {
+  const newState = {
+    ...state,
+    tokenSwap: {
+      ...state.tokenSwap,
+    },
+  };
+  if (state.tokenSwap.outputToken?.uid === payload.uid) {
+    // In this case the chosen token is the same as the output token, so we switch them.
+    newState.tokenSwap.outputToken = { ...newState.tokenSwap.inputToken };
+  }
+
+  newState.tokenSwap.inputToken = payload;
+  return newState;
+};
+
+export const onTokenSwapSetOutputToken = (state, { payload }) => {
+  const newState = {
+    ...state,
+    tokenSwap: {
+      ...state.tokenSwap,
+    },
+  };
+  if (state.tokenSwap.inputToken?.uid === payload.uid) {
+    // In this case the chosen token is the same as the input token, so we switch them.
+    newState.tokenSwap.inputToken = { ...newState.tokenSwap.outputToken };
+  }
+  newState.tokenSwap.outputToken = payload;
+  return newState;
+};
+
+export const onTokenSwapFetchSwapQuoteSuccess = (state, { payload }) => ({
+  ...state,
+  tokenSwap: {
+    ...state.tokenSwap,
+    swapPathQuote: payload,
+    loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.SUCCESSFUL,
+  },
+});
+
+export const onTokenSwapFetchQuoteError = (state) => ({
+  ...state,
+  tokenSwap: {
+    ...state.tokenSwap,
+    swapPathQuote: null,
+    loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.FAILED,
+  },
+});
+
+export const onTokenSwapResetSwapData = (state) => ({
+  ...state,
+  tokenSwap: {
+    ...state.tokenSwap,
+    inputToken: null,
+    outputToken: null,
+    swapPathQuote: null,
+    loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.READY,
+  },
+});
+
+export const onTokenSwapSwitchTokens = (state) => ({
+  ...state,
+  tokenSwap: {
+    ...state.tokenSwap,
+    inputToken: state.tokenSwap.outputToken,
+    outputToken: state.tokenSwap.inputToken,
   },
 });

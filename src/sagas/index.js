@@ -8,6 +8,7 @@
 import { all, call, put, spawn } from 'redux-saga/effects';
 import { saga as walletSagas } from './wallet';
 import { saga as tokensSagas } from './tokens';
+import { saga as tokenSwapSagas } from './tokenSwap';
 import { saga as pushNotificationSaga } from './pushNotification';
 import { saga as errorHandlerSagas } from './errorHandler';
 import { saga as featureToggleSagas } from './featureToggle';
@@ -27,6 +28,7 @@ const log = logger('rootSaga');
 const sagas = {
   walletSagas: { saga: walletSagas, retryCount: 0, critical: true },
   tokensSagas: { saga: tokensSagas, retryCount: 0, critical: true },
+  tokenSwapSagas: { saga: tokenSwapSagas, retryCount: 0, critical: true },
   pushNotificationSaga: { saga: pushNotificationSaga, retryCount: 0, critical: true },
   networkSettingsSagas: { saga: networkSettingsSagas, retryCount: 0, critical: true },
   errorHandlerSagas: { saga: errorHandlerSagas, retryCount: 0, critical: true },

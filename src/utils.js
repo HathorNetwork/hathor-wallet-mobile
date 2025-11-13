@@ -16,7 +16,7 @@ import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import moment from 'moment';
 import baseStyle from './styles/init';
-import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE } from './constants';
+import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE, TOKEN_SWAP_FEATURE_TOGGLE } from './constants';
 import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_BIOMETRY_KEY, SAFE_BIOMETRY_FEATURE_FLAG_KEY, FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
@@ -615,6 +615,21 @@ export const getNanoContractFeatureToggle = (state) => (
 export const isNanoContractsEnabled = (state) => (
   getNanoContractFeatureToggle(state)
   && get(state.serverInfo, 'nano_contracts_enabled', false)
+);
+
+/*
+ * Checks if token swap should be enabled
+ *
+ * Token swap should only be enabled if both the feature flag
+ * and Nano contracts are enabled
+ *
+ * @param {Object} state Redux store state
+ *
+ * @returns {boolean} Whether Token swap should be enabled
+ */
+export const isTokenSwapEnabled = (state) => (
+  isNanoContractsEnabled(state)
+  && get(state.featureToggles, TOKEN_SWAP_FEATURE_TOGGLE, false)
 );
 
 /**
