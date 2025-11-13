@@ -27,7 +27,7 @@ import {
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
 import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
-import { setSupportedBiometry } from './utils';
+import { setSupportedBiometry, isTokenSwapEnabled } from './utils';
 import {
   appStateUpdate,
   lockScreen,
@@ -105,6 +105,11 @@ import UnifiedQRScanner from './screens/UnifiedQRScanner';
 import RegisterOptionsScreen from './screens/RegisterOptionsScreen';
 import { NavigationSerializingProvider } from './hooks/navigation';
 import { SendTransactionRequestScreen } from './screens/Reown/SendTransactionRequestScreen';
+import TokenSwap from './screens/TokenSwap';
+import TokenSwapLoadingScreen from './screens/TokenSwapLoadingScreen';
+import TokenSwapTokenList from './screens/TokenSwapTokenList';
+import { SwapIcon } from './components/Icons/Swap.icon';
+import TokenSwapReview from './screens/TokenSwapReview';
 
 /**
  * This Stack Navigator is exhibited when there is no wallet initialized on the local storage.
@@ -383,6 +388,7 @@ const tabBarIconMap = {
  */
 const TabNavigator = () => {
   const Tab = createBottomTabNavigator();
+  const isSwapEnabled = useSelector(isTokenSwapEnabled);
 
   return (
     <Tab.Navigator
@@ -391,6 +397,9 @@ const TabNavigator = () => {
           const { name } = route;
           const iconName = tabBarIconMap[name];
           const colorName = focused ? COLORS.primary : COLORS.textColorShadow;
+          if (name === 'Swap') {
+            return (<SwapIcon size={24} color={colorName} />)
+          }
           return (<IconTabBar name={iconName} size={24} color={colorName} />);
         },
         tabBarStyle: {
@@ -408,6 +417,7 @@ const TabNavigator = () => {
         name='Home'
         component={IS_MULTI_TOKEN ? DashboardStack : MainScreen}
       />
+      { isSwapEnabled && <Tab.Screen name='Swap' component={TokenSwapLoadingScreen} /> }
       <Tab.Screen name='Send' component={SendStack} />
       <Tab.Screen name='Receive' component={ReceiveScreen} />
       <Tab.Screen name='Settings' component={Settings} />
@@ -504,6 +514,10 @@ const AppStack = () => {
         <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
         <Stack.Screen name='TokenDetail' component={TokenDetail} />
         <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
+        <Stack.Screen name='TokenSwap' component={TokenSwap} />
+        <Stack.Screen name='TokenSwapReview' component={TokenSwapReview} />
+        <Stack.Screen name='TokenSwapListInputToken' component={TokenSwapTokenList('input')} />
+        <Stack.Screen name='TokenSwapListOutputToken' component={TokenSwapTokenList('output')} />
       </Stack.Navigator>
     </SafeAreaView>
   );

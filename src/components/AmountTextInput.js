@@ -52,12 +52,12 @@ const AmountTextInput = forwardRef((props, ref) => {
   useEffect(() => {
     // Update internal state if value prop changes externally
     if (props.value !== text) {
-      setText(props.value || '');
+      onChangeText(props.value);
     }
   }, [props.value]);
 
   const onChangeText = (newText) => {
-    if (newText === '') {
+    if (newText === '' || newText == null) {
       // Need to handle empty string separately
       setText('');
       props.onAmountUpdate(newText, null);
