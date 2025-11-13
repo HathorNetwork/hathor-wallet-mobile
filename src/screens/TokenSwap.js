@@ -319,7 +319,7 @@ const TokenSwap = () => {
                   </View>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Slippage</Text>
-                    <Text style={styles.quoteValue}>0.5%</Text>
+                    <Text style={styles.quoteValue}>{`${TOKEN_SWAP_SLIPPAGE}%`}</Text>
                   </View>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Price impact</Text>
