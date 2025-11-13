@@ -7,13 +7,13 @@
 
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigation, useParams } from '../hooks/navigation';
 import { t } from 'ttag';
+import { useNavigation, useParams } from '../hooks/navigation';
 
 import HathorHeader from '../components/HathorHeader';
 import TokenSelect from '../components/TokenSelect';
 import { tokenSwapSetInputToken, tokenSwapSetOutputToken } from '../actions';
-import { selectTokenSwapAllowedTokens } from '../utils';
+import { selectTokenSwapAllowedTokens } from '../utils/tokenSwap';
 
 /**
  * @param {'input'|'output'} direction If the token chosen will be the swap input or output.
@@ -26,8 +26,8 @@ export default function TokenSwapTokenList(direction) {
     const params = useParams();
     const token = params.token ?? null;
 
-    const tokenMetadata = useSelector(state => state.tokenMetadata);
-    const tokensBalance = useSelector(state => state.tokensBalance);
+    const tokenMetadata = useSelector((state) => state.tokenMetadata);
+    const tokensBalance = useSelector((state) => state.tokensBalance);
     const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
 
     const onItemPress = (item) => {

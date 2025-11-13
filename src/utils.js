@@ -21,7 +21,6 @@ import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
 import { logger } from './logger';
-import { getNetworkSettings } from './sagas/helpers';
 
 const log = logger('utils');
 
@@ -767,61 +766,3 @@ export const getResultHelper = async (fn) => {
     return [e, null];
   }
 };
-
-/**
- * @typedef {Object} TokenData
- * @property {string} name
- * @property {string} symbol
- * @property {string} uid
- * @property {string} [icon]
- */
-
-/**
- * Selector method to get the correct token swap data for the connected network.
- * This method assumes that the network settings are up-to-date.
- * Will return `null` if the allowed token list is invalid or not present for the current network.
- * @param {Object} state
- * @returns {null|Object}
- */
-export function selectTokenSwapData(state) {
-  const networkSettings = getNetworkSettings(state);
-  const network = networkSettings.network;
-  if (!(state.tokenSwapAllowedTokens && state.tokenSwapAllowedTokens.networks)) {
-    return null;
-  }
-  if (!state.tokenSwapAllowedTokens.networks[network]) {
-    return null;
-  }
-  return state.tokenSwapAllowedTokens.networks[network];
-}
-
-/**
- * Selector method to get the correct allowed tokens for the connected network.
- * This method assumes that the network settings are up-to-date.
- * Will return `null` if the allowed token list is invalid or not present for the current network.
- * @param {Object} state
- * @returns {null|TokenData[]}
- */
-export function selectTokenSwapAllowedTokens(state) {
-  const data = selectTokenSwapData(state);
-  if (!data) {
-    return null;
-  }
-  return data.tokens;
-}
-
-
-/**
- * Selector method to get the correct token swap contractId for the connected network.
- * This method assumes that the network settings are up-to-date.
- * Will return `null` if the allowed token list is invalid or not present for the current network.
- * @param {Object} state
- * @returns {null|string}
- */
-export function selectTokenSwapContractId(state) {
-  const data = selectTokenSwapData(state);
-  if (!data) {
-    return null;
-  }
-  return data.pool_manager;
-}

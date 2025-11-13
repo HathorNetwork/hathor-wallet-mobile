@@ -20,7 +20,7 @@ import Spinner from '../components/Spinner';
 import { TOKEN_SWAP_ALLOWED_TOKEN_STATUS } from '../constants';
 import { useNavigation } from '../hooks/navigation';
 import { COLORS } from '../styles/themes';
-import { selectTokenSwapAllowedTokens } from '../utils';
+import { selectTokenSwapAllowedTokens } from '../utils/tokenSwap';
 
 export default function TokenSwapLoadingScreen() {
   const dispatch = useDispatch();

@@ -7,6 +7,7 @@
 
 import { ncApi } from '@hathor/wallet-lib';
 import { get } from 'lodash';
+import { getNetworkSettings } from '../sagas/helpers';
 
 /**
  * Definition of a swap step.
@@ -22,13 +23,21 @@ import { get } from 'lodash';
  * Parsed token swap quote.
  *
  * @typedef {Object} TokenSwapQuote
- * @property {'input'|'output'} direction If the user decided the deposit (input) or withdraw (output) amount.
+ * @property {'input'|'output'} direction User decided the deposit (in) or withdraw (out).
  * @property {TokenSwapPathStep[]} path Path the token swap will take.
  * @property {string} pathStr Value returned by the contract before parsing.
  * @property {number[]} amounts Value of the swap at each step.
  * @property {number} amount_in Amount to deposited.
  * @property {number} amount_out Amount to be withdrawn.
- * @property {number} price_impact percentage value of how the swap will affect the price (with precision).
+ * @property {number} price_impact percentage value of how the swap will affect the price.
+ */
+
+/**
+ * @typedef {Object} TokenData
+ * @property {string} name
+ * @property {string} symbol
+ * @property {string} uid
+ * @property {string} [icon]
  */
 
 /**
@@ -90,21 +99,20 @@ export function calcAmountWithSlippage(direction, amount, slippage) {
     // amount (1 - slippage/100) = amount (1000 - slippage*10) / 1000
     // We use slippage*10 because it can be a fraction (e.g. 0.5)
     // The floor value will automatically be used since BigInt cannot be fractional.
-    return (BigInt(amount) * (1000n - BigInt(Math.ceil(slippage*10)))) / 1000n;
-  } else if (direction === 'output') {
+    return (BigInt(amount) * (1000n - BigInt(Math.ceil(slippage * 10)))) / 1000n;
+  } if (direction === 'output') {
     // amount + slippage% but
     // Same reasoning as input direction, but when a fractional value remains
     // we have to use the ceiling value.
-    const numerator = (BigInt(amount) * (1000n + BigInt(Math.ceil(slippage*10))));
+    const numerator = (BigInt(amount) * (1000n + BigInt(Math.ceil(slippage * 10))));
     const remainder = numerator % 1000n;
     let value = numerator / 1000n;
     if (remainder !== 0n) {
       value += 1n;
     }
     return value;
-  } else {
-    throw TokenSwapDirectionError();
   }
+  throw TokenSwapDirectionError();
 }
 
 /**
@@ -173,20 +181,20 @@ function buildTokenSwapActions(quote, tokenIn, tokenOut, slippage) {
  */
 function getTokenSwapMethod(quote) {
   const methods = {
-    'input': {
-      'single': 'swap_exact_tokens_for_tokens',
-      'multi': 'swap_exact_tokens_for_tokens_through_path',
+    input: {
+      single: 'swap_exact_tokens_for_tokens',
+      multi: 'swap_exact_tokens_for_tokens_through_path',
     },
-    'output': {
-      'single': 'swap_tokens_for_exact_tokens',
-      'multi': 'swap_tokens_for_exact_tokens_through_path',
+    output: {
+      single: 'swap_tokens_for_exact_tokens',
+      multi: 'swap_tokens_for_exact_tokens_through_path',
     },
   };
 
   if (quote.path.length === 0) {
     throw new TokenSwapPathError();
   }
-  
+
   const pathN = quote.path.length > 1 ? 'multi' : 'single';
   const method = get(methods, `${quote.direction}.${pathN}`, null);
   if (method === null) {
@@ -198,12 +206,13 @@ function getTokenSwapMethod(quote) {
 /**
  * Fetch the token swap information for the proposed swap.
  * The swap being proposed will deposit `tokenIn` and withdraw `tokenOut` from the `contractId`.
- * Depending on the direction the `amount` the user chose can either be for deposit (input) or withdraw (output).
+ * Depending on the direction the `amount` the user chose can either be for deposit (input)
+ * or withdraw (output).
  * This method will find the best path and value of the tokens to make the swap happen.
  *
  * @param {'input'|'output'} direction Direction of the swap
  * @param {string} contractId The pool manager to find the swap
- * @param {bigint} amount Amount to swap, may be the input or output amount depending on the direction
+ * @param {bigint} amount Amount to swap, may be the input or output amount based on the direction
  * @param {string} tokenIn Token UID of the deposited token
  * @param {string} tokenOut Token UID of the withdrawn token
  * @returns {Promise<TokenSwapQuote>}
@@ -237,7 +246,7 @@ export async function findBestTokenSwap(direction, contractId, amount, tokenIn, 
 
     return {
       direction,
-      path: data.path.split(',').map(step => parseQuotePathStep(step)),
+      path: data.path.split(',').map((step) => parseQuotePathStep(step)),
       pathStr: data.path,
       amounts: data.amounts,
       amount_out: direction === 'input' ? data.amount_out : amount,
@@ -278,4 +287,53 @@ export function buildTokenSwap(contractId, quote, tokenIn, tokenOut, slippage) {
 
   // Method and data required to make the token swap
   return [method, data];
+}
+
+/**
+ * Selector method to get the correct token swap data for the connected network.
+ * This method assumes that the network settings are up-to-date.
+ * Will return `null` if the allowed token list is invalid or not present for the current network.
+ * @param {Object} state
+ * @returns {null|Object}
+ */
+export function selectTokenSwapData(state) {
+  const networkSettings = getNetworkSettings(state);
+  const { network } = networkSettings;
+  if (!(state.tokenSwapAllowedTokens && state.tokenSwapAllowedTokens.networks)) {
+    return null;
+  }
+  if (!state.tokenSwapAllowedTokens.networks[network]) {
+    return null;
+  }
+  return state.tokenSwapAllowedTokens.networks[network];
+}
+
+/**
+ * Selector method to get the correct allowed tokens for the connected network.
+ * This method assumes that the network settings are up-to-date.
+ * Will return `null` if the allowed token list is invalid or not present for the current network.
+ * @param {Object} state
+ * @returns {null|TokenData[]}
+ */
+export function selectTokenSwapAllowedTokens(state) {
+  const data = selectTokenSwapData(state);
+  if (!data) {
+    return null;
+  }
+  return data.tokens;
+}
+
+/**
+ * Selector method to get the correct token swap contractId for the connected network.
+ * This method assumes that the network settings are up-to-date.
+ * Will return `null` if the allowed token list is invalid or not present for the current network.
+ * @param {Object} state
+ * @returns {null|string}
+ */
+export function selectTokenSwapContractId(state) {
+  const data = selectTokenSwapData(state);
+  if (!data) {
+    return null;
+  }
+  return data.pool_manager;
 }
