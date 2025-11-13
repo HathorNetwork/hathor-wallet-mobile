@@ -58,7 +58,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:627
+#: src/models.js:107 src/utils.js:642
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -213,32 +213,32 @@ msgstr "PIN-коды не совпадают. Попробуйте еще раз
 msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
-#: src/screens/CreateTokenAmount.js:88 src/screens/CreateTokenAmount.js:100
+#: src/screens/CreateTokenAmount.js:86 src/screens/CreateTokenAmount.js:98
 #: src/screens/SendAmountInput.js:92
 msgid "Invalid amount"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:150 src/screens/CreateTokenConfirm.js:154
+#: src/screens/CreateTokenAmount.js:148 src/screens/CreateTokenConfirm.js:154
 #: src/screens/CreateTokenDepositNotice.js:42 src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
 msgstr "СОЗДАТЬ ТОКЕН"
 
-#: src/screens/CreateTokenAmount.js:158
+#: src/screens/CreateTokenAmount.js:156
 #, javascript-format
 msgid "Amount of ${ name } (${ symbol })"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:176
+#: src/screens/CreateTokenAmount.js:174
 msgid "Deposit:"
 msgstr "Депозит:"
 
-#: src/screens/CreateTokenAmount.js:180
+#: src/screens/CreateTokenAmount.js:178
 #, javascript-format
 msgid "You have ${ amountAvailableText } ${ nativeSymbol } available"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:185 src/screens/CreateTokenName.js:64
+#: src/screens/CreateTokenAmount.js:183 src/screens/CreateTokenName.js:64
 #: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:168
@@ -258,6 +258,7 @@ msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
 #: src/screens/CreateTokenConfirm.js:112 src/screens/SendConfirmScreen.js:85
+#: src/screens/TokenSwapReview.js:118
 msgid "Building transaction"
 msgstr ""
 
@@ -448,7 +449,7 @@ msgstr "Введите seed-фразу"
 #: src/components/Reown/SendTransactionRequest.js:525
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:168
-#: src/screens/PinScreen.js:283
+#: src/screens/PinScreen.js:283 src/screens/TokenSwapLoadingScreen.js:90
 msgid "Try again"
 msgstr ""
 
@@ -790,15 +791,17 @@ msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:70
+#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:96
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
 #: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:83
+#: src/screens/TokenSwapReview.js:116
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
 #: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:84
+#: src/screens/TokenSwapReview.js:117
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
@@ -886,6 +889,43 @@ msgstr ""
 #: src/screens/TokenDetail.js:38
 msgid "Unregister"
 msgstr "Отменить регистрацию"
+
+#: src/screens/TokenSwap.js:213
+#, javascript-format
+msgid "Balance: ${ amount }"
+msgstr ""
+
+#: src/screens/TokenSwap.js:252
+msgid "TOKEN SWAP"
+msgstr ""
+
+#: src/screens/TokenSwap.js:345
+msgid "REVIEW"
+msgstr ""
+
+#: src/screens/TokenSwapLoadingScreen.js:84
+msgid "There's been an error loading the token swap protocol."
+msgstr ""
+
+#: src/screens/TokenSwapLoadingScreen.js:99
+msgid "Loading Token Swap"
+msgstr ""
+
+#: src/screens/TokenSwapReview.js:128
+msgid "REVIEW TOKEN SWAP"
+msgstr ""
+
+#: src/screens/TokenSwapReview.js:137
+msgid "Your swap was successful"
+msgstr ""
+
+#: src/screens/TokenSwapReview.js:193
+msgid "SWAP"
+msgstr ""
+
+#: src/screens/TokenSwapTokenList.js:43
+msgid "TOKENS"
+msgstr ""
 
 #.  If none of the patterns match, show an error or handle accordingly
 #: src/screens/UnifiedQRScanner.js:77

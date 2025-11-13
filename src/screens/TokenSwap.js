@@ -15,14 +15,14 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
-import { SwapIcon } from '../components/Icons/Swap.icon';
 import { useDispatch, useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
 import { get } from 'lodash';
+import { SwapIcon } from '../components/Icons/Swap.icon';
 
-import { renderValue, selectTokenSwapAllowedTokens } from '../utils';
-import { calcAmountWithSlippage } from '../utils/tokenSwap';
+import { renderValue } from '../utils';
+import { calcAmountWithSlippage, selectTokenSwapAllowedTokens } from '../utils/tokenSwap';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -42,7 +42,6 @@ import {
 import NavigationService from '../NavigationService';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 
-
 function getAvailableAmount(token, tokensBalance) {
   if (!token) {
     return 0n;
@@ -50,17 +49,15 @@ function getAvailableAmount(token, tokensBalance) {
   return get(tokensBalance, `${token.uid}.data.available`, 0n);
 }
 
-const SwapDivider = ({ onPress }) => {
-  return (
-    <View style={styles.dividerContainer}>
-      <View style={styles.dividerLine} />
-        <TouchableOpacity style={styles.dividerButton} onPress={onPress}>
-          <SwapIcon color={COLORS.white} />
-        </TouchableOpacity>
-      <View style={styles.dividerLine} />
-    </View>
-  );
-};
+const SwapDivider = ({ onPress }) => (
+  <View style={styles.dividerContainer}>
+    <View style={styles.dividerLine} />
+    <TouchableOpacity style={styles.dividerButton} onPress={onPress}>
+      <SwapIcon color={COLORS.white} />
+    </TouchableOpacity>
+    <View style={styles.dividerLine} />
+  </View>
+);
 
 const TokenSwap = () => {
   const dispatch = useDispatch();
@@ -89,7 +86,7 @@ const TokenSwap = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    for (let tk of allowedTokens) {
+    for (const tk of allowedTokens) {
       dispatch(tokenFetchBalanceRequested(tk.uid));
     }
   }, [allowedTokens]);
@@ -122,7 +119,7 @@ const TokenSwap = () => {
 
   useEffect(() => {
     setShowQuote(!!quote);
-    if (!!quote) {
+    if (quote) {
       setInputTokenAmountStr(renderValue(quote.amount_in));
       setOutputTokenAmountStr(renderValue(quote.amount_out));
     }
@@ -193,17 +190,15 @@ const TokenSwap = () => {
     dispatch(tokenSwapSwitchTokens());
   };
 
-  const isReviewButtonDisabled = () => {
-    return (
-      !inputTokenAmountStr
+  const isReviewButtonDisabled = () => (
+    !inputTokenAmountStr
       || !inputTokenAmount
       || inputTokenAmount === 0n
       || !outputTokenAmountStr
       || !outputTokenAmount
       || outputTokenAmount === 0n
       || getAvailableAmount(inputToken, tokensBalance) < inputTokenAmount
-    );
-  };
+  );
 
   const renderGhostElement = () => (
     <View style={{ width: 80, height: 40 }} />
@@ -218,24 +213,24 @@ const TokenSwap = () => {
     return t`Balance: ${amount}`;
   };
 
-  const getAmountWithSlippage = (amount, direction) => {
-    return calcAmountWithSlippage(direction, amount, TOKEN_SWAP_SLIPPAGE);
-  };
+  const getAmountWithSlippage = (amount, direction) => calcAmountWithSlippage(
+    direction,
+    amount,
+    TOKEN_SWAP_SLIPPAGE,
+  );
 
-  const getAmountString = (amount, token) => {
-    return `${renderValue(amount, false)} ${token.symbol}`;
-  };
+  const getAmountString = (amount, token) => `${renderValue(amount, false)} ${token.symbol}`;
 
   const getConversionRate = (swapQuote) => {
     if (!swapQuote) {
       return null;
     }
-    return `${getAmountString(100*Number(swapQuote.amount_out)/Number(swapQuote.amount_in), outputToken)} = ${getAmountString(100, inputToken)}`;
+    return `${getAmountString(100 * (Number(swapQuote.amount_out) / Number(swapQuote.amount_in)), outputToken)} = ${getAmountString(100, inputToken)}`;
   };
 
-  const onReviewButtonPress = (quote, tokenIn, tokenOut) => {
+  const onReviewButtonPress = (quoteArg, tokenIn, tokenOut) => {
     navigation.navigate('TokenSwapReview', {
-      quote,
+      quote: quoteArg,
       tokenIn,
       tokenOut,
     });
@@ -277,7 +272,7 @@ const TokenSwap = () => {
                       { inputToken ? (
                         <TokenBox onPress={onInputTokenBoxPress} label={inputToken.symbol} />
                       ) : (
-                        <TokenBox label={""} />
+                        <TokenBox label='' />
                       )}
                     </View>
                     <InputLabel style={styles.amountAvailable}>
@@ -306,7 +301,7 @@ const TokenSwap = () => {
                       { outputToken ? (
                         <TokenBox onPress={onOutputTokenBoxPress} label={outputToken.symbol} />
                       ) : (
-                        <TokenBox label={""} />
+                        <TokenBox label='' />
                       )}
                     </View>
                     <InputLabel style={styles.amountAvailable}>
@@ -319,33 +314,32 @@ const TokenSwap = () => {
               { showQuote && quote && (
                 <View style={styles.quoteContainer}>
                   <View style={styles.quoteRow}>
-                    <Text style={styles.quoteHeader}>{"Conversion rate"}</Text>
+                    <Text style={styles.quoteHeader}>Conversion rate</Text>
                     <Text style={styles.quoteValue}>{getConversionRate(quote)}</Text>
                   </View>
                   <View style={styles.quoteRow}>
-                    <Text style={styles.quoteHeader}>{"Slippage"}</Text>
-                    <Text style={styles.quoteValue}>{"0.5%"}</Text>
+                    <Text style={styles.quoteHeader}>Slippage</Text>
+                    <Text style={styles.quoteValue}>0.5%</Text>
                   </View>
                   <View style={styles.quoteRow}>
-                    <Text style={styles.quoteHeader}>{"Price impact"}</Text>
-                    <Text style={styles.quoteValue}>{`${quote.price_impact/100}%`}</Text>
+                    <Text style={styles.quoteHeader}>Price impact</Text>
+                    <Text style={styles.quoteValue}>{`${quote.price_impact / 100}%`}</Text>
                   </View>
                   { quote.direction === 'input' && (
                     <View style={styles.quoteRow}>
-                      <Text style={styles.quoteHeader}>{"Minimum received"}</Text>
+                      <Text style={styles.quoteHeader}>Minimum received</Text>
                       <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_out, 'input'), outputToken)}</Text>
                     </View>
                   )}
                   { quote.direction === 'output' && (
                     <View style={styles.quoteRow}>
-                      <Text style={styles.quoteHeader}>{"Maximum to deposit"}</Text>
+                      <Text style={styles.quoteHeader}>Maximum to deposit</Text>
                       <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_in, 'output'), inputToken)}</Text>
                     </View>
                   )}
                 </View>
               )}
             </View>
-
 
             <NewHathorButton
               title={t`REVIEW`}
@@ -396,7 +390,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: COLORS.backgroundColor,
     // For IOS
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 3.84,

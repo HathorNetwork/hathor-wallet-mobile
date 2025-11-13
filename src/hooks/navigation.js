@@ -9,8 +9,6 @@ import React, { createContext } from 'react';
 import { useNavigation as useRNNavigation, useRoute } from '@react-navigation/native';
 import { cloneDeep } from 'lodash';
 
-/* global BigInt */
-
 // This prefix helps identify serialized BigInt values
 const BIG_INT_PREFIX = '__BIGINT__:';
 

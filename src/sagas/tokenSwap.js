@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { bigIntUtils } from '@hathor/wallet-lib';
 import {
   takeLatest,
   takeEvery,
@@ -23,8 +22,7 @@ import {
   tokenSwapFetchQuoteFailed,
 } from '../actions';
 import { logger } from '../logger';
-import { selectTokenSwapContractId } from '../utils';
-import { findBestTokenSwap } from '../utils/tokenSwap';
+import { findBestTokenSwap, selectTokenSwapContractId } from '../utils/tokenSwap';
 
 const log = logger('token-swap-saga');
 

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -18,8 +18,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
 
-import { renderValue, selectTokenSwapContractId } from '../utils';
-import { buildTokenSwap, calcAmountWithSlippage } from '../utils/tokenSwap';
+import { renderValue } from '../utils';
+import {
+  buildTokenSwap,
+  calcAmountWithSlippage,
+  selectTokenSwapContractId,
+} from '../utils/tokenSwap';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
@@ -31,7 +35,6 @@ import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
 import { tokenSwapFetchSwapQuote, tokenSwapResetSwapData } from '../actions';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
-
 
 const TokenSwapReview = () => {
   const dispatch = useDispatch();
@@ -69,12 +72,23 @@ const TokenSwapReview = () => {
   };
 
   const executeSend = async (pin) => {
-    const [method, data] = buildTokenSwap(contractId, quote, tokenIn.uid, tokenOut.uid, TOKEN_SWAP_SLIPPAGE);
+    const [method, data] = buildTokenSwap(
+      contractId,
+      quote,
+      tokenIn.uid,
+      tokenOut.uid,
+      TOKEN_SWAP_SLIPPAGE,
+    );
     if (useWalletService) {
       await wallet.validateAndRenewAuthToken(pin);
     }
     const address = await wallet.getAddressAtIndex(0);
-    const sendTransaction = wallet.createNanoContractTransaction(method, address, data, { pinCode: pin });
+    const sendTransaction = wallet.createNanoContractTransaction(
+      method,
+      address,
+      data,
+      { pinCode: pin },
+    );
     const promise = sendTransaction.run();
 
     // show loading modal
@@ -85,18 +99,15 @@ const TokenSwapReview = () => {
     });
   };
 
-  const getAmountWithSlippage = (amount, direction) => {
-    return calcAmountWithSlippage(direction, amount, TOKEN_SWAP_SLIPPAGE);
-  };
+  const getAmountWithSlippage = (amount, direction) => calcAmountWithSlippage(
+    direction,
+    amount,
+    TOKEN_SWAP_SLIPPAGE,
+  );
 
-  const getAmountString = (amount, token) => {
-    return `${renderValue(amount, false)} ${token.symbol}`;
-  };
+  const getAmountString = (amount, token) => `${renderValue(amount, false)} ${token.symbol}`;
 
-  const getConversionRate = (swapQuote) => {
-    return `${getAmountString(100*Number(swapQuote.amount_out)/Number(swapQuote.amount_in), tokenOut)} = ${getAmountString(100, tokenIn)}`;
-  };
-
+  const getConversionRate = (swapQuote) => `${getAmountString(100 * (Number(swapQuote.amount_out) / Number(swapQuote.amount_in)), tokenOut)} = ${getAmountString(100, tokenIn)}`;
 
   const onSwapButtonPress = () => {
     const pinParams = {
@@ -135,41 +146,43 @@ const TokenSwapReview = () => {
             <View>
               <View style={styles.card}>
                 <View style={styles.tokenContainer}>
-                  <Text style={styles.tokenHeader}>{"Swapping"}</Text>
+                  <Text style={styles.tokenHeader}>Swapping</Text>
                   <Text style={styles.tokenValue}>{getAmountString(quote.amount_in, tokenIn)}</Text>
                 </View>
                 <ArrowDownIcon color={COLORS.primary} />
                 <View style={styles.tokenContainer}>
-                  <Text style={styles.tokenHeader}>{"To"}</Text>
-                  <Text style={styles.tokenValue}>{getAmountString(quote.amount_out, tokenOut)}</Text>
+                  <Text style={styles.tokenHeader}>To</Text>
+                  <Text style={styles.tokenValue}>
+                    {getAmountString(quote.amount_out, tokenOut)}
+                  </Text>
                 </View>
               </View>
 
               <View style={styles.quoteContainer}>
                 <View style={styles.quoteRow}>
-                  <Text style={{ fontWeight: 'bold', color: COLORS.primary}}>{"Swap Details"}</Text>
+                  <Text style={{ fontWeight: 'bold', color: COLORS.primary }}>Swap Details</Text>
                 </View>
                 <View style={styles.quoteRow}>
-                  <Text style={styles.quoteHeader}>{"Conversion rate"}</Text>
+                  <Text style={styles.quoteHeader}>Conversion rate</Text>
                   <Text style={styles.quoteValue}>{getConversionRate(quote)}</Text>
                 </View>
                 <View style={styles.quoteRow}>
-                  <Text style={styles.quoteHeader}>{"Slippage"}</Text>
-                  <Text style={styles.quoteValue}>{"0.5%"}</Text>
+                  <Text style={styles.quoteHeader}>Slippage</Text>
+                  <Text style={styles.quoteValue}>0.5%</Text>
                 </View>
                 <View style={styles.quoteRow}>
-                  <Text style={styles.quoteHeader}>{"Price impact"}</Text>
-                  <Text style={styles.quoteValue}>{`${quote.price_impact/100}%`}</Text>
+                  <Text style={styles.quoteHeader}>Price impact</Text>
+                  <Text style={styles.quoteValue}>{`${quote.price_impact / 100}%`}</Text>
                 </View>
                 { quote.direction === 'input' && (
                   <View style={styles.quoteRow}>
-                    <Text style={styles.quoteHeader}>{"Minimum received"}</Text>
+                    <Text style={styles.quoteHeader}>Minimum received</Text>
                     <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_out, 'input'), tokenOut)}</Text>
                   </View>
                 )}
                 { quote.direction === 'output' && (
                   <View style={styles.quoteRow}>
-                    <Text style={styles.quoteHeader}>{"Maximum to deposit"}</Text>
+                    <Text style={styles.quoteHeader}>Maximum to deposit</Text>
                     <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_in, 'output'), tokenIn)}</Text>
                   </View>
                 )}
@@ -220,7 +233,7 @@ const styles = StyleSheet.create({
     alignItems: 'left',
     justifyContent: 'flex-start',
     // For IOS
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 3.84,
