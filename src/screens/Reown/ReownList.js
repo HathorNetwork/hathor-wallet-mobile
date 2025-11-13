@@ -7,7 +7,6 @@
 
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { StackActions } from '@react-navigation/native';
 import { t } from 'ttag';
 import { get } from 'lodash';
 import {
