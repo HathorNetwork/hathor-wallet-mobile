@@ -893,39 +893,39 @@ msgstr "Отменить регистрацию"
 #: src/screens/TokenSwap.js:213
 #, javascript-format
 msgid "Balance: ${ amount }"
-msgstr "Баланс: ${ amount }"
+msgstr ""
 
 #: src/screens/TokenSwap.js:252
 msgid "TOKEN SWAP"
-msgstr "ОБМЕН ТОКЕНОВ"
+msgstr ""
 
 #: src/screens/TokenSwap.js:345
 msgid "REVIEW"
-msgstr "ПРОСМОТР"
+msgstr ""
 
 #: src/screens/TokenSwapLoadingScreen.js:84
 msgid "There's been an error loading the token swap protocol."
-msgstr "Произошла ошибка при загрузке протокола обмена токенов."
+msgstr ""
 
 #: src/screens/TokenSwapLoadingScreen.js:99
 msgid "Loading Token Swap"
-msgstr "Загрузка обмена токенов"
+msgstr ""
 
 #: src/screens/TokenSwapReview.js:128
 msgid "REVIEW TOKEN SWAP"
-msgstr "ПРОСМОТР ОБМЕНА ТОКЕНОВ"
+msgstr ""
 
 #: src/screens/TokenSwapReview.js:137
 msgid "Your swap was successful"
-msgstr "Ваш обмен прошёл успешно"
+msgstr ""
 
 #: src/screens/TokenSwapReview.js:193
 msgid "SWAP"
-msgstr "ОБМЕН"
+msgstr ""
 
 #: src/screens/TokenSwapTokenList.js:43
 msgid "TOKENS"
-msgstr "ТОКЕНЫ"
+msgstr ""
 
 #.  If none of the patterns match, show an error or handle accordingly
 #: src/screens/UnifiedQRScanner.js:77

@@ -890,39 +890,39 @@ msgstr "Afmeld"
 #: src/screens/TokenSwap.js:213
 #, javascript-format
 msgid "Balance: ${ amount }"
-msgstr "Saldo: ${ amount }"
+msgstr ""
 
 #: src/screens/TokenSwap.js:252
 msgid "TOKEN SWAP"
-msgstr "TOKENBYTTE"
+msgstr ""
 
 #: src/screens/TokenSwap.js:345
 msgid "REVIEW"
-msgstr "GENNEMGÅ"
+msgstr ""
 
 #: src/screens/TokenSwapLoadingScreen.js:84
 msgid "There's been an error loading the token swap protocol."
-msgstr "Der opstod en fejl under indlæsning af tokenbytteprotokollen."
+msgstr ""
 
 #: src/screens/TokenSwapLoadingScreen.js:99
 msgid "Loading Token Swap"
-msgstr "Indlæser tokenbytte"
+msgstr ""
 
 #: src/screens/TokenSwapReview.js:128
 msgid "REVIEW TOKEN SWAP"
-msgstr "GENNEMGÅ TOKENBYTTE"
+msgstr ""
 
 #: src/screens/TokenSwapReview.js:137
 msgid "Your swap was successful"
-msgstr "Dit bytte var vellykket"
+msgstr ""
 
 #: src/screens/TokenSwapReview.js:193
 msgid "SWAP"
-msgstr "BYTTE"
+msgstr ""
 
 #: src/screens/TokenSwapTokenList.js:43
 msgid "TOKENS"
-msgstr "TOKENS"
+msgstr ""
 
 #.  If none of the patterns match, show an error or handle accordingly
 #: src/screens/UnifiedQRScanner.js:77
