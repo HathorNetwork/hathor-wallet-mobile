@@ -1,4 +1,7 @@
 {
+  "env": {
+    "es2020": true
+  },
   "extends": "airbnb",
   "parser": "@babel/eslint-parser",
   "ignorePatterns": ["lockdown.umd.js"],

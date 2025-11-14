@@ -22,8 +22,6 @@ import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 import { COLORS } from '../styles/themes';
 import { useNavigation, useParams } from '../hooks/navigation';
 
-/* global BigInt */
-
 /**
  * This screen expects the following parameters on the navigation:
  * name {string} token name

@@ -35,6 +35,7 @@ import { HathorFlatList } from './HathorFlatList';
  * @param {unknown} props.header
  * @param {boolean} props.renderArrow
  * @param {function} props.onItemPress
+ * @param {boolean} [props.ignoreLoading]
  */
 const TokenSelect = (props) => {
   const tokens = Object.values(props.tokens);
@@ -47,7 +48,7 @@ const TokenSelect = (props) => {
     }
 
     const balance = get(props.tokensBalance, `${item.uid}.data.available`, 0);
-    const tokenState = get(props.tokensBalance, `${item.uid}.status`, 'loading');
+    const tokenState = get(props.tokensBalance, `${item.uid}.status`, props.ignoreLoading ? 'ready' : 'loading');
 
     return (
       <TouchableHighlight
