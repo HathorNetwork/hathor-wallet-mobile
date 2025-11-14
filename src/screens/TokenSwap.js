@@ -22,7 +22,7 @@ import { get } from 'lodash';
 import { SwapIcon } from '../components/Icons/Swap.icon';
 
 import { renderValue } from '../utils';
-import { calcAmountWithSlippage, selectTokenSwapAllowedTokens } from '../utils/tokenSwap';
+import { renderAmountAndSymbolWithSlippage, renderConversionRate, selectTokenSwapAllowedTokens } from '../utils/tokenSwap';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -213,21 +213,6 @@ const TokenSwap = () => {
     return t`Balance: ${amount}`;
   };
 
-  const getAmountWithSlippage = (amount, direction) => calcAmountWithSlippage(
-    direction,
-    amount,
-    TOKEN_SWAP_SLIPPAGE,
-  );
-
-  const getAmountString = (amount, token) => `${renderValue(amount, false)} ${token.symbol}`;
-
-  const getConversionRate = (swapQuote) => {
-    if (!swapQuote) {
-      return null;
-    }
-    return `${getAmountString(100 * (Number(swapQuote.amount_out) / Number(swapQuote.amount_in)), outputToken)} = ${getAmountString(100, inputToken)}`;
-  };
-
   const onReviewButtonPress = (quoteArg, tokenIn, tokenOut) => {
     navigation.navigate('TokenSwapReview', {
       quote: quoteArg,
@@ -315,7 +300,7 @@ const TokenSwap = () => {
                 <View style={styles.quoteContainer}>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Conversion rate</Text>
-                    <Text style={styles.quoteValue}>{getConversionRate(quote)}</Text>
+                    <Text style={styles.quoteValue}>{renderConversionRate(quote, inputToken, outputToken)}</Text>
                   </View>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Slippage</Text>
@@ -328,13 +313,13 @@ const TokenSwap = () => {
                   { quote.direction === 'input' && (
                     <View style={styles.quoteRow}>
                       <Text style={styles.quoteHeader}>Minimum received</Text>
-                      <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_out, 'input'), outputToken)}</Text>
+                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('input', quote.amount_out, outputToken, TOKEN_SWAP_SLIPPAGE)}</Text>
                     </View>
                   )}
                   { quote.direction === 'output' && (
                     <View style={styles.quoteRow}>
                       <Text style={styles.quoteHeader}>Maximum to deposit</Text>
-                      <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_in, 'output'), inputToken)}</Text>
+                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, inputToken,TOKEN_SWAP_SLIPPAGE)}</Text>
                     </View>
                   )}
                 </View>
