@@ -8,6 +8,7 @@
 import { ncApi } from '@hathor/wallet-lib';
 import { get } from 'lodash';
 import { getNetworkSettings } from '../sagas/helpers';
+import { renderValue } from '../utils';
 
 /**
  * Definition of a swap step.
@@ -239,19 +240,19 @@ export async function findBestTokenSwap(direction, contractId, amount, tokenIn, 
     // Call the view method to calculate the best token swap path
     const response = await ncApi.getNanoContractState(contractId, [], [], [call]);
 
-    if (!(response.calls && response.calls[call])) {
+    if (!(response.calls && response.calls[call] && response.calls[call].value)) {
       throw new TokenSwapCallError();
     }
-    const data = response.calls[call];
+    const data = response.calls[call].value;
 
     return {
       direction,
-      path: data.path.split(',').map((step) => parseQuotePathStep(step)),
-      pathStr: data.path,
-      amounts: data.amounts,
-      amount_out: direction === 'input' ? data.amount_out : amount,
-      amount_in: direction === 'output' ? data.amount_in : amount,
-      price_impact: data.price_impact,
+      path: data[0] === '' ? '' : data[0].split(',').map((step) => parseQuotePathStep(step)),
+      pathStr: data[0],
+      amounts: data[1],
+      amount_out: direction === 'input' ? data[2] : amount,
+      amount_in: direction === 'output' ? data[2] : amount,
+      price_impact: data[3],
     };
   } catch (_err) {
     // Any error from the call or returned values is considered a call error.
@@ -336,4 +337,44 @@ export function selectTokenSwapContractId(state) {
     return null;
   }
   return data.pool_manager;
+}
+
+/**
+ * Render amount and token symbol for UI components.
+ * @param {number|bigint} amount
+ * @param {TokenData} token
+ */
+export function renderAmountAndSymbol(amount, token){
+  return `${renderValue(amount, false)} ${token.symbol}`;
+}
+
+/**
+ * Render amount and token symbol for UI components taking into consideration the slippage
+ * Slippage effect will change depending on the direction.
+ * @param {'input'|'output'} direction
+ * @param {number|bigint} amount
+ * @param {TokenData} token
+ * @param {number} slippage
+ */
+export function renderAmountAndSymbolWithSlippage(direction, amount, token, slippage){
+  const newAmount = calcAmountWithSlippage(direction, amount, slippage);
+  return renderAmountAndSymbol(newAmount, token);
+}
+
+/**
+ * Render conversion rate for the quote given
+ * @param {TokenSwapQuote} quote
+ * @param {TokenData} inToken
+ * @param {TokenData} outToken
+ */
+export function renderConversionRate(quote, inToken, outToken) {
+  if (!quote) {
+    return null;
+  }
+  if ((!quote.amount_in) || quote.amount_in === 0) {
+    // Invalid but we should avoid rendering errors
+    return `${renderAmountAndSymbol(100, outToken)} = ${renderAmountAndSymbol(0, inToken)}`;
+  }
+  const exchangeRate = Number(quote.amount_out) / Number(quote.amount_in);
+  return `${renderAmountAndSymbol(100 * exchangeRate, outToken)} = ${renderAmountAndSymbol(100, inToken)}`;
 }

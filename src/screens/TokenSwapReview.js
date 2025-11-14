@@ -18,10 +18,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
 
-import { renderValue } from '../utils';
 import {
   buildTokenSwap,
-  calcAmountWithSlippage,
+  renderAmountAndSymbol,
+  renderAmountAndSymbolWithSlippage,
+  renderConversionRate,
   selectTokenSwapContractId,
 } from '../utils/tokenSwap';
 import NewHathorButton from '../components/NewHathorButton';
@@ -67,7 +68,12 @@ const TokenSwapReview = () => {
    */
   const exitOnError = () => {
     setModal(null);
-    dispatch(tokenSwapFetchSwapQuote(quote.direction, quote.direction === 'input' ? quote.amount_in : quote.amount_out, tokenIn.uid, tokenOut.uid));
+    dispatch(tokenSwapFetchSwapQuote(
+      quote.direction,
+      quote.direction === 'input' ? quote.amount_in : quote.amount_out,
+      tokenIn.uid,
+      tokenOut.uid
+    ));
     navigation.goBack();
   };
 
@@ -98,16 +104,6 @@ const TokenSwapReview = () => {
       promise,
     });
   };
-
-  const getAmountWithSlippage = (amount, direction) => calcAmountWithSlippage(
-    direction,
-    amount,
-    TOKEN_SWAP_SLIPPAGE,
-  );
-
-  const getAmountString = (amount, token) => `${renderValue(amount, false)} ${token.symbol}`;
-
-  const getConversionRate = (swapQuote) => `${getAmountString(100 * (Number(swapQuote.amount_out) / Number(swapQuote.amount_in)), tokenOut)} = ${getAmountString(100, tokenIn)}`;
 
   const onSwapButtonPress = () => {
     const pinParams = {
@@ -147,13 +143,13 @@ const TokenSwapReview = () => {
               <View style={styles.card}>
                 <View style={styles.tokenContainer}>
                   <Text style={styles.tokenHeader}>Swapping</Text>
-                  <Text style={styles.tokenValue}>{getAmountString(quote.amount_in, tokenIn)}</Text>
+                  <Text style={styles.tokenValue}>{renderAmountAndSymbol(quote.amount_in, tokenIn)}</Text>
                 </View>
                 <ArrowDownIcon color={COLORS.primary} />
                 <View style={styles.tokenContainer}>
                   <Text style={styles.tokenHeader}>To</Text>
                   <Text style={styles.tokenValue}>
-                    {getAmountString(quote.amount_out, tokenOut)}
+                    {renderAmountAndSymbol(quote.amount_out, tokenOut)}
                   </Text>
                 </View>
               </View>
@@ -164,7 +160,7 @@ const TokenSwapReview = () => {
                 </View>
                 <View style={styles.quoteRow}>
                   <Text style={styles.quoteHeader}>Conversion rate</Text>
-                  <Text style={styles.quoteValue}>{getConversionRate(quote)}</Text>
+                  <Text style={styles.quoteValue}>{renderConversionRate(quote, tokenIn, tokenOut)}</Text>
                 </View>
                 <View style={styles.quoteRow}>
                   <Text style={styles.quoteHeader}>Slippage</Text>
@@ -177,13 +173,13 @@ const TokenSwapReview = () => {
                 { quote.direction === 'input' && (
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Minimum received</Text>
-                    <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_out, 'input'), tokenOut)}</Text>
+                    <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('input', quote.amount_out, tokenOut, TOKEN_SWAP_SLIPPAGE)}</Text>
                   </View>
                 )}
                 { quote.direction === 'output' && (
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Maximum to deposit</Text>
-                    <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_in, 'output'), tokenIn)}</Text>
+                    <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, tokenIn, TOKEN_SWAP_SLIPPAGE)}</Text>
                   </View>
                 )}
               </View>
