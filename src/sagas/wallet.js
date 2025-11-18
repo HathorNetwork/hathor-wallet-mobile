@@ -88,7 +88,6 @@ import { monitorFeatureFlags } from './featureToggle';
 import {
   getAllAddresses,
   getFirstAddress,
-  setKeychainPin,
 } from '../utils';
 import { logger } from '../logger';
 

@@ -17,7 +17,12 @@ import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import {
-  isBiometryEnabled, setBiometryEnabled, getSupportedBiometry, changePin, generateRandomPassword, setKeychainPin
+  isBiometryEnabled,
+  setBiometryEnabled,
+  getSupportedBiometry,
+  changePin,
+  generateRandomPassword,
+  setKeychainPin,
 } from '../utils';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen, onExceptionCaptured } from '../actions';
@@ -73,15 +78,13 @@ export class Security extends React.Component {
       } else {
         this.onSafeBiometryDisabled();
       }
+    } else if (value) {
+      // Turn on old biometry
+      this.onOldBiometryEnabled();
     } else {
-      if (value) {
-        // Turn on old biometry
-        this.onOldBiometryEnabled();
-      } else {
-        // Turn off old biometry
-        setBiometryEnabled(false);
-        this.setState({ biometryEnabled: false });
-      }
+      // Turn off old biometry
+      setBiometryEnabled(false);
+      this.setState({ biometryEnabled: false });
     }
   }
 
