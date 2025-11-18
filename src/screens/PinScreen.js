@@ -134,6 +134,7 @@ class PinScreen extends React.Component {
        */
       const credentials = await Keychain.getGenericPassword({
         authenticationPrompt: { title: this.biometryText },
+        rules: "AUTOMATIC_UPGRADE",
       });
 
       if (credentials !== false) {
