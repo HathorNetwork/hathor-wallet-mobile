@@ -17,7 +17,7 @@ import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import {
-  isBiometryEnabled, setBiometryEnabled, getSupportedBiometry, changePin, generateRandomPassword
+  isBiometryEnabled, setBiometryEnabled, getSupportedBiometry, changePin, generateRandomPassword, setKeychainPin
 } from '../utils';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen, onExceptionCaptured } from '../actions';
@@ -74,9 +74,14 @@ export class Security extends React.Component {
         this.onSafeBiometryDisabled();
       }
     } else {
-      this.setState({ biometryEnabled: value });
-      setBiometryEnabled(value);
+      this.onOldBiometryEnabled();
     }
+  }
+
+  executeOldBiometryEnable = (pin) => {
+    setKeychainPin(pin);
+    this.setState({ biometryEnabled: true });
+    setBiometryEnabled(true);
   }
 
   executeSafeBiometryEnable = (pin) => {
@@ -139,6 +144,18 @@ export class Security extends React.Component {
   onSafeBiometryEnabled = () => {
     const params = {
       cb: this.executeSafeBiometryEnable,
+      canCancel: true,
+      screenText: t`Enter your 6-digit pin to enable biometry`,
+    };
+    this.props.navigation.navigate('PinScreen', params);
+  }
+
+  /**
+   * Executed when user clicks to enable the old biometry mode
+   */
+  onOldBiometryEnabled = () => {
+    const params = {
+      cb: this.executeOldBiometryEnable,
       canCancel: true,
       screenText: t`Enter your 6-digit pin to enable biometry`,
     };

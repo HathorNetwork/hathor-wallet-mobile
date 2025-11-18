@@ -321,8 +321,6 @@ export function* startWallet(action) {
     return;
   }
 
-  setKeychainPin(pin);
-
   // Wallet might be already ready at this point
   if (!wallet.isReady()) {
     const { error } = yield race({
