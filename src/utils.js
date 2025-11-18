@@ -422,7 +422,9 @@ export const isTokenNFT = (uid, metadatas) => (
 export const setKeychainPin = (pin) => {
   Keychain.setGenericPassword(KEYCHAIN_USER, pin, {
     accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
-    acessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
+    accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+    securityLevel: Keychain.SECURITY_LEVEL.SECURE_HARDWARE,
+    storage: Keychain.STORAGE_TYPE.AES_GCM
   });
 };
 
