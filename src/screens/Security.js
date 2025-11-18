@@ -74,14 +74,21 @@ export class Security extends React.Component {
         this.onSafeBiometryDisabled();
       }
     } else {
-      this.onOldBiometryEnabled();
+      if (value) {
+        // Turn on old biometry
+        this.onOldBiometryEnabled();
+      } else {
+        // Turn off old biometry
+        setBiometryEnabled(false);
+        this.setState({ biometryEnabled: false });
+      }
     }
   }
 
   executeOldBiometryEnable = (pin) => {
     setKeychainPin(pin);
-    this.setState({ biometryEnabled: true });
     setBiometryEnabled(true);
+    this.setState({ biometryEnabled: true });
   }
 
   executeSafeBiometryEnable = (pin) => {
