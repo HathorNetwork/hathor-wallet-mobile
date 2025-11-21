@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
+import hathorLib from '@hathor/wallet-lib';
 
 import { IS_MULTI_TOKEN } from '../constants';
 import { renderValue, isTokenNFT } from '../utils';
@@ -95,10 +96,28 @@ const SendAmountInput = () => {
 
     if (available < amountValue) {
       setError(t`Insufficient funds`);
-    } else {
-      const { address } = params;
-      navigation.navigate('SendConfirmScreen', { address, amount: amountValue, token });
+      return;
     }
+
+    if (token.version && token.version === hathorLib.TokenVersion.FEE) {
+      // The user selected a fee based token
+      // So we need to check the HTR balance to make the transaction happen.
+      const htrBalance = get(tokensBalance, hathorLib.constants.NATIVE_TOKEN_UID);
+      if (!htrBalance) {
+        setError('Insufficient balance of HTR to cover the network fee.');
+        return;
+      }
+      const { available: htrAvailable } = htrBalance.data;
+      // XXX: calculate fee based on amountValue
+      const feeRequired = 2n;
+      if (feeRequired < htrAvailable) {
+        setError('Insufficient balance of HTR to cover the network fee.');
+        return;
+      }
+    }
+    
+    const { address } = params;
+    navigation.navigate('SendConfirmScreen', { address, amount: amountValue, token });
   };
 
   const isButtonDisabled = () => (
