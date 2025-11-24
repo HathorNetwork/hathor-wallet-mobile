@@ -6,12 +6,11 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { msgid, ngettext, t } from 'ttag';
 import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
-import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
@@ -21,7 +20,17 @@ import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackM
 import { renderValue, isTokenNFT } from '../utils';
 import NavigationService from '../NavigationService';
 import { useNavigation, useParams } from '../hooks/navigation';
-import { StyleSheet } from '../../node_modules/react-native/types/index';
+import { COLORS } from '../styles/themes';
+import { DoneIcon } from '../components/Icons/Done.icon';
+
+function NoFee() {
+  return (
+    <View style={styles.nofee}>
+      <DoneIcon color={COLORS.white}/>
+      <Text>No fee</Text>
+    </View>
+  );
+}
 
 const SendConfirmScreen = () => {
   const tokensBalance = useSelector((state) => state.tokensBalance);
@@ -41,22 +50,16 @@ const SendConfirmScreen = () => {
 
   const [modal, setModal] = useState(null);
   const [networkFee, setNetworkFee] = useState(null);
-  const networkFeeAmountAndToken = networkFee ? `${renderValue(amount, false)} HTR` : '';
 
   useEffect(() => {
     const calculateNetworkFee = async () => {
-      if (token.version !== hathorLib.TokenVersion.FEE) {
-        return;
-      }
-      // Check wallet is local or wallet-service.
-      // Local:          We can use the bestUtxoSelection to check if we will need a change output
-      // wallet-service: We need to fetch all utxos and run the same method as above.
       // If the selected utxos amount is higher than `amount` we will have 2 outputs with the token
+      // This can be calculated with the fee utils, but since they are not release yet we need to mock
       // FIXME: Will mock this case just to see UI.
-      setNetworkFee(2n);
+      setNetworkFee(0n);
     };
 
-    calculateNetworkFee(); 
+    calculateNetworkFee();
   }, [token, amount]);
 
   /**
@@ -162,7 +165,7 @@ const SendConfirmScreen = () => {
       )}
 
       <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-        <View>
+        <View style={{ gap: 30 }}>
           <View style={{ alignItems: 'center', marginTop: 32 }}>
             <AmountTextInput
               editable={false}
@@ -173,19 +176,21 @@ const SendConfirmScreen = () => {
             </InputLabel>
           </View>
           <View>
-            <TextFmt>{t`**Transaction summary**`}</TextFmt>
+            <TextFmt style={{ marginBottom: 10 }}>{t`**Transaction summary**`}</TextFmt>
             <View style={styles.summaryContainer}>
               <View style={styles.summaryItem}>
                 <TextFmt>{t`**To**`}</TextFmt>
-                <Text>{address}</Text>
+                <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
               </View>
               <View style={styles.summaryItem}>
                 <TextFmt>{t`**Network Fee**`}</TextFmt>
-                <Text>{networkFeeAmountAndToken}</Text>
+                { networkFee
+                  ? (<Text>{renderValue(networkFee, false)} HTR</Text>)
+                  : (<NoFee/>)}
               </View>
               <View style={styles.summaryItem}>
                 <TextFmt>{t`**Total**`}</TextFmt>
-                <Text>{`${amountAndToken}${networkFee ? ` + ${networkFeeAmountAndToken}` : ''}`}</Text>
+                <Text>{`${amountAndToken}${networkFee ? ` + ${renderValue(networkFee, false)} HTR` : ''}`}</Text>
               </View>
             </View>
           </View>
@@ -205,8 +210,6 @@ const SendConfirmScreen = () => {
 const styles = StyleSheet.create({
   summaryContainer: {
     zIndex: 1,
-    flex: 1,
-    flexDirection: 'column',
     borderRadius: 20,
     padding: 10,
     backgroundColor: COLORS.backgroundColor,
@@ -221,8 +224,16 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   summaryItem: {
+    padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  nofee: {
+    flexDirection: 'row',
+    borderRadius: 10,
+    paddingLeft: 5,
+    paddingRight: 10,
+    backgroundColor: COLORS.feedbackSuccess100,
   },
 });
 

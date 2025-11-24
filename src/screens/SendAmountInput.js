@@ -108,14 +108,15 @@ const SendAmountInput = () => {
         return;
       }
       const { available: htrAvailable } = htrBalance.data;
+      // FIXME: mocked value until utility is created on the lib
       // XXX: calculate fee based on amountValue
       const feeRequired = 2n;
-      if (feeRequired < htrAvailable) {
+      if (feeRequired > htrAvailable) {
         setError('Insufficient balance of HTR to cover the network fee.');
         return;
       }
     }
-    
+
     const { address } = params;
     navigation.navigate('SendConfirmScreen', { address, amount: amountValue, token });
   };
