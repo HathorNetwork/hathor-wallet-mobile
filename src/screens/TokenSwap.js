@@ -376,12 +376,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: COLORS.backgroundColor,
     // For IOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
+    shadowColor: '#ababab',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
     shadowRadius: 3.84,
     // For Android
-    elevation: 2,
+    elevation: 5,
   },
   quoteContainer: {
     paddingTop: 40,

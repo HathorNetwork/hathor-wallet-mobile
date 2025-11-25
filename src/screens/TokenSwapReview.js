@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   },
   screenContent: {
     flex: 1,
-    backgroundColor: COLORS.lowContrastDetail,
+    backgroundColor: '#fff',
   },
   tokenContainer: {
     flexDirection: 'column',
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     alignItems: 'left',
     justifyContent: 'flex-start',
     // For IOS
-    shadowColor: '#000',
+    shadowColor: '#ababab',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 3.84,
