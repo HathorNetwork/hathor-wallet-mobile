@@ -78,8 +78,10 @@ const TokenSwapReview = () => {
   };
 
   const executeSend = async (pin) => {
+    const address = await wallet.getAddressAtIndex(0);
     const [method, data] = buildTokenSwap(
       contractId,
+      address,
       quote,
       tokenIn.uid,
       tokenOut.uid,
@@ -88,8 +90,7 @@ const TokenSwapReview = () => {
     if (useWalletService) {
       await wallet.validateAndRenewAuthToken(pin);
     }
-    const address = await wallet.getAddressAtIndex(0);
-    const sendTransaction = wallet.createNanoContractTransaction(
+    const sendTransaction = await wallet.createNanoContractTransaction(
       method,
       address,
       data,

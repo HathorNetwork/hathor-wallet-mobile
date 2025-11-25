@@ -119,12 +119,13 @@ export function calcAmountWithSlippage(direction, amount, slippage) {
 /**
  * Build the NanoContractAction array required to call the token swap method.
  *
+ * @param {string} caller base58 caller address
  * @param {TokenSwapQuote} quote Token swap quote
  * @param {string} tokenIn Token UID of the deposited token
  * @param {string} tokenOut Token UID of the withdrawn token
  * @param {number} slippage
  */
-function buildTokenSwapActions(quote, tokenIn, tokenOut, slippage) {
+function buildTokenSwapActions(caller, quote, tokenIn, tokenOut, slippage) {
   const actions = [];
   if (quote.direction === 'input') {
     /**
@@ -146,6 +147,7 @@ function buildTokenSwapActions(quote, tokenIn, tokenOut, slippage) {
       type: 'withdrawal',
       token: tokenOut,
       amount: calcAmountWithSlippage('input', quote.amount_out, slippage),
+      address: caller,
     });
   } else if (quote.direction === 'output') {
     /**
@@ -161,6 +163,7 @@ function buildTokenSwapActions(quote, tokenIn, tokenOut, slippage) {
       type: 'withdrawal',
       token: tokenOut,
       amount: quote.amount_out,
+      address: caller,
     });
     // Deposit amount plus slippage
     actions.push({
@@ -250,12 +253,13 @@ export async function findBestTokenSwap(direction, contractId, amount, tokenIn, 
       path: data[0] === '' ? '' : data[0].split(',').map((step) => parseQuotePathStep(step)),
       pathStr: data[0],
       amounts: data[1],
-      amount_out: direction === 'input' ? data[2] : amount,
-      amount_in: direction === 'output' ? data[2] : amount,
+      amount_out: direction === 'input' ? BigInt(data[2]) : amount,
+      amount_in: direction === 'output' ? BigInt(data[2]) : amount,
       price_impact: data[3],
     };
-  } catch (_err) {
+  } catch (err) {
     // Any error from the call or returned values is considered a call error.
+    console.error(err);
     throw new TokenSwapCallError();
   }
 }
@@ -264,15 +268,16 @@ export async function findBestTokenSwap(direction, contractId, amount, tokenIn, 
  * Will determine the correct swap method to execute and mount the data accordingly.
  *
  * @param {string} contractId The pool manager to find the swap
+ * @param {string} caller Address of the caller in base58
  * @param {TokenSwapQuote} quote Token swap quote
  * @param {string} tokenIn Token UID of the deposited token
  * @param {string} tokenOut Token UID of the withdrawn token
  * @param {number} slippage Acceptable slippage on the swap amount
  * @returns {[string, Object]} Method name and data required to execute the token swap.
  */
-export function buildTokenSwap(contractId, quote, tokenIn, tokenOut, slippage) {
+export function buildTokenSwap(contractId, caller, quote, tokenIn, tokenOut, slippage) {
   const method = getTokenSwapMethod(quote);
-  const actions = buildTokenSwapActions(quote, tokenIn, tokenOut, slippage);
+  const actions = buildTokenSwapActions(caller, quote, tokenIn, tokenOut, slippage);
   const data = {
     ncId: contractId,
     actions,
@@ -375,6 +380,20 @@ export function renderConversionRate(quote, inToken, outToken) {
     // Invalid but we should avoid rendering errors
     return `${renderAmountAndSymbol(100, outToken)} = ${renderAmountAndSymbol(0, inToken)}`;
   }
-  const exchangeRate = Number(quote.amount_out) / Number(quote.amount_in);
-  return `${renderAmountAndSymbol(100 * exchangeRate, outToken)} = ${renderAmountAndSymbol(100, inToken)}`;
+  let exchangeRate = 100 * Number(quote.amount_out) / Number(quote.amount_in);
+  let extraRate = 1;
+
+  /**
+   * This loop will gradually increase the reference so we do not use fractional rates.
+   * The cutoff for the reference value is 1000.00
+   */
+  while (!Number.isInteger(exchangeRate)) {
+    if (extraRate === 1000) {
+      exchangeRate = Math.floor(exchangeRate);
+      break;
+    }
+    extraRate *= 10;
+    exchangeRate *= 10;
+  }
+  return `${renderAmountAndSymbol(exchangeRate, outToken)} = ${renderAmountAndSymbol(100*extraRate, inToken)}`;
 }
