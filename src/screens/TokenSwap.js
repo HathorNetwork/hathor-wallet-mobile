@@ -348,11 +348,12 @@ const styles = StyleSheet.create({
   },
   screenContent: {
     flex: 1,
-    backgroundColor: COLORS.lowContrastDetail,
+    backgroundColor: '#fff',
   },
   tokenSelectorWrapper: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    marginRight: 10,
   },
   amountAvailable: {
     marginTop: 8,
@@ -376,11 +377,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.backgroundColor,
     // For IOS
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
     shadowRadius: 3.84,
     // For Android
-    elevation: 5,
+    elevation: 2,
   },
   quoteContainer: {
     paddingTop: 40,
