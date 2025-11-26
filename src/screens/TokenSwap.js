@@ -73,6 +73,8 @@ const TokenSwap = () => {
 
   const [showQuote, setShowQuote] = useState(false);
 
+  const [editing, setEditing] = useState(null);
+
   const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
   const {
     inputToken,
@@ -134,6 +136,9 @@ const TokenSwap = () => {
     setOutputTokenAmountStr('');
     setOutputTokenAmount(0n);
     setSwapDirection('input');
+    setTimeout(() => {
+      setEditing(null);
+    }, 500);
 
     if (inputTokenAmount) {
       dispatch(tokenSwapFetchSwapQuote('input', inputTokenAmount.toString(10), inputToken.uid, outputToken.uid));
@@ -144,6 +149,9 @@ const TokenSwap = () => {
     setInputTokenAmountStr('');
     setInputTokenAmount(0n);
     setSwapDirection('output');
+    setTimeout(() => {
+      setEditing(null);
+    }, 500);
 
     if (outputTokenAmount) {
       dispatch(tokenSwapFetchSwapQuote('output', outputTokenAmount.toString(10), inputToken.uid, outputToken.uid));
@@ -156,6 +164,8 @@ const TokenSwap = () => {
   }
 
   function onFocus(dirClicked) {
+    setEditing(dirClicked);
+    setSwapDirection(null);
     setShowQuote(false);
     if (dirClicked === 'input') {
       setOutputTokenAmount(0n);
@@ -250,7 +260,8 @@ const TokenSwap = () => {
                     value={inputTokenAmountStr}
                     allowOnlyInteger={false}
                     decimalPlaces={decimalPlaces}
-                    style={styles.amountInputText}
+                    style={swapDirection === 'output' ? styles.amountInputTextFaded : styles.amountInputText}
+                    editable={editing !== 'output'}
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -279,7 +290,8 @@ const TokenSwap = () => {
                     value={outputTokenAmountStr}
                     allowOnlyInteger={false}
                     decimalPlaces={decimalPlaces}
-                    style={styles.amountInputText}
+                    style={swapDirection === 'input' ? styles.amountInputTextFaded : styles.amountInputText}
+                    editable={editing !== 'input'}
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -363,6 +375,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignText: 'center',
     marginBottom: 30,
+  },
+  amountInputTextFaded: {
+    flex: 1,
+    alignText: 'center',
+    marginBottom: 30,
+    color: '#ababab',
   },
   tokenCard: {
     flexDirection: 'row',
