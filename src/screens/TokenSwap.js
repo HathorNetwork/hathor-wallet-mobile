@@ -22,7 +22,12 @@ import { get } from 'lodash';
 import { SwapIcon } from '../components/Icons/Swap.icon';
 
 import { renderValue } from '../utils';
-import { renderAmountAndSymbolWithSlippage, renderConversionRate, selectTokenSwapAllowedTokens } from '../utils/tokenSwap';
+import {
+  calcAmountWithSlippage,
+  renderAmountAndSymbolWithSlippage,
+  renderConversionRate,
+  selectTokenSwapAllowedTokens,
+} from '../utils/tokenSwap';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -200,6 +205,21 @@ const TokenSwap = () => {
     dispatch(tokenSwapSwitchTokens());
   };
 
+  const checkQuotedAmount = () => {
+    if (!(quote && quote.direction)) {
+      return false;
+    }
+
+    let quotedAmount = 0n;
+    if (quote.direction === 'input') {
+      quotedAmount = calcAmountWithSlippage('input', quote.amount_out, TOKEN_SWAP_SLIPPAGE);
+    } else if (swapDirection === 'output') {
+      quotedAmount = calcAmountWithSlippage('output', quote.amount_in, TOKEN_SWAP_SLIPPAGE);
+    }
+
+    return quotedAmount > 0n;
+  };
+
   const isReviewButtonDisabled = () => (
     !inputTokenAmountStr
       || !inputTokenAmount
@@ -208,6 +228,7 @@ const TokenSwap = () => {
       || !outputTokenAmount
       || outputTokenAmount === 0n
       || getAvailableAmount(inputToken, tokensBalance) < inputTokenAmount
+      || checkQuotedAmount()
   );
 
   const renderGhostElement = () => (
