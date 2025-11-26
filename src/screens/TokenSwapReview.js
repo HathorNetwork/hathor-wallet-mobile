@@ -80,41 +80,44 @@ const TokenSwapReview = () => {
     navigation.goBack();
   };
 
-  useEffect(() => {
-    setLoading(false);
-  }, [modal]);
-
   const executeSend = async (pin) => {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const address = await wallet.getAddressAtIndex(0);
-    const [method, data] = buildTokenSwap(
-      contractId,
-      address,
-      quote,
-      tokenIn.uid,
-      tokenOut.uid,
-      TOKEN_SWAP_SLIPPAGE,
-    );
-    if (useWalletService) {
-      await wallet.validateAndRenewAuthToken(pin);
+      const address = await wallet.getAddressAtIndex(0);
+      const [method, data] = buildTokenSwap(
+        contractId,
+        address,
+        quote,
+        tokenIn.uid,
+        tokenOut.uid,
+        TOKEN_SWAP_SLIPPAGE,
+      );
+      if (useWalletService) {
+        await wallet.validateAndRenewAuthToken(pin);
+      }
+      const sendTransaction = await wallet.createNanoContractTransaction(
+        method,
+        address,
+        data,
+        { pinCode: pin },
+      );
+      const promise = sendTransaction.runFromMining();
+
+      setLoading(false);
+
+      // show loading modal
+      setModal({
+        text: t`Your transfer is being processed`,
+        sendTransaction,
+        promise,
+      });
+    } catch(err) {
+      console.error(err);
+      this.exitOnError();
+    } finally {
+      setLoading(false);
     }
-    const sendTransaction = await wallet.createNanoContractTransaction(
-      method,
-      address,
-      data,
-      { pinCode: pin },
-    );
-    const promise = sendTransaction.runFromMining();
-
-    setLoading(false);
-
-    // show loading modal
-    setModal({
-      text: t`Your transfer is being processed`,
-      sendTransaction,
-      promise,
-    });
   };
 
   const onSwapButtonPress = () => {
