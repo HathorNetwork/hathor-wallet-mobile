@@ -30,7 +30,7 @@
         1. Maximum to deposit should be a value higher than the input (top) amount
 
 1. **Switching tokens**
-    1. [ ] Clicking on the token switch buttom (the :arrows_clockwise: icon between the tokens) should switch the top and bottom tokens.
+    1. [ ] Clicking on the token switch button (the :arrows_clockwise: icon between the tokens) should switch the top and bottom tokens.
         1. The input amounts should be cleared when switching tokens
     1. [ ] With the top token selected as HTR and the bottom as hUSDC click on the "HTR token box"
         1. Select hUSDC from the list
@@ -39,12 +39,12 @@
 1. **Token Swap review**
     1. [ ] Write a swap of 5.00 HTR for hUSDC
         1. [ ] Check the output value
-    1. [ ] The "Review" buttom should be enabled, click it
+    1. [ ] The "Review" button should be enabled, click it
     1. [ ] The swap should read the same values as the last screen
     1. [ ] The "Swap Details" section should match the values from the last screen
-    1. [ ] Click on the :arrow_backward: icon (or "Go Back" buttom) at the top left of the screen.
+    1. [ ] Click on the :arrow_backward: icon (or "Go Back" button) at the top left of the screen.
         1. The main screen should appear, going back to the token swap screen should show an empty swap.
-    1. [ ] Enter the same swap details but this time click on the "Swap" buttom at the end.
+    1. [ ] Enter the same swap details but this time click on the "Swap" button at the end.
     1. [ ] The token swap should be completed correctly
     1. [ ] Check the transaction on the HTR tx history
     1. [ ] Go back to the token swap screen, select the token box to open the list of tokens.
