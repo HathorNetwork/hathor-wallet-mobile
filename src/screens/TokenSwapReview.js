@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -36,6 +36,8 @@ import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
 import { tokenSwapFetchSwapQuote, tokenSwapResetSwapData } from '../actions';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
+import Spinner from '../components/Spinner';
+import FeedbackModal from '../components/FeedbackModal';
 
 const TokenSwapReview = () => {
   const dispatch = useDispatch();
@@ -51,6 +53,7 @@ const TokenSwapReview = () => {
     tokenOut,
   } = useParams();
   const [modal, setModal] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
 
@@ -77,7 +80,13 @@ const TokenSwapReview = () => {
     navigation.goBack();
   };
 
+  useEffect(() => {
+    setLoading(false);
+  }, [modal]);
+
   const executeSend = async (pin) => {
+    setLoading(true);
+
     const address = await wallet.getAddressAtIndex(0);
     const [method, data] = buildTokenSwap(
       contractId,
@@ -97,6 +106,8 @@ const TokenSwapReview = () => {
       { pinCode: pin },
     );
     const promise = sendTransaction.runFromMining();
+
+    setLoading(false);
 
     // show loading modal
     setModal({
@@ -125,6 +136,13 @@ const TokenSwapReview = () => {
           title={t`REVIEW TOKEN SWAP`}
           onBackPress={exitToMainScreen}
         />
+
+        {loading && (
+          <FeedbackModal
+            text={"Building the token swap"}
+            icon={<Spinner />}
+          />
+        )}
 
         {modal && (
           <SendTransactionFeedbackModal

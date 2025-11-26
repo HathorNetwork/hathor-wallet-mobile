@@ -89,7 +89,7 @@ const TokenSwap = () => {
 
   useEffect(() => {
     for (const tk of allowedTokens) {
-      dispatch(tokenFetchBalanceRequested(tk.uid));
+      dispatch(tokenFetchBalanceRequested(tk.uid, true));
     }
   }, [allowedTokens]);
 
