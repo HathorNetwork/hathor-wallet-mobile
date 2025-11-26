@@ -48,7 +48,7 @@ export const COLORS = {
   /**
    * Light shadow for adding details on the UI
    */
-   lightShadow: '#ababab',
+  lightShadow: '#ababab',
   /**
    * @type {string} More washed down version of the text
    */

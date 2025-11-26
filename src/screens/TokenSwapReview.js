@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -112,7 +112,7 @@ const TokenSwapReview = () => {
         sendTransaction,
         promise,
       });
-    } catch(err) {
+    } catch (err) {
       console.error(err);
       this.exitOnError();
     } finally {
