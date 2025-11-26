@@ -96,7 +96,7 @@ const TokenSwapReview = () => {
       data,
       { pinCode: pin },
     );
-    const promise = sendTransaction.run();
+    const promise = sendTransaction.runFromMining();
 
     // show loading modal
     setModal({
