@@ -228,7 +228,7 @@ const TokenSwap = () => {
       || !outputTokenAmount
       || outputTokenAmount === 0n
       || getAvailableAmount(inputToken, tokensBalance) < inputTokenAmount
-      || checkQuotedAmount()
+      || !checkQuotedAmount()
   );
 
   const renderGhostElement = () => (
