@@ -349,7 +349,7 @@ export function selectTokenSwapContractId(state) {
  * @param {number|bigint} amount
  * @param {TokenData} token
  */
-export function renderAmountAndSymbol(amount, token){
+export function renderAmountAndSymbol(amount, token) {
   return `${renderValue(amount, false)} ${token.symbol}`;
 }
 
@@ -361,7 +361,7 @@ export function renderAmountAndSymbol(amount, token){
  * @param {TokenData} token
  * @param {number} slippage
  */
-export function renderAmountAndSymbolWithSlippage(direction, amount, token, slippage){
+export function renderAmountAndSymbolWithSlippage(direction, amount, token, slippage) {
   const newAmount = calcAmountWithSlippage(direction, amount, slippage);
   return renderAmountAndSymbol(newAmount, token);
 }
@@ -380,7 +380,7 @@ export function renderConversionRate(quote, inToken, outToken) {
     // Invalid but we should avoid rendering errors
     return `${renderAmountAndSymbol(100, outToken)} = ${renderAmountAndSymbol(0, inToken)}`;
   }
-  let exchangeRate = 100 * Number(quote.amount_out) / Number(quote.amount_in);
+  let exchangeRate = (100 * Number(quote.amount_out)) / Number(quote.amount_in);
   let extraRate = 1;
 
   /**
@@ -395,5 +395,5 @@ export function renderConversionRate(quote, inToken, outToken) {
     extraRate *= 10;
     exchangeRate *= 10;
   }
-  return `${renderAmountAndSymbol(exchangeRate, outToken)} = ${renderAmountAndSymbol(100*extraRate, inToken)}`;
+  return `${renderAmountAndSymbol(exchangeRate, outToken)} = ${renderAmountAndSymbol(100 * extraRate, inToken)}`;
 }

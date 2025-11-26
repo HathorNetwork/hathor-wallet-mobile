@@ -333,7 +333,9 @@ const TokenSwap = () => {
                 <View style={styles.quoteContainer}>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Conversion rate</Text>
-                    <Text style={styles.quoteValue}>{renderConversionRate(quote, inputToken, outputToken)}</Text>
+                    <Text style={styles.quoteValue}>
+                      {renderConversionRate(quote, inputToken, outputToken)}
+                    </Text>
                   </View>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Slippage</Text>
@@ -352,7 +354,7 @@ const TokenSwap = () => {
                   { quote.direction === 'output' && (
                     <View style={styles.quoteRow}>
                       <Text style={styles.quoteHeader}>Maximum to deposit</Text>
-                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, inputToken,TOKEN_SWAP_SLIPPAGE)}</Text>
+                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, inputToken, TOKEN_SWAP_SLIPPAGE)}</Text>
                     </View>
                   )}
                 </View>

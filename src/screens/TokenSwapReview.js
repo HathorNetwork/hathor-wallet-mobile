@@ -139,7 +139,7 @@ const TokenSwapReview = () => {
 
         {loading && (
           <FeedbackModal
-            text={"Building the token swap"}
+            text='Building the token swap'
             icon={<Spinner />}
           />
         )}
@@ -162,7 +162,9 @@ const TokenSwapReview = () => {
               <View style={styles.card}>
                 <View style={styles.tokenContainer}>
                   <Text style={styles.tokenHeader}>Swapping</Text>
-                  <Text style={styles.tokenValue}>{renderAmountAndSymbol(quote.amount_in, tokenIn)}</Text>
+                  <Text style={styles.tokenValue}>
+                    {renderAmountAndSymbol(quote.amount_in, tokenIn)}
+                  </Text>
                 </View>
                 <ArrowDownIcon color={COLORS.primary} />
                 <View style={styles.tokenContainer}>
@@ -179,7 +181,9 @@ const TokenSwapReview = () => {
                 </View>
                 <View style={styles.quoteRow}>
                   <Text style={styles.quoteHeader}>Conversion rate</Text>
-                  <Text style={styles.quoteValue}>{renderConversionRate(quote, tokenIn, tokenOut)}</Text>
+                  <Text style={styles.quoteValue}>
+                    {renderConversionRate(quote, tokenIn, tokenOut)}
+                  </Text>
                 </View>
                 <View style={styles.quoteRow}>
                   <Text style={styles.quoteHeader}>Slippage</Text>

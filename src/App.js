@@ -877,11 +877,11 @@ const createRequestInstance = (resolve, timeout) => {
   // and can cause double-encoding or malformed query parameters with special characters
   instance.defaults.paramsSerializer = (params) => {
     const searchParams = new URLSearchParams();
-    Object.keys(params).forEach(key => {
+    Object.keys(params).forEach((key) => {
       const value = params[key];
       if (Array.isArray(value)) {
         // Handle array parameters (e.g., calls[], fields[])
-        value.forEach(v => searchParams.append(`${key}[]`, v));
+        value.forEach((v) => searchParams.append(`${key}[]`, v));
       } else if (value !== null && value !== undefined) {
         searchParams.append(key, value);
       }
