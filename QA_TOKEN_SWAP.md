@@ -1,10 +1,10 @@
 # Token Swap
 
 1. **Token swap screen**
-	1. [ ] Open the token swap screen via the bottom menu
-    1. If the :arrows_clockwise: icon is not present then enable the feature flag `token-swap.rollout` for your device.
-	1. [ ] Check that HTR is already selected as the top token and the bottom token is already selected.
-  1. [ ] Check that both amounts should be set to 0.00
+    1. [ ] Open the token swap screen via the bottom menu
+        1. If the :arrows_clockwise: icon is not present then enable the feature flag `token-swap.rollout` for your device
+    1. [ ] Check that HTR is already selected as the top token and the bottom token is already selected
+    1. [ ] Check that both amounts should be set to 0.00
 
 1. **Token Selection**
   1. [ ] Click on either token box to select another token
