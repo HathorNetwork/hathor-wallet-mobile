@@ -205,6 +205,12 @@ const TokenSwap = () => {
     dispatch(tokenSwapSwitchTokens());
   };
 
+  /**
+   * We need to check that the quoted amount is valid even after we apply the slippage.
+   * The value can be invalid if the quoted amount is 0.01 and with slippage it comes to 0.00
+   * This would mean we have either a deposit or withdrawal of 0 which should not happen.
+   * To avoid this we need this check.
+   */
   const checkQuotedAmount = () => {
     if (!(quote && quote.direction)) {
       return false;
@@ -383,7 +389,7 @@ const styles = StyleSheet.create({
   },
   screenContent: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.backgroundColor,
   },
   tokenSelectorWrapper: {
     flexDirection: 'row',
@@ -403,7 +409,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignText: 'center',
     marginBottom: 30,
-    color: '#ababab',
+    color: COLORS.lightShadow,
   },
   tokenCard: {
     flexDirection: 'row',
@@ -417,7 +423,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: COLORS.backgroundColor,
     // For IOS
-    shadowColor: '#ababab',
+    shadowColor: COLORS.lightShadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 3.84,
@@ -448,7 +454,6 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    // backgroundColor: '#ccc',
     backgroundColor: COLORS.backgroundColor,
   },
   dividerButton: {
@@ -459,7 +464,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   dividerButtonText: {
-    color: '#fff',
+    color: COLORS.backgroundColor,
     fontSize: 16,
     fontWeight: 'bold',
   },

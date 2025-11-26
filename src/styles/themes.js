@@ -46,6 +46,10 @@ export const COLORS = {
   textColorShadowOpacity005: 'rgba(0, 0, 0, 0.05)',
   textColorShadowLighter: 'rgba(0, 0, 0, 0.1)',
   /**
+   * Light shadow for adding details on the UI
+   */
+   lightShadow: '#ababab',
+  /**
    * @type {string} More washed down version of the text
    */
   textColorShadowLight: 'rgba(0, 0, 0, 0.3)',
