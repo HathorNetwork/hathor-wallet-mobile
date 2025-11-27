@@ -237,10 +237,6 @@ const TokenSwap = () => {
       || !checkQuotedAmount()
   );
 
-  const renderGhostElement = () => (
-    <View style={{ width: 80, height: 40 }} />
-  );
-
   const getAvailableString = (token) => {
     if (!token) {
       return '';
@@ -279,7 +275,6 @@ const TokenSwap = () => {
             <View>
               <View style={styles.card}>
                 <View style={styles.tokenCard}>
-                  {renderGhostElement()}
                   <AmountTextInput
                     onAmountUpdate={onInputAmountChange}
                     onEndEditing={onInputAmountEndEditing}
@@ -289,6 +284,7 @@ const TokenSwap = () => {
                     decimalPlaces={decimalPlaces}
                     style={swapDirection === 'output' ? styles.amountInputTextFaded : styles.amountInputText}
                     editable={editing !== 'output'}
+                    textAlign='left'
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -309,7 +305,6 @@ const TokenSwap = () => {
 
               <View style={styles.card}>
                 <View style={styles.tokenCard}>
-                  {renderGhostElement()}
                   <AmountTextInput
                     onAmountUpdate={onOutputAmountChange}
                     onEndEditing={onOutputAmountEndEditing}
@@ -319,6 +314,7 @@ const TokenSwap = () => {
                     decimalPlaces={decimalPlaces}
                     style={swapDirection === 'input' ? styles.amountInputTextFaded : styles.amountInputText}
                     editable={editing !== 'input'}
+                    textAlign='left'
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -367,11 +363,13 @@ const TokenSwap = () => {
               )}
             </View>
 
-            <NewHathorButton
-              title={t`REVIEW`}
-              disabled={isReviewButtonDisabled()}
-              onPress={() => onReviewButtonPress(quote, inputToken, outputToken)}
-            />
+            <View style={styles.buttonContainer}>
+              <NewHathorButton
+                title={t`REVIEW`}
+                disabled={isReviewButtonDisabled()}
+                onPress={() => onReviewButtonPress(quote, inputToken, outputToken)}
+              />
+            </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
@@ -391,6 +389,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.backgroundColor,
   },
+  buttonContainer: {
+    marginBottom: 16,
+  },
   tokenSelectorWrapper: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -402,12 +403,10 @@ const styles = StyleSheet.create({
   },
   amountInputText: { // https://github.com/facebook/react-native/issues/30666
     flex: 1,
-    alignText: 'center',
     marginBottom: 30,
   },
   amountInputTextFaded: {
     flex: 1,
-    alignText: 'center',
     marginBottom: 30,
     color: COLORS.lightShadow,
   },
@@ -416,7 +415,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 30,
-    padding: 8,
+    paddingVertical: 8,
+    paddingLeft: 24,
+    paddingRight: 8,
   },
   card: {
     zIndex: 1,
@@ -425,10 +426,10 @@ const styles = StyleSheet.create({
     // For IOS
     shadowColor: COLORS.lightShadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.1,
     shadowRadius: 3.84,
     // For Android
-    elevation: 5,
+    elevation: 2,
   },
   quoteContainer: {
     paddingTop: 40,
@@ -437,13 +438,14 @@ const styles = StyleSheet.create({
   quoteRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
   quoteHeader: {
-    fontWeight: 'bold',
+    fontWeight: '500',
   },
   quoteValue: {
-    fontWeight: 200,
+    fontWeight: '300',
   },
   dividerContainer: {
     zIndex: 2,
@@ -457,11 +459,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.backgroundColor,
   },
   dividerButton: {
-    paddingHorizontal: 15,
-    paddingVertical: 8,
+    width: 40,
+    height: 40,
     borderRadius: 20,
     backgroundColor: COLORS.primary,
     marginHorizontal: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dividerButtonText: {
     color: COLORS.backgroundColor,

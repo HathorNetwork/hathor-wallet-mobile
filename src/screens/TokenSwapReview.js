@@ -137,7 +137,7 @@ const TokenSwapReview = () => {
         <HathorHeader
           withBorder
           title={t`REVIEW TOKEN SWAP`}
-          onBackPress={exitToMainScreen}
+          onBackPress={exitOnError}
         />
 
         {loading && (
@@ -169,7 +169,9 @@ const TokenSwapReview = () => {
                     {renderAmountAndSymbol(quote.amount_in, tokenIn)}
                   </Text>
                 </View>
-                <ArrowDownIcon color={COLORS.primary} />
+                <View style={styles.iconContainer}>
+                  <ArrowDownIcon color={COLORS.primary} />
+                </View>
                 <View style={styles.tokenContainer}>
                   <Text style={styles.tokenHeader}>To</Text>
                   <Text style={styles.tokenValue}>
@@ -211,11 +213,13 @@ const TokenSwapReview = () => {
               </View>
             </View>
 
-            <NewHathorButton
-              title={t`SWAP`}
-              onPress={onSwapButtonPress}
-              disabled={modal !== null}
-            />
+            <View style={styles.buttonContainer}>
+              <NewHathorButton
+                title={t`SWAP`}
+                onPress={onSwapButtonPress}
+                disabled={modal !== null}
+              />
+            </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
@@ -246,6 +250,13 @@ const styles = StyleSheet.create({
   tokenValue: {
     fontSize: 24,
     fontWeight: 'bold',
+    marginTop: 8,
+  },
+  buttonContainer: {
+    marginBottom: 16,
+  },
+  iconContainer: {
+    paddingLeft: 6,
   },
   card: {
     zIndex: 1,
@@ -255,12 +266,12 @@ const styles = StyleSheet.create({
     alignItems: 'left',
     justifyContent: 'flex-start',
     // For IOS
-    shadowColor: '#ababab',
+    shadowColor: COLORS.lightShadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.1,
     shadowRadius: 3.84,
     // For Android
-    elevation: 5,
+    elevation: 2,
   },
   quoteContainer: {
     paddingTop: 40,
@@ -269,13 +280,14 @@ const styles = StyleSheet.create({
   quoteRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
   quoteHeader: {
-    fontWeight: 'bold',
+    fontWeight: '500',
   },
   quoteValue: {
-    fontWeight: 200,
+    fontWeight: '300',
   },
 });
 
