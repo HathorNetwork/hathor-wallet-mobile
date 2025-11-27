@@ -1000,19 +1000,17 @@ export function* onSessionProposal(action) {
   const availableMethods = values(AVAILABLE_METHODS);
 
   // Check for unsupported mandatory methods - these will cause rejection
-  const unsupportedMandatoryMethods = mandatoryMethods.filter(method =>
-    !availableMethods.includes(method)
+  const unsupportedMandatoryMethods = mandatoryMethods.filter(
+    (method) => !availableMethods.includes(method)
   );
 
   // Check for unsupported optional methods - these will just be logged
-  const unsupportedOptionalMethods = optionalMethods.filter(method =>
-    !availableMethods.includes(method)
+  const unsupportedOptionalMethods = optionalMethods.filter(
+    (method) => !availableMethods.includes(method)
   );
 
   // Calculate the methods we'll actually accept (intersection of requested and available)
-  const acceptedMethods = allRequestedMethods.filter(method =>
-    availableMethods.includes(method)
-  );
+  const acceptedMethods = allRequestedMethods.filter((method) => availableMethods.includes(method));
 
   // Store accepted methods in data for potential display in modal
   data.acceptedMethods = acceptedMethods;
