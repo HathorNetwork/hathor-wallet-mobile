@@ -49,3 +49,9 @@
     1. [ ] Check the transaction on the HTR tx history
     1. [ ] Go back to the token swap screen, select the token box to open the list of tokens.
     1. [ ] There should be some balance for the hUSDC token.
+
+### Turn on the `wallet-service` feature toggle
+1. [ ] Get the `deviceId` and add it in the `UserIDs` strategy in the unleash **`wallet-service-mobile-android-testnet.rollout`** feature toggle
+1. [ ] Turn the feature toggle on
+
+Run the **Token Swap review** test with the wallet-service turned on.
