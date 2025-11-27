@@ -8,6 +8,7 @@
 import { ncApi } from '@hathor/wallet-lib';
 import { get } from 'lodash';
 import { getNetworkSettings } from '../sagas/helpers';
+import { renderValue } from '../utils';
 
 /**
  * Definition of a swap step.
@@ -118,12 +119,13 @@ export function calcAmountWithSlippage(direction, amount, slippage) {
 /**
  * Build the NanoContractAction array required to call the token swap method.
  *
+ * @param {string} caller base58 caller address
  * @param {TokenSwapQuote} quote Token swap quote
  * @param {string} tokenIn Token UID of the deposited token
  * @param {string} tokenOut Token UID of the withdrawn token
  * @param {number} slippage
  */
-function buildTokenSwapActions(quote, tokenIn, tokenOut, slippage) {
+function buildTokenSwapActions(caller, quote, tokenIn, tokenOut, slippage) {
   const actions = [];
   if (quote.direction === 'input') {
     /**
@@ -145,6 +147,7 @@ function buildTokenSwapActions(quote, tokenIn, tokenOut, slippage) {
       type: 'withdrawal',
       token: tokenOut,
       amount: calcAmountWithSlippage('input', quote.amount_out, slippage),
+      address: caller,
     });
   } else if (quote.direction === 'output') {
     /**
@@ -160,6 +163,7 @@ function buildTokenSwapActions(quote, tokenIn, tokenOut, slippage) {
       type: 'withdrawal',
       token: tokenOut,
       amount: quote.amount_out,
+      address: caller,
     });
     // Deposit amount plus slippage
     actions.push({
@@ -239,22 +243,23 @@ export async function findBestTokenSwap(direction, contractId, amount, tokenIn, 
     // Call the view method to calculate the best token swap path
     const response = await ncApi.getNanoContractState(contractId, [], [], [call]);
 
-    if (!(response.calls && response.calls[call])) {
+    if (!(response.calls && response.calls[call] && response.calls[call].value)) {
       throw new TokenSwapCallError();
     }
-    const data = response.calls[call];
+    const data = response.calls[call].value;
 
     return {
       direction,
-      path: data.path.split(',').map((step) => parseQuotePathStep(step)),
-      pathStr: data.path,
-      amounts: data.amounts,
-      amount_out: direction === 'input' ? data.amount_out : amount,
-      amount_in: direction === 'output' ? data.amount_in : amount,
-      price_impact: data.price_impact,
+      path: data[0] === '' ? '' : data[0].split(',').map((step) => parseQuotePathStep(step)),
+      pathStr: data[0],
+      amounts: data[1],
+      amount_out: direction === 'input' ? BigInt(data[2]) : amount,
+      amount_in: direction === 'output' ? BigInt(data[2]) : amount,
+      price_impact: data[3],
     };
-  } catch (_err) {
+  } catch (err) {
     // Any error from the call or returned values is considered a call error.
+    console.error(err);
     throw new TokenSwapCallError();
   }
 }
@@ -263,15 +268,16 @@ export async function findBestTokenSwap(direction, contractId, amount, tokenIn, 
  * Will determine the correct swap method to execute and mount the data accordingly.
  *
  * @param {string} contractId The pool manager to find the swap
+ * @param {string} caller Address of the caller in base58
  * @param {TokenSwapQuote} quote Token swap quote
  * @param {string} tokenIn Token UID of the deposited token
  * @param {string} tokenOut Token UID of the withdrawn token
  * @param {number} slippage Acceptable slippage on the swap amount
  * @returns {[string, Object]} Method name and data required to execute the token swap.
  */
-export function buildTokenSwap(contractId, quote, tokenIn, tokenOut, slippage) {
+export function buildTokenSwap(contractId, caller, quote, tokenIn, tokenOut, slippage) {
   const method = getTokenSwapMethod(quote);
-  const actions = buildTokenSwapActions(quote, tokenIn, tokenOut, slippage);
+  const actions = buildTokenSwapActions(caller, quote, tokenIn, tokenOut, slippage);
   const data = {
     ncId: contractId,
     actions,
@@ -336,4 +342,58 @@ export function selectTokenSwapContractId(state) {
     return null;
   }
   return data.pool_manager;
+}
+
+/**
+ * Render amount and token symbol for UI components.
+ * @param {number|bigint} amount
+ * @param {TokenData} token
+ */
+export function renderAmountAndSymbol(amount, token) {
+  return `${renderValue(amount, false)} ${token.symbol}`;
+}
+
+/**
+ * Render amount and token symbol for UI components taking into consideration the slippage
+ * Slippage effect will change depending on the direction.
+ * @param {'input'|'output'} direction
+ * @param {number|bigint} amount
+ * @param {TokenData} token
+ * @param {number} slippage
+ */
+export function renderAmountAndSymbolWithSlippage(direction, amount, token, slippage) {
+  const newAmount = calcAmountWithSlippage(direction, amount, slippage);
+  return renderAmountAndSymbol(newAmount, token);
+}
+
+/**
+ * Render conversion rate for the quote given
+ * @param {TokenSwapQuote} quote
+ * @param {TokenData} inToken
+ * @param {TokenData} outToken
+ */
+export function renderConversionRate(quote, inToken, outToken) {
+  if (!quote) {
+    return null;
+  }
+  if ((!quote.amount_in) || quote.amount_in === 0) {
+    // Invalid but we should avoid rendering errors
+    return `${renderAmountAndSymbol(100, outToken)} = ${renderAmountAndSymbol(0, inToken)}`;
+  }
+  let exchangeRate = (100 * Number(quote.amount_out)) / Number(quote.amount_in);
+  let extraRate = 1;
+
+  /**
+   * This loop will gradually increase the reference so we do not use fractional rates.
+   * The cutoff for the reference value is 1000.00
+   */
+  while (!Number.isInteger(exchangeRate)) {
+    if (extraRate === 1000) {
+      exchangeRate = Math.floor(exchangeRate);
+      break;
+    }
+    extraRate *= 10;
+    exchangeRate *= 10;
+  }
+  return `${renderAmountAndSymbol(exchangeRate, outToken)} = ${renderAmountAndSymbol(100 * extraRate, inToken)}`;
 }

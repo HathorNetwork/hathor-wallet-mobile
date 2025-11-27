@@ -88,7 +88,6 @@ import { monitorFeatureFlags } from './featureToggle';
 import {
   getAllAddresses,
   getFirstAddress,
-  setKeychainPin,
 } from '../utils';
 import { logger } from '../logger';
 
@@ -320,8 +319,6 @@ export function* startWallet(action) {
     yield put(startWalletFailed());
     return;
   }
-
-  setKeychainPin(pin);
 
   // Wallet might be already ready at this point
   if (!wallet.isReady()) {
