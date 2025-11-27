@@ -28,7 +28,7 @@ export const ArrowDownIcon = ({ type = 'default', size = DEFAULT_ICON_SIZE, colo
     >
       <Path
         fill={color}
-        d="M12 13.7239L16.8619 8.86195L17.8047 9.80476L12 15.6095L6.19526 9.80476L7.13807 8.86195L12 13.7239Z"
+        d='M12 13.7239L16.8619 8.86195L17.8047 9.80476L12 15.6095L6.19526 9.80476L7.13807 8.86195L12 13.7239Z'
       />
     </Svg>
   </BaseIcon>

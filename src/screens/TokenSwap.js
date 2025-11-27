@@ -237,10 +237,6 @@ const TokenSwap = () => {
       || !checkQuotedAmount()
   );
 
-  const renderGhostElement = () => (
-    <View style={{ width: 80, height: 40 }} />
-  );
-
   const getAvailableString = (token) => {
     if (!token) {
       return '';
