@@ -5,13 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from 'react';
-import { View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { msgid, ngettext, t } from 'ttag';
 import hathorLib from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
-import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
@@ -21,6 +20,17 @@ import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackM
 import { renderValue, isTokenNFT } from '../utils';
 import NavigationService from '../NavigationService';
 import { useNavigation, useParams } from '../hooks/navigation';
+import { COLORS } from '../styles/themes';
+import { DoneIcon } from '../components/Icons/Done.icon';
+
+function NoFee() {
+  return (
+    <View style={styles.nofee}>
+      <DoneIcon color={COLORS.white}/>
+      <Text>No fee</Text>
+    </View>
+  );
+}
 
 const SendConfirmScreen = () => {
   const tokensBalance = useSelector((state) => state.tokensBalance);
@@ -39,6 +49,18 @@ const SendConfirmScreen = () => {
   const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
 
   const [modal, setModal] = useState(null);
+  const [networkFee, setNetworkFee] = useState(null);
+
+  useEffect(() => {
+    const calculateNetworkFee = async () => {
+      // If the selected utxos amount is higher than `amount` we will have 2 outputs with the token
+      // This can be calculated with the fee utils, but since they are not release yet we need to mock
+      // FIXME: Will mock this case just to see UI.
+      setNetworkFee(0n);
+    };
+
+    calculateNetworkFee();
+  }, [token, amount]);
 
   /**
    * In case we can prepare the data, open send tx feedback modal (while sending the tx)
@@ -143,7 +165,7 @@ const SendConfirmScreen = () => {
       )}
 
       <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-        <View>
+        <View style={{ gap: 30 }}>
           <View style={{ alignItems: 'center', marginTop: 32 }}>
             <AmountTextInput
               editable={false}
@@ -153,12 +175,25 @@ const SendConfirmScreen = () => {
               {getAvailableString()}
             </InputLabel>
           </View>
-          <SimpleInput
-            label={t`Address`}
-            editable={false}
-            value={address}
-            containerStyle={{ marginTop: 48 }}
-          />
+          <View>
+            <TextFmt style={{ marginBottom: 10 }}>{t`**Transaction summary**`}</TextFmt>
+            <View style={styles.summaryContainer}>
+              <View style={styles.summaryItem}>
+                <TextFmt>{t`**To**`}</TextFmt>
+                <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
+              </View>
+              <View style={styles.summaryItem}>
+                <TextFmt>{t`**Network Fee**`}</TextFmt>
+                { networkFee
+                  ? (<Text>{renderValue(networkFee, false)} HTR</Text>)
+                  : (<NoFee/>)}
+              </View>
+              <View style={styles.summaryItem}>
+                <TextFmt>{t`**Total**`}</TextFmt>
+                <Text>{`${amountAndToken}${networkFee ? ` + ${renderValue(networkFee, false)} HTR` : ''}`}</Text>
+              </View>
+            </View>
+          </View>
         </View>
         <NewHathorButton
           title={t`Send`}
@@ -171,5 +206,35 @@ const SendConfirmScreen = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  summaryContainer: {
+    zIndex: 1,
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: COLORS.backgroundColor,
+    alignItems: 'left',
+    justifyContent: 'flex-start',
+    // For IOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 3.84,
+    // For Android
+    elevation: 5,
+  },
+  summaryItem: {
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  nofee: {
+    flexDirection: 'row',
+    borderRadius: 10,
+    paddingLeft: 5,
+    paddingRight: 10,
+    backgroundColor: COLORS.feedbackSuccess100,
+  },
+});
 
 export default SendConfirmScreen;
