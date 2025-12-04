@@ -22,6 +22,7 @@ import NavigationService from '../NavigationService';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { COLORS } from '../styles/themes';
 import { DoneIcon } from '../components/Icons/Done.icon';
+import InfoTooltip from '../components/InfoTooltip';
 
 function NoFee() {
   return (
@@ -52,15 +53,27 @@ const SendConfirmScreen = () => {
   const [networkFee, setNetworkFee] = useState(null);
 
   useEffect(() => {
-    const calculateNetworkFee = async () => {
-      // If the selected utxos amount is higher than `amount` we will have 2 outputs with the token
-      // This can be calculated with the fee utils, but since they are not release yet we need to mock
-      // FIXME: Will mock this case just to see UI.
-      setNetworkFee(0n);
-    };
-
-    calculateNetworkFee();
-  }, [token, amount]);
+    (async () => {
+      const FBTVersion = 1; // XXX: hathorLib.TokenVersion.FEE
+      if (token.version && token.version === FBTVersion) {
+        setNetworkFee(0n);
+        return;
+      }
+      try {
+        const { changeAmount } = await this.wallet.getUtxosForAmount(amountValue, { token: token.uid });
+        if (changeAmount) {
+          // Since there is change, it means we will have the intended output and a change output.
+          // 2 FBT outputs means the fee value will be payed twice
+          setNetworkFee(2n);
+        } else {
+          // No change means that there will only be the intended output.
+          setNetworkFee(1n);
+        }
+      } catch (err) {
+        setNetworkFee(1n);
+      }
+    })();
+  }, [wallet, token, amountValue]);
 
   /**
    * In case we can prepare the data, open send tx feedback modal (while sending the tx)
@@ -183,7 +196,13 @@ const SendConfirmScreen = () => {
                 <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
               </View>
               <View style={styles.summaryItem}>
-                <TextFmt>{t`**Network Fee**`}</TextFmt>
+                <View>
+                  <TextFmt>{t`**Network Fee**`}</TextFmt>
+                  <InfoTooltip tooltipContent={networkFee
+                    ? (<Text>This fee is fixed and required for every transfer of this token.</Text>)
+                    : (<Text>This token is deposit based, no network fee will be charged.</Text>)
+                  }/>
+                </View>
                 { networkFee
                   ? (<Text>{renderValue(networkFee, false)} HTR</Text>)
                   : (<NoFee/>)}

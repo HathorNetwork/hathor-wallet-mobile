@@ -47,6 +47,7 @@ const SendAmountInput = () => {
   const [amountValue, setAmountValue] = useState(null);
   const [token, setToken] = useState(selectedToken);
   const [error, setError] = useState(null);
+  const [networkFee, setNetworkFee] = useState(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -62,6 +63,29 @@ const SendAmountInput = () => {
   useEffect(() => {
     setToken(selectedToken);
   }, [selectedToken]);
+
+  useEffect(() => {
+    (async () => {
+      const FBTVersion = 1; // XXX: hathorLib.TokenVersion.FEE
+      if (token.version && token.version === FBTVersion) {
+        setNetworkFee(0n);
+        return;
+      }
+      try {
+        const { changeAmount } = await this.wallet.getUtxosForAmount(amountValue, { token: token.uid });
+        if (changeAmount) {
+          // Since there is change, it means we will have the intended output and a change output.
+          // 2 FBT outputs means the fee value will be payed twice
+          setNetworkFee(2n);
+        } else {
+          // No change means that there will only be the intended output.
+          setNetworkFee(1n);
+        }
+      } catch (err) {
+        setNetworkFee(1n);
+      }
+    })();
+  }, [wallet, token, amountValue]);
 
   const focusInput = () => {
     if (inputRef.current) {
@@ -99,7 +123,8 @@ const SendAmountInput = () => {
       return;
     }
 
-    if (token.version && token.version === hathorLib.TokenVersion.FEE) {
+    const FBTVersion = 1; // XXX: hathorLib.TokenVersion.FEE
+    if (token.version && token.version === FBTVersion) {
       // The user selected a fee based token
       // So we need to check the HTR balance to make the transaction happen.
       const htrBalance = get(tokensBalance, hathorLib.constants.NATIVE_TOKEN_UID);
@@ -108,10 +133,7 @@ const SendAmountInput = () => {
         return;
       }
       const { available: htrAvailable } = htrBalance.data;
-      // FIXME: mocked value until utility is created on the lib
-      // XXX: calculate fee based on amountValue
-      const feeRequired = 2n;
-      if (feeRequired > htrAvailable) {
+      if (networkFee > htrAvailable) {
         setError('Insufficient balance of HTR to cover the network fee.');
         return;
       }
