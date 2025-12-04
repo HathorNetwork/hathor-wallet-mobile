@@ -33,6 +33,8 @@ const CreateTokenAmount = () => {
   const [amount, setAmount] = useState(0n);
   const [deposit, setDeposit] = useState(0n);
   const [error, setError] = useState(null);
+  const [title, setTitle] = useState(t`CREATE TOKEN`);
+  const [infoBoxItems, setInfoBoxItems] = useState([]);
   const { wallet, decimalPlaces } = useSelector((state) => ({
     wallet: state.wallet,
     decimalPlaces: state.serverInfo?.decimal_places
@@ -41,7 +43,7 @@ const CreateTokenAmount = () => {
   const params = useParams();
 
   // Get route params with BigInt support
-  const { name, symbol } = params;
+  const { name, symbol, tokenInfoVersion } = params;
 
   const nativeSymbol = wallet.storage.getNativeTokenData().symbol;
 
@@ -65,6 +67,14 @@ const CreateTokenAmount = () => {
 
     return focusListener;
   }, [navigation]);
+
+  useEffect(() => {
+    if (tokenInfoVersion === 1) {
+      setTitle(t`CREATE DEPOSIT TOKEN`);
+    } else if (tokenInfoVersion === 2) {
+      setTitle(t`CREATE FEE TOKEN`);
+    }
+  }, [tokenInfoVersion]);
 
   // Handle amount text change
   const onAmountChange = (text, value) => {
@@ -106,6 +116,7 @@ const CreateTokenAmount = () => {
       symbol: params.symbol,
       amount,
       deposit,
+      tokenInfoVersion,
     });
   };
 
@@ -141,11 +152,28 @@ const CreateTokenAmount = () => {
     </Strong>
   );
 
+  useEffect(() => {
+    if (tokenInfoVersion === 2) {
+      setInfoBoxItems([
+        <Text>{t`A small fee will be applied to each future transaction of this token.`}</Text>,
+      ]);
+    } else {
+      setInfoBoxItems([
+        <Text key='deposit'>{t`Deposit:`} <Strong style={amountStyle}>
+          {hathorLib.numberUtils.prettyValue(deposit)} {nativeSymbol}
+        </Strong></Text>,
+        <Text key='available'>
+          {jt`You have ${amountAvailableText} ${nativeSymbol} available`}
+        </Text>
+      ])
+    }
+  }, [deposit, tokenInfoVersion]);
+
   return (
     <View style={{ flex: 1 }}>
       <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
         <HathorHeader
-          title={t`CREATE TOKEN`}
+          title={title}
           onBackPress={() => navigation.goBack()}
           onCancel={() => navigation.getParent().goBack()}
         />
@@ -169,16 +197,7 @@ const CreateTokenAmount = () => {
               )}
             </View>
             <View>
-              <InfoBox
-                items={[
-                  <Text key='deposit'>{t`Deposit:`} <Strong style={amountStyle}>
-                    {hathorLib.numberUtils.prettyValue(deposit)} {nativeSymbol}
-                  </Strong></Text>,
-                  <Text key='available'>
-                    {jt`You have ${amountAvailableText} ${nativeSymbol} available`}
-                  </Text>
-                ]}
-              />
+              <InfoBox items={infoBoxItems} />
               <NewHathorButton
                 title={t`Next`}
                 disabled={isButtonDisabled()}

@@ -27,7 +27,7 @@ import {
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
 import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
-import { setSupportedBiometry, isTokenSwapEnabled } from './utils';
+import { setSupportedBiometry, isTokenSwapEnabled, isFeeBasedTokensEnabled } from './utils';
 import {
   appStateUpdate,
   lockScreen,
@@ -64,6 +64,7 @@ import SendConfirmScreen from './screens/SendConfirmScreen';
 import Dashboard from './screens/Dashboard';
 import RegisterToken from './screens/RegisterToken';
 import CreateTokenDepositNotice from './screens/CreateTokenDepositNotice';
+import CreateTokenTypeNotice from './screens/CreateTokenTypeNotice';
 import CreateTokenAmount from './screens/CreateTokenAmount';
 import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
@@ -222,14 +223,25 @@ const SendStack = ({ navigation }) => {
  */
 const CreateTokenStack = () => {
   const Stack = createStackNavigator();
+  const fbtEnabled = useSelector(isFeeBasedTokensEnabled);
+  const [initialRoute, setInitialRoute] = useState('CreateTokenDepositNotice');
+
+  useEffect(() => {
+    if (fbtEnabled) {
+      setInitialRoute('CreateTokenTypeNotice');
+    } else {
+      setInitialRoute('CreateTokenDepositNotice');
+    }
+  }, [fbtEnabled]);
 
   return (
     <Stack.Navigator
-      initialRouteName='CreateTokenDepositNotice'
+      initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
       }}
     >
+      <Stack.Screen name='CreateTokenTypeNotice' component={CreateTokenTypeNotice} />
       <Stack.Screen name='CreateTokenDepositNotice' component={CreateTokenDepositNotice} />
       <Stack.Screen name='CreateTokenName' component={CreateTokenName} />
       <Stack.Screen name='CreateTokenSymbol' component={CreateTokenSymbol} />
