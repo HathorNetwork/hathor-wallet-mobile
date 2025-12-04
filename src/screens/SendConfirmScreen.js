@@ -55,12 +55,12 @@ const SendConfirmScreen = () => {
   useEffect(() => {
     (async () => {
       const FBTVersion = 1; // XXX: hathorLib.TokenVersion.FEE
-      if (token.version && token.version === FBTVersion) {
+      if (!(token.version && token.version === FBTVersion)) {
         setNetworkFee(0n);
         return;
       }
       try {
-        const { changeAmount } = await this.wallet.getUtxosForAmount(amountValue, { token: token.uid });
+        const { changeAmount } = await this.wallet.getUtxosForAmount(amount, { token: token.uid });
         if (changeAmount) {
           // Since there is change, it means we will have the intended output and a change output.
           // 2 FBT outputs means the fee value will be payed twice
@@ -73,7 +73,7 @@ const SendConfirmScreen = () => {
         setNetworkFee(1n);
       }
     })();
-  }, [wallet, token, amountValue]);
+  }, [wallet, token, amount]);
 
   /**
    * In case we can prepare the data, open send tx feedback modal (while sending the tx)
@@ -196,12 +196,14 @@ const SendConfirmScreen = () => {
                 <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
               </View>
               <View style={styles.summaryItem}>
-                <View>
+                <View style={{ flex: 2, flexDirection: 'row' }}>
                   <TextFmt>{t`**Network Fee**`}</TextFmt>
-                  <InfoTooltip tooltipContent={networkFee
-                    ? (<Text>This fee is fixed and required for every transfer of this token.</Text>)
-                    : (<Text>This token is deposit based, no network fee will be charged.</Text>)
-                  }/>
+                  <InfoTooltip>
+                    {networkFee
+                      ? (<Text>{t`This fee is fixed and required for every transfer of this token.`} </Text>)
+                      : (<Text>{t`This token is deposit based, no network fee will be charged.`} </Text>)
+                    }
+                  </InfoTooltip>
                 </View>
                 { networkFee
                   ? (<Text>{renderValue(networkFee, false)} HTR</Text>)
@@ -237,10 +239,10 @@ const styles = StyleSheet.create({
     // For IOS
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.1,
     shadowRadius: 3.84,
     // For Android
-    elevation: 5,
+    elevation: 2,
   },
   summaryItem: {
     padding: 10,

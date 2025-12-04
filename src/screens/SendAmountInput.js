@@ -33,6 +33,7 @@ import { COLORS } from '../styles/themes';
 import { useNavigation, useParams } from '../hooks/navigation';
 
 const SendAmountInput = () => {
+  const wallet = useSelector((state) => state.wallet);
   const selectedToken = useSelector((state) => state.selectedToken);
   const tokensBalance = useSelector((state) => state.tokensBalance);
   const tokenMetadata = useSelector((state) => state.tokenMetadata);

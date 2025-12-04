@@ -6,48 +6,42 @@
  */
 
 import React, { useState } from 'react';
-import { Image, Touchable, View } from 'react-native';
+import { Image, TouchableOpacity, View } from 'react-native';
 import infoCircle from '../assets/icons/info-circle.png';
 
-function InfoTooltip({ children, tooltipContent }) {
+function InfoTooltip({ children }) {
   const [isTooltipShown, setIsTooltipShown] = useState(false);
   const [pressLocation, setPressLocation] = useState({ x: 0, y: 0 });
 
   const handlePressIn = (event) => {
     setPressLocation({ x: event.pageX, y: event.pageY });
-    setIsTooltipShown(true);
-  };
-
-  const handlePressOut = () => {
-    setIsTooltipShown(false);
+    setIsTooltipShown(!isTooltipShown);
   };
 
   return (
-    <Touchable
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      style={{ position: 'relative', display: 'inline-block' }} // Ensure children are positioned correctly
+    <TouchableOpacity
+      // onPressIn={handlePressIn}
+      style={{ position: 'relative', display: 'block', overflow: 'visible' }}
     >
-      {children}
       <Image source={infoCircle} width={24} height={24} />
       {isTooltipShown && (
         <View
-          className="tooltip"
           style={{
-            position: 'absolute',
-            top: pressLocation.y + 10, // Adjust offset as needed
-            left: pressLocation.x + 10, // Adjust offset as needed
-            backgroundColor: 'black',
+            position: 'relative',
+            top: pressLocation.y + 20,
+            left: pressLocation.x + 20,
+            backgroundColor: 'gray',
             color: 'white',
             padding: '5px 10px',
             borderRadius: '4px',
             zIndex: 1000,
+            width: 'auto',
           }}
         >
-          {tooltipContent}
+          {children}
         </View>
       )}
-    </Touchable>
+    </TouchableOpacity>
   );
 }
 
