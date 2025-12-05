@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   View,
@@ -25,7 +25,32 @@ import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackM
 import TextFmt from '../components/TextFmt';
 import { newToken, updateSelectedToken } from '../actions';
 import errorIcon from '../assets/images/icErrorBig.png';
+import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
+
+const TokenTypeInfoBox = ({ tokenInfoVersion }) => {
+  let infoText = t`You chose to create a **Deposit-Based Token**, which requires a 1% HTR deposit.`;
+  if (tokenInfoVersion === 2) {
+    infoText = t`You chose to create a **Fee-Based Token**, so a small fee will be applied to each future transaction of this token.`;
+  }
+  return (
+    <View style={{
+      marginTop: 16,
+      padding: 16,
+      backgroundColor: '#DAF1FF',
+      borderRadius: 20,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+    }}
+    >
+      <View style={{ margin: 8 }}>
+        <InfoCircleIcon />
+      </View>
+      <TextFmt style={{ flexShrink: 1 }}>{infoText}</TextFmt>
+    </View>
+  );
+}
 
 /**
  * This component expects the following parameters in navigation:
@@ -49,12 +74,30 @@ const CreateTokenConfirm = () => {
   const params = useParams();
 
   // Parse and store navigation params
-  const { amount, name, symbol } = params;
+  const { amount, name, symbol, tokenInfoVersion } = params;
   const nativeSymbol = wallet.storage.getNativeTokenData().symbol;
 
   // Component state
   const [modal, setModal] = useState(null);
   const [modalType, setModalType] = useState(null);
+  const [title, setTitle] = useState(t`CREATE TOKEN`);
+  const [deposit, setDeposit] = useState(null);
+
+  useEffect(() => {
+    if (tokenInfoVersion === 1) {
+      setTitle(t`CREATE DEPOSIT TOKEN`);
+    } else if (tokenInfoVersion === 2) {
+      setTitle(t`CREATE FEE TOKEN`);
+    }
+  }, [tokenInfoVersion]);
+
+  useEffect(() => {
+    if (tokenInfoVersion === 1) {
+      setDeposit(hathorLib.tokensUtils.getDepositAmount(amount));
+    } else {
+      setDeposit(null);
+    }
+  }, [tokenInfoVersion, amount]);
 
   /**
    * Prepare data and execute create token
@@ -151,7 +194,7 @@ const CreateTokenConfirm = () => {
   return (
     <View style={{ flex: 1 }}>
       <HathorHeader
-        title={t`CREATE TOKEN`}
+        title={title}
         onBackPress={() => navigation.goBack()}
         onCancel={() => navigation.getParent().goBack()}
       />
@@ -201,14 +244,15 @@ const CreateTokenConfirm = () => {
             value={symbol}
             containerStyle={{ marginTop: 32 }}
           />
-          <SimpleInput
-            label={t`Deposit`}
-            editable={false}
-            value={`${hathorLib.numberUtils.prettyValue(
-              hathorLib.tokensUtils.getDepositAmount(amount)
-            )} ${nativeSymbol}`}
-            containerStyle={{ marginTop: 32 }}
-          />
+          { deposit != null && (
+            <SimpleInput
+              label={t`Deposit`}
+              editable={false}
+              value={`${hathorLib.numberUtils.prettyValue(deposit)} ${nativeSymbol}`}
+              containerStyle={{ marginTop: 32 }}
+            />
+          )}
+          { tokenInfoVersion != null && <TokenTypeInfoBox tokenInfoVersion={tokenInfoVersion} /> }
         </View>
         <NewHathorButton
           title={t`Create token`}
