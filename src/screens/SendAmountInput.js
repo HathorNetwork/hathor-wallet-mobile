@@ -73,7 +73,7 @@ const SendAmountInput = () => {
         return;
       }
       try {
-        const { changeAmount } = await this.wallet.getUtxosForAmount(
+        const { changeAmount } = await wallet.getUtxosForAmount(
           amountValue,
           { token: token.uid }
         );
