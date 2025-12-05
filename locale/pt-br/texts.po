@@ -229,12 +229,12 @@ msgstr "CRIAR TOKEN"
 #: src/screens/CreateTokenAmount.js:73 src/screens/CreateTokenConfirm.js:88
 #: src/screens/CreateTokenName.js:44 src/screens/CreateTokenSymbol.js:62
 msgid "CREATE DEPOSIT TOKEN"
-msgstr ""
+msgstr "CRIAR TOKEN DE DEPOSITO"
 
 #: src/screens/CreateTokenAmount.js:75 src/screens/CreateTokenConfirm.js:90
 #: src/screens/CreateTokenName.js:46 src/screens/CreateTokenSymbol.js:64
 msgid "CREATE FEE TOKEN"
-msgstr ""
+msgstr "CRIAR TOKEN DE TAXA"
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
 #: src/screens/SendAmountInput.js:121
@@ -244,6 +244,7 @@ msgstr "Quantidade inválida"
 #: src/screens/CreateTokenAmount.js:158
 msgid "A small fee will be applied to each future transaction of this token."
 msgstr ""
+"Uma pequena taxa vai ser cobrada em cada transação com esse token no futuro."
 
 #: src/screens/CreateTokenAmount.js:162
 msgid "Deposit:"
@@ -270,12 +271,15 @@ msgid ""
 "You chose to create a **Deposit-Based Token**, which requires a 1% HTR "
 "deposit."
 msgstr ""
+"Você escolheu criar um token de **Deposito**, uma taxa de 1% é exigida em HTR"
 
 #: src/screens/CreateTokenConfirm.js:34
 msgid ""
 "You chose to create a **Fee-Based Token**, so a small fee will be applied to "
 "each future transaction of this token."
 msgstr ""
+"Você escolheu criar um token de **Fee**, então uma pequena taxa será cobrada "
+"em cada transação com esse token no futuro."
 
 #: src/screens/CreateTokenConfirm.js:137
 msgid "Creating token"
@@ -385,21 +389,23 @@ msgstr "Por exemplo, HTR"
 
 #: src/screens/CreateTokenTypeNotice.js:92
 msgid "Choose how your tokens will behave for future transactions."
-msgstr ""
+msgstr "Escolha como o token vai se comportar em futuras transações."
 
 #: src/screens/CreateTokenTypeNotice.js:114
 msgid ""
 "Once selected, the token type cannot be changed later. |link:Learn more "
 "about deposits and fees here|"
 msgstr ""
+"Uma vez selecionado, o tipo do token não pode ser alterado depois. |"
+"link:Leia mais sobre depositos e taxas aqui|"
 
 #: src/screens/CreateTokenTypeNotice.js:124
 msgid "DEPOSIT TOKEN"
-msgstr ""
+msgstr "TOKEN DE DEPOSITO"
 
 #: src/screens/CreateTokenTypeNotice.js:130
 msgid "FEE TOKEN"
-msgstr ""
+msgstr "TOKEN DE TAXA"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
 #: src/screens/Dashboard.js:139 src/screens/Dashboard.js:197
@@ -870,15 +876,15 @@ msgstr[1] "Você tem ${ availablePretty } disponíveis"
 
 #: src/screens/SendConfirmScreen.js:175
 msgid "Loading fee information..."
-msgstr ""
+msgstr "Carregando informações..."
 
 #: src/screens/SendConfirmScreen.js:178
 msgid "This token is Deposit Based, no network fee will be charged."
-msgstr ""
+msgstr "Esse token é baseado em deposito, nenhuma taxa de rede será cobrada."
 
 #: src/screens/SendConfirmScreen.js:180
 msgid "This fee is fixed and required for every transfer of this token."
-msgstr ""
+msgstr "Essa taxa é fixa e obrigatória em todas as transações com esse token."
 
 #: src/screens/SendConfirmScreen.js:196
 #, javascript-format
@@ -886,25 +892,24 @@ msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ amountAndToken }** foi confirmada"
 
 #: src/screens/SendConfirmScreen.js:207
-#, fuzzy
 msgid "Read more."
 msgstr "Ler mais."
 
 #: src/screens/SendConfirmScreen.js:223
 msgid "**Transaction summary**"
-msgstr ""
+msgstr "**Resumo da Transação**"
 
 #: src/screens/SendConfirmScreen.js:226
 msgid "**To**"
-msgstr ""
+msgstr "**Para**"
 
 #: src/screens/SendConfirmScreen.js:231
 msgid "**Network Fee** "
-msgstr ""
+msgstr "**Taxa de rede**"
 
 #: src/screens/SendConfirmScreen.js:241
 msgid "**Total**"
-msgstr ""
+msgstr "**Total**"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
 #: src/screens/SendConfirmScreen.js:248
