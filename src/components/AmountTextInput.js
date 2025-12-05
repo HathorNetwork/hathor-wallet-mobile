@@ -101,7 +101,7 @@ const AmountTextInput = forwardRef((props, ref) => {
     placeholder = `0.${zeros}`;
   }
 
-  const { style: customStyle, ...restProps } = props;
+  const { style: customStyle, textAlign, ...restProps } = props;
 
   return (
     <TextInput
@@ -109,7 +109,7 @@ const AmountTextInput = forwardRef((props, ref) => {
       style={[style.input, customStyle]}
       onChangeText={onChangeText}
       value={text}
-      textAlign='center'
+      textAlign={textAlign || 'center'}
       textAlignVertical='bottom'
       keyboardAppearance='dark'
       keyboardType='numeric'

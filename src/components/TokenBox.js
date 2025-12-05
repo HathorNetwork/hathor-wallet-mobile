@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
     height: 40,
-    width: 80,
+    width: 90,
     borderWidth: 1,
     borderColor: COLORS.textColor,
     borderRadius: 8,

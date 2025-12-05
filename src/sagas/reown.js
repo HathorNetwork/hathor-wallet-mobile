@@ -989,8 +989,53 @@ export function* onSessionProposal(action) {
     proposer: get(params, 'proposer.metadata.name', ''),
     url: get(params, 'proposer.metadata.url', ''),
     description: get(params, 'proposer.metadata.description', ''),
-    requiredNamespaces: get(params, 'requiredNamespaces', []),
+    requiredNamespaces: get(params, 'requiredNamespaces', {}),
+    optionalNamespaces: get(params, 'optionalNamespaces', {}),
   };
+
+  // Validate requested methods against available methods
+  const mandatoryMethods = get(data.requiredNamespaces, 'hathor.methods', []);
+  const optionalMethods = get(data.optionalNamespaces, 'hathor.methods', []);
+  const allRequestedMethods = [...mandatoryMethods, ...optionalMethods];
+  const availableMethods = values(AVAILABLE_METHODS);
+
+  // Check for unsupported mandatory methods - these will cause rejection
+  const unsupportedMandatoryMethods = mandatoryMethods.filter(
+    (method) => !availableMethods.includes(method)
+  );
+
+  // Check for unsupported optional methods - these will just be logged
+  const unsupportedOptionalMethods = optionalMethods.filter(
+    (method) => !availableMethods.includes(method)
+  );
+
+  // Calculate the methods we'll actually accept (intersection of requested and available)
+  const acceptedMethods = allRequestedMethods.filter((method) => availableMethods.includes(method));
+
+  // Store accepted methods in data for potential display in modal
+  data.acceptedMethods = acceptedMethods;
+
+  // Reject session if there are unsupported mandatory methods
+  if (unsupportedMandatoryMethods.length > 0) {
+    log.error('Session proposal contains unsupported mandatory methods:', unsupportedMandatoryMethods);
+    try {
+      yield call(() => walletKit.rejectSession({
+        id,
+        reason: {
+          code: ERROR_CODES.UNAUTHORIZED_METHODS,
+          message: `Unsupported mandatory methods: ${unsupportedMandatoryMethods.join(', ')}`,
+        },
+      }));
+    } catch (e) {
+      log.error('Error rejecting session with unsupported mandatory methods', e);
+    }
+    return;
+  }
+
+  // Log warning for unsupported optional methods (but don't reject)
+  if (unsupportedOptionalMethods.length > 0) {
+    log.debug('Some unsupported methods were requested, but they are optional:', unsupportedOptionalMethods);
+  }
 
   const onAcceptAction = { type: 'REOWN_ACCEPT' };
   const onRejectAction = { type: 'REOWN_REJECT' };
@@ -1034,7 +1079,7 @@ export function* onSessionProposal(action) {
           accounts: [`hathor:${networkSettings.network}:${firstAddress}`],
           chains: [`hathor:${networkSettings.network}`],
           events: AVAILABLE_EVENTS,
-          methods: values(AVAILABLE_METHODS),
+          methods: acceptedMethods,
         },
       },
     }));

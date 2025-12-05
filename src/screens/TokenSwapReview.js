@@ -18,10 +18,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
 
-import { renderValue } from '../utils';
 import {
   buildTokenSwap,
-  calcAmountWithSlippage,
+  renderAmountAndSymbol,
+  renderAmountAndSymbolWithSlippage,
+  renderConversionRate,
   selectTokenSwapContractId,
 } from '../utils/tokenSwap';
 import NewHathorButton from '../components/NewHathorButton';
@@ -35,6 +36,8 @@ import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
 import { tokenSwapFetchSwapQuote, tokenSwapResetSwapData } from '../actions';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
+import Spinner from '../components/Spinner';
+import FeedbackModal from '../components/FeedbackModal';
 
 const TokenSwapReview = () => {
   const dispatch = useDispatch();
@@ -50,6 +53,7 @@ const TokenSwapReview = () => {
     tokenOut,
   } = useParams();
   const [modal, setModal] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
 
@@ -67,47 +71,54 @@ const TokenSwapReview = () => {
    */
   const exitOnError = () => {
     setModal(null);
-    dispatch(tokenSwapFetchSwapQuote(quote.direction, quote.direction === 'input' ? quote.amount_in : quote.amount_out, tokenIn.uid, tokenOut.uid));
+    dispatch(tokenSwapFetchSwapQuote(
+      quote.direction,
+      quote.direction === 'input' ? quote.amount_in : quote.amount_out,
+      tokenIn.uid,
+      tokenOut.uid
+    ));
     navigation.goBack();
   };
 
   const executeSend = async (pin) => {
-    const [method, data] = buildTokenSwap(
-      contractId,
-      quote,
-      tokenIn.uid,
-      tokenOut.uid,
-      TOKEN_SWAP_SLIPPAGE,
-    );
-    if (useWalletService) {
-      await wallet.validateAndRenewAuthToken(pin);
+    try {
+      setLoading(true);
+
+      const address = await wallet.getAddressAtIndex(0);
+      const [method, data] = buildTokenSwap(
+        contractId,
+        address,
+        quote,
+        tokenIn.uid,
+        tokenOut.uid,
+        TOKEN_SWAP_SLIPPAGE,
+      );
+      if (useWalletService) {
+        await wallet.validateAndRenewAuthToken(pin);
+      }
+      const sendTransaction = await wallet.createNanoContractTransaction(
+        method,
+        address,
+        data,
+        { pinCode: pin },
+      );
+      const promise = sendTransaction.runFromMining();
+
+      setLoading(false);
+
+      // show loading modal
+      setModal({
+        text: t`Your transfer is being processed`,
+        sendTransaction,
+        promise,
+      });
+    } catch (err) {
+      console.error(err);
+      this.exitOnError();
+    } finally {
+      setLoading(false);
     }
-    const address = await wallet.getAddressAtIndex(0);
-    const sendTransaction = wallet.createNanoContractTransaction(
-      method,
-      address,
-      data,
-      { pinCode: pin },
-    );
-    const promise = sendTransaction.run();
-
-    // show loading modal
-    setModal({
-      text: t`Your transfer is being processed`,
-      sendTransaction,
-      promise,
-    });
   };
-
-  const getAmountWithSlippage = (amount, direction) => calcAmountWithSlippage(
-    direction,
-    amount,
-    TOKEN_SWAP_SLIPPAGE,
-  );
-
-  const getAmountString = (amount, token) => `${renderValue(amount, false)} ${token.symbol}`;
-
-  const getConversionRate = (swapQuote) => `${getAmountString(100 * (Number(swapQuote.amount_out) / Number(swapQuote.amount_in)), tokenOut)} = ${getAmountString(100, tokenIn)}`;
 
   const onSwapButtonPress = () => {
     const pinParams = {
@@ -126,8 +137,15 @@ const TokenSwapReview = () => {
         <HathorHeader
           withBorder
           title={t`REVIEW TOKEN SWAP`}
-          onBackPress={exitToMainScreen}
+          onBackPress={exitOnError}
         />
+
+        {loading && (
+          <FeedbackModal
+            text='Building the token swap'
+            icon={<Spinner />}
+          />
+        )}
 
         {modal && (
           <SendTransactionFeedbackModal
@@ -147,13 +165,17 @@ const TokenSwapReview = () => {
               <View style={styles.card}>
                 <View style={styles.tokenContainer}>
                   <Text style={styles.tokenHeader}>Swapping</Text>
-                  <Text style={styles.tokenValue}>{getAmountString(quote.amount_in, tokenIn)}</Text>
+                  <Text style={styles.tokenValue}>
+                    {renderAmountAndSymbol(quote.amount_in, tokenIn)}
+                  </Text>
                 </View>
-                <ArrowDownIcon color={COLORS.primary} />
+                <View style={styles.iconContainer}>
+                  <ArrowDownIcon color={COLORS.primary} />
+                </View>
                 <View style={styles.tokenContainer}>
                   <Text style={styles.tokenHeader}>To</Text>
                   <Text style={styles.tokenValue}>
-                    {getAmountString(quote.amount_out, tokenOut)}
+                    {renderAmountAndSymbol(quote.amount_out, tokenOut)}
                   </Text>
                 </View>
               </View>
@@ -164,7 +186,9 @@ const TokenSwapReview = () => {
                 </View>
                 <View style={styles.quoteRow}>
                   <Text style={styles.quoteHeader}>Conversion rate</Text>
-                  <Text style={styles.quoteValue}>{getConversionRate(quote)}</Text>
+                  <Text style={styles.quoteValue}>
+                    {renderConversionRate(quote, tokenIn, tokenOut)}
+                  </Text>
                 </View>
                 <View style={styles.quoteRow}>
                   <Text style={styles.quoteHeader}>Slippage</Text>
@@ -177,23 +201,25 @@ const TokenSwapReview = () => {
                 { quote.direction === 'input' && (
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Minimum received</Text>
-                    <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_out, 'input'), tokenOut)}</Text>
+                    <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('input', quote.amount_out, tokenOut, TOKEN_SWAP_SLIPPAGE)}</Text>
                   </View>
                 )}
                 { quote.direction === 'output' && (
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Maximum to deposit</Text>
-                    <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_in, 'output'), tokenIn)}</Text>
+                    <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, tokenIn, TOKEN_SWAP_SLIPPAGE)}</Text>
                   </View>
                 )}
               </View>
             </View>
 
-            <NewHathorButton
-              title={t`SWAP`}
-              onPress={onSwapButtonPress}
-              disabled={modal !== null}
-            />
+            <View style={styles.buttonContainer}>
+              <NewHathorButton
+                title={t`SWAP`}
+                onPress={onSwapButtonPress}
+                disabled={modal !== null}
+              />
+            </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
@@ -211,7 +237,7 @@ const styles = StyleSheet.create({
   },
   screenContent: {
     flex: 1,
-    backgroundColor: COLORS.lowContrastDetail,
+    backgroundColor: '#fff',
   },
   tokenContainer: {
     flexDirection: 'column',
@@ -224,6 +250,13 @@ const styles = StyleSheet.create({
   tokenValue: {
     fontSize: 24,
     fontWeight: 'bold',
+    marginTop: 8,
+  },
+  buttonContainer: {
+    marginBottom: 16,
+  },
+  iconContainer: {
+    paddingLeft: 6,
   },
   card: {
     zIndex: 1,
@@ -233,12 +266,12 @@ const styles = StyleSheet.create({
     alignItems: 'left',
     justifyContent: 'flex-start',
     // For IOS
-    shadowColor: '#000',
+    shadowColor: COLORS.lightShadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.1,
     shadowRadius: 3.84,
     // For Android
-    elevation: 5,
+    elevation: 2,
   },
   quoteContainer: {
     paddingTop: 40,
@@ -247,13 +280,14 @@ const styles = StyleSheet.create({
   quoteRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
   quoteHeader: {
-    fontWeight: 'bold',
+    fontWeight: '500',
   },
   quoteValue: {
-    fontWeight: 200,
+    fontWeight: '300',
   },
 });
 

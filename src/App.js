@@ -880,6 +880,22 @@ const App = () => (
 const createRequestInstance = (resolve, timeout) => {
   const instance = hathorLib.axios.defaultCreateRequestInstance(resolve, timeout);
 
+  // Custom paramsSerializer to handle URL encoding consistently across platforms
+  // This fixes iOS 17+ URL encoding issues where NSURLSession uses RFC 3986
+  // and can cause double-encoding or malformed query parameters with special characters
+  instance.defaults.paramsSerializer = (params) => {
+    const searchParams = new URLSearchParams();
+    Object.keys(params).forEach((key) => {
+      const value = params[key];
+      if (Array.isArray(value)) {
+        // Handle array parameters (e.g., calls[], fields[])
+        value.forEach((v) => searchParams.append(`${key}[]`, v));
+      } else if (value !== null && value !== undefined) {
+        searchParams.append(key, value);
+      }
+    });
+    return searchParams.toString();
+  };
   instance.interceptors.response.use((response) => response, (error) => Promise.reject(error));
   return instance;
 };
