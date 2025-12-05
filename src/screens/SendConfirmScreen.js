@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { useSelector } from 'react-redux';
 import { msgid, ngettext, t } from 'ttag';
 import hathorLib from '@hathor/wallet-lib';
@@ -17,18 +17,20 @@ import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
+import TooltipModal from '../components/TooltipModal';
 import { renderValue, isTokenNFT } from '../utils';
 import NavigationService from '../NavigationService';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { COLORS } from '../styles/themes';
-import { DoneIcon } from '../components/Icons/Done.icon';
-import InfoTooltip from '../components/InfoTooltip';
+import { InfoCircleIcon } from '../components/Icons/InfoCircle';
+import { CheckIcon } from '../components/Icons/Check.icon';
+import { TOKEN_DEPOSIT_URL } from '../constants';
 
 function NoFee() {
   return (
     <View style={styles.nofee}>
-      <DoneIcon color={COLORS.white}/>
-      <Text>No fee</Text>
+      <CheckIcon color='#2E701F' />
+      <Text style={{ color: '#2E701F' }}>No fee</Text>
     </View>
   );
 }
@@ -51,6 +53,7 @@ const SendConfirmScreen = () => {
 
   const [modal, setModal] = useState(null);
   const [networkFee, setNetworkFee] = useState(null);
+  const [isTooltipShown, setIsTooltipShown] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -60,7 +63,7 @@ const SendConfirmScreen = () => {
         return;
       }
       try {
-        const { changeAmount } = await this.wallet.getUtxosForAmount(amount, { token: token.uid });
+        const { changeAmount } = await wallet.getUtxosForAmount(amount, { token: token.uid });
         if (changeAmount) {
           // Since there is change, it means we will have the intended output and a change output.
           // 2 FBT outputs means the fee value will be payed twice
@@ -157,8 +160,28 @@ const SendConfirmScreen = () => {
 
   const tokenNameUpperCase = token.name.toUpperCase();
 
+  const handleFeeInfoPress = () => {
+    setIsTooltipShown(true);
+  };
+
+  const handleTooltipLinkPress = () => {
+    setIsTooltipShown(false);
+    // Navigate to external link
+    Linking.openURL(TOKEN_DEPOSIT_URL);
+  };
+
+  const getTooltipMessage = () => {
+    if (networkFee === null) {
+      return t`Loading fee information...`;
+    }
+    if (networkFee === 0n) {
+      return t`This token is Deposit Based, no network fee will be charged.`;
+    }
+    return t`This fee is fixed and required for every transfer of this token.`;
+  };
+
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
       <HathorHeader
         withBorder
         title={t`SEND ${tokenNameUpperCase}`}
@@ -176,6 +199,14 @@ const SendConfirmScreen = () => {
           hide={isShowingPinScreen}
         />
       )}
+
+      <TooltipModal
+        visible={isTooltipShown}
+        onDismiss={() => setIsTooltipShown(false)}
+        message={getTooltipMessage()}
+        linkText={t`Read more.`}
+        onLinkPress={handleTooltipLinkPress}
+      />
 
       <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
         <View style={{ gap: 30 }}>
@@ -197,17 +228,14 @@ const SendConfirmScreen = () => {
               </View>
               <View style={styles.summaryItem}>
                 <View style={{ flex: 2, flexDirection: 'row' }}>
-                  <TextFmt>{t`**Network Fee**`}</TextFmt>
-                  <InfoTooltip>
-                    {networkFee
-                      ? (<Text>{t`This fee is fixed and required for every transfer of this token.`} </Text>)
-                      : (<Text>{t`This token is deposit based, no network fee will be charged.`} </Text>)
-                    }
-                  </InfoTooltip>
+                  <TextFmt>{t`**Network Fee** `}</TextFmt>
+                  <TouchableOpacity onPress={handleFeeInfoPress}>
+                    <InfoCircleIcon size={20} />
+                  </TouchableOpacity>
                 </View>
                 { networkFee
                   ? (<Text>{renderValue(networkFee, false)} HTR</Text>)
-                  : (<NoFee/>)}
+                  : (<NoFee />)}
               </View>
               <View style={styles.summaryItem}>
                 <TextFmt>{t`**Total**`}</TextFmt>
@@ -236,13 +264,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.backgroundColor,
     alignItems: 'left',
     justifyContent: 'flex-start',
-    // For IOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    // For Android
-    elevation: 2,
   },
   summaryItem: {
     padding: 10,
@@ -254,7 +275,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingLeft: 5,
     paddingRight: 10,
-    backgroundColor: COLORS.feedbackSuccess100,
+    backgroundColor: '#EEFBEB',
   },
 });
 

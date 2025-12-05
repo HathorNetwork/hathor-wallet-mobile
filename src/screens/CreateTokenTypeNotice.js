@@ -36,20 +36,50 @@ class CreateTokenTypeNotice extends React.Component {
         padding: 16,
       },
       typeInfoContainer: {
-        backgroundColor: "#F7F7F7",
+        backgroundColor: '#F7F7F7',
+        padding: 16,
+        marginTop: 16,
+        borderRadius: 8,
       },
       typeInfoHeader: {
-        marginBottom: 16,
+        marginBottom: 8,
         color: COLORS.primary,
+        fontWeight: '600',
+        fontSize: 16,
       },
       typeInfoFooter: {
-        marginTop: 16,
-        color: "#57606A",
+        marginTop: 8,
+        color: '#57606A',
+        fontStyle: 'italic',
+        fontSize: 14,
+      },
+      infoSection: {
+        flexDirection: 'row',
+        marginTop: 24,
+        alignItems: 'flex-start',
+      },
+      infoIcon: {
+        width: 20,
+        height: 20,
+        marginRight: 8,
+        marginTop: 2,
+      },
+      infoText: {
+        flex: 1,
+      },
+      buttonsContainer: {
+        flex: 1,
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        paddingTop: 24,
+        paddingBottom: 24,
+      },
+      introText: {
+        marginBottom: 8,
       },
     }) });
 
   render() {
-    const depositPercentage = this.props.wallet.storage.getTokenDepositPercentage() * 100;
     return (
       <View style={{ flex: 1 }}>
         <HathorHeader
@@ -58,7 +88,7 @@ class CreateTokenTypeNotice extends React.Component {
         />
         <View style={this.style.container}>
           <View>
-            <Text style={this.style.text}>
+            <Text style={[this.style.text, this.style.introText]}>
               {t`Choose how your tokens will behave for future transactions.`}
             </Text>
 
@@ -77,9 +107,9 @@ class CreateTokenTypeNotice extends React.Component {
               <Text style={this.style.typeInfoFooter}>Recommended for occasional use.</Text>
             </View>
 
-            <View>
-              <Image source={infoCircle} style={{ margin: 8 }} />
-              <Text style={this.style.text}>
+            <View style={this.style.infoSection}>
+              <Image source={infoCircle} style={this.style.infoIcon} />
+              <Text style={[this.style.text, this.style.infoText]}>
                 {str2jsx(
                   t`Once selected, the token type cannot be changed later. |link:Learn more about deposits and fees here|`,
                   { link: (x, i) => <Link key={i} href={TOKEN_DEPOSIT_URL}>{x}</Link> }
@@ -87,15 +117,19 @@ class CreateTokenTypeNotice extends React.Component {
               </Text>
             </View>
           </View>
-          <View style={this.style.buttonView}>
-            <NewHathorButton
-              onPress={() => this.props.navigation.navigate('CreateTokenName', { tokenInfoVersion: 1 })}
-              title={t`DEPOSIT TOKEN`}
-            />
-            <NewHathorButton
-              onPress={() => this.props.navigation.navigate('CreateTokenName', { tokenInfoVersion: 2 })}
-              title={t`FEE TOKEN`}
-            />
+          <View style={this.style.buttonsContainer}>
+            <View style={this.style.buttonView}>
+              <NewHathorButton
+                onPress={() => this.props.navigation.navigate('CreateTokenName', { tokenInfoVersion: 1 })}
+                title={t`DEPOSIT TOKEN`}
+              />
+            </View>
+            <View style={this.style.buttonView}>
+              <NewHathorButton
+                onPress={() => this.props.navigation.navigate('CreateTokenName', { tokenInfoVersion: 2 })}
+                title={t`FEE TOKEN`}
+              />
+            </View>
           </View>
         </View>
       </View>

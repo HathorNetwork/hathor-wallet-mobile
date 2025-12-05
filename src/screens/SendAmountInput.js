@@ -73,7 +73,10 @@ const SendAmountInput = () => {
         return;
       }
       try {
-        const { changeAmount } = await this.wallet.getUtxosForAmount(amountValue, { token: token.uid });
+        const { changeAmount } = await this.wallet.getUtxosForAmount(
+          amountValue,
+          { token: token.uid }
+        );
         if (changeAmount) {
           // Since there is change, it means we will have the intended output and a change output.
           // 2 FBT outputs means the fee value will be payed twice

@@ -25,7 +25,7 @@ import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackM
 import TextFmt from '../components/TextFmt';
 import { newToken, updateSelectedToken } from '../actions';
 import errorIcon from '../assets/images/icErrorBig.png';
-import infoCircle from '../assets/icons/info-circle.png'
+import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
 
 const TokenTypeInfoBox = ({ tokenInfoVersion }) => {
@@ -40,10 +40,14 @@ const TokenTypeInfoBox = ({ tokenInfoVersion }) => {
       backgroundColor: '#DAF1FF',
       borderRadius: 20,
       flexDirection: 'row',
-      justifyContent: 'space-around',
-    }}>
-      <Image source={infoCircle} style={{ margin: 8 }} />
-      <TextFmt>{infoText}</TextFmt>
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+    }}
+    >
+      <View style={{ margin: 8 }}>
+        <InfoCircleIcon />
+      </View>
+      <TextFmt style={{ flexShrink: 1 }}>{infoText}</TextFmt>
     </View>
   );
 }
@@ -248,7 +252,7 @@ const CreateTokenConfirm = () => {
               containerStyle={{ marginTop: 32 }}
             />
           )}
-          { tokenInfoVersion != null && <TokenTypeInfoBox tokenInfoVersion={tokenInfoVersion}/> }
+          { tokenInfoVersion != null && <TokenTypeInfoBox tokenInfoVersion={tokenInfoVersion} /> }
         </View>
         <NewHathorButton
           title={t`Create token`}

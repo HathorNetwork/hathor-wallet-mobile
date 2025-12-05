@@ -155,7 +155,7 @@ const CreateTokenAmount = () => {
   useEffect(() => {
     if (tokenInfoVersion === 2) {
       setInfoBoxItems([
-        <Text>{t`A small fee will be applied to each future transaction of this token.`}</Text>,
+        <Text key='fee'>{t`A small fee will be applied to each future transaction of this token.`}</Text>,
       ]);
     } else {
       setInfoBoxItems([

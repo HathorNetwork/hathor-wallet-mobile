@@ -1,4 +1,3 @@
-
 /**
  * Copyright (c) Hathor Labs and its affiliates.
  *
@@ -19,13 +18,13 @@ import { DEFAULT_ICON_SIZE } from './constants';
 export const CheckIcon = ({ type, size = DEFAULT_ICON_SIZE, color = 'black' }) => (
   <BaseIcon type={type}>
     <Svg
-      xmlns="http://www.w3.org/2000/svg"
+      xmlns='http://www.w3.org/2000/svg'
       width={size}
       height={size}
-      viewBox="0 0 12 12"
+      viewBox='0 0 12 12'
       fill='none'
     >
-      <Path d="M5 8.2L3 6.2L3.7 5.5L5 6.8L8.3 3.5L9 4.2L5 8.2Z" fill={color}/>
+      <Path d='M5 8.2L3 6.2L3.7 5.5L5 6.8L8.3 3.5L9 4.2L5 8.2Z' fill={color} />
     </Svg>
   </BaseIcon>
 );

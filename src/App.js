@@ -224,15 +224,11 @@ const SendStack = ({ navigation }) => {
 const CreateTokenStack = () => {
   const Stack = createStackNavigator();
   const fbtEnabled = useSelector(isFeeBasedTokensEnabled);
-  const [initialRoute, setInitialRoute] = useState('CreateTokenDepositNotice');
+  let initialRoute = 'CreateTokenDepositNotice';
 
-  useEffect(() => {
-    if (fbtEnabled) {
-      setInitialRoute('CreateTokenTypeNotice');
-    } else {
-      setInitialRoute('CreateTokenDepositNotice');
-    }
-  }, [fbtEnabled]);
+  if (fbtEnabled) {
+    initialRoute = 'CreateTokenTypeNotice';
+  }
 
   return (
     <Stack.Navigator
