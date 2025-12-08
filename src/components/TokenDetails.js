@@ -39,11 +39,50 @@ const TokenDetails = (props) => {
     props.isNFT && '- NFT'
   );
 
+  const getFeeModelInfo = () => {
+    const version = props.token?.version;
+
+    if (version === 0) {
+      return {
+        model: t`Native Token`,
+        description: t`This is the native token, no fees applies.`,
+      };
+    } else if (version === 1) {
+      return {
+        model: t`Fee Model: Deposit-Based`,
+        description: t`No transaction fees. Requires 1% HTR deposit.`,
+      };
+    } else if (version === 2) {
+      return {
+        model: t`Fee Model: Fee-Based`,
+        description: t`Small fee applies to each transfer. No deposit required.`,
+      };
+    }
+
+    return null;
+  };
+
+  const renderFeeModel = () => {
+    const feeModelInfo = getFeeModelInfo();
+
+    if (!feeModelInfo) {
+      return null;
+    }
+
+    return (
+      <View style={styles.feeModelWrapper}>
+        <Text style={styles.feeModelLabel}>{feeModelInfo.model}</Text>
+        <Text style={styles.feeModelDescription}>{feeModelInfo.description}</Text>
+      </View>
+    );
+  };
+
   return (
     <View style={[styles.contentWrapper, props.contentStyle]}>
       <View style={styles.tokenWrapper}>
         <Text style={{ fontSize: 14, lineHeight: 17, fontWeight: 'bold' }}>{tokenLabel} {renderNFTType()}</Text>
       </View>
+      {renderFeeModel()}
       <View style={styles.qrcodeWrapper}>
         <QRCode
           value={configString}
@@ -94,6 +133,27 @@ const styles = StyleSheet.create({
   tokenWrapper: {
     marginVertical: 24,
     alignItems: 'center',
+  },
+  feeModelWrapper: {
+    backgroundColor: COLORS.lowContrastDetail,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 24,
+    alignSelf: 'stretch',
+    marginHorizontal: 24,
+    alignItems: 'center',
+  },
+  feeModelLabel: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: COLORS.textColor,
+    marginBottom: 4,
+  },
+  feeModelDescription: {
+    fontSize: 11,
+    color: COLORS.textColorShadow,
+    textAlign: 'center',
   },
   qrcodeWrapper: {
     alignSelf: 'stretch',
