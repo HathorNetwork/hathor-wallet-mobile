@@ -48,9 +48,11 @@ class TxDetailsModal extends Component {
   getFeeModelText = (version) => {
     if (version === 0) {
       return t`Native Token`;
-    } else if (version === 1) {
+    }
+    if (version === 1) {
       return t`Deposit Based`;
-    } else if (version === 2) {
+    }
+    if (version === 2) {
       return t`Fee Based`;
     }
     return null;

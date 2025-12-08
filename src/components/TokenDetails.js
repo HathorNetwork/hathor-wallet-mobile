@@ -47,12 +47,14 @@ const TokenDetails = (props) => {
         model: t`Native Token`,
         description: t`This is the native token, no fees applies.`,
       };
-    } else if (version === 1) {
+    }
+    if (version === 1) {
       return {
         model: t`Fee Model: Deposit-Based`,
         description: t`No transaction fees. Requires 1% HTR deposit.`,
       };
-    } else if (version === 2) {
+    }
+    if (version === 2) {
       return {
         model: t`Fee Model: Fee-Based`,
         description: t`Small fee applies to each transfer. No deposit required.`,
