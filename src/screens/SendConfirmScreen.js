@@ -174,6 +174,9 @@ const SendConfirmScreen = () => {
     if (networkFee === null) {
       return t`Loading fee information...`;
     }
+    if (token.uid === hathorLib.constants.NATIVE_TOKEN_UID) {
+      return t`This is the native token, no network fees are charged.`;
+    }
     if (networkFee === 0n) {
       return t`This token is Deposit Based, no network fee will be charged.`;
     }
