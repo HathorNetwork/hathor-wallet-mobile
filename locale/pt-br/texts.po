@@ -391,6 +391,43 @@ msgstr "Por exemplo, HTR"
 msgid "Choose how your tokens will behave for future transactions."
 msgstr "Escolha como o token vai se comportar em futuras transações."
 
+#: src/screens/CreateTokenTypeNotice.js:99
+msgid "Deposit Token:"
+msgstr "Token de Depósito:"
+
+#: src/screens/CreateTokenTypeNotice.js:100
+msgid "Requires a 1% HTR deposit."
+msgstr "Requer um depósito de 1% HTR ao criar."
+
+#: src/screens/CreateTokenTypeNotice.js:101
+msgid "No network fees in future transfers."
+msgstr "Nenhuma taxa de transferência será aplicada."
+
+#: src/screens/CreateTokenTypeNotice.js:102
+msgid "Refundable if token is burned."
+msgstr "Reembolsável se o token for destruido."
+
+#: src/screens/CreateTokenTypeNotice.js:103
+msgid "Recommended for frequent use."
+msgstr "Recomendado para uso frequente."
+
+#: src/screens/CreateTokenTypeNotice.js:107
+msgid "Fee Token:"
+msgstr "Token de taxa:"
+
+#: src/screens/CreateTokenTypeNotice.js:108
+msgid "No deposit required."
+msgstr "Nenhum depósito é cobrado."
+
+#: src/screens/CreateTokenTypeNotice.js:109
+msgid "A small fee applies to every transfer."
+msgstr ""
+"Uma pequena taxa vai ser cobrada em cada transação com esse token no futuro."
+
+#: src/screens/CreateTokenTypeNotice.js:110
+msgid "Recommended for occasional use."
+msgstr "Recomendado para uso ocasional."
+
 #: src/screens/CreateTokenTypeNotice.js:117
 msgid ""
 "Once selected, the token type cannot be changed later. |link:Learn more "

@@ -378,6 +378,42 @@ msgstr "F.eks. HTR"
 msgid "Choose how your tokens will behave for future transactions."
 msgstr ""
 
+#: src/screens/CreateTokenTypeNotice.js:99
+msgid "Deposit Token:"
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:100
+msgid "Requires a 1% HTR deposit."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:101
+msgid "No network fees in future transfers."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:102
+msgid "Refundable if token is burned."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:103
+msgid "Recommended for frequent use."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:107
+msgid "Fee Token:"
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:108
+msgid "No deposit required."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:109
+msgid "A small fee applies to every transfer."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:110
+msgid "Recommended for occasional use."
+msgstr ""
+
 #: src/screens/CreateTokenTypeNotice.js:117
 msgid ""
 "Once selected, the token type cannot be changed later. |link:Learn more "

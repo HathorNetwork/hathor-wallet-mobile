@@ -96,18 +96,18 @@ class CreateTokenTypeNotice extends React.Component {
             </Text>
 
             <View style={this.style.typeInfoContainer}>
-              <Text style={this.style.typeInfoHeader}>Deposit Token:</Text>
-              <Text style={this.style.typeInfo}>Requires a 1% HTR deposit.</Text>
-              <Text style={this.style.typeInfo}>No network fees in future transfers.</Text>
-              <Text style={this.style.typeInfo}>Refundable if token is burned.</Text>
-              <Text style={this.style.typeInfoFooter}>Recommended for frequent use.</Text>
+              <Text style={this.style.typeInfoHeader}>{t`Deposit Token:`}</Text>
+              <Text style={this.style.typeInfo}>{t`Requires a 1% HTR deposit.`}</Text>
+              <Text style={this.style.typeInfo}>{t`No network fees in future transfers.`}</Text>
+              <Text style={this.style.typeInfo}>{t`Refundable if token is burned.`}</Text>
+              <Text style={this.style.typeInfoFooter}>{t`Recommended for frequent use.`}</Text>
             </View>
 
             <View style={this.style.typeInfoContainer}>
-              <Text style={this.style.typeInfoHeader}>Fee Token:</Text>
-              <Text style={this.style.typeInfo}>No deposit required.</Text>
-              <Text style={this.style.typeInfo}>A small fee applies to every transfer.</Text>
-              <Text style={this.style.typeInfoFooter}>Recommended for occasional use.</Text>
+              <Text style={this.style.typeInfoHeader}>{t`Fee Token:`}</Text>
+              <Text style={this.style.typeInfo}>{t`No deposit required.`}</Text>
+              <Text style={this.style.typeInfo}>{t`A small fee applies to every transfer.`}</Text>
+              <Text style={this.style.typeInfoFooter}>{t`Recommended for occasional use.`}</Text>
             </View>
 
             <View style={this.style.infoSection}>
