@@ -29,7 +29,7 @@ import { TOKEN_DEPOSIT_URL } from '../constants';
 function NoFee() {
   return (
     <View style={styles.nofee}>
-      <CheckIcon color='#2E701F' />
+      <CheckIcon size={16} color='#2E701F' />
       <Text style={{ color: '#2E701F' }}>No fee</Text>
     </View>
   );
@@ -230,10 +230,10 @@ const SendConfirmScreen = () => {
                 <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
               </View>
               <View style={styles.summaryItem}>
-                <View style={{ flex: 2, flexDirection: 'row' }}>
-                  <TextFmt>{t`**Network Fee** `}</TextFmt>
-                  <TouchableOpacity onPress={handleFeeInfoPress}>
-                    <InfoCircleIcon size={20} />
+                <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
+                  <TextFmt>{t`**Network Fee**`}</TextFmt>
+                  <TouchableOpacity onPress={handleFeeInfoPress} style={{ marginLeft: 4 }}>
+                    <InfoCircleIcon size={16} />
                   </TouchableOpacity>
                 </View>
                 { networkFee
@@ -279,6 +279,7 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
     paddingRight: 10,
     backgroundColor: '#EEFBEB',
+    alignItems: 'center',
   },
 });
 

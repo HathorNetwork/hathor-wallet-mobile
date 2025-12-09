@@ -74,6 +74,9 @@ class CreateTokenTypeNotice extends React.Component {
         paddingTop: 24,
         paddingBottom: 24,
       },
+      buttonView: {
+        marginTop: 8,
+      },
       introText: {
         marginBottom: 8,
       },

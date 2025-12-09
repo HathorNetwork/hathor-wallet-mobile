@@ -214,7 +214,7 @@ msgstr "Start Wallet"
 
 #: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:83
 #: src/screens/CreateTokenDepositNotice.js:42 src/screens/CreateTokenName.js:42
-#: src/screens/CreateTokenSymbol.js:60 src/screens/CreateTokenTypeNotice.js:86
+#: src/screens/CreateTokenSymbol.js:60 src/screens/CreateTokenTypeNotice.js:89
 msgid "CREATE TOKEN"
 msgstr "OPRET TOKEN"
 
@@ -374,21 +374,21 @@ msgstr "Symbolet er en kortere version af token-navnet"
 msgid "E.g. HTR"
 msgstr "F.eks. HTR"
 
-#: src/screens/CreateTokenTypeNotice.js:92
+#: src/screens/CreateTokenTypeNotice.js:95
 msgid "Choose how your tokens will behave for future transactions."
 msgstr ""
 
-#: src/screens/CreateTokenTypeNotice.js:114
+#: src/screens/CreateTokenTypeNotice.js:117
 msgid ""
 "Once selected, the token type cannot be changed later. |link:Learn more "
 "about deposits and fees here|"
 msgstr ""
 
-#: src/screens/CreateTokenTypeNotice.js:124
+#: src/screens/CreateTokenTypeNotice.js:127
 msgid "DEPOSIT TOKEN"
 msgstr ""
 
-#: src/screens/CreateTokenTypeNotice.js:130
+#: src/screens/CreateTokenTypeNotice.js:133
 msgid "FEE TOKEN"
 msgstr ""
 
@@ -826,7 +826,7 @@ msgid_plural "${ amountAndToken } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:182 src/screens/SendConfirmScreen.js:187
+#: src/screens/SendAmountInput.js:182 src/screens/SendConfirmScreen.js:190
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
@@ -857,40 +857,44 @@ msgid "Loading fee information..."
 msgstr ""
 
 #: src/screens/SendConfirmScreen.js:178
+msgid "This is the native token, no network fees are charged."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:181
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:180
+#: src/screens/SendConfirmScreen.js:183
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:196
+#: src/screens/SendConfirmScreen.js:199
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:207
+#: src/screens/SendConfirmScreen.js:210
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:223
+#: src/screens/SendConfirmScreen.js:226
 msgid "**Transaction summary**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:226
+#: src/screens/SendConfirmScreen.js:229
 msgid "**To**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:231
-msgid "**Network Fee** "
+#: src/screens/SendConfirmScreen.js:234
+msgid "**Network Fee**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:241
+#: src/screens/SendConfirmScreen.js:244
 msgid "**Total**"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:248
+#: src/screens/SendConfirmScreen.js:251
 msgid "Send"
 msgstr "Send"
 
