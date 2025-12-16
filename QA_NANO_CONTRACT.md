@@ -1,175 +1,219 @@
 # QA Nano Contract
 
 - CTA: call-to-action
+- Bet Hotsite: https://staging.betting.hathor.network/ or a locally ran dApp like the [Bet dApp](https://github.com/hathornetwork/bet-dapp)
+
+### Hidden tab when disabled
+1. Make sure the nano-contract feature is 🚫**disabled** for the device
+1. Check a toggle button with two options **does not appear** in the dashboard head
+	1. Tokens
+	1. Nano
 
 ### Activation
-- [ ] Make sure the wallet-service is disabled for the device
-- [ ] Enable the nano contract feature for the device
-- Close the wallet and reopen
-- [ ] Check a toggle button with two options appear in the dashboard head
-	- Tokens
-	- Nano
+1. Take note if the **wallet-service** feature is ✅**enabled** OR 🚫**disabled** for the device. This will be necessary later.
+1. Make sure the **nano-contract** feature is ✅**enabled** for the device
+1. Make sure to connect to a network that supports Nano Contracts, like `testnet-india`
+1. Check a toggle button with two options appear in the dashboard head
+	1. Tokens
+	1. Nano
 
 ### Nano Contract Details
-- [ ] Check the option "Tokens" is selected
-- Select the option "Nano Contracts"
-- [ ] Check the Nano Contract component is in focus with a title "No Nano Contracts"
-- [ ] Check the *Nano Contract Details* component has:
-	- a message, and
-	- a call-to-action (CTA) "Register new"
+1. Check the option "Tokens" is selected
+1. Select the option "Nano Contracts"
+1. Check the Nano Contract component is in focus with a title "No Nano Contracts"
+1. Check the *Nano Contract Details* component has:
+	1. a message, and
+	1. a call-to-action (CTA) "Register new"
 
 ### Register Nano Contract
-- Register a new Nano Contract by tapping over "Register new" on *Nano Contract Details*
-	- It may focus on a component of loading
-- [ ] Check if the Nano Contract Registration screen is in focus
-- [ ] Check if the Nano Contract ID is an input
-- [ ] Check if the Wallet Address is loaded
-- [ ] Check if the "REGISTER NANO CONTRACT" button is disabled
-- Type the following Nano Contract ID `00004f1a3b07f0ffc7ced77a19ae6d4407991a15a281c0ddaf3d6e04a56eba78`
-	- It represents a Nano Contract in the `nano-testnet` network
-- [ ] Check the "REGISTER NANO CONTRACT" button is now actionable
-- Tap on "REGISTER NANO CONTRACT" button
-- [ ] Check for a failure feedback modal to appear
-	- You can't register a Nano Contract from another network
-	- If the message "The informed address does not belong to the wallet" is the failure message, it happens when you are using the wallet service. Make sure to disable it and reload the wallet.
-- Dismiss the modal by tapping outside its area
-- Remove the input
-- [ ] Check if a validation message of error appeared under the input:
-	- It should informe the field is required
-	- it should be in color red
-- [ ] Check if the "REGISTER NANO CONTRACT" button is disabled
-- Type any input
-- [ ] Check if the validation error message disappeared
-
-### Change network
-- Navigate to the *Settings* screen
-- Go to "Network Settings" > Understand disclaimer > Customize
-- [ ] Check if the following fields are hidden, you should not be able see them if Wallet Service is disabled:
-	- "Wallet Service URL (optional)", and
-	- "Wallet Service WS URL (optional)"
-- [NOTE] If you see the mentioned fields because you have Wallet Service enabled, check they are empty or do it by your own before following the next instructions.
-- Set "Node URL" the input "https://node1.nano-testnet.hathor.network/v1a/"
-- Set "Explorer URL" the input "https://explorer.alpha.nano-testnet.hathor.network/"
-- Set "Explorer Service URL" the input "https://explorer-service.nano-testnet.hathor.network/"
-- Set "Transaction Mining Service URL" the input "https://txmining.nano-testnet.hathor.network/"
-- Tap on "SEND" button
-- [ ] Check for a success feedback modal message
-- Dismiss the feedback modal
-- [ ] Check there is a yellow bar at the head informing the custom network as *testnet*
-- Go back to *Dashboard* screen
+1. Register a new Nano Contract by tapping over "Register new" on *Nano Contract Details*
+	1. It may focus on a component of loading
+1. Check the Nano Contract Registration screen contains:
+  1. a Nano Contract ID input
+  1. a Wallet Address loaded
+  1. a disabled "REGISTER NANO CONTRACT" button
+1. Try to register an invalid Nano Contract ID ( ex.: use the id for a common transaction or a random 64-char string )
+1. Check for a failure feedback modal to appear and dismiss it
+1. Clear the input and check if a validation error message appeared under it
+1. Check if the "REGISTER NANO CONTRACT" button is disabled
+1. Type any input and check if the error messages disappeared and the button is enabled
 
 ### Register Nano Contract using the right network
-- Select the option "Nano Contracts" of the toggle button
-- Tap on "Register new" CTA
-- Type `00004f1a3b07f0ffc7ced77a19ae6d4407991a15a281c0ddaf3d6e04a56eba78` as input to Nano Contract ID
-- Tap on "REGISTER NANO CONTRACT" button
-- [ ] Check for a success feedback modal to appear
-	- If a failure feedback modal appear with the message "The informed address does not belong to the wallet", it happens when you are using the wallet service. Make sure to disable it and reload the wallet
-- [ ] Check the feedback modal has:
-	- A message informing the registration has happen with success, and
-	- A "SEE CONTRACT" button
-- Tap on "SEE CONTRACT" button
-- [ ] Check *Nano Contract Details* screen is in focus
+1. Click the "Nano Contracts" tab on the dashboard
+1. Tap on "Register new" and type an invalid Nano Contract ID for the current network ( such as `00005e2f39f2f7a0997338da89e76e638ef3ee80b1b9fb2bcd5b494750792d21` )
+  - Check that an error is shown.
+1. Tap on "Register new" and type a valid Nano Contract ID for the current network
+  1. You can check "Nano" tab in the Explorer for the connected network for valid Nano Contract IDs
+  1. For `testnet-india` network, you can use the Nano Contract ID `00000c1957be0e981f24cbf9699a15184de724e1c40d54c74930b8a5cb18de3e`
+1. Tap on "REGISTER NANO CONTRACT" button
+1. Check for a success feedback modal to appear
+	1. If a failure feedback modal appear with the message "The informed address does not belong to the wallet", this may indicate a problem with the backend, especially the Wallet Service. In this case, please report the issue to the development team for further investigation.
+1. Check the feedback modal has:
+	1. A message informing the registration was successful
+	1. A "SEE CONTRACT" button
+1. Tap on "SEE CONTRACT" button and check that the *Nano Contract Details* screen is in focus
 
 ### Inspect Nano Contract Details
-- From the *Nano Contract Details* screen follow the instructions
-- [ ] Check there is at least one transaction listed, the "initialize"
-- Tap on "Nano Contract" header to expand it
-- Tap on "Nano Contract" header again to shrink it
-- Tap on "Nano Contract" header to expand it again
-- [ ] Check there is a "Nano Contract ID" field with eclipsed value
-- [ ] Check there is a "Blueprint Name" field and value
-- [ ] Check there ia a "Registered Address" field and value
-- [ ] Check the field "Registered Address" is actionable
-- [ ] Check there are two CTAs side-by-side:
-	- "See status details", and
-	- "Unregister contract"
-- Tap on "See status details" CTA:
-	- A browser app should open in the explorer page of the Nano Contract and it should contains all Nano Contract details information, including the arguments of the method call
-- Go back to the wallet
-- Tap on "Registered Address"
-- [ ] Check for a "Choose New Wallet Address" modal appears
-- [ ] Check the address of *index 0* is selected
-- Select any other indexed address
-- [ ] Check for a "New Nano Contract Address" modal appears
-- [ ] Check "New Nano Contract Address" modal has:
-	- An information content informing user this address is used to sign a transaction within the Nano Contract
-	- A mirror content informing the selected address and its index
-	- A "CONFIRM NEW ADDRESS" button
-	- A "GO BACK" button
-- Tap on "GO BACK" button
-- [ ] Check the modal disappear
-- Select any other indexed address
-- [ ] Check the modal appear
-- Tap outside modal area
-- [ ] Check the modal disappear
-- Select any other indexed address
-- Tap on "CONFIRM NEW ADDRESS"
-- [ ] Check for the new address is set on "Registered Address" field
-- Tap on "Registered Address"
-- [ ] Check for the correct indexed address is selected
-- [ ] Dismiss the modal
-- Tap on "Unregister contract" CTA
-- [ ] Check for a new "Unregister Nano Contract" modal appear
-- [ ] Check "Unregister Nano Contract" modal has:
-	- A message asking the user to be sure of unregistration,
-	- A button "YES, UNREGISTER CONTRACT", and
-	- A button "NO, GO BACK"
-- Tap on "NO, GO BACK" button
-- [ ] Check the modal disappear
-- Tap on "Unregister contract" CTA again
-- Tap on "YES, UNREGISTER CONTRACT"
-- [ ] Check the *Dashboard* screen is on focus
-- [ ] Check the Nano Contract list is empty
-	- It shows title "No Nano Contracts"
+1. Ensure you are in the *Nano Contract Details* screen
+1. Check there is at least one transaction listed, the "initialize"
+1. Tap multiple times on "Nano Contract" header to expand and hide it
+1. With this section expanded, check it has the fields:
+  1. Nano contract ID, with eclipsed value
+  1. Contract name
+  1. Registered address
+1. Check the field "Registered Address" is clickable and shows a modal
+1. Dismiss this modal and, back to the details screen check there are two CTAs side-by-side:
+	1. "See status details"
+	1. "Unregister contract"
+1. Tap on "See status details" CTA:
+	1. A browser app should open in the explorer page of the Nano Contract and it should contain all Nano Contract details
+1. Go back to the wallet and tap on "Registered Address"
+1. Check for a "Choose New Wallet Address" modal appears
+1. Check the address of *index 0* is selected. Select any other.
+1. The "New Nano Contract Address" modal shown has:
+	1. An information content informing user this address is used to sign a transaction within the Nano Contract
+	1. A mirror content informing the selected address and its index
+	1. Confirmation and cancellation buttons
+1. Tap on "GO BACK" button and check the modal is dismissed
+1. Select any other indexed address and confirm the selection
+1. Check for the new address is set on "Registered Address" field
+1. Tap on "Registered Address" and check the correct address is selected
+1. Dismiss the modal and tap on "Unregister contract" CTA
+1. Check for a new "Unregister Nano Contract" modal appear
+1. Cancel the action and check it dismisses the modal
+1. Tap on "Unregister contract" and confirm the action
+1. Check the *Dashboard* screen is on focus
+1. Check the Nano Contract list is empty
+	1. It shows title "No Nano Contracts"
 
 ### Inspect Nano Contract Transaction
-- [ ] Register the Nano Contract `00004f1a3b07f0ffc7ced77a19ae6d4407991a15a281c0ddaf3d6e04a56eba78`
-- Go the *Nano Contract Details* screen
-- [ ] Check there are many transactions
-- [ ] Check a transaction item has:
-	- An eclipsed Transaction ID value in bold format
-	- A method name for the transaction
-	- A humanized timestamp
-- [ ] Check any item is actionable
-- [ ] Check the transaction list is ordered from newest to oldest
-- [ ] Check the oldest transaction is the `initialize`
-- Tap on `initialize` transaction
-- [ ] Check the *Nano Contract Transaction* screen is on focus
-- [ ] Check there is a "Transaction ID" field with eclipsed value as a header
-- [ ] Check the header is expanded
-- [ ] Check there is a label with value "Executed" in green
-- [ ] Check there is a "Transaction ID" field with eclipsed value
-- [ ] Check there is a "Nano Contract ID" field with eclipsed value
-- [ ] Check there is a "Blueprint Method" field and value
-- [ ] Check there ia a "Date and Time" field and value
-- [ ] Check there is a "Caller" field with eclipsed value
-- [ ] Check there is a "See transaction details" CTA
-- Tap on any area of the header to shrink it
-- Tap on "Transaction ID" header to expand it
-- Tap on "See transaction details" CTA
-	- A browser app should open in the explorer page of the Transaction and it should contains all Transaction details information, including the arguments of the method call
-- Go back to the wallet
-- [ ] Check there is a content area under the header with title "No Actions"
-- Go back to *Nano Contract Details* screen
-- Tap on any bet
-- [ ] Check the *Nano Contract Transaction* screen is on focus
-- [ ] Check there is an action as a content that has:
-	- A "Deposit" text prefix
-	- An Input ID with eclipsed value
-	- An action amount
+1. Register a valid Nano Contract with many transaction such as `00000c1957be0e981f24cbf9699a15184de724e1c40d54c74930b8a5cb18de3e`
+1. Go the *Nano Contract Details* screen
+1. Check there are many transactions
+1. Check a transaction item has:
+	1. An eclipsed Transaction ID value in bold format
+	1. A method name for the transaction
+	1. A humanized timestamp
+1. Check any item is actionable
+1. Check the transaction list is ordered from newest to oldest
+1. Check the oldest transaction is the `initialize`. Tap it.
+1. Check the *Nano Contract Transaction* screen is on focus. Validate its fields:
+  1. a "Transaction ID" field with eclipsed value as a header
+  1. an expanded header
+  1. a label with value "Executed" in green
+  1. a "Transaction ID" field with eclipsed value
+  1. a "Nano Contract ID" field with eclipsed value
+  1. a "Blueprint Method" field and value
+  1. Check there ia a "Date and Time" field and value
+  1. a "Caller" field with eclipsed value
+  1. a "See transaction details" CTA
+1. Tap on "See transaction details" CTA
+  1. A browser app should open in the explorer page of the Transaction
+1. Go back to the wallet and tap on any area of the header to shrink it
+1. Check there is a content area under the header with title "No Actions"
+1. Go back to *Nano Contract Details* screen and select another action
+1. Check there is an action as a content that has:
+	1. A description of the action
+	1. An Input ID with eclipsed value, if it's a deposit or withdrawal
+	1. An action amount
 
 ### Change network and reset registered Nano Contracts
-- Go to *Network Settings* screen
-- Customize it to `testnet` network
-- Go back to *Dashboard* screen
-- Select "Nano Contracts" option if not selected
-- [ ] Check there is no Nano Contract registered
-- Customize network to `nano-testnet` network
-- Set "Node URL" to value `https://node1.nano-testnet.hathor.network/v1a/`
-- Set "Transaction Mining Service URL" to value `https://txmining.nano-testnet.hathor.network/`
-- Clean "Wallet Service URL (optional)" and "Wallet Service WS URL (optional)" if present
-- Tap on "SEND"
-- Go back to *Dashboard* screen
-- Select "Nano Contracts" option if not selected
-- [ ] Check there is no Nano Contract registered
+1. Switch to the `mainnet` network
+1. If it has a "Nano Contracts" tab, select it. If not, switch back to `testnet`
+1. Check there is no Nano Contract registered
+
+## Reown tests
+
+### Connect to a dApp using ReOwn
+1. Open the Hathor Network [Bet dApp hotsite](https://staging.betting.hathor.network/) or other source of RPC requests
+1. Start the process to connect your wallet using the WalletConnect/ReOwn option
+1. Reject the connection and check the hotsite just closes the QR Code modal
+1. Start again but this time connect your wallet
+1. Check the Bet dApp is now connected to your wallet through the "Hathor Bet" ReOwn session on the Wallet
+
+### Initialize a Bet nano contract
+1. On the Bet dApp hotsite, create a simple Bet nano contract with:
+  - Random results
+  - Two different possible outcomes
+1. A screen should be opened on the wallet to confirm the creation of the Bet nano contract
+1. Check that the screen has all the information about the nano contract
+   - Blueprint Id
+   - Contract name
+   - Method "initialize"
+   - Caller address ( actionable )
+   - Argument "oracle_script"
+   - Argument "token_uid" as HTR
+   - Date last bet in a human readable date and time
+1. Click "Decline Transaction" and then "No, Go Back"
+1. Check that the user is still on the reviewing screen
+1. Click "Decline Transaction" and then confirm. Check the wallet navigates to the Dashboard
+1. The hotsite displays an error during confirmation message
+1. Try again and this time confirm the contract creation
+1. The hotsite should display a message about waiting for block confirmation
+1. After a while, the hotsite should display the success message and a CTA to create a bet
+
+### Create a Bet
+1. On the Bet dApp hotsite, create a simple Bet with 1 HTR and one of the options
+1. The wallet should open a screen about a nano contract not found
+1. The options for the user are "Register Nano Contract" and "Decline Transaction"
+1. Click on "Decline Transaction" and then "No, Go Back"
+1. Check that the user is still on the "Nano Contract Not Found" screen
+1. Register the nano contract
+1. Check the user is navigated to a validation screen containing the Nano Contract data and the betting information
+1. Accept the transaction and see that the hotsite updates with the total amount bet on each option
+1. Using another device, bet on the other option
+
+### Set the bet result
+1. On the HotSite click on "Set Result" and follow the instructions there
+1. The wallet should open a screen asking to confirm the *Sign Oracle Request*, with:
+  1. the oracle data unencrypted ( ex.: "Brazil Wins" )
+  1. an option to show encrypted data ( ex.: "76a914db6fe378a8af070b332104c66c0a83dcb2d03e8b88ac" )
+1. Accept the *Sign Oracle Request*
+1. A new screen is shown requesting to confirm the transaction _Set Result Request*.
+  1. This contains the blueprint method, caller address, value and raw signature
+1. Accept request and validate that the transaction is successful
+
+### Withdraw the prize
+1. On the HotSite of the winning wallet session, click on "Collect your prize"
+1. Confirm the wallet shows a transaction confirmation screen with the correct amount
+1. Accept the transaction and check the wallet has received the correct amount
+
+### Register tokens on Nano Contract send
+The objective of this test is to try and send a custom token using a Nano Contract when the token is unregistered in the wallet, and check the flow to register it after the transaction. The suggested steps below are just one of the ways to test this.
+
+1. Take note of the custom token UIDs created on the main QA tests
+1. Unregister one of them from this wallet
+1. Using a RPC source ( dApp or direct RPC calls ), initialize a Bet Blueprint with this custom token
+1. Check that the request confirmation screen does not show the token name, just the UID, so no registration is offered
+1. Now try to bet, depositing 1 unit of the custom token (you can unselect the "Push Tx" parameter to just experiment without sending tokens)
+1. In the action list of the Request confirmation screen, check that the symbol of the custom token appears, with a tooltip to click on
+1. Click the tooltip and check that the full token information is shown, with a "Tap to copy" link.
+1. Confirm the transaction request
+1. Check that a screen is displayed on transaction success asking the user if they want to register the unregistered tokens
+1. Reject the registration and check the tokens are not registered
+1. Send the custom tokens again using the Nano Contract
+1. Accept the registration and check the tokens are registered
+
+### Create a custom token
+1. Using a RPC source ( dApp or direct RPC calls ), fill all mandatory fields to create a custom token
+2. Check that the request confirmation screen shows all token information correctly
+3. Confirm the transaction request and check the custom token now exists on the Explorer
+
+#### External addresses and data output
+1. Try again to create a custom token, but this time with:
+  - No mint authority
+  - A melt authority to an external address ( not from the wallet )
+  - Make sure the "Allow External Melt Authority" is disabled
+1. The request should appear correctly to the Mobile Wallet App
+1. The "Allow External Melt Authority" option should be `false` in the request details
+1. Confirm the transaction request
+1. Check that the transaction fails
+1. Try again to create the custom token, but this time enabling the "Allow External Melt Authority" option
+1. Also add a data output with the string "Sample Data Output"
+1. Confirm the transaction succeeds and that the token appears on the Explorer
+
+#### Testing the other facade
+1. If the tests above were executed in the **Wallet Service**, disable it for the device and try again using the **Full Node** facade
+1. If the tests above were executed in the **Full Node**, enable the **Wallet Service** for the device and try again using it
+
+Note: A simple way to activate and deactivate the Wallet Service for the device is using the **Custom Network Settings** feature, populating or removing the two Wallet Service fields there.
