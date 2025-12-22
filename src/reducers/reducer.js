@@ -306,19 +306,26 @@ const initialState = {
       showModal: false,
       retrying: false,
       data: null,
+      errorDetails: null,
     },
     createToken: {
       status: REOWN_CREATE_TOKEN_STATUS.READY,
       retrying: false,
+      errorDetails: null,
     },
     createNanoContractCreateTokenTx: {
       status: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.READY,
       retrying: false,
+      errorDetails: null,
     },
     sendTransaction: {
       status: REOWN_SEND_TX_STATUS.READY,
       retrying: false,
       data: null,
+      errorDetails: null,
+    },
+    insufficientFunds: {
+      errorDetails: null,
     },
     connectionFailed: false,
     sessions: {},
@@ -770,7 +777,7 @@ export const reducer = (state = initialState, action) => {
     case types.REOWN_SEND_TX_STATUS_SUCCESS:
       return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.SUCCESSFUL });
     case types.REOWN_SEND_TX_STATUS_FAILURE:
-      return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.FAILED });
+      return onSetSendTxStatus(state, action);
     case types.REOWN_SEND_TX_RETRY:
       return onSetSendTxRetry(state);
     case types.REOWN_SEND_TX_RETRY_DISMISS:
@@ -781,6 +788,8 @@ export const reducer = (state = initialState, action) => {
       return onCreateNanoContractCreateTokenTxRetry(state);
     case types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS:
       return onCreateNanoContractCreateTokenTxRetryDismiss(state);
+    case types.REOWN_SET_INSUFFICIENT_FUNDS_ERROR:
+      return onSetInsufficientFundsError(state, action);
     case types.SET_FULLNODE_NETWORK_NAME:
       return onSetFullNodeNetworkName(state, action);
 
@@ -2027,16 +2036,24 @@ export const onNewNanoContractTransactionRetryDismiss = (state) => ({
   },
 });
 
-export const onSetNewNanoContractTransactionStatus = (state, { payload }) => ({
-  ...state,
-  reown: {
-    ...state.reown,
-    newNanoContractTransaction: {
-      ...state.reown.newNanoContractTransaction,
-      status: payload,
+export const onSetNewNanoContractTransactionStatus = (state, { payload }) => {
+  // Support both old format (string) and new format (object)
+  const status = typeof payload === 'string' ? payload : payload.status;
+  const errorDetails = typeof payload === 'object' ? payload.errorDetails : null;
+
+  return {
+    ...state,
+    reown: {
+      ...state.reown,
+      newNanoContractTransaction: {
+        ...state.reown.newNanoContractTransaction,
+        status,
+        // Store error details only when FAILED, clear otherwise
+        errorDetails: status === REOWN_NEW_NANOCONTRACT_TX_STATUS.FAILED ? errorDetails : null,
+      },
     },
-  },
-});
+  };
+};
 
 export const onSetCreateTokenRetry = (state) => ({
   ...state,
@@ -2060,27 +2077,43 @@ export const onSetCreateTokenRetryDismiss = (state) => ({
   },
 });
 
-export const onSetCreateTokenStatus = (state, { payload }) => ({
-  ...state,
-  reown: {
-    ...state.reown,
-    createToken: {
-      ...state.reown.createToken,
-      status: payload,
-    },
-  },
-});
+export const onSetCreateTokenStatus = (state, { payload }) => {
+  // Support both old format (string) and new format (object)
+  const status = typeof payload === 'string' ? payload : payload.status;
+  const errorDetails = typeof payload === 'object' ? payload.errorDetails : null;
 
-export const onSetSendTxStatus = (state, { payload }) => ({
-  ...state,
-  reown: {
-    ...state.reown,
-    sendTransaction: {
-      ...state.reown.sendTransaction,
-      status: payload,
+  return {
+    ...state,
+    reown: {
+      ...state.reown,
+      createToken: {
+        ...state.reown.createToken,
+        status,
+        // Store error details only when FAILED, clear otherwise
+        errorDetails: status === REOWN_CREATE_TOKEN_STATUS.FAILED ? errorDetails : null,
+      },
     },
-  },
-});
+  };
+};
+
+export const onSetSendTxStatus = (state, { payload }) => {
+  // Support both old format (string) and new format (object)
+  const status = typeof payload === 'string' ? payload : payload.status;
+  const errorDetails = typeof payload === 'object' ? payload.errorDetails : null;
+
+  return {
+    ...state,
+    reown: {
+      ...state.reown,
+      sendTransaction: {
+        ...state.reown.sendTransaction,
+        status,
+        // Store error details only when FAILED, clear otherwise
+        errorDetails: status === REOWN_SEND_TX_STATUS.FAILED ? errorDetails : null,
+      },
+    },
+  };
+};
 
 export const onSetSendTxRetry = (state) => ({
   ...state,
@@ -2236,13 +2269,31 @@ export const onCreateNanoContractCreateTokenTxRetryDismiss = (state) => ({
   },
 });
 
-export const onSetCreateNanoContractCreateTokenTxStatus = (state, { payload }) => ({
+export const onSetCreateNanoContractCreateTokenTxStatus = (state, { payload }) => {
+  // Support both old format (string) and new format (object)
+  const status = typeof payload === 'string' ? payload : payload.status;
+  const errorDetails = typeof payload === 'object' ? payload.errorDetails : null;
+
+  return {
+    ...state,
+    reown: {
+      ...state.reown,
+      createNanoContractCreateTokenTx: {
+        ...state.reown.createNanoContractCreateTokenTx,
+        status,
+        // Store error details only when FAILED, clear otherwise
+        errorDetails: status === REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.FAILED ? errorDetails : null,
+      },
+    },
+  };
+};
+
+export const onSetInsufficientFundsError = (state, { payload }) => ({
   ...state,
   reown: {
     ...state.reown,
-    createNanoContractCreateTokenTx: {
-      ...state.reown.createNanoContractCreateTokenTx,
-      status: payload,
+    insufficientFunds: {
+      errorDetails: payload,
     },
   },
 });

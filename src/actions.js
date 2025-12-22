@@ -219,6 +219,7 @@ export const types = {
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS',
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY',
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS',
+  REOWN_SET_INSUFFICIENT_FUNDS_ERROR: 'REOWN_SET_INSUFFICIENT_FUNDS_ERROR',
   /**
    * Token Swap actions
    */
@@ -1363,10 +1364,14 @@ export const setNewNanoContractStatusLoading = () => ({
 
 /**
  * Signals update on new nano contract status to failed.
+ * @param {Object} errorDetails - Optional error details { message, stack, type, timestamp }
  */
-export const setNewNanoContractStatusFailure = () => ({
+export const setNewNanoContractStatusFailure = (errorDetails = null) => ({
   type: types.REOWN_NEW_NANOCONTRACT_STATUS,
-  payload: REOWN_NEW_NANOCONTRACT_TX_STATUS.FAILED,
+  payload: {
+    status: REOWN_NEW_NANOCONTRACT_TX_STATUS.FAILED,
+    errorDetails,
+  },
 });
 
 /**
@@ -1409,10 +1414,14 @@ export const setCreateTokenStatusLoading = () => ({
 
 /**
  * Signals update on create token status to failed.
+ * @param {Object} errorDetails - Optional error details { message, stack, type, timestamp }
  */
-export const setCreateTokenStatusFailed = () => ({
+export const setCreateTokenStatusFailed = (errorDetails = null) => ({
   type: types.REOWN_CREATE_TOKEN_STATUS,
-  payload: REOWN_CREATE_TOKEN_STATUS.FAILED,
+  payload: {
+    status: REOWN_CREATE_TOKEN_STATUS.FAILED,
+    errorDetails,
+  },
 });
 
 /**
@@ -1574,8 +1583,12 @@ export const setSendTxStatusSuccess = () => ({
   type: types.REOWN_SEND_TX_STATUS_SUCCESS,
 });
 
-export const setSendTxStatusFailure = () => ({
+export const setSendTxStatusFailure = (errorDetails = null) => ({
   type: types.REOWN_SEND_TX_STATUS_FAILURE,
+  payload: {
+    status: REOWN_SEND_TX_STATUS.FAILED,
+    errorDetails,
+  },
 });
 
 export const sendTxRetry = () => ({
@@ -1618,10 +1631,14 @@ export const setCreateNanoContractCreateTokenTxStatusLoading = () => ({
 
 /**
  * Signals update on create nano contract create token transaction status to failed.
+ * @param {Object} errorDetails - Optional error details { message, stack, type, timestamp }
  */
-export const setCreateNanoContractCreateTokenTxStatusFailure = () => ({
+export const setCreateNanoContractCreateTokenTxStatusFailure = (errorDetails = null) => ({
   type: types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
-  payload: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.FAILED,
+  payload: {
+    status: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.FAILED,
+    errorDetails,
+  },
 });
 
 /**
@@ -1630,6 +1647,15 @@ export const setCreateNanoContractCreateTokenTxStatusFailure = () => ({
 export const setCreateNanoContractCreateTokenTxStatusSuccess = () => ({
   type: types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
   payload: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.SUCCESSFUL,
+});
+
+/**
+ * Stores error details for insufficient funds error
+ * @param {Object} errorDetails - Error details { message, stack, type, timestamp }
+ */
+export const setInsufficientFundsError = (errorDetails) => ({
+  type: types.REOWN_SET_INSUFFICIENT_FUNDS_ERROR,
+  payload: errorDetails,
 });
 
 export const tokenSwapFetchAllowedTokens = () => ({
