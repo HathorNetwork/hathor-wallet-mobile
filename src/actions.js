@@ -123,6 +123,9 @@ export const types = {
   REOWN_URI_INPUTTED: 'REOWN_URI_INPUTTED',
   REOWN_CANCEL_SESSION: 'REOWN_CANCEL_SESSION',
   REOWN_SET_CONNECTION_FAILED: 'REOWN_SET_CONNECTION_FAILED',
+  // Deep Link actions
+  DEEP_LINK_SET_PENDING: 'DEEP_LINK_SET_PENDING',
+  DEEP_LINK_CLEAR: 'DEEP_LINK_CLEAR',
   // Network Settings actions
   // NOTE: These actions follows a taxonomy that should be applied
   // to all other actions.
@@ -1027,6 +1030,22 @@ export const pushDeviceRegistered = (isRegistered) => ({
 export const setWCConnectionFailed = (failed) => ({
   type: types.REOWN_SET_CONNECTION_FAILED,
   payload: failed,
+});
+
+/**
+ * Sets a pending deep link to be processed when the wallet is ready.
+ * @param {{ screen: string, params?: object }} deepLink The deep link navigation params
+ */
+export const setDeepLink = (deepLink) => ({
+  type: types.DEEP_LINK_SET_PENDING,
+  payload: deepLink,
+});
+
+/**
+ * Clears the pending deep link after it has been processed.
+ */
+export const clearDeepLink = () => ({
+  type: types.DEEP_LINK_CLEAR,
 });
 
 /**

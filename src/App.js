@@ -9,7 +9,7 @@ import 'react-native-gesture-handler';
 import '../shim';
 
 import React, { useEffect, useState } from 'react';
-import { AppState, StyleSheet, View } from 'react-native';
+import { AppState, Linking, StyleSheet, View } from 'react-native';
 import { connect, Provider, useDispatch, useSelector } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
@@ -30,11 +30,13 @@ import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './con
 import { setSupportedBiometry, isTokenSwapEnabled } from './utils';
 import {
   appStateUpdate,
+  clearDeepLink,
   lockScreen,
   onExceptionCaptured,
   pushTxDetailsRequested,
   requestCameraPermission,
   resetData,
+  setDeepLink,
   setTokens,
 } from './actions';
 import { store } from './reducers/reducer.init';
@@ -533,6 +535,7 @@ const mapStateToProps = (state) => ({
   isResetOnScreenLocked: state.resetOnLockScreen,
   walletStartState: state.walletStartState,
   wallet: state.wallet,
+  pendingDeepLink: state.pendingDeepLink,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -542,6 +545,7 @@ const mapDispatchToProps = (dispatch) => ({
   loadTxDetails: (txId) => dispatch(pushTxDetailsRequested(txId)),
   captureError: (error) => dispatch(onExceptionCaptured(error)),
   appStateUpdate: (oldState, newState) => dispatch(appStateUpdate(oldState, newState)),
+  clearDeepLink: () => dispatch(clearDeepLink()),
 });
 
 class _AppStackWrapper extends React.Component {
@@ -625,6 +629,19 @@ class _AppStackWrapper extends React.Component {
   componentDidUpdate(prevProps) {
     if (prevProps.isScreenLocked && !this.props.isScreenLocked) {
       this.backgroundTime = null;
+    }
+
+    // Handle pending deep link when wallet is ready and unlocked
+    const isWalletReady = this.props.walletStartState === WALLET_STATUS.READY;
+    const isUnlocked = !this.props.isScreenLocked;
+    const hasDeepLink = this.props.pendingDeepLink !== null;
+
+    if (isWalletReady && isUnlocked && hasDeepLink) {
+      const { screen, params } = this.props.pendingDeepLink;
+      // Clear the deep link first to prevent re-navigation
+      this.props.clearDeepLink();
+      // Navigate to the deep link target
+      NavigationService.navigate(screen, params);
     }
   }
 
@@ -769,9 +786,91 @@ const BlankScreen = () => null;
  * This is the main Navigator, evaluating if the wallet is already loaded and navigating to the
  * relevant screen.
  */
+/**
+ * Parses a deep link URL and returns navigation params.
+ * @param {string} url - The deep link URL (e.g., hathorwallet://reown?uri=wc:...)
+ * @returns {object|null} Navigation params or null if URL is invalid
+ */
+const parseDeepLink = (url) => {
+  if (!url || !url.startsWith('hathorwallet://')) {
+    return null;
+  }
+
+  try {
+    // Remove the scheme prefix
+    const path = url.replace('hathorwallet://', '');
+    const [route, queryString] = path.split('?');
+
+    // Parse query parameters
+    const params = {};
+    if (queryString) {
+      queryString.split('&').forEach((param) => {
+        const [key, value] = param.split('=');
+        if (key && value) {
+          params[key] = decodeURIComponent(value);
+        }
+      });
+    }
+
+    switch (route) {
+      case 'dashboard':
+        return { screen: 'Main', params: { screen: 'Home' } };
+      case 'reown':
+        return { screen: 'ReownManual', params };
+      default:
+        return null;
+    }
+  } catch (e) {
+    console.error('Error parsing deep link:', e);
+    return null;
+  }
+};
+
 const RootStack = () => {
   const dispatch = useDispatch();
   const [appStatus, setAppStatus] = useState('initializing');
+  const walletStartState = useSelector((state) => state.walletStartState);
+  const isScreenLocked = useSelector((state) => state.lockScreen);
+
+  /**
+   * Handles a deep link by either navigating immediately (if wallet is ready)
+   * or storing it in Redux for later processing.
+   */
+  const handleDeepLink = (url) => {
+    const navParams = parseDeepLink(url);
+    if (!navParams) {
+      return;
+    }
+
+    const isWalletReady = walletStartState === WALLET_STATUS.READY;
+    const isUnlocked = !isScreenLocked;
+
+    if (isWalletReady && isUnlocked) {
+      // Wallet is ready and unlocked, navigate immediately
+      NavigationService.navigate(navParams.screen, navParams.params);
+    } else {
+      // Store in Redux for later when wallet is ready
+      dispatch(setDeepLink(navParams));
+    }
+  };
+
+  // Check for initial deep link URL
+  useEffect(() => {
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        handleDeepLink(url);
+      }
+    });
+  }, [walletStartState, isScreenLocked]);
+
+  // Listen for deep links while app is running
+  useEffect(() => {
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handleDeepLink(url);
+    });
+
+    return () => subscription.remove();
+  }, [walletStartState, isScreenLocked]);
 
   useEffect(() => {
     STORE.preStart()
@@ -804,6 +903,8 @@ const RootStack = () => {
           index: 0,
           routes: [{ name: 'Init' }],
         });
+        // Clear pending deep link if wallet not loaded (can't navigate to app screens)
+        dispatch(clearDeepLink());
         break;
       default:
         // Do not navigate anywhere if the storage has not returned the isLoaded data

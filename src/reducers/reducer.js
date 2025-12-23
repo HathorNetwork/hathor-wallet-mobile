@@ -553,6 +553,11 @@ const initialState = {
     swapPathQuote: null,
     loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.READY,
   },
+  /**
+   * @type {{ screen: string, params?: object } | null}
+   * Pending deep link to navigate to when wallet is ready
+   */
+  pendingDeepLink: null,
 };
 
 export const reducer = (state = initialState, action) => {
@@ -804,6 +809,10 @@ export const reducer = (state = initialState, action) => {
       return onTokenSwapFetchQuoteError(state);
     case types.TOKEN_SWAP_RESET_SWAP_DATA:
       return onTokenSwapResetSwapData(state);
+    case types.DEEP_LINK_SET_PENDING:
+      return { ...state, pendingDeepLink: action.payload };
+    case types.DEEP_LINK_CLEAR:
+      return { ...state, pendingDeepLink: null };
     default:
       return state;
   }

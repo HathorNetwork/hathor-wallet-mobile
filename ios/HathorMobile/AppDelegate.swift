@@ -20,6 +20,11 @@ class AppDelegate: RCTAppDelegate {
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
+  // Handle deep links when app is already running
+  override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    return RCTLinkingManager.application(app, open: url, options: options)
+  }
+
   override func sourceURL(for bridge: RCTBridge) -> URL? {
     self.bundleURL()
   }
