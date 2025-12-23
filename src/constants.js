@@ -73,6 +73,14 @@ export const PRIVACY_POLICY_URL = 'https://hathor.network/privacy-policy/';
 export const DEEP_LINK_SCHEME = 'hathorwallet';
 
 /**
+ * Deep link types for routing
+ */
+export const DEEP_LINK_TYPE = {
+  NAVIGATE: 'navigate',
+  WALLETCONNECT: 'walletconnect',
+};
+
+/**
  * Re-export variables from config.js.
  */
 export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR, SENTRY_DSN };

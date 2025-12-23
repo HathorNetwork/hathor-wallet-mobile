@@ -26,7 +26,7 @@ import {
 } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
-import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS, DEEP_LINK_SCHEME } from './constants';
+import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS, DEEP_LINK_SCHEME, DEEP_LINK_TYPE } from './constants';
 import { setSupportedBiometry, isTokenSwapEnabled } from './utils';
 import {
   appStateUpdate,
@@ -36,6 +36,7 @@ import {
   pushTxDetailsRequested,
   requestCameraPermission,
   resetData,
+  reownUriInputted,
   setDeepLink,
   setTokens,
 } from './actions';
@@ -546,6 +547,7 @@ const mapDispatchToProps = (dispatch) => ({
   captureError: (error) => dispatch(onExceptionCaptured(error)),
   appStateUpdate: (oldState, newState) => dispatch(appStateUpdate(oldState, newState)),
   clearDeepLink: () => dispatch(clearDeepLink()),
+  processWalletConnectUri: (uri) => dispatch(reownUriInputted(uri)),
 });
 
 class _AppStackWrapper extends React.Component {
@@ -637,11 +639,23 @@ class _AppStackWrapper extends React.Component {
     const hasDeepLink = this.props.pendingDeepLink !== null;
 
     if (isWalletReady && isUnlocked && hasDeepLink) {
-      const { screen, params } = this.props.pendingDeepLink;
-      // Clear the deep link first to prevent re-navigation
+      const deepLink = this.props.pendingDeepLink;
+      // Clear the deep link first to prevent re-processing
       this.props.clearDeepLink();
-      // Navigate to the deep link target
-      NavigationService.navigate(screen, params);
+
+      if (deepLink.type === DEEP_LINK_TYPE.WALLETCONNECT) {
+        // Process WalletConnect URI
+        this.props.processWalletConnectUri(deepLink.uri);
+        // Only navigate to ReownList for new connection requests (pairing URIs have symKey param)
+        // RPC requests on existing sessions don't need navigation - modal will appear automatically
+        const isPairingUri = deepLink.uri && deepLink.uri.includes('symKey=');
+        if (isPairingUri) {
+          NavigationService.navigate('ReownList');
+        }
+      } else if (deepLink.type === DEEP_LINK_TYPE.NAVIGATE) {
+        // Navigate to the deep link target
+        NavigationService.navigate(deepLink.screen, deepLink.params);
+      }
     }
   }
 
@@ -786,10 +800,16 @@ const BlankScreen = () => null;
  * This is the main Navigator, evaluating if the wallet is already loaded and navigating to the
  * relevant screen.
  */
+
 /**
- * Parses a deep link URL and returns navigation params.
+ * Parses a deep link URL and returns the appropriate action.
  * @param {string} url - The deep link URL (e.g., hathorwallet://reown?uri=wc:...)
- * @returns {object|null} Navigation params or null if URL is invalid
+ * @returns {object|null} Deep link action or null if URL is invalid
+ *
+ * Supported deep links:
+ * - hathorwallet://dashboard - Navigate to dashboard
+ * - hathorwallet://reown - Navigate to Reown manual connection screen
+ * - hathorwallet://wc?uri=wc:... - Handle WalletConnect URI (pairing or session request)
  */
 const parseDeepLink = (url) => {
   const schemePrefix = `${DEEP_LINK_SCHEME}://`;
@@ -815,9 +835,16 @@ const parseDeepLink = (url) => {
 
     switch (route) {
       case 'dashboard':
-        return { screen: 'Main', params: { screen: 'Home' } };
+        return { type: DEEP_LINK_TYPE.NAVIGATE, screen: 'Main', params: { screen: 'Home' } };
       case 'reown':
-        return { screen: 'ReownManual', params };
+        return { type: DEEP_LINK_TYPE.NAVIGATE, screen: 'ReownManual', params };
+      case 'wc':
+        // WalletConnect mobile linking - extract the WC URI from query params
+        // Format: hathorwallet://wc?uri=wc:sessionId@2?relay-protocol=irn&symKey=...
+        if (params.uri) {
+          return { type: DEEP_LINK_TYPE.WALLETCONNECT, uri: params.uri };
+        }
+        return null;
       default:
         return null;
     }
@@ -838,20 +865,33 @@ const RootStack = () => {
    * or storing it in Redux for later processing.
    */
   const handleDeepLink = (url) => {
-    const navParams = parseDeepLink(url);
-    if (!navParams) {
+    const deepLinkAction = parseDeepLink(url);
+    if (!deepLinkAction) {
       return;
     }
 
     const isWalletReady = walletStartState === WALLET_STATUS.READY;
     const isUnlocked = !isScreenLocked;
 
-    if (isWalletReady && isUnlocked) {
-      // Wallet is ready and unlocked, navigate immediately
-      NavigationService.navigate(navParams.screen, navParams.params);
-    } else {
-      // Store in Redux for later when wallet is ready
-      dispatch(setDeepLink(navParams));
+    // Store in Redux for later if wallet is not ready or locked
+    if (!isWalletReady || !isUnlocked) {
+      dispatch(setDeepLink(deepLinkAction));
+      return;
+    }
+
+    // Wallet is ready and unlocked, process immediately
+    if (deepLinkAction.type === DEEP_LINK_TYPE.WALLETCONNECT) {
+      // WalletConnect URI - dispatch to Reown saga to handle pairing/session request
+      dispatch(reownUriInputted(deepLinkAction.uri));
+      // Only navigate to ReownList for new connection requests (pairing URIs have symKey param)
+      // RPC requests on existing sessions don't need navigation - modal will appear automatically
+      const isPairingUri = deepLinkAction.uri && deepLinkAction.uri.includes('symKey=');
+      if (isPairingUri) {
+        NavigationService.navigate('ReownList');
+      }
+    } else if (deepLinkAction.type === DEEP_LINK_TYPE.NAVIGATE) {
+      // Navigation deep link
+      NavigationService.navigate(deepLinkAction.screen, deepLinkAction.params);
     }
   };
 
