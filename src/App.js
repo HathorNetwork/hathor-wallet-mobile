@@ -26,7 +26,7 @@ import {
 } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
-import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
+import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS, DEEP_LINK_SCHEME } from './constants';
 import { setSupportedBiometry, isTokenSwapEnabled } from './utils';
 import {
   appStateUpdate,
@@ -792,13 +792,14 @@ const BlankScreen = () => null;
  * @returns {object|null} Navigation params or null if URL is invalid
  */
 const parseDeepLink = (url) => {
-  if (!url || !url.startsWith('hathorwallet://')) {
+  const schemePrefix = `${DEEP_LINK_SCHEME}://`;
+  if (!url || !url.startsWith(schemePrefix)) {
     return null;
   }
 
   try {
     // Remove the scheme prefix
-    const path = url.replace('hathorwallet://', '');
+    const path = url.replace(schemePrefix, '');
     const [route, queryString] = path.split('?');
 
     // Parse query parameters
