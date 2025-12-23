@@ -33,14 +33,22 @@ class CreateTokenName extends React.Component {
   }
 
   onButtonPress = () => {
-    this.props.navigation.navigate('CreateTokenSymbol', { name: this.state.name });
+    const { tokenInfoVersion } = this.props.route.params || {};
+    this.props.navigation.navigate('CreateTokenSymbol', { name: this.state.name, tokenInfoVersion });
   }
 
   render() {
+    const { tokenInfoVersion } = this.props.route.params || {};
+    let title = t`CREATE TOKEN`;
+    if (tokenInfoVersion === 1) {
+      title = t`CREATE DEPOSIT TOKEN`;
+    } else if (tokenInfoVersion === 2) {
+      title = t`CREATE FEE TOKEN`;
+    }
     return (
       <View style={{ flex: 1 }}>
         <HathorHeader
-          title={t`CREATE TOKEN`}
+          title={title}
           onBackPress={() => this.props.navigation.pop()}
           onCancel={() => this.props.navigation.getParent().goBack()}
         />

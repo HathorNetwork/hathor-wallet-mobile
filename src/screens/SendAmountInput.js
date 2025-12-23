@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
+import hathorLib from '@hathor/wallet-lib';
 
 import { IS_MULTI_TOKEN } from '../constants';
 import { renderValue, isTokenNFT } from '../utils';
@@ -32,6 +33,7 @@ import { COLORS } from '../styles/themes';
 import { useNavigation, useParams } from '../hooks/navigation';
 
 const SendAmountInput = () => {
+  const wallet = useSelector((state) => state.wallet);
   const selectedToken = useSelector((state) => state.selectedToken);
   const tokensBalance = useSelector((state) => state.tokensBalance);
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
@@ -46,6 +48,7 @@ const SendAmountInput = () => {
   const [amountValue, setAmountValue] = useState(null);
   const [token, setToken] = useState(selectedToken);
   const [error, setError] = useState(null);
+  const [networkFee, setNetworkFee] = useState(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -61,6 +64,32 @@ const SendAmountInput = () => {
   useEffect(() => {
     setToken(selectedToken);
   }, [selectedToken]);
+
+  useEffect(() => {
+    (async () => {
+      const FBTVersion = 1; // XXX: hathorLib.TokenVersion.FEE
+      if (token.version && token.version === FBTVersion) {
+        setNetworkFee(0n);
+        return;
+      }
+      try {
+        const { changeAmount } = await wallet.getUtxosForAmount(
+          amountValue,
+          { token: token.uid }
+        );
+        if (changeAmount) {
+          // Since there is change, it means we will have the intended output and a change output.
+          // 2 FBT outputs means the fee value will be payed twice
+          setNetworkFee(2n);
+        } else {
+          // No change means that there will only be the intended output.
+          setNetworkFee(1n);
+        }
+      } catch (err) {
+        setNetworkFee(1n);
+      }
+    })();
+  }, [wallet, token, amountValue]);
 
   const focusInput = () => {
     if (inputRef.current) {
@@ -95,10 +124,27 @@ const SendAmountInput = () => {
 
     if (available < amountValue) {
       setError(t`Insufficient funds`);
-    } else {
-      const { address } = params;
-      navigation.navigate('SendConfirmScreen', { address, amount: amountValue, token });
+      return;
     }
+
+    const FBTVersion = 1; // XXX: hathorLib.TokenVersion.FEE
+    if (token.version && token.version === FBTVersion) {
+      // The user selected a fee based token
+      // So we need to check the HTR balance to make the transaction happen.
+      const htrBalance = get(tokensBalance, hathorLib.constants.NATIVE_TOKEN_UID);
+      if (!htrBalance) {
+        setError('Insufficient balance of HTR to cover the network fee.');
+        return;
+      }
+      const { available: htrAvailable } = htrBalance.data;
+      if (networkFee > htrAvailable) {
+        setError('Insufficient balance of HTR to cover the network fee.');
+        return;
+      }
+    }
+
+    const { address } = params;
+    navigation.navigate('SendConfirmScreen', { address, amount: amountValue, token });
   };
 
   const isButtonDisabled = () => (

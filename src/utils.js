@@ -16,7 +16,7 @@ import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import moment from 'moment';
 import baseStyle from './styles/init';
-import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE, TOKEN_SWAP_FEATURE_TOGGLE } from './constants';
+import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE, TOKEN_SWAP_FEATURE_TOGGLE, FBT_FEATURE_TOGGLE } from './constants';
 import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_BIOMETRY_KEY, SAFE_BIOMETRY_FEATURE_FLAG_KEY, FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
@@ -630,6 +630,17 @@ export const isNanoContractsEnabled = (state) => (
 export const isTokenSwapEnabled = (state) => (
   isNanoContractsEnabled(state)
   && get(state.featureToggles, TOKEN_SWAP_FEATURE_TOGGLE, false)
+);
+
+/*
+ * Checks if fee based tokens are enabled
+ *
+ * @param {Object} state Redux store state
+ *
+ * @returns {boolean} Whether fee based tokens are enabled
+ */
+export const isFeeBasedTokensEnabled = (state) => (
+  get(state.featureToggles, FBT_FEATURE_TOGGLE, false)
 );
 
 /**
