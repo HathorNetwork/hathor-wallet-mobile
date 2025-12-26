@@ -34,7 +34,13 @@ import { useNavigation, useParams } from '../hooks/navigation';
 import NavigationService from '../NavigationService';
 import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
-import { tokenSwapFetchSwapQuote, tokenSwapResetSwapData } from '../actions';
+import {
+  fetchTokensMetadata,
+  newToken,
+  tokenMetadataUpdated,
+  tokenSwapFetchSwapQuote,
+  tokenSwapResetSwapData,
+} from '../actions';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 import Spinner from '../components/Spinner';
 import FeedbackModal from '../components/FeedbackModal';
@@ -58,9 +64,33 @@ const TokenSwapReview = () => {
   const navigation = useNavigation();
 
   /**
+   * Register a token if it's not already registered
+   * @param {Object} token - Token to register with uid, name, and symbol properties
+   */
+  const registerTokenIfNeeded = async (token) => {
+    const isRegistered = await wallet.storage.isTokenRegistered(token.uid);
+    if (!isRegistered) {
+      await wallet.storage.registerToken(token);
+      dispatch(newToken(token));
+
+      // Fetch and update token metadata
+      const networkName = wallet.getNetworkObject().name;
+      const metadatas = await fetchTokensMetadata([token.uid], networkName);
+      dispatch(tokenMetadataUpdated(metadatas));
+    }
+  };
+
+  /**
    * Method executed after dismiss success modal
    */
-  const exitToMainScreen = () => {
+  const exitToMainScreen = async () => {
+    try {
+      // Register tokens if they're not already registered
+      await registerTokenIfNeeded(tokenIn);
+      await registerTokenIfNeeded(tokenOut);
+    } catch (err) {
+      console.error(err);
+    }
     setModal(null);
     dispatch(tokenSwapResetSwapData());
     NavigationService.resetToMain();
