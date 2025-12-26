@@ -81,6 +81,7 @@ import {
   REOWN_PROJECT_ID,
   REOWN_FEATURE_TOGGLE,
 } from '../constants';
+import { isPairingUri } from '../contexts/HathorDeeplinkContext';
 import {
   types,
   setReown,
@@ -1103,15 +1104,6 @@ export function* onSessionProposal(action) {
     }
   }
 }
-
-/**
- * Checks if a WalletConnect URI is a pairing URI (for new connections)
- * vs a session URI (for existing session requests).
- * Pairing URIs contain symKey parameter, session URIs don't.
- * @param {string} uri - The WalletConnect URI
- * @returns {boolean} True if this is a pairing URI
- */
-const isPairingUri = (uri) => uri && uri.includes('symKey=');
 
 /**
  * This saga is fired when a URI is inputted either manually or by scanning

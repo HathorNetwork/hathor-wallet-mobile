@@ -42,10 +42,11 @@ const HathorDeeplinkContext = createContext(undefined);
 /**
  * Checks if a WalletConnect URI is a pairing URI (for new connections)
  * vs a session URI (for existing session requests).
+ * Pairing URIs contain symKey parameter, session URIs don't.
  * @param {string} uri - The WalletConnect URI
  * @returns {boolean} True if this is a pairing URI
  */
-const isPairingUri = (uri) => uri && uri.includes('symKey=');
+export const isPairingUri = (uri) => uri && uri.includes('symKey=');
 
 /**
  * Parses a deep link URL and returns the appropriate action.
