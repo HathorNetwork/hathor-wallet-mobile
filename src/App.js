@@ -527,6 +527,25 @@ const AppStack = () => {
 };
 
 /**
+ * Processes a deep link action by dispatching the appropriate action and navigating if needed.
+ * @param {object} deepLinkAction - The parsed deep link action
+ * @param {function} dispatchWalletConnectUri - Function to dispatch WalletConnect URI
+ */
+const processDeepLinkAction = (deepLinkAction, dispatchWalletConnectUri) => {
+  if (deepLinkAction.type === DEEP_LINK_TYPE.WALLETCONNECT) {
+    dispatchWalletConnectUri(deepLinkAction.uri);
+    // Only navigate to ReownList for new connection requests (pairing URIs have symKey param)
+    // RPC requests on existing sessions don't need navigation - modal will appear automatically
+    const isPairingUri = deepLinkAction.uri && deepLinkAction.uri.includes('symKey=');
+    if (isPairingUri) {
+      NavigationService.navigate('ReownList');
+    }
+  } else if (deepLinkAction.type === DEEP_LINK_TYPE.NAVIGATE) {
+    NavigationService.navigate(deepLinkAction.screen, deepLinkAction.params);
+  }
+};
+
+/**
  * loadHistory {bool} Indicates we're loading the tx history
  * lockScreen {bool} Indicates screen is locked
  */
@@ -642,20 +661,7 @@ class _AppStackWrapper extends React.Component {
       const deepLink = this.props.pendingDeepLink;
       // Clear the deep link first to prevent re-processing
       this.props.clearDeepLink();
-
-      if (deepLink.type === DEEP_LINK_TYPE.WALLETCONNECT) {
-        // Process WalletConnect URI
-        this.props.processWalletConnectUri(deepLink.uri);
-        // Only navigate to ReownList for new connection requests (pairing URIs have symKey param)
-        // RPC requests on existing sessions don't need navigation - modal will appear automatically
-        const isPairingUri = deepLink.uri && deepLink.uri.includes('symKey=');
-        if (isPairingUri) {
-          NavigationService.navigate('ReownList');
-        }
-      } else if (deepLink.type === DEEP_LINK_TYPE.NAVIGATE) {
-        // Navigate to the deep link target
-        NavigationService.navigate(deepLink.screen, deepLink.params);
-      }
+      processDeepLinkAction(deepLink, this.props.processWalletConnectUri);
     }
   }
 
@@ -880,19 +886,7 @@ const RootStack = () => {
     }
 
     // Wallet is ready and unlocked, process immediately
-    if (deepLinkAction.type === DEEP_LINK_TYPE.WALLETCONNECT) {
-      // WalletConnect URI - dispatch to Reown saga to handle pairing/session request
-      dispatch(reownUriInputted(deepLinkAction.uri));
-      // Only navigate to ReownList for new connection requests (pairing URIs have symKey param)
-      // RPC requests on existing sessions don't need navigation - modal will appear automatically
-      const isPairingUri = deepLinkAction.uri && deepLinkAction.uri.includes('symKey=');
-      if (isPairingUri) {
-        NavigationService.navigate('ReownList');
-      }
-    } else if (deepLinkAction.type === DEEP_LINK_TYPE.NAVIGATE) {
-      // Navigation deep link
-      NavigationService.navigate(deepLinkAction.screen, deepLinkAction.params);
-    }
+    processDeepLinkAction(deepLinkAction, (uri) => dispatch(reownUriInputted(uri)));
   };
 
   // Check for initial deep link URL
