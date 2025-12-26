@@ -9,7 +9,7 @@ import 'react-native-gesture-handler';
 import '../shim';
 
 import React, { useEffect, useState } from 'react';
-import { AppState, Linking, StyleSheet, View } from 'react-native';
+import { AppState, StyleSheet, View } from 'react-native';
 import { connect, Provider, useDispatch, useSelector } from 'react-redux';
 import * as Keychain from 'react-native-keychain';
 import DeviceInfo from 'react-native-device-info';
@@ -26,20 +26,18 @@ import {
 } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
-import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS, DEEP_LINK_SCHEME, DEEP_LINK_TYPE } from './constants';
+import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
 import { setSupportedBiometry, isTokenSwapEnabled } from './utils';
 import {
   appStateUpdate,
-  clearDeepLink,
   lockScreen,
   onExceptionCaptured,
   pushTxDetailsRequested,
   requestCameraPermission,
   resetData,
-  reownUriInputted,
-  setDeepLink,
   setTokens,
 } from './actions';
+import { HathorDeeplinkProvider } from './contexts/HathorDeeplinkContext';
 import { store } from './reducers/reducer.init';
 import { GlobalErrorHandler } from './components/GlobalErrorModal';
 import { PortalProvider } from './components/Portal';
@@ -527,25 +525,6 @@ const AppStack = () => {
 };
 
 /**
- * Processes a deep link action by dispatching the appropriate action and navigating if needed.
- * @param {object} deepLinkAction - The parsed deep link action
- * @param {function} dispatchWalletConnectUri - Function to dispatch WalletConnect URI
- */
-const processDeepLinkAction = (deepLinkAction, dispatchWalletConnectUri) => {
-  if (deepLinkAction.type === DEEP_LINK_TYPE.WALLETCONNECT) {
-    dispatchWalletConnectUri(deepLinkAction.uri);
-    // Only navigate to ReownList for new connection requests (pairing URIs have symKey param)
-    // RPC requests on existing sessions don't need navigation - modal will appear automatically
-    const isPairingUri = deepLinkAction.uri && deepLinkAction.uri.includes('symKey=');
-    if (isPairingUri) {
-      NavigationService.navigate('ReownList');
-    }
-  } else if (deepLinkAction.type === DEEP_LINK_TYPE.NAVIGATE) {
-    NavigationService.navigate(deepLinkAction.screen, deepLinkAction.params);
-  }
-};
-
-/**
  * loadHistory {bool} Indicates we're loading the tx history
  * lockScreen {bool} Indicates screen is locked
  */
@@ -555,7 +534,6 @@ const mapStateToProps = (state) => ({
   isResetOnScreenLocked: state.resetOnLockScreen,
   walletStartState: state.walletStartState,
   wallet: state.wallet,
-  pendingDeepLink: state.pendingDeepLink,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -565,8 +543,6 @@ const mapDispatchToProps = (dispatch) => ({
   loadTxDetails: (txId) => dispatch(pushTxDetailsRequested(txId)),
   captureError: (error) => dispatch(onExceptionCaptured(error)),
   appStateUpdate: (oldState, newState) => dispatch(appStateUpdate(oldState, newState)),
-  clearDeepLink: () => dispatch(clearDeepLink()),
-  processWalletConnectUri: (uri) => dispatch(reownUriInputted(uri)),
 });
 
 class _AppStackWrapper extends React.Component {
@@ -650,18 +626,6 @@ class _AppStackWrapper extends React.Component {
   componentDidUpdate(prevProps) {
     if (prevProps.isScreenLocked && !this.props.isScreenLocked) {
       this.backgroundTime = null;
-    }
-
-    // Handle pending deep link when wallet is ready and unlocked
-    const isWalletReady = this.props.walletStartState === WALLET_STATUS.READY;
-    const isUnlocked = !this.props.isScreenLocked;
-    const hasDeepLink = this.props.pendingDeepLink !== null;
-
-    if (isWalletReady && isUnlocked && hasDeepLink) {
-      const deepLink = this.props.pendingDeepLink;
-      // Clear the deep link first to prevent re-processing
-      this.props.clearDeepLink();
-      processDeepLinkAction(deepLink, this.props.processWalletConnectUri);
     }
   }
 
@@ -806,106 +770,9 @@ const BlankScreen = () => null;
  * This is the main Navigator, evaluating if the wallet is already loaded and navigating to the
  * relevant screen.
  */
-
-/**
- * Parses a deep link URL and returns the appropriate action.
- * @param {string} url - The deep link URL (e.g., hathorwallet://reown?uri=wc:...)
- * @returns {object|null} Deep link action or null if URL is invalid
- *
- * Supported deep links:
- * - hathorwallet://dashboard - Navigate to dashboard
- * - hathorwallet://reown - Navigate to Reown manual connection screen
- * - hathorwallet://wc?uri=wc:... - Handle WalletConnect URI (pairing or session request)
- */
-const parseDeepLink = (url) => {
-  const schemePrefix = `${DEEP_LINK_SCHEME}://`;
-  if (!url || !url.startsWith(schemePrefix)) {
-    return null;
-  }
-
-  try {
-    // Remove the scheme prefix
-    const path = url.replace(schemePrefix, '');
-    const [route, queryString] = path.split('?');
-
-    // Parse query parameters
-    const params = {};
-    if (queryString) {
-      queryString.split('&').forEach((param) => {
-        const [key, value] = param.split('=');
-        if (key && value) {
-          params[key] = decodeURIComponent(value);
-        }
-      });
-    }
-
-    switch (route) {
-      case 'dashboard':
-        return { type: DEEP_LINK_TYPE.NAVIGATE, screen: 'Main', params: { screen: 'Home' } };
-      case 'reown':
-        return { type: DEEP_LINK_TYPE.NAVIGATE, screen: 'ReownManual', params };
-      case 'wc':
-        // WalletConnect mobile linking - extract the WC URI from query params
-        // Format: hathorwallet://wc?uri=wc:sessionId@2?relay-protocol=irn&symKey=...
-        if (params.uri) {
-          return { type: DEEP_LINK_TYPE.WALLETCONNECT, uri: params.uri };
-        }
-        return null;
-      default:
-        return null;
-    }
-  } catch (e) {
-    console.error('Error parsing deep link:', e);
-    return null;
-  }
-};
-
 const RootStack = () => {
   const dispatch = useDispatch();
   const [appStatus, setAppStatus] = useState('initializing');
-  const walletStartState = useSelector((state) => state.walletStartState);
-  const isScreenLocked = useSelector((state) => state.lockScreen);
-
-  /**
-   * Handles a deep link by either navigating immediately (if wallet is ready)
-   * or storing it in Redux for later processing.
-   */
-  const handleDeepLink = (url) => {
-    const deepLinkAction = parseDeepLink(url);
-    if (!deepLinkAction) {
-      return;
-    }
-
-    const isWalletReady = walletStartState === WALLET_STATUS.READY;
-    const isUnlocked = !isScreenLocked;
-
-    // Store in Redux for later if wallet is not ready or locked
-    if (!isWalletReady || !isUnlocked) {
-      dispatch(setDeepLink(deepLinkAction));
-      return;
-    }
-
-    // Wallet is ready and unlocked, process immediately
-    processDeepLinkAction(deepLinkAction, (uri) => dispatch(reownUriInputted(uri)));
-  };
-
-  // Check for initial deep link URL
-  useEffect(() => {
-    Linking.getInitialURL().then((url) => {
-      if (url) {
-        handleDeepLink(url);
-      }
-    });
-  }, [walletStartState, isScreenLocked]);
-
-  // Listen for deep links while app is running
-  useEffect(() => {
-    const subscription = Linking.addEventListener('url', ({ url }) => {
-      handleDeepLink(url);
-    });
-
-    return () => subscription.remove();
-  }, [walletStartState, isScreenLocked]);
 
   useEffect(() => {
     STORE.preStart()
@@ -938,8 +805,6 @@ const RootStack = () => {
           index: 0,
           routes: [{ name: 'Init' }],
         });
-        // Clear pending deep link if wallet not loaded (can't navigate to app screens)
-        dispatch(clearDeepLink());
         break;
       default:
         // Do not navigate anywhere if the storage has not returned the isLoaded data
@@ -990,12 +855,14 @@ const App = () => (
             ref={navigationRef}
             navigationInChildEnabled
           >
-            <NavigationSerializingProvider>
-              <ShowPushNotificationTxDetails />
-              <NetworkStatusBar />
-              <RootStack />
-              <ReownModal />
-            </NavigationSerializingProvider>
+            <HathorDeeplinkProvider>
+              <NavigationSerializingProvider>
+                <ShowPushNotificationTxDetails />
+                <NetworkStatusBar />
+                <RootStack />
+                <ReownModal />
+              </NavigationSerializingProvider>
+            </HathorDeeplinkProvider>
           </NavigationContainer>
           <GlobalErrorHandler />
         </SafeAreaView>
