@@ -1,5 +1,6 @@
 package network.hathor.wallet;
 
+import android.content.Intent
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -19,4 +20,13 @@ public class MainActivity : ReactActivity() {
   */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
     DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+
+  /**
+   * Handle deep links when app is already running (singleTask launch mode).
+   * This ensures the new intent is available to React Native's Linking module.
+   */
+  override fun onNewIntent(intent: Intent?) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+  }
 }

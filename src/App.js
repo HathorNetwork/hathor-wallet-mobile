@@ -37,6 +37,7 @@ import {
   resetData,
   setTokens,
 } from './actions';
+import { HathorDeeplinkProvider } from './contexts/HathorDeeplinkContext';
 import { store } from './reducers/reducer.init';
 import { GlobalErrorHandler } from './components/GlobalErrorModal';
 import { PortalProvider } from './components/Portal';
@@ -854,12 +855,14 @@ const App = () => (
             ref={navigationRef}
             navigationInChildEnabled
           >
-            <NavigationSerializingProvider>
-              <ShowPushNotificationTxDetails />
-              <NetworkStatusBar />
-              <RootStack />
-              <ReownModal />
-            </NavigationSerializingProvider>
+            <HathorDeeplinkProvider>
+              <NavigationSerializingProvider>
+                <ShowPushNotificationTxDetails />
+                <NetworkStatusBar />
+                <RootStack />
+                <ReownModal />
+              </NavigationSerializingProvider>
+            </HathorDeeplinkProvider>
           </NavigationContainer>
           <GlobalErrorHandler />
         </SafeAreaView>

@@ -82,6 +82,7 @@ import {
   REOWN_PROJECT_ID,
   REOWN_FEATURE_TOGGLE,
 } from '../constants';
+import { isPairingUri } from '../contexts/HathorDeeplinkContext';
 import {
   types,
   setReown,
@@ -1126,17 +1127,32 @@ export function* onSessionProposal(action) {
  * a QR Code
  */
 export function* onUriInputted(action) {
-  const reownClient = yield call(getReownClient);
+  const { payload } = action;
 
-  if (!reownClient) {
-    // Do nothing, client might not yet have been initialized.
-    log.debug('Tried to get reown client in onSessionProposal but it is undefined.');
+  // Check if this is a pairing URI (new connection) or session URI (existing session request)
+  // Session URIs (wc:topic@2) are just meant to open the wallet - the request comes
+  // through the existing WebSocket connection, so we don't need to call pair()
+  if (!isPairingUri(payload)) {
+    log.debug('Session URI received, skipping pairing (request will come via existing connection)');
     return;
   }
 
-  const { core } = reownClient;
+  let reownClient = yield call(getReownClient);
 
-  const { payload } = action;
+  // If client is not ready yet, wait for it to be initialized
+  if (!reownClient) {
+    log.debug('Reown client not ready, waiting for initialization...');
+    // Wait for the SET_REOWN action which indicates client is ready
+    yield take(types.SET_REOWN);
+    reownClient = yield call(getReownClient);
+
+    if (!reownClient) {
+      log.debug('Reown client still not available after waiting.');
+      return;
+    }
+  }
+
+  const { core } = reownClient;
 
   try {
     yield call(core.pairing.pair, { uri: payload });
