@@ -1111,9 +1111,7 @@ export function* onSessionProposal(action) {
  * @param {string} uri - The WalletConnect URI
  * @returns {boolean} True if this is a pairing URI
  */
-const isPairingUri = (uri) => {
-  return uri && uri.includes('symKey=');
-};
+const isPairingUri = (uri) => uri && uri.includes('symKey=');
 
 /**
  * This saga is fired when a URI is inputted either manually or by scanning
