@@ -113,6 +113,9 @@ import {
   setCreateNanoContractCreateTokenTxStatusFailure,
   setCreateNanoContractCreateTokenTxStatusSuccess,
   showGetBalanceModal,
+  showGetAddressModal,
+  showGetAddressClientModal,
+  showGetUtxosModal,
   unregisteredTokensStore,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
@@ -128,6 +131,10 @@ const AVAILABLE_METHODS = {
   HATHOR_SEND_TRANSACTION: 'htr_sendTransaction',
   HATHOR_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: 'htr_createNanoContractCreateTokenTx',
   HATHOR_GET_BALANCE: 'htr_getBalance',
+  HATHOR_GET_ADDRESS: 'htr_getAddress',
+  HATHOR_GET_UTXOS: 'htr_getUtxos',
+  HATHOR_GET_CONNECTED_NETWORK: 'htr_getConnectedNetwork',
+  HATHOR_GET_WALLET_INFORMATION: 'htr_getWalletInformation',
 };
 const AVAILABLE_EVENTS = [];
 
@@ -848,6 +855,49 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           requestMetadata,
         ));
       } break;
+      case TriggerTypes.AddressRequestPrompt: {
+        const getAddressResponseTemplate = (accepted) => () => resolve({
+          type: TriggerResponseTypes.AddressRequestConfirmationResponse,
+          data: accepted,
+        });
+
+        dispatch(showGetAddressModal(
+          getAddressResponseTemplate(true),
+          getAddressResponseTemplate(false),
+          request.data,
+          requestMetadata,
+        ));
+      } break;
+      case TriggerTypes.AddressRequestClientPrompt: {
+        const onAddressSelected = (address) => resolve({
+          type: TriggerResponseTypes.AddressRequestClientResponse,
+          data: { address },
+        });
+
+        const onDeny = () => resolve({
+          type: TriggerResponseTypes.AddressRequestClientResponse,
+          data: { address: null },
+        });
+
+        dispatch(showGetAddressClientModal(
+          onAddressSelected,
+          onDeny,
+          requestMetadata,
+        ));
+      } break;
+      case TriggerTypes.GetUtxosConfirmationPrompt: {
+        const getUtxosResponseTemplate = (accepted) => () => resolve({
+          type: TriggerResponseTypes.GetUtxosConfirmationResponse,
+          data: accepted,
+        });
+
+        dispatch(showGetUtxosModal(
+          getUtxosResponseTemplate(true),
+          getUtxosResponseTemplate(false),
+          request.data,
+          requestMetadata,
+        ));
+      } break;
       default:
         reject(new Error('Invalid request'));
     }
@@ -1235,6 +1285,22 @@ export function* onGetBalanceRequest({ payload }) {
   yield* handleDAppRequest(payload, ReownModalTypes.GET_BALANCE, { passAcceptAction: false });
 }
 
+export function* onGetAddressRequest({ payload }) {
+  yield* handleDAppRequest(payload, ReownModalTypes.GET_ADDRESS, { passAcceptAction: false });
+}
+
+export function* onGetAddressClientRequest({ payload }) {
+  yield* handleDAppRequest(
+    payload,
+    ReownModalTypes.GET_ADDRESS_CLIENT,
+    { passAcceptAction: false },
+  );
+}
+
+export function* onGetUtxosRequest({ payload }) {
+  yield* handleDAppRequest(payload, ReownModalTypes.GET_UTXOS, { passAcceptAction: false });
+}
+
 export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
@@ -1250,6 +1316,9 @@ export function* saga() {
       onCreateNanoContractCreateTokenTxRequest,
     ),
     takeLatest(types.SHOW_GET_BALANCE_REQUEST_MODAL, onGetBalanceRequest),
+    takeLatest(types.SHOW_GET_ADDRESS_REQUEST_MODAL, onGetAddressRequest),
+    takeLatest(types.SHOW_GET_ADDRESS_CLIENT_REQUEST_MODAL, onGetAddressClientRequest),
+    takeLatest(types.SHOW_GET_UTXOS_REQUEST_MODAL, onGetUtxosRequest),
     takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),
