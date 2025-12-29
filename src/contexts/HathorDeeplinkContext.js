@@ -61,19 +61,8 @@ const parseDeepLink = (url) => {
   }
 
   try {
-    const path = url.replace(schemePrefix, '');
-    const [route, queryString] = path.split('?');
-
-    // Parse query parameters
-    const params = {};
-    if (queryString) {
-      queryString.split('&').forEach((param) => {
-        const [key, value] = param.split('=');
-        if (key && value) {
-          params[key] = decodeURIComponent(value);
-        }
-      });
-    }
+    const [route, queryString] = url.replace(schemePrefix, '').split('?');
+    const params = Object.fromEntries(new URLSearchParams(queryString || ''));
 
     switch (route) {
       case 'dashboard':
