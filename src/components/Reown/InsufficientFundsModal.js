@@ -6,11 +6,12 @@
  */
 
 import React, { useEffect } from 'react';
-import { StyleSheet, Image } from 'react-native';
-import { useDispatch } from 'react-redux';
+import { StyleSheet, Image, View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import FeedbackModal from '../FeedbackModal';
 import NewHathorButton from '../NewHathorButton';
+import AdvancedErrorOptions from './AdvancedErrorOptions';
 import { hideReownModal, setSendTxStatusReady } from '../../actions';
 import errorIcon from '../../assets/images/icErrorBig.png';
 
@@ -19,6 +20,7 @@ import errorIcon from '../../assets/images/icErrorBig.png';
  */
 export const InsufficientFundsModal = () => {
   const dispatch = useDispatch();
+  const errorDetails = useSelector((state) => state.reown.insufficientFunds.errorDetails);
 
   // Reset transaction status when component unmounts
   useEffect(() => () => {
@@ -36,7 +38,12 @@ export const InsufficientFundsModal = () => {
       icon={<Image source={errorIcon} style={styles.icon} resizeMode='contain' />}
       text={t`Insufficient funds to complete the transaction.`}
       onDismiss={handleDismiss}
-      action={<NewHathorButton title={t`Close`} onPress={handleDismiss} />}
+      action={(
+        <View style={styles.buttonContainer}>
+          <NewHathorButton title={t`Close`} onPress={handleDismiss} />
+          <AdvancedErrorOptions errorDetails={errorDetails} />
+        </View>
+      )}
     />
   );
 };
@@ -45,6 +52,10 @@ const styles = StyleSheet.create({
   icon: {
     width: 48,
     height: 48,
+  },
+  buttonContainer: {
+    width: '100%',
+    gap: 8,
   },
 });
 

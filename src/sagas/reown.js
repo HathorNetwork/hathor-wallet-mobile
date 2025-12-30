@@ -112,11 +112,34 @@ import {
   setCreateNanoContractCreateTokenTxStatusSuccess,
   showGetBalanceModal,
   unregisteredTokensStore,
+  setInsufficientFundsError,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
 
 const log = logger('reown');
+
+/**
+ * Extracts error details for storage and display
+ * @param {Error} error - The error object
+ * @returns {Object} Error details { message, stack, type, timestamp }
+ */
+function extractErrorDetails(error) {
+  if (!error) {
+    return {
+      message: 'Unknown error',
+      stack: 'No stack trace available',
+      type: 'Error',
+      timestamp: Date.now(),
+    };
+  }
+  return {
+    message: error.message || 'Unknown error',
+    stack: error.stack || 'No stack trace available',
+    type: error?.constructor?.name || 'Error',
+    timestamp: Date.now(),
+  };
+}
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'htr_signWithAddress',
@@ -496,7 +519,8 @@ export function* processRequest(action) {
     let shouldAnswer = true;
     switch (e.constructor) {
       case SendNanoContractTxError: {
-        yield put(setNewNanoContractStatusFailure());
+        const errorDetails = extractErrorDetails(e);
+        yield put(setNewNanoContractStatusFailure(errorDetails));
 
         const dontRetryErrors = [
           'Invalid blueprint ID',
@@ -527,7 +551,8 @@ export function* processRequest(action) {
         }
       } break;
       case CreateTokenError: {
-        yield put(setCreateTokenStatusFailed());
+        const errorDetails = extractErrorDetails(e);
+        yield put(setCreateTokenStatusFailed(errorDetails));
 
         // User might try again, wait for it.
         const retry = yield call(
@@ -560,7 +585,8 @@ export function* processRequest(action) {
         // If the transaction is invalid, we don't receive a
         // SendTransactionConfirmationPrompt, so we need to check if the modal
         // is visible and just reject it if it's not.
-        yield put(setSendTxStatusFailure());
+        const errorDetails = extractErrorDetails(e);
+        yield put(setSendTxStatusFailure(errorDetails));
 
         // User might try again, wait for it.
         const retry = yield call(
@@ -576,7 +602,9 @@ export function* processRequest(action) {
         }
       } break;
       case InsufficientFundsError:
-        yield put(setSendTxStatusFailure());
+        const errorDetails = extractErrorDetails(e);
+        yield put(setSendTxStatusFailure(errorDetails));
+        yield put(setInsufficientFundsError(errorDetails));
         // Show the insufficient funds modal
         yield put(setReownModal({
           show: true,
@@ -593,9 +621,11 @@ export function* processRequest(action) {
             },
           },
         }));
+        shouldAnswer = false;
         break;
       case CreateNanoContractCreateTokenTxError: {
-        yield put(setCreateNanoContractCreateTokenTxStatusFailure());
+        const errorDetails = extractErrorDetails(e);
+        yield put(setCreateNanoContractCreateTokenTxStatusFailure(errorDetails));
 
         const retry = yield call(
           retryHandler,

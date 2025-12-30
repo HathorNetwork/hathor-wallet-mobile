@@ -27,6 +27,7 @@ import {
 } from '../../actions';
 import { REOWN_SEND_TX_STATUS } from '../../constants';
 import FeedbackModal from '../FeedbackModal';
+import AdvancedErrorOptions from './AdvancedErrorOptions';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import { FeedbackContent } from '../FeedbackContent';
 import Spinner from '../Spinner';
@@ -145,6 +146,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  errorActions: {
+    width: '100%',
+    gap: 8,
+  },
 });
 
 export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onReject }) => {
@@ -172,6 +177,8 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
 
   // Get transaction status from Redux
   const sendTxStatus = reown.sendTransaction?.status || REOWN_SEND_TX_STATUS.READY;
+  // Get error details from Redux
+  const errorDetails = reown.sendTransaction?.errorDetails;
 
   // Use token info hook
   const {
@@ -522,7 +529,12 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
           icon={<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />}
           text={t`Error while sending transaction.`}
           onDismiss={onFeedbackModalDismiss}
-          action={<NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />}
+          action={(
+            <View style={styles.errorActions}>
+              <NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />
+              <AdvancedErrorOptions errorDetails={errorDetails} />
+            </View>
+          )}
         />
       )}
 
