@@ -45,6 +45,19 @@ class TxDetailsModal extends Component {
     />
   );
 
+  getFeeModelText = (version) => {
+    if (version === 0) {
+      return t`Native Token`;
+    }
+    if (version === 1) {
+      return t`Deposit Based`;
+    }
+    if (version === 2) {
+      return t`Fee Based`;
+    }
+    return null;
+  };
+
   render() {
     /**
      * @type {{
@@ -77,6 +90,7 @@ class TxDetailsModal extends Component {
     });
     const isNc = tx.isNanoContract();
     const hasFirstBlock = tx.hasFirstBlock();
+    const feeModelText = this.getFeeModelText(token?.version);
 
     return (
       <BackdropModal
@@ -97,6 +111,7 @@ class TxDetailsModal extends Component {
             <ListItem title={t`Token`} text={fullTokenStr} />
             <ListItem title={t`Description`} text={description} />
             <ListItem title={t`Date & Time`} text={timestampStr} />
+            {feeModelText && <ListItem title={t`Fee Model`} text={feeModelText} />}
             <ListItem title={t`Transaction ID`} text={txIdComponent} />
             {isNc && (
               <ListItem
