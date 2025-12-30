@@ -35,8 +35,8 @@ class CreateTokenSymbol extends React.Component {
   }
 
   onButtonPress = () => {
-    const { name } = this.props.route.params;
-    this.props.navigation.navigate('CreateTokenAmount', { name, symbol: this.state.symbol });
+    const { name, tokenInfoVersion } = this.props.route.params;
+    this.props.navigation.navigate('CreateTokenAmount', { name, symbol: this.state.symbol, tokenInfoVersion });
   }
 
   isButtonDisabled = () => {
@@ -56,10 +56,17 @@ class CreateTokenSymbol extends React.Component {
   }
 
   render() {
+    const { tokenInfoVersion } = this.props.route.params;
+    let title = t`CREATE TOKEN`;
+    if (tokenInfoVersion === 1) {
+      title = t`CREATE DEPOSIT TOKEN`;
+    } else if (tokenInfoVersion === 2) {
+      title = t`CREATE FEE TOKEN`;
+    }
     return (
       <View style={{ flex: 1 }}>
         <HathorHeader
-          title={t`CREATE TOKEN`}
+          title={title}
           onBackPress={() => this.props.navigation.goBack()}
           onCancel={() => this.props.navigation.getParent().goBack()}
         />
