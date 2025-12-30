@@ -1387,7 +1387,7 @@ msgid "Report error"
 msgstr ""
 
 #: src/components/GlobalErrorModal.js:126
-#: src/components/Reown/ErrorDetailModal.js:99
+#: src/components/Reown/ErrorDetailModal.js:114
 #: src/components/Reown/InsufficientFundsModal.js:43
 #: src/components/Reown/TokenInfoModal.js:114
 msgid "Close"
@@ -1651,34 +1651,33 @@ msgstr ""
 msgid "Error while sending create token transaction."
 msgstr ""
 
-#: src/components/Reown/ErrorDetailModal.js:63
+#: src/components/Reown/ErrorDetailModal.js:78
 msgid "Error Details"
 msgstr ""
 
-#: src/components/Reown/ErrorDetailModal.js:66
+#: src/components/Reown/ErrorDetailModal.js:81
 msgid "Error Type:"
 msgstr ""
 
-#: src/components/Reown/ErrorDetailModal.js:71
+#: src/components/Reown/ErrorDetailModal.js:86
 msgid "Message:"
 msgstr ""
 
-#: src/components/Reown/ErrorDetailModal.js:76
+#: src/components/Reown/ErrorDetailModal.js:91
 msgid "Timestamp:"
 msgstr ""
 
-#: src/components/Reown/ErrorDetailModal.js:83
+#: src/components/Reown/ErrorDetailModal.js:98
 msgid "Stack Trace:"
 msgstr ""
 
-#: src/components/Reown/ErrorDetailModal.js:93
+#: src/components/Reown/ErrorDetailModal.js:108
 msgid "Copied!"
 msgstr ""
 
-#: src/components/Reown/ErrorDetailModal.js:93
-#, fuzzy
+#: src/components/Reown/ErrorDetailModal.js:108
 msgid "Copy to Clipboard"
-msgstr "Скопировано в буфер обмена!"
+msgstr ""
 
 #: src/components/Reown/GetBalanceModal.js:19
 msgid "New Get Balance Request"

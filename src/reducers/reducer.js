@@ -2111,6 +2111,13 @@ export const onSetSendTxStatus = (state, { payload }) => {
         // Store error details only when FAILED, clear otherwise
         errorDetails: status === REOWN_SEND_TX_STATUS.FAILED ? errorDetails : null,
       },
+      // Clear insufficientFunds errorDetails when status is READY
+      insufficientFunds: {
+        ...state.reown.insufficientFunds,
+        errorDetails: status === REOWN_SEND_TX_STATUS.READY
+          ? null
+          : state.reown.insufficientFunds.errorDetails,
+      },
     },
   };
 };
@@ -2282,7 +2289,9 @@ export const onSetCreateNanoContractCreateTokenTxStatus = (state, { payload }) =
         ...state.reown.createNanoContractCreateTokenTx,
         status,
         // Store error details only when FAILED, clear otherwise
-        errorDetails: status === REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.FAILED ? errorDetails : null,
+        errorDetails: status === REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.FAILED
+          ? errorDetails
+          : null,
       },
     },
   };

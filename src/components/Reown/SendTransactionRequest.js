@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { t } from 'ttag';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, Image } from 'react-native';
 import { constants, numberUtils } from '@hathor/wallet-lib';
@@ -173,7 +173,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   const navigation = useNavigation();
 
   // State for decline modal
-  const [showDeclineModal, setShowDeclineModal] = React.useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
 
   // Get transaction status from Redux
   const sendTxStatus = reown.sendTransaction?.status || REOWN_SEND_TX_STATUS.READY;

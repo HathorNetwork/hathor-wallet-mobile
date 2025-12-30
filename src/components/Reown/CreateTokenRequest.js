@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -120,7 +120,7 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
   const { status, errorDetails } = useSelector((state) => state.reown.createToken);
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const [showDeclineModal, setShowDeclineModal] = React.useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
 
   useEffect(() => () => {
     dispatch(setCreateTokenStatusReady());

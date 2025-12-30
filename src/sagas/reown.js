@@ -601,7 +601,7 @@ export function* processRequest(action) {
           yield* processRequest(action);
         }
       } break;
-      case InsufficientFundsError:
+      case InsufficientFundsError: {
         const errorDetails = extractErrorDetails(e);
         yield put(setSendTxStatusFailure(errorDetails));
         yield put(setInsufficientFundsError(errorDetails));
@@ -622,7 +622,7 @@ export function* processRequest(action) {
           },
         }));
         shouldAnswer = false;
-        break;
+      } break;
       case CreateNanoContractCreateTokenTxError: {
         const errorDetails = extractErrorDetails(e);
         yield put(setCreateNanoContractCreateTokenTxStatusFailure(errorDetails));

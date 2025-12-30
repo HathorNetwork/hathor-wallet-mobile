@@ -1430,7 +1430,7 @@ msgid "Report error"
 msgstr "Reportar erro"
 
 #: src/components/GlobalErrorModal.js:126
-#: src/components/Reown/ErrorDetailModal.js:99
+#: src/components/Reown/ErrorDetailModal.js:114
 #: src/components/Reown/InsufficientFundsModal.js:43
 #: src/components/Reown/TokenInfoModal.js:114
 msgid "Close"
@@ -1540,12 +1540,11 @@ msgstr "Nano Contract"
 
 #: src/components/Reown/AdvancedErrorOptions.js:41
 msgid "Advanced options"
-msgstr ""
+msgstr "Opções avançadas"
 
 #: src/components/Reown/AdvancedErrorOptions.js:47
-#, fuzzy
 msgid "See error details"
-msgstr "Ver detalhes"
+msgstr "Ver detalhes do erro"
 
 #: src/components/Reown/ApproveRejectModal.js:70
 msgid "Reject"
@@ -1704,35 +1703,33 @@ msgstr "Ok, fechar"
 msgid "Error while sending create token transaction."
 msgstr "Erro ao enviar transação de criação de token."
 
-#: src/components/Reown/ErrorDetailModal.js:63
+#: src/components/Reown/ErrorDetailModal.js:78
 msgid "Error Details"
-msgstr ""
+msgstr "Detalhes do Erro"
 
-#: src/components/Reown/ErrorDetailModal.js:66
+#: src/components/Reown/ErrorDetailModal.js:81
 msgid "Error Type:"
-msgstr ""
+msgstr "Tipo de Erro:"
 
-#: src/components/Reown/ErrorDetailModal.js:71
-#, fuzzy
+#: src/components/Reown/ErrorDetailModal.js:86
 msgid "Message:"
-msgstr "Mensagem para assinar"
+msgstr "Mensagem:"
 
-#: src/components/Reown/ErrorDetailModal.js:76
+#: src/components/Reown/ErrorDetailModal.js:91
 msgid "Timestamp:"
-msgstr ""
+msgstr "Data e Hora:"
 
-#: src/components/Reown/ErrorDetailModal.js:83
+#: src/components/Reown/ErrorDetailModal.js:98
 msgid "Stack Trace:"
-msgstr ""
+msgstr "Rastreamento de Pilha:"
 
-#: src/components/Reown/ErrorDetailModal.js:93
+#: src/components/Reown/ErrorDetailModal.js:108
 msgid "Copied!"
-msgstr ""
-
-#: src/components/Reown/ErrorDetailModal.js:93
-#, fuzzy
-msgid "Copy to Clipboard"
 msgstr "Copiado!"
+
+#: src/components/Reown/ErrorDetailModal.js:108
+msgid "Copy to Clipboard"
+msgstr "Copiar para Área de Transferência"
 
 #: src/components/Reown/GetBalanceModal.js:19
 msgid "New Get Balance Request"

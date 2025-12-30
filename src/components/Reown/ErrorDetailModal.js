@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -33,6 +33,14 @@ import { COLORS } from '../../styles/themes';
  */
 const ErrorDetailModal = ({ visible, errorDetails, onDismiss }) => {
   const [copySuccess, setCopySuccess] = useState(false);
+  const timeoutRef = React.useRef(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  }, []);
 
   if (!visible || !errorDetails) {
     return null;
@@ -49,8 +57,15 @@ ${errorDetails.stack}`;
     Clipboard.setString(errorText);
     setCopySuccess(true);
 
-    setTimeout(() => {
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Store timeout ref for cleanup
+    timeoutRef.current = setTimeout(() => {
       setCopySuccess(false);
+      timeoutRef.current = null;
     }, 2000);
   };
 

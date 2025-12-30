@@ -15,6 +15,7 @@ import {
   REOWN_CREATE_TOKEN_STATUS,
   REOWN_NEW_NANOCONTRACT_TX_STATUS,
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
+  REOWN_SEND_TX_STATUS,
 } from './constants';
 import { mapToTxHistory } from './utils';
 
