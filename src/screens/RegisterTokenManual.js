@@ -124,7 +124,7 @@ class RegisterTokenManual extends React.Component {
           <HathorHeader
             withBorder
             title={t`REGISTER TOKEN`}
-            onBackPress={() => this.props.navigation.goBack()}
+            onBackPress={() => NavigationService.resetToMain()}
           />
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
