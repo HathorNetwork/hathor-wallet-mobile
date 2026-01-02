@@ -4,6 +4,7 @@ This document outlines the testing flow for the Mobile Wallet using an RPC inter
  
 **Testing Environment:** https://staging.betting.hathor.network/rpc
 **Network:** Testnet
+**Explorer for validations:** https://explorer.testnet.hathor.network
 
 Navigate to the testing environment above (or raise a developer environment of your choice) and use the *Requests* to generate the expected *Responses* described below.
 
@@ -15,6 +16,14 @@ After each request look closely at the confirmation screen, making sure all the 
 On the screens that have a selectable response, look closely at the response data to ensure the selected elements were sent correctly.
 
 ---
+# Initial connection
+
+1. Open the testing environment and click "Connect Wallet"
+1. On the Mobile Wallet initial screen ( Dashboard), click the QR Code reader on the top right.
+1. Read the QR Code on the testing environment to start the process of connecting your wallet using the WalletConnect/ReOwn
+1. Reject the connection and check that the testing environment just closes the QR Code modal
+1. Start again but this time connect your wallet
+1. Check the testing dApp is now connected to your wallet through the "Hathor Bet" ReOwn session on the Wallet
 
 # Basic Wallet Interaction
 Retrieving data, signing messages and sending basic transactions.
@@ -194,6 +203,8 @@ The query result must also be summarized for double-checking on the response mes
 ## Send Transaction
 Sends a simple transaction.
 Here we explicitly request NOT to send the transaction first, and then send the transaction. On later requests we will consider this switching implicit for the tests.
+
+After the successful response, open the Testnet Explorer and validate the transaction results with the response received.
 
 ### Request (1) - Building and not pushing
 ```json
@@ -461,6 +472,10 @@ console.log(`Oracle buffer: ${getOracleBuffer(myFirstAddress)}`);
 
 ### Request
 Here we will need to test both the pushing and not pushing the transaction, changing only the `push_tx` property of the request.
+
+Confirm that the Blueprint ID matches the request
+Save the `hash` value - this becomes the `nc_id` for subsequent operations
+
 ```json
 {
   "method": "htr_sendNanoContractTx",
@@ -500,13 +515,6 @@ When not pushing the tx, the response property will be a long string.
   }
 }
 ```
-
-### Validation Points
-- [ ] Nano contract initialized successfully
-- [ ] Blueprint ID matches the request
-- [ ] Method is "initialize"
-- [ ] Response type is 0
-- [ ] **Save the `hash` value - this becomes the `nc_id` for subsequent operations**
 
 ## Bet Deposit
 Once the nano contract is initialized, place a single bet in it.
@@ -638,6 +646,8 @@ When not pushing the tx, the response property will be a long string.
 Sets the bet result to `Result_1`, so that the bet above is the winner.
 
 ### Request 1 - Sign Oracle Data
+The confirmation screen on the Mobile Wallet should display the oracle data both unencrypted (`Result_1`) and encrypted ( the hexadecimal signature that will be displayed on the response )
+
 It is necessary to first sign the oracle data for it to be applied to the bet nano contract. Only then we can set the bet result in the next request.
 
 ```json
@@ -669,6 +679,8 @@ It is necessary to first sign the oracle data for it to be applied to the bet na
 ```
 
 ### Request 2 - Set Bet Result
+The confirmation screen here will only display the encrypted signature, not the human-readable bet result.
+
 Here we will need to test both the pushing and not pushing the transaction, changing only the `push_tx` property of the request.
 
 ```json
