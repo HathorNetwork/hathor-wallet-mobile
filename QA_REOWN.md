@@ -1,16 +1,23 @@
 # QA Reown
- 
-**Testing Environment:** https://staging.betting.hathor.network/rpc
-
----
-
-## 📝 Test Flow Overview
 
 This document outlines the testing flow for the Mobile Wallet using an RPC interface. Each section contains the request payload, instructions on how to obtain the necessary data and expected response structure.
+ 
+**Testing Environment:** https://staging.betting.hathor.network/rpc
+**Network:** Testnet
+
+Navigate to the testing environment above (or raise a developer environment of your choice) and use the *Requests* to generate the expected *Responses* described below.
+
+After each request look closely to the confirmation screen, making sure all the request data is properly exhibited.
+- *Always reject the first request* you make for each step
+- Make sure the rejection process has the correct behavior
+- Only then proceed to making the actual request to receive the validation response
+
+On the screens that have a selectable response, look closely to the response data to ensure the selected elements were sent correctly.
 
 ---
 
 # Basic Wallet Interaction
+Retrieving data, signing messages and sending basic transactions.
 
 ## Get Wallet Information
 Just execute this request and have the Wallet app opened to automatically retrieve this data. No approval is necessary by the user.
@@ -61,8 +68,10 @@ Just execute this request and have the Wallet app opened to automatically retrie
 ```
 
 ## Get Addresses
+Addresses may be retrieved by three different ways. For each one, see that the user interface exhibits the dApp request accordingly.
 
 ### Request (1) - First empty
+The requested address will probably have a high index.
 ```json
 {
   "method": "htr_getAddress",
@@ -86,6 +95,7 @@ Just execute this request and have the Wallet app opened to automatically retrie
 ```
 
 ### Request (2) - By index
+The address index must be respected here.
 ```json
 {
   "method": "htr_getAddress",
@@ -110,6 +120,7 @@ Just execute this request and have the Wallet app opened to automatically retrie
 ```
 
 ### Request (3) - By client
+The user will select the desired address from a list.
 ```json
 {
   "method": "htr_getAddress",
@@ -133,6 +144,9 @@ Just execute this request and have the Wallet app opened to automatically retrie
 ```
 
 ## Get UTXOs
+All the request parameters should be exhibited clearly to the user on the confirmation screen.
+
+The query result must also be summarized for double-checking on the response message.
 
 ### Request
 ```json
@@ -178,7 +192,8 @@ Just execute this request and have the Wallet app opened to automatically retrie
 ```
 
 ## Send Transaction
-Sends a simple transaction
+Sends a simple transaction.
+Here we explicitly request NOT to send the transaction and then sending the transaction. On later requests we will consider this switching implicit for the tests.
 
 ### Request (1) - Building and not pushing
 ```json
@@ -227,7 +242,73 @@ Sends a simple transaction
 {
   "type": 8,
   "response": {
-    "pending": "the full response object"
+    "inputs": [
+      {
+        "hash": "{ 64-char tx hash }",
+        "index": 1,
+        "data": {
+          "type": "Buffer",
+          "data": [4, 5, 6, "..."]
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "value": "1",
+        "tokenData": 0,
+        "script": {
+          "type": "Buffer",
+          "data": [1, 2, 3, "..."]
+        },
+        "decodedScript": {
+          "address": {
+            "base58": "{your-address}",
+            "network": {
+              "name": "testnet",
+              "versionBytes": {
+                "p2pkh": 44,
+                "p2sh": 33,
+                "xpriv": 22,
+                "xpub": 11
+              },
+              "bitcoreNetwork": {
+                "name": "htr-testnet",
+                "alias": "test",
+                "pubkeyhash": 99,
+                "privatekey": 88,
+                "scripthash": 77,
+                "bech32prefix": "tn",
+                "xpubkey": 66,
+                "xprivkey": 55,
+                "networkMagic": {
+                  "type": "Buffer",
+                  "data": [7, 8, 9, "..."]
+                },
+                "port": 9876,
+                "dnsSeeds": []
+              }
+            }
+          },
+          "timelock": null
+        }
+      }
+    ],
+    "signalBits": 0,
+    "version": 1,
+    "weight": 17.1097527195551,
+    "nonce": 162898,
+    "timestamp": 123456,
+    "parents": [
+      "{ 64-char tx hash }",
+      "{ 64-char tx hash }"
+    ],
+    "tokens": [],
+    "hash": "{ 64-char tx hash }",
+    "headers": [],
+    "_dataToSignCache": {
+      "type": "Buffer",
+      "data": [1, 2, 3, "..."]
+    }
   }
 }
 ```
@@ -302,7 +383,7 @@ Creates a custom token on the Hathor testnet with mint and melt authorities.
         "index": 0,
         "data": {
           "type": "Buffer",
-          "data": [1 , 2, 3, ...]
+          "data": [1 , 2, 3, "..."]
         }
       }
     ],
@@ -312,7 +393,7 @@ Creates a custom token on the Hathor testnet with mint and melt authorities.
         "tokenData": 1,
         "script": {
           "type": "Buffer",
-          "data": [4, 5, 6, ...]
+          "data": [4, 5, 6, "..."]
         }
       },
       {
@@ -320,7 +401,7 @@ Creates a custom token on the Hathor testnet with mint and melt authorities.
         "tokenData": 129,
         "script": {
           "type": "Buffer",
-          "data": [7, 8, 9, ...]
+          "data": [7, 8, 9, "..."]
         }
       },
       {
@@ -328,7 +409,7 @@ Creates a custom token on the Hathor testnet with mint and melt authorities.
         "tokenData": 129,
         "script": {
           "type": "Buffer",
-          "data": [10, 11, 12, ...]
+          "data": [10, 11, 12, "..."]
         }
       }
     ],
@@ -379,6 +460,7 @@ console.log(`Oracle buffer: ${getOracleBuffer(myFirstAddress)}`);
 ```
 
 ### Request
+Here we will need to test both the pushing and not pushing the transaction, changing only the `push_tx` property of the request.
 ```json
 {
   "method": "htr_sendNanoContractTx",
@@ -392,13 +474,14 @@ console.log(`Oracle buffer: ${getOracleBuffer(myFirstAddress)}`);
       "00",
       "{timestamp for last bet, in unix format}"
     ],
-    "push_tx": true,
+    "push_tx": false,
     "nc_id": null
   }
 }
 ```
 
 ### Expected Response
+When not pushing the tx, the response property will be a long string.
 ```json
 {
   "type": 0,
@@ -410,7 +493,7 @@ console.log(`Oracle buffer: ${getOracleBuffer(myFirstAddress)}`);
         "method": "initialize",
         "args": {
           "type": "Buffer",
-          "data": [1, 2, 3, ...]
+          "data": [1, 2, 3, "..."]
         }
       }
     ]
@@ -430,6 +513,7 @@ Once the nano contract is initialized, place a single bet in it.
 Here we will bet in the `Result_1` value, and the next requests will set this as the winner.
 
 ### Request
+Here we will need to test both the pushing and not pushing the transaction, changing only the `push_tx` property of the request.
 ```json
 {
   "method": "htr_sendNanoContractTx",
@@ -449,12 +533,13 @@ Here we will bet in the `Result_1` value, and the next requests will set this as
       "{ your address 0 }",
       "Result_1"
     ],
-    "push_tx": true
+    "push_tx": false
   }
 }
 ```
 
 ### Response
+When not pushing the tx, the response property will be a long string.
 ```json
 {
   "type": 0,
@@ -465,7 +550,7 @@ Here we will bet in the `Result_1` value, and the next requests will set this as
         "index": 1,
         "data": {
           "type": "Buffer",
-          "data": [1, 2, 3, ...]
+          "data": [1, 2, 3, "..."]
         }
       }
     ],
@@ -475,7 +560,7 @@ Here we will bet in the `Result_1` value, and the next requests will set this as
         "tokenData": 0,
         "script": {
           "type": "Buffer",
-          "data": [4, 5, 6, ...]
+          "data": [4, 5, 6, "..."]
         },
         "decodedScript": null
       }
@@ -497,7 +582,7 @@ Here we will bet in the `Result_1` value, and the next requests will set this as
         "method": "bet",
         "args": {
           "type": "Buffer",
-          "data": [7, 8, 9, ...]
+          "data": [7, 8, 9, "..."]
         },
         "actions": [
           {
@@ -527,7 +612,7 @@ Here we will bet in the `Result_1` value, and the next requests will set this as
               "xprivkey": 151413,
               "networkMagic": {
                 "type": "Buffer",
-                "data": [1, 2, 3, ...]
+                "data": [1, 2, 3, "..."]
               },
               "port": 9876,
               "dnsSeeds": []
@@ -537,13 +622,13 @@ Here we will bet in the `Result_1` value, and the next requests will set this as
         "seqnum": 181716,
         "script": {
           "type": "Buffer",
-          "data": [4, 5, 6, ...]
+          "data": [4, 5, 6, "..."]
         }
       }
     ],
     "_dataToSignCache": {
       "type": "Buffer",
-      "data": [7, 8, 9, ...]
+      "data": [7, 8, 9, "..."]
     }
   }
 }
@@ -584,6 +669,7 @@ It is necessary to first sign the oracle data for it to be applied to the bet na
 ```
 
 ### Request 2 - Set Bet Result
+Here we will need to test both the pushing and not pushing the transaction, changing only the `push_tx` property of the request.
 
 ```json
 {  
@@ -600,12 +686,14 @@ It is necessary to first sign the oracle data for it to be applied to the bet na
         "value": "Result_1"  
       }
     ],  
-    "push_tx": true  
+    "push_tx": false  
   }  
 }
 ```
 
 #### Response for set result
+When not pushing the tx, the response property will be a long string.
+
 ```json
 {
   "type": 0,
@@ -629,7 +717,7 @@ It is necessary to first sign the oracle data for it to be applied to the bet na
         "method": "set_result",
         "args": {
           "type": "Buffer",
-          "data": [1, 2, 3, ...]
+          "data": [1, 2, 3, "..."]
         },
         "actions": [],
         "address": {
@@ -653,7 +741,7 @@ It is necessary to first sign the oracle data for it to be applied to the bet na
               "xprivkey": 5,
               "networkMagic": {
                 "type": "Buffer",
-                "data": [4, 5, 6, ...]
+                "data": [4, 5, 6, "..."]
               },
               "port": 1234,
               "dnsSeeds": []
@@ -663,13 +751,13 @@ It is necessary to first sign the oracle data for it to be applied to the bet na
         "seqnum": 2,
         "script": {
           "type": "Buffer",
-          "data": [7, 8, 9, ...]
+          "data": [7, 8, 9, "..."]
         }
       }
     ],
     "_dataToSignCache": {
       "type": "Buffer",
-      "data": [9, 8, 7, ...]
+      "data": [9, 8, 7, "..."]
     }
   }
 }
@@ -679,6 +767,7 @@ It is necessary to first sign the oracle data for it to be applied to the bet na
 Withdraws the prize from the initialized bet NC back to a wallet address.
 
 ### Request
+Here we will need to test both the pushing and not pushing the transaction, changing only the `push_tx` property of the request.
 ```json
 {
   "method": "htr_sendNanoContractTx",
@@ -696,12 +785,13 @@ Withdraws the prize from the initialized bet NC back to a wallet address.
       }
     ],
     "args": [],
-    "push_tx": true
+    "push_tx": false
   }
 }
 ```
 
 ### Expected Response
+When not pushing the tx, the response property will be a long string.
 ```json
 {
   "type": 0,
@@ -713,7 +803,7 @@ Withdraws the prize from the initialized bet NC back to a wallet address.
         "tokenData": 0,
         "script": {
           "type": "Buffer",
-          "data": [1, 2, 3, ...]
+          "data": [1, 2, 3, "..."]
         },
         "decodedScript": null
       }
@@ -767,7 +857,7 @@ Withdraws the prize from the initialized bet NC back to a wallet address.
               "xprivkey": 9,
               "networkMagic": {
                 "type": "Buffer",
-                "data": [10, 11, 12, ...]
+                "data": [10, 11, 12, "..."]
               },
               "port": 9876,
               "dnsSeeds": []
@@ -777,13 +867,13 @@ Withdraws the prize from the initialized bet NC back to a wallet address.
         "seqnum": 3,
         "script": {
           "type": "Buffer",
-          "data": [1, 2, 3, ...]
+          "data": [1, 2, 3, "..."]
         }
       }
     ],
     "_dataToSignCache": {
       "type": "Buffer",
-      "data": [4, 5, 6, ...]
+      "data": [4, 5, 6, "..."]
     }
   }
 }
@@ -795,21 +885,8 @@ Withdraws the prize from the initialized bet NC back to a wallet address.
 
 ---
 
-## 📋 General Testing Notes
-
-### Environment Setup
-```
-[Add your environment setup notes here]
-```
+# 📋 General Testing Notes
 
 ### Common Issues
 - Mistakes on copy-pasting addresses, hashes and tx-ids are the most common
 - Trying to send transactions with `pushTx` set to `false`
-
----
-
-## References
-
-- **RPG Generator site:** https://staging.betting.hathor.network/rpc
-- **Network:** Testnet
-
