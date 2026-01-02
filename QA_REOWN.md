@@ -324,7 +324,6 @@ After the successful response, open the Testnet Explorer and validate the transa
 }
 ```
 
-
 ## Sign with Address
 Tests the message signing functionality using a wallet address by index.
 
@@ -356,17 +355,15 @@ Tests the message signing functionality using a wallet address by index.
 }
 ```
 
-### Validation Points
-- [ ] Signature is valid and base64-encoded
-- [ ] Address matches the expected derivation path
-- [ ] Response type is 1
-
 ---
 
 ## Create Token
 Creates a custom token on the Hathor testnet with mint and melt authorities.
 
-### Request
+1. Check that the request confirmation screen shows all token information correctly
+1. Confirm the transaction request and check the custom token now exists on the Explorer
+
+### Request (1) - Creation success
 ```json
 {
   "method": "htr_createToken",
@@ -383,7 +380,7 @@ Creates a custom token on the Hathor testnet with mint and melt authorities.
 }
 ```
 
-### Expected Response
+#### Expected Response
 ```json
 {
   "type": 6,
@@ -431,12 +428,51 @@ Creates a custom token on the Hathor testnet with mint and melt authorities.
 }
 ```
 
-### Validation Points
-- [ ] Token created with correct name and symbol
-- [ ] Initial amount matches request (100 tokens)
-- [ ] Mint and melt authority outputs are present
-- [ ] Transaction hash is valid
-- [ ] Response type is 6
+### Request (2) - Invalid mint address
+Try to create a custom token with `create_mint: false` and a mint address, resulting in an invalid request that the wallet cannot complete.
+
+Validate the information the wallet offers to the user.
+```json
+{
+  "method": "htr_createToken",
+  "params": {
+    "network": "testnet",
+    "name": "Test Token",
+    "symbol": "TST",
+    "amount": "100",
+    "create_mint": false,
+    "create_melt": true,
+    "mint_authority_address": "{your-address}",
+    "allow_external_mint_authority_address": false,
+    "allow_external_melt_authority_address": false
+  }
+}
+```
+
+There is no response for this request: the user is forced to reject it.
+
+### Request (3) - Invalid external mint address
+Try to create a custom token with `allow_external_mint_authority_address: false` and an external mint address, resulting in an invalid request that the wallet cannot complete.
+
+Validate the information the wallet offers to the user.
+
+To fetch an external address you may check the Explorer, looking for any transaction there and copying one from its inputs/outputs.
+```json
+{
+  "method": "htr_createToken",
+  "params": {
+    "network": "testnet",
+    "name": "Test Token",
+    "symbol": "TST",
+    "amount": "100",
+    "create_mint": true,
+    "create_melt": true,
+    "mint_authority_address": "{an-external-address}",
+    "allow_external_mint_authority_address": false,
+    "allow_external_melt_authority_address": false
+  }
+}
+```
 
 ---
 
@@ -891,9 +927,20 @@ When not pushing the tx, the response property will be a long string.
 }
 ```
 
-### Validation Points
-- [ ] Withdrawal transaction successful
-- [ ] Output value matches requested amount (1)
+## Bet initialize with a custom token
+The objective of this test is to try and send a custom token using a Nano Contract when the token is unregistered in the wallet, and check the flow to register it after the transaction.
+
+1. Take note of the custom token UIDs created on the main QA tests
+1. Unregister one of them from this wallet
+1. Using the request for `Bet Initialize` above, initialize a Bet Blueprint with this custom token1. Check that the request confirmation screen does not show the token name, just the UID, so no registration is offered
+1. Now try to `Bet Deposit`, depositing 1 unit of the custom token (you can set the `push_tx` parameter to `false` to just experiment without actually sending tokens)
+1. In the action list of the Request confirmation screen, check that the symbol of the custom token appears, with a tooltip to click on
+1. Click the tooltip and check that the full token information is shown, with a "Tap to copy" link.
+1. Confirm the transaction request
+1. Check that a screen is displayed on transaction success asking the user if they want to register the unregistered tokens
+1. Reject the registration and check the token is not registered
+1. Send the custom tokens again using the Nano Contract
+1. Accept the registration and check the custom token is now registered
 
 ---
 
@@ -902,3 +949,9 @@ When not pushing the tx, the response property will be a long string.
 ### Common Issues
 - Mistakes in copy-pasting addresses, hashes and tx-ids are the most common
 - Trying to send transactions with `pushTx` set to `false`
+
+### Testing the other facade
+1. If the tests above were executed in the **Wallet Service**, disable it for the device and try again using the **Full Node** facade
+1. If the tests above were executed in the **Full Node**, enable the **Wallet Service** for the device and try again using it
+
+Note: A simple way to activate and deactivate the Wallet Service for the device is using the **Custom Network Settings** feature, populating or removing the two Wallet Service fields there.
