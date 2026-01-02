@@ -12,7 +12,7 @@ import {
   TouchableWithoutFeedback,
   Text,
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import {
@@ -24,11 +24,23 @@ import NewHathorButton from '../NewHathorButton';
 import { DappContainer } from './NanoContract/DappContainer';
 import { commonStyles } from './theme';
 import { WalletIcon } from '../Icons/Wallet.icon';
-import { renderValue, isTokenNFT } from '../../utils';
 
-export const GetBalanceRequestData = ({ data }) => {
-  const tokenMetadata = useSelector((state) => state.tokenMetadata);
-  const tokens = useSelector((state) => state.tokens);
+export const GetAddressRequestData = ({ data }) => {
+  const isFirstEmpty = data.type === 'first_empty';
+
+  const getDescription = () => {
+    if (isFirstEmpty) {
+      return t`This app is requesting access to your wallet's first empty address`;
+    }
+    return t`This app is requesting access to your wallet address at index ${data.index}`;
+  };
+
+  const getAddressLabel = () => {
+    if (isFirstEmpty) {
+      return t`Address at index ${data.index}`;
+    }
+    return t`Address`;
+  };
 
   return (
     <>
@@ -39,78 +51,43 @@ export const GetBalanceRequestData = ({ data }) => {
             <WalletIcon type='fill' color={COLORS.white} size={24} />
           </View>
           <View style={styles.requestTextWrapper}>
-            <Text style={styles.requestTitle}>{t`Balance Request`}</Text>
+            <Text style={styles.requestTitle}>{t`Address Request`}</Text>
             <Text style={styles.requestDescription}>
-              {t`This app is requesting access to your token balances`}
+              {getDescription()}
             </Text>
           </View>
         </View>
       </View>
 
-      {/* Token list */}
+      {/* Address details */}
       <View style={[commonStyles.card, commonStyles.cardSplit]}>
         <View style={commonStyles.cardSplitIcon}>
           <WalletIcon type='fill' color={COLORS.white} />
         </View>
         <View style={commonStyles.cardSplitContent}>
           <View>
-            <Text style={styles.property}>{t`Tokens to be shared`}</Text>
+            <Text style={styles.property}>{getAddressLabel()}</Text>
+            <Text style={styles.addressValue}>{data.address}</Text>
           </View>
-          {data.map((item, index) => {
-            const isNFT = isTokenNFT(item.token.id, tokenMetadata);
-            const isRegistered = tokens[item.token.id] != null;
-            const displaySymbol = isRegistered ? item.token.symbol : t`Unregistered token`;
-            const displayName = isRegistered ? item.token.name : '';
-
-            return (
-              <View key={item.token.id}>
-                {index > 0 && <View style={commonStyles.cardSeparator} />}
-                <View style={styles.balanceItem}>
-                  <View style={styles.balanceHeader}>
-                    <Text style={styles.tokenSymbol}>{displaySymbol}</Text>
-                    <Text style={styles.tokenName}>{displayName}</Text>
-                  </View>
-                  <View style={styles.balanceDetails}>
-                    <View style={styles.balanceRow}>
-                      <Text style={styles.balanceLabel}>{t`Available:`} </Text>
-                      <Text style={styles.balanceAmount}>
-                        {renderValue(item.balance.unlocked, isNFT)}
-                      </Text>
-                    </View>
-                    {item.balance.locked > 0 && (
-                      <View style={styles.balanceRow}>
-                        <Text style={styles.balanceLabel}>{t`Locked:`} </Text>
-                        <Text style={[styles.balanceAmount, styles.lockedAmount]}>
-                          {renderValue(item.balance.locked, isNFT)}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text style={styles.tokenUid}>{item.token.id}</Text>
-                </View>
-              </View>
-            );
-          })}
         </View>
       </View>
 
       {/* Privacy notice */}
       <View style={styles.privacyNotice}>
         <Text style={styles.privacyText}>
-          {t`The app will only receive your balance information. It cannot access your funds or make transactions.`}
+          {t`The app will receive your address for identification. It cannot access your funds or make transactions without your approval.`}
         </Text>
       </View>
     </>
   );
 };
 
-export const GetBalanceRequest = ({ getBalanceRequest }) => {
-  const { dapp, data } = getBalanceRequest;
+export const GetAddressRequest = ({ getAddressRequest }) => {
+  const { dapp, data } = getAddressRequest;
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
-  const onAcceptGetBalanceRequest = () => {
-    // Signal the user has accepted the current request
+  const onAcceptRequest = () => {
     dispatch(reownAccept());
     navigation.goBack();
   };
@@ -126,12 +103,12 @@ export const GetBalanceRequest = ({ getBalanceRequest }) => {
         <View style={styles.wrapper}>
           <View style={styles.content}>
             <DappContainer dapp={dapp} />
-            <GetBalanceRequestData data={data} />
+            <GetAddressRequestData data={data} />
             {/* User actions */}
             <View style={styles.actionContainer}>
               <NewHathorButton
-                title={t`Share Balance Information`}
-                onPress={onAcceptGetBalanceRequest}
+                title={t`Share Address`}
+                onPress={onAcceptRequest}
               />
               <NewHathorButton
                 title={t`Decline`}
@@ -169,7 +146,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   property: [commonStyles.text, commonStyles.property],
-  value: [commonStyles.text, commonStyles.value],
+  addressValue: {
+    fontSize: 14,
+    color: COLORS.textColor,
+    fontFamily: 'monospace',
+    marginTop: 4,
+  },
   requestCard: {
     padding: 16,
     backgroundColor: COLORS.primaryOpacity10,
@@ -200,51 +182,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textColorShadow,
     lineHeight: 20,
-  },
-  balanceItem: {
-    marginVertical: 12,
-  },
-  balanceHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  tokenSymbol: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginRight: 8,
-    color: COLORS.textColor,
-  },
-  tokenName: {
-    fontSize: 14,
-    color: COLORS.textColorShadow,
-    flex: 1,
-  },
-  balanceDetails: {
-    marginBottom: 4,
-  },
-  balanceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  balanceLabel: {
-    fontSize: 14,
-    color: COLORS.textColorShadow,
-  },
-  balanceAmount: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textColor,
-  },
-  lockedAmount: {
-    color: COLORS.textColorShadow,
-  },
-  tokenUid: {
-    fontSize: 12,
-    color: COLORS.textColorShadow,
-    fontFamily: 'monospace',
   },
   privacyNotice: {
     backgroundColor: COLORS.cardBackground,
