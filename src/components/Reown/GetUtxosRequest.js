@@ -73,11 +73,8 @@ export const GetUtxosRequestData = ({ data }) => {
 
   // Calculate total amount from utxos array as fallback
   const totalAmount = totalAmountAvailable
-    ? Number(totalAmountAvailable)
-    : utxos.reduce((sum, utxo) => sum + (utxo.amount || 0), 0);
-  const totalUtxos = totalUtxosAvailable
-    ? Number(totalUtxosAvailable)
-    : utxos.length;
+    ?? utxos.reduce((sum, utxo) => sum + (utxo.amount || 0), 0);
+  const totalUtxos = totalUtxosAvailable ?? utxos.length;
 
   return (
     <>
@@ -158,7 +155,7 @@ export const GetUtxosRequestData = ({ data }) => {
         <Text style={styles.utxosSummaryTitle}>{t`UTXOs to be shared`}</Text>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>{t`Total quantity:`}</Text>
-          <Text style={styles.summaryValue}>{totalUtxos}</Text>
+          <Text style={styles.summaryValue}>{String(totalUtxos)}</Text>
         </View>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>{t`Total amount:`}</Text>
