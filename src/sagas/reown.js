@@ -112,7 +112,7 @@ import {
   setCreateNanoContractCreateTokenTxStatusSuccess,
   showGetBalanceModal,
   unregisteredTokensStore,
-  setInsufficientFundsError,
+  setReownError,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -520,7 +520,8 @@ export function* processRequest(action) {
     switch (e.constructor) {
       case SendNanoContractTxError: {
         const errorDetails = extractErrorDetails(e);
-        yield put(setNewNanoContractStatusFailure(errorDetails));
+        yield put(setReownError('newNanoContractTransaction', errorDetails));
+        yield put(setNewNanoContractStatusFailure());
 
         const dontRetryErrors = [
           'Invalid blueprint ID',
@@ -535,37 +536,36 @@ export function* processRequest(action) {
           }
         }
 
-        let retry = false;
         if (shouldDisplayRetry) {
-          retry = yield call(
+          // Show retry modal
+          const retry = yield call(
             retryHandler,
             types.REOWN_NEW_NANOCONTRACT_RETRY,
             types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
           );
-        }
 
-        if (retry) {
-          shouldAnswer = false;
-          // Retry the action, exactly as it came:
-          yield* processRequest(action);
+          if (retry) {
+            shouldAnswer = false;
+            // Retry the action, exactly as it came:
+            yield* processRequest(action);
+          }
+        } else {
+          // Error is not retryable, show error modal
+          yield put(setReownModal({
+            show: true,
+            type: ReownModalTypes.REQUEST_ERROR,
+            data: {
+              operationType: 'newNanoContractTransaction',
+              errorMessage: e.message,
+            },
+          }));
         }
       } break;
       case CreateTokenError: {
+        // CreateTokenRequest screen handles its own error display via FeedbackModal
         const errorDetails = extractErrorDetails(e);
-        yield put(setCreateTokenStatusFailed(errorDetails));
-
-        // User might try again, wait for it.
-        const retry = yield call(
-          retryHandler,
-          types.REOWN_CREATE_TOKEN_RETRY,
-          types.REOWN_CREATE_TOKEN_RETRY_DISMISS,
-        );
-
-        if (retry) {
-          shouldAnswer = false;
-          // Retry the action, exactly as it came:
-          yield* processRequest(action);
-        }
+        yield put(setReownError('createToken', errorDetails));
+        yield put(setCreateTokenStatusFailed());
       } break;
       case PrepareSendTransactionError:
         shouldAnswer = false;
@@ -582,29 +582,15 @@ export function* processRequest(action) {
           },
         })); break;
       case SendTransactionError: {
-        // If the transaction is invalid, we don't receive a
-        // SendTransactionConfirmationPrompt, so we need to check if the modal
-        // is visible and just reject it if it's not.
+        // SendTransactionRequest screen handles its own error display via FeedbackModal
         const errorDetails = extractErrorDetails(e);
-        yield put(setSendTxStatusFailure(errorDetails));
-
-        // User might try again, wait for it.
-        const retry = yield call(
-          retryHandler,
-          types.REOWN_SEND_TX_RETRY,
-          types.REOWN_SEND_TX_RETRY_DISMISS,
-        );
-
-        if (retry) {
-          shouldAnswer = false;
-          // Retry the action, exactly as it came:
-          yield* processRequest(action);
-        }
+        yield put(setReownError('sendTransaction', errorDetails));
+        yield put(setSendTxStatusFailure());
       } break;
       case InsufficientFundsError: {
         const errorDetails = extractErrorDetails(e);
-        yield put(setSendTxStatusFailure(errorDetails));
-        yield put(setInsufficientFundsError(errorDetails));
+        yield put(setReownError('sendTransaction', errorDetails));
+        yield put(setSendTxStatusFailure());
         // Show the insufficient funds modal
         yield put(setReownModal({
           show: true,
@@ -624,23 +610,41 @@ export function* processRequest(action) {
         shouldAnswer = false;
       } break;
       case CreateNanoContractCreateTokenTxError: {
+        // CreateNanoContractCreateTokenTxRequest screen handles its own error display
         const errorDetails = extractErrorDetails(e);
-        yield put(setCreateNanoContractCreateTokenTxStatusFailure(errorDetails));
-
-        const retry = yield call(
-          retryHandler,
-          types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY,
-          types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS,
-        );
-
-        if (retry) {
-          shouldAnswer = false;
-          // Retry the action, exactly as it came:
-          yield* processRequest(action);
-        }
+        yield put(setReownError('createNanoContractCreateTokenTx', errorDetails));
+        yield put(setCreateNanoContractCreateTokenTxStatusFailure());
       } break;
-      default:
-        break;
+      default: {
+        // Handle generic errors (e.g., from getBalance, signMessage, etc.)
+        const errorDetails = extractErrorDetails(e);
+        const errorMessage = e.message || 'An error occurred processing the request';
+
+        // Show error modal
+        yield put(setReownModal({
+          show: true,
+          type: ReownModalTypes.REQUEST_ERROR,
+          data: {
+            errorDetails,
+            errorMessage,
+          },
+        }));
+
+        // Reject the RPC request
+        yield call(() => walletKit.respondSessionRequest({
+          topic: payload.topic,
+          response: {
+            id: payload.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.INTERNAL_ERROR,
+              message: errorMessage,
+            },
+          },
+        }));
+
+        shouldAnswer = false;
+      } break;
     }
 
     if (shouldAnswer) {

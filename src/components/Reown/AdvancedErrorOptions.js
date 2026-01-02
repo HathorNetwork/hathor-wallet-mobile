@@ -20,7 +20,7 @@ import { COLORS } from '../../styles/themes';
  * @param {Object} props
  * @param {Object} props.errorDetails - Error details object from Redux
  */
-export const AdvancedErrorOptions = ({ errorDetails }) => {
+export const AdvancedErrorOptions = ({ errorDetails = null }) => {
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [showErrorDetail, setShowErrorDetail] = useState(false);
 
@@ -85,10 +85,6 @@ AdvancedErrorOptions.propTypes = {
     type: PropTypes.string.isRequired,
     timestamp: PropTypes.number.isRequired,
   }),
-};
-
-AdvancedErrorOptions.defaultProps = {
-  errorDetails: null,
 };
 
 export default AdvancedErrorOptions;

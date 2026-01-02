@@ -31,7 +31,7 @@ import { COLORS } from '../../styles/themes';
  * @param {number} props.errorDetails.timestamp - Error timestamp
  * @param {Function} props.onDismiss - Callback when modal is dismissed
  */
-const ErrorDetailModal = ({ visible, errorDetails, onDismiss }) => {
+const ErrorDetailModal = ({ visible, errorDetails = null, onDismiss }) => {
   const [copySuccess, setCopySuccess] = useState(false);
   const timeoutRef = React.useRef(null);
 
@@ -186,10 +186,6 @@ ErrorDetailModal.propTypes = {
     timestamp: PropTypes.number.isRequired,
   }),
   onDismiss: PropTypes.func.isRequired,
-};
-
-ErrorDetailModal.defaultProps = {
-  errorDetails: null,
 };
 
 export default ErrorDetailModal;

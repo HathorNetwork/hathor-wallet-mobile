@@ -454,7 +454,7 @@ msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
 #: src/components/NanoContract/NanoContractDetails.js:249
-#: src/components/Reown/CreateTokenRequest.js:231
+#: src/components/Reown/CreateTokenRequest.js:232
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:599
 #: src/components/Reown/SendTransactionRequest.js:534
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:27
@@ -1591,14 +1591,14 @@ msgid "Create Token Data"
 msgstr "Dados da criaçao de token"
 
 #: src/components/Reown/CreateNanoContractCreateTokenTxRequest.js:70
-#: src/components/Reown/CreateTokenRequest.js:184
+#: src/components/Reown/CreateTokenRequest.js:185
 #: src/components/Reown/SignMessageRequest.js:81
 #: src/components/Reown/SignOracleDataRequest.js:146
 msgid "Accept Request"
 msgstr "Aceitar Solicitação"
 
 #: src/components/Reown/CreateNanoContractCreateTokenTxRequest.js:71
-#: src/components/Reown/CreateTokenRequest.js:188
+#: src/components/Reown/CreateTokenRequest.js:189
 #: src/components/Reown/SignMessageRequest.js:85
 #: src/components/Reown/SignOracleDataRequest.js:150
 msgid "Decline Request"
@@ -1679,27 +1679,27 @@ msgstr "Contrato paga pelo depósito de token?"
 msgid "Token data"
 msgstr "Dados do Token"
 
-#: src/components/Reown/CreateTokenRequest.js:198
+#: src/components/Reown/CreateTokenRequest.js:199
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:501
 #: src/components/Reown/SendTransactionRequest.js:480
 msgid "Sending transaction"
 msgstr "Enviando transação"
 
-#: src/components/Reown/CreateTokenRequest.js:199
+#: src/components/Reown/CreateTokenRequest.js:200
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:502
 #: src/components/Reown/SendTransactionRequest.js:481
 msgid "Please wait."
 msgstr "Por favor, espere."
 
-#: src/components/Reown/CreateTokenRequest.js:218
+#: src/components/Reown/CreateTokenRequest.js:219
 msgid "Create Token Transaction successfully sent."
 msgstr "Transação de Criação de Token enviada com sucesso."
 
-#: src/components/Reown/CreateTokenRequest.js:220
+#: src/components/Reown/CreateTokenRequest.js:221
 msgid "Ok, close"
 msgstr "Ok, fechar"
 
-#: src/components/Reown/CreateTokenRequest.js:227
+#: src/components/Reown/CreateTokenRequest.js:228
 msgid "Error while sending create token transaction."
 msgstr "Erro ao enviar transação de criação de token."
 
@@ -1802,6 +1802,14 @@ msgstr ""
 #: src/components/Reown/RequestConfirmationModal.js:40
 msgid "Review details"
 msgstr "Revisar detalhes"
+
+#: src/components/Reown/RequestErrorModal.js:29
+msgid "An error occurred while processing the request."
+msgstr "Ocorreu um erro ao processar a solicitação."
+
+#: src/components/Reown/RequestErrorModal.js:51
+msgid "Dismiss"
+msgstr "Dispensar"
 
 #: src/components/Reown/SendTransactionModal.js:22
 msgid ""

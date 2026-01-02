@@ -170,8 +170,8 @@ export const BaseNanoContractRequest = ({
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
 
-  // Get error details from Redux
-  const errorDetails = useSelector((state) => state.reown.newNanoContractTransaction.errorDetails);
+  // Get error details from centralized error storage
+  const errorDetails = useSelector((state) => state.reown.errors.newNanoContractTransaction);
 
   // Use token info hook
   const {

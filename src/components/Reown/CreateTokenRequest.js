@@ -117,7 +117,8 @@ export const CreateTokenRequestData = ({ data }) => (
 
 export const CreateTokenRequest = ({ createTokenRequest }) => {
   const { dapp, data } = createTokenRequest;
-  const { status, errorDetails } = useSelector((state) => state.reown.createToken);
+  const { status } = useSelector((state) => state.reown.createToken);
+  const errorDetails = useSelector((state) => state.reown.errors.createToken);
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const [showDeclineModal, setShowDeclineModal] = useState(false);
