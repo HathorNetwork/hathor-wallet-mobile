@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
+import { constants } from '@hathor/wallet-lib';
 import { t } from 'ttag';
 import {
   reownAccept,
@@ -57,7 +58,7 @@ export const GetUtxosRequestData = ({ data }) => {
   const getDisplaySymbol = () => {
     if (isRegistered) return tokenInfo.symbol;
     if (tokenId) return t`Unregistered token`;
-    return 'HTR';
+    return constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
   };
   const displaySymbol = getDisplaySymbol();
 
