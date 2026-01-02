@@ -861,10 +861,16 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           data: accepted,
         });
 
+        // Include the original request type (index, first_empty, etc.) along with address data
+        const addressData = {
+          ...request.data,
+          type: request.params?.type,
+        };
+
         dispatch(showGetAddressModal(
           getAddressResponseTemplate(true),
           getAddressResponseTemplate(false),
-          request.data,
+          addressData,
           requestMetadata,
         ));
       } break;
@@ -891,10 +897,16 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           data: accepted,
         });
 
+        // Include both the UTXO details and the filter parameters from the request
+        const utxosData = {
+          ...request.data,
+          filterParams: request.params,
+        };
+
         dispatch(showGetUtxosModal(
           getUtxosResponseTemplate(true),
           getUtxosResponseTemplate(false),
-          request.data,
+          utxosData,
           requestMetadata,
         ));
       } break;
@@ -1290,11 +1302,34 @@ export function* onGetAddressRequest({ payload }) {
 }
 
 export function* onGetAddressClientRequest({ payload }) {
-  yield* handleDAppRequest(
-    payload,
-    ReownModalTypes.GET_ADDRESS_CLIENT,
-    { passAcceptAction: false },
-  );
+  // This request type has a different flow - it passes callbacks directly to the component
+  // rather than using the standard REOWN_ACCEPT/REOWN_REJECT pattern
+  const { onAddressSelected, deny, dapp } = payload;
+
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet.isReady()) {
+    log.error('Got a session request but wallet is not ready.');
+    deny();
+    return;
+  }
+
+  // Pass the callbacks through the modal data so the screen can call them directly
+  const modalData = {
+    dapp,
+    onAccept: onAddressSelected,
+    onReject: deny,
+  };
+
+  yield put(setReownModal({
+    show: true,
+    type: ReownModalTypes.GET_ADDRESS_CLIENT,
+    data: modalData,
+  }));
+
+  // Note: Unlike other requests, we don't wait for REOWN_ACCEPT/REOWN_REJECT here
+  // because the GetAddressClientRequest component calls the callbacks directly
+  // and the promise is resolved inside the callback
 }
 
 export function* onGetUtxosRequest({ payload }) {

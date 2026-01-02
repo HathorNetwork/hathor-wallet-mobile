@@ -12,7 +12,6 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Text,
-  FlatList,
   TouchableHighlight,
   Image,
 } from 'react-native';
@@ -142,18 +141,20 @@ export const GetAddressClientRequest = ({ getAddressClientRequest }) => {
               {hasLoaded() && (
                 <>
                   <Text style={styles.addressListTitle}>{t`Select an address to share`}</Text>
-                  <FlatList
-                    data={addresses}
-                    renderItem={({ item }) => (
+                  <ScrollView
+                    style={styles.addressListContainer}
+                    nestedScrollEnabled
+                    showsVerticalScrollIndicator
+                  >
+                    {addresses.map((item) => (
                       <AddressItem
+                        key={item.address}
                         item={item}
                         isSelected={selectedItem?.address === item.address}
                         onSelectItem={onSelectItem}
                       />
-                    )}
-                    keyExtractor={(item) => item.address}
-                    scrollEnabled={false}
-                  />
+                    ))}
+                  </ScrollView>
                 </>
               )}
             </View>
@@ -249,6 +250,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.textColor,
     marginBottom: 12,
+  },
+  addressListContainer: {
+    maxHeight: 280,
   },
   addressItemWrapper: {
     paddingVertical: 16,

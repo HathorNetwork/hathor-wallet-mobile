@@ -25,49 +25,62 @@ import { DappContainer } from './NanoContract/DappContainer';
 import { commonStyles } from './theme';
 import { WalletIcon } from '../Icons/Wallet.icon';
 
-export const GetAddressRequestData = ({ data }) => (
-  <>
-    {/* Main request information */}
-    <View style={[commonStyles.card, styles.requestCard]}>
-      <View style={styles.requestHeader}>
-        <View style={styles.requestIconWrapper}>
-          <WalletIcon type='fill' color={COLORS.white} size={24} />
-        </View>
-        <View style={styles.requestTextWrapper}>
-          <Text style={styles.requestTitle}>{t`Address Request`}</Text>
-          <Text style={styles.requestDescription}>
-            {t`This app is requesting access to your wallet address at index ${data.index}`}
-          </Text>
-        </View>
-      </View>
-    </View>
+export const GetAddressRequestData = ({ data }) => {
+  const isFirstEmpty = data.type === 'first_empty';
 
-    {/* Address details */}
-    <View style={[commonStyles.card, commonStyles.cardSplit]}>
-      <View style={commonStyles.cardSplitIcon}>
-        <WalletIcon type='fill' color={COLORS.white} />
-      </View>
-      <View style={commonStyles.cardSplitContent}>
-        <View>
-          <Text style={styles.property}>{t`Address Index`}</Text>
-          <Text style={styles.value}>{data.index}</Text>
-        </View>
-        <View style={commonStyles.cardSeparator} />
-        <View>
-          <Text style={styles.property}>{t`Address`}</Text>
-          <Text style={styles.addressValue}>{data.address}</Text>
-        </View>
-      </View>
-    </View>
+  const getDescription = () => {
+    if (isFirstEmpty) {
+      return t`This app is requesting access to your wallet's first empty address`;
+    }
+    return t`This app is requesting access to your wallet address at index ${data.index}`;
+  };
 
-    {/* Privacy notice */}
-    <View style={styles.privacyNotice}>
-      <Text style={styles.privacyText}>
-        {t`The app will receive your address for identification. It cannot access your funds or make transactions without your approval.`}
-      </Text>
-    </View>
-  </>
-);
+  const getAddressLabel = () => {
+    if (isFirstEmpty) {
+      return t`Address at index ${data.index}`;
+    }
+    return t`Address`;
+  };
+
+  return (
+    <>
+      {/* Main request information */}
+      <View style={[commonStyles.card, styles.requestCard]}>
+        <View style={styles.requestHeader}>
+          <View style={styles.requestIconWrapper}>
+            <WalletIcon type='fill' color={COLORS.white} size={24} />
+          </View>
+          <View style={styles.requestTextWrapper}>
+            <Text style={styles.requestTitle}>{t`Address Request`}</Text>
+            <Text style={styles.requestDescription}>
+              {getDescription()}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Address details */}
+      <View style={[commonStyles.card, commonStyles.cardSplit]}>
+        <View style={commonStyles.cardSplitIcon}>
+          <WalletIcon type='fill' color={COLORS.white} />
+        </View>
+        <View style={commonStyles.cardSplitContent}>
+          <View>
+            <Text style={styles.property}>{getAddressLabel()}</Text>
+            <Text style={styles.addressValue}>{data.address}</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Privacy notice */}
+      <View style={styles.privacyNotice}>
+        <Text style={styles.privacyText}>
+          {t`The app will receive your address for identification. It cannot access your funds or make transactions without your approval.`}
+        </Text>
+      </View>
+    </>
+  );
+};
 
 export const GetAddressRequest = ({ getAddressRequest }) => {
   const { dapp, data } = getAddressRequest;
@@ -133,7 +146,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   property: [commonStyles.text, commonStyles.property],
-  value: [commonStyles.text, commonStyles.value],
   addressValue: {
     fontSize: 14,
     color: COLORS.textColor,

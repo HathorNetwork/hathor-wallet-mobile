@@ -72,14 +72,14 @@ export const GetBalanceRequestData = ({ data }) => {
                   </View>
                   <View style={styles.balanceDetails}>
                     <View style={styles.balanceRow}>
-                      <Text style={styles.balanceLabel}>{t`Available:`}</Text>
+                      <Text style={styles.balanceLabel}>{t`Available:`} </Text>
                       <Text style={styles.balanceAmount}>
                         {renderValue(item.balance.unlocked, isNFT)}
                       </Text>
                     </View>
                     {item.balance.locked > 0 && (
                       <View style={styles.balanceRow}>
-                        <Text style={styles.balanceLabel}>{t`Locked:`}</Text>
+                        <Text style={styles.balanceLabel}>{t`Locked:`} </Text>
                         <Text style={[styles.balanceAmount, styles.lockedAmount]}>
                           {renderValue(item.balance.locked, isNFT)}
                         </Text>
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     color: COLORS.textColorShadow,
   },
   balanceAmount: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: COLORS.textColor,
   },

@@ -30,13 +30,48 @@ export const GetUtxosRequestData = ({ data }) => {
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
   const tokens = useSelector((state) => state.tokens);
 
-  // data contains: token, filter (optional), utxos (the actual UTXOs to share)
-  const { token, utxos = [], filter } = data;
+  // data contains utxoDetails from wallet.getUtxos() plus filterParams from request
+  const {
+    utxos = [],
+    total_amount_available = 0n,
+    total_utxos_available = 0,
+    filterParams = {},
+  } = data;
 
-  const isNFT = token ? isTokenNFT(token.id, tokenMetadata) : false;
-  const isRegistered = token && tokens[token.id] != null;
-  const displaySymbol = isRegistered ? token.symbol : t`Unregistered token`;
-  const displayName = isRegistered ? token.name : '';
+  // Normalize filter params - handle both camelCase and snake_case
+  const params = {
+    token: filterParams.token,
+    maxUtxos: filterParams.maxUtxos ?? filterParams.max_utxos,
+    filterAddress: filterParams.filterAddress ?? filterParams.filter_address,
+    amountSmallerThan: filterParams.amountSmallerThan ?? filterParams.amount_smaller_than,
+    amountBiggerThan: filterParams.amountBiggerThan ?? filterParams.amount_bigger_than,
+    maximumAmount: filterParams.maximumAmount ?? filterParams.max_amount,
+    onlyAvailableUtxos: filterParams.onlyAvailableUtxos ?? filterParams.only_available_utxos,
+  };
+
+  // Get token info from filterParams
+  const tokenId = params.token;
+  const tokenInfo = tokenId ? tokens[tokenId] : null;
+  const isNFT = tokenId ? isTokenNFT(tokenId, tokenMetadata) : false;
+  const isRegistered = tokenInfo != null;
+  const displaySymbol = isRegistered ? tokenInfo.symbol : (tokenId ? t`Unregistered token` : 'HTR');
+
+  // Check if any filter parameters are set
+  const hasFilterParams = params.token
+    || params.maxUtxos
+    || params.filterAddress
+    || params.amountSmallerThan != null
+    || params.amountBiggerThan != null
+    || params.maximumAmount != null
+    || params.onlyAvailableUtxos != null;
+
+  // Calculate total amount from utxos array as fallback
+  const totalAmount = total_amount_available
+    ? Number(total_amount_available)
+    : utxos.reduce((sum, utxo) => sum + (utxo.amount || 0), 0);
+  const totalUtxos = total_utxos_available
+    ? Number(total_utxos_available)
+    : utxos.length;
 
   return (
     <>
@@ -55,54 +90,57 @@ export const GetUtxosRequestData = ({ data }) => {
         </View>
       </View>
 
-      {/* Token information */}
-      {token && (
-        <View style={[commonStyles.card, commonStyles.cardSplit]}>
-          <View style={commonStyles.cardSplitIcon}>
-            <WalletIcon type='fill' color={COLORS.white} />
-          </View>
-          <View style={commonStyles.cardSplitContent}>
-            <View>
-              <Text style={styles.property}>{t`Token`}</Text>
-              <View style={styles.tokenHeader}>
-                <Text style={styles.tokenSymbol}>{displaySymbol}</Text>
-                <Text style={styles.tokenName}>{displayName}</Text>
-              </View>
-              <Text style={styles.tokenUid}>{token.id}</Text>
-            </View>
-          </View>
-        </View>
-      )}
-
-      {/* Filter information */}
-      {filter && (
+      {/* Filter parameters */}
+      {hasFilterParams && (
         <View style={[commonStyles.card, styles.filterCard]}>
-          <Text style={styles.filterTitle}>{t`Filter Parameters`}</Text>
-          {filter.max_utxos && (
+          <Text style={styles.filterTitle}>{t`Request Parameters`}</Text>
+          {params.token && (
+            <View style={styles.filterRow}>
+              <Text style={styles.filterLabel}>{t`Token:`}</Text>
+              <Text style={styles.filterValue}>{displaySymbol}</Text>
+            </View>
+          )}
+          {params.maxUtxos && (
             <View style={styles.filterRow}>
               <Text style={styles.filterLabel}>{t`Max UTXOs:`}</Text>
-              <Text style={styles.filterValue}>{filter.max_utxos}</Text>
+              <Text style={styles.filterValue}>{params.maxUtxos}</Text>
             </View>
           )}
-          {filter.filter_address && (
+          {params.filterAddress && (
             <View style={styles.filterRow}>
               <Text style={styles.filterLabel}>{t`Filter Address:`}</Text>
-              <Text style={styles.filterValueAddress}>{filter.filter_address}</Text>
+              <Text style={styles.filterValueAddress}>{params.filterAddress}</Text>
             </View>
           )}
-          {filter.amount_smaller_than != null && (
+          {params.amountSmallerThan != null && (
             <View style={styles.filterRow}>
               <Text style={styles.filterLabel}>{t`Amount smaller than:`}</Text>
               <Text style={styles.filterValue}>
-                {renderValue(filter.amount_smaller_than, isNFT)}
+                {renderValue(params.amountSmallerThan, isNFT)}
               </Text>
             </View>
           )}
-          {filter.amount_bigger_than != null && (
+          {params.amountBiggerThan != null && (
             <View style={styles.filterRow}>
               <Text style={styles.filterLabel}>{t`Amount bigger than:`}</Text>
               <Text style={styles.filterValue}>
-                {renderValue(filter.amount_bigger_than, isNFT)}
+                {renderValue(params.amountBiggerThan, isNFT)}
+              </Text>
+            </View>
+          )}
+          {params.maximumAmount != null && (
+            <View style={styles.filterRow}>
+              <Text style={styles.filterLabel}>{t`Maximum amount:`}</Text>
+              <Text style={styles.filterValue}>
+                {renderValue(params.maximumAmount, isNFT)}
+              </Text>
+            </View>
+          )}
+          {params.onlyAvailableUtxos != null && (
+            <View style={styles.filterRow}>
+              <Text style={styles.filterLabel}>{t`Only available UTXOs:`}</Text>
+              <Text style={styles.filterValue}>
+                {params.onlyAvailableUtxos ? t`Yes` : t`No`}
               </Text>
             </View>
           )}
@@ -112,9 +150,16 @@ export const GetUtxosRequestData = ({ data }) => {
       {/* UTXOs summary */}
       <View style={[commonStyles.card, styles.utxosSummaryCard]}>
         <Text style={styles.utxosSummaryTitle}>{t`UTXOs to be shared`}</Text>
-        <Text style={styles.utxosSummaryCount}>
-          {t`${utxos.length} UTXO(s) found`}
-        </Text>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>{t`Total quantity:`}</Text>
+          <Text style={styles.summaryValue}>{totalUtxos}</Text>
+        </View>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>{t`Total amount:`}</Text>
+          <Text style={styles.summaryValue}>
+            {renderValue(totalAmount, isNFT)} {displaySymbol}
+          </Text>
+        </View>
       </View>
 
       {/* Privacy notice */}
@@ -190,8 +235,6 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
     marginTop: 8,
   },
-  property: [commonStyles.text, commonStyles.property],
-  value: [commonStyles.text, commonStyles.value],
   requestCard: {
     padding: 16,
     backgroundColor: COLORS.primaryOpacity10,
@@ -222,28 +265,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textColorShadow,
     lineHeight: 20,
-  },
-  tokenHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  tokenSymbol: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginRight: 8,
-    color: COLORS.textColor,
-  },
-  tokenName: {
-    fontSize: 14,
-    color: COLORS.textColorShadow,
-    flex: 1,
-  },
-  tokenUid: {
-    fontSize: 12,
-    color: COLORS.textColorShadow,
-    fontFamily: 'monospace',
-    marginTop: 4,
   },
   filterCard: {
     padding: 16,
@@ -280,16 +301,26 @@ const styles = StyleSheet.create({
   },
   utxosSummaryCard: {
     padding: 16,
-    alignItems: 'center',
   },
   utxosSummaryTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.textColor,
+    marginBottom: 12,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  summaryLabel: {
     fontSize: 14,
     color: COLORS.textColorShadow,
-    marginBottom: 4,
   },
-  utxosSummaryCount: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  summaryValue: {
+    fontSize: 14,
+    fontWeight: '600',
     color: COLORS.textColor,
   },
   privacyNotice: {
