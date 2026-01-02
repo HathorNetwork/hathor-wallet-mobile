@@ -124,60 +124,6 @@
 
 ## Reown tests
 
-### Connect to a dApp using ReOwn
-1. Open the Hathor Network [Bet dApp hotsite](https://staging.betting.hathor.network/) or other source of RPC requests
-1. Start the process to connect your wallet using the WalletConnect/ReOwn option
-1. Reject the connection and check the hotsite just closes the QR Code modal
-1. Start again but this time connect your wallet
-1. Check the Bet dApp is now connected to your wallet through the "Hathor Bet" ReOwn session on the Wallet
-
-### Initialize a Bet nano contract
-1. On the Bet dApp hotsite, create a simple Bet nano contract with:
-  - Random results
-  - Two different possible outcomes
-1. A screen should be opened on the wallet to confirm the creation of the Bet nano contract
-1. Check that the screen has all the information about the nano contract
-   - Blueprint Id
-   - Contract name
-   - Method "initialize"
-   - Caller address ( actionable )
-   - Argument "oracle_script"
-   - Argument "token_uid" as HTR
-   - Date last bet in a human readable date and time
-1. Click "Decline Transaction" and then "No, Go Back"
-1. Check that the user is still on the reviewing screen
-1. Click "Decline Transaction" and then confirm. Check the wallet navigates to the Dashboard
-1. The hotsite displays an error during confirmation message
-1. Try again and this time confirm the contract creation
-1. The hotsite should display a message about waiting for block confirmation
-1. After a while, the hotsite should display the success message and a CTA to create a bet
-
-### Create a Bet
-1. On the Bet dApp hotsite, create a simple Bet with 1 HTR and one of the options
-1. The wallet should open a screen about a nano contract not found
-1. The options for the user are "Register Nano Contract" and "Decline Transaction"
-1. Click on "Decline Transaction" and then "No, Go Back"
-1. Check that the user is still on the "Nano Contract Not Found" screen
-1. Register the nano contract
-1. Check the user is navigated to a validation screen containing the Nano Contract data and the betting information
-1. Accept the transaction and see that the hotsite updates with the total amount bet on each option
-1. Using another device, bet on the other option
-
-### Set the bet result
-1. On the HotSite click on "Set Result" and follow the instructions there
-1. The wallet should open a screen asking to confirm the *Sign Oracle Request*, with:
-  1. the oracle data unencrypted ( ex.: "Brazil Wins" )
-  1. an option to show encrypted data ( ex.: "76a914db6fe378a8af070b332104c66c0a83dcb2d03e8b88ac" )
-1. Accept the *Sign Oracle Request*
-1. A new screen is shown requesting to confirm the transaction _Set Result Request*.
-  1. This contains the blueprint method, caller address, value and raw signature
-1. Accept request and validate that the transaction is successful
-
-### Withdraw the prize
-1. On the HotSite of the winning wallet session, click on "Collect your prize"
-1. Confirm the wallet shows a transaction confirmation screen with the correct amount
-1. Accept the transaction and check the wallet has received the correct amount
-
 ### Register tokens on Nano Contract send
 The objective of this test is to try and send a custom token using a Nano Contract when the token is unregistered in the wallet, and check the flow to register it after the transaction. The suggested steps below are just one of the ways to test this.
 
