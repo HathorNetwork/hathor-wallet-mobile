@@ -634,10 +634,10 @@ export function* processRequest(action) {
         yield put(setReownError('createNanoContractCreateTokenTx', errorDetails));
         yield put(setCreateNanoContractCreateTokenTxStatusFailure());
       } break;
-      case PromptRejectedError: {
+      case PromptRejectedError:
         // User intentionally rejected a prompt, don't show error modal
         // The RPC request will still be rejected below via shouldAnswer
-      } break;
+        break;
       default: {
         // Handle generic errors (e.g., from getBalance, signMessage, etc.)
         const errorDetails = extractErrorDetails(e);

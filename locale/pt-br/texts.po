@@ -1721,7 +1721,7 @@ msgstr "Data e Hora:"
 
 #: src/components/Reown/ErrorDetailModal.js:98
 msgid "Stack Trace:"
-msgstr "Rastreamento de Pilha:"
+msgstr "Stack Trace:"
 
 #: src/components/Reown/ErrorDetailModal.js:108
 msgid "Copied!"
@@ -1729,7 +1729,7 @@ msgstr "Copiado!"
 
 #: src/components/Reown/ErrorDetailModal.js:108
 msgid "Copy to Clipboard"
-msgstr "Copiar para Área de Transferência"
+msgstr "Copiar para o Clipboard"
 
 #: src/components/Reown/GetBalanceModal.js:19
 msgid "New Get Balance Request"
