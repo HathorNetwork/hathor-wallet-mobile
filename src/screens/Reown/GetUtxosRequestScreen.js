@@ -6,40 +6,22 @@
  */
 
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-} from 'react-native';
 import { t } from 'ttag';
 import HathorHeader from '../../components/HathorHeader';
 import OfflineBar from '../../components/OfflineBar';
 import { GetUtxosRequest } from '../../components/Reown/GetUtxosRequest';
-import { COLORS } from '../../styles/themes';
+import { RequestWrapper } from '../../components/Reown/theme';
 
 export function GetUtxosRequestScreen({ route }) {
   const { getUtxosRequest } = route.params;
 
   return (
-    <Wrapper>
+    <RequestWrapper>
       <HathorHeader
         title={t`UTXOs Request`.toUpperCase()}
       />
       <GetUtxosRequest getUtxosRequest={getUtxosRequest} />
       <OfflineBar />
-    </Wrapper>
+    </RequestWrapper>
   );
 }
-
-const Wrapper = ({ children }) => (
-  <View style={styles.wrapper}>
-    {children}
-  </View>
-);
-
-const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: COLORS.lowContrastDetail,
-  },
-});
