@@ -1724,6 +1724,8 @@ msgid ""
 "An app is requesting you to share an address from your wallet. Please select "
 "an address to share."
 msgstr ""
+"Um app está solicitando o compartilhamento de um endereço da sua wallet. "
+"Por favor escolha um endereço para compartilhar"
 
 #: src/components/NanoContract/SelectAddressModal.js:182
 #: src/components/Reown/GetAddressClientRequest.js:55
@@ -1747,7 +1749,7 @@ msgstr "Carregando endereços da wallet."
 
 #: src/components/Reown/GetAddressClientRequest.js:143
 msgid "Select an address to share"
-msgstr ""
+msgstr "Escolha um endereço para compartilhar"
 
 #: src/components/Reown/GetAddressClientRequest.js:165
 msgid ""
@@ -2008,7 +2010,7 @@ msgstr "Sucesso!"
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:559
 #: src/components/Reown/SendTransactionRequest.js:513
 msgid "This transaction will only be built, not pushed to the network."
-msgstr ""
+msgstr "Essa transação será apenas construída, não enviada para a rede."
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:148
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:52
