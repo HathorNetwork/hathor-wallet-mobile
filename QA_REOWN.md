@@ -1,0 +1,815 @@
+# QA Reown
+ 
+**Testing Environment:** https://staging.betting.hathor.network/rpc
+
+---
+
+## 📝 Test Flow Overview
+
+This document outlines the testing flow for the Mobile Wallet using an RPC interface. Each section contains the request payload, instructions on how to obtain the necessary data and expected response structure.
+
+---
+
+# Basic Wallet Interaction
+
+## Get Wallet Information
+Just execute this request and have the Wallet app opened to automatically retrieve this data. No approval is necessary by the user.
+
+### Request
+```json
+{
+  "method": "htr_getWalletInformation",
+  "params": {
+    "network": "testnet"
+  }
+}
+```
+
+### Response
+```json
+{
+  "type": 12,
+  "response": {
+    "network": "testnet",
+    "address0": "{base58 address}"
+  }
+}
+```
+
+## Get Connected Network
+Just execute this request and have the Wallet app opened to automatically retrieve this data. No approval is necessary by the user.
+
+### Request
+```json
+{
+  "method": "htr_getConnectedNetwork",
+  "params": {
+    "network": "testnet"
+  }
+}
+```
+
+### Response
+```json
+{
+  "type": 4,
+  "response": {
+    "network": "testnet",
+    "genesisHash": ""
+  }
+}
+```
+
+## Get Addresses
+
+### Request (1) - First empty
+```json
+{
+  "method": "htr_getAddress",
+  "params": {
+    "network": "testnet",
+    "type": "first_empty"
+  }
+}
+```
+
+#### Response
+```json
+{
+  "type": 2,
+  "response": {
+    "address": "{base58 address}",
+    "index": 1234,
+    "addressPath": "m/44'/280'/0'/0/1234"
+  }
+}
+```
+
+### Request (2) - By index
+```json
+{
+  "method": "htr_getAddress",
+  "params": {
+    "network": "testnet",
+    "type": "index",
+    "index": 3
+  }
+}
+```
+
+#### Response
+```json
+{
+  "type": 2,
+  "response": {
+    "address": "{base58 address}",
+    "index": 1234,
+    "addressPath": "m/44'/280'/0'/0/1234"
+  }
+}
+```
+
+### Request (3) - By client
+```json
+{
+  "method": "htr_getAddress",
+  "params": {
+    "network": "testnet",
+    "type": "client"
+  }
+}
+```
+
+#### Response
+```json
+{
+  "type": 2,
+  "response": {
+    "address": "{base58 address}",
+    "index": 1234,
+    "addressPath": "m/44'/280'/0'/0/1234"
+  }
+}
+```
+
+## Get UTXOs
+
+### Request
+```json
+{
+  "method": "htr_getUtxos",
+  "params": {
+    "network": "testnet",
+    "token": "00",
+    "maxUtxos": 2,
+    "amountSmallerThan": 1000,
+    "amountBiggerThan": 10
+  }
+}
+```
+
+### Response
+```json
+{
+  "type": 5,
+  "response": {
+    "total_amount_available": "123456",
+    "total_utxos_available": "12",
+    "total_amount_locked": "34",
+    "total_utxos_locked": "56",
+    "utxos": [
+      {
+        "address": "{base58 address}",
+        "amount": "123",
+        "tx_id": "{64-char hexadecimal}",
+        "locked": false,
+        "index": 0
+      },
+      {
+        "address": "{base58 address}",
+        "amount": "456",
+        "tx_id": "{64-char tx hash}",
+        "locked": true,
+        "index": 1
+      }
+    ]
+  }
+}
+```
+
+## Send Transaction
+Sends a simple transaction
+
+### Request (1) - Building and not pushing
+```json
+{
+  "method": "htr_sendTransaction",
+  "params": {
+    "network": "testnet",
+    "push_tx": false,
+    "outputs": [
+      {
+        "address": "{one of your addresses, fetched above}",
+        "value": "1"
+      }
+    ]
+  }
+}
+```
+
+#### Response
+```json
+{
+  "type": 8,
+  "response": "{ a long hexadecimal }"
+}
+```
+
+### Request (2) - Pushing the TX
+```json
+{
+  "method": "htr_sendTransaction",
+  "params": {
+    "network": "testnet",
+    "push_tx": true,
+    "outputs": [
+      {
+        "address": "{one of your addresses, fetched above}",
+        "value": "1"
+      }
+    ]
+  }
+}
+```
+
+#### Response
+```json
+{
+  "type": 8,
+  "response": {
+    "pending": "the full response object"
+  }
+}
+```
+
+
+## Sign with Address
+Tests the message signing functionality using a wallet address by index.
+
+### Request
+```json
+{
+  "method": "htr_signWithAddress",
+  "params": {
+    "network": "testnet",
+    "message": "Hello, Hathor!",
+    "addressIndex": 0
+  }
+}
+```
+
+### Expected Response
+```json
+{
+  "type": 1,
+  "response": {
+    "message": "Hello, Hathor!",
+    "signature": "{ a long string }",
+    "address": {
+      "address": "{ your address at the selected index }",
+      "index": 0,
+      "addressPath": "m/44'/280'/0'/0/0"
+    }
+  }
+}
+```
+
+### Validation Points
+- [ ] Signature is valid and base64-encoded
+- [ ] Address matches the expected derivation path
+- [ ] Response type is 1
+
+---
+
+## Create Token
+Creates a custom token on the Hathor testnet with mint and melt authorities.
+
+### Request
+```json
+{
+  "method": "htr_createToken",
+  "params": {
+    "network": "testnet",
+    "name": "Test Token",
+    "symbol": "TST",
+    "amount": "100",
+    "create_mint": true,
+    "create_melt": true,
+    "allow_external_mint_authority_address": false,
+    "allow_external_melt_authority_address": false
+  }
+}
+```
+
+### Expected Response
+```json
+{
+  "type": 6,
+  "response": {
+    "inputs": [
+      {
+        "hash": "{64-char tx hash}",
+        "index": 0,
+        "data": {
+          "type": "Buffer",
+          "data": [1 , 2, 3, ...]
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "value": "100",
+        "tokenData": 1,
+        "script": {
+          "type": "Buffer",
+          "data": [4, 5, 6, ...]
+        }
+      },
+      {
+        "value": "1",
+        "tokenData": 129,
+        "script": {
+          "type": "Buffer",
+          "data": [7, 8, 9, ...]
+        }
+      },
+      {
+        "value": "2",
+        "tokenData": 129,
+        "script": {
+          "type": "Buffer",
+          "data": [10, 11, 12, ...]
+        }
+      }
+    ],
+    "hash": "{64-char tx hash}",
+    "name": "Test Token",
+    "symbol": "TST"
+  }
+}
+```
+
+### Validation Points
+- [ ] Token created with correct name and symbol
+- [ ] Initial amount matches request (100 tokens)
+- [ ] Mint and melt authority outputs are present
+- [ ] Transaction hash is valid
+- [ ] Response type is 6
+
+---
+
+# Betting NanoContract
+The following sections will create a full interaction with the Bet Blueprint:
+- Initializing the bet NC
+- Making a first bet
+- Signing the Oracle data
+- Setting the result with the oracle data
+- Withdrawing the prize from the winning bet
+
+It is advisable to *only use the address at index 0 for all operations*, as some of the RPC requests are hardcoded to use this address index only.
+
+## Bet Initialize
+
+### Pre-requisite
+The user needs to calculate the oracle buffer. This can be done through the following javascript call to the Wallet Lib:
+```js
+import { nanoUtils, Network } from '@hathor/wallet-lib';
+
+/**
+ * Converts an oracle address to a buffer hex string
+ * Used in Initialize Bet RPC to convert oracle address parameter
+ */
+function getOracleBuffer(address: string): string {
+  const network = new Network('testnet');
+  return nanoUtils.getOracleBuffer(address, network).toString('hex');
+}
+
+const myFirstAddress = '{your-address-0}'
+console.log(`Oracle buffer: ${getOracleBuffer(myFirstAddress)}`);
+```
+
+### Request
+```json
+{
+  "method": "htr_sendNanoContractTx",
+  "params": {
+    "network": "testnet",
+    "method": "initialize",
+    "blueprint_id": "{64-char tx hash for the Bet Blueprint}",
+    "actions": [],
+    "args": [
+      "{oracle-buffer for the oracle address}",
+      "00",
+      "{timestamp for last bet, in unix format}"
+    ],
+    "push_tx": true,
+    "nc_id": null
+  }
+}
+```
+
+### Expected Response
+```json
+{
+  "type": 0,
+  "response": {
+    "hash": "{64-char tx hash}",
+    "headers": [
+      {
+        "id": "{64-char tx hash for the Bet Blueprint}",
+        "method": "initialize",
+        "args": {
+          "type": "Buffer",
+          "data": [1, 2, 3, ...]
+        }
+      }
+    ]
+  }
+}
+```
+
+### Validation Points
+- [ ] Nano contract initialized successfully
+- [ ] Blueprint ID matches the request
+- [ ] Method is "initialize"
+- [ ] Response type is 0
+- [ ] **Save the `hash` value - this becomes the `nc_id` for subsequent operations**
+
+## Bet Deposit
+Once the nano contract is initialized, place a single bet in it.
+Here we will bet in the `Result_1` value, and the next requests will set this as the winner.
+
+### Request
+```json
+{
+  "method": "htr_sendNanoContractTx",
+  "params": {
+    "network": "testnet",
+    "method": "bet",
+    "nc_id": "{ nano contract id generated above }",
+    "actions": [
+      {
+        "type": "deposit",
+        "token": "00",
+        "amount": "1",
+        "changeAddress": "{ your address 0 }"
+      }
+    ],
+    "args": [
+      "{ your address 0 }",
+      "Result_1"
+    ],
+    "push_tx": true
+  }
+}
+```
+
+### Response
+```json
+{
+  "type": 0,
+  "response": {
+    "inputs": [
+      {
+        "hash": "{64-char tx hash}",
+        "index": 1,
+        "data": {
+          "type": "Buffer",
+          "data": [1, 2, 3, ...]
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "value": "5",
+        "tokenData": 0,
+        "script": {
+          "type": "Buffer",
+          "data": [4, 5, 6, ...]
+        },
+        "decodedScript": null
+      }
+    ],
+    "signalBits": 0,
+    "version": 1,
+    "weight": 18.1846978319466,
+    "nonce": 2164846482,
+    "timestamp": 1234,
+    "parents": [
+      "{64-char tx hash}",
+      "{64-char tx hash}"
+    ],
+    "tokens": [],
+    "hash": "{64-char tx hash}",
+    "headers": [
+      {
+        "id": "{ nano contract id generated above }",
+        "method": "bet",
+        "args": {
+          "type": "Buffer",
+          "data": [7, 8, 9, ...]
+        },
+        "actions": [
+          {
+            "type": 1,
+            "amount": "1",
+            "tokenIndex": 0
+          }
+        ],
+        "address": {
+          "base58": "{ your address 0 }",
+          "network": {
+            "name": "testnet",
+            "versionBytes": {
+              "p2pkh": 123,
+              "p2sh": 456,
+              "xpriv": 789,
+              "xpub": 101112
+            },
+            "bitcoreNetwork": {
+              "name": "htr-testnet",
+              "alias": "test",
+              "pubkeyhash": 987,
+              "privatekey": 654,
+              "scripthash": 321,
+              "bech32prefix": "tn",
+              "xpubkey": 121110,
+              "xprivkey": 151413,
+              "networkMagic": {
+                "type": "Buffer",
+                "data": [1, 2, 3, ...]
+              },
+              "port": 9876,
+              "dnsSeeds": []
+            }
+          }
+        },
+        "seqnum": 181716,
+        "script": {
+          "type": "Buffer",
+          "data": [4, 5, 6, ...]
+        }
+      }
+    ],
+    "_dataToSignCache": {
+      "type": "Buffer",
+      "data": [7, 8, 9, ...]
+    }
+  }
+}
+```
+
+## Set Bet Result
+Sets the bet result to `Result_1`, so that the bet above is the winner.
+
+### Request 1 - Sign Oracle Data
+It is necessary to first sign the oracle data for it to be applied to the bet nano contract. Only then we can set the bet result in the next request.
+
+```json
+{
+  "method": "htr_signOracleData",
+  "params": {
+    "network": "testnet",
+    "nc_id": "{ nano contract id generated above }",
+    "data": "Result_1",
+    "oracle": "{your-address-0}"
+  }
+}
+```
+
+#### Response for oracle data
+```json
+{
+  "type": 7,
+  "response": {
+    "data": "1x0",
+    "signedData": {
+      "type": "str",
+      "signature": "{ a long hexadecimal string }",
+      "value": "Result_1"
+    },
+    "oracle": "{your-address-0}"
+  }
+}
+```
+
+### Request 2 - Set Bet Result
+
+```json
+{  
+  "method": "htr_sendNanoContractTx",  
+  "params": {  
+    "network": "testnet",  
+    "method": "set_result",  
+    "nc_id": "{ nano contract id generated above }",  
+    "actions": [],  
+    "args": [  
+      {  
+        "type": "str",  
+        "signature": "{ the hexadecimal string generated above }",  
+        "value": "Result_1"  
+      }
+    ],  
+    "push_tx": true  
+  }  
+}
+```
+
+#### Response for set result
+```json
+{
+  "type": 0,
+  "response": {
+    "inputs": [],
+    "outputs": [],
+    "signalBits": 0,
+    "version": 1,
+    "weight": 17.693874101233863,
+    "nonce": 148513,
+    "timestamp": 1234,
+    "parents": [
+      "{64-char tx hash}",
+      "{64-char tx hash}"
+    ],
+    "tokens": [],
+    "hash": "{64-char tx hash}",
+    "headers": [
+      {
+        "id": "{ nano contract id generated above }",
+        "method": "set_result",
+        "args": {
+          "type": "Buffer",
+          "data": [1, 2, 3, ...]
+        },
+        "actions": [],
+        "address": {
+          "base58": "{your-address-0}",
+          "network": {
+            "name": "testnet",
+            "versionBytes": {
+              "p2pkh": 1,
+              "p2sh": 2,
+              "xpriv": 3,
+              "xpub": 4
+            },
+            "bitcoreNetwork": {
+              "name": "htr-testnet",
+              "alias": "test",
+              "pubkeyhash": 1,
+              "privatekey": 2,
+              "scripthash": 3,
+              "bech32prefix": "tn",
+              "xpubkey": 4,
+              "xprivkey": 5,
+              "networkMagic": {
+                "type": "Buffer",
+                "data": [4, 5, 6, ...]
+              },
+              "port": 1234,
+              "dnsSeeds": []
+            }
+          }
+        },
+        "seqnum": 2,
+        "script": {
+          "type": "Buffer",
+          "data": [7, 8, 9, ...]
+        }
+      }
+    ],
+    "_dataToSignCache": {
+      "type": "Buffer",
+      "data": [9, 8, 7, ...]
+    }
+  }
+}
+```
+
+## Bet Withdraw
+Withdraws the prize from the initialized bet NC back to a wallet address.
+
+### Request
+```json
+{
+  "method": "htr_sendNanoContractTx",
+  "params": {
+    "network": "testnet",
+    "method": "withdraw",
+    "nc_id": "{ nano contract id generated above }",
+    "actions": [
+      {
+        "type": "withdrawal",
+        "address": "{your-address-0}",
+        "amount": "1",
+        "token": "00",
+        "changeAddress": "{your-address-0}"
+      }
+    ],
+    "args": [],
+    "push_tx": true
+  }
+}
+```
+
+### Expected Response
+```json
+{
+  "type": 0,
+  "response": {
+    "inputs": [],
+    "outputs": [
+      {
+        "value": "1",
+        "tokenData": 0,
+        "script": {
+          "type": "Buffer",
+          "data": [1, 2, 3, ...]
+        },
+        "decodedScript": null
+      }
+    ],
+    "signalBits": 0,
+    "version": 1,
+    "weight": 17.181848542924126,
+    "nonce": 2862663316,
+    "timestamp": 123456,
+    "parents": [
+      "{64-char tx hash}",
+      "{64-char tx hash}"
+    ],
+    "tokens": [],
+    "hash": "{64-char tx hash}",
+    "headers": [
+      {
+        "id": "{ nano contract id generated above }",
+        "method": "withdraw",
+        "args": {
+          "type": "Buffer",
+          "data": [
+            0
+          ]
+        },
+        "actions": [
+          {
+            "type": 2,
+            "amount": "1",
+            "tokenIndex": 0
+          }
+        ],
+        "address": {
+          "base58": "{your-address-0}",
+          "network": {
+            "name": "testnet",
+            "versionBytes": {
+              "p2pkh": 1,
+              "p2sh": 2,
+              "xpriv": 3,
+              "xpub": 4
+            },
+            "bitcoreNetwork": {
+              "name": "htr-testnet",
+              "alias": "test",
+              "pubkeyhash": 5,
+              "privatekey": 6,
+              "scripthash": 7,
+              "bech32prefix": "tn",
+              "xpubkey": 8,
+              "xprivkey": 9,
+              "networkMagic": {
+                "type": "Buffer",
+                "data": [10, 11, 12, ...]
+              },
+              "port": 9876,
+              "dnsSeeds": []
+            }
+          }
+        },
+        "seqnum": 3,
+        "script": {
+          "type": "Buffer",
+          "data": [1, 2, 3, ...]
+        }
+      }
+    ],
+    "_dataToSignCache": {
+      "type": "Buffer",
+      "data": [4, 5, 6, ...]
+    }
+  }
+}
+```
+
+### Validation Points
+- [ ] Withdrawal transaction successful
+- [ ] Output value matches requested amount (1)
+
+---
+
+## 📋 General Testing Notes
+
+### Environment Setup
+```
+[Add your environment setup notes here]
+```
+
+### Common Issues
+- Mistakes on copy-pasting addresses, hashes and tx-ids are the most common
+- Trying to send transactions with `pushTx` set to `false`
+
+---
+
+## References
+
+- **RPG Generator site:** https://staging.betting.hathor.network/rpc
+- **Network:** Testnet
+

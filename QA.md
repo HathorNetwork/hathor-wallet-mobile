@@ -179,19 +179,23 @@
   1. If the tests above were executed while NOT connected to the Wallet Service, enable it for this device
 1. Repeat all steps, starting from step 2
 
-# Custom Network
+# Dedicated test suites
+The following documents contain long instructions for specific features. See each one for the complete QA steps.
+
+### Custom Network
 
 Test the ability of the app to change networks and connect to custom nodes and wallet services.
 Follow the [Custom Network QA](./QA_CUSTOM_NETWORK.md) steps.
 
-# Push Notification
+### Push Notification
 
 Test the ability of the app to receive push notifications. Follow the [Push Notification QA](./QA_PUSH_NOTIFICATION.md) steps.
 
-# Nano Contracts
+### Nano Contracts
 Test the ability of the app to create and interact with nano contracts. Follow the [Nano Contracts QA](./QA_NANO_CONTRACT.md) steps.
 
-These will also test the ReOwn integration.
+### Reown
+Tests the interaction of distributed apps with the Mobile Wallet. Some are actual tests for Nano Contracts Follow the [Reown QA](QA_REOWN.md)
 
 # Development Environment tests
 The following tests are executed only if for the development environment, with access to source code and building.
