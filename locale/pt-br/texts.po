@@ -1757,7 +1757,7 @@ msgid ""
 "make transactions without your approval."
 msgstr ""
 "O app vai receber o endereço selectionado. Ele não terá acesso aos seus "
-"fundos ou a fazer transações."
+"fundos ou a fazer transações sem a sua aprovação."
 
 #: src/components/Reown/GetAddressClientRequest.js:172
 msgid "Share Selected Address"
@@ -1807,7 +1807,7 @@ msgid ""
 "funds or make transactions without your approval."
 msgstr ""
 "Esse app vai receber apenas seu endereço. Ele não terá acesso aos seus "
-"fundos ou a fazer transações."
+"fundos ou a fazer transações sem a sua aprovação."
 
 #: src/components/Reown/GetAddressRequest.js:110
 msgid "Share Address"
@@ -1938,7 +1938,7 @@ msgid ""
 "cannot spend your funds without your approval."
 msgstr ""
 "O app vai somente receber a informação de UTXOs. Ele não terá acesso aos "
-"seus fundos ou a fazer transações."
+"seus fundos ou a fazer transações sem a sua aprovação."
 
 #: src/components/Reown/GetUtxosRequest.js:205
 msgid "Share UTXOs Information"
