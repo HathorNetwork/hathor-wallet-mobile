@@ -7,12 +7,12 @@ This document outlines the testing flow for the Mobile Wallet using an RPC inter
 
 Navigate to the testing environment above (or raise a developer environment of your choice) and use the *Requests* to generate the expected *Responses* described below.
 
-After each request look closely to the confirmation screen, making sure all the request data is properly exhibited.
+After each request look closely at the confirmation screen, making sure all the request data is properly displayed.
 - *Always reject the first request* you make for each step
 - Make sure the rejection process has the correct behavior
 - Only then proceed to making the actual request to receive the validation response
 
-On the screens that have a selectable response, look closely to the response data to ensure the selected elements were sent correctly.
+On the screens that have a selectable response, look closely at the response data to ensure the selected elements were sent correctly.
 
 ---
 
@@ -68,7 +68,7 @@ Just execute this request and have the Wallet app opened to automatically retrie
 ```
 
 ## Get Addresses
-Addresses may be retrieved by three different ways. For each one, see that the user interface exhibits the dApp request accordingly.
+Addresses may be retrieved in three different ways. For each one, see that the user interface displays the dApp request accordingly.
 
 ### Request (1) - First empty
 The requested address will probably have a high index.
@@ -144,7 +144,7 @@ The user will select the desired address from a list.
 ```
 
 ## Get UTXOs
-All the request parameters should be exhibited clearly to the user on the confirmation screen.
+All the request parameters should be displayed clearly to the user on the confirmation screen.
 
 The query result must also be summarized for double-checking on the response message.
 
@@ -193,7 +193,7 @@ The query result must also be summarized for double-checking on the response mes
 
 ## Send Transaction
 Sends a simple transaction.
-Here we explicitly request NOT to send the transaction and then sending the transaction. On later requests we will consider this switching implicit for the tests.
+Here we explicitly request NOT to send the transaction first, and then send the transaction. On later requests we will consider this switching implicit for the tests.
 
 ### Request (1) - Building and not pushing
 ```json
@@ -441,7 +441,7 @@ It is advisable to *only use the address at index 0 for all operations*, as some
 
 ## Bet Initialize
 
-### Pre-requisite
+### Prerequisite
 The user needs to calculate the oracle buffer. This can be done through the following javascript call to the Wallet Lib:
 ```js
 import { nanoUtils, Network } from '@hathor/wallet-lib';
@@ -888,5 +888,5 @@ When not pushing the tx, the response property will be a long string.
 # 📋 General Testing Notes
 
 ### Common Issues
-- Mistakes on copy-pasting addresses, hashes and tx-ids are the most common
+- Mistakes in copy-pasting addresses, hashes and tx-ids are the most common
 - Trying to send transactions with `pushTx` set to `false`
