@@ -12,35 +12,38 @@ import { t } from 'ttag';
 import FeedbackModal from '../FeedbackModal';
 import NewHathorButton from '../NewHathorButton';
 import AdvancedErrorOptions from './AdvancedErrorOptions';
-import { hideReownModal, setSendTxStatusReady } from '../../actions';
+import { hideReownModal, reownReject } from '../../actions';
 import errorIcon from '../../assets/images/icErrorBig.png';
 
 /**
- * Modal displayed when there are insufficient funds for a transaction
+ * Generic modal displayed when a Reown request fails before user confirmation
+ * Shows error details and allows the user to dismiss (rejecting the dApp request)
  */
-export const InsufficientFundsModal = () => {
+export const RequestErrorModal = () => {
   const dispatch = useDispatch();
-  const errorDetails = useSelector((state) => state.reown.errors.sendTransaction);
+  const reownModal = useSelector((state) => state.reown.modal);
 
-  // Reset transaction status when component unmounts
+  const errorMessage = reownModal.data?.errorMessage || t`An error occurred while processing the request.`;
+  const errorDetails = reownModal.data?.errorDetails || null;
+
+  // Reject the dApp request when component unmounts
   useEffect(() => () => {
-    dispatch(setSendTxStatusReady());
+    dispatch(reownReject());
   }, []);
 
   const handleDismiss = () => {
-    // Reset the transaction status to prevent it from affecting future transactions
-    dispatch(setSendTxStatusReady());
+    dispatch(reownReject());
     dispatch(hideReownModal());
   };
 
   return (
     <FeedbackModal
       icon={<Image source={errorIcon} style={styles.icon} resizeMode='contain' />}
-      text={t`Insufficient funds to complete the transaction.`}
+      text={errorMessage}
       onDismiss={handleDismiss}
       action={(
         <View style={styles.buttonContainer}>
-          <NewHathorButton title={t`Close`} onPress={handleDismiss} />
+          <NewHathorButton title={t`Dismiss`} onPress={handleDismiss} />
           <AdvancedErrorOptions errorDetails={errorDetails} />
         </View>
       )}
@@ -59,4 +62,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default InsufficientFundsModal;
+export default RequestErrorModal;
