@@ -75,6 +75,7 @@ import {
   InsufficientFundsError,
   PrepareSendTransactionError,
   CreateNanoContractCreateTokenTxError,
+  PromptRejectedError,
 } from '@hathor/hathor-rpc-handler';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
@@ -614,6 +615,10 @@ export function* processRequest(action) {
         const errorDetails = extractErrorDetails(e);
         yield put(setReownError('createNanoContractCreateTokenTx', errorDetails));
         yield put(setCreateNanoContractCreateTokenTxStatusFailure());
+      } break;
+      case PromptRejectedError: {
+        // User intentionally rejected a prompt, don't show error modal
+        // The RPC request will still be rejected below via shouldAnswer
       } break;
       default: {
         // Handle generic errors (e.g., from getBalance, signMessage, etc.)
