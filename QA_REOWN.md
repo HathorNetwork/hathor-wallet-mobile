@@ -2,9 +2,9 @@
 
 This document outlines the testing flow for the Mobile Wallet using an RPC interface. Each section contains the request payload, instructions on how to obtain the necessary data and expected response structure.
  
-**Testing Environment:** https://staging.betting.hathor.network/rpc
-**Network:** Testnet
-**Explorer for validations:** https://explorer.testnet.hathor.network
+- **Testing Environment:** https://staging.betting.hathor.network/rpc
+- **Network:** Testnet
+- **Explorer for validations:** https://explorer.testnet.hathor.network
 
 Navigate to the testing environment above (or raise a developer environment of your choice) and use the *Requests* to generate the expected *Responses* described below.
 
@@ -19,7 +19,7 @@ On the screens that have a selectable response, look closely at the response dat
 # Initial connection
 
 1. Open the testing environment and click "Connect Wallet"
-1. On the Mobile Wallet initial screen ( Dashboard), click the QR Code reader on the top right.
+1. On the Mobile Wallet initial screen (Dashboard), click the QR Code reader on the top right.
 1. Read the QR Code on the testing environment to start the process of connecting your wallet using the WalletConnect/ReOwn
 1. Reject the connection and check that the testing environment just closes the QR Code modal
 1. Start again but this time connect your wallet
@@ -122,7 +122,7 @@ The address index must be respected here.
   "type": 2,
   "response": {
     "address": "{base58 address}",
-    "index": 1234,
+    "index": 3,
     "addressPath": "m/44'/280'/0'/0/1234"
   }
 }
@@ -184,7 +184,7 @@ The query result must also be summarized for double-checking on the response mes
       {
         "address": "{base58 address}",
         "amount": "123",
-        "tx_id": "{64-char hexadecimal}",
+        "tx_id": "{64-char tx hash}",
         "locked": false,
         "index": 0
       },
@@ -509,8 +509,8 @@ console.log(`Oracle buffer: ${getOracleBuffer(myFirstAddress)}`);
 ### Request
 Here we will need to test both the pushing and not pushing the transaction, changing only the `push_tx` property of the request.
 
-Confirm that the Blueprint ID matches the request
-Save the `hash` value - this becomes the `nc_id` for subsequent operations
+- Confirm that the Blueprint ID matches the request
+- Save the `hash` value - this becomes the `nc_id` for subsequent operations
 
 ```json
 {
@@ -932,8 +932,10 @@ The objective of this test is to try and send a custom token using a Nano Contra
 
 1. Take note of the custom token UIDs created on the main QA tests
 1. Unregister one of them from this wallet
-1. Using the request for `Bet Initialize` above, initialize a Bet Blueprint with this custom token1. Check that the request confirmation screen does not show the token name, just the UID, so no registration is offered
-1. Now try to `Bet Deposit`, depositing 1 unit of the custom token (you can set the `push_tx` parameter to `false` to just experiment without actually sending tokens)
+1. Using the request for `Bet Initialize` above, initialize a Bet Blueprint with this custom token that has just been unregistered.
+   1. Check that the request confirmation screen does not show the token name, just the UID, so no registration is offered
+1. Now try to `Bet Deposit`, depositing 1 unit of the custom token
+   1. You can set the `push_tx` parameter to `false` to just experiment without actually sending tokens
 1. In the action list of the Request confirmation screen, check that the symbol of the custom token appears, with a tooltip to click on
 1. Click the tooltip and check that the full token information is shown, with a "Tap to copy" link.
 1. Confirm the transaction request
