@@ -33,8 +33,8 @@ export const GetUtxosRequestData = ({ data }) => {
   // data contains utxoDetails from wallet.getUtxos() plus filterParams from request
   const {
     utxos = [],
-    total_amount_available = 0n,
-    total_utxos_available = 0,
+    total_amount_available: totalAmountAvailable = 0n,
+    total_utxos_available: totalUtxosAvailable = 0,
     filterParams = {},
   } = data;
 
@@ -54,7 +54,12 @@ export const GetUtxosRequestData = ({ data }) => {
   const tokenInfo = tokenId ? tokens[tokenId] : null;
   const isNFT = tokenId ? isTokenNFT(tokenId, tokenMetadata) : false;
   const isRegistered = tokenInfo != null;
-  const displaySymbol = isRegistered ? tokenInfo.symbol : (tokenId ? t`Unregistered token` : 'HTR');
+  const getDisplaySymbol = () => {
+    if (isRegistered) return tokenInfo.symbol;
+    if (tokenId) return t`Unregistered token`;
+    return 'HTR';
+  };
+  const displaySymbol = getDisplaySymbol();
 
   // Check if any filter parameters are set
   const hasFilterParams = params.token
@@ -66,11 +71,11 @@ export const GetUtxosRequestData = ({ data }) => {
     || params.onlyAvailableUtxos != null;
 
   // Calculate total amount from utxos array as fallback
-  const totalAmount = total_amount_available
-    ? Number(total_amount_available)
+  const totalAmount = totalAmountAvailable
+    ? Number(totalAmountAvailable)
     : utxos.reduce((sum, utxo) => sum + (utxo.amount || 0), 0);
-  const totalUtxos = total_utxos_available
-    ? Number(total_utxos_available)
+  const totalUtxos = totalUtxosAvailable
+    ? Number(totalUtxosAvailable)
     : utxos.length;
 
   return (
