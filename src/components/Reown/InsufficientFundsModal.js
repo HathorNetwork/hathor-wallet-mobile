@@ -20,7 +20,7 @@ import errorIcon from '../../assets/images/icErrorBig.png';
  */
 export const InsufficientFundsModal = () => {
   const dispatch = useDispatch();
-  const errorDetails = useSelector((state) => state.reown.errors.sendTransaction);
+  const errorDetails = useSelector((state) => state.reown.error);
 
   // Reset transaction status when component unmounts
   useEffect(() => () => {

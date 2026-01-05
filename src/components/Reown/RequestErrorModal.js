@@ -22,9 +22,9 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 export const RequestErrorModal = () => {
   const dispatch = useDispatch();
   const reownModal = useSelector((state) => state.reown.modal);
+  const errorDetails = useSelector((state) => state.reown.error);
 
   const errorMessage = reownModal.data?.errorMessage || t`An error occurred while processing the request.`;
-  const errorDetails = reownModal.data?.errorDetails || null;
 
   // Reject the dApp request when component unmounts
   useEffect(() => () => {

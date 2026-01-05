@@ -530,7 +530,7 @@ export function* processRequest(action) {
     switch (e.constructor) {
       case SendNanoContractTxError: {
         const errorDetails = extractErrorDetails(e);
-        yield put(setReownError('newNanoContractTransaction', errorDetails));
+        yield put(setReownError(errorDetails));
         yield put(setNewNanoContractStatusFailure());
 
         const dontRetryErrors = [
@@ -574,7 +574,7 @@ export function* processRequest(action) {
       case CreateTokenError: {
         // CreateTokenRequest screen handles its own error display via FeedbackModal
         const errorDetails = extractErrorDetails(e);
-        yield put(setReownError('createToken', errorDetails));
+        yield put(setReownError(errorDetails));
         yield put(setCreateTokenStatusFailed());
 
         // User might try again, wait for it.
@@ -623,7 +623,7 @@ export function* processRequest(action) {
       case SendTransactionError: {
         // SendTransactionRequest screen handles its own error display via FeedbackModal
         const errorDetails = extractErrorDetails(e);
-        yield put(setReownError('sendTransaction', errorDetails));
+        yield put(setReownError(errorDetails));
         yield put(setSendTxStatusFailure());
 
         // User might try again, wait for it.
@@ -641,7 +641,7 @@ export function* processRequest(action) {
       } break;
       case InsufficientFundsError: {
         const errorDetails = extractErrorDetails(e);
-        yield put(setReownError('sendTransaction', errorDetails));
+        yield put(setReownError(errorDetails));
         yield put(setSendTxStatusFailure());
         // Show the insufficient funds modal
         yield put(setReownModal({
@@ -664,7 +664,7 @@ export function* processRequest(action) {
       case CreateNanoContractCreateTokenTxError: {
         // CreateNanoContractCreateTokenTxRequest screen handles its own error display
         const errorDetails = extractErrorDetails(e);
-        yield put(setReownError('createNanoContractCreateTokenTx', errorDetails));
+        yield put(setReownError(errorDetails));
         yield put(setCreateNanoContractCreateTokenTxStatusFailure());
 
         // User might try again, wait for it.
@@ -689,12 +689,14 @@ export function* processRequest(action) {
         const errorDetails = extractErrorDetails(e);
         const errorMessage = e.message || 'An error occurred processing the request';
 
+        // Store error details for "See why" button
+        yield put(setReownError(errorDetails));
+
         // Show error modal
         yield put(setReownModal({
           show: true,
           type: ReownModalTypes.REQUEST_ERROR,
           data: {
-            errorDetails,
             errorMessage,
           },
         }));

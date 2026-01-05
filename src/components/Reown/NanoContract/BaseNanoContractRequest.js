@@ -184,7 +184,7 @@ export const BaseNanoContractRequest = ({
   const [showDeclineModal, setShowDeclineModal] = useState(false);
 
   // Get error details from centralized error storage
-  const errorDetails = useSelector((state) => state.reown.errors.newNanoContractTransaction);
+  const errorDetails = useSelector((state) => state.reown.error);
 
   // Use token info hook
   const {

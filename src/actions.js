@@ -1668,13 +1668,13 @@ export const setCreateNanoContractCreateTokenTxStatusSuccess = () => ({
 });
 
 /**
- * Generic action to set error details for any Reown operation
- * @param {string} operation - The operation type (e.g., 'sendTransaction', 'createToken')
+ * Set error details for the current Reown operation.
+ * Only one RPC is processed at a time, so a single error suffices.
  * @param {Object|null} errorDetails - Error details { message, stack, type, timestamp } or null to clear
  */
-export const setReownError = (operation, errorDetails = null) => ({
+export const setReownError = (errorDetails = null) => ({
   type: types.REOWN_SET_ERROR,
-  payload: { operation, errorDetails },
+  payload: errorDetails,
 });
 
 export const tokenSwapFetchAllowedTokens = () => ({

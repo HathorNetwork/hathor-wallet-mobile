@@ -191,7 +191,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   // Get transaction status from Redux
   const sendTxStatus = reown.sendTransaction?.status || REOWN_SEND_TX_STATUS.READY;
   // Get error details from centralized error storage
-  const errorDetails = reown.errors?.sendTransaction;
+  const errorDetails = reown.error;
 
   // Use token info hook
   const {
