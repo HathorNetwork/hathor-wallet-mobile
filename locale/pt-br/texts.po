@@ -1559,12 +1559,11 @@ msgstr "Nano Contract"
 
 #: src/components/Reown/AdvancedErrorOptions.js:41
 msgid "Advanced options"
-msgstr ""
+msgstr "Opções avançadas"
 
 #: src/components/Reown/AdvancedErrorOptions.js:47
-#, fuzzy
 msgid "See error details"
-msgstr "Ver detalhes"
+msgstr "Ver detalhes do erro"
 
 #: src/components/Reown/ApproveRejectModal.js:70
 msgid "Reject"
@@ -1727,16 +1726,15 @@ msgstr "Erro ao enviar transação de criação de token."
 
 #: src/components/Reown/ErrorDetailModal.js:78
 msgid "Error Details"
-msgstr ""
+msgstr "Detalhes do Erro"
 
 #: src/components/Reown/ErrorDetailModal.js:81
 msgid "Error Type:"
-msgstr ""
+msgstr "Tipo do Erro:"
 
 #: src/components/Reown/ErrorDetailModal.js:86
-#, fuzzy
 msgid "Message:"
-msgstr "Mensagem para assinar"
+msgstr "Mensagem:"
 
 #: src/components/Reown/ErrorDetailModal.js:91
 msgid "Timestamp:"
@@ -2001,11 +1999,11 @@ msgstr "Revisar detalhes"
 
 #: src/components/Reown/RequestErrorModal.js:26
 msgid "An error occurred while processing the request."
-msgstr ""
+msgstr "Ocorreu um erro ao processar a solicitação."
 
 #: src/components/Reown/RequestErrorModal.js:46
 msgid "Dismiss"
-msgstr ""
+msgstr "Fechar"
 
 #: src/components/Reown/SendTransactionModal.js:22
 msgid ""
