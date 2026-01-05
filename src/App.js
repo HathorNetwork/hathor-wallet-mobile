@@ -97,6 +97,9 @@ import { NewNanoContractTransactionScreen } from './screens/Reown/NewNanoContrac
 import { NanoContractRegisterQrCodeScreen } from './screens/NanoContractRegisterQrCodeScreen';
 import { SignMessageRequestScreen } from './screens/Reown/SignMessageRequestScreen';
 import { GetBalanceRequestScreen } from './screens/Reown/GetBalanceRequestScreen';
+import { GetAddressRequestScreen } from './screens/Reown/GetAddressRequestScreen';
+import { GetAddressClientRequestScreen } from './screens/Reown/GetAddressClientRequestScreen';
+import { GetUtxosRequestScreen } from './screens/Reown/GetUtxosRequestScreen';
 import { SignOracleDataRequestScreen } from './screens/Reown/SignOracleDataRequestScreen';
 import { CreateTokenRequestScreen } from './screens/Reown/CreateTokenScreen';
 import { CreateNanoContractCreateTokenTxScreen } from './screens/Reown/CreateNanoContractCreateTokenTxScreen';
@@ -489,6 +492,9 @@ const AppStack = () => {
         <Stack.Screen name='NewNanoContractTransactionScreen' component={NewNanoContractTransactionScreen} />
         <Stack.Screen name='SignMessageRequest' component={SignMessageRequestScreen} />
         <Stack.Screen name='GetBalanceRequest' component={GetBalanceRequestScreen} />
+        <Stack.Screen name='GetAddressRequest' component={GetAddressRequestScreen} />
+        <Stack.Screen name='GetAddressClientRequest' component={GetAddressClientRequestScreen} />
+        <Stack.Screen name='GetUtxosRequest' component={GetUtxosRequestScreen} />
         <Stack.Screen name='SendTransactionRequest' component={SendTransactionRequestScreen} />
         <Stack.Screen name='SignOracleDataRequestScreen' component={SignOracleDataRequestScreen} />
         <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
