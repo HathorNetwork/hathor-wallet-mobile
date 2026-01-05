@@ -576,6 +576,19 @@ export function* processRequest(action) {
         const errorDetails = extractErrorDetails(e);
         yield put(setReownError('createToken', errorDetails));
         yield put(setCreateTokenStatusFailed());
+
+        // User might try again, wait for it.
+        const retry = yield call(
+          retryHandler,
+          types.REOWN_CREATE_TOKEN_RETRY,
+          types.REOWN_CREATE_TOKEN_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
+          // Retry the action, exactly as it came:
+          yield* processRequest(action);
+        }
       } break;
       case PrepareSendTransactionError:
         shouldAnswer = false;
@@ -612,6 +625,19 @@ export function* processRequest(action) {
         const errorDetails = extractErrorDetails(e);
         yield put(setReownError('sendTransaction', errorDetails));
         yield put(setSendTxStatusFailure());
+
+        // User might try again, wait for it.
+        const retry = yield call(
+          retryHandler,
+          types.REOWN_SEND_TX_RETRY,
+          types.REOWN_SEND_TX_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
+          // Retry the action, exactly as it came:
+          yield* processRequest(action);
+        }
       } break;
       case InsufficientFundsError: {
         const errorDetails = extractErrorDetails(e);
@@ -640,6 +666,19 @@ export function* processRequest(action) {
         const errorDetails = extractErrorDetails(e);
         yield put(setReownError('createNanoContractCreateTokenTx', errorDetails));
         yield put(setCreateNanoContractCreateTokenTxStatusFailure());
+
+        // User might try again, wait for it.
+        const retry = yield call(
+          retryHandler,
+          types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY,
+          types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS,
+        );
+
+        if (retry) {
+          shouldAnswer = false;
+          // Retry the action, exactly as it came:
+          yield* processRequest(action);
+        }
       } break;
       case PromptRejectedError:
         // User intentionally rejected a prompt, don't show error modal
