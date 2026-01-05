@@ -114,6 +114,9 @@ import {
   setCreateNanoContractCreateTokenTxStatusFailure,
   setCreateNanoContractCreateTokenTxStatusSuccess,
   showGetBalanceModal,
+  showGetAddressModal,
+  showGetAddressClientModal,
+  showGetUtxosModal,
   unregisteredTokensStore,
   setReownError,
 } from '../actions';
@@ -152,6 +155,10 @@ const AVAILABLE_METHODS = {
   HATHOR_SEND_TRANSACTION: 'htr_sendTransaction',
   HATHOR_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: 'htr_createNanoContractCreateTokenTx',
   HATHOR_GET_BALANCE: 'htr_getBalance',
+  HATHOR_GET_ADDRESS: 'htr_getAddress',
+  HATHOR_GET_UTXOS: 'htr_getUtxos',
+  HATHOR_GET_CONNECTED_NETWORK: 'htr_getConnectedNetwork',
+  HATHOR_GET_WALLET_INFORMATION: 'htr_getWalletInformation',
 };
 const AVAILABLE_EVENTS = [];
 
@@ -887,6 +894,61 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           requestMetadata,
         ));
       } break;
+      case TriggerTypes.AddressRequestPrompt: {
+        const getAddressResponseTemplate = (accepted) => () => resolve({
+          type: TriggerResponseTypes.AddressRequestConfirmationResponse,
+          data: accepted,
+        });
+
+        // Include the original request type (index, first_empty, etc.) along with address data
+        const addressData = {
+          ...request.data,
+          type: request.params?.type,
+        };
+
+        dispatch(showGetAddressModal(
+          getAddressResponseTemplate(true),
+          getAddressResponseTemplate(false),
+          addressData,
+          requestMetadata,
+        ));
+      } break;
+      case TriggerTypes.AddressRequestClientPrompt: {
+        const onAddressSelected = (address) => resolve({
+          type: TriggerResponseTypes.AddressRequestClientResponse,
+          data: { address },
+        });
+
+        const onDeny = () => resolve({
+          type: TriggerResponseTypes.AddressRequestClientResponse,
+          data: { address: null },
+        });
+
+        dispatch(showGetAddressClientModal(
+          onAddressSelected,
+          onDeny,
+          requestMetadata,
+        ));
+      } break;
+      case TriggerTypes.GetUtxosConfirmationPrompt: {
+        const getUtxosResponseTemplate = (accepted) => () => resolve({
+          type: TriggerResponseTypes.GetUtxosConfirmationResponse,
+          data: accepted,
+        });
+
+        // Include both the UTXO details and the filter parameters from the request
+        const utxosData = {
+          ...request.data,
+          filterParams: request.params,
+        };
+
+        dispatch(showGetUtxosModal(
+          getUtxosResponseTemplate(true),
+          getUtxosResponseTemplate(false),
+          utxosData,
+          requestMetadata,
+        ));
+      } break;
       default:
         reject(new Error('Invalid request'));
     }
@@ -1274,6 +1336,45 @@ export function* onGetBalanceRequest({ payload }) {
   yield* handleDAppRequest(payload, ReownModalTypes.GET_BALANCE, { passAcceptAction: false });
 }
 
+export function* onGetAddressRequest({ payload }) {
+  yield* handleDAppRequest(payload, ReownModalTypes.GET_ADDRESS, { passAcceptAction: false });
+}
+
+export function* onGetAddressClientRequest({ payload }) {
+  // This request type has a different flow - it passes callbacks directly to the component
+  // rather than using the standard REOWN_ACCEPT/REOWN_REJECT pattern
+  const { onAddressSelected, deny, dapp } = payload;
+
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet.isReady()) {
+    log.error('Got a session request but wallet is not ready.');
+    deny();
+    return;
+  }
+
+  // Pass the callbacks through the modal data so the screen can call them directly
+  const modalData = {
+    dapp,
+    onAccept: onAddressSelected,
+    onReject: deny,
+  };
+
+  yield put(setReownModal({
+    show: true,
+    type: ReownModalTypes.GET_ADDRESS_CLIENT,
+    data: modalData,
+  }));
+
+  // Note: Unlike other requests, we don't wait for REOWN_ACCEPT/REOWN_REJECT here
+  // because the GetAddressClientRequest component calls the callbacks directly
+  // and the promise is resolved inside the callback
+}
+
+export function* onGetUtxosRequest({ payload }) {
+  yield* handleDAppRequest(payload, ReownModalTypes.GET_UTXOS, { passAcceptAction: false });
+}
+
 export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
@@ -1289,6 +1390,9 @@ export function* saga() {
       onCreateNanoContractCreateTokenTxRequest,
     ),
     takeLatest(types.SHOW_GET_BALANCE_REQUEST_MODAL, onGetBalanceRequest),
+    takeLatest(types.SHOW_GET_ADDRESS_REQUEST_MODAL, onGetAddressRequest),
+    takeLatest(types.SHOW_GET_ADDRESS_CLIENT_REQUEST_MODAL, onGetAddressClientRequest),
+    takeLatest(types.SHOW_GET_UTXOS_REQUEST_MODAL, onGetUtxosRequest),
     takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),

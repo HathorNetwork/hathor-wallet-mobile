@@ -106,6 +106,19 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 8,
   },
+  noPushNotice: {
+    backgroundColor: COLORS.cardBackground,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.borderColor,
+  },
+  noPushNoticeText: {
+    fontSize: 13,
+    color: COLORS.textColorShadow,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
 });
 
 /**
@@ -547,6 +560,14 @@ export const BaseNanoContractRequest = ({
             />
 
             {renderAdditionalContent && renderAdditionalContent()}
+
+            {nano.pushTx === false && (
+              <View style={styles.noPushNotice}>
+                <Text style={styles.noPushNoticeText}>
+                  {t`This transaction will only be built, not pushed to the network.`}
+                </Text>
+              </View>
+            )}
 
             <View style={styles.actionContainer}>
               {hasInsufficientBalance && (

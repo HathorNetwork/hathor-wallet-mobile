@@ -257,7 +257,7 @@ msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
 #: src/screens/CreateTokenConfirm.js:112 src/screens/SendConfirmScreen.js:85
-#: src/screens/TokenSwapReview.js:129
+#: src/screens/TokenSwapReview.js:159
 msgid "Building transaction"
 msgstr ""
 
@@ -444,8 +444,8 @@ msgstr "Indtast dine seed-ord adskilt med mellemrum"
 
 #: src/components/NanoContract/NanoContractDetails.js:249
 #: src/components/Reown/CreateTokenRequest.js:232
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:599
-#: src/components/Reown/SendTransactionRequest.js:534
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:620
+#: src/components/Reown/SendTransactionRequest.js:555
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:174
 #: src/screens/PinScreen.js:283 src/screens/TokenSwapLoadingScreen.js:90
@@ -514,7 +514,7 @@ msgstr "Låst"
 msgid "Manual"
 msgstr ""
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:455
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:468
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:239
 #: src/screens/NanoContractRegisterQrCodeScreen.js:48
 #: src/screens/RegisterOptionsScreen.js:77
@@ -788,17 +788,17 @@ msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:111
+#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:141
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
 #: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:83
-#: src/screens/TokenSwapReview.js:127
+#: src/screens/TokenSwapReview.js:157
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
 #: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:84
-#: src/screens/TokenSwapReview.js:128
+#: src/screens/TokenSwapReview.js:158
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -815,8 +815,9 @@ msgstr ""
 
 #: src/components/NanoContract/EditAddressModal.js:63
 #: src/components/NanoContract/SelectAddressModal.js:131
-#: src/components/Reown/SendTransactionRequest.js:292
-#: src/components/Reown/SendTransactionRequest.js:329
+#: src/components/Reown/GetAddressRequest.js:42
+#: src/components/Reown/SendTransactionRequest.js:305
+#: src/components/Reown/SendTransactionRequest.js:342
 #: src/components/Reown/SignMessageRequest.js:40
 #: src/components/Reown/SignOracleDataRequest.js:46
 #: src/screens/SendConfirmScreen.js:157
@@ -907,15 +908,15 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:139
+#: src/screens/TokenSwapReview.js:169
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:155
+#: src/screens/TokenSwapReview.js:185
 msgid "Your swap was successful"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:218
+#: src/screens/TokenSwapReview.js:248
 msgid "SWAP"
 msgstr ""
 
@@ -971,8 +972,24 @@ msgstr ""
 msgid "Create Token Request"
 msgstr ""
 
+#: src/components/Reown/GetAddressClientModal.js:21
+#: src/components/Reown/GetAddressClientRequest.js:114
+#: src/screens/Reown/GetAddressClientRequestScreen.js:21
+msgid "Select Address"
+msgstr ""
+
+#: src/components/Reown/GetAddressRequest.js:54
+#: src/screens/Reown/GetAddressRequestScreen.js:21
+msgid "Address Request"
+msgstr ""
+
 #: src/screens/Reown/GetBalanceRequestScreen.js:25
 msgid "Get Balance Request"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:88
+#: src/screens/Reown/GetUtxosRequestScreen.js:21
+msgid "UTXOs Request"
 msgstr ""
 
 #: src/components/Reown/NanoContract/NewNanoContractTransactionModal.js:19
@@ -980,8 +997,8 @@ msgstr ""
 msgid "New Nano Contract Transaction"
 msgstr ""
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:289
-#: src/components/Reown/SendTransactionRequest.js:465
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:302
+#: src/components/Reown/SendTransactionRequest.js:478
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:35
 msgid "Transaction successfully sent."
 msgstr ""
@@ -1034,15 +1051,15 @@ msgstr ""
 msgid "Reown Sessions"
 msgstr ""
 
-#: src/screens/Reown/ReownManual.js:39
+#: src/screens/Reown/ReownManual.js:40
 msgid "Manual Connection"
 msgstr ""
 
-#: src/screens/Reown/ReownManual.js:45
+#: src/screens/Reown/ReownManual.js:46
 msgid "Reown URI"
 msgstr ""
 
-#: src/screens/Reown/ReownManual.js:57 src/screens/Reown/ReownScan.js:34
+#: src/screens/Reown/ReownManual.js:58 src/screens/Reown/ReownScan.js:34
 msgid "Connect"
 msgstr ""
 
@@ -1171,8 +1188,9 @@ msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.js:213
 #: src/components/NanoContract/SelectAddressModal.js:119
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:417
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:481
+#: src/components/Reown/GetAddressClientRequest.js:136
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:430
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:494
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:190
 msgid "Loading"
 msgstr ""
@@ -1453,6 +1471,7 @@ msgid ""
 msgstr ""
 
 #: src/components/NanoContract/SelectAddressModal.js:111
+#: src/components/Reown/GetAddressClientRequest.js:129
 #: src/components/ShowPushNotificationTxDetails.js:18
 msgid "Retry"
 msgstr ""
@@ -1481,7 +1500,7 @@ msgid "Description"
 msgstr "Beskrivelse"
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
-#: src/components/Reown/SendTransactionRequest.js:281
+#: src/components/Reown/SendTransactionRequest.js:294
 #: src/components/TxDetailsModal.js:100
 msgid "Transaction ID"
 msgstr ""
@@ -1579,10 +1598,12 @@ msgid "Review Create Token Request details"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:77
+#: src/components/Reown/GetUtxosRequest.js:146
 msgid "Yes"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:77
+#: src/components/Reown/GetUtxosRequest.js:146
 msgid "No"
 msgstr ""
 
@@ -1638,14 +1659,14 @@ msgid "Token data"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:199
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:501
-#: src/components/Reown/SendTransactionRequest.js:480
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:514
+#: src/components/Reown/SendTransactionRequest.js:493
 msgid "Sending transaction"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:200
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:502
-#: src/components/Reown/SendTransactionRequest.js:481
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:515
+#: src/components/Reown/SendTransactionRequest.js:494
 msgid "Please wait."
 msgstr ""
 
@@ -1686,8 +1707,97 @@ msgid "Copied!"
 msgstr ""
 
 #: src/components/Reown/ErrorDetailModal.js:108
+#, fuzzy
 msgid "Copy to Clipboard"
-msgstr "Kopiér til udklipsholder"
+msgstr "Kopieret til udklipsholder!"
+
+#: src/components/Reown/GetAddressClientModal.js:19
+msgid "Select Address Request"
+msgstr ""
+
+#: src/components/Reown/GetAddressClientModal.js:20
+msgid ""
+"An app is requesting you to share an address from your wallet. Please select "
+"an address to share."
+msgstr ""
+
+#: src/components/NanoContract/SelectAddressModal.js:182
+#: src/components/Reown/GetAddressClientRequest.js:55
+msgid "index"
+msgstr ""
+
+#: src/components/Reown/GetAddressClientRequest.js:116
+msgid "This app is requesting you to share an address from your wallet"
+msgstr ""
+
+#: src/components/NanoContract/SelectAddressModal.js:109
+#: src/components/Reown/GetAddressClientRequest.js:127
+msgid "Load Addresses Error"
+msgstr ""
+
+#: src/components/NanoContract/SelectAddressModal.js:120
+#: src/components/Reown/GetAddressClientRequest.js:137
+msgid "Loading wallet addresses."
+msgstr ""
+
+#: src/components/Reown/GetAddressClientRequest.js:143
+msgid "Select an address to share"
+msgstr ""
+
+#: src/components/Reown/GetAddressClientRequest.js:165
+msgid ""
+"The app will receive the selected address. It cannot access your funds or "
+"make transactions without your approval."
+msgstr ""
+
+#: src/components/Reown/GetAddressClientRequest.js:172
+msgid "Share Selected Address"
+msgstr ""
+
+#: src/components/Reown/GetAddressClientRequest.js:177
+#: src/components/Reown/GetAddressRequest.js:114
+#: src/components/Reown/GetBalanceRequest.js:137
+#: src/components/Reown/GetUtxosRequest.js:207
+msgid "Decline"
+msgstr ""
+
+#: src/components/Reown/GetAddressModal.js:19
+msgid "New Address Request"
+msgstr ""
+
+#: src/components/Reown/GetAddressModal.js:20
+msgid ""
+"You have received a new Address Request. Please carefully review the details "
+"before deciding to accept or decline."
+msgstr ""
+
+#: src/components/Reown/GetAddressModal.js:21
+msgid "Review Address Request details"
+msgstr ""
+
+#: src/components/Reown/GetAddressRequest.js:33
+msgid "This app is requesting access to your wallet's first empty address"
+msgstr ""
+
+#: src/components/Reown/GetAddressRequest.js:35
+#, javascript-format
+msgid ""
+"This app is requesting access to your wallet address at index ${ data.index }"
+msgstr ""
+
+#: src/components/Reown/GetAddressRequest.js:40
+msgid "Address at index ${ data.index }"
+msgstr ""
+
+#: src/components/Reown/GetAddressRequest.js:78
+msgid ""
+"The app will receive your address for identification. It cannot access your "
+"funds or make transactions without your approval."
+msgstr ""
+
+#: src/components/Reown/GetAddressRequest.js:110
+msgid "Share Address"
+msgstr ""
 
 #: src/components/Reown/GetBalanceModal.js:19
 msgid "New Get Balance Request"
@@ -1716,6 +1826,7 @@ msgid "Tokens to be shared"
 msgstr ""
 
 #: src/components/Reown/GetBalanceRequest.js:62
+#: src/components/Reown/GetUtxosRequest.js:60
 msgid "Unregistered token"
 msgstr ""
 
@@ -1737,8 +1848,78 @@ msgstr ""
 msgid "Share Balance Information"
 msgstr ""
 
-#: src/components/Reown/GetBalanceRequest.js:137
-msgid "Decline"
+#: src/components/Reown/GetUtxosModal.js:19
+msgid "New UTXOs Request"
+msgstr ""
+
+#: src/components/Reown/GetUtxosModal.js:20
+msgid ""
+"You have received a new UTXOs Request. Please carefully review the details "
+"before deciding to accept or decline."
+msgstr ""
+
+#: src/components/Reown/GetUtxosModal.js:21
+msgid "Review UTXOs Request details"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:90
+msgid ""
+"This app is requesting access to your wallet's UTXOs (Unspent Transaction "
+"Outputs)"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:99
+msgid "Request Parameters"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:102
+msgid "Token:"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:108
+msgid "Max UTXOs:"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:114
+msgid "Filter Address:"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:120
+msgid "Amount smaller than:"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:128
+msgid "Amount bigger than:"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:136
+msgid "Maximum amount:"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:144
+msgid "Only available UTXOs:"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:155
+msgid "UTXOs to be shared"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:157
+msgid "Total quantity:"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:161
+msgid "Total amount:"
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:171
+msgid ""
+"The app will receive information about your unspent transaction outputs. It "
+"cannot spend your funds without your approval."
+msgstr ""
+
+#: src/components/Reown/GetUtxosRequest.js:203
+msgid "Share UTXOs Information"
 msgstr ""
 
 #: src/components/Reown/InsufficientFundsModal.js:39
@@ -1755,11 +1936,11 @@ msgstr ""
 msgid "Review details"
 msgstr ""
 
-#: src/components/Reown/RequestErrorModal.js:29
+#: src/components/Reown/RequestErrorModal.js:26
 msgid "An error occurred while processing the request."
 msgstr ""
 
-#: src/components/Reown/RequestErrorModal.js:51
+#: src/components/Reown/RequestErrorModal.js:46
 msgid "Dismiss"
 msgstr ""
 
@@ -1774,56 +1955,61 @@ msgstr ""
 msgid "Review transaction details"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:269
+#: src/components/Reown/SendTransactionRequest.js:282
 msgid "Inputs"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:278
+#: src/components/Reown/SendTransactionRequest.js:291
 msgid "Input"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:288
+#: src/components/Reown/SendTransactionRequest.js:301
 msgid "Copy ID"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:315
+#: src/components/Reown/SendTransactionRequest.js:328
 msgid "Outputs"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:324
+#: src/components/Reown/SendTransactionRequest.js:337
 msgid "Output"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:342
+#: src/components/Reown/SendTransactionRequest.js:355
 msgid "Data field"
 msgstr ""
 
-#: src/components/Reown/SendTransactionRequest.js:364
+#: src/components/Reown/SendTransactionRequest.js:377
 msgid "Change Address"
 msgstr ""
 
 #.  No unregistered tokens, just show success
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:288
-#: src/components/Reown/SendTransactionRequest.js:464
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:301
+#: src/components/Reown/SendTransactionRequest.js:477
 msgid "Success!"
 msgstr ""
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:140
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:567
+#: src/components/Reown/SendTransactionRequest.js:520
+msgid "This transaction will only be built, not pushed to the network."
+msgstr ""
+
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:153
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:52
-#: src/components/Reown/SendTransactionRequest.js:509
+#: src/components/Reown/SendTransactionRequest.js:530
 msgid "Accept Transaction"
 msgstr ""
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:141
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:439
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:460
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:154
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:452
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:473
 #: src/components/Reown/NanoContract/NewNanoContractTransactionRequest.js:53
-#: src/components/Reown/SendTransactionRequest.js:513
+#: src/components/Reown/SendTransactionRequest.js:534
 msgid "Decline Transaction"
 msgstr ""
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:595
-#: src/components/Reown/SendTransactionRequest.js:530
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:616
+#: src/components/Reown/SendTransactionRequest.js:551
 msgid "Error while sending transaction."
 msgstr ""
 
@@ -1878,33 +2064,33 @@ msgstr ""
 msgid "Read More."
 msgstr ""
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:418
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:431
 msgid "Registering Nano Contract."
 msgstr ""
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:437
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:450
 msgid "Error while registering Nano Contract."
 msgstr ""
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:448
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:461
 msgid "Nano Contract Not Found"
 msgstr ""
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:449
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:462
 msgid ""
 "The Nano Contract requested is not registered. First register the Nano "
 "Contract to interact with it."
 msgstr ""
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:482
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:495
 msgid "Loading transaction information."
 msgstr ""
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:556
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:577
 msgid "Insufficient Funds"
 msgstr ""
 
-#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:557
+#: src/components/Reown/NanoContract/BaseNanoContractRequest.js:578
 msgid ""
 "Ensure your wallet balance covers the required amount to accept this "
 "transaction."
@@ -2116,24 +2302,12 @@ msgstr ""
 msgid "Choose New Wallet Address"
 msgstr ""
 
-#: src/components/NanoContract/SelectAddressModal.js:109
-msgid "Load Addresses Error"
-msgstr ""
-
-#: src/components/NanoContract/SelectAddressModal.js:120
-msgid "Loading wallet addresses."
-msgstr ""
-
 #: src/components/NanoContract/SelectAddressModal.js:128
 msgid "Current Information"
 msgstr ""
 
 #: src/components/NanoContract/SelectAddressModal.js:129
 msgid "To change, select other address on the list below."
-msgstr ""
-
-#: src/components/NanoContract/SelectAddressModal.js:182
-msgid "index"
 msgstr ""
 
 #: src/components/NanoContract/UnregisterNanoContractModal.js:39

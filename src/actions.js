@@ -198,6 +198,9 @@ export const types = {
   SHOW_NANO_CONTRACT_SEND_TX_MODAL: 'SHOW_NANO_CONTRACT_SEND_TX_MODAL',
   SHOW_CREATE_TOKEN_REQUEST_MODAL: 'SHOW_CREATE_TOKEN_REQUEST_MODAL',
   SHOW_GET_BALANCE_REQUEST_MODAL: 'SHOW_GET_BALANCE_REQUEST_MODAL',
+  SHOW_GET_ADDRESS_REQUEST_MODAL: 'SHOW_GET_ADDRESS_REQUEST_MODAL',
+  SHOW_GET_ADDRESS_CLIENT_REQUEST_MODAL: 'SHOW_GET_ADDRESS_CLIENT_REQUEST_MODAL',
+  SHOW_GET_UTXOS_REQUEST_MODAL: 'SHOW_GET_UTXOS_REQUEST_MODAL',
   REOWN_NEW_NANOCONTRACT_STATUS: 'REOWN_NEW_NANOCONTRACT_STATUS',
   REOWN_CREATE_TOKEN_STATUS: 'REOWN_CREATE_TOKEN_STATUS',
   REOWN_CREATE_TOKEN_RETRY: 'REOWN_CREATE_TOKEN_RETRY',
@@ -1532,6 +1535,35 @@ export const showCreateNanoContractCreateTokenTxModal = (accept, deny, data, dap
 
 export const showGetBalanceModal = (accept, deny, data, dapp) => ({
   type: types.SHOW_GET_BALANCE_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+    dapp,
+  },
+});
+
+export const showGetAddressModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_GET_ADDRESS_REQUEST_MODAL,
+  payload: {
+    accept,
+    deny,
+    data,
+    dapp,
+  },
+});
+
+export const showGetAddressClientModal = (onAddressSelected, deny, dapp) => ({
+  type: types.SHOW_GET_ADDRESS_CLIENT_REQUEST_MODAL,
+  payload: {
+    onAddressSelected,
+    deny,
+    dapp,
+  },
+});
+
+export const showGetUtxosModal = (accept, deny, data, dapp) => ({
+  type: types.SHOW_GET_UTXOS_REQUEST_MODAL,
   payload: {
     accept,
     deny,
