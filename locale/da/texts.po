@@ -1707,9 +1707,8 @@ msgid "Copied!"
 msgstr ""
 
 #: src/components/Reown/ErrorDetailModal.js:108
-#, fuzzy
 msgid "Copy to Clipboard"
-msgstr "Kopieret til udklipsholder!"
+msgstr ""
 
 #: src/components/Reown/GetAddressClientModal.js:19
 msgid "Select Address Request"
