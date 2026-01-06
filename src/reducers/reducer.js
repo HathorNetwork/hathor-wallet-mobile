@@ -274,6 +274,11 @@ const initialState = {
       show: false,
     },
     /**
+     * Centralized error storage for the current Reown operation.
+     * Only one RPC is processed at a time, so a single error key suffices.
+     */
+    error: null,
+    /**
      * newNanoContractTransaction {{
      *   showModal: boolean;
      *   retrying: boolean;
@@ -770,7 +775,7 @@ export const reducer = (state = initialState, action) => {
     case types.REOWN_SEND_TX_STATUS_SUCCESS:
       return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.SUCCESSFUL });
     case types.REOWN_SEND_TX_STATUS_FAILURE:
-      return onSetSendTxStatus(state, { payload: REOWN_SEND_TX_STATUS.FAILED });
+      return onSetSendTxStatus(state, action);
     case types.REOWN_SEND_TX_RETRY:
       return onSetSendTxRetry(state);
     case types.REOWN_SEND_TX_RETRY_DISMISS:
@@ -781,6 +786,8 @@ export const reducer = (state = initialState, action) => {
       return onCreateNanoContractCreateTokenTxRetry(state);
     case types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS:
       return onCreateNanoContractCreateTokenTxRetryDismiss(state);
+    case types.REOWN_SET_ERROR:
+      return onSetReownError(state, action);
     case types.SET_FULLNODE_NETWORK_NAME:
       return onSetFullNodeNetworkName(state, action);
 
@@ -2035,6 +2042,8 @@ export const onSetNewNanoContractTransactionStatus = (state, { payload }) => ({
       ...state.reown.newNanoContractTransaction,
       status: payload,
     },
+    // Clear error when status is not FAILED
+    error: payload === REOWN_NEW_NANOCONTRACT_TX_STATUS.FAILED ? state.reown.error : null,
   },
 });
 
@@ -2068,6 +2077,8 @@ export const onSetCreateTokenStatus = (state, { payload }) => ({
       ...state.reown.createToken,
       status: payload,
     },
+    // Clear error when status is not FAILED
+    error: payload === REOWN_CREATE_TOKEN_STATUS.FAILED ? state.reown.error : null,
   },
 });
 
@@ -2079,6 +2090,8 @@ export const onSetSendTxStatus = (state, { payload }) => ({
       ...state.reown.sendTransaction,
       status: payload,
     },
+    // Clear error when status is not FAILED
+    error: payload === REOWN_SEND_TX_STATUS.FAILED ? state.reown.error : null,
   },
 });
 
@@ -2244,6 +2257,26 @@ export const onSetCreateNanoContractCreateTokenTxStatus = (state, { payload }) =
       ...state.reown.createNanoContractCreateTokenTx,
       status: payload,
     },
+    // Clear error when status is not FAILED
+    error:
+      payload === REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.FAILED
+        ? state.reown.error
+        : null,
+  },
+});
+
+/**
+ * Set error for the current Reown operation
+ * @param {Object} state
+ * @param {{
+ *   payload: Object | null; // Error details or null to clear
+ * }} action
+ */
+export const onSetReownError = (state, { payload }) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    error: payload,
   },
 });
 

@@ -75,12 +75,15 @@ import {
   InsufficientFundsError,
   PrepareSendTransactionError,
   CreateNanoContractCreateTokenTxError,
+  PromptRejectedError,
+  InvalidParamsError,
 } from '@hathor/hathor-rpc-handler';
 import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
   REOWN_PROJECT_ID,
   REOWN_FEATURE_TOGGLE,
 } from '../constants';
+import { isPairingUri } from '../contexts/HathorDeeplinkContext';
 import {
   types,
   setReown,
@@ -111,12 +114,38 @@ import {
   setCreateNanoContractCreateTokenTxStatusFailure,
   setCreateNanoContractCreateTokenTxStatusSuccess,
   showGetBalanceModal,
+  showGetAddressModal,
+  showGetAddressClientModal,
+  showGetUtxosModal,
   unregisteredTokensStore,
+  setReownError,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
 
 const log = logger('reown');
+
+/**
+ * Extracts error details for storage and display
+ * @param {Error} error - The error object
+ * @returns {Object} Error details { message, stack, type, timestamp }
+ */
+function extractErrorDetails(error) {
+  if (!error) {
+    return {
+      message: 'Unknown error',
+      stack: 'No stack trace available',
+      type: 'Error',
+      timestamp: Date.now(),
+    };
+  }
+  return {
+    message: error.message || 'Unknown error',
+    stack: error.stack || 'No stack trace available',
+    type: error?.constructor?.name || 'Error',
+    timestamp: Date.now(),
+  };
+}
 
 const AVAILABLE_METHODS = {
   HATHOR_SIGN_MESSAGE: 'htr_signWithAddress',
@@ -126,6 +155,10 @@ const AVAILABLE_METHODS = {
   HATHOR_SEND_TRANSACTION: 'htr_sendTransaction',
   HATHOR_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: 'htr_createNanoContractCreateTokenTx',
   HATHOR_GET_BALANCE: 'htr_getBalance',
+  HATHOR_GET_ADDRESS: 'htr_getAddress',
+  HATHOR_GET_UTXOS: 'htr_getUtxos',
+  HATHOR_GET_CONNECTED_NETWORK: 'htr_getConnectedNetwork',
+  HATHOR_GET_WALLET_INFORMATION: 'htr_getWalletInformation',
 };
 const AVAILABLE_EVENTS = [];
 
@@ -496,6 +529,8 @@ export function* processRequest(action) {
     let shouldAnswer = true;
     switch (e.constructor) {
       case SendNanoContractTxError: {
+        const errorDetails = extractErrorDetails(e);
+        yield put(setReownError(errorDetails));
         yield put(setNewNanoContractStatusFailure());
 
         const dontRetryErrors = [
@@ -511,22 +546,35 @@ export function* processRequest(action) {
           }
         }
 
-        let retry = false;
         if (shouldDisplayRetry) {
-          retry = yield call(
+          // Show retry modal
+          const retry = yield call(
             retryHandler,
             types.REOWN_NEW_NANOCONTRACT_RETRY,
             types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
           );
-        }
 
-        if (retry) {
-          shouldAnswer = false;
-          // Retry the action, exactly as it came:
-          yield* processRequest(action);
+          if (retry) {
+            shouldAnswer = false;
+            // Retry the action, exactly as it came:
+            yield* processRequest(action);
+          }
+        } else {
+          // Error is not retryable, show error modal
+          yield put(setReownModal({
+            show: true,
+            type: ReownModalTypes.REQUEST_ERROR,
+            data: {
+              operationType: 'newNanoContractTransaction',
+              errorMessage: e.message,
+            },
+          }));
         }
       } break;
       case CreateTokenError: {
+        // CreateTokenRequest screen handles its own error display via FeedbackModal
+        const errorDetails = extractErrorDetails(e);
+        yield put(setReownError(errorDetails));
         yield put(setCreateTokenStatusFailed());
 
         // User might try again, wait for it.
@@ -556,10 +604,26 @@ export function* processRequest(action) {
             },
           },
         })); break;
+      case InvalidParamsError: {
+        shouldAnswer = false;
+        const errorMessage = e.message;
+
+        yield call(() => walletKit.respondSessionRequest({
+          topic: payload.topic,
+          response: {
+            id: payload.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.INVALID_PAYLOAD,
+              message: errorMessage,
+            },
+          },
+        }));
+      } break;
       case SendTransactionError: {
-        // If the transaction is invalid, we don't receive a
-        // SendTransactionConfirmationPrompt, so we need to check if the modal
-        // is visible and just reject it if it's not.
+        // SendTransactionRequest screen handles its own error display via FeedbackModal
+        const errorDetails = extractErrorDetails(e);
+        yield put(setReownError(errorDetails));
         yield put(setSendTxStatusFailure());
 
         // User might try again, wait for it.
@@ -575,7 +639,9 @@ export function* processRequest(action) {
           yield* processRequest(action);
         }
       } break;
-      case InsufficientFundsError:
+      case InsufficientFundsError: {
+        const errorDetails = extractErrorDetails(e);
+        yield put(setReownError(errorDetails));
         yield put(setSendTxStatusFailure());
         // Show the insufficient funds modal
         yield put(setReownModal({
@@ -593,10 +659,15 @@ export function* processRequest(action) {
             },
           },
         }));
-        break;
+        shouldAnswer = false;
+      } break;
       case CreateNanoContractCreateTokenTxError: {
+        // CreateNanoContractCreateTokenTxRequest screen handles its own error display
+        const errorDetails = extractErrorDetails(e);
+        yield put(setReownError(errorDetails));
         yield put(setCreateNanoContractCreateTokenTxStatusFailure());
 
+        // User might try again, wait for it.
         const retry = yield call(
           retryHandler,
           types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY,
@@ -609,8 +680,42 @@ export function* processRequest(action) {
           yield* processRequest(action);
         }
       } break;
-      default:
+      case PromptRejectedError:
+        // User intentionally rejected a prompt, don't show error modal
+        // The RPC request will still be rejected below via shouldAnswer
         break;
+      default: {
+        // Handle generic errors (e.g., from getBalance, signMessage, etc.)
+        const errorDetails = extractErrorDetails(e);
+        const errorMessage = e.message || 'An error occurred processing the request';
+
+        // Store error details for "See why" button
+        yield put(setReownError(errorDetails));
+
+        // Show error modal
+        yield put(setReownModal({
+          show: true,
+          type: ReownModalTypes.REQUEST_ERROR,
+          data: {
+            errorMessage,
+          },
+        }));
+
+        // Reject the RPC request
+        yield call(() => walletKit.respondSessionRequest({
+          topic: payload.topic,
+          response: {
+            id: payload.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.INTERNAL_ERROR,
+              message: errorMessage,
+            },
+          },
+        }));
+
+        shouldAnswer = false;
+      } break;
     }
 
     if (shouldAnswer) {
@@ -827,6 +932,61 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           getBalanceResponseTemplate(true),
           getBalanceResponseTemplate(false),
           request.data,
+          requestMetadata,
+        ));
+      } break;
+      case TriggerTypes.AddressRequestPrompt: {
+        const getAddressResponseTemplate = (accepted) => () => resolve({
+          type: TriggerResponseTypes.AddressRequestConfirmationResponse,
+          data: accepted,
+        });
+
+        // Include the original request type (index, first_empty, etc.) along with address data
+        const addressData = {
+          ...request.data,
+          type: request.params?.type,
+        };
+
+        dispatch(showGetAddressModal(
+          getAddressResponseTemplate(true),
+          getAddressResponseTemplate(false),
+          addressData,
+          requestMetadata,
+        ));
+      } break;
+      case TriggerTypes.AddressRequestClientPrompt: {
+        const onAddressSelected = (address) => resolve({
+          type: TriggerResponseTypes.AddressRequestClientResponse,
+          data: { address },
+        });
+
+        const onDeny = () => resolve({
+          type: TriggerResponseTypes.AddressRequestClientResponse,
+          data: { address: null },
+        });
+
+        dispatch(showGetAddressClientModal(
+          onAddressSelected,
+          onDeny,
+          requestMetadata,
+        ));
+      } break;
+      case TriggerTypes.GetUtxosConfirmationPrompt: {
+        const getUtxosResponseTemplate = (accepted) => () => resolve({
+          type: TriggerResponseTypes.GetUtxosConfirmationResponse,
+          data: accepted,
+        });
+
+        // Include both the UTXO details and the filter parameters from the request
+        const utxosData = {
+          ...request.data,
+          filterParams: request.params,
+        };
+
+        dispatch(showGetUtxosModal(
+          getUtxosResponseTemplate(true),
+          getUtxosResponseTemplate(false),
+          utxosData,
           requestMetadata,
         ));
       } break;
@@ -1109,17 +1269,32 @@ export function* onSessionProposal(action) {
  * a QR Code
  */
 export function* onUriInputted(action) {
-  const reownClient = yield call(getReownClient);
+  const { payload } = action;
 
-  if (!reownClient) {
-    // Do nothing, client might not yet have been initialized.
-    log.debug('Tried to get reown client in onSessionProposal but it is undefined.');
+  // Check if this is a pairing URI (new connection) or session URI (existing session request)
+  // Session URIs (wc:topic@2) are just meant to open the wallet - the request comes
+  // through the existing WebSocket connection, so we don't need to call pair()
+  if (!isPairingUri(payload)) {
+    log.debug('Session URI received, skipping pairing (request will come via existing connection)');
     return;
   }
 
-  const { core } = reownClient;
+  let reownClient = yield call(getReownClient);
 
-  const { payload } = action;
+  // If client is not ready yet, wait for it to be initialized
+  if (!reownClient) {
+    log.debug('Reown client not ready, waiting for initialization...');
+    // Wait for the SET_REOWN action which indicates client is ready
+    yield take(types.SET_REOWN);
+    reownClient = yield call(getReownClient);
+
+    if (!reownClient) {
+      log.debug('Reown client still not available after waiting.');
+      return;
+    }
+  }
+
+  const { core } = reownClient;
 
   try {
     yield call(core.pairing.pair, { uri: payload });
@@ -1202,6 +1377,45 @@ export function* onGetBalanceRequest({ payload }) {
   yield* handleDAppRequest(payload, ReownModalTypes.GET_BALANCE, { passAcceptAction: false });
 }
 
+export function* onGetAddressRequest({ payload }) {
+  yield* handleDAppRequest(payload, ReownModalTypes.GET_ADDRESS, { passAcceptAction: false });
+}
+
+export function* onGetAddressClientRequest({ payload }) {
+  // This request type has a different flow - it passes callbacks directly to the component
+  // rather than using the standard REOWN_ACCEPT/REOWN_REJECT pattern
+  const { onAddressSelected, deny, dapp } = payload;
+
+  const wallet = yield select((state) => state.wallet);
+
+  if (!wallet.isReady()) {
+    log.error('Got a session request but wallet is not ready.');
+    deny();
+    return;
+  }
+
+  // Pass the callbacks through the modal data so the screen can call them directly
+  const modalData = {
+    dapp,
+    onAccept: onAddressSelected,
+    onReject: deny,
+  };
+
+  yield put(setReownModal({
+    show: true,
+    type: ReownModalTypes.GET_ADDRESS_CLIENT,
+    data: modalData,
+  }));
+
+  // Note: Unlike other requests, we don't wait for REOWN_ACCEPT/REOWN_REJECT here
+  // because the GetAddressClientRequest component calls the callbacks directly
+  // and the promise is resolved inside the callback
+}
+
+export function* onGetUtxosRequest({ payload }) {
+  yield* handleDAppRequest(payload, ReownModalTypes.GET_UTXOS, { passAcceptAction: false });
+}
+
 export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
@@ -1217,6 +1431,9 @@ export function* saga() {
       onCreateNanoContractCreateTokenTxRequest,
     ),
     takeLatest(types.SHOW_GET_BALANCE_REQUEST_MODAL, onGetBalanceRequest),
+    takeLatest(types.SHOW_GET_ADDRESS_REQUEST_MODAL, onGetAddressRequest),
+    takeLatest(types.SHOW_GET_ADDRESS_CLIENT_REQUEST_MODAL, onGetAddressClientRequest),
+    takeLatest(types.SHOW_GET_UTXOS_REQUEST_MODAL, onGetUtxosRequest),
     takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),

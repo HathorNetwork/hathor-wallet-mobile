@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { t } from 'ttag';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Clipboard, Image } from 'react-native';
 import { constants, numberUtils } from '@hathor/wallet-lib';
@@ -27,6 +27,7 @@ import {
 } from '../../actions';
 import { REOWN_SEND_TX_STATUS } from '../../constants';
 import FeedbackModal from '../FeedbackModal';
+import AdvancedErrorOptions from './AdvancedErrorOptions';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import { FeedbackContent } from '../FeedbackContent';
 import Spinner from '../Spinner';
@@ -145,6 +146,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  errorActions: {
+    width: '100%',
+    gap: 8,
+  },
+  noPushNotice: {
+    backgroundColor: COLORS.cardBackground,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.borderColor,
+  },
+  noPushNoticeText: {
+    fontSize: 13,
+    color: COLORS.textColorShadow,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
 });
 
 export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onReject }) => {
@@ -168,10 +186,12 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   const navigation = useNavigation();
 
   // State for decline modal
-  const [showDeclineModal, setShowDeclineModal] = React.useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
 
   // Get transaction status from Redux
   const sendTxStatus = reown.sendTransaction?.status || REOWN_SEND_TX_STATUS.READY;
+  // Get error details from centralized error storage
+  const errorDetails = reown.error;
 
   // Use token info hook
   const {
@@ -494,6 +514,14 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
               {renderOutputs()}
               {renderChangeAddress()}
 
+              {data.pushTx === false && (
+                <View style={styles.noPushNotice}>
+                  <Text style={styles.noPushNoticeText}>
+                    {t`This transaction will only be built, not pushed to the network.`}
+                  </Text>
+                </View>
+              )}
+
               <View style={styles.actionContainer}>
                 {/* Hide action buttons when in success state */}
                 {!isTxSuccessful() && !isTxFailed() && (
@@ -522,7 +550,12 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
           icon={<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />}
           text={t`Error while sending transaction.`}
           onDismiss={onFeedbackModalDismiss}
-          action={<NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />}
+          action={(
+            <View style={styles.errorActions}>
+              <NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />
+              <AdvancedErrorOptions errorDetails={errorDetails} />
+            </View>
+          )}
         />
       )}
 

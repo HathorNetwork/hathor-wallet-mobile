@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { t } from 'ttag';
-import { Network } from '@hathor/wallet-lib';
+import { Network, bigIntUtils } from '@hathor/wallet-lib';
 import { COLORS } from '../../../styles/themes';
 import { commonStyles } from '../theme';
 import { DEFAULT_TOKEN } from '../../../constants';
@@ -133,6 +133,9 @@ const ArgValueRenderer = ({ type, value, network, tokens }) => {
     } else if (value in tokens) {
       displayValue = `${tokens[value].symbol} (${value})`;
     }
+  } else if (typeof value === 'object' && value !== null) {
+    // Handle objects and arrays by converting to JSON string with BigInt support
+    displayValue = bigIntUtils.JSONBigInt.stringify(value, 2);
   }
 
   return (

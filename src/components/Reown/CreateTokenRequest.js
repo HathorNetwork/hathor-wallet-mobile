@@ -31,6 +31,7 @@ import { commonStyles } from './theme';
 import { FeedbackContent } from '../FeedbackContent';
 import { DEFAULT_TOKEN, REOWN_CREATE_TOKEN_STATUS } from '../../constants';
 import FeedbackModal from '../FeedbackModal';
+import AdvancedErrorOptions from './AdvancedErrorOptions';
 import Spinner from '../Spinner';
 import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
@@ -117,6 +118,7 @@ export const CreateTokenRequestData = ({ data }) => (
 export const CreateTokenRequest = ({ createTokenRequest }) => {
   const { dapp, data } = createTokenRequest;
   const { status } = useSelector((state) => state.reown.createToken);
+  const errorDetails = useSelector((state) => state.reown.error);
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const [showDeclineModal, setShowDeclineModal] = useState(false);
@@ -225,7 +227,12 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
           icon={(<Image source={errorIcon} resizeMode='contain' />)}
           text={t`Error while sending create token transaction.`}
           onDismiss={onFeedbackModalDismiss}
-          action={(<NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />)}
+          action={(
+            <View style={styles.errorActions}>
+              <NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />
+              <AdvancedErrorOptions errorDetails={errorDetails} />
+            </View>
+          )}
         />
       )}
     </>
@@ -255,4 +262,8 @@ const styles = StyleSheet.create({
   },
   value: [commonStyles.text, commonStyles.value, { width: '100%' }],
   bold: { fontWeight: 'bold' },
+  errorActions: {
+    width: '100%',
+    gap: 8,
+  },
 });
