@@ -24,6 +24,7 @@ import Spinner from '../../Spinner';
 import { SelectAddressModal } from '../../NanoContract/SelectAddressModal';
 import { DeclineModal } from './DeclineModal';
 import TokenInfoModal from '../TokenInfoModal';
+import AdvancedErrorOptions from '../AdvancedErrorOptions';
 import { useTokenInfo } from '../../../hooks/useTokenInfo';
 import { useBackButtonHandler } from '../../../hooks/useBackButtonHandler';
 import errorIcon from '../../../assets/images/icErrorBig.png';
@@ -101,6 +102,10 @@ const styles = StyleSheet.create({
   disabledButtonText: {
     color: '#737373',
   },
+  errorActions: {
+    width: '100%',
+    gap: 8,
+  },
   noPushNotice: {
     backgroundColor: COLORS.cardBackground,
     padding: 12,
@@ -177,6 +182,9 @@ export const BaseNanoContractRequest = ({
   const [ncAddress, setNcAddress] = useState(registeredNc?.address || firstAddress.address);
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
+
+  // Get error details from centralized error storage
+  const errorDetails = useSelector((state) => state.reown.error);
 
   // Use token info hook
   const {
@@ -607,7 +615,12 @@ export const BaseNanoContractRequest = ({
           icon={(<Image source={errorIcon} style={styles.feedbackModalIcon} resizeMode='contain' />)}
           text={t`Error while sending transaction.`}
           onDismiss={onFeedbackModalDismiss}
-          action={(<NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />)}
+          action={(
+            <View style={styles.errorActions}>
+              <NewHathorButton discrete title={t`Try again`} onPress={onTryAgain} />
+              <AdvancedErrorOptions errorDetails={errorDetails} />
+            </View>
+          )}
         />
       )}
 

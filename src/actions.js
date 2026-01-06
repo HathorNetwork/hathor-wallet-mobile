@@ -15,6 +15,7 @@ import {
   REOWN_CREATE_TOKEN_STATUS,
   REOWN_NEW_NANOCONTRACT_TX_STATUS,
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
+  REOWN_SEND_TX_STATUS,
 } from './constants';
 import { mapToTxHistory } from './utils';
 
@@ -222,6 +223,7 @@ export const types = {
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS',
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY',
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS',
+  REOWN_SET_ERROR: 'REOWN_SET_ERROR',
   /**
    * Token Swap actions
    */
@@ -1608,6 +1610,7 @@ export const setSendTxStatusSuccess = () => ({
 
 export const setSendTxStatusFailure = () => ({
   type: types.REOWN_SEND_TX_STATUS_FAILURE,
+  payload: REOWN_SEND_TX_STATUS.FAILED,
 });
 
 export const sendTxRetry = () => ({
@@ -1662,6 +1665,16 @@ export const setCreateNanoContractCreateTokenTxStatusFailure = () => ({
 export const setCreateNanoContractCreateTokenTxStatusSuccess = () => ({
   type: types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
   payload: REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS.SUCCESSFUL,
+});
+
+/**
+ * Set error details for the current Reown operation.
+ * Only one RPC is processed at a time, so a single error suffices.
+ * @param {Object|null} errorDetails - Error details { message, stack, type, timestamp } or null to clear
+ */
+export const setReownError = (errorDetails = null) => ({
+  type: types.REOWN_SET_ERROR,
+  payload: errorDetails,
 });
 
 export const tokenSwapFetchAllowedTokens = () => ({
