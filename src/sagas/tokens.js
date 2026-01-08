@@ -48,8 +48,50 @@ const CONCURRENT_FETCH_REQUESTS = 5;
 const METADATA_MAX_RETRIES = 3;
 
 /**
+ * Configuration for balance fetch retry mechanism.
+ * Used when force=true to handle eventual consistency with wallet-service.
+ */
+const BALANCE_FETCH_RETRY_DELAY_MS = 300;
+const BALANCE_FETCH_MAX_RETRIES = 3;
+
+/**
+ * DEBUG FLAG: Set to true to simulate slow wallet-service backend.
+ * This makes the eventual consistency bug 100% reproducible for testing.
+ *
+ * When enabled:
+ * - First getBalance call returns the PREVIOUS (stale) balance
+ * - Subsequent calls return the actual balance
+ *
+ * To test:
+ * 1. Set DEBUG_SIMULATE_SLOW_BACKEND = true
+ * 2. Rebuild the app
+ * 3. Send a transaction to the wallet
+ * 4. WITHOUT the retry fix: balance stays stale
+ * 5. WITH the retry fix: balance updates after retry
+ *
+ * IMPORTANT: Set back to false before committing!
+ */
+const DEBUG_SIMULATE_SLOW_BACKEND = false;
+const debugStaleBalanceCache = new Map(); // tokenId -> stale balance
+
+/**
+ * Map to track pending balance fetch requests per tokenId.
+ * This enables request deduplication and force upgrade capability.
+ *
+ * Structure: Map<tokenId, { force: boolean }>
+ * - force: whether the pending request should force a fresh fetch
+ */
+const pendingBalanceRequests = new Map();
+
+/**
  * This saga will create a channel to queue TOKEN_FETCH_BALANCE_REQUESTED actions and
  * consumers that will run in parallel consuming those actions.
+ *
+ * Key improvements over the original implementation:
+ * 1. Request deduplication: Only one fetch per tokenId at a time
+ * 2. Force upgrade: If a force=true request arrives while a force=false is pending,
+ *    the pending request is upgraded to force=true
+ * 3. Race condition prevention: Prevents multiple consumers from processing the same tokenId
  *
  * More information about channels can be read on https://redux-saga.js.org/docs/api/#takechannel
  */
@@ -63,6 +105,27 @@ function* fetchTokenBalanceQueue() {
 
   while (true) {
     const action = yield take(types.TOKEN_FETCH_BALANCE_REQUESTED);
+    const { tokenId, force } = action;
+
+    // Check if there's already a pending request for this tokenId
+    if (pendingBalanceRequests.has(tokenId)) {
+      const pending = pendingBalanceRequests.get(tokenId);
+
+      // Upgrade to force=true if the new request has force=true
+      // This ensures that if a transaction triggers a force refresh while
+      // a non-forced fetch is pending, we'll still get fresh data
+      if (force && !pending.force) {
+        log.debug(`Upgrading pending balance request for ${tokenId} to force=true`);
+        pending.force = true;
+      }
+
+      // Skip queueing duplicate request - the existing one will handle it
+      log.debug(`Skipping duplicate balance request for ${tokenId}, pending request exists`);
+      continue;
+    }
+
+    // Create new pending entry and queue the request
+    pendingBalanceRequests.set(tokenId, { force });
     yield put(fetchTokenBalanceChannel, action);
   }
 }
@@ -88,39 +151,101 @@ function* fetchTokenBalanceConsumer(fetchTokenBalanceChannel) {
   }
 }
 
+/**
+ * Fetches the balance for a specific token.
+ *
+ * Key improvements:
+ * 1. Checks pendingBalanceRequests for the latest force value (supports force upgrade)
+ * 2. For force=true requests, implements retry logic to handle eventual consistency
+ *    with the wallet-service backend
+ * 3. Properly cleans up pending request tracking on completion
+ *
+ * @param {Object} action - The action containing tokenId and force flag
+ */
 function* fetchTokenBalance(action) {
-  const { tokenId, force } = action;
+  const { tokenId } = action;
+
+  // Get the current force value from pending requests (may have been upgraded)
+  const pendingRequest = pendingBalanceRequests.get(tokenId);
+  const force = pendingRequest?.force ?? action.force;
 
   try {
     const wallet = yield select((state) => state.wallet);
     const tokenBalance = yield select((state) => get(state.tokensBalance, tokenId));
 
+    // Use cached data if not forced and data is ready
     if (!force && tokenBalance && tokenBalance.oldStatus === TOKEN_DOWNLOAD_STATUS.READY) {
       log.debug(`Token download status READY.`);
       log.debug(`Token balance already downloaded for token ${tokenId}. Skipping download.`);
-      // The data is already loaded, we should dispatch success
       yield put(tokenFetchBalanceSuccess(tokenId, tokenBalance.data));
       return;
     }
 
-    const response = yield call(wallet.getBalance.bind(wallet), tokenId);
-    const token = get(response, 0, {
-      balance: {
-        unlocked: 0n,
-        locked: 0n,
-      }
-    });
+    // For forced fetches, implement retry logic to handle eventual consistency
+    // This is important because the wallet-service websocket notification may arrive
+    // before the backend has fully processed the transaction into its balance database
+    let balance = null;
+    const attempts = force ? BALANCE_FETCH_MAX_RETRIES : 1;
 
-    const balance = {
-      available: token.balance.unlocked,
-      locked: token.balance.locked,
-    };
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      const response = yield call(wallet.getBalance.bind(wallet), tokenId);
+      const token = get(response, 0, {
+        balance: {
+          unlocked: 0n,
+          locked: 0n,
+        }
+      });
+
+      balance = {
+        available: token.balance.unlocked,
+        locked: token.balance.locked,
+      };
+
+      // DEBUG: Simulate slow backend for manual testing
+      if (DEBUG_SIMULATE_SLOW_BACKEND && force && attempt === 0) {
+        // On first attempt of a forced fetch, return stale balance to simulate
+        // the wallet-service backend not having processed the transaction yet
+        if (!debugStaleBalanceCache.has(tokenId)) {
+          // Cache the "before" balance
+          debugStaleBalanceCache.set(tokenId, { ...balance });
+          log.debug(`[DEBUG] Cached stale balance for ${tokenId}: ${balance.available}`);
+        }
+        // Return the stale balance instead of real one
+        const stale = debugStaleBalanceCache.get(tokenId);
+        log.debug(`[DEBUG] Returning STALE balance for ${tokenId} on attempt ${attempt}: ${stale.available} (real: ${balance.available})`);
+        balance = { ...stale };
+      } else if (DEBUG_SIMULATE_SLOW_BACKEND && force && attempt > 0) {
+        // On retry, clear the cache and return real balance
+        debugStaleBalanceCache.delete(tokenId);
+        log.debug(`[DEBUG] Returning REAL balance for ${tokenId} on attempt ${attempt}: ${balance.available}`);
+      }
+
+      // For forced fetches, check if balance actually changed
+      // If it hasn't and we have retries left, wait and try again
+      if (force && attempt < attempts - 1 && tokenBalance?.data) {
+        const previousBalance = tokenBalance.data;
+        const balanceUnchanged = previousBalance.available === balance.available
+          && previousBalance.locked === balance.locked;
+
+        if (balanceUnchanged) {
+          log.debug(`Balance unchanged for ${tokenId} on attempt ${attempt + 1}, retrying after delay...`);
+          yield delay(BALANCE_FETCH_RETRY_DELAY_MS * (attempt + 1));
+          continue;
+        }
+      }
+
+      // Balance fetched successfully (or changed, or no more retries)
+      break;
+    }
 
     log.debug(`Success fetching token balance for token ${tokenId}.`);
     yield put(tokenFetchBalanceSuccess(tokenId, balance));
   } catch (e) {
     log.error('Error while fetching token balance.', e);
     yield put(tokenFetchBalanceFailed(tokenId));
+  } finally {
+    // Clean up pending request tracking
+    pendingBalanceRequests.delete(tokenId);
   }
 }
 
@@ -263,7 +388,7 @@ export function* fetchTokenMetadata({ tokenId }) {
 export function* fetchTokenData(tokenId, force = false) {
   const fetchBalanceResponse = yield call(
     dispatchAndWait,
-    tokenFetchBalanceRequested(tokenId),
+    tokenFetchBalanceRequested(tokenId, force),
     specificTypeAndPayload(types.TOKEN_FETCH_BALANCE_SUCCESS, {
       tokenId,
     }),
