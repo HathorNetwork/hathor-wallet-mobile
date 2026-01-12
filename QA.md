@@ -21,6 +21,10 @@
   - There should be no tokens listed except HTR
   - Balance should be 0.00 HTR
 
+### Double-check the Version
+1. Navigate to the "Settings" → "About" screen
+1. Confirm that the version being tested is correct, and is not the last public release
+
 ### Generate token error Tests
 1. Go to Settings and Create a new Token.
 1. Enter token name Test Token, and click Next.
