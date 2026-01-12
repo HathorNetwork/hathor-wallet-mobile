@@ -30,7 +30,7 @@ It's a second custom NFT token to test.
 
 ### Preparation
 1. Ensure the **Push Notification** Unleash Feature Toggle is 🚫**disabled** for this device.
-1. If testing the fullnode wallet, make sure the unleash **Wallet Service** feature toggle is also disabled
+1. Make sure the unleash **Wallet Service** feature toggle is enabled, so that the tests run on the correct facade. Also double-check the "Settings" screen for the connection URL, making sure it contains `wallet-service`.
 
 ### Initialize a new wallet with no push feature
 1. You should **not** see a modal to opt-in the push notification yet
@@ -196,15 +196,15 @@ const timeSinceLastRegistration = 2;
 const timeSinceLastRegistration = moment().diff(enabledAt, 'weeks');
 ```
 
-### Turn on the `wallet-service` feature toggle
-1. Get the `deviceId` and add it in the `UserIDs` strategy in the unleash **`wallet-service-mobile-android-testnet.rollout`** feature toggle
-1. Turn the feature toggle on
+### Turn off the `wallet-service` feature toggle
+1. Get the `deviceId` and add it as an exception in the `UserIDs` strategy in the unleash **`wallet-service-mobile-android-testnet.rollout`** feature toggle
+1. Double-check the "Settings" screen, on the URL field, to confirm the test is now being executed on the Fullnode facade.
+   1. The connection address should be `https://node1.testnet.hathor.network/v1a/`.
 
-Run all the tests above with the wallet-service turned on. But as a quick test you can run the following test:
+Run all the tests above with the wallet-service turned off. But as a quick test you can run the following test:
 
-### Send token after turn on the `wallet-service` feature toggle
+### Send token after turning off the `wallet-service` connection
 1. Turn **on** the `push-notification` feature toggle
-1. Turn **on** the `wallet-service` feature toggle
 1. View the details of the transaction (foreground)
 1. View the details of the transaction (background)
 

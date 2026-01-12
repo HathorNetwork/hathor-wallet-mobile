@@ -5,8 +5,9 @@ This document outlines the testing flow for the Mobile Wallet using an RPC inter
 - **Testing Environment:** https://staging.betting.hathor.network/rpc
 - **Network:** Testnet
 - **Explorer for validations:** https://explorer.testnet.hathor.network
+- **Facade**: Wallet Service.
 
-Navigate to the testing environment above (or raise a developer environment of your choice) and use the *Requests* to generate the expected *Responses* described below.
+Navigate to the testing environment above (or raise a development environment of your choice) and use the *Requests* to generate the expected *Responses* described below. For ensuring the Wallet Service is being used, connect to the Testnet using the recommended settings and make sure the "Connected to" URL field in the "Settings" screen contain `wallet-service`.
 
 After each request look closely at the confirmation screen, making sure all the request data is properly displayed.
 - *Always reject the first request* you make for each step
@@ -953,7 +954,6 @@ The objective of this test is to try and send a custom token using a Nano Contra
 - Trying to send transactions with `pushTx` set to `false`
 
 ### Testing the other facade
-1. If the tests above were executed in the **Wallet Service**, disable it for the device and try again using the **Full Node** facade
-1. If the tests above were executed in the **Full Node**, enable the **Wallet Service** for the device and try again using it
+1. Considering that the recommendations were followed, all tests above were executed in the **Wallet Service**. Disable it for the device and try again using the **Full Node** facade
 
 Note: A simple way to activate and deactivate the Wallet Service for the device is using the **Custom Network Settings** feature, populating or removing the two Wallet Service fields there.

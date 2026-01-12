@@ -4,7 +4,7 @@
 1. Load the last release of the app and start a wallet. You can confirm the version on Settings -> About.
 1. Update the code to run the latest version, without resetting the wallet.
 1. You should be shown the PIN screen. Unlock the wallet and confirm load succeeded.
-1. Check if the Wallet Service is active for this device. This will be important to understand the context in which the following tests in this guide will be executed
+1. Make sure the Wallet Service is active for this device. It is important to execute the tests on it before switching to the fullnode.
 1. Reset the wallet.
 
 ### New Wallet Flow
@@ -175,13 +175,13 @@
 1. Use the words saved before.
 1. Click on Start the wallet, and wait for it to be initialized. Validate your transactions are loaded.
 
-# Wallet Service
+# Fullnode Facade tests
 
 1. Go to Settings screen and copy the Unique app identifier
 1. Go to the Unleash Dashboard
-  1. If the tests above were executed while connected to the Wallet Service, disable the `wallet-service.rollout` for this device
-  1. If the tests above were executed while NOT connected to the Wallet Service, enable it for this device
-1. Repeat all steps, starting from step 2
+1. Considering that the recommendations above were followed, all tests were executed on the Wallet Service facade.
+   1. To test the fullnode facade, remove the two "Wallet Service" URL fields from the custom network screen.
+1. Repeat all steps, starting from step 2, now validating the Fullnode facade
 
 # Dedicated test suites
 The following documents contain long instructions for specific features. See each one for the complete QA steps.
