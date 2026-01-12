@@ -1,4 +1,5 @@
 # Suggested Test Sequence
+The main test sequence should be executed on the `testnet` network by default, unless a specific test requires another network.
 
 ### App update
 1. Load the last release of the app and start a wallet. You can confirm the version on Settings -> About.
@@ -160,6 +161,13 @@
 1. Click on Register Token, click on Manual Info, and paste the Configuration string.
 1. Click on Register Token, and check that the Test Token is back and your balance is 99 TEST.
 1. Unregister it again and now use the QR Code on the other device to register it.
+
+### Send HTR to a multisig address
+1. Go to the send screen and enter the following address `wRxmoq2bDxViPqFGmAsZVBwHNwjEyFj9zz`
+   1. Optionally, choose the address of another multisig wallet you control
+1. Send `0.01` HTR to this address
+1. Confirm the transaction has been sent
+1. Navigate to the Explorer and confirm the transaction is successful.
 
 ### Reload data
 1. Turn Wi-Fi off until you see the message 'No internet connection.'.
