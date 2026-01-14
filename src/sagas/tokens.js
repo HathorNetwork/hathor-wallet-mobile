@@ -55,26 +55,6 @@ const BALANCE_FETCH_RETRY_DELAY_MS = 300;
 const BALANCE_FETCH_MAX_RETRIES = 3;
 
 /**
- * DEBUG FLAG: Set to true to simulate slow wallet-service backend.
- * This makes the eventual consistency bug 100% reproducible for testing.
- *
- * When enabled:
- * - First getBalance call returns the PREVIOUS (stale) balance
- * - Subsequent calls return the actual balance
- *
- * To test:
- * 1. Set DEBUG_SIMULATE_SLOW_BACKEND = true
- * 2. Rebuild the app
- * 3. Send a transaction to the wallet
- * 4. WITHOUT the retry fix: balance stays stale
- * 5. WITH the retry fix: balance updates after retry
- *
- * IMPORTANT: Set back to false before committing!
- */
-const DEBUG_SIMULATE_SLOW_BACKEND = false;
-const debugStaleBalanceCache = new Map(); // tokenId -> stale balance
-
-/**
  * Map to track pending balance fetch requests per tokenId.
  * This enables request deduplication and force upgrade capability.
  *
@@ -200,25 +180,6 @@ function* fetchTokenBalance(action) {
         available: token.balance.unlocked,
         locked: token.balance.locked,
       };
-
-      // DEBUG: Simulate slow backend for manual testing
-      if (DEBUG_SIMULATE_SLOW_BACKEND && force && attempt === 0) {
-        // On first attempt of a forced fetch, return stale balance to simulate
-        // the wallet-service backend not having processed the transaction yet
-        if (!debugStaleBalanceCache.has(tokenId)) {
-          // Cache the "before" balance
-          debugStaleBalanceCache.set(tokenId, { ...balance });
-          log.debug(`[DEBUG] Cached stale balance for ${tokenId}: ${balance.available}`);
-        }
-        // Return the stale balance instead of real one
-        const stale = debugStaleBalanceCache.get(tokenId);
-        log.debug(`[DEBUG] Returning STALE balance for ${tokenId} on attempt ${attempt}: ${stale.available} (real: ${balance.available})`);
-        balance = { ...stale };
-      } else if (DEBUG_SIMULATE_SLOW_BACKEND && force && attempt > 0) {
-        // On retry, clear the cache and return real balance
-        debugStaleBalanceCache.delete(tokenId);
-        log.debug(`[DEBUG] Returning REAL balance for ${tokenId} on attempt ${attempt}: ${balance.available}`);
-      }
 
       // For forced fetches, check if balance actually changed
       // If it hasn't and we have retries left, wait and try again
