@@ -67,7 +67,6 @@ const pendingBalanceRequests = new Map();
  * This saga will create a channel to queue TOKEN_FETCH_BALANCE_REQUESTED actions and
  * consumers that will run in parallel consuming those actions.
  *
- * Key improvements over the original implementation:
  * 1. Request deduplication: Only one fetch per tokenId at a time
  * 2. Force upgrade: If a force=true request arrives while a force=false is pending,
  *    the pending request is upgraded to force=true
@@ -134,7 +133,6 @@ function* fetchTokenBalanceConsumer(fetchTokenBalanceChannel) {
 /**
  * Fetches the balance for a specific token.
  *
- * Key improvements:
  * 1. Checks pendingBalanceRequests for the latest force value (supports force upgrade)
  * 2. For force=true requests, implements retry logic to handle eventual consistency
  *    with the wallet-service backend
