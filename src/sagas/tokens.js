@@ -163,9 +163,9 @@ function* fetchTokenBalance(action) {
     // This is important because the wallet-service websocket notification may arrive
     // before the backend has fully processed the transaction into its balance database
     let balance = null;
-    const attempts = force ? BALANCE_FETCH_MAX_RETRIES : 1;
+    const maxAttempts = force ? (BALANCE_FETCH_MAX_RETRIES - 1) : 0;
 
-    for (let attempt = 0; attempt < attempts; attempt += 1) {
+    for (let attempt = 0; attempt <= maxAttempts; attempt += 1) {
       const response = yield call(wallet.getBalance.bind(wallet), tokenId);
       const token = get(response, 0, {
         balance: {
@@ -181,7 +181,7 @@ function* fetchTokenBalance(action) {
 
       // For forced fetches, check if balance actually changed
       // If it hasn't and we have retries left, wait and try again
-      if (force && attempt < attempts - 1 && tokenBalance?.data) {
+      if (force && attempt < maxAttempts && tokenBalance?.data) {
         const previousBalance = tokenBalance.data;
         const balanceUnchanged = previousBalance.available === balance.available
           && previousBalance.locked === balance.locked;
