@@ -34,6 +34,7 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. The Next button should not be clickable. Also, deposit value and your balance should turn red.
 
 ### Receive Tests
+1. Go to "Settings" -> "Network Settings" and change your network to `testnet`
 1. Go to the Receive Screen and check the QR Code.
 1. Click on the address to copy it.
 1. Click on New address and check that a new address was generated. The QRCode must update.
