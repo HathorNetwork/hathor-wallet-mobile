@@ -128,15 +128,21 @@ export function errorHandler(saga, failureAction) {
  * This method is used while processing some action on saga
  * and we need to wait for the user to enter the pin to continue.
  * @param {Function} dispatch - dispatch function from redux
- * @returns {Promise<string>} - Promise that resolves with the pin entered by the user
+ * @param {boolean} [canCancel=false] - whether the user can cancel the pin screen
+ * @returns {Promise<string|null>} - Promise that resolves with the pin entered by the user,
+ *                                   or null if cancelled
  */
-export const showPinScreenForResult = async (dispatch) => new Promise((resolve) => {
+export const showPinScreenForResult = async (dispatch, canCancel = false) => new Promise((resolve) => {
   const params = {
     cb: (_pin) => {
       dispatch(setIsShowingPinScreen(false));
       resolve(_pin);
     },
-    canCancel: false,
+    canCancel,
+    cancelCb: canCancel ? () => {
+      dispatch(setIsShowingPinScreen(false));
+      resolve(null);
+    } : undefined,
     screenText: t`Enter your 6-digit pin to authorize operation`,
     biometryText: t`Authorize operation`,
   };

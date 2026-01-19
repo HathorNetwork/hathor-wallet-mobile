@@ -126,6 +126,12 @@ import { logger } from '../logger';
 const log = logger('reown');
 
 /**
+ * Flag to track if PIN entry was cancelled.
+ * Used to distinguish PIN cancellation from modal rejection in error handling.
+ */
+let pinWasCancelled = false;
+
+/**
  * Extracts error details for storage and display
  * @param {Error} error - The error object
  * @returns {Object} Error details { message, stack, type, timestamp }
@@ -681,7 +687,15 @@ export function* processRequest(action) {
         }
       } break;
       case PromptRejectedError:
-        // User intentionally rejected a prompt, don't show error modal
+        // Check if this was a PIN cancellation (user can retry)
+        // vs a modal rejection (user intentionally rejected)
+        if (pinWasCancelled) {
+          pinWasCancelled = false; // Reset the flag
+          shouldAnswer = false;
+          // Retry the request so user can click Accept again
+          yield* processRequest(action);
+        }
+        // Otherwise, user intentionally rejected a prompt, don't show error modal
         // The RPC request will still be rejected below via shouldAnswer
         break;
       default: {
@@ -912,12 +926,16 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         resolve();
         break;
       case TriggerTypes.PinConfirmationPrompt: {
-        const pinCode = await showPinScreenForResult(dispatch);
+        const pinCode = await showPinScreenForResult(dispatch, true);
+
+        if (pinCode === null) {
+          pinWasCancelled = true;
+        }
 
         resolve({
           type: TriggerResponseTypes.PinRequestResponse,
           data: {
-            accepted: true,
+            accepted: pinCode !== null,
             pinCode,
           }
         });
