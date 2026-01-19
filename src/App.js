@@ -37,6 +37,7 @@ import {
   resetData,
   setTokens,
 } from './actions';
+import { HathorDeeplinkProvider } from './contexts/HathorDeeplinkContext';
 import { store } from './reducers/reducer.init';
 import { GlobalErrorHandler } from './components/GlobalErrorModal';
 import { PortalProvider } from './components/Portal';
@@ -96,6 +97,9 @@ import { NewNanoContractTransactionScreen } from './screens/Reown/NewNanoContrac
 import { NanoContractRegisterQrCodeScreen } from './screens/NanoContractRegisterQrCodeScreen';
 import { SignMessageRequestScreen } from './screens/Reown/SignMessageRequestScreen';
 import { GetBalanceRequestScreen } from './screens/Reown/GetBalanceRequestScreen';
+import { GetAddressRequestScreen } from './screens/Reown/GetAddressRequestScreen';
+import { GetAddressClientRequestScreen } from './screens/Reown/GetAddressClientRequestScreen';
+import { GetUtxosRequestScreen } from './screens/Reown/GetUtxosRequestScreen';
 import { SignOracleDataRequestScreen } from './screens/Reown/SignOracleDataRequestScreen';
 import { CreateTokenRequestScreen } from './screens/Reown/CreateTokenScreen';
 import { CreateNanoContractCreateTokenTxScreen } from './screens/Reown/CreateNanoContractCreateTokenTxScreen';
@@ -488,6 +492,9 @@ const AppStack = () => {
         <Stack.Screen name='NewNanoContractTransactionScreen' component={NewNanoContractTransactionScreen} />
         <Stack.Screen name='SignMessageRequest' component={SignMessageRequestScreen} />
         <Stack.Screen name='GetBalanceRequest' component={GetBalanceRequestScreen} />
+        <Stack.Screen name='GetAddressRequest' component={GetAddressRequestScreen} />
+        <Stack.Screen name='GetAddressClientRequest' component={GetAddressClientRequestScreen} />
+        <Stack.Screen name='GetUtxosRequest' component={GetUtxosRequestScreen} />
         <Stack.Screen name='SendTransactionRequest' component={SendTransactionRequestScreen} />
         <Stack.Screen name='SignOracleDataRequestScreen' component={SignOracleDataRequestScreen} />
         <Stack.Screen name='CreateTokenRequest' component={CreateTokenRequestScreen} />
@@ -854,12 +861,14 @@ const App = () => (
             ref={navigationRef}
             navigationInChildEnabled
           >
-            <NavigationSerializingProvider>
-              <ShowPushNotificationTxDetails />
-              <NetworkStatusBar />
-              <RootStack />
-              <ReownModal />
-            </NavigationSerializingProvider>
+            <HathorDeeplinkProvider>
+              <NavigationSerializingProvider>
+                <ShowPushNotificationTxDetails />
+                <NetworkStatusBar />
+                <RootStack />
+                <ReownModal />
+              </NavigationSerializingProvider>
+            </HathorDeeplinkProvider>
           </NavigationContainer>
           <GlobalErrorHandler />
         </SafeAreaView>
@@ -872,6 +881,22 @@ const App = () => (
 const createRequestInstance = (resolve, timeout) => {
   const instance = hathorLib.axios.defaultCreateRequestInstance(resolve, timeout);
 
+  // Custom paramsSerializer to handle URL encoding consistently across platforms
+  // This fixes iOS 17+ URL encoding issues where NSURLSession uses RFC 3986
+  // and can cause double-encoding or malformed query parameters with special characters
+  instance.defaults.paramsSerializer = (params) => {
+    const searchParams = new URLSearchParams();
+    Object.keys(params).forEach((key) => {
+      const value = params[key];
+      if (Array.isArray(value)) {
+        // Handle array parameters (e.g., calls[], fields[])
+        value.forEach((v) => searchParams.append(`${key}[]`, v));
+      } else if (value !== null && value !== undefined) {
+        searchParams.append(key, value);
+      }
+    });
+    return searchParams.toString();
+  };
   instance.interceptors.response.use((response) => response, (error) => Promise.reject(error));
   return instance;
 };

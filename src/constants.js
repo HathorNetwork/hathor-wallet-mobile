@@ -68,6 +68,19 @@ export const TERMS_OF_SERVICE_URL = 'https://hathor.network/terms-and-conditions
 export const PRIVACY_POLICY_URL = 'https://hathor.network/privacy-policy/';
 
 /**
+ * Deep link URL scheme for the app (e.g., hathorwallet://reown)
+ */
+export const DEEP_LINK_SCHEME = 'hathorwallet';
+
+/**
+ * Deep link types for routing
+ */
+export const DEEP_LINK_TYPE = {
+  NAVIGATE: 'navigate',
+  WALLETCONNECT: 'walletconnect',
+};
+
+/**
  * Re-export variables from config.js.
  */
 export { IS_MULTI_TOKEN, DEFAULT_TOKEN, PRIMARY_COLOR, SENTRY_DSN };

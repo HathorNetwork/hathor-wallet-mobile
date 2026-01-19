@@ -22,7 +22,12 @@ import { get } from 'lodash';
 import { SwapIcon } from '../components/Icons/Swap.icon';
 
 import { renderValue } from '../utils';
-import { calcAmountWithSlippage, selectTokenSwapAllowedTokens } from '../utils/tokenSwap';
+import {
+  calcAmountWithSlippage,
+  renderAmountAndSymbolWithSlippage,
+  renderConversionRate,
+  selectTokenSwapAllowedTokens,
+} from '../utils/tokenSwap';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -73,6 +78,8 @@ const TokenSwap = () => {
 
   const [showQuote, setShowQuote] = useState(false);
 
+  const [editing, setEditing] = useState(null);
+
   const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
   const {
     inputToken,
@@ -87,7 +94,7 @@ const TokenSwap = () => {
 
   useEffect(() => {
     for (const tk of allowedTokens) {
-      dispatch(tokenFetchBalanceRequested(tk.uid));
+      dispatch(tokenFetchBalanceRequested(tk.uid, true));
     }
   }, [allowedTokens]);
 
@@ -134,6 +141,9 @@ const TokenSwap = () => {
     setOutputTokenAmountStr('');
     setOutputTokenAmount(0n);
     setSwapDirection('input');
+    setTimeout(() => {
+      setEditing(null);
+    }, 500);
 
     if (inputTokenAmount) {
       dispatch(tokenSwapFetchSwapQuote('input', inputTokenAmount.toString(10), inputToken.uid, outputToken.uid));
@@ -144,6 +154,9 @@ const TokenSwap = () => {
     setInputTokenAmountStr('');
     setInputTokenAmount(0n);
     setSwapDirection('output');
+    setTimeout(() => {
+      setEditing(null);
+    }, 500);
 
     if (outputTokenAmount) {
       dispatch(tokenSwapFetchSwapQuote('output', outputTokenAmount.toString(10), inputToken.uid, outputToken.uid));
@@ -156,6 +169,8 @@ const TokenSwap = () => {
   }
 
   function onFocus(dirClicked) {
+    setEditing(dirClicked);
+    setSwapDirection(null);
     setShowQuote(false);
     if (dirClicked === 'input') {
       setOutputTokenAmount(0n);
@@ -190,6 +205,27 @@ const TokenSwap = () => {
     dispatch(tokenSwapSwitchTokens());
   };
 
+  /**
+   * We need to check that the quoted amount is valid even after we apply the slippage.
+   * The value can be invalid if the quoted amount is 0.01 and with slippage it comes to 0.00
+   * This would mean we have either a deposit or withdrawal of 0 which should not happen.
+   * To avoid this we need this check.
+   */
+  const checkQuotedAmount = () => {
+    if (!(quote && quote.direction)) {
+      return false;
+    }
+
+    let quotedAmount = 0n;
+    if (quote.direction === 'input') {
+      quotedAmount = calcAmountWithSlippage('input', quote.amount_out, TOKEN_SWAP_SLIPPAGE);
+    } else if (swapDirection === 'output') {
+      quotedAmount = calcAmountWithSlippage('output', quote.amount_in, TOKEN_SWAP_SLIPPAGE);
+    }
+
+    return quotedAmount > 0n;
+  };
+
   const isReviewButtonDisabled = () => (
     !inputTokenAmountStr
       || !inputTokenAmount
@@ -198,10 +234,7 @@ const TokenSwap = () => {
       || !outputTokenAmount
       || outputTokenAmount === 0n
       || getAvailableAmount(inputToken, tokensBalance) < inputTokenAmount
-  );
-
-  const renderGhostElement = () => (
-    <View style={{ width: 80, height: 40 }} />
+      || !checkQuotedAmount()
   );
 
   const getAvailableString = (token) => {
@@ -211,21 +244,6 @@ const TokenSwap = () => {
     const available = getAvailableAmount(token, tokensBalance);
     const amount = `${renderValue(available, false)}`;
     return t`Balance: ${amount}`;
-  };
-
-  const getAmountWithSlippage = (amount, direction) => calcAmountWithSlippage(
-    direction,
-    amount,
-    TOKEN_SWAP_SLIPPAGE,
-  );
-
-  const getAmountString = (amount, token) => `${renderValue(amount, false)} ${token.symbol}`;
-
-  const getConversionRate = (swapQuote) => {
-    if (!swapQuote) {
-      return null;
-    }
-    return `${getAmountString(100 * (Number(swapQuote.amount_out) / Number(swapQuote.amount_in)), outputToken)} = ${getAmountString(100, inputToken)}`;
   };
 
   const onReviewButtonPress = (quoteArg, tokenIn, tokenOut) => {
@@ -257,7 +275,6 @@ const TokenSwap = () => {
             <View>
               <View style={styles.card}>
                 <View style={styles.tokenCard}>
-                  {renderGhostElement()}
                   <AmountTextInput
                     onAmountUpdate={onInputAmountChange}
                     onEndEditing={onInputAmountEndEditing}
@@ -265,7 +282,9 @@ const TokenSwap = () => {
                     value={inputTokenAmountStr}
                     allowOnlyInteger={false}
                     decimalPlaces={decimalPlaces}
-                    style={styles.amountInputText}
+                    style={swapDirection === 'output' ? styles.amountInputTextFaded : styles.amountInputText}
+                    editable={editing !== 'output'}
+                    textAlign='left'
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -286,7 +305,6 @@ const TokenSwap = () => {
 
               <View style={styles.card}>
                 <View style={styles.tokenCard}>
-                  {renderGhostElement()}
                   <AmountTextInput
                     onAmountUpdate={onOutputAmountChange}
                     onEndEditing={onOutputAmountEndEditing}
@@ -294,7 +312,9 @@ const TokenSwap = () => {
                     value={outputTokenAmountStr}
                     allowOnlyInteger={false}
                     decimalPlaces={decimalPlaces}
-                    style={styles.amountInputText}
+                    style={swapDirection === 'input' ? styles.amountInputTextFaded : styles.amountInputText}
+                    editable={editing !== 'input'}
+                    textAlign='left'
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -315,7 +335,9 @@ const TokenSwap = () => {
                 <View style={styles.quoteContainer}>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Conversion rate</Text>
-                    <Text style={styles.quoteValue}>{getConversionRate(quote)}</Text>
+                    <Text style={styles.quoteValue}>
+                      {renderConversionRate(quote, inputToken, outputToken)}
+                    </Text>
                   </View>
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Slippage</Text>
@@ -328,24 +350,26 @@ const TokenSwap = () => {
                   { quote.direction === 'input' && (
                     <View style={styles.quoteRow}>
                       <Text style={styles.quoteHeader}>Minimum received</Text>
-                      <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_out, 'input'), outputToken)}</Text>
+                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('input', quote.amount_out, outputToken, TOKEN_SWAP_SLIPPAGE)}</Text>
                     </View>
                   )}
                   { quote.direction === 'output' && (
                     <View style={styles.quoteRow}>
                       <Text style={styles.quoteHeader}>Maximum to deposit</Text>
-                      <Text style={styles.quoteValue}>{getAmountString(getAmountWithSlippage(quote.amount_in, 'output'), inputToken)}</Text>
+                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, inputToken, TOKEN_SWAP_SLIPPAGE)}</Text>
                     </View>
                   )}
                 </View>
               )}
             </View>
 
-            <NewHathorButton
-              title={t`REVIEW`}
-              disabled={isReviewButtonDisabled()}
-              onPress={() => onReviewButtonPress(quote, inputToken, outputToken)}
-            />
+            <View style={styles.buttonContainer}>
+              <NewHathorButton
+                title={t`REVIEW`}
+                disabled={isReviewButtonDisabled()}
+                onPress={() => onReviewButtonPress(quote, inputToken, outputToken)}
+              />
+            </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
@@ -363,11 +387,15 @@ const styles = StyleSheet.create({
   },
   screenContent: {
     flex: 1,
-    backgroundColor: COLORS.lowContrastDetail,
+    backgroundColor: COLORS.backgroundColor,
+  },
+  buttonContainer: {
+    marginBottom: 16,
   },
   tokenSelectorWrapper: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    marginRight: 10,
   },
   amountAvailable: {
     marginTop: 8,
@@ -375,27 +403,33 @@ const styles = StyleSheet.create({
   },
   amountInputText: { // https://github.com/facebook/react-native/issues/30666
     flex: 1,
-    alignText: 'center',
     marginBottom: 30,
+  },
+  amountInputTextFaded: {
+    flex: 1,
+    marginBottom: 30,
+    color: COLORS.lightShadow,
   },
   tokenCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 30,
-    padding: 8,
+    paddingVertical: 8,
+    paddingLeft: 24,
+    paddingRight: 8,
   },
   card: {
     zIndex: 1,
     borderRadius: 20,
     backgroundColor: COLORS.backgroundColor,
     // For IOS
-    shadowColor: '#000',
+    shadowColor: COLORS.lightShadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.1,
     shadowRadius: 3.84,
     // For Android
-    elevation: 5,
+    elevation: 2,
   },
   quoteContainer: {
     paddingTop: 40,
@@ -404,13 +438,14 @@ const styles = StyleSheet.create({
   quoteRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
   quoteHeader: {
-    fontWeight: 'bold',
+    fontWeight: '500',
   },
   quoteValue: {
-    fontWeight: 200,
+    fontWeight: '300',
   },
   dividerContainer: {
     zIndex: 2,
@@ -421,18 +456,19 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    // backgroundColor: '#ccc',
     backgroundColor: COLORS.backgroundColor,
   },
   dividerButton: {
-    paddingHorizontal: 15,
-    paddingVertical: 8,
+    width: 40,
+    height: 40,
     borderRadius: 20,
     backgroundColor: COLORS.primary,
     marginHorizontal: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dividerButtonText: {
-    color: '#fff',
+    color: COLORS.backgroundColor,
     fontSize: 16,
     fontWeight: 'bold',
   },

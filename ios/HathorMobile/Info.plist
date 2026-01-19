@@ -82,5 +82,16 @@
 	<array>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>hathorwallet</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		</dict>
+	</array>
 </dict>
 </plist>

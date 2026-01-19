@@ -1,5 +1,5 @@
 diff --git a/node_modules/@hathor/wallet-lib/lib/utils/bigint.js b/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
-index 312d9fb..21a2d0a 100644
+index 312d9fb..2b3f211 100644
 --- a/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
 +++ b/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
 @@ -9,6 +9,13 @@ exports.parseSchema = parseSchema;
@@ -10,7 +10,7 @@ index 312d9fb..21a2d0a 100644
 +// The wallet-lib implements a custom reviver in its bigint utils (which it uses
 +// behind the scenes. The problem is that this custom reviver expects JSON.parse
 +// to receive `context`, which is a new feature implemented in nodejs > 22 and
-+// react-native doesn 't have it neither in Hermes or in JavascriptCore
++// react-native doesn't have it neither in Hermes or in JavascriptCore
 +const corejsParser = require('core-js-pure/actual/json/parse');
 +
  /**
@@ -25,16 +25,26 @@ index 312d9fb..21a2d0a 100644
    },
    stringify(value, space) {
      return JSON.stringify(value, this.bigIntReplacer, space);
-@@ -47,7 +54,11 @@ const JSONBigInt = exports.JSONBigInt = {
+@@ -37,6 +44,10 @@ const JSONBigInt = exports.JSONBigInt = {
+       // No special handling needed for non-number values.
+       return value;
+     }
++    if (!context) {
++      // Context not provided (older JS engines), return value as-is
++      return value;
++    }
+     try {
+       const bigIntValue = BigInt(context.source);
+       if (bigIntValue < Number.MIN_SAFE_INTEGER || bigIntValue > Number.MAX_SAFE_INTEGER) {
+@@ -47,7 +58,10 @@ const JSONBigInt = exports.JSONBigInt = {
        // Otherwise, we can keep it as a Number.
        return value;
      } catch (e) {
 -      if (e instanceof SyntaxError && (e.message === `Cannot convert ${context.source} to a BigInt` || e.message === `invalid BigInt syntax`)) {
 +      if (e instanceof SyntaxError
-+        && (e.message === `Cannot convert ${context.source} to a BigInt`
++        && ((context && e.message === `Cannot convert ${context.source} to a BigInt`)
 +          || (e.message === `can't convert string to bigint`)
 +          || (e.message === `Failed to parse String to BigInt`))) {
-+
          // When this error happens, it means the number cannot be converted to a BigInt,
          // so it's a double, for example '123.456' or '1e2'.
          return value;
