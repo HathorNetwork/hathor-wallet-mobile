@@ -132,26 +132,28 @@ export function errorHandler(saga, failureAction) {
  * @returns {Promise<string|null>} - Promise that resolves with the pin entered by the user,
  *                                   or null if cancelled
  */
-export const showPinScreenForResult = async (dispatch, canCancel = false) => new Promise((resolve) => {
-  const params = {
-    cb: (_pin) => {
-      dispatch(setIsShowingPinScreen(false));
-      resolve(_pin);
-    },
-    canCancel,
-    cancelCb: canCancel ? () => {
-      dispatch(setIsShowingPinScreen(false));
-      resolve(null);
-    } : undefined,
-    screenText: t`Enter your 6-digit pin to authorize operation`,
-    biometryText: t`Authorize operation`,
-  };
+export const showPinScreenForResult = async (dispatch, canCancel = false) => (
+  new Promise((resolve) => {
+    const params = {
+      cb: (_pin) => {
+        dispatch(setIsShowingPinScreen(false));
+        resolve(_pin);
+      },
+      canCancel,
+      cancelCb: canCancel ? () => {
+        dispatch(setIsShowingPinScreen(false));
+        resolve(null);
+      } : undefined,
+      screenText: t`Enter your 6-digit pin to authorize operation`,
+      biometryText: t`Authorize operation`,
+    };
 
-  NavigationService.navigate('PinScreen', params);
+    NavigationService.navigate('PinScreen', params);
 
-  // We should set the global isShowingPinScreen
-  dispatch(setIsShowingPinScreen(true));
-});
+    // We should set the global isShowingPinScreen
+    dispatch(setIsShowingPinScreen(true));
+  })
+);
 
 /**
  * Check if the action is about to set screen to unlocked state.
