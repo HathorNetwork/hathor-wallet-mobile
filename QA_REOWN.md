@@ -325,6 +325,23 @@ After the successful response, open the Testnet Explorer and validate the transa
 }
 ```
 
+
+### Request (3) - Sending a data output
+```json
+{
+  "method": "htr_sendTransaction",
+  "params": {
+    "network": "testnet",
+    "push_tx": true,
+    "outputs": [
+      {
+        "data": "Test data output"
+      }
+    ]
+  }
+}
+```
+
 ## Sign with Address
 Tests the message signing functionality using a wallet address by index.
 
