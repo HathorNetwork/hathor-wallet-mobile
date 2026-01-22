@@ -302,6 +302,18 @@ if (!validation.valid) {
   process.exit(1);
 }
 
+// Warn if bumping version on 'release' branch with anything other than 'release' type
+if (currentBranch === 'release' && updateType !== 'release') {
+  const yellow = '\x1b[33m';
+  const reset = '\x1b[0m';
+  console.warn(`${yellow}`);
+  console.warn('⚠️  Warning: You are bumping the version directly on the \'release\' branch.');
+  console.warn('   Version bumps should typically be made on \'release-candidate\' first,');
+  console.warn('   then merged to \'release\' using updateType=release.');
+  console.warn('   This call may be incorrect.');
+  console.warn(`${reset}`);
+}
+
 // Show feedback header
 console.log('\n📦 Version Bump');
 console.log('─'.repeat(40));
