@@ -31,6 +31,9 @@ function getCurrentVersion() {
   const packageJsonFile = fs.readFileSync(packageJsonPath, 'utf8');
   const versionNameRegex = /"version": "(.+)"/;
   const versionNameMatch = packageJsonFile.match(versionNameRegex);
+  if (!versionNameMatch) {
+    throw new Error('Could not find "version" field in package.json. Please ensure the file contains a valid version.');
+  }
   return versionNameMatch[1];
 }
 
