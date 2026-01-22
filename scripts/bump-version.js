@@ -41,6 +41,13 @@ function getCurrentVersion() {
  * @returns {{ valid: boolean, error?: string }}
  */
 function validateBranchVersion(branch, newVersion) {
+  if (branch !== 'release' && branch !== 'release-candidate') {
+    return {
+      valid: false,
+      error: 'Bump should only be executed on the \'release\' or \'release-candidate\' branches',
+    };
+  }
+
   const hasRcTag = newVersion.includes('-rc.');
 
   if (branch === 'release-candidate' && !hasRcTag) {
