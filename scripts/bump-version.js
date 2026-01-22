@@ -41,10 +41,18 @@ function getCurrentVersion() {
  * @returns {{ valid: boolean, error?: string }}
  */
 function validateBranchVersion(branch, newVersion) {
+  if (branch === null) {
+    return {
+      valid: false,
+      error: 'Could not determine the current git branch.\n'
+        + 'Please ensure you are in a git repository and try again.',
+    };
+  }
+
   if (branch !== 'release' && branch !== 'release-candidate') {
     return {
       valid: false,
-      error: 'Bump should only be executed on the \'release\' or \'release-candidate\' branches',
+      error: `Bump should only be executed on the 'release' or 'release-candidate' branches, but current branch is '${branch}'.`,
     };
   }
 
