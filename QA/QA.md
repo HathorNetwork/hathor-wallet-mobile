@@ -198,14 +198,14 @@ The following documents contain long instructions for specific features. See eac
 ### Custom Network
 
 Test the ability of the app to change networks and connect to custom nodes and wallet services.
-Follow the [Custom Network QA](./QA_CUSTOM_NETWORK.md) steps.
+Follow the [Custom Network QA](QA_CUSTOM_NETWORK.md) steps.
 
 ### Push Notification
 
-Test the ability of the app to receive push notifications. Follow the [Push Notification QA](./QA_PUSH_NOTIFICATION.md) steps.
+Test the ability of the app to receive push notifications. Follow the [Push Notification QA](QA_PUSH_NOTIFICATION.md) steps.
 
 ### Nano Contracts
-Test the ability of the app to create and interact with nano contracts. Follow the [Nano Contracts QA](./QA_NANO_CONTRACT.md) steps.
+Test the ability of the app to create and interact with nano contracts. Follow the [Nano Contracts QA](QA_NANO_CONTRACT.md) steps.
 
 ### Reown
 Tests the interaction of distributed apps with the Mobile Wallet. Some are actual tests for Nano Contracts Follow the [Reown QA](QA_REOWN.md)
