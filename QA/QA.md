@@ -210,6 +210,9 @@ Test the ability of the app to create and interact with nano contracts. Follow t
 ### Reown
 Tests the interaction of distributed apps with the Mobile Wallet. Some are actual tests for Nano Contracts Follow the [Reown QA](QA_REOWN.md)
 
+### Token Swap
+Tests the Token Swap feature. Folow the [Token Swap QA](QA_TOKEN_SWAP.md)
+
 # Development Environment tests
 The following tests are executed only if for the development environment, with access to source code and building.
 
