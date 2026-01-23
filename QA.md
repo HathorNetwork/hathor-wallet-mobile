@@ -168,7 +168,7 @@ The main test sequence should be executed on the `testnet` network by default, u
    1. Optionally, choose the address of another multisig wallet you control
 1. Send `0.01` HTR to this address
 1. Confirm the transaction has been sent
-1. Navigate to the Explorer and confirm the transaction is successful.
+1. Navigate to the Explorer and confirm the transaction is successful with the correct output address.
 
 ### Reload data
 1. Turn Wi-Fi off until you see the message 'No internet connection.'.
