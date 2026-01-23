@@ -5,7 +5,7 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Load the last release of the app and start a wallet. You can confirm the version on Settings -> About.
 1. Update the code to run the latest version, without resetting the wallet.
 1. You should be shown the PIN screen. Unlock the wallet and confirm load succeeded.
-1. Make sure the Wallet Service is active for this device. It is important to execute the tests on it before switching to the fullnode.
+1. Make sure the Wallet Service is active for this device ( see [how to check](#identifying-the-current-facade) ). It is important to execute the tests on it before switching to the fullnode.
 1. Reset the wallet.
 
 ### New Wallet Flow
@@ -47,7 +47,7 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Go to the Send Screen and check whether the camera loads correctly.
 1. Click on Manual Info.
 1. Type any random text and click Next. It must show an error message.
-1. Enter the address `WZ7pDnkPnxbs14GHdUFivFzPbzitwNtvZo` (or an address from your other wallet) and click Next.
+1. Enter the address `Wdf7xQtKDNefhd6KTS68Vna1u4wUAyHjLQ` (or an address from your other wallet) and click Next.
 1. Click on the HTR to change the token. Then, select HTR.
 1. Type 100 HTR, click Next, and check the insufficient funds error.
 1. Type 2 HTR, click Next, and check the send summary.
@@ -281,3 +281,15 @@ If you need to interact with the wallet service within this time window you'll n
 to clear this flag along with the entire application data.
 - Android: clear the application cache, start the app again and import/create your wallet
 - iOS: Uninstall the app, install it again, start the app again and import/create your wallet 
+
+### Setting flags on Unleash
+Some of the tests involve changing Unleash flags for the application. This requires access to Hathor Network's Unleash
+and proper permissions to do so. Ask the Code Owner of this repository for the access URL and credentials to do so.
+
+Once logged in, the following feature toggles can be changed. ( Note: This list is for quick reference, but can be 
+obsolete. Refer to `src/constants.js` for the up-to-date list of feature toggle names ).
+- `wallet-service-mobile.rollout`
+- `push-notification.rollout`
+
+Enter the strategies and manipulate them to add your Unique app identifier ( see the "Settings" screen on the app )
+to fit your current needs.

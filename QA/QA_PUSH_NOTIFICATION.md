@@ -1,6 +1,6 @@
 # Push Notification
 
-Some of the tests in this section require the Push Notification Feature Toggle to be enabled or disabled for the device. You can set this configuration on **`push-notification.rollout`** on Unleash.
+Some of the tests in this section require the Push Notification Feature Toggle to be enabled or disabled for the device. You can set this configuration on **`push-notification.rollout`** on Unleash ( [See how to do this](./QA.md#setting-flags-on-unleash) ).
 To make sure the settings were correctly applied, close the app and open it again after each enable/disable toggle on Unleash, unless stated explicitly in the test steps.
 
 ## Custom tokens
@@ -30,7 +30,8 @@ It's a second custom NFT token to test.
 
 ### Preparation
 1. Ensure the **Push Notification** Unleash Feature Toggle is 🚫**disabled** for this device.
-1. Make sure the unleash **Wallet Service** feature toggle is enabled, so that the tests run on the correct facade. Also double-check the "Settings" screen for the connection URL, making sure it contains `wallet-service`.
+1. Make sure the unleash **Wallet Service** feature toggle is enabled, so that the tests run on the correct facade. Also see [how to identify the current facade](./QA.md#identifying-the-current-facade) and double-check the "Settings" 
+2. screen for the connection URL, making sure it belongs to the Wallet Service.
 
 ### Initialize a new wallet with no push feature
 1. You should **not** see a modal to opt-in the push notification yet
