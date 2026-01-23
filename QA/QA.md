@@ -201,7 +201,6 @@ Test the ability of the app to change networks and connect to custom nodes and w
 Follow the [Custom Network QA](QA_CUSTOM_NETWORK.md) steps.
 
 ### Push Notification
-
 Test the ability of the app to receive push notifications. Follow the [Push Notification QA](QA_PUSH_NOTIFICATION.md) steps.
 
 ### Nano Contracts
@@ -231,3 +230,54 @@ The following tests are executed only if for the development environment, with a
 1. We should never have any problems with pt-br translation. We should have all texts translated.
 1. Check if all untranslated texts are known.
 
+# Common Activities
+
+### Identifying the current network
+If the application is connected to the `testnet` or any other custom network, a yellow bar will appear at the top of the
+app in all screens, with a label like `Custom network: testnet`.
+
+To identify if the application is running on `mainnet`, just make sure there is no yellow bar at the top of the app.
+
+Other option is to check the server it's connected to. See below for this approach:
+
+### Identifying the current facade
+Navigate to the `Settings` screen and check for the `Connected to` field. See the expected exhibition values and check
+on which facade you're currently using and on what network.
+
+On `mainnet` we expect:
+- Fullnode: `https://mobile.wallet.hathor.network/v1a/`
+- Wallet Service: `https://wallet-service.hathor.network/`
+
+On `testnet` we expect:
+- Fullnode: `https://node1.testnet.hathor.network/v1a/`
+- Wallet Service: `https://wallet-service.testnet.hathor.network/`
+
+### Changing Networks
+To change the network, follow the steps below:
+- Navigate to `Settings` and scroll down to `Network Settings`
+- Click "I Understand" on the disclaimer message
+- Click the selected network card on the "Pre-settings" options, or click "Customize" for a custom network
+
+### Changing the Facade
+To change between the Fullnode and Wallet Service facades, choose one option and follow the steps below:
+
+#### Fullnode
+Here we will remove the URLs in Custom Network
+- Follow the `Changing Networks` workflow above and select "Customize".
+- Empty the `Wallet Service URL` and `Wallet Service WS URL` fields 
+- Click "SEND" and now the application will be connected through the Fullnode on the current network
+
+Another option for a developer would be to navigate to `Unleash` and deactivate the `wallet-service-mobile.rollout`
+feature for the `Unique app identifier` of the selected device.
+
+#### Wallet Service
+To change back to the Wallet Service facade, follow the `Changing Networks` and simply select one of the "Pre-settings".
+They will all point to the Wallet Service by default.
+
+_⚠ Note:_ If an irrecoverable error happens while the app is trying to communicate with the Wallet Service, an internal
+error handling flag (`IGNORE_WS_TOGGLE_FLAG`) will prevent the app from trying to connect again with it for 24 hours.
+
+If you need to interact with the wallet service within this time window you'll need to resort to the operational system
+to clear this flag along with the entire application data.
+- Android: clear the application cache, start the app again and import/create your wallet
+- iOS: Uninstall the app, install it again, start the app again and import/create your wallet 
