@@ -41,6 +41,44 @@ import { isNanoContractsEnabled, getResultHelper } from '../utils';
 
 const log = logger('nano-contract-saga');
 
+/**
+ * Synchronous lock mechanism to prevent race conditions in concurrent history requests.
+ * Maps ncId -> Set of currently loading request types ('initial', 'before', 'after').
+ *
+ * This is necessary because the Redux state check (historyMeta.isLoading) has a race window
+ * between `yield select()` and `yield put()` where multiple sagas can pass the guard.
+ *
+ * @type {Map<string, Set<'initial' | 'before' | 'after'>>}
+ */
+const loadingByNcId = new Map();
+
+/**
+ * Gets or creates the Set of loading request types for a given ncId.
+ * @param {string} ncId Nano Contract ID
+ * @returns {Set<string>}
+ */
+function getLoadingSet(ncId) {
+  if (!loadingByNcId.has(ncId)) {
+    loadingByNcId.set(ncId, new Set());
+  }
+  return loadingByNcId.get(ncId);
+}
+
+/**
+ * Removes a request type from the loading set and cleans up if empty.
+ * @param {string} ncId Nano Contract ID
+ * @param {string} requestType The request type to remove
+ */
+function cleanupLoading(ncId, requestType) {
+  const loading = loadingByNcId.get(ncId);
+  if (loading) {
+    loading.delete(requestType);
+    if (loading.size === 0) {
+      loadingByNcId.delete(ncId);
+    }
+  }
+}
+
 export const failureMessage = {
   alreadyRegistered: t`Nano Contract already registered.`,
   walletNotReadyError: t`Wallet is not ready yet to register a Nano Contract.`,
@@ -334,39 +372,54 @@ export function* requestHistoryNanoContract({ payload }) {
   const { ncId, before, after } = payload;
   log.debug('Start processing request for nano contract transaction history...');
 
-  const historyMeta = yield select((state) => state.nanoContract.historyMeta);
-  if (historyMeta[ncId] && historyMeta[ncId].isLoading) {
-    // Do nothing if nano contract already loading...
-    log.debug('Halting processing for nano contract transaction history request while it is loading...');
-    return;
-  }
-  yield put(nanoContractHistoryLoading({ ncId }));
+  // Determine request type: 'before' (newer txs), 'after' (older txs), or 'initial' (full reload)
+  const requestType = before != null ? 'before' : (after != null ? 'after' : 'initial');
+  const loading = getLoadingSet(ncId);
 
-  const wallet = yield select((state) => state.wallet);
-  if (!wallet.isReady()) {
-    log.debug('Fail fetching Nano Contract history because wallet is not ready.');
-    yield put(nanoContractHistoryFailure({ ncId, error: failureMessage.walletNotReadyError }));
-    // This will show user an error modal with the option to send the error to sentry.
-    yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), false));
-    return;
-  }
+  // Synchronous lock check - prevents race condition between yield select() and yield put()
+  // Block conditions:
+  // 1. Same request type already in-flight (duplicate request)
+  // 2. Initial is loading (it will replace everything, so other requests should wait)
+  // 3. This is initial but before/after are in-flight (their results would be lost)
+  const shouldBlock = loading.has(requestType)
+    || loading.has('initial')
+    || (requestType === 'initial' && loading.size > 0);
 
-  const fn = wallet.storage.isNanoContractRegistered.bind(wallet.storage);
-  const isNcRegistered = yield call(fn, ncId);
-  if (!isNcRegistered) {
-    log.debug('Fail fetching Nano Contract history because Nano Contract is not registered yet.');
-    yield put(nanoContractHistoryFailure({ ncId, error: failureMessage.notRegistered }));
+  if (shouldBlock) {
+    log.debug(`Halting: conflicting history load for ncId=${ncId}, type=${requestType}, current=[${[...loading]}]`);
     return;
   }
 
-  if (before == null && after == null) {
-    // it clean the history when starting load from the beginning
-    log.debug('Cleaning previous history to start over.');
-    yield put(nanoContractHistoryClean({ ncId }));
-  }
+  // Acquire lock synchronously before any yield
+  loading.add(requestType);
 
-  const useWalletService = yield select((state) => state.useWalletService);
   try {
+    yield put(nanoContractHistoryLoading({ ncId }));
+
+    const wallet = yield select((state) => state.wallet);
+    if (!wallet.isReady()) {
+      log.debug('Fail fetching Nano Contract history because wallet is not ready.');
+      yield put(nanoContractHistoryFailure({ ncId, error: failureMessage.walletNotReadyError }));
+      // This will show user an error modal with the option to send the error to sentry.
+      yield put(onExceptionCaptured(new Error(failureMessage.walletNotReadyError), false));
+      return;
+    }
+
+    const fn = wallet.storage.isNanoContractRegistered.bind(wallet.storage);
+    const isNcRegistered = yield call(fn, ncId);
+    if (!isNcRegistered) {
+      log.debug('Fail fetching Nano Contract history because Nano Contract is not registered yet.');
+      yield put(nanoContractHistoryFailure({ ncId, error: failureMessage.notRegistered }));
+      return;
+    }
+
+    if (before == null && after == null) {
+      // it clean the history when starting load from the beginning
+      log.debug('Cleaning previous history to start over.');
+      yield put(nanoContractHistoryClean({ ncId }));
+    }
+
+    const useWalletService = yield select((state) => state.useWalletService);
     const req = {
       wallet,
       useWalletService,
@@ -396,6 +449,9 @@ export function* requestHistoryNanoContract({ payload }) {
     );
     // give opportunity for users to send the error to our team
     yield put(onExceptionCaptured(error, false));
+  } finally {
+    // Always release the lock, even on error or early return
+    cleanupLoading(ncId, requestType);
   }
 }
 
