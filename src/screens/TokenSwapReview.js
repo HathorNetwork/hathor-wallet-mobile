@@ -37,6 +37,7 @@ import TextFmt from '../components/TextFmt';
 import {
   fetchTokensMetadata,
   newToken,
+  tokenFetchBalanceRequested,
   tokenMetadataUpdated,
   tokenSwapFetchSwapQuote,
   tokenSwapResetSwapData,
@@ -77,6 +78,9 @@ const TokenSwapReview = () => {
       const networkName = wallet.getNetworkObject().name;
       const metadatas = await fetchTokensMetadata([token.uid], networkName);
       dispatch(tokenMetadataUpdated(metadatas));
+
+      // Fetch the balance for the newly registered token
+      dispatch(tokenFetchBalanceRequested(token.uid));
     }
   };
 

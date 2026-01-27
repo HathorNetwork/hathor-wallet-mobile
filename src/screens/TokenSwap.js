@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -20,6 +21,7 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
 import { get } from 'lodash';
 import { SwapIcon } from '../components/Icons/Swap.icon';
+import AmountInputAccessory from '../components/AmountInputAccessory';
 
 import { renderValue } from '../utils';
 import {
@@ -46,6 +48,8 @@ import {
 } from '../actions';
 import NavigationService from '../NavigationService';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
+
+const INPUT_ACCESSORY_VIEW_ID = 'tokenSwapAmountInput';
 
 function getAvailableAmount(token, tokensBalance) {
   if (!token) {
@@ -104,11 +108,11 @@ const TokenSwap = () => {
       dispatch(tokenSwapSetInputToken(allowedTokens[0]));
       return;
     }
-    if (swapDirection === 'input') {
-      // Input has changed
-      setOutputTokenAmount(0n);
-      setOutputTokenAmountStr('');
-    }
+    // Clear both amounts when input token changes
+    setInputTokenAmount(0n);
+    setInputTokenAmountStr('');
+    setOutputTokenAmount(0n);
+    setOutputTokenAmountStr('');
   }, [inputToken]);
 
   useEffect(() => {
@@ -117,11 +121,11 @@ const TokenSwap = () => {
       dispatch(tokenSwapSetOutputToken(allowedTokens[1]));
       return;
     }
-    if (swapDirection === 'output') {
-      // output has changed
-      setInputTokenAmount(0n);
-      setInputTokenAmountStr('');
-    }
+    // Clear both amounts when output token changes
+    setInputTokenAmount(0n);
+    setInputTokenAmountStr('');
+    setOutputTokenAmount(0n);
+    setOutputTokenAmountStr('');
   }, [outputToken]);
 
   useEffect(() => {
@@ -206,6 +210,41 @@ const TokenSwap = () => {
   };
 
   /**
+   * Handles percentage button press from the keyboard accessory.
+   * Calculates the amount based on the percentage of available balance
+   * for the currently focused input field.
+   *
+   * @param {number} percentage - The percentage to apply (25, 50, or 100)
+   */
+  const onPercentagePress = (percentage) => {
+    const token = editing === 'input' ? inputToken : outputToken;
+    const availableBalance = getAvailableAmount(token, tokensBalance);
+
+    if (!availableBalance || availableBalance === 0n) {
+      return;
+    }
+
+    const amount = (availableBalance * BigInt(percentage)) / 100n;
+    const amountStr = renderValue(amount);
+
+    if (editing === 'input') {
+      onInputAmountChange(amountStr, amount);
+      // Trigger quote fetch
+      setOutputTokenAmountStr('');
+      setOutputTokenAmount(0n);
+      setSwapDirection('input');
+      dispatch(tokenSwapFetchSwapQuote('input', amount.toString(10), inputToken.uid, outputToken.uid));
+    } else if (editing === 'output') {
+      onOutputAmountChange(amountStr, amount);
+      // Trigger quote fetch
+      setInputTokenAmountStr('');
+      setInputTokenAmount(0n);
+      setSwapDirection('output');
+      dispatch(tokenSwapFetchSwapQuote('output', amount.toString(10), inputToken.uid, outputToken.uid));
+    }
+  };
+
+  /**
    * We need to check that the quoted amount is valid even after we apply the slippage.
    * The value can be invalid if the quoted amount is 0.01 and with slippage it comes to 0.00
    * This would mean we have either a deposit or withdrawal of 0 which should not happen.
@@ -285,6 +324,7 @@ const TokenSwap = () => {
                     style={swapDirection === 'output' ? styles.amountInputTextFaded : styles.amountInputText}
                     editable={editing !== 'output'}
                     textAlign='left'
+                    inputAccessoryViewID={INPUT_ACCESSORY_VIEW_ID}
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -315,6 +355,7 @@ const TokenSwap = () => {
                     style={swapDirection === 'input' ? styles.amountInputTextFaded : styles.amountInputText}
                     editable={editing !== 'input'}
                     textAlign='left'
+                    inputAccessoryViewID={INPUT_ACCESSORY_VIEW_ID}
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -372,8 +413,31 @@ const TokenSwap = () => {
             </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
+          {/* Android: render accessory inside KeyboardAvoidingView so it moves with keyboard */}
+          {Platform.OS === 'android' && editing !== null && (
+            <AmountInputAccessory
+              nativeID={INPUT_ACCESSORY_VIEW_ID}
+              availableBalance={getAvailableAmount(
+                editing === 'input' ? inputToken : outputToken,
+                tokensBalance
+              )}
+              onPercentagePress={onPercentagePress}
+              visible
+            />
+          )}
         </KeyboardAvoidingView>
       </Pressable>
+      {/* iOS: InputAccessoryView attaches to keyboard natively */}
+      {Platform.OS === 'ios' && (
+        <AmountInputAccessory
+          nativeID={INPUT_ACCESSORY_VIEW_ID}
+          availableBalance={getAvailableAmount(
+            editing === 'input' ? inputToken : outputToken,
+            tokensBalance
+          )}
+          onPercentagePress={onPercentagePress}
+        />
+      )}
     </View>
   );
 };
@@ -439,13 +503,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 8,
-    paddingHorizontal: 4,
   },
   quoteHeader: {
     fontWeight: '500',
+    flexShrink: 0,
   },
   quoteValue: {
     fontWeight: '300',
+    flex: 1,
+    textAlign: 'right',
+    marginLeft: 8,
   },
   dividerContainer: {
     zIndex: 2,
