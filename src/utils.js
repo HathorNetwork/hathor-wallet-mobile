@@ -21,6 +21,12 @@ import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
 import { logger } from './logger';
+import {
+  newToken,
+  tokenFetchBalanceRequested,
+  fetchTokensMetadata,
+  tokenMetadataUpdated,
+} from './actions';
 
 const log = logger('utils');
 
@@ -765,4 +771,34 @@ export const getResultHelper = async (fn) => {
   } catch (e) {
     return [e, null];
   }
+};
+
+/**
+ * Registers a token in the wallet storage and Redux store.
+ * This helper ensures all necessary registration steps are performed:
+ * 1. Persists the token to wallet storage
+ * 2. Dispatches newToken action to add token to Redux state
+ * 3. Dispatches tokenFetchBalanceRequested to fetch the token balance
+ *
+ * @param {Object} wallet - The HathorWallet instance
+ * @param {Function} dispatch - Redux dispatch function
+ * @param {Object} token - Token object with uid, name, and symbol properties
+ */
+export const registerToken = async (wallet, dispatch, token) => {
+  await wallet.storage.registerToken(token);
+  dispatch(newToken(token));
+  dispatch(tokenFetchBalanceRequested(token.uid));
+};
+
+/**
+ * Fetches token metadata from the network and updates the Redux store.
+ *
+ * @param {Object} wallet - The HathorWallet instance
+ * @param {Function} dispatch - Redux dispatch function
+ * @param {string[]} tokenUids - Array of token UIDs to fetch metadata for
+ */
+export const updateTokensMetadata = async (wallet, dispatch, tokenUids) => {
+  const networkName = wallet.getNetworkObject().name;
+  const metadatas = await fetchTokensMetadata(tokenUids, networkName);
+  dispatch(tokenMetadataUpdated(metadatas));
 };

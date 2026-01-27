@@ -19,15 +19,9 @@ import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import Spinner from '../components/Spinner';
 
-import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
+import { getKeyboardAvoidingViewTopDistance, Strong, registerToken, updateTokensMetadata } from '../utils';
 
-import {
-  newToken,
-  updateSelectedToken,
-  fetchTokensMetadata,
-  tokenFetchBalanceRequested,
-  tokenMetadataUpdated
-} from '../actions';
+import { updateSelectedToken } from '../actions';
 import NavigationService from '../NavigationService';
 
 /**
@@ -88,19 +82,12 @@ class RegisterTokenManual extends React.Component {
     });
   }
 
-  onButtonPress = () => {
+  onButtonPress = async () => {
     const { token } = this.state;
-    this.props.wallet.storage.registerToken(token).then(() => {
-      this.props.dispatch(newToken(token));
-      this.props.dispatch(updateSelectedToken(token));
-      // Fetch the balance for the newly registered token
-      this.props.dispatch(tokenFetchBalanceRequested(token.uid));
-      const networkName = this.props.wallet.getNetworkObject().name;
-      fetchTokensMetadata([token.uid], networkName).then((metadatas) => {
-        this.props.dispatch(tokenMetadataUpdated(metadatas));
-      });
-      NavigationService.resetToMain();
-    });
+    await registerToken(this.props.wallet, this.props.dispatch, token);
+    this.props.dispatch(updateSelectedToken(token));
+    updateTokensMetadata(this.props.wallet, this.props.dispatch, [token.uid]);
+    NavigationService.resetToMain();
   }
 
   render() {

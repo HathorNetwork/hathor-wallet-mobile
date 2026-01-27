@@ -23,7 +23,8 @@ import OfflineBar from '../components/OfflineBar';
 import FeedbackModal from '../components/FeedbackModal';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import TextFmt from '../components/TextFmt';
-import { newToken, updateSelectedToken, tokenFetchBalanceRequested } from '../actions';
+import { updateSelectedToken } from '../actions';
+import { registerToken } from '../utils';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { useNavigation, useParams } from '../hooks/navigation';
 
@@ -41,7 +42,6 @@ const CreateTokenConfirm = () => {
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
 
   const dispatch = useDispatch();
-  const dispatchNewToken = (token) => dispatch(newToken(token));
   const dispatchUpdateSelectedToken = (token) => dispatch(updateSelectedToken(token));
 
   // Navigation and params hooks
@@ -119,13 +119,10 @@ const CreateTokenConfirm = () => {
    *
    * @param {Object} tx Create token tx data
    */
-  const onTxSuccess = (tx) => {
+  const onTxSuccess = async (tx) => {
     const token = { uid: tx.hash, name, symbol };
-    dispatchNewToken(token);
+    await registerToken(wallet, dispatch, token);
     dispatchUpdateSelectedToken(token);
-    wallet.storage.registerToken(token);
-    // Fetch the balance for the newly created token
-    dispatch(tokenFetchBalanceRequested(token.uid));
   };
 
   /**
