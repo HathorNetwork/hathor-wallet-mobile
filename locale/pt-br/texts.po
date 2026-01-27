@@ -809,12 +809,12 @@ msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:83
-#: src/screens/TokenSwapReview.js:150
+#: src/screens/TokenSwapReview.js:157
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:84
-#: src/screens/TokenSwapReview.js:151
+#: src/screens/TokenSwapReview.js:158
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -1450,6 +1450,7 @@ msgstr "Reportar erro"
 #: src/components/GlobalErrorModal.js:126
 #: src/components/Reown/ErrorDetailModal.js:114
 #: src/components/Reown/InsufficientFundsModal.js:43
+#: src/components/Reown/NetworkMismatchModal.js:54
 #: src/components/Reown/TokenInfoModal.js:114
 msgid "Close"
 msgstr "Fechar"
@@ -1984,6 +1985,24 @@ msgstr "Compartilhar Informações de UTXOs"
 #: src/components/Reown/InsufficientFundsModal.js:39
 msgid "Insufficient funds to complete the transaction."
 msgstr "Saldo insuficiente para completar a transação."
+
+#: src/components/Reown/NetworkMismatchModal.js:39
+#, fuzzy
+msgid "Network Mismatch"
+msgstr "Configurações de Rede"
+
+#: src/components/Reown/NetworkMismatchModal.js:44
+msgid "The dApp requires a different network than your wallet is connected to."
+msgstr ""
+
+#: src/components/Reown/NetworkMismatchModal.js:47
+#, fuzzy
+msgid "Your wallet:"
+msgstr "Bloquear a wallet"
+
+#: src/components/Reown/NetworkMismatchModal.js:51
+msgid "dApp requires:"
+msgstr ""
 
 #: src/components/Reown/RequestConfirmationModal.js:39
 msgid ""
