@@ -23,6 +23,7 @@ import checkIcon from '../../assets/images/icCheckBig.png';
 import {
   newToken,
   fetchTokensMetadata,
+  tokenFetchBalanceRequested,
   tokenMetadataUpdated
 } from '../../actions';
 import { getTokenLabel, getShortHash } from '../../utils';
@@ -46,6 +47,8 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
       tokens.map(async (token) => {
         await wallet.storage.registerToken(token);
         dispatch(newToken(token));
+        // Fetch the balance for each newly registered token
+        dispatch(tokenFetchBalanceRequested(token.uid));
       })
     );
 

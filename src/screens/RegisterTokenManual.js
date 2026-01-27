@@ -21,7 +21,13 @@ import Spinner from '../components/Spinner';
 
 import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
 
-import { newToken, updateSelectedToken, fetchTokensMetadata, tokenMetadataUpdated } from '../actions';
+import {
+  newToken,
+  updateSelectedToken,
+  fetchTokensMetadata,
+  tokenFetchBalanceRequested,
+  tokenMetadataUpdated
+} from '../actions';
 import NavigationService from '../NavigationService';
 
 /**
@@ -87,6 +93,8 @@ class RegisterTokenManual extends React.Component {
     this.props.wallet.storage.registerToken(token).then(() => {
       this.props.dispatch(newToken(token));
       this.props.dispatch(updateSelectedToken(token));
+      // Fetch the balance for the newly registered token
+      this.props.dispatch(tokenFetchBalanceRequested(token.uid));
       const networkName = this.props.wallet.getNetworkObject().name;
       fetchTokensMetadata([token.uid], networkName).then((metadatas) => {
         this.props.dispatch(tokenMetadataUpdated(metadatas));

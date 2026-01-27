@@ -23,7 +23,7 @@ import OfflineBar from '../components/OfflineBar';
 import FeedbackModal from '../components/FeedbackModal';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import TextFmt from '../components/TextFmt';
-import { newToken, updateSelectedToken } from '../actions';
+import { newToken, updateSelectedToken, tokenFetchBalanceRequested } from '../actions';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { useNavigation, useParams } from '../hooks/navigation';
 
@@ -124,6 +124,8 @@ const CreateTokenConfirm = () => {
     dispatchNewToken(token);
     dispatchUpdateSelectedToken(token);
     wallet.storage.registerToken(token);
+    // Fetch the balance for the newly created token
+    dispatch(tokenFetchBalanceRequested(token.uid));
   };
 
   /**
