@@ -57,11 +57,11 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:648
+#: src/models.js:107 src/utils.js:642
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
-#: src/utils.js:277
+#: src/utils.js:271
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 
@@ -668,7 +668,7 @@ msgstr ""
 msgid "Manual info"
 msgstr "Manuel information"
 
-#: src/screens/RegisterToken.js:42 src/screens/RegisterTokenManual.js:121
+#: src/screens/RegisterToken.js:42 src/screens/RegisterTokenManual.js:122
 msgid "REGISTER TOKEN"
 msgstr "REGISTRER TOKEN"
 
@@ -676,23 +676,23 @@ msgstr "REGISTRER TOKEN"
 msgid "Scan the token QR code"
 msgstr "Scan QR-koden til token"
 
-#: src/screens/RegisterTokenManual.js:97
+#: src/screens/RegisterTokenManual.js:98
 msgid "You're going to register the following token:"
 msgstr "Du registrerer følgende token:"
 
-#: src/screens/RegisterTokenManual.js:99
+#: src/screens/RegisterTokenManual.js:100
 msgid "Name: "
 msgstr "Navn: "
 
-#: src/screens/RegisterTokenManual.js:103
+#: src/screens/RegisterTokenManual.js:104
 msgid "Symbol: "
 msgstr "Symbol: "
 
-#: src/screens/RegisterTokenManual.js:127
+#: src/screens/RegisterTokenManual.js:128
 msgid "Configuration string"
 msgstr "Konfigurationsstreng"
 
-#: src/screens/RegisterTokenManual.js:142
+#: src/screens/RegisterTokenManual.js:143
 msgid "Register token"
 msgstr "Registrer token"
 
@@ -999,18 +999,18 @@ msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:302
 #: src/components/Reown/SendTransactionRequest.js:478
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:30
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:31
 msgid "Transaction successfully sent."
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:33
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:34
 #, javascript-format
 msgid ""
 "There are ${ tokens.length } unregistered tokens in this transaction. Do you "
 "want to register them?"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:35
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:36
 msgid ""
 "There is 1 unregistered token in this transaction. Do you want to register "
 "it?"
