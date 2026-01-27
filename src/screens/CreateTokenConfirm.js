@@ -24,7 +24,7 @@ import FeedbackModal from '../components/FeedbackModal';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import TextFmt from '../components/TextFmt';
 import { updateSelectedToken } from '../actions';
-import { registerToken } from '../utils';
+import { registerToken } from '../utils/tokens';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { useNavigation, useParams } from '../hooks/navigation';
 

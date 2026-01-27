@@ -19,7 +19,8 @@ import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import Spinner from '../components/Spinner';
 
-import { getKeyboardAvoidingViewTopDistance, Strong, registerToken, updateTokensMetadata } from '../utils';
+import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
+import { registerToken, updateTokensMetadata } from '../utils/tokens';
 
 import { updateSelectedToken } from '../actions';
 import NavigationService from '../NavigationService';

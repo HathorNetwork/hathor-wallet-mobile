@@ -38,7 +38,7 @@ import {
   tokenSwapFetchSwapQuote,
   tokenSwapResetSwapData,
 } from '../actions';
-import { registerToken, updateTokensMetadata } from '../utils';
+import { registerToken, updateTokensMetadata } from '../utils/tokens';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 import Spinner from '../components/Spinner';
 import FeedbackModal from '../components/FeedbackModal';

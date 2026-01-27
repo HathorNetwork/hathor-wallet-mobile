@@ -20,7 +20,8 @@ import NewHathorButton from '../../components/NewHathorButton';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 import checkIcon from '../../assets/images/icCheckBig.png';
-import { registerToken, updateTokensMetadata, getTokenLabel, getShortHash } from '../../utils';
+import { registerToken, updateTokensMetadata } from '../../utils/tokens';
+import { getTokenLabel, getShortHash } from '../../utils';
 
 export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
   const { tokens } = route.params;
@@ -42,8 +43,7 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
     );
 
     const uids = tokens.map((token) => token.uid);
-    // This will make the fetch metadata call to run async while we
-    // already navigate to Dashboard without awaiting it
+    // Not awaited intentionally - fetch metadata in background while navigating
     updateTokensMetadata(wallet, dispatch, uids);
     navigation.navigate('Dashboard');
   };
