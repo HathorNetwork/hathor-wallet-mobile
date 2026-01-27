@@ -1987,22 +1987,21 @@ msgid "Insufficient funds to complete the transaction."
 msgstr "Saldo insuficiente para completar a transação."
 
 #: src/components/Reown/NetworkMismatchModal.js:39
-#, fuzzy
 msgid "Network Mismatch"
-msgstr "Configurações de Rede"
+msgstr "Redes Diferentes"
 
 #: src/components/Reown/NetworkMismatchModal.js:44
 msgid "The dApp requires a different network than your wallet is connected to."
 msgstr ""
+"O dApp precisa de uma rede diferente da que sua carteira está conectada."
 
 #: src/components/Reown/NetworkMismatchModal.js:47
-#, fuzzy
 msgid "Your wallet:"
-msgstr "Bloquear a wallet"
+msgstr "Sua carteira:"
 
 #: src/components/Reown/NetworkMismatchModal.js:51
 msgid "dApp requires:"
-msgstr ""
+msgstr "dApp precisa:"
 
 #: src/components/Reown/RequestConfirmationModal.js:39
 msgid ""
