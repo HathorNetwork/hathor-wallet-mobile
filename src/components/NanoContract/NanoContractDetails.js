@@ -150,7 +150,9 @@ export const NanoContractDetails = ({ nc }) => {
             onRefresh={handleNewerTransactions}
             // Enables a button to load more of older transactions until the end
             // By reaching the end, the button ceases to render
-            ListFooterComponent={<LoadMoreButton ncId={nc.ncId} lastTx={txHistory.slice(-1,).pop()} />}
+            ListFooterComponent={(
+              <LoadMoreButton ncId={nc.ncId} lastTx={txHistory.slice(-1,).pop()} />
+            )}
             extraData={[isLoading, error]}
           />
         )}
