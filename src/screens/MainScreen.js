@@ -238,6 +238,9 @@ class MainScreen extends React.Component {
 class TxHistoryView extends React.Component {
   state = { loading: false, canLoadMore: true };
 
+  // Synchronous flag to prevent race conditions with setState
+  isLoadingMore = false;
+
   renderItem = ({ item, index }) => {
     const isFirst = (index === 0);
     const isLast = (index === (this.props.txList.length - 1));
@@ -263,23 +266,30 @@ class TxHistoryView extends React.Component {
   };
 
   loadMoreHistory = async () => {
-    if (!this.state.canLoadMore) {
-      // Already loaded all history
+    if (!this.state.canLoadMore || this.isLoadingMore || this.props.txList.length === 0) {
+      // Already loaded all history, currently loading, or no initial data yet
       return;
     }
 
+    // Set synchronous flag immediately to prevent race conditions
+    this.isLoadingMore = true;
     this.setState({ loading: true });
-    const newHistory = await fetchMoreHistory(
-      this.props.wallet,
-      this.props.token.uid,
-      this.props.txList
-    );
 
-    if (newHistory.length) {
-      this.props.updateTokenHistory(this.props.token.uid, newHistory);
-      this.setState({ loading: false });
-    } else {
-      this.setState({ canLoadMore: false, loading: false });
+    try {
+      const newHistory = await fetchMoreHistory(
+        this.props.wallet,
+        this.props.token.uid,
+        this.props.txList
+      );
+
+      if (newHistory.length) {
+        this.props.updateTokenHistory(this.props.token.uid, newHistory);
+        this.setState({ loading: false });
+      } else {
+        this.setState({ canLoadMore: false, loading: false });
+      }
+    } finally {
+      this.isLoadingMore = false;
     }
   }
 
