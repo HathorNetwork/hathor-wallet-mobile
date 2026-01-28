@@ -57,7 +57,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Última] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:642
+#: src/models.js:107 src/utils.js:654
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -265,7 +265,7 @@ msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
 #: src/screens/CreateTokenConfirm.js:112 src/screens/SendConfirmScreen.js:85
-#: src/screens/TokenSwapReview.js:159
+#: src/screens/TokenSwapReview.js:170
 msgid "Building transaction"
 msgstr "Criando transação"
 
@@ -481,7 +481,7 @@ msgstr "**${ loadedData.addresses } endereços** encontrados"
 msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
-#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PinScreen.js:312
+#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PinScreen.js:318
 #: src/screens/Settings.js:162
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
@@ -589,7 +589,7 @@ msgstr "Desbloqueie sua Hathor Wallet"
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/screens/PinScreen.js:343 src/screens/PinScreen.js:347
+#: src/screens/PinScreen.js:349 src/screens/PinScreen.js:353
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 
@@ -804,17 +804,17 @@ msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:141
+#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:152
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:83
-#: src/screens/TokenSwapReview.js:157
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:83
+#: src/screens/TokenSwapReview.js:168
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
-#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:84
-#: src/screens/TokenSwapReview.js:158
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:84
+#: src/screens/TokenSwapReview.js:169
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -903,16 +903,16 @@ msgstr "Configurações de Rede"
 msgid "Unregister"
 msgstr "Desregistrar"
 
-#: src/screens/TokenSwap.js:246
+#: src/screens/TokenSwap.js:290
 #, javascript-format
 msgid "Balance: ${ amount }"
 msgstr "Saldo ${ amount }"
 
-#: src/screens/TokenSwap.js:270
+#: src/screens/TokenSwap.js:314
 msgid "TOKEN SWAP"
 msgstr "TROCA DE TOKENS"
 
-#: src/screens/TokenSwap.js:368
+#: src/screens/TokenSwap.js:414
 msgid "REVIEW"
 msgstr "REVISAR"
 
@@ -924,15 +924,15 @@ msgstr "Ocorreu um erro ao carregar o protocolo de troca de tokens."
 msgid "Loading Token Swap"
 msgstr "Carregando troca de tokens"
 
-#: src/screens/TokenSwapReview.js:169
+#: src/screens/TokenSwapReview.js:180
 msgid "REVIEW TOKEN SWAP"
 msgstr "REVISAR TROCA DE TOKENS"
 
-#: src/screens/TokenSwapReview.js:185
+#: src/screens/TokenSwapReview.js:196
 msgid "Your swap was successful"
 msgstr "Sua troca foi bem-sucedida"
 
-#: src/screens/TokenSwapReview.js:248
+#: src/screens/TokenSwapReview.js:260
 msgid "SWAP"
 msgstr "TROCAR"
 
@@ -1356,6 +1356,14 @@ msgstr "A wallet não está pronta para carregar o primeiro endereço."
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
+
+#: src/components/AmountInputAccessory.js:94
+msgid "Max"
+msgstr "Máx"
+
+#: src/components/AmountInputAccessory.js:101
+msgid "Done"
+msgstr "Fechar"
 
 #: src/components/AskForPushNotification.js:29
 msgid "Do you want to enable push notifications for this wallet?"
@@ -1997,7 +2005,7 @@ msgstr ""
 msgid "Review details"
 msgstr "Revisar detalhes"
 
-#: src/components/Reown/RequestErrorModal.js:26
+#: src/components/Reown/RequestErrorModal.js:27
 msgid "An error occurred while processing the request."
 msgstr "Ocorreu um erro ao processar a solicitação."
 
