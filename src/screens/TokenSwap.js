@@ -246,7 +246,7 @@ const TokenSwap = () => {
       setInputTokenAmountStr('');
       setInputTokenAmount(0n);
     }
-    // Quote will be fetched when keyboard dismisses via onInputAmountEndEditing/onOutputAmountEndEditing
+    // Quote will be fetched when keyboard dismisses via onEndEditing handlers
   };
 
   /**

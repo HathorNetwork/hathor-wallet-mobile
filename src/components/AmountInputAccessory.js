@@ -25,10 +25,10 @@ import { COLORS } from '../styles/themes';
  *
  * @param {Object} props
  * @param {string} props.nativeID - Unique ID for InputAccessoryView (iOS only)
- * @param {bigint} props.availableBalance - The available balance to calculate percentages from
- * @param {Function} props.onPercentagePress - Callback when a percentage button is pressed: (percentage: number) => void
+ * @param {bigint} props.availableBalance - The available balance to calculate percentages
+ * @param {Function} props.onPercentagePress - Callback when percentage button is pressed
  * @param {Function} props.onDonePress - Callback when Done button is pressed
- * @param {boolean} [props.visible] - Whether to show the accessory (Android only, iOS uses nativeID)
+ * @param {boolean} [props.visible] - Whether to show the accessory (Android only)
  */
 const AmountInputAccessory = ({
   nativeID,
@@ -57,10 +57,12 @@ const AmountInputAccessory = ({
         onPress={() => handlePercentagePress(25)}
         disabled={!availableBalance || availableBalance === 0n}
       >
-        <Text style={[
-          styles.buttonText,
-          (!availableBalance || availableBalance === 0n) && styles.buttonTextDisabled
-        ]}>
+        <Text
+          style={[
+            styles.buttonText,
+            (!availableBalance || availableBalance === 0n) && styles.buttonTextDisabled
+          ]}
+        >
           25%
         </Text>
       </TouchableOpacity>
@@ -69,10 +71,12 @@ const AmountInputAccessory = ({
         onPress={() => handlePercentagePress(50)}
         disabled={!availableBalance || availableBalance === 0n}
       >
-        <Text style={[
-          styles.buttonText,
-          (!availableBalance || availableBalance === 0n) && styles.buttonTextDisabled
-        ]}>
+        <Text
+          style={[
+            styles.buttonText,
+            (!availableBalance || availableBalance === 0n) && styles.buttonTextDisabled
+          ]}
+        >
           50%
         </Text>
       </TouchableOpacity>
@@ -81,10 +85,12 @@ const AmountInputAccessory = ({
         onPress={() => handlePercentagePress(100)}
         disabled={!availableBalance || availableBalance === 0n}
       >
-        <Text style={[
-          styles.buttonText,
-          (!availableBalance || availableBalance === 0n) && styles.buttonTextDisabled
-        ]}>
+        <Text
+          style={[
+            styles.buttonText,
+            (!availableBalance || availableBalance === 0n) && styles.buttonTextDisabled
+          ]}
+        >
           {t`Max`}
         </Text>
       </TouchableOpacity>
