@@ -217,7 +217,7 @@ msgstr "Start Wallet"
 msgid "Invalid amount"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:148 src/screens/CreateTokenConfirm.js:154
+#: src/screens/CreateTokenAmount.js:148 src/screens/CreateTokenConfirm.js:153
 #: src/screens/CreateTokenDepositNotice.js:42 src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
@@ -257,32 +257,32 @@ msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
 #: src/screens/CreateTokenConfirm.js:112 src/screens/SendConfirmScreen.js:85
-#: src/screens/TokenSwapReview.js:159
+#: src/screens/TokenSwapReview.js:152
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:171
+#: src/screens/CreateTokenConfirm.js:170
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:184
+#: src/screens/CreateTokenConfirm.js:183
 msgid "Amount of ${ name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:193
+#: src/screens/CreateTokenConfirm.js:192
 msgid "Token name"
 msgstr "Token navn"
 
-#: src/screens/CreateTokenConfirm.js:199 src/screens/CreateTokenSymbol.js:69
+#: src/screens/CreateTokenConfirm.js:198 src/screens/CreateTokenSymbol.js:69
 msgid "Token symbol"
 msgstr "Token symbol"
 
-#: src/screens/CreateTokenConfirm.js:205
+#: src/screens/CreateTokenConfirm.js:204
 msgid "Deposit"
 msgstr "Indsæt"
 
-#: src/screens/CreateTokenConfirm.js:214
+#: src/screens/CreateTokenConfirm.js:213
 msgid "Create token"
 msgstr "Opret token"
 
@@ -470,7 +470,7 @@ msgstr "**${ props.loadedData.addresses } adresser** fundet"
 msgid "There's been an error connecting to the server."
 msgstr ""
 
-#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PinScreen.js:312
+#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PinScreen.js:318
 #: src/screens/Settings.js:162
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
@@ -576,7 +576,7 @@ msgstr "Lås Hathor-wallet op"
 msgid "Cancel"
 msgstr "Annuller"
 
-#: src/screens/PinScreen.js:343 src/screens/PinScreen.js:347
+#: src/screens/PinScreen.js:349 src/screens/PinScreen.js:353
 msgid "Biometry failed or canceled."
 msgstr "Biometri mislykkedes eller blev annulleret."
 
@@ -650,7 +650,7 @@ msgid "The reown feature is not enabled."
 msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:67
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:82
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:70
 msgid "Register"
 msgstr ""
 
@@ -668,7 +668,7 @@ msgstr ""
 msgid "Manual info"
 msgstr "Manuel information"
 
-#: src/screens/RegisterToken.js:42 src/screens/RegisterTokenManual.js:126
+#: src/screens/RegisterToken.js:42 src/screens/RegisterTokenManual.js:122
 msgid "REGISTER TOKEN"
 msgstr "REGISTRER TOKEN"
 
@@ -676,23 +676,23 @@ msgstr "REGISTRER TOKEN"
 msgid "Scan the token QR code"
 msgstr "Scan QR-koden til token"
 
-#: src/screens/RegisterTokenManual.js:102
+#: src/screens/RegisterTokenManual.js:98
 msgid "You're going to register the following token:"
 msgstr "Du registrerer følgende token:"
 
-#: src/screens/RegisterTokenManual.js:104
+#: src/screens/RegisterTokenManual.js:100
 msgid "Name: "
 msgstr "Navn: "
 
-#: src/screens/RegisterTokenManual.js:108
+#: src/screens/RegisterTokenManual.js:104
 msgid "Symbol: "
 msgstr "Symbol: "
 
-#: src/screens/RegisterTokenManual.js:132
+#: src/screens/RegisterTokenManual.js:128
 msgid "Configuration string"
 msgstr "Konfigurationsstreng"
 
-#: src/screens/RegisterTokenManual.js:147
+#: src/screens/RegisterTokenManual.js:143
 msgid "Register token"
 msgstr "Registrer token"
 
@@ -788,17 +788,17 @@ msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:141
+#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:134
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
-#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:83
-#: src/screens/TokenSwapReview.js:157
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:83
+#: src/screens/TokenSwapReview.js:150
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
-#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:84
-#: src/screens/TokenSwapReview.js:158
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:84
+#: src/screens/TokenSwapReview.js:151
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -908,15 +908,15 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:169
+#: src/screens/TokenSwapReview.js:162
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:185
+#: src/screens/TokenSwapReview.js:178
 msgid "Your swap was successful"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:248
+#: src/screens/TokenSwapReview.js:241
 msgid "SWAP"
 msgstr ""
 
@@ -999,29 +999,29 @@ msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:302
 #: src/components/Reown/SendTransactionRequest.js:478
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:35
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:31
 msgid "Transaction successfully sent."
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:38
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:34
 #, javascript-format
 msgid ""
 "There are ${ tokens.length } unregistered tokens in this transaction. Do you "
 "want to register them?"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:40
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:36
 msgid ""
 "There is 1 unregistered token in this transaction. Do you want to register "
 "it?"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:86
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:74
 #: src/screens/Reown/SuccessFeedbackScreen.js:36
 msgid "Back"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:96
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:84
 msgid "Success"
 msgstr ""
 
@@ -1935,7 +1935,7 @@ msgstr ""
 msgid "Review details"
 msgstr ""
 
-#: src/components/Reown/RequestErrorModal.js:26
+#: src/components/Reown/RequestErrorModal.js:27
 msgid "An error occurred while processing the request."
 msgstr ""
 

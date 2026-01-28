@@ -35,12 +35,10 @@ import NavigationService from '../NavigationService';
 import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
 import {
-  fetchTokensMetadata,
-  newToken,
-  tokenMetadataUpdated,
   tokenSwapFetchSwapQuote,
   tokenSwapResetSwapData,
 } from '../actions';
+import { registerToken, updateTokensMetadata } from '../utils/tokens';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 import Spinner from '../components/Spinner';
 import FeedbackModal from '../components/FeedbackModal';
@@ -70,13 +68,8 @@ const TokenSwapReview = () => {
   const registerTokenIfNeeded = async (token) => {
     const isRegistered = await wallet.storage.isTokenRegistered(token.uid);
     if (!isRegistered) {
-      await wallet.storage.registerToken(token);
-      dispatch(newToken(token));
-
-      // Fetch and update token metadata
-      const networkName = wallet.getNetworkObject().name;
-      const metadatas = await fetchTokensMetadata([token.uid], networkName);
-      dispatch(tokenMetadataUpdated(metadatas));
+      await registerToken(wallet, dispatch, token);
+      await updateTokensMetadata(wallet, dispatch, [token.uid]);
     }
   };
 
