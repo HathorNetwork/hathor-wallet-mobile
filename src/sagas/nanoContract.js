@@ -42,39 +42,48 @@ import { isNanoContractsEnabled, getResultHelper } from '../utils';
 const log = logger('nano-contract-saga');
 
 /**
+ * Request type constants for nano contract history requests.
+ */
+export const REQUEST_TYPE = {
+  INITIAL: 'initial',
+  BEFORE: 'before',
+  AFTER: 'after',
+};
+
+/**
  * Synchronous lock mechanism to prevent race conditions in concurrent history requests.
- * Maps ncId -> Set of currently loading request types ('initial', 'before', 'after').
+ * Maps ncId -> Set of currently loading request types.
  *
  * This is necessary because the Redux state check (historyMeta.isLoading) has a race window
  * between `yield select()` and `yield put()` where multiple sagas can pass the guard.
  *
- * @type {Map<string, Set<'initial' | 'before' | 'after'>>}
+ * @type {Map<string, Set<string>>}
  */
-const loadingByNcId = new Map();
+const loadingLockByNcId = new Map();
 
 /**
  * Gets or creates the Set of loading request types for a given ncId.
  * @param {string} ncId Nano Contract ID
  * @returns {Set<string>}
  */
-function getLoadingSet(ncId) {
-  if (!loadingByNcId.has(ncId)) {
-    loadingByNcId.set(ncId, new Set());
+function getLoadingLockSet(ncId) {
+  if (!loadingLockByNcId.has(ncId)) {
+    loadingLockByNcId.set(ncId, new Set());
   }
-  return loadingByNcId.get(ncId);
+  return loadingLockByNcId.get(ncId);
 }
 
 /**
- * Removes a request type from the loading set and cleans up if empty.
+ * Removes a request type from the loading lock set and cleans up if empty.
  * @param {string} ncId Nano Contract ID
  * @param {string} requestType The request type to remove
  */
-function cleanupLoading(ncId, requestType) {
-  const loading = loadingByNcId.get(ncId);
-  if (loading) {
-    loading.delete(requestType);
-    if (loading.size === 0) {
-      loadingByNcId.delete(ncId);
+function cleanupLoadingLock(ncId, requestType) {
+  const loadingLock = loadingLockByNcId.get(ncId);
+  if (loadingLock) {
+    loadingLock.delete(requestType);
+    if (loadingLock.size === 0) {
+      loadingLockByNcId.delete(ncId);
     }
   }
 }
@@ -373,30 +382,30 @@ export function* requestHistoryNanoContract({ payload }) {
   log.debug('Start processing request for nano contract transaction history...');
 
   // Determine request type: 'before' (newer txs), 'after' (older txs), or 'initial' (full reload)
-  let requestType = 'initial';
+  let requestType = REQUEST_TYPE.INITIAL;
   if (before != null) {
-    requestType = 'before';
+    requestType = REQUEST_TYPE.BEFORE;
   } else if (after != null) {
-    requestType = 'after';
+    requestType = REQUEST_TYPE.AFTER;
   }
-  const loading = getLoadingSet(ncId);
+  const loadingLock = getLoadingLockSet(ncId);
 
   // Synchronous lock check - prevents race condition between yield select() and yield put()
   // Block conditions:
   // 1. Same request type already in-flight (duplicate request)
   // 2. Initial is loading (it will replace everything, so other requests should wait)
   // 3. This is initial but before/after are in-flight (their results would be lost)
-  const shouldBlock = loading.has(requestType)
-    || loading.has('initial')
-    || (requestType === 'initial' && loading.size > 0);
+  const shouldBlock = loadingLock.has(requestType)
+    || loadingLock.has(REQUEST_TYPE.INITIAL)
+    || (requestType === REQUEST_TYPE.INITIAL && loadingLock.size > 0);
 
   if (shouldBlock) {
-    log.debug(`Halting: conflicting history load for ncId=${ncId}, type=${requestType}, current=[${[...loading]}]`);
+    log.debug(`Halting: conflicting history load for ncId=${ncId}, type=${requestType}, current=[${[...loadingLock]}]`);
     return;
   }
 
   // Acquire lock synchronously before any yield
-  loading.add(requestType);
+  loadingLock.add(requestType);
 
   try {
     yield put(nanoContractHistoryLoading({ ncId }));
@@ -456,7 +465,7 @@ export function* requestHistoryNanoContract({ payload }) {
     yield put(onExceptionCaptured(error, false));
   } finally {
     // Always release the lock, even on error or early return
-    cleanupLoading(ncId, requestType);
+    cleanupLoadingLock(ncId, requestType);
   }
 }
 
