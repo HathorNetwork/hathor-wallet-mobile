@@ -150,7 +150,9 @@ export const NanoContractDetails = ({ nc }) => {
             onRefresh={handleNewerTransactions}
             // Enables a button to load more of older transactions until the end
             // By reaching the end, the button ceases to render
-            ListFooterComponent={<LoadMoreButton lastTx={txHistory.slice(-1,).pop()} />}
+            ListFooterComponent={(
+              <LoadMoreButton ncId={nc.ncId} lastTx={txHistory.slice(-1,).pop()} />
+            )}
             extraData={[isLoading, error]}
           />
         )}
@@ -163,12 +165,13 @@ export const NanoContractDetails = ({ nc }) => {
  * It hides the button when the last transaction is the initialize.
  *
  * @param {Object} prop Properties object
+ * @param {string} prop.ncId Nano Contract ID (from the registered contract)
  * @param {{
- *   ncId: string;
  *   txId: string;
+ *   ncMethod: string;
  * }} prop.lastTx A transaction item from transaction history
  */
-const LoadMoreButton = ({ lastTx }) => {
+const LoadMoreButton = ({ ncId, lastTx }) => {
   const dispatch = useDispatch();
   const isInitializeTx = lastTx.ncMethod === 'initialize';
 
@@ -178,10 +181,10 @@ const LoadMoreButton = ({ lastTx }) => {
    */
   const handleLoadMore = useCallback(() => {
     dispatch(nanoContractHistoryRequest({
-      ncId: lastTx.ncId,
+      ncId,
       after: lastTx.txId,
     }));
-  }, [dispatch, lastTx]);
+  }, [dispatch, ncId, lastTx.txId]);
 
   return !isInitializeTx && (
     <NewHathorButton
