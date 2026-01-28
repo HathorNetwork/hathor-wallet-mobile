@@ -84,6 +84,8 @@ const TokenSwap = () => {
 
   const [editing, setEditing] = useState(null);
 
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
   const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
   const {
     inputToken,
@@ -95,6 +97,25 @@ const TokenSwap = () => {
   }));
 
   const navigation = useNavigation();
+
+  // Track keyboard height on Android for proper accessory positioning
+  useEffect(() => {
+    if (Platform.OS !== 'android') {
+      return undefined;
+    }
+
+    const showListener = Keyboard.addListener('keyboardDidShow', (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showListener.remove();
+      hideListener.remove();
+    };
+  }, []);
 
   useEffect(() => {
     for (const tk of allowedTokens) {
@@ -418,20 +439,22 @@ const TokenSwap = () => {
             </View>
           </View>
           <OfflineBar style={{ position: 'relative' }} />
-          {/* Android: render accessory inside KeyboardAvoidingView so it moves with keyboard */}
-          {Platform.OS === 'android' && editing !== null && (
-            <AmountInputAccessory
-              nativeID={INPUT_ACCESSORY_VIEW_ID}
-              availableBalance={getAvailableAmount(
-                editing === 'input' ? inputToken : outputToken,
-                tokensBalance
-              )}
-              onPercentagePress={onPercentagePress}
-              visible
-            />
-          )}
         </KeyboardAvoidingView>
       </Pressable>
+      {/* Android: position accessory absolutely above keyboard */}
+      {Platform.OS === 'android' && editing !== null && keyboardHeight > 0 && (
+        <View style={{ position: 'absolute', bottom: keyboardHeight, left: 0, right: 0 }}>
+          <AmountInputAccessory
+            nativeID={INPUT_ACCESSORY_VIEW_ID}
+            availableBalance={getAvailableAmount(
+              editing === 'input' ? inputToken : outputToken,
+              tokensBalance
+            )}
+            onPercentagePress={onPercentagePress}
+            visible
+          />
+        </View>
+      )}
       {/* iOS: InputAccessoryView attaches to keyboard natively */}
       {Platform.OS === 'ios' && (
         <AmountInputAccessory
