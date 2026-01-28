@@ -373,7 +373,12 @@ export function* requestHistoryNanoContract({ payload }) {
   log.debug('Start processing request for nano contract transaction history...');
 
   // Determine request type: 'before' (newer txs), 'after' (older txs), or 'initial' (full reload)
-  const requestType = before != null ? 'before' : (after != null ? 'after' : 'initial');
+  let requestType = 'initial';
+  if (before != null) {
+    requestType = 'before';
+  } else if (after != null) {
+    requestType = 'after';
+  }
   const loading = getLoadingSet(ncId);
 
   // Synchronous lock check - prevents race condition between yield select() and yield put()
