@@ -26,7 +26,8 @@ import {
 export const registerToken = async (wallet, dispatch, token) => {
   await wallet.storage.registerToken(token);
   dispatch(newToken(token));
-  dispatch(tokenFetchBalanceRequested(token.uid));
+  // Force fetch to avoid returning stale cached data (e.g., after a token swap)
+  dispatch(tokenFetchBalanceRequested(token.uid, true));
 };
 
 /**
