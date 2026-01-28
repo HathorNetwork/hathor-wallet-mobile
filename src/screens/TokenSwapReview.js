@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -60,6 +60,7 @@ const TokenSwapReview = () => {
   } = useParams();
   const [modal, setModal] = useState(null);
   const [loading, setLoading] = useState(false);
+  const registrationPromiseRef = useRef(null);
 
   const navigation = useNavigation();
 
@@ -81,15 +82,25 @@ const TokenSwapReview = () => {
   };
 
   /**
-   * Method executed after dismiss success modal
+   * Called when the swap transaction succeeds (while success modal is showing).
+   * Starts token registration early so it's done/in-progress by the time user dismisses.
+   * The promise is stored so exitToMainScreen can await completion before navigating.
+   */
+  const onSwapSuccess = () => {
+    // Start registration in parallel and store promise for later awaiting
+    registrationPromiseRef.current = Promise.all([
+      registerTokenIfNeeded(tokenIn),
+      registerTokenIfNeeded(tokenOut),
+    ]).catch((err) => console.error(err));
+  };
+
+  /**
+   * Method executed after dismiss success modal.
+   * Awaits token registration completion before navigating.
    */
   const exitToMainScreen = async () => {
-    try {
-      // Register tokens if they're not already registered
-      await registerTokenIfNeeded(tokenIn);
-      await registerTokenIfNeeded(tokenOut);
-    } catch (err) {
-      console.error(err);
+    if (registrationPromiseRef.current) {
+      await registrationPromiseRef.current;
     }
     setModal(null);
     dispatch(tokenSwapResetSwapData());
@@ -183,6 +194,7 @@ const TokenSwapReview = () => {
             sendTransaction={modal.sendTransaction}
             promise={modal.promise}
             successText={<TextFmt>{t`Your swap was successful`}</TextFmt>}
+            onTxSuccess={onSwapSuccess}
             onDismissSuccess={exitToMainScreen}
             onDismissError={exitOnError}
             hide={isShowingPinScreen}
