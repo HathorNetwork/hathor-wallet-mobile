@@ -57,7 +57,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:642
+#: src/models.js:107 src/utils.js:654
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -257,7 +257,7 @@ msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
 #: src/screens/CreateTokenConfirm.js:112 src/screens/SendConfirmScreen.js:85
-#: src/screens/TokenSwapReview.js:159
+#: src/screens/TokenSwapReview.js:170
 msgid "Building transaction"
 msgstr ""
 
@@ -470,7 +470,7 @@ msgstr "**${ props.loadedData.addresses } adresser** fundet"
 msgid "There's been an error connecting to the server."
 msgstr ""
 
-#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PinScreen.js:312
+#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PinScreen.js:318
 #: src/screens/Settings.js:162
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
@@ -576,7 +576,7 @@ msgstr "Lås Hathor-wallet op"
 msgid "Cancel"
 msgstr "Annuller"
 
-#: src/screens/PinScreen.js:343 src/screens/PinScreen.js:347
+#: src/screens/PinScreen.js:349 src/screens/PinScreen.js:353
 msgid "Biometry failed or canceled."
 msgstr "Biometri mislykkedes eller blev annulleret."
 
@@ -788,17 +788,17 @@ msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:141
+#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:152
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
-#: src/sagas/helpers.js:140 src/screens/SendConfirmScreen.js:83
-#: src/screens/TokenSwapReview.js:157
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:83
+#: src/screens/TokenSwapReview.js:168
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
-#: src/sagas/helpers.js:141 src/screens/SendConfirmScreen.js:84
-#: src/screens/TokenSwapReview.js:158
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:84
+#: src/screens/TokenSwapReview.js:169
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -887,16 +887,16 @@ msgstr ""
 msgid "Unregister"
 msgstr "Afmeld"
 
-#: src/screens/TokenSwap.js:246
+#: src/screens/TokenSwap.js:290
 #, javascript-format
 msgid "Balance: ${ amount }"
 msgstr ""
 
-#: src/screens/TokenSwap.js:270
+#: src/screens/TokenSwap.js:314
 msgid "TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwap.js:368
+#: src/screens/TokenSwap.js:414
 msgid "REVIEW"
 msgstr ""
 
@@ -908,15 +908,15 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:169
+#: src/screens/TokenSwapReview.js:180
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:185
+#: src/screens/TokenSwapReview.js:196
 msgid "Your swap was successful"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:248
+#: src/screens/TokenSwapReview.js:260
 msgid "SWAP"
 msgstr ""
 
@@ -1324,6 +1324,14 @@ msgstr ""
 #.  This will show the message in the feedback content
 #: src/sagas/wallet.js:857
 msgid "There was an error while loading first wallet address. Try again."
+msgstr ""
+
+#: src/components/AmountInputAccessory.js:94
+msgid "Max"
+msgstr ""
+
+#: src/components/AmountInputAccessory.js:101
+msgid "Done"
 msgstr ""
 
 #: src/components/AskForPushNotification.js:29
@@ -1935,7 +1943,7 @@ msgstr ""
 msgid "Review details"
 msgstr ""
 
-#: src/components/Reown/RequestErrorModal.js:26
+#: src/components/Reown/RequestErrorModal.js:27
 msgid "An error occurred while processing the request."
 msgstr ""
 
