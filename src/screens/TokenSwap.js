@@ -23,7 +23,7 @@ import { get } from 'lodash';
 import { SwapIcon } from '../components/Icons/Swap.icon';
 import AmountInputAccessory from '../components/AmountInputAccessory';
 
-import { renderValue } from '../utils';
+import { renderValue, formatAmountToInput } from '../utils';
 import {
   calcAmountWithSlippage,
   renderAmountAndSymbolWithSlippage,
@@ -132,7 +132,9 @@ const TokenSwap = () => {
     setShowQuote(!!quote);
     if (quote) {
       setInputTokenAmountStr(renderValue(quote.amount_in));
+      setInputTokenAmount(quote.amount_in);
       setOutputTokenAmountStr(renderValue(quote.amount_out));
+      setOutputTokenAmount(quote.amount_out);
     }
   }, [quote]);
 
@@ -177,9 +179,17 @@ const TokenSwap = () => {
     setSwapDirection(null);
     setShowQuote(false);
     if (dirClicked === 'input') {
+      // Remove thousand separators for editing
+      if (inputTokenAmount && inputTokenAmount > 0n) {
+        setInputTokenAmountStr(formatAmountToInput(inputTokenAmount, decimalPlaces));
+      }
       setOutputTokenAmount(0n);
       setOutputTokenAmountStr('');
     } else if (dirClicked === 'output') {
+      // Remove thousand separators for editing
+      if (outputTokenAmount && outputTokenAmount > 0n) {
+        setOutputTokenAmountStr(formatAmountToInput(outputTokenAmount, decimalPlaces));
+      }
       setInputTokenAmount(0n);
       setInputTokenAmountStr('');
     }
@@ -225,23 +235,18 @@ const TokenSwap = () => {
     }
 
     const amount = (availableBalance * BigInt(percentage)) / 100n;
-    const amountStr = renderValue(amount);
+    const amountStr = formatAmountToInput(amount, decimalPlaces);
 
     if (editing === 'input') {
       onInputAmountChange(amountStr, amount);
-      // Trigger quote fetch
       setOutputTokenAmountStr('');
       setOutputTokenAmount(0n);
-      setSwapDirection('input');
-      dispatch(tokenSwapFetchSwapQuote('input', amount.toString(10), inputToken.uid, outputToken.uid));
     } else if (editing === 'output') {
       onOutputAmountChange(amountStr, amount);
-      // Trigger quote fetch
       setInputTokenAmountStr('');
       setInputTokenAmount(0n);
-      setSwapDirection('output');
-      dispatch(tokenSwapFetchSwapQuote('output', amount.toString(10), inputToken.uid, outputToken.uid));
     }
+    // Quote will be fetched when keyboard dismisses via onInputAmountEndEditing/onOutputAmountEndEditing
   };
 
   /**

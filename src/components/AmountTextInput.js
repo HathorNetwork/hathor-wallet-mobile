@@ -51,8 +51,10 @@ const AmountTextInput = forwardRef((props, ref) => {
 
   useEffect(() => {
     // Update internal state if value prop changes externally
+    // Only update the display text, don't re-parse or call onAmountUpdate
+    // The parent component is responsible for keeping the BigInt state correct
     if (props.value !== text) {
-      onChangeText(props.value);
+      setText(props.value || '');
     }
   }, [props.value]);
 
