@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -100,9 +100,16 @@ const TokenSwap = () => {
   const navigation = useNavigation();
 
   // Track keyboard height on Android for proper accessory positioning
-  useEffect(() => {
+  // Using useLayoutEffect to ensure listeners are set up before paint
+  useLayoutEffect(() => {
     if (Platform.OS !== 'android') {
       return undefined;
+    }
+
+    // Check if keyboard is already visible on mount
+    const metrics = Keyboard.metrics();
+    if (metrics && metrics.height > 0) {
+      setKeyboardHeight(metrics.height);
     }
 
     const showListener = Keyboard.addListener('keyboardDidShow', (e) => {
@@ -346,23 +353,23 @@ const TokenSwap = () => {
         </>
       )}
       {/* Android: position accessory absolutely above keyboard */}
-      {Platform.OS === 'android' && editing === 'input' && keyboardHeight > 0 && (
-        <View style={{ position: 'absolute', bottom: keyboardHeight, left: 0, right: 0, zIndex: 999 }}>
+      {Platform.OS === 'android' && editing === 'input' && (
+        <View style={[styles.androidAccessory, { bottom: keyboardHeight || 0 }]}>
           <AmountInputAccessory
             nativeID={INPUT_ACCESSORY_VIEW_ID}
             availableBalance={getAvailableAmount(inputToken, tokensBalance)}
             onPercentagePress={onPercentagePress}
-            visible
+            visible={keyboardHeight > 0}
           />
         </View>
       )}
-      {Platform.OS === 'android' && editing === 'output' && keyboardHeight > 0 && (
-        <View style={{ position: 'absolute', bottom: keyboardHeight, left: 0, right: 0, zIndex: 999 }}>
+      {Platform.OS === 'android' && editing === 'output' && (
+        <View style={[styles.androidAccessory, { bottom: keyboardHeight || 0 }]}>
           <AmountInputAccessory
             nativeID={OUTPUT_ACCESSORY_VIEW_ID}
             availableBalance={getAvailableAmount(outputToken, tokensBalance)}
             onPercentagePress={onPercentagePress}
-            visible
+            visible={keyboardHeight > 0}
           />
         </View>
       )}
@@ -492,6 +499,12 @@ const styles = StyleSheet.create({
   screenContent: {
     flex: 1,
     backgroundColor: COLORS.backgroundColor,
+  },
+  androidAccessory: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 999,
   },
   buttonContainer: {
     marginBottom: 16,
