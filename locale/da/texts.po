@@ -793,12 +793,12 @@ msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:83
-#: src/screens/TokenSwapReview.js:150
+#: src/screens/TokenSwapReview.js:157
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:84
-#: src/screens/TokenSwapReview.js:151
+#: src/screens/TokenSwapReview.js:158
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -1416,6 +1416,7 @@ msgstr "Rapporter fejl"
 #: src/components/GlobalErrorModal.js:126
 #: src/components/Reown/ErrorDetailModal.js:114
 #: src/components/Reown/InsufficientFundsModal.js:43
+#: src/components/Reown/NetworkMismatchModal.js:54
 #: src/components/Reown/TokenInfoModal.js:114
 msgid "Close"
 msgstr "Luk"
@@ -1923,6 +1924,22 @@ msgstr ""
 
 #: src/components/Reown/InsufficientFundsModal.js:39
 msgid "Insufficient funds to complete the transaction."
+msgstr ""
+
+#: src/components/Reown/NetworkMismatchModal.js:39
+msgid "Network Mismatch"
+msgstr ""
+
+#: src/components/Reown/NetworkMismatchModal.js:44
+msgid "The dApp requires a different network than your wallet is connected to."
+msgstr ""
+
+#: src/components/Reown/NetworkMismatchModal.js:47
+msgid "Your wallet:"
+msgstr ""
+
+#: src/components/Reown/NetworkMismatchModal.js:51
+msgid "dApp requires:"
 msgstr ""
 
 #: src/components/Reown/RequestConfirmationModal.js:39
