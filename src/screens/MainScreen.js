@@ -266,8 +266,8 @@ class TxHistoryView extends React.Component {
   };
 
   loadMoreHistory = async () => {
-    if (!this.state.canLoadMore || this.isLoadingMore || this.props.txList.length === 0) {
-      // Already loaded all history, currently loading, or no initial data yet
+    if (!this.state.canLoadMore || this.isLoadingMore) {
+      // Already loaded all history or currently loading
       return;
     }
 
