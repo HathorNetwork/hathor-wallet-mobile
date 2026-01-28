@@ -50,6 +50,7 @@ import NavigationService from '../NavigationService';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 
 const INPUT_ACCESSORY_VIEW_ID = 'tokenSwapAmountInput';
+const OUTPUT_ACCESSORY_VIEW_ID = 'tokenSwapAmountOutput';
 
 function getAvailableAmount(token, tokensBalance) {
   if (!token) {
@@ -329,6 +330,42 @@ const TokenSwap = () => {
 
   return (
     <View style={styles.screenContent}>
+      {/* iOS: Separate InputAccessoryViews for each TextInput */}
+      {Platform.OS === 'ios' && (
+        <>
+          <AmountInputAccessory
+            nativeID={INPUT_ACCESSORY_VIEW_ID}
+            availableBalance={getAvailableAmount(inputToken, tokensBalance)}
+            onPercentagePress={onPercentagePress}
+          />
+          <AmountInputAccessory
+            nativeID={OUTPUT_ACCESSORY_VIEW_ID}
+            availableBalance={getAvailableAmount(outputToken, tokensBalance)}
+            onPercentagePress={onPercentagePress}
+          />
+        </>
+      )}
+      {/* Android: position accessory absolutely above keyboard */}
+      {Platform.OS === 'android' && editing === 'input' && keyboardHeight > 0 && (
+        <View style={{ position: 'absolute', bottom: keyboardHeight, left: 0, right: 0, zIndex: 999 }}>
+          <AmountInputAccessory
+            nativeID={INPUT_ACCESSORY_VIEW_ID}
+            availableBalance={getAvailableAmount(inputToken, tokensBalance)}
+            onPercentagePress={onPercentagePress}
+            visible
+          />
+        </View>
+      )}
+      {Platform.OS === 'android' && editing === 'output' && keyboardHeight > 0 && (
+        <View style={{ position: 'absolute', bottom: keyboardHeight, left: 0, right: 0, zIndex: 999 }}>
+          <AmountInputAccessory
+            nativeID={OUTPUT_ACCESSORY_VIEW_ID}
+            availableBalance={getAvailableAmount(outputToken, tokensBalance)}
+            onPercentagePress={onPercentagePress}
+            visible
+          />
+        </View>
+      )}
       <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
         <HathorHeader
           withBorder
@@ -381,7 +418,7 @@ const TokenSwap = () => {
                     style={swapDirection === 'input' ? styles.amountInputTextFaded : styles.amountInputText}
                     editable={editing !== 'input'}
                     textAlign='left'
-                    inputAccessoryViewID={INPUT_ACCESSORY_VIEW_ID}
+                    inputAccessoryViewID={OUTPUT_ACCESSORY_VIEW_ID}
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -441,31 +478,6 @@ const TokenSwap = () => {
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
       </Pressable>
-      {/* Android: position accessory absolutely above keyboard */}
-      {Platform.OS === 'android' && editing !== null && keyboardHeight > 0 && (
-        <View style={{ position: 'absolute', bottom: keyboardHeight, left: 0, right: 0 }}>
-          <AmountInputAccessory
-            nativeID={INPUT_ACCESSORY_VIEW_ID}
-            availableBalance={getAvailableAmount(
-              editing === 'input' ? inputToken : outputToken,
-              tokensBalance
-            )}
-            onPercentagePress={onPercentagePress}
-            visible
-          />
-        </View>
-      )}
-      {/* iOS: InputAccessoryView attaches to keyboard natively */}
-      {Platform.OS === 'ios' && (
-        <AmountInputAccessory
-          nativeID={INPUT_ACCESSORY_VIEW_ID}
-          availableBalance={getAvailableAmount(
-            editing === 'input' ? inputToken : outputToken,
-            tokensBalance
-          )}
-          onPercentagePress={onPercentagePress}
-        />
-      )}
     </View>
   );
 };
