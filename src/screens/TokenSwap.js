@@ -92,6 +92,8 @@ const TokenSwap = () => {
 
   // Ref to track editing timeout so we can cancel it on new focus
   const editingTimeoutRef = useRef(null);
+  // Cache last valid keyboard height for when Android reports garbage values
+  const lastValidKeyboardHeight = useRef(0);
 
   const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
   const {
@@ -113,18 +115,57 @@ const TokenSwap = () => {
     }
 
     const showListener = Keyboard.addListener('keyboardDidShow', (e) => {
-      // Calculate distance from bottom of screen to top of keyboard
       const screenHeight = Dimensions.get('window').height;
-      const keyboardTop = e.endCoordinates.screenY;
-      const calculatedHeight = screenHeight - keyboardTop;
-      setKeyboardHeight(calculatedHeight);
+      const MIN_VALID_HEIGHT = 100;
+
+      const processKeyboardMetrics = (coords, isRetry = false) => {
+        const keyboardTop = coords.screenY;
+        const calculatedHeight = screenHeight - keyboardTop;
+        const reportedHeight = coords.height;
+
+        let heightToUse = null;
+        if (calculatedHeight >= MIN_VALID_HEIGHT) {
+          heightToUse = calculatedHeight;
+          lastValidKeyboardHeight.current = calculatedHeight;
+        } else if (reportedHeight >= MIN_VALID_HEIGHT) {
+          heightToUse = reportedHeight;
+          lastValidKeyboardHeight.current = reportedHeight;
+        } else if (lastValidKeyboardHeight.current > 0) {
+          // Use cached value from previous valid keyboard show
+          heightToUse = lastValidKeyboardHeight.current;
+        }
+        // If no valid height found and not a retry, don't set anything yet - wait for retry
+
+        setDebugInfo({
+          screenHeight,
+          screenY: keyboardTop,
+          reportedHeight,
+          calculatedHeight,
+          heightToUse,
+          isRetry,
+        });
+
+        if (heightToUse) {
+          setKeyboardHeight(heightToUse);
+        }
+
+        return heightToUse !== null;
+      };
+
       setKeyboardVisible(true);
-      setDebugInfo({
-        screenHeight,
-        screenY: keyboardTop,
-        reportedHeight: e.endCoordinates.height,
-        calculatedHeight,
-      });
+
+      // Try to process initial values
+      const hasValidHeight = processKeyboardMetrics(e.endCoordinates, false);
+
+      // If values are invalid, retry after a short delay to get correct metrics
+      if (!hasValidHeight) {
+        setTimeout(() => {
+          const metrics = Keyboard.metrics();
+          if (metrics) {
+            processKeyboardMetrics(metrics, true);
+          }
+        }, 100);
+      }
     });
     const hideListener = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardVisible(false);
@@ -384,7 +425,8 @@ const TokenSwap = () => {
           <Text style={{ color: 'white', fontSize: 12 }}>screenH: {debugInfo.screenHeight}</Text>
           <Text style={{ color: 'white', fontSize: 12 }}>screenY: {debugInfo.screenY}</Text>
           <Text style={{ color: 'white', fontSize: 12 }}>reported: {debugInfo.reportedHeight}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>calculated: {debugInfo.calculatedHeight}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>calc: {debugInfo.calculatedHeight}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>chosen: {debugInfo.heightToUse}</Text>
           <Text style={{ color: 'white', fontSize: 12 }}>using: {keyboardHeight}</Text>
         </View>
       )}
