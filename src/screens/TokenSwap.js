@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
+  Dimensions,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -91,9 +92,6 @@ const TokenSwap = () => {
   // Ref to track editing timeout so we can cancel it on new focus
   const editingTimeoutRef = useRef(null);
 
-  // Cache the last known "valid" keyboard height (Android may report wrong height on first show)
-  const lastValidKeyboardHeightRef = useRef(0);
-
   const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
   const {
     inputToken,
@@ -106,37 +104,22 @@ const TokenSwap = () => {
 
   const navigation = useNavigation();
 
-  // Track keyboard height and visibility on Android for proper accessory positioning
+  // Track keyboard position on Android for proper accessory positioning
+  // Use screenY (top of keyboard) instead of height for consistent positioning across devices
   useEffect(() => {
     if (Platform.OS !== 'android') {
       return undefined;
     }
 
     const showListener = Keyboard.addListener('keyboardDidShow', (e) => {
-      const reportedHeight = e.endCoordinates.height;
-
-      // Android sometimes reports a very small height on first keyboard show (e.g., 24px)
-      // If the reported height is suspiciously small, use a cached or default value
-      const MIN_VALID_KEYBOARD_HEIGHT = 100;
-      const DEFAULT_KEYBOARD_HEIGHT = 300; // Reasonable fallback for most Android devices
-      let heightToUse = reportedHeight;
-
-      if (reportedHeight >= MIN_VALID_KEYBOARD_HEIGHT) {
-        // This is a valid height, cache it
-        lastValidKeyboardHeightRef.current = reportedHeight;
-      } else if (lastValidKeyboardHeightRef.current > 0) {
-        // Reported height is too small, use cached valid height
-        heightToUse = lastValidKeyboardHeightRef.current;
-      } else {
-        // First keyboard show with invalid height - use default
-        heightToUse = DEFAULT_KEYBOARD_HEIGHT;
-      }
-
-      setKeyboardHeight(heightToUse);
+      // Calculate distance from bottom of screen to top of keyboard
+      const screenHeight = Dimensions.get('window').height;
+      const keyboardTop = e.endCoordinates.screenY;
+      setKeyboardHeight(screenHeight - keyboardTop);
+      setKeyboardVisible(true);
     });
     const hideListener = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardVisible(false);
-      // Don't reset keyboardHeight to 0 - keep last known value for smooth transitions
     });
 
     return () => {
@@ -387,7 +370,7 @@ const TokenSwap = () => {
           />
         </>
       )}
-      {/* Android: position accessory above keyboard when visible */}
+      {/* Android: position accessory absolutely above keyboard */}
       {Platform.OS === 'android' && editing === 'input' && keyboardVisible && (
         <View style={[styles.androidAccessory, { bottom: keyboardHeight }]}>
           <AmountInputAccessory
