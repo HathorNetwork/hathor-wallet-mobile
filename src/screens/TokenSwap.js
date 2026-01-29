@@ -387,9 +387,9 @@ const TokenSwap = () => {
           />
         </>
       )}
-      {/* Android: position accessory absolutely above keyboard */}
-      {Platform.OS === 'android' && editing === 'input' && (
-        <View style={[styles.androidAccessory, { bottom: keyboardHeight + 24 }]}>
+      {/* Android: position accessory above keyboard when visible */}
+      {Platform.OS === 'android' && editing === 'input' && keyboardVisible && (
+        <View style={[styles.androidAccessory, { bottom: keyboardHeight }]}>
           <AmountInputAccessory
             nativeID={INPUT_ACCESSORY_VIEW_ID}
             availableBalance={getAvailableAmount(inputToken, tokensBalance)}
@@ -398,8 +398,8 @@ const TokenSwap = () => {
           />
         </View>
       )}
-      {Platform.OS === 'android' && editing === 'output' && (
-        <View style={[styles.androidAccessory, { bottom: keyboardHeight + 24 }]}>
+      {Platform.OS === 'android' && editing === 'output' && keyboardVisible && (
+        <View style={[styles.androidAccessory, { bottom: keyboardHeight }]}>
           <AmountInputAccessory
             nativeID={OUTPUT_ACCESSORY_VIEW_ID}
             availableBalance={getAvailableAmount(outputToken, tokensBalance)}
