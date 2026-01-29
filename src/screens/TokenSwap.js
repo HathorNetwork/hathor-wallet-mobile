@@ -88,6 +88,7 @@ const TokenSwap = () => {
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [debugInfo, setDebugInfo] = useState({});
 
   // Ref to track editing timeout so we can cancel it on new focus
   const editingTimeoutRef = useRef(null);
@@ -115,8 +116,15 @@ const TokenSwap = () => {
       // Calculate distance from bottom of screen to top of keyboard
       const screenHeight = Dimensions.get('window').height;
       const keyboardTop = e.endCoordinates.screenY;
-      setKeyboardHeight(screenHeight - keyboardTop);
+      const calculatedHeight = screenHeight - keyboardTop;
+      setKeyboardHeight(calculatedHeight);
       setKeyboardVisible(true);
+      setDebugInfo({
+        screenHeight,
+        screenY: keyboardTop,
+        reportedHeight: e.endCoordinates.height,
+        calculatedHeight,
+      });
     });
     const hideListener = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardVisible(false);
@@ -369,6 +377,16 @@ const TokenSwap = () => {
             onPercentagePress={onPercentagePress}
           />
         </>
+      )}
+      {/* DEBUG: Remove after testing */}
+      {Platform.OS === 'android' && (
+        <View style={{ backgroundColor: 'red', padding: 10, position: 'absolute', top: 100, left: 10, zIndex: 9999 }}>
+          <Text style={{ color: 'white', fontSize: 12 }}>screenH: {debugInfo.screenHeight}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>screenY: {debugInfo.screenY}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>reported: {debugInfo.reportedHeight}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>calculated: {debugInfo.calculatedHeight}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>using: {keyboardHeight}</Text>
+        </View>
       )}
       {/* Android: position accessory absolutely above keyboard */}
       {Platform.OS === 'android' && editing === 'input' && keyboardVisible && (
