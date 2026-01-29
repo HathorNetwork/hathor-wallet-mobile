@@ -112,11 +112,8 @@ const TokenSwap = () => {
       return undefined;
     }
 
-    console.log('[TokenSwap] Keyboard listeners mounted');
-
     const showListener = Keyboard.addListener('keyboardDidShow', (e) => {
       const reportedHeight = e.endCoordinates.height;
-      console.log('[TokenSwap] keyboardDidShow fired, height:', reportedHeight, '| lastValid:', lastValidKeyboardHeightRef.current);
 
       // Android sometimes reports a very small height on first keyboard show (e.g., 24px)
       // If the reported height is suspiciously small, use a cached or default value
@@ -129,11 +126,9 @@ const TokenSwap = () => {
         lastValidKeyboardHeightRef.current = reportedHeight;
       } else if (lastValidKeyboardHeightRef.current > 0) {
         // Reported height is too small, use cached valid height
-        console.log('[TokenSwap] Using cached height instead:', lastValidKeyboardHeightRef.current);
         heightToUse = lastValidKeyboardHeightRef.current;
       } else {
         // First keyboard show with invalid height - use default
-        console.log('[TokenSwap] Using default height:', DEFAULT_KEYBOARD_HEIGHT);
         heightToUse = DEFAULT_KEYBOARD_HEIGHT;
       }
 
@@ -141,13 +136,11 @@ const TokenSwap = () => {
       setKeyboardVisible(true);
     });
     const hideListener = Keyboard.addListener('keyboardDidHide', () => {
-      console.log('[TokenSwap] keyboardDidHide fired');
       setKeyboardVisible(false);
       // Don't reset keyboardHeight to 0 - keep last known value for smooth transitions
     });
 
     return () => {
-      console.log('[TokenSwap] Keyboard listeners unmounted');
       showListener.remove();
       hideListener.remove();
     };
@@ -159,13 +152,6 @@ const TokenSwap = () => {
       clearTimeout(editingTimeoutRef.current);
     }
   }, []);
-
-  // Debug: log state changes
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      console.log('[TokenSwap] State updated - editing:', editing, '| keyboardVisible:', keyboardVisible, '| keyboardHeight:', keyboardHeight);
-    }
-  }, [editing, keyboardVisible, keyboardHeight]);
 
   useEffect(() => {
     for (const tk of allowedTokens) {
@@ -215,12 +201,10 @@ const TokenSwap = () => {
   }
 
   function onInputAmountEndEditing(_target) {
-    console.log('[TokenSwap] onInputAmountEndEditing called | editing:', editing, '| keyboardVisible:', keyboardVisible);
     setOutputTokenAmountStr('');
     setOutputTokenAmount(0n);
     setSwapDirection('input');
     editingTimeoutRef.current = setTimeout(() => {
-      console.log('[TokenSwap] Input timeout fired, setting editing to null');
       setEditing(null);
       editingTimeoutRef.current = null;
     }, 500);
@@ -231,12 +215,10 @@ const TokenSwap = () => {
   }
 
   function onOutputAmountEndEditing(_target) {
-    console.log('[TokenSwap] onOutputAmountEndEditing called | editing:', editing, '| keyboardVisible:', keyboardVisible);
     setInputTokenAmountStr('');
     setInputTokenAmount(0n);
     setSwapDirection('output');
     editingTimeoutRef.current = setTimeout(() => {
-      console.log('[TokenSwap] Output timeout fired, setting editing to null');
       setEditing(null);
       editingTimeoutRef.current = null;
     }, 500);
@@ -252,10 +234,8 @@ const TokenSwap = () => {
   }
 
   function onFocus(dirClicked) {
-    console.log('[TokenSwap] onFocus called:', dirClicked, '| current editing:', editing, '| keyboardVisible:', keyboardVisible, '| keyboardHeight:', keyboardHeight);
     // Clear any pending timeout from previous blur to prevent stale state update
     if (editingTimeoutRef.current) {
-      console.log('[TokenSwap] Clearing pending timeout');
       clearTimeout(editingTimeoutRef.current);
       editingTimeoutRef.current = null;
     }
@@ -408,7 +388,6 @@ const TokenSwap = () => {
         </>
       )}
       {/* Android: position accessory above keyboard when visible */}
-      {Platform.OS === 'android' && console.log('[TokenSwap] Render check - editing:', editing, '| keyboardVisible:', keyboardVisible, '| keyboardHeight:', keyboardHeight)}
       {Platform.OS === 'android' && editing === 'input' && keyboardVisible && (
         <View style={[styles.androidAccessory, { bottom: keyboardHeight }]}>
           <AmountInputAccessory
