@@ -133,7 +133,6 @@ const TokenSwap = () => {
       }
 
       setKeyboardHeight(heightToUse);
-      setKeyboardVisible(true);
     });
     const hideListener = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardVisible(false);
@@ -240,6 +239,7 @@ const TokenSwap = () => {
       editingTimeoutRef.current = null;
     }
     setEditing(dirClicked);
+    setKeyboardVisible(true);
     setSwapDirection(null);
     setShowQuote(false);
     if (dirClicked === 'input') {
