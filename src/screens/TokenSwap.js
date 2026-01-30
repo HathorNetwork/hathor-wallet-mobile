@@ -117,8 +117,9 @@ const TokenSwap = () => {
     const showListener = Keyboard.addListener('keyboardDidShow', (e) => {
       const screenHeight = Dimensions.get('window').height;
       const MIN_VALID_HEIGHT = 100;
+      const RETRY_DELAYS = [100, 200, 300, 500];
 
-      const processKeyboardMetrics = (coords, isRetry = false) => {
+      const processKeyboardMetrics = (coords, retryCount = 0) => {
         const keyboardTop = coords.screenY;
         const calculatedHeight = screenHeight - keyboardTop;
         const reportedHeight = coords.height;
@@ -134,7 +135,6 @@ const TokenSwap = () => {
           // Use cached value from previous valid keyboard show
           heightToUse = lastValidKeyboardHeight.current;
         }
-        // If no valid height found and not a retry, don't set anything yet - wait for retry
 
         setDebugInfo({
           screenHeight,
@@ -142,29 +142,41 @@ const TokenSwap = () => {
           reportedHeight,
           calculatedHeight,
           heightToUse,
-          isRetry,
+          retryCount,
         });
 
         if (heightToUse) {
           setKeyboardHeight(heightToUse);
+          return true;
         }
 
-        return heightToUse !== null;
+        return false;
       };
 
       setKeyboardVisible(true);
 
       // Try to process initial values
-      const hasValidHeight = processKeyboardMetrics(e.endCoordinates, false);
+      const hasValidHeight = processKeyboardMetrics(e.endCoordinates, 0);
 
-      // If values are invalid, retry after a short delay to get correct metrics
+      // If values are invalid, retry multiple times with increasing delays
+      // Android sometimes needs more time to report accurate keyboard dimensions
       if (!hasValidHeight) {
-        setTimeout(() => {
-          const metrics = Keyboard.metrics();
-          if (metrics) {
-            processKeyboardMetrics(metrics, true);
+        const scheduleRetry = (retryIndex) => {
+          if (retryIndex >= RETRY_DELAYS.length) {
+            return; // Give up after all retries
           }
-        }, 100);
+          setTimeout(() => {
+            const metrics = Keyboard.metrics();
+            if (metrics) {
+              const success = processKeyboardMetrics(metrics, retryIndex + 1);
+              if (!success) {
+                // Still invalid, try again
+                scheduleRetry(retryIndex + 1);
+              }
+            }
+          }, RETRY_DELAYS[retryIndex]);
+        };
+        scheduleRetry(0);
       }
     });
     const hideListener = Keyboard.addListener('keyboardDidHide', () => {
@@ -428,6 +440,7 @@ const TokenSwap = () => {
           <Text style={{ color: 'white', fontSize: 12 }}>calc: {debugInfo.calculatedHeight}</Text>
           <Text style={{ color: 'white', fontSize: 12 }}>chosen: {debugInfo.heightToUse}</Text>
           <Text style={{ color: 'white', fontSize: 12 }}>using: {keyboardHeight}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>retry#: {debugInfo.retryCount}</Text>
         </View>
       )}
       {/* Android: position accessory absolutely above keyboard */}
