@@ -374,9 +374,8 @@ const TokenSwap = () => {
       {Platform.OS === 'android' && (
         <View style={{ backgroundColor: 'red', padding: 10, position: 'absolute', top: 100, left: 10, zIndex: 9999 }}>
           <Text style={{ color: 'white', fontSize: 12 }}>kbDp: {debugInfo.height}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>kbPx: {debugInfo.heightPx}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>screenPx: {debugInfo.screenPx}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>rectBottom: {debugInfo.rectBottom}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>navBarDp: {debugInfo.navBarDp}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>rawKbDp: {debugInfo.rawKbDp}</Text>
           <Text style={{ color: 'white', fontSize: 12 }}>visible: {keyboardVisible ? 'true' : 'false'}</Text>
         </View>
       )}

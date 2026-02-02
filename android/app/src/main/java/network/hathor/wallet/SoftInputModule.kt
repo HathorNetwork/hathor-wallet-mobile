@@ -40,8 +40,26 @@ class SoftInputModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
                 val screenHeightPx = rootView.height
                 val keyboardHeightPx = screenHeightPx - rect.bottom
 
+                // Get navigation bar height
+                val resourceId = reactApplicationContext.resources.getIdentifier(
+                    "navigation_bar_height", "dimen", "android"
+                )
+                val navBarHeightPx = if (resourceId > 0) {
+                    reactApplicationContext.resources.getDimensionPixelSize(resourceId)
+                } else {
+                    0
+                }
+
+                // Subtract navigation bar from keyboard height since it's always present
+                val adjustedKeyboardPx = if (keyboardHeightPx > navBarHeightPx) {
+                    keyboardHeightPx - navBarHeightPx
+                } else {
+                    0
+                }
+
                 // Convert to density-independent pixels (dp) for React Native
-                val keyboardHeightDp = (keyboardHeightPx / density).toInt()
+                val keyboardHeightDp = (adjustedKeyboardPx / density).toInt()
+                val navBarDp = (navBarHeightPx / density).toInt()
 
                 // Only send event if keyboard height changed significantly (> 50dp threshold for keyboard)
                 val isVisible = keyboardHeightDp > 50
@@ -51,9 +69,8 @@ class SoftInputModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
 
                     val params = Arguments.createMap().apply {
                         putInt("height", keyboardHeightDp)
-                        putInt("heightPx", keyboardHeightPx)
-                        putInt("screenPx", screenHeightPx)
-                        putInt("rectBottom", rect.bottom)
+                        putInt("navBarDp", navBarDp)
+                        putInt("rawKbDp", (keyboardHeightPx / density).toInt())
                         putBoolean("isVisible", isVisible)
                     }
 
