@@ -7,9 +7,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Dimensions,
   Keyboard,
   KeyboardAvoidingView,
+  NativeEventEmitter,
+  NativeModules,
   Platform,
   Pressable,
   StyleSheet,
@@ -17,6 +18,8 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
+
+const { SoftInputModule } = NativeModules;
 import { useDispatch, useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
@@ -85,15 +88,32 @@ const TokenSwap = () => {
   const [showQuote, setShowQuote] = useState(false);
 
   const [editing, setEditing] = useState(null);
-
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const [debugInfo, setDebugInfo] = useState({});
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   // Ref to track editing timeout so we can cancel it on new focus
   const editingTimeoutRef = useRef(null);
-  // Cache last valid keyboard height for when Android reports garbage values
-  const lastValidKeyboardHeight = useRef(0);
+
+  // Listen for keyboard height from native module (Android only)
+  // Uses WindowInsets API which works on modern Android where SOFT_INPUT_ADJUST_RESIZE is deprecated
+  useEffect(() => {
+    if (Platform.OS !== 'android' || !SoftInputModule) {
+      return undefined;
+    }
+
+    const eventEmitter = new NativeEventEmitter(SoftInputModule);
+    const subscription = eventEmitter.addListener('keyboardHeightChanged', (event) => {
+      setKeyboardHeight(event.height);
+      setKeyboardVisible(event.isVisible);
+    });
+
+    SoftInputModule.startKeyboardListener();
+
+    return () => {
+      subscription.remove();
+      SoftInputModule.stopKeyboardListener();
+    };
+  }, []);
 
   const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
   const {
@@ -106,88 +126,6 @@ const TokenSwap = () => {
   }));
 
   const navigation = useNavigation();
-
-  // Track keyboard position on Android for proper accessory positioning
-  // Use screenY (top of keyboard) instead of height for consistent positioning across devices
-  useEffect(() => {
-    if (Platform.OS !== 'android') {
-      return undefined;
-    }
-
-    const showListener = Keyboard.addListener('keyboardDidShow', (e) => {
-      const screenHeight = Dimensions.get('window').height;
-      const MIN_VALID_HEIGHT = 100;
-      const RETRY_DELAYS = [100, 200, 300, 500];
-
-      const processKeyboardMetrics = (coords, retryCount = 0) => {
-        const keyboardTop = coords.screenY;
-        const calculatedHeight = screenHeight - keyboardTop;
-        const reportedHeight = coords.height;
-
-        let heightToUse = null;
-        if (calculatedHeight >= MIN_VALID_HEIGHT) {
-          heightToUse = calculatedHeight;
-          lastValidKeyboardHeight.current = calculatedHeight;
-        } else if (reportedHeight >= MIN_VALID_HEIGHT) {
-          heightToUse = reportedHeight;
-          lastValidKeyboardHeight.current = reportedHeight;
-        } else if (lastValidKeyboardHeight.current > 0) {
-          // Use cached value from previous valid keyboard show
-          heightToUse = lastValidKeyboardHeight.current;
-        }
-
-        setDebugInfo({
-          screenHeight,
-          screenY: keyboardTop,
-          reportedHeight,
-          calculatedHeight,
-          heightToUse,
-          retryCount,
-        });
-
-        if (heightToUse) {
-          setKeyboardHeight(heightToUse);
-          return true;
-        }
-
-        return false;
-      };
-
-      setKeyboardVisible(true);
-
-      // Try to process initial values
-      const hasValidHeight = processKeyboardMetrics(e.endCoordinates, 0);
-
-      // If values are invalid, retry multiple times with increasing delays
-      // Android sometimes needs more time to report accurate keyboard dimensions
-      if (!hasValidHeight) {
-        const scheduleRetry = (retryIndex) => {
-          if (retryIndex >= RETRY_DELAYS.length) {
-            return; // Give up after all retries
-          }
-          setTimeout(() => {
-            const metrics = Keyboard.metrics();
-            if (metrics) {
-              const success = processKeyboardMetrics(metrics, retryIndex + 1);
-              if (!success) {
-                // Still invalid, try again
-                scheduleRetry(retryIndex + 1);
-              }
-            }
-          }, RETRY_DELAYS[retryIndex]);
-        };
-        scheduleRetry(0);
-      }
-    });
-    const hideListener = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardVisible(false);
-    });
-
-    return () => {
-      showListener.remove();
-      hideListener.remove();
-    };
-  }, []);
 
   // Cleanup editing timeout on unmount
   useEffect(() => () => {
@@ -283,7 +221,6 @@ const TokenSwap = () => {
       editingTimeoutRef.current = null;
     }
     setEditing(dirClicked);
-    setKeyboardVisible(true);
     setSwapDirection(null);
     setShowQuote(false);
     if (dirClicked === 'input') {
@@ -431,19 +368,7 @@ const TokenSwap = () => {
           />
         </>
       )}
-      {/* DEBUG: Remove after testing */}
-      {Platform.OS === 'android' && (
-        <View style={{ backgroundColor: 'red', padding: 10, position: 'absolute', top: 100, left: 10, zIndex: 9999 }}>
-          <Text style={{ color: 'white', fontSize: 12 }}>screenH: {debugInfo.screenHeight}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>screenY: {debugInfo.screenY}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>reported: {debugInfo.reportedHeight}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>calc: {debugInfo.calculatedHeight}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>chosen: {debugInfo.heightToUse}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>using: {keyboardHeight}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>retry#: {debugInfo.retryCount}</Text>
-        </View>
-      )}
-      {/* Android: position accessory absolutely above keyboard */}
+      {/* Android: position accessory absolutely above keyboard using native keyboard height */}
       {Platform.OS === 'android' && editing === 'input' && keyboardVisible && (
         <View style={[styles.androidAccessory, { bottom: keyboardHeight }]}>
           <AmountInputAccessory
