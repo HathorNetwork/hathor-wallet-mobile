@@ -90,6 +90,7 @@ const TokenSwap = () => {
   const [editing, setEditing] = useState(null);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [debugInfo, setDebugInfo] = useState({});
 
   // Ref to track editing timeout so we can cancel it on new focus
   const editingTimeoutRef = useRef(null);
@@ -105,6 +106,7 @@ const TokenSwap = () => {
     const subscription = eventEmitter.addListener('keyboardHeightChanged', (event) => {
       setKeyboardHeight(event.height);
       setKeyboardVisible(event.isVisible);
+      setDebugInfo(event);
     });
 
     SoftInputModule.startKeyboardListener();
@@ -367,6 +369,16 @@ const TokenSwap = () => {
             onPercentagePress={onPercentagePress}
           />
         </>
+      )}
+      {/* DEBUG: Remove after testing */}
+      {Platform.OS === 'android' && (
+        <View style={{ backgroundColor: 'red', padding: 10, position: 'absolute', top: 100, left: 10, zIndex: 9999 }}>
+          <Text style={{ color: 'white', fontSize: 12 }}>kbDp: {debugInfo.height}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>kbPx: {debugInfo.heightPx}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>screenPx: {debugInfo.screenPx}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>rectBottom: {debugInfo.rectBottom}</Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>visible: {keyboardVisible ? 'true' : 'false'}</Text>
+        </View>
       )}
       {/* Android: position accessory absolutely above keyboard using native keyboard height */}
       {Platform.OS === 'android' && editing === 'input' && keyboardVisible && (

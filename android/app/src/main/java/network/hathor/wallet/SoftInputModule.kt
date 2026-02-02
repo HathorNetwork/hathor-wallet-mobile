@@ -51,6 +51,9 @@ class SoftInputModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
 
                     val params = Arguments.createMap().apply {
                         putInt("height", keyboardHeightDp)
+                        putInt("heightPx", keyboardHeightPx)
+                        putInt("screenPx", screenHeightPx)
+                        putInt("rectBottom", rect.bottom)
                         putBoolean("isVisible", isVisible)
                     }
 
