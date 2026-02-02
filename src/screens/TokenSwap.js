@@ -92,27 +92,48 @@ const TokenSwap = () => {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [debugInfo, setDebugInfo] = useState({});
 
+  // Cache last known keyboard height for instant display
+  const lastKeyboardHeightRef = useRef(0);
+
   // Ref to track editing timeout so we can cancel it on new focus
   const editingTimeoutRef = useRef(null);
 
   // Listen for keyboard height from native module (Android only)
-  // Uses WindowInsets API which works on modern Android where SOFT_INPUT_ADJUST_RESIZE is deprecated
+  // Uses ViewTreeObserver which works on modern Android where SOFT_INPUT_ADJUST_RESIZE is deprecated
   useEffect(() => {
     if (Platform.OS !== 'android' || !SoftInputModule) {
       return undefined;
     }
 
+    // Use Keyboard events for fast visibility detection
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      // Immediately show with cached height while waiting for accurate measurement
+      if (lastKeyboardHeightRef.current > 0) {
+        setKeyboardHeight(lastKeyboardHeightRef.current);
+      }
+      setKeyboardVisible(true);
+    });
+
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    // Native module provides accurate height measurements
     const eventEmitter = new NativeEventEmitter(SoftInputModule);
-    const subscription = eventEmitter.addListener('keyboardHeightChanged', (event) => {
-      setKeyboardHeight(event.height);
-      setKeyboardVisible(event.isVisible);
+    const nativeSubscription = eventEmitter.addListener('keyboardHeightChanged', (event) => {
+      if (event.height > 0) {
+        lastKeyboardHeightRef.current = event.height;
+        setKeyboardHeight(event.height);
+      }
       setDebugInfo(event);
     });
 
     SoftInputModule.startKeyboardListener();
 
     return () => {
-      subscription.remove();
+      showSubscription.remove();
+      hideSubscription.remove();
+      nativeSubscription.remove();
       SoftInputModule.stopKeyboardListener();
     };
   }, []);
