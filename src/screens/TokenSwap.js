@@ -9,8 +9,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
-  NativeEventEmitter,
-  NativeModules,
   Platform,
   Pressable,
   StyleSheet,
@@ -18,8 +16,6 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
-
-const { SoftInputModule } = NativeModules;
 import { useDispatch, useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
@@ -88,55 +84,9 @@ const TokenSwap = () => {
   const [showQuote, setShowQuote] = useState(false);
 
   const [editing, setEditing] = useState(null);
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [debugInfo, setDebugInfo] = useState({});
-
-  // Cache last known keyboard height for instant display
-  const lastKeyboardHeightRef = useRef(0);
 
   // Ref to track editing timeout so we can cancel it on new focus
   const editingTimeoutRef = useRef(null);
-
-  // Listen for keyboard height from native module (Android only)
-  // Uses ViewTreeObserver which works on modern Android where SOFT_INPUT_ADJUST_RESIZE is deprecated
-  useEffect(() => {
-    if (Platform.OS !== 'android' || !SoftInputModule) {
-      return undefined;
-    }
-
-    // Use Keyboard events for fast visibility detection
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
-      // Immediately show with cached height while waiting for accurate measurement
-      if (lastKeyboardHeightRef.current > 0) {
-        setKeyboardHeight(lastKeyboardHeightRef.current);
-      }
-      setKeyboardVisible(true);
-    });
-
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardVisible(false);
-    });
-
-    // Native module provides accurate height measurements
-    const eventEmitter = new NativeEventEmitter(SoftInputModule);
-    const nativeSubscription = eventEmitter.addListener('keyboardHeightChanged', (event) => {
-      if (event.height > 0) {
-        lastKeyboardHeightRef.current = event.height;
-        setKeyboardHeight(event.height);
-      }
-      setDebugInfo(event);
-    });
-
-    SoftInputModule.startKeyboardListener();
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-      nativeSubscription.remove();
-      SoftInputModule.stopKeyboardListener();
-    };
-  }, []);
 
   const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
   const {
@@ -391,36 +341,6 @@ const TokenSwap = () => {
           />
         </>
       )}
-      {/* DEBUG: Remove after testing */}
-      {Platform.OS === 'android' && (
-        <View style={{ backgroundColor: 'red', padding: 10, position: 'absolute', top: 100, left: 10, zIndex: 9999 }}>
-          <Text style={{ color: 'white', fontSize: 12 }}>kbDp: {debugInfo.height}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>navBarDp: {debugInfo.navBarDp}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>rawKbDp: {debugInfo.rawKbDp}</Text>
-          <Text style={{ color: 'white', fontSize: 12 }}>visible: {keyboardVisible ? 'true' : 'false'}</Text>
-        </View>
-      )}
-      {/* Android: position accessory absolutely above keyboard using native keyboard height */}
-      {Platform.OS === 'android' && editing === 'input' && keyboardVisible && (
-        <View style={[styles.androidAccessory, { bottom: keyboardHeight }]}>
-          <AmountInputAccessory
-            nativeID={INPUT_ACCESSORY_VIEW_ID}
-            availableBalance={getAvailableAmount(inputToken, tokensBalance)}
-            onPercentagePress={onPercentagePress}
-            visible
-          />
-        </View>
-      )}
-      {Platform.OS === 'android' && editing === 'output' && keyboardVisible && (
-        <View style={[styles.androidAccessory, { bottom: keyboardHeight }]}>
-          <AmountInputAccessory
-            nativeID={OUTPUT_ACCESSORY_VIEW_ID}
-            availableBalance={getAvailableAmount(outputToken, tokensBalance)}
-            onPercentagePress={onPercentagePress}
-            visible
-          />
-        </View>
-      )}
       <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
         <HathorHeader
           withBorder
@@ -547,12 +467,6 @@ const styles = StyleSheet.create({
   screenContent: {
     flex: 1,
     backgroundColor: COLORS.backgroundColor,
-  },
-  androidAccessory: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    zIndex: 999,
   },
   buttonContainer: {
     marginBottom: 16,
