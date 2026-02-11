@@ -131,8 +131,8 @@ msgstr ""
 
 #: src/screens/About.js:107
 msgid ""
-"For further information, check out the |link1:Terms of Service| and |link2:"
-"Privacy Policy|, or our website |link3:https://hathor.network/|."
+"For further information, check out the |link1:Terms of Service| and |"
+"link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
 #: src/screens/BackupWords.js:184
@@ -292,9 +292,9 @@ msgid ""
 "When creating new tokens, a |fn:deposit of ${ depositPercentage }%| in HTR "
 "is required - e.g. if you create 1000 NewCoins, 10 HTR are needed as deposit."
 msgstr ""
-"Når du opretter nye tokens, kræves der et |fn: depositum på "
-"${ depositPercentage }%| i HTR - f.eks. hvis du opretter 1000 NewCoins, er "
-"10 HTR nødvendige som depositum."
+"Når du opretter nye tokens, kræves der et |fn: depositum på $"
+"{ depositPercentage }%| i HTR - f.eks. hvis du opretter 1000 NewCoins, er 10 "
+"HTR nødvendige som depositum."
 
 #: src/screens/CreateTokenDepositNotice.js:55
 msgid ""
@@ -366,8 +366,8 @@ msgstr "Velkommen til Hathor Wallet!"
 
 #: src/screens/InitWallet.js:73
 msgid ""
-"For further information, check out our website |link:https://hathor."
-"network/|."
+"For further information, check out our website |link:https://"
+"hathor.network/|."
 msgstr ""
 "For yderligere information, se vores websted |link:https://hathor.network/|."
 
@@ -442,7 +442,7 @@ msgstr "Ord"
 msgid "Enter your seed words separated by space"
 msgstr "Indtast dine seed-ord adskilt med mellemrum"
 
-#: src/components/NanoContract/NanoContractDetails.js:249
+#: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:232
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:620
 #: src/components/Reown/SendTransactionRequest.js:555
@@ -499,11 +499,11 @@ msgstr ""
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:544 src/screens/MainScreen.js:576
+#: src/screens/MainScreen.js:554 src/screens/MainScreen.js:586
 msgid "Available Balance"
 msgstr "Tilgængelig saldo"
 
-#: src/screens/MainScreen.js:553
+#: src/screens/MainScreen.js:563
 msgid "Locked"
 msgstr "Låst"
 
@@ -534,12 +534,12 @@ msgstr "Du har lige modtaget **${ amount } ${ symbol }**"
 msgid "PAYMENT REQUEST"
 msgstr "BETALINGSANMODNING"
 
-#: src/components/TxDetailsModal.js:97 src/screens/PaymentRequestDetail.js:129
+#: src/components/TxDetailsModal.js:112 src/screens/PaymentRequestDetail.js:129
 msgid "Token"
 msgstr "Token"
 
 #: src/components/Reown/CreateTokenRequest.js:91
-#: src/components/TxDetailsModal.js:158 src/screens/PaymentRequestDetail.js:133
+#: src/components/TxDetailsModal.js:174 src/screens/PaymentRequestDetail.js:133
 msgid "Amount"
 msgstr "Antal"
 
@@ -793,12 +793,12 @@ msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:83
-#: src/screens/TokenSwapReview.js:157
+#: src/screens/TokenSwapReview.js:150
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:84
-#: src/screens/TokenSwapReview.js:158
+#: src/screens/TokenSwapReview.js:151
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -1186,7 +1186,7 @@ msgstr ""
 msgid "Load First Addresses Error"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:213
+#: src/components/NanoContract/NanoContractDetails.js:216
 #: src/components/NanoContract/SelectAddressModal.js:119
 #: src/components/Reown/GetAddressClientRequest.js:136
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:430
@@ -1203,7 +1203,7 @@ msgstr ""
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:80
-#: src/components/TxDetailsModal.js:113
+#: src/components/TxDetailsModal.js:129
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:200
 msgid "Nano Contract ID"
 msgstr ""
@@ -1232,43 +1232,43 @@ msgstr ""
 msgid "Contract successfully registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:45
+#: src/sagas/nanoContract.js:92
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:46
+#: src/sagas/nanoContract.js:93
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:47
+#: src/sagas/nanoContract.js:94
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:48
+#: src/sagas/nanoContract.js:95
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:49
+#: src/sagas/nanoContract.js:96
 msgid "Error while trying to register Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:50
+#: src/sagas/nanoContract.js:97
 msgid "Invalid transaction to register as Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:51
+#: src/sagas/nanoContract.js:98
 msgid "Blueprint not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:52
+#: src/sagas/nanoContract.js:99
 msgid "Couldn't get Blueprint info."
 msgstr ""
 
-#: src/sagas/nanoContract.js:53
+#: src/sagas/nanoContract.js:100
 msgid "Nano Contract not registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:54
+#: src/sagas/nanoContract.js:101
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr ""
 
@@ -1433,7 +1433,7 @@ msgstr "Ingen internetforbindelse"
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
-#: src/components/PushTxDetailsModal.js:77 src/components/TxDetailsModal.js:99
+#: src/components/PushTxDetailsModal.js:77 src/components/TxDetailsModal.js:114
 msgid "Date & Time"
 msgstr "Dato & Tid"
 
@@ -1454,7 +1454,7 @@ msgstr "Her er min adresse: ${ lastSharedAddress }"
 msgid "New address"
 msgstr "Ny adresse"
 
-#: src/components/ReceiveMyAddress.js:78 src/components/TokenDetails.js:61
+#: src/components/ReceiveMyAddress.js:78 src/components/TokenDetails.js:102
 msgid "Share"
 msgstr "Del"
 
@@ -1484,6 +1484,30 @@ msgid ""
 msgstr ""
 "Her er konfigurationsstrengen for token ${ tokenLabel }: ${ configString }"
 
+#: src/components/TokenDetails.js:47 src/components/TxDetailsModal.js:51
+msgid "Native Token"
+msgstr ""
+
+#: src/components/TokenDetails.js:48
+msgid "This is the native token, no fees applies."
+msgstr ""
+
+#: src/components/TokenDetails.js:53
+msgid "Fee Model: Deposit-Based"
+msgstr ""
+
+#: src/components/TokenDetails.js:54
+msgid "No transaction fees. Requires 1% HTR deposit."
+msgstr ""
+
+#: src/components/TokenDetails.js:59
+msgid "Fee Model: Fee-Based"
+msgstr ""
+
+#: src/components/TokenDetails.js:60
+msgid "Small fee applies to each transfer. No deposit required."
+msgstr ""
+
 #: src/components/TransactionStatusLabel.js:69
 msgid "Executed"
 msgstr ""
@@ -1496,32 +1520,44 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:98
+#: src/components/TxDetailsModal.js:54
+msgid "Deposit Based"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:57
+msgid "Fee Based"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:113
 msgid "Description"
 msgstr "Beskrivelse"
 
+#: src/components/TxDetailsModal.js:115
+msgid "Fee Model"
+msgstr ""
+
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:294
-#: src/components/TxDetailsModal.js:100
+#: src/components/TxDetailsModal.js:116
 msgid "Transaction ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:103
+#: src/components/TxDetailsModal.js:119
 msgid "Nano Contract Status"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:89
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:113
-#: src/components/TxDetailsModal.js:112
+#: src/components/TxDetailsModal.js:128
 msgid "Blueprint Method"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:114
+#: src/components/TxDetailsModal.js:130
 msgid "Nano Contract Caller"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:99
-#: src/components/TxDetailsModal.js:115
+#: src/components/TxDetailsModal.js:131
 msgid "Nano Contract"
 msgstr ""
 
@@ -2255,15 +2291,15 @@ msgstr ""
 msgid "Go back"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:188
+#: src/components/NanoContract/NanoContractDetails.js:191
 msgid "Load More"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:214
+#: src/components/NanoContract/NanoContractDetails.js:217
 msgid "Loading Nano Contract transactions."
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:228
+#: src/components/NanoContract/NanoContractDetails.js:231
 msgid "Nano Contract Transactions Error"
 msgstr ""
 
