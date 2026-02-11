@@ -529,13 +529,13 @@ msgstr ""
 msgid "PAYMENT REQUEST"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:97
+#: src/components/TxDetailsModal.js:112
 #: src/screens/PaymentRequestDetail.js:129
 msgid "Token"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:91
-#: src/components/TxDetailsModal.js:158
+#: src/components/TxDetailsModal.js:174
 #: src/screens/PaymentRequestDetail.js:133
 msgid "Amount"
 msgstr ""
@@ -1212,7 +1212,7 @@ msgstr ""
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:80
-#: src/components/TxDetailsModal.js:113
+#: src/components/TxDetailsModal.js:129
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:200
 msgid "Nano Contract ID"
 msgstr ""
@@ -1437,7 +1437,7 @@ msgid "Public Explorer"
 msgstr ""
 
 #: src/components/PushTxDetailsModal.js:77
-#: src/components/TxDetailsModal.js:99
+#: src/components/TxDetailsModal.js:114
 msgid "Date & Time"
 msgstr ""
 
@@ -1459,7 +1459,7 @@ msgid "New address"
 msgstr ""
 
 #: src/components/ReceiveMyAddress.js:78
-#: src/components/TokenDetails.js:61
+#: src/components/TokenDetails.js:102
 msgid "Share"
 msgstr ""
 
@@ -1486,6 +1486,31 @@ msgstr ""
 msgid "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr ""
 
+#: src/components/TokenDetails.js:47
+#: src/components/TxDetailsModal.js:51
+msgid "Native Token"
+msgstr ""
+
+#: src/components/TokenDetails.js:48
+msgid "This is the native token, no fees applies."
+msgstr ""
+
+#: src/components/TokenDetails.js:53
+msgid "Fee Model: Deposit-Based"
+msgstr ""
+
+#: src/components/TokenDetails.js:54
+msgid "No transaction fees. Requires 1% HTR deposit."
+msgstr ""
+
+#: src/components/TokenDetails.js:59
+msgid "Fee Model: Fee-Based"
+msgstr ""
+
+#: src/components/TokenDetails.js:60
+msgid "Small fee applies to each transfer. No deposit required."
+msgstr ""
+
 #: src/components/TransactionStatusLabel.js:69
 msgid "Executed"
 msgstr ""
@@ -1498,32 +1523,44 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:98
+#: src/components/TxDetailsModal.js:54
+msgid "Deposit Based"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:57
+msgid "Fee Based"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:113
 msgid "Description"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:115
+msgid "Fee Model"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:294
-#: src/components/TxDetailsModal.js:100
+#: src/components/TxDetailsModal.js:116
 msgid "Transaction ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:103
+#: src/components/TxDetailsModal.js:119
 msgid "Nano Contract Status"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:89
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:113
-#: src/components/TxDetailsModal.js:112
+#: src/components/TxDetailsModal.js:128
 msgid "Blueprint Method"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:114
+#: src/components/TxDetailsModal.js:130
 msgid "Nano Contract Caller"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:99
-#: src/components/TxDetailsModal.js:115
+#: src/components/TxDetailsModal.js:131
 msgid "Nano Contract"
 msgstr ""
 
