@@ -14,7 +14,7 @@ import QRCode from 'react-native-qrcode-svg';
 import PropTypes from 'prop-types';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
-import hathorLib from '@hathor/wallet-lib';
+import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
 import { getTokenLabel } from '../utils';
 import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
@@ -42,19 +42,19 @@ const TokenDetails = (props) => {
   const getFeeModelInfo = () => {
     const version = props.token?.version;
 
-    if (version === 0) {
+    if (version === TokenVersion.NATIVE) {
       return {
         model: t`Native Token`,
         description: t`This is the native token, no fees applies.`,
       };
     }
-    if (version === 1) {
+    if (version === TokenVersion.DEPOSIT) {
       return {
         model: t`Fee Model: Deposit-Based`,
         description: t`No transaction fees. Requires 1% HTR deposit.`,
       };
     }
-    if (version === 2) {
+    if (version === TokenVersion.FEE) {
       return {
         model: t`Fee Model: Fee-Based`,
         description: t`Small fee applies to each transfer. No deposit required.`,

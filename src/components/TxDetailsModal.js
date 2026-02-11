@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { t } from 'ttag';
 
+import { TokenVersion } from '@hathor/wallet-lib';
 import { getShortContent, getShortHash, getTokenLabel, renderValue } from '../utils';
 import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
@@ -46,13 +47,13 @@ class TxDetailsModal extends Component {
   );
 
   getFeeModelText = (version) => {
-    if (version === 0) {
+    if (version === TokenVersion.NATIVE) {
       return t`Native Token`;
     }
-    if (version === 1) {
+    if (version === TokenVersion.DEPOSIT) {
       return t`Deposit Based`;
     }
-    if (version === 2) {
+    if (version === TokenVersion.FEE) {
       return t`Fee Based`;
     }
     return null;
