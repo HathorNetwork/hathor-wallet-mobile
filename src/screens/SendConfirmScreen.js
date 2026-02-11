@@ -9,7 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { useSelector } from 'react-redux';
 import { msgid, ngettext, t } from 'ttag';
-import hathorLib from '@hathor/wallet-lib';
+import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -57,8 +57,7 @@ const SendConfirmScreen = () => {
 
   useEffect(() => {
     (async () => {
-      const FBTVersion = 1; // XXX: hathorLib.TokenVersion.FEE
-      if (!(token.version && token.version === FBTVersion)) {
+      if (token.version !== TokenVersion.FEE) {
         setNetworkFee(0n);
         return;
       }

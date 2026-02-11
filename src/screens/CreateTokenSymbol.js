@@ -14,7 +14,7 @@ import InfoBox from '../components/InfoBox';
 import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
 import SimpleInput from '../components/SimpleInput';
-import { getKeyboardAvoidingViewTopDistance, Italic } from '../utils';
+import { getKeyboardAvoidingViewTopDistance, Italic, getCreateTokenTitle } from '../utils';
 
 /**
  * This screen expect the following parameters on the navigation:
@@ -35,8 +35,8 @@ class CreateTokenSymbol extends React.Component {
   }
 
   onButtonPress = () => {
-    const { name, tokenInfoVersion } = this.props.route.params;
-    this.props.navigation.navigate('CreateTokenAmount', { name, symbol: this.state.symbol, tokenInfoVersion });
+    const { name, tokenVersion } = this.props.route.params;
+    this.props.navigation.navigate('CreateTokenAmount', { name, symbol: this.state.symbol, tokenVersion });
   }
 
   isButtonDisabled = () => {
@@ -56,13 +56,8 @@ class CreateTokenSymbol extends React.Component {
   }
 
   render() {
-    const { tokenInfoVersion } = this.props.route.params;
-    let title = t`CREATE TOKEN`;
-    if (tokenInfoVersion === 1) {
-      title = t`CREATE DEPOSIT TOKEN`;
-    } else if (tokenInfoVersion === 2) {
-      title = t`CREATE FEE TOKEN`;
-    }
+    const { tokenVersion } = this.props.route.params;
+    const title = getCreateTokenTitle(tokenVersion);
     return (
       <View style={{ flex: 1 }}>
         <HathorHeader

@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { t } from 'ttag';
 import { connect } from 'react-redux';
+import { TokenVersion } from '@hathor/wallet-lib';
 
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
@@ -123,13 +124,13 @@ class CreateTokenTypeNotice extends React.Component {
           <View style={this.style.buttonsContainer}>
             <View style={this.style.buttonView}>
               <NewHathorButton
-                onPress={() => this.props.navigation.navigate('CreateTokenName', { tokenInfoVersion: 1 })}
+                onPress={() => this.props.navigation.navigate('CreateTokenName', { tokenVersion: TokenVersion.DEPOSIT })}
                 title={t`DEPOSIT TOKEN`}
               />
             </View>
             <View style={this.style.buttonView}>
               <NewHathorButton
-                onPress={() => this.props.navigation.navigate('CreateTokenName', { tokenInfoVersion: 2 })}
+                onPress={() => this.props.navigation.navigate('CreateTokenName', { tokenVersion: TokenVersion.FEE })}
                 title={t`FEE TOKEN`}
               />
             </View>

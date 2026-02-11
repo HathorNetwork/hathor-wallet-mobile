@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import hathorLib from '@hathor/wallet-lib';
+import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
 import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import CryptoJS from 'crypto-js';
 import * as Keychain from 'react-native-keychain';
@@ -642,6 +642,22 @@ export const isTokenSwapEnabled = (state) => (
 export const isFeeBasedTokensEnabled = (state) => (
   get(state.featureToggles, FBT_FEATURE_TOGGLE, false)
 );
+
+/**
+ * Get the title for create token screens based on token version.
+ * @param {number} tokenVersion - The token version (NATIVE=0, DEPOSIT=1, FEE=2)
+ * @returns {string} The localized title string
+ */
+export const getCreateTokenTitle = (tokenVersion) => {
+  switch (tokenVersion) {
+    case TokenVersion.DEPOSIT:
+      return t`CREATE DEPOSIT TOKEN`;
+    case TokenVersion.FEE:
+      return t`CREATE FEE TOKEN`;
+    default:
+      return t`CREATE TOKEN`;
+  }
+};
 
 /**
  * Get timestamp in specific format.

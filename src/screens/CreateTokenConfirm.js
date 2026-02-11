@@ -13,7 +13,7 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import { t } from 'ttag';
 
-import hathorLib from '@hathor/wallet-lib';
+import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
@@ -27,10 +27,11 @@ import { newToken, updateSelectedToken } from '../actions';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
+import { getCreateTokenTitle } from '../utils';
 
-const TokenTypeInfoBox = ({ tokenInfoVersion }) => {
+const TokenTypeInfoBox = ({ tokenVersion }) => {
   let infoText = t`You chose to create a **Deposit-Based Token**, which requires a 1% HTR deposit.`;
-  if (tokenInfoVersion === 2) {
+  if (tokenVersion === TokenVersion.FEE) {
     infoText = t`You chose to create a **Fee-Based Token**, so a small fee will be applied to each future transaction of this token.`;
   }
   return (
@@ -74,7 +75,7 @@ const CreateTokenConfirm = () => {
   const params = useParams();
 
   // Parse and store navigation params
-  const { amount, name, symbol, tokenInfoVersion } = params;
+  const { amount, name, symbol, tokenVersion } = params;
   const nativeSymbol = wallet.storage.getNativeTokenData().symbol;
 
   // Component state
@@ -84,20 +85,16 @@ const CreateTokenConfirm = () => {
   const [deposit, setDeposit] = useState(null);
 
   useEffect(() => {
-    if (tokenInfoVersion === 1) {
-      setTitle(t`CREATE DEPOSIT TOKEN`);
-    } else if (tokenInfoVersion === 2) {
-      setTitle(t`CREATE FEE TOKEN`);
-    }
-  }, [tokenInfoVersion]);
+    setTitle(getCreateTokenTitle(tokenVersion));
+  }, [tokenVersion]);
 
   useEffect(() => {
-    if (tokenInfoVersion === 1) {
+    if (tokenVersion === TokenVersion.DEPOSIT) {
       setDeposit(hathorLib.tokensUtils.getDepositAmount(amount));
     } else {
       setDeposit(null);
     }
-  }, [tokenInfoVersion, amount]);
+  }, [tokenVersion, amount]);
 
   /**
    * Prepare data and execute create token
@@ -252,7 +249,7 @@ const CreateTokenConfirm = () => {
               containerStyle={{ marginTop: 32 }}
             />
           )}
-          { tokenInfoVersion != null && <TokenTypeInfoBox tokenInfoVersion={tokenInfoVersion} /> }
+          { tokenVersion != null && <TokenTypeInfoBox tokenVersion={tokenVersion} /> }
         </View>
         <NewHathorButton
           title={t`Create token`}

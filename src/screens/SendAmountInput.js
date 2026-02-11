@@ -18,7 +18,7 @@ import { useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
-import hathorLib from '@hathor/wallet-lib';
+import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
 
 import { IS_MULTI_TOKEN } from '../constants';
 import { renderValue, isTokenNFT } from '../utils';
@@ -67,8 +67,7 @@ const SendAmountInput = () => {
 
   useEffect(() => {
     (async () => {
-      const FBTVersion = 1; // XXX: hathorLib.TokenVersion.FEE
-      if (token.version && token.version === FBTVersion) {
+      if (token.version && token.version === TokenVersion.FEE) {
         setNetworkFee(0n);
         return;
       }
@@ -127,8 +126,7 @@ const SendAmountInput = () => {
       return;
     }
 
-    const FBTVersion = 1; // XXX: hathorLib.TokenVersion.FEE
-    if (token.version && token.version === FBTVersion) {
+    if (token.version === TokenVersion.FEE) {
       // The user selected a fee based token
       // So we need to check the HTR balance to make the transaction happen.
       const htrBalance = get(tokensBalance, hathorLib.constants.NATIVE_TOKEN_UID);

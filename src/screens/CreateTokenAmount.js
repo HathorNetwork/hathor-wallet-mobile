@@ -11,14 +11,14 @@ import { get } from 'lodash';
 import { useSelector } from 'react-redux';
 import { t, jt } from 'ttag';
 
-import hathorLib from '@hathor/wallet-lib';
+import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
 import AmountTextInput from '../components/AmountTextInput';
 import HathorHeader from '../components/HathorHeader';
 import InfoBox from '../components/InfoBox';
 import InputLabel from '../components/InputLabel';
 import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
-import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
+import { getKeyboardAvoidingViewTopDistance, Strong, getCreateTokenTitle } from '../utils';
 import { COLORS } from '../styles/themes';
 import { useNavigation, useParams } from '../hooks/navigation';
 
@@ -43,7 +43,7 @@ const CreateTokenAmount = () => {
   const params = useParams();
 
   // Get route params with BigInt support
-  const { name, symbol, tokenInfoVersion } = params;
+  const { name, symbol, tokenVersion } = params;
 
   const nativeSymbol = wallet.storage.getNativeTokenData().symbol;
 
@@ -69,12 +69,8 @@ const CreateTokenAmount = () => {
   }, [navigation]);
 
   useEffect(() => {
-    if (tokenInfoVersion === 1) {
-      setTitle(t`CREATE DEPOSIT TOKEN`);
-    } else if (tokenInfoVersion === 2) {
-      setTitle(t`CREATE FEE TOKEN`);
-    }
-  }, [tokenInfoVersion]);
+    setTitle(getCreateTokenTitle(tokenVersion));
+  }, [tokenVersion]);
 
   // Handle amount text change
   const onAmountChange = (text, value) => {
@@ -116,7 +112,7 @@ const CreateTokenAmount = () => {
       symbol: params.symbol,
       amount,
       deposit,
-      tokenInfoVersion,
+      tokenVersion,
     });
   };
 
@@ -153,7 +149,7 @@ const CreateTokenAmount = () => {
   );
 
   useEffect(() => {
-    if (tokenInfoVersion === 2) {
+    if (tokenVersion === TokenVersion.FEE) {
       setInfoBoxItems([
         <Text key='fee'>{t`A small fee will be applied to each future transaction of this token.`}</Text>,
       ]);
@@ -167,7 +163,7 @@ const CreateTokenAmount = () => {
         </Text>
       ])
     }
-  }, [deposit, tokenInfoVersion]);
+  }, [deposit, tokenVersion]);
 
   return (
     <View style={{ flex: 1 }}>
