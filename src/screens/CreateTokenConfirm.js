@@ -23,7 +23,8 @@ import OfflineBar from '../components/OfflineBar';
 import FeedbackModal from '../components/FeedbackModal';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import TextFmt from '../components/TextFmt';
-import { newToken, updateSelectedToken } from '../actions';
+import { updateSelectedToken } from '../actions';
+import { registerToken } from '../utils/tokens';
 import errorIcon from '../assets/images/icErrorBig.png';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
@@ -67,7 +68,6 @@ const CreateTokenConfirm = () => {
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
 
   const dispatch = useDispatch();
-  const dispatchNewToken = (token) => dispatch(newToken(token));
   const dispatchUpdateSelectedToken = (token) => dispatch(updateSelectedToken(token));
 
   // Navigation and params hooks
@@ -159,11 +159,10 @@ const CreateTokenConfirm = () => {
    *
    * @param {Object} tx Create token tx data
    */
-  const onTxSuccess = (tx) => {
+  const onTxSuccess = async (tx) => {
     const token = { uid: tx.hash, name, symbol, version: tokenVersion };
-    dispatchNewToken(token);
+    await registerToken(wallet, dispatch, token);
     dispatchUpdateSelectedToken(token);
-    wallet.storage.registerToken(token);
   };
 
   /**

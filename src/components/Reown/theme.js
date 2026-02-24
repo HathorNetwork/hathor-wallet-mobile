@@ -1,7 +1,21 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { COLORS } from '../../styles/themes';
 
+/**
+ * Common wrapper component for Reown request screens
+ */
+export const RequestWrapper = ({ children }) => (
+  <View style={commonStyles.requestWrapper}>
+    {children}
+  </View>
+);
+
 export const commonStyles = StyleSheet.create({
+  requestWrapper: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: COLORS.lowContrastDetail,
+  },
   // Card
   card: {
     paddingVertical: 16,

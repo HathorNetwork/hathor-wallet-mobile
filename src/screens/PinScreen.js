@@ -307,7 +307,13 @@ class PinScreen extends React.Component {
       let onPress;
       if (this.canCancel) {
         title = t`Cancel`;
-        onPress = () => this.props.navigation.goBack();
+        onPress = () => {
+          this.props.navigation.goBack();
+          const cancelCb = this.props.route.params?.cancelCb;
+          if (cancelCb) {
+            cancelCb();
+          }
+        };
       } else {
         title = t`Reset wallet`;
         onPress = () => this.goToReset();

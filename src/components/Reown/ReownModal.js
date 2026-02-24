@@ -17,6 +17,11 @@ import SendTransactionModal from './SendTransactionModal';
 import InsufficientFundsModal from './InsufficientFundsModal';
 import CreateNanoContractCreateTokenTxModal from './CreateNanoContractCreateTokenTxModal';
 import GetBalanceModal from './GetBalanceModal';
+import RequestErrorModal from './RequestErrorModal';
+import GetAddressModal from './GetAddressModal';
+import GetAddressClientModal from './GetAddressClientModal';
+import GetUtxosModal from './GetUtxosModal';
+import NetworkMismatchModal from './NetworkMismatchModal';
 
 export default () => {
   const dispatch = useDispatch();
@@ -40,6 +45,11 @@ export default () => {
     [ReownModalTypes.INSUFFICIENT_FUNDS]: InsufficientFundsModal,
     [ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX]: CreateNanoContractCreateTokenTxModal,
     [ReownModalTypes.GET_BALANCE]: GetBalanceModal,
+    [ReownModalTypes.REQUEST_ERROR]: RequestErrorModal,
+    [ReownModalTypes.GET_ADDRESS]: GetAddressModal,
+    [ReownModalTypes.GET_ADDRESS_CLIENT]: GetAddressClientModal,
+    [ReownModalTypes.GET_UTXOS]: GetUtxosModal,
+    [ReownModalTypes.NETWORK_MISMATCH]: NetworkMismatchModal,
   };
 
   const getModal = (type) => {
@@ -67,4 +77,9 @@ export const ReownModalTypes = {
   INSUFFICIENT_FUNDS: 'InsufficientFunds',
   CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: 'CreateNanoContractCreateTokenTx',
   GET_BALANCE: 'GetBalance',
+  REQUEST_ERROR: 'RequestError',
+  GET_ADDRESS: 'GetAddress',
+  GET_ADDRESS_CLIENT: 'GetAddressClient',
+  GET_UTXOS: 'GetUtxos',
+  NETWORK_MISMATCH: 'NetworkMismatch',
 };

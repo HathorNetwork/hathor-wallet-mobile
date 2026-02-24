@@ -291,6 +291,10 @@ export function buildTokenSwap(contractId, caller, quote, tokenIn, tokenOut, sli
     data.args.push(quote.path[0].fee);
   }
 
+  // Deadline is currently fixed at 1 hour (3_600_000ms) from now.
+  // The Timestamp is in unix so we need it in seconds, not ms
+  data.args.push(Math.floor((Date.now() + 3_600_000) / 1000));
+
   // Method and data required to make the token swap
   return [method, data];
 }

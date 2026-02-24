@@ -20,8 +20,9 @@ import SimpleInput from '../components/SimpleInput';
 import Spinner from '../components/Spinner';
 
 import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
+import { registerToken, updateTokensMetadata } from '../utils/tokens';
 
-import { newToken, updateSelectedToken, fetchTokensMetadata, tokenMetadataUpdated } from '../actions';
+import { updateSelectedToken } from '../actions';
 import NavigationService from '../NavigationService';
 
 /**
@@ -93,15 +94,10 @@ class RegisterTokenManual extends React.Component {
       ...(tokenDetails.tokenInfo?.version != null && { version: tokenDetails.tokenInfo.version }),
     };
 
-    this.props.wallet.storage.registerToken(tokenWithVersion).then(() => {
-      this.props.dispatch(newToken(tokenWithVersion));
-      this.props.dispatch(updateSelectedToken(tokenWithVersion));
-      const networkName = this.props.wallet.getNetworkObject().name;
-      fetchTokensMetadata([tokenWithVersion.uid], networkName).then((metadatas) => {
-        this.props.dispatch(tokenMetadataUpdated(metadatas));
-      });
-      NavigationService.resetToMain();
-    });
+    await registerToken(this.props.wallet, this.props.dispatch, tokenWithVersion);
+    this.props.dispatch(updateSelectedToken(token));
+    updateTokensMetadata(this.props.wallet, this.props.dispatch, [token.uid]);
+    NavigationService.resetToMain();
   }
 
   render() {

@@ -21,8 +21,9 @@ import NewHathorButton from '../../components/NewHathorButton';
 import { reownUriInputted } from '../../actions';
 import { getKeyboardAvoidingViewTopDistance } from '../../utils';
 
-export default function ReownList({ navigation }) {
-  const [configString, setConfigString] = useState('');
+export default function ReownList({ navigation, route }) {
+  const initialUri = route.params?.uri || '';
+  const [configString, setConfigString] = useState(initialUri);
 
   const dispatch = useDispatch();
 

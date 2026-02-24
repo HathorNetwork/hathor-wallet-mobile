@@ -20,11 +20,7 @@ import NewHathorButton from '../../components/NewHathorButton';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 import checkIcon from '../../assets/images/icCheckBig.png';
-import {
-  newToken,
-  fetchTokensMetadata,
-  tokenMetadataUpdated
-} from '../../actions';
+import { registerToken, updateTokensMetadata } from '../../utils/tokens';
 import { getTokenLabel, getShortHash } from '../../utils';
 
 export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
@@ -43,20 +39,12 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
   const onRegister = async () => {
     // Run token registration in parallel
     await Promise.all(
-      tokens.map(async (token) => {
-        await wallet.storage.registerToken(token);
-        dispatch(newToken(token));
-      })
+      tokens.map((token) => registerToken(wallet, dispatch, token))
     );
 
     const uids = tokens.map((token) => token.uid);
-    const networkName = wallet.getNetworkObject().name;
-    // This will make the fetch metadata call to run async while we
-    // already navigate to Dashboard without awaiting it
-    (async () => {
-      const metadatas = await fetchTokensMetadata([uids], networkName);
-      dispatch(tokenMetadataUpdated(metadatas));
-    })();
+    // Not awaited intentionally - fetch metadata in background while navigating
+    updateTokensMetadata(wallet, dispatch, uids);
     navigation.navigate('Dashboard');
   };
 
