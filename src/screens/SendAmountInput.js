@@ -67,7 +67,7 @@ const SendAmountInput = () => {
 
   useEffect(() => {
     (async () => {
-      if (token.version && token.version === TokenVersion.FEE) {
+      if (token.version !== TokenVersion.FEE) {
         setNetworkFee(0n);
         return;
       }
@@ -79,13 +79,13 @@ const SendAmountInput = () => {
         if (changeAmount) {
           // Since there is change, it means we will have the intended output and a change output.
           // 2 FBT outputs means the fee value will be payed twice
-          setNetworkFee(2n);
+          setNetworkFee(2n * hathorLib.constants.FEE_PER_OUTPUT);
         } else {
           // No change means that there will only be the intended output.
-          setNetworkFee(1n);
+          setNetworkFee(hathorLib.constants.FEE_PER_OUTPUT);
         }
       } catch (err) {
-        setNetworkFee(1n);
+        setNetworkFee(hathorLib.constants.FEE_PER_OUTPUT);
       }
     })();
   }, [wallet, token, amountValue]);

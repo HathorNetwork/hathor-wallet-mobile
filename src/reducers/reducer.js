@@ -951,12 +951,13 @@ const onSetTokens = (state, { payload }) => {
     selectedToken = DEFAULT_TOKEN;
   }
 
-  // Only allow name, uid and symbol keys for each token
+  // Only allow name, uid, symbol, and version keys for each token
   const sanitizedTokens = Object.entries(payload).reduce((acc, [uid, token]) => {
     acc[uid] = {
       name: token?.name,
       uid,
       symbol: token?.symbol,
+      version: token?.version,
     };
     return acc;
   }, {});

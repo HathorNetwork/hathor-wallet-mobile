@@ -82,13 +82,22 @@ class RegisterTokenManual extends React.Component {
     });
   }
 
-  onButtonPress = () => {
+  onButtonPress = async () => {
     const { token } = this.state;
-    this.props.wallet.storage.registerToken(token).then(() => {
-      this.props.dispatch(newToken(token));
-      this.props.dispatch(updateSelectedToken(token));
+
+    // Fetch token version since configuration string doesn't include it
+    const tokenDetails = await this.props.wallet.getTokenDetails(token.uid);
+
+    const tokenWithVersion = {
+      ...token,
+      ...(tokenDetails.tokenInfo?.version != null && { version: tokenDetails.tokenInfo.version }),
+    };
+
+    this.props.wallet.storage.registerToken(tokenWithVersion).then(() => {
+      this.props.dispatch(newToken(tokenWithVersion));
+      this.props.dispatch(updateSelectedToken(tokenWithVersion));
       const networkName = this.props.wallet.getNetworkObject().name;
-      fetchTokensMetadata([token.uid], networkName).then((metadatas) => {
+      fetchTokensMetadata([tokenWithVersion.uid], networkName).then((metadatas) => {
         this.props.dispatch(tokenMetadataUpdated(metadatas));
       });
       NavigationService.resetToMain();

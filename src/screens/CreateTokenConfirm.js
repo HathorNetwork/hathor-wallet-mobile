@@ -112,7 +112,7 @@ const CreateTokenConfirm = () => {
       name,
       symbol,
       amount,
-      { address, pinCode: pin }
+      { address, pinCode: pin, tokenVersion }
     ).then((tx) => {
       let sendTransaction;
       if (useWalletService) {
@@ -160,7 +160,7 @@ const CreateTokenConfirm = () => {
    * @param {Object} tx Create token tx data
    */
   const onTxSuccess = (tx) => {
-    const token = { uid: tx.hash, name, symbol };
+    const token = { uid: tx.hash, name, symbol, version: tokenVersion };
     dispatchNewToken(token);
     dispatchUpdateSelectedToken(token);
     wallet.storage.registerToken(token);
