@@ -1,10 +1,11 @@
 # Suggested Test Sequence
+The main test sequence should be executed on the `testnet` network by default, unless a specific test requires another network.
 
 ### App update
 1. Load the last release of the app and start a wallet. You can confirm the version on Settings -> About.
 1. Update the code to run the latest version, without resetting the wallet.
 1. You should be shown the PIN screen. Unlock the wallet and confirm load succeeded.
-1. Check if the Wallet Service is active for this device. This will be important to understand the context in which the following tests in this guide will be executed
+1. Make sure the Wallet Service is active for this device ( see [how to check](#identifying-the-current-facade) ). It is important to execute the tests on it before switching to the fullnode.
 1. Reset the wallet.
 
 ### New Wallet Flow
@@ -21,6 +22,10 @@
   - There should be no tokens listed except HTR
   - Balance should be 0.00 HTR
 
+### Double-check the Version
+1. Navigate to the "Settings" → "About" screen
+1. Confirm that the version being tested is correct, and is not the last public release
+
 ### Generate token error Tests
 1. Go to Settings and Create a new Token.
 1. Enter token name Test Token, and click Next.
@@ -29,6 +34,7 @@
 1. The Next button should not be clickable. Also, deposit value and your balance should turn red.
 
 ### Receive Tests
+1. Go to "Settings" -> "Network Settings" and change your network to `testnet`
 1. Go to the Receive Screen and check the QR Code.
 1. Click on the address to copy it.
 1. Click on New address and check that a new address was generated. The QRCode must update.
@@ -41,7 +47,7 @@
 1. Go to the Send Screen and check whether the camera loads correctly.
 1. Click on Manual Info.
 1. Type any random text and click Next. It must show an error message.
-1. Enter the address `WZ7pDnkPnxbs14GHdUFivFzPbzitwNtvZo` (or an address from your other wallet) and click Next.
+1. Enter the address `Wdf7xQtKDNefhd6KTS68Vna1u4wUAyHjLQ` (or an address from your other wallet) and click Next.
 1. Click on the HTR to change the token. Then, select HTR.
 1. Type 100 HTR, click Next, and check the insufficient funds error.
 1. Type 2 HTR, click Next, and check the send summary.
@@ -157,6 +163,13 @@
 1. Click on Register Token, and check that the Test Token is back and your balance is 99 TEST.
 1. Unregister it again and now use the QR Code on the other device to register it.
 
+### Send HTR to a multisig address
+1. Go to the send screen and enter the following address `wRxmoq2bDxViPqFGmAsZVBwHNwjEyFj9zz`
+   1. Optionally, choose the address of another multisig wallet you control
+1. Send `0.01` HTR to this address
+1. Confirm the transaction has been sent
+1. Navigate to the Explorer and confirm the transaction is successful with the correct output address.
+
 ### Reload data
 1. Turn Wi-Fi off until you see the message 'No internet connection.'.
 1. Turn on Wi-Fi and check if the wallet reloads the transactions correctly.
@@ -171,27 +184,33 @@
 1. Use the words saved before.
 1. Click on Start the wallet, and wait for it to be initialized. Validate your transactions are loaded.
 
-# Wallet Service
+# Fullnode Facade tests
 
 1. Go to Settings screen and copy the Unique app identifier
 1. Go to the Unleash Dashboard
-  1. If the tests above were executed while connected to the Wallet Service, disable the `wallet-service.rollout` for this device
-  1. If the tests above were executed while NOT connected to the Wallet Service, enable it for this device
-1. Repeat all steps, starting from step 2
+1. Considering that the recommendations above were followed, all tests were executed on the Wallet Service facade.
+   1. To test the fullnode facade, remove the two "Wallet Service" URL fields from the custom network screen.
+1. Repeat all steps, starting from step 2, now validating the Fullnode facade
 
-# Custom Network
+# Dedicated test suites
+The following documents contain long instructions for specific features. See each one for the complete QA steps.
+
+### Custom Network
 
 Test the ability of the app to change networks and connect to custom nodes and wallet services.
-Follow the [Custom Network QA](./QA_CUSTOM_NETWORK.md) steps.
+Follow the [Custom Network QA](QA_CUSTOM_NETWORK.md) steps.
 
-# Push Notification
+### Push Notification
+Test the ability of the app to receive push notifications. Follow the [Push Notification QA](QA_PUSH_NOTIFICATION.md) steps.
 
-Test the ability of the app to receive push notifications. Follow the [Push Notification QA](./QA_PUSH_NOTIFICATION.md) steps.
+### Nano Contracts
+Test the ability of the app to create and interact with nano contracts. Follow the [Nano Contracts QA](QA_NANO_CONTRACT.md) steps.
 
-# Nano Contracts
-Test the ability of the app to create and interact with nano contracts. Follow the [Nano Contracts QA](./QA_NANO_CONTRACT.md) steps.
+### Reown
+Tests the interaction of distributed apps with the Mobile Wallet. Some are actual tests for Nano Contracts Follow the [Reown QA](QA_REOWN.md)
 
-These will also test the ReOwn integration.
+### Token Swap
+Tests the Token Swap feature. Folow the [Token Swap QA](QA_TOKEN_SWAP.md)
 
 # Development Environment tests
 The following tests are executed only if for the development environment, with access to source code and building.
@@ -211,3 +230,66 @@ The following tests are executed only if for the development environment, with a
 1. We should never have any problems with pt-br translation. We should have all texts translated.
 1. Check if all untranslated texts are known.
 
+# Common Activities
+
+### Identifying the current network
+If the application is connected to the `testnet` or any other custom network, a yellow bar will appear at the top of the
+app in all screens, with a label like `Custom network: testnet`.
+
+To identify if the application is running on `mainnet`, just make sure there is no yellow bar at the top of the app.
+
+Other option is to check the server it's connected to. See below for this approach:
+
+### Identifying the current facade
+Navigate to the `Settings` screen and check for the `Connected to` field. See the expected exhibition values and check
+on which facade you're currently using and on what network.
+
+On `mainnet` we expect:
+- Fullnode: `https://mobile.wallet.hathor.network/v1a/`
+- Wallet Service: `https://wallet-service.hathor.network/`
+
+On `testnet` we expect:
+- Fullnode: `https://node1.testnet.hathor.network/v1a/`
+- Wallet Service: `https://wallet-service.testnet.hathor.network/`
+
+### Changing Networks
+To change the network, follow the steps below:
+- Navigate to `Settings` and scroll down to `Network Settings`
+- Click "I Understand" on the disclaimer message
+- Click the selected network card on the "Pre-settings" options, or click "Customize" for a custom network
+
+### Changing the Facade
+To change between the Fullnode and Wallet Service facades, choose one option and follow the steps below:
+
+#### Fullnode
+Here we will remove the URLs in Custom Network
+- Follow the `Changing Networks` workflow above and select "Customize".
+- Empty the `Wallet Service URL` and `Wallet Service WS URL` fields 
+- Click "SEND" and now the application will be connected through the Fullnode on the current network
+
+Another option for a developer would be to navigate to `Unleash` and deactivate the `wallet-service-mobile.rollout`
+feature for the `Unique app identifier` of the selected device.
+
+#### Wallet Service
+To change back to the Wallet Service facade, follow the `Changing Networks` and simply select one of the "Pre-settings".
+They will all point to the Wallet Service by default.
+
+_⚠ Note:_ If an irrecoverable error happens while the app is trying to communicate with the Wallet Service, an internal
+error handling flag (`IGNORE_WS_TOGGLE_FLAG`) will prevent the app from trying to connect again with it for 24 hours.
+
+If you need to interact with the wallet service within this time window you'll need to resort to the operational system
+to clear this flag along with the entire application data.
+- Android: clear the application cache, start the app again and import/create your wallet
+- iOS: Uninstall the app, install it again, start the app again and import/create your wallet 
+
+### Setting flags on Unleash
+Some of the tests involve changing Unleash flags for the application. This requires access to Hathor Network's Unleash
+and proper permissions to do so. Ask the Code Owner of this repository for the access URL and credentials to do so.
+
+Once logged in, the following feature toggles can be changed. ( Note: This list is for quick reference, but can be 
+obsolete. Refer to `src/constants.js` for the up-to-date list of feature toggle names ).
+- `wallet-service-mobile.rollout`
+- `push-notification.rollout`
+
+Enter the strategies and manipulate them to add your Unique app identifier ( see the "Settings" screen on the app )
+to fit your current needs.

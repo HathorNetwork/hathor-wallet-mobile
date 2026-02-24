@@ -58,7 +58,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:654
+#: src/models.js:107 src/utils.js:642
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -218,7 +218,7 @@ msgstr "Запустить кошелек"
 msgid "Invalid amount"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:148 src/screens/CreateTokenConfirm.js:154
+#: src/screens/CreateTokenAmount.js:148 src/screens/CreateTokenConfirm.js:153
 #: src/screens/CreateTokenDepositNotice.js:42 src/screens/CreateTokenName.js:43
 #: src/screens/CreateTokenSymbol.js:62
 msgid "CREATE TOKEN"
@@ -258,32 +258,32 @@ msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
 #: src/screens/CreateTokenConfirm.js:112 src/screens/SendConfirmScreen.js:85
-#: src/screens/TokenSwapReview.js:170
+#: src/screens/TokenSwapReview.js:152
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:171
+#: src/screens/CreateTokenConfirm.js:170
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:184
+#: src/screens/CreateTokenConfirm.js:183
 msgid "Amount of ${ name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:193
+#: src/screens/CreateTokenConfirm.js:192
 msgid "Token name"
 msgstr "Имя токена"
 
-#: src/screens/CreateTokenConfirm.js:199 src/screens/CreateTokenSymbol.js:69
+#: src/screens/CreateTokenConfirm.js:198 src/screens/CreateTokenSymbol.js:69
 msgid "Token symbol"
 msgstr "Символ токена"
 
-#: src/screens/CreateTokenConfirm.js:205
+#: src/screens/CreateTokenConfirm.js:204
 msgid "Deposit"
 msgstr "Депозит"
 
-#: src/screens/CreateTokenConfirm.js:214
+#: src/screens/CreateTokenConfirm.js:213
 msgid "Create token"
 msgstr "Создать токен"
 
@@ -652,7 +652,7 @@ msgid "The reown feature is not enabled."
 msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:67
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:82
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:70
 msgid "Register"
 msgstr ""
 
@@ -670,7 +670,7 @@ msgstr ""
 msgid "Manual info"
 msgstr "Ручной ввод"
 
-#: src/screens/RegisterToken.js:42 src/screens/RegisterTokenManual.js:126
+#: src/screens/RegisterToken.js:42 src/screens/RegisterTokenManual.js:122
 msgid "REGISTER TOKEN"
 msgstr "РЕГИСТРАЦИЯ ТОКЕНА"
 
@@ -678,23 +678,23 @@ msgstr "РЕГИСТРАЦИЯ ТОКЕНА"
 msgid "Scan the token QR code"
 msgstr "Сканировать QR-код токена"
 
-#: src/screens/RegisterTokenManual.js:102
+#: src/screens/RegisterTokenManual.js:98
 msgid "You're going to register the following token:"
 msgstr "Вы зарегистрируете следующий токен:"
 
-#: src/screens/RegisterTokenManual.js:104
+#: src/screens/RegisterTokenManual.js:100
 msgid "Name: "
 msgstr "Имя: "
 
-#: src/screens/RegisterTokenManual.js:108
+#: src/screens/RegisterTokenManual.js:104
 msgid "Symbol: "
 msgstr "Символ: "
 
-#: src/screens/RegisterTokenManual.js:132
+#: src/screens/RegisterTokenManual.js:128
 msgid "Configuration string"
 msgstr "Конфигурация"
 
-#: src/screens/RegisterTokenManual.js:147
+#: src/screens/RegisterTokenManual.js:143
 msgid "Register token"
 msgstr "Зарегистрировать токен"
 
@@ -790,17 +790,17 @@ msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:152
+#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:134
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:83
-#: src/screens/TokenSwapReview.js:168
+#: src/screens/TokenSwapReview.js:157
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:84
-#: src/screens/TokenSwapReview.js:169
+#: src/screens/TokenSwapReview.js:158
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
@@ -890,16 +890,16 @@ msgstr ""
 msgid "Unregister"
 msgstr "Отменить регистрацию"
 
-#: src/screens/TokenSwap.js:290
+#: src/screens/TokenSwap.js:246
 #, javascript-format
 msgid "Balance: ${ amount }"
 msgstr ""
 
-#: src/screens/TokenSwap.js:314
+#: src/screens/TokenSwap.js:270
 msgid "TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwap.js:414
+#: src/screens/TokenSwap.js:368
 msgid "REVIEW"
 msgstr ""
 
@@ -911,15 +911,15 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:180
+#: src/screens/TokenSwapReview.js:162
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:196
+#: src/screens/TokenSwapReview.js:178
 msgid "Your swap was successful"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:260
+#: src/screens/TokenSwapReview.js:241
 msgid "SWAP"
 msgstr ""
 
@@ -1004,29 +1004,29 @@ msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:302
 #: src/components/Reown/SendTransactionRequest.js:478
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:35
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:31
 msgid "Transaction successfully sent."
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:38
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:34
 #, javascript-format
 msgid ""
 "There are ${ tokens.length } unregistered tokens in this transaction. Do you "
 "want to register them?"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:40
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:36
 msgid ""
 "There is 1 unregistered token in this transaction. Do you want to register "
 "it?"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:86
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:74
 #: src/screens/Reown/SuccessFeedbackScreen.js:36
 msgid "Back"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:96
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:84
 msgid "Success"
 msgstr ""
 
@@ -1331,14 +1331,6 @@ msgstr ""
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
-#: src/components/AmountInputAccessory.js:94
-msgid "Max"
-msgstr ""
-
-#: src/components/AmountInputAccessory.js:101
-msgid "Done"
-msgstr ""
-
 #: src/components/AskForPushNotification.js:29
 msgid "Do you want to enable push notifications for this wallet?"
 msgstr ""
@@ -1415,6 +1407,7 @@ msgstr ""
 #: src/components/GlobalErrorModal.js:126
 #: src/components/Reown/ErrorDetailModal.js:114
 #: src/components/Reown/InsufficientFundsModal.js:43
+#: src/components/Reown/NetworkMismatchModal.js:54
 #: src/components/Reown/TokenInfoModal.js:114
 msgid "Close"
 msgstr ""
@@ -1921,6 +1914,22 @@ msgstr ""
 
 #: src/components/Reown/InsufficientFundsModal.js:39
 msgid "Insufficient funds to complete the transaction."
+msgstr ""
+
+#: src/components/Reown/NetworkMismatchModal.js:39
+msgid "Network Mismatch"
+msgstr ""
+
+#: src/components/Reown/NetworkMismatchModal.js:44
+msgid "The dApp requires a different network than your wallet is connected to."
+msgstr ""
+
+#: src/components/Reown/NetworkMismatchModal.js:47
+msgid "Your wallet:"
+msgstr ""
+
+#: src/components/Reown/NetworkMismatchModal.js:51
+msgid "dApp requires:"
 msgstr ""
 
 #: src/components/Reown/RequestConfirmationModal.js:39

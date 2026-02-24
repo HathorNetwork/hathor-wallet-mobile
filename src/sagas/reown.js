@@ -174,6 +174,7 @@ const AVAILABLE_EVENTS = [];
  */
 const ERROR_CODES = {
   UNAUTHORIZED_METHODS: 3001,
+  UNSUPPORTED_CHAINS: 5100,
   USER_DISCONNECTED: 6000,
   USER_REJECTED: 5000,
   USER_REJECTED_METHOD: 5002,
@@ -1171,6 +1172,47 @@ export function* onSessionProposal(action) {
     optionalNamespaces: get(params, 'optionalNamespaces', {}),
   };
 
+  // Validate requested chains against wallet network
+  const networkSettings = yield select(getNetworkSettings);
+  const walletChain = `hathor:${networkSettings.network}`;
+
+  // Extract chains from required and optional namespaces
+  const requiredChains = get(data.requiredNamespaces, 'hathor.chains', []);
+  const optionalChains = get(data.optionalNamespaces, 'hathor.chains', []);
+  const allRequestedChains = [...requiredChains, ...optionalChains];
+
+  // Check if the dApp requests any chains and if our wallet chain is not among them
+  if (allRequestedChains.length > 0 && !allRequestedChains.includes(walletChain)) {
+    log.error('Network mismatch: wallet network not in requested chains', {
+      walletChain,
+      requestedChains: allRequestedChains,
+    });
+
+    // Show network mismatch modal
+    yield put(setReownModal({
+      show: true,
+      type: ReownModalTypes.NETWORK_MISMATCH,
+      data: {
+        walletNetwork: networkSettings.network,
+        dappNetworks: allRequestedChains.map((chain) => chain.replace('hathor:', '')),
+      },
+    }));
+
+    // Reject the session with UNSUPPORTED_CHAINS error
+    try {
+      yield call(() => walletKit.rejectSession({
+        id,
+        reason: {
+          code: ERROR_CODES.UNSUPPORTED_CHAINS,
+          message: `Network mismatch: wallet is on ${networkSettings.network}, dApp requires ${allRequestedChains.join(', ')}`,
+        },
+      }));
+    } catch (e) {
+      log.error('Error rejecting session due to network mismatch', e);
+    }
+    return;
+  }
+
   // Validate requested methods against available methods
   const mandatoryMethods = get(data.requiredNamespaces, 'hathor.methods', []);
   const optionalMethods = get(data.optionalNamespaces, 'hathor.methods', []);
@@ -1247,7 +1289,6 @@ export function* onSessionProposal(action) {
     return;
   }
 
-  const networkSettings = yield select(getNetworkSettings);
   try {
     yield call(() => walletKit.approveSession({
       id,

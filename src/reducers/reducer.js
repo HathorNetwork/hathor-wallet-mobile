@@ -889,6 +889,13 @@ const onNewTx = (state, action) => {
  */
 const onUpdateTokenHistory = (state, action) => {
   const { token, newHistory } = action.payload;
+  const existingData = get(state.tokensHistory, `${token}.data`, []);
+
+  // Create a Set of existing txIds for efficient lookup
+  const existingTxIds = new Set(existingData.map((tx) => tx.txId));
+
+  // Filter out any transactions that already exist to prevent duplicates
+  const uniqueNewHistory = newHistory.filter((tx) => !existingTxIds.has(tx.txId));
 
   return {
     ...state,
@@ -897,8 +904,8 @@ const onUpdateTokenHistory = (state, action) => {
       [token]: {
         ...state.tokensHistory[token],
         data: [
-          ...get(state.tokensHistory, `${token}.data`, []),
-          ...newHistory,
+          ...existingData,
+          ...uniqueNewHistory,
         ]
       }
     },
