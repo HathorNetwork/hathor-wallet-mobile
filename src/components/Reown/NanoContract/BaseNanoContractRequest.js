@@ -347,10 +347,12 @@ export const BaseNanoContractRequest = ({
       ? prepareAcceptData(nanoWithCaller, ncAddress)
       : nanoWithCaller;
 
+    // Always dispatch reownAccept for flowId tracking in saga
+    dispatch(reownAccept(acceptedData, flowId));
+
+    // Also call the callback if provided (to resolve the Promise in promptHandler)
     if (typeof onAccept === 'function') {
       onAccept(acceptedData);
-    } else {
-      dispatch(reownAccept(acceptedData, flowId));
     }
   };
 

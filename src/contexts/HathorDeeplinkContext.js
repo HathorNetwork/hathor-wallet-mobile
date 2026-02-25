@@ -86,16 +86,27 @@ const parseDeepLink = (url) => {
 };
 
 /**
+ * Checks if there are active RPC requests being processed.
+ * @param {number} activeRpcRequestCount - Count of active RPC requests from Redux
+ * @returns {boolean} True if there are active RPC requests
+ */
+const hasActiveRpcRequests = (activeRpcRequestCount) => {
+  return activeRpcRequestCount > 0;
+};
+
+/**
  * Processes a deep link action by dispatching the appropriate action and navigating if needed.
  * @param {DeepLinkAction} deepLinkAction - The parsed deep link action
  * @param {function} dispatchWalletConnectUri - Function to dispatch WalletConnect URI
+ * @param {number} activeRpcRequestCount - Count of active RPC requests from Redux
  */
-const processDeepLinkAction = (deepLinkAction, dispatchWalletConnectUri) => {
+const processDeepLinkAction = (deepLinkAction, dispatchWalletConnectUri, activeRpcRequestCount) => {
   if (deepLinkAction.type === DEEP_LINK_TYPE.WALLETCONNECT) {
     dispatchWalletConnectUri(deepLinkAction.uri);
     // Only navigate to ReownList for new connection requests (pairing URIs have symKey param)
     // RPC requests on existing sessions don't need navigation - modal will appear automatically
-    if (isPairingUri(deepLinkAction.uri)) {
+    // If there are active RPC requests, skip navigation - the saga will handle it after RPCs complete
+    if (isPairingUri(deepLinkAction.uri) && !hasActiveRpcRequests(activeRpcRequestCount)) {
       NavigationService.navigate('ReownList');
     }
   } else if (deepLinkAction.type === DEEP_LINK_TYPE.NAVIGATE) {
@@ -118,6 +129,7 @@ export function HathorDeeplinkProvider({ children }) {
   const dispatch = useDispatch();
   const walletStartState = useSelector((state) => state.walletStartState);
   const isScreenLocked = useSelector((state) => state.lockScreen);
+  const activeRpcRequestCount = useSelector((state) => state.reown.activeRpcRequestCount);
 
   const isWalletReady = walletStartState === WALLET_STATUS.READY;
   const isUnlocked = !isScreenLocked;
@@ -171,7 +183,7 @@ export function HathorDeeplinkProvider({ children }) {
 
         if (canProcess) {
           // Wallet is ready, process immediately
-          processDeepLinkAction(deepLinkAction, dispatchWalletConnectUri);
+          processDeepLinkAction(deepLinkAction, dispatchWalletConnectUri, activeRpcRequestCount);
         } else {
           // Store for later processing
           setPendingDeepLink(deepLinkAction);
@@ -183,16 +195,16 @@ export function HathorDeeplinkProvider({ children }) {
         setIsProcessing(false);
       }
     },
-    [canProcess, dispatchWalletConnectUri]
+    [canProcess, dispatchWalletConnectUri, activeRpcRequestCount]
   );
 
   // Process pending deep link when wallet becomes ready
   useEffect(() => {
     if (canProcess && pendingDeepLink) {
-      processDeepLinkAction(pendingDeepLink, dispatchWalletConnectUri);
+      processDeepLinkAction(pendingDeepLink, dispatchWalletConnectUri, activeRpcRequestCount);
       setPendingDeepLink(null);
     }
-  }, [canProcess, pendingDeepLink, dispatchWalletConnectUri]);
+  }, [canProcess, pendingDeepLink, dispatchWalletConnectUri, activeRpcRequestCount]);
 
   // Handle initial URL (app opened from deep link)
   useEffect(() => {

@@ -12,10 +12,12 @@ import RequestConfirmationModal from './RequestConfirmationModal';
 export default ({
   onDismiss,
   data,
+  flowId,
 }) => (
   <RequestConfirmationModal
     onDismiss={onDismiss}
     data={data}
+    flowId={flowId}
     title={t`New UTXOs Request`}
     message={t`You have received a new UTXOs Request. Please carefully review the details before deciding to accept or decline.`}
     reviewButtonText={t`Review UTXOs Request details`}

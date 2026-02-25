@@ -13,14 +13,14 @@ import { GetUtxosRequest } from '../../components/Reown/GetUtxosRequest';
 import { RequestWrapper } from '../../components/Reown/theme';
 
 export function GetUtxosRequestScreen({ route }) {
-  const { getUtxosRequest } = route.params;
+  const { getUtxosRequest, flowId } = route.params;
 
   return (
     <RequestWrapper>
       <HathorHeader
         title={t`UTXOs Request`.toUpperCase()}
       />
-      <GetUtxosRequest getUtxosRequest={getUtxosRequest} />
+      <GetUtxosRequest getUtxosRequest={getUtxosRequest} flowId={flowId} />
       <OfflineBar />
     </RequestWrapper>
   );

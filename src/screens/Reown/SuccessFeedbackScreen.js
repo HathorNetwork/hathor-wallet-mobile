@@ -11,17 +11,22 @@ import {
   View,
   Image
 } from 'react-native';
+import { useDispatch } from 'react-redux';
 import { t } from 'ttag';
 import { FeedbackContent } from '../../components/FeedbackContent';
 import NewHathorButton from '../../components/NewHathorButton';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 import checkIcon from '../../assets/images/icCheckBig.png';
+import { reownUserReadyForConnection } from '../../actions';
 
 export function SuccessFeedbackScreen({ navigation, route }) {
   const { title, message } = route.params;
+  const dispatch = useDispatch();
 
   const onBackHome = () => {
+    // Signal that user is ready for any pending connection modals
+    dispatch(reownUserReadyForConnection());
     navigation.navigate('Dashboard');
   };
 

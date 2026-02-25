@@ -12,10 +12,12 @@ import RequestConfirmationModal from './RequestConfirmationModal';
 export default ({
   onDismiss,
   data,
+  flowId,
 }) => (
   <RequestConfirmationModal
     onDismiss={onDismiss}
     data={data}
+    flowId={flowId}
     title={t`Select Address Request`}
     message={t`An app is requesting you to share an address from your wallet. Please select an address to share.`}
     reviewButtonText={t`Select Address`}

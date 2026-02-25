@@ -274,6 +274,34 @@ const initialState = {
       show: false,
     },
     /**
+     * Tracks the flowIds of pending RPC requests.
+     * Used to determine if a connection request should wait for RPCs to complete.
+     * FlowIds are added when handleDAppRequest starts and removed when accepted/rejected.
+     */
+    pendingRpcFlowIds: [],
+    /**
+     * Tracks the count of active RPC requests being processed.
+     * This includes the entire request lifecycle (from start to finish, including PIN entry).
+     * Used by onSessionProposal to wait for all RPCs to complete before showing connection modal.
+     */
+    activeRpcRequestCount: 0,
+    /**
+     * Flag to skip navigation confirmation modals.
+     * Set to true when programmatically resetting navigation after RPC completion.
+     */
+    skipNavigationConfirmation: false,
+    /**
+     * Flag indicating that a connection proposal is waiting for the user to be ready.
+     * Set to true when there's a pending connection and we're waiting for user navigation.
+     */
+    waitingForUserToBeReady: false,
+    /**
+     * Flag indicating the user has signaled they are ready for a pending connection modal.
+     * Set to true when user navigates away from RPC screens (success or rejection).
+     * Used by the saga to avoid missing the action if it arrives before RPC ends.
+     */
+    userReadyForConnection: false,
+    /**
      * Centralized error storage for the current Reown operation.
      * Only one RPC is processed at a time, so a single error key suffices.
      */
@@ -698,6 +726,20 @@ export const reducer = (state = initialState, action) => {
       return onSetReownSessions(state, action);
     case types.REOWN_SET_CONNECTION_FAILED:
       return onSetReownConnectionFailed(state, action);
+    case types.REOWN_ADD_PENDING_RPC_FLOW_ID:
+      return onAddPendingRpcFlowId(state, action);
+    case types.REOWN_REMOVE_PENDING_RPC_FLOW_ID:
+      return onRemovePendingRpcFlowId(state, action);
+    case types.REOWN_RPC_REQUEST_START:
+      return onRpcRequestStart(state);
+    case types.REOWN_RPC_REQUEST_END:
+      return onRpcRequestEnd(state);
+    case types.REOWN_SET_SKIP_NAVIGATION_CONFIRMATION:
+      return onSetSkipNavigationConfirmation(state, action);
+    case types.REOWN_USER_READY_FOR_CONNECTION:
+      return onUserReadyForConnection(state);
+    case types.REOWN_CLEAR_USER_READY_FOR_CONNECTION:
+      return onClearUserReadyForConnection(state);
     case types.NETWORKSETTINGS_UPDATE_REQUEST:
       return onNetworkSettingsUpdateRequest(state);
     case types.NETWORKSETTINGS_UPDATE_STATE:
@@ -1586,6 +1628,85 @@ export const onSetReownConnectionFailed = (state, { payload }) => ({
   reown: {
     ...state.reown,
     connectionFailed: payload,
+  },
+});
+
+/**
+ * Adds a flowId to the list of pending RPC requests.
+ * @param {string} action.payload The flowId to add
+ */
+export const onAddPendingRpcFlowId = (state, { payload }) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    pendingRpcFlowIds: [...state.reown.pendingRpcFlowIds, payload],
+  },
+});
+
+/**
+ * Removes a flowId from the list of pending RPC requests.
+ * @param {string} action.payload The flowId to remove
+ */
+export const onRemovePendingRpcFlowId = (state, { payload }) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    pendingRpcFlowIds: state.reown.pendingRpcFlowIds.filter((id) => id !== payload),
+  },
+});
+
+/**
+ * Increments the count of active RPC requests.
+ */
+export const onRpcRequestStart = (state) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    activeRpcRequestCount: state.reown.activeRpcRequestCount + 1,
+  },
+});
+
+/**
+ * Decrements the count of active RPC requests.
+ */
+export const onRpcRequestEnd = (state) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    activeRpcRequestCount: Math.max(0, state.reown.activeRpcRequestCount - 1),
+  },
+});
+
+/**
+ * Sets the flag to skip navigation confirmation modals.
+ */
+export const onSetSkipNavigationConfirmation = (state, { payload }) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    skipNavigationConfirmation: payload,
+  },
+});
+
+/**
+ * Sets the flag indicating user is ready for pending connection modal.
+ */
+export const onUserReadyForConnection = (state) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    userReadyForConnection: true,
+  },
+});
+
+/**
+ * Clears the user ready for connection flag after it has been consumed.
+ */
+export const onClearUserReadyForConnection = (state) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    userReadyForConnection: false,
   },
 });
 

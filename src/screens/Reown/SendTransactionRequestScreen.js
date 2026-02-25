@@ -17,7 +17,7 @@ import { SendTransactionRequest } from '../../components/Reown/SendTransactionRe
 import { COLORS } from '../../styles/themes';
 
 export function SendTransactionRequestScreen({ route }) {
-  const { sendTransactionRequest, onAccept, onReject } = route.params;
+  const { sendTransactionRequest, onAccept, onReject, flowId } = route.params;
 
   return (
     <Wrapper>
@@ -28,6 +28,7 @@ export function SendTransactionRequestScreen({ route }) {
         sendTransactionRequest={sendTransactionRequest}
         onAccept={onAccept}
         onReject={onReject}
+        flowId={flowId}
       />
       <OfflineBar />
     </Wrapper>

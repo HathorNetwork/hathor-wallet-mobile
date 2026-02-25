@@ -17,14 +17,14 @@ import { CreateTokenRequest } from '../../components/Reown/CreateTokenRequest';
 import { COLORS } from '../../styles/themes';
 
 export function CreateTokenRequestScreen({ route }) {
-  const { createTokenRequest } = route.params;
+  const { createTokenRequest, flowId } = route.params;
 
   return (
     <Wrapper>
       <HathorHeader
         title={t`Create Token Request`.toUpperCase()}
       />
-      <CreateTokenRequest createTokenRequest={createTokenRequest} />
+      <CreateTokenRequest createTokenRequest={createTokenRequest} flowId={flowId} />
       <OfflineBar />
     </Wrapper>
   );

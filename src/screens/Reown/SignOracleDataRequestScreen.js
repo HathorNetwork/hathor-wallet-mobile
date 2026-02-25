@@ -17,14 +17,14 @@ import { SignOracleDataRequest } from '../../components/Reown/SignOracleDataRequ
 import { COLORS } from '../../styles/themes';
 
 export function SignOracleDataRequestScreen({ route }) {
-  const { signOracleData } = route.params;
+  const { signOracleData, flowId } = route.params;
 
   return (
     <Wrapper>
       <HathorHeader
         title={t`Sign Oracle Data Request`.toUpperCase()}
       />
-      <SignOracleDataRequest signOracleData={signOracleData} />
+      <SignOracleDataRequest signOracleData={signOracleData} flowId={flowId} />
       <OfflineBar />
     </Wrapper>
   );

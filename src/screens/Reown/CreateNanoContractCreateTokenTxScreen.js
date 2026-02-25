@@ -17,7 +17,7 @@ import { CreateNanoContractCreateTokenTxRequest } from '../../components/Reown/C
 import { COLORS } from '../../styles/themes';
 
 export function CreateNanoContractCreateTokenTxScreen({ route }) {
-  const { createNanoContractCreateTokenTxRequest, onAccept, onReject } = route.params;
+  const { createNanoContractCreateTokenTxRequest, onAccept, onReject, flowId } = route.params;
 
   return (
     <Wrapper>
@@ -29,7 +29,8 @@ export function CreateNanoContractCreateTokenTxScreen({ route }) {
           params: {
             createNanoContractCreateTokenTxRequest,
             onAccept,
-            onReject
+            onReject,
+            flowId
           }
         }}
       />

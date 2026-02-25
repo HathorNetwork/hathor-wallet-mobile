@@ -13,14 +13,14 @@ import { GetAddressClientRequest } from '../../components/Reown/GetAddressClient
 import { RequestWrapper } from '../../components/Reown/theme';
 
 export function GetAddressClientRequestScreen({ route }) {
-  const { getAddressClientRequest } = route.params;
+  const { getAddressClientRequest, flowId } = route.params;
 
   return (
     <RequestWrapper>
       <HathorHeader
         title={t`Select Address`.toUpperCase()}
       />
-      <GetAddressClientRequest getAddressClientRequest={getAddressClientRequest} />
+      <GetAddressClientRequest getAddressClientRequest={getAddressClientRequest} flowId={flowId} />
       <OfflineBar />
     </RequestWrapper>
   );

@@ -59,6 +59,7 @@ import {
   select,
   race,
   actionChannel,
+  delay,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
@@ -119,10 +120,15 @@ import {
   showGetUtxosModal,
   unregisteredTokensStore,
   setReownError,
+  reownRpcRequestStart,
+  reownRpcRequestEnd,
+  setSkipReownNavigationConfirmation,
+  reownClearUserReadyForConnection,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
 import { generateFlowId } from '../utils/reown';
+import NavigationService from '../NavigationService';
 
 const log = logger('reown');
 
@@ -449,10 +455,15 @@ function* requestsListener() {
   while (true) {
     try {
       action = yield take(requestsChannel);
+      // Track that an RPC request is being processed (for deep link handling)
+      yield put(reownRpcRequestStart());
       yield call(processRequest, action);
     } catch (error) {
       log.error('Error processing request.', error);
       yield put(onExceptionCaptured(error));
+    } finally {
+      // Signal that the RPC request has finished processing
+      yield put(reownRpcRequestEnd());
     }
   }
 }
@@ -1101,6 +1112,7 @@ export function* handleDAppRequest(payload, modalType, options = {}) {
   }
 
   // Generate unique flow ID for this approval flow
+  // (used to scope REOWN_ACCEPT/REOWN_REJECT actions to this specific request)
   const flowId = generateFlowId();
 
   // Determine the data to pass to the modal
@@ -1163,6 +1175,45 @@ export function* onSessionProposal(action) {
     // Do nothing, client might not yet have been initialized.
     log.debug('Tried to get reown client in onSessionProposal but it is undefined.');
     return;
+  }
+
+  // Check if there are active RPC requests that should be handled first
+  // This uses the count-based tracking from requestsListener, which covers
+  // the entire RPC lifecycle including PIN entry and transaction processing
+  let activeRpcCount = yield select((state) => state.reown.activeRpcRequestCount);
+  if (activeRpcCount > 0) {
+    log.debug('Active RPC requests detected, waiting for them to complete before showing connection modal.', {
+      activeCount: activeRpcCount,
+    });
+
+    // Wait for all active RPC requests to complete
+    while (activeRpcCount > 0) {
+      yield take(types.REOWN_RPC_REQUEST_END);
+      activeRpcCount = yield select((state) => state.reown.activeRpcRequestCount);
+    }
+
+    log.debug('All active RPCs completed, checking if user is already ready for connection modal.');
+    // Check if user ready flag is already set (for rejection flow, it may be set before RPC ends)
+    let userReady = yield select((state) => state.reown.userReadyForConnection);
+    if (!userReady) {
+      log.debug('User not yet ready, waiting for user to navigate away from success screen.');
+      // Wait for the user to navigate back from success screen (or reach Dashboard)
+      // This ensures we don't show the connection modal on top of the success feedback
+      yield take(types.REOWN_USER_READY_FOR_CONNECTION);
+    }
+    // Clear the flag for future use
+    yield put(reownClearUserReadyForConnection());
+
+    log.debug('User is ready, navigating to ReownList for connection.');
+    // Small delay to let any pending component navigation (like goBack) complete first
+    // This prevents conflicts between the component's navigation and our reset
+    yield delay(100);
+    // Set flag to skip confirmation modals during navigation reset
+    yield put(setSkipReownNavigationConfirmation(true));
+    // Reset navigation to ReownList
+    NavigationService.resetToReownList();
+    // Clear the flag
+    yield put(setSkipReownNavigationConfirmation(false));
   }
 
   const { walletKit } = reownClient;

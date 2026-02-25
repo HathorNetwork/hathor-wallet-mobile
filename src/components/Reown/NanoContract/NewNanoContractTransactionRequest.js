@@ -31,7 +31,7 @@ import { REOWN_NEW_NANOCONTRACT_TX_STATUS } from '../../../constants';
  * @param {string} props.ncTxRequest.dapp.url
  * @param {string} props.ncTxRequest.dapp.description
  */
-export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
+export const NewNanoContractTransactionRequest = ({ ncTxRequest, flowId }) => {
   const { data: nc, dapp } = ncTxRequest;
 
   // Status configuration for the base component
@@ -52,6 +52,7 @@ export const NewNanoContractTransactionRequest = ({ ncTxRequest }) => {
       acceptButtonText={t`Accept Transaction`}
       declineButtonText={t`Decline Transaction`}
       checkInsufficientBalance
+      flowId={flowId}
     />
   );
 };

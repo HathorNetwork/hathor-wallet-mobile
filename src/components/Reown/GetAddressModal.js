@@ -12,10 +12,12 @@ import RequestConfirmationModal from './RequestConfirmationModal';
 export default ({
   onDismiss,
   data,
+  flowId,
 }) => (
   <RequestConfirmationModal
     onDismiss={onDismiss}
     data={data}
+    flowId={flowId}
     title={t`New Address Request`}
     message={t`You have received a new Address Request. Please carefully review the details before deciding to accept or decline.`}
     reviewButtonText={t`Review Address Request details`}

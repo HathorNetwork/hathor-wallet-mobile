@@ -125,6 +125,13 @@ export const types = {
   REOWN_URI_INPUTTED: 'REOWN_URI_INPUTTED',
   REOWN_CANCEL_SESSION: 'REOWN_CANCEL_SESSION',
   REOWN_SET_CONNECTION_FAILED: 'REOWN_SET_CONNECTION_FAILED',
+  REOWN_ADD_PENDING_RPC_FLOW_ID: 'REOWN_ADD_PENDING_RPC_FLOW_ID',
+  REOWN_REMOVE_PENDING_RPC_FLOW_ID: 'REOWN_REMOVE_PENDING_RPC_FLOW_ID',
+  REOWN_RPC_REQUEST_START: 'REOWN_RPC_REQUEST_START',
+  REOWN_RPC_REQUEST_END: 'REOWN_RPC_REQUEST_END',
+  REOWN_SET_SKIP_NAVIGATION_CONFIRMATION: 'REOWN_SET_SKIP_NAVIGATION_CONFIRMATION',
+  REOWN_USER_READY_FOR_CONNECTION: 'REOWN_USER_READY_FOR_CONNECTION',
+  REOWN_CLEAR_USER_READY_FOR_CONNECTION: 'REOWN_CLEAR_USER_READY_FOR_CONNECTION',
   // Network Settings actions
   // NOTE: These actions follows a taxonomy that should be applied
   // to all other actions.
@@ -1039,6 +1046,65 @@ export const pushDeviceRegistered = (isRegistered) => ({
 export const setWCConnectionFailed = (failed) => ({
   type: types.REOWN_SET_CONNECTION_FAILED,
   payload: failed,
+});
+
+/**
+ * Adds a flowId to the list of pending RPC requests.
+ * @param {string} flowId - The flow ID to add
+ */
+export const addPendingRpcFlowId = (flowId) => ({
+  type: types.REOWN_ADD_PENDING_RPC_FLOW_ID,
+  payload: flowId,
+});
+
+/**
+ * Removes a flowId from the list of pending RPC requests.
+ * @param {string} flowId - The flow ID to remove
+ */
+export const removePendingRpcFlowId = (flowId) => ({
+  type: types.REOWN_REMOVE_PENDING_RPC_FLOW_ID,
+  payload: flowId,
+});
+
+/**
+ * Signals that an RPC request has started processing.
+ * Used to track active RPC requests for deep link handling.
+ */
+export const reownRpcRequestStart = () => ({
+  type: types.REOWN_RPC_REQUEST_START,
+});
+
+/**
+ * Signals that an RPC request has finished processing.
+ * Used to track active RPC requests for deep link handling.
+ */
+export const reownRpcRequestEnd = () => ({
+  type: types.REOWN_RPC_REQUEST_END,
+});
+
+/**
+ * Sets a flag to skip navigation confirmation modals.
+ * Used when programmatically resetting navigation after RPC completion.
+ * @param {boolean} skip - Whether to skip confirmation
+ */
+export const setSkipReownNavigationConfirmation = (skip) => ({
+  type: types.REOWN_SET_SKIP_NAVIGATION_CONFIRMATION,
+  payload: skip,
+});
+
+/**
+ * Signals that the user is ready to see a pending connection modal.
+ * Dispatched when user navigates back from success screens or when Dashboard gets focus.
+ */
+export const reownUserReadyForConnection = () => ({
+  type: types.REOWN_USER_READY_FOR_CONNECTION,
+});
+
+/**
+ * Clears the user ready for connection flag after it has been consumed.
+ */
+export const reownClearUserReadyForConnection = () => ({
+  type: types.REOWN_CLEAR_USER_READY_FOR_CONNECTION,
 });
 
 /**
