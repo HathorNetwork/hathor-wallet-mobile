@@ -28,8 +28,6 @@ export const types = {
   HISTORY_UPDATE: 'HISTORY_UPDATE',
   NEW_TX: 'NEW_TX',
   BALANCE_UPDATE: 'BALANCE_UPDATE',
-  NEW_INVOICE: 'NEW_INVOICE',
-  CLEAR_INVOICE: 'CLEAR_INVOICE',
   NETWORK_ERROR: 'NETWORK_ERROR',
   CLEAR_NETWORK_ERROR: 'CLEAR_NETWORK_ERROR',
   RESET_DATA: 'RESET_DATA',
@@ -384,17 +382,6 @@ export const setServerInfo = (payload) => (
 export const newTx = (tx, updatedBalanceMap) => (
   { type: types.NEW_TX, payload: { tx, updatedBalanceMap } }
 );
-
-/**
- * address {String} address to each payment should be sent
- * amount {int} amount to be paid
- * token {Object} token we're expecting to receive
- */
-export const newInvoice = (address, amount, token) => (
-  { type: types.NEW_INVOICE, payload: { address, amount, token } }
-);
-
-export const clearInvoice = () => ({ type: types.CLEAR_INVOICE });
 
 export const resetData = () => ({ type: types.RESET_DATA });
 

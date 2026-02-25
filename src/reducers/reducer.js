@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
 import {
   INITIAL_TOKENS,
@@ -41,12 +40,6 @@ import { WALLET_STATUS } from '../sagas/wallet';
  *   active {boolean} indicates we're loading the tx history
  *   error {boolean} error loading history
  * }
- * latestInvoice {Object} tracks the latest payment request created {
- *   address {string} address where we're expecting the payment
- *   amount {int} admount to be paid
- *   token {Object} payment should be made in this token
- * }
- * invoicePayment {Object} null if not paid or the tx that settles latestInvoice
  * selectedToken {Object} token currently selected by the user
  * isOnline {bool} Indicates whether the wallet is connected to the fullnode's websocket
  * lockScreen {bool} Indicates screen is locked
@@ -93,8 +86,6 @@ const initialState = {
   tokensHistory: {},
   tokensBalance: {},
   loadHistoryStatus: { active: true, error: false },
-  latestInvoice: null,
-  invoicePayment: null,
   /**
    * tokens {Object.<string, Object>} Map of tokens added plus initial tokens,
    * @see {@link INITIAL_TOKENS}
@@ -564,10 +555,6 @@ export const reducer = (state = initialState, action) => {
   switch (action.type) {
     case types.NEW_TX:
       return onNewTx(state, action);
-    case types.NEW_INVOICE:
-      return onNewInvoice(state, action);
-    case types.CLEAR_INVOICE:
-      return onClearInvoice(state, action);
     case types.RESET_DATA:
       return initialState;
     case types.UPDATE_SELECTED_TOKEN:
@@ -853,36 +840,9 @@ const onSetIsShowingPinScreen = (state, action) => ({
 });
 
 /**
- * Updates the history and balance when a new tx arrives. Also checks
- * if this tx settles an open invoice.
+ * Handler for new transaction events. Currently a no-op but kept for future use.
  */
-const onNewTx = (state, action) => {
-  const { tx } = action.payload;
-
-  // if we have the invoice modal, check if this tx settles it
-  let invoicePayment = null;
-  if (state.latestInvoice && state.latestInvoice.amount) {
-    for (const txout of tx.outputs) {
-      // Don't consider authority outputs
-      if (hathorLib.transactionUtils.isAuthorityOutput(txout)) {
-        continue;
-      }
-
-      if (txout.decoded && txout.decoded.address
-        && txout.decoded.address === state.latestInvoice.address
-        && txout.value === state.latestInvoice.amount
-        && txout.token === state.latestInvoice.token.uid) {
-        invoicePayment = tx;
-        break;
-      }
-    }
-  }
-
-  return {
-    ...state,
-    invoicePayment: invoicePayment || state.invoicePayment,
-  };
-};
+const onNewTx = (state) => state;
 
 /**
  * Update token history after fetching more data in pagination
@@ -911,28 +871,6 @@ const onUpdateTokenHistory = (state, action) => {
     },
   };
 };
-
-/**
- * Create a new payment request
- */
-const onNewInvoice = (state, action) => {
-  const { address } = action.payload;
-  const { amount } = action.payload;
-  const { token } = action.payload;
-  return {
-    ...state,
-    latestInvoice: { address, amount, token },
-  };
-};
-
-/**
- * When the user leaves the invoice screen, clear the invoice information
- */
-const onClearInvoice = (state) => ({
-  ...state,
-  latestInvoice: null,
-  invoicePayment: null,
-});
 
 /**
  * Switch the selected token

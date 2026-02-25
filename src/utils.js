@@ -273,17 +273,23 @@ export const validateAddress = (address, network) => {
 };
 
 /**
-   * Parse the QR code for a payment request (or just an address)
+   * Parse the QR code for an address
    *
    * @param {string} data The QR code data
    *
-   * @return {Object} {isValid, error} or {isValid, address, amount, token}
+   * @return {Object} {isValid, error} or {isValid, address}
    */
 export const parseQRCode = (data) => {
-  let qrcode;
   let hathorAddress;
   try {
-    qrcode = JSON.parse(data);
+    const qrcode = JSON.parse(data);
+    // If it's a JSON object with token/amount, reject it (payment request format not supported)
+    if (qrcode.token || qrcode.amount) {
+      return {
+        isValid: false,
+        error: 'Payment request QR codes are not supported. Please use a simple address QR code.',
+      };
+    }
     // make sure hathorAddress is not null or undefined
     hathorAddress = qrcode.address || '';
   } catch (error) {
@@ -296,31 +302,9 @@ export const parseQRCode = (data) => {
     return { isValid, error };
   }
 
-  if (!qrcode) {
-    // just the address (no token or amount)
-    return {
-      isValid: true,
-      address,
-    };
-  }
-  // complete qr code
-  const { token, amount } = qrcode;
-  if (token && !amount) {
-    return {
-      isValid: false,
-      error: 'Payment request must have an amount',
-    };
-  } if (amount && !token) {
-    return {
-      isValid: false,
-      error: 'Payment request must contain token data',
-    };
-  }
   return {
     isValid: true,
     address,
-    token,
-    amount,
   };
 };
 
