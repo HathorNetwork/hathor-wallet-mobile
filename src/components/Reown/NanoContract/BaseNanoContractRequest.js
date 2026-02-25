@@ -153,6 +153,7 @@ export const BaseNanoContractRequest = ({
   acceptButtonText = t`Accept Transaction`,
   declineButtonText = t`Decline Transaction`,
   checkInsufficientBalance = false,
+  flowId,
 }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
@@ -349,7 +350,7 @@ export const BaseNanoContractRequest = ({
     if (typeof onAccept === 'function') {
       onAccept(acceptedData);
     } else {
-      dispatch(reownAccept(acceptedData));
+      dispatch(reownAccept(acceptedData, flowId));
     }
   };
 
@@ -378,7 +379,7 @@ export const BaseNanoContractRequest = ({
     dispatch(statusConfig.retryDismissAction());
     // If the user leaves without accepting or declining, we should decline the transaction
     if (status !== statusConfig.statusConstants.SUCCESSFUL) {
-      dispatch(reownReject());
+      dispatch(reownReject(flowId));
     }
   }
 

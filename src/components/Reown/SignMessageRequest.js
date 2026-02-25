@@ -49,7 +49,7 @@ export const SignMessageRequestData = ({ data }) => (
   </View>
 );
 
-export const SignMessageRequest = ({ signMessageRequest }) => {
+export const SignMessageRequest = ({ signMessageRequest, flowId }) => {
   const { dapp, data } = signMessageRequest;
   const { message, address } = data;
   const dispatch = useDispatch();
@@ -59,12 +59,12 @@ export const SignMessageRequest = ({ signMessageRequest }) => {
     const acceptedReq = { address, message };
 
     // Signal the user has accepted the current request and pass the accepted data.
-    dispatch(reownAccept(acceptedReq));
+    dispatch(reownAccept(acceptedReq, flowId));
     navigation.goBack();
   };
 
   const onDeclineTransaction = () => {
-    dispatch(reownReject());
+    dispatch(reownReject(flowId));
     navigation.goBack();
   };
 

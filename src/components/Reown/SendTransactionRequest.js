@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onReject }) => {
+export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onReject, flowId }) => {
   const { dapp = {}, data = {} } = sendTransactionRequest || {};
   const {
     tokens: registeredTokens,
@@ -400,7 +400,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     if (onReject && typeof onReject === 'function') {
       onReject();
     }
-    dispatch(reownReject());
+    dispatch(reownReject(flowId));
     navigateBack();
   };
 

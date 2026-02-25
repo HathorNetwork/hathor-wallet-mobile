@@ -104,19 +104,19 @@ export const GetBalanceRequestData = ({ data }) => {
   );
 };
 
-export const GetBalanceRequest = ({ getBalanceRequest }) => {
+export const GetBalanceRequest = ({ getBalanceRequest, flowId }) => {
   const { dapp, data } = getBalanceRequest;
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
   const onAcceptGetBalanceRequest = () => {
     // Signal the user has accepted the current request
-    dispatch(reownAccept());
+    dispatch(reownAccept(undefined, flowId));
     navigation.goBack();
   };
 
   const onDeclineRequest = () => {
-    dispatch(reownReject());
+    dispatch(reownReject(flowId));
     navigation.goBack();
   };
 

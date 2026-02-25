@@ -315,14 +315,20 @@ export const reownCancelSession = (sessionKey) => ({
 
 /**
  * @param {Object} data Data that the user has accepted.
+ * @param {string} [flowId] Optional flow ID to scope this action to a specific approval flow.
  */
-export const reownAccept = (data) => ({
+export const reownAccept = (data, flowId) => ({
   type: types.REOWN_ACCEPT,
   payload: data,
+  flowId,
 });
 
-export const reownReject = () => ({
+/**
+ * @param {string} [flowId] Optional flow ID to scope this action to a specific approval flow.
+ */
+export const reownReject = (flowId) => ({
   type: types.REOWN_REJECT,
+  flowId,
 });
 
 /**

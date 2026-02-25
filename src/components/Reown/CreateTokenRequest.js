@@ -115,7 +115,7 @@ export const CreateTokenRequestData = ({ data }) => (
   </View>
 );
 
-export const CreateTokenRequest = ({ createTokenRequest }) => {
+export const CreateTokenRequest = ({ createTokenRequest, flowId }) => {
   const { dapp, data } = createTokenRequest;
   const { status } = useSelector((state) => state.reown.createToken);
   const errorDetails = useSelector((state) => state.reown.error);
@@ -130,7 +130,7 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
   const onAcceptCreateTokenRequest = () => {
     const acceptedCreateToken = data;
 
-    dispatch(reownAccept(acceptedCreateToken));
+    dispatch(reownAccept(acceptedCreateToken, flowId));
   };
 
   const onDeclineTransaction = () => {
@@ -144,7 +144,7 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
 
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
-    dispatch(reownReject());
+    dispatch(reownReject(flowId));
     navigateBack();
   };
 

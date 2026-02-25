@@ -43,6 +43,7 @@ export const RequestConfirmationModal = ({
   onRejectAction,
   onAcceptAction,
   retryingStateSelector,
+  flowId,
 }) => {
   // If retryingStateSelector is provided, check if retrying
   const isRetrying = retryingStateSelector
@@ -64,10 +65,10 @@ export const RequestConfirmationModal = ({
     if (onRejectAction) {
       onRejectAction();
     } else {
-      dispatch(reownReject());
+      dispatch(reownReject(flowId));
     }
     onDismiss();
-  }, [onDismiss, onRejectAction, dispatch]);
+  }, [onDismiss, onRejectAction, dispatch, flowId]);
 
   const navigateToDetailScreen = () => {
     onDismiss();
@@ -77,6 +78,9 @@ export const RequestConfirmationModal = ({
     // Add accept/reject callbacks if provided
     if (onAcceptAction) params.onAccept = onAcceptAction;
     if (onRejectAction) params.onReject = onRejectAction;
+
+    // Pass flowId so the detail screen can scope its actions
+    params.flowId = flowId;
 
     navigation.navigate(destinationScreen, params);
   };

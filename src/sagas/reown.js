@@ -122,6 +122,7 @@ import {
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
+import { generateFlowId } from '../utils/reown';
 
 const log = logger('reown');
 
@@ -1099,6 +1100,9 @@ export function* handleDAppRequest(payload, modalType, options = {}) {
     return;
   }
 
+  // Generate unique flow ID for this approval flow
+  const flowId = generateFlowId();
+
   // Determine the data to pass to the modal
   const modalData = {
     data: nc || data, // Some requests use 'nc' instead of 'data'
@@ -1109,13 +1113,15 @@ export function* handleDAppRequest(payload, modalType, options = {}) {
     show: true,
     type: modalType,
     data: modalData,
+    flowId,
     onAcceptAction: acceptCb,
     onRejectAction: denyCb,
   }));
 
+  // Use predicate-based take to only match actions with our flowId
   const { deny, accept } = yield race({
-    accept: take(types.REOWN_ACCEPT),
-    deny: take(types.REOWN_REJECT),
+    accept: take((action) => action.type === types.REOWN_ACCEPT && action.flowId === flowId),
+    deny: take((action) => action.type === types.REOWN_REJECT && action.flowId === flowId),
   });
 
   if (deny) {
@@ -1257,20 +1263,26 @@ export function* onSessionProposal(action) {
     log.debug('Some unsupported methods were requested, but they are optional:', unsupportedOptionalMethods);
   }
 
-  const onAcceptAction = { type: 'REOWN_ACCEPT' };
-  const onRejectAction = { type: 'REOWN_REJECT' };
+  // Generate unique flow ID for this session proposal
+  const flowId = generateFlowId();
+
+  // Include flowId in action objects (these are dispatched by ConnectModal)
+  const onAcceptAction = { type: 'REOWN_ACCEPT', flowId };
+  const onRejectAction = { type: 'REOWN_REJECT', flowId };
 
   yield put(setReownModal({
     show: true,
     type: ReownModalTypes.CONNECT,
     data,
+    flowId,
     onAcceptAction,
     onRejectAction,
   }));
 
+  // Use predicate-based take to only match actions with our flowId
   const { reject } = yield race({
-    accept: take(onAcceptAction.type),
-    reject: take(onRejectAction.type),
+    accept: take((action) => action.type === 'REOWN_ACCEPT' && action.flowId === flowId),
+    reject: take((action) => action.type === 'REOWN_REJECT' && action.flowId === flowId),
   });
 
   if (reject) {
