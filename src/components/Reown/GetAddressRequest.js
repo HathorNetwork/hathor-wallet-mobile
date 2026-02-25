@@ -88,7 +88,7 @@ export const GetAddressRequest = ({ getAddressRequest }) => {
   const navigation = useNavigation();
 
   const onAcceptRequest = () => {
-    dispatch(reownAccept(undefined));
+    dispatch(reownAccept());
     navigation.goBack();
   };
 

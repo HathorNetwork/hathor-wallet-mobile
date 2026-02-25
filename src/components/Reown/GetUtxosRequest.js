@@ -181,7 +181,7 @@ export const GetUtxosRequest = ({ getUtxosRequest }) => {
   const navigation = useNavigation();
 
   const onAcceptRequest = () => {
-    dispatch(reownAccept(undefined));
+    dispatch(reownAccept());
     navigation.goBack();
   };
 

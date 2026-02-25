@@ -346,12 +346,10 @@ export const BaseNanoContractRequest = ({
       ? prepareAcceptData(nanoWithCaller, ncAddress)
       : nanoWithCaller;
 
-    // Always dispatch reownAccept to signal acceptance in saga
-    dispatch(reownAccept(acceptedData));
-
-    // Also call the callback if provided (to resolve the Promise in promptHandler)
     if (typeof onAccept === 'function') {
       onAccept(acceptedData);
+    } else {
+      dispatch(reownAccept(acceptedData));
     }
   };
 

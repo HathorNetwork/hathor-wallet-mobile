@@ -118,7 +118,7 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
 
   const onAcceptSignOracleDataRequest = () => {
     // Signal the user has accepted the current request and pass the accepted data.
-    dispatch(reownAccept(undefined));
+    dispatch(reownAccept());
     navigation.goBack();
   };
 

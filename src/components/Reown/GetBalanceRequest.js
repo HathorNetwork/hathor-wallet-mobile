@@ -111,7 +111,7 @@ export const GetBalanceRequest = ({ getBalanceRequest }) => {
 
   const onAcceptGetBalanceRequest = () => {
     // Signal the user has accepted the current request
-    dispatch(reownAccept(undefined));
+    dispatch(reownAccept());
     navigation.goBack();
   };
 

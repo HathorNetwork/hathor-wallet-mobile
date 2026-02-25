@@ -29,7 +29,7 @@ export function CreateNanoContractCreateTokenTxScreen({ route }) {
           params: {
             createNanoContractCreateTokenTxRequest,
             onAccept,
-            onReject,
+            onReject
           }
         }}
       />

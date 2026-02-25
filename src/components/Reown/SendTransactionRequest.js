@@ -21,7 +21,6 @@ import TokenInfoModal from './TokenInfoModal';
 import { useTokenInfo } from '../../hooks/useTokenInfo';
 import {
   setSendTxStatusReady,
-  reownAccept,
   reownReject,
   sendTxRetry,
   sendTxRetryDismiss
@@ -392,9 +391,6 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
 
   // Accept transaction
   const onAcceptTransaction = () => {
-    // Dispatch action to signal acceptance in saga
-    dispatch(reownAccept(data));
-    // Call the callback to resolve the Promise in promptHandler
     onAccept(data);
   };
 
