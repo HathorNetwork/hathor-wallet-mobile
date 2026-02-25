@@ -326,7 +326,10 @@ const TokenSwap = () => {
 
   return (
     <View style={styles.screenContent}>
-      {/* iOS: Separate InputAccessoryViews for each TextInput */}
+      {/* iOS: Separate InputAccessoryViews for each TextInput
+        * TODO: Add InputAccessoryViews for Android. We had issues positioning the keyboard
+        * buttons correctly on Android screens, so this feature is iOS-only for now.
+        */}
       {Platform.OS === 'ios' && (
         <>
           <AmountInputAccessory
