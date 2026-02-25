@@ -57,7 +57,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Última] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:642
+#: src/models.js:107 src/utils.js:654
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -265,7 +265,7 @@ msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
 #: src/screens/CreateTokenConfirm.js:112 src/screens/SendConfirmScreen.js:85
-#: src/screens/TokenSwapReview.js:152
+#: src/screens/TokenSwapReview.js:163
 msgid "Building transaction"
 msgstr "Criando transação"
 
@@ -453,7 +453,7 @@ msgstr "Palavras"
 msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
-#: src/components/NanoContract/NanoContractDetails.js:249
+#: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:232
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:620
 #: src/components/Reown/SendTransactionRequest.js:555
@@ -512,11 +512,11 @@ msgstr "Ocorreu um erro ao carregar seu histórico de transações"
 msgid "Please |tryAgain:try again|"
 msgstr "Por favor |tryAgain:tente novamente|"
 
-#: src/screens/MainScreen.js:544 src/screens/MainScreen.js:576
+#: src/screens/MainScreen.js:554 src/screens/MainScreen.js:586
 msgid "Available Balance"
 msgstr "Saldo Disponível"
 
-#: src/screens/MainScreen.js:553
+#: src/screens/MainScreen.js:563
 msgid "Locked"
 msgstr "Bloqueado"
 
@@ -804,17 +804,17 @@ msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:134
+#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:145
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:83
-#: src/screens/TokenSwapReview.js:157
+#: src/screens/TokenSwapReview.js:161
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:84
-#: src/screens/TokenSwapReview.js:158
+#: src/screens/TokenSwapReview.js:162
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -903,16 +903,16 @@ msgstr "Configurações de Rede"
 msgid "Unregister"
 msgstr "Desregistrar"
 
-#: src/screens/TokenSwap.js:246
+#: src/screens/TokenSwap.js:308
 #, javascript-format
 msgid "Balance: ${ amount }"
 msgstr "Saldo ${ amount }"
 
-#: src/screens/TokenSwap.js:270
+#: src/screens/TokenSwap.js:347
 msgid "TOKEN SWAP"
 msgstr "TROCA DE TOKENS"
 
-#: src/screens/TokenSwap.js:368
+#: src/screens/TokenSwap.js:447
 msgid "REVIEW"
 msgstr "REVISAR"
 
@@ -924,15 +924,15 @@ msgstr "Ocorreu um erro ao carregar o protocolo de troca de tokens."
 msgid "Loading Token Swap"
 msgstr "Carregando troca de tokens"
 
-#: src/screens/TokenSwapReview.js:162
+#: src/screens/TokenSwapReview.js:173
 msgid "REVIEW TOKEN SWAP"
 msgstr "REVISAR TROCA DE TOKENS"
 
-#: src/screens/TokenSwapReview.js:178
+#: src/screens/TokenSwapReview.js:189
 msgid "Your swap was successful"
 msgstr "Sua troca foi bem-sucedida"
 
-#: src/screens/TokenSwapReview.js:241
+#: src/screens/TokenSwapReview.js:253
 msgid "SWAP"
 msgstr "TROCAR"
 
@@ -1216,7 +1216,7 @@ msgstr "Ver contrato"
 msgid "Load First Addresses Error"
 msgstr "Erro ao carregar primeiro endereço da wallet"
 
-#: src/components/NanoContract/NanoContractDetails.js:213
+#: src/components/NanoContract/NanoContractDetails.js:216
 #: src/components/NanoContract/SelectAddressModal.js:119
 #: src/components/Reown/GetAddressClientRequest.js:136
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:430
@@ -1262,43 +1262,43 @@ msgstr "Transação do Nano Contract"
 msgid "Contract successfully registered."
 msgstr "Nano Contract registrado com sucesso."
 
-#: src/sagas/nanoContract.js:45
+#: src/sagas/nanoContract.js:92
 msgid "Nano Contract already registered."
 msgstr "Nano Contract já registrado."
 
-#: src/sagas/nanoContract.js:46
+#: src/sagas/nanoContract.js:93
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr "A wallet não está pronta ainda para registrar Nano Contracts."
 
-#: src/sagas/nanoContract.js:47
+#: src/sagas/nanoContract.js:94
 msgid "The informed address does not belong to the wallet."
 msgstr "O endereço informado não pertence a esta carteira."
 
-#: src/sagas/nanoContract.js:48
+#: src/sagas/nanoContract.js:95
 msgid "Nano Contract not found."
 msgstr "Nano Contract não encontrado."
 
-#: src/sagas/nanoContract.js:49
+#: src/sagas/nanoContract.js:96
 msgid "Error while trying to register Nano Contract."
 msgstr "Erro ao tentar registrar o Nano Contract."
 
-#: src/sagas/nanoContract.js:50
+#: src/sagas/nanoContract.js:97
 msgid "Invalid transaction to register as Nano Contract."
 msgstr "Nano Contract inválido."
 
-#: src/sagas/nanoContract.js:51
+#: src/sagas/nanoContract.js:98
 msgid "Blueprint not found."
 msgstr "Blueprint não encontrado."
 
-#: src/sagas/nanoContract.js:52
+#: src/sagas/nanoContract.js:99
 msgid "Couldn't get Blueprint info."
 msgstr "Não foi possível carregar informações do Blueprint."
 
-#: src/sagas/nanoContract.js:53
+#: src/sagas/nanoContract.js:100
 msgid "Nano Contract not registered."
 msgstr "Nano Contract não registrado."
 
-#: src/sagas/nanoContract.js:54
+#: src/sagas/nanoContract.js:101
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr "Error ao fazer download do histórico de transações do Nano Contract."
 
@@ -1356,6 +1356,14 @@ msgstr "A wallet não está pronta para carregar o primeiro endereço."
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
+
+#: src/components/AmountInputAccessory.js:94
+msgid "Max"
+msgstr "Máx"
+
+#: src/components/AmountInputAccessory.js:101
+msgid "Done"
+msgstr "Ok"
 
 #: src/components/AskForPushNotification.js:29
 msgid "Do you want to enable push notifications for this wallet?"
@@ -2334,15 +2342,15 @@ msgstr "Confirmar novo endereço"
 msgid "Go back"
 msgstr "Voltar"
 
-#: src/components/NanoContract/NanoContractDetails.js:188
+#: src/components/NanoContract/NanoContractDetails.js:191
 msgid "Load More"
 msgstr "Carregar mais"
 
-#: src/components/NanoContract/NanoContractDetails.js:214
+#: src/components/NanoContract/NanoContractDetails.js:217
 msgid "Loading Nano Contract transactions."
 msgstr "Carregando transações do Nano Contract."
 
-#: src/components/NanoContract/NanoContractDetails.js:228
+#: src/components/NanoContract/NanoContractDetails.js:231
 msgid "Nano Contract Transactions Error"
 msgstr "Erro em Transações do Nano Contract"
 
