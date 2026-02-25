@@ -22,7 +22,7 @@ import {
 import { commonStyles } from './theme';
 
 export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
-  const { createNanoContractCreateTokenTxRequest: request, onAccept, onReject, flowId } = route.params;
+  const { createNanoContractCreateTokenTxRequest: request, onAccept, onReject } = route.params;
   const { data, dapp } = request;
   const { nano, token } = data;
 
@@ -70,7 +70,6 @@ export const CreateNanoContractCreateTokenTxRequest = ({ route }) => {
       acceptButtonText={t`Accept Request`}
       declineButtonText={t`Decline Request`}
       checkInsufficientBalance
-      flowId={flowId}
     />
   );
 };

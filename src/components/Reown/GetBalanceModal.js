@@ -12,12 +12,10 @@ import RequestConfirmationModal from './RequestConfirmationModal';
 export default ({
   onDismiss,
   data,
-  flowId,
 }) => (
   <RequestConfirmationModal
     onDismiss={onDismiss}
     data={data}
-    flowId={flowId}
     title={t`New Get Balance Request`}
     message={t`You have received a new Get Balance Request. Please carefully review the details before deciding to accept or decline.`}
     reviewButtonText={t`Review Get Balance Request details`}

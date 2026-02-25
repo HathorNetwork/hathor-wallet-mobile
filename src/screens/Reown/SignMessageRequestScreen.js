@@ -17,14 +17,14 @@ import { SignMessageRequest } from '../../components/Reown/SignMessageRequest';
 import { COLORS } from '../../styles/themes';
 
 export function SignMessageRequestScreen({ route }) {
-  const { signMessageRequest, flowId } = route.params;
+  const { signMessageRequest } = route.params;
 
   return (
     <Wrapper>
       <HathorHeader
         title={t`Sign Message Request`.toUpperCase()}
       />
-      <SignMessageRequest signMessageRequest={signMessageRequest} flowId={flowId} />
+      <SignMessageRequest signMessageRequest={signMessageRequest} />
       <OfflineBar />
     </Wrapper>
   );

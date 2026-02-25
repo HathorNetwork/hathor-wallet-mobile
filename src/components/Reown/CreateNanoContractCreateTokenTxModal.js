@@ -12,14 +12,12 @@ import RequestConfirmationModal from './RequestConfirmationModal';
 export const CreateNanoContractCreateTokenTxModal = ({
   onDismiss,
   data,
-  flowId,
   accept,
   deny,
 }) => (
   <RequestConfirmationModal
     onDismiss={onDismiss}
     data={data}
-    flowId={flowId}
     title={t`Create Nano Contract Create Token Request`}
     message={t`You have received a new Create Nano Contract Create Token Request. Please carefully review the details before deciding to accept or decline.`}
     reviewButtonText={t`Review request details`}

@@ -21,7 +21,7 @@ import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import { registerToken, updateTokensMetadata } from '../../utils/tokens';
-import { reownUserReadyForConnection } from '../../actions';
+import { reownUserReadyForNextFlow } from '../../actions';
 import { getTokenLabel, getShortHash } from '../../utils';
 
 export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
@@ -46,14 +46,14 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
     const uids = tokens.map((token) => token.uid);
     // Not awaited intentionally - fetch metadata in background while navigating
     updateTokensMetadata(wallet, dispatch, uids);
-    // Signal that user is ready for any pending connection modals
-    dispatch(reownUserReadyForConnection());
+    // Signal that user is ready for the next flow in the unified queue
+    dispatch(reownUserReadyForNextFlow());
     navigation.navigate('Dashboard');
   };
 
   const onBackHome = () => {
-    // Signal that user is ready for any pending connection modals
-    dispatch(reownUserReadyForConnection());
+    // Signal that user is ready for the next flow in the unified queue
+    dispatch(reownUserReadyForNextFlow());
     navigation.navigate('Dashboard');
   };
 

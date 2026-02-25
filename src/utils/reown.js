@@ -6,16 +6,9 @@
  */
 
 /**
- * Simple counter-based flow ID generator for scoping Reown actions.
- * Flow IDs only need to be unique within the app session.
+ * Reown utility functions.
  *
- * This is used to prevent race conditions where multiple approval flows
- * (e.g., session proposals and dApp requests) could interfere with each other
- * when waiting on global REOWN_ACCEPT/REOWN_REJECT actions.
+ * Note: The generateFlowId function was removed as part of the unified queue implementation.
+ * With a single actionChannel processing all user-facing Reown flows sequentially,
+ * flowId scoping is no longer needed - only one modal can be active at a time.
  */
-let flowIdCounter = 0;
-
-export const generateFlowId = () => {
-  flowIdCounter += 1;
-  return `flow_${flowIdCounter}`;
-};

@@ -8,8 +8,8 @@
 import { useState, useEffect } from 'react';
 import { BackHandler } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useSelector, useDispatch } from 'react-redux';
-import { reownUserReadyForConnection } from '../actions';
+import { useDispatch } from 'react-redux';
+import { reownUserReadyForNextFlow } from '../actions';
 
 /**
  * Custom hook to handle back button and navigation events with a confirmation modal
@@ -22,18 +22,13 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const [isIntentionallyNavigatingBack, setIsIntentionallyNavigatingBack] = useState(false);
-  // Check if we should skip confirmation due to programmatic navigation reset
-  const skipReownConfirmation = useSelector(
-    (state) => state.reown?.skipNavigationConfirmation ?? false
-  );
 
   // Set up back button and navigation event handlers
   useEffect(() => {
     // Add back button handler to intercept Android back button
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      // If we're intentionally navigating back, the condition is met, or we're in a
-      // programmatic navigation reset, allow the default back behavior
-      if (isIntentionallyNavigatingBack || allowNavigationCondition || skipReownConfirmation) {
+      // If we're intentionally navigating back or the condition is met, allow the default behavior
+      if (isIntentionallyNavigatingBack || allowNavigationCondition) {
         return false;
       }
       // Show confirmation modal instead of going back directly
@@ -44,9 +39,8 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
 
     // Add navigation event listener to handle iOS swipe back gesture
     const beforeRemoveListener = navigation.addListener('beforeRemove', (e) => {
-      // If we're intentionally navigating back, the condition is met, or we're in a
-      // programmatic navigation reset, allow navigation
-      if (isIntentionallyNavigatingBack || allowNavigationCondition || skipReownConfirmation) {
+      // If we're intentionally navigating back or the condition is met, allow navigation
+      if (isIntentionallyNavigatingBack || allowNavigationCondition) {
         return;
       }
       // Prevent default navigation behavior
@@ -64,7 +58,6 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
     isIntentionallyNavigatingBack,
     showConfirmationModal,
     allowNavigationCondition,
-    skipReownConfirmation,
   ]);
 
   /**
@@ -79,8 +72,8 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
       beforeNavigateCallback();
     }
 
-    // Signal that user is ready for any pending connection modals
-    dispatch(reownUserReadyForConnection());
+    // Signal that user is ready for the next flow in the unified queue
+    dispatch(reownUserReadyForNextFlow());
 
     // We need to give time for any modal to close
     // before navigating back
@@ -103,8 +96,8 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
       beforeNavigateCallback();
     }
 
-    // Signal that user is ready for any pending connection modals
-    dispatch(reownUserReadyForConnection());
+    // Signal that user is ready for the next flow in the unified queue
+    dispatch(reownUserReadyForNextFlow());
 
     // We need to give time for any modal to close
     // before navigating

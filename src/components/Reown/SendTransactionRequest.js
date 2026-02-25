@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onReject, flowId }) => {
+export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onReject }) => {
   const { dapp = {}, data = {} } = sendTransactionRequest || {};
   const {
     tokens: registeredTokens,
@@ -392,8 +392,8 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
 
   // Accept transaction
   const onAcceptTransaction = () => {
-    // Dispatch action to signal acceptance (for flowId tracking in saga)
-    dispatch(reownAccept(data, flowId));
+    // Dispatch action to signal acceptance in saga
+    dispatch(reownAccept(data));
     // Call the callback to resolve the Promise in promptHandler
     onAccept(data);
   };
@@ -404,7 +404,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
     if (onReject && typeof onReject === 'function') {
       onReject();
     }
-    dispatch(reownReject(flowId));
+    dispatch(reownReject());
     navigateBack();
   };
 

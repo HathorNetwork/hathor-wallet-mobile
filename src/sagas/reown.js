@@ -59,7 +59,6 @@ import {
   select,
   race,
   actionChannel,
-  delay,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
@@ -120,15 +119,9 @@ import {
   showGetUtxosModal,
   unregisteredTokensStore,
   setReownError,
-  reownRpcRequestStart,
-  reownRpcRequestEnd,
-  setSkipReownNavigationConfirmation,
-  reownClearUserReadyForConnection,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
-import { generateFlowId } from '../utils/reown';
-import NavigationService from '../NavigationService';
 
 const log = logger('reown');
 
@@ -263,7 +256,7 @@ function* init() {
     // Pass extend = true so session expiration date get renewed
     yield call(refreshActiveSessions, true);
     yield fork(listenForAppStateChange);
-    yield fork(requestsListener);
+    yield fork(unifiedReownFlowListener);
 
     // If the wallet is reset, we should cancel all listeners
     yield take([
@@ -448,23 +441,56 @@ export function* clearSessions() {
   yield call(refreshActiveSessions);
 }
 
-function* requestsListener() {
-  const requestsChannel = yield actionChannel('REOWN_SESSION_REQUEST');
+/**
+ * Unified queue listener for all user-facing Reown flows.
+ * Handles both RPC requests and connection proposals sequentially,
+ * eliminating the need for coordination flags.
+ */
+function* unifiedReownFlowListener() {
+  // Create a single action channel that queues both RPC requests and session proposals
+  const flowChannel = yield actionChannel([
+    'REOWN_SESSION_REQUEST',      // RPC requests from dApps
+    'REOWN_SESSION_PROPOSAL',     // New connection proposals
+  ]);
 
-  let action;
   while (true) {
+    const action = yield take(flowChannel);
+
     try {
-      action = yield take(requestsChannel);
-      // Track that an RPC request is being processed (for deep link handling)
-      yield put(reownRpcRequestStart());
-      yield call(processRequest, action);
+      if (action.type === 'REOWN_SESSION_REQUEST') {
+        yield call(processRequest, action);
+        // After RPC completes, check if user is on a continuation screen (success/feedback)
+        // If so, wait for them to navigate away before processing next queued item
+        yield call(waitForUserReadyIfOnContinuationScreen);
+      } else if (action.type === 'REOWN_SESSION_PROPOSAL') {
+        yield call(onSessionProposal, action);
+      }
     } catch (error) {
-      log.error('Error processing request.', error);
+      log.error('Error processing Reown flow.', error);
       yield put(onExceptionCaptured(error));
-    } finally {
-      // Signal that the RPC request has finished processing
-      yield put(reownRpcRequestEnd());
     }
+  }
+}
+
+/**
+ * Helper to wait for user to be ready after an RPC completes if they're on a success screen.
+ * This is called after processRequest completes to ensure we don't show a connection modal
+ * on top of a success feedback screen.
+ */
+function* waitForUserReadyIfOnContinuationScreen() {
+  // Check the current RPC status - if it ended with success, we're likely on a success screen
+  const reownState = yield select((state) => state.reown);
+  const isOnSuccessScreen =
+    reownState.newNanoContractTransaction?.status === 'successful' ||
+    reownState.createToken?.status === 'successful' ||
+    reownState.sendTransaction?.status === 'successful' ||
+    reownState.createNanoContractCreateTokenTx?.status === 'successful';
+
+  if (isOnSuccessScreen) {
+    log.debug('User is on success screen, waiting for navigation before processing next flow.');
+    // Wait for user to signal they've navigated away (e.g., clicked "Back" button)
+    yield take(types.REOWN_USER_READY_FOR_NEXT_FLOW);
+    log.debug('User ready for next flow, continuing queue processing.');
   }
 }
 
@@ -1092,7 +1118,8 @@ export function* onSendTransactionRequest({ payload }) {
 }
 
 /**
- * Generic handler for dApp requests
+ * Generic handler for dApp requests.
+ * With the unified queue, only one flow is active at a time, so we can use simple takes.
  *
  * @param {Object} payload The payload containing the request data and callbacks
  * @param {String} modalType The type of modal to show
@@ -1111,10 +1138,6 @@ export function* handleDAppRequest(payload, modalType, options = {}) {
     return;
   }
 
-  // Generate unique flow ID for this approval flow
-  // (used to scope REOWN_ACCEPT/REOWN_REJECT actions to this specific request)
-  const flowId = generateFlowId();
-
   // Determine the data to pass to the modal
   const modalData = {
     data: nc || data, // Some requests use 'nc' instead of 'data'
@@ -1125,15 +1148,14 @@ export function* handleDAppRequest(payload, modalType, options = {}) {
     show: true,
     type: modalType,
     data: modalData,
-    flowId,
     onAcceptAction: acceptCb,
     onRejectAction: denyCb,
   }));
 
-  // Use predicate-based take to only match actions with our flowId
+  // Simple take - safe because unified queue ensures only one flow is active
   const { deny, accept } = yield race({
-    accept: take((action) => action.type === types.REOWN_ACCEPT && action.flowId === flowId),
-    deny: take((action) => action.type === types.REOWN_REJECT && action.flowId === flowId),
+    accept: take(types.REOWN_ACCEPT),
+    deny: take(types.REOWN_REJECT),
   });
 
   if (deny) {
@@ -1163,9 +1185,10 @@ export function* onWalletReset() {
 }
 
 /**
- * This saga will be called (dispatched from the event listener) when a session
- * proposal RPC is sent from a dApp. This happens after the client scans a wallet
- * connect URI
+ * This saga will be called when a session proposal is processed from the unified queue.
+ * This happens after the client scans a wallet connect URI.
+ * Note: Since this is processed through the unified queue, we don't need to wait
+ * for active RPC requests - the queue ensures sequential processing.
  */
 export function* onSessionProposal(action) {
   const { id, params } = action.payload;
@@ -1175,45 +1198,6 @@ export function* onSessionProposal(action) {
     // Do nothing, client might not yet have been initialized.
     log.debug('Tried to get reown client in onSessionProposal but it is undefined.');
     return;
-  }
-
-  // Check if there are active RPC requests that should be handled first
-  // This uses the count-based tracking from requestsListener, which covers
-  // the entire RPC lifecycle including PIN entry and transaction processing
-  let activeRpcCount = yield select((state) => state.reown.activeRpcRequestCount);
-  if (activeRpcCount > 0) {
-    log.debug('Active RPC requests detected, waiting for them to complete before showing connection modal.', {
-      activeCount: activeRpcCount,
-    });
-
-    // Wait for all active RPC requests to complete
-    while (activeRpcCount > 0) {
-      yield take(types.REOWN_RPC_REQUEST_END);
-      activeRpcCount = yield select((state) => state.reown.activeRpcRequestCount);
-    }
-
-    log.debug('All active RPCs completed, checking if user is already ready for connection modal.');
-    // Check if user ready flag is already set (for rejection flow, it may be set before RPC ends)
-    let userReady = yield select((state) => state.reown.userReadyForConnection);
-    if (!userReady) {
-      log.debug('User not yet ready, waiting for user to navigate away from success screen.');
-      // Wait for the user to navigate back from success screen (or reach Dashboard)
-      // This ensures we don't show the connection modal on top of the success feedback
-      yield take(types.REOWN_USER_READY_FOR_CONNECTION);
-    }
-    // Clear the flag for future use
-    yield put(reownClearUserReadyForConnection());
-
-    log.debug('User is ready, navigating to ReownList for connection.');
-    // Small delay to let any pending component navigation (like goBack) complete first
-    // This prevents conflicts between the component's navigation and our reset
-    yield delay(100);
-    // Set flag to skip confirmation modals during navigation reset
-    yield put(setSkipReownNavigationConfirmation(true));
-    // Reset navigation to ReownList
-    NavigationService.resetToReownList();
-    // Clear the flag
-    yield put(setSkipReownNavigationConfirmation(false));
   }
 
   const { walletKit } = reownClient;
@@ -1314,26 +1298,22 @@ export function* onSessionProposal(action) {
     log.debug('Some unsupported methods were requested, but they are optional:', unsupportedOptionalMethods);
   }
 
-  // Generate unique flow ID for this session proposal
-  const flowId = generateFlowId();
-
-  // Include flowId in action objects (these are dispatched by ConnectModal)
-  const onAcceptAction = { type: 'REOWN_ACCEPT', flowId };
-  const onRejectAction = { type: 'REOWN_REJECT', flowId };
+  // Simple action objects (no flowId needed - unified queue ensures single flow)
+  const onAcceptAction = { type: 'REOWN_ACCEPT' };
+  const onRejectAction = { type: 'REOWN_REJECT' };
 
   yield put(setReownModal({
     show: true,
     type: ReownModalTypes.CONNECT,
     data,
-    flowId,
     onAcceptAction,
     onRejectAction,
   }));
 
-  // Use predicate-based take to only match actions with our flowId
+  // Simple take - safe because unified queue ensures only one flow is active
   const { reject } = yield race({
-    accept: take((action) => action.type === 'REOWN_ACCEPT' && action.flowId === flowId),
-    reject: take((action) => action.type === 'REOWN_REJECT' && action.flowId === flowId),
+    accept: take('REOWN_ACCEPT'),
+    reject: take('REOWN_REJECT'),
   });
 
   if (reject) {
@@ -1556,7 +1536,7 @@ export function* saga() {
     takeLatest(types.SHOW_GET_ADDRESS_REQUEST_MODAL, onGetAddressRequest),
     takeLatest(types.SHOW_GET_ADDRESS_CLIENT_REQUEST_MODAL, onGetAddressClientRequest),
     takeLatest(types.SHOW_GET_UTXOS_REQUEST_MODAL, onGetUtxosRequest),
-    takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
+    // Note: REOWN_SESSION_PROPOSAL is handled by unifiedReownFlowListener, not here
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),
     takeEvery('REOWN_SHUTDOWN', clearSessions),

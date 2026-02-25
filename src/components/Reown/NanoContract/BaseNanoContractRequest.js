@@ -153,7 +153,6 @@ export const BaseNanoContractRequest = ({
   acceptButtonText = t`Accept Transaction`,
   declineButtonText = t`Decline Transaction`,
   checkInsufficientBalance = false,
-  flowId,
 }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
@@ -347,8 +346,8 @@ export const BaseNanoContractRequest = ({
       ? prepareAcceptData(nanoWithCaller, ncAddress)
       : nanoWithCaller;
 
-    // Always dispatch reownAccept for flowId tracking in saga
-    dispatch(reownAccept(acceptedData, flowId));
+    // Always dispatch reownAccept to signal acceptance in saga
+    dispatch(reownAccept(acceptedData));
 
     // Also call the callback if provided (to resolve the Promise in promptHandler)
     if (typeof onAccept === 'function') {
@@ -381,7 +380,7 @@ export const BaseNanoContractRequest = ({
     dispatch(statusConfig.retryDismissAction());
     // If the user leaves without accepting or declining, we should decline the transaction
     if (status !== statusConfig.statusConstants.SUCCESSFUL) {
-      dispatch(reownReject(flowId));
+      dispatch(reownReject());
     }
   }
 

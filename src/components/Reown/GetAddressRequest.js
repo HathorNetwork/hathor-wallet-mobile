@@ -82,18 +82,18 @@ export const GetAddressRequestData = ({ data }) => {
   );
 };
 
-export const GetAddressRequest = ({ getAddressRequest, flowId }) => {
+export const GetAddressRequest = ({ getAddressRequest }) => {
   const { dapp, data } = getAddressRequest;
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
   const onAcceptRequest = () => {
-    dispatch(reownAccept(undefined, flowId));
+    dispatch(reownAccept(undefined));
     navigation.goBack();
   };
 
   const onDeclineRequest = () => {
-    dispatch(reownReject(flowId));
+    dispatch(reownReject());
     navigation.goBack();
   };
 

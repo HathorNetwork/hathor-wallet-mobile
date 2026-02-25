@@ -12,14 +12,12 @@ import RequestConfirmationModal from './RequestConfirmationModal';
 export default ({
   onDismiss,
   data,
-  flowId,
   onAcceptAction,
   onRejectAction,
 }) => (
   <RequestConfirmationModal
     onDismiss={onDismiss}
     data={data}
-    flowId={flowId}
     title={t`Transaction Request`}
     message={t`You have received a new transaction request. Please carefully review the details before deciding to accept or decline.`}
     reviewButtonText={t`Review transaction details`}

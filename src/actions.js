@@ -125,13 +125,7 @@ export const types = {
   REOWN_URI_INPUTTED: 'REOWN_URI_INPUTTED',
   REOWN_CANCEL_SESSION: 'REOWN_CANCEL_SESSION',
   REOWN_SET_CONNECTION_FAILED: 'REOWN_SET_CONNECTION_FAILED',
-  REOWN_ADD_PENDING_RPC_FLOW_ID: 'REOWN_ADD_PENDING_RPC_FLOW_ID',
-  REOWN_REMOVE_PENDING_RPC_FLOW_ID: 'REOWN_REMOVE_PENDING_RPC_FLOW_ID',
-  REOWN_RPC_REQUEST_START: 'REOWN_RPC_REQUEST_START',
-  REOWN_RPC_REQUEST_END: 'REOWN_RPC_REQUEST_END',
-  REOWN_SET_SKIP_NAVIGATION_CONFIRMATION: 'REOWN_SET_SKIP_NAVIGATION_CONFIRMATION',
-  REOWN_USER_READY_FOR_CONNECTION: 'REOWN_USER_READY_FOR_CONNECTION',
-  REOWN_CLEAR_USER_READY_FOR_CONNECTION: 'REOWN_CLEAR_USER_READY_FOR_CONNECTION',
+  REOWN_USER_READY_FOR_NEXT_FLOW: 'REOWN_USER_READY_FOR_NEXT_FLOW',
   // Network Settings actions
   // NOTE: These actions follows a taxonomy that should be applied
   // to all other actions.
@@ -321,21 +315,21 @@ export const reownCancelSession = (sessionKey) => ({
 });
 
 /**
+ * Accept the current Reown request.
+ * With unified queue, only one flow is active at a time, so no flowId is needed.
  * @param {Object} data Data that the user has accepted.
- * @param {string} [flowId] Optional flow ID to scope this action to a specific approval flow.
  */
-export const reownAccept = (data, flowId) => ({
+export const reownAccept = (data) => ({
   type: types.REOWN_ACCEPT,
   payload: data,
-  flowId,
 });
 
 /**
- * @param {string} [flowId] Optional flow ID to scope this action to a specific approval flow.
+ * Reject the current Reown request.
+ * With unified queue, only one flow is active at a time, so no flowId is needed.
  */
-export const reownReject = (flowId) => ({
+export const reownReject = () => ({
   type: types.REOWN_REJECT,
-  flowId,
 });
 
 /**
@@ -1049,62 +1043,11 @@ export const setWCConnectionFailed = (failed) => ({
 });
 
 /**
- * Adds a flowId to the list of pending RPC requests.
- * @param {string} flowId - The flow ID to add
+ * Signals that the user is ready for the next flow in the unified queue.
+ * Dispatched when user navigates away from success/feedback screens.
  */
-export const addPendingRpcFlowId = (flowId) => ({
-  type: types.REOWN_ADD_PENDING_RPC_FLOW_ID,
-  payload: flowId,
-});
-
-/**
- * Removes a flowId from the list of pending RPC requests.
- * @param {string} flowId - The flow ID to remove
- */
-export const removePendingRpcFlowId = (flowId) => ({
-  type: types.REOWN_REMOVE_PENDING_RPC_FLOW_ID,
-  payload: flowId,
-});
-
-/**
- * Signals that an RPC request has started processing.
- * Used to track active RPC requests for deep link handling.
- */
-export const reownRpcRequestStart = () => ({
-  type: types.REOWN_RPC_REQUEST_START,
-});
-
-/**
- * Signals that an RPC request has finished processing.
- * Used to track active RPC requests for deep link handling.
- */
-export const reownRpcRequestEnd = () => ({
-  type: types.REOWN_RPC_REQUEST_END,
-});
-
-/**
- * Sets a flag to skip navigation confirmation modals.
- * Used when programmatically resetting navigation after RPC completion.
- * @param {boolean} skip - Whether to skip confirmation
- */
-export const setSkipReownNavigationConfirmation = (skip) => ({
-  type: types.REOWN_SET_SKIP_NAVIGATION_CONFIRMATION,
-  payload: skip,
-});
-
-/**
- * Signals that the user is ready to see a pending connection modal.
- * Dispatched when user navigates back from success screens or when Dashboard gets focus.
- */
-export const reownUserReadyForConnection = () => ({
-  type: types.REOWN_USER_READY_FOR_CONNECTION,
-});
-
-/**
- * Clears the user ready for connection flag after it has been consumed.
- */
-export const reownClearUserReadyForConnection = () => ({
-  type: types.REOWN_CLEAR_USER_READY_FOR_CONNECTION,
+export const reownUserReadyForNextFlow = () => ({
+  type: types.REOWN_USER_READY_FOR_NEXT_FLOW,
 });
 
 /**

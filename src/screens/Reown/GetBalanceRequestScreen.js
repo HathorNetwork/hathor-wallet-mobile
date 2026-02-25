@@ -17,14 +17,14 @@ import { GetBalanceRequest } from '../../components/Reown/GetBalanceRequest';
 import { COLORS } from '../../styles/themes';
 
 export function GetBalanceRequestScreen({ route }) {
-  const { getBalanceRequest, flowId } = route.params;
+  const { getBalanceRequest } = route.params;
 
   return (
     <Wrapper>
       <HathorHeader
         title={t`Get Balance Request`.toUpperCase()}
       />
-      <GetBalanceRequest getBalanceRequest={getBalanceRequest} flowId={flowId} />
+      <GetBalanceRequest getBalanceRequest={getBalanceRequest} />
       <OfflineBar />
     </Wrapper>
   );

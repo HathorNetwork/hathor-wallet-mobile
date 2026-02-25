@@ -79,7 +79,7 @@ export const SignOracleDataRequestData = ({ oracle, data }) => (
   </View>
 );
 
-export const SignOracleDataRequest = ({ signOracleData, flowId }) => {
+export const SignOracleDataRequest = ({ signOracleData }) => {
   const { dapp, data } = signOracleData;
   const dispatch = useDispatch();
   const navigation = useNavigation();
@@ -118,13 +118,13 @@ export const SignOracleDataRequest = ({ signOracleData, flowId }) => {
 
   const onAcceptSignOracleDataRequest = () => {
     // Signal the user has accepted the current request and pass the accepted data.
-    dispatch(reownAccept(undefined, flowId));
+    dispatch(reownAccept(undefined));
     navigation.goBack();
   };
 
   const onDeclineConfirmation = () => {
     setShowDeclineModal(false);
-    dispatch(reownReject(flowId));
+    dispatch(reownReject());
     navigation.goBack();
   };
 

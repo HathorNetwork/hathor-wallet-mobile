@@ -175,18 +175,18 @@ export const GetUtxosRequestData = ({ data }) => {
   );
 };
 
-export const GetUtxosRequest = ({ getUtxosRequest, flowId }) => {
+export const GetUtxosRequest = ({ getUtxosRequest }) => {
   const { dapp, data } = getUtxosRequest;
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
   const onAcceptRequest = () => {
-    dispatch(reownAccept(undefined, flowId));
+    dispatch(reownAccept(undefined));
     navigation.goBack();
   };
 
   const onDeclineRequest = () => {
-    dispatch(reownReject(flowId));
+    dispatch(reownReject());
     navigation.goBack();
   };
 

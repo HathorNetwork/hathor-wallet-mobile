@@ -44,33 +44,8 @@ function resetToMain() {
   });
 }
 
-/**
- * Clears the navigation history and navigates to ReownList screen.
- * Used when a connection request needs to be shown after an RPC request completes.
- * This bypasses beforeRemove listeners that might show confirmation modals.
- * @returns <void>
- */
-function resetToReownList() {
-  _navigator.current.reset({
-    index: 0,
-    routes: [
-      {
-        name: 'App',
-        state: {
-          routes: [
-            { name: 'Main', params: { screen: 'Home' } },
-            { name: 'ReownList' },
-          ],
-          index: 1,
-        },
-      },
-    ],
-  });
-}
-
 export default {
   navigate,
   setTopLevelNavigator,
   resetToMain,
-  resetToReownList,
 };

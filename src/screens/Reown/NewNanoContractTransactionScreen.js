@@ -17,13 +17,13 @@ import { NewNanoContractTransactionRequest } from '../../components/Reown/NanoCo
 import { COLORS } from '../../styles/themes';
 
 export function NewNanoContractTransactionScreen({ route }) {
-  const { ncTxRequest, flowId } = route.params;
+  const { ncTxRequest } = route.params;
   return (
     <Wrapper>
       <HathorHeader
         title={t`New Nano Contract Transaction`.toUpperCase()}
       />
-      <NewNanoContractTransactionRequest ncTxRequest={ncTxRequest} flowId={flowId} />
+      <NewNanoContractTransactionRequest ncTxRequest={ncTxRequest} />
       <OfflineBar />
     </Wrapper>
   );
