@@ -26,10 +26,7 @@ export const types = {
   SET_TEMP_PIN: 'SET_TEMP_PIN',
   SET_RECOVERING_PIN: 'SET_RECOVERING_PIN',
   HISTORY_UPDATE: 'HISTORY_UPDATE',
-  NEW_TX: 'NEW_TX',
   BALANCE_UPDATE: 'BALANCE_UPDATE',
-  NEW_INVOICE: 'NEW_INVOICE',
-  CLEAR_INVOICE: 'CLEAR_INVOICE',
   NETWORK_ERROR: 'NETWORK_ERROR',
   CLEAR_NETWORK_ERROR: 'CLEAR_NETWORK_ERROR',
   RESET_DATA: 'RESET_DATA',
@@ -376,25 +373,6 @@ export const setIsOnline = (status) => ({ type: types.SET_IS_ONLINE, payload: st
 export const setServerInfo = (payload) => (
   { type: types.SET_SERVER_INFO, payload }
 );
-
-/**
- * tx {Object} the new transaction
- * updatedBalanceMap {Object} balance map updated for each token in this tx
- */
-export const newTx = (tx, updatedBalanceMap) => (
-  { type: types.NEW_TX, payload: { tx, updatedBalanceMap } }
-);
-
-/**
- * address {String} address to each payment should be sent
- * amount {int} amount to be paid
- * token {Object} token we're expecting to receive
- */
-export const newInvoice = (address, amount, token) => (
-  { type: types.NEW_INVOICE, payload: { address, amount, token } }
-);
-
-export const clearInvoice = () => ({ type: types.CLEAR_INVOICE });
 
 export const resetData = () => ({ type: types.RESET_DATA });
 

@@ -75,7 +75,6 @@ import About from './screens/About';
 import Security from './screens/Security';
 import PushNotification from './screens/PushNotification';
 import ChangePin from './screens/ChangePin';
-import PaymentRequestDetail from './screens/PaymentRequestDetail';
 import ChangeToken from './screens/ChangeToken';
 import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
@@ -448,7 +447,6 @@ const AppStack = () => {
     let newEdges;
     switch (lastRouteName) {
       case 'RegisterToken':
-      case 'PaymentRequestDetail':
       case 'CreateTokenStack':
       case 'About':
       case 'ResetWallet':
@@ -508,7 +506,6 @@ const AppStack = () => {
           component={ResetWallet}
           options={{ gesturesEnabled: false }}
         />
-        <Stack.Screen name='PaymentRequestDetail' component={PaymentRequestDetail} />
         <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
         <Stack.Screen name='RegisterNanoContract' component={RegisterNanoContractStack} />
         <Stack.Screen name='ChangeToken' component={ChangeToken} />
