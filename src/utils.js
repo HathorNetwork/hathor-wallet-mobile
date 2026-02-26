@@ -404,6 +404,18 @@ export const renderValue = (amount, isInteger) => {
 };
 
 /**
+ * Format a BigInt amount as a decimal string without thousand separators.
+ * Useful for input fields where thousand separators are not allowed.
+ *
+ * @param {bigint} amount The token amount as BigInt
+ * @param {number} decimalPlaces Number of decimal places
+ * @return {string} Formatted value without thousand separators (e.g., "1234.56")
+ */
+export const formatAmountToInput = (amount, decimalPlaces) => (
+  hathorLib.numberUtils.prettyValue(amount, decimalPlaces).replace(/,/g, '')
+);
+
+/**
  * Render value to integer or decimal
  *
  * @params {string} uid Token uid

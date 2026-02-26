@@ -5,10 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -20,8 +21,9 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
 import { get } from 'lodash';
 import { SwapIcon } from '../components/Icons/Swap.icon';
+import AmountInputAccessory from '../components/AmountInputAccessory';
 
-import { renderValue } from '../utils';
+import { renderValue, formatAmountToInput } from '../utils';
 import {
   calcAmountWithSlippage,
   renderAmountAndSymbolWithSlippage,
@@ -46,6 +48,9 @@ import {
 } from '../actions';
 import NavigationService from '../NavigationService';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
+
+const INPUT_ACCESSORY_VIEW_ID = 'tokenSwapAmountInput';
+const OUTPUT_ACCESSORY_VIEW_ID = 'tokenSwapAmountOutput';
 
 function getAvailableAmount(token, tokensBalance) {
   if (!token) {
@@ -80,6 +85,9 @@ const TokenSwap = () => {
 
   const [editing, setEditing] = useState(null);
 
+  // Ref to track editing timeout so we can cancel it on new focus
+  const editingTimeoutRef = useRef(null);
+
   const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
   const {
     inputToken,
@@ -91,6 +99,13 @@ const TokenSwap = () => {
   }));
 
   const navigation = useNavigation();
+
+  // Cleanup editing timeout on unmount
+  useEffect(() => () => {
+    if (editingTimeoutRef.current) {
+      clearTimeout(editingTimeoutRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     for (const tk of allowedTokens) {
@@ -104,11 +119,11 @@ const TokenSwap = () => {
       dispatch(tokenSwapSetInputToken(allowedTokens[0]));
       return;
     }
-    if (swapDirection === 'input') {
-      // Input has changed
-      setOutputTokenAmount(0n);
-      setOutputTokenAmountStr('');
-    }
+    // Clear both amounts when input token changes
+    setInputTokenAmount(0n);
+    setInputTokenAmountStr('');
+    setOutputTokenAmount(0n);
+    setOutputTokenAmountStr('');
   }, [inputToken]);
 
   useEffect(() => {
@@ -117,18 +132,20 @@ const TokenSwap = () => {
       dispatch(tokenSwapSetOutputToken(allowedTokens[1]));
       return;
     }
-    if (swapDirection === 'output') {
-      // output has changed
-      setInputTokenAmount(0n);
-      setInputTokenAmountStr('');
-    }
+    // Clear both amounts when output token changes
+    setInputTokenAmount(0n);
+    setInputTokenAmountStr('');
+    setOutputTokenAmount(0n);
+    setOutputTokenAmountStr('');
   }, [outputToken]);
 
   useEffect(() => {
     setShowQuote(!!quote);
     if (quote) {
       setInputTokenAmountStr(renderValue(quote.amount_in));
+      setInputTokenAmount(quote.amount_in);
       setOutputTokenAmountStr(renderValue(quote.amount_out));
+      setOutputTokenAmount(quote.amount_out);
     }
   }, [quote]);
 
@@ -141,8 +158,9 @@ const TokenSwap = () => {
     setOutputTokenAmountStr('');
     setOutputTokenAmount(0n);
     setSwapDirection('input');
-    setTimeout(() => {
+    editingTimeoutRef.current = setTimeout(() => {
       setEditing(null);
+      editingTimeoutRef.current = null;
     }, 500);
 
     if (inputTokenAmount) {
@@ -154,8 +172,9 @@ const TokenSwap = () => {
     setInputTokenAmountStr('');
     setInputTokenAmount(0n);
     setSwapDirection('output');
-    setTimeout(() => {
+    editingTimeoutRef.current = setTimeout(() => {
       setEditing(null);
+      editingTimeoutRef.current = null;
     }, 500);
 
     if (outputTokenAmount) {
@@ -169,13 +188,26 @@ const TokenSwap = () => {
   }
 
   function onFocus(dirClicked) {
+    // Clear any pending timeout from previous blur to prevent stale state update
+    if (editingTimeoutRef.current) {
+      clearTimeout(editingTimeoutRef.current);
+      editingTimeoutRef.current = null;
+    }
     setEditing(dirClicked);
     setSwapDirection(null);
     setShowQuote(false);
     if (dirClicked === 'input') {
+      // Remove thousand separators for editing
+      if (inputTokenAmount && inputTokenAmount > 0n) {
+        setInputTokenAmountStr(formatAmountToInput(inputTokenAmount, decimalPlaces));
+      }
       setOutputTokenAmount(0n);
       setOutputTokenAmountStr('');
     } else if (dirClicked === 'output') {
+      // Remove thousand separators for editing
+      if (outputTokenAmount && outputTokenAmount > 0n) {
+        setOutputTokenAmountStr(formatAmountToInput(outputTokenAmount, decimalPlaces));
+      }
       setInputTokenAmount(0n);
       setInputTokenAmountStr('');
     }
@@ -203,6 +235,36 @@ const TokenSwap = () => {
 
     // switch the tokens being swapped
     dispatch(tokenSwapSwitchTokens());
+  };
+
+  /**
+   * Handles percentage button press from the keyboard accessory.
+   * Calculates the amount based on the percentage of available balance
+   * for the currently focused input field.
+   *
+   * @param {number} percentage - The percentage to apply (25, 50, or 100)
+   */
+  const onPercentagePress = (percentage) => {
+    const token = editing === 'input' ? inputToken : outputToken;
+    const availableBalance = getAvailableAmount(token, tokensBalance);
+
+    if (!availableBalance || availableBalance === 0n) {
+      return;
+    }
+
+    const amount = (availableBalance * BigInt(percentage)) / 100n;
+    const amountStr = formatAmountToInput(amount, decimalPlaces);
+
+    if (editing === 'input') {
+      onInputAmountChange(amountStr, amount);
+      setOutputTokenAmountStr('');
+      setOutputTokenAmount(0n);
+    } else if (editing === 'output') {
+      onOutputAmountChange(amountStr, amount);
+      setInputTokenAmountStr('');
+      setInputTokenAmount(0n);
+    }
+    // Quote will be fetched when keyboard dismisses via onEndEditing handlers
   };
 
   /**
@@ -264,6 +326,24 @@ const TokenSwap = () => {
 
   return (
     <View style={styles.screenContent}>
+      {/* iOS: Separate InputAccessoryViews for each TextInput
+        * TODO: Add InputAccessoryViews for Android. We had issues positioning the keyboard
+        * buttons correctly on Android screens, so this feature is iOS-only for now.
+        */}
+      {Platform.OS === 'ios' && (
+        <>
+          <AmountInputAccessory
+            nativeID={INPUT_ACCESSORY_VIEW_ID}
+            availableBalance={getAvailableAmount(inputToken, tokensBalance)}
+            onPercentagePress={onPercentagePress}
+          />
+          <AmountInputAccessory
+            nativeID={OUTPUT_ACCESSORY_VIEW_ID}
+            availableBalance={getAvailableAmount(outputToken, tokensBalance)}
+            onPercentagePress={onPercentagePress}
+          />
+        </>
+      )}
       <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
         <HathorHeader
           withBorder
@@ -285,6 +365,7 @@ const TokenSwap = () => {
                     style={swapDirection === 'output' ? styles.amountInputTextFaded : styles.amountInputText}
                     editable={editing !== 'output'}
                     textAlign='left'
+                    inputAccessoryViewID={INPUT_ACCESSORY_VIEW_ID}
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -315,6 +396,7 @@ const TokenSwap = () => {
                     style={swapDirection === 'input' ? styles.amountInputTextFaded : styles.amountInputText}
                     editable={editing !== 'input'}
                     textAlign='left'
+                    inputAccessoryViewID={OUTPUT_ACCESSORY_VIEW_ID}
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -439,13 +521,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 8,
-    paddingHorizontal: 4,
   },
   quoteHeader: {
     fontWeight: '500',
+    flexShrink: 0,
   },
   quoteValue: {
     fontWeight: '300',
+    flex: 1,
+    textAlign: 'right',
+    marginLeft: 8,
   },
   dividerContainer: {
     zIndex: 2,
