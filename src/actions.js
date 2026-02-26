@@ -26,7 +26,6 @@ export const types = {
   SET_TEMP_PIN: 'SET_TEMP_PIN',
   SET_RECOVERING_PIN: 'SET_RECOVERING_PIN',
   HISTORY_UPDATE: 'HISTORY_UPDATE',
-  NEW_TX: 'NEW_TX',
   BALANCE_UPDATE: 'BALANCE_UPDATE',
   NETWORK_ERROR: 'NETWORK_ERROR',
   CLEAR_NETWORK_ERROR: 'CLEAR_NETWORK_ERROR',
@@ -373,14 +372,6 @@ export const setIsOnline = (status) => ({ type: types.SET_IS_ONLINE, payload: st
  */
 export const setServerInfo = (payload) => (
   { type: types.SET_SERVER_INFO, payload }
-);
-
-/**
- * tx {Object} the new transaction
- * updatedBalanceMap {Object} balance map updated for each token in this tx
- */
-export const newTx = (tx, updatedBalanceMap) => (
-  { type: types.NEW_TX, payload: { tx, updatedBalanceMap } }
 );
 
 export const resetData = () => ({ type: types.RESET_DATA });

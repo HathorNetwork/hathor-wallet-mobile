@@ -553,8 +553,6 @@ const initialState = {
 
 export const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case types.NEW_TX:
-      return onNewTx(state, action);
     case types.RESET_DATA:
       return initialState;
     case types.UPDATE_SELECTED_TOKEN:
@@ -838,11 +836,6 @@ const onSetIsShowingPinScreen = (state, action) => ({
   ...state,
   isShowingPinScreen: action.payload,
 });
-
-/**
- * Handler for new transaction events. Currently a no-op but kept for future use.
- */
-const onNewTx = (state) => state;
 
 /**
  * Update token history after fetching more data in pagination
