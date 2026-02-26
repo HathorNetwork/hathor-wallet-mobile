@@ -449,8 +449,8 @@ export function* clearSessions() {
 function* unifiedReownFlowListener() {
   // Create a single action channel that queues both RPC requests and session proposals
   const flowChannel = yield actionChannel([
-    'REOWN_SESSION_REQUEST',      // RPC requests from dApps
-    'REOWN_SESSION_PROPOSAL',     // New connection proposals
+    'REOWN_SESSION_REQUEST', // RPC requests from dApps
+    'REOWN_SESSION_PROPOSAL', // New connection proposals
   ]);
 
   while (true) {
@@ -487,7 +487,7 @@ export function* processRequest(action) {
   if (!reownClient) {
     log.debug('Tried to get reown client in clearSessions but it is undefined.');
     // Do nothing, client might not yet have been initialized.
-    return;
+    return false;
   }
   const { walletKit } = reownClient;
   const wallet = yield select((state) => state.wallet);
@@ -497,7 +497,7 @@ export function* processRequest(action) {
 
   if (!requestSession) {
     log.error('Could not identify the request session, ignoring request.');
-    return;
+    return false;
   }
 
   const data = {
@@ -592,8 +592,8 @@ export function* processRequest(action) {
           if (retry) {
             shouldAnswer = false;
             // Retry the action, exactly as it came:
-            yield* processRequest(action);
-            return; // Recursive call handles signal dispatch
+            const result = yield* processRequest(action);
+            return result; // Recursive call handles waiting
           }
         } else {
           // Error is not retryable, show error modal
@@ -623,8 +623,8 @@ export function* processRequest(action) {
         if (retry) {
           shouldAnswer = false;
           // Retry the action, exactly as it came:
-          yield* processRequest(action);
-          return; // Recursive call handles signal dispatch
+          const result = yield* processRequest(action);
+          return result; // Recursive call handles waiting
         }
       } break;
       case PrepareSendTransactionError:
@@ -673,8 +673,8 @@ export function* processRequest(action) {
         if (retry) {
           shouldAnswer = false;
           // Retry the action, exactly as it came:
-          yield* processRequest(action);
-          return; // Recursive call handles signal dispatch
+          const result = yield* processRequest(action);
+          return result; // Recursive call handles waiting
         }
       } break;
       case InsufficientFundsError: {
@@ -715,8 +715,8 @@ export function* processRequest(action) {
         if (retry) {
           shouldAnswer = false;
           // Retry the action, exactly as it came:
-          yield* processRequest(action);
-          return; // Recursive call handles signal dispatch
+          const result = yield* processRequest(action);
+          return result; // Recursive call handles waiting
         }
       } break;
       case PromptRejectedError:
@@ -726,8 +726,8 @@ export function* processRequest(action) {
           pinWasCancelled = false; // Reset the flag
           shouldAnswer = false;
           // Retry the request so user can click Accept again
-          yield* processRequest(action);
-          return; // Recursive call handles signal dispatch
+          const result = yield* processRequest(action);
+          return result; // Recursive call handles waiting
         }
         // Otherwise, user intentionally rejected a prompt, don't show error modal
         // The RPC request will still be rejected below via shouldAnswer
