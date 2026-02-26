@@ -458,10 +458,13 @@ function* unifiedReownFlowListener() {
 
     try {
       if (action.type === 'REOWN_SESSION_REQUEST') {
-        yield call(processRequest, action);
-        // After RPC completes, check if user is on a continuation screen (success/feedback)
-        // If so, wait for them to navigate away before processing next queued item
-        yield call(waitForUserReadyIfOnContinuationScreen);
+        // processRequest returns true if a success screen is shown (user must navigate away)
+        const shouldWaitForUserReady = yield call(processRequest, action);
+        if (shouldWaitForUserReady) {
+          // Wait for signal from success screen when user navigates back
+          yield take(types.REOWN_USER_READY_FOR_NEXT_FLOW);
+        }
+        // For rejections, errors, and read-only ops, continue immediately
       } else if (action.type === 'REOWN_SESSION_PROPOSAL') {
         yield call(onSessionProposal, action);
       }
@@ -469,28 +472,6 @@ function* unifiedReownFlowListener() {
       log.error('Error processing Reown flow.', error);
       yield put(onExceptionCaptured(error));
     }
-  }
-}
-
-/**
- * Helper to wait for user to be ready after an RPC completes if they're on a success screen.
- * This is called after processRequest completes to ensure we don't show a connection modal
- * on top of a success feedback screen.
- */
-function* waitForUserReadyIfOnContinuationScreen() {
-  // Check the current RPC status - if it ended with success, we're likely on a success screen
-  const reownState = yield select((state) => state.reown);
-  const isOnSuccessScreen =
-    reownState.newNanoContractTransaction?.status === 'successful' ||
-    reownState.createToken?.status === 'successful' ||
-    reownState.sendTransaction?.status === 'successful' ||
-    reownState.createNanoContractCreateTokenTx?.status === 'successful';
-
-  if (isOnSuccessScreen) {
-    log.debug('User is on success screen, waiting for navigation before processing next flow.');
-    // Wait for user to signal they've navigated away (e.g., clicked "Back" button)
-    yield take(types.REOWN_USER_READY_FOR_NEXT_FLOW);
-    log.debug('User ready for next flow, continuing queue processing.');
   }
 }
 
@@ -527,6 +508,9 @@ export function* processRequest(action) {
     chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
 
+  // Track whether this flow shows a success screen that will dispatch the ready signal
+  let successScreenWillSignal = false;
+
   try {
     let dispatch;
     yield put((_dispatch) => {
@@ -544,18 +528,24 @@ export function* processRequest(action) {
     switch (response.type) {
       case RpcResponseTypes.SendNanoContractTxResponse:
         yield put(setNewNanoContractStatusSuccess());
+        successScreenWillSignal = true;
         break;
       case RpcResponseTypes.CreateTokenResponse:
         yield put(setCreateTokenStatusSuccessful());
+        successScreenWillSignal = true;
         break;
       case RpcResponseTypes.SendTransactionResponse:
         yield put(setSendTxStatusSuccess());
+        successScreenWillSignal = true;
         // The modal state will be updated by the SendTransactionLoadingFinishedTrigger
         break;
       case RpcResponseTypes.CreateNanoContractCreateTokenTxResponse:
         yield put(setCreateNanoContractCreateTokenTxStatusSuccess());
+        successScreenWillSignal = true;
         break;
       default:
+        // Read-only operations (getBalance, getAddress, signMessage, etc.)
+        // don't show success screens - saga will signal at the end
         log.debug('Unknown response type:', response.type);
         break;
     }
@@ -603,6 +593,7 @@ export function* processRequest(action) {
             shouldAnswer = false;
             // Retry the action, exactly as it came:
             yield* processRequest(action);
+            return; // Recursive call handles signal dispatch
           }
         } else {
           // Error is not retryable, show error modal
@@ -633,6 +624,7 @@ export function* processRequest(action) {
           shouldAnswer = false;
           // Retry the action, exactly as it came:
           yield* processRequest(action);
+          return; // Recursive call handles signal dispatch
         }
       } break;
       case PrepareSendTransactionError:
@@ -682,6 +674,7 @@ export function* processRequest(action) {
           shouldAnswer = false;
           // Retry the action, exactly as it came:
           yield* processRequest(action);
+          return; // Recursive call handles signal dispatch
         }
       } break;
       case InsufficientFundsError: {
@@ -723,6 +716,7 @@ export function* processRequest(action) {
           shouldAnswer = false;
           // Retry the action, exactly as it came:
           yield* processRequest(action);
+          return; // Recursive call handles signal dispatch
         }
       } break;
       case PromptRejectedError:
@@ -733,6 +727,7 @@ export function* processRequest(action) {
           shouldAnswer = false;
           // Retry the request so user can click Accept again
           yield* processRequest(action);
+          return; // Recursive call handles signal dispatch
         }
         // Otherwise, user intentionally rejected a prompt, don't show error modal
         // The RPC request will still be rejected below via shouldAnswer
@@ -789,6 +784,10 @@ export function* processRequest(action) {
       }
     }
   }
+
+  // Return whether a success screen is shown (caller should wait for user to navigate away)
+  // For rejections, errors, and read-only ops, return false to continue immediately
+  return successScreenWillSignal;
 }
 
 /**
@@ -1299,8 +1298,8 @@ export function* onSessionProposal(action) {
   }
 
   // Simple action objects (no flowId needed - unified queue ensures single flow)
-  const onAcceptAction = { type: 'REOWN_ACCEPT' };
-  const onRejectAction = { type: 'REOWN_REJECT' };
+  const onAcceptAction = { type: types.REOWN_ACCEPT };
+  const onRejectAction = { type: types.REOWN_REJECT };
 
   yield put(setReownModal({
     show: true,
@@ -1312,8 +1311,8 @@ export function* onSessionProposal(action) {
 
   // Simple take - safe because unified queue ensures only one flow is active
   const { reject } = yield race({
-    accept: take('REOWN_ACCEPT'),
-    reject: take('REOWN_REJECT'),
+    accept: take(types.REOWN_ACCEPT),
+    reject: take(types.REOWN_REJECT),
   });
 
   if (reject) {
