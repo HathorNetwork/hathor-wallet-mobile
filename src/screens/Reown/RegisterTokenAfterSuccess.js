@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -28,6 +28,17 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
   const { tokens } = route.params;
   const wallet = useSelector((state) => state.wallet);
   const dispatch = useDispatch();
+  const signalSentRef = useRef(false);
+
+  // Belt-and-suspenders: ensure signal is dispatched on unmount
+  // in case of unexpected navigation or component unmount
+  useEffect(() => {
+    return () => {
+      if (!signalSentRef.current) {
+        dispatch(reownUserReadyForNextFlow());
+      }
+    };
+  }, [dispatch]);
 
   let message = t`Transaction successfully sent.`;
 
@@ -47,12 +58,14 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
     // Not awaited intentionally - fetch metadata in background while navigating
     updateTokensMetadata(wallet, dispatch, uids);
     // Signal that user is ready for the next flow in the unified queue
+    signalSentRef.current = true;
     dispatch(reownUserReadyForNextFlow());
     navigation.navigate('Dashboard');
   };
 
   const onBackHome = () => {
     // Signal that user is ready for the next flow in the unified queue
+    signalSentRef.current = true;
     dispatch(reownUserReadyForNextFlow());
     navigation.navigate('Dashboard');
   };

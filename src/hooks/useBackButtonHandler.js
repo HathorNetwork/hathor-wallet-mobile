@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BackHandler } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
@@ -22,6 +22,17 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const [isIntentionallyNavigatingBack, setIsIntentionallyNavigatingBack] = useState(false);
+  const signalSentRef = useRef(false);
+
+  // Belt-and-suspenders: ensure signal is dispatched on unmount
+  // in case of unexpected navigation or component unmount
+  useEffect(() => {
+    return () => {
+      if (!signalSentRef.current) {
+        dispatch(reownUserReadyForNextFlow());
+      }
+    };
+  }, [dispatch]);
 
   // Set up back button and navigation event handlers
   useEffect(() => {
@@ -73,6 +84,7 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
     }
 
     // Signal that user is ready for the next flow in the unified queue
+    signalSentRef.current = true;
     dispatch(reownUserReadyForNextFlow());
 
     // We need to give time for any modal to close
@@ -97,6 +109,7 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
     }
 
     // Signal that user is ready for the next flow in the unified queue
+    signalSentRef.current = true;
     dispatch(reownUserReadyForNextFlow());
 
     // We need to give time for any modal to close

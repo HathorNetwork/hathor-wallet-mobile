@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -23,9 +23,21 @@ import { reownUserReadyForNextFlow } from '../../actions';
 export function SuccessFeedbackScreen({ navigation, route }) {
   const { title, message } = route.params;
   const dispatch = useDispatch();
+  const signalSentRef = useRef(false);
+
+  // Belt-and-suspenders: ensure signal is dispatched on unmount
+  // in case of unexpected navigation or component unmount
+  useEffect(() => {
+    return () => {
+      if (!signalSentRef.current) {
+        dispatch(reownUserReadyForNextFlow());
+      }
+    };
+  }, [dispatch]);
 
   const onBackHome = () => {
     // Signal that user is ready for the next flow in the unified queue
+    signalSentRef.current = true;
     dispatch(reownUserReadyForNextFlow());
     navigation.navigate('Dashboard');
   };

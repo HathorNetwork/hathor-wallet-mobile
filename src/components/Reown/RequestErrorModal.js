@@ -8,6 +8,7 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Image, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import FeedbackModal from '../FeedbackModal';
 import NewHathorButton from '../NewHathorButton';
@@ -18,13 +19,18 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 /**
  * Generic modal displayed when a Reown request fails before user confirmation
  * Shows error details and allows the user to dismiss (rejecting the dApp request)
+ *
+ * If `navigateOnDismiss` is true in modal data, navigates to Dashboard on dismiss.
+ * This is used for timeout errors where the user may be on a detail screen.
  */
 export const RequestErrorModal = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const reownModal = useSelector((state) => state.reown.modal);
   const errorDetails = useSelector((state) => state.reown.error);
 
   const errorMessage = reownModal.data?.errorMessage || t`An error occurred while processing the request.`;
+  const navigateOnDismiss = reownModal.data?.navigateOnDismiss || false;
 
   // Reject the dApp request when component unmounts
   useEffect(() => () => {
@@ -34,6 +40,12 @@ export const RequestErrorModal = () => {
   const handleDismiss = () => {
     dispatch(reownReject());
     dispatch(hideReownModal());
+
+    // Navigate to Dashboard if requested (e.g., for timeout errors where user is on a detail screen)
+    // Using navigate() instead of goBack() to bypass the back button confirmation handler
+    if (navigateOnDismiss) {
+      navigation.navigate('Dashboard');
+    }
   };
 
   return (

@@ -59,6 +59,7 @@ import {
   select,
   race,
   actionChannel,
+  delay,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
@@ -82,6 +83,7 @@ import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
   REOWN_PROJECT_ID,
   REOWN_FEATURE_TOGGLE,
+  REOWN_REQUEST_TIMEOUT,
 } from '../constants';
 import { isPairingUri } from '../contexts/HathorDeeplinkContext';
 import {
@@ -461,8 +463,20 @@ function* unifiedReownFlowListener() {
         // processRequest returns true if a success screen is shown (user must navigate away)
         const shouldWaitForUserReady = yield call(processRequest, action);
         if (shouldWaitForUserReady) {
-          // Wait for signal from success screen when user navigates back
-          yield take(types.REOWN_USER_READY_FOR_NEXT_FLOW);
+          // Wait for signal from success screen with timeout fallback
+          const { timeout } = yield race({
+            ready: take(types.REOWN_USER_READY_FOR_NEXT_FLOW),
+            timeout: delay(REOWN_REQUEST_TIMEOUT),
+          });
+
+          if (timeout) {
+            log.error('Timeout waiting for user to navigate from success screen - continuing queue.');
+            // Reset any lingering success states to clean up UI
+            yield put(setNewNanoContractStatusReady());
+            yield put(setCreateTokenStatusReady());
+            yield put(setSendTxStatusReady());
+            yield put(setCreateNanoContractCreateTokenTxStatusReady());
+          }
         }
         // For rejections, errors, and read-only ops, continue immediately
       } else if (action.type === 'REOWN_SESSION_PROPOSAL') {
@@ -1151,11 +1165,29 @@ export function* handleDAppRequest(payload, modalType, options = {}) {
     onRejectAction: denyCb,
   }));
 
-  // Simple take - safe because unified queue ensures only one flow is active
-  const { deny, accept } = yield race({
+  // Wait for user response with timeout to prevent indefinite blocking
+  const { deny, accept, timeout } = yield race({
     accept: take(types.REOWN_ACCEPT),
     deny: take(types.REOWN_REJECT),
+    timeout: delay(REOWN_REQUEST_TIMEOUT),
   });
+
+  if (timeout) {
+    log.error('Request expired - user did not respond within time limit.');
+    // Show expiration modal to user
+    // navigateOnDismiss ensures user is taken back to Dashboard when dismissing
+    // (in case they navigated to a detail screen)
+    yield put(setReownModal({
+      show: true,
+      type: ReownModalTypes.REQUEST_ERROR,
+      data: {
+        errorMessage: 'Request expired. Please try again.',
+        navigateOnDismiss: true,
+      },
+    }));
+    denyCb();
+    return;
+  }
 
   if (deny) {
     denyCb();
