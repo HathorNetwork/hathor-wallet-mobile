@@ -1341,11 +1341,38 @@ export function* onSessionProposal(action) {
     onRejectAction,
   }));
 
-  // Simple take - safe because unified queue ensures only one flow is active
-  const { reject } = yield race({
+  // Wait for user response with timeout to prevent indefinite blocking
+  const { reject, timeout } = yield race({
     accept: take(types.REOWN_ACCEPT),
     reject: take(types.REOWN_REJECT),
+    timeout: delay(REOWN_REQUEST_TIMEOUT),
   });
+
+  if (timeout) {
+    log.error('Session proposal expired - user did not respond within time limit.');
+    // Show expiration modal to user
+    yield put(setReownModal({
+      show: true,
+      type: ReownModalTypes.REQUEST_ERROR,
+      data: {
+        errorMessage: 'Connection request expired. Please try again.',
+        navigateOnDismiss: true,
+      },
+    }));
+    // Reject the session
+    try {
+      yield call(() => walletKit.rejectSession({
+        id,
+        reason: {
+          code: ERROR_CODES.USER_REJECTED,
+          message: 'Request expired',
+        },
+      }));
+    } catch (e) {
+      log.error('Error rejecting expired session proposal', e);
+    }
+    return;
+  }
 
   if (reject) {
     try {
