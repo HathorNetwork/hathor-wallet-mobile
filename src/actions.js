@@ -126,6 +126,7 @@ export const types = {
   REOWN_CANCEL_SESSION: 'REOWN_CANCEL_SESSION',
   REOWN_SET_CONNECTION_FAILED: 'REOWN_SET_CONNECTION_FAILED',
   REOWN_USER_READY_FOR_NEXT_FLOW: 'REOWN_USER_READY_FOR_NEXT_FLOW',
+  REOWN_SET_FORCE_NAVIGATE_TO_DASHBOARD: 'REOWN_SET_FORCE_NAVIGATE_TO_DASHBOARD',
   // Network Settings actions
   // NOTE: These actions follows a taxonomy that should be applied
   // to all other actions.
@@ -1048,6 +1049,16 @@ export const setWCConnectionFailed = (failed) => ({
  */
 export const reownUserReadyForNextFlow = () => ({
   type: types.REOWN_USER_READY_FOR_NEXT_FLOW,
+});
+
+/**
+ * Sets a flag to force navigation to Dashboard from Reown screens.
+ * Used when timeout occurs and screen needs to navigate away.
+ * @param {boolean} force - Whether to force navigate to Dashboard
+ */
+export const setForceNavigateToDashboard = (force) => ({
+  type: types.REOWN_SET_FORCE_NAVIGATE_TO_DASHBOARD,
+  payload: force,
 });
 
 /**

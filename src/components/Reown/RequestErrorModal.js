@@ -8,12 +8,11 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Image, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
 import FeedbackModal from '../FeedbackModal';
 import NewHathorButton from '../NewHathorButton';
 import AdvancedErrorOptions from './AdvancedErrorOptions';
-import { hideReownModal, reownReject } from '../../actions';
+import { hideReownModal, reownReject, setForceNavigateToDashboard } from '../../actions';
 import errorIcon from '../../assets/images/icErrorBig.png';
 
 /**
@@ -25,7 +24,6 @@ import errorIcon from '../../assets/images/icErrorBig.png';
  */
 export const RequestErrorModal = () => {
   const dispatch = useDispatch();
-  const navigation = useNavigation();
   const reownModal = useSelector((state) => state.reown.modal);
   const errorDetails = useSelector((state) => state.reown.error);
 
@@ -41,10 +39,10 @@ export const RequestErrorModal = () => {
     dispatch(reownReject());
     dispatch(hideReownModal());
 
-    // Navigate to Dashboard if requested, e.g., for timeout errors where user is on a detail screen
-    // Using navigate() instead of goBack() to bypass the back button confirmation handler
+    // Signal the Reown screen to navigate to Main if requested
+    // The screen (via useReownSignal) will handle navigation using replace
     if (navigateOnDismiss) {
-      navigation.navigate('Dashboard');
+      dispatch(setForceNavigateToDashboard(true));
     }
   };
 
