@@ -32,12 +32,10 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
 
   // Belt-and-suspenders: ensure signal is dispatched on unmount
   // in case of unexpected navigation or component unmount
-  useEffect(() => {
-    return () => {
-      if (!signalSentRef.current) {
-        dispatch(reownUserReadyForNextFlow());
-      }
-    };
+  useEffect(() => () => {
+    if (!signalSentRef.current) {
+      dispatch(reownUserReadyForNextFlow());
+    }
   }, [dispatch]);
 
   let message = t`Transaction successfully sent.`;

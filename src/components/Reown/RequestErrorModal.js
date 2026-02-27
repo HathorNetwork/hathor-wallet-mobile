@@ -41,7 +41,7 @@ export const RequestErrorModal = () => {
     dispatch(reownReject());
     dispatch(hideReownModal());
 
-    // Navigate to Dashboard if requested (e.g., for timeout errors where user is on a detail screen)
+    // Navigate to Dashboard if requested, e.g., for timeout errors where user is on a detail screen
     // Using navigate() instead of goBack() to bypass the back button confirmation handler
     if (navigateOnDismiss) {
       navigation.navigate('Dashboard');
