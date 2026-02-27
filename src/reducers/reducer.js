@@ -265,6 +265,11 @@ const initialState = {
       show: false,
     },
     /**
+     * When true, Reown screens should navigate to Dashboard.
+     * Used for timeout scenarios where the screen needs to navigate away.
+     */
+    forceNavigateToDashboard: false,
+    /**
      * Centralized error storage for the current Reown operation.
      * Only one RPC is processed at a time, so a single error key suffices.
      */
@@ -773,6 +778,8 @@ export const reducer = (state = initialState, action) => {
       return onCreateNanoContractCreateTokenTxRetryDismiss(state);
     case types.REOWN_SET_ERROR:
       return onSetReownError(state, action);
+    case types.REOWN_SET_FORCE_NAVIGATE_TO_DASHBOARD:
+      return onSetForceNavigateToDashboard(state, action);
     case types.SET_FULLNODE_NETWORK_NAME:
       return onSetFullNodeNetworkName(state, action);
 
@@ -2215,6 +2222,14 @@ export const onSetReownError = (state, { payload }) => ({
   reown: {
     ...state.reown,
     error: payload,
+  },
+});
+
+export const onSetForceNavigateToDashboard = (state, { payload }) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    forceNavigateToDashboard: payload,
   },
 });
 

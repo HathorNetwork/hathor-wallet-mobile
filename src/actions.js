@@ -122,6 +122,8 @@ export const types = {
   REOWN_URI_INPUTTED: 'REOWN_URI_INPUTTED',
   REOWN_CANCEL_SESSION: 'REOWN_CANCEL_SESSION',
   REOWN_SET_CONNECTION_FAILED: 'REOWN_SET_CONNECTION_FAILED',
+  REOWN_USER_READY_FOR_NEXT_FLOW: 'REOWN_USER_READY_FOR_NEXT_FLOW',
+  REOWN_SET_FORCE_NAVIGATE_TO_DASHBOARD: 'REOWN_SET_FORCE_NAVIGATE_TO_DASHBOARD',
   // Network Settings actions
   // NOTE: These actions follows a taxonomy that should be applied
   // to all other actions.
@@ -311,6 +313,8 @@ export const reownCancelSession = (sessionKey) => ({
 });
 
 /**
+ * Accept the current Reown request.
+ * With unified queue, only one flow is active at a time, so no flowId is needed.
  * @param {Object} data Data that the user has accepted.
  */
 export const reownAccept = (data) => ({
@@ -318,6 +322,10 @@ export const reownAccept = (data) => ({
   payload: data,
 });
 
+/**
+ * Reject the current Reown request.
+ * With unified queue, only one flow is active at a time, so no flowId is needed.
+ */
 export const reownReject = () => ({
   type: types.REOWN_REJECT,
 });
@@ -1011,6 +1019,24 @@ export const pushDeviceRegistered = (isRegistered) => ({
 export const setWCConnectionFailed = (failed) => ({
   type: types.REOWN_SET_CONNECTION_FAILED,
   payload: failed,
+});
+
+/**
+ * Signals that the user is ready for the next flow in the unified queue.
+ * Dispatched when user navigates away from success/feedback screens.
+ */
+export const reownUserReadyForNextFlow = () => ({
+  type: types.REOWN_USER_READY_FOR_NEXT_FLOW,
+});
+
+/**
+ * Sets a flag to force navigation to Dashboard from Reown screens.
+ * Used when timeout occurs and screen needs to navigate away.
+ * @param {boolean} force - Whether to force navigate to Dashboard
+ */
+export const setForceNavigateToDashboard = (force) => ({
+  type: types.REOWN_SET_FORCE_NAVIGATE_TO_DASHBOARD,
+  payload: force,
 });
 
 /**

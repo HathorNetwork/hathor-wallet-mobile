@@ -21,12 +21,14 @@ import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import { registerToken, updateTokensMetadata } from '../../utils/tokens';
+import { useReownSignal } from '../../hooks/useReownSignal';
 import { getTokenLabel, getShortHash } from '../../utils';
 
 export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
   const { tokens } = route.params;
   const wallet = useSelector((state) => state.wallet);
   const dispatch = useDispatch();
+  const { signalReadyForNextFlow } = useReownSignal();
 
   let message = t`Transaction successfully sent.`;
 
@@ -45,10 +47,14 @@ export function RegisterTokenAfterSuccessScreen({ navigation, route }) {
     const uids = tokens.map((token) => token.uid);
     // Not awaited intentionally - fetch metadata in background while navigating
     updateTokensMetadata(wallet, dispatch, uids);
+    // Signal that user is ready for the next flow in the unified queue
+    signalReadyForNextFlow();
     navigation.navigate('Dashboard');
   };
 
   const onBackHome = () => {
+    // Signal that user is ready for the next flow in the unified queue
+    signalReadyForNextFlow();
     navigation.navigate('Dashboard');
   };
 

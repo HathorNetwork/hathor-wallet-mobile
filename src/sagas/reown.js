@@ -59,6 +59,7 @@ import {
   select,
   race,
   actionChannel,
+  delay,
 } from 'redux-saga/effects';
 import { eventChannel } from 'redux-saga';
 import { get, values } from 'lodash';
@@ -82,6 +83,7 @@ import { ReownModalTypes } from '../components/Reown/ReownModal';
 import {
   REOWN_PROJECT_ID,
   REOWN_FEATURE_TOGGLE,
+  REOWN_REQUEST_TIMEOUT,
 } from '../constants';
 import { isPairingUri } from '../contexts/HathorDeeplinkContext';
 import {
@@ -256,7 +258,7 @@ function* init() {
     // Pass extend = true so session expiration date get renewed
     yield call(refreshActiveSessions, true);
     yield fork(listenForAppStateChange);
-    yield fork(requestsListener);
+    yield fork(unifiedReownFlowListener);
 
     // If the wallet is reset, we should cancel all listeners
     yield take([
@@ -441,16 +443,47 @@ export function* clearSessions() {
   yield call(refreshActiveSessions);
 }
 
-function* requestsListener() {
-  const requestsChannel = yield actionChannel('REOWN_SESSION_REQUEST');
+/**
+ * Unified queue listener for all user-facing Reown flows.
+ * Handles both RPC requests and connection proposals sequentially,
+ * eliminating the need for coordination flags.
+ */
+function* unifiedReownFlowListener() {
+  // Create a single action channel that queues both RPC requests and session proposals
+  const flowChannel = yield actionChannel([
+    'REOWN_SESSION_REQUEST', // RPC requests from dApps
+    'REOWN_SESSION_PROPOSAL', // New connection proposals
+  ]);
 
-  let action;
   while (true) {
+    const action = yield take(flowChannel);
+
     try {
-      action = yield take(requestsChannel);
-      yield call(processRequest, action);
+      if (action.type === 'REOWN_SESSION_REQUEST') {
+        // processRequest returns true if a success screen is shown (user must navigate away)
+        const shouldWaitForUserReady = yield call(processRequest, action);
+        if (shouldWaitForUserReady) {
+          // Wait for signal from success screen with timeout fallback
+          const { timeout } = yield race({
+            ready: take(types.REOWN_USER_READY_FOR_NEXT_FLOW),
+            timeout: delay(REOWN_REQUEST_TIMEOUT),
+          });
+
+          if (timeout) {
+            log.error('Timeout waiting for user to navigate from success screen - continuing queue.');
+            // Reset any lingering success states to clean up UI
+            yield put(setNewNanoContractStatusReady());
+            yield put(setCreateTokenStatusReady());
+            yield put(setSendTxStatusReady());
+            yield put(setCreateNanoContractCreateTokenTxStatusReady());
+          }
+        }
+        // For rejections, errors, and read-only ops, continue immediately
+      } else if (action.type === 'REOWN_SESSION_PROPOSAL') {
+        yield call(onSessionProposal, action);
+      }
     } catch (error) {
-      log.error('Error processing request.', error);
+      log.error('Error processing Reown flow.', error);
       yield put(onExceptionCaptured(error));
     }
   }
@@ -468,7 +501,7 @@ export function* processRequest(action) {
   if (!reownClient) {
     log.debug('Tried to get reown client in clearSessions but it is undefined.');
     // Do nothing, client might not yet have been initialized.
-    return;
+    return false;
   }
   const { walletKit } = reownClient;
   const wallet = yield select((state) => state.wallet);
@@ -478,7 +511,7 @@ export function* processRequest(action) {
 
   if (!requestSession) {
     log.error('Could not identify the request session, ignoring request.');
-    return;
+    return false;
   }
 
   const data = {
@@ -488,6 +521,9 @@ export function* processRequest(action) {
     description: get(requestSession.peer, 'metadata.description', ''),
     chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
+
+  // Track whether this flow shows a success screen that will dispatch the ready signal
+  let successScreenWillSignal = false;
 
   try {
     let dispatch;
@@ -506,18 +542,24 @@ export function* processRequest(action) {
     switch (response.type) {
       case RpcResponseTypes.SendNanoContractTxResponse:
         yield put(setNewNanoContractStatusSuccess());
+        successScreenWillSignal = true;
         break;
       case RpcResponseTypes.CreateTokenResponse:
         yield put(setCreateTokenStatusSuccessful());
+        successScreenWillSignal = true;
         break;
       case RpcResponseTypes.SendTransactionResponse:
         yield put(setSendTxStatusSuccess());
+        successScreenWillSignal = true;
         // The modal state will be updated by the SendTransactionLoadingFinishedTrigger
         break;
       case RpcResponseTypes.CreateNanoContractCreateTokenTxResponse:
         yield put(setCreateNanoContractCreateTokenTxStatusSuccess());
+        successScreenWillSignal = true;
         break;
       default:
+        // Read-only operations (getBalance, getAddress, signMessage, etc.)
+        // don't show success screens - saga will signal at the end
         log.debug('Unknown response type:', response.type);
         break;
     }
@@ -564,7 +606,8 @@ export function* processRequest(action) {
           if (retry) {
             shouldAnswer = false;
             // Retry the action, exactly as it came:
-            yield* processRequest(action);
+            const result = yield* processRequest(action);
+            return result; // Recursive call handles waiting
           }
         } else {
           // Error is not retryable, show error modal
@@ -594,7 +637,8 @@ export function* processRequest(action) {
         if (retry) {
           shouldAnswer = false;
           // Retry the action, exactly as it came:
-          yield* processRequest(action);
+          const result = yield* processRequest(action);
+          return result; // Recursive call handles waiting
         }
       } break;
       case PrepareSendTransactionError:
@@ -643,7 +687,8 @@ export function* processRequest(action) {
         if (retry) {
           shouldAnswer = false;
           // Retry the action, exactly as it came:
-          yield* processRequest(action);
+          const result = yield* processRequest(action);
+          return result; // Recursive call handles waiting
         }
       } break;
       case InsufficientFundsError: {
@@ -684,7 +729,8 @@ export function* processRequest(action) {
         if (retry) {
           shouldAnswer = false;
           // Retry the action, exactly as it came:
-          yield* processRequest(action);
+          const result = yield* processRequest(action);
+          return result; // Recursive call handles waiting
         }
       } break;
       case PromptRejectedError:
@@ -694,7 +740,8 @@ export function* processRequest(action) {
           pinWasCancelled = false; // Reset the flag
           shouldAnswer = false;
           // Retry the request so user can click Accept again
-          yield* processRequest(action);
+          const result = yield* processRequest(action);
+          return result; // Recursive call handles waiting
         }
         // Otherwise, user intentionally rejected a prompt, don't show error modal
         // The RPC request will still be rejected below via shouldAnswer
@@ -751,6 +798,10 @@ export function* processRequest(action) {
       }
     }
   }
+
+  // Return whether a success screen is shown (caller should wait for user to navigate away)
+  // For rejections, errors, and read-only ops, return false to continue immediately
+  return successScreenWillSignal;
 }
 
 /**
@@ -1080,7 +1131,8 @@ export function* onSendTransactionRequest({ payload }) {
 }
 
 /**
- * Generic handler for dApp requests
+ * Generic handler for dApp requests.
+ * With the unified queue, only one flow is active at a time, so we can use simple takes.
  *
  * @param {Object} payload The payload containing the request data and callbacks
  * @param {String} modalType The type of modal to show
@@ -1113,10 +1165,29 @@ export function* handleDAppRequest(payload, modalType, options = {}) {
     onRejectAction: denyCb,
   }));
 
-  const { deny, accept } = yield race({
+  // Wait for user response with timeout to prevent indefinite blocking
+  const { deny, accept, timeout } = yield race({
     accept: take(types.REOWN_ACCEPT),
     deny: take(types.REOWN_REJECT),
+    timeout: delay(REOWN_REQUEST_TIMEOUT),
   });
+
+  if (timeout) {
+    log.error('Request expired - user did not respond within time limit.');
+    // Show expiration modal to user
+    // navigateOnDismiss ensures user is taken back to Dashboard when dismissing
+    // (in case they navigated to a detail screen)
+    yield put(setReownModal({
+      show: true,
+      type: ReownModalTypes.REQUEST_ERROR,
+      data: {
+        errorMessage: 'Request expired. Please try again.',
+        navigateOnDismiss: true,
+      },
+    }));
+    denyCb();
+    return;
+  }
 
   if (deny) {
     denyCb();
@@ -1145,9 +1216,10 @@ export function* onWalletReset() {
 }
 
 /**
- * This saga will be called (dispatched from the event listener) when a session
- * proposal RPC is sent from a dApp. This happens after the client scans a wallet
- * connect URI
+ * This saga will be called when a session proposal is processed from the unified queue.
+ * This happens after the client scans a wallet connect URI.
+ * Note: Since this is processed through the unified queue, we don't need to wait
+ * for active RPC requests - the queue ensures sequential processing.
  */
 export function* onSessionProposal(action) {
   const { id, params } = action.payload;
@@ -1257,8 +1329,9 @@ export function* onSessionProposal(action) {
     log.debug('Some unsupported methods were requested, but they are optional:', unsupportedOptionalMethods);
   }
 
-  const onAcceptAction = { type: 'REOWN_ACCEPT' };
-  const onRejectAction = { type: 'REOWN_REJECT' };
+  // Simple action objects (no flowId needed - unified queue ensures single flow)
+  const onAcceptAction = { type: types.REOWN_ACCEPT };
+  const onRejectAction = { type: types.REOWN_REJECT };
 
   yield put(setReownModal({
     show: true,
@@ -1268,10 +1341,38 @@ export function* onSessionProposal(action) {
     onRejectAction,
   }));
 
-  const { reject } = yield race({
-    accept: take(onAcceptAction.type),
-    reject: take(onRejectAction.type),
+  // Wait for user response with timeout to prevent indefinite blocking
+  const { reject, timeout } = yield race({
+    accept: take(types.REOWN_ACCEPT),
+    reject: take(types.REOWN_REJECT),
+    timeout: delay(REOWN_REQUEST_TIMEOUT),
   });
+
+  if (timeout) {
+    log.error('Session proposal expired - user did not respond within time limit.');
+    // Show expiration modal to user
+    yield put(setReownModal({
+      show: true,
+      type: ReownModalTypes.REQUEST_ERROR,
+      data: {
+        errorMessage: 'Connection request expired. Please try again.',
+        navigateOnDismiss: true,
+      },
+    }));
+    // Reject the session
+    try {
+      yield call(() => walletKit.rejectSession({
+        id,
+        reason: {
+          code: ERROR_CODES.USER_REJECTED,
+          message: 'Request expired',
+        },
+      }));
+    } catch (e) {
+      log.error('Error rejecting expired session proposal', e);
+    }
+    return;
+  }
 
   if (reject) {
     try {
@@ -1493,7 +1594,7 @@ export function* saga() {
     takeLatest(types.SHOW_GET_ADDRESS_REQUEST_MODAL, onGetAddressRequest),
     takeLatest(types.SHOW_GET_ADDRESS_CLIENT_REQUEST_MODAL, onGetAddressClientRequest),
     takeLatest(types.SHOW_GET_UTXOS_REQUEST_MODAL, onGetUtxosRequest),
-    takeEvery('REOWN_SESSION_PROPOSAL', onSessionProposal),
+    // Note: REOWN_SESSION_PROPOSAL is handled by unifiedReownFlowListener, not here
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),
     takeEvery('REOWN_SHUTDOWN', clearSessions),
