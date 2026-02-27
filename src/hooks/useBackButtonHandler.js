@@ -5,11 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { BackHandler } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
-import { reownUserReadyForNextFlow } from '../actions';
+import { useReownSignal } from './useReownSignal';
 
 /**
  * Custom hook to handle back button and navigation events with a confirmation modal
@@ -20,17 +19,8 @@ import { reownUserReadyForNextFlow } from '../actions';
  */
 export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondition = false) => {
   const navigation = useNavigation();
-  const dispatch = useDispatch();
   const [isIntentionallyNavigatingBack, setIsIntentionallyNavigatingBack] = useState(false);
-  const signalSentRef = useRef(false);
-
-  // Belt-and-suspenders: ensure signal is dispatched on unmount
-  // in case of unexpected navigation or component unmount
-  useEffect(() => () => {
-    if (!signalSentRef.current) {
-      dispatch(reownUserReadyForNextFlow());
-    }
-  }, [dispatch]);
+  const { signalReadyForNextFlow } = useReownSignal();
 
   // Set up back button and navigation event handlers
   useEffect(() => {
@@ -81,9 +71,7 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
       beforeNavigateCallback();
     }
 
-    // Signal that user is ready for the next flow in the unified queue
-    signalSentRef.current = true;
-    dispatch(reownUserReadyForNextFlow());
+    signalReadyForNextFlow();
 
     // We need to give time for any modal to close
     // before navigating back
@@ -106,9 +94,7 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
       beforeNavigateCallback();
     }
 
-    // Signal that user is ready for the next flow in the unified queue
-    signalSentRef.current = true;
-    dispatch(reownUserReadyForNextFlow());
+    signalReadyForNextFlow();
 
     // We need to give time for any modal to close
     // before navigating

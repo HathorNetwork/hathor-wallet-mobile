@@ -5,38 +5,26 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   View,
   Image
 } from 'react-native';
-import { useDispatch } from 'react-redux';
 import { t } from 'ttag';
 import { FeedbackContent } from '../../components/FeedbackContent';
 import NewHathorButton from '../../components/NewHathorButton';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 import checkIcon from '../../assets/images/icCheckBig.png';
-import { reownUserReadyForNextFlow } from '../../actions';
+import { useReownSignal } from '../../hooks/useReownSignal';
 
 export function SuccessFeedbackScreen({ navigation, route }) {
   const { title, message } = route.params;
-  const dispatch = useDispatch();
-  const signalSentRef = useRef(false);
-
-  // Belt-and-suspenders: ensure signal is dispatched on unmount
-  // in case of unexpected navigation or component unmount
-  useEffect(() => () => {
-    if (!signalSentRef.current) {
-      dispatch(reownUserReadyForNextFlow());
-    }
-  }, [dispatch]);
+  const { signalReadyForNextFlow } = useReownSignal();
 
   const onBackHome = () => {
-    // Signal that user is ready for the next flow in the unified queue
-    signalSentRef.current = true;
-    dispatch(reownUserReadyForNextFlow());
+    signalReadyForNextFlow();
     navigation.navigate('Dashboard');
   };
 
