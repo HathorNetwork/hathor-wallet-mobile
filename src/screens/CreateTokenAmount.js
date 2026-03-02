@@ -164,7 +164,7 @@ const CreateTokenAmount = () => {
           {hathorLib.numberUtils.prettyValue(networkFee)} {nativeSymbol}
         </Strong></Text>,
         <Text key='available'>
-          {jt`You have ${amountAvailableText} ${nativeSymbol} available`}
+          {jt`You have ${amountAvailableText} available`}
         </Text>
       ])
     }

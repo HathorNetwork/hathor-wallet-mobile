@@ -30,7 +30,7 @@ function NoFee() {
   return (
     <View style={styles.nofee}>
       <CheckIcon size={16} color='#2E701F' />
-      <Text style={{ color: '#2E701F' }}>No fee</Text>
+      <Text style={{ color: '#2E701F' }}>{t`No fee`}</Text>
     </View>
   );
 }
@@ -188,6 +188,16 @@ const SendConfirmScreen = () => {
     return t`This fee is fixed and required for every transfer of this token.`;
   };
 
+  const renderNetworkFeeValue = () => {
+    if (networkFee === null) {
+      return <Text style={{ color: COLORS.textColorShadow }}>{t`Loading...`}</Text>;
+    }
+    if (networkFee > 0n) {
+      return <Text>{renderValue(networkFee, false)} HTR</Text>;
+    }
+    return <NoFee />;
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
       <HathorHeader
@@ -241,9 +251,7 @@ const SendConfirmScreen = () => {
                     <InfoCircleIcon size={16} />
                   </TouchableOpacity>
                 </View>
-                { networkFee
-                  ? (<Text>{renderValue(networkFee, false)} HTR</Text>)
-                  : (<NoFee />)}
+                {renderNetworkFeeValue()}
               </View>
               <View style={styles.summaryItem}>
                 <TextFmt>{t`**Total**`}</TextFmt>
@@ -270,7 +278,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 10,
     backgroundColor: COLORS.backgroundColor,
-    alignItems: 'left',
+    alignItems: 'flex-start',
     justifyContent: 'flex-start',
   },
   summaryItem: {

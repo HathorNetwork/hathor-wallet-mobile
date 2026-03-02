@@ -131,12 +131,12 @@ const SendAmountInput = () => {
       // So we need to check the HTR balance to make the transaction happen.
       const htrBalance = get(tokensBalance, hathorLib.constants.NATIVE_TOKEN_UID);
       if (!htrBalance) {
-        setError('Insufficient balance of HTR to cover the network fee.');
+        setError(t`Insufficient balance of HTR to cover the network fee.`);
         return;
       }
       const { available: htrAvailable } = htrBalance.data;
       if (networkFee > htrAvailable) {
-        setError('Insufficient balance of HTR to cover the network fee.');
+        setError(t`Insufficient balance of HTR to cover the network fee.`);
         return;
       }
     }

@@ -54,6 +54,10 @@ class CreateTokenTypeNotice extends React.Component {
         fontStyle: 'italic',
         fontSize: 14,
       },
+      typeInfo: {
+        color: '#57606A',
+        fontSize: 14,
+      },
       infoSection: {
         flexDirection: 'row',
         marginTop: 24,
