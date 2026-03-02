@@ -48,7 +48,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
 #: src/models.js:107
-#: src/utils.js:642
+#: src/utils.js:638
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
@@ -255,7 +255,7 @@ msgstr ""
 
 #: src/screens/CreateTokenConfirm.js:112
 #: src/screens/SendConfirmScreen.js:85
-#: src/screens/TokenSwapReview.js:152
+#: src/screens/TokenSwapReview.js:163
 msgid "Building transaction"
 msgstr ""
 
@@ -432,7 +432,7 @@ msgstr ""
 msgid "Enter your seed words separated by space"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:249
+#: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:232
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:620
 #: src/components/Reown/SendTransactionRequest.js:555
@@ -492,12 +492,12 @@ msgstr ""
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:544
-#: src/screens/MainScreen.js:576
+#: src/screens/MainScreen.js:554
+#: src/screens/MainScreen.js:586
 msgid "Available Balance"
 msgstr ""
 
-#: src/screens/MainScreen.js:553
+#: src/screens/MainScreen.js:563
 msgid "Locked"
 msgstr ""
 
@@ -518,43 +518,6 @@ msgstr ""
 
 #: src/screens/NanoContractRegisterQrCodeScreen.js:63
 msgid "Scan the nano contract ID QR code"
-msgstr ""
-
-#: src/screens/PaymentRequestDetail.js:88
-#, javascript-format
-msgid "You've just received **${ amount } ${ symbol }**"
-msgstr ""
-
-#: src/screens/PaymentRequestDetail.js:105
-msgid "PAYMENT REQUEST"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:97
-#: src/screens/PaymentRequestDetail.js:129
-msgid "Token"
-msgstr ""
-
-#: src/components/Reown/CreateTokenRequest.js:91
-#: src/components/TxDetailsModal.js:158
-#: src/screens/PaymentRequestDetail.js:133
-msgid "Amount"
-msgstr ""
-
-#: src/screens/PaymentRequestDetail.js:141
-#: src/screens/Receive.js:30
-msgid "My Address"
-msgstr ""
-
-#: src/screens/PaymentRequestDetail.js:145
-msgid "Status"
-msgstr ""
-
-#: src/screens/PaymentRequestDetail.js:146
-msgid "Received"
-msgstr ""
-
-#: src/screens/PaymentRequestDetail.js:146
-msgid "Waiting confirmation"
 msgstr ""
 
 #: src/screens/PinScreen.js:272
@@ -601,16 +564,7 @@ msgstr ""
 msgid "There was an error enabling push notification. Please try again later."
 msgstr ""
 
-#: src/screens/Receive.js:31
-#. *
-#.      * index {number} Selected index of the tab bar
-#.      
-#.  eslint thinks routes is not used, but TabView uses it
-#.  eslint-disable-next-line react/no-unused-state
-msgid "Payment Request"
-msgstr ""
-
-#: src/screens/Receive.js:93
+#: src/screens/Receive.js:19
 msgid "RECEIVE"
 msgstr ""
 
@@ -644,7 +598,7 @@ msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:45
 #: src/screens/RegisterOptionsScreen.js:57
-#: src/screens/SendScanQRCode.js:40
+#: src/screens/SendScanQRCode.js:38
 #: src/screens/UnifiedQRScanner.js:36
 msgid "OK"
 msgstr ""
@@ -655,7 +609,7 @@ msgid "The reown feature is not enabled."
 msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:67
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:70
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:76
 msgid "Register"
 msgstr ""
 
@@ -668,7 +622,7 @@ msgid "Reown Connection"
 msgstr ""
 
 #: src/screens/RegisterToken.js:27
-#: src/screens/SendScanQRCode.js:92
+#: src/screens/SendScanQRCode.js:72
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 msgid "Manual info"
@@ -768,7 +722,7 @@ msgid "Lock wallet"
 msgstr ""
 
 #: src/screens/SendAddressInput.js:53
-#: src/screens/SendScanQRCode.js:100
+#: src/screens/SendScanQRCode.js:80
 msgid "SEND"
 msgstr ""
 
@@ -793,20 +747,20 @@ msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
 #: src/screens/SendConfirmScreen.js:70
-#: src/screens/TokenSwapReview.js:134
+#: src/screens/TokenSwapReview.js:145
 #.  show loading modal
 msgid "Your transfer is being processed"
 msgstr ""
 
 #: src/sagas/helpers.js:147
 #: src/screens/SendConfirmScreen.js:83
-#: src/screens/TokenSwapReview.js:150
+#: src/screens/TokenSwapReview.js:161
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
 #: src/sagas/helpers.js:148
 #: src/screens/SendConfirmScreen.js:84
-#: src/screens/TokenSwapReview.js:151
+#: src/screens/TokenSwapReview.js:162
 msgid "Authorize operation"
 msgstr ""
 
@@ -837,17 +791,12 @@ msgstr ""
 msgid "Send"
 msgstr ""
 
-#: src/screens/SendScanQRCode.js:37
+#: src/screens/SendScanQRCode.js:35
 msgid "Invalid QR code"
 msgstr ""
 
-#: src/screens/SendScanQRCode.js:76
-#, javascript-format
-msgid "You don't have the requested token [${ tokenLabel }]"
-msgstr ""
-
 #: src/screens/Reown/ReownScan.js:49
-#: src/screens/SendScanQRCode.js:108
+#: src/screens/SendScanQRCode.js:88
 #: src/screens/UnifiedQRScanner.js:96
 msgid "Scan the QR code"
 msgstr ""
@@ -896,16 +845,16 @@ msgstr ""
 msgid "Unregister"
 msgstr ""
 
-#: src/screens/TokenSwap.js:246
+#: src/screens/TokenSwap.js:308
 #, javascript-format
 msgid "Balance: ${ amount }"
 msgstr ""
 
-#: src/screens/TokenSwap.js:270
+#: src/screens/TokenSwap.js:350
 msgid "TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwap.js:368
+#: src/screens/TokenSwap.js:450
 msgid "REVIEW"
 msgstr ""
 
@@ -917,15 +866,15 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:162
+#: src/screens/TokenSwapReview.js:173
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:178
+#: src/screens/TokenSwapReview.js:189
 msgid "Your swap was successful"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:241
+#: src/screens/TokenSwapReview.js:253
 msgid "SWAP"
 msgstr ""
 
@@ -1007,29 +956,29 @@ msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:302
 #: src/components/Reown/SendTransactionRequest.js:478
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:31
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:33
 msgid "Transaction successfully sent."
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:34
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:36
 #, javascript-format
 msgid ""
 "There are ${ tokens.length } unregistered tokens in this transaction. Do "
 "you want to register them?"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:36
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:38
 msgid ""
 "There is 1 unregistered token in this transaction. Do you want to register "
 "it?"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:74
-#: src/screens/Reown/SuccessFeedbackScreen.js:36
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:80
+#: src/screens/Reown/SuccessFeedbackScreen.js:39
 msgid "Back"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:84
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:90
 msgid "Success"
 msgstr ""
 
@@ -1195,7 +1144,7 @@ msgstr ""
 msgid "Load First Addresses Error"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:213
+#: src/components/NanoContract/NanoContractDetails.js:216
 #: src/components/NanoContract/SelectAddressModal.js:119
 #: src/components/Reown/GetAddressClientRequest.js:136
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:430
@@ -1212,7 +1161,7 @@ msgstr ""
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:80
-#: src/components/TxDetailsModal.js:113
+#: src/components/TxDetailsModal.js:129
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:200
 msgid "Nano Contract ID"
 msgstr ""
@@ -1241,43 +1190,43 @@ msgstr ""
 msgid "Contract successfully registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:45
+#: src/sagas/nanoContract.js:92
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:46
+#: src/sagas/nanoContract.js:93
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:47
+#: src/sagas/nanoContract.js:94
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:48
+#: src/sagas/nanoContract.js:95
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:49
+#: src/sagas/nanoContract.js:96
 msgid "Error while trying to register Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:50
+#: src/sagas/nanoContract.js:97
 msgid "Invalid transaction to register as Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:51
+#: src/sagas/nanoContract.js:98
 msgid "Blueprint not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:52
+#: src/sagas/nanoContract.js:99
 msgid "Couldn't get Blueprint info."
 msgstr ""
 
-#: src/sagas/nanoContract.js:53
+#: src/sagas/nanoContract.js:100
 msgid "Nano Contract not registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:54
+#: src/sagas/nanoContract.js:101
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr ""
 
@@ -1317,22 +1266,30 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: src/sagas/wallet.js:817
+#: src/sagas/wallet.js:811
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:831
+#: src/sagas/wallet.js:825
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:841
+#: src/sagas/wallet.js:835
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:857
+#: src/sagas/wallet.js:851
 #.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
+msgstr ""
+
+#: src/components/AmountInputAccessory.js:94
+msgid "Max"
+msgstr ""
+
+#: src/components/AmountInputAccessory.js:101
+msgid "Done"
 msgstr ""
 
 #: src/components/AskForPushNotification.js:29
@@ -1416,10 +1373,6 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: src/components/NewPaymentRequest.js:189
-msgid "Create payment request"
-msgstr ""
-
 #: src/components/OfflineBar.js:53
 msgid "No internet connection"
 msgstr ""
@@ -1429,7 +1382,7 @@ msgid "Public Explorer"
 msgstr ""
 
 #: src/components/PushTxDetailsModal.js:77
-#: src/components/TxDetailsModal.js:99
+#: src/components/TxDetailsModal.js:114
 msgid "Date & Time"
 msgstr ""
 
@@ -1446,12 +1399,12 @@ msgstr ""
 msgid "Here is my address: ${ lastSharedAddress }"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:72
+#: src/components/ReceiveMyAddress.js:57
 msgid "New address"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:78
-#: src/components/TokenDetails.js:61
+#: src/components/ReceiveMyAddress.js:63
+#: src/components/TokenDetails.js:102
 msgid "Share"
 msgstr ""
 
@@ -1478,6 +1431,31 @@ msgstr ""
 msgid "Here is the configuration string of token ${ tokenLabel }: ${ configString }"
 msgstr ""
 
+#: src/components/TokenDetails.js:47
+#: src/components/TxDetailsModal.js:51
+msgid "Native Token"
+msgstr ""
+
+#: src/components/TokenDetails.js:48
+msgid "This is the native token, no fees apply."
+msgstr ""
+
+#: src/components/TokenDetails.js:53
+msgid "Fee Model: Deposit-Based"
+msgstr ""
+
+#: src/components/TokenDetails.js:54
+msgid "No transaction fees. Requires 1% HTR deposit."
+msgstr ""
+
+#: src/components/TokenDetails.js:59
+msgid "Fee Model: Fee-Based"
+msgstr ""
+
+#: src/components/TokenDetails.js:60
+msgid "Small fee applies to each transfer. No deposit required."
+msgstr ""
+
 #: src/components/TransactionStatusLabel.js:69
 msgid "Executed"
 msgstr ""
@@ -1490,33 +1468,54 @@ msgstr ""
 msgid "Voided"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:98
+#: src/components/TxDetailsModal.js:54
+msgid "Deposit Based"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:57
+msgid "Fee Based"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:112
+msgid "Token"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:113
 msgid "Description"
+msgstr ""
+
+#: src/components/TxDetailsModal.js:115
+msgid "Fee Model"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:294
-#: src/components/TxDetailsModal.js:100
+#: src/components/TxDetailsModal.js:116
 msgid "Transaction ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:103
+#: src/components/TxDetailsModal.js:119
 msgid "Nano Contract Status"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:89
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:113
-#: src/components/TxDetailsModal.js:112
+#: src/components/TxDetailsModal.js:128
 msgid "Blueprint Method"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:114
+#: src/components/TxDetailsModal.js:130
 msgid "Nano Contract Caller"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:99
-#: src/components/TxDetailsModal.js:115
+#: src/components/TxDetailsModal.js:131
 msgid "Nano Contract"
+msgstr ""
+
+#: src/components/Reown/CreateTokenRequest.js:91
+#: src/components/TxDetailsModal.js:174
+msgid "Amount"
 msgstr ""
 
 #: src/components/Reown/AdvancedErrorOptions.js:41
@@ -1947,11 +1946,11 @@ msgstr ""
 msgid "Review details"
 msgstr ""
 
-#: src/components/Reown/RequestErrorModal.js:27
+#: src/components/Reown/RequestErrorModal.js:30
 msgid "An error occurred while processing the request."
 msgstr ""
 
-#: src/components/Reown/RequestErrorModal.js:46
+#: src/components/Reown/RequestErrorModal.js:56
 msgid "Dismiss"
 msgstr ""
 
@@ -2249,15 +2248,15 @@ msgstr ""
 msgid "Go back"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:188
+#: src/components/NanoContract/NanoContractDetails.js:191
 msgid "Load More"
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:214
+#: src/components/NanoContract/NanoContractDetails.js:217
 msgid "Loading Nano Contract transactions."
 msgstr ""
 
-#: src/components/NanoContract/NanoContractDetails.js:228
+#: src/components/NanoContract/NanoContractDetails.js:231
 msgid "Nano Contract Transactions Error"
 msgstr ""
 

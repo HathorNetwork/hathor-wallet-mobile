@@ -59,7 +59,6 @@ import {
   setServerInfo,
   setIsOnline,
   setWallet,
-  newTx,
   types,
   setAvailablePushNotification,
   resetWalletSuccess,
@@ -614,11 +613,6 @@ export function* handleTx(action) {
       // screen
       yield put(tokenInvalidateHistory(tokenUid));
     }
-  }
-
-  // If this is a new tx, we should dispatch newTx
-  if (action.type === 'WALLET_NEW_TX') {
-    yield put(newTx(tx));
   }
 
   // We should sync the last shared address on our redux store with the facade's internal state

@@ -40,8 +40,6 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Click on New address and check that a new address was generated. The QRCode must update.
 1. Click on Share and Cancel.
 1. Make sure the copied address, the shared address and the parsed QR Code image are the same.
-1. Click on Payment Request and generate a payment request of 10 HTR.
-1. Pay the Payment Request using another wallet and check the confirmation message.
 
 ### Send Tests
 1. Go to the Send Screen and check whether the camera loads correctly.
@@ -143,15 +141,6 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Go to the Send Screen and enter the address of another test wallet.
 1. Change the token to TEST and continue.
 1. Type 3 TEST and send it.
-1. Go to the Receive Screen and click on Payment Request.
-1. Generate a payment request of 2 TEST.
-1. Pay the Payment Request using your test wallet that has just received the TEST before and check the confirmation message.
-
-### Send HTR with QR Code
-1. Generate a payment request requesting 1 HTR from another device
-1. Use the Mobile Wallet QR code scanner to read the QR code from this other device
-1. Pay the Payment Request, the transaction should be successful
-1. Do the same with a TEST payment request
 
 ### Register a token Tests
 1. Go to the Dashboard Screen.
@@ -222,7 +211,7 @@ The following tests are executed only if for the development environment, with a
     1. No more Dashboard screen (list of tokens and balances). Should go straight to `_DEFAULT_TOKEN` screen.
     1. On token info screen, there's no more 'Unregister Token' option.
     1. No more register or create token options on Settings screen.
-    1. On Send Tokens and Create Payment Request screens, there's no button to select tokens.
+    1. On Send Tokens there's no button to select tokens.
     1. [If modified `_PRIMARY_COLOR` on config.js] Colors must have changed.
 
 ### Translations

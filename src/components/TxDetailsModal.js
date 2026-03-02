@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { t } from 'ttag';
 
+import { TokenVersion } from '@hathor/wallet-lib';
 import { getShortContent, getShortHash, getTokenLabel, renderValue } from '../utils';
 import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
@@ -44,6 +45,19 @@ class TxDetailsModal extends Component {
       textStyle={{ fontSize: 16 }}
     />
   );
+
+  getFeeModelText = (version) => {
+    if (version === TokenVersion.NATIVE) {
+      return t`Native Token`;
+    }
+    if (version === TokenVersion.DEPOSIT) {
+      return t`Deposit Based`;
+    }
+    if (version === TokenVersion.FEE) {
+      return t`Fee Based`;
+    }
+    return null;
+  };
 
   render() {
     /**
@@ -77,6 +91,7 @@ class TxDetailsModal extends Component {
     });
     const isNc = tx.isNanoContract();
     const hasFirstBlock = tx.hasFirstBlock();
+    const feeModelText = this.getFeeModelText(token?.version);
 
     return (
       <BackdropModal
@@ -97,6 +112,7 @@ class TxDetailsModal extends Component {
             <ListItem title={t`Token`} text={fullTokenStr} />
             <ListItem title={t`Description`} text={description} />
             <ListItem title={t`Date & Time`} text={timestampStr} />
+            {feeModelText && <ListItem title={t`Fee Model`} text={feeModelText} />}
             <ListItem title={t`Transaction ID`} text={txIdComponent} />
             {isNc && (
               <ListItem

@@ -205,6 +205,9 @@ export const FEATURE_TOGGLE_DEFAULTS = {
 // Project id configured in https://walletconnect.com
 export const REOWN_PROJECT_ID = '8264fff563181da658ce64ee80e80458';
 
+// Timeout for Reown requests (5 minutes to match WalletConnect server default)
+export const REOWN_REQUEST_TIMEOUT = 5 * 60 * 1000;
+
 export const STAGE_DEV_PRIVNET = 'dev-privnet';
 export const STAGE_TESTNET = 'testnet';
 export const NETWORK_TESTNET = 'testnet';
