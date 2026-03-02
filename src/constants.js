@@ -58,6 +58,10 @@ export const KEYCHAIN_USER = 'hathor-keychain';
 export const TOKEN_DEPOSIT_URL = 'https://github.com/HathorNetwork/rfcs/blob/master/text/0011-token-deposit.md';
 
 /**
+ * URL with more information about token fees
+ */
+export const TOKEN_FEES_URL = 'https://github.com/HathorNetwork/rfcs/blob/feat/transaction-fee-minting/text/0045-transaction_fee_minting.md'
+/**
  * URL for the Terms of Service
  */
 export const TERMS_OF_SERVICE_URL = 'https://hathor.network/terms-and-conditions/';

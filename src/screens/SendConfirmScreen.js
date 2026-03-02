@@ -24,7 +24,7 @@ import { useNavigation, useParams } from '../hooks/navigation';
 import { COLORS } from '../styles/themes';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { CheckIcon } from '../components/Icons/Check.icon';
-import { TOKEN_DEPOSIT_URL } from '../constants';
+import { TOKEN_DEPOSIT_URL, TOKEN_FEES_URL } from '../constants';
 
 function NoFee() {
   return (
@@ -165,8 +165,14 @@ const SendConfirmScreen = () => {
 
   const handleTooltipLinkPress = () => {
     setIsTooltipShown(false);
+
     // Navigate to external link
-    Linking.openURL(TOKEN_DEPOSIT_URL);
+    if (token.version === TokenVersion.FEE) {
+      Linking.openURL(TOKEN_FEES_URL);
+    } else {
+      // for deposit based tokens and htr
+      Linking.openURL(TOKEN_DEPOSIT_URL);
+    }
   };
 
   const getTooltipMessage = () => {
