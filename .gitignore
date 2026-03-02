@@ -85,3 +85,6 @@ ios/HathorMobile.xcodeproj/project.xcworkspace/
 
 # Env file used by pre_release.sh.
 /env
+
+.yalc/
+yalc.lock
