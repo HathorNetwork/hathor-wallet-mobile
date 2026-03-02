@@ -103,6 +103,7 @@ const initialState = {
    *     name: 'YanCoin',
    *     symbol: 'YAN',
    *     uid: '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824',
+   *     version: 1,
    *   },
    * }
    */
@@ -111,13 +112,15 @@ const initialState = {
    * selectedToken {{
    *  uid: string;
    *  name; string;
-   *  symbol: string
+   *  symbol: string;
+   *  version: number;
    * }} Token selected to operate with
    * @example
    * {
    *   name: 'YanCoin',
    *   symbol: 'YAN',
-   *   uid: '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824'
+   *   uid: '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824',
+   *   version: 1,
    * }
    */
   selectedToken: DEFAULT_TOKEN,
@@ -903,12 +906,13 @@ const onSetTokens = (state, { payload }) => {
     selectedToken = DEFAULT_TOKEN;
   }
 
-  // Only allow name, uid and symbol keys for each token
+  // Only allow name, uid, symbol, and version keys for each token
   const sanitizedTokens = Object.entries(payload).reduce((acc, [uid, token]) => {
     acc[uid] = {
       name: token?.name,
       uid,
       symbol: token?.symbol,
+      version: token?.version,
     };
     return acc;
   }, {});
