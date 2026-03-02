@@ -199,6 +199,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [NANO_CONTRACT_FEATURE_TOGGLE]: false,
   [SAFE_BIOMETRY_MODE_FEATURE_TOGGLE]: false,
   [TOKEN_SWAP_FEATURE_TOGGLE]: false,
+  [FBT_FEATURE_TOGGLE]: false,
 };
 
 // Project id configured in https://walletconnect.com
