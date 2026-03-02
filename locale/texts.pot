@@ -48,7 +48,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
 #: src/models.js:107
-#: src/utils.js:654
+#: src/utils.js:638
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
@@ -520,43 +520,6 @@ msgstr ""
 msgid "Scan the nano contract ID QR code"
 msgstr ""
 
-#: src/screens/PaymentRequestDetail.js:88
-#, javascript-format
-msgid "You've just received **${ amount } ${ symbol }**"
-msgstr ""
-
-#: src/screens/PaymentRequestDetail.js:105
-msgid "PAYMENT REQUEST"
-msgstr ""
-
-#: src/components/TxDetailsModal.js:112
-#: src/screens/PaymentRequestDetail.js:129
-msgid "Token"
-msgstr ""
-
-#: src/components/Reown/CreateTokenRequest.js:91
-#: src/components/TxDetailsModal.js:174
-#: src/screens/PaymentRequestDetail.js:133
-msgid "Amount"
-msgstr ""
-
-#: src/screens/PaymentRequestDetail.js:141
-#: src/screens/Receive.js:30
-msgid "My Address"
-msgstr ""
-
-#: src/screens/PaymentRequestDetail.js:145
-msgid "Status"
-msgstr ""
-
-#: src/screens/PaymentRequestDetail.js:146
-msgid "Received"
-msgstr ""
-
-#: src/screens/PaymentRequestDetail.js:146
-msgid "Waiting confirmation"
-msgstr ""
-
 #: src/screens/PinScreen.js:272
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
@@ -601,16 +564,7 @@ msgstr ""
 msgid "There was an error enabling push notification. Please try again later."
 msgstr ""
 
-#: src/screens/Receive.js:31
-#. *
-#.      * index {number} Selected index of the tab bar
-#.      
-#.  eslint thinks routes is not used, but TabView uses it
-#.  eslint-disable-next-line react/no-unused-state
-msgid "Payment Request"
-msgstr ""
-
-#: src/screens/Receive.js:93
+#: src/screens/Receive.js:19
 msgid "RECEIVE"
 msgstr ""
 
@@ -644,7 +598,7 @@ msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:45
 #: src/screens/RegisterOptionsScreen.js:57
-#: src/screens/SendScanQRCode.js:40
+#: src/screens/SendScanQRCode.js:38
 #: src/screens/UnifiedQRScanner.js:36
 msgid "OK"
 msgstr ""
@@ -655,7 +609,7 @@ msgid "The reown feature is not enabled."
 msgstr ""
 
 #: src/screens/RegisterOptionsScreen.js:67
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:70
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:76
 msgid "Register"
 msgstr ""
 
@@ -668,7 +622,7 @@ msgid "Reown Connection"
 msgstr ""
 
 #: src/screens/RegisterToken.js:27
-#: src/screens/SendScanQRCode.js:92
+#: src/screens/SendScanQRCode.js:72
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
 msgid "Manual info"
@@ -768,7 +722,7 @@ msgid "Lock wallet"
 msgstr ""
 
 #: src/screens/SendAddressInput.js:53
-#: src/screens/SendScanQRCode.js:100
+#: src/screens/SendScanQRCode.js:80
 msgid "SEND"
 msgstr ""
 
@@ -837,17 +791,12 @@ msgstr ""
 msgid "Send"
 msgstr ""
 
-#: src/screens/SendScanQRCode.js:37
+#: src/screens/SendScanQRCode.js:35
 msgid "Invalid QR code"
 msgstr ""
 
-#: src/screens/SendScanQRCode.js:76
-#, javascript-format
-msgid "You don't have the requested token [${ tokenLabel }]"
-msgstr ""
-
 #: src/screens/Reown/ReownScan.js:49
-#: src/screens/SendScanQRCode.js:108
+#: src/screens/SendScanQRCode.js:88
 #: src/screens/UnifiedQRScanner.js:96
 msgid "Scan the QR code"
 msgstr ""
@@ -901,11 +850,11 @@ msgstr ""
 msgid "Balance: ${ amount }"
 msgstr ""
 
-#: src/screens/TokenSwap.js:347
+#: src/screens/TokenSwap.js:350
 msgid "TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwap.js:447
+#: src/screens/TokenSwap.js:450
 msgid "REVIEW"
 msgstr ""
 
@@ -1007,29 +956,29 @@ msgstr ""
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:302
 #: src/components/Reown/SendTransactionRequest.js:478
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:31
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:33
 msgid "Transaction successfully sent."
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:34
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:36
 #, javascript-format
 msgid ""
 "There are ${ tokens.length } unregistered tokens in this transaction. Do "
 "you want to register them?"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:36
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:38
 msgid ""
 "There is 1 unregistered token in this transaction. Do you want to register "
 "it?"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:74
-#: src/screens/Reown/SuccessFeedbackScreen.js:36
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:80
+#: src/screens/Reown/SuccessFeedbackScreen.js:39
 msgid "Back"
 msgstr ""
 
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:84
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:90
 msgid "Success"
 msgstr ""
 
@@ -1317,20 +1266,20 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: src/sagas/wallet.js:817
+#: src/sagas/wallet.js:811
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:831
+#: src/sagas/wallet.js:825
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:841
+#: src/sagas/wallet.js:835
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:857
+#: src/sagas/wallet.js:851
 #.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
@@ -1424,10 +1373,6 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: src/components/NewPaymentRequest.js:189
-msgid "Create payment request"
-msgstr ""
-
 #: src/components/OfflineBar.js:53
 msgid "No internet connection"
 msgstr ""
@@ -1454,11 +1399,11 @@ msgstr ""
 msgid "Here is my address: ${ lastSharedAddress }"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:72
+#: src/components/ReceiveMyAddress.js:57
 msgid "New address"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:78
+#: src/components/ReceiveMyAddress.js:63
 #: src/components/TokenDetails.js:102
 msgid "Share"
 msgstr ""
@@ -1492,7 +1437,7 @@ msgid "Native Token"
 msgstr ""
 
 #: src/components/TokenDetails.js:48
-msgid "This is the native token, no fees applies."
+msgid "This is the native token, no fees apply."
 msgstr ""
 
 #: src/components/TokenDetails.js:53
@@ -1531,6 +1476,10 @@ msgstr ""
 msgid "Fee Based"
 msgstr ""
 
+#: src/components/TxDetailsModal.js:112
+msgid "Token"
+msgstr ""
+
 #: src/components/TxDetailsModal.js:113
 msgid "Description"
 msgstr ""
@@ -1562,6 +1511,11 @@ msgstr ""
 #: src/components/NanoContract/NanoContractDetailsHeader.js:99
 #: src/components/TxDetailsModal.js:131
 msgid "Nano Contract"
+msgstr ""
+
+#: src/components/Reown/CreateTokenRequest.js:91
+#: src/components/TxDetailsModal.js:174
+msgid "Amount"
 msgstr ""
 
 #: src/components/Reown/AdvancedErrorOptions.js:41
@@ -1992,11 +1946,11 @@ msgstr ""
 msgid "Review details"
 msgstr ""
 
-#: src/components/Reown/RequestErrorModal.js:27
+#: src/components/Reown/RequestErrorModal.js:30
 msgid "An error occurred while processing the request."
 msgstr ""
 
-#: src/components/Reown/RequestErrorModal.js:46
+#: src/components/Reown/RequestErrorModal.js:56
 msgid "Dismiss"
 msgstr ""
 

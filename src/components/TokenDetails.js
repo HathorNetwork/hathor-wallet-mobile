@@ -45,7 +45,7 @@ const TokenDetails = (props) => {
     if (version === TokenVersion.NATIVE) {
       return {
         model: t`Native Token`,
-        description: t`This is the native token, no fees applies.`,
+        description: t`This is the native token, no fees apply.`,
       };
     }
     if (version === TokenVersion.DEPOSIT) {
