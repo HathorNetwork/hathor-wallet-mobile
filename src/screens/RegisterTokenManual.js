@@ -51,6 +51,7 @@ class RegisterTokenManual extends React.Component {
       errorMessage: '',
       token: null,
       validating: false,
+      registering: false,
     };
   }
 
@@ -86,18 +87,25 @@ class RegisterTokenManual extends React.Component {
   onButtonPress = async () => {
     const { token } = this.state;
 
-    // Fetch token version since configuration string doesn't include it
-    const tokenDetails = await this.props.wallet.getTokenDetails(token.uid);
+    this.setState({ registering: true, errorMessage: '' });
 
-    const tokenWithVersion = {
-      ...token,
-      ...(tokenDetails.tokenInfo?.version != null && { version: tokenDetails.tokenInfo.version }),
-    };
+    try {
+      // Fetch token version since configuration string doesn't include it
+      const tokenDetails = await this.props.wallet.getTokenDetails(token.uid);
+      const tokenWithVersion = {
+        ...token,
+        ...(tokenDetails.tokenInfo?.version != null && { version: tokenDetails.tokenInfo.version }),
+      };
 
-    await registerToken(this.props.wallet, this.props.dispatch, tokenWithVersion);
-    this.props.dispatch(updateSelectedToken(token));
-    updateTokensMetadata(this.props.wallet, this.props.dispatch, [token.uid]);
-    NavigationService.resetToMain();
+      await registerToken(this.props.wallet, this.props.dispatch, tokenWithVersion);
+      this.props.dispatch(updateSelectedToken(tokenWithVersion));
+      updateTokensMetadata(this.props.wallet, this.props.dispatch, [token.uid]);
+      NavigationService.resetToMain();
+    } catch (err) {
+      this.setState({ errorMessage: t`Failed to register token. Please try again.` });
+    } finally {
+      this.setState({ registering: false });
+    }
   }
 
   render() {
@@ -147,10 +155,10 @@ class RegisterTokenManual extends React.Component {
               />
               {this.state.token && renderTokenView()}
             </View>
-            {this.state.validating && renderSpinner()}
+            {(this.state.validating || this.state.registering) && renderSpinner()}
             <NewHathorButton
               title={t`Register token`}
-              disabled={this.state.configString === '' || this.state.errorMessage !== '' || this.state.token === null}
+              disabled={this.state.configString === '' || this.state.token === null || this.state.registering}
               onPress={this.onButtonPress}
             />
           </View>
