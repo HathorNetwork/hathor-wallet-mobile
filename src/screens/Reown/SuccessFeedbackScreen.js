@@ -17,11 +17,14 @@ import NewHathorButton from '../../components/NewHathorButton';
 import OfflineBar from '../../components/OfflineBar';
 import { COLORS } from '../../styles/themes';
 import checkIcon from '../../assets/images/icCheckBig.png';
+import { useReownSignal } from '../../hooks/useReownSignal';
 
 export function SuccessFeedbackScreen({ navigation, route }) {
   const { title, message } = route.params;
+  const { signalReadyForNextFlow } = useReownSignal();
 
   const onBackHome = () => {
+    signalReadyForNextFlow();
     navigation.navigate('Dashboard');
   };
 

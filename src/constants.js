@@ -58,6 +58,10 @@ export const KEYCHAIN_USER = 'hathor-keychain';
 export const TOKEN_DEPOSIT_URL = 'https://github.com/HathorNetwork/rfcs/blob/master/text/0011-token-deposit.md';
 
 /**
+ * URL with more information about token fees
+ */
+export const TOKEN_FEES_URL = 'https://github.com/HathorNetwork/rfcs/blob/master/text/0045-transaction_fee_minting.md'
+/**
  * URL for the Terms of Service
  */
 export const TERMS_OF_SERVICE_URL = 'https://hathor.network/terms-and-conditions/';
@@ -177,6 +181,7 @@ export const NETWORK_SETTINGS_FEATURE_TOGGLE = 'network-settings.rollout';
 export const NANO_CONTRACT_FEATURE_TOGGLE = 'nano-contract.rollout';
 export const SAFE_BIOMETRY_MODE_FEATURE_TOGGLE = 'safe-biometry-mode.rollout'
 export const TOKEN_SWAP_FEATURE_TOGGLE = 'token-swap.rollout';
+export const FBT_FEATURE_TOGGLE = 'fee-based-tokens.rollout';
 
 /**
  * Default feature toggle values.
@@ -194,10 +199,14 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [NANO_CONTRACT_FEATURE_TOGGLE]: false,
   [SAFE_BIOMETRY_MODE_FEATURE_TOGGLE]: false,
   [TOKEN_SWAP_FEATURE_TOGGLE]: false,
+  [FBT_FEATURE_TOGGLE]: false,
 };
 
 // Project id configured in https://walletconnect.com
 export const REOWN_PROJECT_ID = '8264fff563181da658ce64ee80e80458';
+
+// Timeout for Reown requests (5 minutes to match WalletConnect server default)
+export const REOWN_REQUEST_TIMEOUT = 5 * 60 * 1000;
 
 export const STAGE_DEV_PRIVNET = 'dev-privnet';
 export const STAGE_TESTNET = 'testnet';

@@ -51,6 +51,7 @@ class RegisterTokenManual extends React.Component {
       errorMessage: '',
       token: null,
       validating: false,
+      registering: false,
     };
   }
 
@@ -85,10 +86,30 @@ class RegisterTokenManual extends React.Component {
 
   onButtonPress = async () => {
     const { token } = this.state;
-    await registerToken(this.props.wallet, this.props.dispatch, token);
-    this.props.dispatch(updateSelectedToken(token));
-    updateTokensMetadata(this.props.wallet, this.props.dispatch, [token.uid]);
-    NavigationService.resetToMain();
+
+    this.setState({ registering: true, errorMessage: '' });
+
+    try {
+      // Fetch token version since configuration string doesn't include it
+      const tokenDetails = await this.props.wallet.getTokenDetails(token.uid);
+      const tokenWithVersion = {
+        ...token,
+        ...(tokenDetails.tokenInfo?.version != null && { version: tokenDetails.tokenInfo.version }),
+      };
+
+      await registerToken(this.props.wallet, this.props.dispatch, tokenWithVersion);
+      this.props.dispatch(updateSelectedToken(tokenWithVersion));
+      updateTokensMetadata(this.props.wallet, this.props.dispatch, [token.uid]);
+      // Reset registering state before navigation to avoid setState on unmounted component
+      this.setState({ registering: false }, () => {
+        NavigationService.resetToMain();
+      });
+    } catch (err) {
+      this.setState({
+        registering: false,
+        errorMessage: t`Failed to register token. Please try again.`,
+      });
+    }
   }
 
   render() {
@@ -138,10 +159,10 @@ class RegisterTokenManual extends React.Component {
               />
               {this.state.token && renderTokenView()}
             </View>
-            {this.state.validating && renderSpinner()}
+            {(this.state.validating || this.state.registering) && renderSpinner()}
             <NewHathorButton
               title={t`Register token`}
-              disabled={this.state.configString === '' || this.state.errorMessage !== '' || this.state.token === null}
+              disabled={this.state.configString === '' || this.state.token === null || this.state.registering}
               onPress={this.onButtonPress}
             />
           </View>

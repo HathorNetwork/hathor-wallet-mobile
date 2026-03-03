@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import hathorLib from '@hathor/wallet-lib';
 import { get } from 'lodash';
 import {
   INITIAL_TOKENS,
@@ -41,12 +40,6 @@ import { WALLET_STATUS } from '../sagas/wallet';
  *   active {boolean} indicates we're loading the tx history
  *   error {boolean} error loading history
  * }
- * latestInvoice {Object} tracks the latest payment request created {
- *   address {string} address where we're expecting the payment
- *   amount {int} admount to be paid
- *   token {Object} payment should be made in this token
- * }
- * invoicePayment {Object} null if not paid or the tx that settles latestInvoice
  * selectedToken {Object} token currently selected by the user
  * isOnline {bool} Indicates whether the wallet is connected to the fullnode's websocket
  * lockScreen {bool} Indicates screen is locked
@@ -93,8 +86,6 @@ const initialState = {
   tokensHistory: {},
   tokensBalance: {},
   loadHistoryStatus: { active: true, error: false },
-  latestInvoice: null,
-  invoicePayment: null,
   /**
    * tokens {Object.<string, Object>} Map of tokens added plus initial tokens,
    * @see {@link INITIAL_TOKENS}
@@ -112,6 +103,7 @@ const initialState = {
    *     name: 'YanCoin',
    *     symbol: 'YAN',
    *     uid: '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824',
+   *     version: 1,
    *   },
    * }
    */
@@ -120,13 +112,15 @@ const initialState = {
    * selectedToken {{
    *  uid: string;
    *  name; string;
-   *  symbol: string
+   *  symbol: string;
+   *  version: number;
    * }} Token selected to operate with
    * @example
    * {
    *   name: 'YanCoin',
    *   symbol: 'YAN',
-   *   uid: '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824'
+   *   uid: '000003a3b261e142d3dfd84970d3a50a93b5bc3a66a3b6ba973956148a3eb824',
+   *   version: 1,
    * }
    */
   selectedToken: DEFAULT_TOKEN,
@@ -273,6 +267,11 @@ const initialState = {
     modal: {
       show: false,
     },
+    /**
+     * When true, Reown screens should navigate to Dashboard.
+     * Used for timeout scenarios where the screen needs to navigate away.
+     */
+    forceNavigateToDashboard: false,
     /**
      * Centralized error storage for the current Reown operation.
      * Only one RPC is processed at a time, so a single error key suffices.
@@ -562,12 +561,6 @@ const initialState = {
 
 export const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case types.NEW_TX:
-      return onNewTx(state, action);
-    case types.NEW_INVOICE:
-      return onNewInvoice(state, action);
-    case types.CLEAR_INVOICE:
-      return onClearInvoice(state, action);
     case types.RESET_DATA:
       return initialState;
     case types.UPDATE_SELECTED_TOKEN:
@@ -788,6 +781,8 @@ export const reducer = (state = initialState, action) => {
       return onCreateNanoContractCreateTokenTxRetryDismiss(state);
     case types.REOWN_SET_ERROR:
       return onSetReownError(state, action);
+    case types.REOWN_SET_FORCE_NAVIGATE_TO_DASHBOARD:
+      return onSetForceNavigateToDashboard(state, action);
     case types.SET_FULLNODE_NETWORK_NAME:
       return onSetFullNodeNetworkName(state, action);
 
@@ -853,38 +848,6 @@ const onSetIsShowingPinScreen = (state, action) => ({
 });
 
 /**
- * Updates the history and balance when a new tx arrives. Also checks
- * if this tx settles an open invoice.
- */
-const onNewTx = (state, action) => {
-  const { tx } = action.payload;
-
-  // if we have the invoice modal, check if this tx settles it
-  let invoicePayment = null;
-  if (state.latestInvoice && state.latestInvoice.amount) {
-    for (const txout of tx.outputs) {
-      // Don't consider authority outputs
-      if (hathorLib.transactionUtils.isAuthorityOutput(txout)) {
-        continue;
-      }
-
-      if (txout.decoded && txout.decoded.address
-        && txout.decoded.address === state.latestInvoice.address
-        && txout.value === state.latestInvoice.amount
-        && txout.token === state.latestInvoice.token.uid) {
-        invoicePayment = tx;
-        break;
-      }
-    }
-  }
-
-  return {
-    ...state,
-    invoicePayment: invoicePayment || state.invoicePayment,
-  };
-};
-
-/**
  * Update token history after fetching more data in pagination
  */
 const onUpdateTokenHistory = (state, action) => {
@@ -911,28 +874,6 @@ const onUpdateTokenHistory = (state, action) => {
     },
   };
 };
-
-/**
- * Create a new payment request
- */
-const onNewInvoice = (state, action) => {
-  const { address } = action.payload;
-  const { amount } = action.payload;
-  const { token } = action.payload;
-  return {
-    ...state,
-    latestInvoice: { address, amount, token },
-  };
-};
-
-/**
- * When the user leaves the invoice screen, clear the invoice information
- */
-const onClearInvoice = (state) => ({
-  ...state,
-  latestInvoice: null,
-  invoicePayment: null,
-});
 
 /**
  * Switch the selected token
@@ -965,12 +906,13 @@ const onSetTokens = (state, { payload }) => {
     selectedToken = DEFAULT_TOKEN;
   }
 
-  // Only allow name, uid and symbol keys for each token
+  // Only allow name, uid, symbol, and version keys for each token
   const sanitizedTokens = Object.entries(payload).reduce((acc, [uid, token]) => {
     acc[uid] = {
       name: token?.name,
       uid,
       symbol: token?.symbol,
+      version: token?.version,
     };
     return acc;
   }, {});
@@ -2284,6 +2226,14 @@ export const onSetReownError = (state, { payload }) => ({
   reown: {
     ...state.reown,
     error: payload,
+  },
+});
+
+export const onSetForceNavigateToDashboard = (state, { payload }) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    forceNavigateToDashboard: payload,
   },
 });
 
