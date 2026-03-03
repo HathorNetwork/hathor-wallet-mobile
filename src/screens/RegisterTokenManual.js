@@ -100,11 +100,15 @@ class RegisterTokenManual extends React.Component {
       await registerToken(this.props.wallet, this.props.dispatch, tokenWithVersion);
       this.props.dispatch(updateSelectedToken(tokenWithVersion));
       updateTokensMetadata(this.props.wallet, this.props.dispatch, [token.uid]);
-      NavigationService.resetToMain();
+      // Reset registering state before navigation to avoid setState on unmounted component
+      this.setState({ registering: false }, () => {
+        NavigationService.resetToMain();
+      });
     } catch (err) {
-      this.setState({ errorMessage: t`Failed to register token. Please try again.` });
-    } finally {
-      this.setState({ registering: false });
+      this.setState({
+        registering: false,
+        errorMessage: t`Failed to register token. Please try again.`,
+      });
     }
   }
 

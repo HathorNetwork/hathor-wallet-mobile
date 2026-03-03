@@ -66,16 +66,29 @@ const SendAmountInput = () => {
   }, [selectedToken]);
 
   useEffect(() => {
-    (async () => {
+    let cancelled = false;
+
+    const calculateNetworkFee = async () => {
       if (token.version !== TokenVersion.FEE) {
         setNetworkFee(0n);
         return;
       }
+
+      if (amountValue == null || amountValue <= 0n) {
+        setNetworkFee(null);
+        return;
+      }
+
+      // Set to null while calculating to indicate loading state
+      setNetworkFee(null);
+
       try {
         const { changeAmount } = await wallet.getUtxosForAmount(
           amountValue,
           { token: token.uid }
         );
+        if (cancelled) return;
+
         if (changeAmount) {
           // Since there is change, it means we will have the intended output and a change output.
           // 2 FBT outputs means the fee value will be payed twice
@@ -85,10 +98,15 @@ const SendAmountInput = () => {
           setNetworkFee(hathorLib.constants.FEE_PER_OUTPUT);
         }
       } catch (err) {
-        setNetworkFee(hathorLib.constants.FEE_PER_OUTPUT);
+        if (!cancelled) {
+          setNetworkFee(hathorLib.constants.FEE_PER_OUTPUT);
+        }
       }
-    })();
-  }, [wallet, token, amountValue]);
+    };
+
+    calculateNetworkFee();
+    return () => { cancelled = true; };
+  }, [wallet, token.uid, token.version, amountValue]);
 
   const focusInput = () => {
     if (inputRef.current) {
@@ -127,6 +145,11 @@ const SendAmountInput = () => {
     }
 
     if (token.version === TokenVersion.FEE) {
+      // Guard against stale/unknown fee
+      if (networkFee == null) {
+        setError(t`Calculating network fee...`);
+        return;
+      }
       // The user selected a fee based token
       // So we need to check the HTR balance to make the transaction happen.
       const htrBalance = get(tokensBalance, hathorLib.constants.NATIVE_TOKEN_UID);

@@ -34,7 +34,6 @@ const CreateTokenAmount = () => {
   const [networkFee, setNetworkFee] = useState(0n);
   const [error, setError] = useState(null);
   const [title, setTitle] = useState(t`CREATE TOKEN`);
-  const [infoBoxItems, setInfoBoxItems] = useState([]);
   const { wallet, decimalPlaces } = useSelector((state) => ({
     wallet: state.wallet,
     decimalPlaces: state.serverInfo?.decimal_places
@@ -153,28 +152,31 @@ const CreateTokenAmount = () => {
     </Strong>
   );
 
-  useEffect(() => {
+  // Compute infoBoxItems directly instead of storing in state to avoid stale balance data
+  const getInfoBoxItems = () => {
+    const availableText = (
+      <Text key='available'>
+        {jt`You have ${amountAvailableText} available`}
+      </Text>
+    );
+
     if (tokenVersion === TokenVersion.FEE) {
-      setInfoBoxItems([
+      return [
         <Text key='fee'>{t`Network fee:`} <Strong style={amountStyle}>
           {hathorLib.numberUtils.prettyValue(networkFee)} {nativeSymbol}
         </Strong></Text>,
-        <Text key='available'>
-          {jt`You have ${amountAvailableText} available`}
-        </Text>,
+        availableText,
         <Text key='feeInfo'>{t`A small fee will be applied to each future transaction of this token.`}</Text>,
-      ]);
-    } else {
-      setInfoBoxItems([
-        <Text key='deposit'>{t`Deposit:`} <Strong style={amountStyle}>
-          {hathorLib.numberUtils.prettyValue(networkFee)} {nativeSymbol}
-        </Strong></Text>,
-        <Text key='available'>
-          {jt`You have ${amountAvailableText} available`}
-        </Text>
-      ])
+      ];
     }
-  }, [networkFee, tokenVersion]);
+
+    return [
+      <Text key='deposit'>{t`Deposit:`} <Strong style={amountStyle}>
+        {hathorLib.numberUtils.prettyValue(networkFee)} {nativeSymbol}
+      </Strong></Text>,
+      availableText,
+    ];
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -204,7 +206,7 @@ const CreateTokenAmount = () => {
               )}
             </View>
             <View>
-              <InfoBox items={infoBoxItems} />
+              <InfoBox items={getInfoBoxItems()} />
               <NewHathorButton
                 title={t`Next`}
                 disabled={isButtonDisabled()}
