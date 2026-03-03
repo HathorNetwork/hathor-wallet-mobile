@@ -423,8 +423,8 @@ msgid "Fee Token:"
 msgstr "Token de Taxa"
 
 #: src/screens/CreateTokenTypeNotice.js:113
-msgid "Pay only 0.01 HTR to create the token."
-msgstr "Pague apenas 0,01 HTR para criar o token."
+msgid "Requires 0.01 HTR fee to create."
+msgstr "Requer 0,01 HTR para criar o token."
 
 #: src/screens/CreateTokenTypeNotice.js:114
 msgid "No deposit required."

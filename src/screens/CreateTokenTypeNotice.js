@@ -110,7 +110,7 @@ class CreateTokenTypeNotice extends React.Component {
 
             <View style={this.style.typeInfoContainer}>
               <Text style={this.style.typeInfoHeader}>{t`Fee Token:`}</Text>
-              <Text style={this.style.typeInfo}>{t`Pay only 0.01 HTR to create the token.`}</Text>
+              <Text style={this.style.typeInfo}>{t`Requires 0.01 HTR fee to create.`}</Text>
               <Text style={this.style.typeInfo}>{t`No deposit required.`}</Text>
               <Text style={this.style.typeInfo}>{t`A small fee applies to every transfer.`}</Text>
               <Text style={this.style.typeInfoFooter}>{t`Recommended for occasional use.`}</Text>

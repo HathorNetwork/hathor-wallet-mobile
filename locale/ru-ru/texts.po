@@ -411,7 +411,7 @@ msgid "Fee Token:"
 msgstr ""
 
 #: src/screens/CreateTokenTypeNotice.js:113
-msgid "Pay only 0.01 HTR to create the token."
+msgid "Requires 0.01 HTR fee to create."
 msgstr ""
 
 #: src/screens/CreateTokenTypeNotice.js:114
