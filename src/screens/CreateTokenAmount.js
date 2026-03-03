@@ -11,14 +11,14 @@ import { get } from 'lodash';
 import { useSelector } from 'react-redux';
 import { t, jt } from 'ttag';
 
-import hathorLib from '@hathor/wallet-lib';
+import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
 import AmountTextInput from '../components/AmountTextInput';
 import HathorHeader from '../components/HathorHeader';
 import InfoBox from '../components/InfoBox';
 import InputLabel from '../components/InputLabel';
 import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
-import { getKeyboardAvoidingViewTopDistance, Strong } from '../utils';
+import { getKeyboardAvoidingViewTopDistance, Strong, getCreateTokenTitle } from '../utils';
 import { COLORS } from '../styles/themes';
 import { useNavigation, useParams } from '../hooks/navigation';
 
@@ -31,8 +31,9 @@ const CreateTokenAmount = () => {
   const inputRef = useRef(null);
   const [amountText, setAmountText] = useState('');
   const [amount, setAmount] = useState(0n);
-  const [deposit, setDeposit] = useState(0n);
+  const [networkFee, setNetworkFee] = useState(0n);
   const [error, setError] = useState(null);
+  const [title, setTitle] = useState(t`CREATE TOKEN`);
   const { wallet, decimalPlaces } = useSelector((state) => ({
     wallet: state.wallet,
     decimalPlaces: state.serverInfo?.decimal_places
@@ -41,7 +42,7 @@ const CreateTokenAmount = () => {
   const params = useParams();
 
   // Get route params with BigInt support
-  const { name, symbol } = params;
+  const { name, symbol, tokenVersion } = params;
 
   const nativeSymbol = wallet.storage.getNativeTokenData().symbol;
 
@@ -66,6 +67,10 @@ const CreateTokenAmount = () => {
     return focusListener;
   }, [navigation]);
 
+  useEffect(() => {
+    setTitle(getCreateTokenTitle(tokenVersion));
+  }, [tokenVersion]);
+
   // Handle amount text change
   const onAmountChange = (text, value) => {
     setAmountText(text);
@@ -74,27 +79,32 @@ const CreateTokenAmount = () => {
       if (value !== null) {
         setAmount(value);
 
-        // Calculate deposit (1% of amount)
-        const calculatedDeposit = value / BigInt(100);
-        setDeposit(calculatedDeposit);
+        // For fee-based tokens, deposit is always 1n
+        // For regular tokens, deposit is 1% of amount
+        if (tokenVersion === TokenVersion.FEE) {
+          setNetworkFee(1n);
+        } else {
+          const calculatedDeposit = value / BigInt(100);
+          setNetworkFee(calculatedDeposit);
+        }
 
         setError(null);
       } else if (text) {
         // If text is not empty but no valid BigInt was provided, show error
         setAmount(0n);
-        setDeposit(0n);
+        setNetworkFee(0n);
         setError(t`Invalid amount`);
       } else {
         // Text is empty
         setAmount(0n);
-        setDeposit(0n);
+        setNetworkFee(0n);
         setError(null);
       }
     } catch (e) {
       // Handle any unexpected errors
       console.error('Error processing amount:', e);
       setAmount(0n);
-      setDeposit(0n);
+      setNetworkFee(0n);
       setError(t`Invalid amount`);
     }
   };
@@ -105,7 +115,8 @@ const CreateTokenAmount = () => {
       name: params.name,
       symbol: params.symbol,
       amount,
-      deposit,
+      deposit: networkFee,
+      tokenVersion,
     });
   };
 
@@ -119,7 +130,7 @@ const CreateTokenAmount = () => {
       return true;
     }
 
-    if (deposit > balance.available) {
+    if (networkFee > balance.available) {
       return true;
     }
 
@@ -128,7 +139,7 @@ const CreateTokenAmount = () => {
 
   // Determine style for amount display
   const getAmountStyle = () => {
-    if (deposit > balance.available) {
+    if (networkFee > balance.available) {
       return { color: COLORS.errorTextColor };
     }
     return {};
@@ -141,11 +152,37 @@ const CreateTokenAmount = () => {
     </Strong>
   );
 
+  // Compute infoBoxItems directly instead of storing in state to avoid stale balance data
+  const getInfoBoxItems = () => {
+    const availableText = (
+      <Text key='available'>
+        {jt`You have ${amountAvailableText} available`}
+      </Text>
+    );
+
+    if (tokenVersion === TokenVersion.FEE) {
+      return [
+        <Text key='fee'>{t`Network fee:`} <Strong style={amountStyle}>
+          {hathorLib.numberUtils.prettyValue(networkFee)} {nativeSymbol}
+        </Strong></Text>,
+        availableText,
+        <Text key='feeInfo'>{t`A small fee will be applied to each future transaction of this token.`}</Text>,
+      ];
+    }
+
+    return [
+      <Text key='deposit'>{t`Deposit:`} <Strong style={amountStyle}>
+        {hathorLib.numberUtils.prettyValue(networkFee)} {nativeSymbol}
+      </Strong></Text>,
+      availableText,
+    ];
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
         <HathorHeader
-          title={t`CREATE TOKEN`}
+          title={title}
           onBackPress={() => navigation.goBack()}
           onCancel={() => navigation.getParent().goBack()}
         />
@@ -169,16 +206,7 @@ const CreateTokenAmount = () => {
               )}
             </View>
             <View>
-              <InfoBox
-                items={[
-                  <Text key='deposit'>{t`Deposit:`} <Strong style={amountStyle}>
-                    {hathorLib.numberUtils.prettyValue(deposit)} {nativeSymbol}
-                  </Strong></Text>,
-                  <Text key='available'>
-                    {jt`You have ${amountAvailableText} ${nativeSymbol} available`}
-                  </Text>
-                ]}
-              />
+              <InfoBox items={getInfoBoxItems()} />
               <NewHathorButton
                 title={t`Next`}
                 disabled={isButtonDisabled()}

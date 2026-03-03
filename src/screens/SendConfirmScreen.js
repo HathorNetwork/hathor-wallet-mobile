@@ -6,21 +6,34 @@
  */
 
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { useSelector } from 'react-redux';
 import { msgid, ngettext, t } from 'ttag';
-import hathorLib from '@hathor/wallet-lib';
+import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
-import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
+import TooltipModal from '../components/TooltipModal';
 import { renderValue, isTokenNFT } from '../utils';
 import NavigationService from '../NavigationService';
 import { useNavigation, useParams } from '../hooks/navigation';
+import { COLORS } from '../styles/themes';
+import { InfoCircleIcon } from '../components/Icons/InfoCircle';
+import { CheckIcon } from '../components/Icons/Check.icon';
+import { TOKEN_DEPOSIT_URL, TOKEN_FEES_URL } from '../constants';
+
+function NoFee() {
+  return (
+    <View style={styles.nofee}>
+      <CheckIcon size={16} color='#2E701F' />
+      <Text style={{ color: '#2E701F' }}>{t`No fee`}</Text>
+    </View>
+  );
+}
 
 const SendConfirmScreen = () => {
   const tokensBalance = useSelector((state) => state.tokensBalance);
@@ -34,11 +47,14 @@ const SendConfirmScreen = () => {
   const params = useParams();
 
   // Parse and store navigation params
-  const { amount, address, token } = params;
+  const { amount, address, token, networkFee } = params;
   const isNFT = isTokenNFT(token.uid, tokenMetadata);
   const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
 
   const [modal, setModal] = useState(null);
+  const [isTooltipShown, setIsTooltipShown] = useState(false);
+
+  const nativeSymbol = hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
 
   /**
    * In case we can prepare the data, open send tx feedback modal (while sending the tx)
@@ -122,8 +138,51 @@ const SendConfirmScreen = () => {
 
   const tokenNameUpperCase = token.name.toUpperCase();
 
+  const handleFeeInfoPress = () => {
+    setIsTooltipShown(true);
+  };
+
+  const handleTooltipLinkPress = () => {
+    setIsTooltipShown(false);
+
+    // Navigate to external link
+    if (token.version === TokenVersion.FEE) {
+      Linking.openURL(TOKEN_FEES_URL);
+    } else {
+      // for deposit based tokens and htr
+      Linking.openURL(TOKEN_DEPOSIT_URL);
+    }
+  };
+
+  const getTooltipMessage = () => {
+    if (networkFee === null) {
+      return t`Loading fee information...`;
+    }
+    if (token.uid === hathorLib.constants.NATIVE_TOKEN_UID) {
+      return t`This is the native token, no network fees are charged.`;
+    }
+    if (networkFee === 0n) {
+      return t`This token is Deposit Based, no network fee will be charged.`;
+    }
+    return t`This fee is fixed and required for every transfer of this token.`;
+  };
+
+  const renderNetworkFeeValue = () => {
+    if (networkFee === null) {
+      return <Text style={{ color: COLORS.textColorShadow }}>{t`Loading...`}</Text>;
+    }
+    if (networkFee > 0n) {
+      return (
+        <Text>
+          {renderValue(networkFee, false)} {nativeSymbol}
+        </Text>
+      )
+    }
+    return <NoFee />;
+  };
+
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
       <HathorHeader
         withBorder
         title={t`SEND ${tokenNameUpperCase}`}
@@ -142,8 +201,16 @@ const SendConfirmScreen = () => {
         />
       )}
 
+      <TooltipModal
+        visible={isTooltipShown}
+        onDismiss={() => setIsTooltipShown(false)}
+        message={getTooltipMessage()}
+        linkText={t`Read more.`}
+        onLinkPress={handleTooltipLinkPress}
+      />
+
       <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-        <View>
+        <View style={{ gap: 30 }}>
           <View style={{ alignItems: 'center', marginTop: 32 }}>
             <AmountTextInput
               editable={false}
@@ -153,12 +220,28 @@ const SendConfirmScreen = () => {
               {getAvailableString()}
             </InputLabel>
           </View>
-          <SimpleInput
-            label={t`Address`}
-            editable={false}
-            value={address}
-            containerStyle={{ marginTop: 48 }}
-          />
+          <View>
+            <TextFmt style={{ marginBottom: 10 }}>{t`**Transaction summary**`}</TextFmt>
+            <View style={styles.summaryContainer}>
+              <View style={styles.summaryItem}>
+                <TextFmt>{t`**To**`}</TextFmt>
+                <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
+              </View>
+              <View style={styles.summaryItem}>
+                <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
+                  <TextFmt>{t`**Network Fee**`}</TextFmt>
+                  <TouchableOpacity onPress={handleFeeInfoPress} style={{ marginLeft: 4 }}>
+                    <InfoCircleIcon size={16} />
+                  </TouchableOpacity>
+                </View>
+                {renderNetworkFeeValue()}
+              </View>
+              <View style={styles.summaryItem}>
+                <TextFmt>{t`**Total**`}</TextFmt>
+                <Text>{`${amountAndToken}${networkFee ? ` + ${renderValue(networkFee, false)} ${nativeSymbol}` : ''}`}</Text>
+              </View>
+            </View>
+          </View>
         </View>
         <NewHathorButton
           title={t`Send`}
@@ -171,5 +254,29 @@ const SendConfirmScreen = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  summaryContainer: {
+    zIndex: 1,
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: COLORS.backgroundColor,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+  },
+  summaryItem: {
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  nofee: {
+    flexDirection: 'row',
+    borderRadius: 10,
+    paddingLeft: 5,
+    paddingRight: 10,
+    backgroundColor: '#EEFBEB',
+    alignItems: 'center',
+  },
+});
 
 export default SendConfirmScreen;

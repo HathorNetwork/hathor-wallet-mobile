@@ -58,13 +58,27 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:638
+#: src/models.js:107 src/utils.js:665
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
 #: src/utils.js:271
 msgid "Invalid address"
 msgstr "Неправильный адрес"
+
+#: src/utils.js:650
+msgid "CREATE DEPOSIT TOKEN"
+msgstr ""
+
+#: src/utils.js:652
+msgid "CREATE FEE TOKEN"
+msgstr ""
+
+#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:84
+#: src/screens/CreateTokenDepositNotice.js:42
+#: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:654
+msgid "CREATE TOKEN"
+msgstr "СОЗДАТЬ ТОКЕН"
 
 #. *
 #.          * @example
@@ -213,77 +227,95 @@ msgstr "PIN-коды не совпадают. Попробуйте еще раз
 msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
-#: src/screens/CreateTokenAmount.js:86 src/screens/CreateTokenAmount.js:98
-#: src/screens/SendAmountInput.js:92
+#: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
+#: src/screens/SendAmountInput.js:138
 msgid "Invalid amount"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:148 src/screens/CreateTokenConfirm.js:153
-#: src/screens/CreateTokenDepositNotice.js:42 src/screens/CreateTokenName.js:43
-#: src/screens/CreateTokenSymbol.js:62
-msgid "CREATE TOKEN"
-msgstr "СОЗДАТЬ ТОКЕН"
-
-#: src/screens/CreateTokenAmount.js:156
+#: src/screens/CreateTokenAmount.js:159
 #, javascript-format
-msgid "Amount of ${ name } (${ symbol })"
+msgid "You have ${ amountAvailableText } available"
+msgstr ""
+
+#: src/screens/CreateTokenAmount.js:165
+msgid "Network fee:"
+msgstr ""
+
+#: src/screens/CreateTokenAmount.js:169
+msgid "A small fee will be applied to each future transaction of this token."
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:174
 msgid "Deposit:"
 msgstr "Депозит:"
 
-#: src/screens/CreateTokenAmount.js:178
+#: src/screens/CreateTokenAmount.js:193
 #, javascript-format
-msgid "You have ${ amountAvailableText } ${ nativeSymbol } available"
+msgid "Amount of ${ name } (${ symbol })"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:183 src/screens/CreateTokenName.js:64
-#: src/screens/CreateTokenSymbol.js:84 src/screens/InitWallet.js:229
+#: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
+#: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:168
+#: src/screens/SendAmountInput.js:235
 msgid "Next"
 msgstr "Далее"
 
-#: src/screens/CreateTokenConfirm.js:94
+#: src/screens/CreateTokenConfirm.js:34
+msgid ""
+"You chose to create a **Deposit-Based Token**, which requires a 1% HTR "
+"deposit."
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:36
+msgid ""
+"You chose to create a **Fee-Based Token**, so a small fee will be applied to "
+"each future transaction of this token."
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:140
 msgid "Creating token"
 msgstr "Создать токен"
 
-#: src/screens/CreateTokenConfirm.js:109
+#: src/screens/CreateTokenConfirm.js:155
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Введите 6-значный PIN-код для создания токена"
 
-#: src/screens/CreateTokenConfirm.js:110
+#: src/screens/CreateTokenConfirm.js:156
 msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
-#: src/screens/CreateTokenConfirm.js:112 src/screens/SendConfirmScreen.js:85
+#: src/screens/CreateTokenConfirm.js:158 src/screens/SendConfirmScreen.js:101
 #: src/screens/TokenSwapReview.js:163
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:170
+#: src/screens/CreateTokenConfirm.js:216
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:183
+#: src/screens/CreateTokenConfirm.js:229
 msgid "Amount of ${ name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:192
+#: src/screens/CreateTokenConfirm.js:238
 msgid "Token name"
 msgstr "Имя токена"
 
-#: src/screens/CreateTokenConfirm.js:198 src/screens/CreateTokenSymbol.js:69
+#: src/screens/CreateTokenConfirm.js:244 src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr "Символ токена"
 
-#: src/screens/CreateTokenConfirm.js:204
+#: src/screens/CreateTokenConfirm.js:251
 msgid "Deposit"
 msgstr "Депозит"
 
-#: src/screens/CreateTokenConfirm.js:213
+#: src/screens/CreateTokenConfirm.js:259
+msgid "Network fee"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:268
 msgid "Create token"
 msgstr "Создать токен"
 
@@ -326,29 +358,87 @@ msgstr "0/30 символов"
 msgid "${ text.length }/30 characters"
 msgstr "${ text.length }/30 символов"
 
-#: src/screens/CreateTokenName.js:50
+#: src/screens/CreateTokenName.js:53
 msgid "Token Name"
 msgstr "Имя Токена"
 
-#: src/screens/CreateTokenName.js:59
+#: src/screens/CreateTokenName.js:62
 msgid "Token name should be the full name of the new token you are creating"
 msgstr "Здесь должно быть указано полное имя создаваемого вами токена"
 
-#: src/screens/CreateTokenName.js:60
+#: src/screens/CreateTokenName.js:63
 msgid "E.g. MyToken or My Token"
 msgstr "Например, MyToken или My Token"
 
-#: src/screens/CreateTokenSymbol.js:72
+#: src/screens/CreateTokenSymbol.js:74
 msgid "Between 2 and 5 characters"
 msgstr "От 2 до 5 символов"
 
-#: src/screens/CreateTokenSymbol.js:79
+#: src/screens/CreateTokenSymbol.js:81
 msgid "The symbol is a smaller version of the token name"
 msgstr "Символ является сокращенной версией имени токена"
 
-#: src/screens/CreateTokenSymbol.js:80
+#: src/screens/CreateTokenSymbol.js:82
 msgid "E.g. HTR"
 msgstr "Например, HTR"
+
+#: src/screens/CreateTokenTypeNotice.js:100
+msgid "Choose how your tokens will behave for future transactions."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:104
+msgid "Deposit Token:"
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:105
+msgid "Requires a 1% HTR deposit."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:106
+msgid "No network fees in future transfers."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:107
+msgid "Refundable if token is burned."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:108
+msgid "Recommended for frequent use."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:112
+msgid "Fee Token:"
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:113
+msgid "Requires 0.01 HTR fee to create."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:114
+msgid "No deposit required."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:115
+msgid "A small fee applies to every transfer."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:116
+msgid "Recommended for occasional use."
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:123
+msgid ""
+"Once selected, the token type cannot be changed later. |link:Learn more "
+"about deposits and fees here|"
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:133
+msgid "DEPOSIT TOKEN"
+msgstr ""
+
+#: src/screens/CreateTokenTypeNotice.js:139
+msgid "FEE TOKEN"
+msgstr ""
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
 #: src/screens/Dashboard.js:139 src/screens/Dashboard.js:197
@@ -627,7 +717,7 @@ msgstr ""
 msgid "Manual info"
 msgstr "Ручной ввод"
 
-#: src/screens/RegisterToken.js:42 src/screens/RegisterTokenManual.js:122
+#: src/screens/RegisterToken.js:42 src/screens/RegisterTokenManual.js:143
 msgid "REGISTER TOKEN"
 msgstr "РЕГИСТРАЦИЯ ТОКЕНА"
 
@@ -635,23 +725,27 @@ msgstr "РЕГИСТРАЦИЯ ТОКЕНА"
 msgid "Scan the token QR code"
 msgstr "Сканировать QR-код токена"
 
-#: src/screens/RegisterTokenManual.js:98
+#: src/screens/RegisterTokenManual.js:110
+msgid "Failed to register token. Please try again."
+msgstr ""
+
+#: src/screens/RegisterTokenManual.js:119
 msgid "You're going to register the following token:"
 msgstr "Вы зарегистрируете следующий токен:"
 
-#: src/screens/RegisterTokenManual.js:100
+#: src/screens/RegisterTokenManual.js:121
 msgid "Name: "
 msgstr "Имя: "
 
-#: src/screens/RegisterTokenManual.js:104
+#: src/screens/RegisterTokenManual.js:125
 msgid "Symbol: "
 msgstr "Символ: "
 
-#: src/screens/RegisterTokenManual.js:128
+#: src/screens/RegisterTokenManual.js:149
 msgid "Configuration string"
 msgstr "Конфигурация"
 
-#: src/screens/RegisterTokenManual.js:143
+#: src/screens/RegisterTokenManual.js:164
 msgid "Register token"
 msgstr "Зарегистрировать токен"
 
@@ -730,11 +824,19 @@ msgstr "ОТПРАВИТЬ"
 msgid "Address to send"
 msgstr "Адрес отправки"
 
-#: src/screens/SendAmountInput.js:97
+#: src/screens/SendAmountInput.js:143
 msgid "Insufficient funds"
 msgstr "Недостаточно средств"
 
-#: src/screens/SendAmountInput.js:122
+#: src/screens/SendAmountInput.js:150
+msgid "Calculating network fee..."
+msgstr ""
+
+#: src/screens/SendAmountInput.js:157 src/screens/SendAmountInput.js:162
+msgid "Insufficient balance of HTR to cover the network fee."
+msgstr ""
+
+#: src/screens/SendAmountInput.js:189
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
@@ -742,26 +844,30 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendAmountInput.js:136 src/screens/SendConfirmScreen.js:129
+#: src/screens/SendAmountInput.js:203 src/screens/SendConfirmScreen.js:188
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
+#: src/screens/SendConfirmScreen.js:33
+msgid "No fee"
+msgstr ""
+
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:70 src/screens/TokenSwapReview.js:145
+#: src/screens/SendConfirmScreen.js:86 src/screens/TokenSwapReview.js:145
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:83
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:99
 #: src/screens/TokenSwapReview.js:161
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:84
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:100
 #: src/screens/TokenSwapReview.js:162
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
-#: src/screens/SendConfirmScreen.js:120
+#: src/screens/SendConfirmScreen.js:136
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
@@ -769,23 +875,54 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendConfirmScreen.js:138
+#: src/screens/SendConfirmScreen.js:159
+msgid "Loading fee information..."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:162
+msgid "This is the native token, no network fees are charged."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:165
+msgid "This token is Deposit Based, no network fee will be charged."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:167
+msgid "This fee is fixed and required for every transfer of this token."
+msgstr ""
+
+#: src/components/Reown/NanoContract/NanoContractExecInfo.js:106
+#: src/screens/SendConfirmScreen.js:172
+msgid "Loading..."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:197
+#, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Ваш перевод **${ amountAndToken }** был подтвержден"
 
-#: src/components/NanoContract/EditAddressModal.js:63
-#: src/components/NanoContract/SelectAddressModal.js:131
-#: src/components/Reown/GetAddressRequest.js:42
-#: src/components/Reown/SendTransactionRequest.js:305
-#: src/components/Reown/SendTransactionRequest.js:342
-#: src/components/Reown/SignMessageRequest.js:40
-#: src/components/Reown/SignOracleDataRequest.js:46
-#: src/screens/SendConfirmScreen.js:157
-msgid "Address"
-msgstr "Адрес"
+#: src/screens/SendConfirmScreen.js:208
+msgid "Read more."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:224
+msgid "**Transaction summary**"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:227
+msgid "**To**"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:232
+msgid "**Network Fee**"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:240
+msgid "**Total**"
+msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:164
+#: src/screens/SendConfirmScreen.js:247
 msgid "Send"
 msgstr "Отправить"
 
@@ -1780,6 +1917,16 @@ msgstr ""
 msgid "Address at index ${ data.index }"
 msgstr ""
 
+#: src/components/NanoContract/EditAddressModal.js:63
+#: src/components/NanoContract/SelectAddressModal.js:131
+#: src/components/Reown/GetAddressRequest.js:42
+#: src/components/Reown/SendTransactionRequest.js:305
+#: src/components/Reown/SendTransactionRequest.js:342
+#: src/components/Reown/SignMessageRequest.js:40
+#: src/components/Reown/SignOracleDataRequest.js:46
+msgid "Address"
+msgstr "Адрес"
+
 #: src/components/Reown/GetAddressRequest.js:78
 msgid ""
 "The app will receive your address for identification. It cannot access your "
@@ -2161,10 +2308,6 @@ msgstr ""
 #: src/components/NanoContract/NanoContractsListItem.js:59
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:90
 msgid "Blueprint Name"
-msgstr ""
-
-#: src/components/Reown/NanoContract/NanoContractExecInfo.js:106
-msgid "Loading..."
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:103
