@@ -400,11 +400,11 @@ msgstr "Escolha como seus tokens vão se comportar em futuras transações."
 
 #: src/screens/CreateTokenTypeNotice.js:104
 msgid "Deposit Token:"
-msgstr "Token de Depósito"
+msgstr "Token de Depósito:"
 
 #: src/screens/CreateTokenTypeNotice.js:105
 msgid "Requires a 1% HTR deposit."
-msgstr "Requer depósito de 1% em HTR"
+msgstr "Requer depósito de 1% em HTR."
 
 #: src/screens/CreateTokenTypeNotice.js:106
 msgid "No network fees in future transfers."
@@ -420,7 +420,7 @@ msgstr "Recomendado para uso frequente."
 
 #: src/screens/CreateTokenTypeNotice.js:112
 msgid "Fee Token:"
-msgstr "Token de Taxa"
+msgstr "Token de Taxa:"
 
 #: src/screens/CreateTokenTypeNotice.js:113
 msgid "Requires 0.01 HTR fee to create."
@@ -855,7 +855,7 @@ msgstr "Calculando taxa da rede..."
 
 #: src/screens/SendAmountInput.js:157 src/screens/SendAmountInput.js:162
 msgid "Insufficient balance of HTR to cover the network fee."
-msgstr "Saldo insuficiente para cobrir a taxa da rede"
+msgstr "Saldo insuficiente para cobrir a taxa da rede."
 
 #: src/screens/SendAmountInput.js:189
 #, javascript-format
@@ -896,7 +896,7 @@ msgstr[1] "Você tem ${ availablePretty } disponíveis"
 
 #: src/screens/SendConfirmScreen.js:159
 msgid "Loading fee information..."
-msgstr "Carregando informações da taxa."
+msgstr "Carregando informações da taxa..."
 
 #: src/screens/SendConfirmScreen.js:162
 msgid "This is the native token, no network fees are charged."
