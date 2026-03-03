@@ -142,7 +142,7 @@ const SendAmountInput = () => {
     }
 
     const { address } = params;
-    navigation.navigate('SendConfirmScreen', { address, amount: amountValue, token });
+    navigation.navigate('SendConfirmScreen', { address, amount: amountValue, token, networkFee });
   };
 
   const isButtonDisabled = () => (

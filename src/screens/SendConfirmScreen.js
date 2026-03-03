@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { useSelector } from 'react-redux';
 import { msgid, ngettext, t } from 'ttag';
@@ -47,35 +47,14 @@ const SendConfirmScreen = () => {
   const params = useParams();
 
   // Parse and store navigation params
-  const { amount, address, token } = params;
+  const { amount, address, token, networkFee } = params;
   const isNFT = isTokenNFT(token.uid, tokenMetadata);
   const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
 
   const [modal, setModal] = useState(null);
-  const [networkFee, setNetworkFee] = useState(null);
   const [isTooltipShown, setIsTooltipShown] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      if (token.version !== TokenVersion.FEE) {
-        setNetworkFee(0n);
-        return;
-      }
-      try {
-        const { changeAmount } = await wallet.getUtxosForAmount(amount, { token: token.uid });
-        if (changeAmount) {
-          // Since there is change, it means we will have the intended output and a change output.
-          // 2 FBT outputs means the fee value will be payed twice
-          setNetworkFee(2n * hathorLib.constants.FEE_PER_OUTPUT);
-        } else {
-          // No change means that there will only be the intended output.
-          setNetworkFee(hathorLib.constants.FEE_PER_OUTPUT);
-        }
-      } catch (err) {
-        setNetworkFee(hathorLib.constants.FEE_PER_OUTPUT);
-      }
-    })();
-  }, [wallet, token, amount]);
+  const nativeSymbol = hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
 
   /**
    * In case we can prepare the data, open send tx feedback modal (while sending the tx)
@@ -193,7 +172,11 @@ const SendConfirmScreen = () => {
       return <Text style={{ color: COLORS.textColorShadow }}>{t`Loading...`}</Text>;
     }
     if (networkFee > 0n) {
-      return <Text>{renderValue(networkFee, false)} HTR</Text>;
+      return (
+        <Text>
+          {renderValue(networkFee, false)} {nativeSymbol}
+        </Text>
+      )
     }
     return <NoFee />;
   };
@@ -255,7 +238,7 @@ const SendConfirmScreen = () => {
               </View>
               <View style={styles.summaryItem}>
                 <TextFmt>{t`**Total**`}</TextFmt>
-                <Text>{`${amountAndToken}${networkFee ? ` + ${renderValue(networkFee, false)} HTR` : ''}`}</Text>
+                <Text>{`${amountAndToken}${networkFee ? ` + ${renderValue(networkFee, false)} ${nativeSymbol}` : ''}`}</Text>
               </View>
             </View>
           </View>
