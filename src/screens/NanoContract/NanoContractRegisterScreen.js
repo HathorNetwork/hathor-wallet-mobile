@@ -46,6 +46,7 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import { FeedbackContent } from '../../components/FeedbackContent';
 import { hasError } from '../../utils';
+import NavigationService from '../../NavigationService';
 
 /**
  * Validates the formModel, returning the invalidModel.
@@ -255,7 +256,7 @@ const FieldContainer = ({ last, children }) => (
 const NavigationHeader = ({ navigation }) => (
   <HathorHeader
     title={t`Nano Contract Registration`.toUpperCase()}
-    onBackPress={() => navigation.goBack()}
+    onBackPress={() => NavigationService.resetToMain()}
   />
 );
 
