@@ -156,7 +156,13 @@ const CreateTokenAmount = () => {
   useEffect(() => {
     if (tokenVersion === TokenVersion.FEE) {
       setInfoBoxItems([
-        <Text key='fee'>{t`A small fee will be applied to each future transaction of this token.`}</Text>,
+        <Text key='fee'>{t`Network fee:`} <Strong style={amountStyle}>
+          {hathorLib.numberUtils.prettyValue(networkFee)} {nativeSymbol}
+        </Strong></Text>,
+        <Text key='available'>
+          {jt`You have ${amountAvailableText} available`}
+        </Text>,
+        <Text key='feeInfo'>{t`A small fee will be applied to each future transaction of this token.`}</Text>,
       ]);
     } else {
       setInfoBoxItems([

@@ -83,6 +83,7 @@ const CreateTokenConfirm = () => {
   const [modalType, setModalType] = useState(null);
   const [title, setTitle] = useState(t`CREATE TOKEN`);
   const [deposit, setDeposit] = useState(null);
+  const [networkFee, setNetworkFee] = useState(null);
 
   useEffect(() => {
     setTitle(getCreateTokenTitle(tokenVersion));
@@ -91,8 +92,13 @@ const CreateTokenConfirm = () => {
   useEffect(() => {
     if (tokenVersion === TokenVersion.DEPOSIT) {
       setDeposit(hathorLib.tokensUtils.getDepositAmount(amount));
+      setNetworkFee(null);
+    } else if (tokenVersion === TokenVersion.FEE) {
+      setDeposit(null);
+      setNetworkFee(hathorLib.constants.FEE_PER_OUTPUT);
     } else {
       setDeposit(null);
+      setNetworkFee(null);
     }
   }, [tokenVersion, amount]);
 
@@ -245,6 +251,14 @@ const CreateTokenConfirm = () => {
               label={t`Deposit`}
               editable={false}
               value={`${hathorLib.numberUtils.prettyValue(deposit)} ${nativeSymbol}`}
+              containerStyle={{ marginTop: 32 }}
+            />
+          )}
+          { networkFee != null && (
+            <SimpleInput
+              label={t`Network fee`}
+              editable={false}
+              value={`${hathorLib.numberUtils.prettyValue(networkFee)} ${nativeSymbol}`}
               containerStyle={{ marginTop: 32 }}
             />
           )}
