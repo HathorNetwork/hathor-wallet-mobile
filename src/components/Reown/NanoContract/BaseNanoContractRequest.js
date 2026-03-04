@@ -17,6 +17,7 @@ import NewHathorButton from '../../NewHathorButton';
 import { DappContainer } from './DappContainer';
 import { NanoContractExecInfo } from './NanoContractExecInfo';
 import { NanoContractActions } from './NanoContractActions';
+import { TransactionFees } from '../TransactionFees';
 import { NanoContractMethodArgs } from './NanoContractMethodArgs';
 import { FeedbackContent } from '../../FeedbackContent';
 import FeedbackModal from '../../FeedbackModal';
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
  * Base component for nano contract requests that provides common functionality
  *
  * @param {Object} props
- * @param {Object} props.nano - Nano contract data
+ * @param {import('@hathor/hathor-rpc-handler').NanoContractParams} props.nano - Nano contract data
  * @param {Object} props.dapp - DApp information
  * @param {Function} props.onAccept - Accept callback
  * @param {Function} props.onReject - Reject callback
@@ -551,6 +552,10 @@ export const BaseNanoContractRequest = ({
               error={knownTokens.error}
               isTokenRegistered={isTokenRegistered}
               showTokenInfo={showTokenInfo}
+            />
+            <TransactionFees
+              fees={nanoWithCaller.fees}
+              tokens={knownTokens}
             />
             <NanoContractMethodArgs
               blueprintId={nano.blueprintId}

@@ -34,6 +34,7 @@ import Spinner from '../Spinner';
 import { DeclineModal } from './NanoContract/DeclineModal';
 import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 import { isTokenNFT } from '../../utils';
+import { TransactionFees } from './TransactionFees';
 
 const styles = StyleSheet.create({
   wide: {
@@ -513,6 +514,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
               {renderInputs()}
               {renderOutputs()}
               {renderChangeAddress()}
+              <TransactionFees fees={data?.fees} tokens={knownTokens} />
 
               {data.pushTx === false && (
                 <View style={styles.noPushNotice}>

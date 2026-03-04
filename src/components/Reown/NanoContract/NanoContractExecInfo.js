@@ -113,6 +113,10 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
           <TextValue label>{t`Blueprint Method`}</TextValue>
           <FrozenTextValue>{nc.method}</FrozenTextValue>
         </View>
+        <View>
+          <TextValue label>{t`Contract pays fees?`}</TextValue>
+          <FrozenTextValue>{nc.contractPaysFees ? t`Yes` : t`No`}</FrozenTextValue>
+        </View>
         <View style={commonStyles.cardSeparator} />
         <TouchableOpacity onPress={onSelectAddress}>
           <View style={styles.contentEditable}>
