@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
-import { numberUtils } from '@hathor/wallet-lib';
+import { numberUtils, TokenVersion } from '@hathor/wallet-lib';
 import { t } from 'ttag';
 import {
   createTokenRetry,
@@ -37,6 +37,7 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 import { DeclineModal } from './NanoContract/DeclineModal';
+import { TransactionFees } from './TransactionFees';
 
 const condRenderData = (
   attribute,
@@ -76,6 +77,17 @@ const condRenderData = (
 function renderBooleanFormatter(bool) {
   return bool ? t`Yes` : t`No`;
 }
+/**
+ * Renders translated values for token version
+ * @param {TokenVersion} version
+ */
+function renderVersionFormatter(version) {
+  const versionMap = {
+    [TokenVersion.FEE]: t`Fee`,
+    [TokenVersion.DEPOSIT]: t`Deposit`,
+  };
+  return versionMap[version] || t`Unknown`;
+}
 
 export const CreateTokenRequestData = ({ data }) => (
   <View style={[commonStyles.card, commonStyles.cardSplit]}>
@@ -89,6 +101,7 @@ export const CreateTokenRequestData = ({ data }) => (
       {condRenderData(data.name, t`Name`, false)}
       {condRenderData(data.symbol, t`Symbol`, true)}
       {condRenderData(data.amount, t`Amount`, true, numberUtils.prettyValue)}
+      {condRenderData(data.version, t`Type`, true, renderVersionFormatter)}
       {condRenderData(data.address, t`Address to send newly minted ${data.symbol}`, true)}
       {condRenderData(data.changeAddress, t`Address to send change ${DEFAULT_TOKEN.symbol}`, true)}
       {condRenderData(data.createMint, t`Create mint authority?`, true, renderBooleanFormatter)}
@@ -110,6 +123,7 @@ export const CreateTokenRequestData = ({ data }) => (
           renderBooleanFormatter,
         )}
       {condRenderData(data.contractPaysTokenDeposit, t`Contract pays token deposit?`, true, renderBooleanFormatter)}
+      {condRenderData(data.contractPaysFees, t`Contract pays fees?`, true, renderBooleanFormatter)}
       {condRenderData(data.data, t`Token data`, true, (tokenData) => tokenData.join('\n'))}
     </View>
   </View>
@@ -179,6 +193,7 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
             <View style={styles.content}>
               <DappContainer dapp={dapp} />
               <CreateTokenRequestData data={data} />
+              {data?.fee && (<TransactionFees fee={data?.fee} />)}
               {/* User actions */}
               <View style={styles.actionContainer}>
                 <NewHathorButton

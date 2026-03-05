@@ -940,6 +940,7 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           sendTransactionResponseTemplate(false),
           {
             ...request.data,
+            params: request.params,
             tokenDetails: tokenDetailsObj,
           },
           requestMetadata
