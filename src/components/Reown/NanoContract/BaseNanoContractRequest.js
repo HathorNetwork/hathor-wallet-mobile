@@ -553,10 +553,11 @@ export const BaseNanoContractRequest = ({
               isTokenRegistered={isTokenRegistered}
               showTokenInfo={showTokenInfo}
             />
-            <TransactionFees
-              fees={nanoWithCaller.fees}
-              tokens={knownTokens}
-            />
+            {nanoWithCaller.fee && (
+              <TransactionFees
+                fee={nanoWithCaller.fee}
+              />
+            )}
             <NanoContractMethodArgs
               blueprintId={nano.blueprintId}
               blueprintName={blueprintInfo?.data?.name}

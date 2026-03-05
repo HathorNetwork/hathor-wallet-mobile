@@ -514,7 +514,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
               {renderInputs()}
               {renderOutputs()}
               {renderChangeAddress()}
-              <TransactionFees fees={data?.fees} tokens={knownTokens} />
+              {data?.fee && (<TransactionFees fee={data?.fee} />)}
 
               {data.pushTx === false && (
                 <View style={styles.noPushNotice}>

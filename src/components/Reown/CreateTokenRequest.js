@@ -193,7 +193,7 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
             <View style={styles.content}>
               <DappContainer dapp={dapp} />
               <CreateTokenRequestData data={data} />
-              <TransactionFees fees={data?.fees} tokens={knownTokens} />
+              <TransactionFees fee={data?.fee} />
               {/* User actions */}
               <View style={styles.actionContainer}>
                 <NewHathorButton
