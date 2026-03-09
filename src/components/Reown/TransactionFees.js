@@ -19,6 +19,25 @@ import { renderValue } from '../../utils';
 import { SentIcon } from '../Icons/Sent.icon';
 import { COLORS } from '../../styles/themes';
 
+const styles = StyleSheet.create({
+  wrapper: { marginTop: 0, marginBottom: 0, marginHorizontal: 0 },
+  symbol: [commonStyles.text, commonStyles.bold],
+  amount: {
+    marginLeft: 'auto',
+    marginRight: 0,
+    paddingRight: 16,
+  },
+  amountText: {
+    fontSize: 16,
+    lineHeight: 20,
+    color: COLORS.black,
+    textAlign: 'right',
+  },
+  contentWrapper: {
+    flex: 1,
+  },
+});
+
 /**
  * Renders a list of network fees with icon, token symbol, and amount.
  * Returns null if there are no fees to render.
@@ -27,15 +46,13 @@ import { COLORS } from '../../styles/themes';
  * @param {bigint} props.fee fee amount
  */
 export const TransactionFees = ({ fee }) => {
-  const styles = StyleSheet.create({
-    wrapper: { marginTop: 0, marginBottom: 0, marginHorizontal: 0 },
-  });
+  if (!fee) {
+    return null;
+  }
 
   return (
     <View>
-      <View>
-        <Text style={commonStyles.sectionTitle}>{t`Network Fee`}</Text>
-      </View>
+      <Text style={commonStyles.sectionTitle}>{t`Network Fee`}</Text>
       <HathorFlatList
         scrollEnabled={false} // it avoids nearest scrolls
         wrapperStyle={styles.wrapper}
@@ -62,24 +79,6 @@ export const TransactionFees = ({ fee }) => {
  * @param {boolean} props.isNft Whether the token is an NFT
  */
 const FeeItem = ({ fee, symbol, isNft }) => {
-  const styles = StyleSheet.create({
-    symbol: [commonStyles.text, commonStyles.bold],
-    amount: {
-      marginLeft: 'auto',
-      marginRight: 0,
-      paddingRight: 16,
-    },
-    amountText: {
-      fontSize: 16,
-      lineHeight: 20,
-      color: COLORS.black,
-      textAlign: 'right',
-    },
-    contentWrapper: {
-      flex: 1,
-    },
-  });
-
   const amountToRender = renderValue(fee, isNft);
 
   return (

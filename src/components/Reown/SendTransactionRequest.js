@@ -326,7 +326,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
         {outputs.map((output, index) => {
           const tokenId = output.token || constants.NATIVE_TOKEN_UID;
           // Convert string value to bigint for display
-          const value = output.value ? BigInt(output.value) : null;
+          const value = output.value != null ? BigInt(output.value) : null;
           const outputKey = `output-${output.address || ''}-${index}`;
 
           return (
