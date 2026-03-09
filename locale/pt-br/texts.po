@@ -429,7 +429,7 @@ msgstr "Requer 0,01 HTR para criar o token."
 
 #: src/screens/CreateTokenTypeNotice.js:114
 msgid "No deposit required."
-msgstr "Nenhum deósito é necessário."
+msgstr "Nenhum depósito é necessário."
 
 #: src/screens/CreateTokenTypeNotice.js:115
 msgid "A small fee applies to every transfer."
