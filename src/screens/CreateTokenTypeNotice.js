@@ -20,7 +20,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import baseStyle from '../styles/init';
 import { Link, str2jsx } from '../utils';
-import { TOKEN_DEPOSIT_URL } from '../constants';
+import { TOKEN_FEES_URL } from '../constants';
 import infoCircle from '../assets/icons/info-circle.png'
 import { COLORS } from '../styles/themes';
 
@@ -121,7 +121,7 @@ class CreateTokenTypeNotice extends React.Component {
               <Text style={[this.style.text, this.style.infoText]}>
                 {str2jsx(
                   t`Once selected, the token type cannot be changed later. |link:Learn more about deposits and fees here|`,
-                  { link: (x, i) => <Link key={i} href={TOKEN_DEPOSIT_URL}>{x}</Link> }
+                  { link: (x, i) => <Link key={i} href={TOKEN_FEES_URL}>{x}</Link> }
                 )}
               </Text>
             </View>

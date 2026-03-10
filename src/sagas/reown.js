@@ -198,6 +198,7 @@ function convertAndStoreTokenDetails(tokenDetailsMap, dispatch) {
         uid: key,
         name: value.tokenInfo.name,
         symbol: value.tokenInfo.symbol,
+        version: value.tokenInfo.version,
       },
     ])
   );
@@ -940,6 +941,7 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           sendTransactionResponseTemplate(false),
           {
             ...request.data,
+            params: request.params,
             tokenDetails: tokenDetailsObj,
           },
           requestMetadata
