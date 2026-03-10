@@ -125,7 +125,8 @@ export const CreateTokenRequestData = ({ data }) => (
       {condRenderData(data.contractPaysTokenDeposit, t`Contract pays token deposit?`, true, renderBooleanFormatter)}
       {condRenderData(data.contractPaysFees, t`Contract pays fees?`, true, renderBooleanFormatter)}
       {condRenderData(data.data, t`Token data`, true, (tokenData) => tokenData.join('\n'))}
-      {condRenderData(data.deposit, t`Deposit`, true, (value) => renderAmountAndSymbol(value, DEFAULT_TOKEN))}
+      {/* in this case we want to render only if data.deposit is not null and not 0 */}
+      {data.deposit && condRenderData(data.deposit, t`Deposit`, true, (value) => renderAmountAndSymbol(value, DEFAULT_TOKEN))}
       {condRenderData(true, t`Network Fee`, true, () => (data.fee ? renderAmountAndSymbol(data.fee, DEFAULT_TOKEN) : '-'))}
     </View>
   </View>
