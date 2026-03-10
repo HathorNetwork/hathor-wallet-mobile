@@ -265,6 +265,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   summaryItem: {
+    width: '100%',
     padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
