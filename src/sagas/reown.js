@@ -198,6 +198,7 @@ function convertAndStoreTokenDetails(tokenDetailsMap, dispatch) {
         uid: key,
         name: value.tokenInfo.name,
         symbol: value.tokenInfo.symbol,
+        version: value.tokenInfo.version,
       },
     ])
   );
