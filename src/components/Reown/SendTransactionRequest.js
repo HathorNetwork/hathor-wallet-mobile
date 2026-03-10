@@ -34,6 +34,7 @@ import Spinner from '../Spinner';
 import { DeclineModal } from './NanoContract/DeclineModal';
 import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 import { isTokenNFT } from '../../utils';
+import { TransactionFees } from './TransactionFees';
 
 const styles = StyleSheet.create({
   wide: {
@@ -193,6 +194,12 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   // Get error details from centralized error storage
   const errorDetails = reown.error;
 
+  // Use params for display (outputs, inputs)
+  // Use data for fee, changeAddress, pushTx
+  const params = data.params || {};
+  const { outputs = [], inputs = [] } = params;
+  const { fee, changeAddress, pushTx } = data;
+
   // Use token info hook
   const {
     showTokenInfoModal,
@@ -273,14 +280,14 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   };
 
   const renderInputs = () => {
-    if (!data?.inputs || data.inputs.length === 0) {
+    if (!inputs || inputs.length === 0) {
       return null;
     }
 
     return (
       <View>
         <Text style={styles.sectionTitle}>{t`Inputs`}</Text>
-        {data.inputs.map((input, index) => {
+        {inputs.map((input, index) => {
           const inputKey = `input-${input.txId || ''}-${input.index || ''}-${index}`;
           return (
             <View
@@ -289,28 +296,18 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
             >
               <View style={styles.itemHeader}>
                 <Text style={styles.itemTitle}>{t`Input`} {index + 1}</Text>
-                {renderTokenValue(input?.value, input?.token)}
               </View>
               <Text style={styles.labelText}>{t`Transaction ID`}</Text>
               <View style={styles.valueContainer}>
                 <Text style={styles.monospace}>
-                  {truncateTxId(input?.txId)} ({input?.index})
+                  {truncateTxId(input.txId)} ({input.index})
                 </Text>
-                {input?.txId && (
+                {input.txId && (
                   <TouchableOpacity onPress={() => copyToClipboard(input.txId)}>
                     <Text style={styles.copyButton}>{t`Copy ID`}</Text>
                   </TouchableOpacity>
                 )}
               </View>
-              <Text style={styles.labelText}>{t`Address`}</Text>
-              <TouchableOpacity
-                style={styles.addressContainer}
-                onPress={() => copyToClipboard(input?.address)}
-              >
-                <Text style={styles.monospace} numberOfLines={1}>
-                  {input?.address}
-                </Text>
-              </TouchableOpacity>
             </View>
           );
         })}
@@ -319,15 +316,19 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   };
 
   const renderOutputs = () => {
-    if (!data?.outputs || data.outputs.length === 0) {
+    if (!outputs || outputs.length === 0) {
       return null;
     }
 
     return (
       <View>
         <Text style={styles.sectionTitle}>{t`Outputs`}</Text>
-        {data.outputs.map((output, index) => {
+        {outputs.map((output, index) => {
+          const tokenId = output.token || constants.NATIVE_TOKEN_UID;
+          // Convert string value to bigint for display
+          const value = output.value != null ? BigInt(output.value) : null;
           const outputKey = `output-${output.address || ''}-${index}`;
+
           return (
             <View
               key={outputKey}
@@ -335,30 +336,30 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
             >
               <View style={styles.itemHeader}>
                 <Text style={styles.itemTitle}>{t`Output`} {index + 1}</Text>
-                {renderTokenValue(output?.value, output?.token)}
+                {renderTokenValue(value, tokenId)}
               </View>
-              {output?.address && (
+              {output.address && (
                 <>
                   <Text style={styles.labelText}>{t`Address`}</Text>
                   <TouchableOpacity
                     style={styles.addressContainer}
-                    onPress={() => copyToClipboard(output?.address)}
+                    onPress={() => copyToClipboard(output.address)}
                   >
                     <Text style={styles.monospace} numberOfLines={1}>
-                      {output?.address}
+                      {output.address}
                     </Text>
                   </TouchableOpacity>
                 </>
               )}
-              {output?.data && (
-                <View>
+              {output.data && (
+                <>
                   <Text style={styles.labelText}>{t`Data field`}</Text>
                   <View style={styles.valueContainer}>
                     <Text style={styles.monospace}>
                       {output.data}
                     </Text>
                   </View>
-                </View>
+                </>
               )}
             </View>
           );
@@ -368,7 +369,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
   };
 
   const renderChangeAddress = () => {
-    if (!data?.changeAddress) {
+    if (!changeAddress) {
       return null;
     }
 
@@ -378,10 +379,10 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
         <View style={styles.itemContainer}>
           <TouchableOpacity
             style={styles.addressContainer}
-            onPress={() => copyToClipboard(data.changeAddress)}
+            onPress={() => copyToClipboard(changeAddress)}
           >
             <Text style={styles.monospace} numberOfLines={1}>
-              {data.changeAddress}
+              {changeAddress}
             </Text>
           </TouchableOpacity>
         </View>
@@ -442,19 +443,12 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
       // Check if there are unregistered tokens in the transaction
       const tokensInTransaction = new Set();
 
-      // Collect all token UIDs from inputs and outputs
-      if (data?.inputs) {
-        data.inputs.forEach((input) => {
-          if (input.token && input.token !== constants.NATIVE_TOKEN_UID) {
-            tokensInTransaction.add(input.token);
-          }
-        });
-      }
-
-      if (data?.outputs) {
-        data.outputs.forEach((output) => {
-          if (output.token && output.token !== constants.NATIVE_TOKEN_UID) {
-            tokensInTransaction.add(output.token);
+      // Collect all token UIDs from outputs (params.outputs)
+      if (outputs) {
+        outputs.forEach((output) => {
+          const tokenId = output.token || constants.NATIVE_TOKEN_UID;
+          if (tokenId !== constants.NATIVE_TOKEN_UID) {
+            tokensInTransaction.add(tokenId);
           }
         });
       }
@@ -483,7 +477,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
       // Restore ready status
       dispatch(setSendTxStatusReady());
     }
-  }, [sendTxStatus, data, registeredTokens, unregisteredTokens]);
+  }, [sendTxStatus, outputs, registeredTokens, unregisteredTokens]);
 
   return (
     <>
@@ -513,8 +507,9 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
               {renderInputs()}
               {renderOutputs()}
               {renderChangeAddress()}
+              {fee && (<TransactionFees fee={fee} />)}
 
-              {data.pushTx === false && (
+              {pushTx === false && (
                 <View style={styles.noPushNotice}>
                   <Text style={styles.noPushNoticeText}>
                     {t`This transaction will only be built, not pushed to the network.`}

@@ -27,7 +27,7 @@ import {
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import IconTabBar from './icon-font';
 import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
-import { setSupportedBiometry, isTokenSwapEnabled } from './utils';
+import { setSupportedBiometry, isTokenSwapEnabled, isFeeBasedTokensEnabled } from './utils';
 import {
   appStateUpdate,
   lockScreen,
@@ -65,6 +65,7 @@ import SendConfirmScreen from './screens/SendConfirmScreen';
 import Dashboard from './screens/Dashboard';
 import RegisterToken from './screens/RegisterToken';
 import CreateTokenDepositNotice from './screens/CreateTokenDepositNotice';
+import CreateTokenTypeNotice from './screens/CreateTokenTypeNotice';
 import CreateTokenAmount from './screens/CreateTokenAmount';
 import CreateTokenConfirm from './screens/CreateTokenConfirm';
 import CreateTokenDetail from './screens/CreateTokenDetail';
@@ -75,7 +76,6 @@ import About from './screens/About';
 import Security from './screens/Security';
 import PushNotification from './screens/PushNotification';
 import ChangePin from './screens/ChangePin';
-import PaymentRequestDetail from './screens/PaymentRequestDetail';
 import ChangeToken from './screens/ChangeToken';
 import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
@@ -226,14 +226,21 @@ const SendStack = ({ navigation }) => {
  */
 const CreateTokenStack = () => {
   const Stack = createStackNavigator();
+  const fbtEnabled = useSelector(isFeeBasedTokensEnabled);
+  let initialRoute = 'CreateTokenDepositNotice';
+
+  if (fbtEnabled) {
+    initialRoute = 'CreateTokenTypeNotice';
+  }
 
   return (
     <Stack.Navigator
-      initialRouteName='CreateTokenDepositNotice'
+      initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
       }}
     >
+      <Stack.Screen name='CreateTokenTypeNotice' component={CreateTokenTypeNotice} />
       <Stack.Screen name='CreateTokenDepositNotice' component={CreateTokenDepositNotice} />
       <Stack.Screen name='CreateTokenName' component={CreateTokenName} />
       <Stack.Screen name='CreateTokenSymbol' component={CreateTokenSymbol} />
@@ -448,7 +455,6 @@ const AppStack = () => {
     let newEdges;
     switch (lastRouteName) {
       case 'RegisterToken':
-      case 'PaymentRequestDetail':
       case 'CreateTokenStack':
       case 'About':
       case 'ResetWallet':
@@ -508,7 +514,6 @@ const AppStack = () => {
           component={ResetWallet}
           options={{ gesturesEnabled: false }}
         />
-        <Stack.Screen name='PaymentRequestDetail' component={PaymentRequestDetail} />
         <Stack.Screen name='RegisterToken' component={RegisterTokenStack} />
         <Stack.Screen name='RegisterNanoContract' component={RegisterNanoContractStack} />
         <Stack.Screen name='ChangeToken' component={ChangeToken} />

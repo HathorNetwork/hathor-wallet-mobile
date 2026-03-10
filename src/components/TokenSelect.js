@@ -60,9 +60,15 @@ const TokenSelect = (props) => {
             <View style={symbolWrapperStyle}>
               <Text style={symbolTextStyle}>{item.symbol}</Text>
             </View>
-            <Text style={[styles.text, styles.leftText]}>{item.name}</Text>
+            <Text
+              style={[styles.text, styles.leftText, styles.nameText]}
+              numberOfLines={1}
+              ellipsizeMode='tail'
+            >
+              {item.name}
+            </Text>
           </View>
-          <View style={styles.itemLeftWrapper}>
+          <View style={styles.itemRightWrapper}>
             <Text style={[styles.text, styles.rightText]}>
               {tokenState === TOKEN_DOWNLOAD_STATUS.READY && (
                 renderValue(
@@ -129,9 +135,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   itemLeftWrapper: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    flexShrink: 1,
+  },
+  itemRightWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 0,
   },
   symbolWrapper: {
     padding: 4,
@@ -149,6 +161,11 @@ const styles = StyleSheet.create({
   },
   leftText: {
     fontSize: 14,
+  },
+  nameText: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
   },
   symbolText: {
     fontWeight: 'bold',

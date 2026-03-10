@@ -14,7 +14,7 @@ import InfoBox from '../components/InfoBox';
 import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
 import SimpleInput from '../components/SimpleInput';
-import { getKeyboardAvoidingViewTopDistance, Italic } from '../utils';
+import { getKeyboardAvoidingViewTopDistance, Italic, getCreateTokenTitle } from '../utils';
 
 /**
  * This screen expect the following parameters on the navigation:
@@ -35,8 +35,8 @@ class CreateTokenSymbol extends React.Component {
   }
 
   onButtonPress = () => {
-    const { name } = this.props.route.params;
-    this.props.navigation.navigate('CreateTokenAmount', { name, symbol: this.state.symbol });
+    const { name, tokenVersion } = this.props.route.params;
+    this.props.navigation.navigate('CreateTokenAmount', { name, symbol: this.state.symbol, tokenVersion });
   }
 
   isButtonDisabled = () => {
@@ -56,10 +56,12 @@ class CreateTokenSymbol extends React.Component {
   }
 
   render() {
+    const { tokenVersion } = this.props.route.params;
+    const title = getCreateTokenTitle(tokenVersion);
     return (
       <View style={{ flex: 1 }}>
         <HathorHeader
-          title={t`CREATE TOKEN`}
+          title={title}
           onBackPress={() => this.props.navigation.goBack()}
           onCancel={() => this.props.navigation.getParent().goBack()}
         />

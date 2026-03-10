@@ -21,6 +21,7 @@ import RequestErrorModal from './RequestErrorModal';
 import GetAddressModal from './GetAddressModal';
 import GetAddressClientModal from './GetAddressClientModal';
 import GetUtxosModal from './GetUtxosModal';
+import NetworkMismatchModal from './NetworkMismatchModal';
 
 export default () => {
   const dispatch = useDispatch();
@@ -48,6 +49,7 @@ export default () => {
     [ReownModalTypes.GET_ADDRESS]: GetAddressModal,
     [ReownModalTypes.GET_ADDRESS_CLIENT]: GetAddressClientModal,
     [ReownModalTypes.GET_UTXOS]: GetUtxosModal,
+    [ReownModalTypes.NETWORK_MISMATCH]: NetworkMismatchModal,
   };
 
   const getModal = (type) => {
@@ -79,4 +81,5 @@ export const ReownModalTypes = {
   GET_ADDRESS: 'GetAddress',
   GET_ADDRESS_CLIENT: 'GetAddressClient',
   GET_UTXOS: 'GetUtxos',
+  NETWORK_MISMATCH: 'NetworkMismatch',
 };

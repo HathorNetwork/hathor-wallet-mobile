@@ -92,12 +92,12 @@ const parseDeepLink = (url) => {
  */
 const processDeepLinkAction = (deepLinkAction, dispatchWalletConnectUri) => {
   if (deepLinkAction.type === DEEP_LINK_TYPE.WALLETCONNECT) {
+    // Dispatch the URI to trigger pairing/session request handling in the saga.
+    // The unified queue ensures that:
+    // - For pairing URIs: session proposal will be queued and shown via ConnectModal when ready
+    // - For session URIs: RPC request comes through existing WebSocket connection
+    // No navigation needed - modals appear automatically through the unified queue.
     dispatchWalletConnectUri(deepLinkAction.uri);
-    // Only navigate to ReownList for new connection requests (pairing URIs have symKey param)
-    // RPC requests on existing sessions don't need navigation - modal will appear automatically
-    if (isPairingUri(deepLinkAction.uri)) {
-      NavigationService.navigate('ReownList');
-    }
   } else if (deepLinkAction.type === DEEP_LINK_TYPE.NAVIGATE) {
     NavigationService.navigate(deepLinkAction.screen, deepLinkAction.params);
   }

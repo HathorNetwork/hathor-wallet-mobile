@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { BackHandler } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useReownSignal } from './useReownSignal';
 
 /**
  * Custom hook to handle back button and navigation events with a confirmation modal
@@ -19,13 +20,13 @@ import { useNavigation } from '@react-navigation/native';
 export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondition = false) => {
   const navigation = useNavigation();
   const [isIntentionallyNavigatingBack, setIsIntentionallyNavigatingBack] = useState(false);
+  const { signalReadyForNextFlow } = useReownSignal();
 
   // Set up back button and navigation event handlers
   useEffect(() => {
     // Add back button handler to intercept Android back button
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      // If we're intentionally navigating back or the condition to allow navigation is met,
-      // allow the default back behavior
+      // If we're intentionally navigating back or the condition is met, allow the default behavior
       if (isIntentionallyNavigatingBack || allowNavigationCondition) {
         return false;
       }
@@ -37,8 +38,7 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
 
     // Add navigation event listener to handle iOS swipe back gesture
     const beforeRemoveListener = navigation.addListener('beforeRemove', (e) => {
-      // If we're intentionally navigating back or the condition to allow navigation is met,
-      // allow navigation
+      // If we're intentionally navigating back or the condition is met, allow navigation
       if (isIntentionallyNavigatingBack || allowNavigationCondition) {
         return;
       }
@@ -55,7 +55,8 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
     };
   }, [
     isIntentionallyNavigatingBack,
-    showConfirmationModal
+    showConfirmationModal,
+    allowNavigationCondition,
   ]);
 
   /**
@@ -69,6 +70,8 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
     if (beforeNavigateCallback) {
       beforeNavigateCallback();
     }
+
+    signalReadyForNextFlow();
 
     // We need to give time for any modal to close
     // before navigating back
@@ -90,6 +93,8 @@ export const useBackButtonHandler = (showConfirmationModal, allowNavigationCondi
     if (beforeNavigateCallback) {
       beforeNavigateCallback();
     }
+
+    signalReadyForNextFlow();
 
     // We need to give time for any modal to close
     // before navigating
