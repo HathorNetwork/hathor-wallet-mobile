@@ -37,7 +37,7 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 import { DeclineModal } from './NanoContract/DeclineModal';
-import { TransactionFees } from './TransactionFees';
+import { renderAmountAndSymbol } from '../../utils/tokenSwap';
 
 const condRenderData = (
   attribute,
@@ -101,7 +101,7 @@ export const CreateTokenRequestData = ({ data }) => (
       {condRenderData(data.name, t`Name`, false)}
       {condRenderData(data.symbol, t`Symbol`, true)}
       {condRenderData(data.amount, t`Amount`, true, numberUtils.prettyValue)}
-      {condRenderData(data.version, t`Type`, true, renderVersionFormatter)}
+      {condRenderData(data.version ?? TokenVersion.DEPOSIT, t`Type`, true, renderVersionFormatter)}
       {condRenderData(data.address, t`Address to send newly minted ${data.symbol}`, true)}
       {condRenderData(data.changeAddress, t`Address to send change ${DEFAULT_TOKEN.symbol}`, true)}
       {condRenderData(data.createMint, t`Create mint authority?`, true, renderBooleanFormatter)}
@@ -125,6 +125,8 @@ export const CreateTokenRequestData = ({ data }) => (
       {condRenderData(data.contractPaysTokenDeposit, t`Contract pays token deposit?`, true, renderBooleanFormatter)}
       {condRenderData(data.contractPaysFees, t`Contract pays fees?`, true, renderBooleanFormatter)}
       {condRenderData(data.data, t`Token data`, true, (tokenData) => tokenData.join('\n'))}
+      {condRenderData(data.deposit, t`Deposit`, true, (value) => renderAmountAndSymbol(value, DEFAULT_TOKEN))}
+      {condRenderData(true, t`Network Fee`, true, () => (data.fee ? renderAmountAndSymbol(data.fee, DEFAULT_TOKEN) : '-'))}
     </View>
   </View>
 );
@@ -193,7 +195,6 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
             <View style={styles.content}>
               <DappContainer dapp={dapp} />
               <CreateTokenRequestData data={data} />
-              {data?.fee && (<TransactionFees fee={data?.fee} />)}
               {/* User actions */}
               <View style={styles.actionContainer}>
                 <NewHathorButton
