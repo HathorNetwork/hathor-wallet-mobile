@@ -146,11 +146,12 @@ const SendConfirmScreen = () => {
     setIsTooltipShown(false);
 
     // Navigate to external link
-    if (token.version === TokenVersion.FEE) {
-      Linking.openURL(TOKEN_FEES_URL);
-    } else {
-      // for deposit based tokens and htr
+    if (token.version === TokenVersion.DEPOSIT) {
+      // for deposit based tokens
       Linking.openURL(TOKEN_DEPOSIT_URL);
+    } else {
+      // for fee-based tokens and htr
+      Linking.openURL(TOKEN_FEES_URL);
     }
   };
 
