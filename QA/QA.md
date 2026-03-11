@@ -42,7 +42,6 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Repeat the steps
 1. The Next button should not be clickable. Also, Network fee value should be 0.01 HTR (flat) and your balance should turn red.
 
-
 ### Receive Tests
 1. Go to "Settings" -> "Network Settings" and change your network to `testnet`
 1. Go to the Receive Screen and check the QR Code.
@@ -191,14 +190,13 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Copy its configuration string by clicking or sharing it.
 1. Unregister the token. Check that the "I want to unregister" radio button is mandatory.
 1. Click on Register Token, click on Manual Info, and paste the Configuration string.
-1. Click on Register Token, and check that the Test Token is back and your balance is 99 TEST.
+1. Click on Register Token, and check that the Test Token is back and your balance is 99 DBT.
 1. Unregister it again and now use the QR Code on the other device to register it.
 1. Go to the Dashboard Screen.
 1. Select the Fee token (FBT).
 1. Click on the Token info on the upper right.
 1. Check the `Fee model`, it should be Fee-based.
 1. Remove and re-register the fee token to see if the fee model remains correctly.
-
 
 ### Send HTR to a multisig address
 1. Go to the send screen and enter the following address `wRxmoq2bDxViPqFGmAsZVBwHNwjEyFj9zz`
