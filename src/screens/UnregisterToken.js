@@ -17,6 +17,7 @@ import { t } from 'ttag';
 import { connect } from 'react-redux';
 import hathorLib from '@hathor/wallet-lib';
 import { setTokens, tokenMetadataRemoved } from '../actions';
+import { saveCurrentTokensForNetwork } from '../utils/networkTokens';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import TextFmt from '../components/TextFmt';
@@ -29,6 +30,7 @@ import NavigationService from '../NavigationService';
  * selectedToken {Object} Select token config {name, symbol, uid}
  */
 const mapStateToProps = (state) => ({
+  wallet: state.wallet,
   storage: state.wallet.storage,
   selectedToken: state.selectedToken,
 });
@@ -91,9 +93,10 @@ class UnregisterToken extends React.Component {
       }
       return newTokens;
     });
-    promise.then((tokens) => {
+    promise.then(async (tokens) => {
       this.props.dispatch(tokenMetadataRemoved(tokenUnregister));
       this.props.dispatch(setTokens(tokens));
+      await saveCurrentTokensForNetwork(this.props.wallet);
       NavigationService.resetToMain();
     }, (e) => {
       this.setState({ errorMessage: e.message });
