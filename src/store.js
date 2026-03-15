@@ -14,6 +14,7 @@ export const ACCESS_DATA_KEY = 'asyncstorage:access';
 export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
 export const STORE_VERSION_KEY = 'asyncstorage:version';
 export const REGISTERED_NANO_CONTRACTS_KEY = 'asyncstorage:registeredNanoContracts';
+export const NETWORK_TOKENS_KEY = 'asyncstorage:networkTokens';
 export const PIN_BACKUP_KEY = 'asyncstorage:pinBackup';
 // Wheather old biometry mode is active (by the user request)
 export const IS_OLD_BIOMETRY_ENABLED_KEY = 'mobile:isBiometryEnabled';
@@ -530,6 +531,31 @@ class AsyncStorageStore {
     }
     // We have finished the migration so we can set the storage version to the most recent one.
     this.updateStorageVersion();
+  }
+
+  /**
+   * Save registered tokens for a specific network identified by genesis block hash.
+   *
+   * @param {string} genesisHash The genesis block hash identifying the network
+   * @param {Object} tokens Tokens map to save (keyed by uid)
+   */
+  saveTokensForNetwork(genesisHash, tokens) {
+    if (!genesisHash) return;
+    const networkTokens = this.getItem(NETWORK_TOKENS_KEY) || {};
+    networkTokens[genesisHash] = tokens;
+    this.setItem(NETWORK_TOKENS_KEY, networkTokens);
+  }
+
+  /**
+   * Get saved tokens for a specific network identified by genesis block hash.
+   *
+   * @param {string} genesisHash The genesis block hash identifying the network
+   * @returns {Object|null} Saved tokens map or null
+   */
+  getTokensForNetwork(genesisHash) {
+    if (!genesisHash) return null;
+    const networkTokens = this.getItem(NETWORK_TOKENS_KEY) || {};
+    return networkTokens[genesisHash] || null;
   }
 
   /**

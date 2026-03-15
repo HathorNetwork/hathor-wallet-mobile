@@ -11,6 +11,7 @@ import {
   fetchTokensMetadata,
   tokenMetadataUpdated,
 } from '../actions';
+import { saveCurrentTokensForNetwork } from './networkTokens';
 
 /**
  * Registers a token in the wallet storage and Redux store.
@@ -28,6 +29,7 @@ export const registerToken = async (wallet, dispatch, token) => {
   dispatch(newToken(token));
   // Force fetch to avoid returning stale cached data (e.g., after a token swap)
   dispatch(tokenFetchBalanceRequested(token.uid, true));
+  await saveCurrentTokensForNetwork(wallet);
 };
 
 /**

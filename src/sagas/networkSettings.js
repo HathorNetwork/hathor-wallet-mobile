@@ -27,6 +27,7 @@ import {
 import {
   getFullnodeNetwork,
   getWalletServiceNetwork,
+  getRegisteredTokens,
 } from './helpers';
 import { STORE } from '../store';
 import { isWalletServiceEnabled } from './wallet';
@@ -272,6 +273,17 @@ export function* persistNetworkSettings(action) {
     console.error('Error while persisting the custom network settings.', err);
     yield put(networkSettingsUpdateFailure());
     return;
+  }
+
+  // Save current registered tokens before switching networks
+  const serverInfo = yield select((state) => state.serverInfo);
+  const currentGenesisHash = serverInfo?.genesis_block_hash || null;
+  if (currentGenesisHash) {
+    const wallet = yield select((state) => state.wallet);
+    if (wallet) {
+      const tokens = yield call(getRegisteredTokens, wallet, true);
+      STORE.saveTokensForNetwork(currentGenesisHash, tokens);
+    }
   }
 
   const wallet = yield select((state) => state.wallet);
