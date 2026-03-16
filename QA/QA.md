@@ -176,7 +176,7 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. send it
 
 #### Sending a fee token without enough htr to cover network fee
-1. Send your remaning htr to another test wallet (you may need access to it to recover htr)
+1. Send your remaning htr to another test wallet and leave only `0.01 HTR` with you (you may need access to it to recover htr)
 1. Go to the Send Screen and enter the address of another test wallet.
 1. type 1 FBT
 1. Click in the Next button
