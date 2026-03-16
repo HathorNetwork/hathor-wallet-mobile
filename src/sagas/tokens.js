@@ -18,7 +18,13 @@ import {
 import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
-import { specificTypeAndPayload, dispatchAndWait, getRegisteredTokenUids, getNetworkSettings } from './helpers';
+import {
+  specificTypeAndPayload,
+  dispatchAndWait,
+  getRegisteredTokenUids,
+  getNetworkSettings,
+  getRegisteredTokens,
+} from './helpers';
 import { mapToTxHistory } from '../utils';
 import {
   types,
@@ -28,7 +34,10 @@ import {
   tokenFetchHistoryRequested,
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
+  tokensSavedForNetwork,
 } from '../actions';
+import { STORE } from '../store';
+import { networkSettingsKeyMap } from '../constants';
 import { logger } from '../logger';
 
 const log = logger('tokens-saga');
@@ -458,6 +467,104 @@ export function* fetchTokenData(tokenId, force = false) {
   }
 }
 
+/**
+ * Get the genesis hash from the current server info, falling back
+ * to the stored network settings.
+ */
+function getGenesisHash(serverInfo) {
+  return serverInfo?.genesis_block_hash
+    || serverInfo?.genesisBlockHash
+    || null;
+}
+
+/**
+ * Persist the genesis hash in network settings so it's available
+ * for save/restore across sessions.
+ */
+function storeGenesisHash(genesisHash) {
+  if (!genesisHash) return;
+  const settings = STORE.getItem(
+    networkSettingsKeyMap.networkSettings,
+  );
+  if (settings && settings.genesisHash !== genesisHash) {
+    STORE.setItem(
+      networkSettingsKeyMap.networkSettings,
+      { ...settings, genesisHash },
+    );
+  }
+}
+
+/**
+ * Save the current registered tokens (excluding HTR) to persistent
+ * storage keyed by the current network's genesis hash.
+ *
+ * Dispatched by the networkSettings saga before it wipes token storage.
+ */
+export function* saveNetworkTokens() {
+  const serverInfo = yield select((state) => state.serverInfo);
+  const genesisHash = getGenesisHash(serverInfo);
+
+  if (genesisHash) {
+    const wallet = yield select((state) => state.wallet);
+    if (wallet) {
+      const tokens = yield call(getRegisteredTokens, wallet, true);
+      STORE.saveTokensForNetwork(genesisHash, tokens);
+    }
+  }
+
+  yield put(tokensSavedForNetwork());
+}
+
+/**
+ * Restore previously saved tokens for the current network after
+ * the wallet starts successfully.
+ *
+ * Also stores the genesis hash in network settings for future use.
+ */
+export function* restoreNetworkTokens() {
+  const serverInfo = yield select((state) => state.serverInfo);
+  const genesisHash = getGenesisHash(serverInfo);
+
+  storeGenesisHash(genesisHash);
+
+  if (!genesisHash) return;
+
+  const savedTokens = STORE.getTokensForNetwork(genesisHash);
+  if (!savedTokens) return;
+
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet) return;
+
+  for (const token of Object.values(savedTokens)) {
+    const isRegistered = yield call(
+      [wallet.storage, wallet.storage.isTokenRegistered],
+      token.uid,
+    );
+    if (!isRegistered) {
+      yield call(
+        [wallet.storage, wallet.storage.registerToken],
+        token,
+      );
+    }
+  }
+}
+
+/**
+ * Update the persisted token snapshot whenever tokens change
+ * (register or unregister).
+ */
+export function* updateNetworkTokenSnapshot() {
+  const serverInfo = yield select((state) => state.serverInfo);
+  const genesisHash = getGenesisHash(serverInfo);
+  if (!genesisHash) return;
+
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet || !wallet.isReady()) return;
+
+  const tokens = yield call(getRegisteredTokens, wallet, true);
+  STORE.saveTokensForNetwork(genesisHash, tokens);
+}
+
 export function* saga() {
   yield all([
     fork(fetchTokenBalanceQueue),
@@ -465,5 +572,9 @@ export function* saga() {
     fork(fetchTokenMetadataQueue),
     takeEvery(types.NEW_TOKEN, routeTokenChange),
     takeEvery(types.SET_TOKENS, routeTokenChange),
+    takeEvery(types.SAVE_TOKENS_FOR_NETWORK, saveNetworkTokens),
+    takeEvery(types.START_WALLET_SUCCESS, restoreNetworkTokens),
+    takeEvery(types.NEW_TOKEN, updateNetworkTokenSnapshot),
+    takeEvery(types.SET_TOKENS, updateNetworkTokenSnapshot),
   ]);
 }

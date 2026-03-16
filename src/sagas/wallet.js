@@ -320,21 +320,6 @@ export function* startWallet(action) {
     return;
   }
 
-  // Store genesis hash in network settings for token persistence across network changes
-  const currentServerInfo = yield select((state) => state.serverInfo);
-  const genesisHash = currentServerInfo?.genesis_block_hash
-    || currentServerInfo?.genesisBlockHash
-    || null;
-  if (genesisHash) {
-    const currentNetworkSettings = STORE.getItem(networkSettingsKeyMap.networkSettings);
-    if (currentNetworkSettings && currentNetworkSettings.genesisHash !== genesisHash) {
-      STORE.setItem(
-        networkSettingsKeyMap.networkSettings,
-        { ...currentNetworkSettings, genesisHash },
-      );
-    }
-  }
-
   // Wallet might be already ready at this point
   if (!wallet.isReady()) {
     const { error } = yield race({
@@ -345,22 +330,6 @@ export function* startWallet(action) {
     if (error) {
       yield put(startWalletFailed());
       return;
-    }
-  }
-
-  // Restore previously saved tokens for this network (identified by genesis hash)
-  if (genesisHash) {
-    const savedTokens = STORE.getTokensForNetwork(genesisHash);
-    if (savedTokens) {
-      for (const token of Object.values(savedTokens)) {
-        const isAlreadyRegistered = yield call(
-          [wallet.storage, wallet.storage.isTokenRegistered],
-          token.uid,
-        );
-        if (!isAlreadyRegistered) {
-          yield call([wallet.storage, wallet.storage.registerToken], token);
-        }
-      }
     }
   }
 

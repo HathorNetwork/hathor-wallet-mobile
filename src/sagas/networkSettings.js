@@ -1,4 +1,4 @@
-import { all, takeEvery, put, call, race, delay, select } from 'redux-saga/effects';
+import { all, takeEvery, put, call, take, race, delay, select } from 'redux-saga/effects';
 import { config, helpersUtils } from '@hathor/wallet-lib';
 import { isEmpty } from 'lodash';
 import { t } from 'ttag';
@@ -13,6 +13,7 @@ import {
   networkSettingsUpdateReady,
   networkChanged,
   setFullNodeNetworkName,
+  saveTokensForNetwork,
 } from '../actions';
 import {
   NETWORK_MAINNET,
@@ -27,7 +28,6 @@ import {
 import {
   getFullnodeNetwork,
   getWalletServiceNetwork,
-  getRegisteredTokens,
 } from './helpers';
 import { STORE } from '../store';
 import { isWalletServiceEnabled } from './wallet';
@@ -275,16 +275,9 @@ export function* persistNetworkSettings(action) {
     return;
   }
 
-  // Save current registered tokens before switching networks
-  const serverInfo = yield select((state) => state.serverInfo);
-  const currentGenesisHash = serverInfo?.genesis_block_hash || null;
-  if (currentGenesisHash) {
-    const wallet = yield select((state) => state.wallet);
-    if (wallet) {
-      const tokens = yield call(getRegisteredTokens, wallet, true);
-      STORE.saveTokensForNetwork(currentGenesisHash, tokens);
-    }
-  }
+  // Ask the tokens saga to save current tokens before we wipe them
+  yield put(saveTokensForNetwork());
+  yield take(types.TOKENS_SAVED_FOR_NETWORK);
 
   const wallet = yield select((state) => state.wallet);
 
