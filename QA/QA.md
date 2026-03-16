@@ -149,7 +149,7 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Close the token details.
 1. Back to Create new token
 1. Select Fee token.
-1. Enter token name Fee Based Token, and click Next.
+1. Enter token name Fee-Based Token, and click Next.
 1. Enter token symbol FBT, and click Next.
 1. Enter the amount of 100, and click Next.
 1. Verify the Network fee amount, it should be 0.01 HTR.
@@ -176,7 +176,7 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. send it
 
 #### Sending a fee token without enough htr to cover network fee
-1. Send your remaning htr to another test wallet and leave only `0.01 HTR` with you (you may need access to it to recover htr)
+1. Send your remaining htr to another test wallet and leave only `0.01 HTR` with you (you may need access to it to recover htr)
 1. Go to the Send Screen and enter the address of another test wallet.
 1. type 1 FBT
 1. Click in the Next button
@@ -245,7 +245,7 @@ Test the ability of the app to create and interact with nano contracts. Follow t
 Tests the interaction of distributed apps with the Mobile Wallet. Some are actual tests for Nano Contracts Follow the [Reown QA](QA_REOWN.md)
 
 ### Token Swap
-Tests the Token Swap feature. Folow the [Token Swap QA](QA_TOKEN_SWAP.md)
+Tests the Token Swap feature. Follow the [Token Swap QA](QA_TOKEN_SWAP.md)
 
 # Development Environment tests
 The following tests are executed only if for the development environment, with access to source code and building.

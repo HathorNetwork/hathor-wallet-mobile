@@ -228,7 +228,7 @@ After the successful response, open the Testnet Explorer and validate the transa
 
 1. The network fee card should not appear for this request.
 
-### Request (1.2) - Building with fee based tokens and not pushing
+### Request (1.2) - Building with fee-based tokens and not pushing
 ```json
 {
   "method": "htr_sendTransaction",
@@ -1056,14 +1056,14 @@ The objective of this test is to try and send a custom token using a Nano Contra
 
 # Deposit and withdrawal action from Fee nano contract
 The following sections will create a full interaction with the fee blueprint.
-- Initialize the fee NC and depositng HTR into it
+- Initialize the fee NC and depositing HTR into it
 - Depositing Fee-based tokens
 - Withdrawing Fee-based tokens paying with wallet utxos
 - Withdrawing Fee-based tokens paying with contract withdrawal
 
 It is advisable to *only use the address at index 0 for all operations*, as some of the RPC requests are hardcoded to use this address index only.
 
-## Fee initiliaze
+## Fee initialize
 The user needs to create a fee-based token to be able to do the deposit and withdrawal operations.
 
 ### Request
@@ -1095,7 +1095,7 @@ Here we will test only pushing the transaction, since we already did bet test ca
 ```
 
 ### Expected Response
-When not pushing the tx, the response property will be a long string.
+When pushing the tx, the response will contain the transaction details.
 ```json
 {
   "type": 0,
@@ -1166,10 +1166,12 @@ It should prompt the user with 0.01 HTR `Network fee` in the screen and `Contrac
     ],
     "args": [],
     "push_tx": true,
-    "contract_pays_fees": true,
+    "contract_pays_fees": true
   }
 }
 ```
+### Confirmation screen
+It should prompt the user with 0.01 HTR `Network fee` in the screen and `Contract pays fees?` Yes
 
 # Withdrawing fee-based tokens from Fee contract
 
@@ -1227,10 +1229,6 @@ It should prompt the user with 0.01 HTR `Network fee` in the screen and `Contrac
   }
 }
 ```
-
-### Confirmation Screen
-
-It should prompt the user with 0.01 HTR `Network fee` in the screen and `Contract pays fees?` Yes
 
 ### Confirmation Screen
 
