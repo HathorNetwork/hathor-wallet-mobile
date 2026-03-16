@@ -287,6 +287,7 @@ export function* startWallet(action) {
         max_tx_weight_coefficient: versionData.minTxWeightCoefficient,
         min_tx_weight_k: versionData.minTxWeightK,
         nano_contracts_enabled: versionData.nanoContractsEnabled,
+        genesis_block_hash: versionData.genesisBlockHash,
       }));
 
       network = versionData.network;
@@ -327,7 +328,10 @@ export function* startWallet(action) {
   if (genesisHash) {
     const currentNetworkSettings = STORE.getItem(networkSettingsKeyMap.networkSettings);
     if (currentNetworkSettings && currentNetworkSettings.genesisHash !== genesisHash) {
-      STORE.setItem(networkSettingsKeyMap.networkSettings, { ...currentNetworkSettings, genesisHash });
+      STORE.setItem(
+        networkSettingsKeyMap.networkSettings,
+        { ...currentNetworkSettings, genesisHash },
+      );
     }
   }
 
