@@ -277,7 +277,10 @@ export function* persistNetworkSettings(action) {
 
   // Ask the tokens saga to save current tokens before we wipe them
   yield put(saveTokensForNetwork());
-  yield take(types.TOKENS_SAVED_FOR_NETWORK);
+  yield race({
+    saved: take(types.TOKENS_SAVED_FOR_NETWORK),
+    timeout: delay(5000),
+  });
 
   const wallet = yield select((state) => state.wallet);
 

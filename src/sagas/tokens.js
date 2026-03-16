@@ -472,9 +472,14 @@ export function* fetchTokenData(tokenId, force = false) {
  * to the stored network settings.
  */
 function getGenesisHash(serverInfo) {
-  return serverInfo?.genesis_block_hash
-    || serverInfo?.genesisBlockHash
-    || null;
+  const fromServerInfo = serverInfo?.genesis_block_hash
+    || serverInfo?.genesisBlockHash;
+  if (fromServerInfo) return fromServerInfo;
+
+  const settings = STORE.getItem(
+    networkSettingsKeyMap.networkSettings,
+  );
+  return settings?.genesisHash || null;
 }
 
 /**
@@ -501,18 +506,24 @@ function storeGenesisHash(genesisHash) {
  * Dispatched by the networkSettings saga before it wipes token storage.
  */
 export function* saveNetworkTokens() {
-  const serverInfo = yield select((state) => state.serverInfo);
-  const genesisHash = getGenesisHash(serverInfo);
+  try {
+    const serverInfo = yield select((state) => state.serverInfo);
+    const genesisHash = getGenesisHash(serverInfo);
 
-  if (genesisHash) {
-    const wallet = yield select((state) => state.wallet);
-    if (wallet) {
-      const tokens = yield call(getRegisteredTokens, wallet, true);
-      STORE.saveTokensForNetwork(genesisHash, tokens);
+    if (genesisHash) {
+      const wallet = yield select((state) => state.wallet);
+      if (wallet) {
+        const tokens = yield call(
+          getRegisteredTokens, wallet, true,
+        );
+        STORE.saveTokensForNetwork(genesisHash, tokens);
+      }
     }
+  } catch (e) {
+    log.error('Error saving tokens for network:', e);
+  } finally {
+    yield put(tokensSavedForNetwork());
   }
-
-  yield put(tokensSavedForNetwork());
 }
 
 /**
