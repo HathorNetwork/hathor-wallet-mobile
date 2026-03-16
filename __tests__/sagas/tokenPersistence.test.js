@@ -1,4 +1,4 @@
-import { put, call, select } from 'redux-saga/effects';
+import { put, call } from 'redux-saga/effects';
 import { jest, test, expect, beforeEach, describe } from '@jest/globals';
 import {
   saveNetworkTokens,
@@ -7,7 +7,6 @@ import {
 } from '../../src/sagas/tokens';
 import { tokensSavedForNetwork } from '../../src/actions';
 import { STORE } from '../../src/store';
-import { getRegisteredTokens } from '../../src/sagas/helpers';
 
 const GENESIS_HASH = 'abc123def456genesis';
 

@@ -503,28 +503,32 @@ export function* saveNetworkTokens() {
  * the wallet starts successfully.
  */
 export function* restoreNetworkTokens() {
-  const serverInfo = yield select((state) => state.serverInfo);
-  const genesisHash = getGenesisHash(serverInfo);
+  try {
+    const serverInfo = yield select((state) => state.serverInfo);
+    const genesisHash = getGenesisHash(serverInfo);
 
-  if (!genesisHash) return;
+    if (!genesisHash) return;
 
-  const savedTokens = yield call([STORE, STORE.getTokensForNetwork], genesisHash);
-  if (!savedTokens) return;
+    const savedTokens = yield call([STORE, STORE.getTokensForNetwork], genesisHash);
+    if (!savedTokens) return;
 
-  const wallet = yield select((state) => state.wallet);
-  if (!wallet) return;
+    const wallet = yield select((state) => state.wallet);
+    if (!wallet) return;
 
-  for (const token of Object.values(savedTokens)) {
-    const isRegistered = yield call(
-      [wallet.storage, wallet.storage.isTokenRegistered],
-      token.uid,
-    );
-    if (!isRegistered) {
-      yield call(
-        [wallet.storage, wallet.storage.registerToken],
-        token,
+    for (const token of Object.values(savedTokens)) {
+      const isRegistered = yield call(
+        [wallet.storage, wallet.storage.isTokenRegistered],
+        token.uid,
       );
+      if (!isRegistered) {
+        yield call(
+          [wallet.storage, wallet.storage.registerToken],
+          token,
+        );
+      }
     }
+  } catch (e) {
+    log.error('Error restoring tokens for network:', e);
   }
 }
 
@@ -533,15 +537,19 @@ export function* restoreNetworkTokens() {
  * (register or unregister).
  */
 export function* updateNetworkTokenSnapshot() {
-  const serverInfo = yield select((state) => state.serverInfo);
-  const genesisHash = getGenesisHash(serverInfo);
-  if (!genesisHash) return;
+  try {
+    const serverInfo = yield select((state) => state.serverInfo);
+    const genesisHash = getGenesisHash(serverInfo);
+    if (!genesisHash) return;
 
-  const wallet = yield select((state) => state.wallet);
-  if (!wallet || !wallet.isReady()) return;
+    const wallet = yield select((state) => state.wallet);
+    if (!wallet || !wallet.isReady()) return;
 
-  const tokens = yield call(getRegisteredTokens, wallet, true);
-  yield call([STORE, STORE.saveTokensForNetwork], genesisHash, tokens);
+    const tokens = yield call(getRegisteredTokens, wallet, true);
+    yield call([STORE, STORE.saveTokensForNetwork], genesisHash, tokens);
+  } catch (e) {
+    log.error('Error updating network token snapshot:', e);
+  }
 }
 
 export function* saga() {
