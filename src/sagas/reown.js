@@ -233,25 +233,40 @@ function* init() {
       return;
     }
 
-    const core = new Core({
-      projectId: REOWN_PROJECT_ID,
-    });
+    // Reuse existing WalletKit if available. Each WalletKit.init() creates
+    // a new SignClient engine that registers handlers on the Core's relayer.
+    // Multiple engines cause stale ones (with empty session stores) to
+    // intercept relay messages and send empty error responses ({}) to dApps.
+    const previousClient = yield call(getReownClient);
 
-    const metadata = {
-      name: 'Hathor',
-      description: 'Hathor Mobile Wallet',
-      url: 'https://hathor.network/',
-    };
+    let core;
+    let walletKit;
 
-    const walletKit = yield call(WalletKit.init, {
-      core,
-      metadata,
-    });
+    if (previousClient?.walletKit && previousClient?.core) {
+      log.debug('Reusing existing WalletKit instance.');
+      core = previousClient.core;
+      walletKit = previousClient.walletKit;
+    } else {
+      core = new Core({
+        projectId: REOWN_PROJECT_ID,
+      });
 
-    yield put(setReown({
-      walletKit,
-      core,
-    }));
+      const metadata = {
+        name: 'Hathor',
+        description: 'Hathor Mobile Wallet',
+        url: 'https://hathor.network/',
+      };
+
+      walletKit = yield call(WalletKit.init, {
+        core,
+        metadata,
+      });
+
+      yield put(setReown({
+        walletKit,
+        core,
+      }));
+    }
 
     yield fork(setupListeners, walletKit);
 
