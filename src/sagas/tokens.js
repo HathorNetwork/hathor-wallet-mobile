@@ -37,7 +37,6 @@ import {
   tokensSavedForNetwork,
 } from '../actions';
 import { STORE } from '../store';
-import { networkSettingsKeyMap } from '../constants';
 import { logger } from '../logger';
 
 const log = logger('tokens-saga');
@@ -468,35 +467,10 @@ export function* fetchTokenData(tokenId, force = false) {
 }
 
 /**
- * Get the genesis hash from the current server info, falling back
- * to the stored network settings.
+ * Get the genesis hash from serverInfo in redux state.
  */
 function getGenesisHash(serverInfo) {
-  const fromServerInfo = serverInfo?.genesis_block_hash
-    || serverInfo?.genesisBlockHash;
-  if (fromServerInfo) return fromServerInfo;
-
-  const settings = STORE.getItem(
-    networkSettingsKeyMap.networkSettings,
-  );
-  return settings?.genesisHash || null;
-}
-
-/**
- * Persist the genesis hash in network settings so it's available
- * for save/restore across sessions.
- */
-function storeGenesisHash(genesisHash) {
-  if (!genesisHash) return;
-  const settings = STORE.getItem(
-    networkSettingsKeyMap.networkSettings,
-  );
-  if (settings && settings.genesisHash !== genesisHash) {
-    STORE.setItem(
-      networkSettingsKeyMap.networkSettings,
-      { ...settings, genesisHash },
-    );
-  }
+  return serverInfo?.genesis_block_hash || null;
 }
 
 /**
@@ -514,7 +488,7 @@ export function* saveNetworkTokens() {
       const wallet = yield select((state) => state.wallet);
       if (wallet) {
         const tokens = yield call(getRegisteredTokens, wallet, true);
-        STORE.saveTokensForNetwork(genesisHash, tokens);
+        yield call([STORE, STORE.saveTokensForNetwork], genesisHash, tokens);
       }
     }
   } catch (e) {
@@ -527,18 +501,14 @@ export function* saveNetworkTokens() {
 /**
  * Restore previously saved tokens for the current network after
  * the wallet starts successfully.
- *
- * Also stores the genesis hash in network settings for future use.
  */
 export function* restoreNetworkTokens() {
   const serverInfo = yield select((state) => state.serverInfo);
   const genesisHash = getGenesisHash(serverInfo);
 
-  storeGenesisHash(genesisHash);
-
   if (!genesisHash) return;
 
-  const savedTokens = STORE.getTokensForNetwork(genesisHash);
+  const savedTokens = yield call([STORE, STORE.getTokensForNetwork], genesisHash);
   if (!savedTokens) return;
 
   const wallet = yield select((state) => state.wallet);
@@ -571,7 +541,7 @@ export function* updateNetworkTokenSnapshot() {
   if (!wallet || !wallet.isReady()) return;
 
   const tokens = yield call(getRegisteredTokens, wallet, true);
-  STORE.saveTokensForNetwork(genesisHash, tokens);
+  yield call([STORE, STORE.saveTokensForNetwork], genesisHash, tokens);
 }
 
 export function* saga() {

@@ -13,6 +13,7 @@ import {
   constants as hathorLibConstants,
   config,
   errors,
+  versionApi,
 } from '@hathor/wallet-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -269,6 +270,7 @@ export function* startWallet(action) {
       // In the wallet-service facade, serverInfo is null, so we need to get
       // version data and convert it to what serverInfo expects:
       const versionData = yield call([wallet, wallet.getVersionData]);
+      const rawVersionData = yield call([versionApi, versionApi.asyncGetVersion]);
 
       yield put(setServerInfo({
         version: versionData.version,
@@ -287,7 +289,7 @@ export function* startWallet(action) {
         max_tx_weight_coefficient: versionData.minTxWeightCoefficient,
         min_tx_weight_k: versionData.minTxWeightK,
         nano_contracts_enabled: versionData.nanoContractsEnabled,
-        genesis_block_hash: versionData.genesisBlockHash,
+        genesis_block_hash: rawVersionData.genesis_block_hash,
       }));
 
       network = versionData.network;

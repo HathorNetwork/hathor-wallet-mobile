@@ -1,4 +1,4 @@
-import { put, call } from 'redux-saga/effects';
+import { put, call, select } from 'redux-saga/effects';
 import { jest, test, expect, beforeEach, describe } from '@jest/globals';
 import {
   saveNetworkTokens,
@@ -7,6 +7,7 @@ import {
 } from '../../src/sagas/tokens';
 import { tokensSavedForNetwork } from '../../src/actions';
 import { STORE } from '../../src/store';
+import { getRegisteredTokens } from '../../src/sagas/helpers';
 
 const GENESIS_HASH = 'abc123def456genesis';
 
@@ -39,17 +40,16 @@ describe('saveNetworkTokens', () => {
     // feed wallet, then call getRegisteredTokens
     gen.next(mockWallet);
 
-    // feed registered tokens, should call STORE.saveTokensForNetwork
-    const result = gen.next(mockTokens);
+    // feed registered tokens, expect call to STORE.saveTokensForNetwork
+    const saveCall = gen.next(mockTokens);
+    expect(saveCall.value).toStrictEqual(
+      call([STORE, STORE.saveTokensForNetwork], GENESIS_HASH, mockTokens),
+    );
 
-    // should dispatch tokensSavedForNetwork
+    // advance past save, should dispatch tokensSavedForNetwork
+    const result = gen.next();
     expect(result.value).toStrictEqual(put(tokensSavedForNetwork()));
 
-    // should have saved to store
-    const saved = STORE.getTokensForNetwork(GENESIS_HASH);
-    expect(saved).toStrictEqual(mockTokens);
-
-    // saga should end
     expect(gen.next().done).toBe(true);
   });
 
@@ -61,12 +61,7 @@ describe('saveNetworkTokens', () => {
     // feed serverInfo with no genesis hash
     const result = gen.next({ genesis_block_hash: null });
 
-    // should still dispatch tokensSavedForNetwork
     expect(result.value).toStrictEqual(put(tokensSavedForNetwork()));
-
-    // nothing saved
-    expect(STORE.getTokensForNetwork(GENESIS_HASH)).toBeNull();
-
     expect(gen.next().done).toBe(true);
   });
 
@@ -87,17 +82,20 @@ describe('saveNetworkTokens', () => {
 
 describe('restoreNetworkTokens', () => {
   test('restores tokens for current network', () => {
-    // Pre-save tokens for this genesis hash
-    STORE.saveTokensForNetwork(GENESIS_HASH, mockTokens);
-
     const gen = restoreNetworkTokens();
 
     // select serverInfo
     gen.next();
-    // feed serverInfo, then select wallet (after storeGenesisHash)
-    gen.next({ genesis_block_hash: GENESIS_HASH });
+    // feed serverInfo, expect call to STORE.getTokensForNetwork
+    const getCall = gen.next({ genesis_block_hash: GENESIS_HASH });
+    expect(getCall.value).toStrictEqual(
+      call([STORE, STORE.getTokensForNetwork], GENESIS_HASH),
+    );
 
-    // feed wallet, then call isTokenRegistered for token1
+    // feed saved tokens, then select wallet
+    gen.next(mockTokens);
+
+    // feed wallet, then isTokenRegistered for token1
     gen.next(mockWallet);
 
     // feed isTokenRegistered=false for token1, expect registerToken call
@@ -121,28 +119,23 @@ describe('restoreNetworkTokens', () => {
       ),
     );
 
-    // advance, saga should end
     expect(gen.next().done).toBe(true);
   });
 
   test('skips already registered tokens', () => {
-    STORE.saveTokensForNetwork(GENESIS_HASH, {
-      token1: mockTokens.token1,
-    });
-
     const gen = restoreNetworkTokens();
 
     // select serverInfo
     gen.next();
-    // feed serverInfo
+    // feed serverInfo, expect STORE.getTokensForNetwork call
     gen.next({ genesis_block_hash: GENESIS_HASH });
+    // feed saved tokens with one token
+    gen.next({ token1: mockTokens.token1 });
     // feed wallet
     gen.next(mockWallet);
 
-    // feed isTokenRegistered=true for token1
+    // feed isTokenRegistered=true for token1, saga should end
     const result = gen.next(true);
-
-    // should NOT call registerToken, saga ends
     expect(result.done).toBe(true);
   });
 
@@ -151,7 +144,7 @@ describe('restoreNetworkTokens', () => {
 
     // select serverInfo
     gen.next();
-    // feed serverInfo with no genesis hash — saga should return
+    // feed serverInfo with no genesis hash
     const result = gen.next({ genesis_block_hash: null });
 
     expect(result.done).toBe(true);
@@ -164,8 +157,8 @@ describe('restoreNetworkTokens', () => {
     gen.next();
     // feed serverInfo
     gen.next({ genesis_block_hash: GENESIS_HASH });
-    // no saved tokens — saga should return after selecting wallet
-    const result = gen.next(mockWallet);
+    // feed null saved tokens
+    const result = gen.next(null);
 
     expect(result.done).toBe(true);
   });
@@ -182,11 +175,11 @@ describe('updateNetworkTokenSnapshot', () => {
     // feed wallet, then call getRegisteredTokens
     gen.next(mockWallet);
 
-    // feed tokens — should save to store
-    gen.next(mockTokens);
-
-    const saved = STORE.getTokensForNetwork(GENESIS_HASH);
-    expect(saved).toStrictEqual(mockTokens);
+    // feed tokens, expect call to STORE.saveTokensForNetwork
+    const saveCall = gen.next(mockTokens);
+    expect(saveCall.value).toStrictEqual(
+      call([STORE, STORE.saveTokensForNetwork], GENESIS_HASH, mockTokens),
+    );
 
     expect(gen.next().done).toBe(true);
   });
