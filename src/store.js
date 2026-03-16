@@ -33,6 +33,7 @@ export const walletKeys = [
   ACCESS_DATA_KEY,
   REGISTERED_TOKENS_KEY,
   REGISTERED_NANO_CONTRACTS_KEY,
+  NETWORK_TOKENS_KEY,
 ];
 
 export const cleanOnWalletReset = [

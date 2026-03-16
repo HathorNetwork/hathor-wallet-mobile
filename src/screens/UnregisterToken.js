@@ -93,14 +93,16 @@ class UnregisterToken extends React.Component {
       }
       return newTokens;
     });
-    promise.then(async (tokens) => {
-      this.props.dispatch(tokenMetadataRemoved(tokenUnregister));
-      this.props.dispatch(setTokens(tokens));
-      await saveCurrentTokensForNetwork(this.props.wallet);
-      NavigationService.resetToMain();
-    }, (e) => {
-      this.setState({ errorMessage: e.message });
-    });
+    promise
+      .then(async (tokens) => {
+        this.props.dispatch(tokenMetadataRemoved(tokenUnregister));
+        this.props.dispatch(setTokens(tokens));
+        await saveCurrentTokensForNetwork(this.props.wallet);
+        NavigationService.resetToMain();
+      })
+      .catch((e) => {
+        this.setState({ errorMessage: e.message });
+      });
   }
 
   render() {
