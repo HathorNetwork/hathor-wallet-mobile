@@ -513,9 +513,7 @@ export function* saveNetworkTokens() {
     if (genesisHash) {
       const wallet = yield select((state) => state.wallet);
       if (wallet) {
-        const tokens = yield call(
-          getRegisteredTokens, wallet, true,
-        );
+        const tokens = yield call(getRegisteredTokens, wallet, true);
         STORE.saveTokensForNetwork(genesisHash, tokens);
       }
     }
