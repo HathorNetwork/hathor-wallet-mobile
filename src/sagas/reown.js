@@ -432,13 +432,17 @@ export function* clearSessions() {
   const activeSessions = yield call(() => walletKit.getActiveSessions());
 
   for (const key of Object.keys(activeSessions)) {
-    yield call(() => walletKit.disconnectSession({
-      topic: activeSessions[key].topic,
-      reason: {
-        code: ERROR_CODES.USER_DISCONNECTED,
-        message: '',
-      },
-    }));
+    try {
+      yield call(() => walletKit.disconnectSession({
+        topic: activeSessions[key].topic,
+        reason: {
+          code: ERROR_CODES.USER_DISCONNECTED,
+          message: '',
+        },
+      }));
+    } catch (e) {
+      log.error('Error disconnecting session, it may have been already deleted.', e);
+    }
   }
 
   yield call(refreshActiveSessions);
@@ -1207,16 +1211,6 @@ export function* handleDAppRequest(payload, modalType, options = {}) {
  * Listens for the wallet reset action, dispatched from the wallet sagas so we
  * can clear all current sessions.
  */
-export function* onWalletReset() {
-  const reown = yield select((state) => state.reown);
-  if (!reown || !reown.client) {
-    // Do nothing, wallet connect might not have been initialized yet
-    return;
-  }
-
-  yield call(clearSessions);
-}
-
 /**
  * This saga will be called when a session proposal is processed from the unified queue.
  * This happens after the client scans a wallet connect URI.
@@ -1600,7 +1594,6 @@ export function* saga() {
     takeEvery('REOWN_SESSION_DELETE', onSessionDelete),
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),
     takeEvery('REOWN_SHUTDOWN', clearSessions),
-    takeEvery(types.RESET_WALLET, onWalletReset),
     takeLatest(types.REOWN_URI_INPUTTED, onUriInputted),
   ]);
 }
