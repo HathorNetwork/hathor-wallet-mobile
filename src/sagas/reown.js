@@ -1208,10 +1208,6 @@ export function* handleDAppRequest(payload, modalType, options = {}) {
 }
 
 /**
- * Listens for the wallet reset action, dispatched from the wallet sagas so we
- * can clear all current sessions.
- */
-/**
  * This saga will be called when a session proposal is processed from the unified queue.
  * This happens after the client scans a wallet connect URI.
  * Note: Since this is processed through the unified queue, we don't need to wait
