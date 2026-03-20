@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import hathorLib from '@hathor/wallet-lib';
+import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
 import { bigIntCoercibleSchema } from '@hathor/wallet-lib/lib/utils/bigint';
 import CryptoJS from 'crypto-js';
 import * as Keychain from 'react-native-keychain';
@@ -16,7 +16,7 @@ import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import moment from 'moment';
 import baseStyle from './styles/init';
-import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE, TOKEN_SWAP_FEATURE_TOGGLE } from './constants';
+import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE, TOKEN_SWAP_FEATURE_TOGGLE, FBT_FEATURE_TOGGLE } from './constants';
 import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_BIOMETRY_KEY, SAFE_BIOMETRY_FEATURE_FLAG_KEY, FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
@@ -273,17 +273,23 @@ export const validateAddress = (address, network) => {
 };
 
 /**
-   * Parse the QR code for a payment request (or just an address)
+   * Parse the QR code for an address
    *
    * @param {string} data The QR code data
    *
-   * @return {Object} {isValid, error} or {isValid, address, amount, token}
+   * @return {Object} {isValid, error} or {isValid, address}
    */
 export const parseQRCode = (data) => {
-  let qrcode;
   let hathorAddress;
   try {
-    qrcode = JSON.parse(data);
+    const qrcode = JSON.parse(data);
+    // If it's a JSON object with token/amount, reject it (payment request format not supported)
+    if (qrcode.token || qrcode.amount) {
+      return {
+        isValid: false,
+        error: 'Payment request QR codes are not supported. Please use a simple address QR code.',
+      };
+    }
     // make sure hathorAddress is not null or undefined
     hathorAddress = qrcode.address || '';
   } catch (error) {
@@ -296,31 +302,9 @@ export const parseQRCode = (data) => {
     return { isValid, error };
   }
 
-  if (!qrcode) {
-    // just the address (no token or amount)
-    return {
-      isValid: true,
-      address,
-    };
-  }
-  // complete qr code
-  const { token, amount } = qrcode;
-  if (token && !amount) {
-    return {
-      isValid: false,
-      error: 'Payment request must have an amount',
-    };
-  } if (amount && !token) {
-    return {
-      isValid: false,
-      error: 'Payment request must contain token data',
-    };
-  }
   return {
     isValid: true,
     address,
-    token,
-    amount,
   };
 };
 
@@ -402,6 +386,18 @@ export const renderValue = (amount, isInteger) => {
 
   return hathorLib.numberUtils.prettyValue(amount);
 };
+
+/**
+ * Format a BigInt amount as a decimal string without thousand separators.
+ * Useful for input fields where thousand separators are not allowed.
+ *
+ * @param {bigint} amount The token amount as BigInt
+ * @param {number} decimalPlaces Number of decimal places
+ * @return {string} Formatted value without thousand separators (e.g., "1234.56")
+ */
+export const formatAmountToInput = (amount, decimalPlaces) => (
+  hathorLib.numberUtils.prettyValue(amount, decimalPlaces).replace(/,/g, '')
+);
 
 /**
  * Render value to integer or decimal
@@ -631,6 +627,33 @@ export const isTokenSwapEnabled = (state) => (
   isNanoContractsEnabled(state)
   && get(state.featureToggles, TOKEN_SWAP_FEATURE_TOGGLE, false)
 );
+
+/*
+ * Checks if fee based tokens are enabled
+ *
+ * @param {Object} state Redux store state
+ *
+ * @returns {boolean} Whether fee based tokens are enabled
+ */
+export const isFeeBasedTokensEnabled = (state) => (
+  get(state.featureToggles, FBT_FEATURE_TOGGLE, false)
+);
+
+/**
+ * Get the title for create token screens based on token version.
+ * @param {number} tokenVersion - The token version (NATIVE=0, DEPOSIT=1, FEE=2)
+ * @returns {string} The localized title string
+ */
+export const getCreateTokenTitle = (tokenVersion) => {
+  switch (tokenVersion) {
+    case TokenVersion.DEPOSIT:
+      return t`CREATE DEPOSIT TOKEN`;
+    case TokenVersion.FEE:
+      return t`CREATE FEE TOKEN`;
+    default:
+      return t`CREATE TOKEN`;
+  }
+};
 
 /**
  * Get timestamp in specific format.

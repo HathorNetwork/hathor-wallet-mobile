@@ -15,7 +15,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import OfflineBar from '../components/OfflineBar';
 import SimpleInput from '../components/SimpleInput';
 import TextFmt from '../components/TextFmt';
-import { getKeyboardAvoidingViewTopDistance, Italic } from '../utils';
+import { getKeyboardAvoidingViewTopDistance, Italic, getCreateTokenTitle } from '../utils';
 
 class CreateTokenName extends React.Component {
   /**
@@ -33,14 +33,17 @@ class CreateTokenName extends React.Component {
   }
 
   onButtonPress = () => {
-    this.props.navigation.navigate('CreateTokenSymbol', { name: this.state.name });
+    const { tokenVersion } = this.props.route.params || {};
+    this.props.navigation.navigate('CreateTokenSymbol', { name: this.state.name, tokenVersion });
   }
 
   render() {
+    const { tokenVersion } = this.props.route.params || {};
+    const title = getCreateTokenTitle(tokenVersion);
     return (
       <View style={{ flex: 1 }}>
         <HathorHeader
-          title={t`CREATE TOKEN`}
+          title={title}
           onBackPress={() => this.props.navigation.pop()}
           onCancel={() => this.props.navigation.getParent().goBack()}
         />

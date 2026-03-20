@@ -39,35 +39,20 @@ export default function ReceiveMyAddress() {
     return null;
   }
 
-  // This is used to set the width of the address wrapper view
-  // For some reason I was not being able to set as 100%, so I had to use this
-  const { height, width } = Dimensions.get('window');
-
-  const addressWrapperStyle = StyleSheet.create({
-    style: {
-      padding: 16,
-      borderBottomWidth: 1.5,
-      borderTopWidth: 1.5,
-      borderColor: COLORS.borderColor,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: width - 32,
-    },
-  });
+  const { height } = Dimensions.get('window');
 
   return (
     <View style={styles.wrapper}>
       <View style={styles.qrcodeWrapper}>
         <QRCode value={`hathor:${lastSharedAddress}`} size={height < 650 ? 160 : 250} />
       </View>
-      <View style={addressWrapperStyle.style}>
+      <View style={styles.addressWrapper}>
         <CopyClipboard
           text={lastSharedAddress}
           textStyle={{ fontSize: height < 650 ? 11 : 13 }}
         />
       </View>
-      <View style={{ flexDirection: 'row' }}>
+      <View style={styles.buttonRow}>
         <SimpleButton
           title={t`New address`}
           onPress={getNextAddress}
@@ -88,17 +73,28 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 32,
-    borderWidth: 1.5,
-    borderColor: COLORS.borderColor,
-    borderRadius: 8,
-    marginBottom: 32,
-    backgroundColor: COLORS.backgroundColor, // Ensures maximum contrast for the code readers
+    backgroundColor: COLORS.backgroundColor,
   },
   qrcodeWrapper: {
     padding: 24,
     flex: 1,
+    justifyContent: 'center',
+  },
+  addressWrapper: {
+    padding: 16,
+    borderTopWidth: 1.5,
+    borderColor: COLORS.borderColor,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'stretch',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    alignSelf: 'stretch',
+    borderTopWidth: 1.5,
+    borderBottomWidth: 1.5,
+    borderColor: COLORS.borderColor,
   },
   buttonContainer: {
     flex: 1,

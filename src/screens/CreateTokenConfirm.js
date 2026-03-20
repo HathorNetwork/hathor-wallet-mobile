@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   View,
@@ -13,7 +13,7 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import { t } from 'ttag';
 
-import hathorLib from '@hathor/wallet-lib';
+import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
 import NewHathorButton from '../components/NewHathorButton';
 import SimpleInput from '../components/SimpleInput';
 import AmountTextInput from '../components/AmountTextInput';
@@ -23,9 +23,36 @@ import OfflineBar from '../components/OfflineBar';
 import FeedbackModal from '../components/FeedbackModal';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import TextFmt from '../components/TextFmt';
-import { newToken, updateSelectedToken } from '../actions';
+import { updateSelectedToken } from '../actions';
+import { registerToken } from '../utils/tokens';
 import errorIcon from '../assets/images/icErrorBig.png';
+import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
+import { getCreateTokenTitle } from '../utils';
+
+const TokenTypeInfoBox = ({ tokenVersion }) => {
+  let infoText = t`You chose to create a **Deposit-Based Token**, which requires a 1% HTR deposit.`;
+  if (tokenVersion === TokenVersion.FEE) {
+    infoText = t`You chose to create a **Fee-Based Token**, so a small fee will be applied to each future transaction of this token.`;
+  }
+  return (
+    <View style={{
+      marginTop: 16,
+      padding: 16,
+      backgroundColor: '#DAF1FF',
+      borderRadius: 20,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+    }}
+    >
+      <View style={{ margin: 8 }}>
+        <InfoCircleIcon />
+      </View>
+      <TextFmt style={{ flexShrink: 1 }}>{infoText}</TextFmt>
+    </View>
+  );
+}
 
 /**
  * This component expects the following parameters in navigation:
@@ -41,7 +68,6 @@ const CreateTokenConfirm = () => {
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
 
   const dispatch = useDispatch();
-  const dispatchNewToken = (token) => dispatch(newToken(token));
   const dispatchUpdateSelectedToken = (token) => dispatch(updateSelectedToken(token));
 
   // Navigation and params hooks
@@ -49,12 +75,32 @@ const CreateTokenConfirm = () => {
   const params = useParams();
 
   // Parse and store navigation params
-  const { amount, name, symbol } = params;
+  const { amount, name, symbol, tokenVersion } = params;
   const nativeSymbol = wallet.storage.getNativeTokenData().symbol;
 
   // Component state
   const [modal, setModal] = useState(null);
   const [modalType, setModalType] = useState(null);
+  const [title, setTitle] = useState(t`CREATE TOKEN`);
+  const [deposit, setDeposit] = useState(null);
+  const [networkFee, setNetworkFee] = useState(null);
+
+  useEffect(() => {
+    setTitle(getCreateTokenTitle(tokenVersion));
+  }, [tokenVersion]);
+
+  useEffect(() => {
+    if (tokenVersion === TokenVersion.DEPOSIT) {
+      setDeposit(hathorLib.tokensUtils.getDepositAmount(amount));
+      setNetworkFee(null);
+    } else if (tokenVersion === TokenVersion.FEE) {
+      setDeposit(null);
+      setNetworkFee(hathorLib.constants.FEE_PER_OUTPUT);
+    } else {
+      setDeposit(null);
+      setNetworkFee(null);
+    }
+  }, [tokenVersion, amount]);
 
   /**
    * Prepare data and execute create token
@@ -72,7 +118,7 @@ const CreateTokenConfirm = () => {
       name,
       symbol,
       amount,
-      { address, pinCode: pin }
+      { address, pinCode: pin, tokenVersion }
     ).then((tx) => {
       let sendTransaction;
       if (useWalletService) {
@@ -119,11 +165,10 @@ const CreateTokenConfirm = () => {
    *
    * @param {Object} tx Create token tx data
    */
-  const onTxSuccess = (tx) => {
-    const token = { uid: tx.hash, name, symbol };
-    dispatchNewToken(token);
+  const onTxSuccess = async (tx) => {
+    const token = { uid: tx.hash, name, symbol, version: tokenVersion };
+    await registerToken(wallet, dispatch, token);
     dispatchUpdateSelectedToken(token);
-    wallet.storage.registerToken(token);
   };
 
   /**
@@ -151,7 +196,7 @@ const CreateTokenConfirm = () => {
   return (
     <View style={{ flex: 1 }}>
       <HathorHeader
-        title={t`CREATE TOKEN`}
+        title={title}
         onBackPress={() => navigation.goBack()}
         onCancel={() => navigation.getParent().goBack()}
       />
@@ -201,14 +246,23 @@ const CreateTokenConfirm = () => {
             value={symbol}
             containerStyle={{ marginTop: 32 }}
           />
-          <SimpleInput
-            label={t`Deposit`}
-            editable={false}
-            value={`${hathorLib.numberUtils.prettyValue(
-              hathorLib.tokensUtils.getDepositAmount(amount)
-            )} ${nativeSymbol}`}
-            containerStyle={{ marginTop: 32 }}
-          />
+          { deposit != null && (
+            <SimpleInput
+              label={t`Deposit`}
+              editable={false}
+              value={`${hathorLib.numberUtils.prettyValue(deposit)} ${nativeSymbol}`}
+              containerStyle={{ marginTop: 32 }}
+            />
+          )}
+          { networkFee != null && (
+            <SimpleInput
+              label={t`Network fee`}
+              editable={false}
+              value={`${hathorLib.numberUtils.prettyValue(networkFee)} ${nativeSymbol}`}
+              containerStyle={{ marginTop: 32 }}
+            />
+          )}
+          { tokenVersion != null && <TokenTypeInfoBox tokenVersion={tokenVersion} /> }
         </View>
         <NewHathorButton
           title={t`Create token`}
