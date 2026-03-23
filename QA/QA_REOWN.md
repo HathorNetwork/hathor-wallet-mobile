@@ -224,6 +224,32 @@ After the successful response, open the Testnet Explorer and validate the transa
 }
 ```
 
+#### Confirmation Screen
+
+1. The network fee card should not appear for this request.
+
+### Request (1.2) - Building with fee-based tokens and not pushing
+```json
+{
+  "method": "htr_sendTransaction",
+  "params": {
+    "network": "testnet",
+    "push_tx": false,
+    "outputs": [
+      {
+        "address": "{one of your addresses, fetched above}",
+        "token": "{FeeBasedTokenUid}",
+        "value": "1"
+      }
+    ]
+  }
+}
+```
+
+#### Confirmation Screen
+
+1. The network fee card should appear with 0.01 HTR (1 per output, as you send more FBT outputs the network fee should reflect it).
+
 #### Response
 ```json
 {
@@ -380,8 +406,18 @@ Creates a custom token on the Hathor testnet with mint and melt authorities.
 
 1. Check that the request confirmation screen shows all token information correctly
 1. Confirm the transaction request and check the custom token now exists on the Explorer
+1. Check the `Confirmation screen` section for specific cases for the expect case for each request
 
-### Request (1) - Creation success
+### Fees
+
+0.01 HTR for each data input
+0.01 HTR for minting fee-based tokens
+
+### Deposit
+1% of the minted/created amount
+
+### Request (1) - Deposit token creation success
+Here we don't specify the token version we are creating, it should defaults to `'deposit'`
 ```json
 {
   "method": "htr_createToken",
@@ -397,6 +433,60 @@ Creates a custom token on the Hathor testnet with mint and melt authorities.
   }
 }
 ```
+
+### Confirmation Screen
+
+1. Network fee should appear as '-'.
+1. Deposit amount should be 1 HTR.
+
+### Request (1.2) - Deposit token creation with data success
+Here we don't specify the token version we are creating, it should defaults to `'deposit'`
+```json
+{
+  "method": "htr_createToken",
+  "params": {
+    "network": "testnet",
+    "name": "Test Token",
+    "symbol": "TST",
+    "amount": "100",
+    "version": "deposit",
+    "data": ["abc", "de"],
+    "create_mint": true,
+    "create_melt": true,
+    "allow_external_mint_authority_address": false,
+    "allow_external_melt_authority_address": false
+  }
+}
+```
+
+### Confirmation Screen
+
+1. Network fee should appear as '0.02 HTR'. (from data outputs)
+1. Deposit amount should be '1.00' HTR. (from deposit amount)
+
+### Request (1.3) - Fee token creation with data success
+```json
+{
+  "method": "htr_createToken",
+  "params": {
+    "network": "testnet",
+    "name": "Test Token",
+    "symbol": "TST",
+    "amount": "100",
+    "version": "fee",
+    "data": ["abc", "de"],
+    "create_mint": true,
+    "create_melt": true,
+    "allow_external_mint_authority_address": false,
+    "allow_external_melt_authority_address": false
+  }
+}
+```
+
+### Confirmation Screen
+
+1. Network fee should have '0.03 HTR' value. (fee + data outputs)
+1. Deposit amount should be hidden.
 
 #### Expected Response
 ```json
@@ -963,6 +1053,186 @@ The objective of this test is to try and send a custom token using a Nano Contra
 1. Accept the registration and check the custom token is now registered
 
 ---
+
+# Deposit and withdrawal action from Fee nano contract
+The following sections will create a full interaction with the fee blueprint.
+- Initialize the fee NC and depositing HTR into it
+- Depositing Fee-based tokens
+- Withdrawing Fee-based tokens paying with wallet utxos
+- Withdrawing Fee-based tokens paying with contract withdrawal
+
+It is advisable to *only use the address at index 0 for all operations*, as some of the RPC requests are hardcoded to use this address index only.
+
+## Fee initialize
+The user needs to create a fee-based token to be able to do the deposit and withdrawal operations.
+
+### Request
+Here we will test only pushing the transaction, since we already did bet test cases.
+
+- Confirm that the Blueprint ID matches the request
+- Save the `hash` value - this becomes the `nc_id` for subsequent operations
+
+```json
+{
+  "method": "htr_sendNanoContractTx",
+  "params": {
+    "network": "testnet",
+    "method": "initialize",
+    "blueprint_id": "{64-char tx hash for the Fee Blueprint}",
+    "actions": [
+      {
+        "type": "deposit",
+        "token": "00",
+        "amount": "10",
+        "changeAddress": "{ your address 0 }"
+      }
+    ],
+    "args": [],
+    "push_tx": true,
+    "nc_id": null
+  }
+}
+```
+
+### Expected Response
+When pushing the tx, the response will contain the transaction details.
+```json
+{
+  "type": 0,
+  "response": {
+    "hash": "{64-char tx hash}",
+    "headers": [
+      {
+        "id": "{64-char tx hash for the Fee Blueprint}",
+        "method": "initialize",
+        "args": {
+          "type": "Buffer",
+          "data": [1, 2, 3, "..."]
+        }
+      }
+    ]
+  }
+}
+```
+## Depositing fee-based tokens into Fee contract
+
+### Paying with wallet utxos
+### Request
+```json
+{
+  "method": "htr_sendNanoContractTx",
+  "params": {
+    "network": "testnet",
+    "nc_id": "{ nano contract id generated above }",
+    "method": "noop",
+    "actions": [
+      {
+        "type": "deposit",
+        "token": "{ fee based token uid }",
+        "amount": "10",
+        "changeAddress": "{ your address 0 }"
+      }
+    ],
+    "args": [],
+    "push_tx": true
+  }
+}
+```
+### Confirmation screen
+It should prompt the user with 0.01 HTR `Network fee` in the screen and `Contract pays fees` No
+
+### Contract paying fees via htr withdrawal
+### Request
+```json
+{
+  "method": "htr_sendNanoContractTx",
+  "params": {
+    "network": "testnet",
+    "nc_id": "{ nano contract id generated above }",
+    "method": "noop",
+    "actions": [
+      {
+        "type": "withdrawal",
+        "token": "00",
+        "amount": "1",
+        "address": "{ your address 0 }"
+      },
+      {
+        "type": "deposit",
+        "token": "{ fee based token uid }",
+        "amount": "10",
+        "changeAddress": "{ your address 0 }"
+      }
+    ],
+    "args": [],
+    "push_tx": true,
+    "contract_pays_fees": true
+  }
+}
+```
+### Confirmation screen
+It should prompt the user with 0.01 HTR `Network fee` in the screen and `Contract pays fees?` Yes
+
+# Withdrawing fee-based tokens from Fee contract
+
+### Paying with wallet utxos
+### Request
+```json
+{
+  "method": "htr_sendNanoContractTx",
+  "params": {
+    "network": "testnet",
+    "nc_id": "{ nano contract id generated above }",
+    "method": "noop",
+    "actions": [
+      {
+        "type": "withdrawal",
+        "token": "{ fee based token uid }",
+        "amount": "10",
+        "address": "{ your address 0 }"
+      }
+    ],
+    "args": [],
+    "push_tx": true
+  }
+}
+```
+### Confirmation screen
+It should prompt the user with 0.01 HTR `Network fee` in the screen and `Contract pays fees` No
+
+### Contract paying fees via htr withdrawal
+### Request
+```json
+{
+  "method": "htr_sendNanoContractTx",
+  "params": {
+    "network": "testnet",
+    "nc_id": "{ nano contract id generated above }",
+    "method": "noop",
+    "actions": [
+      {
+        "type": "withdrawal",
+        "token": "00",
+        "amount": "1",
+        "address": "{ your address 0 }"
+      },
+      {
+        "type": "withdrawal",
+        "token": "{ fee based token uid }",
+        "amount": "10",
+        "address": "{ your address 0 }"
+      }
+    ],
+    "args": [],
+    "push_tx": true,
+    "contract_pays_fees": true
+  }
+}
+```
+
+### Confirmation Screen
+
+It should prompt the user with 0.01 HTR `Network fee` in the screen and `Contract pays fees?` Yes
 
 # 📋 General Testing Notes
 

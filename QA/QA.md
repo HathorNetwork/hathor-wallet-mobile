@@ -1,6 +1,9 @@
 # Suggested Test Sequence
 The main test sequence should be executed on the `testnet` network by default, unless a specific test requires another network.
 
+### Fee feature flag
+1. Make sure `FBT_FEATURE_TOGGLE` is active.
+
 ### App update
 1. Load the last release of the app and start a wallet. You can confirm the version on Settings -> About.
 1. Update the code to run the latest version, without resetting the wallet.
@@ -27,11 +30,17 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Confirm that the version being tested is correct, and is not the last public release
 
 ### Generate token error Tests
+
 1. Go to Settings and Create a new Token.
+1. Click in Deposit token
 1. Enter token name Test Token, and click Next.
 1. Enter token symbol TEST, and click Next.
 1. Enter the amount of 100.
-1. The Next button should not be clickable. Also, deposit value and your balance should turn red.
+1. The Next button should not be clickable. Also, deposit value should be 1.00 HTR (1% of the amount) and your balance should turn red.
+1. Back to Create Token screen
+1. Click in Fee token
+1. Repeat the steps
+1. The Next button should not be clickable. Also, Network fee value should be 0.01 HTR (flat) and your balance should turn red.
 
 ### Receive Tests
 1. Go to "Settings" -> "Network Settings" and change your network to `testnet`
@@ -128,29 +137,66 @@ The main test sequence should be executed on the `testnet` network by default, u
 
 ### Create a new token Tests
 1. Click on Create a new token.
-1. Enter token name Test Token, and click Next.
-1. Enter token symbol TEST, and click Next.
+1. Select Deposit token.
+1. Enter token name Deposit Token, and click Next.
+1. Enter token symbol DBT, and click Next.
 1. Enter the amount of 100, and click Next.
+1. Verify the deposit amount, it should be 1.00 HTR
 1. Click on create token and check the confirmation message.
 1. After the confirmation message, it must show the Token Details.
 1. Click on the configuration string to copy it.
 1. Click on Share and cancel.
 1. Close the token details.
+1. Back to Create new token
+1. Select Fee token.
+1. Enter token name Fee-Based Token, and click Next.
+1. Enter token symbol FBT, and click Next.
+1. Enter the amount of 100, and click Next.
+1. Verify the Network fee amount, it should be 0.01 HTR.
 
 ### Send and receive the new token
+#### Sending a deposit token
 1. Go to the Send Screen and enter the address of another test wallet.
-1. Change the token to TEST and continue.
-1. Type 3 TEST and send it.
+1. Change the token to DBT and continue.
+1. Type 3 DBT.
+1. Check the network fee badge, it should be `No fee`.
+1. Check the network fee tooltip, it should show the deposit token message and a `Read more` link.
+1. Open the link and check if it's the deposit tokens rfc.
+1. Send it.
+
+#### Sending a fee token
+1. Go to the Send Screen and enter the address of another test wallet.
+1. Change the token to FBT and continue.
+1. Type 100 FBT (this number should be exactly the amount used to create the token, the idea is to have no change).
+1. Check the network fee badge, it should be `0.01 HTR`
+1. Check the network fee tooltip, it should show the fee token message and a `Read more` link.
+1. Open the link and check if it's the fee tokens rfc.
+1. Back to the amount screen and type 50 FBT (less than the total amount used to create the token)
+1. Check if the network fee changed to `0.02 HTR` meaning we have a change output
+1. send it
+
+#### Sending a fee token without enough htr to cover network fee
+1. Send your remaining htr to another test wallet and leave only `0.01 HTR` with you (you may need access to it to recover htr)
+1. Go to the Send Screen and enter the address of another test wallet.
+1. type 1 FBT
+1. Click in the Next button
+1. Check the insufficient balance message
 
 ### Register a token Tests
 1. Go to the Dashboard Screen.
-1. Select the Test Token.
+1. Select the Deposit Token (DBT).
 1. Click on the Token Info on the upper right.
+1. Check the `Fee model`, it should be Deposit-based.
 1. Copy its configuration string by clicking or sharing it.
 1. Unregister the token. Check that the "I want to unregister" radio button is mandatory.
 1. Click on Register Token, click on Manual Info, and paste the Configuration string.
-1. Click on Register Token, and check that the Test Token is back and your balance is 99 TEST.
+1. Click on Register Token, and check that the Test Token is back and your balance is 99 DBT.
 1. Unregister it again and now use the QR Code on the other device to register it.
+1. Go to the Dashboard Screen.
+1. Select the Fee token (FBT).
+1. Click on the Token info on the upper right.
+1. Check the `Fee model`, it should be Fee-based.
+1. Remove and re-register the fee token to see if the fee model remains correctly.
 
 ### Send HTR to a multisig address
 1. Go to the send screen and enter the following address `wRxmoq2bDxViPqFGmAsZVBwHNwjEyFj9zz`
@@ -199,7 +245,7 @@ Test the ability of the app to create and interact with nano contracts. Follow t
 Tests the interaction of distributed apps with the Mobile Wallet. Some are actual tests for Nano Contracts Follow the [Reown QA](QA_REOWN.md)
 
 ### Token Swap
-Tests the Token Swap feature. Folow the [Token Swap QA](QA_TOKEN_SWAP.md)
+Tests the Token Swap feature. Follow the [Token Swap QA](QA_TOKEN_SWAP.md)
 
 # Development Environment tests
 The following tests are executed only if for the development environment, with access to source code and building.
