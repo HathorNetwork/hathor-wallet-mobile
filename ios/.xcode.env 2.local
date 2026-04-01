@@ -1,0 +1,2 @@
+# Override Node.js path for Xcode builds
+export NODE_BINARY=/nix/store/ngzypl7h9rq5j6azqxsl8ba7awcsxvkl-devshell-dir/bin/node

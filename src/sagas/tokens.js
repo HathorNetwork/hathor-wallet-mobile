@@ -35,6 +35,7 @@ import {
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
   tokensSavedForNetwork,
+  setTokens,
 } from '../actions';
 import { STORE } from '../store';
 import { logger } from '../logger';
@@ -515,6 +516,7 @@ export function* restoreNetworkTokens() {
     const wallet = yield select((state) => state.wallet);
     if (!wallet) return;
 
+    let restoredAny = false;
     for (const token of Object.values(savedTokens)) {
       const isRegistered = yield call(
         [wallet.storage, wallet.storage.isTokenRegistered],
@@ -525,6 +527,16 @@ export function* restoreNetworkTokens() {
           [wallet.storage, wallet.storage.registerToken],
           token,
         );
+        restoredAny = true;
+      }
+    }
+
+    if (restoredAny) {
+      const tokens = yield call(getRegisteredTokens, wallet);
+      yield put(setTokens(tokens));
+
+      for (const token of Object.values(savedTokens)) {
+        yield put(tokenFetchBalanceRequested(token.uid));
       }
     }
   } catch (e) {
@@ -538,6 +550,9 @@ export function* restoreNetworkTokens() {
  */
 export function* updateNetworkTokenSnapshot() {
   try {
+    const walletStartState = yield select((state) => state.walletStartState);
+    if (walletStartState !== 'ready') return;
+
     const serverInfo = yield select((state) => state.serverInfo);
     const genesisHash = getGenesisHash(serverInfo);
     if (!genesisHash) return;

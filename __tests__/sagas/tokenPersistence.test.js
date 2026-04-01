@@ -5,7 +5,11 @@ import {
   restoreNetworkTokens,
   updateNetworkTokenSnapshot,
 } from '../../src/sagas/tokens';
-import { tokensSavedForNetwork } from '../../src/actions';
+import {
+  tokensSavedForNetwork,
+  setTokens,
+  tokenFetchBalanceRequested,
+} from '../../src/actions';
 import { STORE } from '../../src/store';
 
 const GENESIS_HASH = 'abc123def456genesis';
@@ -80,7 +84,7 @@ describe('saveNetworkTokens', () => {
 });
 
 describe('restoreNetworkTokens', () => {
-  test('restores tokens for current network', () => {
+  test('restores tokens for current network and updates Redux', () => {
     const gen = restoreNetworkTokens();
 
     // select serverInfo
@@ -117,6 +121,21 @@ describe('restoreNetworkTokens', () => {
         mockTokens.token2,
       ),
     );
+
+    // advance past registerToken, expect getRegisteredTokens call
+    gen.next();
+
+    // feed all registered tokens, expect setTokens dispatch
+    const allTokens = { ...mockTokens, htr: { uid: '00', name: 'HTR', symbol: 'HTR' } };
+    const setTokensEffect = gen.next(allTokens);
+    expect(setTokensEffect.value).toStrictEqual(put(setTokens(allTokens)));
+
+    // expect tokenFetchBalanceRequested for each saved token
+    const fetchBalance1 = gen.next();
+    expect(fetchBalance1.value).toStrictEqual(put(tokenFetchBalanceRequested('token1')));
+
+    const fetchBalance2 = gen.next();
+    expect(fetchBalance2.value).toStrictEqual(put(tokenFetchBalanceRequested('token2')));
 
     expect(gen.next().done).toBe(true);
   });
@@ -164,11 +183,13 @@ describe('restoreNetworkTokens', () => {
 });
 
 describe('updateNetworkTokenSnapshot', () => {
-  test('updates snapshot when genesis hash and wallet available', () => {
+  test('updates snapshot when wallet start state is ready', () => {
     const gen = updateNetworkTokenSnapshot();
 
-    // select serverInfo
+    // select walletStartState
     gen.next();
+    // feed walletStartState='ready', then select serverInfo
+    gen.next('ready');
     // feed serverInfo, then select wallet
     gen.next({ genesis_block_hash: GENESIS_HASH });
     // feed wallet, then call getRegisteredTokens
@@ -183,11 +204,24 @@ describe('updateNetworkTokenSnapshot', () => {
     expect(gen.next().done).toBe(true);
   });
 
+  test('does nothing when walletStartState is not ready', () => {
+    const gen = updateNetworkTokenSnapshot();
+
+    // select walletStartState
+    gen.next();
+    // feed walletStartState='loading' — should exit early
+    const result = gen.next('loading');
+
+    expect(result.done).toBe(true);
+  });
+
   test('does nothing without genesis hash', () => {
     const gen = updateNetworkTokenSnapshot();
 
-    // select serverInfo
+    // select walletStartState
     gen.next();
+    // feed walletStartState='ready'
+    gen.next('ready');
     // feed serverInfo without genesis hash
     const result = gen.next({});
 
@@ -197,8 +231,10 @@ describe('updateNetworkTokenSnapshot', () => {
   test('does nothing when wallet is not ready', () => {
     const gen = updateNetworkTokenSnapshot();
 
-    // select serverInfo
+    // select walletStartState
     gen.next();
+    // feed walletStartState='ready'
+    gen.next('ready');
     // feed serverInfo
     gen.next({ genesis_block_hash: GENESIS_HASH });
     // feed wallet that is not ready

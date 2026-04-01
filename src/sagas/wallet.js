@@ -287,7 +287,7 @@ export function* startWallet(action) {
         max_tx_weight_coefficient: versionData.minTxWeightCoefficient,
         min_tx_weight_k: versionData.minTxWeightK,
         nano_contracts_enabled: versionData.nanoContractsEnabled,
-        genesis_block_hash: versionData.genesis_block_hash,
+        genesis_block_hash: versionData.genesisBlockHash,
       }));
 
       network = versionData.network;
