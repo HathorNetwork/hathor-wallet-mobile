@@ -166,16 +166,23 @@ const ReownPendingOverlay = () => {
 
   // Slide banner in/out
   useEffect(() => {
-    Animated.timing(bannerAnim, {
-      toValue: visible ? 0 : -80,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
+    if (visible) {
+      Animated.timing(bannerAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible, bannerAnim]);
 
+  // Close expanded view when requests are cleared
+  useEffect(() => {
     if (!visible) {
       setExpanded(false);
     }
-  }, [visible, bannerAnim]);
+  }, [visible]);
+
+  if (!visible) return null;
 
   // Fade overlay in/out
   useEffect(() => {
@@ -211,8 +218,6 @@ const ReownPendingOverlay = () => {
   );
 
   const keyExtractor = useCallback((item) => `${item.id}`, []);
-
-  if (!visible) return null;
 
   // Compute dApp summary for banner
   const firstDapp = pendingRequests[0]?.dapp;
