@@ -142,16 +142,21 @@ export default function PendingRequests({ navigation }) {
   const pendingRequests = useSelector((state) => state.reown.pendingRequests);
   const reownClient = useSelector((state) => state.reown.client);
   const [rejecting, setRejecting] = React.useState(false);
+  const rejectTimeoutRef = useRef(null);
 
   useEffect(() => {
     dispatch(reownFetchPendingRequests());
+    return () => {
+      if (rejectTimeoutRef.current) {
+        clearTimeout(rejectTimeoutRef.current);
+      }
+    };
   }, [dispatch]);
 
   const handleRejectAll = useCallback(() => {
     setRejecting(true);
     dispatch(reownRejectAllPendingRequests());
-    // The saga will update the pending requests list
-    setTimeout(() => setRejecting(false), 500);
+    rejectTimeoutRef.current = setTimeout(() => setRejecting(false), 500);
   }, [dispatch]);
 
   const handleRejectSingle = useCallback((id, topic) => {

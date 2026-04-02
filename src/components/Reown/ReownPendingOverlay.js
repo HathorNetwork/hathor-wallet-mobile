@@ -260,9 +260,7 @@ const ReownPendingOverlay = () => {
             <View style={styles.bannerTextWrap}>
               <Text style={styles.bannerCount}>{count}</Text>
               <Text style={styles.bannerLabel}>
-                {count === 1
-                  ? t`pending request`
-                  : t`pending requests`}
+                {t`pending requests`}
               </Text>
             </View>
           </View>

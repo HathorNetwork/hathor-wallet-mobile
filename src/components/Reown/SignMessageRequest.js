@@ -87,7 +87,6 @@ export const SignMessageRequest = ({ signMessageRequest }) => {
                 secondary
                 danger
               />
-
             </View>
           </View>
         </View>

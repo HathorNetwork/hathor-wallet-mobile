@@ -531,7 +531,6 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
                       secondary
                       danger
                     />
-
                   </>
                 )}
               </View>

@@ -476,7 +476,6 @@ export const BaseNanoContractRequest = ({
                 secondary
                 danger
               />
-
             </View>
           )}
         />
@@ -599,7 +598,6 @@ export const BaseNanoContractRequest = ({
                 secondary
                 danger
               />
-
             </View>
           </View>
         </View>

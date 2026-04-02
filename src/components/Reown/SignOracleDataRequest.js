@@ -152,7 +152,6 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
                   secondary
                   danger
                 />
-
               </View>
             </View>
           </View>

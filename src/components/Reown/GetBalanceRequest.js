@@ -139,7 +139,6 @@ export const GetBalanceRequest = ({ getBalanceRequest }) => {
                 secondary
                 danger
               />
-
             </View>
           </View>
         </View>

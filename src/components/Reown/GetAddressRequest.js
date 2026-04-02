@@ -116,7 +116,6 @@ export const GetAddressRequest = ({ getAddressRequest }) => {
                 secondary
                 danger
               />
-
             </View>
           </View>
         </View>

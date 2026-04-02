@@ -179,7 +179,6 @@ export const GetAddressClientRequest = ({ getAddressClientRequest }) => {
                 secondary
                 danger
               />
-
             </View>
           </View>
         </View>

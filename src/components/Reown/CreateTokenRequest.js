@@ -208,7 +208,6 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
                   secondary
                   danger
                 />
-
               </View>
             </View>
           )}

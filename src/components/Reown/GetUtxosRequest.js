@@ -209,7 +209,6 @@ export const GetUtxosRequest = ({ getUtxosRequest }) => {
                 secondary
                 danger
               />
-
             </View>
           </View>
         </View>
