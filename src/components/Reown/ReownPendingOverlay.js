@@ -182,8 +182,6 @@ const ReownPendingOverlay = () => {
     }
   }, [visible]);
 
-  if (!visible) return null;
-
   // Fade overlay in/out
   useEffect(() => {
     Animated.timing(overlayAnim, {
@@ -219,7 +217,9 @@ const ReownPendingOverlay = () => {
 
   const keyExtractor = useCallback((item) => `${item.id}`, []);
 
-  // Compute dApp summary for banner
+  // All hooks above — safe to early-return now
+  if (!visible) return null;
+
   const firstDapp = pendingRequests[0]?.dapp;
 
   return (
