@@ -18,12 +18,12 @@ import {
   Platform,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigation, StackActions } from '@react-navigation/native';
 import { t } from 'ttag';
 import { Portal } from '../Portal';
 import {
   reownRejectAllPendingRequests,
   reownReject,
-  setForceNavigateToDashboard,
   hideReownModal,
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
@@ -155,6 +155,7 @@ const PageDots = ({ count, activeIndex }) => {
  */
 const ReownPendingOverlay = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const pendingRequests = useSelector(
     (state) => state.reown.pendingRequests
   );
@@ -197,12 +198,12 @@ const ReownPendingOverlay = () => {
     dispatch(reownRejectAllPendingRequests());
     // Unblock the currently-processing request saga
     dispatch(reownReject());
-    // Close the active Reown modal/detail screen
+    // Close the active Reown modal
     dispatch(hideReownModal());
-    // Navigate away from the current request detail screen
-    dispatch(setForceNavigateToDashboard(true));
+    // Pop all Reown screens off the navigation stack
+    navigation.dispatch(StackActions.popToTop());
     setExpanded(false);
-  }, [dispatch]);
+  }, [dispatch, navigation]);
 
   const onViewableItemsChanged = useRef(({ viewableItems }) => {
     if (viewableItems.length > 0) {
