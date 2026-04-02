@@ -24,6 +24,7 @@ import {
   reownRejectAllPendingRequests,
   reownReject,
   setForceNavigateToDashboard,
+  hideReownModal,
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
 
@@ -196,6 +197,8 @@ const ReownPendingOverlay = () => {
     dispatch(reownRejectAllPendingRequests());
     // Unblock the currently-processing request saga
     dispatch(reownReject());
+    // Close the active Reown modal/detail screen
+    dispatch(hideReownModal());
     // Navigate away from the current request detail screen
     dispatch(setForceNavigateToDashboard(true));
     setExpanded(false);
