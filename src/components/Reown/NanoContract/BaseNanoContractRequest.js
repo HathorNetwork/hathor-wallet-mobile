@@ -24,7 +24,6 @@ import FeedbackModal from '../../FeedbackModal';
 import Spinner from '../../Spinner';
 import { SelectAddressModal } from '../../NanoContract/SelectAddressModal';
 import { DeclineModal } from './DeclineModal';
-import { RejectAllButton } from '../RejectAllButton';
 import TokenInfoModal from '../TokenInfoModal';
 import AdvancedErrorOptions from '../AdvancedErrorOptions';
 import { useTokenInfo } from '../../../hooks/useTokenInfo';
@@ -477,7 +476,7 @@ export const BaseNanoContractRequest = ({
                 secondary
                 danger
               />
-              <RejectAllButton />
+
             </View>
           )}
         />
@@ -600,7 +599,7 @@ export const BaseNanoContractRequest = ({
                 secondary
                 danger
               />
-              <RejectAllButton />
+
             </View>
           </View>
         </View>

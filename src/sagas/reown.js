@@ -122,6 +122,7 @@ import {
   unregisteredTokensStore,
   setReownError,
   setReownPendingRequests,
+  reownReject,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -1686,6 +1687,10 @@ export function* rejectAllPendingRequests() {
       log.error('[rejectAllPendingRequests] Error rejecting request', e);
     }
   }
+
+  // Unblock the currently-processing request in the saga queue
+  // (it's waiting on REOWN_ACCEPT/REOWN_REJECT in a race)
+  yield put(reownReject());
 
   // Clear the pending requests list
   yield put(setReownPendingRequests([]));

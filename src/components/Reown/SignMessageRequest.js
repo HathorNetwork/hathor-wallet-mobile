@@ -22,7 +22,6 @@ import {
 import { COLORS } from '../../styles/themes';
 import NewHathorButton from '../NewHathorButton';
 import { DappContainer } from './NanoContract/DappContainer';
-import { RejectAllButton } from './RejectAllButton';
 import { commonStyles } from './theme';
 import { NanoContractIcon } from '../Icons/NanoContract.icon';
 
@@ -88,7 +87,7 @@ export const SignMessageRequest = ({ signMessageRequest }) => {
                 secondary
                 danger
               />
-              <RejectAllButton />
+
             </View>
           </View>
         </View>

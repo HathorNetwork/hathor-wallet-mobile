@@ -32,7 +32,6 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 import { FeedbackContent } from '../FeedbackContent';
 import Spinner from '../Spinner';
 import { DeclineModal } from './NanoContract/DeclineModal';
-import { RejectAllButton } from './RejectAllButton';
 import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 import { isTokenNFT } from '../../utils';
 import { TransactionFees } from './TransactionFees';
@@ -532,7 +531,7 @@ export const SendTransactionRequest = ({ sendTransactionRequest, onAccept, onRej
                       secondary
                       danger
                     />
-                    <RejectAllButton />
+
                   </>
                 )}
               </View>

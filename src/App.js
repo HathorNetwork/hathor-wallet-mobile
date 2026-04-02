@@ -87,6 +87,7 @@ import ReownScan from './screens/Reown/ReownScan';
 import PendingRequests from './screens/Reown/PendingRequests';
 import baseStyle from './styles/init';
 import ReownModal from './components/Reown/ReownModal';
+import ReownPendingOverlay from './components/Reown/ReownPendingOverlay';
 import { COLORS, HathorTheme } from './styles/themes';
 import { NetworkSettingsFlowNav, NetworkSettingsFlowStack } from './screens/NetworkSettings';
 import { NetworkStatusBar } from './components/NetworkSettings/NetworkStatusBar';
@@ -874,6 +875,7 @@ const App = () => (
                 <NetworkStatusBar />
                 <RootStack />
                 <ReownModal />
+                <ReownPendingOverlay />
               </NavigationSerializingProvider>
             </HathorDeeplinkProvider>
           </NavigationContainer>

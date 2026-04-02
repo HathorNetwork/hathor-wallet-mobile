@@ -28,7 +28,7 @@ const ModalBase = ({ styleModal, styleWrapper, show, onDismiss, children }) => {
   const button = hasChildren && React.Children.toArray(children).find(
     (child) => child.type.displayName === Button.displayName
   );
-  const discreteButtons = hasChildren && React.Children.toArray(children).filter(
+  const discreteButton = hasChildren && React.Children.toArray(children).find(
     (child) => child.type.displayName === DiscreteButton.displayName
   );
 
@@ -45,7 +45,7 @@ const ModalBase = ({ styleModal, styleWrapper, show, onDismiss, children }) => {
       {title && title}
       {body && body}
       {button && button}
-      {discreteButtons && discreteButtons}
+      {discreteButton && discreteButton}
     </BackdropModal>
   );
 };
@@ -76,14 +76,8 @@ const Button = ({ title, disabled, secondary, danger, onPress }) => (
 );
 Button.displayName = 'ModalBaseButton';
 
-const DiscreteButton = ({ title, onPress, danger }) => (
-  <NewHathorButton
-    title={title}
-    discrete
-    onPress={onPress}
-    wrapperStyle={styles.discreteButton}
-    textStyle={danger ? { color: COLORS.errorBgColor } : undefined}
-  />
+const DiscreteButton = ({ title, onPress }) => (
+  <NewHathorButton title={title} discrete {...{ onPress }} wrapperStyle={styles.discreteButton} />
 );
 DiscreteButton.displayName = 'ModalBaseDiscreteButton';
 

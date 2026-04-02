@@ -27,7 +27,6 @@ import { DappContainer } from './NanoContract/DappContainer';
 import { commonStyles } from './theme';
 import { NanoContractIcon } from '../Icons/NanoContract.icon';
 import { DeclineModal } from './NanoContract/DeclineModal';
-import { RejectAllButton } from './RejectAllButton';
 import CopyClipboard from '../CopyClipboard';
 
 export const SignOracleDataRequestData = ({ oracle, data }) => (
@@ -153,7 +152,7 @@ export const SignOracleDataRequest = ({ signOracleData }) => {
                   secondary
                   danger
                 />
-                <RejectAllButton />
+
               </View>
             </View>
           </View>

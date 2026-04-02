@@ -21,7 +21,6 @@ import { t } from 'ttag';
 import { COLORS } from '../../styles/themes';
 import NewHathorButton from '../NewHathorButton';
 import { DappContainer } from './NanoContract/DappContainer';
-import { RejectAllButton } from './RejectAllButton';
 import { commonStyles } from './theme';
 import { WalletIcon } from '../Icons/Wallet.icon';
 import { TextValue } from '../TextValue';
@@ -180,7 +179,7 @@ export const GetAddressClientRequest = ({ getAddressClientRequest }) => {
                 secondary
                 danger
               />
-              <RejectAllButton onRejectAction={onReject} />
+
             </View>
           </View>
         </View>
