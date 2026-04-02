@@ -102,16 +102,21 @@ target 'HathorMobile' do
 
     # Fix fmt 11.x consteval build error on Xcode 26+.
     # Apple clang claims consteval support but fmt's usage is incompatible.
+    # We disable consteval for ALL Apple clang versions as a safe fallback.
     fmt_base = File.join(installer.sandbox.root, 'fmt', 'include', 'fmt', 'base.h')
     if File.exist?(fmt_base)
-      content = File.read(fmt_base)
-      patched = content.gsub(
-        /defined\(__apple_build_version__\) && __apple_build_version__ < \d+L/,
-        'defined(__apple_build_version__)'
-      )
-      if content != patched
-        File.write(fmt_base, patched)
-        Pod::UI.puts "Patched fmt/base.h to disable consteval on Apple clang"
+      begin
+        content = File.read(fmt_base)
+        patched = content.gsub(
+          /defined\(__apple_build_version__\) && __apple_build_version__ < \d+L/,
+          'defined(__apple_build_version__)'
+        )
+        if content != patched
+          File.write(fmt_base, patched)
+          Pod::UI.puts "Patched fmt/base.h to disable consteval on Apple clang"
+        end
+      rescue => e
+        Pod::UI.warn "Failed to patch fmt/base.h: #{e.message}"
       end
     end
   end
