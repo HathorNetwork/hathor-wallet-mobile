@@ -23,6 +23,7 @@ import { Portal } from '../Portal';
 import {
   reownRejectAllPendingRequests,
   reownReject,
+  setForceNavigateToDashboard,
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
 
@@ -193,8 +194,10 @@ const ReownPendingOverlay = () => {
 
   const onRejectAll = useCallback(() => {
     dispatch(reownRejectAllPendingRequests());
-    // Also unblock the currently-processing request saga
+    // Unblock the currently-processing request saga
     dispatch(reownReject());
+    // Navigate away from the current request detail screen
+    dispatch(setForceNavigateToDashboard(true));
     setExpanded(false);
   }, [dispatch]);
 
