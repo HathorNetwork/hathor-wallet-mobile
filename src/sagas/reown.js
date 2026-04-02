@@ -588,6 +588,7 @@ export function* processRequest(action) {
 
   if (!requestSession) {
     log.error('Could not identify the request session, ignoring request.');
+    yield cancel(pendingPollTask);
     return false;
   }
 
@@ -683,6 +684,7 @@ export function* processRequest(action) {
           if (retry) {
             shouldAnswer = false;
             // Retry the action, exactly as it came:
+            yield cancel(pendingPollTask);
             const result = yield* processRequest(action);
             return result; // Recursive call handles waiting
           }
