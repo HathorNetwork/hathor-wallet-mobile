@@ -23,6 +23,7 @@ import {
 import { COLORS } from '../../styles/themes';
 import NewHathorButton from '../NewHathorButton';
 import { DappContainer } from './NanoContract/DappContainer';
+import { RejectAllButton } from './RejectAllButton';
 import { commonStyles } from './theme';
 import { WalletIcon } from '../Icons/Wallet.icon';
 import { renderValue, isTokenNFT } from '../../utils';
@@ -209,6 +210,7 @@ export const GetUtxosRequest = ({ getUtxosRequest }) => {
                 secondary
                 danger
               />
+              <RejectAllButton />
             </View>
           </View>
         </View>

@@ -121,6 +121,7 @@ import {
   showGetUtxosModal,
   unregisteredTokensStore,
   setReownError,
+  setReownPendingRequests,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
 import { logger } from '../logger';
@@ -336,7 +337,27 @@ export function* checkForPendingRequests() {
   const { walletKit } = reownClient;
 
   yield call([walletKit, walletKit.getPendingSessionProposals]);
-  yield call([walletKit, walletKit.getPendingSessionRequests]);
+  const pendingRequests = yield call([walletKit, walletKit.getPendingSessionRequests]);
+
+  // Enrich pending requests with session metadata (dApp name, icon, url)
+  const activeSessions = yield call(() => walletKit.getActiveSessions());
+  const enriched = (pendingRequests || []).map((req) => {
+    const session = activeSessions[req.topic];
+    return {
+      id: req.id,
+      topic: req.topic,
+      method: get(req, 'params.request.method', 'unknown'),
+      params: get(req, 'params.request.params', {}),
+      dapp: {
+        name: get(session, 'peer.metadata.name', 'Unknown dApp'),
+        icon: get(session, 'peer.metadata.icons[0]', null),
+        url: get(session, 'peer.metadata.url', ''),
+        description: get(session, 'peer.metadata.description', ''),
+      },
+    };
+  });
+
+  yield put(setReownPendingRequests(enriched));
 }
 
 export function* refreshActiveSessions(extend = false) {
@@ -519,11 +540,24 @@ export function* processRequest(action) {
 
   const reownClient = yield call(getReownClient);
   if (!reownClient) {
-    log.debug('Tried to get reown client in clearSessions but it is undefined.');
+    log.debug('Tried to get reown client in processRequest but it is undefined.');
     // Do nothing, client might not yet have been initialized.
     return false;
   }
   const { walletKit } = reownClient;
+
+  // Check if this request was already responded to
+  // (e.g. batch-rejected from PendingRequests screen)
+  const stillPending = yield call([walletKit, walletKit.getPendingSessionRequests]);
+  const isStillPending = (stillPending || []).some((req) => req.id === payload.id);
+  if (!isStillPending) {
+    log.debug('Request was already responded to (likely batch-rejected), skipping.');
+    return false;
+  }
+
+  // Refresh pending requests count so the UI can show "Reject All (N)"
+  yield call(checkForPendingRequests);
+
   const wallet = yield select((state) => state.wallet);
 
   const activeSessions = yield call(() => walletKit.getActiveSessions());
@@ -1583,6 +1617,80 @@ export function* onGetUtxosRequest({ payload }) {
   yield* handleDAppRequest(payload, ReownModalTypes.GET_UTXOS, { passAcceptAction: false });
 }
 
+/**
+ * Fetches all pending session requests from WalletKit and stores them in Redux.
+ */
+export function* fetchPendingRequests() {
+  yield call(checkForPendingRequests);
+}
+
+/**
+ * Rejects a single pending request by id and topic.
+ */
+export function* rejectSinglePendingRequest(action) {
+  const { id, topic } = action.payload;
+  const reownClient = yield call(getReownClient);
+  if (!reownClient) {
+    log.debug('Tried to get reown client in rejectSinglePendingRequest but it is undefined.');
+    return;
+  }
+  const { walletKit } = reownClient;
+
+  try {
+    yield call(() => walletKit.respondSessionRequest({
+      topic,
+      response: {
+        id,
+        jsonrpc: '2.0',
+        error: {
+          code: ERROR_CODES.USER_REJECTED_METHOD,
+          message: 'Rejected by the user',
+        },
+      },
+    }));
+  } catch (e) {
+    log.error('[rejectSinglePendingRequest] Error rejecting request', e);
+  }
+
+  // Refresh the pending requests list
+  yield call(checkForPendingRequests);
+}
+
+/**
+ * Rejects all pending session requests at once.
+ */
+export function* rejectAllPendingRequests() {
+  const reownClient = yield call(getReownClient);
+  if (!reownClient) {
+    log.debug('Tried to get reown client in rejectAllPendingRequests but it is undefined.');
+    return;
+  }
+  const { walletKit } = reownClient;
+
+  const pendingRequests = yield call([walletKit, walletKit.getPendingSessionRequests]);
+
+  for (const req of (pendingRequests || [])) {
+    try {
+      yield call(() => walletKit.respondSessionRequest({
+        topic: req.topic,
+        response: {
+          id: req.id,
+          jsonrpc: '2.0',
+          error: {
+            code: ERROR_CODES.USER_REJECTED_METHOD,
+            message: 'Rejected by the user',
+          },
+        },
+      }));
+    } catch (e) {
+      log.error('[rejectAllPendingRequests] Error rejecting request', e);
+    }
+  }
+
+  // Clear the pending requests list
+  yield put(setReownPendingRequests([]));
+}
+
 export function* saga() {
   yield all([
     fork(featureToggleUpdateListener),
@@ -1606,5 +1714,8 @@ export function* saga() {
     takeEvery('REOWN_CANCEL_SESSION', onCancelSession),
     takeEvery('REOWN_SHUTDOWN', clearSessions),
     takeLatest(types.REOWN_URI_INPUTTED, onUriInputted),
+    takeLatest(types.REOWN_FETCH_PENDING_REQUESTS, fetchPendingRequests),
+    takeLatest(types.REOWN_REJECT_ALL_PENDING_REQUESTS, rejectAllPendingRequests),
+    takeEvery(types.REOWN_REJECT_PENDING_REQUEST, rejectSinglePendingRequest),
   ]);
 }

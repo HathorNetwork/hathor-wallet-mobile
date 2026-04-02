@@ -224,6 +224,10 @@ export const types = {
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY',
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS',
   REOWN_SET_ERROR: 'REOWN_SET_ERROR',
+  REOWN_FETCH_PENDING_REQUESTS: 'REOWN_FETCH_PENDING_REQUESTS',
+  REOWN_SET_PENDING_REQUESTS: 'REOWN_SET_PENDING_REQUESTS',
+  REOWN_REJECT_ALL_PENDING_REQUESTS: 'REOWN_REJECT_ALL_PENDING_REQUESTS',
+  REOWN_REJECT_PENDING_REQUEST: 'REOWN_REJECT_PENDING_REQUEST',
   /**
    * Token Swap actions
    */
@@ -1680,6 +1684,24 @@ export const setCreateNanoContractCreateTokenTxStatusSuccess = () => ({
 export const setReownError = (errorDetails = null) => ({
   type: types.REOWN_SET_ERROR,
   payload: errorDetails,
+});
+
+export const reownFetchPendingRequests = () => ({
+  type: types.REOWN_FETCH_PENDING_REQUESTS,
+});
+
+export const setReownPendingRequests = (requests) => ({
+  type: types.REOWN_SET_PENDING_REQUESTS,
+  payload: requests,
+});
+
+export const reownRejectAllPendingRequests = () => ({
+  type: types.REOWN_REJECT_ALL_PENDING_REQUESTS,
+});
+
+export const reownRejectPendingRequest = (requestId, topic) => ({
+  type: types.REOWN_REJECT_PENDING_REQUEST,
+  payload: { id: requestId, topic },
 });
 
 export const tokenSwapFetchAllowedTokens = () => ({

@@ -37,6 +37,7 @@ import errorIcon from '../../assets/images/icErrorBig.png';
 import checkIcon from '../../assets/images/icCheckBig.png';
 import { useBackButtonHandler } from '../../hooks/useBackButtonHandler';
 import { DeclineModal } from './NanoContract/DeclineModal';
+import { RejectAllButton } from './RejectAllButton';
 import { renderAmountAndSymbol } from '../../utils/tokenSwap';
 
 const condRenderData = (
@@ -208,6 +209,7 @@ export const CreateTokenRequest = ({ createTokenRequest }) => {
                   secondary
                   danger
                 />
+                <RejectAllButton />
               </View>
             </View>
           )}

@@ -11,7 +11,7 @@ import { t } from 'ttag';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { ModalBase } from '../ModalBase';
-import { reownReject } from '../../actions';
+import { reownReject, reownRejectAllPendingRequests } from '../../actions';
 import { WarnDisclaimer } from './WarnDisclaimer';
 import { REOWN_SKIP_CONFIRMATION_MODAL } from '../../config';
 import { commonStyles } from './theme';
@@ -59,6 +59,9 @@ export const RequestConfirmationModal = ({
 
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const pendingCount = useSelector(
+    (state) => state.reown.pendingRequests.length
+  );
 
   const onModalDismiss = useCallback(() => {
     if (onRejectAction) {
@@ -66,6 +69,18 @@ export const RequestConfirmationModal = ({
     } else {
       dispatch(reownReject());
     }
+    onDismiss();
+  }, [onDismiss, onRejectAction, dispatch]);
+
+  const onRejectAll = useCallback(() => {
+    // Reject the current request
+    if (onRejectAction) {
+      onRejectAction();
+    } else {
+      dispatch(reownReject());
+    }
+    // Batch-reject all remaining pending requests in WalletKit
+    dispatch(reownRejectAllPendingRequests());
     onDismiss();
   }, [onDismiss, onRejectAction, dispatch]);
 
@@ -110,6 +125,13 @@ export const RequestConfirmationModal = ({
         title={t`Cancel`}
         onPress={onModalDismiss}
       />
+      {pendingCount > 1 && (
+        <ModalBase.DiscreteButton
+          title={t`Reject All Pending (${pendingCount})`}
+          onPress={onRejectAll}
+          danger
+        />
+      )}
     </ModalBase>
   );
 };
