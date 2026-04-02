@@ -1,6 +1,0 @@
-# Override Node.js path for Xcode builds
-# Use Nix-provided Node.js
-export NODE_BINARY=/nix/store/ngzypl7h9rq5j6azqxsl8ba7awcsxvkl-devshell-dir/bin/node
-
-# Alternatively, if you're using direnv or nix-shell, you could use:
-# export NODE_BINARY=$(command -v node)
