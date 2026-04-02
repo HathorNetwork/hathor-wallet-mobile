@@ -188,9 +188,11 @@ describe('updateNetworkTokenSnapshot', () => {
 
     // select walletStartState
     gen.next();
-    // feed walletStartState='ready', then select serverInfo
+    // feed walletStartState='ready', then select wallet (guard)
     gen.next('ready');
-    // feed serverInfo, then select wallet
+    // feed wallet (guard passes), then select serverInfo (from persistTokensForCurrentNetwork)
+    gen.next(mockWallet);
+    // feed serverInfo, then select wallet (from persistTokensForCurrentNetwork)
     gen.next({ genesis_block_hash: GENESIS_HASH });
     // feed wallet, then call getRegisteredTokens
     gen.next(mockWallet);
@@ -220,9 +222,11 @@ describe('updateNetworkTokenSnapshot', () => {
 
     // select walletStartState
     gen.next();
-    // feed walletStartState='ready'
+    // feed walletStartState='ready', then select wallet (guard)
     gen.next('ready');
-    // feed serverInfo without genesis hash
+    // feed wallet (guard passes), then select serverInfo (from persistTokensForCurrentNetwork)
+    gen.next(mockWallet);
+    // feed serverInfo without genesis hash — should exit early
     const result = gen.next({});
 
     expect(result.done).toBe(true);
@@ -233,11 +237,9 @@ describe('updateNetworkTokenSnapshot', () => {
 
     // select walletStartState
     gen.next();
-    // feed walletStartState='ready'
+    // feed walletStartState='ready', then select wallet (guard)
     gen.next('ready');
-    // feed serverInfo
-    gen.next({ genesis_block_hash: GENESIS_HASH });
-    // feed wallet that is not ready
+    // feed wallet that is not ready — should exit early
     const result = gen.next({ isReady: () => false });
 
     expect(result.done).toBe(true);

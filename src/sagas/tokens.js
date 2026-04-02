@@ -475,23 +475,30 @@ function getGenesisHash(serverInfo) {
 }
 
 /**
- * Save the current registered tokens (excluding HTR) to persistent
- * storage keyed by the current network's genesis hash.
+ * Persist the current registered tokens (excluding HTR) to storage
+ * keyed by the current network's genesis hash.
+ */
+function* persistTokensForCurrentNetwork() {
+  const serverInfo = yield select((state) => state.serverInfo);
+  const genesisHash = getGenesisHash(serverInfo);
+  if (!genesisHash) return;
+
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet) return;
+
+  const tokens = yield call(getRegisteredTokens, wallet, true);
+  yield call([STORE, STORE.saveTokensForNetwork], genesisHash, tokens);
+}
+
+/**
+ * Save the current registered tokens for the active network.
  *
  * Dispatched by the networkSettings saga before it wipes token storage.
+ * Always dispatches tokensSavedForNetwork() when done.
  */
 export function* saveNetworkTokens() {
   try {
-    const serverInfo = yield select((state) => state.serverInfo);
-    const genesisHash = getGenesisHash(serverInfo);
-
-    if (genesisHash) {
-      const wallet = yield select((state) => state.wallet);
-      if (wallet) {
-        const tokens = yield call(getRegisteredTokens, wallet, true);
-        yield call([STORE, STORE.saveTokensForNetwork], genesisHash, tokens);
-      }
-    }
+    yield* persistTokensForCurrentNetwork();
   } catch (e) {
     log.error('Error saving tokens for network:', e);
   } finally {
@@ -553,15 +560,10 @@ export function* updateNetworkTokenSnapshot() {
     const walletStartState = yield select((state) => state.walletStartState);
     if (walletStartState !== 'ready') return;
 
-    const serverInfo = yield select((state) => state.serverInfo);
-    const genesisHash = getGenesisHash(serverInfo);
-    if (!genesisHash) return;
-
     const wallet = yield select((state) => state.wallet);
     if (!wallet || !wallet.isReady()) return;
 
-    const tokens = yield call(getRegisteredTokens, wallet, true);
-    yield call([STORE, STORE.saveTokensForNetwork], genesisHash, tokens);
+    yield* persistTokensForCurrentNetwork();
   } catch (e) {
     log.error('Error updating network token snapshot:', e);
   }
