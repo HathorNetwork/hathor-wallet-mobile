@@ -361,6 +361,24 @@ export function* checkForPendingRequests() {
   yield put(setReownPendingRequests(enriched));
 }
 
+/**
+ * Polls pending requests every 2s so the global overlay banner
+ * can update in real-time as new requests arrive from dApps.
+ * Meant to be forked and cancelled when no longer needed.
+ */
+function* pollPendingRequests() {
+  try {
+    while (true) {
+      yield delay(2000);
+      yield call(checkForPendingRequests);
+    }
+  } finally {
+    if (yield cancelled()) {
+      log.debug('Pending requests polling stopped.');
+    }
+  }
+}
+
 export function* refreshActiveSessions(extend = false) {
   log.debug('Refreshing active sessions.');
   const reownClient = yield call(getReownClient);
@@ -558,6 +576,10 @@ export function* processRequest(action) {
 
   // Refresh pending requests count so the UI can show "Reject All (N)"
   yield call(checkForPendingRequests);
+
+  // Poll pending requests in the background so the overlay banner
+  // updates as more requests arrive while this one is being displayed
+  const pendingPollTask = yield fork(pollPendingRequests);
 
   const wallet = yield select((state) => state.wallet);
 
@@ -854,8 +876,12 @@ export function* processRequest(action) {
     }
   }
 
-  // Return whether a success screen is shown (caller should wait for user to navigate away)
-  // For rejections, errors, and read-only ops, return false to continue immediately
+  // Stop polling for pending requests
+  yield cancel(pendingPollTask);
+
+  // Return whether a success screen is shown
+  // (caller should wait for user to navigate away)
+  // For rejections, errors, and read-only ops, return false
   return successScreenWillSignal;
 }
 
