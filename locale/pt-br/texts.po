@@ -1119,48 +1119,43 @@ msgstr "Rejeitar"
 
 #: src/screens/Reown/PendingRequests.js:128
 msgid "All clear!"
-msgstr ""
+msgstr "Tudo certo!"
 
 #: src/screens/Reown/PendingRequests.js:130
 msgid "No pending requests from dApps."
-msgstr ""
+msgstr "Nenhuma solicitação pendente de dApps."
 
 #: src/screens/Reown/PendingRequests.js:133
-#, fuzzy
 msgid "Go Back"
 msgstr "Voltar"
 
 #: src/components/Reown/ReownPendingOverlay.js:307
 #: src/screens/Reown/PendingRequests.js:193
 #: src/screens/Reown/PendingRequests.js:208
-#, fuzzy
 msgid "Pending Requests"
-msgstr "Recusar Solicitação"
+msgstr "Solicitações Pendentes"
 
 #: src/screens/Reown/PendingRequests.js:197
-#, fuzzy
 msgid "Reown is not connected."
-msgstr "Reown"
+msgstr "Reown não está conectado."
 
 #: src/screens/Reown/PendingRequests.js:225 src/screens/Reown/ReownList.js:209
-#, fuzzy
 msgid "pending request"
-msgstr "Recusar Solicitação"
+msgstr "solicitação pendente"
 
 #: src/components/Reown/ReownPendingOverlay.js:263
 #: src/screens/Reown/PendingRequests.js:226 src/screens/Reown/ReownList.js:210
-#, fuzzy
 msgid "pending requests"
-msgstr "Recusar Solicitação"
+msgstr "solicitações pendentes"
 
 #: src/screens/Reown/PendingRequests.js:230
 #, javascript-format
 msgid "from ${ dappSummary[0].name }"
-msgstr ""
+msgstr "de ${ dappSummary[0].name }"
 
 #: src/screens/Reown/PendingRequests.js:231
 msgid "from ${ dappSummary.length } dApps"
-msgstr ""
+msgstr "de ${ dappSummary.length } dApps"
 
 #: src/components/AskForPushNotificationRefresh.js:37
 #: src/screens/Reown/PendingRequests.js:240
@@ -1168,14 +1163,13 @@ msgid "Refresh"
 msgstr "Atualizar"
 
 #: src/screens/Reown/PendingRequests.js:257
-#, fuzzy
 msgid "Rejecting..."
-msgstr "Rejeitar"
+msgstr "Rejeitando..."
 
 #: src/screens/Reown/PendingRequests.js:257
 #, javascript-format
 msgid "Reject All (${ pendingRequests.length })"
-msgstr ""
+msgstr "Rejeitar Todas (${ pendingRequests.length })"
 
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:303
 #: src/components/Reown/SendTransactionRequest.js:472
@@ -1235,9 +1229,8 @@ msgid "Reown Sessions"
 msgstr "Sessões do Reown"
 
 #: src/screens/Reown/ReownList.js:213
-#, fuzzy
 msgid "Review"
-msgstr "Revisar detalhes"
+msgstr "Revisar"
 
 #: src/screens/Reown/ReownManual.js:40
 msgid "Manual Connection"
@@ -2244,7 +2237,7 @@ msgstr "dApp precisa:"
 #: src/components/Reown/ReownPendingOverlay.js:274
 #: src/components/Reown/ReownPendingOverlay.js:340
 msgid "REJECT ALL"
-msgstr ""
+msgstr "REJEITAR TODAS"
 
 #: src/components/Reown/ReownPendingOverlay.js:349
 #: src/components/Reown/RequestErrorModal.js:56

@@ -1113,18 +1113,16 @@ msgstr ""
 #: src/components/Reown/ReownPendingOverlay.js:307
 #: src/screens/Reown/PendingRequests.js:193
 #: src/screens/Reown/PendingRequests.js:208
-#, fuzzy
 msgid "Pending Requests"
-msgstr "Запрос Средств"
+msgstr ""
 
 #: src/screens/Reown/PendingRequests.js:197
 msgid "Reown is not connected."
 msgstr ""
 
 #: src/screens/Reown/PendingRequests.js:225 src/screens/Reown/ReownList.js:209
-#, fuzzy
 msgid "pending request"
-msgstr "Запрос Средств"
+msgstr ""
 
 #: src/components/Reown/ReownPendingOverlay.js:263
 #: src/screens/Reown/PendingRequests.js:226 src/screens/Reown/ReownList.js:210
