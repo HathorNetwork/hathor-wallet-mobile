@@ -25,6 +25,7 @@ import {
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
+import { ImportTokensModalState } from '../components/ImportTokensModal';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
@@ -557,6 +558,12 @@ const initialState = {
     swapPathQuote: null,
     loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.READY,
   },
+  tokenImport: {
+    unregisteredTokens: {},
+    bannerDismissed: false,
+    loading: false,
+    importStatus: ImportTokensModalState.IDLE,
+  },
 };
 
 export const reducer = (state = initialState, action) => {
@@ -806,6 +813,25 @@ export const reducer = (state = initialState, action) => {
       return onTokenSwapFetchQuoteError(state);
     case types.TOKEN_SWAP_RESET_SWAP_DATA:
       return onTokenSwapResetSwapData(state);
+
+    case types.TOKEN_IMPORT_FETCH_REQUESTED:
+      return onTokenImportFetchRequested(state);
+    case types.TOKEN_IMPORT_FETCH_SUCCESS:
+      return onTokenImportFetchSuccess(state, action);
+    case types.TOKEN_IMPORT_FETCH_FAILED:
+      return onTokenImportFetchFailed(state);
+    case types.TOKEN_IMPORT_NEW_DETECTED:
+      return onTokenImportNewDetected(state, action);
+    case types.TOKEN_IMPORT_REQUESTED:
+      return onTokenImportRequested(state);
+    case types.TOKEN_IMPORT_SUCCESS:
+      return onTokenImportSuccess(state, action);
+    case types.TOKEN_IMPORT_FAILED:
+      return onTokenImportFailed(state);
+    case types.TOKEN_IMPORT_DISMISS_BANNER:
+      return onTokenImportDismissBanner(state);
+    case types.TOKEN_IMPORT_RESET_STATUS:
+      return onTokenImportResetStatus(state);
     default:
       return state;
   }
@@ -2331,5 +2357,89 @@ export const onTokenSwapSwitchTokens = (state) => ({
     ...state.tokenSwap,
     inputToken: state.tokenSwap.outputToken,
     outputToken: state.tokenSwap.inputToken,
+  },
+});
+
+const onTokenImportFetchRequested = (state) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    loading: true,
+  },
+});
+
+const onTokenImportFetchSuccess = (state, { payload }) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    loading: false,
+    unregisteredTokens: payload,
+  },
+});
+
+const onTokenImportFetchFailed = (state) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    loading: false,
+  },
+});
+
+const onTokenImportNewDetected = (state, { payload }) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    unregisteredTokens: {
+      ...state.tokenImport.unregisteredTokens,
+      ...payload,
+    },
+    bannerDismissed: false,
+  },
+});
+
+const onTokenImportRequested = (state) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    importStatus: ImportTokensModalState.IMPORTING,
+  },
+});
+
+const onTokenImportSuccess = (state, { payload: tokenUids }) => {
+  const unregisteredTokens = { ...state.tokenImport.unregisteredTokens };
+  for (const uid of tokenUids) {
+    delete unregisteredTokens[uid];
+  }
+  return {
+    ...state,
+    tokenImport: {
+      ...state.tokenImport,
+      importStatus: ImportTokensModalState.SUCCESS,
+      unregisteredTokens,
+    },
+  };
+};
+
+const onTokenImportFailed = (state) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    importStatus: ImportTokensModalState.ERROR,
+  },
+});
+
+const onTokenImportDismissBanner = (state) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    bannerDismissed: true,
+  },
+});
+
+const onTokenImportResetStatus = (state) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    importStatus: ImportTokensModalState.IDLE,
   },
 });

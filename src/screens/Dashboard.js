@@ -21,6 +21,7 @@ import { TwoOptionsToggle } from '../components/TwoOptionsToggle';
 import QRCodeIcon from '../components/Icons/QRCodeIcon';
 import { tokenFetchBalanceRequested, updateSelectedToken } from '../actions';
 import AskForPushNotificationRefresh from '../components/AskForPushNotificationRefresh';
+import TokenImportBanner from '../components/TokenImportBanner';
 import { COLORS } from '../styles/themes';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
@@ -148,7 +149,12 @@ export const Dashboard = () => {
         isTokensSelected(currList)
         && (
           <TokenSelect
-            header={<TokensHeader isNanoEnabled={isNanoEnabled} />}
+            header={(
+              <>
+                <TokensHeader isNanoEnabled={isNanoEnabled} />
+                <TokenImportBanner />
+              </>
+            )}
             renderArrow
             onItemPress={onTokenPress}
             selectedToken={selectedToken}
