@@ -206,6 +206,8 @@ export const types = {
   REOWN_CREATE_TOKEN_RETRY: 'REOWN_CREATE_TOKEN_RETRY',
   REOWN_CREATE_TOKEN_RETRY_DISMISS: 'REOWN_CREATE_TOKEN_RETRY_DISMISS',
   NETWORK_CHANGED: 'NETWORK_CHANGED',
+  SAVE_TOKENS_FOR_NETWORK: 'SAVE_TOKENS_FOR_NETWORK',
+  TOKENS_SAVED_FOR_NETWORK: 'TOKENS_SAVED_FOR_NETWORK',
   APPSTATE_UPDATED: 'APPSTATE_UPDATED',
   SET_USE_SAFE_BIOMETRY_MODE: 'SET_USE_SAFE_BIOMETRY_MODE',
   SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
@@ -743,6 +745,14 @@ export const reloadWalletRequested = () => ({
 
 export const networkChanged = () => ({
   type: types.NETWORK_CHANGED,
+});
+
+export const saveTokensForNetwork = () => ({
+  type: types.SAVE_TOKENS_FOR_NETWORK,
+});
+
+export const tokensSavedForNetwork = () => ({
+  type: types.TOKENS_SAVED_FOR_NETWORK,
 });
 
 export const startWalletRequested = (payload) => ({
