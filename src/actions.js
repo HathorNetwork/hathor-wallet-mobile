@@ -254,6 +254,18 @@ export const types = {
   // Clean swap data when user does not confirm the swap
   TOKEN_SWAP_RESET_SWAP_DATA: 'TOKEN_SWAP_RESET_SWAP_DATA',
   TOKEN_SWAP_START_SWAP: 'TOKEN_SWAP_START_SWAP',
+
+  // Token Import actions
+  TOKEN_IMPORT_FETCH_REQUESTED: 'TOKEN_IMPORT_FETCH_REQUESTED',
+  TOKEN_IMPORT_FETCH_SUCCESS: 'TOKEN_IMPORT_FETCH_SUCCESS',
+  TOKEN_IMPORT_FETCH_FAILED: 'TOKEN_IMPORT_FETCH_FAILED',
+  TOKEN_IMPORT_NEW_TX_TOKENS: 'TOKEN_IMPORT_NEW_TX_TOKENS',
+  TOKEN_IMPORT_NEW_DETECTED: 'TOKEN_IMPORT_NEW_DETECTED',
+  TOKEN_IMPORT_REQUESTED: 'TOKEN_IMPORT_REQUESTED',
+  TOKEN_IMPORT_SUCCESS: 'TOKEN_IMPORT_SUCCESS',
+  TOKEN_IMPORT_FAILED: 'TOKEN_IMPORT_FAILED',
+  TOKEN_IMPORT_DISMISS_BANNER: 'TOKEN_IMPORT_DISMISS_BANNER',
+  TOKEN_IMPORT_RESET_STATUS: 'TOKEN_IMPORT_RESET_STATUS',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1740,4 +1752,49 @@ export const tokenSwapResetSwapData = () => ({
 
 export const tokenSwapSwitchTokens = () => ({
   type: types.TOKEN_SWAP_SWITCH_TOKENS,
+});
+
+export const tokenImportFetchRequested = () => ({
+  type: types.TOKEN_IMPORT_FETCH_REQUESTED,
+});
+
+export const tokenImportFetchSuccess = (tokens) => ({
+  type: types.TOKEN_IMPORT_FETCH_SUCCESS,
+  payload: tokens,
+});
+
+export const tokenImportFetchFailed = () => ({
+  type: types.TOKEN_IMPORT_FETCH_FAILED,
+});
+
+export const tokenImportNewTxTokens = (tokenUids) => ({
+  type: types.TOKEN_IMPORT_NEW_TX_TOKENS,
+  payload: tokenUids,
+});
+
+export const tokenImportNewDetected = (tokens) => ({
+  type: types.TOKEN_IMPORT_NEW_DETECTED,
+  payload: tokens,
+});
+
+export const tokenImportRequested = (tokens) => ({
+  type: types.TOKEN_IMPORT_REQUESTED,
+  payload: tokens,
+});
+
+export const tokenImportSuccess = (tokenUids) => ({
+  type: types.TOKEN_IMPORT_SUCCESS,
+  payload: tokenUids,
+});
+
+export const tokenImportFailed = () => ({
+  type: types.TOKEN_IMPORT_FAILED,
+});
+
+export const tokenImportDismissBanner = () => ({
+  type: types.TOKEN_IMPORT_DISMISS_BANNER,
+});
+
+export const tokenImportResetStatus = () => ({
+  type: types.TOKEN_IMPORT_RESET_STATUS,
 });

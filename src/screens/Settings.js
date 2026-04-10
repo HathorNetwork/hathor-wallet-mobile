@@ -151,6 +151,13 @@ export class Settings extends React.Component {
                   onPress={() => this.props.navigation.navigate('RegisterToken')}
                 />
               )}
+            {IS_MULTI_TOKEN
+              && (
+                <ListMenu
+                  title={t`Import tokens`}
+                  onPress={() => this.props.navigation.navigate('ImportTokensScreen')}
+                />
+              )}
             {this.props.reownEnabled
               && (
                 <ListMenu
