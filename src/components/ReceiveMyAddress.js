@@ -22,6 +22,7 @@ export default function ReceiveMyAddress() {
   const dispatch = useDispatch();
   const wallet = useSelector((state) => state.wallet);
   const lastSharedAddress = useSelector((state) => state.lastSharedAddress);
+  const addressMode = useSelector((state) => state.addressMode);
 
   const getNextAddress = async () => {
     const { address, index } = await wallet.getNextAddress();
@@ -53,11 +54,13 @@ export default function ReceiveMyAddress() {
         />
       </View>
       <View style={styles.buttonRow}>
-        <SimpleButton
-          title={t`New address`}
-          onPress={getNextAddress}
-          containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
-        />
+        {addressMode !== 'single' && (
+          <SimpleButton
+            title={t`New address`}
+            onPress={getNextAddress}
+            containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
+          />
+        )}
         <SimpleButton
           onPress={shareAddress}
           title={t`Share`}
