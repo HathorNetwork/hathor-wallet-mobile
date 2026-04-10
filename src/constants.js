@@ -133,6 +133,20 @@ export const pushNotificationKey = {
 };
 
 /**
+ * Wallet address modes.
+ */
+export const ADDRESS_MODE = {
+  SINGLE: 'single',
+  MULTI: 'multi',
+};
+
+// Address mode is namespaced per network so a preference on one network does
+// not leak into another (e.g. mainnet has the rollout flag on, testnet does not).
+// The 'wallet:' prefix means STORE.clearItems(true) sweeps it on resetWallet.
+const ADDRESS_MODE_KEY_PREFIX = 'wallet:address_mode:';
+export const addressModeKey = (network) => `${ADDRESS_MODE_KEY_PREFIX}${network}`;
+
+/**
  * this is the message key for localization of new transaction when show amount is enabled
  */
 export const NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED = 'new_transaction_received_description_with_tokens';
@@ -182,6 +196,7 @@ export const NANO_CONTRACT_FEATURE_TOGGLE = 'nano-contract.rollout';
 export const SAFE_BIOMETRY_MODE_FEATURE_TOGGLE = 'safe-biometry-mode.rollout'
 export const TOKEN_SWAP_FEATURE_TOGGLE = 'token-swap.rollout';
 export const FBT_FEATURE_TOGGLE = 'fee-based-tokens.rollout';
+export const SINGLE_ADDRESS_FEATURE_TOGGLE = 'single-address-mobile.rollout';
 
 /**
  * Default feature toggle values.
@@ -200,6 +215,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [SAFE_BIOMETRY_MODE_FEATURE_TOGGLE]: false,
   [TOKEN_SWAP_FEATURE_TOGGLE]: false,
   [FBT_FEATURE_TOGGLE]: false,
+  [SINGLE_ADDRESS_FEATURE_TOGGLE]: false,
 };
 
 // Project id configured in https://walletconnect.com
