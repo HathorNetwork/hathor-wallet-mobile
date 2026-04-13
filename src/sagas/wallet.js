@@ -10,6 +10,7 @@ import {
   HathorWallet,
   HathorWalletServiceWallet,
   Network,
+  SCANNING_POLICY,
   constants as hathorLibConstants,
   config,
   errors,
@@ -37,9 +38,11 @@ import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
+  SINGLE_ADDRESS_FEATURE_TOGGLE,
+  ADDRESS_MODE_KEY,
   networkSettingsKeyMap,
 } from '../constants';
-import { STORE } from '../store';
+import { STORE, ACCESS_DATA_KEY } from '../store';
 import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
@@ -71,6 +74,7 @@ import {
   firstAddressSuccess,
   firstAddressRequest,
   setFullNodeNetworkName,
+  setAddressMode,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -195,6 +199,27 @@ export function* startWallet(action) {
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
 
+  // Determine address mode
+  const persistedAddressMode = STORE.getItem(ADDRESS_MODE_KEY);
+  const singleAddressFeatureFlag = yield select(
+    (state) => state.featureToggles[SINGLE_ADDRESS_FEATURE_TOGGLE]
+  );
+  const isNewWallet = STORE.getItem(ACCESS_DATA_KEY) == null;
+
+  let addressMode;
+  if (persistedAddressMode != null) {
+    addressMode = persistedAddressMode;
+  } else if (singleAddressFeatureFlag && isNewWallet) {
+    addressMode = 'single';
+  } else {
+    addressMode = 'multi';
+  }
+
+  STORE.setItem(ADDRESS_MODE_KEY, addressMode);
+  yield put(setAddressMode(addressMode));
+
+  const singleAddressMode = addressMode === 'single';
+
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
   yield put((_dispatch) => {
@@ -214,6 +239,7 @@ export function* startWallet(action) {
       seed: words,
       network,
       storage,
+      singleAddressMode,
     });
   } else {
     const connection = new Connection({
@@ -231,6 +257,9 @@ export function* startWallet(action) {
       beforeReloadCallback: () => {
         dispatch(onWalletReload());
       },
+      ...(singleAddressMode && {
+        scanPolicy: { policy: SCANNING_POLICY.SINGLE_ADDRESS },
+      }),
     };
     wallet = new HathorWallet(walletConfig);
   }
