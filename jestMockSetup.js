@@ -121,3 +121,22 @@ jest.mock('react-native-permissions', () => ({
 // If re-added, uncomment these mocks:
 // jest.mock('react-native-modal');
 // jest.mock('react-native-animatable');
+
+// WalletConnect compat shim imports native modules not available in test
+jest.mock('@walletconnect/react-native-compat', () => ({}));
+
+// react-native-camera-kit native component can't be parsed by babel codegen in tests
+jest.mock('react-native-camera-kit', () => ({
+  Camera: 'Camera',
+  CameraType: { Back: 'back', Front: 'front' },
+}));
+
+// wallet-lib sub-path imports trigger bitcore-lib double-instance error in tests.
+// These must be mocked to avoid loading bitcore-lib twice.
+jest.mock('@hathor/wallet-lib/lib/nano_contracts/utils', () => ({
+  getBlueprintId: jest.fn(),
+}));
+jest.mock('@hathor/wallet-lib/lib/api/axiosWrapper', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({ get: jest.fn(), post: jest.fn() })),
+}));
