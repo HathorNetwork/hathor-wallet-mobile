@@ -58,14 +58,30 @@ jest.mock('react-native-status-bar-height');
 
 jest.mock('@react-native-async-storage/async-storage', () => jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 
-jest.mock('@react-native-firebase/messaging');
+jest.mock('@react-native-firebase/messaging', () => () => ({
+  getToken: jest.fn(() => Promise.resolve('mock-token')),
+  deleteToken: jest.fn(() => Promise.resolve()),
+  requestPermission: jest.fn(() => Promise.resolve(1)),
+  getInitialNotification: jest.fn(() => Promise.resolve(null)),
+  onMessage: jest.fn(() => jest.fn()),
+  onNotificationOpenedApp: jest.fn(() => jest.fn()),
+  setBackgroundMessageHandler: jest.fn(),
+  isDeviceRegisteredForRemoteMessages: true,
+  registerDeviceForRemoteMessages: jest.fn(() => Promise.resolve()),
+  AuthorizationStatus: { AUTHORIZED: 1, NOT_DETERMINED: -1, DENIED: 0, PROVISIONAL: 2 },
+}));
+jest.mock('@react-native-firebase/app', () => ({
+  firebase: {
+    app: jest.fn(),
+  },
+}));
 
 jest.mock('@sentry/react-native');
 
 jest.mock('react-native-version-number');
 
-jest.mock('unleash-proxy-client', () => ({
-  UnleashClient: jest.fn(() => ({
+jest.mock('@hathor/unleash-client', () => ({
+  HathorUnleashClient: jest.fn(() => ({
     getAllToggles: () => ({}),
     isEnabled: () => false,
     getVariant: () => ({}),
@@ -101,6 +117,7 @@ jest.mock('react-native-permissions', () => ({
   }
 }));
 
-jest.mock('react-native-modal');
-
-jest.mock('react-native-animatable');
+// react-native-modal and react-native-animatable were removed as dependencies.
+// If re-added, uncomment these mocks:
+// jest.mock('react-native-modal');
+// jest.mock('react-native-animatable');
