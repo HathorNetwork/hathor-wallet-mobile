@@ -32,6 +32,24 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 64;
 const CARD_MARGIN = 8;
 
+/**
+ * activeOpacity values tuned per interaction type so the touch feedback
+ * matches the prominence of the element being tapped.
+ */
+// Large tappable surface (banner card). Subtle dim, mostly visual confirmation.
+const ACTIVE_OPACITY_BANNER = 0.85;
+// Primary call-to-action buttons (e.g. "Reject All" inside the carousel).
+const ACTIVE_OPACITY_PRIMARY_BUTTON = 0.8;
+// Secondary / compact buttons (reject pill, dismiss). Stronger dim for clearer
+// feedback on smaller hit areas.
+const ACTIVE_OPACITY_SECONDARY_BUTTON = 0.7;
+
+// White with opacity, used on dark (banner) backgrounds.
+const WHITE_OPACITY_15 = 'rgba(255, 255, 255, 0.15)';
+const WHITE_OPACITY_75 = 'rgba(255, 255, 255, 0.75)';
+// Scrim behind the expanded overlay.
+const BACKDROP_SCRIM = 'rgba(0, 0, 0, 0.6)';
+
 const METHOD_LABELS = {
   htr_signWithAddress: 'Sign Message',
   htr_sendNanoContractTx: 'Nano Contract Tx',
@@ -64,7 +82,7 @@ const getCategoryStyle = (category) => {
     default:
       return {
         color: COLORS.positiveBalanceColor,
-        bg: 'hsla(180, 80%, 95%, 1)',
+        bg: COLORS.positiveBalanceBgColor,
       };
   }
 };
@@ -242,7 +260,7 @@ const ReownPendingOverlay = () => {
         <TouchableOpacity
           style={styles.bannerTouchable}
           onPress={() => setExpanded(true)}
-          activeOpacity={0.85}
+          activeOpacity={ACTIVE_OPACITY_BANNER}
         >
           <View style={styles.bannerLeft}>
             {firstDapp?.icon ? (
@@ -267,7 +285,7 @@ const ReownPendingOverlay = () => {
           <TouchableOpacity
             onPress={onRejectAll}
             style={styles.bannerRejectBtn}
-            activeOpacity={0.7}
+            activeOpacity={ACTIVE_OPACITY_SECONDARY_BUTTON}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text style={styles.bannerRejectText}>
@@ -334,7 +352,7 @@ const ReownPendingOverlay = () => {
             <TouchableOpacity
               style={styles.rejectAllBtn}
               onPress={onRejectAll}
-              activeOpacity={0.8}
+              activeOpacity={ACTIVE_OPACITY_PRIMARY_BUTTON}
             >
               <Text style={styles.rejectAllText}>
                 {t`REJECT ALL`} ({count})
@@ -344,7 +362,7 @@ const ReownPendingOverlay = () => {
             <TouchableOpacity
               style={styles.dismissBtn}
               onPress={() => setExpanded(false)}
-              activeOpacity={0.7}
+              activeOpacity={ACTIVE_OPACITY_SECONDARY_BUTTON}
             >
               <Text style={styles.dismissText}>{t`Dismiss`}</Text>
             </TouchableOpacity>
@@ -372,7 +390,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 14,
-    shadowColor: '#000',
+    shadowColor: COLORS.black,
     shadowOpacity: 0.25,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 12,
@@ -392,7 +410,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: WHITE_OPACITY_15,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -414,7 +432,7 @@ const styles = StyleSheet.create({
   },
   bannerLabel: {
     fontSize: 13,
-    color: 'rgba(255,255,255,0.75)',
+    color: WHITE_OPACITY_75,
   },
   bannerRejectBtn: {
     paddingHorizontal: 12,
@@ -445,7 +463,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: BACKDROP_SCRIM,
   },
   overlayContent: {
     position: 'absolute',

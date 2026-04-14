@@ -59,7 +59,7 @@ const getCategoryBgColor = (category) => {
   switch (category) {
     case 'write': return COLORS.feedbackWarning100;
     case 'sign': return COLORS.primaryOpacity10;
-    case 'read': return 'hsla(180, 80%, 95%, 1)';
+    case 'read': return COLORS.positiveBalanceBgColor;
     default: return COLORS.freeze100;
   }
 };
