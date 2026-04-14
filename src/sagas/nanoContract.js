@@ -88,6 +88,13 @@ function cleanupLoadingLock(ncId, requestType) {
   }
 }
 
+/**
+ * Clears all loading locks. Only for use in tests.
+ */
+export function clearLoadingLocksForTesting() {
+  loadingLockByNcId.clear();
+}
+
 export const failureMessage = {
   alreadyRegistered: t`Nano Contract already registered.`,
   walletNotReadyError: t`Wallet is not ready yet to register a Nano Contract.`,
