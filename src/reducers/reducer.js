@@ -164,6 +164,18 @@ const initialState = {
   useWalletService: false,
   tokenMetadata: {},
   metadataLoaded: false,
+  /**
+   * tokenIcons {{
+   *   manifest: { [uid: string]: string },  // uid -> icon filename (e.g. "<uid>.png")
+   *   network: string | null,                // network the manifest was fetched for
+   *   lastFetched: number,                   // epoch ms of last successful fetch
+   * }}
+   */
+  tokenIcons: {
+    manifest: {},
+    network: null,
+    lastFetched: 0,
+  },
   uniqueDeviceId: null,
   isShowingPinScreen: false,
   /**
@@ -806,6 +818,9 @@ export const reducer = (state = initialState, action) => {
       return onTokenSwapFetchQuoteError(state);
     case types.TOKEN_SWAP_RESET_SWAP_DATA:
       return onTokenSwapResetSwapData(state);
+
+    case types.TOKEN_ICONS_MANIFEST_UPDATED:
+      return onTokenIconsManifestUpdated(state, action);
     default:
       return state;
   }
@@ -2331,5 +2346,14 @@ export const onTokenSwapSwitchTokens = (state) => ({
     ...state.tokenSwap,
     inputToken: state.tokenSwap.outputToken,
     outputToken: state.tokenSwap.inputToken,
+  },
+});
+
+const onTokenIconsManifestUpdated = (state, { payload }) => ({
+  ...state,
+  tokenIcons: {
+    manifest: payload.manifest,
+    network: payload.network,
+    lastFetched: payload.lastFetched,
   },
 });

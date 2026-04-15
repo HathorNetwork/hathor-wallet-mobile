@@ -254,7 +254,25 @@ export const types = {
   // Clean swap data when user does not confirm the swap
   TOKEN_SWAP_RESET_SWAP_DATA: 'TOKEN_SWAP_RESET_SWAP_DATA',
   TOKEN_SWAP_START_SWAP: 'TOKEN_SWAP_START_SWAP',
+
+  // Token Icons — manifest fetched from public S3 bucket
+  TOKEN_ICONS_FETCH_REQUESTED: 'TOKEN_ICONS_FETCH_REQUESTED',
+  TOKEN_ICONS_MANIFEST_UPDATED: 'TOKEN_ICONS_MANIFEST_UPDATED',
+  TOKEN_ICONS_FETCH_FAILED: 'TOKEN_ICONS_FETCH_FAILED',
 };
+
+export const tokenIconsFetchRequested = () => ({
+  type: types.TOKEN_ICONS_FETCH_REQUESTED,
+});
+
+export const tokenIconsManifestUpdated = ({ manifest, network, lastFetched }) => ({
+  type: types.TOKEN_ICONS_MANIFEST_UPDATED,
+  payload: { manifest, network, lastFetched },
+});
+
+export const tokenIconsFetchFailed = () => ({
+  type: types.TOKEN_ICONS_FETCH_FAILED,
+});
 
 export const featureToggleInitialized = () => ({
   type: types.FEATURE_TOGGLE_INITIALIZED,

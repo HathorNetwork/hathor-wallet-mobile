@@ -7,14 +7,14 @@
 
 import React from 'react';
 import {
-  Image, StyleSheet, View, Text, TouchableHighlight,
+  StyleSheet, View, Text, TouchableHighlight,
 } from 'react-native';
 import { get } from 'lodash';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 
-import chevronRight from '../assets/icons/chevron-right.png';
 import Spinner from './Spinner';
+import TokenAvatar from './TokenAvatar';
 import { renderValue, isTokenNFT } from '../utils';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
@@ -33,20 +33,12 @@ import { HathorFlatList } from './HathorFlatList';
  * @param {unknown} props.tokenMetadata
  * @param {{ [uid: string]: { uid: string; name: string; symbol: string; }}} props.tokens
  * @param {unknown} props.header
- * @param {boolean} props.renderArrow
  * @param {function} props.onItemPress
  * @param {boolean} [props.ignoreLoading]
  */
 const TokenSelect = (props) => {
   const tokens = Object.values(props.tokens);
   const renderItem = ({ item }) => {
-    const symbolWrapperStyle = [styles.symbolWrapper];
-    const symbolTextStyle = [styles.text, styles.leftText, styles.symbolText];
-    if (props.selectedToken && props.selectedToken.uid === item.uid) {
-      symbolWrapperStyle.push(styles.symbolWrapperSelected);
-      symbolTextStyle.push(styles.symbolTextSelected);
-    }
-
     const balance = get(props.tokensBalance, `${item.uid}.data.available`, 0);
     const tokenState = get(props.tokensBalance, `${item.uid}.status`, props.ignoreLoading ? 'ready' : 'loading');
 
@@ -56,12 +48,10 @@ const TokenSelect = (props) => {
         underlayColor={COLORS.primaryOpacity30}
       >
         <View style={styles.itemWrapper}>
-          <View style={styles.itemLeftWrapper}>
-            <View style={symbolWrapperStyle}>
-              <Text style={symbolTextStyle}>{item.symbol}</Text>
-            </View>
+          <TokenAvatar uid={item.uid} symbol={item.symbol} size={40} />
+          <View style={styles.itemCenterWrapper}>
             <Text
-              style={[styles.text, styles.leftText, styles.nameText]}
+              style={styles.nameText}
               numberOfLines={1}
               ellipsizeMode='tail'
             >
@@ -69,32 +59,24 @@ const TokenSelect = (props) => {
             </Text>
           </View>
           <View style={styles.itemRightWrapper}>
-            <Text style={[styles.text, styles.rightText]}>
-              {tokenState === TOKEN_DOWNLOAD_STATUS.READY && (
-                renderValue(
-                  balance,
-                  isTokenNFT(item.uid, props.tokenMetadata)
-                )
-              )}
-
-              {tokenState === TOKEN_DOWNLOAD_STATUS.FAILED && (
-                <FontAwesomeIcon
-                  icon={faCircleExclamation}
-                  color={COLORS.errorTextShadow}
-                  style={{ fontSize: 14 }}
-                />
-              )}
-
-              {tokenState === TOKEN_DOWNLOAD_STATUS.LOADING && (
-                <Spinner size={14} animating />
-              )}
-
-              {' '}
-
-              {item.symbol}
-            </Text>
-            {props.renderArrow
-              && <Image style={{ marginLeft: 8 }} source={chevronRight} width={24} height={24} />}
+            {tokenState === TOKEN_DOWNLOAD_STATUS.READY && (
+              <Text style={styles.balanceText}>
+                {renderValue(balance, isTokenNFT(item.uid, props.tokenMetadata))}
+              </Text>
+            )}
+            {tokenState === TOKEN_DOWNLOAD_STATUS.FAILED && (
+              <FontAwesomeIcon
+                icon={faCircleExclamation}
+                color={COLORS.errorTextShadow}
+                style={{ fontSize: 14 }}
+              />
+            )}
+            {tokenState === TOKEN_DOWNLOAD_STATUS.LOADING && (
+              <Spinner size={14} animating />
+            )}
+            {tokenState === TOKEN_DOWNLOAD_STATUS.READY && (
+              <Text style={styles.rightSymbolText}>{item.symbol}</Text>
+            )}
           </View>
         </View>
       </TouchableHighlight>
@@ -125,56 +107,40 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
+    backgroundColor: COLORS.lowContrastDetail,
   },
   itemWrapper: {
     height: 80,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  itemLeftWrapper: {
+  itemCenterWrapper: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexShrink: 1,
+    minWidth: 0,
+    marginLeft: 12,
+    marginRight: 8,
+    justifyContent: 'center',
   },
   itemRightWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
     flexShrink: 0,
-  },
-  symbolWrapper: {
-    padding: 4,
-    backgroundColor: COLORS.lowContrastDetail,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-    borderRadius: 4,
-  },
-  text: {
-    lineHeight: 20,
-  },
-  rightText: {
-    fontSize: 16,
-  },
-  leftText: {
-    fontSize: 14,
+    alignItems: 'flex-end',
   },
   nameText: {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
+    fontSize: 15,
+    lineHeight: 20,
+    color: COLORS.textColor,
   },
-  symbolText: {
-    fontWeight: 'bold',
+  rightSymbolText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: COLORS.textColorShadow,
+    marginTop: 2,
   },
-  symbolTextSelected: {
-    color: COLORS.backgroundColor,
-  },
-  symbolWrapperSelected: {
-    backgroundColor: COLORS.primary,
+  balanceText: {
+    fontSize: 16,
+    lineHeight: 20,
+    color: COLORS.textColor,
   },
 });
 
