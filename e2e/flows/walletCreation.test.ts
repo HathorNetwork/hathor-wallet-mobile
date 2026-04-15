@@ -17,11 +17,19 @@ import { device, element, by, expect as detoxExpect, waitFor } from 'detox';
 
 describe('Wallet Creation Flow', () => {
   beforeAll(async () => {
-    await device.launchApp({ newInstance: true });
+    // Disable Detox synchronization to work around RN 0.77 compatibility issue
+    // (wix/Detox#4803 — Detox hangs on isReady with RN 0.76+)
+    await device.launchApp({
+      newInstance: true,
+      launchArgs: { detoxDisableSynchronization: 1 },
+    });
   });
 
   it('should display the Welcome screen', async () => {
-    await detoxExpect(element(by.text('Welcome to Hathor Wallet!'))).toBeVisible();
+    // With sync disabled, use waitFor to poll for elements
+    await waitFor(element(by.text('Welcome to Hathor Wallet!')))
+      .toBeVisible()
+      .withTimeout(30000);
   });
 
   it('should enable Start button after agreeing to terms', async () => {
