@@ -6,19 +6,21 @@ module.exports = {
       config: 'e2e/jest.config.js',
     },
     jest: {
-      setupTimeout: 120000,
+      setupTimeout: 240000,
     },
   },
   apps: {
     'ios.debug': {
       type: 'ios.app',
-      binaryPath: 'ios/build/Build/Products/Debug-iphonesimulator/HathorMobile.app',
-      build: 'xcodebuild -workspace ios/HathorMobile.xcworkspace -scheme HathorMobile -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build',
+      // Use Xcode's default DerivedData to avoid AssetCatalogSimulatorAgent spawn issue
+      // triggered by -derivedDataPath on Xcode 16.x
+      binaryPath: `${process.env.HOME}/Library/Developer/Xcode/DerivedData/HathorMobile-cbapwsfseepdpbcjvvcfzhzwkjyf/Build/Products/Debug-iphonesimulator/HathorMobile.app`,
+      build: 'xcodebuild -workspace ios/HathorMobile.xcworkspace -scheme HathorMobile -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 16"',
     },
     'ios.release': {
       type: 'ios.app',
-      binaryPath: 'ios/build/Build/Products/Release-iphonesimulator/HathorMobile.app',
-      build: 'xcodebuild -workspace ios/HathorMobile.xcworkspace -scheme HathorMobile -configuration Release -sdk iphonesimulator -derivedDataPath ios/build',
+      binaryPath: `${process.env.HOME}/Library/Developer/Xcode/DerivedData/HathorMobile-cbapwsfseepdpbcjvvcfzhzwkjyf/Build/Products/Release-iphonesimulator/HathorMobile.app`,
+      build: 'xcodebuild -workspace ios/HathorMobile.xcworkspace -scheme HathorMobile -configuration Release -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 16"',
     },
     'android.debug': {
       type: 'android.apk',
