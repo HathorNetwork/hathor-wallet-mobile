@@ -108,19 +108,16 @@
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.3.3",
     "@tsconfig/react-native": "3.0.5",
-    "@types/detox": "^17.14.3",
     "@types/jest": "29.5.14",
     "@types/react": "18.3.20",
     "@types/react-test-renderer": "18.0.1",
     "babel-jest": "29.7.0",
-    "detox": "^20.50.1",
     "eslint": "8.51.0",
     "eslint-config-airbnb": "19.0.4",
     "eslint-plugin-import": "2.27.5",
     "eslint-plugin-jsx-a11y": "6.7.1",
     "eslint-plugin-react": "7.32.2",
     "jest": "29.7.0",
-    "jest-circus": "^30.3.0",
     "patch-package": "8.0.0",
     "react-test-renderer": "18.3.1",
     "redux-saga-test-plan": "^4.0.6",
@@ -185,8 +182,6 @@
       "core-js-pure": false,
       "@react-native-firebase/app>firebase>@firebase/firestore>@grpc/proto-loader>protobufjs": false,
       "@react-native-firebase/app>firebase>@firebase/util": false,
-      "detox": false,
-      "detox>bunyan>dtrace-provider": false,
       "jest-circus>jest-runtime>jest-resolve>unrs-resolver": false
     }
   }
