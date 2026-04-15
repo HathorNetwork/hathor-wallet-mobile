@@ -1,0 +1,101 @@
+appId: network.hathor.wallet
+---
+
+# ============================================================
+# Wallet Creation E2E Flow
+# ============================================================
+# Prerequisites: app must be freshly launched on WelcomeScreen.
+# Run: maestro test .maestro/flows/walletCreation.yaml
+#
+# Note: After tapping a Pressable that causes a React re-render,
+# subsequent element-based taps may fail due to a Maestro/XCUITest
+# stale-element bug with Fabric. Use coordinate taps as workaround.
+# ============================================================
+
+# ------ Step 1: WelcomeScreen ------
+- assertVisible: "Welcome to Hathor Wallet!"
+
+# Toggle terms switch (center of [16,411][67,465])
+- tapOn:
+    id: "terms-agreement-switch"
+
+# Tap START button via coordinates (center of [16,754][377,802])
+# Using coordinates because the switch toggle causes a re-render
+# that makes element-based taps unreliable
+- tapOn:
+    point: "196,778"
+
+# ------ Step 2: InitialScreen ------
+- extendedWaitUntil:
+    visible: "To start,"
+    timeout: 10000
+
+# Tap NEW WALLET
+- tapOn: "NEW WALLET"
+
+# ------ Step 3: NewWordsScreen ------
+- extendedWaitUntil:
+    visible: "Your wallet has been created!"
+    timeout: 10000
+
+# Capture the 24 seed words
+- copyTextFrom:
+    id: "seed-words-area"
+- evalScript: ${output.seedWords = maestro.copiedText}
+
+# Tap NEXT
+- tapOn: "NEXT"
+
+# ------ Step 4: BackupWords (5 validation steps) ------
+- extendedWaitUntil:
+    visible: "Please select the word that corresponds to the number below"
+    timeout: 10000
+
+- repeat:
+    times: 5
+    commands:
+      - copyTextFrom:
+          id: "backup-step-number"
+      - evalScript: |
+          var words = output.seedWords.split(' ');
+          var position = parseInt(maestro.copiedText, 10);
+          output.correctWord = words[position - 1];
+      - tapOn: ${output.correctWord}
+
+# ------ Step 4b: Success modal ------
+- extendedWaitUntil:
+    visible: "Words saved correctly"
+    timeout: 10000
+- tapOn: "Words saved correctly"
+
+# ------ Step 5: ChoosePinScreen ------
+- extendedWaitUntil:
+    visible: "Create a new PIN code,"
+    timeout: 10000
+
+# Enter PIN 123456
+- tapOn: "1"
+- tapOn: "2"
+- tapOn: "3"
+- tapOn: "4"
+- tapOn: "5"
+- tapOn: "6"
+
+# Confirm PIN
+- extendedWaitUntil:
+    visible: "To confirm the PIN,"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "2"
+- tapOn: "3"
+- tapOn: "4"
+- tapOn: "5"
+- tapOn: "6"
+
+# Start wallet
+- tapOn: "START THE WALLET"
+
+# ------ Step 6: Verify wallet started ------
+- extendedWaitUntil:
+    visible: "Tokens"
+    timeout: 30000

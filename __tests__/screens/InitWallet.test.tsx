@@ -101,25 +101,23 @@ describe('WelcomeScreen', () => {
   });
 
   it('renders the Start button as disabled initially', () => {
-    const { getByText } = render(
+    const { getByTestId } = render(
       <WelcomeScreen navigation={mockNavigation} />
     );
-    const startButton = getByText('Start');
-    // The parent TouchableOpacity should be disabled
-    // We test by pressing and verifying navigate is NOT called
+    const startButton = getByTestId('welcome-start-button');
+    // Pressing should not navigate (guard in onPress blocks when disabled)
     fireEvent.press(startButton);
     expect(mockNavigation.navigate).not.toHaveBeenCalled();
   });
 
   it('enables the Start button after toggling the agreement switch', () => {
-    const { getByText, UNSAFE_getByType } = render(
+    const { getByText, getByTestId } = render(
       <WelcomeScreen navigation={mockNavigation} />
     );
 
-    // Find and toggle the Switch
-    const { Switch } = require('react-native');
-    const switchComponent = UNSAFE_getByType(Switch);
-    fireEvent(switchComponent, 'valueChange', true);
+    // Find and press the custom toggle switch
+    const toggleSwitch = getByTestId('terms-agreement-switch');
+    fireEvent.press(toggleSwitch);
 
     // Now the Start button should work
     fireEvent.press(getByText('Start'));
