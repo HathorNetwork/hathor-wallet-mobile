@@ -16,7 +16,6 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   TouchableWithoutFeedback,
@@ -27,6 +26,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import TextFmt from '../components/TextFmt';
 
+import ToggleSwitch from '../components/ToggleSwitch';
 import baseStyle from '../styles/init';
 import { Link, str2jsx } from '../utils';
 
@@ -76,7 +76,7 @@ class WelcomeScreen extends React.Component {
             </Text>
           </View>
           <View style={this.style.switchView}>
-            <Switch
+            <ToggleSwitch
               testID="terms-agreement-switch"
               onValueChange={this.toggleSwitch}
               trackColor={{ true: COLORS.primary }}
@@ -94,6 +94,7 @@ class WelcomeScreen extends React.Component {
           </View>
           <View style={this.style.buttonView}>
             <NewHathorButton
+              testID="welcome-start-button"
               disabled={!this.state.switchValue}
               onPress={() => this.props.navigation.navigate('InitialScreen')}
               title={t`Start`}
@@ -223,7 +224,9 @@ class NewWordsScreen extends React.Component {
               {t`You must **do a backup** and save the words below **in the same order they appear**.`}
             </TextFmt>
           </View>
-          {renderWords()}
+          <View testID="seed-words-area" accessible accessibilityLabel={this.state.words}>
+            {renderWords()}
+          </View>
           <View style={this.style.buttonView}>
             <NewHathorButton
               onPress={navigateToNextStep}
