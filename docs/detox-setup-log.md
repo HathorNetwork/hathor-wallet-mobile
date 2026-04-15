@@ -45,12 +45,18 @@
 **Error:** `The app has not responded to the network requests below: (id = -1000) isReady: {}`
 **Symptom:** App launches in simulator, Detox's websocket connects on port 55728, but app never responds with "ready".
 **Root cause:** Known Detox issue with React Native 0.76+ on iOS — [wix/Detox#4803](https://github.com/wix/Detox/issues/4803). Detox's synchronization mechanism times out because RN's new architecture blocks the main dispatch queue during initialization. The app itself is fine (it works via `npm run ios`).
-**Status as of April 2026:** Open issue, no resolution. Affects Detox 20.32+ with RN 0.76.9+.
-**Potential workarounds to try:**
-- Disable Detox synchronization: `device.launchApp({ newInstance: true, launchArgs: { detoxDisableSynchronization: 1 } })`
-- Use `waitFor` with manual timeouts instead of relying on auto-sync
-- Wait for Detox patch/update that resolves the RN 0.76+ compatibility
-- Consider Maestro as an alternative E2E framework (YAML-based, doesn't rely on RN bridge sync)
+**Resolution:** The actual root cause was recurring 1-second JS timers (Unleash feature flag polling, websocket keepalive) that keep Detox sync perpetually "busy". Detox 20.37.0+ officially supports RN 0.77 with New Architecture.
+**Fix:** Launch with `detoxEnableSynchronization: 0` and use `waitFor(...).withTimeout()` for all assertions. First test passes.
+
+### 7. UISwitch tap doesn't fire onValueChange in Fabric (CURRENT BLOCKER)
+**Error:** Detox finds and taps `UISwitch` / `RCTSwitchComponentView` (by.type, by.id, tap, longPress all succeed without error), but React Native's `onValueChange` callback is never invoked.
+**Root cause:** In Fabric (New Architecture), native UISwitch event dispatching bypasses the old bridge. Detox's tap simulation doesn't trigger Fabric's event pipeline for Switch components.
+**Impact:** Any test that toggles a `<Switch>` is blocked. The WelcomeScreen terms agreement is the first interaction.
+**Attempted:** `tap()`, `longPress()`, `swipe()`, `tap({x,y})`, `by.type('UISwitch')`, `by.type('RCTSwitchComponentView')`, `by.id('testID')` — all find the element but none fire the callback.
+**Potential solutions:**
+1. Replace `<Switch>` with a `TouchableOpacity`-based toggle in the app code
+2. Use Maestro instead (operates at accessibility layer, not native view layer)
+3. Wait for a Detox fix for Fabric Switch interaction
 
 ## Approaches That Don't Work
 - `pod install --repo-update` → CocoaPods CDN intermittently fails with HTTP/2 framing errors
