@@ -561,9 +561,6 @@ class BalanceView extends React.Component {
           {`${lockedStr} ${token.symbol}`}
         </Text>
         <Text style={style.text1}>{t`Locked`}</Text>
-        <View style={style.networkView}>
-          <Text style={style.networkText}>{network}</Text>
-        </View>
         <Image style={style.expandButton} source={chevronUp} width={12} height={7} />
       </View>
     );
