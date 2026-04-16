@@ -1,0 +1,18 @@
+This is a temporary file to discuss the infra to support this feature.
+
+# Infra
+
+Token icons rely on a json file stored on a server. We currently have the token swap feature that also has json files served, and it also includes an icon field, even though it's not used today.
+
+I see 2 possibilities:
+- we merge the infra for both features (token swap and icons);
+- keep them separate;
+
+
+# Naming convention
+
+Nowadays, we use just mainnet and testnet to differentiate the networks, even though we could have several networks.
+
+What's the best way to do that? Do we have on the app the name for each testnet? For instance, india-testnet? How is the playground network called? And the upcoming privacy network?
+
+If we can differentiate by network name, that's fine. If not, maybe assigning numerical values to each chain. For instance, 0 is mainnet. 100 is testnet, and other ones can have different values.
