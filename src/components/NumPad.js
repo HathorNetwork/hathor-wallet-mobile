@@ -81,6 +81,7 @@ const NumPadButton = (props) => {
   const underlayColor = (props.number !== null ? COLORS.textColorShadowLighter : 'transparent');
   return (
     <TouchableHighlight
+      testID={props.number !== null ? `numpad-${props.number === -1 ? 'backspace' : props.number}` : undefined}
       style={style.buttonStyle}
       onPress={props.onPress}
       underlayColor={underlayColor}
