@@ -47,12 +47,11 @@ const NewHathorButton = (props) => {
   return (
     <Pressable
       testID={props.testID}
-      onPress={() => { if (!props.disabled && props.onPress) props.onPress(); }}
-      style={({ pressed }) => [
+      onPress={props.disabled ? undefined : props.onPress}
+      style={[
         ...wrapperViewStyle,
         props.wrapperStyle,
         props.style,
-        pressed && !props.disabled && { opacity: 0.6 },
       ]}
     >
       <Text

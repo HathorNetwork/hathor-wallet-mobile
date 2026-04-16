@@ -60,7 +60,7 @@ class WelcomeScreen extends React.Component {
         <HathorHeader withLogo />
         <View style={this.style.container}>
           <Text style={this.style.title}>{t`Welcome to Hathor Wallet!`}</Text>
-          <View>
+          <View accessible={false}>
             <TextFmt style={this.style.text}>
               {t`This wallet is connected to the **mainnet**.`}
             </TextFmt>
@@ -92,14 +92,13 @@ class WelcomeScreen extends React.Component {
               )}
             </Text>
           </View>
-          <View style={this.style.buttonView}>
-            <NewHathorButton
-              testID="welcome-start-button"
-              disabled={!this.state.switchValue}
-              onPress={() => this.props.navigation.navigate('InitialScreen')}
-              title={t`Start`}
-            />
-          </View>
+          <NewHathorButton
+            testID="welcome-start-button"
+            disabled={!this.state.switchValue}
+            onPress={() => this.props.navigation.navigate('InitialScreen')}
+            title={t`Start`}
+          />
+          <View style={this.style.buttonView} />
         </View>
       </View>
     );
@@ -124,18 +123,17 @@ class InitialScreen extends React.Component {
           <Text style={this.style.text}>
             {t`To import a wallet, you will need to provide your seed words.`}
           </Text>
-          <View style={this.style.buttonView}>
-            <NewHathorButton
-              onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
-              title={t`Import Wallet`}
-              style={{ marginBottom: 16 }}
-              secondary
-            />
-            <NewHathorButton
-              onPress={() => this.props.navigation.navigate('NewWordsScreen')}
-              title={t`New Wallet`}
-            />
-          </View>
+          <NewHathorButton
+            onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
+            title={t`Import Wallet`}
+            style={{ marginBottom: 16 }}
+            secondary
+          />
+          <NewHathorButton
+            onPress={() => this.props.navigation.navigate('NewWordsScreen')}
+            title={t`New Wallet`}
+          />
+          <View style={this.style.buttonView} />
         </View>
       </View>
     );
@@ -218,21 +216,23 @@ class NewWordsScreen extends React.Component {
           onBackPress={() => this.props.navigation.goBack()}
         />
         <View style={this.style.container}>
-          <View>
+          <View accessible={false}>
             <Text style={this.style.title}>{t`Your wallet has been created!`}</Text>
             <TextFmt style={this.style.text}>
               {t`You must **do a backup** and save the words below **in the same order they appear**.`}
             </TextFmt>
           </View>
-          <View testID="seed-words-area" accessible accessibilityLabel={this.state.words}>
+          <Text testID="seed-words-data" style={{ fontSize: 8 }}>
+            {this.state.words}
+          </Text>
+          <View>
             {renderWords()}
           </View>
-          <View style={this.style.buttonView}>
-            <NewHathorButton
-              onPress={navigateToNextStep}
-              title={t`Next`}
-            />
-          </View>
+          <NewHathorButton
+            onPress={navigateToNextStep}
+            title={t`Next`}
+          />
+          <View style={this.style.buttonView} />
         </View>
       </View>
     );
