@@ -4,33 +4,28 @@ appId: network.hathor.wallet
 # ============================================================
 # Wallet Creation E2E Flow
 # ============================================================
-# Prerequisites: app must be freshly launched on WelcomeScreen.
-# Run: maestro test .maestro/flows/walletCreation.yaml
+# Navigates the full create-wallet flow:
+#   WelcomeScreen -> InitialScreen -> NewWordsScreen ->
+#   BackupWords (5 steps) -> ChoosePinScreen -> Wallet starts
 #
-# Note: After tapping a Pressable that causes a React re-render,
-# subsequent element-based taps may fail due to a Maestro/XCUITest
-# stale-element bug with Fabric. Use coordinate taps as workaround.
+# Prerequisites: app must be running on the WelcomeScreen.
+# Run: maestro test .maestro/flows/walletCreation.yaml
 # ============================================================
 
 # ------ Step 1: WelcomeScreen ------
 - assertVisible: "Welcome to Hathor Wallet!"
 
-# Toggle terms switch (center of [16,411][67,465])
 - tapOn:
     id: "terms-agreement-switch"
 
-# Tap START button via coordinates (center of [16,754][377,802])
-# Using coordinates because the switch toggle causes a re-render
-# that makes element-based taps unreliable
 - tapOn:
-    point: "196,778"
+    id: "welcome-start-button"
 
 # ------ Step 2: InitialScreen ------
 - extendedWaitUntil:
     visible: "To start,"
     timeout: 10000
 
-# Tap NEW WALLET
 - tapOn: "NEW WALLET"
 
 # ------ Step 3: NewWordsScreen ------
@@ -38,17 +33,16 @@ appId: network.hathor.wallet
     visible: "Your wallet has been created!"
     timeout: 10000
 
-# Capture the 24 seed words
 - copyTextFrom:
-    id: "seed-words-area"
-- evalScript: ${output.seedWords = maestro.copiedText}
+    id: "seed-words-data"
+- runScript:
+    file: ../scripts/captureWords.js
 
-# Tap NEXT
 - tapOn: "NEXT"
 
 # ------ Step 4: BackupWords (5 validation steps) ------
 - extendedWaitUntil:
-    visible: "Please select the word that corresponds to the number below"
+    visible: "Please select the word that corresponds to the number below:"
     timeout: 10000
 
 - repeat:
@@ -56,22 +50,23 @@ appId: network.hathor.wallet
     commands:
       - copyTextFrom:
           id: "backup-step-number"
-      - evalScript: |
-          var words = output.seedWords.split(' ');
-          var position = parseInt(maestro.copiedText, 10);
-          output.correctWord = words[position - 1];
+      - runScript:
+          file: ../scripts/lookupWord.js
       - tapOn: ${output.correctWord}
 
 # ------ Step 4b: Success modal ------
 - extendedWaitUntil:
     visible: "Words saved correctly"
     timeout: 10000
-- tapOn: "Words saved correctly"
+# Dismiss the modal by tapping the backdrop (top of screen)
+- tapOn:
+    point: "196,100"
+- waitForAnimationToEnd
 
 # ------ Step 5: ChoosePinScreen ------
 - extendedWaitUntil:
     visible: "Create a new PIN code,"
-    timeout: 10000
+    timeout: 15000
 
 # Enter PIN 123456
 - tapOn: "1"

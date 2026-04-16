@@ -180,7 +180,7 @@ const BackupWords = ({ navigation, route }) => {
         onBackPress={() => navigation.goBack()}
       />
       <View style={[styles.container, { flexDirection: 'column', justifyContent: 'space-between' }]}>
-        <View>
+        <View accessible={false}>
           <Text style={styles.title}>{t`To make sure you saved,`}</Text>
           <Text style={styles.text}>
             {t`Please select the word that corresponds to the number below:`}
