@@ -257,17 +257,7 @@ export const networkSettingsKeyMap = {
   networkSettings: 'networkSettings:networkSettings'
 };
 
-/**
- * Base URL for the public bucket hosting token icon manifest and PNG files.
- * Full URLs: `${TOKEN_ICONS_BASE_URL}/${network}/icons.json` and
- * `${TOKEN_ICONS_BASE_URL}/${network}/<uid>.png`.
- */
-export const TOKEN_ICONS_BASE_URL = 'https://hathor-public-files.s3.us-east-1.amazonaws.com/mobile';
-
-/** Refresh the icons manifest no more than once per day. */
-export const TOKEN_ICONS_TTL_MS = 24 * 60 * 60 * 1000;
-
-/** Storage key for the cached icons manifest (shared across networks — keyed internally). */
+/** Storage key for the cached token icon URLs. */
 export const tokenIconsKeyMap = {
   cache: 'tokenIcons:cache',
 };

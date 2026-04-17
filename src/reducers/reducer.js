@@ -165,17 +165,11 @@ const initialState = {
   tokenMetadata: {},
   metadataLoaded: false,
   /**
-   * tokenIcons {{
-   *   manifest: { [uid: string]: string },  // uid -> icon filename (e.g. "<uid>.png")
-   *   network: string | null,                // network the manifest was fetched for
-   *   lastFetched: number,                   // epoch ms of last successful fetch
-   * }}
+   * tokenIcons {{ [uid: string]: string }}
+   * Maps token uid to its icon URL. Populated from the metadata API response and
+   * cached in storage so icons render instantly on next launch.
    */
-  tokenIcons: {
-    manifest: {},
-    network: null,
-    lastFetched: 0,
-  },
+  tokenIcons: {},
   uniqueDeviceId: null,
   isShowingPinScreen: false,
   /**
@@ -819,8 +813,10 @@ export const reducer = (state = initialState, action) => {
     case types.TOKEN_SWAP_RESET_SWAP_DATA:
       return onTokenSwapResetSwapData(state);
 
-    case types.TOKEN_ICONS_MANIFEST_UPDATED:
-      return onTokenIconsManifestUpdated(state, action);
+    case types.TOKEN_ICONS_LOADED:
+      return onTokenIconsLoaded(state, action);
+    case types.TOKEN_ICON_UPDATED:
+      return onTokenIconUpdated(state, action);
     default:
       return state;
   }
@@ -2349,11 +2345,15 @@ export const onTokenSwapSwitchTokens = (state) => ({
   },
 });
 
-const onTokenIconsManifestUpdated = (state, { payload }) => ({
+const onTokenIconsLoaded = (state, { payload }) => ({
+  ...state,
+  tokenIcons: payload,
+});
+
+const onTokenIconUpdated = (state, { payload }) => ({
   ...state,
   tokenIcons: {
-    manifest: payload.manifest,
-    network: payload.network,
-    lastFetched: payload.lastFetched,
+    ...state.tokenIcons,
+    [payload.uid]: payload.url,
   },
 });

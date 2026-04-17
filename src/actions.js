@@ -255,23 +255,19 @@ export const types = {
   TOKEN_SWAP_RESET_SWAP_DATA: 'TOKEN_SWAP_RESET_SWAP_DATA',
   TOKEN_SWAP_START_SWAP: 'TOKEN_SWAP_START_SWAP',
 
-  // Token Icons — manifest fetched from public S3 bucket
-  TOKEN_ICONS_FETCH_REQUESTED: 'TOKEN_ICONS_FETCH_REQUESTED',
-  TOKEN_ICONS_MANIFEST_UPDATED: 'TOKEN_ICONS_MANIFEST_UPDATED',
-  TOKEN_ICONS_FETCH_FAILED: 'TOKEN_ICONS_FETCH_FAILED',
+  // Token Icons — URLs piggyback on the existing metadata fetch
+  TOKEN_ICONS_LOADED: 'TOKEN_ICONS_LOADED',
+  TOKEN_ICON_UPDATED: 'TOKEN_ICON_UPDATED',
 };
 
-export const tokenIconsFetchRequested = () => ({
-  type: types.TOKEN_ICONS_FETCH_REQUESTED,
+export const tokenIconsLoaded = (urls) => ({
+  type: types.TOKEN_ICONS_LOADED,
+  payload: urls,
 });
 
-export const tokenIconsManifestUpdated = ({ manifest, network, lastFetched }) => ({
-  type: types.TOKEN_ICONS_MANIFEST_UPDATED,
-  payload: { manifest, network, lastFetched },
-});
-
-export const tokenIconsFetchFailed = () => ({
-  type: types.TOKEN_ICONS_FETCH_FAILED,
+export const tokenIconUpdated = (uid, url) => ({
+  type: types.TOKEN_ICON_UPDATED,
+  payload: { uid, url },
 });
 
 export const featureToggleInitialized = () => ({

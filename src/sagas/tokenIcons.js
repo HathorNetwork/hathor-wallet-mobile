@@ -5,79 +5,54 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { all, call, put, select, takeLatest } from 'redux-saga/effects';
-import {
-  TOKEN_ICONS_BASE_URL,
-  TOKEN_ICONS_TTL_MS,
-  tokenIconsKeyMap,
-} from '../constants';
+import { all, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
+import { tokenIconsKeyMap } from '../constants';
 import {
   types,
-  tokenIconsManifestUpdated,
-  tokenIconsFetchFailed,
+  tokenIconsLoaded,
+  tokenIconUpdated,
 } from '../actions';
 import { STORE } from '../store';
-import { getNetworkSettings } from './helpers';
 import { logger } from '../logger';
 
 const log = logger('tokenIcons');
 
-function buildManifestUrl(network) {
-  return `${TOKEN_ICONS_BASE_URL}/${network}/icons.json`;
+/**
+ * Load cached icon URLs from storage into Redux so icons render immediately.
+ */
+function* loadCachedIcons() {
+  const cached = STORE.getItem(tokenIconsKeyMap.cache);
+  if (cached && typeof cached === 'object') {
+    yield put(tokenIconsLoaded(cached));
+  }
 }
 
 /**
- * Builds the absolute URL for a token icon given its filename from the manifest.
+ * When a token metadata response includes an icon URL, store it in Redux.
  */
-export function buildIconUrl(network, filename) {
-  return `${TOKEN_ICONS_BASE_URL}/${network}/${filename}`;
+function* onMetadataSuccess({ tokenId, data }) {
+  if (data?.icon) {
+    yield put(tokenIconUpdated(tokenId, data.icon));
+  }
 }
 
-function* fetchManifest() {
-  const networkSettings = yield select(getNetworkSettings);
-  const network = networkSettings?.network;
-  if (!network) {
-    return;
-  }
-
-  // Load cached manifest from storage so the UI has something while we (maybe) refetch.
-  const cached = STORE.getItem(tokenIconsKeyMap.cache);
-  if (cached && cached.network === network) {
-    yield put(tokenIconsManifestUpdated({
-      manifest: cached.manifest || {},
-      network,
-      lastFetched: cached.lastFetched || 0,
-    }));
-
-    const fresh = Date.now() - (cached.lastFetched || 0) < TOKEN_ICONS_TTL_MS;
-    if (fresh) {
-      return;
-    }
-  }
-
+/**
+ * After all metadata is fetched, persist the current icon map to storage.
+ * This overwrites the previous cache, so unregistered tokens are pruned.
+ */
+function* persistIcons() {
+  const tokenIcons = yield select((state) => state.tokenIcons);
   try {
-    const response = yield call(fetch, buildManifestUrl(network));
-    if (!response.ok) {
-      throw new Error(`manifest request failed: ${response.status}`);
-    }
-    const body = yield call([response, response.json]);
-    const manifest = body?.icons || {};
-    const lastFetched = Date.now();
-
-    STORE.setItem(tokenIconsKeyMap.cache, { manifest, network, lastFetched });
-    yield put(tokenIconsManifestUpdated({ manifest, network, lastFetched }));
+    STORE.setItem(tokenIconsKeyMap.cache, tokenIcons);
   } catch (e) {
-    log.error('Failed to fetch token icons manifest', e);
-    yield put(tokenIconsFetchFailed());
+    log.error('Failed to persist token icons cache', e);
   }
 }
 
 export function* saga() {
   yield all([
-    takeLatest([
-      types.TOKEN_ICONS_FETCH_REQUESTED,
-      types.START_WALLET_SUCCESS,
-      types.NETWORKSETTINGS_UPDATE_SUCCESS,
-    ], fetchManifest),
+    takeLatest(types.START_WALLET_SUCCESS, loadCachedIcons),
+    takeEvery(types.TOKEN_FETCH_METADATA_SUCCESS, onMetadataSuccess),
+    takeLatest(types.TOKEN_METADATA_UPDATED, persistIcons),
   ]);
 }

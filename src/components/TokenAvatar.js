@@ -9,7 +9,6 @@ import React, { useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { COLORS } from '../styles/themes';
-import { buildIconUrl } from '../sagas/tokenIcons';
 
 import htrIcon from '../assets/tokens/htr.png';
 import husdcIcon from '../assets/tokens/husdc.png';
@@ -30,12 +29,12 @@ const BUNDLED_ICONS = {
  *
  * Resolution order:
  *   1. Bundled asset (HTR / hUSDC).
- *   2. Remote icon listed in the manifest for the current network.
- *   3. Fallback: solid black circle with the token's symbol centered.
+ *   2. Remote icon URL from the metadata API (cached in Redux/storage).
+ *   3. Fallback: gray circle with the token's symbol centered.
  */
 const TokenAvatar = ({ uid, symbol, size = 40 }) => {
   const [remoteFailed, setRemoteFailed] = useState(false);
-  const { manifest, network } = useSelector((state) => state.tokenIcons);
+  const iconUrl = useSelector((state) => state.tokenIcons[uid]);
 
   const dim = { width: size, height: size, borderRadius: size / 2 };
   const bundled = BUNDLED_ICONS[uid];
@@ -44,18 +43,17 @@ const TokenAvatar = ({ uid, symbol, size = 40 }) => {
     return <Image source={bundled} style={[styles.image, dim]} />;
   }
 
-  const filename = manifest?.[uid];
-  if (filename && network && !remoteFailed) {
+  if (iconUrl && !remoteFailed) {
     return (
       <Image
-        source={{ uri: buildIconUrl(network, filename) }}
+        source={{ uri: iconUrl }}
         style={[styles.image, dim]}
         onError={() => setRemoteFailed(true)}
       />
     );
   }
 
-  // Fallback: black circle with the symbol (first 4 chars, so long symbols still fit).
+  // Fallback: gray circle with the symbol (first 4 chars, so long symbols still fit).
   const label = (symbol || '').slice(0, 4);
   return (
     <View style={[styles.fallback, dim]}>
