@@ -182,6 +182,7 @@ export const NANO_CONTRACT_FEATURE_TOGGLE = 'nano-contract.rollout';
 export const SAFE_BIOMETRY_MODE_FEATURE_TOGGLE = 'safe-biometry-mode.rollout'
 export const TOKEN_SWAP_FEATURE_TOGGLE = 'token-swap.rollout';
 export const FBT_FEATURE_TOGGLE = 'fee-based-tokens.rollout';
+export const WEB3AUTH_FEATURE_TOGGLE = 'web3auth.rollout';
 
 /**
  * Default feature toggle values.
@@ -200,7 +201,19 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [SAFE_BIOMETRY_MODE_FEATURE_TOGGLE]: false,
   [TOKEN_SWAP_FEATURE_TOGGLE]: false,
   [FBT_FEATURE_TOGGLE]: false,
+  [WEB3AUTH_FEATURE_TOGGLE]: false,
 };
+
+// Web3Auth configuration (https://dashboard.web3auth.io)
+export const WEB3AUTH_CLIENT_ID = 'BLQbTFHmFa4TpQwAKEnBsf9ZArKB8R_hP3gKjBdSrF48fSmzo3ES-KpoaAvX7JMaa1PvefbD5yEXgRrgsiQiauQ';
+export const WEB3AUTH_CLIENT_SECRET = 'df3c8ec8d20559e808fa16e4b77404203b48c843e7a41e9feace2205f134b416';
+
+// Web3Auth storage keys
+export const WEB3AUTH_WALLET_TYPE_KEY = 'web3auth:walletType';
+export const WEB3AUTH_EMAIL_KEY = 'web3auth:email';
+
+// Web3Auth redirect scheme
+export const WEB3AUTH_REDIRECT_URL = 'hathorwallet://openlogin';
 
 // Project id configured in https://walletconnect.com
 export const REOWN_PROJECT_ID = '8264fff563181da658ce64ee80e80458';

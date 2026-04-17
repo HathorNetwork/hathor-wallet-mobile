@@ -28,9 +28,11 @@ import { HathorList, ListItem, ListMenu } from '../components/HathorList';
 import { lockScreen, onExceptionCaptured } from '../actions';
 import { COLORS } from '../styles/themes';
 import { SAFE_BIOMETRY_FEATURE_FLAG_KEY, STORE } from '../store';
+import { isSingleKeyWallet } from '../selectors';
 
 const mapStateToProps = (state) => ({
   wallet: state.wallet,
+  singleKey: isSingleKeyWallet(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

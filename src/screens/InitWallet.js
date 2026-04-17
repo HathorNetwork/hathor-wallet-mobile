@@ -19,9 +19,12 @@ import {
   Switch,
   Text,
   TextInput,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { connect } from 'react-redux';
+import { LOGIN_PROVIDER } from '@web3auth/react-native-sdk';
 import { t } from 'ttag';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
@@ -30,7 +33,8 @@ import TextFmt from '../components/TextFmt';
 import baseStyle from '../styles/init';
 import { Link, str2jsx } from '../utils';
 
-import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '../constants';
+import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL, WEB3AUTH_FEATURE_TOGGLE } from '../constants';
+import { web3authLogin, deriveKeysFromPrivateKey } from '../sagas/web3auth';
 import { COLORS } from '../styles/themes';
 import { SKIP_SEED_CONFIRMATION } from '../config';
 
@@ -105,7 +109,45 @@ class WelcomeScreen extends React.Component {
 }
 
 class InitialScreen extends React.Component {
-  style = ({ ...baseStyle });
+  style = ({ ...baseStyle,
+    ...StyleSheet.create({
+      socialRow: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 16,
+        marginBottom: 24,
+      },
+      socialButton: {
+        width: 56,
+        height: 56,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: COLORS.borderColor,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: COLORS.white,
+      },
+      socialIcon: {
+        fontSize: 24,
+      },
+    }) });
+
+  handleSocialLogin = async (loginProvider) => {
+    try {
+      const { privateKey, email } = await web3authLogin(loginProvider);
+      const { publicKey, address } = deriveKeysFromPrivateKey(privateKey);
+
+      this.props.navigation.navigate('Web3AuthRecoveryScreen', {
+        privateKey,
+        publicKey,
+        address,
+        web3authEmail: email,
+        walletType: 'web3auth',
+      });
+    } catch (e) {
+      // User cancelled or error — stay on screen
+    }
+  };
 
   render() {
     return (
@@ -123,6 +165,28 @@ class InitialScreen extends React.Component {
             {t`To import a wallet, you will need to provide your seed words.`}
           </Text>
           <View style={this.style.buttonView}>
+            {this.props.web3authEnabled && (
+              <View style={this.style.socialRow}>
+                <TouchableOpacity
+                  style={this.style.socialButton}
+                  onPress={() => this.handleSocialLogin(LOGIN_PROVIDER.GOOGLE)}
+                >
+                  <Text style={this.style.socialIcon}>G</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={this.style.socialButton}
+                  onPress={() => this.handleSocialLogin(LOGIN_PROVIDER.EMAIL_PASSWORDLESS)}
+                >
+                  <Text style={this.style.socialIcon}>@</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={this.style.socialButton}
+                  onPress={() => this.handleSocialLogin(LOGIN_PROVIDER.APPLE)}
+                >
+                  <Text style={this.style.socialIcon}>A</Text>
+                </TouchableOpacity>
+              </View>
+            )}
             <NewHathorButton
               onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
               title={t`Import Wallet`}
@@ -139,6 +203,12 @@ class InitialScreen extends React.Component {
     );
   }
 }
+
+const mapInitialStateToProps = (state) => ({
+  web3authEnabled: !!state.featureToggles[WEB3AUTH_FEATURE_TOGGLE],
+});
+
+const ConnectedInitialScreen = connect(mapInitialStateToProps)(InitialScreen);
 
 class NewWordsScreen extends React.Component {
   state = {
@@ -392,5 +462,5 @@ class LoadWordsScreen extends React.Component {
 }
 
 export {
-  WelcomeScreen, InitialScreen, LoadWordsScreen, NewWordsScreen,
+  WelcomeScreen, ConnectedInitialScreen as InitialScreen, LoadWordsScreen, NewWordsScreen,
 };

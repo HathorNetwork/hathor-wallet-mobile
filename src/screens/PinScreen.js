@@ -43,6 +43,7 @@ const log = logger('PIN_SCREEN');
 const mapStateToProps = (state) => ({
   loadHistoryActive: state.loadHistoryStatus.active,
   wallet: state.wallet,
+  walletType: state.walletType,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -156,8 +157,22 @@ class PinScreen extends React.Component {
           // The handleDataMigration method ensures we have already migrated if necessary
           // This means the wallet is loaded and the access data is ready to be used.
 
-          const words = await STORE.getWalletWords(actualPin);
-          this.props.startWalletRequested({ words, pin: actualPin });
+          if (this.props.walletType === 'web3auth') {
+            const privateKey = await STORE.getWeb3AuthPrivateKey(actualPin);
+            const publicKey = await STORE.getWeb3AuthPublicKey();
+            const { deriveKeysFromPrivateKey } = require('../sagas/web3auth');
+            const { address } = deriveKeysFromPrivateKey(privateKey);
+            this.props.startWalletRequested({
+              privateKey,
+              publicKey,
+              address,
+              pin: actualPin,
+              walletType: 'web3auth',
+            });
+          } else {
+            const words = await STORE.getWalletWords(actualPin);
+            this.props.startWalletRequested({ words, pin: actualPin });
+          }
         }
         this.props.unlockScreen();
       } catch (e) {
@@ -192,61 +207,51 @@ class PinScreen extends React.Component {
 
   validatePin = async (pin) => {
     try {
-      // Validate if we are able to decrypt the seed using this PIN
-      // this will throw if the words are not able to be decoded with this
-      // pin.
-
-      // This will return either the old or the new access data.
-      // We can ignore which one it is since we will only use the words which is present on both.
       const { accessData } = await STORE.getAvailableAccessData();
 
       if (!accessData) {
-        // The wallet does not have an access data, we can't unlock it
-        // This should not happen since we check if the wallet is initialized
-        // before showing the unlock screen, but we will handle it anyway
         this.props.onExceptionCaptured(
-          new Error(
-            "Attempted to unlock wallet but it wasn't initialized.",
-          ),
-          true, // Fatal since we can't start the wallet
+          new Error("Attempted to unlock wallet but it wasn't initialized."),
+          true,
         );
         return;
       }
 
-      let wordsEncryptedData = accessData.words;
-      if (!accessData.words.data) {
-        // This is from a previous version
-        // We need aditional data to check pin
-        wordsEncryptedData = {
-          data: accessData.words,
-          hash: accessData.hashPasswd,
-          salt: accessData.saltPasswd,
-          iterations: accessData.hashIterations,
-          pbkdf2Hasher: accessData.pbkdf2Hasher,
-        };
+      if (accessData.singleKeyMode) {
+        // Web3Auth wallet: validate PIN against encrypted private key
+        const pinCorrect = cryptoUtils.checkPassword(accessData.singleKeyPrivateKey, pin);
+        if (!pinCorrect) {
+          this.removeOneChar();
+          return;
+        }
+      } else {
+        // HD wallet: validate PIN against encrypted words (existing logic)
+        let wordsEncryptedData = accessData.words;
+        if (!accessData.words.data) {
+          wordsEncryptedData = {
+            data: accessData.words,
+            hash: accessData.hashPasswd,
+            salt: accessData.saltPasswd,
+            iterations: accessData.hashIterations,
+            pbkdf2Hasher: accessData.pbkdf2Hasher,
+          };
+        }
+        const pinCorrect = cryptoUtils.checkPassword(wordsEncryptedData, pin);
+        if (!pinCorrect) {
+          this.removeOneChar();
+          return;
+        }
+        const words = cryptoUtils.decryptData(wordsEncryptedData, pin);
+        walletUtils.wordsValid(words);
       }
-      const pinCorrect = cryptoUtils.checkPassword(wordsEncryptedData, pin);
-
-      if (!pinCorrect) {
-        this.removeOneChar();
-        return;
-      }
-
-      const words = cryptoUtils.decryptData(wordsEncryptedData, pin);
-      // Will throw InvalidWords if the seed is invalid
-      walletUtils.wordsValid(words);
     } catch (e) {
       this.props.onExceptionCaptured(
-        new Error(
-          "User inserted a valid PIN but the app wasn't able to decrypt the words",
-        ),
-        true, // Fatal since we can't start the wallet
+        new Error("User inserted a valid PIN but the app wasn't able to decrypt the data"),
+        true,
       );
-
       return;
     }
 
-    // Inserted PIN was able to decrypt the words successfully
     this.dismiss(pin);
   };
 

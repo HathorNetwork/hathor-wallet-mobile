@@ -557,6 +557,16 @@ const initialState = {
     swapPathQuote: null,
     loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.READY,
   },
+  /**
+   * walletType {'hd' | 'web3auth' | null} The type of wallet being used.
+   * null when uninitialized.
+   */
+  walletType: null,
+  /**
+   * web3authEmail {string | null} Email from Web3Auth social login.
+   * null when not using Web3Auth.
+   */
+  web3authEmail: null,
 };
 
 export const reducer = (state = initialState, action) => {
@@ -595,6 +605,16 @@ export const reducer = (state = initialState, action) => {
       return onUpdateLoadedData(state, action);
     case types.SET_USE_WALLET_SERVICE:
       return onSetUseWalletService(state, action);
+    case types.SET_WALLET_TYPE:
+      return {
+        ...state,
+        walletType: action.payload,
+      };
+    case types.SET_WEB3AUTH_EMAIL:
+      return {
+        ...state,
+        web3authEmail: action.payload,
+      };
     case types.TOKEN_METADATA_UPDATED:
       return onTokenMetadataUpdated(state, action);
     case types.TOKEN_METADATA_REMOVED:

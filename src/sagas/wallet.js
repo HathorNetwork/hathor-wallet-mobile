@@ -13,6 +13,7 @@ import {
   constants as hathorLibConstants,
   config,
   errors,
+  transactionUtils,
 } from '@hathor/wallet-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -39,6 +40,7 @@ import {
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
   networkSettingsKeyMap,
 } from '../constants';
+import { web3authLogout, cleanWeb3AuthState } from './web3auth';
 import { STORE } from '../store';
 import {
   tokenFetchBalanceRequested,
@@ -154,6 +156,10 @@ export function* startWallet(action) {
   const {
     words,
     pin,
+    privateKey,
+    publicKey,
+    address,
+    walletType,
   } = action.payload;
 
   // clean memory storage and metadata before starting the wallet.
@@ -192,7 +198,10 @@ export function* startWallet(action) {
   const useWalletService = yield call(isWalletServiceEnabled);
   const usePushNotification = yield call(isPushNotificationEnabled);
 
-  yield put(setUseWalletService(useWalletService));
+  // Force-disable wallet-service for single-key (web3auth) wallets
+  const effectiveUseWalletService = walletType === 'web3auth' ? false : useWalletService;
+
+  yield put(setUseWalletService(effectiveUseWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
 
   // This is a work-around so we can dispatch actions from inside callbacks.
@@ -202,7 +211,7 @@ export function* startWallet(action) {
   });
 
   let wallet;
-  if (useWalletService && !isEmpty(networkSettings.walletServiceUrl)) {
+  if (effectiveUseWalletService && !isEmpty(networkSettings.walletServiceUrl)) {
     const network = new Network(networkSettings.network);
 
     // Set urls for wallet service
@@ -221,17 +230,22 @@ export function* startWallet(action) {
       servers: [networkSettings.nodeUrl],
     });
 
-    // The default configuration will use a memory store
-    // We will save the access data on the persistent async storage
-    // To allow starting the wallet again
     const walletConfig = {
-      seed: words,
       storage,
       connection,
       beforeReloadCallback: () => {
         dispatch(onWalletReload());
       },
     };
+
+    if (walletType === 'web3auth') {
+      walletConfig.privateKey = privateKey;
+      walletConfig.publicKey = publicKey;
+      walletConfig.preCalculatedAddresses = [address];
+    } else {
+      walletConfig.seed = words;
+    }
+
     wallet = new HathorWallet(walletConfig);
   }
 
@@ -240,6 +254,51 @@ export function* startWallet(action) {
   config.setTxMiningUrl(networkSettings.txMiningServiceUrl);
 
   yield put(setWallet(wallet));
+
+  if (walletType === 'web3auth') {
+    wallet.setExternalTxSigningMethod(async (tx, walletStorage, pinCode) => {
+      const privKeyHex = await walletStorage.getSingleKeyPrivateKey(pinCode);
+      const { PrivateKey } = require('bitcore-lib');
+      const privKey = new PrivateKey(privKeyHex);
+      const dataToSignHash = tx.getDataToSignHash();
+      const inputSignatures = [];
+
+      for await (const { tx: spentTx, input, index: inputIndex } of walletStorage.getSpentTxs(tx.inputs)) {
+        if (input.data) {
+          // This input is already signed
+          continue;
+        }
+        const spentOut = spentTx.outputs[input.index];
+        if (!spentOut.decoded.address) {
+          continue;
+        }
+        const addressInfo = await walletStorage.getAddressInfo(spentOut.decoded.address);
+        if (!addressInfo) {
+          continue;
+        }
+        inputSignatures.push({
+          inputIndex,
+          addressIndex: addressInfo.bip32AddressIndex,
+          signature: transactionUtils.getSignature(dataToSignHash, privKey),
+          pubkey: privKey.publicKey.toDER(),
+        });
+      }
+
+      let ncCallerSignature = null;
+      if (tx.isNanoContract()) {
+        const ncAddress = transactionUtils.getNanoContractCaller(tx);
+        if (ncAddress) {
+          const ncAddrInfo = await walletStorage.getAddressInfo(ncAddress.base58);
+          if (ncAddrInfo) {
+            const sig = transactionUtils.getSignature(dataToSignHash, privKey);
+            ncCallerSignature = transactionUtils.createInputData(sig, privKey.publicKey.toDER());
+          }
+        }
+      }
+
+      return { inputSignatures, ncCallerSignature };
+    });
+  }
 
   // Setup listeners before starting the wallet so we don't lose messages
   yield fork(setupWalletListeners, wallet);
@@ -265,7 +324,7 @@ export function* startWallet(action) {
     yield put(setServerInfo(serverInfo));
 
     let network = get(serverInfo, 'network');
-    if (useWalletService) {
+    if (effectiveUseWalletService) {
       // In the wallet-service facade, serverInfo is null, so we need to get
       // version data and convert it to what serverInfo expects:
       const versionData = yield call([wallet, wallet.getVersionData]);
@@ -304,7 +363,7 @@ export function* startWallet(action) {
       yield put(onExceptionCaptured(e, false));
     }
 
-    if (useWalletService) {
+    if (effectiveUseWalletService) {
       // Wallet Service start wallet will fail if the status returned from
       // the service is 'error' or if the start wallet request failed.
       //
@@ -760,6 +819,7 @@ export function* onWalletReloadData() {
 
 export function* onResetWallet() {
   const wallet = yield select((state) => state.wallet);
+  const walletType = yield select((state) => state.walletType);
 
   // We need to clear the ignore flag so that new wallet starts can load in the
   // wallet-service after a start error:
@@ -768,6 +828,12 @@ export function* onResetWallet() {
   if (wallet) {
     yield call(() => wallet.stop({ cleanStorage: true, cleanAddresses: true }));
     yield setWallet(null);
+  }
+
+  // Clean up Web3Auth state if this was a web3auth wallet
+  if (walletType === 'web3auth') {
+    yield call(web3authLogout);
+    yield* cleanWeb3AuthState();
   }
 
   yield call(() => STORE.resetWallet());

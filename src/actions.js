@@ -254,6 +254,9 @@ export const types = {
   // Clean swap data when user does not confirm the swap
   TOKEN_SWAP_RESET_SWAP_DATA: 'TOKEN_SWAP_RESET_SWAP_DATA',
   TOKEN_SWAP_START_SWAP: 'TOKEN_SWAP_START_SWAP',
+  // Web3Auth actions
+  SET_WALLET_TYPE: 'SET_WALLET_TYPE',
+  SET_WEB3AUTH_EMAIL: 'SET_WEB3AUTH_EMAIL',
 };
 
 export const featureToggleInitialized = () => ({
@@ -1740,4 +1743,20 @@ export const tokenSwapResetSwapData = () => ({
 
 export const tokenSwapSwitchTokens = () => ({
   type: types.TOKEN_SWAP_SWITCH_TOKENS,
+});
+
+/**
+ * walletType {'hd' | 'web3auth'} The type of wallet being used
+ */
+export const setWalletType = (walletType) => ({
+  type: types.SET_WALLET_TYPE,
+  payload: walletType,
+});
+
+/**
+ * email {string} The email from Web3Auth social login
+ */
+export const setWeb3authEmail = (email) => ({
+  type: types.SET_WEB3AUTH_EMAIL,
+  payload: email,
 });
