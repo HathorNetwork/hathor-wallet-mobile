@@ -20,8 +20,6 @@ const BUNDLED_ICONS = {
   '00': htrIcon,
   // hUSDC mainnet
   '00003b17e8d656e4612926d5d2c5a4d5b3e4536e6bebc61c76cb71a65b81986f': husdcIcon,
-  // hUSDC testnet
-  '00000000901832d8f4987030eeed4bb578448e0c05e67dbd121dc917d3989477': husdcIcon,
 };
 
 /**

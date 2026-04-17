@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: COLORS.lowContrastDetail,
+    backgroundColor: COLORS.lowContrastDetail, // Defines an outer area on the main list content
   },
   itemWrapper: {
     height: 80,
