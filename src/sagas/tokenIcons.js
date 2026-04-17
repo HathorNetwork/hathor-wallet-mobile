@@ -6,7 +6,7 @@
  */
 
 import { all, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
-import { tokenIconsKeyMap } from '../constants';
+import { TOKEN_ICONS_CACHE_KEY } from '../constants';
 import {
   types,
   tokenIconsLoaded,
@@ -21,7 +21,7 @@ const log = logger('tokenIcons');
  * Load cached icon URLs from storage into Redux so icons render immediately.
  */
 function* loadCachedIcons() {
-  const cached = STORE.getItem(tokenIconsKeyMap.cache);
+  const cached = STORE.getItem(TOKEN_ICONS_CACHE_KEY);
   if (cached && typeof cached === 'object') {
     yield put(tokenIconsLoaded(cached));
   }
@@ -43,7 +43,7 @@ function* onMetadataSuccess({ tokenId, data }) {
 function* persistIcons() {
   const tokenIcons = yield select((state) => state.tokenIcons);
   try {
-    STORE.setItem(tokenIconsKeyMap.cache, tokenIcons);
+    STORE.setItem(TOKEN_ICONS_CACHE_KEY, tokenIcons);
   } catch (e) {
     log.error('Failed to persist token icons cache', e);
   }

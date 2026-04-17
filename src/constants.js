@@ -258,9 +258,7 @@ export const networkSettingsKeyMap = {
 };
 
 /** Storage key for the cached token icon URLs. */
-export const tokenIconsKeyMap = {
-  cache: 'tokenIcons:cache',
-};
+export const TOKEN_ICONS_CACHE_KEY = 'tokenIcons:cache';
 
 export const BASE_STATUS = {
   READY: 'ready',

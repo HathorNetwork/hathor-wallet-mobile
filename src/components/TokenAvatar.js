@@ -13,10 +13,9 @@ import { COLORS } from '../styles/themes';
 import htrIcon from '../assets/tokens/htr.png';
 import husdcIcon from '../assets/tokens/husdc.png';
 
-// Bundled icons shipped with the app. Keyed by mainnet/testnet uid so the same
-// physical asset is reused on both networks.
-const BUNDLED_ICONS = {
-  // Native HTR (same uid on every network).
+// Bundled icons shipped with the app.
+const BUNDLED_TOKEN_ICONS = {
+  // Native HTR (same uid on every network)
   '00': htrIcon,
   // hUSDC mainnet
   '00003b17e8d656e4612926d5d2c5a4d5b3e4536e6bebc61c76cb71a65b81986f': husdcIcon,
@@ -35,7 +34,7 @@ const TokenAvatar = ({ uid, symbol, size = 40 }) => {
   const iconUrl = useSelector((state) => state.tokenIcons[uid]);
 
   const dim = { width: size, height: size, borderRadius: size / 2 };
-  const bundled = BUNDLED_ICONS[uid];
+  const bundled = BUNDLED_TOKEN_ICONS[uid];
 
   if (bundled) {
     return <Image source={bundled} style={[styles.image, dim]} />;
