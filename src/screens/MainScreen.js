@@ -539,7 +539,7 @@ class BalanceView extends React.Component {
   renderExpanded() {
     const availableStr = renderValue(this.props.balance.available, this.props.isNFT);
     const lockedStr = renderValue(this.props.balance.locked, this.props.isNFT);
-    const { network, token } = this.props;
+    const { token } = this.props;
     const { style } = this;
     return (
       <View style={style.center}>
