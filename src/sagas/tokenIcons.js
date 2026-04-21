@@ -28,6 +28,14 @@ function* loadCachedIcons() {
 }
 
 /**
+ * Clear the persisted icon cache so stale icons from a previous network
+ * are not loaded on next wallet start.
+ */
+function clearIconCache() {
+  STORE.removeItem(TOKEN_ICONS_CACHE_KEY);
+}
+
+/**
  * When a token metadata response includes an icon URL, store it in Redux.
  */
 function* onMetadataSuccess({ tokenId, data }) {
@@ -54,5 +62,6 @@ export function* saga() {
     takeLatest(types.START_WALLET_SUCCESS, loadCachedIcons),
     takeEvery(types.TOKEN_FETCH_METADATA_SUCCESS, onMetadataSuccess),
     takeLatest(types.TOKEN_METADATA_UPDATED, persistIcons),
+    takeLatest(types.RESET_DATA, clearIconCache),
   ]);
 }
