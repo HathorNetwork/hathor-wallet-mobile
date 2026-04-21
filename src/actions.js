@@ -254,7 +254,21 @@ export const types = {
   // Clean swap data when user does not confirm the swap
   TOKEN_SWAP_RESET_SWAP_DATA: 'TOKEN_SWAP_RESET_SWAP_DATA',
   TOKEN_SWAP_START_SWAP: 'TOKEN_SWAP_START_SWAP',
+
+  // Token Icons — URLs piggyback on the existing metadata fetch
+  TOKEN_ICONS_LOADED: 'TOKEN_ICONS_LOADED',
+  TOKEN_ICON_UPDATED: 'TOKEN_ICON_UPDATED',
 };
+
+export const tokenIconsLoaded = (urls) => ({
+  type: types.TOKEN_ICONS_LOADED,
+  payload: urls,
+});
+
+export const tokenIconUpdated = (uid, url) => ({
+  type: types.TOKEN_ICON_UPDATED,
+  payload: { uid, url },
+});
 
 export const featureToggleInitialized = () => ({
   type: types.FEATURE_TOGGLE_INITIALIZED,
