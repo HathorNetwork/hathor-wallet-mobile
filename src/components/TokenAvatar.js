@@ -43,7 +43,7 @@ const TokenAvatar = ({ uid, symbol, size = 40 }) => {
   if (iconUrl && !remoteFailed) {
     return (
       <Image
-        source={{ uri: iconUrl }}
+        source={{ uri: iconUrl, headers: { Accept: 'image/png' } }}
         style={[styles.image, dim]}
         onError={() => setRemoteFailed(true)}
       />
