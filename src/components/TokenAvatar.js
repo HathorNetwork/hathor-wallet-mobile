@@ -40,7 +40,7 @@ const TokenAvatar = ({ uid, symbol, size = 40 }) => {
     return <Image source={bundled} style={[styles.image, dim]} />;
   }
 
-  if (iconUrl && !remoteFailed) {
+  if (iconUrl && !remoteFailed && iconUrl.startsWith('https://')) {
     return (
       <Image
         source={{ uri: iconUrl, headers: { Accept: 'image/png' } }}
