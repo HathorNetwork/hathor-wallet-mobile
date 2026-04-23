@@ -151,8 +151,8 @@ msgstr ""
 
 #: src/screens/About.js:107
 msgid ""
-"For further information, check out the |link1:Terms of Service| and |"
-"link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
+"For further information, check out the |link1:Terms of Service| and |link2:"
+"Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 "Para mais informações, veja os |link1:Termos de Serviço| e |link2:Política "
 "de Privacidade|, ou visite nosso site |link3:https://hathor.network/|."
@@ -319,7 +319,7 @@ msgid "Token symbol"
 msgstr "Símbolo do token"
 
 #: src/components/Reown/CreateTokenRequest.js:87
-#: src/components/Reown/CreateTokenRequest.js:128
+#: src/components/Reown/CreateTokenRequest.js:129
 #: src/screens/CreateTokenConfirm.js:251
 msgid "Deposit"
 msgstr "Depósito"
@@ -445,8 +445,8 @@ msgid ""
 "Once selected, the token type cannot be changed later. |link:Learn more "
 "about deposits and fees here|"
 msgstr ""
-"Uma vez selecionado, o tipo de token não pode ser alterado depois. |"
-"link:Saiba mais sobre depósitos e taxas aqui|"
+"Uma vez selecionado, o tipo de token não pode ser alterado depois. |link:"
+"Saiba mais sobre depósitos e taxas aqui|"
 
 #: src/screens/CreateTokenTypeNotice.js:133
 msgid "DEPOSIT TOKEN"
@@ -473,8 +473,8 @@ msgstr "Bem vindo à Hathor Wallet!"
 
 #: src/screens/InitWallet.js:73
 msgid ""
-"For further information, check out our website |link:https://"
-"hathor.network/|."
+"For further information, check out our website |link:https://hathor."
+"network/|."
 msgstr ""
 "Para mais informações, visite nosso site |link:https://hathor.network/|."
 
@@ -552,7 +552,7 @@ msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
 #: src/components/NanoContract/NanoContractDetails.js:252
-#: src/components/Reown/CreateTokenRequest.js:248
+#: src/components/Reown/CreateTokenRequest.js:249
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:626
 #: src/components/Reown/SendTransactionRequest.js:550
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:27
@@ -649,7 +649,7 @@ msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:127
+#: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -866,7 +866,7 @@ msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:203 src/screens/SendConfirmScreen.js:188
+#: src/screens/SendAmountInput.js:203 src/screens/SendConfirmScreen.js:189
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
@@ -896,54 +896,54 @@ msgid_plural "${ availablePretty } available"
 msgstr[0] "Você tem ${ availablePretty } disponível"
 msgstr[1] "Você tem ${ availablePretty } disponíveis"
 
-#: src/screens/SendConfirmScreen.js:159
+#: src/screens/SendConfirmScreen.js:160
 msgid "Loading fee information..."
 msgstr "Carregando informações da taxa..."
 
-#: src/screens/SendConfirmScreen.js:162
+#: src/screens/SendConfirmScreen.js:163
 msgid "This is the native token, no network fees are charged."
 msgstr "Token nativo, nenhuma taxa aplicada."
 
-#: src/screens/SendConfirmScreen.js:165
+#: src/screens/SendConfirmScreen.js:166
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr "Este token é de Depósito, nenhuma taxa de rede será cobrada."
 
-#: src/screens/SendConfirmScreen.js:167
+#: src/screens/SendConfirmScreen.js:168
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr "Esta taxa é fixa e obrigatória para cada transação deste token."
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:106
-#: src/screens/SendConfirmScreen.js:172
+#: src/screens/SendConfirmScreen.js:173
 msgid "Loading..."
 msgstr "Carregando..."
 
-#: src/screens/SendConfirmScreen.js:197
+#: src/screens/SendConfirmScreen.js:198
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ amountAndToken }** foi confirmada"
 
-#: src/screens/SendConfirmScreen.js:208
+#: src/screens/SendConfirmScreen.js:209
 msgid "Read more."
 msgstr "Ler mais."
 
-#: src/screens/SendConfirmScreen.js:224
+#: src/screens/SendConfirmScreen.js:225
 msgid "**Transaction summary**"
 msgstr "**Resumo da transação**"
 
-#: src/screens/SendConfirmScreen.js:227
+#: src/screens/SendConfirmScreen.js:228
 msgid "**To**"
 msgstr "**Para**"
 
-#: src/screens/SendConfirmScreen.js:232
+#: src/screens/SendConfirmScreen.js:233
 msgid "**Network Fee**"
 msgstr "**Taxa de Rede**"
 
-#: src/screens/SendConfirmScreen.js:240
+#: src/screens/SendConfirmScreen.js:241
 msgid "**Total**"
 msgstr "**Total**"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:247
+#: src/screens/SendConfirmScreen.js:248
 msgid "Send"
 msgstr "Enviar"
 
@@ -1112,6 +1112,65 @@ msgstr "Requisição de UTXOs"
 msgid "New Nano Contract Transaction"
 msgstr "Nova Transação de Nano Contract"
 
+#: src/components/Reown/ApproveRejectModal.js:70
+#: src/screens/Reown/PendingRequests.js:116
+msgid "Reject"
+msgstr "Rejeitar"
+
+#: src/screens/Reown/PendingRequests.js:128
+msgid "All clear!"
+msgstr "Tudo certo!"
+
+#: src/screens/Reown/PendingRequests.js:130
+msgid "No pending requests from dApps."
+msgstr "Nenhuma solicitação pendente de dApps."
+
+#: src/screens/Reown/PendingRequests.js:133
+msgid "Go Back"
+msgstr "Voltar"
+
+#: src/components/Reown/ReownPendingOverlay.js:307
+#: src/screens/Reown/PendingRequests.js:193
+#: src/screens/Reown/PendingRequests.js:208
+msgid "Pending Requests"
+msgstr "Solicitações Pendentes"
+
+#: src/screens/Reown/PendingRequests.js:197
+msgid "Reown is not connected."
+msgstr "Reown não está conectado."
+
+#: src/screens/Reown/PendingRequests.js:225 src/screens/Reown/ReownList.js:209
+msgid "pending request"
+msgstr "solicitação pendente"
+
+#: src/components/Reown/ReownPendingOverlay.js:263
+#: src/screens/Reown/PendingRequests.js:226 src/screens/Reown/ReownList.js:210
+msgid "pending requests"
+msgstr "solicitações pendentes"
+
+#: src/screens/Reown/PendingRequests.js:230
+#, javascript-format
+msgid "from ${ dappSummary[0].name }"
+msgstr "de ${ dappSummary[0].name }"
+
+#: src/screens/Reown/PendingRequests.js:231
+msgid "from ${ dappSummary.length } dApps"
+msgstr "de ${ dappSummary.length } dApps"
+
+#: src/components/AskForPushNotificationRefresh.js:37
+#: src/screens/Reown/PendingRequests.js:240
+msgid "Refresh"
+msgstr "Atualizar"
+
+#: src/screens/Reown/PendingRequests.js:257
+msgid "Rejecting..."
+msgstr "Rejeitando..."
+
+#: src/screens/Reown/PendingRequests.js:257
+#, javascript-format
+msgid "Reject All (${ pendingRequests.length })"
+msgstr "Rejeitar Todas (${ pendingRequests.length })"
+
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:303
 #: src/components/Reown/SendTransactionRequest.js:472
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:33
@@ -1142,32 +1201,36 @@ msgstr "Voltar"
 msgid "Success"
 msgstr "Sucesso"
 
-#: src/screens/Reown/ReownList.js:34
+#: src/screens/Reown/ReownList.js:35
 msgid "There was an error connecting. Please try again later."
 msgstr ""
 "Ocorreu um erro durante a conexão. Por favor, tente novamente mais tarde."
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
-#: src/screens/Reown/ReownList.js:113
+#: src/screens/Reown/ReownList.js:162
 msgid "Add"
 msgstr "Adicionar"
 
-#: src/screens/Reown/ReownList.js:119
+#: src/screens/Reown/ReownList.js:168
 msgid "End session"
 msgstr "Encerrar sessão"
 
-#: src/screens/Reown/ReownList.js:119
+#: src/screens/Reown/ReownList.js:168
 msgid "This will disconnect the session."
 msgstr "Isso irá desconectar a sessão."
 
-#: src/screens/Reown/ReownList.js:121
+#: src/screens/Reown/ReownList.js:170
 msgid "End"
 msgstr "Encerrar"
 
-#: src/screens/Reown/ReownList.js:144
+#: src/screens/Reown/ReownList.js:193
 msgid "Reown Sessions"
 msgstr "Sessões do Reown"
+
+#: src/screens/Reown/ReownList.js:213
+msgid "Review"
+msgstr "Revisar"
 
 #: src/screens/Reown/ReownManual.js:40
 msgid "Manual Connection"
@@ -1486,10 +1549,6 @@ msgstr ""
 "Para continuar recebendo notificações, é necessário atualizar sua "
 "configuração de notificação. Deseja atualizar agora?"
 
-#: src/components/AskForPushNotificationRefresh.js:37
-msgid "Refresh"
-msgstr "Atualizar"
-
 #: src/components/CopyClipboard.js:55
 msgid "Copied to clipboard!"
 msgstr "Copiado!"
@@ -1713,10 +1772,6 @@ msgstr "Opções avançadas"
 msgid "See error details"
 msgstr "Ver detalhes do erro"
 
-#: src/components/Reown/ApproveRejectModal.js:70
-msgid "Reject"
-msgstr "Rejeitar"
-
 #: src/components/Reown/ApproveRejectModal.js:71
 msgid "Approve"
 msgstr "Aprovar"
@@ -1758,14 +1813,14 @@ msgid "Create Token Data"
 msgstr "Dados da criaçao de token"
 
 #: src/components/Reown/CreateNanoContractCreateTokenTxRequest.js:70
-#: src/components/Reown/CreateTokenRequest.js:201
+#: src/components/Reown/CreateTokenRequest.js:202
 #: src/components/Reown/SignMessageRequest.js:81
 #: src/components/Reown/SignOracleDataRequest.js:146
 msgid "Accept Request"
 msgstr "Aceitar Solicitação"
 
 #: src/components/Reown/CreateNanoContractCreateTokenTxRequest.js:71
-#: src/components/Reown/CreateTokenRequest.js:205
+#: src/components/Reown/CreateTokenRequest.js:206
 #: src/components/Reown/SignMessageRequest.js:85
 #: src/components/Reown/SignOracleDataRequest.js:150
 msgid "Decline Request"
@@ -1863,32 +1918,32 @@ msgstr "Contrato paga taxas da rede?"
 msgid "Token data"
 msgstr "Dados do Token"
 
-#: src/components/Reown/CreateTokenRequest.js:129
+#: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
 msgid "Network Fee"
 msgstr "Taxa de Rede"
 
-#: src/components/Reown/CreateTokenRequest.js:215
+#: src/components/Reown/CreateTokenRequest.js:216
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:515
 #: src/components/Reown/SendTransactionRequest.js:487
 msgid "Sending transaction"
 msgstr "Enviando transação"
 
-#: src/components/Reown/CreateTokenRequest.js:216
+#: src/components/Reown/CreateTokenRequest.js:217
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:516
 #: src/components/Reown/SendTransactionRequest.js:488
 msgid "Please wait."
 msgstr "Por favor, espere."
 
-#: src/components/Reown/CreateTokenRequest.js:235
+#: src/components/Reown/CreateTokenRequest.js:236
 msgid "Create Token Transaction successfully sent."
 msgstr "Transação de Criação de Token enviada com sucesso."
 
-#: src/components/Reown/CreateTokenRequest.js:237
+#: src/components/Reown/CreateTokenRequest.js:238
 msgid "Ok, close"
 msgstr "Ok, fechar"
 
-#: src/components/Reown/CreateTokenRequest.js:244
+#: src/components/Reown/CreateTokenRequest.js:245
 msgid "Error while sending create token transaction."
 msgstr "Erro ao enviar transação de criação de token."
 
@@ -2179,6 +2234,16 @@ msgstr "Sua carteira:"
 msgid "dApp requires:"
 msgstr "dApp precisa:"
 
+#: src/components/Reown/ReownPendingOverlay.js:274
+#: src/components/Reown/ReownPendingOverlay.js:340
+msgid "REJECT ALL"
+msgstr "REJEITAR TODAS"
+
+#: src/components/Reown/ReownPendingOverlay.js:349
+#: src/components/Reown/RequestErrorModal.js:56
+msgid "Dismiss"
+msgstr "Fechar"
+
 #: src/components/Reown/RequestConfirmationModal.js:39
 msgid ""
 "You have received a new request. Please carefully review the details before "
@@ -2194,10 +2259,6 @@ msgstr "Revisar detalhes"
 #: src/components/Reown/RequestErrorModal.js:30
 msgid "An error occurred while processing the request."
 msgstr "Ocorreu um erro ao processar a solicitação."
-
-#: src/components/Reown/RequestErrorModal.js:56
-msgid "Dismiss"
-msgstr "Fechar"
 
 #: src/components/Reown/SendTransactionModal.js:22
 msgid ""
