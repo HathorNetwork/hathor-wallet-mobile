@@ -21,9 +21,13 @@ const log = logger('tokenIcons');
  * Load cached icon URLs from storage into Redux so icons render immediately.
  */
 function* loadCachedIcons() {
-  const cached = STORE.getItem(TOKEN_ICONS_CACHE_KEY);
-  if (cached && typeof cached === 'object') {
-    yield put(tokenIconsLoaded(cached));
+  try {
+    const cached = STORE.getItem(TOKEN_ICONS_CACHE_KEY);
+    if (cached && typeof cached === 'object') {
+      yield put(tokenIconsLoaded(cached));
+    }
+  } catch (e) {
+    log.error('Failed to read token icons cache', e);
   }
 }
 
@@ -32,7 +36,11 @@ function* loadCachedIcons() {
  * are not loaded on next wallet start.
  */
 function clearIconCache() {
-  STORE.removeItem(TOKEN_ICONS_CACHE_KEY);
+  try {
+    STORE.removeItem(TOKEN_ICONS_CACHE_KEY);
+  } catch (e) {
+    log.error('Failed to clear token icons cache', e);
+  }
 }
 
 /**
