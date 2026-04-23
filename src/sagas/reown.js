@@ -1720,8 +1720,10 @@ export function* rejectAllPendingRequests() {
   // (it's waiting on REOWN_ACCEPT/REOWN_REJECT in a race)
   yield put(reownReject());
 
-  // Clear the pending requests list
-  yield put(setReownPendingRequests([]));
+  // Sync pending requests from walletKit rather than blindly setting [] —
+  // a new request may have arrived during the rejection loop.
+  const stillPending = yield call([walletKit, walletKit.getPendingSessionRequests]);
+  yield put(setReownPendingRequests(stillPending));
 }
 
 export function* saga() {

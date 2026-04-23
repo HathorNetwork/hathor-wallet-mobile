@@ -23,7 +23,6 @@ import { t } from 'ttag';
 import { Portal } from '../Portal';
 import {
   reownRejectAllPendingRequests,
-  reownReject,
   hideReownModal,
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
@@ -214,8 +213,6 @@ const ReownPendingOverlay = () => {
 
   const onRejectAll = useCallback(() => {
     dispatch(reownRejectAllPendingRequests());
-    // Unblock the currently-processing request saga
-    dispatch(reownReject());
     // Close the active Reown modal
     dispatch(hideReownModal());
     // Pop all Reown screens off the navigation stack
