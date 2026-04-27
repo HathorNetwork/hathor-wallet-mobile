@@ -58,7 +58,7 @@ class WelcomeScreen extends React.Component {
     return (
       <View style={{ flex: 1 }}>
         <HathorHeader withLogo />
-        <View style={this.style.container}>
+        <View accessible={false} style={this.style.container}>
           <Text style={this.style.title}>{t`Welcome to Hathor Wallet!`}</Text>
           <View accessible={false}>
             <TextFmt style={this.style.text}>
@@ -75,7 +75,7 @@ class WelcomeScreen extends React.Component {
               )}
             </Text>
           </View>
-          <View style={this.style.switchView}>
+          <View accessible={false} style={this.style.switchView}>
             <ToggleSwitch
               testID="terms-agreement-switch"
               onValueChange={this.toggleSwitch}
@@ -92,13 +92,14 @@ class WelcomeScreen extends React.Component {
               )}
             </Text>
           </View>
-          <NewHathorButton
-            testID="welcome-start-button"
-            disabled={!this.state.switchValue}
-            onPress={() => this.props.navigation.navigate('InitialScreen')}
-            title={t`Start`}
-          />
-          <View style={this.style.buttonView} />
+          <View accessible={false} style={this.style.buttonView}>
+            <NewHathorButton
+              testID="welcome-start-button"
+              disabled={!this.state.switchValue}
+              onPress={() => this.props.navigation.navigate('InitialScreen')}
+              title={t`Start`}
+            />
+          </View>
         </View>
       </View>
     );
@@ -112,7 +113,7 @@ class InitialScreen extends React.Component {
     return (
       <View style={{ flex: 1 }}>
         <HathorHeader withLogo />
-        <View style={this.style.container}>
+        <View accessible={false} style={this.style.container}>
           <Text style={this.style.title}>{t`To start,`}</Text>
           <TextFmt style={this.style.text}>
             {t`You need to **initialize your wallet**.`}
@@ -123,17 +124,18 @@ class InitialScreen extends React.Component {
           <Text style={this.style.text}>
             {t`To import a wallet, you will need to provide your seed words.`}
           </Text>
-          <NewHathorButton
-            onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
-            title={t`Import Wallet`}
-            style={{ marginBottom: 16 }}
-            secondary
-          />
-          <NewHathorButton
-            onPress={() => this.props.navigation.navigate('NewWordsScreen')}
-            title={t`New Wallet`}
-          />
-          <View style={this.style.buttonView} />
+          <View accessible={false} style={this.style.buttonView}>
+            <NewHathorButton
+              onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
+              title={t`Import Wallet`}
+              style={{ marginBottom: 16 }}
+              secondary
+            />
+            <NewHathorButton
+              onPress={() => this.props.navigation.navigate('NewWordsScreen')}
+              title={t`New Wallet`}
+            />
+          </View>
         </View>
       </View>
     );
@@ -215,7 +217,7 @@ class NewWordsScreen extends React.Component {
           withLogo
           onBackPress={() => this.props.navigation.goBack()}
         />
-        <View style={this.style.container}>
+        <View accessible={false} style={this.style.container}>
           <View accessible={false}>
             <Text style={this.style.title}>{t`Your wallet has been created!`}</Text>
             <TextFmt style={this.style.text}>
@@ -225,14 +227,15 @@ class NewWordsScreen extends React.Component {
           <Text testID="seed-words-data" style={{ fontSize: 8 }}>
             {this.state.words}
           </Text>
-          <View>
+          <View accessible={false}>
             {renderWords()}
           </View>
-          <NewHathorButton
-            onPress={navigateToNextStep}
-            title={t`Next`}
-          />
-          <View style={this.style.buttonView} />
+          <View accessible={false} style={this.style.buttonView}>
+            <NewHathorButton
+              onPress={navigateToNextStep}
+              title={t`Next`}
+            />
+          </View>
         </View>
       </View>
     );

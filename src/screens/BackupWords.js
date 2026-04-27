@@ -168,7 +168,7 @@ const BackupWords = ({ navigation, route }) => {
     }
 
     return (
-      <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <View accessible={false} style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center' }}>
         {viewArr}
       </View>
     );
@@ -179,7 +179,7 @@ const BackupWords = ({ navigation, route }) => {
       <HathorHeader
         onBackPress={() => navigation.goBack()}
       />
-      <View style={[styles.container, { flexDirection: 'column', justifyContent: 'space-between' }]}>
+      <View accessible={false} style={[styles.container, { flexDirection: 'column', justifyContent: 'space-between' }]}>
         <View accessible={false}>
           <Text style={styles.title}>{t`To make sure you saved,`}</Text>
           <Text style={styles.text}>
@@ -193,7 +193,7 @@ const BackupWords = ({ navigation, route }) => {
             {indexes[step]}
           </Text>
         </View>
-        <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
+        <View accessible={false} style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
           {renderOptions()}
         </View>
         {renderFooter()}

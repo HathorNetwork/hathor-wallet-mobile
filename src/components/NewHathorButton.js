@@ -8,7 +8,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-  Pressable, StyleSheet, Text,
+  StyleSheet, Text, TouchableOpacity,
 } from 'react-native';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 import { COLORS } from '../styles/themes';
@@ -45,9 +45,10 @@ const NewHathorButton = (props) => {
   }
 
   return (
-    <Pressable
+    <TouchableOpacity
       testID={props.testID}
-      onPress={props.disabled ? undefined : props.onPress}
+      onPress={props.onPress}
+      disabled={props.disabled}
       style={[
         ...wrapperViewStyle,
         props.wrapperStyle,
@@ -61,7 +62,7 @@ const NewHathorButton = (props) => {
       >
         {props.title}
       </Text>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

@@ -27,14 +27,20 @@ const ToggleSwitch = ({ value, onValueChange, trackColor, testID }) => (
     onPress={() => onValueChange(!value)}
     hitSlop={8}
   >
-    <View style={[
-      styles.track,
-      { backgroundColor: value ? (trackColor?.true || COLORS.primary) : '#E0E0E0' },
-    ]}>
-      <View style={[
-        styles.thumb,
-        { transform: [{ translateX: value ? 21 : 2 }] },
-      ]} />
+    <View
+      accessible={false}
+      style={[
+        styles.track,
+        { backgroundColor: value ? (trackColor?.true || COLORS.primary) : '#E0E0E0' },
+      ]}
+    >
+      <View
+        accessible={false}
+        style={[
+          styles.thumb,
+          { transform: [{ translateX: value ? 21 : 2 }] },
+        ]}
+      />
     </View>
   </Pressable>
 );
