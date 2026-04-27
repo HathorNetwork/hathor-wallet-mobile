@@ -40,6 +40,8 @@ export const cleanOnWalletReset = [
   PIN_BACKUP_KEY,
   IS_BIOMETRY_ENABLED_KEY,
   IS_OLD_BIOMETRY_ENABLED_KEY,
+  'web3auth:walletType',
+  'web3auth:email',
 ];
 
 /* eslint-disable class-methods-use-this */
@@ -338,6 +340,22 @@ class AsyncStorageStore {
   }
 
   /**
+   * Generate accessData for a Web3Auth single-key wallet and prepare storage.
+   * @param {string} privateKey - 32-byte hex raw secp256k1 private key
+   * @param {string} publicKey - 33-byte compressed public key hex
+   * @param {string} pin - User PIN for encryption
+   */
+  async initWeb3AuthStorage(privateKey, publicKey, pin) {
+    const accessData = walletUtils.generateAccessDataFromPrivateKey(
+      privateKey,
+      publicKey,
+      { pin },
+    );
+    const storage = this.getStorage();
+    await storage.saveAccessData(accessData);
+  }
+
+  /**
    * Get access data of loaded wallet from async storage.
    *
    * @returns {IWalletAccessData|null}
@@ -393,6 +411,32 @@ class AsyncStorageStore {
       return null;
     }
     return cryptoUtils.decryptData(accessData.words, pin);
+  }
+
+  /**
+   * Get the decrypted private key for a Web3Auth single-key wallet.
+   * @throws {Error} If the private key cannot be decrypted.
+   * @param {string} pin
+   * @returns {Promise<string|null>} Hex-encoded raw private key.
+   */
+  async getWeb3AuthPrivateKey(pin) {
+    const accessData = await this._getAccessData();
+    if (!accessData || !accessData.singleKeyPrivateKey) {
+      return null;
+    }
+    return cryptoUtils.decryptData(accessData.singleKeyPrivateKey, pin);
+  }
+
+  /**
+   * Get the public key for a Web3Auth single-key wallet.
+   * @returns {Promise<string|null>} Hex-encoded compressed public key.
+   */
+  async getWeb3AuthPublicKey() {
+    const accessData = await this._getAccessData();
+    if (!accessData || !accessData.singleKeyPublicKey) {
+      return null;
+    }
+    return accessData.singleKeyPublicKey;
   }
 
   /**

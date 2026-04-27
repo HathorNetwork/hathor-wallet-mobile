@@ -25,8 +25,16 @@ import {
   useRoute
 } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import IconTabBar from './icon-font';
-import { IS_MULTI_TOKEN, LOCK_TIMEOUT, PUSH_ACTION, INITIAL_TOKENS } from './constants';
+import {
+  IS_MULTI_TOKEN,
+  LOCK_TIMEOUT,
+  PUSH_ACTION,
+  INITIAL_TOKENS,
+  WEB3AUTH_WALLET_TYPE_KEY,
+  WEB3AUTH_EMAIL_KEY,
+} from './constants';
 import { setSupportedBiometry, isTokenSwapEnabled, isFeeBasedTokensEnabled } from './utils';
 import {
   appStateUpdate,
@@ -36,6 +44,8 @@ import {
   requestCameraPermission,
   resetData,
   setTokens,
+  setWalletType,
+  setWeb3authEmail,
 } from './actions';
 import { HathorDeeplinkProvider } from './contexts/HathorDeeplinkContext';
 import { store } from './reducers/reducer.init';
@@ -48,6 +58,7 @@ import {
   WelcomeScreen,
 } from './screens/InitWallet';
 import ChoosePinScreen from './screens/ChoosePinScreen';
+import Web3AuthRecoveryScreen from './screens/Web3AuthRecoveryScreen';
 import BackupWords from './screens/BackupWords';
 import PinScreen from './screens/PinScreen';
 import ResetWallet from './screens/ResetWallet';
@@ -139,6 +150,7 @@ const InitStack = () => {
         <Stack.Screen name='LoadWordsScreen' component={LoadWordsScreen} />
         <Stack.Screen name='BackupWords' component={BackupWords} />
         <Stack.Screen name='ChoosePinScreen' component={ChoosePinScreen} />
+        <Stack.Screen name='Web3AuthRecoveryScreen' component={Web3AuthRecoveryScreen} />
       </Stack.Navigator>
     </SafeAreaView>
   );
@@ -790,6 +802,17 @@ const RootStack = () => {
 
   useEffect(() => {
     STORE.preStart()
+      .then(async () => {
+        // Restore Web3Auth state into Redux
+        const walletType = await AsyncStorage.getItem(WEB3AUTH_WALLET_TYPE_KEY);
+        const web3authEmail = await AsyncStorage.getItem(WEB3AUTH_EMAIL_KEY);
+        if (walletType) {
+          dispatch(setWalletType(walletType));
+        }
+        if (web3authEmail) {
+          dispatch(setWeb3authEmail(web3authEmail));
+        }
+      })
       .then(() => STORE.walletIsLoaded())
       .then((_isLoaded) => {
         setAppStatus(_isLoaded ? 'isLoaded' : 'notLoaded');

@@ -14,11 +14,13 @@ import {
 import { connect } from 'react-redux';
 import { t } from 'ttag';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
 import { startWalletRequested, unlockScreen } from '../actions';
-import { PIN_SIZE } from '../constants';
+import { PIN_SIZE, WEB3AUTH_WALLET_TYPE_KEY, WEB3AUTH_EMAIL_KEY } from '../constants';
 import { COLORS } from '../styles/themes';
 
 import baseStyle from '../styles/init';
@@ -27,10 +29,7 @@ import NavigationService from '../NavigationService';
 
 const mapDispatchToProps = (dispatch) => ({
   unlockScreen: () => dispatch(unlockScreen()),
-  startWalletRequested: (words, pin) => dispatch(startWalletRequested({
-    words,
-    pin
-  })),
+  startWalletRequested: (payload) => dispatch(startWalletRequested(payload)),
 });
 
 class ChoosePinScreen extends React.Component {
@@ -49,6 +48,13 @@ class ChoosePinScreen extends React.Component {
   constructor(props) {
     super(props);
     this.words = this.props.route.params?.words; // Mandatory parameter
+
+    // Web3Auth params (optional — only set when coming from social login)
+    this.privateKey = this.props.route.params?.privateKey;
+    this.publicKey = this.props.route.params?.publicKey;
+    this.address = this.props.route.params?.address;
+    this.web3authEmail = this.props.route.params?.web3authEmail;
+    this.walletType = this.props.route.params?.walletType || 'hd';
 
     /**
      * pin1 {string} Input value for pin
@@ -81,10 +87,31 @@ class ChoosePinScreen extends React.Component {
   }
 
   goToNextScreen = () => {
-    STORE.initStorage(this.words, this.state.pin1).then(() => {
-      // we are just initializing the wallet, so make sure it's not locked when going to AppStack
+    const pin = this.state.pin1;
+
+    const initPromise = this.walletType === 'web3auth'
+      ? STORE.initWeb3AuthStorage(this.privateKey, this.publicKey, pin)
+      : STORE.initStorage(this.words, pin);
+
+    initPromise.then(() => {
       this.props.unlockScreen();
-      this.props.startWalletRequested(this.words, this.state.pin1);
+
+      if (this.walletType === 'web3auth') {
+        AsyncStorage.setItem(WEB3AUTH_WALLET_TYPE_KEY, 'web3auth');
+        if (this.web3authEmail) {
+          AsyncStorage.setItem(WEB3AUTH_EMAIL_KEY, this.web3authEmail);
+        }
+        this.props.startWalletRequested({
+          privateKey: this.privateKey,
+          publicKey: this.publicKey,
+          address: this.address,
+          pin,
+          walletType: 'web3auth',
+        });
+      } else {
+        this.props.startWalletRequested({ words: this.words, pin });
+      }
+
       NavigationService.resetToMain();
     });
   }

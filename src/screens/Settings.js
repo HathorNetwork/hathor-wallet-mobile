@@ -28,6 +28,7 @@ import { COLORS } from '../styles/themes';
 import { NetworkSettingsFlowNav } from './NetworkSettings';
 import { isNanoContractsEnabled, isPushNotificationAvailableForUser } from '../utils';
 import { getNetworkSettings } from '../sagas/helpers';
+import { isSingleKeyWallet } from '../selectors';
 
 /**
  * selectedToken {Object} Select token config {name, symbol, uid}
@@ -53,6 +54,7 @@ const mapStateToProps = (state) => {
     isPushNotificationAvailable: isPushNotificationAvailableForUser(state),
     reownEnabled: state.featureToggles[REOWN_FEATURE_TOGGLE] && isNanoContractsEnabled(state),
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
+    singleKey: isSingleKeyWallet(state),
   };
 };
 
@@ -151,13 +153,19 @@ export class Settings extends React.Component {
                   onPress={() => this.props.navigation.navigate('RegisterToken')}
                 />
               )}
-            {this.props.reownEnabled
+            {this.props.reownEnabled && !this.props.singleKey
               && (
                 <ListMenu
                   title='Reown'
                   onPress={() => this.props.navigation.navigate('ReownList')}
                 />
               )}
+            {this.props.singleKey && (
+              <ListMenu
+                title={t`Sign out`}
+                onPress={() => this.props.navigation.navigate('ResetWallet')}
+              />
+            )}
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}
