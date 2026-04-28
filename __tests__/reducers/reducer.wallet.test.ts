@@ -15,6 +15,7 @@ import {
   newToken,
   setTokens,
   updateSelectedToken,
+  types,
 } from '../../src/actions';
 import { WALLET_STATUS } from '../../src/sagas/wallet';
 import { DEFAULT_TOKEN, INITIAL_TOKENS } from '../../src/constants';
@@ -172,5 +173,84 @@ describe('wallet reset', () => {
     const resetState = reducer(state, resetWalletSuccess());
     expect(resetState.tokens).toEqual(INITIAL_TOKENS);
     expect(resetState.tokensBalance).toEqual({});
+  });
+});
+
+// ─── START_WALLET_NOT_STARTED ──────────────────────────────────────────────
+// No exported action creator; dispatched as a raw action by the wallet saga.
+describe('START_WALLET_NOT_STARTED', () => {
+  it('resets walletStartState to NOT_STARTED from READY', () => {
+    let state = reducer(getInitialState(), startWalletRequested({ words: 't', pin: '123456' }));
+    state = reducer(state, startWalletSuccess());
+    expect(state.walletStartState).toBe(WALLET_STATUS.READY);
+
+    state = reducer(state, { type: types.START_WALLET_NOT_STARTED });
+    expect(state.walletStartState).toBe(WALLET_STATUS.NOT_STARTED);
+  });
+});
+
+// ─── Initial-State Shape Contract ──────────────────────────────────────────
+// Pins the SHAPE (top-level keys) of the in-scope sub-trees. A future
+// RTK-slices refactor must preserve this shape OR consciously update this
+// snapshot. Catches accidental shape drift that behavior tests would miss.
+describe('initial state shape contract (in-scope sub-trees)', () => {
+  it('exposes each in-scope top-level key', () => {
+    const state = getInitialState();
+    ['reown', 'selectedToken', 'tokens', 'wallet', 'walletStartState'].forEach((key) => {
+      expect(state).toHaveProperty(key);
+    });
+  });
+
+  it('walletStartState starts at NOT_STARTED', () => {
+    expect(getInitialState().walletStartState).toBe(WALLET_STATUS.NOT_STARTED);
+  });
+
+  it('wallet starts as null', () => {
+    expect(getInitialState().wallet).toBeNull();
+  });
+
+  it('tokens starts equal to INITIAL_TOKENS', () => {
+    expect(getInitialState().tokens).toEqual(INITIAL_TOKENS);
+  });
+
+  it('selectedToken starts equal to DEFAULT_TOKEN', () => {
+    expect(getInitialState().selectedToken).toEqual(DEFAULT_TOKEN);
+  });
+});
+
+// ─── Action-Type Contract ──────────────────────────────────────────────────
+// Pins the literal `.type` of every in-scope action creator. Catches RTK's
+// default `slice/action` auto-renaming, which would silently break saga
+// listeners keyed off the current strings.
+describe('action-type contract (in-scope action creators)', () => {
+  it('startWalletRequested.type', () => {
+    expect(startWalletRequested({ words: '', pin: '' }).type).toBe('START_WALLET_REQUESTED');
+  });
+  it('startWalletSuccess.type', () => {
+    expect(startWalletSuccess().type).toBe('START_WALLET_SUCCESS');
+  });
+  it('startWalletFailed.type', () => {
+    expect(startWalletFailed().type).toBe('START_WALLET_FAILED');
+  });
+  it('setWallet.type', () => {
+    expect(setWallet(null).type).toBe('SET_WALLET');
+  });
+  it('resetData.type', () => {
+    expect(resetData().type).toBe('RESET_DATA');
+  });
+  it('resetWalletSuccess.type', () => {
+    expect(resetWalletSuccess().type).toBe('RESET_WALLET_SUCCESS');
+  });
+  it('newToken.type', () => {
+    expect(newToken({ uid: 'a', name: 'A', symbol: 'A' }).type).toBe('NEW_TOKEN');
+  });
+  it('setTokens.type', () => {
+    expect(setTokens({}).type).toBe('SET_TOKENS');
+  });
+  it('updateSelectedToken.type', () => {
+    expect(updateSelectedToken(DEFAULT_TOKEN).type).toBe('UPDATE_SELECTED_TOKEN');
+  });
+  it('START_WALLET_NOT_STARTED type constant (no creator exported)', () => {
+    expect(types.START_WALLET_NOT_STARTED).toBe('START_WALLET_NOT_STARTED');
   });
 });
