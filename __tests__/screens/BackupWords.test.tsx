@@ -7,6 +7,9 @@
  * - Edge positions (near boundaries) display correct option ranges
  */
 import React from 'react';
+import {
+  describe, it, expect, jest, beforeEach,
+} from '@jest/globals';
 import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
 
 // The 24 test words — same as used in InitWallet.test.tsx
@@ -133,13 +136,17 @@ describe('BackupWords', () => {
   });
 
   it('shows 5 word option buttons', () => {
-    const { getAllByText } = render(
+    const { getByText } = render(
       <BackupWords navigation={mockNavigation} route={mockRoute} />
     );
-    // The correct word for position 3 (0-indexed: 2) is TEST_WORDS_ARR[2] = 'able'
-    // Options should include words around position 3 (indexes 0-4): abandon, ability, able, about, above
-    const correctWord = TEST_WORDS_ARR[FIXED_INDEXES[0] - 1];
-    expect(getAllByText(correctWord).length).toBeGreaterThan(0);
+    // For position 3 (1-indexed), the screen renders the 5 words around it.
+    // With FIXED_INDEXES[0] = 3, that window is TEST_WORDS_ARR[0..4] —
+    // 'abandon', 'ability', 'able', 'about', 'above'. Asserting each is
+    // present pins (a) the option count, (b) the correct word is included.
+    const expectedOptions = TEST_WORDS_ARR.slice(0, 5);
+    expectedOptions.forEach((word) => {
+      expect(getByText(word)).toBeTruthy();
+    });
   });
 
   it('advances to next step when correct word is selected', async () => {
@@ -189,13 +196,16 @@ describe('BackupWords', () => {
       <BackupWords navigation={mockNavigation} route={mockRoute} />
     );
 
-    // Select the correct word for each of the 5 steps
-    for (let i = 0; i < 5; i++) {
-      const correctWord = TEST_WORDS_ARR[FIXED_INDEXES[i] - 1];
+    // Select the correct word for each of the 5 steps. Steps must run
+    // sequentially (each press advances UI), so we serialize via reduce
+    // — a for+await loop would trip no-await-in-loop / no-plusplus.
+    await FIXED_INDEXES.reduce(async (prev, idx) => {
+      await prev;
+      const correctWord = TEST_WORDS_ARR[idx - 1];
       await act(async () => {
         fireEvent.press(getByText(correctWord));
       });
-    }
+    }, Promise.resolve());
 
     // After all 5 correct, success modal should appear
     await waitFor(() => {
