@@ -164,18 +164,14 @@ describe('BackupWords', () => {
       <BackupWords navigation={mockNavigation} route={mockRoute} />
     );
 
-    // Select a WRONG word (not the one at position FIXED_INDEXES[0])
+    // Pick a wrong word that is guaranteed different from the correct one.
     const correctWord = TEST_WORDS_ARR[FIXED_INDEXES[0] - 1];
-    // Find any option that is NOT the correct word
-    // Options are around index (FIXED_INDEXES[0]-1), which is 2. Options: indexes 0-4
-    const wrongWord = TEST_WORDS_ARR[0]; // 'abandon' — not 'able'
-    if (wrongWord === correctWord) {
-      // Fallback if they happen to be the same
-      return;
-    }
+    const wrongWord = TEST_WORDS_ARR.find((w) => w !== correctWord);
+    expect(wrongWord).toBeDefined();
+    expect(wrongWord).not.toEqual(correctWord);
 
     await act(async () => {
-      fireEvent.press(getByText(wrongWord));
+      fireEvent.press(getByText(wrongWord!));
     });
 
     // The failure modal should appear with "Wrong word." text
@@ -203,31 +199,26 @@ describe('BackupWords', () => {
     });
   });
 
-  it('failure modal dismiss navigates back', async () => {
+  it('shows failure modal for wrong selection', async () => {
+    // Renamed from 'failure modal dismiss navigates back' — this test only
+    // verifies the modal appears. Simulating the BackdropModal dismiss to
+    // assert goBack() requires reaching into modal internals; left as a
+    // follow-up. The dismiss → goBack wiring is currently verified by
+    // reading the screen source.
     const { getByText, queryByText } = render(
       <BackupWords navigation={mockNavigation} route={mockRoute} />
     );
 
-    // Select wrong word
     const correctWord = TEST_WORDS_ARR[FIXED_INDEXES[0] - 1];
-    const wrongWord = TEST_WORDS_ARR[0] === correctWord
-      ? TEST_WORDS_ARR[1]
-      : TEST_WORDS_ARR[0];
+    const wrongWord = TEST_WORDS_ARR.find((w) => w !== correctWord);
+    expect(wrongWord).toBeDefined();
 
     await act(async () => {
-      fireEvent.press(getByText(wrongWord));
+      fireEvent.press(getByText(wrongWord!));
     });
 
-    // Wait for failure modal
     await waitFor(() => {
       expect(queryByText('Wrong word.')).toBeTruthy();
     });
-
-    // The FeedbackModal's onDismiss should call navigation.goBack()
-    // The modal uses BackdropModal which has a backdrop press handler.
-    // We can test that the onDismiss callback was wired correctly
-    // by checking the navigation mock after the component would dismiss.
-    // For now, we verify the modal appeared — the dismiss → goBack
-    // wiring is verified by reading the source code.
   });
 });

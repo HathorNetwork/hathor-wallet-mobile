@@ -1,8 +1,14 @@
 /**
  * Test helper: mock navigation objects for React Navigation 7.
  *
- * Provides mock implementations of useNavigation and useRoute that
- * components can call without a real NavigationContainer.
+ * Provides plain mock objects that can be passed as props or returned
+ * from `useNavigation()`/`useRoute()` in a `jest.mock(...)` factory at
+ * module scope in the consuming test file.
+ *
+ * Note: this file does NOT call `jest.mock(...)` itself. `jest.mock` is
+ * hoisted by Babel only when written at top-level of the test module —
+ * wrapping it inside an exported helper would defeat the hoist and run
+ * after the modules under test are already imported.
  */
 import { jest } from '@jest/globals';
 
@@ -33,35 +39,4 @@ export function createMockRoute(params: Record<string, unknown> = {}) {
     name: 'MockRoute',
     params,
   };
-}
-
-/**
- * Setup jest mocks for both React Navigation's native hooks
- * and the app's custom BigInt-aware hooks in src/hooks/navigation.js.
- *
- * Call this in a beforeEach or at module scope in your test file.
- *
- * @returns Object with references to the mocks for assertion.
- */
-export function setupNavigationMocks(routeParams: Record<string, unknown> = {}) {
-  const mockNav = createMockNavigation();
-  const mockRoute = createMockRoute(routeParams);
-
-  // Mock React Navigation's native hooks
-  jest.mock('@react-navigation/native', () => {
-    const actual = jest.requireActual('@react-navigation/native') as any;
-    return {
-      ...actual,
-      useNavigation: () => mockNav,
-      useRoute: () => mockRoute,
-    };
-  });
-
-  // Mock the app's custom hooks (which wrap the above with BigInt handling)
-  jest.mock('../../src/hooks/navigation', () => ({
-    useNavigation: () => mockNav,
-    useParams: () => mockRoute.params,
-  }));
-
-  return { navigation: mockNav, route: mockRoute };
 }

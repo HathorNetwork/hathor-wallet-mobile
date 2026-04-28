@@ -118,7 +118,7 @@
     "eslint-plugin-jsx-a11y": "6.7.1",
     "eslint-plugin-react": "7.32.2",
     "jest": "29.7.0",
-    "jest-circus": "^30.3.0",
+    "jest-circus": "29.7.0",
     "patch-package": "8.0.0",
     "react-test-renderer": "18.3.1",
     "redux-saga-test-plan": "^4.0.6",
@@ -181,8 +181,7 @@
       "@walletconnect/core>@walletconnect/keyvaluestorage>unstorage>listhen>@parcel/watcher": false,
       "core-js-pure": false,
       "@react-native-firebase/app>firebase>@firebase/firestore>@grpc/proto-loader>protobufjs": false,
-      "@react-native-firebase/app>firebase>@firebase/util": false,
-      "jest-circus>jest-runtime>jest-resolve>unrs-resolver": false
+      "@react-native-firebase/app>firebase>@firebase/util": false
     }
   }
 }
