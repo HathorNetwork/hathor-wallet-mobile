@@ -181,7 +181,8 @@
       "@walletconnect/core>@walletconnect/keyvaluestorage>unstorage>listhen>@parcel/watcher": false,
       "core-js-pure": false,
       "@react-native-firebase/app>firebase>@firebase/firestore>@grpc/proto-loader>protobufjs": false,
-      "@react-native-firebase/app>firebase>@firebase/util": false
+      "@react-native-firebase/app>firebase>@firebase/util": false,
+      "jest-circus>jest-runtime>jest-resolve>unrs-resolver": false
     }
   }
 }
