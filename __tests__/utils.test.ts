@@ -4,6 +4,7 @@
  * These tests focus on financial math (getIntegerAmount, getAmountParsed)
  * and string helpers (getShortHash, getShortContent, getTokenLabel).
  */
+import { describe, it, expect, jest } from '@jest/globals';
 import { getIntegerAmount, getAmountParsed, getShortHash, getShortContent, getTokenLabel } from '../src/utils';
 
 // ─── getIntegerAmount ──────────────────────────────────────────────────────

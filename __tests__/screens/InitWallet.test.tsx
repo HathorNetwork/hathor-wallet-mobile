@@ -5,6 +5,7 @@
  * and NewWordsScreen (word generation and display).
  */
 import React from 'react';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { render, fireEvent } from '@testing-library/react-native';
 import { WelcomeScreen, InitialScreen, NewWordsScreen } from '../../src/screens/InitWallet';
 
