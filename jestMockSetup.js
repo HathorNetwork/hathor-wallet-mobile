@@ -92,6 +92,14 @@ jest.mock('@sentry/react-native');
 
 jest.mock('react-native-version-number');
 
+// NOTE: production code in src/sagas/featureToggle.js imports the DEFAULT
+// export `UnleashClient` and the named export `FetchTogglesStatus`. This
+// mock instead exposes a named `HathorUnleashClient` and `EVENTS`, so those
+// imports would resolve to undefined at module load time. Acceptable today
+// because no test exercises featureToggle.js (the saga is never imported by
+// any __tests__/ file). If a future test runs through that saga, replace
+// this mock with one that exports a default mapping to HathorUnleashClient
+// and adds FetchTogglesStatus with values matching the production enum.
 jest.mock('@hathor/unleash-client', () => ({
   HathorUnleashClient: jest.fn(() => ({
     getAllToggles: () => ({}),

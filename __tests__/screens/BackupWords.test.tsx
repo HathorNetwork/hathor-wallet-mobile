@@ -143,7 +143,7 @@ describe('BackupWords', () => {
   });
 
   it('advances to next step when correct word is selected', async () => {
-    const { getByText, queryByText } = render(
+    const { getByText } = render(
       <BackupWords navigation={mockNavigation} route={mockRoute} />
     );
 
@@ -199,26 +199,8 @@ describe('BackupWords', () => {
     });
   });
 
-  it('shows failure modal for wrong selection', async () => {
-    // Renamed from 'failure modal dismiss navigates back' — this test only
-    // verifies the modal appears. Simulating the BackdropModal dismiss to
-    // assert goBack() requires reaching into modal internals; left as a
-    // follow-up. The dismiss → goBack wiring is currently verified by
-    // reading the screen source.
-    const { getByText, queryByText } = render(
-      <BackupWords navigation={mockNavigation} route={mockRoute} />
-    );
-
-    const correctWord = TEST_WORDS_ARR[FIXED_INDEXES[0] - 1];
-    const wrongWord = TEST_WORDS_ARR.find((w) => w !== correctWord);
-    expect(wrongWord).toBeDefined();
-
-    await act(async () => {
-      fireEvent.press(getByText(wrongWord!));
-    });
-
-    await waitFor(() => {
-      expect(queryByText('Wrong word.')).toBeTruthy();
-    });
-  });
+  // The 'shows failure modal when wrong word is selected' test above is the
+  // single failure-modal coverage. The dismiss → goBack wiring (originally
+  // intended here) is left as a follow-up: simulating the BackdropModal
+  // dismiss requires reaching into modal internals.
 });

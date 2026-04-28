@@ -6,29 +6,17 @@
  */
 import { expectSaga } from 'redux-saga-test-plan';
 import * as matchers from 'redux-saga-test-plan/matchers';
-import { throwError } from 'redux-saga-test-plan/providers';
-import { select, call } from 'redux-saga/effects';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { reducer } from '../../src/reducers/reducer';
 import {
   startWalletRequested,
-  setWallet,
-  setServerInfo,
-  startWalletSuccess,
   startWalletFailed,
   resetWalletSuccess,
-  setUseWalletService,
-  setAvailablePushNotification,
-  setUniqueDeviceId,
-  firstAddressRequest,
-  walletRefreshSharedAddress,
-  setFullNodeNetworkName,
 } from '../../src/actions';
 import {
   startWallet,
   onResetWallet,
   WALLET_STATUS,
-  IGNORE_WS_TOGGLE_FLAG,
   isWalletServiceEnabled,
   isPushNotificationEnabled,
 } from '../../src/sagas/wallet';
@@ -137,13 +125,6 @@ describe('startWallet saga', () => {
   const mockStorage = {
     store: { cleanMetadata: jest.fn() },
     cleanStorage: jest.fn(),
-  };
-
-  const mockServerInfo = {
-    network: 'mainnet',
-    decimal_places: 2,
-    version: '0.60.0',
-    native_token: { name: 'Hathor', symbol: 'HTR' },
   };
 
   const action = startWalletRequested({
