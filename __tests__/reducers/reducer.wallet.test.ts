@@ -20,9 +20,7 @@ import {
 } from '../../src/actions';
 import { WALLET_STATUS } from '../../src/sagas/wallet';
 import { DEFAULT_TOKEN, INITIAL_TOKENS } from '../../src/constants';
-
-// Helper: get initial state from the reducer
-const getInitialState = () => reducer(undefined, { type: '@@INIT' });
+import { getInitialState } from '../helpers/getInitialState';
 
 // ─── Wallet Start Lifecycle ────────────────────────────────────────────────
 describe('wallet start lifecycle', () => {
@@ -194,11 +192,26 @@ describe('START_WALLET_NOT_STARTED', () => {
 // Pins the SHAPE (top-level keys) of the in-scope sub-trees. A future
 // RTK-slices refactor must preserve this shape OR consciously update this
 // snapshot. Catches accidental shape drift that behavior tests would miss.
+//
+// Uses sorted-keys equality (not just `toHaveProperty`) so the test fails if
+// any in-scope key is *moved* under a sub-tree (e.g. walletStartState →
+// state.wallet.walletStartState) or *added* alongside (e.g. an alias).
 describe('initial state shape contract (in-scope sub-trees)', () => {
-  it('exposes each in-scope top-level key', () => {
-    const state = getInitialState();
-    ['reown', 'selectedToken', 'tokens', 'wallet', 'walletStartState'].forEach((key) => {
-      expect(state).toHaveProperty(key);
+  // The keys this branch's tests are responsible for. A migration that
+  // adds new top-level keys outside this set is fine and out of scope;
+  // reshuffling these specific keys is what we want to catch.
+  const IN_SCOPE_TOP_LEVEL = [
+    'reown',
+    'selectedToken',
+    'tokens',
+    'wallet',
+    'walletStartState',
+  ];
+
+  it('top-level state contains every in-scope key (and none of them have moved)', () => {
+    const topLevelKeys = Object.keys(getInitialState()).sort();
+    IN_SCOPE_TOP_LEVEL.forEach((key) => {
+      expect(topLevelKeys).toContain(key);
     });
   });
 
@@ -210,8 +223,13 @@ describe('initial state shape contract (in-scope sub-trees)', () => {
     expect(getInitialState().wallet).toBeNull();
   });
 
-  it('tokens starts equal to INITIAL_TOKENS', () => {
-    expect(getInitialState().tokens).toEqual(INITIAL_TOKENS);
+  it('tokens starts equal to INITIAL_TOKENS (and is keyed by uid, not nested under .byId)', () => {
+    const state = getInitialState();
+    expect(state.tokens).toEqual(INITIAL_TOKENS);
+    // Pin the keying convention: tokens is a flat uid → token map. If a
+    // refactor reshapes it (e.g., tokens.byId), behavior tests still pass
+    // but selectors break. This assertion forces the diff to be explicit.
+    expect(state.tokens[DEFAULT_TOKEN.uid]).toEqual(DEFAULT_TOKEN);
   });
 
   it('selectedToken starts equal to DEFAULT_TOKEN', () => {
@@ -223,9 +241,19 @@ describe('initial state shape contract (in-scope sub-trees)', () => {
 // Pins the literal `.type` of every in-scope action creator. Catches RTK's
 // default `slice/action` auto-renaming, which would silently break saga
 // listeners keyed off the current strings.
+//
+// Uses MINIMAL VALID payloads (not `{}`/`null` shortcuts) so this block
+// keeps testing the type literal even if a future RTK `prepare` callback
+// validates inputs and throws on empty arguments.
 describe('action-type contract (in-scope action creators)', () => {
+  const sampleToken = { uid: 'sample', name: 'Sample', symbol: 'SMP' };
+  const sampleStartPayload = {
+    words: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+    pin: '123456',
+  };
+
   it('startWalletRequested.type', () => {
-    expect(startWalletRequested({ words: '', pin: '' }).type).toBe('START_WALLET_REQUESTED');
+    expect(startWalletRequested(sampleStartPayload).type).toBe('START_WALLET_REQUESTED');
   });
   it('startWalletSuccess.type', () => {
     expect(startWalletSuccess().type).toBe('START_WALLET_SUCCESS');
@@ -234,7 +262,7 @@ describe('action-type contract (in-scope action creators)', () => {
     expect(startWalletFailed().type).toBe('START_WALLET_FAILED');
   });
   it('setWallet.type', () => {
-    expect(setWallet(null).type).toBe('SET_WALLET');
+    expect(setWallet({ id: 'sample-wallet' }).type).toBe('SET_WALLET');
   });
   it('resetData.type', () => {
     expect(resetData().type).toBe('RESET_DATA');
@@ -243,10 +271,10 @@ describe('action-type contract (in-scope action creators)', () => {
     expect(resetWalletSuccess().type).toBe('RESET_WALLET_SUCCESS');
   });
   it('newToken.type', () => {
-    expect(newToken({ uid: 'a', name: 'A', symbol: 'A' }).type).toBe('NEW_TOKEN');
+    expect(newToken(sampleToken).type).toBe('NEW_TOKEN');
   });
   it('setTokens.type', () => {
-    expect(setTokens({}).type).toBe('SET_TOKENS');
+    expect(setTokens({ [DEFAULT_TOKEN.uid]: DEFAULT_TOKEN }).type).toBe('SET_TOKENS');
   });
   it('updateSelectedToken.type', () => {
     expect(updateSelectedToken(DEFAULT_TOKEN).type).toBe('UPDATE_SELECTED_TOKEN');

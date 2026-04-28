@@ -164,14 +164,18 @@ describe('BackupWords', () => {
       <BackupWords navigation={mockNavigation} route={mockRoute} />
     );
 
-    // Pick a wrong word that is guaranteed different from the correct one.
-    const correctWord = TEST_WORDS_ARR[FIXED_INDEXES[0] - 1];
-    const wrongWord = TEST_WORDS_ARR.find((w) => w !== correctWord);
-    expect(wrongWord).toBeDefined();
+    // BackupWords displays a window of options around FIXED_INDEXES[0].
+    // Picking the word at the position immediately AFTER the correct one
+    // guarantees the wrong word is both (a) different from the correct
+    // word and (b) inside the on-screen options window — independent of
+    // any future change to FIXED_INDEXES values.
+    const correctIdx = FIXED_INDEXES[0] - 1;
+    const correctWord = TEST_WORDS_ARR[correctIdx];
+    const wrongWord = TEST_WORDS_ARR[correctIdx + 1];
     expect(wrongWord).not.toEqual(correctWord);
 
     await act(async () => {
-      fireEvent.press(getByText(wrongWord!));
+      fireEvent.press(getByText(wrongWord));
     });
 
     // The failure modal should appear with "Wrong word." text

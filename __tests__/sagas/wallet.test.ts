@@ -94,12 +94,13 @@ describe('onResetWallet saga', () => {
       .put(resetWalletSuccess())
       .run()
       .then((result) => {
-        // wallet.stop should NOT have been called.
-        // beforeEach runs jest.clearAllMocks(), so this is a real
-        // cross-test isolation check — not vacuously true. The
-        // expectSaga(...).not.call.fn(mockWallet.stop) alternative would
-        // target the same outer mockWallet.stop reference, so it has the
-        // same scope as this assertion.
+        // Asserts the saga's null-guard short-circuits before any wallet
+        // method call. clearAllMocks() in beforeEach ensures earlier
+        // tests' invocations are cleared, so this is true coverage of
+        // the null-handling branch (not a stale-counter coincidence) —
+        // even though the production code physically can't call .stop
+        // on null state.wallet. The expectSaga(...).not.call.fn(...)
+        // alternative would target the same outer reference.
         expect(mockWallet.stop).not.toHaveBeenCalled();
         expect(result.storeState.walletStartState).toBe(WALLET_STATUS.NOT_STARTED);
         storeResetSpy.mockRestore();

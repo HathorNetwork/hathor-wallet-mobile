@@ -102,12 +102,12 @@ unchanged.
 ```ts
 // ✅ Good — survives any internal reorg
 import { reducer } from '../../src/reducers/reducer';
-import { setWallet } from '../../src/actions';
-const next = reducer(state, setWallet(myWallet));
+import { resetWalletSuccess } from '../../src/actions';
+const next = reducer(state, resetWalletSuccess());
 
-// ❌ Bad — breaks the moment onSetWallet is renamed/inlined into a slice
-import { onSetWallet } from '../../src/reducers/reducer';
-const next = onSetWallet(state, { payload: myWallet });
+// ❌ Bad — breaks the moment onResetWalletSuccess is renamed/inlined into a slice
+import { onResetWalletSuccess } from '../../src/reducers/reducer';
+const next = onResetWalletSuccess(state);
 ```
 
 ### Pin contracts at the seams
@@ -140,10 +140,18 @@ of five `expect` calls broke.
 
 ### Reuse the helpers
 
-`getInitialState()`, `renderWithProviders()`, `mockStore()`,
-`mockNavigation()` already exist. Add to them rather than copying setup
-boilerplate. If you find yourself writing the same five-line setup twice,
-move it into `__tests__/helpers/`.
+The repo's `__tests__/helpers/` already provides:
+
+- `getInitialState()` — root-reducer initial state, for reducer tests.
+- `renderWithProviders()` — mount a screen with Redux + theme.
+- `mockStore()` — preconfigured store factory.
+- `createMockNavigation()` / `createMockRoute()` — plain mock objects to
+  pass as props or return from a `useNavigation()`/`useRoute()` mock
+  factory in your test file.
+
+Add to these helpers rather than copying setup boilerplate. If you find
+yourself writing the same five-line setup twice, move it into
+`__tests__/helpers/`.
 
 ### Don't mock what you can run
 

@@ -13,8 +13,7 @@
 import { describe, it, expect } from '@jest/globals';
 import { reducer } from '../../src/reducers/reducer';
 import { setReownPendingRequests, types } from '../../src/actions';
-
-const getInitialState = () => reducer(undefined, { type: '@@INIT' });
+import { getInitialState } from '../helpers/getInitialState';
 
 // ─── Behavior ──────────────────────────────────────────────────────────────
 describe('REOWN_SET_PENDING_REQUESTS', () => {
