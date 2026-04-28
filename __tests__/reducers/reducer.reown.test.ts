@@ -10,6 +10,7 @@
  *   - Initial state shape of state.reown
  *   - Action-type literal string
  */
+import { describe, it, expect } from '@jest/globals';
 import { reducer } from '../../src/reducers/reducer';
 import { setReownPendingRequests, types } from '../../src/actions';
 

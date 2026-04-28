@@ -4,6 +4,7 @@
  * Tests the full start → ready/failed cycle and the reset cycle,
  * verifying that Redux state transitions match expectations.
  */
+import { describe, it, expect } from '@jest/globals';
 import { reducer } from '../../src/reducers/reducer';
 import {
   startWalletRequested,
@@ -83,7 +84,7 @@ describe('token operations', () => {
   it('adds a new token via NEW_TOKEN', () => {
     const token = { uid: 'token123', name: 'TestCoin', symbol: 'TST' };
     const state = reducer(getInitialState(), newToken(token));
-    expect(state.tokens['token123']).toEqual(token);
+    expect(state.tokens.token123).toEqual(token);
     // Initial default token should still be present
     expect(state.tokens[DEFAULT_TOKEN.uid]).toBeDefined();
   });
@@ -95,7 +96,7 @@ describe('token operations', () => {
     };
     const state = reducer(getInitialState(), setTokens(tokens));
     expect(Object.keys(state.tokens)).toHaveLength(2);
-    expect(state.tokens['token123'].name).toBe('TestCoin');
+    expect(state.tokens.token123.name).toBe('TestCoin');
   });
 
   it('resets selectedToken to DEFAULT_TOKEN if unregistered via SET_TOKENS', () => {
