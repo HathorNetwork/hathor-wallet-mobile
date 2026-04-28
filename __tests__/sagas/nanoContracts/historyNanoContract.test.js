@@ -88,7 +88,10 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
       put(nanoContractHistoryFailure({ ncId, error: failureMessage.nanoContractHistoryFailure }))
     );
 
-    // Next should be onExceptionCaptured
+    // Next should be onExceptionCaptured.
+    // Note: toStrictEqual compares Error instances structurally (by name +
+    // message) since Jest 24, so two `new Error('network error')` match here
+    // — no need to capture and reuse the original Error reference.
     const exceptionResult = gen.next().value;
     expect(exceptionResult).toStrictEqual(
       put(onExceptionCaptured(new Error('network error'), false))

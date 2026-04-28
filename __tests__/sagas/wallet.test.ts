@@ -106,7 +106,12 @@ describe('onResetWallet saga', () => {
       .put(resetWalletSuccess())
       .run()
       .then((result) => {
-        // wallet.stop should NOT have been called
+        // wallet.stop should NOT have been called.
+        // beforeEach runs jest.clearAllMocks(), so this is a real
+        // cross-test isolation check — not vacuously true. The
+        // expectSaga(...).not.call.fn(mockWallet.stop) alternative would
+        // target the same outer mockWallet.stop reference, so it has the
+        // same scope as this assertion.
         expect(mockWallet.stop).not.toHaveBeenCalled();
         expect(result.storeState.walletStartState).toBe(WALLET_STATUS.NOT_STARTED);
         storeResetSpy.mockRestore();

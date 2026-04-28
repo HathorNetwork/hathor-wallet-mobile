@@ -58,6 +58,18 @@ jest.mock('react-native-status-bar-height');
 
 jest.mock('@react-native-async-storage/async-storage', () => jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 
+// NOTE: this mocks the module's default export as a callable returning the
+// messaging object. Production code in src/sagas/pushNotification.js and
+// src/workers/backgroundListeners.js imports NAMED exports (getMessaging,
+// getToken, setBackgroundMessageHandler, etc.), which would resolve to
+// undefined under this mock. That is acceptable today because no test path
+// invokes those code paths — the imports never get called. If a future test
+// exercises pushNotification.js or backgroundListeners.js, this mock must be
+// rewritten to export named symbols (getMessaging, getToken, deleteToken,
+// hasPermission, requestPermission, getInitialNotification, onMessage,
+// onNotificationOpenedApp, setBackgroundMessageHandler,
+// isDeviceRegisteredForRemoteMessages, registerDeviceForRemoteMessages,
+// AuthorizationStatus) alongside the default factory.
 jest.mock('@react-native-firebase/messaging', () => () => ({
   getToken: jest.fn(() => Promise.resolve('mock-token')),
   deleteToken: jest.fn(() => Promise.resolve()),
