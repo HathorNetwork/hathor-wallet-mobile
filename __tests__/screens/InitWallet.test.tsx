@@ -9,6 +9,7 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { Switch } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { WelcomeScreen, InitialScreen, NewWordsScreen } from '../../src/screens/InitWallet';
+import NewHathorButton from '../../src/components/NewHathorButton';
 
 // Mock wallet-lib to control word generation while providing all needed exports
 jest.mock('@hathor/wallet-lib', () => {
@@ -108,13 +109,20 @@ describe('WelcomeScreen', () => {
   });
 
   it('renders the Start button as disabled initially', () => {
-    const { getByText } = render(
+    // Direct contract assertion on the button's disabled prop, instead
+    // of inferring disabled-ness from "navigate wasn't called" — that
+    // indirect check would also pass for unrelated reasons (e.g. mock
+    // wiring drift). The Start button is the only NewHathorButton on
+    // WelcomeScreen, so UNSAFE_getByType resolves uniquely.
+    // eslint-disable-next-line camelcase
+    const { getByText, UNSAFE_getByType } = render(
       <WelcomeScreen navigation={mockNavigation} />
     );
-    const startButton = getByText('Start');
-    // The parent TouchableOpacity should be disabled
-    // We test by pressing and verifying navigate is NOT called
-    fireEvent.press(startButton);
+    // eslint-disable-next-line camelcase
+    const startButton = UNSAFE_getByType(NewHathorButton);
+    expect(startButton.props.disabled).toBe(true);
+    // Belt-and-suspenders: pressing the disabled button must not navigate.
+    fireEvent.press(getByText('Start'));
     expect(mockNavigation.navigate).not.toHaveBeenCalled();
   });
 

@@ -136,17 +136,21 @@ describe('BackupWords', () => {
   });
 
   it('shows 5 word option buttons', () => {
-    const { getByText } = render(
+    const { getByText, queryByText } = render(
       <BackupWords navigation={mockNavigation} route={mockRoute} />
     );
     // For position 3 (1-indexed), the screen renders the 5 words around it.
     // With FIXED_INDEXES[0] = 3, that window is TEST_WORDS_ARR[0..4] —
-    // 'abandon', 'ability', 'able', 'about', 'above'. Asserting each is
-    // present pins (a) the option count, (b) the correct word is included.
+    // 'abandon', 'ability', 'able', 'about', 'above'.
     const expectedOptions = TEST_WORDS_ARR.slice(0, 5);
     expectedOptions.forEach((word) => {
       expect(getByText(word)).toBeTruthy();
     });
+    // Pin the count contract: the word immediately past the window
+    // (TEST_WORDS_ARR[5] = 'absent') must NOT render. Catches the
+    // regression where the window expands to 6+ options without a
+    // matching change to the visible-words contract.
+    expect(queryByText(TEST_WORDS_ARR[5])).toBeNull();
   });
 
   it('advances to next step when correct word is selected', async () => {
