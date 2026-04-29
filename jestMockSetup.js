@@ -58,14 +58,50 @@ jest.mock('react-native-status-bar-height');
 
 jest.mock('@react-native-async-storage/async-storage', () => jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 
-jest.mock('@react-native-firebase/messaging');
+// NOTE: this mocks the module's default export as a callable returning the
+// messaging object. Production code in src/sagas/pushNotification.js and
+// src/workers/backgroundListeners.js imports NAMED exports (getMessaging,
+// getToken, setBackgroundMessageHandler, etc.), which would resolve to
+// undefined under this mock. That is acceptable today because no test path
+// invokes those code paths — the imports never get called. If a future test
+// exercises pushNotification.js or backgroundListeners.js, this mock must be
+// rewritten to export named symbols (getMessaging, getToken, deleteToken,
+// hasPermission, requestPermission, getInitialNotification, onMessage,
+// onNotificationOpenedApp, setBackgroundMessageHandler,
+// isDeviceRegisteredForRemoteMessages, registerDeviceForRemoteMessages,
+// AuthorizationStatus) alongside the default factory.
+jest.mock('@react-native-firebase/messaging', () => () => ({
+  getToken: jest.fn(() => Promise.resolve('mock-token')),
+  deleteToken: jest.fn(() => Promise.resolve()),
+  requestPermission: jest.fn(() => Promise.resolve(1)),
+  getInitialNotification: jest.fn(() => Promise.resolve(null)),
+  onMessage: jest.fn(() => jest.fn()),
+  onNotificationOpenedApp: jest.fn(() => jest.fn()),
+  setBackgroundMessageHandler: jest.fn(),
+  isDeviceRegisteredForRemoteMessages: true,
+  registerDeviceForRemoteMessages: jest.fn(() => Promise.resolve()),
+  AuthorizationStatus: { AUTHORIZED: 1, NOT_DETERMINED: -1, DENIED: 0, PROVISIONAL: 2 },
+}));
+jest.mock('@react-native-firebase/app', () => ({
+  firebase: {
+    app: jest.fn(),
+  },
+}));
 
 jest.mock('@sentry/react-native');
 
 jest.mock('react-native-version-number');
 
-jest.mock('unleash-proxy-client', () => ({
-  UnleashClient: jest.fn(() => ({
+// NOTE: production code in src/sagas/featureToggle.js imports the DEFAULT
+// export `UnleashClient` and the named export `FetchTogglesStatus`. This
+// mock instead exposes a named `HathorUnleashClient` and `EVENTS`, so those
+// imports would resolve to undefined at module load time. Acceptable today
+// because no test exercises featureToggle.js (the saga is never imported by
+// any __tests__/ file). If a future test runs through that saga, replace
+// this mock with one that exports a default mapping to HathorUnleashClient
+// and adds FetchTogglesStatus with values matching the production enum.
+jest.mock('@hathor/unleash-client', () => ({
+  HathorUnleashClient: jest.fn(() => ({
     getAllToggles: () => ({}),
     isEnabled: () => false,
     getVariant: () => ({}),
@@ -101,6 +137,26 @@ jest.mock('react-native-permissions', () => ({
   }
 }));
 
-jest.mock('react-native-modal');
+// react-native-modal and react-native-animatable were removed as dependencies.
+// If re-added, uncomment these mocks:
+// jest.mock('react-native-modal');
+// jest.mock('react-native-animatable');
 
-jest.mock('react-native-animatable');
+// WalletConnect compat shim imports native modules not available in test
+jest.mock('@walletconnect/react-native-compat', () => ({}));
+
+// react-native-camera-kit native component can't be parsed by babel codegen in tests
+jest.mock('react-native-camera-kit', () => ({
+  Camera: 'Camera',
+  CameraType: { Back: 'back', Front: 'front' },
+}));
+
+// wallet-lib sub-path imports trigger bitcore-lib double-instance error in tests.
+// These must be mocked to avoid loading bitcore-lib twice.
+jest.mock('@hathor/wallet-lib/lib/nano_contracts/utils', () => ({
+  getBlueprintId: jest.fn(),
+}));
+jest.mock('@hathor/wallet-lib/lib/api/axiosWrapper', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({ get: jest.fn(), post: jest.fn() })),
+}));
