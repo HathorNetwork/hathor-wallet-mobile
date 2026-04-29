@@ -2347,7 +2347,9 @@ export const onTokenSwapSwitchTokens = (state) => ({
 
 const onTokenIconsLoaded = (state, { payload }) => ({
   ...state,
-  tokenIcons: payload,
+  // Merge cached icons under any icons already fetched from metadata,
+  // so fresh responses are never overwritten by stale cache.
+  tokenIcons: { ...payload, ...state.tokenIcons },
 });
 
 const onTokenIconUpdated = (state, { payload }) => ({
