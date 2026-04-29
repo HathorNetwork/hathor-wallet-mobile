@@ -11,6 +11,7 @@ import {
   describe, it, expect, jest, beforeEach,
 } from '@jest/globals';
 import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
+import BackupWords from '../../src/screens/BackupWords';
 
 // The 24 test words — same as used in InitWallet.test.tsx
 const TEST_WORDS = 'abandon ability able about above absent absorb abstract absurd abuse access accident acid acoustic acquire across act action actor actress actual adapt add addict';
@@ -21,12 +22,10 @@ const TEST_WORDS_ARR = TEST_WORDS.split(' ');
 const FIXED_INDEXES = [3, 8, 12, 18, 22]; // 1-indexed positions to validate
 jest.mock('lodash', () => {
   const actual = jest.requireActual('lodash');
-  let shuffleCallCount = 0;
 
   return {
     ...actual,
     shuffle: jest.fn((arr: any[]) => {
-      shuffleCallCount += 1;
       // First call: shuffling the 1-24 indexes array → return with our chosen 5 first
       if (arr.length === 24 && typeof arr[0] === 'number') {
         // Place our chosen indexes at the front, rest after
@@ -45,12 +44,16 @@ jest.mock('lodash', () => {
 jest.mock('@hathor/wallet-lib', () => {
   class MemoryStore {
     getItem() { return null; }
+
     setItem() {}
+
     cleanStorage() {}
+
     clearItems() {}
   }
   class Storage {
     constructor() { this.store = new MemoryStore(); }
+
     cleanStorage() {}
   }
   return {
@@ -94,16 +97,13 @@ jest.mock('../../src/config', () => ({
 jest.mock('../../src/assets/images/icCheckBig.png', () => 1);
 jest.mock('../../src/assets/images/icErrorBig.png', () => 1);
 
-// Mock Portal to render children directly (no PortalProvider needed)
-jest.mock('../../src/components/Portal', () => {
-  const React = require('react');
-  return {
-    Portal: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    PortalProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  };
-});
-
-import BackupWords from '../../src/screens/BackupWords';
+// Mock Portal to render children directly (no PortalProvider needed).
+// Returning `children` works because ReactNode is itself a valid render
+// value — wrapping in a fragment would just add a no-op layer.
+jest.mock('../../src/components/Portal', () => ({
+  Portal: ({ children }: { children: unknown }) => children,
+  PortalProvider: ({ children }: { children: unknown }) => children,
+}));
 
 describe('BackupWords', () => {
   const mockNavigation = {

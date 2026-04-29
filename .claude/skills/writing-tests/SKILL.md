@@ -131,11 +131,17 @@ Helpers live in `__tests__/helpers/`. Reuse them; don't redefine.
    scope of the test file. Wrapping it inside an exported helper makes
    it a runtime no-op — the mock fires *after* modules under test are
    already imported.
-2. **New helpers must be `.js`, not `.ts`.** The repo has no
-   TS-aware import resolver, so `.ts` helpers fail
-   `import/no-unresolved` from any consumer. (Workaround until
-   `eslint-import-resolver-typescript` is added — tracked as a
-   follow-up; meanwhile this rule is load-bearing.)
+2. **New helpers must be `.js`, not `.ts`.** ESLint's default
+   resolver (no `eslint-import-resolver-typescript` configured) can't
+   follow `.ts`/`.tsx` extensions, so `.ts` helpers fail
+   `import/no-unresolved` from any consumer. **`getInitialState.js`
+   is the JS reference example — copy its shape for new helpers.**
+   The branch currently ships three TS helpers as tracked exceptions:
+   `mockNavigation.ts`, `mockStore.ts`, `renderWithProviders.tsx`.
+   They predate this rule and are scheduled to flip to `.js` (or
+   stay TS once the typescript resolver is added). Don't pattern-match
+   from them when authoring new helpers, and don't add new TS helpers
+   in the meantime.
 
 ## 5. Saga tests
 

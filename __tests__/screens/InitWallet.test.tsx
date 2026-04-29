@@ -6,6 +6,7 @@
  */
 import React from 'react';
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { Switch } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { WelcomeScreen, InitialScreen, NewWordsScreen } from '../../src/screens/InitWallet';
 
@@ -14,8 +15,11 @@ jest.mock('@hathor/wallet-lib', () => {
   // Base class that HybridStore extends
   class MemoryStore {
     getItem() { return null; }
+
     setItem() {}
+
     cleanStorage() {}
+
     clearItems() {}
   }
 
@@ -23,6 +27,7 @@ jest.mock('@hathor/wallet-lib', () => {
     constructor() {
       this.store = new MemoryStore();
     }
+
     cleanStorage() {}
   }
 
@@ -37,6 +42,7 @@ jest.mock('@hathor/wallet-lib', () => {
     errors: {
       InvalidWords: class InvalidWords extends Error {
         invalidWords: string[];
+
         constructor(message: string, invalidWords: string[]) {
           super(message);
           this.invalidWords = invalidWords;
@@ -113,12 +119,16 @@ describe('WelcomeScreen', () => {
   });
 
   it('enables the Start button after toggling the agreement switch', () => {
+    // UNSAFE_getByType is RTL's escape-hatch for finding components by
+    // class reference. The non-camelCase name is upstream's choice; the
+    // disable scope is intentionally narrow.
+    // eslint-disable-next-line camelcase
     const { getByText, UNSAFE_getByType } = render(
       <WelcomeScreen navigation={mockNavigation} />
     );
 
     // Find and toggle the Switch
-    const { Switch } = require('react-native');
+    // eslint-disable-next-line camelcase
     const switchComponent = UNSAFE_getByType(Switch);
     fireEvent(switchComponent, 'valueChange', true);
 
@@ -193,7 +203,7 @@ describe('NewWordsScreen', () => {
     // Verify first, middle, and last words appear.
     expect(getByText('abandon')).toBeTruthy();
     expect(getByText('absurd')).toBeTruthy(); // word 10
-    expect(getByText('addict')).toBeTruthy();  // word 24
+    expect(getByText('addict')).toBeTruthy(); // word 24
   });
 
   it('navigates to BackupWords on Next press (SKIP_SEED_CONFIRMATION=false)', () => {
