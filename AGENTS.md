@@ -1,60 +1,51 @@
 # Agent guide for hathor-wallet-mobile
 
-This file is the entry point for AI coding agents (Claude Code, Cursor,
-Codex, etc.) working in this repo. Read it first; follow the pointers
-for depth.
+Single source of truth for AI coding agents (Claude Code, Cursor,
+Codex, etc.). `CLAUDE.md` is a thin pointer to this file — don't
+duplicate rules across both.
 
-## Repo conventions
+## 1. Pin every dependency exactly
 
-### 1. Pin every dependency version exactly
+`package.json` MUST use exact versions — **no `^`, no `~`**. Supply-
+chain mitigation, mandatory. Review tools (CodeRabbit, Copilot) flag
+ranges; fix both sides to the same exact version. Regenerate the
+lockfile per rule 2 after editing.
 
-`package.json` MUST use exact versions — no `^`, no `~`. This is a
-supply-chain mitigation and is **mandatory**. When a CodeRabbit-style
-review flags a version mismatch, fix both sides to the same exact
-version. After editing `package.json`, regenerate `package-lock.json`
-following rule (3) below.
+## 2. Lockfile regen on Node 22 / npm 10
 
-### 2. Use Node 22 / npm 10 for any lockfile regeneration
-
-CI runs Node 22.x (`.github/workflows/main.yml` matrix). Running
-`npm install` with a different major (e.g. Node 24 / npm 11) produces
-a divergent lockfile that fails CI's `npm ci`.
+CI's matrix is Node 22 (`.github/workflows/main.yml`). A lockfile
+generated on a different major fails `npm ci` with *"Missing: X
+from lock file"*.
 
 ```sh
 nvm install 22 && nvm use 22
 npm install --no-audit --no-fund
 ```
 
-### 3. Tests follow `docs/testing-guide.md`
+## 3. Tests
 
-Read it before writing tests. The short version:
+Read `docs/testing-guide.md` before writing tests. Quick rules:
 
-- **Always import jest globals** in `.test.ts` / `.test.tsx`:
+- **Import jest globals** (`.eslintrc` has no `env.jest`):
   `import { describe, it, expect } from '@jest/globals';`
-  (the repo's ESLint has no `env.jest`, so `no-undef` will fire).
 - **Test the public contract**: dispatch real action creators against
-  the *root* `reducer`; never import internal `onXxx` handlers.
-- **Reducer tests pin three contracts**: behavior (action → state),
-  initial-state shape (sorted-keys equality), action-type strings.
-  Canonical examples: `__tests__/reducers/reducer.{wallet,reown}.test.ts`.
-- **Reuse `__tests__/helpers/`** — don't redefine setup boilerplate.
-  Note: helpers use `.js`, not `.ts`; the repo has no TS-aware import
-  resolver, so `.ts` helpers fail `import/no-unresolved`.
-- For Claude Code: a more detailed skill auto-loads on test work — see
-  `.claude/skills/writing-tests/SKILL.md`. Other agents should read
-  `docs/testing-guide.md` directly.
+  the *root* reducer; never import internal `onXxx` handlers.
+- **Reducer tests pin three contracts**: behavior, initial-state shape
+  (sorted-keys equality), action-type strings. Canonical:
+  `__tests__/reducers/reducer.{wallet,reown}.test.ts`.
+- **Reuse `__tests__/helpers/`**; helpers must be `.js` (no TS-aware
+  resolver in this repo).
+- Claude Code only: `.claude/skills/writing-tests/SKILL.md` auto-loads
+  on test file edits and has the deeper gotchas.
 
-### 4. Commits
+## 4. Commits
 
-- Conventional Commits (`feat:`, `fix:`, `chore:`, `test:`, `docs:`).
+- Conventional Commits (`feat:`/`fix:`/`chore:`/`test:`/`docs:`).
 - 50-char title cap, 72-col body wrap.
-- Sign commits with GPG before merge (`git commit -S` or sign-and-amend
-  before push). CI may require all commits signed.
+- Sign with GPG before merge — CI may require all commits signed.
 
-### 5. PRs
+## 5. PRs
 
-- Assign to `tuliomir`. Tag `tests` for test PRs, `bug` for fixes,
-  `dependencies` for dep changes.
+- Assign `tuliomir`. Tag `tests`/`bug`/`dependencies` as applicable.
 - Add to project 15 with status "In Progress WIP".
-- Description should be concise; explicit breaking-change notes when
-  applicable.
+- Concise description; explicit breaking-change notes when applicable.
