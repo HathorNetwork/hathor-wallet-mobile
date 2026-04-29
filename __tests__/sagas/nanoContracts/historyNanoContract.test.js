@@ -219,17 +219,25 @@ describe('sagas/nanoContract/requestHistoryNanoContract', () => {
     // taken BEFORE the first yield, so a single .next() leaves the lock held
     // and pauses the generator at `yield put(nanoContractHistoryLoading)`.
     const firstGen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
-    firstGen.next();
+    try {
+      firstGen.next();
 
-    // Start a second saga for the SAME ncId + same (initial) request type.
-    // The synchronous lock check at the top of requestHistoryNanoContract
-    // must observe the held lock and `return` immediately — no put(loading),
-    // no select, no anything observable.
-    const secondGen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
-    const firstYield = secondGen.next();
+      // Start a second saga for the SAME ncId + same (initial) request type.
+      // The synchronous lock check at the top of requestHistoryNanoContract
+      // must observe the held lock and `return` immediately — no put(loading),
+      // no select, no anything observable.
+      const secondGen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
+      const firstYield = secondGen.next();
 
-    // `done: true` with `value: undefined` is a generator that returned
-    // without yielding. That is exactly what the lock short-circuit does.
-    expect(firstYield).toEqual({ value: undefined, done: true });
+      // `done: true` with `value: undefined` is a generator that returned
+      // without yielding. That is exactly what the lock short-circuit does.
+      expect(firstYield).toEqual({ value: undefined, done: true });
+    } finally {
+      // Drive the first generator to completion so its `finally` block runs
+      // and releases the module-level lock. Otherwise the lock leaks across
+      // suites within the same jest worker, since beforeEach only clears
+      // BEFORE the next test — anything in between sees stale state.
+      firstGen.return();
+    }
   });
 });
