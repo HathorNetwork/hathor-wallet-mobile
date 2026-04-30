@@ -19,7 +19,13 @@ import NewHathorButton from '../../components/NewHathorButton';
 import Spinner from '../../components/Spinner';
 import FeedbackModal from '../../components/FeedbackModal';
 import { networkSettingsPersistStore, networkSettingsUpdateReady } from '../../actions';
-import { PRE_SETTINGS_MAINNET, PRE_SETTINGS_TESTNET } from '../../constants';
+import {
+  PRE_SETTINGS_MAINNET,
+  PRE_SETTINGS_TESTNET,
+  PRE_SETTINGS_SHIELDED_TESTNET,
+  SHIELDED_OUTPUTS_FEATURE_TOGGLE,
+  FEATURE_TOGGLE_DEFAULTS,
+} from '../../constants';
 import { CustomNetworkSettingsNav } from './CustomNetworkSettingsScreen';
 import { feedbackSucceedText, feedbackFailedText, feedbackLoadingText, hasFailed, isLoading, hasSucceeded } from './helper';
 import errorIcon from '../../assets/images/icErrorBig.png';
@@ -79,8 +85,13 @@ export const NetworkPreSettingsNav = Symbol('NetworkPreSettings').toString();
 export function NetworkPreSettingsScreen({ navigation }) {
   const dispatch = useDispatch();
   const networkSettingsStatus = useSelector((state) => state.networkSettingsStatus);
+  const shieldedEnabled = useSelector(
+    (state) => state.featureToggles[SHIELDED_OUTPUTS_FEATURE_TOGGLE]
+      ?? FEATURE_TOGGLE_DEFAULTS[SHIELDED_OUTPUTS_FEATURE_TOGGLE]
+  );
   const setMainnetNetwork = () => dispatch(networkSettingsPersistStore(PRE_SETTINGS_MAINNET));
   const setTestnetNetwork = () => dispatch(networkSettingsPersistStore(PRE_SETTINGS_TESTNET));
+  const setShieldedTestnetNetwork = () => dispatch(networkSettingsPersistStore(PRE_SETTINGS_SHIELDED_TESTNET));
   const setCustomNetwork = () => {
     navigation.push(CustomNetworkSettingsNav);
   };
@@ -125,6 +136,9 @@ export function NetworkPreSettingsScreen({ navigation }) {
       <View style={styles.content}>
         <CustomNetwork title='Mainnet' url={PRE_SETTINGS_MAINNET.nodeUrl} onPress={setMainnetNetwork} />
         <CustomNetwork title='Testnet' url={PRE_SETTINGS_TESTNET.nodeUrl} onPress={setTestnetNetwork} />
+        {shieldedEnabled && (
+          <CustomNetwork title='Shielded Testnet' url={PRE_SETTINGS_SHIELDED_TESTNET.nodeUrl} onPress={setShieldedTestnetNetwork} />
+        )}
         <View style={styles.buttonContainer}>
           <NewHathorButton
             onPress={setCustomNetwork}

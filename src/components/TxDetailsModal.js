@@ -11,20 +11,26 @@ import {
   StyleSheet,
   View,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import { t } from 'ttag';
 
-import { TokenVersion } from '@hathor/wallet-lib';
-import { getShortContent, getShortHash, getTokenLabel, renderValue } from '../utils';
+import hathorLib from '@hathor/wallet-lib';
+import { getShortHash, getTokenLabel, renderValue } from '../utils';
 import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 import CopyClipboard from './CopyClipboard';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
 import { COLORS } from '../styles/themes';
-import { TransactionStatusLabel } from './TransactionStatusLabel';
 import BackdropModal from './BackdropModal';
+import { ChevronDownIcon } from './Icons/ChevronDown.icon';
+import { ChevronUpIcon } from './Icons/ChevronUp.icon';
 
 class TxDetailsModal extends Component {
+  state = {
+    isFeesExpanded: false,
+  };
+
   style = StyleSheet.create({
     container: {
       paddingHorizontal: 8,
@@ -36,6 +42,63 @@ class TxDetailsModal extends Component {
       backgroundColor: COLORS.backgroundColor,
       maxHeight: '80%',
     },
+    // Match the visual contract of `ListItem` (used for the Date,
+    // Transaction ID and Public Explorer rows): 64px tall row, 16px
+    // horizontal padding, full-weight bottom border in
+    // COLORS.borderColor. The label uses the muted "shadow" color and
+    // 14pt; the right-hand value uses the primary color and 16pt.
+    feeRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      height: 64,
+      paddingLeft: 16,
+      paddingRight: 16,
+      borderColor: COLORS.borderColor,
+      borderBottomWidth: 1,
+    },
+    // When the breakdown is open, the Fees row and its details read as
+    // one cluster — no divider between them. The shared bottom border
+    // moves down to the bottom of `feeBreakdown` (already in place).
+    feeRowExpanded: {
+      borderBottomWidth: 0,
+    },
+    feeRowLabel: {
+      fontSize: 14,
+      color: COLORS.textColorShadow,
+    },
+    feeRowValueWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    feeRowValue: {
+      fontSize: 16,
+      color: COLORS.textColor,
+    },
+    feeBreakdown: {
+      paddingLeft: 16,
+      paddingRight: 16,
+      paddingVertical: 8,
+      borderColor: COLORS.borderColor,
+      borderBottomWidth: 1,
+    },
+    feeBreakdownRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 4,
+    },
+    feeBreakdownLabel: {
+      fontSize: 13,
+      color: COLORS.textColorShadow,
+      // Small indent so the breakdown reads as a child of the Fees row
+      // and not a peer of the other top-level rows.
+      paddingLeft: 10,
+    },
+    feeBreakdownValue: {
+      fontSize: 13,
+      color: COLORS.textColorShadow,
+    },
   });
 
   getCopyClipboard = ({ text, copyText }) => (
@@ -46,18 +109,57 @@ class TxDetailsModal extends Component {
     />
   );
 
-  getFeeModelText = (version) => {
-    if (version === TokenVersion.NATIVE) {
-      return t`Native Token`;
-    }
-    if (version === TokenVersion.DEPOSIT) {
-      return t`Deposit Based`;
-    }
-    if (version === TokenVersion.FEE) {
-      return t`Fee Based`;
-    }
-    return null;
+  toggleFeesExpanded = () => {
+    this.setState((prev) => ({ isFeesExpanded: !prev.isFeesExpanded }));
   };
+
+  renderFeesRow(networkFee, privacyFee) {
+    const totalFee = networkFee + privacyFee;
+    if (totalFee <= 0n) return null;
+    const nativeSymbol = hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
+    return (
+      <>
+        <TouchableOpacity
+          style={[
+            this.style.feeRow,
+            this.state.isFeesExpanded && this.style.feeRowExpanded,
+          ]}
+          onPress={this.toggleFeesExpanded}
+          activeOpacity={0.6}
+        >
+          <Text style={this.style.feeRowLabel}>{t`Fees`}</Text>
+          <View style={this.style.feeRowValueWrapper}>
+            <Text style={this.style.feeRowValue}>
+              {renderValue(totalFee, false)} {nativeSymbol}
+            </Text>
+            {this.state.isFeesExpanded
+              ? <ChevronUpIcon size={16} color={COLORS.textColor} />
+              : <ChevronDownIcon size={16} color={COLORS.textColor} />}
+          </View>
+        </TouchableOpacity>
+        {this.state.isFeesExpanded && (
+          <View style={this.style.feeBreakdown}>
+            {networkFee > 0n && (
+              <View style={this.style.feeBreakdownRow}>
+                <Text style={this.style.feeBreakdownLabel}>{t`Network fee`}</Text>
+                <Text style={this.style.feeBreakdownValue}>
+                  {renderValue(networkFee, false)} {nativeSymbol}
+                </Text>
+              </View>
+            )}
+            {privacyFee > 0n && (
+              <View style={this.style.feeBreakdownRow}>
+                <Text style={this.style.feeBreakdownLabel}>{t`Privacy fee`}</Text>
+                <Text style={this.style.feeBreakdownValue}>
+                  {renderValue(privacyFee, false)} {nativeSymbol}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+      </>
+    );
+  }
 
   render() {
     /**
@@ -68,30 +170,21 @@ class TxDetailsModal extends Component {
      * }} TxDetailsModal properties
      */
     const { token, tx, isNFT } = this.props;
-    const { txId, ncId, ncMethod, ncCaller, isVoided } = tx;
-    const ncCallerAddr = ncCaller && ncCaller.base58;
+    const { txId } = tx;
 
-    const fullTokenStr = getTokenLabel(token);
     const description = tx.getDescription(token);
     const timestampStr = tx.getTimestampFormat();
     const shortTxId = getShortHash(txId, 7);
-    const shortNcId = ncId && getShortHash(ncId, 7);
-    const shortNcCallerAddr = ncCallerAddr && getShortContent(ncCallerAddr, 7);
     const txIdComponent = this.getCopyClipboard({
       text: shortTxId,
-      copyText: txId
+      copyText: txId,
     });
-    const ncIdComponent = ncId && this.getCopyClipboard({
-      text: shortNcId,
-      copyText: ncId
-    });
-    const ncCallerAddrComponent = ncCaller && this.getCopyClipboard({
-      text: shortNcCallerAddr,
-      copyText: ncCallerAddr
-    });
-    const isNc = tx.isNanoContract();
-    const hasFirstBlock = tx.hasFirstBlock();
-    const feeModelText = this.getFeeModelText(token?.version);
+
+    // Fees are precomputed during TxHistory.from() so the modal works
+    // identically against full-node and wallet-service history shapes
+    // (the latter may strip the raw headers / shielded_outputs).
+    const networkFee = tx?.networkFee ?? 0n;
+    const privacyFee = tx?.privacyFee ?? 0n;
 
     return (
       <BackdropModal
@@ -106,29 +199,16 @@ class TxDetailsModal extends Component {
         swipeThreshold={100}
       >
         <SlideIndicatorBar />
-        <BalanceView tx={tx} token={token} isNFT={isNFT} />
+        {/* Hero amount + direction (Sent / Received). The previous
+            modal labelled this row "Amount"; the redesign promotes the
+            description (Sent / Received) into the subtitle slot so the
+            user can immediately see the tx polarity. */}
+        <BalanceView tx={tx} token={token} isNFT={isNFT} description={description} />
         <ScrollView>
           <View>
-            <ListItem title={t`Token`} text={fullTokenStr} />
-            <ListItem title={t`Description`} text={description} />
             <ListItem title={t`Date & Time`} text={timestampStr} />
-            {feeModelText && <ListItem title={t`Fee Model`} text={feeModelText} />}
+            {this.renderFeesRow(networkFee, privacyFee)}
             <ListItem title={t`Transaction ID`} text={txIdComponent} />
-            {isNc && (
-              <ListItem
-                title={t`Nano Contract Status`}
-                text={(
-                  <TransactionStatusLabel
-                    isVoided={isVoided}
-                    hasFirstBlock={hasFirstBlock}
-                  />
-                )}
-              />
-            )}
-            {isNc && <ListItem title={t`Blueprint Method`} text={ncMethod} />}
-            {isNc && <ListItem title={t`Nano Contract ID`} text={ncIdComponent} />}
-            {isNc && <ListItem title={t`Nano Contract Caller`} text={ncCallerAddrComponent} />}
-            {isNc && <PublicExplorerListButton txId={shortNcId} title={t`Nano Contract`} />}
             <PublicExplorerListButton txId={tx.txId} />
           </View>
         </ScrollView>
@@ -150,7 +230,7 @@ class BalanceView extends Component {
       fontSize: 32,
       fontWeight: 'bold',
     },
-    text1: {
+    description: {
       paddingTop: 8,
       fontSize: 12,
       fontWeight: 'bold',
@@ -159,7 +239,7 @@ class BalanceView extends Component {
   });
 
   render() {
-    const { tx, isNFT } = this.props;
+    const { tx, isNFT, description } = this.props;
     const balanceStr = renderValue(tx.balance, isNFT);
     return (
       <View style={this.style.view}>
@@ -171,7 +251,7 @@ class BalanceView extends Component {
         >
           {`${balanceStr} ${this.props.token.symbol}`}
         </Text>
-        <Text style={this.style.text1}>{t`Amount`}</Text>
+        <Text style={this.style.description}>{description}</Text>
       </View>
     );
   }

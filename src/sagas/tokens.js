@@ -82,6 +82,41 @@ const pendingBalanceRequests = new Map();
 const pendingHistoryRequests = new Map();
 
 /**
+ * Compute the private (shielded) vs public (transparent) split of the
+ * UNLOCKED balance for a single token, by iterating the wallet's local
+ * UTXO storage.
+ *
+ * `private + public === unlocked` because we filter
+ * `only_available_utxos: true` (skip locked UTXOs) and ignore
+ * authority outputs (their `value` is the bitmask, not a balance).
+ *
+ * Returns `{ privateBalance, publicBalance }`. On failure (storage not
+ * iterable, e.g., wallet-service mode where UTXOs aren't synced
+ * locally) returns zeros — the caller still has the wallet-lib's
+ * authoritative `available` total.
+ */
+async function computePrivatePublicSplit(wallet, tokenId) {
+  let privateBalance = 0n;
+  let publicBalance = 0n;
+  const { storage } = wallet;
+  if (!storage || !storage.selectUtxos) {
+    return { privateBalance, publicBalance };
+  }
+  const baseFilter = { token: tokenId, only_available_utxos: true };
+  for await (const utxo of storage.selectUtxos({ ...baseFilter, shielded: true })) {
+    if ((utxo.authorities ?? 0n) !== 0n) continue;
+    if (!utxo.value) continue;
+    privateBalance += utxo.value;
+  }
+  for await (const utxo of storage.selectUtxos({ ...baseFilter, shielded: false })) {
+    if ((utxo.authorities ?? 0n) !== 0n) continue;
+    if (!utxo.value) continue;
+    publicBalance += utxo.value;
+  }
+  return { privateBalance, publicBalance };
+}
+
+/**
  * This saga will create a channel to queue TOKEN_FETCH_BALANCE_REQUESTED actions and
  * consumers that will run in parallel consuming those actions.
  *
@@ -192,9 +227,24 @@ function* fetchTokenBalance(action) {
         }
       });
 
+      // Per-pool split (private = shielded, public = transparent) is
+      // computed from local UTXO storage. Wrapped in try/catch so a
+      // failure here doesn't abort the balance fetch.
+      let privateBalance = 0n;
+      let publicBalance = 0n;
+      try {
+        const split = yield call(computePrivatePublicSplit, wallet, tokenId);
+        privateBalance = split.privateBalance;
+        publicBalance = split.publicBalance;
+      } catch (e) {
+        log.warn(`fetchTokenBalance private/public split failed for ${tokenId}`, e);
+      }
+
       balance = {
         available: token.balance.unlocked,
         locked: token.balance.locked,
+        privateBalance,
+        publicBalance,
       };
 
       // For forced fetches, check if balance actually changed

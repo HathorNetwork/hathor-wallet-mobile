@@ -21,6 +21,7 @@ import {
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
   TOKEN_SWAP_ALLOWED_TOKEN_STATUS,
   TOKEN_SWAP_QUOTE_STATUS,
+  DEFAULT_PRIVACY_MODE,
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -86,6 +87,15 @@ const initialState = {
   tokensHistory: {},
   tokensBalance: {},
   loadHistoryStatus: { active: true, error: false },
+  /**
+   * User's default transaction privacy mode for new sends. The per-tx
+   * Transaction Privacy modal can override this for a single tx; the
+   * Privacy Settings screen writes through to AsyncStorage. Hydrated at
+   * wallet start by the privacyDefaultModeLoad saga.
+   *
+   * @type {'public'|'hide_amount'|'private'}
+   */
+  privacyDefaultMode: DEFAULT_PRIVACY_MODE,
   /**
    * tokens {Object.<string, Object>} Map of tokens added plus initial tokens,
    * @see {@link INITIAL_TOKENS}
@@ -820,6 +830,8 @@ export const reducer = (state = initialState, action) => {
       return onTokenIconsLoaded(state, action);
     case types.TOKEN_ICON_UPDATED:
       return onTokenIconUpdated(state, action);
+    case types.PRIVACY_DEFAULT_MODE_SET:
+      return { ...state, privacyDefaultMode: action.payload };
     default:
       return state;
   }

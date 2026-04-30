@@ -81,6 +81,7 @@ import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
+import PrivacySettings from './screens/PrivacySettings';
 import ReownList from './screens/Reown/ReownList';
 import ReownManual from './screens/Reown/ReownManual';
 import ReownScan from './screens/Reown/ReownScan';
@@ -175,48 +176,31 @@ const CameraPermissionScreen = () => null;
 /**
  * Stack of screens dedicated to the token sending process
  */
-const SendStack = ({ navigation }) => {
+const SendStack = () => {
   const Stack = createStackNavigator();
-  const [initialRoute, setInitialRoute] = useState('CameraPermissionScreen');
   const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
   const dispatch = useDispatch();
 
-  /*
-   * Request camera permission on initialization, if permission is not already set
-   */
+  // Request camera permission on initialization so the QR-scanner
+  // option from the address-input screen works without an extra prompt
+  // on the first scan. Doesn't gate the initial screen anymore — the
+  // manual address-entry screen is always first now (see redesign).
   useEffect(() => {
     if (isCameraAvailable === null) {
       dispatch(requestCameraPermission());
     }
   }, []);
 
-  // Listen to camera permission changes from user input and navigate to the relevant screen
-  useEffect(() => {
-    let initScreenName;
-    switch (isCameraAvailable) {
-      case true:
-        initScreenName = 'SendScanQRCode';
-        break;
-      case false:
-        initScreenName = 'SendAddressInput';
-        break;
-      default:
-        initScreenName = 'CameraPermissionScreen';
-    }
-    setInitialRoute(initScreenName);
-    navigation.replace(initScreenName);
-  }, [isCameraAvailable]);
-
   return (
     <Stack.Navigator
-      initialRouteName={initialRoute}
+      initialRouteName='SendAddressInput'
       screenOptions={{
         headerShown: false,
       }}
     >
-      <Stack.Screen name='CameraPermissionScreen' component={CameraPermissionScreen} />
-      <Stack.Screen name='SendScanQRCode' component={SendScanQRCode} />
       <Stack.Screen name='SendAddressInput' component={SendAddressInput} />
+      <Stack.Screen name='SendScanQRCode' component={SendScanQRCode} />
+      <Stack.Screen name='CameraPermissionScreen' component={CameraPermissionScreen} />
       <Stack.Screen name='SendAmountInput' component={SendAmountInput} />
       <Stack.Screen name='SendConfirmScreen' component={SendConfirmScreen} />
     </Stack.Navigator>
@@ -494,6 +478,7 @@ const AppStack = () => {
         <Stack.Screen name='NanoContractRegisterScreen' component={NanoContractRegisterScreen} />
         <Stack.Screen name='About' component={About} />
         <Stack.Screen name='Security' component={Security} />
+        <Stack.Screen name='PrivacySettings' component={PrivacySettings} />
         <Stack.Screen name='ReownList' component={ReownList} />
         <Stack.Screen name='ReownManual' component={ReownManual} />
         <Stack.Screen name='ReownScan' component={ReownScan} />

@@ -29,6 +29,7 @@ import errorIcon from '../assets/images/icErrorBig.png';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { getCreateTokenTitle } from '../utils';
+import { SHIELDED_OUTPUTS_FEATURE_TOGGLE, FEATURE_TOGGLE_DEFAULTS } from '../constants';
 
 const TokenTypeInfoBox = ({ tokenVersion }) => {
   let infoText = t`You chose to create a **Deposit-Based Token**, which requires a 1% HTR deposit.`;
@@ -66,6 +67,10 @@ const CreateTokenConfirm = () => {
   const useWalletService = useSelector((state) => state.useWalletService);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
+  const shieldedEnabled = useSelector(
+    (state) => state.featureToggles[SHIELDED_OUTPUTS_FEATURE_TOGGLE]
+      ?? FEATURE_TOGGLE_DEFAULTS[SHIELDED_OUTPUTS_FEATURE_TOGGLE]
+  );
 
   const dispatch = useDispatch();
   const dispatchUpdateSelectedToken = (token) => dispatch(updateSelectedToken(token));
@@ -113,7 +118,10 @@ const CreateTokenConfirm = () => {
       await wallet.validateAndRenewAuthToken(pin);
     }
 
-    const { address } = await wallet.getCurrentAddress({ markAsUsed: true });
+    const { address } = await wallet.getCurrentAddress(
+      { markAsUsed: true },
+      { legacy: !shieldedEnabled }
+    );
     wallet.prepareCreateNewToken(
       name,
       symbol,
