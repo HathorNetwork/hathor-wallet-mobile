@@ -88,3 +88,9 @@ ios/HathorMobile.xcodeproj/project.xcworkspace/
 
 .yalc/
 yalc.lock
+
+# Compiled Rust framework — 38 MB binary, fetched / built separately,
+# never tracked. Source bindings (hathor_ct_crypto.swift, the FFI .h
+# / .modulemap, and the hand-written HathorCtCryptoModule.{m,swift})
+# remain tracked alongside this entry.
+ios/HathorCtCrypto/libhathor_ct_crypto.xcframework/
