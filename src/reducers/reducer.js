@@ -332,6 +332,7 @@ const initialState = {
     },
     connectionFailed: false,
     sessions: {},
+    pendingRequests: [],
   },
   unleashClient: null,
   featureTogglesInitialized: false,
@@ -697,6 +698,8 @@ export const reducer = (state = initialState, action) => {
       return onSetReownSessions(state, action);
     case types.REOWN_SET_CONNECTION_FAILED:
       return onSetReownConnectionFailed(state, action);
+    case types.REOWN_SET_PENDING_REQUESTS:
+      return onSetReownPendingRequests(state, action);
     case types.NETWORKSETTINGS_UPDATE_REQUEST:
       return onNetworkSettingsUpdateRequest(state);
     case types.NETWORKSETTINGS_UPDATE_STATE:
@@ -1539,6 +1542,14 @@ export const onSetReownConnectionFailed = (state, { payload }) => ({
   reown: {
     ...state.reown,
     connectionFailed: payload,
+  },
+});
+
+export const onSetReownPendingRequests = (state, { payload }) => ({
+  ...state,
+  reown: {
+    ...state.reown,
+    pendingRequests: payload,
   },
 });
 
