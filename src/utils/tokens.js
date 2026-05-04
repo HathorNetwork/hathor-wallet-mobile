@@ -10,6 +10,7 @@ import {
   tokenFetchBalanceRequested,
   fetchTokensMetadata,
   tokenMetadataUpdated,
+  tokenIconUpdated,
 } from '../actions';
 
 /**
@@ -40,5 +41,14 @@ export const registerToken = async (wallet, dispatch, token) => {
 export const updateTokensMetadata = async (wallet, dispatch, tokenUids) => {
   const networkName = wallet.getNetworkObject().name;
   const metadatas = await fetchTokensMetadata(tokenUids, networkName);
+
+  // Update icon URLs before dispatching tokenMetadataUpdated, so the
+  // persistIcons saga (triggered by TOKEN_METADATA_UPDATED) captures them.
+  for (const [uid, meta] of Object.entries(metadatas)) {
+    if (meta?.icon) {
+      dispatch(tokenIconUpdated(uid, meta.icon));
+    }
+  }
+
   dispatch(tokenMetadataUpdated(metadatas));
 };

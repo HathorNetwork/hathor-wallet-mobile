@@ -149,7 +149,6 @@ export const Dashboard = () => {
         && (
           <TokenSelect
             header={<TokensHeader isNanoEnabled={isNanoEnabled} />}
-            renderArrow
             onItemPress={onTokenPress}
             selectedToken={selectedToken}
             tokens={tokens}

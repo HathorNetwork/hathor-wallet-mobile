@@ -164,6 +164,12 @@ const initialState = {
   useWalletService: false,
   tokenMetadata: {},
   metadataLoaded: false,
+  /**
+   * tokenIcons {{ [uid: string]: string }}
+   * Maps token uid to its icon URL. Populated from the metadata API response and
+   * cached in storage so icons render instantly on next launch.
+   */
+  tokenIcons: {},
   uniqueDeviceId: null,
   isShowingPinScreen: false,
   /**
@@ -809,6 +815,11 @@ export const reducer = (state = initialState, action) => {
       return onTokenSwapFetchQuoteError(state);
     case types.TOKEN_SWAP_RESET_SWAP_DATA:
       return onTokenSwapResetSwapData(state);
+
+    case types.TOKEN_ICONS_LOADED:
+      return onTokenIconsLoaded(state, action);
+    case types.TOKEN_ICON_UPDATED:
+      return onTokenIconUpdated(state, action);
     default:
       return state;
   }
@@ -2342,5 +2353,20 @@ export const onTokenSwapSwitchTokens = (state) => ({
     ...state.tokenSwap,
     inputToken: state.tokenSwap.outputToken,
     outputToken: state.tokenSwap.inputToken,
+  },
+});
+
+const onTokenIconsLoaded = (state, { payload }) => ({
+  ...state,
+  // Merge cached icons under any icons already fetched from metadata,
+  // so fresh responses are never overwritten by stale cache.
+  tokenIcons: { ...payload, ...state.tokenIcons },
+});
+
+const onTokenIconUpdated = (state, { payload }) => ({
+  ...state,
+  tokenIcons: {
+    ...state.tokenIcons,
+    [payload.uid]: payload.url,
   },
 });

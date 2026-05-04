@@ -258,7 +258,34 @@ export const types = {
   // Clean swap data when user does not confirm the swap
   TOKEN_SWAP_RESET_SWAP_DATA: 'TOKEN_SWAP_RESET_SWAP_DATA',
   TOKEN_SWAP_START_SWAP: 'TOKEN_SWAP_START_SWAP',
+
+  // Token Icons — URLs piggyback on the existing metadata fetch
+  TOKEN_ICONS_LOADED: 'TOKEN_ICONS_LOADED',
+  TOKEN_ICON_UPDATED: 'TOKEN_ICON_UPDATED',
 };
+
+/**
+ * Replace the entire token-icon map in Redux with a previously cached copy.
+ * Called once at wallet startup to restore icons from local storage.
+ *
+ * @param {{ [uid: string]: string }} iconsByUid - Map of token UID → icon URL.
+ */
+export const tokenIconsLoaded = (iconsByUid) => ({
+  type: types.TOKEN_ICONS_LOADED,
+  payload: iconsByUid,
+});
+
+/**
+ * Store or update the icon URL for a single token.
+ * Dispatched when metadata for a token includes an icon field.
+ *
+ * @param {string} uid - The token's unique identifier.
+ * @param {string} url - The HTTPS URL of the token's icon image.
+ */
+export const tokenIconUpdated = (uid, url) => ({
+  type: types.TOKEN_ICON_UPDATED,
+  payload: { uid, url },
+});
 
 export const featureToggleInitialized = () => ({
   type: types.FEATURE_TOGGLE_INITIALIZED,
