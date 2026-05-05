@@ -13,7 +13,7 @@ set -v # Verbose mode for better debugging
 git log -n1
 
 echo "🧹 Major cache and dependency cleanup..."
-./scripts/cleanup.sh --ios --android
+./scripts/cleanup.sh
 
 echo "🧹 Cleaning old GoogleService files..."
 rm -f ./android/app/google-services.json

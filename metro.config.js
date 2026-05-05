@@ -26,7 +26,11 @@ const config = {
   resolver: {
     blacklistRE: blacklist([
       /node_modules\/.*\/node_modules\/react-native\/.*/,
+      /node_modules\/@hathor\/ct-crypto-node\/.*/,
     ]),
+    extraNodeModules: {
+      '@hathor/ct-crypto-node': require.resolve('./empty-module'),
+    },
   },
   serializer: lockdownSerializer({ hermesRuntime: true }),
 };

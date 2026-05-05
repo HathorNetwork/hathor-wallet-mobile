@@ -29,6 +29,14 @@ export const SAFE_BIOMETRY_FEATURE_FLAG_KEY = 'asyncstorage:featureFlagSafeBiome
 // These are updated on every call to unleash
 export const FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY = 'asyncstorage:featureTogglesLastKnownValues';
 
+// User's default transaction privacy mode for new sends. The per-tx
+// privacy modal can override it for a single transaction; this key
+// persists the default. Survives app close/unlock and wallet reset
+// because privacy preferences belong to the device, not the wallet.
+// Values: 'public' (default for new/upgraded users), 'hide_amount',
+// 'private'.
+export const PRIVACY_DEFAULT_MODE_KEY = 'asyncstorage:privacyDefaultMode';
+
 export const walletKeys = [
   ACCESS_DATA_KEY,
   REGISTERED_TOKENS_KEY,

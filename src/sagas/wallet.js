@@ -37,6 +37,7 @@ import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
+  SHIELDED_OUTPUTS_FEATURE_TOGGLE,
   networkSettingsKeyMap,
 } from '../constants';
 import { STORE } from '../store';
@@ -71,6 +72,7 @@ import {
   firstAddressSuccess,
   firstAddressRequest,
   setFullNodeNetworkName,
+  privacyDefaultModeLoad,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -228,6 +230,8 @@ export function* startWallet(action) {
       seed: words,
       storage,
       connection,
+      pinCode: pin,
+      password: pin,
       beforeReloadCallback: () => {
         dispatch(onWalletReload());
       },
@@ -257,6 +261,22 @@ export function* startWallet(action) {
   try {
     // XXX: This comes as undefined when the facade is the wallet-service.
     // We need to update this when we start returning something there.
+    // Set mobile shielded crypto provider BEFORE wallet.start() so the
+    // auto-detect in start() is skipped. The auto-detect would load the
+    // empty-module proxy for @hathor/ct-crypto-node which fails at runtime.
+    // Only set the provider when the shielded-outputs feature is enabled —
+    // otherwise wallet-lib skips all shielded processing, matching the UI.
+    const shieldedEnabled = yield call(checkForFeatureFlag, SHIELDED_OUTPUTS_FEATURE_TOGGLE);
+    if (shieldedEnabled) {
+      try {
+        const { createMobileShieldedCryptoProvider } = require('../shieldedCryptoProvider');
+        wallet.storage.setShieldedCryptoProvider(createMobileShieldedCryptoProvider());
+        console.log('[WALLET] Mobile shielded crypto provider set');
+      } catch (e) {
+        console.log('Mobile shielded crypto provider not available:', e.message);
+      }
+    }
+
     const serverInfo = yield call(wallet.start.bind(wallet), {
       pinCode: pin,
       password: pin,
@@ -344,6 +364,11 @@ export function* startWallet(action) {
 
   yield put(walletRefreshSharedAddress());
   yield put(firstAddressRequest());
+  // Hydrate the user's persisted default privacy mode into Redux. The
+  // SendAmount screen, the per-tx Privacy modal, and the Privacy
+  // Settings screen all read from this state — load it once on wallet
+  // start so they don't each have to hit AsyncStorage on render.
+  yield put(privacyDefaultModeLoad());
   yield put(startWalletSuccess());
 
   // The way the redux-saga fork model works is that if a saga has `forked`
@@ -610,9 +635,21 @@ export function* handleTx(action) {
       || tokenUid === DEFAULT_TOKEN.uid) {
       yield put(tokenFetchHistoryRequested(tokenUid, true));
     } else {
-      // Invalidate the history so it will get requested the next time the user enters the history
-      // screen
-      yield put(tokenInvalidateHistory(tokenUid));
+      // If the user is currently looking at this token's screen, force a
+      // re-fetch instead of only invalidating — MainScreen's render treats any
+      // non-'ready'/'loading' status (including 'invalidated') as an error
+      // state, so a plain invalidate shows "There was an error loading your
+      // transaction history" until the user manually taps "try again". A
+      // tokenFetchHistoryRequested sets status='loading' first, which renders
+      // the spinner while the refresh runs.
+      const selectedUid = yield select((state) => state?.selectedToken?.uid);
+      if (selectedUid === tokenUid) {
+        yield put(tokenFetchHistoryRequested(tokenUid, true));
+      } else {
+        // Invalidate the history so it will get requested the next time the user enters the history
+        // screen
+        yield put(tokenInvalidateHistory(tokenUid));
+      }
     }
   }
 
@@ -798,8 +835,36 @@ export function* onStartWalletFailed() {
 
 export function* refreshSharedAddress() {
   const wallet = yield select((state) => state.wallet);
+  const shieldedEnabled = yield call(checkForFeatureFlag, SHIELDED_OUTPUTS_FEATURE_TOGGLE);
 
-  const { address, index } = yield call(() => wallet.getCurrentAddress());
+  // Attempt the shielded chain first when the feature flag is on. This can
+  // throw "Current shielded address is not loaded (index=-1)..." when the
+  // user's wallet was initialized before shielded support existed, or the
+  // feature was enabled after start-up so no shielded address was ever
+  // derived. In that case the wallet has no shielded keys / cursor and
+  // there's nothing we can do from this path — fall through to legacy so
+  // the screen shows *some* usable address instead of crashing with an
+  // unhandled exception (see Sentry WALLET-MOBILE-AT "Current shielded
+  // address is not loaded (index=-1)", ~9 affected users since 0.37.0).
+  let address;
+  let index;
+  if (shieldedEnabled) {
+    try {
+      ({ address, index } = yield call(
+        () => wallet.getCurrentAddress({}, { legacy: false })
+      ));
+    } catch (e) {
+      log.warn(
+        'Shielded address unavailable despite feature flag; falling back to legacy.',
+        e
+      );
+    }
+  }
+  if (!address) {
+    ({ address, index } = yield call(
+      () => wallet.getCurrentAddress({}, { legacy: true })
+    ));
+  }
 
   yield put(sharedAddressUpdate(address, index));
 }
@@ -842,7 +907,8 @@ export function* fetchFirstWalletAddress() {
   }
 
   try {
-    const address = yield call(getFirstAddress, wallet);
+    const shieldedEnabled = yield call(checkForFeatureFlag, SHIELDED_OUTPUTS_FEATURE_TOGGLE);
+    const address = yield call(getFirstAddress, wallet, shieldedEnabled);
     log.log('First wallet address loaded with success.');
     yield put(firstAddressSuccess({ address }));
   } catch (error) {

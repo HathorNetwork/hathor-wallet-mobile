@@ -39,7 +39,11 @@ import {
   tokenSwapResetSwapData,
 } from '../actions';
 import { registerToken, updateTokensMetadata } from '../utils/tokens';
-import { TOKEN_SWAP_SLIPPAGE } from '../constants';
+import {
+  TOKEN_SWAP_SLIPPAGE,
+  SHIELDED_OUTPUTS_FEATURE_TOGGLE,
+  FEATURE_TOGGLE_DEFAULTS,
+} from '../constants';
 import Spinner from '../components/Spinner';
 import FeedbackModal from '../components/FeedbackModal';
 
@@ -50,6 +54,10 @@ const TokenSwapReview = () => {
   const useWalletService = useSelector((state) => state.useWalletService);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const contractId = useSelector(selectTokenSwapContractId);
+  const shieldedEnabled = useSelector(
+    (state) => state.featureToggles[SHIELDED_OUTPUTS_FEATURE_TOGGLE]
+      ?? FEATURE_TOGGLE_DEFAULTS[SHIELDED_OUTPUTS_FEATURE_TOGGLE]
+  );
 
   const {
     quote,
@@ -118,7 +126,7 @@ const TokenSwapReview = () => {
     try {
       setLoading(true);
 
-      const address = await wallet.getAddressAtIndex(0);
+      const address = await wallet.getAddressAtIndex(0, { legacy: !shieldedEnabled });
       const [method, data] = buildTokenSwap(
         contractId,
         address,

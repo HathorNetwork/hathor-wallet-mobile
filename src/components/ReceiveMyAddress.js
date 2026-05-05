@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions, Share, StyleSheet, View,
 } from 'react-native';
@@ -17,21 +17,48 @@ import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
 import { sharedAddressUpdate } from '../actions';
 import { COLORS } from '../styles/themes';
+import { SHIELDED_OUTPUTS_FEATURE_TOGGLE, FEATURE_TOGGLE_DEFAULTS } from '../constants';
 
 export default function ReceiveMyAddress() {
   const dispatch = useDispatch();
   const wallet = useSelector((state) => state.wallet);
   const lastSharedAddress = useSelector((state) => state.lastSharedAddress);
+  const shieldedEnabled = useSelector(
+    (state) => state.featureToggles[SHIELDED_OUTPUTS_FEATURE_TOGGLE]
+      ?? FEATURE_TOGGLE_DEFAULTS[SHIELDED_OUTPUTS_FEATURE_TOGGLE]
+  );
+  const [displayAddress, setDisplayAddress] = useState(null);
+
+  // When shielded is enabled, derive the shielded address for the current index.
+  // When disabled, fall back to the legacy lastSharedAddress without deriving.
+  useEffect(() => {
+    if (!lastSharedAddress || !wallet || !shieldedEnabled) {
+      setDisplayAddress(null);
+      return undefined;
+    }
+    let cancelled = false;
+    const derive = async () => {
+      try {
+        const info = await wallet.getCurrentAddress({}, { legacy: false });
+        if (!cancelled) setDisplayAddress(info.address);
+      } catch (e) {
+        if (!cancelled) setDisplayAddress(null);
+      }
+    };
+    derive();
+    return () => { cancelled = true; };
+  }, [shieldedEnabled, lastSharedAddress, wallet]);
+
+  const addressToShow = displayAddress || lastSharedAddress;
 
   const getNextAddress = async () => {
-    const { address, index } = await wallet.getNextAddress();
-
+    const { address, index } = await wallet.getNextAddress({ legacy: !shieldedEnabled });
     dispatch(sharedAddressUpdate(address, index));
   };
 
   const shareAddress = () => {
     Share.share({
-      message: t`Here is my address: ${lastSharedAddress}`,
+      message: t`Here is my address: ${addressToShow}`,
     });
   };
 
@@ -44,11 +71,11 @@ export default function ReceiveMyAddress() {
   return (
     <View style={styles.wrapper}>
       <View style={styles.qrcodeWrapper}>
-        <QRCode value={`hathor:${lastSharedAddress}`} size={height < 650 ? 160 : 250} />
+        <QRCode value={`hathor:${addressToShow}`} size={height < 650 ? 160 : 250} />
       </View>
       <View style={styles.addressWrapper}>
         <CopyClipboard
-          text={lastSharedAddress}
+          text={addressToShow}
           textStyle={{ fontSize: height < 650 ? 11 : 13 }}
         />
       </View>

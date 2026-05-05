@@ -122,6 +122,9 @@ export const types = {
   REOWN_URI_INPUTTED: 'REOWN_URI_INPUTTED',
   REOWN_CANCEL_SESSION: 'REOWN_CANCEL_SESSION',
   REOWN_SET_CONNECTION_FAILED: 'REOWN_SET_CONNECTION_FAILED',
+  // Privacy default mode actions
+  PRIVACY_DEFAULT_MODE_LOAD: 'PRIVACY_DEFAULT_MODE_LOAD',
+  PRIVACY_DEFAULT_MODE_SET: 'PRIVACY_DEFAULT_MODE_SET',
   REOWN_USER_READY_FOR_NEXT_FLOW: 'REOWN_USER_READY_FOR_NEXT_FLOW',
   REOWN_SET_FORCE_NAVIGATE_TO_DASHBOARD: 'REOWN_SET_FORCE_NAVIGATE_TO_DASHBOARD',
   // Network Settings actions
@@ -622,7 +625,48 @@ export const fetchTokenBalance = async (wallet, uid) => {
   }
   const balance = await wallet.getBalance(uid);
   const tokenBalance = balance[0].balance;
-  return { available: tokenBalance.unlocked, locked: tokenBalance.locked };
+
+  // Compute private (shielded) vs public (transparent) split by
+  // iterating only UNLOCKED UTXOs, so `private + public === unlocked`
+  // and the parts add up to the headline "Available Balance".
+  // Authority outputs contribute nothing — their `value` is the
+  // authority bitmask, not a token amount.
+  //
+  // Two separate passes (shielded:true, shielded:false) so a failure
+  // in one branch doesn't cancel the other and the underlying
+  // selectUtxos filter does the type discrimination — we don't
+  // re-check `utxo.shielded` by hand.
+  let privateBalance = 0n;
+  let publicBalance = 0n;
+  try {
+    const { storage } = wallet;
+    if (storage && storage.selectUtxos) {
+      const baseFilter = { token: uid, only_available_utxos: true };
+      for await (const utxo of storage.selectUtxos({ ...baseFilter, shielded: true })) {
+        if ((utxo.authorities ?? 0n) !== 0n) continue;
+        if (!utxo.value) continue;
+        privateBalance += utxo.value;
+      }
+      for await (const utxo of storage.selectUtxos({ ...baseFilter, shielded: false })) {
+        if ((utxo.authorities ?? 0n) !== 0n) continue;
+        if (!utxo.value) continue;
+        publicBalance += utxo.value;
+      }
+    }
+  } catch (e) {
+    // Surface storage iteration failures via the logger so they're
+    // diagnosable, but don't block balance fetch — the total still
+    // renders from the wallet-lib's cached balance.
+    // eslint-disable-next-line no-console
+    console.warn('fetchTokenBalance private/public split failed', uid, e?.message ?? e);
+  }
+
+  return {
+    available: tokenBalance.unlocked,
+    locked: tokenBalance.locked,
+    privateBalance,
+    publicBalance,
+  };
 };
 
 /**
@@ -1789,4 +1833,24 @@ export const tokenSwapResetSwapData = () => ({
 
 export const tokenSwapSwitchTokens = () => ({
   type: types.TOKEN_SWAP_SWITCH_TOKENS,
+});
+
+/**
+ * Request the saga to load the user's persisted default privacy mode
+ * from AsyncStorage. Dispatched once at wallet start.
+ */
+export const privacyDefaultModeLoad = () => ({
+  type: types.PRIVACY_DEFAULT_MODE_LOAD,
+});
+
+/**
+ * Set the user's default privacy mode in Redux state and persist it to
+ * AsyncStorage. Used by the Privacy Settings screen on Save Preferences,
+ * and by the load saga when reading the persisted value at startup.
+ *
+ * @param {string} mode One of PRIVACY_MODE.PUBLIC | HIDE_AMOUNT | PRIVATE
+ */
+export const privacyDefaultModeSet = (mode) => ({
+  type: types.PRIVACY_DEFAULT_MODE_SET,
+  payload: mode,
 });
