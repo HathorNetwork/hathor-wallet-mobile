@@ -130,6 +130,13 @@ export class Settings extends React.Component {
               title={t`Security`}
               onPress={() => this.props.navigation.navigate('Security')}
             />
+            {this.props.reownEnabled
+              && (
+                <ListMenu
+                  title='Reown'
+                  onPress={() => this.props.navigation.navigate('ReownList')}
+                />
+              )}
             {this.props.isPushNotificationAvailable
               && (
                 <ListMenu
@@ -154,13 +161,6 @@ export class Settings extends React.Component {
               onPress={() => this.props.navigation.navigate('PrivacySettings')}
               isFirst={!this.props.networkSettingsEnabled}
             />
-            {this.props.reownEnabled
-              && (
-                <ListMenu
-                  title='Reown'
-                  onPress={() => this.props.navigation.navigate('ReownList')}
-                />
-              )}
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}

@@ -15,7 +15,6 @@ import {
   View,
 } from 'react-native';
 import { useSelector } from 'react-redux';
-import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
 import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
@@ -26,7 +25,7 @@ import {
   FEATURE_TOGGLE_DEFAULTS,
   DEFAULT_PRIVACY_MODE,
 } from '../constants';
-import { renderValue, isTokenNFT } from '../utils';
+import { getKeyboardAvoidingViewTopDistance, renderValue, isTokenNFT } from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -296,7 +295,14 @@ const SendAmountInput = () => {
           title={t`SEND ${tokenNameUpperCase}`}
           onBackPress={() => navigation.goBack()}
         />
-        <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
+        <KeyboardAvoidingView
+          behavior='padding'
+          style={{ flex: 1 }}
+          // statusBar + headerHeight — see SendAddressInput for why
+          // `getStatusBarHeight()` alone is not enough on screens that
+          // render a `<HathorHeader />` above the KAV.
+          keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}
+        >
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
               <View style={{

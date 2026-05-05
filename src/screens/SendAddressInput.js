@@ -92,79 +92,96 @@ export const SendAddressInput = () => {
   );
 
   return (
+    // Layout matches SendAmountInput exactly:
+    //   <Pressable> (keyboard-dismiss) wraps both the header and the
+    //   <KeyboardAvoidingView>; KAV's offset is the status bar only.
+    // The header inside KAV's coverage area means KAV measures the full
+    // remaining viewport (no manual `headerHeight` math), so the
+    // `justifyContent: 'space-between'` distributes Input and NEXT
+    // consistently regardless of whether the user came in fresh or via
+    // a back-from-swap navigation that re-runs measurement.
+    //
+    // Previously this screen used `keyboardVerticalOffset =
+    // getKeyboardAvoidingViewTopDistance()` (statusBar + headerHeight)
+    // with the header outside KAV. The layout collapsed when the bottom
+    // tab bar was hidden by a sibling navigator (Token Swap), pushing
+    // NEXT to the middle.
     <View style={{ flex: 1 }}>
-      <HathorHeader
-        withBorder
-        title={t`SEND TOKENS`}
-        rightElement={QRButton}
-      />
-      <KeyboardAvoidingView
-        behavior='padding'
+      <Pressable
         style={{ flex: 1 }}
-        keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}
+        onPress={Keyboard.dismiss}
+        accessible={false}
       >
-        {/* Tap-outside-to-dismiss: the Pressable fires only when the
-            tap doesn't land on a child that captures it (TextInput,
-            QR button, NEXT button). That's how we get keyboard
-            dismissal without breaking nested touches — the user can
-            still type, scan, or tap NEXT, and tapping the empty
-            white area collapses the keyboard so the bottom tab bar
-            is reachable again. */}
-        <Pressable
-          onPress={Keyboard.dismiss}
+        <HathorHeader
+          withBorder
+          title={t`SEND TOKENS`}
+          rightElement={QRButton}
+        />
+        <KeyboardAvoidingView
+          behavior='padding'
           style={{ flex: 1 }}
-          accessible={false}
+          // keyboardVerticalOffset is the distance from the screen top
+          // to the KAV's top. KAV renders after the header in the JSX,
+          // so its top sits at `statusBar + headerHeight` from screen
+          // top — regardless of which Pressable/View wraps them.
+          // Underestimating this offset (e.g. using just `statusBar`)
+          // makes KAV believe it can absorb more keyboard overlap than
+          // it actually can, and the bottom NEXT button ends up flush
+          // with the keyboard top on first show. The double remeasure
+          // that happens when the user dismisses + reopens the keyboard
+          // hides the bug — but the first-mount layout was wrong.
+          keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}
         >
           <View style={styles.body}>
-          <View>
-            <Text style={styles.label}>{t`Address to send`}</Text>
-            {/* The card-as-a-Pressable forwards taps anywhere inside
-                the box to the TextInput's `focus()`. Without this,
-                tapping the empty padding below the cursor line on an
-                empty multiline input would do nothing because the
-                input itself only spans a single text-line of height. */}
-            <Pressable
-              onPress={() => inputRef.current?.focus()}
-              style={[
-                styles.inputCard,
-                formModel.error ? styles.inputCardError : null,
-              ]}
-            >
-              <TextInput
-                ref={inputRef}
-                style={styles.input}
-                autoFocus
-                value={formModel.address ?? ''}
-                onChangeText={onAddressChange}
-                placeholder={t`Paste or type address`}
-                placeholderTextColor='#9CA3AF'
-                autoCorrect={false}
-                spellCheck={false}
-                autoCapitalize='none'
-                autoCompleteType='off'
-                underlineColorAndroid='transparent'
-                // Hathor addresses (legacy ~34 chars; shielded ~95) need
-                // to wrap so the user can read the full address. Multi-
-                // line + textAlignVertical: top keeps the cursor at the
-                // start when the field is empty.
-                multiline
-                textAlignVertical='top'
-                scrollEnabled={false}
-              />
-            </Pressable>
-            {formModel.error ? (
-              <Text style={styles.errorText}>{formModel.error}</Text>
-            ) : null}
+            <View>
+              <Text style={styles.label}>{t`Address to send`}</Text>
+              {/* The card-as-a-Pressable forwards taps anywhere inside
+                  the box to the TextInput's `focus()`. Without this,
+                  tapping the empty padding below the cursor line on an
+                  empty multiline input would do nothing because the
+                  input itself only spans a single text-line of height. */}
+              <Pressable
+                onPress={() => inputRef.current?.focus()}
+                style={[
+                  styles.inputCard,
+                  formModel.error ? styles.inputCardError : null,
+                ]}
+              >
+                <TextInput
+                  ref={inputRef}
+                  style={styles.input}
+                  autoFocus
+                  value={formModel.address ?? ''}
+                  onChangeText={onAddressChange}
+                  placeholder={t`Paste or type address`}
+                  placeholderTextColor='#9CA3AF'
+                  autoCorrect={false}
+                  spellCheck={false}
+                  autoCapitalize='none'
+                  autoCompleteType='off'
+                  underlineColorAndroid='transparent'
+                  // Hathor addresses (legacy ~34 chars; shielded ~95)
+                  // need to wrap so the user can read the full address.
+                  // Multi-line + textAlignVertical: top keeps the cursor
+                  // at the start when the field is empty.
+                  multiline
+                  textAlignVertical='top'
+                  scrollEnabled={false}
+                />
+              </Pressable>
+              {formModel.error ? (
+                <Text style={styles.errorText}>{formModel.error}</Text>
+              ) : null}
+            </View>
+            <NewHathorButton
+              title={t`Next`}
+              disabled={!isAddressValid()}
+              onPress={onButtonPress}
+            />
           </View>
-          <NewHathorButton
-            title={t`Next`}
-            disabled={!isAddressValid()}
-            onPress={onButtonPress}
-          />
-          </View>
-        </Pressable>
-        <OfflineBar style={{ position: 'relative' }} />
-      </KeyboardAvoidingView>
+          <OfflineBar style={{ position: 'relative' }} />
+        </KeyboardAvoidingView>
+      </Pressable>
     </View>
   );
 };

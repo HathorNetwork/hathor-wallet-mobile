@@ -104,7 +104,16 @@ const PrivacyModeCard = ({ selectedMode, onSelect, variant = 'per-tx' }) => {
             <Switch
               value={isActive}
               onValueChange={() => onSelect(opt.key)}
-              trackColor={{ false: COLORS.borderColor, true: COLORS.primary }}
+              // Off-state track. Default `COLORS.borderColor` (#eee) on
+              // a `#FAFAFA` card is Apple-default light and reads as
+              // "invisible" — but going much darker (e.g. #D1D5DB) makes
+              // the white thumb visually split the track and looks
+              // worse than the original problem. `#DCDCDC` is one tone
+              // darker than the card, just enough to outline the track
+              // without turning the thumb into a high-contrast accent.
+              // ios_backgroundColor intentionally not set so iOS's
+              // animation transition uses its default behavior.
+              trackColor={{ false: '#DCDCDC', true: COLORS.primary }}
               style={styles.switch}
             />
           </View>
