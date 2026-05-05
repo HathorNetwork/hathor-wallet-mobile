@@ -651,33 +651,33 @@ msgstr "Resetar Wallet"
 msgid "Connect to mainnet"
 msgstr "Conectar à mainnet"
 
-#: src/screens/MainScreen.js:127
+#: src/screens/MainScreen.js:125
 msgid "No transactions"
 msgstr "Nenhuma transação"
 
-#: src/screens/MainScreen.js:130
+#: src/screens/MainScreen.js:128
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 "|share:Compartilhe seu endereço| com seus amigos e comece a trocar seus "
 "tokens"
 
-#: src/screens/MainScreen.js:147
+#: src/screens/MainScreen.js:145
 msgid "Loading transactions"
 msgstr "Carregando transações"
 
-#: src/screens/MainScreen.js:156
+#: src/screens/MainScreen.js:154
 msgid "There was an error loading your transaction history"
 msgstr "Ocorreu um erro ao carregar seu histórico de transações"
 
-#: src/screens/MainScreen.js:159
+#: src/screens/MainScreen.js:157
 msgid "Please |tryAgain:try again|"
 msgstr "Por favor |tryAgain:tente novamente|"
 
-#: src/screens/MainScreen.js:554 src/screens/MainScreen.js:586
+#: src/screens/MainScreen.js:540 src/screens/MainScreen.js:569
 msgid "Available Balance"
 msgstr "Saldo Disponível"
 
-#: src/screens/MainScreen.js:563
+#: src/screens/MainScreen.js:549
 msgid "Locked"
 msgstr "Bloqueado"
 
@@ -712,7 +712,7 @@ msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:127
+#: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -1171,6 +1171,65 @@ msgstr "Requisição de UTXOs"
 msgid "New Nano Contract Transaction"
 msgstr "Nova Transação de Nano Contract"
 
+#: src/components/Reown/ApproveRejectModal.js:70
+#: src/screens/Reown/PendingRequests.js:116
+msgid "Reject"
+msgstr "Rejeitar"
+
+#: src/screens/Reown/PendingRequests.js:128
+msgid "All clear!"
+msgstr "Tudo certo!"
+
+#: src/screens/Reown/PendingRequests.js:130
+msgid "No pending requests from dApps."
+msgstr "Nenhuma solicitação pendente de dApps."
+
+#: src/screens/Reown/PendingRequests.js:133
+msgid "Go Back"
+msgstr "Voltar"
+
+#: src/components/Reown/ReownPendingOverlay.js:322
+#: src/screens/Reown/PendingRequests.js:193
+#: src/screens/Reown/PendingRequests.js:208
+msgid "Pending Requests"
+msgstr "Solicitações Pendentes"
+
+#: src/screens/Reown/PendingRequests.js:197
+msgid "Reown is not connected."
+msgstr "Reown não está conectado."
+
+#: src/screens/Reown/PendingRequests.js:225 src/screens/Reown/ReownList.js:209
+msgid "pending request"
+msgstr "solicitação pendente"
+
+#: src/components/Reown/ReownPendingOverlay.js:278
+#: src/screens/Reown/PendingRequests.js:226 src/screens/Reown/ReownList.js:210
+msgid "pending requests"
+msgstr "solicitações pendentes"
+
+#: src/screens/Reown/PendingRequests.js:230
+#, javascript-format
+msgid "from ${ dappSummary[0].name }"
+msgstr "de ${ dappSummary[0].name }"
+
+#: src/screens/Reown/PendingRequests.js:231
+msgid "from ${ dappSummary.length } dApps"
+msgstr "de ${ dappSummary.length } dApps"
+
+#: src/components/AskForPushNotificationRefresh.js:37
+#: src/screens/Reown/PendingRequests.js:240
+msgid "Refresh"
+msgstr "Atualizar"
+
+#: src/screens/Reown/PendingRequests.js:257
+msgid "Rejecting..."
+msgstr "Rejeitando..."
+
+#: src/screens/Reown/PendingRequests.js:257
+#, javascript-format
+msgid "Reject All (${ pendingRequests.length })"
+msgstr "Rejeitar Todas (${ pendingRequests.length })"
+
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:303
 #: src/components/Reown/SendTransactionRequest.js:472
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:33
@@ -1196,32 +1255,36 @@ msgstr "Há 1 token não registrado nesta transação. Você deseja registrá-lo
 msgid "Success"
 msgstr "Sucesso"
 
-#: src/screens/Reown/ReownList.js:34
+#: src/screens/Reown/ReownList.js:35
 msgid "There was an error connecting. Please try again later."
 msgstr ""
 "Ocorreu um erro durante a conexão. Por favor, tente novamente mais tarde."
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
-#: src/screens/Reown/ReownList.js:113
+#: src/screens/Reown/ReownList.js:162
 msgid "Add"
 msgstr "Adicionar"
 
-#: src/screens/Reown/ReownList.js:119
+#: src/screens/Reown/ReownList.js:168
 msgid "End session"
 msgstr "Encerrar sessão"
 
-#: src/screens/Reown/ReownList.js:119
+#: src/screens/Reown/ReownList.js:168
 msgid "This will disconnect the session."
 msgstr "Isso irá desconectar a sessão."
 
-#: src/screens/Reown/ReownList.js:121
+#: src/screens/Reown/ReownList.js:170
 msgid "End"
 msgstr "Encerrar"
 
-#: src/screens/Reown/ReownList.js:144
+#: src/screens/Reown/ReownList.js:193
 msgid "Reown Sessions"
 msgstr "Sessões do Reown"
+
+#: src/screens/Reown/ReownList.js:213
+msgid "Review"
+msgstr "Revisar"
 
 #: src/screens/Reown/ReownManual.js:40
 msgid "Manual Connection"
@@ -1453,31 +1516,31 @@ msgstr "Nano Contract não registrado."
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr "Error ao fazer download do histórico de transações do Nano Contract."
 
-#: src/sagas/networkSettings.js:86
+#: src/sagas/networkSettings.js:87
 msgid "Custom Network Settings cannot be empty."
 msgstr "As Configurações de Rede não podem estar vazias."
 
-#: src/sagas/networkSettings.js:93
+#: src/sagas/networkSettings.js:94
 msgid "explorerUrl should be a valid URL."
 msgstr "explorerUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:100
+#: src/sagas/networkSettings.js:101
 msgid "explorerServiceUrl should be a valid URL."
 msgstr "explorerServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:107
+#: src/sagas/networkSettings.js:108
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr "txMiningServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:114
+#: src/sagas/networkSettings.js:115
 msgid "nodeUrl should be a valid URL."
 msgstr "nodeUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:121
+#: src/sagas/networkSettings.js:122
 msgid "walletServiceUrl should be a valid URL."
 msgstr "walletServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:128
+#: src/sagas/networkSettings.js:129
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr "walletServiceWsUrl deve ser uma URL válida."
 
@@ -1489,21 +1552,21 @@ msgstr "Transação"
 msgid "Open"
 msgstr "Abrir"
 
-#: src/sagas/wallet.js:830
+#: src/sagas/wallet.js:831
 msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:844
+#: src/sagas/wallet.js:845
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
-#: src/sagas/wallet.js:854
+#: src/sagas/wallet.js:855
 msgid "Wallet is not ready to load the first address."
 msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:870
+#: src/sagas/wallet.js:871
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
@@ -1539,10 +1602,6 @@ msgid ""
 msgstr ""
 "Para continuar recebendo notificações, é necessário atualizar sua "
 "configuração de notificação. Deseja atualizar agora?"
-
-#: src/components/AskForPushNotificationRefresh.js:37
-msgid "Refresh"
-msgstr "Atualizar"
 
 #: src/components/CopyClipboard.js:55
 msgid "Copied to clipboard!"
@@ -1718,6 +1777,7 @@ msgstr ""
 msgid "New tokens"
 msgstr "Novos tokens"
 
+#: src/components/Reown/ReownPendingOverlay.js:364
 #: src/components/Reown/RequestErrorModal.js:56
 #: src/components/TokenImportBanner.js:66
 msgid "Dismiss"
@@ -1798,10 +1858,6 @@ msgstr "Opções avançadas"
 #: src/components/Reown/AdvancedErrorOptions.js:47
 msgid "See error details"
 msgstr "Ver detalhes do erro"
-
-#: src/components/Reown/ApproveRejectModal.js:70
-msgid "Reject"
-msgstr "Rejeitar"
 
 #: src/components/Reown/ApproveRejectModal.js:71
 msgid "Approve"
@@ -2264,6 +2320,11 @@ msgstr "Sua carteira:"
 #: src/components/Reown/NetworkMismatchModal.js:51
 msgid "dApp requires:"
 msgstr "dApp precisa:"
+
+#: src/components/Reown/ReownPendingOverlay.js:289
+#: src/components/Reown/ReownPendingOverlay.js:355
+msgid "REJECT ALL"
+msgstr "REJEITAR TODAS"
 
 #: src/components/Reown/RequestConfirmationModal.js:39
 msgid ""

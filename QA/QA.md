@@ -197,6 +197,7 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Click on the Token info on the upper right.
 1. Check the `Fee model`, it should be Fee-based.
 1. Remove and re-register the fee token to see if the fee model remains correctly.
+1. Switch to a different network (e.g. Testnet), then switch back. Verify registered tokens are still there.
 
 ### Send HTR to a multisig address
 1. Go to the send screen and enter the following address `wRxmoq2bDxViPqFGmAsZVBwHNwjEyFj9zz`

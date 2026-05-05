@@ -18,7 +18,13 @@ import {
 import { metadataApi } from '@hathor/wallet-lib';
 import { channel } from 'redux-saga';
 import { get } from 'lodash';
-import { specificTypeAndPayload, dispatchAndWait, getRegisteredTokenUids, getNetworkSettings } from './helpers';
+import {
+  specificTypeAndPayload,
+  dispatchAndWait,
+  getRegisteredTokenUids,
+  getNetworkSettings,
+  getRegisteredTokens,
+} from './helpers';
 import { mapToTxHistory } from '../utils';
 import {
   types,
@@ -28,7 +34,10 @@ import {
   tokenFetchHistoryRequested,
   tokenFetchHistorySuccess,
   tokenFetchHistoryFailed,
+  tokensSavedForNetwork,
+  setTokens,
 } from '../actions';
+import { STORE } from '../store';
 import { logger } from '../logger';
 
 const log = logger('tokens-saga');
@@ -458,6 +467,108 @@ export function* fetchTokenData(tokenId, force = false) {
   }
 }
 
+/**
+ * Get the genesis hash from serverInfo in redux state.
+ */
+function getGenesisHash(serverInfo) {
+  return serverInfo?.genesis_block_hash || null;
+}
+
+/**
+ * Persist the current registered tokens (excluding HTR) to storage
+ * keyed by the current network's genesis hash.
+ */
+function* persistTokensForCurrentNetwork() {
+  const serverInfo = yield select((state) => state.serverInfo);
+  const genesisHash = getGenesisHash(serverInfo);
+  if (!genesisHash) return;
+
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet) return;
+
+  const tokens = yield call(getRegisteredTokens, wallet, true);
+  yield call([STORE, STORE.saveTokensForNetwork], genesisHash, tokens);
+}
+
+/**
+ * Save the current registered tokens for the active network.
+ *
+ * Dispatched by the networkSettings saga before it wipes token storage.
+ * Always dispatches tokensSavedForNetwork() when done.
+ */
+export function* saveNetworkTokens() {
+  try {
+    yield* persistTokensForCurrentNetwork();
+  } catch (e) {
+    log.error('Error saving tokens for network:', e);
+  } finally {
+    yield put(tokensSavedForNetwork());
+  }
+}
+
+/**
+ * Restore previously saved tokens for the current network after
+ * the wallet starts successfully.
+ */
+export function* restoreNetworkTokens() {
+  try {
+    const serverInfo = yield select((state) => state.serverInfo);
+    const genesisHash = getGenesisHash(serverInfo);
+
+    if (!genesisHash) return;
+
+    const savedTokens = yield call([STORE, STORE.getTokensForNetwork], genesisHash);
+    if (!savedTokens) return;
+
+    const wallet = yield select((state) => state.wallet);
+    if (!wallet) return;
+
+    let restoredAny = false;
+    for (const token of Object.values(savedTokens)) {
+      const isRegistered = yield call(
+        [wallet.storage, wallet.storage.isTokenRegistered],
+        token.uid,
+      );
+      if (!isRegistered) {
+        yield call(
+          [wallet.storage, wallet.storage.registerToken],
+          token,
+        );
+        restoredAny = true;
+      }
+    }
+
+    if (restoredAny) {
+      const tokens = yield call(getRegisteredTokens, wallet);
+      yield put(setTokens(tokens));
+
+      for (const token of Object.values(savedTokens)) {
+        yield put(tokenFetchBalanceRequested(token.uid));
+      }
+    }
+  } catch (e) {
+    log.error('Error restoring tokens for network:', e);
+  }
+}
+
+/**
+ * Update the persisted token snapshot whenever tokens change
+ * (register or unregister).
+ */
+export function* updateNetworkTokenSnapshot() {
+  try {
+    const walletStartState = yield select((state) => state.walletStartState);
+    if (walletStartState !== 'ready') return;
+
+    const wallet = yield select((state) => state.wallet);
+    if (!wallet || !wallet.isReady()) return;
+
+    yield* persistTokensForCurrentNetwork();
+  } catch (e) {
+    log.error('Error updating network token snapshot:', e);
+  }
+}
+
 export function* saga() {
   yield all([
     fork(fetchTokenBalanceQueue),
@@ -465,5 +576,9 @@ export function* saga() {
     fork(fetchTokenMetadataQueue),
     takeEvery(types.NEW_TOKEN, routeTokenChange),
     takeEvery(types.SET_TOKENS, routeTokenChange),
+    takeEvery(types.SAVE_TOKENS_FOR_NETWORK, saveNetworkTokens),
+    takeEvery(types.START_WALLET_SUCCESS, restoreNetworkTokens),
+    takeEvery(types.NEW_TOKEN, updateNetworkTokenSnapshot),
+    takeEvery(types.SET_TOKENS, updateNetworkTokenSnapshot),
   ]);
 }

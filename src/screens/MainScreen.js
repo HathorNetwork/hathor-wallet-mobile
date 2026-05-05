@@ -37,7 +37,6 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from '../components/HathorFlatList';
 import { ActionDot } from '../components/Icons/ActionDot.icon';
-import { getNetworkSettings } from '../sagas/helpers';
 
 /**
  * txList {Array} array with transactions of the selected token
@@ -53,7 +52,6 @@ const mapStateToProps = (state) => ({
   balance: get(state.tokensBalance, `${state.selectedToken.uid}.data`, { available: 0n, locked: 0n }),
   selectedToken: state.selectedToken,
   isOnline: state.isOnline,
-  network: getNetworkSettings(state).network,
   wallet: state.wallet,
   tokenMetadata: state.tokenMetadata,
 });
@@ -223,7 +221,6 @@ class MainScreen extends React.Component {
           rightElement={renderRightElement()}
         />
         <BalanceView
-          network={this.props.network}
           balance={this.props.balance}
           token={this.props.selectedToken}
           isNFT={this.isNFT()}
@@ -519,17 +516,6 @@ class BalanceView extends React.Component {
       marginTop: 24,
       marginBottom: 24,
     },
-    networkView: {
-      backgroundColor: COLORS.primaryOpacity10,
-      padding: 8,
-      marginTop: 32,
-      borderRadius: 8,
-    },
-    networkText: {
-      color: COLORS.primary,
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
   });
 
   toggleExpanded = () => {
@@ -539,7 +525,7 @@ class BalanceView extends React.Component {
   renderExpanded() {
     const availableStr = renderValue(this.props.balance.available, this.props.isNFT);
     const lockedStr = renderValue(this.props.balance.locked, this.props.isNFT);
-    const { network, token } = this.props;
+    const { token } = this.props;
     const { style } = this;
     return (
       <View style={style.center}>
@@ -561,9 +547,6 @@ class BalanceView extends React.Component {
           {`${lockedStr} ${token.symbol}`}
         </Text>
         <Text style={style.text1}>{t`Locked`}</Text>
-        <View style={style.networkView}>
-          <Text style={style.networkText}>{network}</Text>
-        </View>
         <Image style={style.expandButton} source={chevronUp} width={12} height={7} />
       </View>
     );
