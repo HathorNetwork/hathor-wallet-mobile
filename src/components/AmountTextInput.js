@@ -6,15 +6,24 @@
  */
 
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { StyleSheet, Text, TextInput } from 'react-native';
+import { StyleSheet, TextInput } from 'react-native';
 import { getAmountParsed, getIntegerAmount } from '../utils';
 import { COLORS } from '../styles/themes';
 
-// When the rendered text would overflow the input width, we scale
-// the font size down by this factor at minimum (relative to the base
-// font size). 0.5 keeps very large amounts readable without
-// shrinking past a usable size.
+// Auto-shrink lower bound: never scale the font below this fraction of
+// the base size, so very long amounts stay readable even when scaled.
 const MIN_FONT_SCALE = 0.5;
+
+// Average glyph width as a fraction of fontSize for the bold sans-serif
+// AmountTextInput uses. We don't measure rendered text (an earlier
+// implementation that did caused a Folly F14Set assertion crash on
+// iOS 26.1 + Fabric due to the extra hidden <Text> re-rendering on
+// every keystroke), so we estimate width as
+// `length * fontSize * GLYPH_RATIO`. Slightly conservative for digits
+// and slightly generous for `,` / `.` — net effect is the font shrinks
+// a hair sooner than strictly necessary, which is preferable to letting
+// the value clip behind the token selector.
+const GLYPH_RATIO = 0.55;
 
 /**
  * Text input component specifically for handling token amounts with BigInt validation.
@@ -38,14 +47,12 @@ const AmountTextInput = forwardRef((props, ref) => {
   const { decimalPlaces } = props;
 
   // Auto-shrink-to-fit: amounts can grow long enough to overflow the
-  // input's column (e.g. `957,791,973.79`). React Native's TextInput
-  // doesn't support `adjustsFontSizeToFit` directly, so we measure the
-  // text via a hidden <Text> sibling rendered at the base font size
-  // and scale the input's fontSize down when the measured width
-  // exceeds the input's container width. When the user shortens the
-  // value, measuredTextWidth shrinks and the font scales back up.
+  // input's column (e.g. `957,791,973.79`). We capture the column
+  // width once via the TextInput's `onLayout` and scale `fontSize` down
+  // when the estimated text width (length × fontSize × GLYPH_RATIO)
+  // exceeds it. When the user shortens the value, the estimate drops
+  // and the font scales back up to the base size.
   const [containerWidth, setContainerWidth] = useState(0);
-  const [measuredTextWidth, setMeasuredTextWidth] = useState(0);
 
   // Expose the focus method to parent components
   useImperativeHandle(ref, () => ({
@@ -123,50 +130,34 @@ const AmountTextInput = forwardRef((props, ref) => {
 
   // Resolve the base (unscaled) font size from the merged style chain
   // so callers that override fontSize via `customStyle` still get
-  // correct measurement + scaling math.
+  // correct scaling math.
   const flatStyle = StyleSheet.flatten([style.input, customStyle]) || {};
   const baseFontSize = flatStyle.fontSize ?? 32;
   const minFontSize = Math.max(14, Math.floor(baseFontSize * MIN_FONT_SCALE));
-  const scaledFontSize = (containerWidth > 0 && measuredTextWidth > containerWidth)
+  const displayed = text || placeholder;
+  const estimatedWidth = displayed.length * baseFontSize * GLYPH_RATIO;
+  const scaledFontSize = (containerWidth > 0 && estimatedWidth > containerWidth)
     ? Math.max(
       minFontSize,
-      Math.floor(baseFontSize * (containerWidth / measuredTextWidth)),
+      Math.floor(baseFontSize * (containerWidth / estimatedWidth)),
     )
     : baseFontSize;
 
   return (
-    <>
-      {/* Hidden measurement layer — same styles as the TextInput, but
-          positioned absolutely offscreen so it doesn't participate in
-          layout. We render at `baseFontSize` (not the scaled size) so
-          its onLayout width tells us the natural width of the text and
-          we can decide whether scaling is needed at all. */}
-      <Text
-        style={[
-          style.input,
-          customStyle,
-          style.measureLayer,
-          { fontSize: baseFontSize },
-        ]}
-        onLayout={(e) => setMeasuredTextWidth(e.nativeEvent.layout.width)}
-      >
-        {text || placeholder}
-      </Text>
-      <TextInput
-        ref={inputRef}
-        style={[style.input, customStyle, { fontSize: scaledFontSize }]}
-        onChangeText={onChangeText}
-        value={text}
-        textAlign={textAlign || 'center'}
-        textAlignVertical='bottom'
-        keyboardAppearance='dark'
-        keyboardType='numeric'
-        placeholder={placeholder}
-        placeholderTextColor={COLORS.midContrastDetail}
-        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-        {...restProps}
-      />
-    </>
+    <TextInput
+      ref={inputRef}
+      style={[style.input, customStyle, { fontSize: scaledFontSize }]}
+      onChangeText={onChangeText}
+      value={text}
+      textAlign={textAlign || 'center'}
+      textAlignVertical='bottom'
+      keyboardAppearance='dark'
+      keyboardType='numeric'
+      placeholder={placeholder}
+      placeholderTextColor={COLORS.midContrastDetail}
+      onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+      {...restProps}
+    />
   );
 });
 
@@ -178,16 +169,6 @@ const style = StyleSheet.create({
     fontWeight: 'bold',
     paddingVertical: 0,
     color: COLORS.textColor,
-  },
-  // Hidden <Text> used solely to measure the natural width of the
-  // current value at the base font size. Pinned far offscreen and
-  // rendered with opacity 0; absolute positioning removes it from
-  // the parent's flexbox layout entirely.
-  measureLayer: {
-    position: 'absolute',
-    top: -9999,
-    left: 0,
-    opacity: 0,
   },
 });
 
