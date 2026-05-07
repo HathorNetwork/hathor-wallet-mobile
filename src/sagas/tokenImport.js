@@ -7,7 +7,6 @@
 
 import {
   call,
-  delay,
   put,
   select,
   takeEvery,
@@ -18,10 +17,13 @@ import {
 } from '@hathor/wallet-lib';
 import {
   types,
+  tokenImportFetchRequested,
   tokenImportFetchSuccess,
   tokenImportFetchFailed,
+  tokenImportNewDetected,
   tokenImportSuccess,
   tokenImportFailed,
+  tokenImportRemoveFromList,
   tokenFetchBalanceRequested,
   newToken,
 } from '../actions';
@@ -29,16 +31,6 @@ import { getRegisteredTokens } from './helpers';
 import { logger } from '../logger';
 
 const log = logger('tokenImport');
-
-const THROTTLE_MS = 200;
-
-/**
- * Get all token UIDs the wallet has interacted with.
- */
-function* fetchAllTokenUids(wallet) {
-  const tokens = yield call(() => wallet.getTokens());
-  return tokens;
-}
 
 /**
  * Fetch details (name, symbol) for a single token.
@@ -70,27 +62,12 @@ function* fetchTokenDetails(wallet, uid) {
 }
 
 /**
- * Fetch balance for a single token.
- */
-function* fetchTokenBalance(wallet, uid) {
-  try {
-    const balanceResult = yield call(() => wallet.getBalance(uid));
-    if (Array.isArray(balanceResult) && balanceResult.length > 0) {
-      const { balance } = balanceResult[0];
-      return {
-        available: balance.unlocked,
-        locked: balance.locked,
-      };
-    }
-    return { available: 0, locked: 0 };
-  } catch (e) {
-    log.error(`Failed to fetch balance for token ${uid}:`, e);
-    return { available: 0, locked: 0 };
-  }
-}
-
-/**
  * Main saga: fetch all unregistered tokens on wallet ready.
+ *
+ * Balances are not fetched here. We dispatch `tokenFetchBalanceRequested` per
+ * uid so the canonical balance pipeline (`state.tokensBalance`) populates
+ * them. The dedup queue in `sagas/tokens.js` serializes the requests, so
+ * we don't need to throttle this loop.
  */
 export function* fetchUnregisteredTokens() {
   const wallet = yield select((state) => state.wallet);
@@ -103,7 +80,7 @@ export function* fetchUnregisteredTokens() {
   try {
     const htrUid = hathorLibConstants.NATIVE_TOKEN_UID;
 
-    const allTokenUids = yield call(fetchAllTokenUids, wallet);
+    const allTokenUids = yield call(() => wallet.getTokens());
 
     const registeredTokens = yield call(getRegisteredTokens, wallet);
     const registeredUids = Object.keys(registeredTokens);
@@ -120,14 +97,12 @@ export function* fetchUnregisteredTokens() {
     const unregisteredTokens = {};
     for (const uid of unregisteredUids) {
       const details = yield call(fetchTokenDetails, wallet, uid);
-      const balance = yield call(fetchTokenBalance, wallet, uid);
       unregisteredTokens[uid] = {
         uid: details.uid,
         name: details.name,
         symbol: details.symbol,
-        balance,
       };
-      yield delay(THROTTLE_MS);
+      yield put(tokenFetchBalanceRequested(uid, true));
     }
 
     yield put(tokenImportFetchSuccess(unregisteredTokens));
@@ -140,6 +115,10 @@ export function* fetchUnregisteredTokens() {
 /**
  * Handle new unregistered token UIDs detected from a transaction.
  * Fetches details and dispatches TOKEN_IMPORT_NEW_DETECTED with full objects.
+ *
+ * Registered with `takeEvery` (not `takeLatest`) so that bursts of incoming
+ * transactions during sync/reconnect cannot cancel an in-flight handler and
+ * silently drop the UIDs it had already accumulated.
  */
 export function* handleNewTokenDetection(action) {
   const tokenUids = action.payload;
@@ -152,20 +131,15 @@ export function* handleNewTokenDetection(action) {
   const newTokens = {};
   for (const uid of tokenUids) {
     const details = yield call(fetchTokenDetails, wallet, uid);
-    const balance = yield call(fetchTokenBalance, wallet, uid);
     newTokens[uid] = {
       uid: details.uid,
       name: details.name,
       symbol: details.symbol,
-      balance,
     };
-    yield delay(THROTTLE_MS);
+    yield put(tokenFetchBalanceRequested(uid, true));
   }
 
-  yield put({
-    type: types.TOKEN_IMPORT_NEW_DETECTED,
-    payload: newTokens,
-  });
+  yield put(tokenImportNewDetected(newTokens));
 }
 
 /**
@@ -181,11 +155,16 @@ export function* importSelectedTokens(action) {
   }
 
   try {
+    // eslint-disable-next-line no-unreachable
+    // Snapshot once: the loop only adds to this set, so we don't need to
+    // re-iterate the storage's async registered-tokens iterator per item.
+    const registeredTokens = yield call(getRegisteredTokens, wallet);
+    const alreadyRegistered = new Set(Object.keys(registeredTokens));
+
     const successUids = [];
     for (const token of tokens) {
       try {
-        const registeredTokens = yield call(getRegisteredTokens, wallet);
-        if (registeredTokens[token.uid]) {
+        if (alreadyRegistered.has(token.uid)) {
           successUids.push(token.uid);
           continue;
         }
@@ -197,6 +176,7 @@ export function* importSelectedTokens(action) {
         yield put(newToken({ uid: token.uid, name: token.name, symbol: token.symbol }));
         yield put(tokenFetchBalanceRequested(token.uid, true));
 
+        alreadyRegistered.add(token.uid);
         successUids.push(token.uid);
       } catch (e) {
         log.error(`Failed to register token ${token.uid}:`, e);
@@ -213,7 +193,10 @@ export function* importSelectedTokens(action) {
 }
 
 /**
- * When any token gets registered (from any flow), remove it from tokenImport state.
+ * When any token gets registered (from any flow — including the manual
+ * Register Token screen), drop it from the unregistered list. We use
+ * TOKEN_IMPORT_REMOVE_FROM_LIST instead of TOKEN_IMPORT_SUCCESS so that
+ * importStatus is NOT flipped to SUCCESS for unrelated registrations.
  */
 function* onTokenRegistered(action) {
   const token = action.payload;
@@ -221,13 +204,22 @@ function* onTokenRegistered(action) {
 
   const { unregisteredTokens } = yield select((state) => state.tokenImport);
   if (unregisteredTokens[token.uid]) {
-    yield put(tokenImportSuccess([token.uid]));
+    yield put(tokenImportRemoveFromList([token.uid]));
   }
+}
+
+// On unregister, re-run the unregistered-tokens scan so the banner reappears
+// for any token still known to the wallet. Preserves `bannerDismissed` (the
+// fetch-success reducer doesn't touch it), so a banner dismissed in this
+// session stays hidden.
+function* onTokenUnregistered() {
+  yield put(tokenImportFetchRequested());
 }
 
 export function* saga() {
   yield takeLatest(types.TOKEN_IMPORT_FETCH_REQUESTED, fetchUnregisteredTokens);
-  yield takeLatest(types.TOKEN_IMPORT_NEW_TX_TOKENS, handleNewTokenDetection);
+  yield takeEvery(types.TOKEN_IMPORT_NEW_TX_TOKENS, handleNewTokenDetection);
   yield takeLatest(types.TOKEN_IMPORT_REQUESTED, importSelectedTokens);
   yield takeEvery(types.NEW_TOKEN, onTokenRegistered);
+  yield takeEvery(types.TOKEN_METADATA_REMOVED, onTokenUnregistered);
 }

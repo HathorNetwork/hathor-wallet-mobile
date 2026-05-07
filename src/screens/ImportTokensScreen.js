@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -25,6 +25,10 @@ import { CircleInfoIcon } from '../components/Icons/CircleInfo.icon';
 import { COLORS } from '../styles/themes';
 import { getShortHash } from '../utils';
 import { OpenInNewIcon } from '../components/Icons/OpenInNew.icon';
+import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
+import { logger } from '../logger';
+
+const log = logger('ImportTokensScreen');
 
 /**
  * ImportTokensScreen displays a list of unregistered tokens found in the wallet.
@@ -34,23 +38,48 @@ const ImportTokensScreen = () => {
   const navigation = useNavigation();
   const unregisteredTokens = useSelector((state) => state.tokenImport.unregisteredTokens);
   const loading = useSelector((state) => state.tokenImport.loading);
+  const tokensBalance = useSelector((state) => state.tokensBalance);
   const explorerUrl = useSelector((state) => state.networkSettings.explorerUrl);
 
-  const [tokenList, setTokenList] = useState(
-    () => Object.values(unregisteredTokens).map(
-      (token) => ({ ...token, selected: false })
-    )
-  );
+  // Selection lives locally; the visible list is derived from the store so any
+  // newly detected unregistered tokens appear without needing to re-enter the screen.
+  const [selectedUids, setSelectedUids] = useState(() => new Set());
+
+  const tokenList = Object.values(unregisteredTokens).map((token) => ({
+    ...token,
+    selected: selectedUids.has(token.uid),
+  }));
+
+  // Drop selections for uids that are no longer in the unregistered list
+  // (e.g. registered through another flow while the screen was open).
+  useEffect(() => {
+    setSelectedUids((prev) => {
+      let changed = false;
+      const next = new Set();
+      prev.forEach((uid) => {
+        if (unregisteredTokens[uid]) {
+          next.add(uid);
+        } else {
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [unregisteredTokens]);
 
   const hasTokens = tokenList.length > 0;
-  const hasSelection = tokenList.some((tk) => tk.selected);
+  const hasSelection = selectedUids.size > 0;
 
   const toggleToken = (uid) => {
-    setTokenList((prev) => prev.map((token) => (
-      token.uid === uid
-        ? { ...token, selected: !token.selected }
-        : token
-    )));
+    setSelectedUids((prev) => {
+      const next = new Set(prev);
+      if (next.has(uid)) {
+        next.delete(uid);
+      } else {
+        next.add(uid);
+      }
+      return next;
+    });
   };
 
   const handleContinue = () => {
@@ -58,9 +87,20 @@ const ImportTokensScreen = () => {
     navigation.navigate('ConfirmImportScreen', { tokens: selectedTokens });
   };
 
-  const handleOpenExplorer = (uid) => {
-    if (explorerUrl) {
-      Linking.openURL(`${explorerUrl}/token_detail/${uid}`);
+  const handleOpenExplorer = async (uid) => {
+    if (!explorerUrl) {
+      return;
+    }
+    const url = `${explorerUrl}token_detail/${uid}`;
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        log.error(`Cannot open URL: ${url}`);
+        return;
+      }
+      await Linking.openURL(url);
+    } catch (e) {
+      log.error(`Failed to open explorer URL ${url}:`, e);
     }
   };
 
@@ -69,7 +109,11 @@ const ImportTokensScreen = () => {
   };
 
   const formatBalance = (token) => {
-    const available = token.balance?.available ?? 0;
+    const entry = tokensBalance[token.uid];
+    if (!entry || entry.status !== TOKEN_DOWNLOAD_STATUS.READY) {
+      return `— ${token.symbol}`;
+    }
+    const available = entry.data?.available ?? 0n;
     return `${numberUtils.prettyValue(available, constants.DECIMAL_PLACES)} ${token.symbol}`;
   };
 
@@ -141,7 +185,7 @@ const ImportTokensScreen = () => {
         </Text>
 
         <View style={styles.infoBanner}>
-          <CircleInfoIcon size={20} color='#4a90d9' />
+          <CircleInfoIcon size={20} color={COLORS.infoBannerAccent} />
           <View style={styles.infoBannerTextContainer}>
             <Text style={styles.infoBannerTitle}>
               {t`Check before import tokens`}
@@ -210,7 +254,7 @@ const styles = StyleSheet.create({
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#daf1ff',
+    backgroundColor: COLORS.infoBannerBg,
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -272,7 +316,7 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 2,
     borderWidth: 2,
-    borderColor: '#49454f',
+    borderColor: COLORS.controlBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -308,7 +352,7 @@ const styles = StyleSheet.create({
   },
   tokenUid: {
     fontSize: 12,
-    color: '#616161',
+    color: COLORS.mutedText,
     lineHeight: 20,
   },
   footer: {

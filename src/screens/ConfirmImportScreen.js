@@ -19,6 +19,7 @@ import ImportTokensModal from '../components/ImportTokensModal';
 import { tokenImportRequested, tokenImportResetStatus } from '../actions';
 import { COLORS } from '../styles/themes';
 import { useParams } from '../hooks/navigation';
+import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 
 /**
  * Screen that displays the list of tokens the user is about to import,
@@ -26,17 +27,22 @@ import { useParams } from '../hooks/navigation';
  *
  * Route params:
  * @param {Array} tokens - Array of token objects to import
- *   Each token: { uid, name, symbol, balance }
+ *   Each token: { uid, name, symbol }
  */
 const ConfirmImportScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const { tokens } = useParams();
   const importStatus = useSelector((state) => state.tokenImport.importStatus);
+  const tokensBalance = useSelector((state) => state.tokensBalance);
 
   const [showModal, setShowModal] = useState(false);
 
   const handleImportPress = useCallback(() => {
+    // Reset any stale terminal status (SUCCESS/ERROR) from a prior session
+    // before opening the modal, so the user never sees a one-frame flash of
+    // the previous result before the IMPORTING state takes over.
+    dispatch(tokenImportResetStatus());
     setShowModal(true);
     dispatch(tokenImportRequested(tokens));
   }, [dispatch, tokens]);
@@ -58,7 +64,11 @@ const ConfirmImportScreen = () => {
   }, [navigation]);
 
   const formatBalance = (token) => {
-    const available = token.balance?.available ?? 0;
+    const entry = tokensBalance[token.uid];
+    if (!entry || entry.status !== TOKEN_DOWNLOAD_STATUS.READY) {
+      return `— ${token.symbol}`;
+    }
+    const available = entry.data?.available ?? 0n;
     return `${numberUtils.prettyValue(available, constants.DECIMAL_PLACES)} ${token.symbol}`;
   };
 
@@ -107,7 +117,6 @@ const ConfirmImportScreen = () => {
               data={tokens}
               renderItem={renderTokenItem}
               keyExtractor={keyExtractor}
-              scrollEnabled={tokens.length > 5}
             />
           </View>
         </View>
@@ -139,9 +148,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 16,
-    justifyContent: 'space-between',
   },
   topSection: {
+    flex: 1,
     paddingTop: 32,
   },
   title: {
@@ -156,6 +165,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   tokenListCard: {
+    flexShrink: 1,
     backgroundColor: COLORS.backgroundColor,
     borderRadius: 16,
     shadowColor: COLORS.black,
@@ -183,7 +193,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   symbolTag: {
-    backgroundColor: '#eff0f2',
+    backgroundColor: COLORS.tagSurface,
     borderRadius: 4,
     minWidth: 40,
     height: 23,

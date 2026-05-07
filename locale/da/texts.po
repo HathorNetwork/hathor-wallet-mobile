@@ -226,24 +226,24 @@ msgstr "PIN-koder stemmer ikke overens. Prøv igen."
 msgid "Start the Wallet"
 msgstr "Start Wallet"
 
-#: src/screens/ConfirmImportScreen.js:87 src/screens/ImportTokensScreen.js:173
+#: src/screens/ConfirmImportScreen.js:97 src/screens/ImportTokensScreen.js:217
 msgid "IMPORT TOKENS"
 msgstr ""
 
-#: src/screens/ConfirmImportScreen.js:101
+#: src/screens/ConfirmImportScreen.js:111
 msgid "Confirm Import"
 msgstr ""
 
-#: src/screens/ConfirmImportScreen.js:103
+#: src/screens/ConfirmImportScreen.js:113
 msgid "You are about to add these tokens to your wallet:"
 msgstr ""
 
-#: src/components/TokenImportBanner.js:80
-#: src/screens/ConfirmImportScreen.js:117 src/screens/Settings.js:157
+#: src/components/TokenImportBanner.js:77
+#: src/screens/ConfirmImportScreen.js:126 src/screens/Settings.js:157
 msgid "Import tokens"
 msgstr ""
 
-#: src/screens/ConfirmImportScreen.js:126
+#: src/screens/ConfirmImportScreen.js:135
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:80
 #: src/screens/Reown/SuccessFeedbackScreen.js:39
 msgid "Back"
@@ -465,7 +465,7 @@ msgid "FEE TOKEN"
 msgstr ""
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
-#: src/screens/Dashboard.js:140 src/screens/Dashboard.js:203
+#: src/screens/Dashboard.js:140 src/screens/Dashboard.js:202
 msgid "Tokens"
 msgstr "Tokens"
 
@@ -475,40 +475,40 @@ msgstr "Tokens"
 msgid "Nano Contracts"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:108
+#: src/screens/ImportTokensScreen.js:152
 msgid "No tokens available to import"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:111
+#: src/screens/ImportTokensScreen.js:155
 msgid "We didn't find any unregistered tokens linked to your wallet."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:114
+#: src/screens/ImportTokensScreen.js:158
 msgid "You can register a new one manually."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:118 src/screens/Settings.js:150
+#: src/screens/ImportTokensScreen.js:162 src/screens/Settings.js:150
 msgid "Register a token"
 msgstr "Registrer en token"
 
-#: src/screens/ImportTokensScreen.js:140
+#: src/screens/ImportTokensScreen.js:184
 msgid "Select the tokens you want to add to your wallet."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:147
+#: src/screens/ImportTokensScreen.js:191
 msgid "Check before import tokens"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:150
+#: src/screens/ImportTokensScreen.js:194
 msgid ""
 "Adding tokens is your responsibility. Make sure you recognize the source."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:156
+#: src/screens/ImportTokensScreen.js:200
 msgid "Tokens found"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:182
+#: src/screens/ImportTokensScreen.js:226
 msgid "Continue"
 msgstr ""
 
@@ -594,7 +594,7 @@ msgstr "Ord"
 msgid "Enter your seed words separated by space"
 msgstr "Indtast dine seed-ord adskilt med mellemrum"
 
-#: src/components/ImportTokensModal.js:76
+#: src/components/ImportTokensModal.js:69
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:626
@@ -1631,20 +1631,20 @@ msgstr "Rapporter fejl"
 msgid "Close"
 msgstr "Luk"
 
-#: src/components/ImportTokensModal.js:39
+#: src/components/ImportTokensModal.js:32
 msgid "Adding tokens..."
 msgstr ""
 
-#: src/components/ImportTokensModal.js:52
+#: src/components/ImportTokensModal.js:45
 msgid "New tokens added!"
 msgstr ""
 
-#: src/components/ImportTokensModal.js:56
+#: src/components/ImportTokensModal.js:49
 msgid "See all tokens"
 msgstr ""
 
 #.  Error state
-#: src/components/ImportTokensModal.js:72
+#: src/components/ImportTokensModal.js:65
 msgid "Add tokens failed"
 msgstr ""
 
@@ -1731,17 +1731,17 @@ msgstr ""
 msgid "Small fee applies to each transfer. No deposit required."
 msgstr ""
 
-#: src/components/TokenImportBanner.js:62
+#: src/components/TokenImportBanner.js:59
 msgid "New tokens"
 msgstr ""
 
 #: src/components/Reown/ReownPendingOverlay.js:364
 #: src/components/Reown/RequestErrorModal.js:56
-#: src/components/TokenImportBanner.js:66
+#: src/components/TokenImportBanner.js:63
 msgid "Dismiss"
 msgstr ""
 
-#: src/components/TokenImportBanner.js:73
+#: src/components/TokenImportBanner.js:70
 msgid "We found tokens linked to your address that are not yet in your wallet."
 msgstr ""
 

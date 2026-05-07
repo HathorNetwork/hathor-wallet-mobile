@@ -21,11 +21,11 @@ import {
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
   TOKEN_SWAP_ALLOWED_TOKEN_STATUS,
   TOKEN_SWAP_QUOTE_STATUS,
+  TOKEN_IMPORT_MODAL_STATE,
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { WALLET_STATUS } from '../sagas/wallet';
-import { ImportTokensModalState } from '../components/ImportTokensModal';
 
 /**
  * tokensBalance {Object} stores the balance for each token (Dict[tokenUid: str, {
@@ -569,7 +569,7 @@ const initialState = {
     unregisteredTokens: {},
     bannerDismissed: false,
     loading: false,
-    importStatus: ImportTokensModalState.IDLE,
+    importStatus: TOKEN_IMPORT_MODAL_STATE.IDLE,
   },
 };
 
@@ -837,6 +837,8 @@ export const reducer = (state = initialState, action) => {
       return onTokenImportSuccess(state, action);
     case types.TOKEN_IMPORT_FAILED:
       return onTokenImportFailed(state);
+    case types.TOKEN_IMPORT_REMOVE_FROM_LIST:
+      return onTokenImportRemoveFromList(state, action);
     case types.TOKEN_IMPORT_DISMISS_BANNER:
       return onTokenImportDismissBanner(state);
     case types.TOKEN_IMPORT_RESET_STATUS:
@@ -2438,30 +2440,50 @@ const onTokenImportRequested = (state) => ({
   ...state,
   tokenImport: {
     ...state.tokenImport,
-    importStatus: ImportTokensModalState.IMPORTING,
+    importStatus: TOKEN_IMPORT_MODAL_STATE.IMPORTING,
   },
 });
 
-const onTokenImportSuccess = (state, { payload: tokenUids }) => {
-  const unregisteredTokens = { ...state.tokenImport.unregisteredTokens };
-  for (const uid of tokenUids) {
-    delete unregisteredTokens[uid];
+const removeUidsFromUnregistered = (unregistered, uids) => {
+  const next = { ...unregistered };
+  for (const uid of uids) {
+    delete next[uid];
   }
-  return {
-    ...state,
-    tokenImport: {
-      ...state.tokenImport,
-      importStatus: ImportTokensModalState.SUCCESS,
-      unregisteredTokens,
-    },
-  };
+  return next;
 };
+
+const onTokenImportSuccess = (state, { payload: tokenUids }) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    importStatus: TOKEN_IMPORT_MODAL_STATE.SUCCESS,
+    unregisteredTokens: removeUidsFromUnregistered(
+      state.tokenImport.unregisteredTokens,
+      tokenUids,
+    ),
+  },
+});
+
+// Used when a token is registered through an unrelated flow (e.g. the manual
+// "Register token" screen). We want the uid removed from the unregistered list
+// but importStatus must NOT transition to SUCCESS, otherwise the next time the
+// user opens the import modal it would briefly flash "New tokens added!".
+const onTokenImportRemoveFromList = (state, { payload: tokenUids }) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    unregisteredTokens: removeUidsFromUnregistered(
+      state.tokenImport.unregisteredTokens,
+      tokenUids,
+    ),
+  },
+});
 
 const onTokenImportFailed = (state) => ({
   ...state,
   tokenImport: {
     ...state.tokenImport,
-    importStatus: ImportTokensModalState.ERROR,
+    importStatus: TOKEN_IMPORT_MODAL_STATE.ERROR,
   },
 });
 
@@ -2477,6 +2499,6 @@ const onTokenImportResetStatus = (state) => ({
   ...state,
   tokenImport: {
     ...state.tokenImport,
-    importStatus: ImportTokensModalState.IDLE,
+    importStatus: TOKEN_IMPORT_MODAL_STATE.IDLE,
   },
 });

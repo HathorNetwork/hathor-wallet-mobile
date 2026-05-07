@@ -268,6 +268,7 @@ export const types = {
   TOKEN_IMPORT_REQUESTED: 'TOKEN_IMPORT_REQUESTED',
   TOKEN_IMPORT_SUCCESS: 'TOKEN_IMPORT_SUCCESS',
   TOKEN_IMPORT_FAILED: 'TOKEN_IMPORT_FAILED',
+  TOKEN_IMPORT_REMOVE_FROM_LIST: 'TOKEN_IMPORT_REMOVE_FROM_LIST',
   TOKEN_IMPORT_DISMISS_BANNER: 'TOKEN_IMPORT_DISMISS_BANNER',
   TOKEN_IMPORT_RESET_STATUS: 'TOKEN_IMPORT_RESET_STATUS',
 
@@ -1838,6 +1839,13 @@ export const tokenImportSuccess = (tokenUids) => ({
 
 export const tokenImportFailed = () => ({
   type: types.TOKEN_IMPORT_FAILED,
+});
+
+// Removes uids from the unregistered list WITHOUT changing importStatus.
+// Use this when a token is registered through an unrelated flow.
+export const tokenImportRemoveFromList = (tokenUids) => ({
+  type: types.TOKEN_IMPORT_REMOVE_FROM_LIST,
+  payload: tokenUids,
 });
 
 export const tokenImportDismissBanner = () => ({

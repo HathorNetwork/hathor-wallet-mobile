@@ -234,24 +234,24 @@ msgstr "Os PINs estão diferentes. Tente novamente."
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
-#: src/screens/ConfirmImportScreen.js:87 src/screens/ImportTokensScreen.js:173
+#: src/screens/ConfirmImportScreen.js:97 src/screens/ImportTokensScreen.js:217
 msgid "IMPORT TOKENS"
 msgstr "IMPORTAR TOKENS"
 
-#: src/screens/ConfirmImportScreen.js:101
+#: src/screens/ConfirmImportScreen.js:111
 msgid "Confirm Import"
 msgstr "Confirmar importação"
 
-#: src/screens/ConfirmImportScreen.js:103
+#: src/screens/ConfirmImportScreen.js:113
 msgid "You are about to add these tokens to your wallet:"
 msgstr "Você está prestes a adicionar esses tokens à sua carteira:"
 
-#: src/components/TokenImportBanner.js:80
-#: src/screens/ConfirmImportScreen.js:117 src/screens/Settings.js:157
+#: src/components/TokenImportBanner.js:77
+#: src/screens/ConfirmImportScreen.js:126 src/screens/Settings.js:157
 msgid "Import tokens"
 msgstr "Importar tokens"
 
-#: src/screens/ConfirmImportScreen.js:126
+#: src/screens/ConfirmImportScreen.js:135
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:80
 #: src/screens/Reown/SuccessFeedbackScreen.js:39
 msgid "Back"
@@ -480,7 +480,7 @@ msgid "FEE TOKEN"
 msgstr "TOKEN DE TAXA"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
-#: src/screens/Dashboard.js:140 src/screens/Dashboard.js:203
+#: src/screens/Dashboard.js:140 src/screens/Dashboard.js:202
 msgid "Tokens"
 msgstr "Tokens"
 
@@ -490,44 +490,44 @@ msgstr "Tokens"
 msgid "Nano Contracts"
 msgstr "Nano Contracts"
 
-#: src/screens/ImportTokensScreen.js:108
+#: src/screens/ImportTokensScreen.js:152
 msgid "No tokens available to import"
 msgstr "Nenhum token disponível para ser importado"
 
-#: src/screens/ImportTokensScreen.js:111
+#: src/screens/ImportTokensScreen.js:155
 msgid "We didn't find any unregistered tokens linked to your wallet."
 msgstr "Não encontramos nenhum token não registrado vinculado à sua carteira."
 
-#: src/screens/ImportTokensScreen.js:114
+#: src/screens/ImportTokensScreen.js:158
 msgid "You can register a new one manually."
 msgstr "Você pode registrar um novo token manualmente."
 
-#: src/screens/ImportTokensScreen.js:118 src/screens/Settings.js:150
+#: src/screens/ImportTokensScreen.js:162 src/screens/Settings.js:150
 msgid "Register a token"
 msgstr "Registrar um token"
 
-#: src/screens/ImportTokensScreen.js:140
+#: src/screens/ImportTokensScreen.js:184
 msgid "Select the tokens you want to add to your wallet."
 msgstr "Selecione os tokens que você quer adicionar à sua carteira."
 
-#: src/screens/ImportTokensScreen.js:147
+#: src/screens/ImportTokensScreen.js:191
 msgid "Check before import tokens"
 msgstr "Atenção antes de importar tokens"
 
-#: src/screens/ImportTokensScreen.js:150
+#: src/screens/ImportTokensScreen.js:194
 msgid ""
 "Adding tokens is your responsibility. Make sure you recognize the source."
 msgstr ""
 "Adicionar tokens é sua responsabilidade. Tenha certeza de que reconhece a "
 "fonte."
 
-#: src/screens/ImportTokensScreen.js:156
+#: src/screens/ImportTokensScreen.js:200
 msgid "Tokens found"
 msgstr "Tokens encontrados"
 
-#: src/screens/ImportTokensScreen.js:182
+#: src/screens/ImportTokensScreen.js:226
 msgid "Continue"
-msgstr "Continue"
+msgstr "Continuar"
 
 #: src/screens/InitWallet.js:62
 msgid "Welcome to Hathor Wallet!"
@@ -613,7 +613,7 @@ msgstr "Palavras"
 msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
-#: src/components/ImportTokensModal.js:76
+#: src/components/ImportTokensModal.js:69
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:626
@@ -1673,20 +1673,20 @@ msgstr "Reportar erro"
 msgid "Close"
 msgstr "Fechar"
 
-#: src/components/ImportTokensModal.js:39
+#: src/components/ImportTokensModal.js:32
 msgid "Adding tokens..."
 msgstr "Adicionando tokens..."
 
-#: src/components/ImportTokensModal.js:52
+#: src/components/ImportTokensModal.js:45
 msgid "New tokens added!"
 msgstr "Novos tokens adicionados!"
 
-#: src/components/ImportTokensModal.js:56
+#: src/components/ImportTokensModal.js:49
 msgid "See all tokens"
 msgstr "Ver todos os tokens"
 
 #.  Error state
-#: src/components/ImportTokensModal.js:72
+#: src/components/ImportTokensModal.js:65
 msgid "Add tokens failed"
 msgstr "Adicionar tokens falhou"
 
@@ -1773,17 +1773,17 @@ msgid "Small fee applies to each transfer. No deposit required."
 msgstr ""
 "Uma pequena taxa é aplicada em cada transação. Nenhum depósito é necessário."
 
-#: src/components/TokenImportBanner.js:62
+#: src/components/TokenImportBanner.js:59
 msgid "New tokens"
 msgstr "Novos tokens"
 
 #: src/components/Reown/ReownPendingOverlay.js:364
 #: src/components/Reown/RequestErrorModal.js:56
-#: src/components/TokenImportBanner.js:66
+#: src/components/TokenImportBanner.js:63
 msgid "Dismiss"
 msgstr "Fechar"
 
-#: src/components/TokenImportBanner.js:73
+#: src/components/TokenImportBanner.js:70
 msgid "We found tokens linked to your address that are not yet in your wallet."
 msgstr ""
 "Encontramos tokens vinculados aos seus endereços que não estão em sua "

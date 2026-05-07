@@ -13,6 +13,7 @@ import { t } from 'ttag';
 import NewHathorButton from './NewHathorButton';
 import HathorModal from './HathorModal';
 import { COLORS } from '../styles/themes';
+import { TOKEN_IMPORT_MODAL_STATE } from '../constants';
 import checkIcon from '../assets/images/icCheckBig.png';
 import errorIcon from '../assets/images/icErrorBig.png';
 
@@ -22,17 +23,9 @@ import errorIcon from '../assets/images/icErrorBig.png';
  * @param {Function} props.onDismiss - Called when "SEE ALL TOKENS" is pressed (success)
  * @param {Function} props.onRetry - Called when "TRY AGAIN" is pressed (error)
  */
-
-export const ImportTokensModalState = {
-  IDLE: 'idle',
-  IMPORTING: 'importing',
-  SUCCESS: 'success',
-  ERROR: 'error',
-};
-
 const ImportTokensModal = ({ status, onDismiss, onRetry }) => {
   const renderContent = () => {
-    if (status === ImportTokensModalState.IMPORTING) {
+    if (status === TOKEN_IMPORT_MODAL_STATE.IMPORTING) {
       return (
         <>
           <ActivityIndicator size='large' color={COLORS.textColor} />
@@ -41,7 +34,7 @@ const ImportTokensModal = ({ status, onDismiss, onRetry }) => {
       );
     }
 
-    if (status === ImportTokensModalState.SUCCESS) {
+    if (status === TOKEN_IMPORT_MODAL_STATE.SUCCESS) {
       return (
         <>
           <Image
@@ -81,11 +74,11 @@ const ImportTokensModal = ({ status, onDismiss, onRetry }) => {
     );
   };
 
+  // Outside-tap should always dismiss; "Try again" is reachable only via the
+  // explicit button so we never trigger a destructive retry by accident.
   const handleDismiss = () => {
-    if (status === ImportTokensModalState.SUCCESS && onDismiss) {
+    if (onDismiss) {
       onDismiss();
-    } else if (status === ImportTokensModalState.ERROR && onRetry) {
-      onRetry();
     }
   };
 

@@ -155,7 +155,6 @@ export const Dashboard = () => {
                 <TokenImportBanner />
               </>
             )}
-            renderArrow
             onItemPress={onTokenPress}
             selectedToken={selectedToken}
             tokens={tokens}

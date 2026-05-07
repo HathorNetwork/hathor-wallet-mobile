@@ -19,9 +19,6 @@ import { CircleInfoIcon } from './Icons/CircleInfo.icon';
 import { tokenImportDismissBanner } from '../actions';
 import { COLORS } from '../styles/themes';
 
-const BANNER_BG = '#daf1ff';
-const INFO_ICON_COLOR = '#4a90d9';
-
 /**
  * Banner displayed on the Dashboard when unregistered tokens are detected.
  * Tapping "Import tokens" navigates to ImportTokensScreen.
@@ -55,7 +52,7 @@ export default function TokenImportBanner() {
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <CircleInfoIcon size={20} color={INFO_ICON_COLOR} />
+        <CircleInfoIcon size={20} color={COLORS.infoBannerAccent} />
       </View>
       <View style={styles.content}>
         <View style={styles.titleRow}>
@@ -89,8 +86,8 @@ export default function TokenImportBanner() {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: BANNER_BG,
+    alignItems: 'center',
+    backgroundColor: COLORS.infoBannerBg,
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -101,7 +98,6 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 20,
     height: 20,
-    marginTop: 2,
   },
   content: {
     flex: 1,
