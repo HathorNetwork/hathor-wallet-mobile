@@ -52,7 +52,7 @@ export default function AddressMode({ navigation }) {
 
     const checkAddresses = async () => {
       try {
-        if (wallet && typeof wallet.hasTxOutsideFirstAddress === 'function') {
+        if (wallet) {
           const result = await wallet.hasTxOutsideFirstAddress();
           if (!cancelled) {
             setHasTxOutside(result);
@@ -276,7 +276,6 @@ const styles = StyleSheet.create({
   descriptionContainer: {
     marginHorizontal: 16,
     marginTop: 16,
-    width: 341,
   },
   descriptionText: {
     fontSize: 14,
@@ -391,13 +390,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bottomSheet: {
-    width: 343,
+    width: '100%',
+    maxWidth: 343,
     backgroundColor: '#fff',
     borderRadius: 8,
     paddingVertical: 24,
     paddingHorizontal: 16,
     alignItems: 'center',
     marginBottom: 32,
+    marginHorizontal: 16,
   },
   handleBar: {
     width: 40,

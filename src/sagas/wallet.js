@@ -230,8 +230,9 @@ export function* startWallet(action) {
   // during the first connection, it changes to GAP_LIMIT and we sync after
   // wallet.start. Persistence to AsyncStorage is therefore deferred to after
   // the connection (single point of write — see post-start sync below).
-  const singleAddressFeatureEnabled = yield select(
-    (state) => state.featureToggles[SINGLE_ADDRESS_FEATURE_TOGGLE]
+  const singleAddressFeatureEnabled = yield call(
+    checkForFeatureFlag,
+    SINGLE_ADDRESS_FEATURE_TOGGLE,
   );
   const storedAddressMode = STORE.getItem(addressModeKey(networkSettings.network));
   const attemptedAddressMode = decideAddressMode({

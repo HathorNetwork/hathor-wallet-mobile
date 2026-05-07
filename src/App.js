@@ -464,6 +464,7 @@ const AppStack = () => {
       case 'UnifiedQRScanner':
       case 'RegisterOptions':
       case 'RegisterTokenManual':
+      case 'AddressMode':
         newEdges = ['bottom'];
         break;
       default:

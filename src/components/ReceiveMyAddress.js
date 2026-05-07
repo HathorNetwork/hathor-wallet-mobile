@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
 import { sharedAddressUpdate } from '../actions';
+import { ADDRESS_MODE } from '../constants';
 import { COLORS } from '../styles/themes';
 
 export default function ReceiveMyAddress() {
@@ -54,7 +55,7 @@ export default function ReceiveMyAddress() {
         />
       </View>
       <View style={styles.buttonRow}>
-        {addressMode !== 'single' && (
+        {addressMode !== ADDRESS_MODE.SINGLE && (
           <SimpleButton
             title={t`New address`}
             onPress={getNextAddress}
