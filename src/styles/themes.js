@@ -66,6 +66,11 @@ export const COLORS = {
    */
   positiveBalanceColor: '#0DA0A0',
   /**
+   * @type {string} Light background paired with positiveBalanceColor
+   * (e.g. read/info method badges in the Reown overlay)
+   */
+  positiveBalanceBgColor: 'hsla(180, 80%, 95%, 1)',
+  /**
    * @type {string} For containers with error feedbacks
    */
   errorBgColor: '#DE3535',

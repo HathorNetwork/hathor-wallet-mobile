@@ -149,65 +149,65 @@ msgid ""
 "link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-#: src/screens/AddressMode.js:96
+#: src/screens/AddressMode.js:98
 msgid "Error"
 msgstr ""
 
-#: src/screens/AddressMode.js:97
+#: src/screens/AddressMode.js:99
 msgid "Failed to change address mode. Please try again."
 msgstr ""
 
-#: src/screens/AddressMode.js:158 src/screens/AddressMode.js:171
+#: src/screens/AddressMode.js:160 src/screens/AddressMode.js:173
 msgid "ADDRESS MODE"
 msgstr ""
 
-#: src/screens/AddressMode.js:177
+#: src/screens/AddressMode.js:179
 msgid "You can set your wallet to "
 msgstr ""
 
-#: src/screens/AddressMode.js:179
+#: src/screens/AddressMode.js:181
 msgid "single or multi address mode"
 msgstr ""
 
-#: src/screens/AddressMode.js:184
+#: src/screens/AddressMode.js:186
 msgid "You can switch anytime in the settings."
 msgstr ""
 
-#: src/screens/AddressMode.js:191
+#: src/screens/AddressMode.js:193
 msgid "Single Address"
 msgstr ""
 
-#: src/screens/AddressMode.js:192
+#: src/screens/AddressMode.js:194
 msgid "Your wallet will use only one address (index 0)."
 msgstr ""
 
-#: src/screens/AddressMode.js:193
+#: src/screens/AddressMode.js:195
 msgid "Easier to manage and compatible with all dApps."
 msgstr ""
 
-#: src/screens/AddressMode.js:198
+#: src/screens/AddressMode.js:200
 msgid "Multi Address"
 msgstr ""
 
-#: src/screens/AddressMode.js:199
+#: src/screens/AddressMode.js:201
 msgid "Your wallet will let you generate multiple addresses."
 msgstr ""
 
-#: src/screens/AddressMode.js:200
+#: src/screens/AddressMode.js:202
 msgid "Useful for advanced users."
 msgstr ""
 
-#: src/screens/AddressMode.js:211
+#: src/screens/AddressMode.js:213
 msgid ""
 "You can't switch to single address mode because other addresses in your "
 "wallet are already in use."
 msgstr ""
 
-#: src/screens/AddressMode.js:235
+#: src/screens/AddressMode.js:237
 msgid "SAVE PREFERENCES"
 msgstr ""
 
-#: src/screens/AddressMode.js:255
+#: src/screens/AddressMode.js:257
 msgid ""
 "Changing\n"
 "address mode..."
@@ -506,7 +506,7 @@ msgid "FEE TOKEN"
 msgstr ""
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
-#: src/screens/Dashboard.js:139 src/screens/Dashboard.js:197
+#: src/screens/Dashboard.js:139 src/screens/Dashboard.js:196
 msgid "Tokens"
 msgstr "Tokens"
 
@@ -635,31 +635,31 @@ msgstr "Nulstil wallet"
 msgid "Connect to mainnet"
 msgstr ""
 
-#: src/screens/MainScreen.js:127
+#: src/screens/MainScreen.js:125
 msgid "No transactions"
 msgstr "Ingen transaktioner"
 
-#: src/screens/MainScreen.js:130
+#: src/screens/MainScreen.js:128
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr "|share:Del din adresse| med venner og begynd at udveksle tokens"
 
-#: src/screens/MainScreen.js:147
+#: src/screens/MainScreen.js:145
 msgid "Loading transactions"
 msgstr "Indlæser dine transaktioner"
 
-#: src/screens/MainScreen.js:156
+#: src/screens/MainScreen.js:154
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:159
+#: src/screens/MainScreen.js:157
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:554 src/screens/MainScreen.js:586
+#: src/screens/MainScreen.js:540 src/screens/MainScreen.js:569
 msgid "Available Balance"
 msgstr "Tilgængelig saldo"
 
-#: src/screens/MainScreen.js:563
+#: src/screens/MainScreen.js:549
 msgid "Locked"
 msgstr "Låst"
 
@@ -694,7 +694,7 @@ msgid "Unlock Hathor Wallet"
 msgstr "Lås Hathor-wallet op"
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:127
+#: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr "Annuller"
 
@@ -1050,16 +1050,16 @@ msgstr "Forbundet til"
 msgid "Unregister"
 msgstr "Afmeld"
 
-#: src/screens/TokenSwap.js:308
+#: src/screens/TokenSwap.js:333
 #, javascript-format
 msgid "Balance: ${ amount }"
 msgstr ""
 
-#: src/screens/TokenSwap.js:350
+#: src/screens/TokenSwap.js:357
 msgid "TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwap.js:450
+#: src/screens/TokenSwap.js:455
 msgid "REVIEW"
 msgstr ""
 
@@ -1160,6 +1160,65 @@ msgstr ""
 msgid "New Nano Contract Transaction"
 msgstr ""
 
+#: src/components/Reown/ApproveRejectModal.js:70
+#: src/screens/Reown/PendingRequests.js:116
+msgid "Reject"
+msgstr ""
+
+#: src/screens/Reown/PendingRequests.js:128
+msgid "All clear!"
+msgstr ""
+
+#: src/screens/Reown/PendingRequests.js:130
+msgid "No pending requests from dApps."
+msgstr ""
+
+#: src/screens/Reown/PendingRequests.js:133
+msgid "Go Back"
+msgstr ""
+
+#: src/components/Reown/ReownPendingOverlay.js:322
+#: src/screens/Reown/PendingRequests.js:193
+#: src/screens/Reown/PendingRequests.js:208
+msgid "Pending Requests"
+msgstr ""
+
+#: src/screens/Reown/PendingRequests.js:197
+msgid "Reown is not connected."
+msgstr ""
+
+#: src/screens/Reown/PendingRequests.js:225 src/screens/Reown/ReownList.js:209
+msgid "pending request"
+msgstr ""
+
+#: src/components/Reown/ReownPendingOverlay.js:278
+#: src/screens/Reown/PendingRequests.js:226 src/screens/Reown/ReownList.js:210
+msgid "pending requests"
+msgstr ""
+
+#: src/screens/Reown/PendingRequests.js:230
+#, javascript-format
+msgid "from ${ dappSummary[0].name }"
+msgstr ""
+
+#: src/screens/Reown/PendingRequests.js:231
+msgid "from ${ dappSummary.length } dApps"
+msgstr ""
+
+#: src/components/AskForPushNotificationRefresh.js:37
+#: src/screens/Reown/PendingRequests.js:240
+msgid "Refresh"
+msgstr ""
+
+#: src/screens/Reown/PendingRequests.js:257
+msgid "Rejecting..."
+msgstr ""
+
+#: src/screens/Reown/PendingRequests.js:257
+#, javascript-format
+msgid "Reject All (${ pendingRequests.length })"
+msgstr ""
+
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:303
 #: src/components/Reown/SendTransactionRequest.js:472
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:33
@@ -1188,30 +1247,34 @@ msgstr ""
 msgid "Success"
 msgstr ""
 
-#: src/screens/Reown/ReownList.js:34
+#: src/screens/Reown/ReownList.js:35
 msgid "There was an error connecting. Please try again later."
 msgstr ""
 
 #.  translator: Used when the QR Code Scanner is opened, and user will manually
 #.  enter the information.
-#: src/screens/Reown/ReownList.js:113
+#: src/screens/Reown/ReownList.js:162
 msgid "Add"
 msgstr ""
 
-#: src/screens/Reown/ReownList.js:119
+#: src/screens/Reown/ReownList.js:168
 msgid "End session"
 msgstr ""
 
-#: src/screens/Reown/ReownList.js:119
+#: src/screens/Reown/ReownList.js:168
 msgid "This will disconnect the session."
 msgstr ""
 
-#: src/screens/Reown/ReownList.js:121
+#: src/screens/Reown/ReownList.js:170
 msgid "End"
 msgstr ""
 
-#: src/screens/Reown/ReownList.js:144
+#: src/screens/Reown/ReownList.js:193
 msgid "Reown Sessions"
+msgstr ""
+
+#: src/screens/Reown/ReownList.js:213
+msgid "Review"
 msgstr ""
 
 #: src/screens/Reown/ReownManual.js:40
@@ -1471,29 +1534,29 @@ msgstr "Transaktion"
 msgid "Open"
 msgstr "Åben"
 
-#: src/sagas/wallet.js:841
+#: src/sagas/wallet.js:874
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:855
+#: src/sagas/wallet.js:888
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:865
+#: src/sagas/wallet.js:898
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:881
+#: src/sagas/wallet.js:914
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
-#: src/components/AmountInputAccessory.js:94
+#: src/components/AmountInputAccessory.js:98
 msgid "Max"
 msgstr ""
 
-#: src/components/AmountInputAccessory.js:101
+#: src/components/AmountInputAccessory.js:105
 msgid "Done"
 msgstr ""
 
@@ -1517,10 +1580,6 @@ msgstr ""
 msgid ""
 "In order to keep receiving push notifications, you need to refresh your "
 "registration. Do you want to do it now?"
-msgstr ""
-
-#: src/components/AskForPushNotificationRefresh.js:37
-msgid "Refresh"
 msgstr ""
 
 #: src/components/CopyClipboard.js:55
@@ -1743,10 +1802,6 @@ msgstr ""
 
 #: src/components/Reown/AdvancedErrorOptions.js:47
 msgid "See error details"
-msgstr ""
-
-#: src/components/Reown/ApproveRejectModal.js:70
-msgid "Reject"
 msgstr ""
 
 #: src/components/Reown/ApproveRejectModal.js:71
@@ -2183,6 +2238,16 @@ msgstr ""
 msgid "dApp requires:"
 msgstr ""
 
+#: src/components/Reown/ReownPendingOverlay.js:289
+#: src/components/Reown/ReownPendingOverlay.js:355
+msgid "REJECT ALL"
+msgstr ""
+
+#: src/components/Reown/ReownPendingOverlay.js:364
+#: src/components/Reown/RequestErrorModal.js:56
+msgid "Dismiss"
+msgstr ""
+
 #: src/components/Reown/RequestConfirmationModal.js:39
 msgid ""
 "You have received a new request. Please carefully review the details before "
@@ -2195,10 +2260,6 @@ msgstr ""
 
 #: src/components/Reown/RequestErrorModal.js:30
 msgid "An error occurred while processing the request."
-msgstr ""
-
-#: src/components/Reown/RequestErrorModal.js:56
-msgid "Dismiss"
 msgstr ""
 
 #: src/components/Reown/SendTransactionModal.js:22
@@ -2608,9 +2669,6 @@ msgstr ""
 
 #~ msgid "Waiting confirmation"
 #~ msgstr "Venter på bekræftelse"
-
-#~ msgid "Payment Request"
-#~ msgstr "Betalingsanmodning"
 
 #, javascript-format
 #~ msgid "You don't have the requested token [${ tokenLabel }]"

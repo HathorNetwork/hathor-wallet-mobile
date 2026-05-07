@@ -15,7 +15,8 @@
     "test": "jest",
     "setup": "npm install && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib,util --hack && npx patch-package",
     "setup:release": "npm ci && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib,util --hack && npx patch-package",
-    "i18n": "make i18n"
+    "i18n": "make i18n",
+    "checki18n": "make check_i18n"
   },
   "dependencies": {
     "@ethersproject/shims": "5.7.0",

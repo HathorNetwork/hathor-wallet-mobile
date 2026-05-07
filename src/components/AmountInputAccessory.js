@@ -7,31 +7,35 @@
 
 import React from 'react';
 import {
-  InputAccessoryView,
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  Platform,
   Keyboard,
 } from 'react-native';
 import { t } from 'ttag';
 import { COLORS } from '../styles/themes';
 
 /**
- * Quick action buttons for amount input (25%, 50%, Max, Done).
- * Uses InputAccessoryView on iOS for native keyboard integration.
- * On Android, renders as a regular component that should be positioned above the keyboard.
+ * Quick-action buttons for an amount input (25%, 50%, Max, Done).
+ * Renders as a regular component; the parent is responsible for
+ * positioning it above the keyboard (e.g. via an absolutely-positioned
+ * overlay tied to keyboard events).
+ *
+ * Previously this component used iOS's `<InputAccessoryView>` to attach
+ * itself to the keyboard window. That caused iOS to keep the accessory
+ * height associated with the keyboard frame across screen unmounts —
+ * the next screen with `<KeyboardAvoidingView>` then over-padded by the
+ * accessory's height (~92 px). Rendering as a plain view instead, and
+ * letting the parent place it, removes that leak entirely.
  *
  * @param {Object} props
- * @param {string} props.nativeID - Unique ID for InputAccessoryView (iOS only)
- * @param {bigint} props.availableBalance - The available balance to calculate percentages
- * @param {Function} props.onPercentagePress - Callback when percentage button is pressed
- * @param {Function} props.onDonePress - Callback when Done button is pressed
- * @param {boolean} [props.visible] - Whether to show the accessory (Android only)
+ * @param {bigint} props.availableBalance - Used to compute percentages
+ * @param {Function} props.onPercentagePress - Called with 25 | 50 | 100
+ * @param {Function} [props.onDonePress] - Optional extra Done handler
+ * @param {boolean} [props.visible=true] - Skip rendering when false
  */
 const AmountInputAccessory = ({
-  nativeID,
   availableBalance,
   onPercentagePress,
   onDonePress,
@@ -103,15 +107,6 @@ const AmountInputAccessory = ({
     </View>
   );
 
-  if (Platform.OS === 'ios') {
-    return (
-      <InputAccessoryView nativeID={nativeID}>
-        {buttons}
-      </InputAccessoryView>
-    );
-  }
-
-  // Android: render as a regular component (parent should position it)
   if (!visible) {
     return null;
   }
