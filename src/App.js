@@ -79,6 +79,8 @@ import ChangePin from './screens/ChangePin';
 import ChangeToken from './screens/ChangeToken';
 import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
+import ImportTokensScreen from './screens/ImportTokensScreen';
+import ConfirmImportScreen from './screens/ConfirmImportScreen';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
 import ReownList from './screens/Reown/ReownList';
@@ -463,6 +465,8 @@ const AppStack = () => {
       case 'UnifiedQRScanner':
       case 'RegisterOptions':
       case 'RegisterTokenManual':
+      case 'ImportTokensScreen':
+      case 'ConfirmImportScreen':
         newEdges = ['bottom'];
         break;
       default:
@@ -529,6 +533,8 @@ const AppStack = () => {
         <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
         <Stack.Screen name='TokenDetail' component={TokenDetail} />
         <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
+        <Stack.Screen name='ImportTokensScreen' component={ImportTokensScreen} />
+        <Stack.Screen name='ConfirmImportScreen' component={ConfirmImportScreen} />
         <Stack.Screen name='TokenSwap' component={TokenSwap} />
         <Stack.Screen name='TokenSwapReview' component={TokenSwapReview} />
         <Stack.Screen name='TokenSwapListInputToken' component={TokenSwapTokenList('input')} />

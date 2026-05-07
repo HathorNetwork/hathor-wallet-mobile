@@ -227,6 +227,29 @@ msgstr "PIN-коды не совпадают. Попробуйте еще раз
 msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
+#: src/screens/ConfirmImportScreen.js:97 src/screens/ImportTokensScreen.js:217
+msgid "IMPORT TOKENS"
+msgstr ""
+
+#: src/screens/ConfirmImportScreen.js:111
+msgid "Confirm Import"
+msgstr ""
+
+#: src/screens/ConfirmImportScreen.js:113
+msgid "You are about to add these tokens to your wallet:"
+msgstr ""
+
+#: src/components/TokenImportBanner.js:77
+#: src/screens/ConfirmImportScreen.js:126 src/screens/Settings.js:157
+msgid "Import tokens"
+msgstr ""
+
+#: src/screens/ConfirmImportScreen.js:135
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:80
+#: src/screens/Reown/SuccessFeedbackScreen.js:39
+msgid "Back"
+msgstr ""
+
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
 #: src/screens/SendAmountInput.js:142
 msgid "Invalid amount"
@@ -443,14 +466,51 @@ msgid "FEE TOKEN"
 msgstr ""
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
-#: src/screens/Dashboard.js:139 src/screens/Dashboard.js:196
+#: src/screens/Dashboard.js:140 src/screens/Dashboard.js:202
 msgid "Tokens"
 msgstr "ТокенЫ"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
 #: src/components/NanoContract/NanoContractsList.js:75
-#: src/screens/Dashboard.js:140
+#: src/screens/Dashboard.js:141
 msgid "Nano Contracts"
+msgstr ""
+
+#: src/screens/ImportTokensScreen.js:152
+msgid "No tokens available to import"
+msgstr ""
+
+#: src/screens/ImportTokensScreen.js:155
+msgid "We didn't find any unregistered tokens linked to your wallet."
+msgstr ""
+
+#: src/screens/ImportTokensScreen.js:158
+msgid "You can register a new one manually."
+msgstr ""
+
+#: src/screens/ImportTokensScreen.js:162 src/screens/Settings.js:150
+msgid "Register a token"
+msgstr "Зарегистрировать токен"
+
+#: src/screens/ImportTokensScreen.js:184
+msgid "Select the tokens you want to add to your wallet."
+msgstr ""
+
+#: src/screens/ImportTokensScreen.js:191
+msgid "Check before import tokens"
+msgstr ""
+
+#: src/screens/ImportTokensScreen.js:194
+msgid ""
+"Adding tokens is your responsibility. Make sure you recognize the source."
+msgstr ""
+
+#: src/screens/ImportTokensScreen.js:200
+msgid "Tokens found"
+msgstr ""
+
+#: src/screens/ImportTokensScreen.js:226
+msgid "Continue"
 msgstr ""
 
 #: src/screens/InitWallet.js:62
@@ -535,6 +595,7 @@ msgstr "Слова"
 msgid "Enter your seed words separated by space"
 msgstr "Введите seed-фразу"
 
+#: src/components/ImportTokensModal.js:69
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:626
@@ -564,7 +625,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PinScreen.js:318
-#: src/screens/Settings.js:162
+#: src/screens/Settings.js:169
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
 
@@ -957,23 +1018,19 @@ msgstr "Безопасность"
 msgid "Create a new token"
 msgstr "Создать новый токен"
 
-#: src/screens/Settings.js:150
-msgid "Register a token"
-msgstr "Зарегистрировать токен"
-
-#: src/screens/Settings.js:166
+#: src/screens/Settings.js:173
 msgid "About"
 msgstr "О нас"
 
-#: src/screens/Settings.js:173
+#: src/screens/Settings.js:180
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/Settings.js:187
+#: src/screens/Settings.js:194
 msgid "Developer Settings"
 msgstr ""
 
-#: src/screens/Settings.js:189
+#: src/screens/Settings.js:196
 msgid "Network Settings"
 msgstr ""
 
@@ -1169,11 +1226,6 @@ msgstr ""
 msgid ""
 "There is 1 unregistered token in this transaction. Do you want to register "
 "it?"
-msgstr ""
-
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:80
-#: src/screens/Reown/SuccessFeedbackScreen.js:39
-msgid "Back"
 msgstr ""
 
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:90
@@ -1467,21 +1519,21 @@ msgstr ""
 msgid "Open"
 msgstr "Открыть"
 
-#: src/sagas/wallet.js:812
+#: src/sagas/wallet.js:831
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:826
+#: src/sagas/wallet.js:845
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:836
+#: src/sagas/wallet.js:855
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:852
+#: src/sagas/wallet.js:871
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
@@ -1570,6 +1622,23 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
+#: src/components/ImportTokensModal.js:32
+msgid "Adding tokens..."
+msgstr ""
+
+#: src/components/ImportTokensModal.js:45
+msgid "New tokens added!"
+msgstr ""
+
+#: src/components/ImportTokensModal.js:49
+msgid "See all tokens"
+msgstr ""
+
+#.  Error state
+#: src/components/ImportTokensModal.js:65
+msgid "Add tokens failed"
+msgstr ""
+
 #: src/components/OfflineBar.js:53
 msgid "No internet connection"
 msgstr "Нет соединения с интернетом"
@@ -1650,6 +1719,20 @@ msgstr ""
 
 #: src/components/TokenDetails.js:60
 msgid "Small fee applies to each transfer. No deposit required."
+msgstr ""
+
+#: src/components/TokenImportBanner.js:59
+msgid "New tokens"
+msgstr ""
+
+#: src/components/Reown/ReownPendingOverlay.js:364
+#: src/components/Reown/RequestErrorModal.js:56
+#: src/components/TokenImportBanner.js:63
+msgid "Dismiss"
+msgstr ""
+
+#: src/components/TokenImportBanner.js:70
+msgid "We found tokens linked to your address that are not yet in your wallet."
 msgstr ""
 
 #: src/components/TransactionStatusLabel.js:69
@@ -2159,11 +2242,6 @@ msgstr ""
 #: src/components/Reown/ReownPendingOverlay.js:289
 #: src/components/Reown/ReownPendingOverlay.js:355
 msgid "REJECT ALL"
-msgstr ""
-
-#: src/components/Reown/ReownPendingOverlay.js:364
-#: src/components/Reown/RequestErrorModal.js:56
-msgid "Dismiss"
 msgstr ""
 
 #: src/components/Reown/RequestConfirmationModal.js:39

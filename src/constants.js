@@ -309,6 +309,18 @@ export const TOKEN_SWAP_STATUS = {
 };
 
 /**
+ * States used by the token import modal (status of the user-initiated import flow).
+ * Lives in constants (not in the modal component) so the reducer can transition
+ * importStatus without depending on a UI module.
+ */
+export const TOKEN_IMPORT_MODAL_STATE = {
+  IDLE: 'idle',
+  IMPORTING: 'importing',
+  SUCCESS: 'success',
+  ERROR: 'error',
+};
+
+/**
  * Timeout in miliseconds to call wallet-service.
  */
 export const WALLET_SERVICE_REQUEST_TIMEOUT = 3000;

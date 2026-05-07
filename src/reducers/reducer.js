@@ -21,6 +21,7 @@ import {
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_STATUS,
   TOKEN_SWAP_ALLOWED_TOKEN_STATUS,
   TOKEN_SWAP_QUOTE_STATUS,
+  TOKEN_IMPORT_MODAL_STATE,
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -564,6 +565,12 @@ const initialState = {
     swapPathQuote: null,
     loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.READY,
   },
+  tokenImport: {
+    unregisteredTokens: {},
+    bannerDismissed: false,
+    loading: false,
+    importStatus: TOKEN_IMPORT_MODAL_STATE.IDLE,
+  },
 };
 
 export const reducer = (state = initialState, action) => {
@@ -815,6 +822,27 @@ export const reducer = (state = initialState, action) => {
       return onTokenSwapFetchQuoteError(state);
     case types.TOKEN_SWAP_RESET_SWAP_DATA:
       return onTokenSwapResetSwapData(state);
+
+    case types.TOKEN_IMPORT_FETCH_REQUESTED:
+      return onTokenImportFetchRequested(state);
+    case types.TOKEN_IMPORT_FETCH_SUCCESS:
+      return onTokenImportFetchSuccess(state, action);
+    case types.TOKEN_IMPORT_FETCH_FAILED:
+      return onTokenImportFetchFailed(state);
+    case types.TOKEN_IMPORT_NEW_DETECTED:
+      return onTokenImportNewDetected(state, action);
+    case types.TOKEN_IMPORT_REQUESTED:
+      return onTokenImportRequested(state);
+    case types.TOKEN_IMPORT_SUCCESS:
+      return onTokenImportSuccess(state, action);
+    case types.TOKEN_IMPORT_FAILED:
+      return onTokenImportFailed(state);
+    case types.TOKEN_IMPORT_REMOVE_FROM_LIST:
+      return onTokenImportRemoveFromList(state, action);
+    case types.TOKEN_IMPORT_DISMISS_BANNER:
+      return onTokenImportDismissBanner(state);
+    case types.TOKEN_IMPORT_RESET_STATUS:
+      return onTokenImportResetStatus(state);
 
     case types.TOKEN_ICONS_LOADED:
       return onTokenIconsLoaded(state, action);
@@ -2368,5 +2396,114 @@ const onTokenIconUpdated = (state, { payload }) => ({
   tokenIcons: {
     ...state.tokenIcons,
     [payload.uid]: payload.url,
+  },
+});
+
+const onTokenImportFetchRequested = (state) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    loading: true,
+  },
+});
+
+const onTokenImportFetchSuccess = (state, { payload }) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    loading: false,
+    // Merge so live detections dispatched via TOKEN_IMPORT_NEW_DETECTED
+    // during the fetch window are not overwritten by the fetch result.
+    unregisteredTokens: {
+      ...payload,
+      ...state.tokenImport.unregisteredTokens,
+    },
+  },
+});
+
+const onTokenImportFetchFailed = (state) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    loading: false,
+  },
+});
+
+const onTokenImportNewDetected = (state, { payload }) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    unregisteredTokens: {
+      ...state.tokenImport.unregisteredTokens,
+      ...payload,
+    },
+    bannerDismissed: false,
+  },
+});
+
+const onTokenImportRequested = (state) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    importStatus: TOKEN_IMPORT_MODAL_STATE.IMPORTING,
+  },
+});
+
+const removeUidsFromUnregistered = (unregistered, uids) => {
+  const next = { ...unregistered };
+  for (const uid of uids) {
+    delete next[uid];
+  }
+  return next;
+};
+
+const onTokenImportSuccess = (state, { payload: tokenUids }) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    importStatus: TOKEN_IMPORT_MODAL_STATE.SUCCESS,
+    unregisteredTokens: removeUidsFromUnregistered(
+      state.tokenImport.unregisteredTokens,
+      tokenUids,
+    ),
+  },
+});
+
+// Used when a token is registered through an unrelated flow (e.g. the manual
+// "Register token" screen). We want the uid removed from the unregistered list
+// but importStatus must NOT transition to SUCCESS, otherwise the next time the
+// user opens the import modal it would briefly flash "New tokens added!".
+const onTokenImportRemoveFromList = (state, { payload: tokenUids }) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    unregisteredTokens: removeUidsFromUnregistered(
+      state.tokenImport.unregisteredTokens,
+      tokenUids,
+    ),
+  },
+});
+
+const onTokenImportFailed = (state) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    importStatus: TOKEN_IMPORT_MODAL_STATE.ERROR,
+  },
+});
+
+const onTokenImportDismissBanner = (state) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    bannerDismissed: true,
+  },
+});
+
+const onTokenImportResetStatus = (state) => ({
+  ...state,
+  tokenImport: {
+    ...state.tokenImport,
+    importStatus: TOKEN_IMPORT_MODAL_STATE.IDLE,
   },
 });

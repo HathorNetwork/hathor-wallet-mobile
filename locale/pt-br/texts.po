@@ -234,6 +234,29 @@ msgstr "Os PINs estão diferentes. Tente novamente."
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
+#: src/screens/ConfirmImportScreen.js:97 src/screens/ImportTokensScreen.js:217
+msgid "IMPORT TOKENS"
+msgstr "IMPORTAR TOKENS"
+
+#: src/screens/ConfirmImportScreen.js:111
+msgid "Confirm Import"
+msgstr "Confirmar importação"
+
+#: src/screens/ConfirmImportScreen.js:113
+msgid "You are about to add these tokens to your wallet:"
+msgstr "Você está prestes a adicionar esses tokens à sua carteira:"
+
+#: src/components/TokenImportBanner.js:77
+#: src/screens/ConfirmImportScreen.js:126 src/screens/Settings.js:157
+msgid "Import tokens"
+msgstr "Importar tokens"
+
+#: src/screens/ConfirmImportScreen.js:135
+#: src/screens/Reown/RegisterTokenAfterSuccess.js:80
+#: src/screens/Reown/SuccessFeedbackScreen.js:39
+msgid "Back"
+msgstr "Voltar"
+
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
 #: src/screens/SendAmountInput.js:142
 msgid "Invalid amount"
@@ -457,15 +480,54 @@ msgid "FEE TOKEN"
 msgstr "TOKEN DE TAXA"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
-#: src/screens/Dashboard.js:139 src/screens/Dashboard.js:196
+#: src/screens/Dashboard.js:140 src/screens/Dashboard.js:202
 msgid "Tokens"
 msgstr "Tokens"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
 #: src/components/NanoContract/NanoContractsList.js:75
-#: src/screens/Dashboard.js:140
+#: src/screens/Dashboard.js:141
 msgid "Nano Contracts"
 msgstr "Nano Contracts"
+
+#: src/screens/ImportTokensScreen.js:152
+msgid "No tokens available to import"
+msgstr "Nenhum token disponível para ser importado"
+
+#: src/screens/ImportTokensScreen.js:155
+msgid "We didn't find any unregistered tokens linked to your wallet."
+msgstr "Não encontramos nenhum token não registrado vinculado à sua carteira."
+
+#: src/screens/ImportTokensScreen.js:158
+msgid "You can register a new one manually."
+msgstr "Você pode registrar um novo token manualmente."
+
+#: src/screens/ImportTokensScreen.js:162 src/screens/Settings.js:150
+msgid "Register a token"
+msgstr "Registrar um token"
+
+#: src/screens/ImportTokensScreen.js:184
+msgid "Select the tokens you want to add to your wallet."
+msgstr "Selecione os tokens que você quer adicionar à sua carteira."
+
+#: src/screens/ImportTokensScreen.js:191
+msgid "Check before import tokens"
+msgstr "Atenção antes de importar tokens"
+
+#: src/screens/ImportTokensScreen.js:194
+msgid ""
+"Adding tokens is your responsibility. Make sure you recognize the source."
+msgstr ""
+"Adicionar tokens é sua responsabilidade. Tenha certeza de que reconhece a "
+"fonte."
+
+#: src/screens/ImportTokensScreen.js:200
+msgid "Tokens found"
+msgstr "Tokens encontrados"
+
+#: src/screens/ImportTokensScreen.js:226
+msgid "Continue"
+msgstr "Continuar"
 
 #: src/screens/InitWallet.js:62
 msgid "Welcome to Hathor Wallet!"
@@ -551,6 +613,7 @@ msgstr "Palavras"
 msgid "Enter your seed words separated by space"
 msgstr "Digite suas palavras separadas por espaços"
 
+#: src/components/ImportTokensModal.js:69
 #: src/components/NanoContract/NanoContractDetails.js:252
 #: src/components/Reown/CreateTokenRequest.js:249
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:626
@@ -580,7 +643,7 @@ msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PinScreen.js:318
-#: src/screens/Settings.js:162
+#: src/screens/Settings.js:169
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
 
@@ -976,23 +1039,19 @@ msgstr "Segurança"
 msgid "Create a new token"
 msgstr "Criar um novo token"
 
-#: src/screens/Settings.js:150
-msgid "Register a token"
-msgstr "Registrar um token"
-
-#: src/screens/Settings.js:166
+#: src/screens/Settings.js:173
 msgid "About"
 msgstr "Sobre"
 
-#: src/screens/Settings.js:173
+#: src/screens/Settings.js:180
 msgid "Unique app identifier"
 msgstr "Identificador único do aplicativo"
 
-#: src/screens/Settings.js:187
+#: src/screens/Settings.js:194
 msgid "Developer Settings"
 msgstr "Configurações do Desenvolvedor"
 
-#: src/screens/Settings.js:189
+#: src/screens/Settings.js:196
 msgid "Network Settings"
 msgstr "Configurações de Rede"
 
@@ -1191,11 +1250,6 @@ msgid ""
 "There is 1 unregistered token in this transaction. Do you want to register "
 "it?"
 msgstr "Há 1 token não registrado nesta transação. Você deseja registrá-lo?"
-
-#: src/screens/Reown/RegisterTokenAfterSuccess.js:80
-#: src/screens/Reown/SuccessFeedbackScreen.js:39
-msgid "Back"
-msgstr "Voltar"
 
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:90
 msgid "Success"
@@ -1498,21 +1552,21 @@ msgstr "Transação"
 msgid "Open"
 msgstr "Abrir"
 
-#: src/sagas/wallet.js:812
+#: src/sagas/wallet.js:831
 msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:826
+#: src/sagas/wallet.js:845
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
-#: src/sagas/wallet.js:836
+#: src/sagas/wallet.js:855
 msgid "Wallet is not ready to load the first address."
 msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:852
+#: src/sagas/wallet.js:871
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
@@ -1619,6 +1673,23 @@ msgstr "Reportar erro"
 msgid "Close"
 msgstr "Fechar"
 
+#: src/components/ImportTokensModal.js:32
+msgid "Adding tokens..."
+msgstr "Adicionando tokens..."
+
+#: src/components/ImportTokensModal.js:45
+msgid "New tokens added!"
+msgstr "Novos tokens adicionados!"
+
+#: src/components/ImportTokensModal.js:49
+msgid "See all tokens"
+msgstr "Ver todos os tokens"
+
+#.  Error state
+#: src/components/ImportTokensModal.js:65
+msgid "Add tokens failed"
+msgstr "Adicionar tokens falhou"
+
 #: src/components/OfflineBar.js:53
 msgid "No internet connection"
 msgstr "Sem conexão com a internet"
@@ -1701,6 +1772,22 @@ msgstr "Modelo de taxa: Token com taxa"
 msgid "Small fee applies to each transfer. No deposit required."
 msgstr ""
 "Uma pequena taxa é aplicada em cada transação. Nenhum depósito é necessário."
+
+#: src/components/TokenImportBanner.js:59
+msgid "New tokens"
+msgstr "Novos tokens"
+
+#: src/components/Reown/ReownPendingOverlay.js:364
+#: src/components/Reown/RequestErrorModal.js:56
+#: src/components/TokenImportBanner.js:63
+msgid "Dismiss"
+msgstr "Fechar"
+
+#: src/components/TokenImportBanner.js:70
+msgid "We found tokens linked to your address that are not yet in your wallet."
+msgstr ""
+"Encontramos tokens vinculados aos seus endereços que não estão em sua "
+"carteira ainda."
 
 #: src/components/TransactionStatusLabel.js:69
 msgid "Executed"
@@ -2238,11 +2325,6 @@ msgstr "dApp precisa:"
 #: src/components/Reown/ReownPendingOverlay.js:355
 msgid "REJECT ALL"
 msgstr "REJEITAR TODAS"
-
-#: src/components/Reown/ReownPendingOverlay.js:364
-#: src/components/Reown/RequestErrorModal.js:56
-msgid "Dismiss"
-msgstr "Fechar"
 
 #: src/components/Reown/RequestConfirmationModal.js:39
 msgid ""
