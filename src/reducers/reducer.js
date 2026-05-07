@@ -2412,7 +2412,12 @@ const onTokenImportFetchSuccess = (state, { payload }) => ({
   tokenImport: {
     ...state.tokenImport,
     loading: false,
-    unregisteredTokens: payload,
+    // Merge so live detections dispatched via TOKEN_IMPORT_NEW_DETECTED
+    // during the fetch window are not overwritten by the fetch result.
+    unregisteredTokens: {
+      ...payload,
+      ...state.tokenImport.unregisteredTokens,
+    },
   },
 });
 

@@ -25,7 +25,10 @@ import errorIcon from '../assets/images/icErrorBig.png';
  */
 const ImportTokensModal = ({ status, onDismiss, onRetry }) => {
   const renderContent = () => {
-    if (status === TOKEN_IMPORT_MODAL_STATE.IMPORTING) {
+    // IDLE shares the spinner branch to avoid a one-frame flash of the error
+    // UI between mount and the first IMPORTING dispatch.
+    if (status === TOKEN_IMPORT_MODAL_STATE.IMPORTING
+        || status === TOKEN_IMPORT_MODAL_STATE.IDLE) {
       return (
         <>
           <ActivityIndicator size='large' color={COLORS.textColor} />

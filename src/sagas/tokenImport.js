@@ -121,7 +121,7 @@ export function* fetchUnregisteredTokens() {
  * silently drop the UIDs it had already accumulated.
  */
 export function* handleNewTokenDetection(action) {
-  const tokenUids = action.payload;
+  const tokenUids = action.payload ?? [];
   const wallet = yield select((state) => state.wallet);
 
   if (!wallet || !wallet.isReady()) {
