@@ -23,6 +23,7 @@ import { STORE } from '../store';
 import { ADDRESS_MODE, addressModeKey } from '../constants';
 import { setAddressMode, reloadWalletRequested } from '../actions';
 import { getNetworkSettings } from '../sagas/helpers';
+import { WALLET_STATUS } from '../sagas/wallet';
 
 /**
  * Screen that allows the user to toggle between single and multi address mode.
@@ -35,11 +36,25 @@ export default function AddressMode({ navigation }) {
   const wallet = useSelector((state) => state.wallet);
   const currentMode = useSelector((state) => state.addressMode);
   const network = useSelector((state) => getNetworkSettings(state).network);
+  const walletStartState = useSelector((state) => state.walletStartState);
 
   const [selectedMode, setSelectedMode] = useState(currentMode || ADDRESS_MODE.MULTI);
   const [hasTxOutside, setHasTxOutside] = useState(false);
   const [checking, setChecking] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const checkAddresses = useCallback(async () => {
+    setChecking(true);
+    try {
+      const result = await wallet.hasTxOutsideFirstAddress();
+      setHasTxOutside(result);
+    } catch (e) {
+      // If the check fails, we conservatively prevent switching to single mode
+      setHasTxOutside(true);
+    } finally {
+      setChecking(false);
+    }
+  }, [wallet]);
 
   useEffect(() => {
     if (currentMode) {
@@ -48,34 +63,17 @@ export default function AddressMode({ navigation }) {
   }, [currentMode]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    const checkAddresses = async () => {
-      try {
-        if (wallet) {
-          const result = await wallet.hasTxOutsideFirstAddress();
-          if (!cancelled) {
-            setHasTxOutside(result);
-          }
-        }
-      } catch (e) {
-        // If the check fails, we conservatively prevent switching to single mode
-        if (!cancelled) {
-          setHasTxOutside(true);
-        }
-      } finally {
-        if (!cancelled) {
-          setChecking(false);
-        }
-      }
-    };
-
+    // Wait for the wallet to be fully ready before running the check.
+    // Why: saving a mode change dispatches reloadWalletRequested, which
+    // replaces the wallet with a freshly-created instance whose storage
+    // was just cleaned. Calling hasTxOutsideFirstAddress on it throws,
+    // and the catch above would conservatively show the warning banner.
+    if (!wallet || walletStartState !== WALLET_STATUS.READY) {
+      setChecking(true);
+      return;
+    }
     checkAddresses();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [wallet]);
+  }, [wallet, walletStartState, checkAddresses]);
 
   const isSaveDisabled = selectedMode === currentMode;
 
