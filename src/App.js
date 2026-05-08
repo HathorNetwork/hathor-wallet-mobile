@@ -82,6 +82,7 @@ import UnregisterToken from './screens/UnregisterToken';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
 import PrivacySettings from './screens/PrivacySettings';
+import ExportPrivacyKeys from './screens/ExportPrivacyKeys';
 import ReownList from './screens/Reown/ReownList';
 import ReownManual from './screens/Reown/ReownManual';
 import ReownScan from './screens/Reown/ReownScan';
@@ -479,6 +480,7 @@ const AppStack = () => {
         <Stack.Screen name='About' component={About} />
         <Stack.Screen name='Security' component={Security} />
         <Stack.Screen name='PrivacySettings' component={PrivacySettings} />
+        <Stack.Screen name='ExportPrivacyKeys' component={ExportPrivacyKeys} />
         <Stack.Screen name='ReownList' component={ReownList} />
         <Stack.Screen name='ReownManual' component={ReownManual} />
         <Stack.Screen name='ReownScan' component={ReownScan} />
