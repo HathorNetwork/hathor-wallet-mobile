@@ -83,7 +83,6 @@ class SendScanQRCode extends React.Component {
         />
         <View style={{ flex: 1, margin: 16, alignSelf: 'stretch' }}>
           <QRCodeReader
-            navigation={this.props.navigation}
             onSuccess={this.onSuccess}
             bottomText={t`Scan the QR code`}
           />
