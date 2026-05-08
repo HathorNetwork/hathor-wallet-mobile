@@ -16,12 +16,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import SimpleButton from './SimpleButton';
 import CopyClipboard from './CopyClipboard';
 import { sharedAddressUpdate } from '../actions';
+import { ADDRESS_MODE } from '../constants';
 import { COLORS } from '../styles/themes';
 
 export default function ReceiveMyAddress() {
   const dispatch = useDispatch();
   const wallet = useSelector((state) => state.wallet);
   const lastSharedAddress = useSelector((state) => state.lastSharedAddress);
+  const addressMode = useSelector((state) => state.addressMode);
 
   const getNextAddress = async () => {
     const { address, index } = await wallet.getNextAddress();
@@ -53,11 +55,13 @@ export default function ReceiveMyAddress() {
         />
       </View>
       <View style={styles.buttonRow}>
-        <SimpleButton
-          title={t`New address`}
-          onPress={getNextAddress}
-          containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
-        />
+        {addressMode !== ADDRESS_MODE.SINGLE && (
+          <SimpleButton
+            title={t`New address`}
+            onPress={getNextAddress}
+            containerStyle={[styles.buttonContainer, styles.leftButtonBorder]}
+          />
+        )}
         <SimpleButton
           onPress={shareAddress}
           title={t`Share`}

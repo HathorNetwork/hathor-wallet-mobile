@@ -157,6 +157,74 @@ msgstr ""
 "Para mais informações, veja os |link1:Termos de Serviço| e |link2:Política "
 "de Privacidade|, ou visite nosso site |link3:https://hathor.network/|."
 
+#: src/screens/AddressMode.js:98
+msgid "Error"
+msgstr "Erro"
+
+#: src/screens/AddressMode.js:99
+msgid "Failed to change address mode. Please try again."
+msgstr "Falha ao alterar o modo de endereço. Por favor, tente novamente."
+
+#: src/screens/AddressMode.js:160 src/screens/AddressMode.js:173
+msgid "ADDRESS MODE"
+msgstr "MODO DE ENDEREÇO"
+
+#: src/screens/AddressMode.js:179
+msgid "You can set your wallet to "
+msgstr "Você pode configurar sua carteira para "
+
+#: src/screens/AddressMode.js:181
+msgid "single or multi address mode"
+msgstr "modo de endereço único ou múltiplos"
+
+#: src/screens/AddressMode.js:186
+msgid "You can switch anytime in the settings."
+msgstr "Você pode trocar a qualquer momento nas configurações."
+
+#: src/screens/AddressMode.js:193
+msgid "Single Address"
+msgstr "Endereço Único"
+
+#: src/screens/AddressMode.js:194
+msgid "Your wallet will use only one address (index 0)."
+msgstr "Sua carteira usará apenas um endereço (índice 0)."
+
+#: src/screens/AddressMode.js:195
+msgid "Easier to manage and compatible with all dApps."
+msgstr "Mais fácil de gerenciar e compatível com todos os dApps."
+
+#: src/screens/AddressMode.js:200
+msgid "Multi Address"
+msgstr "Múltiplos Endereços"
+
+#: src/screens/AddressMode.js:201
+msgid "Your wallet will let you generate multiple addresses."
+msgstr "Sua carteira permitirá gerar múltiplos endereços."
+
+#: src/screens/AddressMode.js:202
+msgid "Useful for advanced users."
+msgstr "Útil para usuários avançados."
+
+#: src/screens/AddressMode.js:213
+msgid ""
+"You can't switch to single address mode because other addresses in your "
+"wallet are already in use."
+msgstr ""
+"Você não pode mudar para o modo de endereço único porque outros endereços da "
+"sua carteira já estão em uso."
+
+#: src/screens/AddressMode.js:237
+msgid "SAVE PREFERENCES"
+msgstr "SALVAR PREFERÊNCIAS"
+
+#: src/screens/AddressMode.js:257
+msgid ""
+"Changing\n"
+"address mode..."
+msgstr ""
+"Alterando\n"
+"modo de endereço..."
+
 #: src/screens/BackupWords.js:184
 msgid "To make sure you saved,"
 msgstr "Para conferir que você salvou,"
@@ -580,7 +648,7 @@ msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PinScreen.js:318
-#: src/screens/Settings.js:162
+#: src/screens/Settings.js:170
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
 
@@ -657,7 +725,7 @@ msgstr "Cancelar"
 msgid "Biometry failed or canceled."
 msgstr "Biometria falhou ou foi cancelada."
 
-#: src/screens/PushNotification.js:58 src/screens/Settings.js:136
+#: src/screens/PushNotification.js:58 src/screens/Settings.js:140
 msgid "Push Notification"
 msgstr "Notificação"
 
@@ -956,60 +1024,68 @@ msgstr "QR code inválido"
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
 
-#: src/screens/Settings.js:105
+#: src/screens/Settings.js:108
 msgid "You are connected to"
 msgstr "Você está conectado à"
 
-#: src/screens/Settings.js:113
+#: src/screens/Settings.js:117
 msgid "General Settings"
 msgstr "Configurações Gerais"
 
-#: src/screens/Settings.js:117
-msgid "Connected to"
-msgstr "Conectado ao servidor"
-
-#: src/screens/Settings.js:130
-msgid "Security"
-msgstr "Segurança"
-
-#: src/screens/Settings.js:143
-msgid "Create a new token"
-msgstr "Criar um novo token"
-
-#: src/screens/Settings.js:150
+#: src/screens/Settings.js:121
 msgid "Register a token"
 msgstr "Registrar um token"
 
-#: src/screens/Settings.js:166
+#: src/screens/Settings.js:129
+msgid "Create a new token"
+msgstr "Criar um novo token"
+
+#: src/screens/Settings.js:134
+msgid "Security"
+msgstr "Segurança"
+
+#: src/screens/Settings.js:147
+msgid "Reown"
+msgstr "Reown"
+
+#: src/screens/Settings.js:154
+msgid "Advanced Settings"
+msgstr "Configurações Avançadas"
+
+#: src/screens/Settings.js:158
+msgid "Network Settings"
+msgstr "Configurações de Rede"
+
+#: src/screens/Settings.js:165
+msgid "Address Mode"
+msgstr "Modo de Endereço"
+
+#: src/screens/Settings.js:178
 msgid "About"
 msgstr "Sobre"
 
-#: src/screens/Settings.js:173
+#: src/screens/Settings.js:186
 msgid "Unique app identifier"
 msgstr "Identificador único do aplicativo"
 
-#: src/screens/Settings.js:187
-msgid "Developer Settings"
-msgstr "Configurações do Desenvolvedor"
-
-#: src/screens/Settings.js:189
-msgid "Network Settings"
-msgstr "Configurações de Rede"
+#: src/screens/Settings.js:199
+msgid "Connected to"
+msgstr "Conectado ao servidor"
 
 #: src/screens/TokenDetail.js:38
 msgid "Unregister"
 msgstr "Desregistrar"
 
-#: src/screens/TokenSwap.js:308
+#: src/screens/TokenSwap.js:333
 #, javascript-format
 msgid "Balance: ${ amount }"
 msgstr "Saldo ${ amount }"
 
-#: src/screens/TokenSwap.js:350
+#: src/screens/TokenSwap.js:357
 msgid "TOKEN SWAP"
 msgstr "TROCA DE TOKENS"
 
-#: src/screens/TokenSwap.js:450
+#: src/screens/TokenSwap.js:455
 msgid "REVIEW"
 msgstr "REVISAR"
 
@@ -1498,30 +1574,30 @@ msgstr "Transação"
 msgid "Open"
 msgstr "Abrir"
 
-#: src/sagas/wallet.js:812
+#: src/sagas/wallet.js:874
 msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:826
+#: src/sagas/wallet.js:888
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
-#: src/sagas/wallet.js:836
+#: src/sagas/wallet.js:898
 msgid "Wallet is not ready to load the first address."
 msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:852
+#: src/sagas/wallet.js:914
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
 
-#: src/components/AmountInputAccessory.js:94
+#: src/components/AmountInputAccessory.js:98
 msgid "Max"
 msgstr "Máx"
 
-#: src/components/AmountInputAccessory.js:101
+#: src/components/AmountInputAccessory.js:105
 msgid "Done"
 msgstr "Ok"
 
@@ -1639,16 +1715,16 @@ msgstr "ID"
 msgid "New Transaction"
 msgstr "Transação"
 
-#: src/components/ReceiveMyAddress.js:34
+#: src/components/ReceiveMyAddress.js:35
 #, javascript-format
 msgid "Here is my address: ${ lastSharedAddress }"
 msgstr "Esse é o meu endereço: ${ lastSharedAddress }"
 
-#: src/components/ReceiveMyAddress.js:57
+#: src/components/ReceiveMyAddress.js:59
 msgid "New address"
 msgstr "Novo endereço"
 
-#: src/components/ReceiveMyAddress.js:63 src/components/TokenDetails.js:102
+#: src/components/ReceiveMyAddress.js:66 src/components/TokenDetails.js:102
 msgid "Share"
 msgstr "Compartilhar"
 
@@ -2668,15 +2744,15 @@ msgstr "${ tokenSymbol } Conceder Authority"
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
 
+#~ msgid "Developer Settings"
+#~ msgstr "Configurações do Desenvolvedor"
+
 #, javascript-format
 #~ msgid "You've just received **${ amount } ${ symbol }**"
 #~ msgstr "Você recebeu **${ amount } ${ symbol }**"
 
 #~ msgid "PAYMENT REQUEST"
 #~ msgstr "REQUISIÇÃO DE PAGAMENTO"
-
-#~ msgid "My Address"
-#~ msgstr "Meu endereço"
 
 #~ msgid "Status"
 #~ msgstr "Status"

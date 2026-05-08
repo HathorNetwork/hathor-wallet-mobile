@@ -22,6 +22,7 @@ import {
   IS_MULTI_TOKEN,
   NETWORK_SETTINGS_FEATURE_TOGGLE,
   REOWN_FEATURE_TOGGLE,
+  SINGLE_ADDRESS_FEATURE_TOGGLE,
 } from '../constants';
 import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
@@ -53,6 +54,8 @@ const mapStateToProps = (state) => {
     isPushNotificationAvailable: isPushNotificationAvailableForUser(state),
     reownEnabled: state.featureToggles[REOWN_FEATURE_TOGGLE] && isNanoContractsEnabled(state),
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
+    singleAddressEnabled: state.featureToggles[SINGLE_ADDRESS_FEATURE_TOGGLE],
+    addressMode: state.addressMode,
   };
 };
 
@@ -110,22 +113,23 @@ export class Settings extends React.Component {
             )
           )}
 
+          {/* Section 1: General Settings */}
           <HathorList title={t`General Settings`}>
-            <ListItem
-              text={(
-                <View style={{ flex: 1 }}>
-                  <Text style={{ marginBottom: 8, color: COLORS.textColorShadow, fontSize: 12 }}>{t`Connected to`}</Text>
-                  <Text
-                    style={{ fontSize: 12 }}
-                    adjustsFontSizeToFit
-                    minimumFontScale={0.5}
-                  >
-                    {this.props.server}
-                  </Text>
-                </View>
+            {IS_MULTI_TOKEN
+              && (
+                <ListMenu
+                  title={t`Register a token`}
+                  onPress={() => this.props.navigation.navigate('RegisterToken')}
+                  isFirst
+                />
               )}
-              isFirst
-            />
+            {IS_MULTI_TOKEN
+              && (
+                <ListMenu
+                  title={t`Create a new token`}
+                  onPress={() => this.props.navigation.navigate('CreateTokenStack')}
+                />
+              )}
             <ListMenu
               title={t`Security`}
               onPress={() => this.props.navigation.navigate('Security')}
@@ -137,34 +141,43 @@ export class Settings extends React.Component {
                   onPress={() => this.props.navigation.navigate('PushNotification')}
                 />
               )}
-            {IS_MULTI_TOKEN
-              && (
-                <ListMenu
-                  title={t`Create a new token`}
-                  onPress={() => this.props.navigation.navigate('CreateTokenStack')}
-                />
-              )}
-            {IS_MULTI_TOKEN
-              && (
-                <ListMenu
-                  title={t`Register a token`}
-                  onPress={() => this.props.navigation.navigate('RegisterToken')}
-                />
-              )}
             {this.props.reownEnabled
               && (
                 <ListMenu
-                  title='Reown'
+                  title={t`Reown`}
                   onPress={() => this.props.navigation.navigate('ReownList')}
+                />
+              )}
+          </HathorList>
+
+          {/* Section 2: Advanced Settings */}
+          <HathorList title={t`Advanced Settings`}>
+            {this.props.networkSettingsEnabled
+              && (
+                <ListMenu
+                  title={t`Network Settings`}
+                  onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
+                />
+              )}
+            {this.props.singleAddressEnabled
+              && (
+                <ListMenu
+                  title={t`Address Mode`}
+                  onPress={() => this.props.navigation.navigate('AddressMode')}
                 />
               )}
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}
             />
+          </HathorList>
+
+          {/* Section 3: Footer */}
+          <HathorList>
             <ListMenu
               title={t`About`}
               onPress={() => this.props.navigation.navigate('About')}
+              isFirst
             />
             <ListItem
               text={(
@@ -180,17 +193,22 @@ export class Settings extends React.Component {
                 </View>
               )}
             />
+            <ListItem
+              text={(
+                <View style={{ flex: 1 }}>
+                  <Text style={{ marginBottom: 8, color: COLORS.textColorShadow, fontSize: 12 }}>{t`Connected to`}</Text>
+                  <Text
+                    style={{ fontSize: 12 }}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.5}
+                  >
+                    {this.props.server}
+                  </Text>
+                </View>
+              )}
+              isLast
+            />
           </HathorList>
-
-          {this.props.networkSettingsEnabled
-            && (
-              <HathorList title={t`Developer Settings`}>
-                <ListMenu
-                  title={t`Network Settings`}
-                  onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
-                />
-              </HathorList>
-            )}
 
         </ScrollView>
         <OfflineBar />

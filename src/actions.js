@@ -103,6 +103,7 @@ export const types = {
   PUSH_DEVICE_REGISTERED: 'PUSH_DEVICE_REGISTERED',
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
+  SET_ADDRESS_MODE: 'SET_ADDRESS_MODE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
   SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
   // Feature Toggle actions
@@ -960,6 +961,15 @@ export const sharedAddressUpdate = (lastSharedAddress, lastSharedIndex) => ({
     lastSharedAddress,
     lastSharedIndex,
   },
+});
+
+/**
+ * Set the wallet address mode
+ * @param {'single'|'multi'} mode
+ */
+export const setAddressMode = (mode) => ({
+  type: types.SET_ADDRESS_MODE,
+  payload: mode,
 });
 
 /**
