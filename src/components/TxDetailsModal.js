@@ -21,6 +21,7 @@ import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 import CopyClipboard from './CopyClipboard';
 import { PublicExplorerListButton } from './PublicExplorerListButton';
+import AuditUnblindingRows from './AuditUnblindingRows';
 import { COLORS } from '../styles/themes';
 import BackdropModal from './BackdropModal';
 import { ChevronDownIcon } from './Icons/ChevronDown.icon';
@@ -210,6 +211,7 @@ class TxDetailsModal extends Component {
             {this.renderFeesRow(networkFee, privacyFee)}
             <ListItem title={t`Transaction ID`} text={txIdComponent} />
             <PublicExplorerListButton txId={tx.txId} />
+            <AuditUnblindingRows txId={tx.txId} />
           </View>
         </ScrollView>
       </BackdropModal>
