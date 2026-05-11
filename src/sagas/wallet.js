@@ -127,7 +127,7 @@ export function decideAddressMode({ singleAddressFeatureEnabled, storedAddressMo
     // User explicitly chose multi via Settings → respect.
     return ADDRESS_MODE.MULTI;
   }
-  // null (no preference) or SINGLE → attempt single. The wallet-lib downgrades
+  // null (no preference) or SINGLE → attempt single. The wallet-lib changes
   // to GAP_LIMIT if it finds tx on addresses with index > 0.
   return ADDRESS_MODE.SINGLE;
 }
@@ -279,9 +279,12 @@ export function* startWallet(action) {
       beforeReloadCallback: () => {
         dispatch(onWalletReload());
       },
-      ...(singleAddressMode && {
-        scanPolicy: { policy: SCANNING_POLICY.SINGLE_ADDRESS },
-      }),
+      scanPolicy: singleAddressMode
+        ? { policy: SCANNING_POLICY.SINGLE_ADDRESS }
+        : {
+          policy: SCANNING_POLICY.GAP_LIMIT,
+          gapLimit: hathorLibConstants.GAP_LIMIT,
+        },
     };
     wallet = new HathorWallet(walletConfig);
   }

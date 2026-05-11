@@ -21,9 +21,32 @@ import HathorHeader from '../components/HathorHeader';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import { ADDRESS_MODE, addressModeKey } from '../constants';
-import { setAddressMode, reloadWalletRequested } from '../actions';
+import { setAddressMode, reloadWalletRequested, onExceptionCaptured } from '../actions';
 import { getNetworkSettings } from '../sagas/helpers';
 import { WALLET_STATUS } from '../sagas/wallet';
+import { logger } from '../logger';
+
+const log = logger('AddressMode');
+
+/**
+ * Checks whether the wallet has any tx on addresses past index 0.
+ * Returns true conservatively when the underlying call throws, so the
+ * caller can prevent switching to single-address mode without proof
+ * that no other addresses are in use.
+ *
+ * @param {Object} wallet - Hathor wallet instance
+ * @param {Function} dispatch - Redux dispatch (for exception capture)
+ * @returns {Promise<boolean>}
+ */
+async function detectTxOutsideFirstAddress(wallet, dispatch) {
+  try {
+    return await wallet.hasTxOutsideFirstAddress();
+  } catch (e) {
+    log.error('hasTxOutsideFirstAddress check failed', e);
+    dispatch(onExceptionCaptured(e, false));
+    return true;
+  }
+}
 
 /**
  * Screen that allows the user to toggle between single and multi address mode.
@@ -38,23 +61,10 @@ export default function AddressMode({ navigation }) {
   const network = useSelector((state) => getNetworkSettings(state).network);
   const walletStartState = useSelector((state) => state.walletStartState);
 
-  const [selectedMode, setSelectedMode] = useState(currentMode || ADDRESS_MODE.MULTI);
+  const [selectedMode, setSelectedMode] = useState(currentMode);
   const [hasTxOutside, setHasTxOutside] = useState(false);
   const [checking, setChecking] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  const checkAddresses = useCallback(async () => {
-    setChecking(true);
-    try {
-      const result = await wallet.hasTxOutsideFirstAddress();
-      setHasTxOutside(result);
-    } catch (e) {
-      // If the check fails, we conservatively prevent switching to single mode
-      setHasTxOutside(true);
-    } finally {
-      setChecking(false);
-    }
-  }, [wallet]);
 
   useEffect(() => {
     if (currentMode) {
@@ -63,17 +73,27 @@ export default function AddressMode({ navigation }) {
   }, [currentMode]);
 
   useEffect(() => {
-    // Wait for the wallet to be fully ready before running the check.
-    // Why: saving a mode change dispatches reloadWalletRequested, which
-    // replaces the wallet with a freshly-created instance whose storage
-    // was just cleaned. Calling hasTxOutsideFirstAddress on it throws,
-    // and the catch above would conservatively show the warning banner.
-    if (!wallet || walletStartState !== WALLET_STATUS.READY) {
+    // Wait until the wallet is fully ready AND the saga has populated
+    // currentMode (the post-start sync in startWallet writes Redux +
+    // AsyncStorage with the wallet-lib's actual scan policy).
+    if (!wallet || walletStartState !== WALLET_STATUS.READY || currentMode == null) {
       setChecking(true);
-      return;
+      return undefined;
     }
-    checkAddresses();
-  }, [wallet, walletStartState, checkAddresses]);
+
+    let cancelled = false;
+    setChecking(true);
+    detectTxOutsideFirstAddress(wallet, dispatch).then((result) => {
+      if (!cancelled) {
+        setHasTxOutside(result);
+        setChecking(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [wallet, walletStartState, currentMode, dispatch]);
 
   const isSaveDisabled = selectedMode === currentMode;
 
@@ -88,10 +108,16 @@ export default function AddressMode({ navigation }) {
         await wallet.enableMultiAddressMode();
       }
 
+      // Persist optimistically. The saga's post-start sync (startWallet)
+      // overwrites this value after reload with the wallet-lib's
+      // authoritative scan policy — the lib may silently changes
+      // SINGLE → GAP_LIMIT if it detects tx on addresses past index 0.
       STORE.setItem(addressModeKey(network), selectedMode);
       dispatch(setAddressMode(selectedMode));
       dispatch(reloadWalletRequested());
     } catch (e) {
+      log.error('Failed to change address mode', e);
+      dispatch(onExceptionCaptured(e, false));
       Alert.alert(
         t`Error`,
         t`Failed to change address mode. Please try again.`,
@@ -99,12 +125,12 @@ export default function AddressMode({ navigation }) {
     } finally {
       setSaving(false);
     }
-  }, [selectedMode, currentMode, wallet, dispatch, isSaveDisabled, network]);
+  }, [selectedMode, wallet, dispatch, isSaveDisabled, network]);
 
   const singleDisabled = hasTxOutside;
 
   const renderRadioIcon = (isSelected, isDisabled) => {
-    const outerColor = isDisabled ? '#c4c4c4' : COLORS.primary;
+    const outerColor = isDisabled ? COLORS.borderColorDark : COLORS.primary;
     return (
       <View
         style={[
@@ -121,8 +147,8 @@ export default function AddressMode({ navigation }) {
 
   const renderCard = (mode, label, body, hint, isDisabled) => {
     const isSelected = selectedMode === mode;
-    const labelColor = isDisabled ? '#c4c4c4' : COLORS.primary;
-    const bodyColor = isDisabled ? '#b0b0b0' : COLORS.black;
+    const labelColor = isDisabled ? COLORS.borderColorDark : COLORS.primary;
+    const bodyColor = isDisabled ? COLORS.midContrastDetail : COLORS.black;
 
     return (
       <TouchableOpacity
@@ -264,7 +290,7 @@ export default function AddressMode({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
   },
   loadingContainer: {
     flex: 1,
@@ -312,7 +338,7 @@ const styles = StyleSheet.create({
   cardHint: {
     fontSize: 12,
     fontStyle: 'italic',
-    color: '#57606a',
+    color: COLORS.darkContrastDetail,
     lineHeight: 20,
   },
   radioOuter: {
@@ -332,7 +358,7 @@ const styles = StyleSheet.create({
   warningBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(217, 119, 6, 0.2)',
+    backgroundColor: COLORS.feedbackWarning100,
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -345,7 +371,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     textAlign: 'center',
-    color: '#D97706',
+    color: COLORS.feedbackWarning300,
   },
   warningText: {
     flex: 1,
@@ -366,7 +392,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   saveButtonDisabled: {
-    backgroundColor: '#e5e5e5',
+    backgroundColor: COLORS.borderColorMid,
   },
   saveButtonActive: {
     backgroundColor: COLORS.black,
@@ -376,21 +402,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   saveButtonTextDisabled: {
-    color: '#737373',
+    color: COLORS.darkContrastDetail,
   },
   saveButtonTextActive: {
-    color: '#fff',
+    color: COLORS.white,
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: COLORS.textColorShadow,
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
   bottomSheet: {
     width: '100%',
     maxWidth: 343,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     borderRadius: 8,
     paddingVertical: 24,
     paddingHorizontal: 16,
@@ -402,7 +428,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#ccc',
+    backgroundColor: COLORS.borderColorDark,
     marginBottom: 24,
   },
   bottomSheetSpinner: {
