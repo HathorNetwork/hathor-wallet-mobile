@@ -231,7 +231,7 @@ export default function AddressMode({ navigation }) {
       {singleDisabled && (
         <View style={styles.warningBanner}>
           <Text style={styles.warningIcon}>
-            {'\u26A0'}
+            ⚠
           </Text>
           <Text style={styles.warningText}>
             {t`You can't switch to single address mode because other addresses in your wallet are already in use.`}
