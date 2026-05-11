@@ -13,7 +13,6 @@ import { t } from 'ttag';
 import QRCodeReader from '../components/QRCodeReader';
 import OfflineBar from '../components/OfflineBar';
 import HathorHeader from '../components/HathorHeader';
-import SimpleButton from '../components/SimpleButton';
 import { parseQRCode } from '../utils';
 import { COLORS } from '../styles/themes';
 
@@ -64,21 +63,11 @@ class SendScanQRCode extends React.Component {
   }
 
   render() {
-    const ManualInfoButton = () => (
-      <SimpleButton
-        withBorder
-        // translator: Used when the QR Code Scanner is opened, and user will manually
-        // enter the information.
-        title={t`Manual info`}
-        onPress={() => this.props.navigation.navigate('SendAddressInput')}
-      />
-    );
-
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.lowContrastDetail }}>
         <HathorHeader
           title={t`SEND`}
-          rightElement={<ManualInfoButton />}
+          onBackPress={() => this.props.navigation.goBack()}
           wrapperStyle={{ borderBottomWidth: 0 }}
         />
         <View style={{ flex: 1, margin: 16, alignSelf: 'stretch' }}>

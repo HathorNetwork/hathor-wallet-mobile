@@ -182,6 +182,7 @@ export const NANO_CONTRACT_FEATURE_TOGGLE = 'nano-contract.rollout';
 export const SAFE_BIOMETRY_MODE_FEATURE_TOGGLE = 'safe-biometry-mode.rollout'
 export const TOKEN_SWAP_FEATURE_TOGGLE = 'token-swap.rollout';
 export const FBT_FEATURE_TOGGLE = 'fee-based-tokens.rollout';
+export const SHIELDED_OUTPUTS_FEATURE_TOGGLE = 'shielded-outputs.rollout';
 
 /**
  * Default feature toggle values.
@@ -200,10 +201,32 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [SAFE_BIOMETRY_MODE_FEATURE_TOGGLE]: false,
   [TOKEN_SWAP_FEATURE_TOGGLE]: false,
   [FBT_FEATURE_TOGGLE]: false,
+  [SHIELDED_OUTPUTS_FEATURE_TOGGLE]: true,
 };
 
 // Project id configured in https://walletconnect.com
 export const REOWN_PROJECT_ID = '8264fff563181da658ce64ee80e80458';
+
+/**
+ * Privacy mode keys used both in the per-tx Transaction Privacy modal and
+ * in the Privacy Settings screen (default mode for new transactions).
+ *
+ * - PUBLIC:      transparent send. Token + amount visible on-chain.
+ * - HIDE_AMOUNT: AmountShielded — token UID still visible, amount hidden.
+ * - PRIVATE:     FullShielded — both token and amount hidden via
+ *                asset_commitment.
+ *
+ * The string values are persisted to AsyncStorage under
+ * PRIVACY_DEFAULT_MODE_KEY (see src/store.js); changing them is a
+ * breaking schema change.
+ */
+export const PRIVACY_MODE = {
+  PUBLIC: 'public',
+  HIDE_AMOUNT: 'hide_amount',
+  PRIVATE: 'private',
+};
+
+export const DEFAULT_PRIVACY_MODE = PRIVACY_MODE.PUBLIC;
 
 // Timeout for Reown requests (5 minutes to match WalletConnect server default)
 export const REOWN_REQUEST_TIMEOUT = 5 * 60 * 1000;
@@ -229,6 +252,26 @@ export const PRE_SETTINGS_TESTNET = {
   explorerUrl: EXPLORER_TESTNET_URL,
   explorerServiceUrl: EXPLORER_SERVICE_TESTNET_URL,
   txMiningServiceUrl: TX_MINING_SERVICE_TESTNET_URL,
+};
+
+export const STAGE_SHIELDED_TESTNET = 'testnet';
+export const NETWORK_SHIELDED_TESTNET = 'testnet';
+export const FULL_NETWORK_SHIELDED_TESTNET = 'testnet';
+export const NODE_SERVER_SHIELDED_TESTNET_URL = 'https://node1.shielded-outputs.testnet.hathor.network/v1a/';
+export const EXPLORER_SHIELDED_TESTNET_URL = 'https://explorer.shielded-outputs.testnet.hathor.network/';
+export const EXPLORER_SERVICE_SHIELDED_TESTNET_URL = 'https://explorer-service.shielded-outputs.testnet.hathor.network/';
+export const TX_MINING_SERVICE_SHIELDED_TESTNET_URL = 'https://txmining.shielded-outputs.testnet.hathor.network/';
+
+export const PRE_SETTINGS_SHIELDED_TESTNET = {
+  stage: STAGE_SHIELDED_TESTNET,
+  network: NETWORK_SHIELDED_TESTNET,
+  fullNetwork: FULL_NETWORK_SHIELDED_TESTNET,
+  walletServiceUrl: null,
+  walletServiceWsUrl: null,
+  nodeUrl: NODE_SERVER_SHIELDED_TESTNET_URL,
+  explorerUrl: EXPLORER_SHIELDED_TESTNET_URL,
+  explorerServiceUrl: EXPLORER_SERVICE_SHIELDED_TESTNET_URL,
+  txMiningServiceUrl: TX_MINING_SERVICE_SHIELDED_TESTNET_URL,
 };
 
 export const FULL_NETWORK_MAINNET = 'mainnet';

@@ -110,31 +110,13 @@ export class Settings extends React.Component {
             )
           )}
 
-          <HathorList title={t`General Settings`}>
-            <ListItem
-              text={(
-                <View style={{ flex: 1 }}>
-                  <Text style={{ marginBottom: 8, color: COLORS.textColorShadow, fontSize: 12 }}>{t`Connected to`}</Text>
-                  <Text
-                    style={{ fontSize: 12 }}
-                    adjustsFontSizeToFit
-                    minimumFontScale={0.5}
-                  >
-                    {this.props.server}
-                  </Text>
-                </View>
-              )}
-              isFirst
-            />
-            <ListMenu
-              title={t`Security`}
-              onPress={() => this.props.navigation.navigate('Security')}
-            />
-            {this.props.isPushNotificationAvailable
+          <HathorList title={t`GENERAL SETTINGS`}>
+            {IS_MULTI_TOKEN
               && (
                 <ListMenu
-                  title={t`Push Notification`}
-                  onPress={() => this.props.navigation.navigate('PushNotification')}
+                  title={t`Register a token`}
+                  onPress={() => this.props.navigation.navigate('RegisterToken')}
+                  isFirst
                 />
               )}
             {IS_MULTI_TOKEN
@@ -144,13 +126,10 @@ export class Settings extends React.Component {
                   onPress={() => this.props.navigation.navigate('CreateTokenStack')}
                 />
               )}
-            {IS_MULTI_TOKEN
-              && (
-                <ListMenu
-                  title={t`Register a token`}
-                  onPress={() => this.props.navigation.navigate('RegisterToken')}
-                />
-              )}
+            <ListMenu
+              title={t`Security`}
+              onPress={() => this.props.navigation.navigate('Security')}
+            />
             {this.props.reownEnabled
               && (
                 <ListMenu
@@ -158,13 +137,45 @@ export class Settings extends React.Component {
                   onPress={() => this.props.navigation.navigate('ReownList')}
                 />
               )}
+            {this.props.isPushNotificationAvailable
+              && (
+                <ListMenu
+                  title={t`Push Notification`}
+                  onPress={() => this.props.navigation.navigate('PushNotification')}
+                />
+              )}
+          </HathorList>
+
+          <HathorList title={t`ADVANCED SETTINGS`}>
+            {this.props.networkSettingsEnabled
+              && (
+                <ListMenu
+                  title={t`Network`}
+                  onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
+                  isFirst
+                />
+              )}
+            {/* Address Mode entry intentionally hidden until the feature lands. */}
+            <ListMenu
+              title={t`Privacy`}
+              onPress={() => this.props.navigation.navigate('PrivacySettings')}
+              isFirst={!this.props.networkSettingsEnabled}
+            />
             <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}
             />
+          </HathorList>
+
+          {/* Bottom info card — `About` followed by the device identifier
+              and connected-server rows in a single grouped card per the
+              figma. `HathorList` auto-marks the last child as `isLast`,
+              so the trailing rounded corners come for free. */}
+          <HathorList>
             <ListMenu
               title={t`About`}
               onPress={() => this.props.navigation.navigate('About')}
+              isFirst
             />
             <ListItem
               text={(
@@ -172,7 +183,6 @@ export class Settings extends React.Component {
                   <Text style={{ marginBottom: 8, color: COLORS.textColorShadow, fontSize: 12 }}>
                     {t`Unique app identifier`}
                   </Text>
-
                   <CopyClipboard
                     text={this.props.uniqueDeviceId}
                     textStyle={{ fontSize: 12 }}
@@ -180,17 +190,23 @@ export class Settings extends React.Component {
                 </View>
               )}
             />
+            <ListItem
+              text={(
+                <View style={{ flex: 1 }}>
+                  <Text style={{ marginBottom: 8, color: COLORS.textColorShadow, fontSize: 12 }}>
+                    {t`Connected to`}
+                  </Text>
+                  <Text
+                    style={{ fontSize: 12 }}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.5}
+                  >
+                    {this.props.server}
+                  </Text>
+                </View>
+              )}
+            />
           </HathorList>
-
-          {this.props.networkSettingsEnabled
-            && (
-              <HathorList title={t`Developer Settings`}>
-                <ListMenu
-                  title={t`Network Settings`}
-                  onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
-                />
-              </HathorList>
-            )}
 
         </ScrollView>
         <OfflineBar />

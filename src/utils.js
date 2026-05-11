@@ -714,7 +714,9 @@ export const getAllAddresses = async (wallet) => {
  * @throws {Error} either wallet not ready or other http request error if using wallet service.
  * @async
  */
-export const getFirstAddress = async (wallet) => wallet.getAddressAtIndex(0);
+export const getFirstAddress = async (wallet, shieldedEnabled = false) => (
+  wallet.getAddressAtIndex(0, { legacy: !shieldedEnabled })
+);
 
 /**
  * Verifies if the invalidModel of the form has an error message.

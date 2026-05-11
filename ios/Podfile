@@ -87,9 +87,34 @@ target 'HathorMobile' do
       # :ccache_enabled => true
     )
 
-    # Fix for Hermes dSYM upload issue to App Store
-    # https://github.com/facebook/react-native/issues/36279
+    # Fix fmt consteval error with newer Xcode/clang versions (fmt 11.x + Apple clang 17)
+    Dir.glob("#{installer.sandbox.root}/**/fmt/base.h").each do |path|
+      text = File.read(path)
+      if text.include?('FMT_USE_CONSTEVAL 1')
+        File.chmod(0644, path)
+        File.write(path, text.gsub('FMT_USE_CONSTEVAL 1', 'FMT_USE_CONSTEVAL 0'))
+        Pod::UI.puts "Patched fmt consteval in #{path}".yellow
+      end
+    end
+
+    # Link hathor-ct-crypto static library for shielded output support
     installer.pods_project.targets.each do |target|
+      if target.name == 'HathorMobile'
+        target.build_configurations.each do |config|
+          config.build_settings['OTHER_LDFLAGS'] ||= ['$(inherited)']
+          config.build_settings['OTHER_LDFLAGS'] << '-L$(SRCROOT)/HathorCtCrypto'
+          config.build_settings['OTHER_LDFLAGS'] << '-lhathor_ct_crypto'
+          config.build_settings['LIBRARY_SEARCH_PATHS'] ||= ['$(inherited)']
+          config.build_settings['LIBRARY_SEARCH_PATHS'] << '$(SRCROOT)/HathorCtCrypto'
+          config.build_settings['SWIFT_INCLUDE_PATHS'] ||= ['$(inherited)']
+          config.build_settings['SWIFT_INCLUDE_PATHS'] << '$(SRCROOT)/HathorCtCrypto'
+        end
+      end
+    end
+
+    installer.pods_project.targets.each do |target|
+      # Fix for Hermes dSYM upload issue to App Store
+      # https://github.com/facebook/react-native/issues/36279
       if target.name.include?('hermes') || target.name.include?('Hermes')
         target.build_configurations.each do |config|
           config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'

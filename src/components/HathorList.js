@@ -25,7 +25,14 @@ export class HathorList extends Component {
       alignSelf: 'stretch',
       backgroundColor: COLORS.backgroundColor,
       borderRadius: defaultRadius,
+      // Visible 1px ring around the whole card so the bottom edge
+      // reads as "list ends here" — matches the figma settings card,
+      // which has a thin border on all sides.
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: COLORS.borderColor,
       margin: 16,
+      // Marginal vertical to match other listings; horizontal margin
+      // 16 lines the card up with the section title below.
       shadowOffset: { height: 2, width: 0 },
       shadowRadius: 4,
       shadowColor: COLORS.textColor,
@@ -33,7 +40,13 @@ export class HathorList extends Component {
     },
     title: {
       alignSelf: 'flex-start',
-      paddingHorizontal: 32,
+      // Align with the card's left edge (16 margin) instead of the
+      // row content (16 margin + 16 row padding = 32). The figma puts
+      // "GENERAL SETTINGS" flush to the card's outer left edge.
+      paddingHorizontal: 16,
+      // Add some breathing room above each section title so the
+      // groups read as separate clusters.
+      marginTop: 8,
       fontSize: 14,
       // HSL is preferable than RGB because it allows an
       // easier manipulation in arithmetic fashion.
@@ -57,11 +70,23 @@ export class HathorList extends Component {
       style.push(this.style.infinityView);
     }
 
+    // Auto-mark the last visible child as `isLast` so its bottom border
+    // line is removed and its bottom corners get rounded — matches the
+    // figma settings card. Filtering out falsy children handles the
+    // common conditional-render pattern (`flag && <ListMenu .../>`).
+    const validChildren = React.Children.toArray(this.props.children).filter(Boolean);
+    const lastIdx = validChildren.length - 1;
+    const decoratedChildren = validChildren.map((child, idx) => (
+      idx === lastIdx && React.isValidElement(child)
+        ? React.cloneElement(child, { isLast: true })
+        : child
+    ));
+
     return (
       <>
         {this.props.title && <Text style={[this.style.title]}>{this.props.title}</Text>}
         <View style={style}>
-          {this.props.children}
+          {decoratedChildren}
         </View>
       </>
     );

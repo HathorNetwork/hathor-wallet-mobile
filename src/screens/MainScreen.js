@@ -12,7 +12,6 @@ import {
   Text,
   View,
   Image,
-  TouchableWithoutFeedback,
   TouchableHighlight,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -28,8 +27,6 @@ import TxDetailsModal from '../components/TxDetailsModal';
 import OfflineBar from '../components/OfflineBar';
 import { HathorList } from '../components/HathorList';
 import { Strong, str2jsx, renderValue, isTokenNFT } from '../utils';
-import chevronUp from '../assets/icons/chevron-up.png';
-import chevronDown from '../assets/icons/chevron-down.png';
 import { IS_MULTI_TOKEN } from '../constants';
 import { fetchMoreHistory, updateTokenHistory } from '../actions';
 import Spinner from '../components/Spinner';
@@ -37,6 +34,9 @@ import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from '../components/HathorFlatList';
 import { ActionDot } from '../components/Icons/ActionDot.icon';
+import { ShieldPadlockIcon } from '../components/Icons/ShieldPadlock.icon';
+import { EyeIcon } from '../components/Icons/Eye.icon';
+import { getNetworkSettings } from '../sagas/helpers';
 
 /**
  * txList {Array} array with transactions of the selected token
@@ -49,7 +49,12 @@ const mapStateToProps = (state) => ({
   }),
   // If we are on this screen, we can be sure that the balance is loaded since we don't navigate
   // to it if the status is `failed`
-  balance: get(state.tokensBalance, `${state.selectedToken.uid}.data`, { available: 0n, locked: 0n }),
+  balance: get(state.tokensBalance, `${state.selectedToken.uid}.data`, {
+    available: 0n,
+    locked: 0n,
+    privateBalance: 0n,
+    publicBalance: 0n,
+  }),
   selectedToken: state.selectedToken,
   isOnline: state.isOnline,
   wallet: state.wallet,
@@ -481,26 +486,15 @@ class TxListItem extends React.Component {
 }
 
 class BalanceView extends React.Component {
-  state = {
-    isExpanded: false,
-  };
-
   style = StyleSheet.create({
-    toucharea: {
-      alignSelf: 'stretch',
-    },
     center: {
       alignItems: 'center',
     },
     view: {
       paddingTop: 32,
+      paddingBottom: 24,
       paddingLeft: 54,
       paddingRight: 54,
-    },
-    balanceLocked: {
-      marginTop: 24,
-      fontSize: 18,
-      fontWeight: 'bold',
     },
     balanceAvailable: {
       fontSize: 32,
@@ -512,49 +506,48 @@ class BalanceView extends React.Component {
       fontWeight: 'bold',
       color: COLORS.textColorShadow,
     },
-    expandButton: {
+    splitRow: {
+      flexDirection: 'row',
+      // Wrap so each {icon + value + label} group stacks onto its own
+      // row when the values are too big to fit side-by-side. Row-gap
+      // (vertical spacing on wrap) and column-gap share the same `gap`
+      // value in RN's flexbox.
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      alignItems: 'center',
+      // Extra breathing room below the "Available Balance" caption per
+      // figma — the split row should not feel like it belongs to the
+      // headline cluster.
       marginTop: 24,
-      marginBottom: 24,
+      gap: 16,
+    },
+    splitItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    splitValue: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: COLORS.textColor,
+    },
+    splitLabel: {
+      fontSize: 16,
+      color: COLORS.textColorShadow,
     },
   });
 
-  toggleExpanded = () => {
-    this.setState((prevState) => ({ isExpanded: !prevState.isExpanded }));
-  }
-
-  renderExpanded() {
-    const availableStr = renderValue(this.props.balance.available, this.props.isNFT);
-    const lockedStr = renderValue(this.props.balance.locked, this.props.isNFT);
-    const { token } = this.props;
-    const { style } = this;
-    return (
-      <View style={style.center}>
-        <Text
-          style={style.balanceAvailable}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-          numberOfLines={1}
-        >
-          {`${availableStr} ${token.symbol}`}
-        </Text>
-        <Text style={style.text1}>{t`Available Balance`}</Text>
-        <Text
-          style={style.balanceLocked}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-          numberOfLines={1}
-        >
-          {`${lockedStr} ${token.symbol}`}
-        </Text>
-        <Text style={style.text1}>{t`Locked`}</Text>
-        <Image style={style.expandButton} source={chevronUp} width={12} height={7} />
-      </View>
-    );
-  }
-
   renderSimple() {
-    const availableStr = renderValue(this.props.balance.available, this.props.isNFT);
-    const { token } = this.props;
+    const { balance, token, isNFT } = this.props;
+    // "Available Balance" is the full UNLOCKED balance (shielded +
+    // transparent). The split below it is `private` = unlocked
+    // shielded (AS + FS) and `public` = unlocked transparent — so
+    // `private + public === available`. Locked balances are not shown
+    // on this screen by design.
+    const total = balance.available ?? 0n;
+    const totalStr = renderValue(total, isNFT);
+    const privateStr = renderValue(balance.privateBalance ?? 0n, isNFT);
+    const publicStr = renderValue(balance.publicBalance ?? 0n, isNFT);
     const { style } = this;
     return (
       <View style={style.center}>
@@ -564,24 +557,41 @@ class BalanceView extends React.Component {
           minimumFontScale={0.5}
           numberOfLines={1}
         >
-          {`${availableStr} ${token.symbol}`}
+          {`${totalStr} ${token.symbol}`}
         </Text>
         <Text style={style.text1}>{t`Available Balance`}</Text>
-        <Image style={style.expandButton} source={chevronDown} width={12} height={7} />
+        <View style={style.splitRow}>
+          {/* The Shield/Eye icons have a `0 0 40 40` viewBox with
+              transparent padding, so the visible glyph is roughly 60%
+              of the `size` value. We pass 24 to land at a glyph that
+              reads about the same height as the surrounding 16pt
+              text without dominating the row. */}
+          <View style={style.splitItem}>
+            <ShieldPadlockIcon size={24} color={COLORS.textColor} />
+            <Text style={style.splitValue}>{privateStr}</Text>
+            <Text style={style.splitLabel}>{t`private`}</Text>
+          </View>
+          <View style={style.splitItem}>
+            <EyeIcon size={24} color={COLORS.textColor} />
+            <Text style={style.splitValue}>{publicStr}</Text>
+            <Text style={style.splitLabel}>{t`public`}</Text>
+          </View>
+        </View>
       </View>
     );
   }
 
+  // The redesigned Token Detail screen no longer has a separate
+  // "expanded" view that surfaced Locked + the network pill behind a
+  // chevron toggle. The balance is always shown as total + private /
+  // public split — a single, non-expandable layout. Locked is folded
+  // into the total per spec.
   render() {
     const { style } = this;
     return (
-      <TouchableWithoutFeedback style={style.toucharea} onPress={this.toggleExpanded}>
-        <View style={style.view}>
-          {!this.state.isExpanded
-            ? this.renderSimple()
-            : this.renderExpanded()}
-        </View>
-      </TouchableWithoutFeedback>
+      <View style={style.view}>
+        {this.renderSimple()}
+      </View>
     );
   }
 }

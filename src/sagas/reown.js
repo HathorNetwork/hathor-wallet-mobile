@@ -84,6 +84,7 @@ import {
   REOWN_PROJECT_ID,
   REOWN_FEATURE_TOGGLE,
   REOWN_REQUEST_TIMEOUT,
+  SHIELDED_OUTPUTS_FEATURE_TOGGLE,
 } from '../constants';
 import { isPairingUri } from '../contexts/HathorDeeplinkContext';
 import {
@@ -1303,7 +1304,10 @@ export function* onSessionProposal(action) {
 
   const { walletKit } = reownClient;
   const wallet = yield select((state) => state.wallet);
-  const firstAddress = yield call(() => wallet.getAddressAtIndex(0));
+  const shieldedEnabled = yield call(checkForFeatureFlag, SHIELDED_OUTPUTS_FEATURE_TOGGLE);
+  const firstAddress = yield call(
+    () => wallet.getAddressAtIndex(0, { legacy: !shieldedEnabled })
+  );
 
   const data = {
     icon: get(params, 'proposer.metadata.icons[0]', null),
