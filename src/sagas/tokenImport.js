@@ -155,7 +155,6 @@ export function* importSelectedTokens(action) {
   }
 
   try {
-    // eslint-disable-next-line no-unreachable
     // Snapshot once: the loop only adds to this set, so we don't need to
     // re-iterate the storage's async registered-tokens iterator per item.
     const registeredTokens = yield call(getRegisteredTokens, wallet);

@@ -77,8 +77,6 @@ const ImportTokensModal = ({ status, onDismiss, onRetry }) => {
     );
   };
 
-  // Outside-tap should always dismiss; "Try again" is reachable only via the
-  // explicit button so we never trigger a destructive retry by accident.
   const handleDismiss = () => {
     if (onDismiss) {
       onDismiss();
