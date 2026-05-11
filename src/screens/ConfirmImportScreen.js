@@ -16,6 +16,8 @@ import { numberUtils, constants } from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import ImportTokensModal from '../components/ImportTokensModal';
+import TokenListCard from '../components/TokenListCard';
+import TokenItem from '../components/TokenItem';
 import { tokenImportRequested, tokenImportResetStatus } from '../actions';
 import { COLORS } from '../styles/themes';
 import { useParams } from '../hooks/navigation';
@@ -72,22 +74,14 @@ const ConfirmImportScreen = () => {
     return `${numberUtils.prettyValue(available, constants.DECIMAL_PLACES)} ${token.symbol}`;
   };
 
-  const renderTokenItem = ({ item, index }) => {
-    const isLast = index === tokens.length - 1;
-    return (
-      <View style={[styles.tokenRow, !isLast && styles.tokenRowBorder]}>
-        <View style={styles.tokenInfo}>
-          <View style={styles.symbolTag}>
-            <Text style={styles.symbolText} numberOfLines={1}>{item.symbol}</Text>
-          </View>
-          <Text style={styles.tokenName} numberOfLines={1}>{item.name}</Text>
-        </View>
-        <Text style={styles.tokenBalance} numberOfLines={1}>
-          {formatBalance(item)}
-        </Text>
-      </View>
-    );
-  };
+  const renderTokenItem = ({ item, index }) => (
+    <TokenItem
+      readonly
+      token={item}
+      balance={formatBalance(item)}
+      isLast={index === tokens.length - 1}
+    />
+  );
 
   const keyExtractor = (item) => item.uid;
 
@@ -112,13 +106,13 @@ const ConfirmImportScreen = () => {
           <Text style={styles.description}>
             {t`You are about to add these tokens to your wallet:`}
           </Text>
-          <View style={styles.tokenListCard}>
+          <TokenListCard style={styles.tokenListCard}>
             <FlatList
               data={tokens}
               renderItem={renderTokenItem}
               keyExtractor={keyExtractor}
             />
-          </View>
+          </TokenListCard>
         </View>
 
         <View style={styles.bottomSection}>
@@ -166,58 +160,6 @@ const styles = StyleSheet.create({
   },
   tokenListCard: {
     flexShrink: 1,
-    backgroundColor: COLORS.backgroundColor,
-    borderRadius: 16,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-    paddingVertical: 16,
-  },
-  tokenRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  tokenRowBorder: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.borderColor,
-  },
-  tokenInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 8,
-  },
-  symbolTag: {
-    backgroundColor: COLORS.tagSurface,
-    borderRadius: 4,
-    minWidth: 40,
-    height: 23,
-    paddingHorizontal: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  symbolText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: COLORS.textColor,
-    textAlign: 'center',
-  },
-  tokenName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: COLORS.textColor,
-    marginLeft: 8,
-    flexShrink: 1,
-  },
-  tokenBalance: {
-    fontSize: 14,
-    color: COLORS.textColor,
-    textAlign: 'right',
   },
   bottomSection: {
     paddingBottom: 21,

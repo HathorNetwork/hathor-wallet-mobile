@@ -21,10 +21,10 @@ import { t } from 'ttag';
 import { numberUtils, constants } from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
+import TokenListCard from '../components/TokenListCard';
+import TokenItem from '../components/TokenItem';
 import { CircleInfoIcon } from '../components/Icons/CircleInfo.icon';
 import { COLORS } from '../styles/themes';
-import { getShortHash } from '../utils';
-import { OpenInNewIcon } from '../components/Icons/OpenInNew.icon';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { logger } from '../logger';
 
@@ -117,34 +117,16 @@ const ImportTokensScreen = () => {
     return `${numberUtils.prettyValue(available, constants.DECIMAL_PLACES)} ${token.symbol}`;
   };
 
-  const renderTokenItem = ({ item, index }) => {
-    const isSelected = item.selected;
-    const isLast = index === tokenList.length - 1;
-
-    return (
-      <TouchableOpacity
-        style={[styles.tokenItem, !isLast && styles.tokenItemBorder]}
-        onPress={() => toggleToken(item.uid)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.tokenLeft}>
-          <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-            {isSelected && <Text style={styles.checkmark}>&#10003;</Text>}
-          </View>
-          <View style={styles.tokenInfo}>
-            <Text style={styles.tokenName} numberOfLines={1}>{item.name}</Text>
-            <Text style={styles.tokenBalance} numberOfLines={1}>{formatBalance(item)}</Text>
-          </View>
-        </View>
-        <View style={styles.tokenRight}>
-          <Text style={styles.tokenUid} numberOfLines={1}>{getShortHash(item.uid, 5)}</Text>
-          <TouchableOpacity onPress={() => handleOpenExplorer(item.uid)} hitSlop={8}>
-            <OpenInNewIcon size={20} color={COLORS.primary} />
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  const renderTokenItem = ({ item, index }) => (
+    <TokenItem
+      token={item}
+      balance={formatBalance(item)}
+      isLast={index === tokenList.length - 1}
+      isSelected={item.selected}
+      onToggle={() => toggleToken(item.uid)}
+      onOpenExplorer={() => handleOpenExplorer(item.uid)}
+    />
+  );
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
@@ -200,13 +182,13 @@ const ImportTokensScreen = () => {
           {t`Tokens found`} ({tokenList.length})
         </Text>
 
-        <FlatList
-          data={tokenList}
-          keyExtractor={(item) => item.uid}
-          renderItem={renderTokenItem}
-          style={styles.tokenListCard}
-          contentContainerStyle={styles.tokenListContent}
-        />
+        <TokenListCard style={styles.tokenListCard}>
+          <FlatList
+            data={tokenList}
+            keyExtractor={(item) => item.uid}
+            renderItem={renderTokenItem}
+          />
+        </TokenListCard>
       </View>
     );
   };
@@ -283,77 +265,6 @@ const styles = StyleSheet.create({
   },
   tokenListCard: {
     flex: 1,
-  },
-  tokenListContent: {
-    backgroundColor: COLORS.backgroundColor,
-    borderRadius: 16,
-    shadowColor: COLORS.textColor,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-    paddingVertical: 16,
-  },
-  tokenItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  tokenItemBorder: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.borderColor,
-  },
-  tokenLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 12,
-  },
-  checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 2,
-    borderWidth: 2,
-    borderColor: COLORS.controlBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  checkmark: {
-    color: COLORS.white,
-    fontSize: 12,
-    fontWeight: '700',
-    lineHeight: 14,
-  },
-  tokenInfo: {
-    flexShrink: 1,
-    gap: 2,
-  },
-  tokenName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.textColor,
-    lineHeight: 20,
-  },
-  tokenBalance: {
-    fontSize: 14,
-    color: COLORS.textColor,
-    lineHeight: 20,
-  },
-  tokenRight: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 6,
-  },
-  tokenUid: {
-    fontSize: 12,
-    color: COLORS.mutedText,
-    lineHeight: 20,
   },
   footer: {
     paddingHorizontal: 16,
