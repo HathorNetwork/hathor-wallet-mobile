@@ -15,30 +15,37 @@ import { COLORS } from '../styles/themes';
 
 import { PenIcon } from './Icons/Pen.icon';
 
-export const EditInfoContainer = ({ center, onPress, children }) => (
-  <TouchableOpacity
-    style={[
-      center && styles.editInfoWrapperCentered
-    ]}
-    onPress={onPress}
-  >
-    <View style={[
-      styles.editInfoContainer,
-      center && styles.editInfoContainerCentered,
-    ]}
+export const EditInfoContainer = ({ center, onPress, editable = true, children }) => {
+  const Wrapper = editable ? TouchableOpacity : View;
+  const wrapperProps = editable ? { onPress } : {};
+
+  return (
+    <Wrapper
+      style={[
+        center && styles.editInfoWrapperCentered
+      ]}
+      {...wrapperProps}
     >
       <View style={[
-        center && styles.alignCenter,
+        styles.editInfoContainer,
+        center && styles.editInfoContainerCentered,
       ]}
       >
-        {children}
+        <View style={[
+          center && styles.alignCenter,
+        ]}
+        >
+          {children}
+        </View>
+        {editable && (
+          <View style={styles.editIcon}>
+            <PenIcon />
+          </View>
+        )}
       </View>
-      <View style={styles.editIcon}>
-        <PenIcon />
-      </View>
-    </View>
-  </TouchableOpacity>
-);
+    </Wrapper>
+  );
+};
 
 const styles = StyleSheet.create({
   editInfoWrapperCentered: {

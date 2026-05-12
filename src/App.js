@@ -73,6 +73,7 @@ import RegisterTokenManual from './screens/RegisterTokenManual';
 import CreateTokenName from './screens/CreateTokenName';
 import CreateTokenSymbol from './screens/CreateTokenSymbol';
 import About from './screens/About';
+import AddressMode from './screens/AddressMode';
 import Security from './screens/Security';
 import PushNotification from './screens/PushNotification';
 import ChangePin from './screens/ChangePin';
@@ -465,6 +466,7 @@ const AppStack = () => {
       case 'UnifiedQRScanner':
       case 'RegisterOptions':
       case 'RegisterTokenManual':
+      case 'AddressMode':
       case 'ImportTokensScreen':
       case 'ConfirmImportScreen':
         newEdges = ['bottom'];
@@ -497,6 +499,7 @@ const AppStack = () => {
         <Stack.Screen name='NanoContractTransactionScreen' component={NanoContractTransactionScreen} />
         <Stack.Screen name='NanoContractRegisterScreen' component={NanoContractRegisterScreen} />
         <Stack.Screen name='About' component={About} />
+        <Stack.Screen name='AddressMode' component={AddressMode} />
         <Stack.Screen name='Security' component={Security} />
         <Stack.Screen name='ReownList' component={ReownList} />
         <Stack.Screen name='ReownManual' component={ReownManual} />

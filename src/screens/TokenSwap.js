@@ -49,9 +49,6 @@ import {
 import NavigationService from '../NavigationService';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 
-const INPUT_ACCESSORY_VIEW_ID = 'tokenSwapAmountInput';
-const OUTPUT_ACCESSORY_VIEW_ID = 'tokenSwapAmountOutput';
-
 function getAvailableAmount(token, tokensBalance) {
   if (!token) {
     return 0n;
@@ -85,6 +82,12 @@ const TokenSwap = () => {
 
   const [editing, setEditing] = useState(null);
 
+  // iOS-only: tracks the keyboard's reported height so we can position
+  // the quick-action accessory overlay above it. Replaces the previous
+  // `<InputAccessoryView>` integration — see the overlay block in JSX
+  // below for the rationale.
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
   // Ref to track editing timeout so we can cancel it on new focus
   const editingTimeoutRef = useRef(null);
 
@@ -105,6 +108,28 @@ const TokenSwap = () => {
     if (editingTimeoutRef.current) {
       clearTimeout(editingTimeoutRef.current);
     }
+  }, []);
+
+  // Track the iOS keyboard height so the absolutely-positioned
+  // accessory overlay can sit flush against the visual keyboard top.
+  // `endCoordinates.height` already includes the home-indicator
+  // safe-area, so the overlay's `bottom: keyboardHeight` lands exactly
+  // where the old <InputAccessoryView> rendered. Android does not need
+  // this — the overlay block itself is gated to iOS.
+  useEffect(() => {
+    if (Platform.OS !== 'ios') {
+      return undefined;
+    }
+    const showSub = Keyboard.addListener('keyboardWillShow', (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener('keyboardWillHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -326,24 +351,6 @@ const TokenSwap = () => {
 
   return (
     <View style={styles.screenContent}>
-      {/* iOS: Separate InputAccessoryViews for each TextInput
-        * TODO: Add InputAccessoryViews for Android. We had issues positioning the keyboard
-        * buttons correctly on Android screens, so this feature is iOS-only for now.
-        */}
-      {Platform.OS === 'ios' && (
-        <>
-          <AmountInputAccessory
-            nativeID={INPUT_ACCESSORY_VIEW_ID}
-            availableBalance={getAvailableAmount(inputToken, tokensBalance)}
-            onPercentagePress={onPercentagePress}
-          />
-          <AmountInputAccessory
-            nativeID={OUTPUT_ACCESSORY_VIEW_ID}
-            availableBalance={getAvailableAmount(outputToken, tokensBalance)}
-            onPercentagePress={onPercentagePress}
-          />
-        </>
-      )}
       <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
         <HathorHeader
           withBorder
@@ -365,7 +372,6 @@ const TokenSwap = () => {
                     style={swapDirection === 'output' ? styles.amountInputTextFaded : styles.amountInputText}
                     editable={editing !== 'output'}
                     textAlign='left'
-                    inputAccessoryViewID={INPUT_ACCESSORY_VIEW_ID}
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -396,7 +402,6 @@ const TokenSwap = () => {
                     style={swapDirection === 'input' ? styles.amountInputTextFaded : styles.amountInputText}
                     editable={editing !== 'input'}
                     textAlign='left'
-                    inputAccessoryViewID={OUTPUT_ACCESSORY_VIEW_ID}
                   />
                   <View>
                     <View style={styles.tokenSelectorWrapper}>
@@ -456,6 +461,27 @@ const TokenSwap = () => {
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
       </Pressable>
+      {/* iOS keyboard accessory overlay (replaces <InputAccessoryView>).
+          Rendered as a sibling of the main Pressable, positioned
+          absolutely against the screen bottom so its top edge sits
+          flush with the visual keyboard top. We render it only while
+          one of the AmountTextInputs is focused (`editing` is set) and
+          the keyboard frame is known. iOS-only; Android still gets no
+          accessory, matching prior behavior. */}
+      {Platform.OS === 'ios' && editing && keyboardHeight > 0 && (
+        <View
+          pointerEvents='box-none'
+          style={[styles.kbAccessoryOverlay, { bottom: keyboardHeight }]}
+        >
+          <AmountInputAccessory
+            availableBalance={getAvailableAmount(
+              editing === 'input' ? inputToken : outputToken,
+              tokensBalance,
+            )}
+            onPercentagePress={onPercentagePress}
+          />
+        </View>
+      )}
     </View>
   );
 };
@@ -470,6 +496,12 @@ const styles = StyleSheet.create({
   screenContent: {
     flex: 1,
     backgroundColor: COLORS.backgroundColor,
+  },
+  kbAccessoryOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
   buttonContainer: {
     marginBottom: 16,
