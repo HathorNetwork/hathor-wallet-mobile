@@ -126,6 +126,13 @@ export class Settings extends React.Component {
             {IS_MULTI_TOKEN
               && (
                 <ListMenu
+                  title={t`Import tokens`}
+                  onPress={() => this.props.navigation.navigate('ImportTokensScreen')}
+                />
+              )}
+            {IS_MULTI_TOKEN
+              && (
+                <ListMenu
                   title={t`Create a new token`}
                   onPress={() => this.props.navigation.navigate('CreateTokenStack')}
                 />
@@ -159,7 +166,7 @@ export class Settings extends React.Component {
                   onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
                 />
               )}
-            {this.props.singleAddressEnabled
+            {this.props.reownEnabled
               && (
                 <ListMenu
                   title={t`Address Mode`}

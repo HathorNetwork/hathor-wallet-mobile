@@ -76,6 +76,7 @@ import {
   firstAddressRequest,
   setFullNodeNetworkName,
   setAddressMode,
+  tokenImportFetchRequested,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -414,6 +415,7 @@ export function* startWallet(action) {
   yield put(walletRefreshSharedAddress());
   yield put(firstAddressRequest());
   yield put(startWalletSuccess());
+  yield put(tokenImportFetchRequested());
 
   // The way the redux-saga fork model works is that if a saga has `forked`
   // another saga (using the `fork` effect), it will remain active until all
@@ -639,6 +641,31 @@ export function* handleTx(action) {
 
     return acc;
   }, [{}, new Set([])],);
+
+  // Detect unregistered tokens in this transaction.
+  // Use wallet.getTxBalance so we only consider tokens whose inputs/outputs touch
+  // an address that belongs to this wallet.
+  let txBalance = null;
+  try {
+    txBalance = yield call([wallet, wallet.getTxBalance], tx);
+  } catch (error) {
+    log.error(`Failed to compute getTxBalance for tx ${tx?.tx_id}:`, error);
+  }
+  const myTxTokenUids = txBalance ? Object.keys(txBalance) : [];
+  const currentUnregistered = yield select((state) => state.tokenImport.unregisteredTokens);
+  const htrUid = hathorLibConstants.NATIVE_TOKEN_UID;
+  const newUnknownUids = myTxTokenUids.filter(
+    (uid) => uid !== htrUid
+      && registeredUids.indexOf(uid) === -1
+      && !currentUnregistered[uid],
+  );
+
+  if (newUnknownUids.length > 0) {
+    yield put({
+      type: types.TOKEN_IMPORT_NEW_TX_TOKENS,
+      payload: newUnknownUids,
+    });
+  }
 
   let txWalletAddresses = null;
   try {

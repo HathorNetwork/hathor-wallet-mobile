@@ -17,6 +17,7 @@ import { saga as permissionsSagas } from './permissions';
 import { saga as reownSagas } from './reown';
 import { saga as networkSettingsSagas } from './networkSettings';
 import { saga as sesSagas } from './ses';
+import { saga as tokenImportSagas } from './tokenImport';
 
 import { saga as nanoContractSagas } from './nanoContract';
 import { onExceptionCaptured } from '../actions';
@@ -39,6 +40,7 @@ const sagas = {
   reownSagas: { saga: reownSagas, retryCount: 0, critical: false },
   nanoContractSagas: { saga: nanoContractSagas, retryCount: 0, critical: true },
   sesSagas: { saga: sesSagas, retryCount: 0, critical: true },
+  tokenImportSagas: { saga: tokenImportSagas, retryCount: 0, critical: false },
 };
 
 function* rootSaga() {
