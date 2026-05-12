@@ -575,10 +575,14 @@ export function* handleTx(action) {
 
   // Detect unregistered tokens in this transaction.
   // Use wallet.getTxBalance so we only consider tokens whose inputs/outputs touch
-  // an address that belongs to this wallet — a multi-token tx can carry unrelated
-  // tokens on third-party addresses and those must not surface in the import banner.
-  const txBalance = yield call([wallet, wallet.getTxBalance], tx);
-  const myTxTokenUids = Object.keys(txBalance);
+  // an address that belongs to this wallet.
+  let txBalance = null;
+  try {
+    txBalance = yield call([wallet, wallet.getTxBalance], tx);
+  } catch (error) {
+    log.error(`Failed to compute getTxBalance for tx ${tx?.tx_id}:`, error);
+  }
+  const myTxTokenUids = txBalance ? Object.keys(txBalance) : [];
   const currentUnregistered = yield select((state) => state.tokenImport.unregisteredTokens);
   const htrUid = hathorLibConstants.NATIVE_TOKEN_UID;
   const newUnknownUids = myTxTokenUids.filter(
