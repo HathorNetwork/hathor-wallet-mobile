@@ -268,6 +268,7 @@ const initialState = {
   walletStartState: WALLET_STATUS.NOT_STARTED,
   lastSharedAddress: null,
   lastSharedIndex: null,
+  addressMode: null,
   reown: {
     client: null,
     modal: {
@@ -684,6 +685,8 @@ export const reducer = (state = initialState, action) => {
       return onWalletReloading(state);
     case types.SHARED_ADDRESS_UPDATE:
       return onSharedAddressUpdate(state, action);
+    case types.SET_ADDRESS_MODE:
+      return onSetAddressMode(state, action);
     case types.SET_UNLEASH_CLIENT:
       return onSetUnleashClient(state, action);
     case types.SET_FEATURE_TOGGLES:
@@ -1502,6 +1505,14 @@ const onSharedAddressUpdate = (state, action) => ({
   ...state,
   lastSharedAddress: action.payload.lastSharedAddress,
   lastSharedIndex: action.payload.lastSharedIndex,
+});
+
+/**
+ * @param {'single'|'multi'} action.payload The address mode
+ */
+const onSetAddressMode = (state, action) => ({
+  ...state,
+  addressMode: action.payload,
 });
 
 /**

@@ -14,7 +14,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { firstAddressRequest } from '../../../actions';
-import { NANOCONTRACT_BLUEPRINTINFO_STATUS as STATUS } from '../../../constants';
+import { ADDRESS_MODE, NANOCONTRACT_BLUEPRINTINFO_STATUS as STATUS } from '../../../constants';
 import { COLORS } from '../../../styles/themes';
 import { FrozenTextValue } from '../../FrozenTextValue';
 import { CircleError } from '../../Icons/CircleError.icon';
@@ -37,6 +37,8 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
   const registeredNc = useSelector((state) => state.nanoContract.registered[nc.ncId]);
   const blueprintInfo = useSelector((state) => state.nanoContract.blueprint[nc.blueprintId]);
   const firstAddress = useSelector((state) => state.firstAddress);
+  const addressMode = useSelector((state) => state.addressMode);
+  const isSingleAddress = addressMode === ADDRESS_MODE.SINGLE;
 
   const isInitialize = nc.method === 'initialize';
   const notInitialize = !isInitialize;
@@ -118,7 +120,7 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
           <FrozenTextValue>{nc.contractPaysFees ? t`Yes` : t`No`}</FrozenTextValue>
         </View>
         <View style={commonStyles.cardSeparator} />
-        <TouchableOpacity onPress={onSelectAddress}>
+        <TouchableOpacity onPress={onSelectAddress} disabled={isSingleAddress}>
           <View style={styles.contentEditable}>
             <View style={styles.contentEditableValue}>
               <TextValue label>
@@ -136,9 +138,11 @@ export const NanoContractExecInfo = ({ nc, onSelectAddress }) => {
                 <WarnTextValue>{t`Couldn't determine address, select one`}</WarnTextValue>
               )}
             </View>
-            <View style={styles.contentEditableIcon}>
-              <PenIcon />
-            </View>
+            {!isSingleAddress && (
+              <View style={styles.contentEditableIcon}>
+                <PenIcon />
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       </View>
