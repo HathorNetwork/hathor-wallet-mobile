@@ -60,6 +60,7 @@ The main test sequence should be executed on the `testnet` network by default, u
 1. Type 2 HTR, click Next, and check the send summary.
 1. Click on Send and type a wrong PIN Code.
 1. Finally, type a correct PIN Code and check the confirmation.
+1. When back on the Dashboard screen, check the camera is turned off. Point it to a valid QR Code and it should not trigger a "Send Transaction" flow.
 
 ### Transaction History Tests
 1. Verify Dashboard displays HTR token by default
@@ -300,7 +301,7 @@ To change between the Fullnode and Wallet Service facades, choose one option and
 #### Fullnode
 Here we will remove the URLs in Custom Network
 - Follow the `Changing Networks` workflow above and select "Customize".
-- Empty the `Wallet Service URL` and `Wallet Service WS URL` fields 
+- Empty the `Wallet Service URL` and `Wallet Service WS URL` fields
 - Click "SEND" and now the application will be connected through the Fullnode on the current network
 
 Another option for a developer would be to navigate to `Unleash` and deactivate the `wallet-service-mobile.rollout`
@@ -316,13 +317,13 @@ error handling flag (`IGNORE_WS_TOGGLE_FLAG`) will prevent the app from trying t
 If you need to interact with the wallet service within this time window you'll need to resort to the operational system
 to clear this flag along with the entire application data.
 - Android: clear the application cache, start the app again and import/create your wallet
-- iOS: Uninstall the app, install it again, start the app again and import/create your wallet 
+- iOS: Uninstall the app, install it again, start the app again and import/create your wallet
 
 ### Setting flags on Unleash
 Some of the tests involve changing Unleash flags for the application. This requires access to Hathor Network's Unleash
 and proper permissions to do so. Ask the Code Owner of this repository for the access URL and credentials to do so.
 
-Once logged in, the following feature toggles can be changed. ( Note: This list is for quick reference, but can be 
+Once logged in, the following feature toggles can be changed. ( Note: This list is for quick reference, but can be
 obsolete. Refer to `src/constants.js` for the up-to-date list of feature toggle names ).
 - `wallet-service-mobile.rollout`
 - `push-notification.rollout`
