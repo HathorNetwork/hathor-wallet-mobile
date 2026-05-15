@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { ncApi } from '@hathor/wallet-lib';
+import { ncApi, TokenVersion } from '@hathor/wallet-lib';
 import { get } from 'lodash';
 import { getNetworkSettings } from '../sagas/helpers';
 import { renderValue } from '../utils';
@@ -39,6 +39,8 @@ import { renderValue } from '../utils';
  * @property {string} symbol
  * @property {string} uid
  * @property {string} [icon]
+ * @property {number} [version] Token version (TokenVersion enum: NATIVE=0, DEPOSIT=1, FEE=2).
+ *   Optional for backwards compatibility with older allowlist payloads.
  */
 
 /**
@@ -400,4 +402,54 @@ export function renderConversionRate(quote, inToken, outToken) {
     exchangeRate *= 10;
   }
   return `${renderAmountAndSymbol(exchangeRate, outToken)} = ${renderAmountAndSymbol(100 * extraRate, inToken)}`;
+}
+
+/**
+ * Whether a swap allowlist token is fee-based.
+ * @param {TokenData} token
+ * @returns {boolean}
+ */
+export function isFeeBasedSwapToken(token) {
+  return !!token && token.version === TokenVersion.FEE;
+}
+
+/**
+ * Whether a swap involves at least one fee-based token (FBT).
+ * FBT swaps require an on-chain HTR network fee; non-FBT swaps do not.
+ * @param {TokenData|null|undefined} inputToken
+ * @param {TokenData|null|undefined} outputToken
+ * @returns {boolean}
+ */
+export function isSwappingFeeBasedTokens(inputToken, outputToken) {
+  return isFeeBasedSwapToken(inputToken) || isFeeBasedSwapToken(outputToken);
+}
+
+/**
+ * Sum the HTR-denominated fee entries from a prepared SendTransaction's fee header.
+ *
+ * - Returns `null` when no prepared tx is available.
+ * - Returns `0n` when the tx is prepared but has no fee header (non-FBT swap).
+ * - Throws when an entry references a non-HTR token — token swap fees must be
+ *   denominated in HTR; an unexpected token index signals a wallet-lib regression
+ *   that we want to surface loudly rather than silently mis-display.
+ *
+ * @param {Object|undefined} preBuiltSendTx
+ * @returns {bigint|null}
+ */
+export function getNetworkFeeFromTx(preBuiltSendTx) {
+  if (!preBuiltSendTx || !preBuiltSendTx.transaction) {
+    return null;
+  }
+  const header = preBuiltSendTx.transaction.getFeeHeader?.();
+  if (!header) {
+    return 0n;
+  }
+  let total = 0n;
+  for (const entry of header.entries) {
+    if (entry.tokenIndex !== 0) {
+      throw new Error(`Unexpected non-HTR fee entry: tokenIndex=${entry.tokenIndex}`);
+    }
+    total += entry.amount;
+  }
+  return total;
 }

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -19,16 +19,21 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
-import { get } from 'lodash';
+import { debounce, get } from 'lodash';
+import hathorLib from '@hathor/wallet-lib';
 import { SwapIcon } from '../components/Icons/Swap.icon';
 import AmountInputAccessory from '../components/AmountInputAccessory';
 
 import { renderValue, formatAmountToInput } from '../utils';
 import {
+  buildTokenSwap,
   calcAmountWithSlippage,
+  getNetworkFeeFromTx,
+  isSwappingFeeBasedTokens,
   renderAmountAndSymbolWithSlippage,
   renderConversionRate,
   selectTokenSwapAllowedTokens,
+  selectTokenSwapContractId,
 } from '../utils/tokenSwap';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
@@ -40,10 +45,12 @@ import { COLORS } from '../styles/themes';
 import { useNavigation } from '../hooks/navigation';
 import {
   tokenFetchBalanceRequested,
+  tokenSwapClearPreBuiltTx,
   tokenSwapFetchSwapQuote,
   tokenSwapResetSwapData,
   tokenSwapSetInputToken,
   tokenSwapSetOutputToken,
+  tokenSwapSetPreBuiltTx,
   tokenSwapSwitchTokens,
 } from '../actions';
 import NavigationService from '../NavigationService';
@@ -88,20 +95,39 @@ const TokenSwap = () => {
   // below for the rationale.
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
+  const [building, setBuilding] = useState(false);
+  const [buildError, setBuildError] = useState(null);
+
   // Ref to track editing timeout so we can cancel it on new focus
   const editingTimeoutRef = useRef(null);
+
+  // Synchronous mirror of the latest preBuiltSendTx — needed because the
+  // unmount cleanup runs once and would otherwise capture the value from the
+  // first render (null) via closure. Inline mutation during render is the
+  // idiomatic pattern for "latest value via ref" and avoids an extra useEffect.
+  const preBuiltSendTxRef = useRef(null);
+
+  // Each tx build attempt gets a unique id. When inputs change during an
+  // in-flight build, the id is bumped; the stale build's result is released
+  // instead of dispatched. Prevents a slow build from clobbering a newer one.
+  const txBuildIdRef = useRef(0);
 
   const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
   const {
     inputToken,
     outputToken,
     swapPathQuote: quote,
+    preBuiltSendTx,
   } = useSelector((state) => state.tokenSwap);
+  const wallet = useSelector((state) => state.wallet);
+  const contractId = useSelector(selectTokenSwapContractId);
   const { decimalPlaces } = useSelector((state) => ({
     decimalPlaces: state.serverInfo?.decimal_places
   }));
 
   const navigation = useNavigation();
+
+  preBuiltSendTxRef.current = preBuiltSendTx;
 
   // Cleanup editing timeout on unmount
   useEffect(() => () => {
@@ -173,6 +199,104 @@ const TokenSwap = () => {
       setOutputTokenAmount(quote.amount_out);
     }
   }, [quote]);
+
+  // Release the currently-prepared tx (if any). Internal try/catch keeps the
+  // returned promise from rejecting, so callers can safely fire-and-forget.
+  // Memoized on `dispatch` (stable) so the unmount cleanup's deps stay tight.
+  const releaseStaleTx = useCallback(async () => {
+    const tx = preBuiltSendTxRef.current;
+    if (!tx) return;
+    preBuiltSendTxRef.current = null;
+    dispatch(tokenSwapClearPreBuiltTx());
+    try {
+      await tx.releaseUtxos();
+    } catch (e) {
+      console.error(e);
+    }
+  }, [dispatch]);
+
+  // The fee shown on this screen and the fee broadcast on confirmation come
+  // from the SAME built tx, so the user can never confirm a fee different
+  // from what they saw. Awaiting releaseStaleTx() before the new selection
+  // guarantees the previous build's UTXOs are eligible for reuse.
+  const buildPreBuiltSwapTx = async () => {
+    const txBuildId = txBuildIdRef.current;
+    await releaseStaleTx();
+    try {
+      const address = await wallet.getAddressAtIndex(0);
+      const [method, data] = buildTokenSwap(
+        contractId,
+        address,
+        quote,
+        inputToken.uid,
+        outputToken.uid,
+        TOKEN_SWAP_SLIPPAGE,
+      );
+      const sendTx = await wallet.createNanoContractTransaction(
+        method,
+        address,
+        data,
+        { signTx: false },
+      );
+      if (txBuildId !== txBuildIdRef.current) {
+        // A newer build started — drop this result and free its locks.
+        sendTx.releaseUtxos().catch((e) => console.error(e));
+        return;
+      }
+      dispatch(tokenSwapSetPreBuiltTx(sendTx));
+    } catch (err) {
+      if (txBuildId !== txBuildIdRef.current) return;
+      console.error('Failed to pre-build swap tx', err);
+      setBuildError(err);
+    } finally {
+      if (txBuildId === txBuildIdRef.current) setBuilding(false);
+    }
+  };
+
+  // The debounced wrapper is created once (empty deps) so its pending state
+  // persists across renders; it routes the call through latestBuildRef so the
+  // closure is always fresh.
+  const latestBuildRef = useRef(buildPreBuiltSwapTx);
+  latestBuildRef.current = buildPreBuiltSwapTx;
+  const debouncedBuild = useMemo(
+    () => debounce(() => latestBuildRef.current(), 500),
+    [],
+  );
+
+  useEffect(() => {
+    txBuildIdRef.current += 1;
+    setBuildError(null);
+
+    if (!quote || !inputToken || !outputToken || !wallet || !contractId) {
+      setBuilding(false);
+      return undefined;
+    }
+    // Empty path means the contract found no route between these tokens —
+    // not an error, just nothing to build.
+    if (!quote.path || quote.path.length === 0) {
+      setBuilding(false);
+      releaseStaleTx();
+      return undefined;
+    }
+    // Non-FBT swaps have no header fee, so no pre-build needed.
+    if (!isSwappingFeeBasedTokens(inputToken, outputToken)) {
+      setBuilding(false);
+      releaseStaleTx();
+      return undefined;
+    }
+
+    setBuilding(true);
+    debouncedBuild();
+    return () => debouncedBuild.cancel();
+  }, [quote, inputToken, outputToken, wallet, contractId, debouncedBuild, releaseStaleTx]);
+
+  // Release any locked UTXOs if the user leaves the screen without confirming.
+  // Reads from preBuiltSendTxRef (kept current via inline mutation above) so it
+  // sees the latest value at unmount time.
+  useEffect(() => () => {
+    releaseStaleTx();
+    debouncedBuild.cancel();
+  }, [debouncedBuild, releaseStaleTx]);
 
   function onInputAmountChange(text, value) {
     setInputTokenAmountStr(text);
@@ -292,6 +416,25 @@ const TokenSwap = () => {
     // Quote will be fetched when keyboard dismisses via onEndEditing handlers
   };
 
+  const networkFee = useMemo(
+    () => getNetworkFeeFromTx(preBuiltSendTx),
+    [preBuiltSendTx],
+  );
+
+  // True when the user has enough HTR to cover the network fee on top of any HTR
+  // they are also sending as the swap input.
+  const hasEnoughHTRForFee = () => {
+    if (!networkFee || networkFee === 0n) return true;
+    const htrBalance = get(tokensBalance, hathorLib.constants.NATIVE_TOKEN_UID);
+    if (!htrBalance) return false;
+    const htrAvailable = get(htrBalance, 'data.available', 0n);
+    let htrOutgoing = 0n;
+    if (inputToken && inputToken.uid === hathorLib.constants.NATIVE_TOKEN_UID && quote) {
+      htrOutgoing = BigInt(quote.amount_in);
+    }
+    return htrAvailable >= (networkFee + htrOutgoing);
+  };
+
   /**
    * We need to check that the quoted amount is valid even after we apply the slippage.
    * The value can be invalid if the quoted amount is 0.01 and with slippage it comes to 0.00
@@ -322,6 +465,9 @@ const TokenSwap = () => {
       || outputTokenAmount === 0n
       || getAvailableAmount(inputToken, tokensBalance) < inputTokenAmount
       || !checkQuotedAmount()
+      || building
+      || (isSwappingFeeBasedTokens(inputToken, outputToken)
+        && (!preBuiltSendTx || !hasEnoughHTRForFee()))
   );
 
   const getAvailableString = (token) => {
@@ -434,6 +580,17 @@ const TokenSwap = () => {
                     <Text style={styles.quoteHeader}>Price impact</Text>
                     <Text style={styles.quoteValue}>{`${quote.price_impact / 100}%`}</Text>
                   </View>
+                  {isSwappingFeeBasedTokens(inputToken, outputToken) && (
+                    <View style={styles.quoteRow}>
+                      <Text style={styles.quoteHeader}>{t`Network Fee`}</Text>
+                      <Text style={styles.quoteValue}>
+                        {building && t`Calculating…`}
+                        {!building && networkFee != null
+                          && `${renderValue(networkFee, false)} ${hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol}`}
+                        {!building && networkFee == null && '-'}
+                      </Text>
+                    </View>
+                  )}
                   { quote.direction === 'input' && (
                     <View style={styles.quoteRow}>
                       <Text style={styles.quoteHeader}>Minimum received</Text>
@@ -451,6 +608,16 @@ const TokenSwap = () => {
             </View>
 
             <View style={styles.buttonContainer}>
+              {!building && preBuiltSendTx && !hasEnoughHTRForFee() && (
+                <Text style={styles.error}>
+                  {t`Insufficient balance of HTR to cover the network fee.`}
+                </Text>
+              )}
+              {buildError && (
+                <Text style={styles.error}>
+                  {t`Failed to calculate network fee. Please try again.`}
+                </Text>
+              )}
               <NewHathorButton
                 title={t`REVIEW`}
                 disabled={isReviewButtonDisabled()}

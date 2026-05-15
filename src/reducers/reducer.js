@@ -559,12 +559,15 @@ const initialState = {
    * @property {null|TokenData} outputToken Token being swapped out
    * @property {null|TokenSwapQuote} swapPathQuote Latest quote from the pool manager for the swap
    * @property {TOKEN_SWAP_QUOTE_STATUS} loadSwapPathQuoteStatus Status of the quote request
+   * @property {null|Object} preBuiltSendTx Built but unsigned SendTransaction for the current swap,
+   *   so the fee shown on selection matches what is broadcast on confirmation. Not persisted.
    */
   tokenSwap: {
     inputToken: null,
     outputToken: null,
     swapPathQuote: null,
     loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.READY,
+    preBuiltSendTx: null,
   },
   tokenImport: {
     unregisteredTokens: {},
@@ -825,6 +828,10 @@ export const reducer = (state = initialState, action) => {
       return onTokenSwapFetchQuoteError(state);
     case types.TOKEN_SWAP_RESET_SWAP_DATA:
       return onTokenSwapResetSwapData(state);
+    case types.TOKEN_SWAP_SET_PRE_BUILT_TX:
+      return onTokenSwapSetPreBuiltTx(state, action);
+    case types.TOKEN_SWAP_CLEAR_PRE_BUILT_TX:
+      return onTokenSwapClearPreBuiltTx(state);
 
     case types.TOKEN_IMPORT_FETCH_REQUESTED:
       return onTokenImportFetchRequested(state);
@@ -2384,6 +2391,23 @@ export const onTokenSwapResetSwapData = (state) => ({
     outputToken: null,
     swapPathQuote: null,
     loadSwapPathQuoteStatus: TOKEN_SWAP_QUOTE_STATUS.READY,
+    preBuiltSendTx: null,
+  },
+});
+
+export const onTokenSwapSetPreBuiltTx = (state, { payload }) => ({
+  ...state,
+  tokenSwap: {
+    ...state.tokenSwap,
+    preBuiltSendTx: payload.sendTransaction,
+  },
+});
+
+export const onTokenSwapClearPreBuiltTx = (state) => ({
+  ...state,
+  tokenSwap: {
+    ...state.tokenSwap,
+    preBuiltSendTx: null,
   },
 });
 

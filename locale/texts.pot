@@ -374,7 +374,7 @@ msgstr ""
 
 #: src/screens/CreateTokenConfirm.js:158
 #: src/screens/SendConfirmScreen.js:105
-#: src/screens/TokenSwapReview.js:163
+#: src/screens/TokenSwapReview.js:183
 msgid "Building transaction"
 msgstr ""
 
@@ -737,7 +737,7 @@ msgstr ""
 msgid "Register Nano Contract"
 msgstr ""
 
-#: src/screens/NanoContractRegisterQrCodeScreen.js:63
+#: src/screens/NanoContractRegisterQrCodeScreen.js:62
 msgid "Scan the nano contract ID QR code"
 msgstr ""
 
@@ -854,7 +854,7 @@ msgstr ""
 msgid "REGISTER TOKEN"
 msgstr ""
 
-#: src/screens/RegisterToken.js:53
+#: src/screens/RegisterToken.js:52
 msgid "Scan the token QR code"
 msgstr ""
 
@@ -965,6 +965,7 @@ msgstr ""
 
 #: src/screens/SendAmountInput.js:161
 #: src/screens/SendAmountInput.js:166
+#: src/screens/TokenSwap.js:613
 msgid "Insufficient balance of HTR to cover the network fee."
 msgstr ""
 
@@ -981,24 +982,25 @@ msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
 #: src/screens/SendConfirmScreen.js:33
+#: src/screens/TokenSwapReview.js:261
 msgid "No fee"
 msgstr ""
 
 #: src/screens/SendConfirmScreen.js:90
-#: src/screens/TokenSwapReview.js:145
+#: src/screens/TokenSwapReview.js:165
 #.  show loading modal
 msgid "Your transfer is being processed"
 msgstr ""
 
 #: src/sagas/helpers.js:147
 #: src/screens/SendConfirmScreen.js:103
-#: src/screens/TokenSwapReview.js:161
+#: src/screens/TokenSwapReview.js:181
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
 #: src/sagas/helpers.js:148
 #: src/screens/SendConfirmScreen.js:104
-#: src/screens/TokenSwapReview.js:162
+#: src/screens/TokenSwapReview.js:182
 msgid "Authorize operation"
 msgstr ""
 
@@ -1065,7 +1067,7 @@ msgid "Invalid QR code"
 msgstr ""
 
 #: src/screens/Reown/ReownScan.js:49
-#: src/screens/SendScanQRCode.js:88
+#: src/screens/SendScanQRCode.js:87
 #: src/screens/UnifiedQRScanner.js:96
 msgid "Scan the QR code"
 msgstr ""
@@ -1118,16 +1120,31 @@ msgstr ""
 msgid "Unregister"
 msgstr ""
 
-#: src/screens/TokenSwap.js:333
+#: src/screens/TokenSwap.js:479
 #, javascript-format
 msgid "Balance: ${ amount }"
 msgstr ""
 
-#: src/screens/TokenSwap.js:357
+#: src/screens/TokenSwap.js:503
 msgid "TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwap.js:455
+#: src/components/Reown/CreateTokenRequest.js:130
+#: src/components/Reown/TransactionFees.js:55
+#: src/screens/TokenSwap.js:585
+#: src/screens/TokenSwapReview.js:257
+msgid "Network Fee"
+msgstr ""
+
+#: src/screens/TokenSwap.js:587
+msgid "Calculating…"
+msgstr ""
+
+#: src/screens/TokenSwap.js:618
+msgid "Failed to calculate network fee. Please try again."
+msgstr ""
+
+#: src/screens/TokenSwap.js:622
 msgid "REVIEW"
 msgstr ""
 
@@ -1139,15 +1156,15 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:173
+#: src/screens/TokenSwapReview.js:193
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:189
+#: src/screens/TokenSwapReview.js:209
 msgid "Your swap was successful"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:253
+#: src/screens/TokenSwapReview.js:281
 msgid "SWAP"
 msgstr ""
 
@@ -2021,11 +2038,6 @@ msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:127
 msgid "Token data"
-msgstr ""
-
-#: src/components/Reown/CreateTokenRequest.js:130
-#: src/components/Reown/TransactionFees.js:55
-msgid "Network Fee"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:216
