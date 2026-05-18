@@ -763,7 +763,7 @@ msgstr "Digitar"
 msgid "Register Nano Contract"
 msgstr "Registrar Nano Contract"
 
-#: src/screens/NanoContractRegisterQrCodeScreen.js:63
+#: src/screens/NanoContractRegisterQrCodeScreen.js:62
 msgid "Scan the nano contract ID QR code"
 msgstr "Escaneie o QR code do ID do Nano Contract"
 
@@ -873,7 +873,7 @@ msgstr "Digitar"
 msgid "REGISTER TOKEN"
 msgstr "REGISTRAR UM TOKEN"
 
-#: src/screens/RegisterToken.js:53
+#: src/screens/RegisterToken.js:52
 msgid "Scan the token QR code"
 msgstr "Leia o QR code do token"
 
@@ -1082,7 +1082,7 @@ msgstr "Enviar"
 msgid "Invalid QR code"
 msgstr "QR code inválido"
 
-#: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:88
+#: src/screens/Reown/ReownScan.js:49 src/screens/SendScanQRCode.js:87
 #: src/screens/UnifiedQRScanner.js:96
 msgid "Scan the QR code"
 msgstr "Leia o QR code"
@@ -2457,7 +2457,7 @@ msgstr "Campo de dados"
 
 #: src/components/Reown/SendTransactionRequest.js:378
 msgid "Change Address"
-msgstr "Alterar Endereço"
+msgstr "Endereço de troco"
 
 #.  No unregistered tokens, just show success
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:302
@@ -2619,7 +2619,7 @@ msgstr "Endereço para filtrar UTXOs:"
 
 #: src/components/Reown/NanoContract/NanoContractActions.js:200
 msgid "Change address:"
-msgstr "Alterar Endereço:"
+msgstr "Endereço de troco:"
 
 #: src/components/Reown/NanoContract/NanoContractActions.js:218
 msgid "Address to send new authority:"

@@ -737,7 +737,7 @@ msgstr ""
 msgid "Register Nano Contract"
 msgstr ""
 
-#: src/screens/NanoContractRegisterQrCodeScreen.js:63
+#: src/screens/NanoContractRegisterQrCodeScreen.js:62
 msgid "Scan the nano contract ID QR code"
 msgstr ""
 
@@ -854,7 +854,7 @@ msgstr ""
 msgid "REGISTER TOKEN"
 msgstr ""
 
-#: src/screens/RegisterToken.js:53
+#: src/screens/RegisterToken.js:52
 msgid "Scan the token QR code"
 msgstr ""
 
@@ -1065,7 +1065,7 @@ msgid "Invalid QR code"
 msgstr ""
 
 #: src/screens/Reown/ReownScan.js:49
-#: src/screens/SendScanQRCode.js:88
+#: src/screens/SendScanQRCode.js:87
 #: src/screens/UnifiedQRScanner.js:96
 msgid "Scan the QR code"
 msgstr ""
