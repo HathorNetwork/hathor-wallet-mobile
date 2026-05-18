@@ -1,0 +1,51 @@
+diff --git a/node_modules/bitcore-lib/lib/crypto/point.js b/node_modules/bitcore-lib/lib/crypto/point.js
+index 6046ed3..1b24ccd 100644
+--- a/node_modules/bitcore-lib/lib/crypto/point.js
++++ b/node_modules/bitcore-lib/lib/crypto/point.js
+@@ -26,7 +26,13 @@ var Point = function Point(x, y, isRed) {
+   } catch (e) {
+     throw new Error('Invalid Point');
+   }
+-  point.validate();
++  // Use bitcore's strict validate if available (saved from prototype before restore)
++  var strictValidate = global.__bitcorePointValidate;
++  if (strictValidate) {
++    strictValidate.call(point);
++  } else {
++    point.validate();
++  }
+   return point;
+ };
+ 
+@@ -47,7 +53,12 @@ Point.fromX = function fromX(odd, x){
+   } catch (e) {
+     throw new Error('Invalid X');
+   }
+-  point.validate();
++  var strictValidate = global.__bitcorePointValidate;
++  if (strictValidate) {
++    strictValidate.call(point);
++  } else {
++    point.validate();
++  }
+   return point;
+ };
+ 
+diff --git a/node_modules/bitcore-lib/lib/publickey.js b/node_modules/bitcore-lib/lib/publickey.js
+index f9c48a1..53b84c6 100644
+--- a/node_modules/bitcore-lib/lib/publickey.js
++++ b/node_modules/bitcore-lib/lib/publickey.js
+@@ -50,7 +50,12 @@ function PublicKey(data, extra) {
+   var info = this._classifyArgs(data, extra);
+ 
+   // validation
+-  info.point.validate();
++  var strictValidate = global.__bitcorePointValidate;
++  if (strictValidate) {
++    strictValidate.call(info.point);
++  } else {
++    info.point.validate();
++  }
+ 
+   JSUtil.defineImmutable(this, {
+     point: info.point,

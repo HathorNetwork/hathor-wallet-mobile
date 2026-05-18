@@ -13,8 +13,8 @@
     "start:clean": "react-native start --reset-cache",
     "lint": "eslint .",
     "test": "jest",
-    "setup": "npm install && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib --hack && npx patch-package",
-    "setup:release": "npm ci && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib --hack && npx patch-package",
+    "setup": "npm install && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib --hack && node scripts/fix-web3auth-crypto-hack.js && npx patch-package",
+    "setup:release": "npm ci && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib --hack && node scripts/fix-web3auth-crypto-hack.js && npx patch-package",
     "i18n": "make i18n"
   },
   "dependencies": {
