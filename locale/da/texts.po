@@ -372,7 +372,7 @@ msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
 #: src/screens/CreateTokenConfirm.js:158 src/screens/SendConfirmScreen.js:105
-#: src/screens/TokenSwapReview.js:183
+#: src/screens/TokenSwapReview.js:172
 msgid "Building transaction"
 msgstr ""
 
@@ -959,7 +959,7 @@ msgid "Calculating network fee..."
 msgstr ""
 
 #: src/screens/SendAmountInput.js:161 src/screens/SendAmountInput.js:166
-#: src/screens/TokenSwap.js:613
+#: src/screens/TokenSwap.js:532
 msgid "Insufficient balance of HTR to cover the network fee."
 msgstr ""
 
@@ -974,22 +974,22 @@ msgstr[1] ""
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:33 src/screens/TokenSwapReview.js:261
+#: src/screens/SendConfirmScreen.js:33 src/screens/TokenSwapReview.js:262
 msgid "No fee"
 msgstr ""
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:165
+#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:154
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:103
-#: src/screens/TokenSwapReview.js:181
+#: src/screens/TokenSwapReview.js:170
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:104
-#: src/screens/TokenSwapReview.js:182
+#: src/screens/TokenSwapReview.js:171
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -1108,30 +1108,31 @@ msgstr "Forbundet til"
 msgid "Unregister"
 msgstr "Afmeld"
 
-#: src/screens/TokenSwap.js:479
+#: src/screens/TokenSwap.js:390
 #, javascript-format
 msgid "Balance: ${ amount }"
 msgstr ""
 
-#: src/screens/TokenSwap.js:503
+#: src/screens/TokenSwap.js:415
 msgid "TOKEN SWAP"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:130
-#: src/components/Reown/TransactionFees.js:55 src/screens/TokenSwap.js:585
-#: src/screens/TokenSwapReview.js:257
+#: src/components/Reown/TransactionFees.js:55 src/screens/TokenSwap.js:509
+#: src/screens/TokenSwapReview.js:258
 msgid "Network Fee"
 msgstr ""
 
-#: src/screens/TokenSwap.js:587
+#: src/screens/TokenSwap.js:512
 msgid "Calculating…"
 msgstr ""
 
-#: src/screens/TokenSwap.js:618
-msgid "Failed to calculate network fee. Please try again."
+#: src/screens/TokenSwap.js:525
+#, javascript-format
+msgid "Insufficient balance of ${ inputToken.symbol }."
 msgstr ""
 
-#: src/screens/TokenSwap.js:622
+#: src/screens/TokenSwap.js:536
 msgid "REVIEW"
 msgstr ""
 
@@ -1143,15 +1144,15 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:193
+#: src/screens/TokenSwapReview.js:182
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:209
+#: src/screens/TokenSwapReview.js:198
 msgid "Your swap was successful"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:281
+#: src/screens/TokenSwapReview.js:270
 msgid "SWAP"
 msgstr ""
 

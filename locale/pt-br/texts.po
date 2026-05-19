@@ -388,7 +388,7 @@ msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
 #: src/screens/CreateTokenConfirm.js:158 src/screens/SendConfirmScreen.js:105
-#: src/screens/TokenSwapReview.js:183
+#: src/screens/TokenSwapReview.js:172
 msgid "Building transaction"
 msgstr "Criando transação"
 
@@ -987,7 +987,7 @@ msgid "Calculating network fee..."
 msgstr "Calculando taxa da rede..."
 
 #: src/screens/SendAmountInput.js:161 src/screens/SendAmountInput.js:166
-#: src/screens/TokenSwap.js:613
+#: src/screens/TokenSwap.js:532
 msgid "Insufficient balance of HTR to cover the network fee."
 msgstr "Saldo insuficiente para cobrir a taxa da rede."
 
@@ -1002,22 +1002,22 @@ msgstr[1] "${ amountAndToken } disponíveis"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:33 src/screens/TokenSwapReview.js:261
+#: src/screens/SendConfirmScreen.js:33 src/screens/TokenSwapReview.js:262
 msgid "No fee"
 msgstr "Sem taxa"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:165
+#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:154
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:103
-#: src/screens/TokenSwapReview.js:181
+#: src/screens/TokenSwapReview.js:170
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:104
-#: src/screens/TokenSwapReview.js:182
+#: src/screens/TokenSwapReview.js:171
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -1136,30 +1136,31 @@ msgstr "Conectado ao servidor"
 msgid "Unregister"
 msgstr "Desregistrar"
 
-#: src/screens/TokenSwap.js:479
+#: src/screens/TokenSwap.js:390
 #, javascript-format
 msgid "Balance: ${ amount }"
 msgstr "Saldo ${ amount }"
 
-#: src/screens/TokenSwap.js:503
+#: src/screens/TokenSwap.js:415
 msgid "TOKEN SWAP"
 msgstr "TROCA DE TOKENS"
 
 #: src/components/Reown/CreateTokenRequest.js:130
-#: src/components/Reown/TransactionFees.js:55 src/screens/TokenSwap.js:585
-#: src/screens/TokenSwapReview.js:257
+#: src/components/Reown/TransactionFees.js:55 src/screens/TokenSwap.js:509
+#: src/screens/TokenSwapReview.js:258
 msgid "Network Fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/TokenSwap.js:587
+#: src/screens/TokenSwap.js:512
 msgid "Calculating…"
 msgstr "Calculando…"
 
-#: src/screens/TokenSwap.js:618
-msgid "Failed to calculate network fee. Please try again."
-msgstr "Falha ao calcular a taxa da rede. Por favor, tente novamente."
+#: src/screens/TokenSwap.js:525
+#, javascript-format
+msgid "Insufficient balance of ${ inputToken.symbol }."
+msgstr "Saldo insuficiente de ${ inputToken.symbol }."
 
-#: src/screens/TokenSwap.js:622
+#: src/screens/TokenSwap.js:536
 msgid "REVIEW"
 msgstr "REVISAR"
 
@@ -1171,15 +1172,15 @@ msgstr "Ocorreu um erro ao carregar o protocolo de troca de tokens."
 msgid "Loading Token Swap"
 msgstr "Carregando troca de tokens"
 
-#: src/screens/TokenSwapReview.js:193
+#: src/screens/TokenSwapReview.js:182
 msgid "REVIEW TOKEN SWAP"
 msgstr "REVISAR TROCA DE TOKENS"
 
-#: src/screens/TokenSwapReview.js:209
+#: src/screens/TokenSwapReview.js:198
 msgid "Your swap was successful"
 msgstr "Sua troca foi bem-sucedida"
 
-#: src/screens/TokenSwapReview.js:281
+#: src/screens/TokenSwapReview.js:270
 msgid "SWAP"
 msgstr "TROCAR"
 
@@ -2835,6 +2836,9 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#~ msgid "Failed to calculate network fee. Please try again."
+#~ msgstr "Falha ao calcular a taxa da rede. Por favor, tente novamente."
 
 #~ msgid "Developer Settings"
 #~ msgstr "Configurações do Desenvolvedor"
