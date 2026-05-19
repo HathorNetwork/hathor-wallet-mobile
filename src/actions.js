@@ -259,10 +259,6 @@ export const types = {
   // Clean swap data when user does not confirm the swap
   TOKEN_SWAP_RESET_SWAP_DATA: 'TOKEN_SWAP_RESET_SWAP_DATA',
   TOKEN_SWAP_START_SWAP: 'TOKEN_SWAP_START_SWAP',
-  // Pre-built (unsigned) SendTransaction for the current swap, so the fee shown
-  // on the selection screen matches what is broadcast on confirmation.
-  TOKEN_SWAP_SET_PRE_BUILT_TX: 'TOKEN_SWAP_SET_PRE_BUILT_TX',
-  TOKEN_SWAP_CLEAR_PRE_BUILT_TX: 'TOKEN_SWAP_CLEAR_PRE_BUILT_TX',
 
   // Token Import actions
   TOKEN_IMPORT_FETCH_REQUESTED: 'TOKEN_IMPORT_FETCH_REQUESTED',
@@ -1816,18 +1812,6 @@ export const tokenSwapResetSwapData = () => ({
 
 export const tokenSwapSwitchTokens = () => ({
   type: types.TOKEN_SWAP_SWITCH_TOKENS,
-});
-
-/**
- * @param {import('@hathor/wallet-lib').SendTransaction} sendTransaction Built but unsigned SendTransaction.
- */
-export const tokenSwapSetPreBuiltTx = (sendTransaction) => ({
-  type: types.TOKEN_SWAP_SET_PRE_BUILT_TX,
-  payload: { sendTransaction },
-});
-
-export const tokenSwapClearPreBuiltTx = () => ({
-  type: types.TOKEN_SWAP_CLEAR_PRE_BUILT_TX,
 });
 
 export const tokenImportFetchRequested = () => ({

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -20,10 +20,11 @@ import { t } from 'ttag';
 import hathorLib from '@hathor/wallet-lib';
 
 import {
-  getNetworkFeeFromTx,
+  buildTokenSwap,
   renderAmountAndSymbol,
   renderAmountAndSymbolWithSlippage,
   renderConversionRate,
+  selectTokenSwapContractId,
 } from '../utils/tokenSwap';
 import { renderValue } from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
@@ -36,7 +37,6 @@ import NavigationService from '../NavigationService';
 import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
 import {
-  tokenSwapClearPreBuiltTx,
   tokenSwapFetchSwapQuote,
   tokenSwapResetSwapData,
 } from '../actions';
@@ -51,23 +51,19 @@ const TokenSwapReview = () => {
   const wallet = useSelector((state) => state.wallet);
   const useWalletService = useSelector((state) => state.useWalletService);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
-  const preBuiltSendTx = useSelector((state) => state.tokenSwap.preBuiltSendTx);
+  const contractId = useSelector(selectTokenSwapContractId);
 
   const {
     quote,
     tokenIn,
     tokenOut,
+    networkFee,
   } = useParams();
   const [modal, setModal] = useState(null);
   const [loading, setLoading] = useState(false);
   const registrationPromiseRef = useRef(null);
 
   const navigation = useNavigation();
-
-  const networkFee = useMemo(
-    () => getNetworkFeeFromTx(preBuiltSendTx),
-    [preBuiltSendTx],
-  );
 
   /**
    * Register a token if it's not already registered
@@ -108,23 +104,9 @@ const TokenSwapReview = () => {
   };
 
   /**
-   * Release any locked UTXOs from the prepared tx. Safe to call multiple times.
-   */
-  const releasePreBuiltTx = async () => {
-    if (!preBuiltSendTx) return;
-    try {
-      await preBuiltSendTx.releaseUtxos();
-    } catch (err) {
-      console.error(err);
-    }
-    dispatch(tokenSwapClearPreBuiltTx());
-  };
-
-  /**
    * Method executed after dismiss success modal
    */
   const exitOnError = async () => {
-    await releasePreBuiltTx();
     setModal(null);
     dispatch(tokenSwapFetchSwapQuote(
       quote.direction,
@@ -135,35 +117,42 @@ const TokenSwapReview = () => {
     navigation.goBack();
   };
 
-  /**
-   * Header back: release UTXOs and return without re-fetching a quote.
-   */
-  const onBackPress = async () => {
-    await releasePreBuiltTx();
-    navigation.goBack();
-  };
-
   const executeSend = async (pin) => {
     try {
       setLoading(true);
-
-      if (!preBuiltSendTx) {
-        throw new Error('Prepared transaction missing');
-      }
 
       if (useWalletService) {
         await wallet.validateAndRenewAuthToken(pin);
       }
 
-      await wallet.signTx(preBuiltSendTx.transaction, { pinCode: pin });
-      const promise = preBuiltSendTx.runFromMining();
+      const address = await wallet.getAddressAtIndex(0);
+      const [method, data] = buildTokenSwap(
+        contractId,
+        address,
+        quote,
+        tokenIn.uid,
+        tokenOut.uid,
+        TOKEN_SWAP_SLIPPAGE,
+      );
+      if (useWalletService) {
+        await wallet.validateAndRenewAuthToken(pin);
+      }
+      const sendTransaction = await wallet.createNanoContractTransaction(
+        method,
+        address,
+        data,
+        // we ensure if the tx exceed the network fee
+        // presented in the review setp, an error will be raised
+        { pinCode: pin, maxFee: networkFee },
+      );
+      const promise = sendTransaction.runFromMining();
 
       setLoading(false);
 
       // show loading modal
       setModal({
         text: t`Your transfer is being processed`,
-        sendTransaction: preBuiltSendTx,
+        sendTransaction,
         promise,
       });
     } catch (err) {
@@ -191,7 +180,7 @@ const TokenSwapReview = () => {
         <HathorHeader
           withBorder
           title={t`REVIEW TOKEN SWAP`}
-          onBackPress={onBackPress}
+          onBackPress={exitOnError}
         />
 
         {loading && (
@@ -253,14 +242,6 @@ const TokenSwapReview = () => {
                   <Text style={styles.quoteHeader}>Price impact</Text>
                   <Text style={styles.quoteValue}>{`${quote.price_impact / 100}%`}</Text>
                 </View>
-                <View style={styles.quoteRow}>
-                  <Text style={styles.quoteHeader}>{t`Network Fee`}</Text>
-                  <Text style={styles.quoteValue}>
-                    {networkFee != null && networkFee > 0n
-                      ? `${renderValue(networkFee, false)} ${hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol}`
-                      : t`No fee`}
-                  </Text>
-                </View>
                 { quote.direction === 'input' && (
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Minimum received</Text>
@@ -273,6 +254,14 @@ const TokenSwapReview = () => {
                     <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, tokenIn, TOKEN_SWAP_SLIPPAGE)}</Text>
                   </View>
                 )}
+                <View style={styles.quoteRow}>
+                  <Text style={styles.quoteHeader}>{t`Network Fee`}</Text>
+                  <Text style={styles.quoteValue}>
+                    {networkFee != null && networkFee > 0n
+                      ? `${renderValue(networkFee, false)} ${hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol}`
+                      : t`No fee`}
+                  </Text>
+                </View>
               </View>
             </View>
 

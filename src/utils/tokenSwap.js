@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { ncApi, TokenVersion } from '@hathor/wallet-lib';
+import hathorLib, { ncApi, TokenVersion } from '@hathor/wallet-lib';
 import { get } from 'lodash';
 import { getNetworkSettings } from '../sagas/helpers';
 import { renderValue } from '../utils';
@@ -425,31 +425,31 @@ export function isSwappingFeeBasedTokens(inputToken, outputToken) {
 }
 
 /**
- * Sum the HTR-denominated fee entries from a prepared SendTransaction's fee header.
+ * Calculate the HTR network fee for a swap.
  *
- * - Returns `null` when no prepared tx is available.
- * - Returns `0n` when the tx is prepared but has no fee header (non-FBT swap).
- * - Throws when an entry references a non-HTR token — token swap fees must be
- *   denominated in HTR; an unexpected token index signals a wallet-lib regression
- *   that we want to surface loudly rather than silently mis-display.
- *
- * @param {Object|undefined} preBuiltSendTx
- * @returns {bigint|null}
+ * @param {Object} wallet hathor-wallet-lib wallet instance
+ * @param {TokenSwapQuote} quote
+ * @param {TokenData} tokenIn
+ * @param {TokenData} tokenOut
+ * @returns {Promise<bigint>} HTR amount in smallest units
  */
-export function getNetworkFeeFromTx(preBuiltSendTx) {
-  if (!preBuiltSendTx || !preBuiltSendTx.transaction) {
-    return null;
-  }
-  const header = preBuiltSendTx.transaction.getFeeHeader?.();
-  if (!header) {
-    return 0n;
-  }
-  let total = 0n;
-  for (const entry of header.entries) {
-    if (entry.tokenIndex !== 0) {
-      throw new Error(`Unexpected non-HTR fee entry: tokenIndex=${entry.tokenIndex}`);
+export async function calculateSwapNetworkFee(wallet, quote, tokenIn, tokenOut) {
+  let units = 0n;
+
+  if (tokenIn && tokenIn.version === TokenVersion.FEE) {
+    units += 1n;
+    const { changeAmount } = await wallet.getUtxosForAmount(
+      BigInt(quote.amount_in),
+      { token: tokenIn.uid },
+    );
+    if (changeAmount && changeAmount > 0n) {
+      units += 1n;
     }
-    total += entry.amount;
   }
-  return total;
+
+  if (tokenOut && tokenOut.version === TokenVersion.FEE) {
+    units += 1n;
+  }
+
+  return units * hathorLib.constants.FEE_PER_OUTPUT;
 }
