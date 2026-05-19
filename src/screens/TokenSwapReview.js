@@ -142,7 +142,7 @@ const TokenSwapReview = () => {
         address,
         data,
         // we ensure if the tx exceed the network fee
-        // presented in the review setp, an error will be raised
+        // presented in the review step, an error will be raised
         { pinCode: pin, maxFee: networkFee },
       );
       const promise = sendTransaction.runFromMining();
