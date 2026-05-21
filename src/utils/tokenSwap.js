@@ -7,6 +7,7 @@
 
 import hathorLib, { ncApi, TokenVersion } from '@hathor/wallet-lib';
 import { get } from 'lodash';
+import { t } from 'ttag';
 import { getNetworkSettings } from '../sagas/helpers';
 import { renderValue } from '../utils';
 
@@ -424,32 +425,30 @@ export function isSwappingFeeBasedTokens(inputToken, outputToken) {
   return isFeeBasedSwapToken(inputToken) || isFeeBasedSwapToken(outputToken);
 }
 
-/**
- * Calculate the HTR network fee for a swap.
- *
- * @param {Object} wallet hathor-wallet-lib wallet instance
- * @param {TokenSwapQuote} quote
- * @param {TokenData} tokenIn
- * @param {TokenData} tokenOut
- * @returns {Promise<bigint>} HTR amount in smallest units
- */
-export async function calculateSwapNetworkFee(wallet, quote, tokenIn, tokenOut) {
-  let units = 0n;
+const BUILD_ERROR_MESSAGES = {
+  HTR_FEE: 'Not enough HTR utxos to pay the fee.',
+  DEPOSIT_UTXO: 'Not enough utxos to execute the deposit.',
+};
 
-  if (tokenIn && tokenIn.version === TokenVersion.FEE) {
-    units += 1n;
-    const { changeAmount } = await wallet.getUtxosForAmount(
-      BigInt(quote.amount_in),
-      { token: tokenIn.uid },
-    );
-    if (changeAmount && changeAmount > 0n) {
-      units += 1n;
+/**
+ * Map a builder exception to a user-facing message.
+ *
+ * The recognized strings match the messages thrown by the lib at
+ * nano_contracts/builder.ts (selectFeeInputs and executeDeposit). Anything
+ * else falls back to a generic message so the modal stays functional if
+ * those strings ever change.
+ *
+ * @param {Error} err
+ * @returns {string}
+ */
+export function mapBuildError(err) {
+  if (err instanceof hathorLib.errors.NanoContractTransactionError) {
+    if (err.message === BUILD_ERROR_MESSAGES.HTR_FEE) {
+      return t`Insufficient HTR balance to cover the network fee.`;
+    }
+    if (err.message === BUILD_ERROR_MESSAGES.DEPOSIT_UTXO) {
+      return t`Insufficient balance to execute the swap.`;
     }
   }
-
-  if (tokenOut && tokenOut.version === TokenVersion.FEE) {
-    units += 1n;
-  }
-
-  return units * hathorLib.constants.FEE_PER_OUTPUT;
+  return t`Could not build the swap transaction. Please try again.`;
 }

@@ -20,15 +20,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
 import { get } from 'lodash';
-import hathorLib from '@hathor/wallet-lib';
 import { SwapIcon } from '../components/Icons/Swap.icon';
 import AmountInputAccessory from '../components/AmountInputAccessory';
 
 import { renderValue, formatAmountToInput } from '../utils';
 import {
   calcAmountWithSlippage,
-  calculateSwapNetworkFee,
-  isSwappingFeeBasedTokens,
   renderAmountAndSymbolWithSlippage,
   renderConversionRate,
   selectTokenSwapAllowedTokens,
@@ -91,9 +88,6 @@ const TokenSwap = () => {
   // below for the rationale.
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-  // we use null value in this prop to track loading state
-  const [networkFee, setNetworkFee] = useState(0n);
-
   // Ref to track editing timeout so we can cancel it on new focus
   const editingTimeoutRef = useRef(null);
 
@@ -103,7 +97,6 @@ const TokenSwap = () => {
     outputToken,
     swapPathQuote: quote,
   } = useSelector((state) => state.tokenSwap);
-  const wallet = useSelector((state) => state.wallet);
   const { decimalPlaces } = useSelector((state) => ({
     decimalPlaces: state.serverInfo?.decimal_places
   }));
@@ -180,40 +173,6 @@ const TokenSwap = () => {
       setOutputTokenAmount(quote.amount_out);
     }
   }, [quote]);
-
-  useEffect(() => {
-    let cancelled = false;
-    refreshNetworkFee(() => cancelled);
-    return () => { cancelled = true; };
-  }, [quote, inputToken, outputToken, wallet, tokensBalance]);
-
-  const refreshNetworkFee = async (isCancelled) => {
-    if (!quote || !inputToken || !outputToken || !wallet
-        || !quote.path || quote.path.length === 0
-        || !isSwappingFeeBasedTokens(inputToken, outputToken)) {
-      setNetworkFee(0n);
-      return;
-    }
-    if (getAvailableAmount(inputToken, tokensBalance) < BigInt(quote.amount_in)) {
-      setNetworkFee(null);
-      return;
-    }
-
-    setNetworkFee(null);
-
-    try {
-      const fee = await calculateSwapNetworkFee(wallet, quote, inputToken, outputToken);
-      if (isCancelled()) return;
-      setNetworkFee(fee);
-    } catch (err) {
-      if (isCancelled()) return;
-      console.error('Failed to calculate network fee', err);
-      // Fall back to a single output's worth so the button doesn't stay
-      // disabled forever on a transient selector error — same posture as
-      // SendAmountInput.
-      setNetworkFee(hathorLib.constants.FEE_PER_OUTPUT);
-    }
-  };
 
   function onInputAmountChange(text, value) {
     setInputTokenAmountStr(text);
@@ -333,20 +292,6 @@ const TokenSwap = () => {
     // Quote will be fetched when keyboard dismisses via onEndEditing handlers
   };
 
-  // True when the user has enough HTR to cover the network fee on top of any HTR
-  // they are also sending as the swap input.
-  const hasEnoughHTRForFee = () => {
-    if (!networkFee || networkFee === 0n) return true;
-    const htrBalance = get(tokensBalance, hathorLib.constants.NATIVE_TOKEN_UID);
-    if (!htrBalance) return false;
-    const htrAvailable = get(htrBalance, 'data.available', 0n);
-    let htrOutgoing = 0n;
-    if (inputToken && inputToken.uid === hathorLib.constants.NATIVE_TOKEN_UID && quote) {
-      htrOutgoing = BigInt(quote.amount_in);
-    }
-    return htrAvailable >= (networkFee + htrOutgoing);
-  };
-
   /**
    * We need to check that the quoted amount is valid even after we apply the slippage.
    * The value can be invalid if the quoted amount is 0.01 and with slippage it comes to 0.00
@@ -377,8 +322,6 @@ const TokenSwap = () => {
       || outputTokenAmount === 0n
       || getAvailableAmount(inputToken, tokensBalance) < inputTokenAmount
       || !checkQuotedAmount()
-      || (isSwappingFeeBasedTokens(inputToken, outputToken)
-        && (networkFee == null || !hasEnoughHTRForFee()))
   );
 
   const getAvailableString = (token) => {
@@ -395,7 +338,6 @@ const TokenSwap = () => {
       quote: quoteArg,
       tokenIn,
       tokenOut,
-      networkFee,
     });
   };
 
@@ -504,16 +446,6 @@ const TokenSwap = () => {
                       <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, inputToken, TOKEN_SWAP_SLIPPAGE)}</Text>
                     </View>
                   )}
-                  {isSwappingFeeBasedTokens(inputToken, outputToken) && (
-                    <View style={styles.quoteRow}>
-                      <Text style={styles.quoteHeader}>{t`Network Fee`}</Text>
-                      <Text style={styles.quoteValue}>
-                        {networkFee == null
-                          ? t`Calculating…`
-                          : `${renderValue(networkFee, false)} ${hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol}`}
-                      </Text>
-                    </View>
-                  )}
                 </View>
               )}
             </View>
@@ -523,13 +455,6 @@ const TokenSwap = () => {
                 && getAvailableAmount(inputToken, tokensBalance) < inputTokenAmount && (
                 <Text style={styles.error}>
                   {t`Insufficient balance of ${inputToken.symbol}.`}
-                </Text>
-              )}
-              {isSwappingFeeBasedTokens(inputToken, outputToken)
-                && networkFee != null
-                && !hasEnoughHTRForFee() && (
-                <Text style={styles.error}>
-                  {t`Insufficient balance of HTR to cover the network fee.`}
                 </Text>
               )}
               <NewHathorButton

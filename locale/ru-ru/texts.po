@@ -123,6 +123,18 @@ msgstr ""
 msgid "New transaction received"
 msgstr ""
 
+#: src/utils/tokenSwap.js:447
+msgid "Insufficient HTR balance to cover the network fee."
+msgstr ""
+
+#: src/utils/tokenSwap.js:450
+msgid "Insufficient balance to execute the swap."
+msgstr ""
+
+#: src/utils/tokenSwap.js:453
+msgid "Could not build the swap transaction. Please try again."
+msgstr ""
+
 #: src/screens/About.js:83
 msgid "ABOUT"
 msgstr "О НАС"
@@ -373,7 +385,7 @@ msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
 #: src/screens/CreateTokenConfirm.js:158 src/screens/SendConfirmScreen.js:105
-#: src/screens/TokenSwapReview.js:172
+#: src/screens/TokenSwapReview.js:205
 msgid "Building transaction"
 msgstr ""
 
@@ -960,7 +972,6 @@ msgid "Calculating network fee..."
 msgstr ""
 
 #: src/screens/SendAmountInput.js:161 src/screens/SendAmountInput.js:166
-#: src/screens/TokenSwap.js:532
 msgid "Insufficient balance of HTR to cover the network fee."
 msgstr ""
 
@@ -976,22 +987,22 @@ msgstr[2] ""
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:33 src/screens/TokenSwapReview.js:262
+#: src/screens/SendConfirmScreen.js:33 src/screens/TokenSwapReview.js:304
 msgid "No fee"
 msgstr ""
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:154
+#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:189
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:103
-#: src/screens/TokenSwapReview.js:170
+#: src/screens/TokenSwapReview.js:203
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:104
-#: src/screens/TokenSwapReview.js:171
+#: src/screens/TokenSwapReview.js:204
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
@@ -1111,31 +1122,21 @@ msgstr "Подключены к"
 msgid "Unregister"
 msgstr "Отменить регистрацию"
 
-#: src/screens/TokenSwap.js:390
+#: src/screens/TokenSwap.js:333
 #, javascript-format
 msgid "Balance: ${ amount }"
 msgstr ""
 
-#: src/screens/TokenSwap.js:415
+#: src/screens/TokenSwap.js:357
 msgid "TOKEN SWAP"
 msgstr ""
 
-#: src/components/Reown/CreateTokenRequest.js:130
-#: src/components/Reown/TransactionFees.js:55 src/screens/TokenSwap.js:509
-#: src/screens/TokenSwapReview.js:258
-msgid "Network Fee"
-msgstr ""
-
-#: src/screens/TokenSwap.js:512
-msgid "Calculating…"
-msgstr ""
-
-#: src/screens/TokenSwap.js:525
+#: src/screens/TokenSwap.js:457
 #, javascript-format
 msgid "Insufficient balance of ${ inputToken.symbol }."
 msgstr ""
 
-#: src/screens/TokenSwap.js:536
+#: src/screens/TokenSwap.js:461
 msgid "REVIEW"
 msgstr ""
 
@@ -1147,15 +1148,25 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:182
+#: src/screens/TokenSwapReview.js:215
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:198
+#: src/screens/TokenSwapReview.js:221
+msgid "Building the swap transaction for your review"
+msgstr ""
+
+#: src/screens/TokenSwapReview.js:239
 msgid "Your swap was successful"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:270
+#: src/components/Reown/CreateTokenRequest.js:130
+#: src/components/Reown/TransactionFees.js:55
+#: src/screens/TokenSwapReview.js:300
+msgid "Network Fee"
+msgstr ""
+
+#: src/screens/TokenSwapReview.js:312
 msgid "SWAP"
 msgstr ""
 
