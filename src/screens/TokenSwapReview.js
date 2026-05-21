@@ -38,7 +38,10 @@ import { useNavigation, useParams } from '../hooks/navigation';
 import NavigationService from '../NavigationService';
 import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
-import { tokenSwapResetSwapData } from '../actions';
+import {
+  tokenSwapFetchSwapQuote,
+  tokenSwapResetSwapData,
+} from '../actions';
 import { registerToken, updateTokensMetadata } from '../utils/tokens';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 import Spinner from '../components/Spinner';
@@ -86,17 +89,17 @@ const TokenSwapReview = () => {
           tokenOut.uid,
           TOKEN_SWAP_SLIPPAGE,
         );
-        const tx = await wallet.createNanoContractTransaction(
+        const sendTransaction = await wallet.createNanoContractTransaction(
           method,
           address,
           data,
           { signTx: false },
         );
         if (cancelled) {
-          try { await tx.releaseUtxos(); } catch (e) { console.error(e); }
+          try { await sendTransaction.releaseUtxos(); } catch (e) { console.error(e); }
           return;
         }
-        setSendTx(tx);
+        setSendTx(sendTransaction);
         setPhase(PHASE.READY);
       } catch (err) {
         if (cancelled) return;
@@ -165,16 +168,29 @@ const TokenSwapReview = () => {
     NavigationService.resetToMain();
   };
 
+  // Refresh the quote on the TokenSwap screen so it isn't stale when the
+  // user returns after an error or cancellation.
+  const refreshQuote = () => {
+    dispatch(tokenSwapFetchSwapQuote(
+      quote.direction,
+      quote.direction === 'input' ? quote.amount_in : quote.amount_out,
+      tokenIn.uid,
+      tokenOut.uid,
+    ));
+  };
+
   // Closes the send-progress modal and navigates back. The beforeRemove
   // listener releases reserved UTXOs along the way.
   const exitOnError = () => {
     setModal(null);
+    refreshQuote();
     navigation.goBack();
   };
 
   // Build error: the lib already released UTXOs in its own catch, so there
   // is no sendTx to release here — just go back.
   const dismissBuildError = () => {
+    refreshQuote();
     navigation.goBack();
   };
 
