@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { Clipboard, Image, Linking } from 'react-native';
 import { useSelector } from 'react-redux';
 import { t } from 'ttag';
+import hathorLib from '@hathor/wallet-lib';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCopy } from '@fortawesome/free-solid-svg-icons';
@@ -39,44 +40,13 @@ import { combineURLs } from '../utils';
  */
 
 /**
- * Build the wire envelope. Stringifies bigints because JSON.stringify
- * doesn't handle them natively, and the explorer parser will revive
- * them from string form. Schema is versioned so we can evolve later
- * without a flag day.
+ * Canonical encoder lives in wallet-lib (single source of truth across
+ * mobile, headless, and the audit page). The mobile component used to
+ * carry its own `buildEnvelope` / `base64url` / `encodePayload` triple
+ * — moving the format to the lib means a single byte-level fix
+ * propagates to every producer in lockstep.
  */
-const encodeEntry = (e) => ({
-  index: e.index,
-  value: typeof e.value === 'bigint' ? e.value.toString() : String(e.value),
-  token: e.token,
-  vbf: e.vbf,
-  ...(e.abf ? { abf: e.abf } : {}),
-});
-
-const buildEnvelope = (txId, outputs, inputs) => ({
-  v: 1,
-  txId,
-  outputs: outputs.map(encodeEntry),
-  // `inputs` is only emitted when the wallet has at least one entry
-  // for it. Older explorers parsing this payload were keyed by output
-  // position only — leaving the key absent (rather than `[]`) keeps
-  // the wire form identical for the common output-only case.
-  ...(inputs && inputs.length > 0 ? { inputs: inputs.map(encodeEntry) } : {}),
-});
-
-/**
- * URL-fragment-safe base64. RFC 4648 §5: replace `+` with `-`, `/` with
- * `_`, strip padding `=`. Done by hand so we don't pull in another
- * dependency for one trivial transform.
- */
-const base64url = (str) => Buffer.from(str, 'utf8')
-  .toString('base64')
-  .replace(/\+/g, '-')
-  .replace(/\//g, '_')
-  .replace(/=+$/, '');
-
-const encodePayload = (txId, outputs, inputs) => base64url(
-  JSON.stringify(buildEnvelope(txId, outputs, inputs)),
-);
+const encodePayload = hathorLib.shielded.encodeShieldedUnblindingPayload;
 
 export const AuditUnblindingRows = ({ txId }) => {
   const wallet = useSelector((state) => state.wallet);
