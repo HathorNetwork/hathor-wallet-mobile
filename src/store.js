@@ -7,7 +7,7 @@
 
 import CryptoJS from 'crypto-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MemoryStore, Storage, cryptoUtils, walletUtils } from '@hathor/wallet-lib';
+import { MemoryStore, Storage, bigIntUtils, cryptoUtils, walletUtils } from '@hathor/wallet-lib';
 import { NETWORK_MAINNET } from './constants';
 
 export const ACCESS_DATA_KEY = 'asyncstorage:access';
@@ -258,7 +258,10 @@ class AsyncStorageStore {
 
   setItem(key, value) {
     this.hathorMemoryStorage[key] = value;
-    AsyncStorage.setItem(key, JSON.stringify(value));
+    // JSONBigInt round-trips bigint values that the native JSON cannot.
+    // Required for the wallet-lib 3.x token shape, which can include
+    // bigint balance fields under registered tokens.
+    AsyncStorage.setItem(key, bigIntUtils.JSONBigInt.stringify(value));
   }
 
   /**
@@ -485,7 +488,9 @@ class AsyncStorageStore {
     const allValues = await AsyncStorage.multiGet(keys);
     for (const arr of allValues) {
       const key = arr[0];
-      const value = JSON.parse(arr[1]);
+      // Use JSONBigInt to match the writer in setItem so any bigint values
+      // (e.g. token balances persisted via NETWORK_TOKENS_KEY) round-trip.
+      const value = bigIntUtils.JSONBigInt.parse(arr[1]);
 
       this.hathorMemoryStorage[key] = value;
     }

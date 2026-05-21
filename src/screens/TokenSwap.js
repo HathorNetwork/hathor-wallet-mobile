@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -451,6 +451,12 @@ const TokenSwap = () => {
             </View>
 
             <View style={styles.buttonContainer}>
+              {inputToken && inputTokenAmount > 0n
+                && getAvailableAmount(inputToken, tokensBalance) < inputTokenAmount && (
+                <Text style={styles.error}>
+                  {t`Insufficient balance of ${inputToken.symbol}.`}
+                </Text>
+              )}
               <NewHathorButton
                 title={t`REVIEW`}
                 disabled={isReviewButtonDisabled()}
@@ -489,6 +495,7 @@ const TokenSwap = () => {
 const styles = StyleSheet.create({
   error: {
     marginTop: 12,
+    marginBottom: 12,
     fontSize: 12,
     textAlign: 'center',
     color: COLORS.errorTextColor,

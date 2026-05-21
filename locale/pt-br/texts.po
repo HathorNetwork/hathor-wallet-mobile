@@ -126,6 +126,19 @@ msgstr "Há uma nova transação na sua carteira."
 msgid "New transaction received"
 msgstr "Nova transação recebida"
 
+#: src/utils/tokenSwap.js:447
+msgid "Insufficient HTR balance to cover the network fee."
+msgstr "Saldo insuficiente de HTR para cobrir a taxa da rede."
+
+#: src/utils/tokenSwap.js:450
+msgid "Insufficient balance to execute the swap."
+msgstr "Saldo insuficiente para executar o swap."
+
+#: src/utils/tokenSwap.js:453
+msgid "Could not build the swap transaction. Please try again."
+msgstr ""
+"Não foi possível construir a transação de swap. Por favor, tente novamente."
+
 #: src/screens/About.js:83
 msgid "ABOUT"
 msgstr "SOBRE"
@@ -388,7 +401,7 @@ msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
 #: src/screens/CreateTokenConfirm.js:158 src/screens/SendConfirmScreen.js:105
-#: src/screens/TokenSwapReview.js:163
+#: src/screens/TokenSwapReview.js:205
 msgid "Building transaction"
 msgstr "Criando transação"
 
@@ -1001,22 +1014,22 @@ msgstr[1] "${ amountAndToken } disponíveis"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:33
+#: src/screens/SendConfirmScreen.js:33 src/screens/TokenSwapReview.js:304
 msgid "No fee"
 msgstr "Sem taxa"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:145
+#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:189
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:103
-#: src/screens/TokenSwapReview.js:161
+#: src/screens/TokenSwapReview.js:203
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:104
-#: src/screens/TokenSwapReview.js:162
+#: src/screens/TokenSwapReview.js:204
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -1144,7 +1157,12 @@ msgstr "Saldo ${ amount }"
 msgid "TOKEN SWAP"
 msgstr "TROCA DE TOKENS"
 
-#: src/screens/TokenSwap.js:455
+#: src/screens/TokenSwap.js:457
+#, javascript-format
+msgid "Insufficient balance of ${ inputToken.symbol }."
+msgstr "Saldo insuficiente de ${ inputToken.symbol }."
+
+#: src/screens/TokenSwap.js:461
 msgid "REVIEW"
 msgstr "REVISAR"
 
@@ -1156,15 +1174,25 @@ msgstr "Ocorreu um erro ao carregar o protocolo de troca de tokens."
 msgid "Loading Token Swap"
 msgstr "Carregando troca de tokens"
 
-#: src/screens/TokenSwapReview.js:173
+#: src/screens/TokenSwapReview.js:215
 msgid "REVIEW TOKEN SWAP"
 msgstr "REVISAR TROCA DE TOKENS"
 
-#: src/screens/TokenSwapReview.js:189
+#: src/screens/TokenSwapReview.js:221
+msgid "Building the swap transaction for your review"
+msgstr "Criando transação de swap para ser revisada"
+
+#: src/screens/TokenSwapReview.js:239
 msgid "Your swap was successful"
 msgstr "Sua troca foi bem-sucedida"
 
-#: src/screens/TokenSwapReview.js:253
+#: src/components/Reown/CreateTokenRequest.js:130
+#: src/components/Reown/TransactionFees.js:55
+#: src/screens/TokenSwapReview.js:300
+msgid "Network Fee"
+msgstr "Taxa de Rede"
+
+#: src/screens/TokenSwapReview.js:312
 msgid "SWAP"
 msgstr "TROCAR"
 
@@ -2081,11 +2109,6 @@ msgstr "Contrato paga taxas da rede?"
 msgid "Token data"
 msgstr "Dados do Token"
 
-#: src/components/Reown/CreateTokenRequest.js:130
-#: src/components/Reown/TransactionFees.js:55
-msgid "Network Fee"
-msgstr "Taxa de Rede"
-
 #: src/components/Reown/CreateTokenRequest.js:216
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:515
 #: src/components/Reown/SendTransactionRequest.js:487
@@ -2825,6 +2848,12 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#~ msgid "Calculating…"
+#~ msgstr "Calculando…"
+
+#~ msgid "Failed to calculate network fee. Please try again."
+#~ msgstr "Falha ao calcular a taxa da rede. Por favor, tente novamente."
 
 #~ msgid "Developer Settings"
 #~ msgstr "Configurações do Desenvolvedor"

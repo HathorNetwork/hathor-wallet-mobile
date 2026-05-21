@@ -5,8 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Pressable,
@@ -17,14 +18,17 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { t } from 'ttag';
+import hathorLib from '@hathor/wallet-lib';
 
 import {
   buildTokenSwap,
+  mapBuildError,
   renderAmountAndSymbol,
   renderAmountAndSymbolWithSlippage,
   renderConversionRate,
   selectTokenSwapContractId,
 } from '../utils/tokenSwap';
+import { renderValue } from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
@@ -42,6 +46,13 @@ import { registerToken, updateTokensMetadata } from '../utils/tokens';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 import Spinner from '../components/Spinner';
 import FeedbackModal from '../components/FeedbackModal';
+import errorIcon from '../assets/images/icErrorBig.png';
+
+const PHASE = Object.freeze({
+  BUILDING: 'building',
+  ERROR: 'error',
+  READY: 'ready',
+});
 
 const TokenSwapReview = () => {
   const dispatch = useDispatch();
@@ -51,16 +62,72 @@ const TokenSwapReview = () => {
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const contractId = useSelector(selectTokenSwapContractId);
 
-  const {
-    quote,
-    tokenIn,
-    tokenOut,
-  } = useParams();
+  const { quote, tokenIn, tokenOut } = useParams();
+
+  const [phase, setPhase] = useState(PHASE.BUILDING);
+  const [buildError, setBuildError] = useState(null);
+  const [sendTx, setSendTx] = useState(null);
   const [modal, setModal] = useState(null);
-  const [loading, setLoading] = useState(false);
+
   const registrationPromiseRef = useRef(null);
+  const sentSuccessfullyRef = useRef(false);
+  const releasedRef = useRef(false);
 
   const navigation = useNavigation();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const address = await wallet.getAddressAtIndex(0);
+        const [method, data] = buildTokenSwap(
+          contractId,
+          address,
+          quote,
+          tokenIn.uid,
+          tokenOut.uid,
+          TOKEN_SWAP_SLIPPAGE,
+        );
+        const sendTransaction = await wallet.createNanoContractTransaction(
+          method,
+          address,
+          data,
+          { signTx: false },
+        );
+        if (cancelled) {
+          try { await sendTransaction.releaseUtxos(); } catch (e) { console.error(e); }
+          return;
+        }
+        setSendTx(sendTransaction);
+        setPhase(PHASE.READY);
+      } catch (err) {
+        if (cancelled) return;
+        console.error(err);
+        setBuildError({ message: mapBuildError(err) });
+        setPhase(PHASE.ERROR);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', async (e) => {
+      if (sentSuccessfullyRef.current || releasedRef.current || !sendTx) {
+        return;
+      }
+      e.preventDefault();
+      releasedRef.current = true;
+      try { await sendTx.releaseUtxos(); } catch (err) { console.error(err); }
+      navigation.dispatch(e.data.action);
+    });
+    return unsubscribe;
+  }, [sendTx, navigation]);
+
+  const networkFee = phase === PHASE.READY && sendTx
+    ? (sendTx.transaction.getFeeHeader()?.entries?.[0]?.amount ?? 0n)
+    : 0n;
 
   /**
    * Register a token if it's not already registered
@@ -81,6 +148,7 @@ const TokenSwapReview = () => {
    */
   const onSwapSuccess = () => {
     // Start registration in parallel and store promise for later awaiting
+    sentSuccessfullyRef.current = true;
     registrationPromiseRef.current = Promise.all([
       registerTokenIfNeeded(tokenIn),
       registerTokenIfNeeded(tokenOut),
@@ -100,57 +168,47 @@ const TokenSwapReview = () => {
     NavigationService.resetToMain();
   };
 
-  /**
-   * Method executed after dismiss success modal
-   */
-  const exitOnError = () => {
-    setModal(null);
+  // Refresh the quote on the TokenSwap screen so it isn't stale when the
+  // user returns after an error or cancellation.
+  const refreshQuote = () => {
     dispatch(tokenSwapFetchSwapQuote(
       quote.direction,
       quote.direction === 'input' ? quote.amount_in : quote.amount_out,
       tokenIn.uid,
-      tokenOut.uid
+      tokenOut.uid,
     ));
+  };
+
+  // Closes the send-progress modal and navigates back. The beforeRemove
+  // listener releases reserved UTXOs along the way.
+  const exitOnError = () => {
+    setModal(null);
+    refreshQuote();
+    navigation.goBack();
+  };
+
+  // Build error: the lib already released UTXOs in its own catch, so there
+  // is no sendTx to release here — just go back.
+  const dismissBuildError = () => {
+    refreshQuote();
     navigation.goBack();
   };
 
   const executeSend = async (pin) => {
     try {
-      setLoading(true);
-
-      const address = await wallet.getAddressAtIndex(0);
-      const [method, data] = buildTokenSwap(
-        contractId,
-        address,
-        quote,
-        tokenIn.uid,
-        tokenOut.uid,
-        TOKEN_SWAP_SLIPPAGE,
-      );
       if (useWalletService) {
         await wallet.validateAndRenewAuthToken(pin);
       }
-      const sendTransaction = await wallet.createNanoContractTransaction(
-        method,
-        address,
-        data,
-        { pinCode: pin },
-      );
-      const promise = sendTransaction.runFromMining();
-
-      setLoading(false);
-
-      // show loading modal
+      await wallet.signTx(sendTx.transaction, { pinCode: pin });
+      const promise = sendTx.runFromMining();
       setModal({
         text: t`Your transfer is being processed`,
-        sendTransaction,
+        sendTransaction: sendTx,
         promise,
       });
     } catch (err) {
       console.error(err);
-      this.exitOnError();
-    } finally {
-      setLoading(false);
+      exitOnError();
     }
   };
 
@@ -174,10 +232,18 @@ const TokenSwapReview = () => {
           onBackPress={exitOnError}
         />
 
-        {loading && (
+        {phase === PHASE.BUILDING && (
           <FeedbackModal
-            text='Building the token swap'
+            text={t`Building the swap transaction for your review`}
             icon={<Spinner />}
+          />
+        )}
+
+        {phase === PHASE.ERROR && buildError && (
+          <FeedbackModal
+            text={buildError.message}
+            icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
+            onDismiss={dismissBuildError}
           />
         )}
 
@@ -195,6 +261,7 @@ const TokenSwapReview = () => {
         )}
 
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
+          {phase === PHASE.READY && (
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
               <View style={styles.card}>
@@ -245,6 +312,14 @@ const TokenSwapReview = () => {
                     <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, tokenIn, TOKEN_SWAP_SLIPPAGE)}</Text>
                   </View>
                 )}
+                <View style={styles.quoteRow}>
+                  <Text style={styles.quoteHeader}>{t`Network Fee`}</Text>
+                  <Text style={styles.quoteValue}>
+                    {networkFee != null && networkFee > 0n
+                      ? `${renderValue(networkFee, false)} ${hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol}`
+                      : t`No fee`}
+                  </Text>
+                </View>
               </View>
             </View>
 
@@ -256,6 +331,7 @@ const TokenSwapReview = () => {
               />
             </View>
           </View>
+          )}
           <OfflineBar style={{ position: 'relative' }} />
         </KeyboardAvoidingView>
       </Pressable>
