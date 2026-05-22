@@ -103,6 +103,7 @@ export const types = {
   PUSH_DEVICE_REGISTERED: 'PUSH_DEVICE_REGISTERED',
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
+  SET_ADDRESS_MODE: 'SET_ADDRESS_MODE',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
   SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
   // Feature Toggle actions
@@ -206,6 +207,8 @@ export const types = {
   REOWN_CREATE_TOKEN_RETRY: 'REOWN_CREATE_TOKEN_RETRY',
   REOWN_CREATE_TOKEN_RETRY_DISMISS: 'REOWN_CREATE_TOKEN_RETRY_DISMISS',
   NETWORK_CHANGED: 'NETWORK_CHANGED',
+  SAVE_TOKENS_FOR_NETWORK: 'SAVE_TOKENS_FOR_NETWORK',
+  TOKENS_SAVED_FOR_NETWORK: 'TOKENS_SAVED_FOR_NETWORK',
   APPSTATE_UPDATED: 'APPSTATE_UPDATED',
   SET_USE_SAFE_BIOMETRY_MODE: 'SET_USE_SAFE_BIOMETRY_MODE',
   SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL: 'SHOW_SIGN_ORACLE_DATA_REQUEST_MODAL',
@@ -224,6 +227,10 @@ export const types = {
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY',
   REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS: 'REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS',
   REOWN_SET_ERROR: 'REOWN_SET_ERROR',
+  REOWN_FETCH_PENDING_REQUESTS: 'REOWN_FETCH_PENDING_REQUESTS',
+  REOWN_SET_PENDING_REQUESTS: 'REOWN_SET_PENDING_REQUESTS',
+  REOWN_REJECT_ALL_PENDING_REQUESTS: 'REOWN_REJECT_ALL_PENDING_REQUESTS',
+  REOWN_REJECT_PENDING_REQUEST: 'REOWN_REJECT_PENDING_REQUEST',
   /**
    * Token Swap actions
    */
@@ -252,7 +259,47 @@ export const types = {
   // Clean swap data when user does not confirm the swap
   TOKEN_SWAP_RESET_SWAP_DATA: 'TOKEN_SWAP_RESET_SWAP_DATA',
   TOKEN_SWAP_START_SWAP: 'TOKEN_SWAP_START_SWAP',
+
+  // Token Import actions
+  TOKEN_IMPORT_FETCH_REQUESTED: 'TOKEN_IMPORT_FETCH_REQUESTED',
+  TOKEN_IMPORT_FETCH_SUCCESS: 'TOKEN_IMPORT_FETCH_SUCCESS',
+  TOKEN_IMPORT_FETCH_FAILED: 'TOKEN_IMPORT_FETCH_FAILED',
+  TOKEN_IMPORT_NEW_TX_TOKENS: 'TOKEN_IMPORT_NEW_TX_TOKENS',
+  TOKEN_IMPORT_NEW_DETECTED: 'TOKEN_IMPORT_NEW_DETECTED',
+  TOKEN_IMPORT_REQUESTED: 'TOKEN_IMPORT_REQUESTED',
+  TOKEN_IMPORT_SUCCESS: 'TOKEN_IMPORT_SUCCESS',
+  TOKEN_IMPORT_FAILED: 'TOKEN_IMPORT_FAILED',
+  TOKEN_IMPORT_REMOVE_FROM_LIST: 'TOKEN_IMPORT_REMOVE_FROM_LIST',
+  TOKEN_IMPORT_DISMISS_BANNER: 'TOKEN_IMPORT_DISMISS_BANNER',
+  TOKEN_IMPORT_RESET_STATUS: 'TOKEN_IMPORT_RESET_STATUS',
+
+  // Token Icons — URLs piggyback on the existing metadata fetch
+  TOKEN_ICONS_LOADED: 'TOKEN_ICONS_LOADED',
+  TOKEN_ICON_UPDATED: 'TOKEN_ICON_UPDATED',
 };
+
+/**
+ * Replace the entire token-icon map in Redux with a previously cached copy.
+ * Called once at wallet startup to restore icons from local storage.
+ *
+ * @param {{ [uid: string]: string }} iconsByUid - Map of token UID → icon URL.
+ */
+export const tokenIconsLoaded = (iconsByUid) => ({
+  type: types.TOKEN_ICONS_LOADED,
+  payload: iconsByUid,
+});
+
+/**
+ * Store or update the icon URL for a single token.
+ * Dispatched when metadata for a token includes an icon field.
+ *
+ * @param {string} uid - The token's unique identifier.
+ * @param {string} url - The HTTPS URL of the token's icon image.
+ */
+export const tokenIconUpdated = (uid, url) => ({
+  type: types.TOKEN_ICON_UPDATED,
+  payload: { uid, url },
+});
 
 export const featureToggleInitialized = () => ({
   type: types.FEATURE_TOGGLE_INITIALIZED,
@@ -745,6 +792,14 @@ export const networkChanged = () => ({
   type: types.NETWORK_CHANGED,
 });
 
+export const saveTokensForNetwork = () => ({
+  type: types.SAVE_TOKENS_FOR_NETWORK,
+});
+
+export const tokensSavedForNetwork = () => ({
+  type: types.TOKENS_SAVED_FOR_NETWORK,
+});
+
 export const startWalletRequested = (payload) => ({
   type: types.START_WALLET_REQUESTED,
   payload,
@@ -919,6 +974,15 @@ export const sharedAddressUpdate = (lastSharedAddress, lastSharedIndex) => ({
     lastSharedAddress,
     lastSharedIndex,
   },
+});
+
+/**
+ * Set the wallet address mode
+ * @param {'single'|'multi'} mode
+ */
+export const setAddressMode = (mode) => ({
+  type: types.SET_ADDRESS_MODE,
+  payload: mode,
 });
 
 /**
@@ -1682,6 +1746,24 @@ export const setReownError = (errorDetails = null) => ({
   payload: errorDetails,
 });
 
+export const reownFetchPendingRequests = () => ({
+  type: types.REOWN_FETCH_PENDING_REQUESTS,
+});
+
+export const setReownPendingRequests = (requests) => ({
+  type: types.REOWN_SET_PENDING_REQUESTS,
+  payload: requests,
+});
+
+export const reownRejectAllPendingRequests = () => ({
+  type: types.REOWN_REJECT_ALL_PENDING_REQUESTS,
+});
+
+export const reownRejectPendingRequest = (requestId, topic) => ({
+  type: types.REOWN_REJECT_PENDING_REQUEST,
+  payload: { id: requestId, topic },
+});
+
 export const tokenSwapFetchAllowedTokens = () => ({
   type: types.TOKEN_SWAP_FETCH_ALLOWED_TOKENS,
 });
@@ -1730,4 +1812,56 @@ export const tokenSwapResetSwapData = () => ({
 
 export const tokenSwapSwitchTokens = () => ({
   type: types.TOKEN_SWAP_SWITCH_TOKENS,
+});
+
+export const tokenImportFetchRequested = () => ({
+  type: types.TOKEN_IMPORT_FETCH_REQUESTED,
+});
+
+export const tokenImportFetchSuccess = (tokens) => ({
+  type: types.TOKEN_IMPORT_FETCH_SUCCESS,
+  payload: tokens,
+});
+
+export const tokenImportFetchFailed = () => ({
+  type: types.TOKEN_IMPORT_FETCH_FAILED,
+});
+
+export const tokenImportNewTxTokens = (tokenUids) => ({
+  type: types.TOKEN_IMPORT_NEW_TX_TOKENS,
+  payload: tokenUids,
+});
+
+export const tokenImportNewDetected = (tokens) => ({
+  type: types.TOKEN_IMPORT_NEW_DETECTED,
+  payload: tokens,
+});
+
+export const tokenImportRequested = (tokens) => ({
+  type: types.TOKEN_IMPORT_REQUESTED,
+  payload: tokens,
+});
+
+export const tokenImportSuccess = (tokenUids) => ({
+  type: types.TOKEN_IMPORT_SUCCESS,
+  payload: tokenUids,
+});
+
+export const tokenImportFailed = () => ({
+  type: types.TOKEN_IMPORT_FAILED,
+});
+
+// Removes uids from the unregistered list WITHOUT changing importStatus.
+// Use this when a token is registered through an unrelated flow.
+export const tokenImportRemoveFromList = (tokenUids) => ({
+  type: types.TOKEN_IMPORT_REMOVE_FROM_LIST,
+  payload: tokenUids,
+});
+
+export const tokenImportDismissBanner = () => ({
+  type: types.TOKEN_IMPORT_DISMISS_BANNER,
+});
+
+export const tokenImportResetStatus = () => ({
+  type: types.TOKEN_IMPORT_RESET_STATUS,
 });

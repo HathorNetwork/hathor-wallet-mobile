@@ -49,6 +49,7 @@ const SendAmountInput = () => {
   const [token, setToken] = useState(selectedToken);
   const [error, setError] = useState(null);
   const [networkFee, setNetworkFee] = useState(null);
+  const [utxos, setUtxos] = useState(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -81,13 +82,16 @@ const SendAmountInput = () => {
 
       // Set to null while calculating to indicate loading state
       setNetworkFee(null);
+      setUtxos(null);
 
       try {
-        const { changeAmount } = await wallet.getUtxosForAmount(
+        const { utxos: selectedUtxos, changeAmount } = await wallet.getUtxosForAmount(
           amountValue,
           { token: token.uid }
         );
         if (cancelled) return;
+
+        setUtxos(selectedUtxos);
 
         if (changeAmount) {
           // Since there is change, it means we will have the intended output and a change output.
@@ -165,7 +169,7 @@ const SendAmountInput = () => {
     }
 
     const { address } = params;
-    navigation.navigate('SendConfirmScreen', { address, amount: amountValue, token, networkFee });
+    navigation.navigate('SendConfirmScreen', { address, amount: amountValue, token, networkFee, utxos });
   };
 
   const isButtonDisabled = () => (

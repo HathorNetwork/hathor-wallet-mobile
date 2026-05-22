@@ -1,4 +1,4 @@
-import { all, takeEvery, put, call, race, delay, select } from 'redux-saga/effects';
+import { all, takeEvery, put, call, take, race, delay, select } from 'redux-saga/effects';
 import { config, helpersUtils } from '@hathor/wallet-lib';
 import { isEmpty } from 'lodash';
 import { t } from 'ttag';
@@ -13,6 +13,7 @@ import {
   networkSettingsUpdateReady,
   networkChanged,
   setFullNodeNetworkName,
+  saveTokensForNetwork,
 } from '../actions';
 import {
   NETWORK_MAINNET,
@@ -273,6 +274,13 @@ export function* persistNetworkSettings(action) {
     yield put(networkSettingsUpdateFailure());
     return;
   }
+
+  // Ask the tokens saga to save current tokens before we wipe them
+  yield put(saveTokensForNetwork());
+  yield race({
+    saved: take(types.TOKENS_SAVED_FOR_NETWORK),
+    timeout: delay(5000),
+  });
 
   const wallet = yield select((state) => state.wallet);
 

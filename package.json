@@ -1,6 +1,6 @@
 {
   "name": "HathorMobile",
-  "version": "0.38.0-rc.4",
+  "version": "0.38.0",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=10.0.0"
@@ -15,7 +15,8 @@
     "test": "jest",
     "setup": "npm install && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib --hack && npx patch-package",
     "setup:release": "npm ci && ./node_modules/.bin/allow-scripts && rn-nodeify --install stream,process,path,events,crypto,console,buffer,zlib --hack && npx patch-package",
-    "i18n": "make i18n"
+    "i18n": "make i18n",
+    "checki18n": "make check_i18n"
   },
   "dependencies": {
     "@ethersproject/shims": "5.7.0",
@@ -25,7 +26,7 @@
     "@fortawesome/react-native-fontawesome": "0.3.2",
     "@hathor/hathor-rpc-handler": "4.3.0",
     "@hathor/unleash-client": "0.1.0",
-    "@hathor/wallet-lib": "2.17.0",
+    "@hathor/wallet-lib": "3.1.1",
     "@json-rpc-tools/utils": "1.7.6",
     "@lavamoat/preinstall-always-fail": "2.1.0",
     "@lavamoat/react-native-lockdown": "0.1.0",

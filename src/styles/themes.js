@@ -66,6 +66,11 @@ export const COLORS = {
    */
   positiveBalanceColor: '#0DA0A0',
   /**
+   * @type {string} Light background paired with positiveBalanceColor
+   * (e.g. read/info method badges in the Reown overlay)
+   */
+  positiveBalanceBgColor: 'hsla(180, 80%, 95%, 1)',
+  /**
    * @type {string} For containers with error feedbacks
    */
   errorBgColor: '#DE3535',
@@ -97,6 +102,26 @@ export const COLORS = {
   feedbackError600: 'hsla(7, 100%, 30%, 1)',
   freeze100: 'hsla(0, 0%, 90%, 1)',
   freeze300: 'hsla(0, 0%, 45%, 1)',
+  /**
+   * @type {string} Light blue background used by info/notice banners.
+   */
+  infoBannerBg: '#daf1ff',
+  /**
+   * @type {string} Accent color paired with infoBannerBg (icons, accents).
+   */
+  infoBannerAccent: '#4a90d9',
+  /**
+   * @type {string} Neutral border used by selectable controls (e.g. checkboxes).
+   */
+  controlBorder: '#49454f',
+  /**
+   * @type {string} Muted gray used for secondary metadata text (e.g. short hashes).
+   */
+  mutedText: '#616161',
+  /**
+   * @type {string} Light neutral surface used by tag/badge backgrounds.
+   */
+  tagSurface: '#eff0f2',
   cardWarning100: 'hsla(46, 100%, 95%, 1)',
   cardWarning200: 'hsla(46, 100%, 58%, 1)',
   /**

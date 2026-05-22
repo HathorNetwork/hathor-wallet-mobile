@@ -5,8 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { ncApi } from '@hathor/wallet-lib';
+import hathorLib, { ncApi, TokenVersion } from '@hathor/wallet-lib';
 import { get } from 'lodash';
+import { t } from 'ttag';
 import { getNetworkSettings } from '../sagas/helpers';
 import { renderValue } from '../utils';
 
@@ -39,6 +40,8 @@ import { renderValue } from '../utils';
  * @property {string} symbol
  * @property {string} uid
  * @property {string} [icon]
+ * @property {number} [version] Token version (TokenVersion enum: NATIVE=0, DEPOSIT=1, FEE=2).
+ *   Optional for backwards compatibility with older allowlist payloads.
  */
 
 /**
@@ -400,4 +403,52 @@ export function renderConversionRate(quote, inToken, outToken) {
     exchangeRate *= 10;
   }
   return `${renderAmountAndSymbol(exchangeRate, outToken)} = ${renderAmountAndSymbol(100 * extraRate, inToken)}`;
+}
+
+/**
+ * Whether a swap allowlist token is fee-based.
+ * @param {TokenData} token
+ * @returns {boolean}
+ */
+export function isFeeBasedSwapToken(token) {
+  return !!token && token.version === TokenVersion.FEE;
+}
+
+/**
+ * Whether a swap involves at least one fee-based token (FBT).
+ * FBT swaps require an on-chain HTR network fee; non-FBT swaps do not.
+ * @param {TokenData|null|undefined} inputToken
+ * @param {TokenData|null|undefined} outputToken
+ * @returns {boolean}
+ */
+export function isSwappingFeeBasedTokens(inputToken, outputToken) {
+  return isFeeBasedSwapToken(inputToken) || isFeeBasedSwapToken(outputToken);
+}
+
+const BUILD_ERROR_MESSAGES = {
+  HTR_FEE: 'Not enough HTR utxos to pay the fee.',
+  DEPOSIT_UTXO: 'Not enough utxos to execute the deposit.',
+};
+
+/**
+ * Map a builder exception to a user-facing message.
+ *
+ * The recognized strings match the messages thrown by the lib at
+ * nano_contracts/builder.ts (selectFeeInputs and executeDeposit). Anything
+ * else falls back to a generic message so the modal stays functional if
+ * those strings ever change.
+ *
+ * @param {Error} err
+ * @returns {string}
+ */
+export function mapBuildError(err) {
+  if (err instanceof hathorLib.errors.NanoContractTransactionError) {
+    if (err.message === BUILD_ERROR_MESSAGES.HTR_FEE) {
+      return t`Insufficient HTR balance to cover the network fee.`;
+    }
+    if (err.message === BUILD_ERROR_MESSAGES.DEPOSIT_UTXO) {
+      return t`Insufficient balance to execute the swap.`;
+    }
+  }
+  return t`Could not build the swap transaction. Please try again.`;
 }

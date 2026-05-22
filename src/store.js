@@ -7,13 +7,14 @@
 
 import CryptoJS from 'crypto-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MemoryStore, Storage, cryptoUtils, walletUtils } from '@hathor/wallet-lib';
+import { MemoryStore, Storage, bigIntUtils, cryptoUtils, walletUtils } from '@hathor/wallet-lib';
 import { NETWORK_MAINNET } from './constants';
 
 export const ACCESS_DATA_KEY = 'asyncstorage:access';
 export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
 export const STORE_VERSION_KEY = 'asyncstorage:version';
 export const REGISTERED_NANO_CONTRACTS_KEY = 'asyncstorage:registeredNanoContracts';
+export const NETWORK_TOKENS_KEY = 'asyncstorage:networkTokens';
 export const PIN_BACKUP_KEY = 'asyncstorage:pinBackup';
 // Wheather old biometry mode is active (by the user request)
 export const IS_OLD_BIOMETRY_ENABLED_KEY = 'mobile:isBiometryEnabled';
@@ -32,6 +33,7 @@ export const walletKeys = [
   ACCESS_DATA_KEY,
   REGISTERED_TOKENS_KEY,
   REGISTERED_NANO_CONTRACTS_KEY,
+  NETWORK_TOKENS_KEY,
 ];
 
 export const cleanOnWalletReset = [
@@ -256,7 +258,10 @@ class AsyncStorageStore {
 
   setItem(key, value) {
     this.hathorMemoryStorage[key] = value;
-    AsyncStorage.setItem(key, JSON.stringify(value));
+    // JSONBigInt round-trips bigint values that the native JSON cannot.
+    // Required for the wallet-lib 3.x token shape, which can include
+    // bigint balance fields under registered tokens.
+    AsyncStorage.setItem(key, bigIntUtils.JSONBigInt.stringify(value));
   }
 
   /**
@@ -483,7 +488,9 @@ class AsyncStorageStore {
     const allValues = await AsyncStorage.multiGet(keys);
     for (const arr of allValues) {
       const key = arr[0];
-      const value = JSON.parse(arr[1]);
+      // Use JSONBigInt to match the writer in setItem so any bigint values
+      // (e.g. token balances persisted via NETWORK_TOKENS_KEY) round-trip.
+      const value = bigIntUtils.JSONBigInt.parse(arr[1]);
 
       this.hathorMemoryStorage[key] = value;
     }
@@ -530,6 +537,31 @@ class AsyncStorageStore {
     }
     // We have finished the migration so we can set the storage version to the most recent one.
     this.updateStorageVersion();
+  }
+
+  /**
+   * Save registered tokens for a specific network identified by genesis block hash.
+   *
+   * @param {string} genesisHash The genesis block hash identifying the network
+   * @param {Object} tokens Tokens map to save (keyed by uid)
+   */
+  saveTokensForNetwork(genesisHash, tokens) {
+    if (!genesisHash) return;
+    const networkTokens = this.getItem(NETWORK_TOKENS_KEY) || {};
+    networkTokens[genesisHash] = tokens;
+    this.setItem(NETWORK_TOKENS_KEY, networkTokens);
+  }
+
+  /**
+   * Get saved tokens for a specific network identified by genesis block hash.
+   *
+   * @param {string} genesisHash The genesis block hash identifying the network
+   * @returns {Object|null} Saved tokens map or null
+   */
+  getTokensForNetwork(genesisHash) {
+    if (!genesisHash) return null;
+    const networkTokens = this.getItem(NETWORK_TOKENS_KEY) || {};
+    return networkTokens[genesisHash] || null;
   }
 
   /**

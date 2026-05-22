@@ -10,12 +10,12 @@ import * as React from 'react';
 import { AppState, StyleSheet, Text, View } from 'react-native';
 import { Camera, CameraType } from 'react-native-camera-kit';
 import { useEffect, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import { COLORS } from '../styles/themes';
 
 const APP_ACTIVE_STATE = 'active';
 
 export default ({
-  navigation,
   onSuccess,
   focusHeight = 250,
   focusWidth = 250,
@@ -23,53 +23,18 @@ export default ({
 }) => {
   // States related to Camera rendering logic
   const [currentAppState, setCurrentAppState] = useState(AppState.currentState);
-  const [isFocusedScreen, setIsFocusedScreen] = useState(false);
+  const isFocused = useIsFocused();
 
   // States related to the custom marker
   const [canvasHeight, setCanvasHeight] = useState(0);
   const [canvasWidth, setCanvasWidth] = useState(0);
 
-  // Initialization and event listeners
+  // Track app foreground/background. Pairing this with useIsFocused below in
+  // the render predicate is what stops iOS AVCaptureSession from running when
+  // the screen is alive but not actually visible (e.g. mounted in a blurred tab).
   useEffect(() => {
-    /*
-     * We need to focus/unfocus the QRCode scanner, so that it doesn't freeze
-     * - When the navigation focuses this screen or app becomes active, we set it to `true`
-     * - When the navigation moves away or app becomes inactive, we set it to `false`
-     */
-    let appStateEvent;
-    const focusEvent = navigation.addListener('focus', () => {
-      setIsFocusedScreen(true);
-      appStateEvent = AppState.addEventListener('change', (nextAppState) => {
-        if (
-          currentAppState === APP_ACTIVE_STATE
-          && nextAppState !== APP_ACTIVE_STATE) {
-          // It's changing and won't be active anymore
-          setIsFocusedScreen(false);
-        } else if (
-          nextAppState === APP_ACTIVE_STATE
-          && currentAppState !== APP_ACTIVE_STATE) {
-          // Will become active now
-          setIsFocusedScreen(true);
-        }
-
-        setCurrentAppState(nextAppState);
-      });
-    });
-    const blurEvent = navigation.addListener('blur', () => {
-      setIsFocusedScreen(false);
-    });
-
-    // After all the listeners are in place, allow the Camera component to be rendered
-    setIsFocusedScreen(true);
-
-    return () => {
-      focusEvent();
-      blurEvent();
-      if (appStateEvent) { // This listener may have never been initialized
-        appStateEvent.remove();
-        appStateEvent = null;
-      }
-    };
+    const sub = AppState.addEventListener('change', setCurrentAppState);
+    return () => sub.remove();
   }, []);
 
   /**
@@ -154,7 +119,7 @@ export default ({
       onLayout={onViewLayoutHandler}
     >
       <>
-        {isFocusedScreen && (
+        {isFocused && currentAppState === APP_ACTIVE_STATE && (
           <Camera
             cameraType={CameraType.Back}
             flashMode='off'

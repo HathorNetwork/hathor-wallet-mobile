@@ -59,15 +59,15 @@ To make sure the settings were correctly applied, close the app and open it agai
 1. Click on the "Public Explorer" item
 1. Verify that you were redirected to the transaction page on the testnet explorer
 
-### Check registered tokens are cleaned when changing network settings
+### Check registered tokens persist across network changes
 1. Register a token on Mainnet network
-1. Navigate to Network Pre-Settings screen
-1. Select the Testnet network
-1. Navigate to Mainscreen
-1. Check there is only the HTR token in the dashboard
-1. Register a token on Testnet network
-1. Switch back to the Mainnet network
-1. Check there is only the HTR token in the dashboard
+1. Navigate to Network Pre-Settings screen and select Testnet
+1. Check the Mainnet token is not visible on the Testnet dashboard
+1. Register a different token on Testnet
+1. Switch back to Mainnet
+1. Check the Mainnet token is still registered and visible with its balance
+1. Switch back to Testnet
+1. Check the Testnet token is still registered and visible with its balance
 
 ### Check some fields don't appear when Wallet Service is disabled for the wallet
 1. Ensure the **Wallet Service** Unleash Feature Toggle is 🚫**disabled** for this device.

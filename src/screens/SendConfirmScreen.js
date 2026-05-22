@@ -47,7 +47,7 @@ const SendConfirmScreen = () => {
   const params = useParams();
 
   // Parse and store navigation params
-  const { amount, address, token, networkFee } = params;
+  const { amount, address, token, networkFee, utxos } = params;
   const isNFT = isTokenNFT(token.uid, tokenMetadata);
   const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
 
@@ -64,6 +64,9 @@ const SendConfirmScreen = () => {
    */
   const executeSend = async (pin) => {
     const outputs = [{ address, value: amount, token: token.uid }];
+    const inputs = utxos
+      ? utxos.map(({ txId, index }) => ({ txId, index }))
+      : [];
     let sendTransaction;
 
     if (useWalletService) {
@@ -71,11 +74,12 @@ const SendConfirmScreen = () => {
 
       sendTransaction = new hathorLib.SendTransactionWalletService(wallet, {
         outputs,
+        inputs,
         pin,
       });
     } else {
       sendTransaction = new hathorLib.SendTransaction(
-        { storage: wallet.storage, outputs, pin }
+        { storage: wallet.storage, outputs, inputs, pin }
       );
     }
 
