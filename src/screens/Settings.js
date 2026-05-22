@@ -160,14 +160,8 @@ export class Settings extends React.Component {
                   onPress={() => this.props.navigation.navigate('ReownList')}
                 />
               )}
-            {this.props.singleKey && (
-              <ListMenu
-                title={t`Sign out`}
-                onPress={() => this.props.navigation.navigate('ResetWallet')}
-              />
-            )}
             <ListMenu
-              title={t`Reset wallet`}
+              title={this.props.singleKey ? t`Sign out` : t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}
             />
             <ListMenu

@@ -125,12 +125,12 @@ msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr ""
 
 #: src/screens/About.js:99
-#: src/screens/InitWallet.js:65
+#: src/screens/InitWallet.js:69
 msgid "This wallet is connected to the **mainnet**."
 msgstr ""
 
 #: src/screens/About.js:102
-#: src/screens/InitWallet.js:68
+#: src/screens/InitWallet.js:72
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
 "So, we advise you to keep only a small amount of tokens here, such as "
@@ -196,33 +196,33 @@ msgstr ""
 msgid "CHANGE PIN"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:140
+#: src/screens/ChoosePinScreen.js:167
 msgid "Enter your new PIN code"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:152
+#: src/screens/ChoosePinScreen.js:179
 msgid "Enter your new PIN code again"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:74
+#: src/screens/ChoosePinScreen.js:80
 msgid "Create a new PIN code,"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:77
+#: src/screens/ChoosePinScreen.js:83
 msgid "To confirm the PIN,"
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:166
+#: src/screens/ChoosePinScreen.js:193
 msgid "PIN codes don't match. Try again."
 msgstr ""
 
-#: src/screens/ChoosePinScreen.js:189
+#: src/screens/ChoosePinScreen.js:216
 msgid "Start the Wallet"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:96
 #: src/screens/CreateTokenAmount.js:108
-#: src/screens/SendAmountInput.js:138
+#: src/screens/SendAmountInput.js:142
 msgid "Invalid amount"
 msgstr ""
 
@@ -251,10 +251,10 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:211
 #: src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86
-#: src/screens/InitWallet.js:229
-#: src/screens/InitWallet.js:382
+#: src/screens/InitWallet.js:317
+#: src/screens/InitWallet.js:470
 #: src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:235
+#: src/screens/SendAmountInput.js:239
 msgid "Next"
 msgstr ""
 
@@ -283,7 +283,7 @@ msgid "Authorize token creation"
 msgstr ""
 
 #: src/screens/CreateTokenConfirm.js:158
-#: src/screens/SendConfirmScreen.js:101
+#: src/screens/SendConfirmScreen.js:105
 #: src/screens/TokenSwapReview.js:163
 msgid "Building transaction"
 msgstr ""
@@ -307,7 +307,7 @@ msgid "Token symbol"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:87
-#: src/components/Reown/CreateTokenRequest.js:128
+#: src/components/Reown/CreateTokenRequest.js:129
 #: src/screens/CreateTokenConfirm.js:251
 msgid "Deposit"
 msgstr ""
@@ -450,89 +450,92 @@ msgstr ""
 msgid "Nano Contracts"
 msgstr ""
 
-#: src/screens/InitWallet.js:62
+#: src/screens/InitWallet.js:66
 msgid "Welcome to Hathor Wallet!"
 msgstr ""
 
-#: src/screens/InitWallet.js:73
+#: src/screens/InitWallet.js:77
 msgid ""
 "For further information, check out our website "
 "|link:https://hathor.network/|."
 msgstr ""
 
-#: src/screens/InitWallet.js:86
+#: src/screens/InitWallet.js:90
 msgid ""
 "I agree with the |link1:Terms of Service| and |link2:Privacy Policy| and "
 "understand the risks of using a mobile wallet"
 msgstr ""
 
-#: src/screens/InitWallet.js:98
+#: src/screens/InitWallet.js:102
 msgid "Start"
 msgstr ""
 
-#: src/screens/InitWallet.js:115
+#: src/screens/InitWallet.js:168
 msgid "To start,"
 msgstr ""
 
-#: src/screens/InitWallet.js:117
+#: src/screens/InitWallet.js:170
 msgid "You need to **initialize your wallet**."
 msgstr ""
 
-#: src/screens/InitWallet.js:120
+#: src/screens/InitWallet.js:173
 msgid ""
 "You can either **start a new wallet** or **import a wallet** that already "
 "exists."
 msgstr ""
 
-#: src/screens/InitWallet.js:123
+#: src/screens/InitWallet.js:176
 msgid "To import a wallet, you will need to provide your seed words."
 msgstr ""
 
-#: src/screens/InitWallet.js:128
+#: src/screens/InitWallet.js:204
 msgid "Import Wallet"
 msgstr ""
 
-#: src/screens/InitWallet.js:134
+#: src/screens/InitWallet.js:210
 msgid "New Wallet"
 msgstr ""
 
-#: src/screens/InitWallet.js:220
+#: src/screens/InitWallet.js:308
 msgid "Your wallet has been created!"
 msgstr ""
 
-#: src/screens/InitWallet.js:222
+#: src/screens/InitWallet.js:310
 msgid ""
 "You must **do a backup** and save the words below **in the same order they "
 "appear**."
 msgstr ""
 
-#: src/screens/InitWallet.js:343
+#: src/screens/InitWallet.js:431
 msgid "To import a wallet,"
 msgstr ""
 
-#: src/screens/InitWallet.js:345
+#: src/screens/InitWallet.js:433
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
 "wallet, separated by space."
 msgstr ""
 
-#: src/screens/InitWallet.js:348
+#: src/screens/InitWallet.js:436
 msgid "Words"
 msgstr ""
 
-#: src/screens/InitWallet.js:353
+#: src/screens/InitWallet.js:441
 msgid "Enter your seed words separated by space"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetails.js:252
-#: src/components/Reown/CreateTokenRequest.js:248
+#: src/components/Reown/CreateTokenRequest.js:249
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:626
 #: src/components/Reown/SendTransactionRequest.js:550
+#: src/components/Web3AuthErrorDialog.js:26
+#: src/components/Web3AuthErrorDialog.js:34
+#: src/components/Web3AuthErrorDialog.js:52
 #: src/screens/LoadHistoryScreen.js:51
 #: src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:174
-#: src/screens/PinScreen.js:283
+#: src/screens/PinScreen.js:288
 #: src/screens/TokenSwapLoadingScreen.js:90
 msgid "Try again"
 msgstr ""
@@ -556,8 +559,8 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28
-#: src/screens/PinScreen.js:318
-#: src/screens/Settings.js:162
+#: src/screens/PinScreen.js:323
+#: src/screens/Settings.js:170
 msgid "Reset wallet"
 msgstr ""
 
@@ -613,31 +616,35 @@ msgstr ""
 msgid "Scan the nano contract ID QR code"
 msgstr ""
 
-#: src/screens/PinScreen.js:272
+#: src/screens/PinScreen.js:277
 msgid "Incorrect PIN Code. Try again."
 msgstr ""
 
-#: src/screens/PinScreen.js:76
+#: src/screens/PinScreen.js:77
 msgid "Enter your PIN Code "
 msgstr ""
 
-#: src/screens/PinScreen.js:77
+#: src/screens/PinScreen.js:78
 msgid "Unlock Hathor Wallet"
 msgstr ""
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:309
+#: src/components/Web3AuthErrorDialog.js:27
+#: src/components/Web3AuthErrorDialog.js:35
+#: src/components/Web3AuthErrorDialog.js:43
+#: src/components/Web3AuthErrorDialog.js:53
+#: src/screens/PinScreen.js:314
 #: src/screens/Reown/ReownList.js:127
 msgid "Cancel"
 msgstr ""
 
-#: src/screens/PinScreen.js:349
-#: src/screens/PinScreen.js:353
+#: src/screens/PinScreen.js:354
+#: src/screens/PinScreen.js:358
 msgid "Biometry failed or canceled."
 msgstr ""
 
 #: src/screens/PushNotification.js:58
-#: src/screens/Settings.js:136
+#: src/screens/Settings.js:138
 msgid "Push Notification"
 msgstr ""
 
@@ -784,37 +791,37 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr ""
 
-#: src/screens/Security.js:145
+#: src/screens/Security.js:147
 msgid "Disable biometry"
 msgstr ""
 
-#: src/screens/Security.js:146
+#: src/screens/Security.js:148
 msgid "Disabling biometry"
 msgstr ""
 
-#: src/screens/Security.js:158
-#: src/screens/Security.js:170
+#: src/screens/Security.js:160
+#: src/screens/Security.js:172
 msgid "Enter your 6-digit pin to enable biometry"
 msgstr ""
 
-#: src/screens/Security.js:183
+#: src/screens/Security.js:185
 msgid "No biometry supported"
 msgstr ""
 
-#: src/screens/Security.js:183
+#: src/screens/Security.js:185
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr ""
 
-#: src/screens/Security.js:191
+#: src/screens/Security.js:193
 msgid "SECURITY"
 msgstr ""
 
-#: src/screens/Security.js:213
+#: src/screens/Security.js:215
 msgid "Change PIN"
 msgstr ""
 
-#: src/screens/Security.js:218
+#: src/screens/Security.js:220
 msgid "Lock wallet"
 msgstr ""
 
@@ -827,28 +834,28 @@ msgstr ""
 msgid "Address to send"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:143
+#: src/screens/SendAmountInput.js:147
 msgid "Insufficient funds"
 msgstr ""
 
-#: src/screens/SendAmountInput.js:150
+#: src/screens/SendAmountInput.js:154
 msgid "Calculating network fee..."
 msgstr ""
 
-#: src/screens/SendAmountInput.js:157
-#: src/screens/SendAmountInput.js:162
+#: src/screens/SendAmountInput.js:161
+#: src/screens/SendAmountInput.js:166
 msgid "Insufficient balance of HTR to cover the network fee."
 msgstr ""
 
-#: src/screens/SendAmountInput.js:189
+#: src/screens/SendAmountInput.js:193
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:203
-#: src/screens/SendConfirmScreen.js:188
+#: src/screens/SendAmountInput.js:207
+#: src/screens/SendConfirmScreen.js:193
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
@@ -856,79 +863,79 @@ msgstr ""
 msgid "No fee"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:86
+#: src/screens/SendConfirmScreen.js:90
 #: src/screens/TokenSwapReview.js:145
 #.  show loading modal
 msgid "Your transfer is being processed"
 msgstr ""
 
 #: src/sagas/helpers.js:147
-#: src/screens/SendConfirmScreen.js:99
+#: src/screens/SendConfirmScreen.js:103
 #: src/screens/TokenSwapReview.js:161
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
 #: src/sagas/helpers.js:148
-#: src/screens/SendConfirmScreen.js:100
+#: src/screens/SendConfirmScreen.js:104
 #: src/screens/TokenSwapReview.js:162
 msgid "Authorize operation"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:136
+#: src/screens/SendConfirmScreen.js:140
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendConfirmScreen.js:159
+#: src/screens/SendConfirmScreen.js:164
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:162
+#: src/screens/SendConfirmScreen.js:167
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:165
+#: src/screens/SendConfirmScreen.js:170
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:167
+#: src/screens/SendConfirmScreen.js:172
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:106
-#: src/screens/SendConfirmScreen.js:172
+#: src/screens/SendConfirmScreen.js:177
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:197
+#: src/screens/SendConfirmScreen.js:202
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:208
+#: src/screens/SendConfirmScreen.js:213
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:224
+#: src/screens/SendConfirmScreen.js:229
 msgid "**Transaction summary**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:227
+#: src/screens/SendConfirmScreen.js:232
 msgid "**To**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:232
+#: src/screens/SendConfirmScreen.js:237
 msgid "**Network Fee**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:240
+#: src/screens/SendConfirmScreen.js:245
 msgid "**Total**"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:247
+#: src/screens/SendConfirmScreen.js:252
 msgid "Send"
 msgstr ""
 
@@ -942,43 +949,47 @@ msgstr ""
 msgid "Scan the QR code"
 msgstr ""
 
-#: src/screens/Settings.js:105
+#: src/screens/Settings.js:107
 msgid "You are connected to"
 msgstr ""
 
-#: src/screens/Settings.js:113
+#: src/screens/Settings.js:115
 msgid "General Settings"
 msgstr ""
 
-#: src/screens/Settings.js:117
+#: src/screens/Settings.js:119
 msgid "Connected to"
 msgstr ""
 
-#: src/screens/Settings.js:130
+#: src/screens/Settings.js:132
 msgid "Security"
 msgstr ""
 
-#: src/screens/Settings.js:143
+#: src/screens/Settings.js:145
 msgid "Create a new token"
 msgstr ""
 
-#: src/screens/Settings.js:150
+#: src/screens/Settings.js:152
 msgid "Register a token"
 msgstr ""
 
-#: src/screens/Settings.js:166
+#: src/screens/Settings.js:165
+msgid "Sign out"
+msgstr ""
+
+#: src/screens/Settings.js:174
 msgid "About"
 msgstr ""
 
-#: src/screens/Settings.js:173
+#: src/screens/Settings.js:181
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/Settings.js:187
+#: src/screens/Settings.js:195
 msgid "Developer Settings"
 msgstr ""
 
-#: src/screens/Settings.js:189
+#: src/screens/Settings.js:197
 msgid "Network Settings"
 msgstr ""
 
@@ -1060,6 +1071,20 @@ msgstr ""
 
 #: src/screens/UnregisterToken.js:135
 msgid "Unregister token"
+msgstr ""
+
+#: src/screens/Web3AuthRecoveryScreen.js:33
+msgid "Set up recovery"
+msgstr ""
+
+#: src/screens/Web3AuthRecoveryScreen.js:35
+msgid ""
+"To protect your wallet, you need to set up a recovery method. This ensures "
+"you can access your funds even if you lose this device."
+msgstr ""
+
+#: src/screens/Web3AuthRecoveryScreen.js:42
+msgid "Continue"
 msgstr ""
 
 #: src/screens/Reown/CreateNanoContractCreateTokenTxScreen.js:25
@@ -1371,31 +1396,31 @@ msgstr ""
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr ""
 
-#: src/sagas/networkSettings.js:86
+#: src/sagas/networkSettings.js:87
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:93
+#: src/sagas/networkSettings.js:94
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:100
+#: src/sagas/networkSettings.js:101
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:107
+#: src/sagas/networkSettings.js:108
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:114
+#: src/sagas/networkSettings.js:115
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:121
+#: src/sagas/networkSettings.js:122
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:128
+#: src/sagas/networkSettings.js:129
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
@@ -1407,20 +1432,20 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: src/sagas/wallet.js:811
+#: src/sagas/wallet.js:881
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:825
+#: src/sagas/wallet.js:895
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:835
+#: src/sagas/wallet.js:905
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:851
+#: src/sagas/wallet.js:921
 #.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
@@ -1535,16 +1560,16 @@ msgstr ""
 msgid "New Transaction"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:34
+#: src/components/ReceiveMyAddress.js:36
 #, javascript-format
 msgid "Here is my address: ${ lastSharedAddress }"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:57
+#: src/components/ReceiveMyAddress.js:60
 msgid "New address"
 msgstr ""
 
-#: src/components/ReceiveMyAddress.js:63
+#: src/components/ReceiveMyAddress.js:67
 #: src/components/TokenDetails.js:102
 msgid "Share"
 msgstr ""
@@ -1659,6 +1684,48 @@ msgstr ""
 msgid "Amount"
 msgstr ""
 
+#: src/components/Web3AuthErrorDialog.js:24
+msgid "Connection issue"
+msgstr ""
+
+#: src/components/Web3AuthErrorDialog.js:25
+msgid "We couldn't reach Web3Auth. Check your internet connection and try again."
+msgstr ""
+
+#: src/components/Web3AuthErrorDialog.js:32
+msgid "Configuration error"
+msgstr ""
+
+#: src/components/Web3AuthErrorDialog.js:33
+msgid ""
+"There was an issue with our authentication setup. Please try again in a few "
+"minutes. If the problem persists, contact support."
+msgstr ""
+
+#: src/components/Web3AuthErrorDialog.js:40
+msgid "Recovery factor required"
+msgstr ""
+
+#: src/components/Web3AuthErrorDialog.js:41
+msgid ""
+"To protect your wallet, you must configure at least one recovery factor. "
+"Would you like to set it up now?"
+msgstr ""
+
+#: src/components/Web3AuthErrorDialog.js:42
+msgid "Configure now"
+msgstr ""
+
+#: src/components/Web3AuthErrorDialog.js:50
+msgid "Something went wrong"
+msgstr ""
+
+#: src/components/Web3AuthErrorDialog.js:51
+msgid ""
+"We couldn't complete the sign-in. Please try again. If the issue persists, "
+"contact support."
+msgstr ""
+
 #: src/components/Reown/AdvancedErrorOptions.js:41
 msgid "Advanced options"
 msgstr ""
@@ -1705,14 +1772,14 @@ msgid "Create Token Data"
 msgstr ""
 
 #: src/components/Reown/CreateNanoContractCreateTokenTxRequest.js:70
-#: src/components/Reown/CreateTokenRequest.js:201
+#: src/components/Reown/CreateTokenRequest.js:202
 #: src/components/Reown/SignMessageRequest.js:81
 #: src/components/Reown/SignOracleDataRequest.js:146
 msgid "Accept Request"
 msgstr ""
 
 #: src/components/Reown/CreateNanoContractCreateTokenTxRequest.js:71
-#: src/components/Reown/CreateTokenRequest.js:205
+#: src/components/Reown/CreateTokenRequest.js:206
 #: src/components/Reown/SignMessageRequest.js:85
 #: src/components/Reown/SignOracleDataRequest.js:150
 msgid "Decline Request"
@@ -1808,32 +1875,32 @@ msgstr ""
 msgid "Token data"
 msgstr ""
 
-#: src/components/Reown/CreateTokenRequest.js:129
+#: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
 msgid "Network Fee"
 msgstr ""
 
-#: src/components/Reown/CreateTokenRequest.js:215
+#: src/components/Reown/CreateTokenRequest.js:216
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:515
 #: src/components/Reown/SendTransactionRequest.js:487
 msgid "Sending transaction"
 msgstr ""
 
-#: src/components/Reown/CreateTokenRequest.js:216
+#: src/components/Reown/CreateTokenRequest.js:217
 #: src/components/Reown/NanoContract/BaseNanoContractRequest.js:516
 #: src/components/Reown/SendTransactionRequest.js:488
 msgid "Please wait."
 msgstr ""
 
-#: src/components/Reown/CreateTokenRequest.js:235
+#: src/components/Reown/CreateTokenRequest.js:236
 msgid "Create Token Transaction successfully sent."
 msgstr ""
 
-#: src/components/Reown/CreateTokenRequest.js:237
+#: src/components/Reown/CreateTokenRequest.js:238
 msgid "Ok, close"
 msgstr ""
 
-#: src/components/Reown/CreateTokenRequest.js:244
+#: src/components/Reown/CreateTokenRequest.js:245
 msgid "Error while sending create token transaction."
 msgstr ""
 

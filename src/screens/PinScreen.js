@@ -160,12 +160,9 @@ class PinScreen extends React.Component {
           if (this.props.walletType === 'web3auth') {
             const privateKey = await STORE.getWeb3AuthPrivateKey(actualPin);
             const publicKey = await STORE.getWeb3AuthPublicKey();
-            const { deriveKeysFromPrivateKey } = require('../sagas/web3auth');
-            const { address } = deriveKeysFromPrivateKey(privateKey);
             this.props.startWalletRequested({
               privateKey,
               publicKey,
-              address,
               pin: actualPin,
               walletType: 'web3auth',
             });

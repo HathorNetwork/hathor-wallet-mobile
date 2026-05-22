@@ -16,6 +16,7 @@ import {
   transactionUtils,
 } from '@hathor/wallet-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PrivateKey } from 'bitcore-lib';
 import {
   takeLatest,
   takeEvery,
@@ -73,6 +74,7 @@ import {
   firstAddressSuccess,
   firstAddressRequest,
   setFullNodeNetworkName,
+  setWalletType,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -158,7 +160,6 @@ export function* startWallet(action) {
     pin,
     privateKey,
     publicKey,
-    address,
     walletType,
   } = action.payload;
 
@@ -241,7 +242,6 @@ export function* startWallet(action) {
     if (walletType === 'web3auth') {
       walletConfig.privateKey = privateKey;
       walletConfig.publicKey = publicKey;
-      walletConfig.preCalculatedAddresses = [address];
     } else {
       walletConfig.seed = words;
     }
@@ -256,14 +256,15 @@ export function* startWallet(action) {
   yield put(setWallet(wallet));
 
   if (walletType === 'web3auth') {
+    yield put(setWalletType('web3auth'));
     wallet.setExternalTxSigningMethod(async (tx, walletStorage, pinCode) => {
       const privKeyHex = await walletStorage.getSingleKeyPrivateKey(pinCode);
-      const { PrivateKey } = require('bitcore-lib');
       const privKey = new PrivateKey(privKeyHex);
       const dataToSignHash = tx.getDataToSignHash();
       const inputSignatures = [];
 
-      for await (const { tx: spentTx, input, index: inputIndex } of walletStorage.getSpentTxs(tx.inputs)) {
+      const spentTxs = walletStorage.getSpentTxs(tx.inputs);
+      for await (const { tx: spentTx, input, index: inputIndex } of spentTxs) {
         if (input.data) {
           // This input is already signed
           continue;

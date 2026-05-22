@@ -9,6 +9,7 @@
 import 'intl';
 import 'intl/locale-data/jsonp/en';
 
+import { WEB3AUTH_NETWORK } from '@web3auth/react-native-sdk';
 import {
   _IS_MULTI_TOKEN as IS_MULTI_TOKEN,
   _DEFAULT_TOKEN as DEFAULT_TOKEN,
@@ -201,19 +202,47 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [SAFE_BIOMETRY_MODE_FEATURE_TOGGLE]: false,
   [TOKEN_SWAP_FEATURE_TOGGLE]: false,
   [FBT_FEATURE_TOGGLE]: false,
-  [WEB3AUTH_FEATURE_TOGGLE]: false,
+  [WEB3AUTH_FEATURE_TOGGLE]: true,
 };
 
-// Web3Auth configuration (https://dashboard.web3auth.io)
-export const WEB3AUTH_CLIENT_ID = 'BLQbTFHmFa4TpQwAKEnBsf9ZArKB8R_hP3gKjBdSrF48fSmzo3ES-KpoaAvX7JMaa1PvefbD5yEXgRrgsiQiauQ';
-export const WEB3AUTH_CLIENT_SECRET = 'df3c8ec8d20559e808fa16e4b77404203b48c843e7a41e9feace2205f134b416';
-
-// Web3Auth storage keys
 export const WEB3AUTH_WALLET_TYPE_KEY = 'web3auth:walletType';
 export const WEB3AUTH_EMAIL_KEY = 'web3auth:email';
 
 // Web3Auth redirect scheme
 export const WEB3AUTH_REDIRECT_URL = 'hathorwallet://openlogin';
+
+// Custom verifier name in the MetaMask Embedded Wallets dashboard.
+// Same name is used across both networks but each network has its own
+// verifier deployment.
+const HATHOR_GOOGLE_VERIFIER = 'hathor-google';
+
+/**
+ * Web3Auth configuration per Hathor network.
+ *
+ * Hathor testnet maps to Web3Auth Sapphire Devnet.
+ * Hathor mainnet maps to Web3Auth Sapphire Mainnet.
+ *
+ * Each entry contains the Web3Auth project Client ID, the Hathor-owned Google
+ * OAuth Client ID configured on the verifier, and the Web3Auth Auth Network.
+ *
+ * Mainnet entries are placeholders until the team creates the mainnet project
+ * in the dashboard. A user trying to log in on Hathor mainnet before that point
+ * will hit a controlled error in getWeb3AuthConfig().
+ */
+export const WEB3AUTH_CONFIG = Object.freeze({
+  testnet: {
+    clientId: 'BLQbTFHmFa4TpQwAKEnBsf9ZArKB8R_hP3gKjBdSrF48fSmzo3ES-KpoaAvX7JMaa1PvefbD5yEXgRrgsiQiauQ',
+    googleClientId: '206408356798-lmqb7i1n1vr6e761479q146sfqgnvue8.apps.googleusercontent.com',
+    verifier: HATHOR_GOOGLE_VERIFIER,
+    network: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
+  },
+  mainnet: {
+    clientId: null, // TODO: create mainnet project in MetaMask dashboard
+    googleClientId: null, // TODO: create Google OAuth client for mainnet (or reuse)
+    verifier: HATHOR_GOOGLE_VERIFIER,
+    network: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
+  },
+});
 
 // Project id configured in https://walletconnect.com
 export const REOWN_PROJECT_ID = '8264fff563181da658ce64ee80e80458';

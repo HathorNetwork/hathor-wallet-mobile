@@ -57,7 +57,7 @@ const FIELDS = ['react-native', 'browser'];
 const KEY_TO_REMOVE = 'crypto';
 
 let touched = 0;
-let missing = [];
+const missing = [];
 
 for (const pkg of PACKAGES) {
   const pjsonPath = path.join('node_modules', pkg, 'package.json');
@@ -79,7 +79,7 @@ for (const pkg of PACKAGES) {
   }
 
   if (changed) {
-    fs.writeFileSync(pjsonPath, JSON.stringify(data, null, 2) + '\n');
+    fs.writeFileSync(pjsonPath, `${JSON.stringify(data, null, 2)}\n`);
     touched += 1;
     console.log(`  fixed ${pkg}`);
   }
@@ -93,7 +93,7 @@ if (missing.length) {
   );
   for (const pkg of missing) console.warn(`  - ${pkg}`);
   console.warn(
-    'This may indicate that the Web3Auth dependency tree has changed. ' +
-      'Update the PACKAGES list in this script.',
+    'This may indicate that the Web3Auth dependency tree has changed. '
+      + 'Update the PACKAGES list in this script.',
   );
 }

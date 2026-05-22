@@ -24,17 +24,21 @@ import {
   View,
 } from 'react-native';
 import { connect } from 'react-redux';
-import { LOGIN_PROVIDER } from '@web3auth/react-native-sdk';
+import { LOGIN_PROVIDER } from '@web3auth/auth';
 import { t } from 'ttag';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import TextFmt from '../components/TextFmt';
+import GoogleProviderIcon from '../components/Icons/GoogleProvider.icon';
+import EmailProviderIcon from '../components/Icons/EmailProvider.icon';
+import AppleProviderIcon from '../components/Icons/AppleProvider.icon';
 
 import baseStyle from '../styles/init';
 import { Link, str2jsx } from '../utils';
 
 import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL, WEB3AUTH_FEATURE_TOGGLE } from '../constants';
-import { web3authLogin, deriveKeysFromPrivateKey } from '../sagas/web3auth';
+import { web3authLogin, derivePublicKey, classifyWeb3AuthError, WEB3AUTH_ERROR_TYPES } from '../sagas/web3auth';
+import Web3AuthErrorDialog from '../components/Web3AuthErrorDialog';
 import { COLORS } from '../styles/themes';
 import { SKIP_SEED_CONFIRMATION } from '../config';
 
@@ -109,44 +113,90 @@ class WelcomeScreen extends React.Component {
 }
 
 class InitialScreen extends React.Component {
+  state = {
+    web3authErrorType: null,
+    web3authOriginalError: null,
+  };
+
   style = ({ ...baseStyle,
     ...StyleSheet.create({
       socialRow: {
         flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 16,
-        marginBottom: 24,
+        justifyContent: 'space-between',
+        marginVertical: 16,
+        gap: 8,
       },
-      socialButton: {
-        width: 56,
+      providerCard: {
+        flex: 1,
         height: 56,
-        borderRadius: 8,
         borderWidth: 1,
-        borderColor: COLORS.borderColor,
-        justifyContent: 'center',
+        borderColor: '#ece5f8',
+        borderRadius: 8,
         alignItems: 'center',
+        justifyContent: 'center',
         backgroundColor: COLORS.white,
       },
-      socialIcon: {
-        fontSize: 24,
+      orRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 0,
+        marginBottom: 16,
+      },
+      orLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: COLORS.borderColorMid,
+      },
+      orText: {
+        marginHorizontal: 12,
+        fontSize: 14,
+        color: COLORS.midContrastDetail,
+        fontWeight: '600',
+        textTransform: 'uppercase',
       },
     }) });
 
   handleSocialLogin = async (loginProvider) => {
     try {
-      const { privateKey, email } = await web3authLogin(loginProvider);
-      const { publicKey, address } = deriveKeysFromPrivateKey(privateKey);
+      let extraLoginOptions = {};
+      if (loginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS) {
+        // For email passwordless, Web3Auth requires login_hint (the email)
+        const testEmail = 'test_account_5041@example.com'; // Web3Auth test account (OTP: 973012)
+        extraLoginOptions = { login_hint: testEmail };
+      }
+      const { privateKey, email } = await web3authLogin(
+        loginProvider,
+        this.props.hathorNetwork,
+        extraLoginOptions,
+      );
+      const publicKey = derivePublicKey(privateKey);
 
       this.props.navigation.navigate('Web3AuthRecoveryScreen', {
         privateKey,
         publicKey,
-        address,
         web3authEmail: email,
         walletType: 'web3auth',
       });
-    } catch (e) {
-      // User cancelled or error — stay on screen
+    } catch (err) {
+      const errorType = classifyWeb3AuthError(err);
+      if (errorType === WEB3AUTH_ERROR_TYPES.USER_CANCELLED) {
+        // Silent — user intentionally backed out of the OAuth flow.
+        return;
+      }
+      this.setState({ web3authErrorType: errorType, web3authOriginalError: err });
     }
+  };
+
+  dismissWeb3AuthError = () => {
+    this.setState({ web3authErrorType: null, web3authOriginalError: null });
+  };
+
+  retryWeb3AuthLogin = () => {
+    this.dismissWeb3AuthError();
+    // Only Google is currently wired up; Email and Apple cards are inert.
+    // Retrying defaults to Google because that is the only provider that
+    // could have produced the failure we are recovering from.
+    this.handleSocialLogin(LOGIN_PROVIDER.GOOGLE);
   };
 
   render() {
@@ -166,26 +216,29 @@ class InitialScreen extends React.Component {
           </Text>
           <View style={this.style.buttonView}>
             {this.props.web3authEnabled && (
-              <View style={this.style.socialRow}>
-                <TouchableOpacity
-                  style={this.style.socialButton}
-                  onPress={() => this.handleSocialLogin(LOGIN_PROVIDER.GOOGLE)}
-                >
-                  <Text style={this.style.socialIcon}>G</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={this.style.socialButton}
-                  onPress={() => this.handleSocialLogin(LOGIN_PROVIDER.EMAIL_PASSWORDLESS)}
-                >
-                  <Text style={this.style.socialIcon}>@</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={this.style.socialButton}
-                  onPress={() => this.handleSocialLogin(LOGIN_PROVIDER.APPLE)}
-                >
-                  <Text style={this.style.socialIcon}>A</Text>
-                </TouchableOpacity>
-              </View>
+              <>
+                <View style={this.style.socialRow}>
+                  <TouchableOpacity
+                    style={this.style.providerCard}
+                    onPress={() => this.handleSocialLogin(LOGIN_PROVIDER.GOOGLE)}
+                  >
+                    <GoogleProviderIcon size={24} />
+                  </TouchableOpacity>
+                  {/* TODO: WAITING OAUTH CLIENT TO BE DEFINED */}
+                  <View style={this.style.providerCard}>
+                    <EmailProviderIcon size={24} />
+                  </View>
+                  {/* TODO: WAITING OAUTH CLIENT TO BE DEFINED */}
+                  <View style={this.style.providerCard}>
+                    <AppleProviderIcon size={24} />
+                  </View>
+                </View>
+                <View style={this.style.orRow}>
+                  <View style={this.style.orLine} />
+                  <Text style={this.style.orText}>{t`OR`}</Text>
+                  <View style={this.style.orLine} />
+                </View>
+              </>
             )}
             <NewHathorButton
               onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
@@ -199,6 +252,12 @@ class InitialScreen extends React.Component {
             />
           </View>
         </View>
+        <Web3AuthErrorDialog
+          errorType={this.state.web3authErrorType}
+          onRetry={this.retryWeb3AuthLogin}
+          onCancel={this.dismissWeb3AuthError}
+          originalError={this.state.web3authOriginalError}
+        />
       </View>
     );
   }
@@ -206,6 +265,7 @@ class InitialScreen extends React.Component {
 
 const mapInitialStateToProps = (state) => ({
   web3authEnabled: !!state.featureToggles[WEB3AUTH_FEATURE_TOGGLE],
+  hathorNetwork: state.networkSettings.network,
 });
 
 const ConnectedInitialScreen = connect(mapInitialStateToProps)(InitialScreen);

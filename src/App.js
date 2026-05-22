@@ -800,9 +800,12 @@ const RootStack = () => {
   useEffect(() => {
     STORE.preStart()
       .then(async () => {
-        // Restore Web3Auth state into Redux
-        const walletType = await AsyncStorage.getItem(WEB3AUTH_WALLET_TYPE_KEY);
-        const web3authEmail = await AsyncStorage.getItem(WEB3AUTH_EMAIL_KEY);
+        // Restore Web3Auth state into Redux. Values are JSON-serialized to stay
+        // compatible with STORE.preStart, which JSON.parse's every value.
+        const rawWalletType = await AsyncStorage.getItem(WEB3AUTH_WALLET_TYPE_KEY);
+        const rawWeb3authEmail = await AsyncStorage.getItem(WEB3AUTH_EMAIL_KEY);
+        const walletType = rawWalletType ? JSON.parse(rawWalletType) : null;
+        const web3authEmail = rawWeb3authEmail ? JSON.parse(rawWeb3authEmail) : null;
         if (walletType) {
           dispatch(setWalletType(walletType));
         }
