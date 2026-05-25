@@ -14,8 +14,21 @@ class HathorCtCryptoModule: NSObject {
     data.map { NSNumber(value: $0) }
   }
 
+  // u64 values arrive as NSString (decimal) to avoid the precision loss that
+  // would happen if JS Numbers (doubles) were marshaled directly. Anything > 2^53
+  // would silently truncate; the String round-trip is exact for the full u64 range.
+  private func parseU64(_ value: NSString) throws -> UInt64 {
+    guard let v = UInt64(value as String) else {
+      throw NSError(
+        domain: "HathorCtCryptoModule", code: 1,
+        userInfo: [NSLocalizedDescriptionKey: "value '\(value)' is not a valid uint64"]
+      )
+    }
+    return v
+  }
+
   @objc func createShieldedOutput(
-    _ value: Double,
+    _ value: NSString,
     recipientPubkey: [Any],
     tokenUid: [Any],
     fullyShielded: Bool,
@@ -24,7 +37,7 @@ class HathorCtCryptoModule: NSObject {
   ) {
     do {
       let result = try createShieldedOutputUniffi(
-        value: UInt64(value),
+        value: try parseU64(value),
         recipientPubkey: toData(recipientPubkey),
         tokenUid: toData(tokenUid),
         fullyShielded: fullyShielded
@@ -54,8 +67,8 @@ class HathorCtCryptoModule: NSObject {
   ) {
     do {
       // JS callers pass [] (instead of null) for the absent parameter, since
-      // the RN bridge can't marshal JS null → NSArray. Treat empty arrays as
-      // nil before forwarding to UniFFI.
+      // the RN bridge can't convert JS null into NSArray (warns and breaks the call).
+      // Swift treats empty arrays as nil before forwarding to UniFFI.
       // - tokenUid is empty for FullShielded (recovered from rangeproof message).
       // - assetCommitment is empty for AmountShielded (generator from tokenUid).
       let tuid: Data? = tokenUid.isEmpty ? nil : toData(tokenUid)
@@ -68,8 +81,9 @@ class HathorCtCryptoModule: NSObject {
         tokenUid: tuid,
         assetCommitment: ac
       )
+      // value returned as String for non-lossy u64 marshaling back to JS BigInt.
       resolve([
-        "value": NSNumber(value: result.value),
+        "value": String(result.value),
         "blindingFactor": toArray(result.blindingFactor),
         "tokenUid": toArray(result.tokenUid),
         "assetBlindingFactor": result.assetBlindingFactor.map { toArray($0) } as Any,
@@ -107,6 +121,19 @@ class HathorCtCryptoModule: NSObject {
     }
   }
 
+  @objc func deriveAssetTag(
+    _ tokenUid: [Any],
+    resolve: RCTPromiseResolveBlock,
+    reject: RCTPromiseRejectBlock
+  ) {
+    do {
+      let result = try deriveAssetTagUniffi(tokenUid: toData(tokenUid))
+      resolve(toArray(result))
+    } catch {
+      reject("CRYPTO_ERROR", error.localizedDescription, error)
+    }
+  }
+
   @objc func createAssetCommitment(
     _ tag: [Any],
     blindingFactor: [Any],
@@ -119,6 +146,36 @@ class HathorCtCryptoModule: NSObject {
     } catch {
       reject("CRYPTO_ERROR", error.localizedDescription, error)
     }
+  }
+
+  @objc func createCommitment(
+    _ value: NSString,
+    blindingFactor: [Any],
+    generator: [Any],
+    resolve: RCTPromiseResolveBlock,
+    reject: RCTPromiseRejectBlock
+  ) {
+    do {
+      let result = try createCommitmentUniffi(
+        value: try parseU64(value),
+        blindingFactor: toData(blindingFactor),
+        generator: toData(generator)
+      )
+      resolve(toArray(result))
+    } catch {
+      reject("CRYPTO_ERROR", error.localizedDescription, error)
+    }
+  }
+
+  @objc func generateRandomBlindingFactor(
+    _ resolve: RCTPromiseResolveBlock,
+    reject: RCTPromiseRejectBlock
+  ) {
+    // Dedicated UniFFI export — replaces the old "call createShieldedOutput
+    // with dummy values and extract the blinding factor" hack that mobile
+    // used before this export existed.
+    let result = generateRandomBlindingFactorUniffi()
+    resolve(toArray(result))
   }
 
   @objc func createSurjectionProof(
@@ -162,7 +219,7 @@ class HathorCtCryptoModule: NSObject {
   }
 
   @objc func createShieldedOutputWithBlinding(
-    _ value: Double,
+    _ value: NSString,
     recipientPubkey: [Any],
     tokenUid: [Any],
     fullyShielded: Bool,
@@ -172,7 +229,7 @@ class HathorCtCryptoModule: NSObject {
   ) {
     do {
       let result = try createShieldedOutputWithBlindingUniffi(
-        value: UInt64(value),
+        value: try parseU64(value),
         recipientPubkey: toData(recipientPubkey),
         tokenUid: toData(tokenUid),
         fullyShielded: fullyShielded,
@@ -192,7 +249,7 @@ class HathorCtCryptoModule: NSObject {
   }
 
   @objc func createShieldedOutputWithBothBlindings(
-    _ value: Double,
+    _ value: NSString,
     recipientPubkey: [Any],
     tokenUid: [Any],
     valueBlindingFactor: [Any],
@@ -202,7 +259,7 @@ class HathorCtCryptoModule: NSObject {
   ) {
     do {
       let result = try createShieldedOutputWithBothBlindingsUniffi(
-        value: UInt64(value),
+        value: try parseU64(value),
         recipientPubkey: toData(recipientPubkey),
         tokenUid: toData(tokenUid),
         valueBlindingFactor: toData(valueBlindingFactor),
@@ -222,7 +279,7 @@ class HathorCtCryptoModule: NSObject {
   }
 
   @objc func computeBalancingBlindingFactorFull(
-    _ value: Double,
+    _ value: NSString,
     generatorBlindingFactor: [Any],
     inputs: [[String: Any]],
     otherOutputs: [[String: Any]],
@@ -230,22 +287,20 @@ class HathorCtCryptoModule: NSObject {
     reject: RCTPromiseRejectBlock
   ) {
     do {
-      let inEntries = inputs.map { entry -> BlindingEntry in
-        BlindingEntry(
-          value: (entry["value"] as! NSNumber).uint64Value,
+      // BlindingEntry's `value` is now String-marshaled too — uint64Value-on-Double
+      // round-tripping is gone.
+      let decodeEntry = { (entry: [String: Any]) throws -> BlindingEntry in
+        let vStr = entry["value"] as? NSString ?? NSString(string: "\(entry["value"] ?? "0")")
+        return BlindingEntry(
+          value: try self.parseU64(vStr),
           vbf: self.toData(entry["vbf"] as! [Any]),
           gbf: self.toData(entry["gbf"] as! [Any])
         )
       }
-      let outEntries = otherOutputs.map { entry -> BlindingEntry in
-        BlindingEntry(
-          value: (entry["value"] as! NSNumber).uint64Value,
-          vbf: self.toData(entry["vbf"] as! [Any]),
-          gbf: self.toData(entry["gbf"] as! [Any])
-        )
-      }
+      let inEntries = try inputs.map(decodeEntry)
+      let outEntries = try otherOutputs.map(decodeEntry)
       let result = try computeBalancingBlindingFactorFullUniffi(
-        value: UInt64(value),
+        value: try parseU64(value),
         generatorBlindingFactor: toData(generatorBlindingFactor),
         inputs: inEntries,
         otherOutputs: outEntries
