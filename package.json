@@ -26,7 +26,7 @@
     "@hathor/hathor-rpc-handler": "4.3.0",
     "@hathor/unleash-client": "0.1.0",
     "@hathor/ct-crypto-provider": "0.0.1-shielded",
-    "@hathor/wallet-lib": "0.0.16-shielded",
+    "@hathor/wallet-lib": "0.0.17-shielded",
     "@json-rpc-tools/utils": "1.7.6",
     "@lavamoat/preinstall-always-fail": "2.1.0",
     "@lavamoat/react-native-lockdown": "0.1.0",
