@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Image } from 'react-native';
 import { useSelector } from 'react-redux';
 import { msgid, ngettext, t } from 'ttag';
 import hathorLib, { TokenVersion } from '@hathor/wallet-lib';
@@ -18,6 +18,8 @@ import OfflineBar from '../components/OfflineBar';
 import TextFmt from '../components/TextFmt';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import TooltipModal from '../components/TooltipModal';
+import FeedbackModal from '../components/FeedbackModal';
+import Spinner from '../components/Spinner';
 import { renderValue, isTokenNFT } from '../utils';
 import NavigationService from '../NavigationService';
 import { useNavigation, useParams } from '../hooks/navigation';
@@ -25,6 +27,13 @@ import { COLORS } from '../styles/themes';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { CheckIcon } from '../components/Icons/Check.icon';
 import { TOKEN_DEPOSIT_URL, TOKEN_FEES_URL } from '../constants';
+import errorIcon from '../assets/images/icErrorBig.png';
+
+const PHASE = Object.freeze({
+  BUILDING: 'building',
+  ERROR: 'error',
+  READY: 'ready',
+});
 
 function NoFee() {
   return (
@@ -33,6 +42,21 @@ function NoFee() {
       <Text style={{ color: '#2E701F' }}>{t`No fee`}</Text>
     </View>
   );
+}
+
+// Wallet-lib raises "No UTXOs available for the token <uid>." when auto-
+// selection can't cover the amount. HTR shortage gets its own message because,
+// on FBT sends, it means insufficient HTR for the network fee.
+function mapBuildError(err) {
+  const msg = err?.message || '';
+  const htrUid = hathorLib.constants.NATIVE_TOKEN_UID;
+  if (msg.includes(`No UTXOs available for the token ${htrUid}`)) {
+    return t`Insufficient HTR to cover the network fee.`;
+  }
+  if (msg.includes('No UTXOs available for the token')) {
+    return t`Insufficient balance to send this transaction.`;
+  }
+  return msg || t`Failed to build transaction.`;
 }
 
 const SendConfirmScreen = () => {
@@ -47,50 +71,87 @@ const SendConfirmScreen = () => {
   const params = useParams();
 
   // Parse and store navigation params
-  const { amount, address, token, networkFee, utxos } = params;
+  const { amount, address, token } = params;
   const isNFT = isTokenNFT(token.uid, tokenMetadata);
   const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
 
+  const [phase, setPhase] = useState(PHASE.BUILDING);
+  const [sendTx, setSendTx] = useState(null);
+  const [buildError, setBuildError] = useState(null);
   const [modal, setModal] = useState(null);
   const [isTooltipShown, setIsTooltipShown] = useState(false);
 
   const nativeSymbol = hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
 
+  // Build the transaction on mount (without inputs — let the lib auto-select
+  // FBT and HTR UTXOs). This produces the exact fee the user will pay, which
+  // we then show on the review screen.
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const outputs = [{ address, value: amount, token: token.uid }];
+        const sendTransaction = useWalletService
+          ? new hathorLib.SendTransactionWalletService(wallet, { outputs })
+          : new hathorLib.SendTransaction({ storage: wallet.storage, outputs });
+
+        await sendTransaction.run('prepare-tx');
+
+        if (cancelled) {
+          try { await sendTransaction.releaseUtxos(); } catch (e) { console.error(e); }
+          return;
+        }
+
+        setSendTx(sendTransaction);
+        setPhase(PHASE.READY);
+      } catch (err) {
+        if (cancelled) return;
+        console.error(err);
+        setBuildError({ message: mapBuildError(err) });
+        setPhase(PHASE.ERROR);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, []);
+
+  // Release reserved UTXOs on unmount. Safe to call unconditionally:
+  // no-op if the tx was already broadcast (UTXOs already cleared from the
+  // selection map) and skipped if no tx was built.
+  useEffect(() => () => {
+    if (sendTx) {
+      sendTx.releaseUtxos().catch((err) => console.error(err));
+    }
+  }, [sendTx]);
+
+  const networkFee = phase === PHASE.READY && sendTx
+    ? (sendTx.transaction.getFeeHeader()?.entries?.[0]?.amount ?? 0n)
+    : null;
+
   /**
-   * In case we can prepare the data, open send tx feedback modal (while sending the tx)
-   * Otherwise, show error
+   * Sign and broadcast the pre-built transaction. Failures transition
+   * the flow to PHASE.ERROR.
    *
-   * @param {String} pin User PIN already validated
+   * @param {string} pin Validated user PIN
    */
   const executeSend = async (pin) => {
-    const outputs = [{ address, value: amount, token: token.uid }];
-    const inputs = utxos
-      ? utxos.map(({ txId, index }) => ({ txId, index }))
-      : [];
-    let sendTransaction;
-
-    if (useWalletService) {
-      await wallet.validateAndRenewAuthToken(pin);
-
-      sendTransaction = new hathorLib.SendTransactionWalletService(wallet, {
-        outputs,
-        inputs,
-        pin,
+    try {
+      if (useWalletService) {
+        await wallet.validateAndRenewAuthToken(pin);
+      }
+      await wallet.signTx(sendTx.transaction, { pinCode: pin });
+      const promise = sendTx.runFromMining();
+      setModal({
+        text: t`Your transfer is being processed`,
+        sendTransaction: sendTx,
+        promise,
       });
-    } else {
-      sendTransaction = new hathorLib.SendTransaction(
-        { storage: wallet.storage, outputs, inputs, pin }
-      );
+    } catch (err) {
+      console.error(err);
+      setBuildError({ message: mapBuildError(err) });
+      setPhase(PHASE.ERROR);
     }
-
-    const promise = sendTransaction.run();
-
-    // show loading modal
-    setModal({
-      text: t`Your transfer is being processed`,
-      sendTransaction,
-      promise,
-    });
   };
 
   /**
@@ -132,6 +193,10 @@ const SendConfirmScreen = () => {
     }, 500);
   };
 
+  const dismissBuildError = () => {
+    navigation.goBack();
+  };
+
   const getAvailableString = () => {
     const balance = tokensBalance[token.uid].data;
     const available = balance ? balance.available : 0;
@@ -148,7 +213,6 @@ const SendConfirmScreen = () => {
 
   const handleTooltipLinkPress = () => {
     setIsTooltipShown(false);
-
     // Navigate to external link
     if (token.version === TokenVersion.DEPOSIT) {
       // for deposit based tokens
@@ -181,7 +245,7 @@ const SendConfirmScreen = () => {
         <Text>
           {renderValue(networkFee, false)} {nativeSymbol}
         </Text>
-      )
+      );
     }
     return <NoFee />;
   };
@@ -193,6 +257,21 @@ const SendConfirmScreen = () => {
         title={t`SEND ${tokenNameUpperCase}`}
         onBackPress={() => navigation.goBack()}
       />
+
+      {phase === PHASE.BUILDING && (
+        <FeedbackModal
+          text={t`Building your transaction`}
+          icon={<Spinner />}
+        />
+      )}
+
+      {phase === PHASE.ERROR && buildError && (
+        <FeedbackModal
+          text={buildError.message}
+          icon={<Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />}
+          onDismiss={dismissBuildError}
+        />
+      )}
 
       {modal && (
         <SendTransactionFeedbackModal
@@ -214,47 +293,49 @@ const SendConfirmScreen = () => {
         onLinkPress={handleTooltipLinkPress}
       />
 
-      <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-        <View style={{ gap: 30 }}>
-          <View style={{ alignItems: 'center', marginTop: 32 }}>
-            <AmountTextInput
-              editable={false}
-              value={amountAndToken}
-            />
-            <InputLabel style={{ marginTop: 8 }}>
-              {getAvailableString()}
-            </InputLabel>
-          </View>
-          <View>
-            <TextFmt style={{ marginBottom: 10 }}>{t`**Transaction summary**`}</TextFmt>
-            <View style={styles.summaryContainer}>
-              <View style={styles.summaryItem}>
-                <TextFmt>{t`**To**`}</TextFmt>
-                <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
-                  <TextFmt>{t`**Network Fee**`}</TextFmt>
-                  <TouchableOpacity onPress={handleFeeInfoPress} style={{ marginLeft: 4 }}>
-                    <InfoCircleIcon size={16} />
-                  </TouchableOpacity>
+      {phase === PHASE.READY && (
+        <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
+          <View style={{ gap: 30 }}>
+            <View style={{ alignItems: 'center', marginTop: 32 }}>
+              <AmountTextInput
+                editable={false}
+                value={amountAndToken}
+              />
+              <InputLabel style={{ marginTop: 8 }}>
+                {getAvailableString()}
+              </InputLabel>
+            </View>
+            <View>
+              <TextFmt style={{ marginBottom: 10 }}>{t`**Transaction summary**`}</TextFmt>
+              <View style={styles.summaryContainer}>
+                <View style={styles.summaryItem}>
+                  <TextFmt>{t`**To**`}</TextFmt>
+                  <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
                 </View>
-                {renderNetworkFeeValue()}
-              </View>
-              <View style={styles.summaryItem}>
-                <TextFmt>{t`**Total**`}</TextFmt>
-                <Text>{`${amountAndToken}${networkFee ? ` + ${renderValue(networkFee, false)} ${nativeSymbol}` : ''}`}</Text>
+                <View style={styles.summaryItem}>
+                  <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
+                    <TextFmt>{t`**Network Fee**`}</TextFmt>
+                    <TouchableOpacity onPress={handleFeeInfoPress} style={{ marginLeft: 4 }}>
+                      <InfoCircleIcon size={16} />
+                    </TouchableOpacity>
+                  </View>
+                  {renderNetworkFeeValue()}
+                </View>
+                <View style={styles.summaryItem}>
+                  <TextFmt>{t`**Total**`}</TextFmt>
+                  <Text>{`${amountAndToken}${networkFee ? ` + ${renderValue(networkFee, false)} ${nativeSymbol}` : ''}`}</Text>
+                </View>
               </View>
             </View>
           </View>
+          <NewHathorButton
+            title={t`Send`}
+            onPress={onSendPress}
+            // disable while modal is visible
+            disabled={modal !== null}
+          />
         </View>
-        <NewHathorButton
-          title={t`Send`}
-          onPress={onSendPress}
-          // disable while modal is visible
-          disabled={modal !== null}
-        />
-      </View>
+      )}
       <OfflineBar />
     </View>
   );
