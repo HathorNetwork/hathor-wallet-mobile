@@ -70,6 +70,7 @@ const SendConfirmScreen = () => {
   const navigation = useNavigation();
   const params = useParams();
 
+  // Parse and store navigation params
   const { amount, address, token } = params;
   const isNFT = isTokenNFT(token.uid, tokenMetadata);
   const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
@@ -136,6 +137,12 @@ const SendConfirmScreen = () => {
     ? (sendTx.transaction.getFeeHeader()?.entries?.[0]?.amount ?? 0n)
     : null;
 
+  /**
+   * Sign and broadcast the pre-built transaction. Failures transition
+   * the flow to PHASE.ERROR.
+   *
+   * @param {string} pin Validated user PIN
+   */
   const executeSend = async (pin) => {
     try {
       if (useWalletService) {
@@ -155,6 +162,9 @@ const SendConfirmScreen = () => {
     }
   };
 
+  /**
+   * Executed when user clicks to send the tx and opens PIN screen
+   */
   const onSendPress = () => {
     const pinParams = {
       cb: executeSend,
@@ -182,7 +192,7 @@ const SendConfirmScreen = () => {
     let initialRoute = 'CameraPermissionScreen';
     if (isCameraAvailable) {
       initialRoute = 'SendScanQRCode';
-    } else if (isCameraAvailable === false) {
+    } else if (isCameraAvailable === false) { // might be null
       initialRoute = 'SendAddressInput';
     }
 
