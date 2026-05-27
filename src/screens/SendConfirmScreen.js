@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Image } from 'react-native';
 import { useSelector } from 'react-redux';
 import { msgid, ngettext, t } from 'ttag';
@@ -81,9 +81,6 @@ const SendConfirmScreen = () => {
   const [modal, setModal] = useState(null);
   const [isTooltipShown, setIsTooltipShown] = useState(false);
 
-  const sentSuccessfullyRef = useRef(false);
-  const releasedRef = useRef(false);
-
   const nativeSymbol = hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
 
   // Build the transaction on mount (without inputs — let the lib auto-select
@@ -119,19 +116,14 @@ const SendConfirmScreen = () => {
     return () => { cancelled = true; };
   }, []);
 
-  // Release reserved UTXOs if the user navigates away before sending.
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', async (e) => {
-      if (sentSuccessfullyRef.current || releasedRef.current || !sendTx) {
-        return;
-      }
-      e.preventDefault();
-      releasedRef.current = true;
-      try { await sendTx.releaseUtxos(); } catch (err) { console.error(err); }
-      navigation.dispatch(e.data.action);
-    });
-    return unsubscribe;
-  }, [sendTx, navigation]);
+  // Release reserved UTXOs on unmount. Safe to call unconditionally:
+  // no-op if the tx was already broadcast (UTXOs already cleared from the
+  // selection map) and skipped if no tx was built.
+  useEffect(() => () => {
+    if (sendTx) {
+      sendTx.releaseUtxos().catch((err) => console.error(err));
+    }
+  }, [sendTx]);
 
   const networkFee = phase === PHASE.READY && sendTx
     ? (sendTx.transaction.getFeeHeader()?.entries?.[0]?.amount ?? 0n)
@@ -174,10 +166,6 @@ const SendConfirmScreen = () => {
       biometryLoadingText: t`Building transaction`,
     };
     navigation.navigate('PinScreen', pinParams);
-  };
-
-  const onSendSuccess = () => {
-    sentSuccessfullyRef.current = true;
   };
 
   /**
@@ -291,7 +279,6 @@ const SendConfirmScreen = () => {
           sendTransaction={modal.sendTransaction}
           promise={modal.promise}
           successText={<TextFmt>{t`Your transfer of **${amountAndToken}** has been confirmed`}</TextFmt>}
-          onTxSuccess={onSendSuccess}
           onDismissSuccess={exitScreen}
           onDismissError={() => setModal(null)}
           hide={isShowingPinScreen}
