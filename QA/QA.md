@@ -45,8 +45,12 @@ Make sure the following feature flags are active.
 1. The Next button should not be clickable. Also, Network fee value should be 0.01 HTR (flat) and your balance should turn red.
 
 ### Address mode
-1. Go to "Settings" -> "Network Settings" and change your network to `testnet`
-1. Change the address mode to "Multi Address", save the preferences, the wallet should restart and back to the address mode selection screen.
+
+Run these tests early, while the wallet still has no transactions on addresses other than index `0`. Reuse the same wallet for the steps below.
+
+Follow the [Address Mode QA](QA_ADDRESS_MODE.md) steps.
+
+After completing the suite, leave the wallet on `testnet` with the "Multi Address" mode selected so subsequent tests have a consistent setup.
 
 ### Import tokens (empty wallet)
 1. Go to "Settings" -> Import tokens
@@ -271,6 +275,9 @@ Tests the interaction of distributed apps with the Mobile Wallet. Some are actua
 
 ### Token Swap
 Tests the Token Swap feature. Follow the [Token Swap QA](QA_TOKEN_SWAP.md)
+
+### Address Mode
+Tests the single/multi address mode behavior and network-dependent defaults. Follow the [Address Mode QA](QA_ADDRESS_MODE.md)
 
 # Development Environment tests
 The following tests are executed only if for the development environment, with access to source code and building.
