@@ -327,7 +327,7 @@ msgid "Back"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/SendAmountInput.js:142
+#: src/screens/SendAmountInput.js:92
 msgid "Invalid amount"
 msgstr ""
 
@@ -356,7 +356,7 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:239
+#: src/screens/SendAmountInput.js:169
 msgid "Next"
 msgstr "Далее"
 
@@ -384,8 +384,8 @@ msgstr "Введите 6-значный PIN-код для создания то�
 msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
-#: src/screens/CreateTokenConfirm.js:158 src/screens/SendConfirmScreen.js:105
-#: src/screens/TokenSwapReview.js:205
+#: src/screens/CreateTokenConfirm.js:158 src/screens/SendConfirmScreen.js:164
+#: src/screens/TokenSwapReview.js:221
 msgid "Building transaction"
 msgstr ""
 
@@ -963,19 +963,11 @@ msgstr "ОТПРАВИТЬ"
 msgid "Address to send"
 msgstr "Адрес отправки"
 
-#: src/screens/SendAmountInput.js:147
+#: src/screens/SendAmountInput.js:97
 msgid "Insufficient funds"
 msgstr "Недостаточно средств"
 
-#: src/screens/SendAmountInput.js:154
-msgid "Calculating network fee..."
-msgstr ""
-
-#: src/screens/SendAmountInput.js:161 src/screens/SendAmountInput.js:166
-msgid "Insufficient balance of HTR to cover the network fee."
-msgstr ""
-
-#: src/screens/SendAmountInput.js:193
+#: src/screens/SendAmountInput.js:123
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
@@ -983,30 +975,41 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendAmountInput.js:207 src/screens/SendConfirmScreen.js:193
+#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:259
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:33 src/screens/TokenSwapReview.js:304
+#: src/screens/SendConfirmScreen.js:42 src/screens/TokenSwapReview.js:320
 msgid "No fee"
 msgstr ""
 
-#.  show loading modal
-#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:189
+#: src/screens/SendConfirmScreen.js:54
+msgid "Insufficient HTR to cover the network fee."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:57
+msgid "Insufficient balance to send this transaction."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:59
+msgid "Failed to build transaction."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:147 src/screens/TokenSwapReview.js:205
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:103
-#: src/screens/TokenSwapReview.js:203
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:162
+#: src/screens/TokenSwapReview.js:219
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:104
-#: src/screens/TokenSwapReview.js:204
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:163
+#: src/screens/TokenSwapReview.js:220
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
-#: src/screens/SendConfirmScreen.js:140
+#: src/screens/SendConfirmScreen.js:207
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
@@ -1014,54 +1017,58 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendConfirmScreen.js:164
+#: src/screens/SendConfirmScreen.js:230
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:167
+#: src/screens/SendConfirmScreen.js:233
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:170
+#: src/screens/SendConfirmScreen.js:236
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:172
+#: src/screens/SendConfirmScreen.js:238
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:177
+#: src/screens/SendConfirmScreen.js:243
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:202
+#: src/screens/SendConfirmScreen.js:265
+msgid "Building your transaction"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:283
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Ваш перевод **${ amountAndToken }** был подтвержден"
 
-#: src/screens/SendConfirmScreen.js:213
+#: src/screens/SendConfirmScreen.js:295
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:229
+#: src/screens/SendConfirmScreen.js:312
 msgid "**Transaction summary**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:232
+#: src/screens/SendConfirmScreen.js:315
 msgid "**To**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:237
+#: src/screens/SendConfirmScreen.js:320
 msgid "**Network Fee**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:245
+#: src/screens/SendConfirmScreen.js:328
 msgid "**Total**"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:252
+#: src/screens/SendConfirmScreen.js:335
 msgid "Send"
 msgstr "Отправить"
 
@@ -1148,25 +1155,25 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:215
+#: src/screens/TokenSwapReview.js:231
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:221
+#: src/screens/TokenSwapReview.js:237
 msgid "Building the swap transaction for your review"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:239
+#: src/screens/TokenSwapReview.js:255
 msgid "Your swap was successful"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:300
+#: src/screens/TokenSwapReview.js:316
 msgid "Network Fee"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:312
+#: src/screens/TokenSwapReview.js:328
 msgid "SWAP"
 msgstr ""
 
