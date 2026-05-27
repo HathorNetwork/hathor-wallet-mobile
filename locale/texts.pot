@@ -385,7 +385,7 @@ msgid "Authorize token creation"
 msgstr ""
 
 #: src/screens/CreateTokenConfirm.js:158
-#: src/screens/SendConfirmScreen.js:164
+#: src/screens/SendConfirmScreen.js:166
 #: src/screens/TokenSwapReview.js:221
 msgid "Building transaction"
 msgstr ""
@@ -979,7 +979,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: src/screens/SendAmountInput.js:137
-#: src/screens/SendConfirmScreen.js:259
+#: src/screens/SendConfirmScreen.js:257
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
@@ -1000,82 +1000,82 @@ msgstr ""
 msgid "Failed to build transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:147
+#: src/screens/SendConfirmScreen.js:146
 #: src/screens/TokenSwapReview.js:205
 msgid "Your transfer is being processed"
 msgstr ""
 
 #: src/sagas/helpers.js:147
-#: src/screens/SendConfirmScreen.js:162
+#: src/screens/SendConfirmScreen.js:164
 #: src/screens/TokenSwapReview.js:219
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
 #: src/sagas/helpers.js:148
-#: src/screens/SendConfirmScreen.js:163
+#: src/screens/SendConfirmScreen.js:165
 #: src/screens/TokenSwapReview.js:220
 msgid "Authorize operation"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:207
+#: src/screens/SendConfirmScreen.js:205
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendConfirmScreen.js:230
+#: src/screens/SendConfirmScreen.js:228
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:233
+#: src/screens/SendConfirmScreen.js:231
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:236
+#: src/screens/SendConfirmScreen.js:234
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:238
+#: src/screens/SendConfirmScreen.js:236
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:243
+#: src/screens/SendConfirmScreen.js:241
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:265
+#: src/screens/SendConfirmScreen.js:263
 msgid "Building your transaction"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:283
+#: src/screens/SendConfirmScreen.js:281
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:295
+#: src/screens/SendConfirmScreen.js:292
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:312
+#: src/screens/SendConfirmScreen.js:309
 msgid "**Transaction summary**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:315
+#: src/screens/SendConfirmScreen.js:312
 msgid "**To**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:320
+#: src/screens/SendConfirmScreen.js:317
 msgid "**Network Fee**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:328
+#: src/screens/SendConfirmScreen.js:325
 msgid "**Total**"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:335
+#: src/screens/SendConfirmScreen.js:332
 msgid "Send"
 msgstr ""
 
