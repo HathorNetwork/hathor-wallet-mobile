@@ -4,7 +4,7 @@ The main test sequence should be executed on the `testnet` network by default, u
 ### Feature flags
 Make sure the following feature flags are active.
 1. `FBT_FEATURE_TOGGLE` is active.
-1. `SINGLE_ADDRESS_FEATURE_TOGGLE]` is active.
+1. `SINGLE_ADDRESS_FEATURE_TOGGLE` is active.
 
 ### App update
 1. Load the last release of the app and start a wallet. You can confirm the version on Settings -> About.

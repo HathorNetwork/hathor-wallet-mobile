@@ -2,7 +2,7 @@
 
 This is the standard, every new wallet should initialize in single address mode.
 
-### Auto switch to multi with tx outiside index 0
+### Auto switch to multi with tx outside index 0
 
 1. Generate a new wallet (or import an empty one)
 1. Go to Settings -> Address mode, the single mode should be selected.
@@ -19,7 +19,7 @@ This is the standard, every new wallet should initialize in single address mode.
 1. Go to settings -> Change network -> testnet/mainnet (should be a different network than the one that you did the steps above)
 1. Wait for the wallet restart, then go to Settings -> Address Mode, Single should be selected (and the standard for an empty wallet)
 
-Fo the next steps you'll need a wallet connect to Reown, follow the [Reown QA](QA_REOWN.md) to do it.
+For the next steps you'll need a wallet connected to Reown, follow the [Reown QA](QA_REOWN.md) to do it.
 
 ### Single Address mode
 

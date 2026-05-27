@@ -83,13 +83,13 @@
 1. **Insufficient balance to swap (deposit-based token — hUSDC)**
     1. [ ] Do a swap between HTR -> hUSDC.
     1. [ ] Transfer all your HTR to another wallet, your balance should be 0.
-    1. [ ] With you zero balance, select HTR for the swap and input any amount. The review button should be disabled (gray) and a Inssufficient balance of HTR message should shown in red.
+    1. [ ] With your zero balance, select HTR for the swap and input any amount. The review button should be disabled (gray) and an Insufficient balance of HTR message should be shown in red.
 
 1. **Insufficient balance to swap (fee-based token — KOIN)**
     1. [ ] Do a swap between HTR -> KOIN.
     1. [ ] Transfer all your HTR to another wallet, your balance should be 0.
-    1. [ ] With you zero balance, select HTR for the swap and input any amount. The review button should be disabled (gray) and a Inssufficient balance of HTR message should shown in red.
-    1. [ ] Select KOIN -> HTR, the review button should be enabled, after building the tx you should see an error that the wallet has isufficient funds to pay the network fee.
+    1. [ ] With your zero balance, select HTR for the swap and input any amount. The review button should be disabled (gray) and an Insufficient balance of HTR message should be shown in red.
+    1. [ ] Select KOIN -> HTR, the review button should be enabled, after building the tx you should see an error that the wallet has insufficient funds to pay the network fee.
 
 ### Turn on the `wallet-service` feature toggle
 1. [ ] Get the `deviceId` and add it in the `UserIDs` strategy in the unleash **`wallet-service-mobile-android-testnet.rollout`** feature toggle
