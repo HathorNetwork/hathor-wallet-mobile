@@ -80,6 +80,10 @@ const SendConfirmScreen = () => {
   const [buildError, setBuildError] = useState(null);
   const [modal, setModal] = useState(null);
   const [isTooltipShown, setIsTooltipShown] = useState(false);
+  // Disables the Send button from the moment it's tapped until the screen is
+  // interactive again, closing the window between the PinScreen dismissal and
+  // the feedback modal render where the button would otherwise be tappable.
+  const [isSending, setIsSending] = useState(false);
 
   const nativeSymbol = hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
 
@@ -124,6 +128,17 @@ const SendConfirmScreen = () => {
       sendTx.releaseUtxos().catch((err) => console.error(err));
     }
   }, [sendTx]);
+
+  // Re-enable the Send button whenever this screen regains focus. This covers
+  // the PinScreen being dismissed by cancel or hardware back (neither sets the
+  // feedback modal).
+  useEffect(() => {
+    const focusListener = navigation.addListener('focus', () => {
+      setIsSending(false);
+    });
+
+    return focusListener;
+  }, [navigation]);
 
   const networkFee = phase === PHASE.READY && sendTx
     ? (sendTx.transaction.getFeeHeader()?.entries?.[0]?.amount ?? 0n)
@@ -170,6 +185,9 @@ const SendConfirmScreen = () => {
    * Executed when user clicks to send the tx and opens PIN screen
    */
   const onSendPress = () => {
+    // Disable the button before opening the PinScreen so it can't be tapped
+    // again while we return from it and build the feedback modal.
+    setIsSending(true);
     const pinParams = {
       cb: executeSend,
       canCancel: true,
@@ -348,8 +366,9 @@ const SendConfirmScreen = () => {
           <NewHathorButton
             title={t`Send`}
             onPress={onSendPress}
-            // disable while modal is visible
-            disabled={modal !== null}
+            // Disable once tapped (isSending) and while the feedback modal is
+            // visible; re-enabled on screen focus or when the modal is dismissed.
+            disabled={modal !== null || isSending}
           />
         </View>
       )}
