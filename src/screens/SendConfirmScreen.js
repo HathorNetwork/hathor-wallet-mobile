@@ -44,10 +44,10 @@ function NoFee() {
   );
 }
 
-// Wallet-lib raises "No UTXOs available for the token <uid>." when auto-
-// selection can't cover the amount. HTR shortage gets its own message because,
-// on FBT sends, it means insufficient HTR for the network fee.
-function mapBuildError(err) {
+// Translates wallet-lib error messages to user-friendly text. The UTXO
+// patterns apply during build (auto-selection in prepare-tx); other errors
+// (auth, signing, mining) fall through to the original lib message.
+function mapTxError(err) {
   const msg = err?.message || '';
   const htrUid = hathorLib.constants.NATIVE_TOKEN_UID;
   if (msg.includes(`No UTXOs available for the token ${htrUid}`)) {
@@ -56,7 +56,7 @@ function mapBuildError(err) {
   if (msg.includes('No UTXOs available for the token')) {
     return t`Insufficient balance to send this transaction.`;
   }
-  return msg || t`Failed to build transaction.`;
+  return msg || t`Failed to process transaction.`;
 }
 
 const SendConfirmScreen = () => {
@@ -80,6 +80,10 @@ const SendConfirmScreen = () => {
   const [buildError, setBuildError] = useState(null);
   const [modal, setModal] = useState(null);
   const [isTooltipShown, setIsTooltipShown] = useState(false);
+  // Disables the Send button from the moment it's tapped until the screen is
+  // interactive again, closing the window between the PinScreen dismissal and
+  // the feedback modal render where the button would otherwise be tappable.
+  const [isSending, setIsSending] = useState(false);
 
   const nativeSymbol = hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
 
@@ -108,7 +112,7 @@ const SendConfirmScreen = () => {
       } catch (err) {
         if (cancelled) return;
         console.error(err);
-        setBuildError({ message: mapBuildError(err) });
+        setBuildError({ message: mapTxError(err) });
         setPhase(PHASE.ERROR);
       }
     })();
@@ -125,39 +129,65 @@ const SendConfirmScreen = () => {
     }
   }, [sendTx]);
 
+  // Re-enable the Send button whenever this screen regains focus. This covers
+  // the PinScreen being dismissed by cancel or hardware back (neither sets the
+  // feedback modal).
+  useEffect(() => {
+    const focusListener = navigation.addListener('focus', () => {
+      setIsSending(false);
+    });
+
+    return focusListener;
+  }, [navigation]);
+
   const networkFee = phase === PHASE.READY && sendTx
     ? (sendTx.transaction.getFeeHeader()?.entries?.[0]?.amount ?? 0n)
     : null;
 
   /**
-   * Sign and broadcast the pre-built transaction. Failures transition
-   * the flow to PHASE.ERROR.
+   * Sign and mine the pre-built transaction.
+   * Returns the in-flight promise so the feedback modal can subscribe to it.
+   * Any error along the path is mapped to user-friendly text before rejecting.
    *
    * @param {string} pin Validated user PIN
+   * @returns {Promise<Transaction>}
    */
-  const executeSend = async (pin) => {
+  const signAndSendTx = async (pin) => {
     try {
       if (useWalletService) {
         await wallet.validateAndRenewAuthToken(pin);
       }
       await wallet.signTx(sendTx.transaction, { pinCode: pin });
-      const promise = sendTx.runFromMining();
-      setModal({
-        text: t`Your transfer is being processed`,
-        sendTransaction: sendTx,
-        promise,
-      });
+      return await sendTx.runFromMining();
     } catch (err) {
       console.error(err);
-      setBuildError({ message: mapBuildError(err) });
-      setPhase(PHASE.ERROR);
+      throw new Error(mapTxError(err));
     }
+  };
+
+  /**
+   * Called after PIN validation. Hands the running signAndSendTx promise to
+   * the feedback modal — setModal is synchronous so the modal renders in the
+   * same commit as the PinScreen dismissal, closing the window where the
+   * Send button could be tapped again.
+   *
+   * @param {string} pin Validated user PIN
+   */
+  const executeSend = (pin) => {
+    setModal({
+      text: t`Your transfer is being processed`,
+      sendTransaction: sendTx,
+      promise: signAndSendTx(pin),
+    });
   };
 
   /**
    * Executed when user clicks to send the tx and opens PIN screen
    */
   const onSendPress = () => {
+    // Disable the button before opening the PinScreen so it can't be tapped
+    // again while we return from it and build the feedback modal.
+    setIsSending(true);
     const pinParams = {
       cb: executeSend,
       canCancel: true,
@@ -300,6 +330,11 @@ const SendConfirmScreen = () => {
               <AmountTextInput
                 editable={false}
                 value={amountAndToken}
+                // Stretch to the parent's width so the auto-shrink logic measures a
+                // fixed column width. The parent is `alignItems: 'center'`, so without
+                // this the input sizes to its content and the font-scaling feedback loop
+                // collapses the size. `textAlign: 'center'` keeps the value centered.
+                style={{ alignSelf: 'stretch' }}
               />
               <InputLabel style={{ marginTop: 8 }}>
                 {getAvailableString()}
@@ -331,8 +366,9 @@ const SendConfirmScreen = () => {
           <NewHathorButton
             title={t`Send`}
             onPress={onSendPress}
-            // disable while modal is visible
-            disabled={modal !== null}
+            // Disable once tapped (isSending) and while the feedback modal is
+            // visible; re-enabled on screen focus or when the modal is dismissed.
+            disabled={modal !== null || isSending}
           />
         </View>
       )}
