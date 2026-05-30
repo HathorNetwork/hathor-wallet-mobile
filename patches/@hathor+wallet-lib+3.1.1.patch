@@ -1,8 +1,8 @@
 diff --git a/node_modules/@hathor/wallet-lib/lib/utils/bigint.js b/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
-index 312d9fb..2b3f211 100644
+index 312d9fb..38840c2 100644
 --- a/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
 +++ b/node_modules/@hathor/wallet-lib/lib/utils/bigint.js
-@@ -9,6 +9,13 @@ exports.parseSchema = parseSchema;
+@@ -9,6 +9,21 @@ exports.parseSchema = parseSchema;
  exports.transformJsonBigIntResponse = transformJsonBigIntResponse;
  var _zod = require("zod");
  var _types = require("../types");
@@ -13,10 +13,18 @@ index 312d9fb..2b3f211 100644
 +// react-native doesn't have it neither in Hermes or in JavascriptCore
 +const corejsParser = require('core-js-pure/actual/json/parse');
 +
++// `JSON.rawJSON` (used to emit BigInts as raw, unquoted JSON numbers) is a
++// Node v22 / V8 API unavailable in react-native engines, and the core-js-pure
++// stringify/rawJSON ponyfills break under this app's SES hardening ("Cannot
++// assign to read-only property"). Instead we serialize BigInts to a sentinel
++// string with the native JSON.stringify and then unquote them into raw numbers.
++const BIGINT_SENTINEL = String.fromCharCode(0) + 'bigint:';
++const BIGINT_SENTINEL_RE = /"\\u0000bigint:(-?\d+)"/g;
++
  /**
   * Copyright (c) Hathor Labs and its affiliates.
   *
-@@ -27,7 +34,7 @@ const JSONBigInt = exports.JSONBigInt = {
+@@ -27,16 +42,22 @@ const JSONBigInt = exports.JSONBigInt = {
    /* eslint-disable @typescript-eslint/no-explicit-any */
    parse(text) {
      // @ts-expect-error TypeScript hasn't been updated with the `context` argument from Node v22.
@@ -24,8 +32,13 @@ index 312d9fb..2b3f211 100644
 +    return corejsParser(text, this.bigIntReviver);
    },
    stringify(value, space) {
-     return JSON.stringify(value, this.bigIntReplacer, space);
-@@ -37,6 +44,10 @@ const JSONBigInt = exports.JSONBigInt = {
+-    return JSON.stringify(value, this.bigIntReplacer, space);
++    // Native JSON.stringify is SES-safe; bigIntReplacer tags BigInts with a
++    // sentinel string which we then unquote into raw JSON numbers.
++    return JSON.stringify(value, this.bigIntReplacer, space).replace(BIGINT_SENTINEL_RE, '$1');
+   },
+   bigIntReviver(_key, value, context) {
+     if (typeof value !== 'number') {
        // No special handling needed for non-number values.
        return value;
      }
@@ -36,7 +49,7 @@ index 312d9fb..2b3f211 100644
      try {
        const bigIntValue = BigInt(context.source);
        if (bigIntValue < Number.MIN_SAFE_INTEGER || bigIntValue > Number.MAX_SAFE_INTEGER) {
-@@ -47,7 +58,10 @@ const JSONBigInt = exports.JSONBigInt = {
+@@ -47,7 +68,10 @@ const JSONBigInt = exports.JSONBigInt = {
        // Otherwise, we can keep it as a Number.
        return value;
      } catch (e) {
@@ -48,3 +61,16 @@ index 312d9fb..2b3f211 100644
          // When this error happens, it means the number cannot be converted to a BigInt,
          // so it's a double, for example '123.456' or '1e2'.
          return value;
+@@ -59,9 +83,9 @@ const JSONBigInt = exports.JSONBigInt = {
+     }
+   },
+   bigIntReplacer(_key, value_) {
+-    // If the value is a BigInt, we simply return its string representation.
+-    // @ts-expect-error TypeScript hasn't been updated with the `rawJSON` function from Node v22.
+-    return typeof value_ === 'bigint' ? JSON.rawJSON(value_.toString(10)) : value_;
++    // Tag BigInts with a sentinel string; stringify() unquotes them into raw
++    // JSON numbers so they round-trip back to a BigInt through bigIntReviver.
++    return typeof value_ === 'bigint' ? `${BIGINT_SENTINEL}${value_.toString(10)}` : value_;
+   }
+   /* eslint-enable @typescript-eslint/no-explicit-any */
+ };
