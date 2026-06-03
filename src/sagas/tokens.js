@@ -21,6 +21,7 @@ import { get } from 'lodash';
 import {
   specificTypeAndPayload,
   dispatchAndWait,
+  getGenesisHash,
   getRegisteredTokenUids,
   getNetworkSettings,
   getRegisteredTokens,
@@ -465,13 +466,6 @@ export function* fetchTokenData(tokenId, force = false) {
   if (fetchHistoryResponse.failure || fetchBalanceResponse.failure) {
     throw new Error(`Error loading HTR history or balance for token ${tokenId}`);
   }
-}
-
-/**
- * Get the genesis hash from serverInfo in redux state.
- */
-function getGenesisHash(serverInfo) {
-  return serverInfo?.genesis_block_hash || null;
 }
 
 /**

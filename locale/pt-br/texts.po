@@ -401,7 +401,7 @@ msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
 #: src/screens/CreateTokenConfirm.js:158 src/screens/SendConfirmScreen.js:105
-#: src/screens/TokenSwapReview.js:205
+#: src/screens/TokenSwapReview.js:221
 msgid "Building transaction"
 msgstr "Criando transação"
 
@@ -1014,22 +1014,22 @@ msgstr[1] "${ amountAndToken } disponíveis"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:33 src/screens/TokenSwapReview.js:304
+#: src/screens/SendConfirmScreen.js:33 src/screens/TokenSwapReview.js:320
 msgid "No fee"
 msgstr "Sem taxa"
 
 #.  show loading modal
-#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:189
+#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:205
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:103
-#: src/screens/TokenSwapReview.js:203
+#: src/screens/TokenSwapReview.js:219
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:104
-#: src/screens/TokenSwapReview.js:204
+#: src/screens/TokenSwapReview.js:220
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -1174,25 +1174,25 @@ msgstr "Ocorreu um erro ao carregar o protocolo de troca de tokens."
 msgid "Loading Token Swap"
 msgstr "Carregando troca de tokens"
 
-#: src/screens/TokenSwapReview.js:215
+#: src/screens/TokenSwapReview.js:231
 msgid "REVIEW TOKEN SWAP"
 msgstr "REVISAR TROCA DE TOKENS"
 
-#: src/screens/TokenSwapReview.js:221
+#: src/screens/TokenSwapReview.js:237
 msgid "Building the swap transaction for your review"
 msgstr "Criando transação de swap para ser revisada"
 
-#: src/screens/TokenSwapReview.js:239
+#: src/screens/TokenSwapReview.js:255
 msgid "Your swap was successful"
 msgstr "Sua troca foi bem-sucedida"
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:300
+#: src/screens/TokenSwapReview.js:316
 msgid "Network Fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/TokenSwapReview.js:312
+#: src/screens/TokenSwapReview.js:328
 msgid "SWAP"
 msgstr "TROCAR"
 
@@ -1580,71 +1580,71 @@ msgstr "Transação do Nano Contract"
 msgid "Contract successfully registered."
 msgstr "Nano Contract registrado com sucesso."
 
-#: src/sagas/nanoContract.js:92
+#: src/sagas/nanoContract.js:95
 msgid "Nano Contract already registered."
 msgstr "Nano Contract já registrado."
 
-#: src/sagas/nanoContract.js:93
+#: src/sagas/nanoContract.js:96
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr "A wallet não está pronta ainda para registrar Nano Contracts."
 
-#: src/sagas/nanoContract.js:94
+#: src/sagas/nanoContract.js:97
 msgid "The informed address does not belong to the wallet."
 msgstr "O endereço informado não pertence a esta carteira."
 
-#: src/sagas/nanoContract.js:95
+#: src/sagas/nanoContract.js:98
 msgid "Nano Contract not found."
 msgstr "Nano Contract não encontrado."
 
-#: src/sagas/nanoContract.js:96
+#: src/sagas/nanoContract.js:99
 msgid "Error while trying to register Nano Contract."
 msgstr "Erro ao tentar registrar o Nano Contract."
 
-#: src/sagas/nanoContract.js:97
+#: src/sagas/nanoContract.js:100
 msgid "Invalid transaction to register as Nano Contract."
 msgstr "Nano Contract inválido."
 
-#: src/sagas/nanoContract.js:98
+#: src/sagas/nanoContract.js:101
 msgid "Blueprint not found."
 msgstr "Blueprint não encontrado."
 
-#: src/sagas/nanoContract.js:99
+#: src/sagas/nanoContract.js:102
 msgid "Couldn't get Blueprint info."
 msgstr "Não foi possível carregar informações do Blueprint."
 
-#: src/sagas/nanoContract.js:100
+#: src/sagas/nanoContract.js:103
 msgid "Nano Contract not registered."
 msgstr "Nano Contract não registrado."
 
-#: src/sagas/nanoContract.js:101
+#: src/sagas/nanoContract.js:104
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr "Error ao fazer download do histórico de transações do Nano Contract."
 
-#: src/sagas/networkSettings.js:87
+#: src/sagas/networkSettings.js:88
 msgid "Custom Network Settings cannot be empty."
 msgstr "As Configurações de Rede não podem estar vazias."
 
-#: src/sagas/networkSettings.js:94
+#: src/sagas/networkSettings.js:95
 msgid "explorerUrl should be a valid URL."
 msgstr "explorerUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:101
+#: src/sagas/networkSettings.js:102
 msgid "explorerServiceUrl should be a valid URL."
 msgstr "explorerServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:108
+#: src/sagas/networkSettings.js:109
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr "txMiningServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:115
+#: src/sagas/networkSettings.js:116
 msgid "nodeUrl should be a valid URL."
 msgstr "nodeUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:122
+#: src/sagas/networkSettings.js:123
 msgid "walletServiceUrl should be a valid URL."
 msgstr "walletServiceUrl deve ser uma URL válida."
 
-#: src/sagas/networkSettings.js:129
+#: src/sagas/networkSettings.js:130
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr "walletServiceWsUrl deve ser uma URL válida."
 

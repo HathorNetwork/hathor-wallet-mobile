@@ -15,6 +15,7 @@ export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
 export const STORE_VERSION_KEY = 'asyncstorage:version';
 export const REGISTERED_NANO_CONTRACTS_KEY = 'asyncstorage:registeredNanoContracts';
 export const NETWORK_TOKENS_KEY = 'asyncstorage:networkTokens';
+export const NETWORK_NANO_CONTRACTS_KEY = 'asyncstorage:networkNanoContracts';
 export const PIN_BACKUP_KEY = 'asyncstorage:pinBackup';
 // Wheather old biometry mode is active (by the user request)
 export const IS_OLD_BIOMETRY_ENABLED_KEY = 'mobile:isBiometryEnabled';
@@ -34,6 +35,7 @@ export const walletKeys = [
   REGISTERED_TOKENS_KEY,
   REGISTERED_NANO_CONTRACTS_KEY,
   NETWORK_TOKENS_KEY,
+  NETWORK_NANO_CONTRACTS_KEY,
 ];
 
 export const cleanOnWalletReset = [
@@ -562,6 +564,31 @@ class AsyncStorageStore {
     if (!genesisHash) return null;
     const networkTokens = this.getItem(NETWORK_TOKENS_KEY) || {};
     return networkTokens[genesisHash] || null;
+  }
+
+  /**
+   * Save registered nano contracts for a specific network identified by genesis block hash.
+   *
+   * @param {string} genesisHash The genesis block hash identifying the network
+   * @param {Object} contracts Nano contracts map to save (keyed by ncId)
+   */
+  saveNanoContractsForNetwork(genesisHash, contracts) {
+    if (!genesisHash) return;
+    const networkNanoContracts = this.getItem(NETWORK_NANO_CONTRACTS_KEY) || {};
+    networkNanoContracts[genesisHash] = contracts;
+    this.setItem(NETWORK_NANO_CONTRACTS_KEY, networkNanoContracts);
+  }
+
+  /**
+   * Get saved nano contracts for a specific network identified by genesis block hash.
+   *
+   * @param {string} genesisHash The genesis block hash identifying the network
+   * @returns {Object|null} Saved nano contracts map or null
+   */
+  getNanoContractsForNetwork(genesisHash) {
+    if (!genesisHash) return null;
+    const networkNanoContracts = this.getItem(NETWORK_NANO_CONTRACTS_KEY) || {};
+    return networkNanoContracts[genesisHash] || null;
   }
 
   /**

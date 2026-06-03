@@ -171,6 +171,10 @@ export const types = {
   NANOCONTRACT_UNREGISTER_SUCCESS: 'NANOCONTRACT_UNREGISTER_SUCCESS',
   /* It initiates a process to change the address on registered Nano Contract. */
   NANOCONTRACT_ADDRESS_CHANGE_REQUEST: 'NANOCONTRACT_ADDRESS_CHANGE_REQUEST',
+  /* It asks the nano contract saga to snapshot the current registered contracts for the active network. */
+  SAVE_NANO_CONTRACTS_FOR_NETWORK: 'SAVE_NANO_CONTRACTS_FOR_NETWORK',
+  /* It signals the registered nano contracts were snapshotted for the active network. */
+  NANO_CONTRACTS_SAVED_FOR_NETWORK: 'NANO_CONTRACTS_SAVED_FOR_NETWORK',
   /* It triggers a process to fetch blueprint info. */
   NANOCONTRACT_BLUEPRINTINFO_REQUEST: 'NANOCONTRACT_BLUEPRINTINFO_REQUEST',
   /* It signals a failure on fetch blueprint info. */
@@ -1214,6 +1218,22 @@ export const networkSettingsUpdateReady = () => ({
  */
 export const nanoContractInit = () => ({
   type: types.NANOCONTRACT_INIT,
+});
+
+/**
+ * Ask the nano contract saga to snapshot the currently registered nano
+ * contracts for the active network before the storage is wiped on a
+ * network change.
+ */
+export const saveNanoContractsForNetwork = () => ({
+  type: types.SAVE_NANO_CONTRACTS_FOR_NETWORK,
+});
+
+/**
+ * Signals the registered nano contracts were snapshotted for the active network.
+ */
+export const nanoContractsSavedForNetwork = () => ({
+  type: types.NANO_CONTRACTS_SAVED_FOR_NETWORK,
 });
 
 /**
