@@ -353,11 +353,11 @@ gh pr create \
   --repo HathorNetwork/hathor-wallet-mobile \
   --base release \
   --head release-candidate \
-  --title "Release v<X.Y.Z>" \
+  --title "[v<X.Y.Z>] Start public release" \
   --body "Stable release of v<X.Y.Z>, promoting v<X.Y.Z>-rc.<N> after successful QA."
 ```
 
-- **Title format:** `Release v<X.Y.Z>` (no `-rc` suffix).
+- **Title format:** `[v<X.Y.Z>] Start public release` (no `-rc` suffix).
 - **Body:** short — name the rc being promoted. The PR list is already documented in the latest rc's release notes; a link suffices.
 - **Merge with a merge commit** — not squash, not rebase. `release` and `release-candidate` must stay structurally in sync.
 - **2 approvals** required.
@@ -524,7 +524,7 @@ The script edits four files: `package.json`, `package-lock.json`, `android/app/b
 | 1 | `Release candidate v<X.Y.Z>-rc.1` |
 | 2 | `chore: bump to v<X.Y.Z>-rc.N` |
 | 4 (fix) | Normal feature/fix PR title (e.g., `fix(...)`) |
-| 5.1 | `Release v<X.Y.Z>` |
+| 5.1 | `[v<X.Y.Z>] Start public release` |
 | 5.2 | `chore: bump to v<X.Y.Z>` |
 | 6 | `[v<X.Y.Z>] Sync master with release` |
 | Hotfix bump | `chore: bump to v<X.Y.(Z+1)>` |
