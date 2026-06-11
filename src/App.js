@@ -73,19 +73,24 @@ import RegisterTokenManual from './screens/RegisterTokenManual';
 import CreateTokenName from './screens/CreateTokenName';
 import CreateTokenSymbol from './screens/CreateTokenSymbol';
 import About from './screens/About';
+import AddressMode from './screens/AddressMode';
 import Security from './screens/Security';
 import PushNotification from './screens/PushNotification';
 import ChangePin from './screens/ChangePin';
 import ChangeToken from './screens/ChangeToken';
 import TokenDetail from './screens/TokenDetail';
 import UnregisterToken from './screens/UnregisterToken';
+import ImportTokensScreen from './screens/ImportTokensScreen';
+import ConfirmImportScreen from './screens/ConfirmImportScreen';
 import ReceiveScreen from './screens/Receive';
 import Settings from './screens/Settings';
 import ReownList from './screens/Reown/ReownList';
 import ReownManual from './screens/Reown/ReownManual';
 import ReownScan from './screens/Reown/ReownScan';
+import PendingRequests from './screens/Reown/PendingRequests';
 import baseStyle from './styles/init';
 import ReownModal from './components/Reown/ReownModal';
+import ReownPendingOverlay from './components/Reown/ReownPendingOverlay';
 import { COLORS, HathorTheme } from './styles/themes';
 import { NetworkSettingsFlowNav, NetworkSettingsFlowStack } from './screens/NetworkSettings';
 import { NetworkStatusBar } from './components/NetworkSettings/NetworkStatusBar';
@@ -461,6 +466,9 @@ const AppStack = () => {
       case 'UnifiedQRScanner':
       case 'RegisterOptions':
       case 'RegisterTokenManual':
+      case 'AddressMode':
+      case 'ImportTokensScreen':
+      case 'ConfirmImportScreen':
         newEdges = ['bottom'];
         break;
       default:
@@ -491,10 +499,12 @@ const AppStack = () => {
         <Stack.Screen name='NanoContractTransactionScreen' component={NanoContractTransactionScreen} />
         <Stack.Screen name='NanoContractRegisterScreen' component={NanoContractRegisterScreen} />
         <Stack.Screen name='About' component={About} />
+        <Stack.Screen name='AddressMode' component={AddressMode} />
         <Stack.Screen name='Security' component={Security} />
         <Stack.Screen name='ReownList' component={ReownList} />
         <Stack.Screen name='ReownManual' component={ReownManual} />
         <Stack.Screen name='ReownScan' component={ReownScan} />
+        <Stack.Screen name='PendingRequests' component={PendingRequests} />
         <Stack.Screen name='NewNanoContractTransactionScreen' component={NewNanoContractTransactionScreen} />
         <Stack.Screen name='SignMessageRequest' component={SignMessageRequestScreen} />
         <Stack.Screen name='GetBalanceRequest' component={GetBalanceRequestScreen} />
@@ -526,6 +536,8 @@ const AppStack = () => {
         <Stack.Screen name='CreateTokenStack' component={CreateTokenStack} />
         <Stack.Screen name='TokenDetail' component={TokenDetail} />
         <Stack.Screen name='UnregisterToken' component={UnregisterToken} />
+        <Stack.Screen name='ImportTokensScreen' component={ImportTokensScreen} />
+        <Stack.Screen name='ConfirmImportScreen' component={ConfirmImportScreen} />
         <Stack.Screen name='TokenSwap' component={TokenSwap} />
         <Stack.Screen name='TokenSwapReview' component={TokenSwapReview} />
         <Stack.Screen name='TokenSwapListInputToken' component={TokenSwapTokenList('input')} />
@@ -872,6 +884,7 @@ const App = () => (
                 <NetworkStatusBar />
                 <RootStack />
                 <ReownModal />
+                <ReownPendingOverlay />
               </NavigationSerializingProvider>
             </HathorDeeplinkProvider>
           </NavigationContainer>

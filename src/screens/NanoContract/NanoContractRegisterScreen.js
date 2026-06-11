@@ -29,6 +29,7 @@ import SimpleInput from '../../components/SimpleInput';
 import { TextLabel } from '../../components/TextLabel';
 import { TextValue } from '../../components/TextValue';
 import { COLORS } from '../../styles/themes';
+import { ADDRESS_MODE } from '../../constants';
 import {
   firstAddressRequest,
   nanoContractRegisterReady,
@@ -66,6 +67,7 @@ export function NanoContractRegisterScreen({ navigation, route }) {
 
   const dispatch = useDispatch();
   const { address, error } = useSelector((state) => state.firstAddress);
+  const isSingleAddress = useSelector((state) => state.addressMode === ADDRESS_MODE.SINGLE);
   const registerState = useSelector((state) => ({
     registerStatus: state.nanoContract.registerStatus,
     registerFailureMessage: state.nanoContract.registerFailureMessage,
@@ -209,19 +211,21 @@ export function NanoContractRegisterScreen({ navigation, route }) {
               <TextValue>{address}</TextValue>
             </FieldContainer>
           </View>
-          <View style={styles.infoContainer}>
-            <View style={styles.infoIcon}>
-              <CircleInfoIcon size={20} color='hsla(203, 100%, 25%, 1)' />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.text}>
-                {t`If you want to change the wallet address, you will be able to do`}
-                <Text style={styles.bold}>
-                  {' '}{t`after the contract is registered.`}
+          {!isSingleAddress && (
+            <View style={styles.infoContainer}>
+              <View style={styles.infoIcon}>
+                <CircleInfoIcon size={20} color='hsla(203, 100%, 25%, 1)' />
+              </View>
+              <View style={styles.infoContent}>
+                <Text style={styles.text}>
+                  {t`If you want to change the wallet address, you will be able to do`}
+                  <Text style={styles.bold}>
+                    {' '}{t`after the contract is registered.`}
+                  </Text>
                 </Text>
-              </Text>
+              </View>
             </View>
-          </View>
+          )}
           {isLoading(registerState.registerStatus)
             && (
               <View style={styles.loadingContainer}>

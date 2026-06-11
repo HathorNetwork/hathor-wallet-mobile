@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { t } from 'ttag';
+import { ADDRESS_MODE } from '../../constants';
 import { COLORS } from '../../styles/themes';
 import { combineURLs, getShortContent, getShortHash } from '../../utils';
 import SimpleButton from '../SimpleButton';
@@ -152,6 +153,7 @@ const HeaderShrank = () => (
  */
 const HeaderExpanded = ({ nc, address, onEditAddress, onUnregisterNanoContract }) => {
   const baseExplorerUrl = useSelector((state) => state.networkSettings.explorerUrl);
+  const isSingleAddress = useSelector((state) => state.addressMode === ADDRESS_MODE.SINGLE);
 
   const navigatesToExplorer = () => {
     const txUrl = `transaction/${nc.ncId}`;
@@ -170,7 +172,7 @@ const HeaderExpanded = ({ nc, address, onEditAddress, onUnregisterNanoContract }
           <TextValue bold pb4>{nc.blueprintName}</TextValue>
           <TextLabel>{t`Blueprint Name`}</TextLabel>
         </InfoContainer>
-        <EditInfoContainer center onPress={onEditAddress}>
+        <EditInfoContainer center onPress={onEditAddress} editable={!isSingleAddress}>
           <TextValue bold pb4>{getShortContent(address, 7)}</TextValue>
           <TextLabel>{t`Registered Address`}</TextLabel>
         </EditInfoContainer>

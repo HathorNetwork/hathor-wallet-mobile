@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { StackActions } from '@react-navigation/native';
 import { t } from 'ttag';
@@ -28,6 +28,7 @@ import { HathorList } from '../../components/HathorList';
 import {
   reownCancelSession,
   setWCConnectionFailed,
+  reownFetchPendingRequests,
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
 
@@ -86,6 +87,46 @@ const style = StyleSheet.create({
     margin: 8,
     alignSelf: 'stretch',
     borderRadius: 30,
+  },
+  pendingBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: COLORS.feedbackError200,
+    borderRadius: 12,
+  },
+  pendingBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  pendingBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.errorBgColor,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pendingBadgeText: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: COLORS.white,
+  },
+  pendingBannerText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.feedbackError600,
+  },
+  pendingBannerAction: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: COLORS.feedbackError600,
+    textDecorationLine: 'underline',
   }
 });
 
@@ -93,6 +134,14 @@ export default function ReownList({ navigation }) {
   const dispatch = useDispatch();
   const connectionFailed = useSelector((state) => state.reown.connectionFailed);
   const connectedSessions = useSelector((state) => state.reown.sessions);
+  const pendingRequests = useSelector((state) => state.reown.pendingRequests);
+  const reownClient = useSelector((state) => state.reown.client);
+
+  useEffect(() => {
+    if (reownClient) {
+      dispatch(reownFetchPendingRequests());
+    }
+  }, [dispatch, reownClient]);
 
   const mappedSessions = Object.keys(connectedSessions).map((sessionKey) => {
     const session = connectedSessions[sessionKey];
@@ -145,6 +194,25 @@ export default function ReownList({ navigation }) {
           onBackPress={onBackPress}
           rightElement={renderHeaderRightElement()}
         />
+        {pendingRequests.length > 0 && (
+          <TouchableOpacity
+            style={style.pendingBanner}
+            onPress={() => navigation.navigate('PendingRequests')}
+            activeOpacity={0.7}
+          >
+            <View style={style.pendingBannerLeft}>
+              <View style={style.pendingBadge}>
+                <Text style={style.pendingBadgeText}>{pendingRequests.length}</Text>
+              </View>
+              <Text style={style.pendingBannerText}>
+                {pendingRequests.length === 1
+                  ? t`pending request`
+                  : t`pending requests`}
+              </Text>
+            </View>
+            <Text style={style.pendingBannerAction}>{t`Review`}</Text>
+          </TouchableOpacity>
+        )}
         <View style={style.sessionListWrapper}>
           <HathorList infinity>
             {mappedSessions.map(({

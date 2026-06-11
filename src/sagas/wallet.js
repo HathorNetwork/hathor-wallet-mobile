@@ -10,6 +10,7 @@ import {
   HathorWallet,
   HathorWalletServiceWallet,
   Network,
+  SCANNING_POLICY,
   constants as hathorLibConstants,
   config,
   errors,
@@ -37,6 +38,9 @@ import {
   DEFAULT_TOKEN,
   WALLET_SERVICE_FEATURE_TOGGLE,
   PUSH_NOTIFICATION_FEATURE_TOGGLE,
+  SINGLE_ADDRESS_FEATURE_TOGGLE,
+  ADDRESS_MODE,
+  addressModeKey,
   networkSettingsKeyMap,
 } from '../constants';
 import { STORE } from '../store';
@@ -71,6 +75,8 @@ import {
   firstAddressSuccess,
   firstAddressRequest,
   setFullNodeNetworkName,
+  setAddressMode,
+  tokenImportFetchRequested,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -101,6 +107,31 @@ export const WALLET_STATUS = {
 
 export const IGNORE_WS_TOGGLE_FLAG = 'featureFlags:ignoreWalletServiceFlag';
 export const EXPIRE_WS_IGNORE_FLAG = 24 * 60 * 60 * 1000; // 24 hours
+
+/**
+ * Pure helper: computes the address mode the wallet should *attempt* to use.
+ *
+ * The wallet-lib is the source of truth — if we attempt SINGLE but it detects
+ * tx on addresses with index > 0 during the first connection, it changes to
+ * GAP_LIMIT. We sync after wallet.start (see startWallet).
+ *
+ * @param {object} opts
+ * @param {boolean} opts.singleAddressFeatureEnabled
+ * @param {string|null} opts.storedAddressMode  ADDRESS_MODE.SINGLE, ADDRESS_MODE.MULTI, or null
+ * @returns {string} ADDRESS_MODE.SINGLE or ADDRESS_MODE.MULTI
+ */
+export function decideAddressMode({ singleAddressFeatureEnabled, storedAddressMode }) {
+  if (!singleAddressFeatureEnabled) {
+    return ADDRESS_MODE.MULTI;
+  }
+  if (storedAddressMode === ADDRESS_MODE.MULTI) {
+    // User explicitly chose multi via Settings → respect.
+    return ADDRESS_MODE.MULTI;
+  }
+  // null (no preference) or SINGLE → attempt single. The wallet-lib changes
+  // to GAP_LIMIT if it finds tx on addresses with index > 0.
+  return ADDRESS_MODE.SINGLE;
+}
 
 /**
  * Returns the value of the PUSH_NOTIFICATION_FEATURE_TOGGLE feature flag
@@ -181,12 +212,15 @@ export function* startWallet(action) {
     // If the wallet is initialized from quit state it must
     // update the network settings on redux state
     yield put(networkSettingsUpdateState(networkSettings));
-
-    // and we also must update the unleash client for the custom network settings
-    yield call(monitorFeatureFlags, 0, false);
   } else {
     networkSettings = yield select(getNetworkSettings);
   }
+
+  // Refresh the unleash client context so feature toggles reflect the current
+  // network. Required after wallet reset, since onResetWalletSuccess preserves
+  // state.featureToggles to avoid re-initialization, leaving stale values from
+  // the previous network until the next polling cycle.
+  yield call(monitorFeatureFlags, 0, false);
 
   const uniqueDeviceId = getUniqueId();
   const useWalletService = yield call(isWalletServiceEnabled);
@@ -194,6 +228,23 @@ export function* startWallet(action) {
 
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
+
+  // Determine the address mode to attempt. The wallet-lib is the source of
+  // truth: if we attempt SINGLE but it detects tx on addresses with index > 0
+  // during the first connection, it changes to GAP_LIMIT and we sync after
+  // wallet.start. Persistence to AsyncStorage is therefore deferred to after
+  // the connection (single point of write — see post-start sync below).
+  const singleAddressFeatureEnabled = yield call(
+    checkForFeatureFlag,
+    SINGLE_ADDRESS_FEATURE_TOGGLE,
+  );
+  const storedAddressMode = STORE.getItem(addressModeKey(networkSettings.network));
+  const attemptedAddressMode = decideAddressMode({
+    singleAddressFeatureEnabled,
+    storedAddressMode,
+  });
+
+  const singleAddressMode = attemptedAddressMode === ADDRESS_MODE.SINGLE;
 
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
@@ -214,6 +265,7 @@ export function* startWallet(action) {
       seed: words,
       network,
       storage,
+      singleAddressMode,
     });
   } else {
     const connection = new Connection({
@@ -231,6 +283,12 @@ export function* startWallet(action) {
       beforeReloadCallback: () => {
         dispatch(onWalletReload());
       },
+      scanPolicy: singleAddressMode
+        ? { policy: SCANNING_POLICY.SINGLE_ADDRESS }
+        : {
+          policy: SCANNING_POLICY.GAP_LIMIT,
+          gapLimit: hathorLibConstants.GAP_LIMIT,
+        },
     };
     wallet = new HathorWallet(walletConfig);
   }
@@ -287,6 +345,7 @@ export function* startWallet(action) {
         max_tx_weight_coefficient: versionData.minTxWeightCoefficient,
         min_tx_weight_k: versionData.minTxWeightK,
         nano_contracts_enabled: versionData.nanoContractsEnabled,
+        genesis_block_hash: versionData.genesisBlockHash,
       }));
 
       network = versionData.network;
@@ -332,6 +391,18 @@ export function* startWallet(action) {
     }
   }
 
+  // After connection, confirm the actual scan policy. The wallet-lib changes
+  // SINGLE_ADDRESS → GAP_LIMIT during the first connection if it finds tx on
+  // addresses with index > 0. Persist the *real* mode here — single point of
+  // write for addressMode (both Redux and AsyncStorage).
+  const actualScanPolicy = yield call([wallet.storage, wallet.storage.getScanningPolicy]);
+  const finalAddressMode = actualScanPolicy === SCANNING_POLICY.SINGLE_ADDRESS
+    ? ADDRESS_MODE.SINGLE
+    : ADDRESS_MODE.MULTI;
+
+  yield put(setAddressMode(finalAddressMode));
+  STORE.setItem(addressModeKey(networkSettings.network), finalAddressMode);
+
   try {
     yield call(loadTokens);
   } catch (e) {
@@ -344,6 +415,7 @@ export function* startWallet(action) {
   yield put(walletRefreshSharedAddress());
   yield put(firstAddressRequest());
   yield put(startWalletSuccess());
+  yield put(tokenImportFetchRequested());
 
   // The way the redux-saga fork model works is that if a saga has `forked`
   // another saga (using the `fork` effect), it will remain active until all
@@ -569,6 +641,31 @@ export function* handleTx(action) {
 
     return acc;
   }, [{}, new Set([])],);
+
+  // Detect unregistered tokens in this transaction.
+  // Use wallet.getTxBalance so we only consider tokens whose inputs/outputs touch
+  // an address that belongs to this wallet.
+  let txBalance = null;
+  try {
+    txBalance = yield call([wallet, wallet.getTxBalance], tx);
+  } catch (error) {
+    log.error(`Failed to compute getTxBalance for tx ${tx?.tx_id}:`, error);
+  }
+  const myTxTokenUids = txBalance ? Object.keys(txBalance) : [];
+  const currentUnregistered = yield select((state) => state.tokenImport.unregisteredTokens);
+  const htrUid = hathorLibConstants.NATIVE_TOKEN_UID;
+  const newUnknownUids = myTxTokenUids.filter(
+    (uid) => uid !== htrUid
+      && registeredUids.indexOf(uid) === -1
+      && !currentUnregistered[uid],
+  );
+
+  if (newUnknownUids.length > 0) {
+    yield put({
+      type: types.TOKEN_IMPORT_NEW_TX_TOKENS,
+      payload: newUnknownUids,
+    });
+  }
 
   let txWalletAddresses = null;
   try {

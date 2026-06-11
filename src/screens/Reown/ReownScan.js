@@ -47,7 +47,6 @@ export default function ReownScan({ navigation }) {
         <QRCodeReader
           onSuccess={onSuccess}
           bottomText={t`Scan the QR code`}
-          navigation={navigation}
         />
       </View>
       <OfflineBar />

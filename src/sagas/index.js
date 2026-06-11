@@ -8,6 +8,7 @@
 import { all, call, put, spawn } from 'redux-saga/effects';
 import { saga as walletSagas } from './wallet';
 import { saga as tokensSagas } from './tokens';
+import { saga as tokenIconsSagas } from './tokenIcons';
 import { saga as tokenSwapSagas } from './tokenSwap';
 import { saga as pushNotificationSaga } from './pushNotification';
 import { saga as errorHandlerSagas } from './errorHandler';
@@ -16,6 +17,7 @@ import { saga as permissionsSagas } from './permissions';
 import { saga as reownSagas } from './reown';
 import { saga as networkSettingsSagas } from './networkSettings';
 import { saga as sesSagas } from './ses';
+import { saga as tokenImportSagas } from './tokenImport';
 
 import { saga as nanoContractSagas } from './nanoContract';
 import { onExceptionCaptured } from '../actions';
@@ -28,6 +30,7 @@ const log = logger('rootSaga');
 const sagas = {
   walletSagas: { saga: walletSagas, retryCount: 0, critical: true },
   tokensSagas: { saga: tokensSagas, retryCount: 0, critical: true },
+  tokenIconsSagas: { saga: tokenIconsSagas, retryCount: 0, critical: false },
   tokenSwapSagas: { saga: tokenSwapSagas, retryCount: 0, critical: true },
   pushNotificationSaga: { saga: pushNotificationSaga, retryCount: 0, critical: true },
   networkSettingsSagas: { saga: networkSettingsSagas, retryCount: 0, critical: true },
@@ -37,6 +40,7 @@ const sagas = {
   reownSagas: { saga: reownSagas, retryCount: 0, critical: false },
   nanoContractSagas: { saga: nanoContractSagas, retryCount: 0, critical: true },
   sesSagas: { saga: sesSagas, retryCount: 0, critical: true },
+  tokenImportSagas: { saga: tokenImportSagas, retryCount: 0, critical: false },
 };
 
 function* rootSaga() {
