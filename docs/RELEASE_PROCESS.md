@@ -13,7 +13,7 @@ Read these before doing anything else. They override anything that looks "obviou
 1. **Identify the phase first.** Phases 1–6 below are sequential within a release cycle; you execute one at a time. If the user has not said which phase they want, ask before touching anything.
 2. **Confirm before any irreversible or outward-facing action.** Pushing a tag, creating a GitHub release, opening a PR, merging a PR, posting to Slack — show the exact command and content and pause for the user to confirm. These actions create artefacts (tags, releases, "mentioned in" backlinks, notifications) that are difficult or impossible to fully retract.
 3. **Signed tags only.** Always `git tag -s`, always verify with `git tag -v` before pushing. If GPG signing fails, stop and surface the error. Never fall back to an unsigned tag "just to keep moving."
-4. **Pre-release vs Latest is not optional.** rc tags (`vX.Y.Z-rc.N`) are GitHub **pre-releases** — pass `--prerelease` explicitly to `gh release create` (the CLI default is Latest=true). Stable tags (`vX.Y.Z`) are the GitHub **Latest** release — omit `--prerelease`.
+4. **Every release the agent creates is a GitHub pre-release.** Always pass `--prerelease` to `gh release create` — for rc tags (`vX.Y.Z-rc.N`) and for the stable tag (`vX.Y.Z`) alike. The agent never marks anything "Latest". Promotion of a stable release from **Pre-release** to **Latest** is a manual step performed by the product manager in the GitHub UI, after their own review — they flip the very release instance the agent created. Do not pass anything that would set Latest, and do not flip it yourself.
 5. **Build PR-lists locally before pasting them into PR bodies or release notes.** GitHub creates **permanent** "mentioned in" backlinks on every PR you reference. Editing the body afterwards does not remove them. Draft the list to a scratch file (e.g., `drafts/` or `/tmp/`), confirm it with the user, then paste once.
 6. **Never hand-edit version files.** `make bump` is the source of truth. The script encodes subtle rules (iOS `MARKETING_VERSION` drops the `-rc` suffix; `CURRENT_PROJECT_VERSION` follows a separate numbering; Android `versionCode` is monotonic) that will drift from any written checklist over time. PR templates that list individual files are informational, not authoritative.
 7. **Stay in scope.**
@@ -24,7 +24,7 @@ Read these before doing anything else. They override anything that looks "obviou
 
 - **`master`** — main development branch. Every feature PR is **squash-merged** into `master`. This keeps `master` linear and makes the release changelog recipe (one squash-commit per PR) work.
 - **`release-candidate`** — staging branch for the next release. Receives merges from `master` and version bumps with an `-rc.N` suffix. Tags on this branch are GitHub **pre-releases**.
-- **`release`** — public stable branch. Tags on this branch are GitHub **Latest** releases. After every release, changes are synced back to `master` through a dedicated PR.
+- **`release`** — public stable branch. The agent publishes tags on this branch as GitHub **pre-releases**; the product manager later promotes the chosen one to **Latest** manually. After every release, changes are synced back to `master` through a dedicated PR.
 
 ```mermaid
 %%{init: { 'gitGraph': { 'mainBranchName': 'master' } } }%%
@@ -261,7 +261,7 @@ Verify:
 gh release list --repo HathorNetwork/hathor-wallet-mobile --limit 3
 ```
 
-The new release should appear as `Pre-release`. The previous stable should still show `Latest`.
+The new release should appear as `Pre-release`. The previous stable shows `Latest` only if the product manager already promoted it; otherwise it too is a `Pre-release`. Either way, the agent never changes that flag.
 
 ### 3.4 — Release-notes format
 
@@ -397,14 +397,15 @@ git tag -v v<X.Y.Z>
 git push origin v<X.Y.Z>
 ```
 
-### 5.4 — GitHub release (Latest)
+### 5.4 — GitHub release (pre-release)
 
-The stable release **is** the "Latest" — do not pass `--prerelease`:
+The agent publishes the stable tag as a **pre-release** — pass `--prerelease`, exactly as for an rc. The product manager later flips this same release instance from **Pre-release** to **Latest** in the GitHub UI, after their review. The agent never marks it Latest itself (see operating rule #4):
 
 ```sh
 gh release create v<X.Y.Z> \
   --repo HathorNetwork/hathor-wallet-mobile \
   --title v<X.Y.Z> \
+  --prerelease \
   --notes "$(cat <<'EOF'
 <paste-aggregated-release-notes-here>
 EOF
@@ -423,7 +424,7 @@ Verify:
 gh release list --repo HathorNetwork/hathor-wallet-mobile --limit 5
 ```
 
-The new `v<X.Y.Z>` should show **Latest**. The latest rc that was previously "Latest" is not affected — rcs are always Pre-release.
+The new `v<X.Y.Z>` should show **Pre-release**, like every release the agent creates. It stays that way until the product manager manually promotes it to **Latest** in the GitHub UI — that promotion is outside this document's scope.
 
 ### 5.5 — Build and rollout
 
@@ -484,7 +485,7 @@ If a critical bug is found **after** the stable release tag is published:
 
    PR title: `chore: bump to v<X.Y.(Z+1)>`. PR base: `release`. Same `version_bump_pr_template.md`. 2 approvals; squash-merge.
 
-3. **Tag and release.** Repeat Phase 5.3 and 5.4 with the new patch version. Stable release: **Latest**, not pre-release.
+3. **Tag and release.** Repeat Phase 5.3 and 5.4 with the new patch version. Like every release the agent creates, the hotfix release is published as a **pre-release**; the product manager promotes it to **Latest** manually.
 
 4. **Parallel fix on `master`.** Open a PR with the same fix targeted at `master` so the bug doesn't regress next cycle.
 
