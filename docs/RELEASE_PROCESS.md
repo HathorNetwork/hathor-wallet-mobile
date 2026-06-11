@@ -57,7 +57,6 @@ gitGraph
 
 - **Squash-merge on `master`.** Every PR into `master` uses GitHub's "Squash and merge". Required for the changelog recipe.
 - **Approvals.** `.github/CODEOWNERS` requires `@pedroferreira1` on every PR. Independent of CODEOWNERS, **all release-related PRs require 2 reviewer approvals** before merge.
-- **Daily decision.** Starting a new release-candidate cycle is discussed in the daily standup before Phase 1 is opened.
 - **One cycle at a time.** Once Phase 1 has merged, no new release-candidate is kicked off until the current cycle is fully released and synced back (Phase 6 complete).
 
 ## Phase 1 — Start the release (master → release-candidate)
@@ -81,11 +80,11 @@ gitGraph
      --repo HathorNetwork/hathor-wallet-mobile \
      --base release-candidate \
      --head master \
-     --title "Release candidate v<X.Y.Z>-rc.1" \
+     --title "[v<X.Y.Z>-rc.1] Start release process" \
      --body-file .github/PULL_REQUEST_TEMPLATE/release_candidate_pr_template.md
    ```
 
-   - **Title format:** `Release candidate v<X.Y.Z>-rc.1`, where `<X.Y.Z>` is the upcoming version (a `minor` bump from the last stable, in the common case).
+   - **Title format:** `[v<X.Y.Z>-rc.1] Start release process`, where `<X.Y.Z>` is the upcoming version (a `minor` bump from the last stable, in the common case). The bracketed `[v...]` prefix mirrors the Phase 5.1 title and keeps the PR list readable.
    - The template body reminds reviewers that the version bump is a separate PR. Leave it as-is.
 
 3. After review, **merge with a merge commit** — not squash, not rebase. The point is to preserve the shared ancestry of `master` and `release-candidate` so Phase 5 and Phase 6 work. In the GitHub UI choose "Create a merge commit". Via CLI:
@@ -98,7 +97,7 @@ gitGraph
 
 - Squashing or rebasing the kickoff merge — destroys the shared ancestor commit.
 - Including version-file changes in this PR — bumps belong in Phase 2.
-- Skipping the daily-meeting decision — multiple parallel cycles are not supported.
+- Starting a new cycle before the previous one is fully released and synced back — multiple parallel cycles are not supported.
 
 ## Phase 2 — RC bump PR
 
@@ -522,7 +521,7 @@ The script edits four files: `package.json`, `package-lock.json`, `android/app/b
 
 | Phase | Title format |
 |---|---|
-| 1 | `Release candidate v<X.Y.Z>-rc.1` |
+| 1 | `[v<X.Y.Z>-rc.1] Start release process` |
 | 2 | `chore: bump to v<X.Y.Z>-rc.N` |
 | 4 (fix) | Normal feature/fix PR title (e.g., `fix(...)`) |
 | 5.1 | `[v<X.Y.Z>] Start public release` |
