@@ -21,7 +21,14 @@
         1. Slippage should be 0.5%
         1. Price impact should be a percentage
         1. Minimum received should be a value lower than the output (bottom) amount
-    1. [ ] This time add 1.00 hUSDC on the bottom input area
+    1. [ ] This time add 1.00 hUSDC on the bottom input area (deposit-based token)
+        1. The top value should be filled out and in gray tone.
+    1. [ ] Check the swap quote information
+        1. Conversion rate should match the input/output amounts
+        1. Slippage should be 0.5%
+        1. Price impact should be a percentage
+        1. Maximum to deposit should be a value higher than the input (top) amount
+    1. [ ] Clear the inputs and this time add 1.00 KOIN on the bottom input area (fee-based token)
         1. The top value should be filled out and in gray tone.
     1. [ ] Check the swap quote information
         1. Conversion rate should match the input/output amounts
@@ -29,14 +36,21 @@
         1. Price impact should be a percentage
         1. Maximum to deposit should be a value higher than the input (top) amount
 
-1. **Switching tokens**
+1. **Switching tokens (deposit-based token — hUSDC)**
     1. [ ] Clicking on the token switch button (the :arrows_clockwise: icon between the tokens) should switch the top and bottom tokens.
         1. The input amounts should be cleared when switching tokens
     1. [ ] With the top token selected as HTR and the bottom as hUSDC click on the "HTR token box"
         1. Select hUSDC from the list
     1. [ ] Check that the top token is hUSDC and the bottom token is HTR.
 
-1. **Token Swap review**
+1. **Switching tokens (fee-based token — KOIN)**
+    1. [ ] Clicking on the token switch button (the :arrows_clockwise: icon between the tokens) should switch the top and bottom tokens.
+        1. The input amounts should be cleared when switching tokens
+    1. [ ] With the top token selected as HTR and the bottom as KOIN click on the "HTR token box"
+        1. Select KOIN from the list
+    1. [ ] Check that the top token is KOIN and the bottom token is HTR.
+
+1. **Token Swap review (deposit-based token — hUSDC)**
     1. [ ] Write a swap of 5.00 HTR for hUSDC
         1. [ ] Check the output value
     1. [ ] The "Review" button should be enabled, click it
@@ -49,6 +63,33 @@
     1. [ ] Check the transaction on the HTR tx history
     1. [ ] Go back to the token swap screen, select the token box to open the list of tokens.
     1. [ ] There should be some balance for the hUSDC token.
+
+1. **Token Swap review (fee-based token — KOIN)**
+    1. [ ] Write a swap of 5.00 HTR for KOIN
+        1. [ ] Check the output value
+    1. [ ] The "Review" button should be enabled, click it
+    1. [ ] A bottom modal should appear indicating the build of the swap transaction
+    1. [ ] The swap should read the same values as the last screen, and with network fee field.
+    1. [ ] The "Swap Details" section should match the values from the last screen
+    1. [ ] Click on the :arrow_backward: icon (or "Go Back" button) at the top left of the screen.
+        1. The main screen should appear, going back to the token swap screen should show an empty swap.
+    1. [ ] Enter the same swap details but this time click on the "Swap" button at the end.
+    1. [ ] The token swap should be completed correctly
+    1. [ ] Check the transaction on the HTR tx history
+    1. [ ] Go back to the token swap screen, select the token box to open the list of tokens.
+    1. [ ] There should be some balance for the KOIN token.
+
+
+1. **Insufficient balance to swap (deposit-based token — hUSDC)**
+    1. [ ] Do a swap between HTR -> hUSDC.
+    1. [ ] Transfer all your HTR to another wallet, your balance should be 0.
+    1. [ ] With your zero balance, select HTR for the swap and input any amount. The review button should be disabled (gray) and an Insufficient balance of HTR message should be shown in red.
+
+1. **Insufficient balance to swap (fee-based token — KOIN)**
+    1. [ ] Do a swap between HTR -> KOIN.
+    1. [ ] Transfer all your HTR to another wallet, your balance should be 0.
+    1. [ ] With your zero balance, select HTR for the swap and input any amount. The review button should be disabled (gray) and an Insufficient balance of HTR message should be shown in red.
+    1. [ ] Select KOIN -> HTR, the review button should be enabled, after building the tx you should see an error that the wallet has insufficient funds to pay the network fee.
 
 ### Turn on the `wallet-service` feature toggle
 1. [ ] Get the `deviceId` and add it in the `UserIDs` strategy in the unleash **`wallet-service-mobile-android-testnet.rollout`** feature toggle
