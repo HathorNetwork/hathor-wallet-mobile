@@ -16,7 +16,6 @@ import CreateTokenModal from './CreateTokenModal';
 import SendTransactionModal from './SendTransactionModal';
 import InsufficientFundsModal from './InsufficientFundsModal';
 import CreateNanoContractCreateTokenTxModal from './CreateNanoContractCreateTokenTxModal';
-import GetBalanceModal from './GetBalanceModal';
 import RequestErrorModal from './RequestErrorModal';
 import GetAddressModal from './GetAddressModal';
 import GetAddressClientModal from './GetAddressClientModal';
@@ -44,7 +43,6 @@ export default () => {
     [ReownModalTypes.SEND_TRANSACTION]: SendTransactionModal,
     [ReownModalTypes.INSUFFICIENT_FUNDS]: InsufficientFundsModal,
     [ReownModalTypes.CREATE_NANO_CONTRACT_CREATE_TOKEN_TX]: CreateNanoContractCreateTokenTxModal,
-    [ReownModalTypes.GET_BALANCE]: GetBalanceModal,
     [ReownModalTypes.REQUEST_ERROR]: RequestErrorModal,
     [ReownModalTypes.GET_ADDRESS]: GetAddressModal,
     [ReownModalTypes.GET_ADDRESS_CLIENT]: GetAddressClientModal,
@@ -76,7 +74,6 @@ export const ReownModalTypes = {
   SEND_TRANSACTION: 'SendTransaction',
   INSUFFICIENT_FUNDS: 'InsufficientFunds',
   CREATE_NANO_CONTRACT_CREATE_TOKEN_TX: 'CreateNanoContractCreateTokenTx',
-  GET_BALANCE: 'GetBalance',
   REQUEST_ERROR: 'RequestError',
   GET_ADDRESS: 'GetAddress',
   GET_ADDRESS_CLIENT: 'GetAddressClient',

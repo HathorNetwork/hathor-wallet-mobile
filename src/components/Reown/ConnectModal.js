@@ -8,7 +8,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { t } from 'ttag';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import ApproveRejectModal from './ApproveRejectModal';
 import { COLORS } from '../../styles/themes';
 
@@ -84,9 +84,14 @@ export default ({
     <ApproveRejectModal
       headerText={t`Connect to this dApp?`}
       body={(
-        <Text style={styles.modalText}>
-          { t`By clicking connect, you allow this dapp to receive your wallet's public address. Please validate the URL and the dApp name, this is an important security step to protect your data from potential phishing risks.` }
-        </Text>
+        <View>
+          <Text style={styles.modalText}>
+            { t`By clicking connect, you allow this dapp to receive your wallet's public address. Please validate the URL and the dApp name, this is an important security step to protect your data from potential phishing risks.` }
+          </Text>
+          <Text style={styles.modalText}>
+            { t`This dApp will also be able to view the balance of your tokens.` }
+          </Text>
+        </View>
       )}
       onAccept={onAccept}
       onReject={onReject}
