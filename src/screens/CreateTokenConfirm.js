@@ -232,6 +232,11 @@ const CreateTokenConfirm = () => {
               editable={false}
               decimalPlaces={decimalPlaces}
               value={hathorLib.numberUtils.prettyValue(amount)}
+              // Stretch to the parent's width so the auto-shrink logic measures a
+              // fixed column width. The parent is `alignItems: 'center'`, so without
+              // this the input sizes to its content and the font-scaling feedback loop
+              // collapses the size. `textAlign: 'center'` keeps the value centered.
+              style={{ alignSelf: 'stretch' }}
             />
           </View>
           <SimpleInput

@@ -52,6 +52,7 @@ function* fetchTokenDetails(wallet, uid) {
         uid,
         name: details.tokenInfo.name,
         symbol: details.tokenInfo.symbol,
+        version: details.tokenInfo.version,
       };
     }
   } catch (e) {
@@ -101,6 +102,7 @@ export function* fetchUnregisteredTokens() {
         uid: details.uid,
         name: details.name,
         symbol: details.symbol,
+        version: details.version,
       };
       yield put(tokenFetchBalanceRequested(uid, true));
     }
@@ -135,6 +137,7 @@ export function* handleNewTokenDetection(action) {
       uid: details.uid,
       name: details.name,
       symbol: details.symbol,
+      version: details.version,
     };
     yield put(tokenFetchBalanceRequested(uid, true));
   }
@@ -168,11 +171,17 @@ export function* importSelectedTokens(action) {
           continue;
         }
 
+        const persistedPayload = {
+          uid: token.uid,
+          name: token.name,
+          symbol: token.symbol,
+          version: token.version,
+        };
         yield call(
           [wallet.storage, wallet.storage.registerToken],
-          { uid: token.uid, name: token.name, symbol: token.symbol },
+          persistedPayload,
         );
-        yield put(newToken({ uid: token.uid, name: token.name, symbol: token.symbol }));
+        yield put(newToken(persistedPayload));
         yield put(tokenFetchBalanceRequested(token.uid, true));
 
         alreadyRegistered.add(token.uid);
