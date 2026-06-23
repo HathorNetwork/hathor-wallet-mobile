@@ -7,7 +7,6 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Image,
   View,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
@@ -20,13 +19,10 @@ import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
-import FeedbackModal from '../components/FeedbackModal';
-import Spinner from '../components/Spinner';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import TextFmt from '../components/TextFmt';
 import { updateSelectedToken } from '../actions';
 import { registerToken } from '../utils/tokens';
-import errorIcon from '../assets/images/icErrorBig.png';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { getCreateTokenTitle } from '../utils';
@@ -80,10 +76,10 @@ const CreateTokenConfirm = () => {
   const nativeSymbol = wallet.storage.getNativeTokenData().symbol;
 
   // Component state
-  // Spinner while the tx is being prepared, and error feedback after a failure
-  const [showFeedbackModal, setFeedbackModal] = useState(null);
-  // Tracks mining/propagation once the tx is prepared
-  const [showSendTransactionModal, setSendTransactionModal] = useState(null);
+  // A single modal drives the whole flow: it mounts showing a spinner while the
+  // tx is prepared (sendTransaction/promise still null) and then tracks
+  // mining/propagation once they are ready. Shape: { text, sendTransaction, promise }
+  const [sendTransactionModal, setSendTransactionModal] = useState(null);
   // Disables the Create token button from the moment it's tapped until the screen
   // is interactive again, closing the window between the PinScreen dismissal and
   // the feedback modal render where the button would otherwise be tappable.
@@ -121,20 +117,14 @@ const CreateTokenConfirm = () => {
   }, [navigation]);
 
   /**
-   * Prepare data and execute create token
-   * If success when preparing, show feedback modal, otherwise show error
+   * Prepare and create the token. The promise built here covers the whole flow —
+   * prepare, then mine/propagate — so a failure while preparing surfaces as an
+   * error in the same feedback modal.
    *
-   * @param {String} pinCode User PIN
+   * @param {String} pin User PIN
    */
-  const executeCreate = async (pin) => {
-    // Show a non-dismissable spinner immediately so the user gets feedback and the
-    // Create token button is disabled while the transaction is being prepared.
-    setFeedbackModal({
-      icon: <Spinner />,
-      text: t`Building the transaction`,
-    });
-
-    try {
+  const executeCreate = (pin) => {
+    const promise = (async () => {
       if (useWalletService) {
         await wallet.validateAndRenewAuthToken(pin);
       }
@@ -147,29 +137,21 @@ const CreateTokenConfirm = () => {
         { address, pinCode: pin, tokenVersion }
       );
 
-      let sendTransaction;
-      if (useWalletService) {
-        sendTransaction = new hathorLib.SendTransactionWalletService(
-          wallet,
-          { transaction: tx }
-        );
-      } else {
-        sendTransaction = new hathorLib.SendTransaction(
-          { storage: wallet.storage, transaction: tx, pin }
-        );
-      }
+      const sendTransaction = useWalletService
+        ? new hathorLib.SendTransactionWalletService(wallet, { transaction: tx })
+        : new hathorLib.SendTransaction({ storage: wallet.storage, transaction: tx, pin });
 
-      const promise = sendTransaction.runFromMining();
+      // Hand the instance to the modal so it subscribes to mining events.
+      setSendTransactionModal((prev) => ({ ...prev, sendTransaction, text: t`Creating token` }));
 
-      // swap the spinner for the modal that tracks mining/propagation
-      setFeedbackModal(null);
-      setSendTransactionModal({
-        sendTransaction,
-        promise,
-      });
-    } catch (err) {
-      onError(err.message);
-    }
+      return sendTransaction.runFromMining();
+    })();
+
+    setSendTransactionModal({
+      text: t`Building the transaction`,
+      sendTransaction: null,
+      promise,
+    });
   };
 
   /**
@@ -201,20 +183,6 @@ const CreateTokenConfirm = () => {
   };
 
   /**
-   * Show error message if there is one while creating the token
-   *
-   * @param {String} message Error message
-   */
-  const onError = (message) => {
-    setSendTransactionModal(null);
-    setFeedbackModal({
-      icon: <Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />,
-      text: message,
-      onDismiss: () => setFeedbackModal(null),
-    });
-  };
-
-  /**
    * Method executed after dismiss success modal
    */
   const exitScreen = () => {
@@ -223,10 +191,8 @@ const CreateTokenConfirm = () => {
   };
 
   // Keep the button disabled from the moment it's tapped (isSending) and while
-  // any modal (preparing spinner, mining progress or error) is on screen.
-  const isCreatingToken = isSending
-    || showFeedbackModal !== null
-    || showSendTransactionModal !== null;
+  // the feedback modal (building spinner, mining progress or error) is on screen.
+  const isCreatingToken = isSending || sendTransactionModal !== null;
 
   return (
     <View style={{ flex: 1 }}>
@@ -236,19 +202,11 @@ const CreateTokenConfirm = () => {
         onCancel={() => navigation.getParent().goBack()}
       />
 
-      {showFeedbackModal && (
-        <FeedbackModal
-          icon={showFeedbackModal.icon}
-          text={showFeedbackModal.text}
-          onDismiss={showFeedbackModal.onDismiss}
-        />
-      )}
-
-      {showSendTransactionModal && (
+      {sendTransactionModal && (
         <SendTransactionFeedbackModal
-          text={t`Creating token`}
-          sendTransaction={showSendTransactionModal.sendTransaction}
-          promise={showSendTransactionModal.promise}
+          text={sendTransactionModal.text}
+          sendTransaction={sendTransactionModal.sendTransaction}
+          promise={sendTransactionModal.promise}
           successText={<TextFmt>{t`**${name}** created successfully`}</TextFmt>}
           onTxSuccess={onTxSuccess}
           onDismissSuccess={exitScreen}
