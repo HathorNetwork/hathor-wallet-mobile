@@ -196,23 +196,27 @@ export function* restoreNetworkNanoContracts() {
     if (!savedContracts) return;
 
     const wallet = yield select((state) => state.wallet);
-    if (!wallet) return;
+    if (!wallet || !wallet.isReady()) return;
 
     for (const contract of Object.values(savedContracts)) {
-      const isRegistered = yield call(
-        [wallet.storage, wallet.storage.isNanoContractRegistered],
-        contract.ncId,
-      );
-      if (!isRegistered) {
-        yield call(
-          [wallet.storage, wallet.storage.registerNanoContract],
+      try {
+        const isRegistered = yield call(
+          [wallet.storage, wallet.storage.isNanoContractRegistered],
           contract.ncId,
-          contract,
         );
-        yield put(nanoContractRegisterSuccess({
-          entryKey: contract.ncId,
-          entryValue: contract,
-        }));
+        if (!isRegistered) {
+          yield call(
+            [wallet.storage, wallet.storage.registerNanoContract],
+            contract.ncId,
+            contract,
+          );
+          yield put(nanoContractRegisterSuccess({
+            entryKey: contract.ncId,
+            entryValue: contract,
+          }));
+        }
+      } catch (e) {
+        log.error(`Error restoring nano contract ${contract.ncId} for network:`, e);
       }
     }
   } catch (e) {
