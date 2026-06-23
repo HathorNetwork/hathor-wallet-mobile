@@ -92,6 +92,17 @@ class MainScreen extends React.Component {
     this.props.getHistory(this.props.selectedToken);
   }
 
+  // Refetch when the cached history is invalidated externally (e.g. by handleTx
+  // after a new tx for this token). The screen stays mounted across tab focus
+  // changes under React Navigation v7, so componentDidMount alone is not enough.
+  componentDidUpdate(prevProps) {
+    const prevStatus = get(prevProps.tokenHistory, 'status');
+    const status = get(this.props.tokenHistory, 'status');
+    if (status === TOKEN_DOWNLOAD_STATUS.INVALIDATED && prevStatus !== status) {
+      this.props.getHistory(this.props.selectedToken);
+    }
+  }
+
   isNFT = () => (
     isTokenNFT(get(this.props, 'selectedToken.uid'), this.props.tokenMetadata)
   )
@@ -190,7 +201,7 @@ class MainScreen extends React.Component {
         );
       }
 
-      if (status === 'loading') {
+      if (status === 'loading' || status === TOKEN_DOWNLOAD_STATUS.INVALIDATED) {
         return renderLoadingHistory();
       }
 
