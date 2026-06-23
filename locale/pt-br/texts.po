@@ -73,7 +73,7 @@ msgstr "CRIAR TOKEN DE DEPÓSITO"
 msgid "CREATE FEE TOKEN"
 msgstr "CRIAR TOKEN DE TAXA"
 
-#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:91
+#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:87
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:654
 msgid "CREATE TOKEN"
@@ -339,7 +339,7 @@ msgid "Back"
 msgstr "Voltar"
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/SendAmountInput.js:142
+#: src/screens/SendAmountInput.js:92
 msgid "Invalid amount"
 msgstr "Quantidade inválida"
 
@@ -368,11 +368,11 @@ msgstr "Quantidade de ${ name } (${ symbol })"
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:239
+#: src/screens/SendAmountInput.js:169
 msgid "Next"
 msgstr "Próximo"
 
-#: src/screens/CreateTokenConfirm.js:35
+#: src/screens/CreateTokenConfirm.js:31
 msgid ""
 "You chose to create a **Deposit-Based Token**, which requires a 1% HTR "
 "deposit."
@@ -380,7 +380,7 @@ msgstr ""
 "Você escolheu criar um **Token Baseado em Depósito**, que requer um depósito "
 "de 1% em HTR."
 
-#: src/screens/CreateTokenConfirm.js:37
+#: src/screens/CreateTokenConfirm.js:33
 msgid ""
 "You chose to create a **Fee-Based Token**, so a small fee will be applied to "
 "each future transaction of this token."
@@ -388,57 +388,55 @@ msgstr ""
 "Você escolheu criar um **Token com Taxa**, então uma pequena taxa será "
 "aplicada a cada transação futura deste token."
 
-#.  Show a non-dismissable spinner immediately so the user gets feedback and the
-#.  Create token button is disabled while the transaction is being prepared.
-#: src/screens/CreateTokenConfirm.js:134
+#: src/screens/CreateTokenConfirm.js:145
+msgid "Creating token"
+msgstr "Criando um token"
+
+#: src/screens/CreateTokenConfirm.js:151
 msgid "Building the transaction"
 msgstr "Criando a transação"
 
-#: src/screens/CreateTokenConfirm.js:184
+#: src/screens/CreateTokenConfirm.js:166
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
 
-#: src/screens/CreateTokenConfirm.js:185
+#: src/screens/CreateTokenConfirm.js:167
 msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
-#: src/screens/CreateTokenConfirm.js:187 src/screens/SendConfirmScreen.js:105
+#: src/screens/CreateTokenConfirm.js:169 src/screens/SendConfirmScreen.js:196
 #: src/screens/TokenSwapReview.js:221
 msgid "Building transaction"
 msgstr "Criando transação"
 
-#: src/screens/CreateTokenConfirm.js:249
-msgid "Creating token"
-msgstr "Criando um token"
-
-#: src/screens/CreateTokenConfirm.js:252
+#: src/screens/CreateTokenConfirm.js:210
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr "**${ name }** criado com sucesso"
 
-#: src/screens/CreateTokenConfirm.js:264
+#: src/screens/CreateTokenConfirm.js:222
 msgid "Amount of ${ name }"
 msgstr "Quantidade de ${ name }"
 
-#: src/screens/CreateTokenConfirm.js:281
+#: src/screens/CreateTokenConfirm.js:236
 msgid "Token name"
 msgstr "Nome do token"
 
-#: src/screens/CreateTokenConfirm.js:287 src/screens/CreateTokenSymbol.js:71
+#: src/screens/CreateTokenConfirm.js:242 src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr "Símbolo do token"
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:294
+#: src/screens/CreateTokenConfirm.js:249
 msgid "Deposit"
 msgstr "Depósito"
 
-#: src/screens/CreateTokenConfirm.js:302
+#: src/screens/CreateTokenConfirm.js:257
 msgid "Network fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/CreateTokenConfirm.js:311
+#: src/screens/CreateTokenConfirm.js:266
 msgid "Create token"
 msgstr "Criar um token"
 
@@ -738,33 +736,33 @@ msgstr "Resetar Wallet"
 msgid "Connect to mainnet"
 msgstr "Conectar à mainnet"
 
-#: src/screens/MainScreen.js:125
+#: src/screens/MainScreen.js:136
 msgid "No transactions"
 msgstr "Nenhuma transação"
 
-#: src/screens/MainScreen.js:128
+#: src/screens/MainScreen.js:139
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 "|share:Compartilhe seu endereço| com seus amigos e comece a trocar seus "
 "tokens"
 
-#: src/screens/MainScreen.js:145
+#: src/screens/MainScreen.js:156
 msgid "Loading transactions"
 msgstr "Carregando transações"
 
-#: src/screens/MainScreen.js:154
+#: src/screens/MainScreen.js:165
 msgid "There was an error loading your transaction history"
 msgstr "Ocorreu um erro ao carregar seu histórico de transações"
 
-#: src/screens/MainScreen.js:157
+#: src/screens/MainScreen.js:168
 msgid "Please |tryAgain:try again|"
 msgstr "Por favor |tryAgain:tente novamente|"
 
-#: src/screens/MainScreen.js:540 src/screens/MainScreen.js:569
+#: src/screens/MainScreen.js:551 src/screens/MainScreen.js:580
 msgid "Available Balance"
 msgstr "Saldo Disponível"
 
-#: src/screens/MainScreen.js:549
+#: src/screens/MainScreen.js:560
 msgid "Locked"
 msgstr "Bloqueado"
 
@@ -997,103 +995,110 @@ msgstr "ENVIAR"
 msgid "Address to send"
 msgstr "Endereço para enviar"
 
-#: src/screens/SendAmountInput.js:147
+#: src/screens/SendAmountInput.js:97
 msgid "Insufficient funds"
 msgstr "Saldo insuficiente"
 
-#: src/screens/SendAmountInput.js:154
-msgid "Calculating network fee..."
-msgstr "Calculando taxa da rede..."
-
-#: src/screens/SendAmountInput.js:161 src/screens/SendAmountInput.js:166
-msgid "Insufficient balance of HTR to cover the network fee."
-msgstr "Saldo insuficiente para cobrir a taxa da rede."
-
-#: src/screens/SendAmountInput.js:193
+#: src/screens/SendAmountInput.js:123
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:207 src/screens/SendConfirmScreen.js:193
+#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:287
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:33 src/screens/TokenSwapReview.js:320
+#: src/screens/SendConfirmScreen.js:42 src/screens/TokenSwapReview.js:320
 msgid "No fee"
 msgstr "Sem taxa"
 
-#.  show loading modal
-#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:205
+#: src/screens/SendConfirmScreen.js:54
+msgid "Insufficient HTR to cover the network fee."
+msgstr "Saldo insuficiente de HTR para cobrir a taxa da rede."
+
+#: src/screens/SendConfirmScreen.js:57
+msgid "Insufficient balance to send this transaction."
+msgstr "Saldo insuficiente para completar a transação."
+
+#: src/screens/SendConfirmScreen.js:59
+msgid "Failed to process transaction."
+msgstr "Falha ao processar a transação"
+
+#: src/screens/SendConfirmScreen.js:178 src/screens/TokenSwapReview.js:205
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:103
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:194
 #: src/screens/TokenSwapReview.js:219
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:195
 #: src/screens/TokenSwapReview.js:220
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
-#: src/screens/SendConfirmScreen.js:140
+#: src/screens/SendConfirmScreen.js:235
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] "Você tem ${ availablePretty } disponível"
 msgstr[1] "Você tem ${ availablePretty } disponíveis"
 
-#: src/screens/SendConfirmScreen.js:164
+#: src/screens/SendConfirmScreen.js:258
 msgid "Loading fee information..."
 msgstr "Carregando informações da taxa..."
 
-#: src/screens/SendConfirmScreen.js:167
+#: src/screens/SendConfirmScreen.js:261
 msgid "This is the native token, no network fees are charged."
 msgstr "Token nativo, nenhuma taxa aplicada."
 
-#: src/screens/SendConfirmScreen.js:170
+#: src/screens/SendConfirmScreen.js:264
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr "Este token é de Depósito, nenhuma taxa de rede será cobrada."
 
-#: src/screens/SendConfirmScreen.js:172
+#: src/screens/SendConfirmScreen.js:266
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr "Esta taxa é fixa e obrigatória para cada transação deste token."
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:177
+#: src/screens/SendConfirmScreen.js:271
 msgid "Loading..."
 msgstr "Carregando..."
 
-#: src/screens/SendConfirmScreen.js:202
+#: src/screens/SendConfirmScreen.js:293
+msgid "Building your transaction"
+msgstr "Criando sua transação"
+
+#: src/screens/SendConfirmScreen.js:311
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ amountAndToken }** foi confirmada"
 
-#: src/screens/SendConfirmScreen.js:213
+#: src/screens/SendConfirmScreen.js:322
 msgid "Read more."
 msgstr "Ler mais."
 
-#: src/screens/SendConfirmScreen.js:229
+#: src/screens/SendConfirmScreen.js:344
 msgid "**Transaction summary**"
 msgstr "**Resumo da transação**"
 
-#: src/screens/SendConfirmScreen.js:232
+#: src/screens/SendConfirmScreen.js:347
 msgid "**To**"
 msgstr "**Para**"
 
-#: src/screens/SendConfirmScreen.js:237
+#: src/screens/SendConfirmScreen.js:352
 msgid "**Network Fee**"
 msgstr "**Taxa de Rede**"
 
-#: src/screens/SendConfirmScreen.js:245
+#: src/screens/SendConfirmScreen.js:360
 msgid "**Total**"
 msgstr "**Total**"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:252
+#: src/screens/SendConfirmScreen.js:367
 msgid "Send"
 msgstr "Enviar"
 
@@ -1833,7 +1838,7 @@ msgstr "Novo endereço"
 msgid "Share"
 msgstr "Compartilhar"
 
-#: src/components/SendTransactionFeedbackModal.js:162
+#: src/components/SendTransactionFeedbackModal.js:214
 msgid "Propagating transaction to the network."
 msgstr "Propagando a transação para a rede."
 
@@ -2854,6 +2859,12 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#~ msgid "Calculating network fee..."
+#~ msgstr "Calculando taxa da rede..."
+
+#~ msgid "Insufficient balance of HTR to cover the network fee."
+#~ msgstr "Saldo insuficiente para cobrir a taxa da rede."
 
 #~ msgid "Calculating…"
 #~ msgstr "Calculando…"

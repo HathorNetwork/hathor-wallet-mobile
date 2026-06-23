@@ -48,10 +48,19 @@ const AmountTextInput = forwardRef((props, ref) => {
 
   // Auto-shrink-to-fit: amounts can grow long enough to overflow the
   // input's column (e.g. `957,791,973.79`). We capture the column
-  // width once via the TextInput's `onLayout` and scale `fontSize` down
+  // width via the TextInput's `onLayout` and scale `fontSize` down
   // when the estimated text width (length × fontSize × GLYPH_RATIO)
   // exceeds it. When the user shortens the value, the estimate drops
   // and the font scales back up to the base size.
+  //
+  // IMPORTANT: `onLayout` measures this TextInput's OWN box, so callers
+  // MUST give it a parent-determined width — `flex: 1` when it shares a
+  // row (e.g. with a TokenBox), or `alignSelf: 'stretch'` / an explicit
+  // width when it sits alone in an `alignItems: 'center'` column. Without
+  // that the input sizes to its content; since `fontSize` (which this
+  // logic controls) also drives the content width, the measurement feeds
+  // back into itself and the font collapses to `minFontSize`, flickering
+  // on the way down.
   const [containerWidth, setContainerWidth] = useState(0);
 
   // Expose the focus method to parent components
