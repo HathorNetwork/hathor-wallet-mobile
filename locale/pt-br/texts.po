@@ -73,7 +73,7 @@ msgstr "CRIAR TOKEN DE DEPÓSITO"
 msgid "CREATE FEE TOKEN"
 msgstr "CRIAR TOKEN DE TAXA"
 
-#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:84
+#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:87
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:654
 msgid "CREATE TOKEN"
@@ -372,7 +372,7 @@ msgstr "Quantidade de ${ name } (${ symbol })"
 msgid "Next"
 msgstr "Próximo"
 
-#: src/screens/CreateTokenConfirm.js:34
+#: src/screens/CreateTokenConfirm.js:31
 msgid ""
 "You chose to create a **Deposit-Based Token**, which requires a 1% HTR "
 "deposit."
@@ -380,7 +380,7 @@ msgstr ""
 "Você escolheu criar um **Token Baseado em Depósito**, que requer um depósito "
 "de 1% em HTR."
 
-#: src/screens/CreateTokenConfirm.js:36
+#: src/screens/CreateTokenConfirm.js:33
 msgid ""
 "You chose to create a **Fee-Based Token**, so a small fee will be applied to "
 "each future transaction of this token."
@@ -388,51 +388,55 @@ msgstr ""
 "Você escolheu criar um **Token com Taxa**, então uma pequena taxa será "
 "aplicada a cada transação futura deste token."
 
-#: src/screens/CreateTokenConfirm.js:140
+#: src/screens/CreateTokenConfirm.js:145
 msgid "Creating token"
 msgstr "Criando um token"
 
-#: src/screens/CreateTokenConfirm.js:155
+#: src/screens/CreateTokenConfirm.js:151
+msgid "Building the transaction"
+msgstr "Criando a transação"
+
+#: src/screens/CreateTokenConfirm.js:166
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
 
-#: src/screens/CreateTokenConfirm.js:156
+#: src/screens/CreateTokenConfirm.js:167
 msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
-#: src/screens/CreateTokenConfirm.js:158 src/screens/SendConfirmScreen.js:196
+#: src/screens/CreateTokenConfirm.js:169 src/screens/SendConfirmScreen.js:196
 #: src/screens/TokenSwapReview.js:221
 msgid "Building transaction"
 msgstr "Criando transação"
 
-#: src/screens/CreateTokenConfirm.js:216
+#: src/screens/CreateTokenConfirm.js:210
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr "**${ name }** criado com sucesso"
 
-#: src/screens/CreateTokenConfirm.js:229
+#: src/screens/CreateTokenConfirm.js:222
 msgid "Amount of ${ name }"
 msgstr "Quantidade de ${ name }"
 
-#: src/screens/CreateTokenConfirm.js:243
+#: src/screens/CreateTokenConfirm.js:236
 msgid "Token name"
 msgstr "Nome do token"
 
-#: src/screens/CreateTokenConfirm.js:249 src/screens/CreateTokenSymbol.js:71
+#: src/screens/CreateTokenConfirm.js:242 src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr "Símbolo do token"
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:256
+#: src/screens/CreateTokenConfirm.js:249
 msgid "Deposit"
 msgstr "Depósito"
 
-#: src/screens/CreateTokenConfirm.js:264
+#: src/screens/CreateTokenConfirm.js:257
 msgid "Network fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/CreateTokenConfirm.js:273
+#: src/screens/CreateTokenConfirm.js:266
 msgid "Create token"
 msgstr "Criar um token"
 
@@ -1834,7 +1838,7 @@ msgstr "Novo endereço"
 msgid "Share"
 msgstr "Compartilhar"
 
-#: src/components/SendTransactionFeedbackModal.js:162
+#: src/components/SendTransactionFeedbackModal.js:214
 msgid "Propagating transaction to the network."
 msgstr "Propagando a transação para a rede."
 

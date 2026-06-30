@@ -74,7 +74,7 @@ msgstr ""
 msgid "CREATE FEE TOKEN"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:84
+#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:87
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:654
 msgid "CREATE TOKEN"
@@ -360,63 +360,67 @@ msgstr ""
 msgid "Next"
 msgstr "Далее"
 
-#: src/screens/CreateTokenConfirm.js:34
+#: src/screens/CreateTokenConfirm.js:31
 msgid ""
 "You chose to create a **Deposit-Based Token**, which requires a 1% HTR "
 "deposit."
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:36
+#: src/screens/CreateTokenConfirm.js:33
 msgid ""
 "You chose to create a **Fee-Based Token**, so a small fee will be applied to "
 "each future transaction of this token."
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:140
+#: src/screens/CreateTokenConfirm.js:145
 msgid "Creating token"
 msgstr "Создать токен"
 
-#: src/screens/CreateTokenConfirm.js:155
+#: src/screens/CreateTokenConfirm.js:151
+msgid "Building the transaction"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:166
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Введите 6-значный PIN-код для создания токена"
 
-#: src/screens/CreateTokenConfirm.js:156
+#: src/screens/CreateTokenConfirm.js:167
 msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
-#: src/screens/CreateTokenConfirm.js:158 src/screens/SendConfirmScreen.js:196
+#: src/screens/CreateTokenConfirm.js:169 src/screens/SendConfirmScreen.js:196
 #: src/screens/TokenSwapReview.js:221
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:216
+#: src/screens/CreateTokenConfirm.js:210
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:229
+#: src/screens/CreateTokenConfirm.js:222
 msgid "Amount of ${ name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:243
+#: src/screens/CreateTokenConfirm.js:236
 msgid "Token name"
 msgstr "Имя токена"
 
-#: src/screens/CreateTokenConfirm.js:249 src/screens/CreateTokenSymbol.js:71
+#: src/screens/CreateTokenConfirm.js:242 src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr "Символ токена"
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:256
+#: src/screens/CreateTokenConfirm.js:249
 msgid "Deposit"
 msgstr "Депозит"
 
-#: src/screens/CreateTokenConfirm.js:264
+#: src/screens/CreateTokenConfirm.js:257
 msgid "Network fee"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:273
+#: src/screens/CreateTokenConfirm.js:266
 msgid "Create token"
 msgstr "Создать токен"
 
@@ -1778,7 +1782,7 @@ msgstr "Новый адрес"
 msgid "Share"
 msgstr "Поделиться"
 
-#: src/components/SendTransactionFeedbackModal.js:162
+#: src/components/SendTransactionFeedbackModal.js:214
 msgid "Propagating transaction to the network."
 msgstr ""
 
