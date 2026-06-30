@@ -36,6 +36,8 @@ export const fixtures = {
             version: 4,
             weight: 21.89480540500889,
             signal_bits: 0,
+            is_voided: false,
+            first_block: '0000004f1e93c11d96b35bf0d6b97a0b0e7c4e0f8e3d2c1b0a09887766554433',
             parents: [
               '0000008fbebdf8d78be50c88aceebf3c6b9e92f4affd7dfc96d48a7a49f23e69',
               '00000121c46366b19de5efa8e6c23f62895322486395a0e31e987f9073025989'
@@ -66,7 +68,26 @@ export const fixtures = {
             nc_id: '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a',
             nc_method: 'swap',
             nc_args: '',
-            nc_pubkey: '020b120c8ad037ceb2e5b51b3edda7cd15a44f843b56e49880f6647fa9aadadffa'
+            nc_address: 'HTeZeYTCv7cZ8u7pBGHkWsPwhZAuoq5j3V',
+            nc_pubkey: '020b120c8ad037ceb2e5b51b3edda7cd15a44f843b56e49880f6647fa9aadadffa',
+            nc_context: {
+              actions: [
+                {
+                  type: 'deposit',
+                  token_uid: '00',
+                  amount: 100,
+                  mint: false,
+                  melt: false,
+                },
+                {
+                  type: 'grant_authority',
+                  token_uid: '00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d',
+                  amount: 0,
+                  mint: true,
+                  melt: true,
+                },
+              ],
+            },
           },
         ],
       },
