@@ -1553,71 +1553,71 @@ msgstr ""
 msgid "Contract successfully registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:92
+#: src/sagas/nanoContract.js:95
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:93
+#: src/sagas/nanoContract.js:96
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:94
+#: src/sagas/nanoContract.js:97
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:95
+#: src/sagas/nanoContract.js:98
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:96
+#: src/sagas/nanoContract.js:99
 msgid "Error while trying to register Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:97
+#: src/sagas/nanoContract.js:100
 msgid "Invalid transaction to register as Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:98
+#: src/sagas/nanoContract.js:101
 msgid "Blueprint not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:99
+#: src/sagas/nanoContract.js:102
 msgid "Couldn't get Blueprint info."
 msgstr ""
 
-#: src/sagas/nanoContract.js:100
+#: src/sagas/nanoContract.js:103
 msgid "Nano Contract not registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:101
+#: src/sagas/nanoContract.js:104
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr ""
 
-#: src/sagas/networkSettings.js:87
+#: src/sagas/networkSettings.js:88
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:94
+#: src/sagas/networkSettings.js:95
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:101
+#: src/sagas/networkSettings.js:102
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:108
+#: src/sagas/networkSettings.js:109
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:115
+#: src/sagas/networkSettings.js:116
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:122
+#: src/sagas/networkSettings.js:123
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:129
+#: src/sagas/networkSettings.js:130
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
