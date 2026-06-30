@@ -7,7 +7,6 @@
 
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { StackActions } from '@react-navigation/native';
 import { t } from 'ttag';
 import { get } from 'lodash';
 import {
@@ -31,6 +30,7 @@ import {
   reownFetchPendingRequests,
 } from '../../actions';
 import { COLORS } from '../../styles/themes';
+import NavigationService from '../../NavigationService';
 
 const connectFailedText = t`There was an error connecting. Please try again later.`;
 
@@ -182,8 +182,7 @@ export default function ReownList({ navigation }) {
   };
 
   const onBackPress = () => {
-    const popToAction = StackActions.popTo('Main');
-    navigation.dispatch(popToAction);
+    NavigationService.resetToMain();
   }
 
   return (
