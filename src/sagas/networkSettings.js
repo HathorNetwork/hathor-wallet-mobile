@@ -14,6 +14,7 @@ import {
   networkChanged,
   setFullNodeNetworkName,
   saveTokensForNetwork,
+  saveNanoContractsForNetwork,
 } from '../actions';
 import {
   NETWORK_MAINNET,
@@ -275,12 +276,22 @@ export function* persistNetworkSettings(action) {
     return;
   }
 
-  // Ask the tokens saga to save current tokens before we wipe them
+  // Ask the tokens and nano contract sagas to snapshot their current
+  // registered entries before we wipe storage. Both snapshots are keyed by the
+  // network's genesis hash so they can be restored when the wallet returns to
+  // this network. We wait for both concurrently so a single 5s timeout applies.
   yield put(saveTokensForNetwork());
-  yield race({
-    saved: take(types.TOKENS_SAVED_FOR_NETWORK),
-    timeout: delay(5000),
-  });
+  yield put(saveNanoContractsForNetwork());
+  yield all([
+    race({
+      saved: take(types.TOKENS_SAVED_FOR_NETWORK),
+      timeout: delay(5000),
+    }),
+    race({
+      saved: take(types.NANO_CONTRACTS_SAVED_FOR_NETWORK),
+      timeout: delay(5000),
+    }),
+  ]);
 
   const wallet = yield select((state) => state.wallet);
 

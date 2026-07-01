@@ -21,7 +21,9 @@ import {
 } from 'redux-saga/effects';
 import { t } from 'ttag';
 import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
-import { getRegisteredNanoContracts, safeEffect } from './helpers';
+import { getGenesisHash, getRegisteredNanoContracts, safeEffect } from './helpers';
+import { WALLET_STATUS } from './wallet';
+import { STORE } from '../store';
 import {
   nanoContractBlueprintInfoFailure,
   nanoContractBlueprintInfoSuccess,
@@ -31,6 +33,7 @@ import {
   nanoContractHistorySuccess,
   nanoContractRegisterFailure,
   nanoContractRegisterSuccess,
+  nanoContractsSavedForNetwork,
   nanoContractUnregisterSuccess,
   onExceptionCaptured,
   types,
@@ -133,6 +136,110 @@ export function* init() {
     yield put(nanoContractRegisterSuccess({ entryKey: contract.ncId, entryValue: contract }));
   }
   log.debug('Registered Nano Contracts loaded.');
+}
+
+/**
+ * Persist the current registered nano contracts to storage keyed by the
+ * current network's genesis hash.
+ *
+ * Registered nano contracts live in a single working cache that is wiped on
+ * every network change. This snapshot is what survives the wipe, so a contract
+ * registered on a given network reappears when the wallet returns to it,
+ * analogous to how registered tokens behave.
+ */
+function* persistNanoContractsForCurrentNetwork() {
+  const serverInfo = yield select((state) => state.serverInfo);
+  const genesisHash = getGenesisHash(serverInfo);
+  if (!genesisHash) return;
+
+  const wallet = yield select((state) => state.wallet);
+  if (!wallet) return;
+
+  const registeredContracts = yield call(getRegisteredNanoContracts, wallet);
+  const contracts = {};
+  for (const contract of registeredContracts) {
+    contracts[contract.ncId] = contract;
+  }
+  yield call([STORE, STORE.saveNanoContractsForNetwork], genesisHash, contracts);
+}
+
+/**
+ * Save the current registered nano contracts for the active network.
+ *
+ * Dispatched by the networkSettings saga before it wipes nano contract storage.
+ * Always dispatches nanoContractsSavedForNetwork() when done.
+ */
+export function* saveNetworkNanoContracts() {
+  try {
+    yield* persistNanoContractsForCurrentNetwork();
+  } catch (e) {
+    log.error('Error saving nano contracts for network:', e);
+  } finally {
+    yield put(nanoContractsSavedForNetwork());
+  }
+}
+
+/**
+ * Restore previously saved nano contracts for the current network after the
+ * wallet starts successfully.
+ */
+export function* restoreNetworkNanoContracts() {
+  try {
+    const isEnabled = yield select(isNanoContractsEnabled);
+    if (!isEnabled) return;
+
+    const serverInfo = yield select((state) => state.serverInfo);
+    const genesisHash = getGenesisHash(serverInfo);
+    if (!genesisHash) return;
+
+    const savedContracts = yield call([STORE, STORE.getNanoContractsForNetwork], genesisHash);
+    if (!savedContracts) return;
+
+    const wallet = yield select((state) => state.wallet);
+    if (!wallet || !wallet.isReady()) return;
+
+    for (const contract of Object.values(savedContracts)) {
+      try {
+        const isRegistered = yield call(
+          [wallet.storage, wallet.storage.isNanoContractRegistered],
+          contract.ncId,
+        );
+        if (!isRegistered) {
+          yield call(
+            [wallet.storage, wallet.storage.registerNanoContract],
+            contract.ncId,
+            contract,
+          );
+          yield put(nanoContractRegisterSuccess({
+            entryKey: contract.ncId,
+            entryValue: contract,
+          }));
+        }
+      } catch (e) {
+        log.error(`Error restoring nano contract ${contract.ncId} for network:`, e);
+      }
+    }
+  } catch (e) {
+    log.error('Error restoring nano contracts for network:', e);
+  }
+}
+
+/**
+ * Update the persisted nano contract snapshot whenever the registered set
+ * changes (register, unregister or address change).
+ */
+export function* updateNetworkNanoContractSnapshot() {
+  try {
+    const walletStartState = yield select((state) => state.walletStartState);
+    if (walletStartState !== WALLET_STATUS.READY) return;
+
+    const wallet = yield select((state) => state.wallet);
+    if (!wallet || !wallet.isReady()) return;
+
+    yield* persistNanoContractsForCurrentNetwork();
+  } catch (e) {
+    log.error('Error updating network nano contract snapshot:', e);
+  }
 }
 
 /**
@@ -531,6 +638,10 @@ export function* requestNanoContractAddressChange({ payload }) {
     newAddress,
   );
   log.debug(`Success persisting Nano Contract address update. ncId = ${ncId}`);
+
+  // Keep the per-network snapshot in sync with the updated address so it
+  // survives a network change.
+  yield* updateNetworkNanoContractSnapshot();
 }
 
 /**
@@ -563,6 +674,10 @@ export function* requestBlueprintInfo({ payload }) {
 export function* saga() {
   yield all([
     debounce(500, [[types.START_WALLET_SUCCESS, types.NANOCONTRACT_INIT]], init),
+    takeEvery(types.SAVE_NANO_CONTRACTS_FOR_NETWORK, saveNetworkNanoContracts),
+    takeEvery(types.START_WALLET_SUCCESS, restoreNetworkNanoContracts),
+    takeEvery(types.NANOCONTRACT_REGISTER_SUCCESS, updateNetworkNanoContractSnapshot),
+    takeEvery(types.NANOCONTRACT_UNREGISTER_SUCCESS, updateNetworkNanoContractSnapshot),
     takeEvery(
       types.NANOCONTRACT_REGISTER_REQUEST,
       safeEffect(registerNanoContract, registerNanoContractOnError)

@@ -21,6 +21,7 @@ import { get } from 'lodash';
 import {
   specificTypeAndPayload,
   dispatchAndWait,
+  getGenesisHash,
   getRegisteredTokenUids,
   getNetworkSettings,
   getRegisteredTokens,
@@ -468,10 +469,34 @@ export function* fetchTokenData(tokenId, force = false) {
 }
 
 /**
- * Get the genesis hash from serverInfo in redux state.
+ * Token config fields (ITokenData) that are persisted in the network snapshot.
+ * Everything else returned by `getRegisteredTokens` is wallet metadata
+ * (ITokenMetadata: `numTransactions` and a `bigint` `balance`) that is
+ * recomputed/re-fetched once the wallet syncs on the destination network, so it
+ * must not be persisted. Keeping it out also stops `bigint` balances from being
+ * written to AsyncStorage.
  */
-function getGenesisHash(serverInfo) {
-  return serverInfo?.genesis_block_hash || null;
+const SNAPSHOT_TOKEN_CONFIG_FIELDS = ['uid', 'name', 'symbol', 'version'];
+
+/**
+ * Strip wallet metadata from a registered tokens map, keeping only the token
+ * config fields.
+ *
+ * @param {Object} tokens Registered tokens map keyed by uid
+ * @returns {Object} Tokens map with only config fields per token
+ */
+function stripTokenMetadata(tokens) {
+  const tokenConfigs = {};
+  for (const [uid, token] of Object.entries(tokens)) {
+    const config = {};
+    for (const field of SNAPSHOT_TOKEN_CONFIG_FIELDS) {
+      if (token[field] !== undefined) {
+        config[field] = token[field];
+      }
+    }
+    tokenConfigs[uid] = config;
+  }
+  return tokenConfigs;
 }
 
 /**
@@ -487,7 +512,8 @@ function* persistTokensForCurrentNetwork() {
   if (!wallet) return;
 
   const tokens = yield call(getRegisteredTokens, wallet, true);
-  yield call([STORE, STORE.saveTokensForNetwork], genesisHash, tokens);
+  const tokenConfigs = stripTokenMetadata(tokens);
+  yield call([STORE, STORE.saveTokensForNetwork], genesisHash, tokenConfigs);
 }
 
 /**

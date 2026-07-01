@@ -34,23 +34,69 @@ class SendTransactionFeedbackModal extends React.Component {
     errorMessage: '',
   }
 
+  // sendTransaction/promise can arrive after mount (while the tx is still being
+  // prepared); these flags ensure each subscription runs exactly once.
+  promiseSubscribed = false;
+
+  eventsSubscribed = false;
+
+  // The promise resolves independently of the listeners, so it can settle after
+  // unmount; this guards its handlers from calling setState on a dead component.
+  unmounted = false;
+
   componentDidMount = () => {
-    // Start event listeners
-    this.addSendTxEventHandlers();
+    // Props may arrive after mount, so subscriptions are attempted here and
+    // again in componentDidUpdate.
+    this.subscribeToPromise();
+    this.subscribeToSendTransaction();
+  }
+
+  componentDidUpdate = (prevProps) => {
+    if (prevProps.promise !== this.props.promise) {
+      this.subscribeToPromise();
+    }
+    if (prevProps.sendTransaction !== this.props.sendTransaction) {
+      this.subscribeToSendTransaction();
+    }
+  }
+
+  componentWillUnmount = () => {
+    this.unmounted = true;
+    if (this.props.sendTransaction) {
+      this.props.sendTransaction.removeListener('job-submitted', this.updateEstimation);
+      this.props.sendTransaction.removeListener('estimation-updated', this.updateEstimation);
+      this.props.sendTransaction.removeListener('job-done', this.jobDone);
+    }
   }
 
   /**
-   * Create event listeners for all sendTransaction events
+   * Subscribe to the promise that mines and propagates the tx. It also covers
+   * the building phase: a failure while preparing the tx rejects this promise
+   * and is shown as an error in this same modal.
    */
-  addSendTxEventHandlers = () => {
-    this.props.sendTransaction.on('job-submitted', this.updateEstimation);
-    this.props.sendTransaction.on('estimation-updated', this.updateEstimation);
-    this.props.sendTransaction.on('job-done', this.jobDone);
+  subscribeToPromise = () => {
+    if (this.promiseSubscribed || !this.props.promise) {
+      return;
+    }
+    this.promiseSubscribed = true;
     this.props.promise.then((tx) => {
       this.onSendSuccess(tx);
     }, (err) => {
       this.onSendError(err.message);
     });
+  }
+
+  /**
+   * Create event listeners for all sendTransaction mining events.
+   */
+  subscribeToSendTransaction = () => {
+    if (this.eventsSubscribed || !this.props.sendTransaction) {
+      return;
+    }
+    this.eventsSubscribed = true;
+    this.props.sendTransaction.on('job-submitted', this.updateEstimation);
+    this.props.sendTransaction.on('estimation-updated', this.updateEstimation);
+    this.props.sendTransaction.on('job-done', this.jobDone);
   }
 
   /**
@@ -60,6 +106,9 @@ class SendTransactionFeedbackModal extends React.Component {
    * @param {Object} tx Transaction data
    */
   onSendSuccess = (tx) => {
+    if (this.unmounted) {
+      return;
+    }
     this.setState({ sending: false, success: true, errorMessage: '' });
     if (this.props.onTxSuccess) {
       this.props.onTxSuccess(tx);
@@ -73,6 +122,9 @@ class SendTransactionFeedbackModal extends React.Component {
    * @param {String} message Error message
    */
   onSendError = (message) => {
+    if (this.unmounted) {
+      return;
+    }
     this.setState({ sending: false, success: false, errorMessage: message });
     if (this.props.onTxError) {
       this.props.onTxError(message);
@@ -174,20 +226,22 @@ class SendTransactionFeedbackModal extends React.Component {
 SendTransactionFeedbackModal.defaultProps = {
   // Defaults to not hide the modal
   hide: false,
+  sendTransaction: null,
+  promise: null,
 };
 
 SendTransactionFeedbackModal.propTypes = {
   // Text displayed on the first line of the modal
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
-  // lib object that handles the mining/propagation requests and emit events
+  // lib object that handles the mining/propagation requests and emits events
   sendTransaction: PropTypes.oneOfType([
     PropTypes.instanceOf(hathorLib.SendTransaction),
     PropTypes.instanceOf(hathorLib.SendTransactionWalletService)
-  ]).isRequired,
-  // promise that is mining the transaction using the sendTransaction instance above.
+  ]),
+  // promise that mines/propagates the tx using the sendTransaction instance above
   promise: PropTypes.shape({
     then: PropTypes.func.isRequired,
-  }).isRequired,
+  }),
   // optional method to be executed when the tx is mined and propagated with success
   onTxSuccess: PropTypes.func,
   // optional method to be executed when an error happens while sending the tx

@@ -7,7 +7,6 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Image,
   View,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
@@ -20,12 +19,10 @@ import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
-import FeedbackModal from '../components/FeedbackModal';
 import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackModal';
 import TextFmt from '../components/TextFmt';
 import { updateSelectedToken } from '../actions';
 import { registerToken } from '../utils/tokens';
-import errorIcon from '../assets/images/icErrorBig.png';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { getCreateTokenTitle } from '../utils';
@@ -79,8 +76,14 @@ const CreateTokenConfirm = () => {
   const nativeSymbol = wallet.storage.getNativeTokenData().symbol;
 
   // Component state
-  const [modal, setModal] = useState(null);
-  const [modalType, setModalType] = useState(null);
+  // A single modal drives the whole flow: it mounts showing a spinner while the
+  // tx is prepared (sendTransaction/promise still null) and then tracks
+  // mining/propagation once they are ready. Shape: { text, sendTransaction, promise }
+  const [sendTransactionModal, setSendTransactionModal] = useState(null);
+  // Disables the Create token button from the moment it's tapped until the screen
+  // is interactive again, closing the window between the PinScreen dismissal and
+  // the feedback modal render where the button would otherwise be tappable.
+  const [isSending, setIsSending] = useState(false);
   const [title, setTitle] = useState(t`CREATE TOKEN`);
   const [deposit, setDeposit] = useState(null);
   const [networkFee, setNetworkFee] = useState(null);
@@ -102,47 +105,52 @@ const CreateTokenConfirm = () => {
     }
   }, [tokenVersion, amount]);
 
-  /**
-   * Prepare data and execute create token
-   * If success when preparing, show feedback modal, otherwise show error
-   *
-   * @param {String} pinCode User PIN
-   */
-  const executeCreate = async (pin) => {
-    if (useWalletService) {
-      await wallet.validateAndRenewAuthToken(pin);
-    }
+  // Re-enable the Create token button whenever this screen regains focus. This
+  // covers the PinScreen being dismissed by cancel or hardware back (neither
+  // sets the feedback modal).
+  useEffect(() => {
+    const focusListener = navigation.addListener('focus', () => {
+      setIsSending(false);
+    });
 
-    const { address } = await wallet.getCurrentAddress({ markAsUsed: true });
-    wallet.prepareCreateNewToken(
-      name,
-      symbol,
-      amount,
-      { address, pinCode: pin, tokenVersion }
-    ).then((tx) => {
-      let sendTransaction;
+    return focusListener;
+  }, [navigation]);
+
+  /**
+   * Prepare and create the token. The promise built here covers the whole flow —
+   * prepare, then mine/propagate — so a failure while preparing surfaces as an
+   * error in the same feedback modal.
+   *
+   * @param {String} pin User PIN
+   */
+  const executeCreate = (pin) => {
+    const promise = (async () => {
       if (useWalletService) {
-        sendTransaction = new hathorLib.SendTransactionWalletService(
-          wallet,
-          { transaction: tx }
-        );
-      } else {
-        sendTransaction = new hathorLib.SendTransaction(
-          { storage: wallet.storage, transaction: tx, pin }
-        );
+        await wallet.validateAndRenewAuthToken(pin);
       }
 
-      const promise = sendTransaction.runFromMining();
+      const { address } = await wallet.getCurrentAddress({ markAsUsed: true });
+      const tx = await wallet.prepareCreateNewToken(
+        name,
+        symbol,
+        amount,
+        { address, pinCode: pin, tokenVersion }
+      );
 
-      // show loading modal
-      setModalType('SendTransactionFeedbackModal');
-      setModal({
-        text: t`Creating token`,
-        sendTransaction,
-        promise,
-      });
-    }, (err) => {
-      onError(err.message);
+      const sendTransaction = useWalletService
+        ? new hathorLib.SendTransactionWalletService(wallet, { transaction: tx })
+        : new hathorLib.SendTransaction({ storage: wallet.storage, transaction: tx, pin });
+
+      // Hand the instance to the modal so it subscribes to mining events.
+      setSendTransactionModal((prev) => ({ ...prev, sendTransaction, text: t`Creating token` }));
+
+      return sendTransaction.runFromMining();
+    })();
+
+    setSendTransactionModal({
+      text: t`Building the transaction`,
+      sendTransaction: null,
+      promise,
     });
   };
 
@@ -150,6 +158,9 @@ const CreateTokenConfirm = () => {
    * Executed when user clicks to create the token and opens the PIN screen
    */
   const onSendPress = () => {
+    // Disable the button before opening the PinScreen so it can't be tapped
+    // again while we return from it and build the feedback modal.
+    setIsSending(true);
     const pinParams = {
       cb: executeCreate,
       screenText: t`Enter your 6-digit pin to create your token`,
@@ -172,26 +183,16 @@ const CreateTokenConfirm = () => {
   };
 
   /**
-   * Show error message if there is one while creating the token
-   *
-   * @param {String} message Error message
-   */
-  const onError = (message) => {
-    setModalType('FeedbackModal');
-    setModal({
-      icon: <Image source={errorIcon} style={{ height: 105, width: 105 }} resizeMode='contain' />,
-      text: message,
-      onDismiss: () => setModal(null),
-    });
-  };
-
-  /**
    * Method executed after dismiss success modal
    */
   const exitScreen = () => {
-    setModal(null);
+    setSendTransactionModal(null);
     navigation.navigate('CreateTokenDetail');
   };
+
+  // Keep the button disabled from the moment it's tapped (isSending) and while
+  // the feedback modal (building spinner, mining progress or error) is on screen.
+  const isCreatingToken = isSending || sendTransactionModal !== null;
 
   return (
     <View style={{ flex: 1 }}>
@@ -201,25 +202,17 @@ const CreateTokenConfirm = () => {
         onCancel={() => navigation.getParent().goBack()}
       />
 
-      {modal && (
-        modalType === 'FeedbackModal' ? (
-          <FeedbackModal
-            icon={modal.icon}
-            text={modal.text}
-            onDismiss={modal.onDismiss}
-          />
-        ) : (
-          <SendTransactionFeedbackModal
-            text={modal.text}
-            sendTransaction={modal.sendTransaction}
-            promise={modal.promise}
-            successText={<TextFmt>{t`**${name}** created successfully`}</TextFmt>}
-            onTxSuccess={onTxSuccess}
-            onDismissSuccess={exitScreen}
-            onDismissError={() => setModal(null)}
-            hide={isShowingPinScreen}
-          />
-        )
+      {sendTransactionModal && (
+        <SendTransactionFeedbackModal
+          text={sendTransactionModal.text}
+          sendTransaction={sendTransactionModal.sendTransaction}
+          promise={sendTransactionModal.promise}
+          successText={<TextFmt>{t`**${name}** created successfully`}</TextFmt>}
+          onTxSuccess={onTxSuccess}
+          onDismissSuccess={exitScreen}
+          onDismissError={() => setSendTransactionModal(null)}
+          hide={isShowingPinScreen}
+        />
       )}
 
       <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
@@ -232,6 +225,11 @@ const CreateTokenConfirm = () => {
               editable={false}
               decimalPlaces={decimalPlaces}
               value={hathorLib.numberUtils.prettyValue(amount)}
+              // Stretch to the parent's width so the auto-shrink logic measures a
+              // fixed column width. The parent is `alignItems: 'center'`, so without
+              // this the input sizes to its content and the font-scaling feedback loop
+              // collapses the size. `textAlign: 'center'` keeps the value centered.
+              style={{ alignSelf: 'stretch' }}
             />
           </View>
           <SimpleInput
@@ -267,8 +265,7 @@ const CreateTokenConfirm = () => {
         <NewHathorButton
           title={t`Create token`}
           onPress={onSendPress}
-          // disable while modal is visible
-          disabled={modal !== null}
+          disabled={isCreatingToken}
         />
       </View>
       <OfflineBar />

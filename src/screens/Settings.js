@@ -166,7 +166,7 @@ export class Settings extends React.Component {
                   onPress={() => this.props.navigation.navigate(NetworkSettingsFlowNav)}
                 />
               )}
-            {this.props.reownEnabled
+            {this.props.singleAddressEnabled
               && (
                 <ListMenu
                   title={t`Address Mode`}

@@ -74,7 +74,7 @@ msgstr ""
 msgid "CREATE FEE TOKEN"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:84
+#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:87
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:654
 msgid "CREATE TOKEN"
@@ -327,7 +327,7 @@ msgid "Back"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:96 src/screens/CreateTokenAmount.js:108
-#: src/screens/SendAmountInput.js:142
+#: src/screens/SendAmountInput.js:92
 msgid "Invalid amount"
 msgstr ""
 
@@ -356,67 +356,71 @@ msgstr ""
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
 #: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:229
 #: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
-#: src/screens/SendAmountInput.js:239
+#: src/screens/SendAmountInput.js:169
 msgid "Next"
 msgstr "Далее"
 
-#: src/screens/CreateTokenConfirm.js:34
+#: src/screens/CreateTokenConfirm.js:31
 msgid ""
 "You chose to create a **Deposit-Based Token**, which requires a 1% HTR "
 "deposit."
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:36
+#: src/screens/CreateTokenConfirm.js:33
 msgid ""
 "You chose to create a **Fee-Based Token**, so a small fee will be applied to "
 "each future transaction of this token."
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:140
+#: src/screens/CreateTokenConfirm.js:145
 msgid "Creating token"
 msgstr "Создать токен"
 
-#: src/screens/CreateTokenConfirm.js:155
+#: src/screens/CreateTokenConfirm.js:151
+msgid "Building the transaction"
+msgstr ""
+
+#: src/screens/CreateTokenConfirm.js:166
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Введите 6-значный PIN-код для создания токена"
 
-#: src/screens/CreateTokenConfirm.js:156
+#: src/screens/CreateTokenConfirm.js:167
 msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
-#: src/screens/CreateTokenConfirm.js:158 src/screens/SendConfirmScreen.js:105
+#: src/screens/CreateTokenConfirm.js:169 src/screens/SendConfirmScreen.js:196
 #: src/screens/TokenSwapReview.js:221
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:216
+#: src/screens/CreateTokenConfirm.js:210
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:229
+#: src/screens/CreateTokenConfirm.js:222
 msgid "Amount of ${ name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:238
+#: src/screens/CreateTokenConfirm.js:236
 msgid "Token name"
 msgstr "Имя токена"
 
-#: src/screens/CreateTokenConfirm.js:244 src/screens/CreateTokenSymbol.js:71
+#: src/screens/CreateTokenConfirm.js:242 src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr "Символ токена"
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:251
+#: src/screens/CreateTokenConfirm.js:249
 msgid "Deposit"
 msgstr "Депозит"
 
-#: src/screens/CreateTokenConfirm.js:259
+#: src/screens/CreateTokenConfirm.js:257
 msgid "Network fee"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:268
+#: src/screens/CreateTokenConfirm.js:266
 msgid "Create token"
 msgstr "Создать токен"
 
@@ -709,32 +713,32 @@ msgstr "Сбросить кошелек"
 msgid "Connect to mainnet"
 msgstr ""
 
-#: src/screens/MainScreen.js:125
+#: src/screens/MainScreen.js:136
 msgid "No transactions"
 msgstr "Нет транзакций"
 
-#: src/screens/MainScreen.js:128
+#: src/screens/MainScreen.js:139
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 "|share:Поделитесь своим адресом| с друзьями и начните обменивать свои токены"
 
-#: src/screens/MainScreen.js:145
+#: src/screens/MainScreen.js:156
 msgid "Loading transactions"
 msgstr "Загрузка ваших транзакций"
 
-#: src/screens/MainScreen.js:154
+#: src/screens/MainScreen.js:165
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:157
+#: src/screens/MainScreen.js:168
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:540 src/screens/MainScreen.js:569
+#: src/screens/MainScreen.js:551 src/screens/MainScreen.js:580
 msgid "Available Balance"
 msgstr "Доступный Баланс"
 
-#: src/screens/MainScreen.js:549
+#: src/screens/MainScreen.js:560
 msgid "Locked"
 msgstr "Заблокированный"
 
@@ -963,19 +967,11 @@ msgstr "ОТПРАВИТЬ"
 msgid "Address to send"
 msgstr "Адрес отправки"
 
-#: src/screens/SendAmountInput.js:147
+#: src/screens/SendAmountInput.js:97
 msgid "Insufficient funds"
 msgstr "Недостаточно средств"
 
-#: src/screens/SendAmountInput.js:154
-msgid "Calculating network fee..."
-msgstr ""
-
-#: src/screens/SendAmountInput.js:161 src/screens/SendAmountInput.js:166
-msgid "Insufficient balance of HTR to cover the network fee."
-msgstr ""
-
-#: src/screens/SendAmountInput.js:193
+#: src/screens/SendAmountInput.js:123
 #, javascript-format
 msgid "${ amountAndToken } available"
 msgid_plural "${ amountAndToken } available"
@@ -983,30 +979,41 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendAmountInput.js:207 src/screens/SendConfirmScreen.js:193
+#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:287
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:33 src/screens/TokenSwapReview.js:320
+#: src/screens/SendConfirmScreen.js:42 src/screens/TokenSwapReview.js:320
 msgid "No fee"
 msgstr ""
 
-#.  show loading modal
-#: src/screens/SendConfirmScreen.js:90 src/screens/TokenSwapReview.js:205
+#: src/screens/SendConfirmScreen.js:54
+msgid "Insufficient HTR to cover the network fee."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:57
+msgid "Insufficient balance to send this transaction."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:59
+msgid "Failed to process transaction."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:178 src/screens/TokenSwapReview.js:205
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:103
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:194
 #: src/screens/TokenSwapReview.js:219
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:104
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:195
 #: src/screens/TokenSwapReview.js:220
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
-#: src/screens/SendConfirmScreen.js:140
+#: src/screens/SendConfirmScreen.js:235
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
@@ -1014,54 +1021,58 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendConfirmScreen.js:164
+#: src/screens/SendConfirmScreen.js:258
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:167
+#: src/screens/SendConfirmScreen.js:261
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:170
+#: src/screens/SendConfirmScreen.js:264
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:172
+#: src/screens/SendConfirmScreen.js:266
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:177
+#: src/screens/SendConfirmScreen.js:271
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:202
+#: src/screens/SendConfirmScreen.js:293
+msgid "Building your transaction"
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:311
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Ваш перевод **${ amountAndToken }** был подтвержден"
 
-#: src/screens/SendConfirmScreen.js:213
+#: src/screens/SendConfirmScreen.js:322
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:229
+#: src/screens/SendConfirmScreen.js:344
 msgid "**Transaction summary**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:232
+#: src/screens/SendConfirmScreen.js:347
 msgid "**To**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:237
+#: src/screens/SendConfirmScreen.js:352
 msgid "**Network Fee**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:245
+#: src/screens/SendConfirmScreen.js:360
 msgid "**Total**"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:252
+#: src/screens/SendConfirmScreen.js:367
 msgid "Send"
 msgstr "Отправить"
 
@@ -1538,71 +1549,71 @@ msgstr ""
 msgid "Contract successfully registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:92
+#: src/sagas/nanoContract.js:95
 msgid "Nano Contract already registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:93
+#: src/sagas/nanoContract.js:96
 msgid "Wallet is not ready yet to register a Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:94
+#: src/sagas/nanoContract.js:97
 msgid "The informed address does not belong to the wallet."
 msgstr ""
 
-#: src/sagas/nanoContract.js:95
+#: src/sagas/nanoContract.js:98
 msgid "Nano Contract not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:96
+#: src/sagas/nanoContract.js:99
 msgid "Error while trying to register Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:97
+#: src/sagas/nanoContract.js:100
 msgid "Invalid transaction to register as Nano Contract."
 msgstr ""
 
-#: src/sagas/nanoContract.js:98
+#: src/sagas/nanoContract.js:101
 msgid "Blueprint not found."
 msgstr ""
 
-#: src/sagas/nanoContract.js:99
+#: src/sagas/nanoContract.js:102
 msgid "Couldn't get Blueprint info."
 msgstr ""
 
-#: src/sagas/nanoContract.js:100
+#: src/sagas/nanoContract.js:103
 msgid "Nano Contract not registered."
 msgstr ""
 
-#: src/sagas/nanoContract.js:101
+#: src/sagas/nanoContract.js:104
 msgid "Error while trying to download Nano Contract transactions history."
 msgstr ""
 
-#: src/sagas/networkSettings.js:87
+#: src/sagas/networkSettings.js:88
 msgid "Custom Network Settings cannot be empty."
 msgstr ""
 
-#: src/sagas/networkSettings.js:94
+#: src/sagas/networkSettings.js:95
 msgid "explorerUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:101
+#: src/sagas/networkSettings.js:102
 msgid "explorerServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:108
+#: src/sagas/networkSettings.js:109
 msgid "txMiningServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:115
+#: src/sagas/networkSettings.js:116
 msgid "nodeUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:122
+#: src/sagas/networkSettings.js:123
 msgid "walletServiceUrl should be a valid URL."
 msgstr ""
 
-#: src/sagas/networkSettings.js:129
+#: src/sagas/networkSettings.js:130
 msgid "walletServiceWsUrl should be a valid URL."
 msgstr ""
 
@@ -1767,7 +1778,7 @@ msgstr "Новый адрес"
 msgid "Share"
 msgstr "Поделиться"
 
-#: src/components/SendTransactionFeedbackModal.js:162
+#: src/components/SendTransactionFeedbackModal.js:214
 msgid "Propagating transaction to the network."
 msgstr ""
 
