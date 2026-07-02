@@ -101,7 +101,6 @@ import { NanoContractRegisterScreen } from './screens/NanoContract/NanoContractR
 import { NewNanoContractTransactionScreen } from './screens/Reown/NewNanoContractTransactionScreen';
 import { NanoContractRegisterQrCodeScreen } from './screens/NanoContractRegisterQrCodeScreen';
 import { SignMessageRequestScreen } from './screens/Reown/SignMessageRequestScreen';
-import { GetBalanceRequestScreen } from './screens/Reown/GetBalanceRequestScreen';
 import { GetAddressRequestScreen } from './screens/Reown/GetAddressRequestScreen';
 import { GetAddressClientRequestScreen } from './screens/Reown/GetAddressClientRequestScreen';
 import { GetUtxosRequestScreen } from './screens/Reown/GetUtxosRequestScreen';
@@ -507,7 +506,6 @@ const AppStack = () => {
         <Stack.Screen name='PendingRequests' component={PendingRequests} />
         <Stack.Screen name='NewNanoContractTransactionScreen' component={NewNanoContractTransactionScreen} />
         <Stack.Screen name='SignMessageRequest' component={SignMessageRequestScreen} />
-        <Stack.Screen name='GetBalanceRequest' component={GetBalanceRequestScreen} />
         <Stack.Screen name='GetAddressRequest' component={GetAddressRequestScreen} />
         <Stack.Screen name='GetAddressClientRequest' component={GetAddressClientRequestScreen} />
         <Stack.Screen name='GetUtxosRequest' component={GetUtxosRequestScreen} />

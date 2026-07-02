@@ -115,7 +115,6 @@ import {
   setCreateNanoContractCreateTokenTxStatusReady,
   setCreateNanoContractCreateTokenTxStatusFailure,
   setCreateNanoContractCreateTokenTxStatusSuccess,
-  showGetBalanceModal,
   showGetAddressModal,
   showGetAddressClientModal,
   showGetUtxosModal,
@@ -1076,19 +1075,6 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
           }
         });
       } break;
-      case TriggerTypes.GetBalanceConfirmationPrompt: {
-        const getBalanceResponseTemplate = (accepted) => () => resolve({
-          type: TriggerResponseTypes.GetBalanceConfirmationResponse,
-          data: accepted,
-        });
-
-        dispatch(showGetBalanceModal(
-          getBalanceResponseTemplate(true),
-          getBalanceResponseTemplate(false),
-          request.data,
-          requestMetadata,
-        ));
-      } break;
       case TriggerTypes.AddressRequestPrompt: {
         const getAddressResponseTemplate = (accepted) => () => resolve({
           type: TriggerResponseTypes.AddressRequestConfirmationResponse,
@@ -1603,10 +1589,6 @@ export function onCreateNanoContractCreateTokenTxRequest({ payload }) {
   deny();
 }
 
-export function* onGetBalanceRequest({ payload }) {
-  yield* handleDAppRequest(payload, ReownModalTypes.GET_BALANCE, { passAcceptAction: false });
-}
-
 export function* onGetAddressRequest({ payload }) {
   yield* handleDAppRequest(payload, ReownModalTypes.GET_ADDRESS, { passAcceptAction: false });
 }
@@ -1740,7 +1722,6 @@ export function* saga() {
       types.SHOW_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_REQUEST_MODAL,
       onCreateNanoContractCreateTokenTxRequest,
     ),
-    takeLatest(types.SHOW_GET_BALANCE_REQUEST_MODAL, onGetBalanceRequest),
     takeLatest(types.SHOW_GET_ADDRESS_REQUEST_MODAL, onGetAddressRequest),
     takeLatest(types.SHOW_GET_ADDRESS_CLIENT_REQUEST_MODAL, onGetAddressClientRequest),
     takeLatest(types.SHOW_GET_UTXOS_REQUEST_MODAL, onGetUtxosRequest),

@@ -1272,10 +1272,6 @@ msgstr "Escolha de Endereço"
 msgid "Address Request"
 msgstr "Requisição de Endereço"
 
-#: src/screens/Reown/GetBalanceRequestScreen.js:25
-msgid "Get Balance Request"
-msgstr "Requisição de Saldo"
-
 #: src/components/Reown/GetUtxosRequest.js:88
 #: src/screens/Reown/GetUtxosRequestScreen.js:21
 msgid "UTXOs Request"
@@ -1982,7 +1978,7 @@ msgstr "Aprovar"
 msgid "Connect to this dApp?"
 msgstr "Conectar à esse dApp?"
 
-#: src/components/Reown/ConnectModal.js:88
+#: src/components/Reown/ConnectModal.js:89
 msgid ""
 "By clicking connect, you allow this dapp to receive your wallet's public "
 "address. Please validate the URL and the dApp name, this is an important "
@@ -1992,6 +1988,10 @@ msgstr ""
 "sua wallet. Por favor valide a URL e o nome do dApp, essa é uma etapa "
 "importante de segurança para proteger seus dados de potenciais riscos de "
 "phishing."
+
+#: src/components/Reown/ConnectModal.js:92
+msgid "This dApp will also be able to view the balance of your tokens."
+msgstr "Esse dApp poderá ler o saldo dos seus tokens."
 
 #: src/components/Reown/CreateNanoContractCreateTokenTxModal.js:21
 msgid "Create Nano Contract Create Token Request"
@@ -2222,7 +2222,6 @@ msgstr "Compartilhar Endereço da Carteira"
 
 #: src/components/Reown/GetAddressClientRequest.js:177
 #: src/components/Reown/GetAddressRequest.js:114
-#: src/components/Reown/GetBalanceRequest.js:137
 #: src/components/Reown/GetUtxosRequest.js:207
 msgid "Decline"
 msgstr "Recusar"
@@ -2279,59 +2278,6 @@ msgstr ""
 msgid "Share Address"
 msgstr "Compartilhar Endereço"
 
-#: src/components/Reown/GetBalanceModal.js:19
-msgid "New Get Balance Request"
-msgstr "Nova Requisição de Saldo"
-
-#: src/components/Reown/GetBalanceModal.js:20
-msgid ""
-"You have received a new Get Balance Request. Please carefully review the "
-"details before deciding to accept or decline."
-msgstr ""
-"Você recebeu uma nova solicitação de Saldo. Por favor revise cuidadosamente "
-"os detalhes antes de decidir aceitar ou rejeitar."
-
-#: src/components/Reown/GetBalanceModal.js:21
-msgid "Review Get Balance Request details"
-msgstr "Revisar detalhes da Solicitação de Saldo"
-
-#: src/components/Reown/GetBalanceRequest.js:42
-msgid "Balance Request"
-msgstr "Requisição de Saldo"
-
-#: src/components/Reown/GetBalanceRequest.js:44
-msgid "This app is requesting access to your token balances"
-msgstr "Esse app está solicitando acesso ao seu saldo de tokens"
-
-#: src/components/Reown/GetBalanceRequest.js:57
-msgid "Tokens to be shared"
-msgstr "Tokens a serem compartilhados"
-
-#: src/components/Reown/GetBalanceRequest.js:62
-#: src/components/Reown/GetUtxosRequest.js:60
-msgid "Unregistered token"
-msgstr "Token não registrado"
-
-#: src/components/Reown/GetBalanceRequest.js:75
-msgid "Available:"
-msgstr "Disponível:"
-
-#: src/components/Reown/GetBalanceRequest.js:82
-msgid "Locked:"
-msgstr "Bloqueado:"
-
-#: src/components/Reown/GetBalanceRequest.js:100
-msgid ""
-"The app will only receive your balance information. It cannot access your "
-"funds or make transactions."
-msgstr ""
-"O app vai somente receber a informação de saldo. Ele não terá acesso aos "
-"seus fundos ou a fazer transações."
-
-#: src/components/Reown/GetBalanceRequest.js:133
-msgid "Share Balance Information"
-msgstr "Compartilhar Informações de Saldo"
-
 #: src/components/Reown/GetUtxosModal.js:19
 msgid "New UTXOs Request"
 msgstr "Nova Solicitação de UTXOs"
@@ -2347,6 +2293,10 @@ msgstr ""
 #: src/components/Reown/GetUtxosModal.js:21
 msgid "Review UTXOs Request details"
 msgstr "Revisar detalhes da solicitação de UTXOs"
+
+#: src/components/Reown/GetUtxosRequest.js:60
+msgid "Unregistered token"
+msgstr "Token não registrado"
 
 #: src/components/Reown/GetUtxosRequest.js:90
 msgid ""
