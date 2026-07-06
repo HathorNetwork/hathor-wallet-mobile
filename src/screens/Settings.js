@@ -23,6 +23,7 @@ import {
   NETWORK_SETTINGS_FEATURE_TOGGLE,
   REOWN_FEATURE_TOGGLE,
   SINGLE_ADDRESS_FEATURE_TOGGLE,
+  AMOUNT_FORMAT_FEATURE_TOGGLE,
 } from '../constants';
 import CopyClipboard from '../components/CopyClipboard';
 import { COLORS } from '../styles/themes';
@@ -55,6 +56,7 @@ const mapStateToProps = (state) => {
     reownEnabled: state.featureToggles[REOWN_FEATURE_TOGGLE] && isNanoContractsEnabled(state),
     networkSettingsEnabled: state.featureToggles[NETWORK_SETTINGS_FEATURE_TOGGLE],
     singleAddressEnabled: state.featureToggles[SINGLE_ADDRESS_FEATURE_TOGGLE],
+    amountFormatEnabled: state.featureToggles[AMOUNT_FORMAT_FEATURE_TOGGLE],
     addressMode: state.addressMode,
   };
 };
@@ -171,6 +173,13 @@ export class Settings extends React.Component {
                 <ListMenu
                   title={t`Address Mode`}
                   onPress={() => this.props.navigation.navigate('AddressMode')}
+                />
+              )}
+            {this.props.amountFormatEnabled
+              && (
+                <ListMenu
+                  title={t`Amount format`}
+                  onPress={() => this.props.navigation.navigate('AmountFormat')}
                 />
               )}
             <ListMenu

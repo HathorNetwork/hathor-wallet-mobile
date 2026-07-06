@@ -16,7 +16,7 @@ import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import moment from 'moment';
 import baseStyle from './styles/init';
-import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE, TOKEN_SWAP_FEATURE_TOGGLE, FBT_FEATURE_TOGGLE } from './constants';
+import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE, TOKEN_SWAP_FEATURE_TOGGLE, FBT_FEATURE_TOGGLE, AMOUNT_FORMAT } from './constants';
 import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_BIOMETRY_KEY, SAFE_BIOMETRY_FEATURE_FLAG_KEY, FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
@@ -372,19 +372,90 @@ export const getLightBackground = (alpha) => {
   return `${COLORS.primary}${hex}`;
 };
 
+const SUBSCRIPT_DIGITS = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
+
+// Shortest zero run worth compressing.
+const COMPRESS_MIN_ZERO_RUN = 3;
+
 /**
- * Render value in a formatted way for display
+ * Render a non-negative integer as a Unicode subscript string (e.g. 12 -> "₁₂").
+ *
+ * @param {number} n
+ * @return {string}
+ */
+const toSubscript = (n) => String(n)
+  .split('')
+  .map((digit) => SUBSCRIPT_DIGITS[Number(digit)])
+  .join('');
+
+/**
+ * Collapse the leading run of fractional zeros into subscript notation,
+ * e.g. "0.0000005195" -> "0.0₆5195". Only the first zero run (right after the
+ * decimal point) is compressed; inner zeros are kept verbatim
+ * (e.g. "0.000000045600000123" -> "0.0₇45600000123"). Takes prettyValue's
+ * stringified amount to reuse the lib's BigInt formatting. Returns the input
+ * unchanged when nothing qualifies: value >= 1, integer, zero, or a leading run
+ * shorter than COMPRESS_MIN_ZERO_RUN.
+ *
+ * @param {string} formatted Amount string from prettyValue
+ * @return {string}
+ */
+export const compressAmountString = (formatted) => {
+  const isNegative = formatted.startsWith('-');
+  const unsigned = isNegative ? formatted.slice(1) : formatted;
+
+  const dotIndex = unsigned.indexOf('.');
+  if (dotIndex === -1) {
+    return formatted;
+  }
+
+  const integerPart = unsigned.slice(0, dotIndex);
+  const decimalPart = unsigned.slice(dotIndex + 1);
+
+  // Only sub-1 values have a leading-zero run worth compressing.
+  if (integerPart.replace(/,/g, '') !== '0') {
+    return formatted;
+  }
+
+  // Trailing zeros are insignificant; drop them before scanning.
+  const trimmed = decimalPart.replace(/0+$/, '');
+  if (trimmed === '') {
+    return formatted;
+  }
+
+  // Count only the leading run of zeros; inner zeros are left verbatim.
+  let leadingZeros = 0;
+  while (leadingZeros < trimmed.length && trimmed[leadingZeros] === '0') {
+    leadingZeros += 1;
+  }
+
+  if (leadingZeros < COMPRESS_MIN_ZERO_RUN) {
+    return formatted;
+  }
+
+  const sign = isNegative ? '-' : '';
+  const significant = trimmed.slice(leadingZeros);
+  return `${sign}0.0${toSubscript(leadingZeros)}${significant}`;
+};
+
+/**
+ * Render value in a formatted way for display.
  *
  * @param {bigint} amount The token amount as BigInt
  * @param {boolean} isInteger Whether the token is an NFT or regular token
+ * @param {string} [amountFormat] AMOUNT_FORMAT.EXPANDED (default) or COMPRESSED
  * @return {string} Formatted value for display
  */
-export const renderValue = (amount, isInteger) => {
-  if (isInteger) {
-    return hathorLib.numberUtils.prettyValue(amount, 0);
+export const renderValue = (amount, isInteger, amountFormat = AMOUNT_FORMAT.EXPANDED) => {
+  const formatted = isInteger
+    ? hathorLib.numberUtils.prettyValue(amount, 0)
+    : hathorLib.numberUtils.prettyValue(amount);
+
+  if (amountFormat === AMOUNT_FORMAT.COMPRESSED) {
+    return compressAmountString(formatted);
   }
 
-  return hathorLib.numberUtils.prettyValue(amount);
+  return formatted;
 };
 
 /**
