@@ -174,6 +174,10 @@ export class Settings extends React.Component {
                 />
               )}
             <ListMenu
+              title={t`Amount format`}
+              onPress={() => this.props.navigation.navigate('AmountFormat')}
+            />
+            <ListMenu
               title={t`Reset wallet`}
               onPress={() => this.props.navigation.navigate('ResetWallet')}
             />

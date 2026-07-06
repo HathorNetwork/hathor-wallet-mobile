@@ -147,6 +147,20 @@ const ADDRESS_MODE_KEY_PREFIX = 'wallet:address_mode:';
 export const addressModeKey = (network) => `${ADDRESS_MODE_KEY_PREFIX}${network}`;
 
 /**
+ * Amount display format (wallet-wide, network-independent).
+ */
+export const AMOUNT_FORMAT = {
+  EXPANDED: 'expanded',
+  COMPRESSED: 'compressed',
+};
+
+export const AMOUNT_FORMAT_DEFAULT = AMOUNT_FORMAT.EXPANDED;
+
+// The 'wallet:' prefix means STORE.clearItems(true) sweeps it on resetWallet,
+// so a fresh wallet returns to the default (Expanded).
+export const AMOUNT_FORMAT_KEY = 'wallet:amount_format';
+
+/**
  * this is the message key for localization of new transaction when show amount is enabled
  */
 export const NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED = 'new_transaction_received_description_with_tokens';

@@ -54,6 +54,7 @@ const mapStateToProps = (state) => ({
   isOnline: state.isOnline,
   wallet: state.wallet,
   tokenMetadata: state.tokenMetadata,
+  amountFormat: state.amountFormat,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -114,6 +115,7 @@ class MainScreen extends React.Component {
         token={this.props.selectedToken}
         onRequestClose={this.closeTxDetails}
         isNFT={this.isNFT()}
+        amountFormat={this.props.amountFormat}
       />
     );
     this.setState({ modal: txDetailsModal });
@@ -197,6 +199,7 @@ class MainScreen extends React.Component {
             wallet={this.props.wallet}
             updateTokenHistory={this.props.updateTokenHistory}
             isNFT={this.isNFT()}
+            amountFormat={this.props.amountFormat}
           />
         );
       }
@@ -235,6 +238,7 @@ class MainScreen extends React.Component {
           balance={this.props.balance}
           token={this.props.selectedToken}
           isNFT={this.isNFT()}
+          amountFormat={this.props.amountFormat}
         />
         {renderTxHistory()}
         <OfflineBar />
@@ -260,6 +264,7 @@ class TxHistoryView extends React.Component {
         token={this.props.token}
         onTxPress={this.props.onTxPress}
         isNFT={this.props.isNFT}
+        amountFormat={this.props.amountFormat}
       />
     );
   }
@@ -469,7 +474,7 @@ class TxListItem extends React.Component {
     const style = this.getStyle(item);
     const image = this.getImage(item);
 
-    const balanceStr = renderValue(item.balance, this.props.isNFT);
+    const balanceStr = renderValue(item.balance, this.props.isNFT, this.props.amountFormat);
     const description = item.getDescription(this.props.token);
     const { timestamp } = this.state;
     return (
@@ -534,8 +539,16 @@ class BalanceView extends React.Component {
   }
 
   renderExpanded() {
-    const availableStr = renderValue(this.props.balance.available, this.props.isNFT);
-    const lockedStr = renderValue(this.props.balance.locked, this.props.isNFT);
+    const availableStr = renderValue(
+      this.props.balance.available,
+      this.props.isNFT,
+      this.props.amountFormat
+    );
+    const lockedStr = renderValue(
+      this.props.balance.locked,
+      this.props.isNFT,
+      this.props.amountFormat
+    );
     const { token } = this.props;
     const { style } = this;
     return (
@@ -564,7 +577,11 @@ class BalanceView extends React.Component {
   }
 
   renderSimple() {
-    const availableStr = renderValue(this.props.balance.available, this.props.isNFT);
+    const availableStr = renderValue(
+      this.props.balance.available,
+      this.props.isNFT,
+      this.props.amountFormat
+    );
     const { token } = this.props;
     const { style } = this;
     return (

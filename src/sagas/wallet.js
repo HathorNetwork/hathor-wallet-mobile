@@ -42,6 +42,8 @@ import {
   ADDRESS_MODE,
   addressModeKey,
   networkSettingsKeyMap,
+  AMOUNT_FORMAT_KEY,
+  AMOUNT_FORMAT_DEFAULT,
 } from '../constants';
 import { STORE } from '../store';
 import {
@@ -77,6 +79,7 @@ import {
   setFullNodeNetworkName,
   setAddressMode,
   tokenImportFetchRequested,
+  setAmountFormat,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -193,6 +196,12 @@ export function* startWallet(action) {
   const storage = STORE.getStorage();
   yield call([storage.store, storage.store.cleanMetadata]); // clean metadata on memory
   yield call([storage, storage.cleanStorage], true); // clean transaction history
+
+  // Hydrate the wallet-wide amount format preference (network-independent).
+  // startWallet re-runs on every unlock, so this re-applies a persisted choice
+  // onto the freshly-initialized redux state (which defaults to Expanded).
+  const storedAmountFormat = STORE.getItem(AMOUNT_FORMAT_KEY) ?? AMOUNT_FORMAT_DEFAULT;
+  yield put(setAmountFormat(storedAmountFormat));
 
   // As this is a core setting for the wallet, it should be loaded first.
   // Network settings either from store or redux state

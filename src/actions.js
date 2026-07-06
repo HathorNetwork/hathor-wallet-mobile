@@ -104,6 +104,7 @@ export const types = {
   WALLET_REFRESH_SHARED_ADDRESS: 'WALLET_REFRESH_SHARED_ADDRESS',
   SHARED_ADDRESS_UPDATE: 'SHARED_ADDRESS_UPDATE',
   SET_ADDRESS_MODE: 'SET_ADDRESS_MODE',
+  SET_AMOUNT_FORMAT: 'SET_AMOUNT_FORMAT',
   EXCEPTION_CAPTURED: 'EXCEPTION_CAPTURED',
   SET_FEATURE_TOGGLES: 'SET_FEATURE_TOGGLES',
   // Feature Toggle actions
@@ -986,6 +987,15 @@ export const sharedAddressUpdate = (lastSharedAddress, lastSharedIndex) => ({
 export const setAddressMode = (mode) => ({
   type: types.SET_ADDRESS_MODE,
   payload: mode,
+});
+
+/**
+ * Set the wallet-wide amount display format
+ * @param {'expanded'|'compressed'} format
+ */
+export const setAmountFormat = (format) => ({
+  type: types.SET_AMOUNT_FORMAT,
+  payload: format,
 });
 
 /**
