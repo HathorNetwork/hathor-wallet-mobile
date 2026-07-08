@@ -4,5 +4,12 @@
 <dict>
 	<key>aps-environment</key>
 	<string>production</string>
+	<!-- Passkey (PRF) onboarding: platform passkeys are bound to this domain. It must serve
+	     https://wallet.hathor.dev/.well-known/apple-app-site-association with a "webcredentials"
+	     entry for this app's Team ID + bundle ID. See docs/PASSKEY_ONBOARDING.md. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>webcredentials:wallet.hathor.dev</string>
+	</array>
 </dict>
 </plist>

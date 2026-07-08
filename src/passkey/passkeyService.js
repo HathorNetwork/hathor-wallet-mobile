@@ -1,0 +1,182 @@
+/**
+ * Copyright (c) Hathor Labs and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * Passkey (PRF) onboarding service — PoC-1.
+ *
+ * A WebAuthn passkey's PRF output is a 32-byte secret that is DETERMINISTIC for a given
+ * credential + salt, never leaves the secure element, and is synced/backed-up by the platform
+ * (iCloud Keychain / Google Password Manager). We use it as the BIP39 entropy for an otherwise
+ * completely ordinary Hathor HD wallet: the user does Face ID, no 24 words are ever shown, and
+ * "backup" becomes the passkey's own platform sync. Everything BELOW this file is unchanged —
+ * the derived words feed the existing ChoosePinScreen -> STORE.initStorage -> startWallet pipeline.
+ *
+ * Native layer: react-native-passkey (>= 3.3, PRF on iOS 18+ / Android Credential Manager).
+ *
+ * IMPORTANT — on-device prerequisites (see docs/PASSKEY_ONBOARDING.md):
+ *   - iOS: Associated Domains entitlement `webcredentials:<PASSKEY_RP_ID>` + a hosted
+ *     https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association. Without it, create/get fail.
+ *   - PASSKEY_USE_MOCK bypasses the native passkey with a deterministic dev secret so the whole
+ *     onboarding flow is testable BEFORE that infra exists. DEV ONLY — never ship funds on it.
+ */
+
+import Mnemonic from 'bitcore-mnemonic';
+import {
+  PASSKEY_RP_ID,
+  PASSKEY_RP_NAME,
+  PASSKEY_USE_MOCK,
+} from '../constants';
+
+const PRF_SALT_STRING = 'hathor-passkey-poc/prf/v1';
+// Buffer is globally polyfilled in RN (see shim.js); avoid TextEncoder for reliability.
+const PRF_SALT = new Uint8Array(Buffer.from(PRF_SALT_STRING, 'utf8'));
+
+const toB64Url = (u8) => Buffer.from(u8)
+  .toString('base64')
+  .replace(/\+/g, '-')
+  .replace(/\//g, '_')
+  .replace(/=+$/, '');
+
+const fromB64Url = (s) => new Uint8Array(
+  Buffer.from(String(s).replace(/-/g, '+').replace(/_/g, '/'), 'base64')
+);
+
+const randomBytes = (n) => {
+  const b = new Uint8Array(n);
+  // react-native-get-random-values makes global.crypto.getRandomValues available.
+  global.crypto.getRandomValues(b);
+  return b;
+};
+
+// react-native-passkey is a NATIVE dependency. Lazy-require it so the JS bundle still builds for
+// anyone who hasn't run `yarn && pod install` yet; the clear error only fires if passkey is used.
+function getPasskey() {
+  try {
+    // eslint-disable-next-line global-require, import/no-unresolved
+    return require('react-native-passkey').Passkey;
+  } catch (e) {
+    throw new Error(
+      'react-native-passkey is not installed. Run `yarn && cd ios && pod install`.'
+    );
+  }
+}
+
+/** True if this device/build can produce a passkey PRF secret. */
+export async function isPasskeySupported() {
+  if (PASSKEY_USE_MOCK) return true;
+  try {
+    const Passkey = getPasskey();
+    const r = Passkey.isSupported();
+    return typeof r?.then === 'function' ? await r : !!r;
+  } catch (e) {
+    return false;
+  }
+}
+
+/** Coerce a binary value (base64url string, byte array, or RN Uint8Array-as-object) to bytes. */
+function toBytes(v) {
+  if (v == null) return undefined;
+  if (v instanceof Uint8Array) return v;
+  if (typeof v === 'string') return fromB64Url(v);
+  if (Array.isArray(v)) return new Uint8Array(v);
+  if (typeof v === 'object') {
+    // RN serializes a Uint8Array across the bridge as { "0": b, "1": b, ... }.
+    const keys = Object.keys(v).filter((k) => /^\d+$/.test(k)).sort((a, b) => Number(a) - Number(b));
+    if (keys.length) return new Uint8Array(keys.map((k) => v[k]));
+  }
+  return undefined;
+}
+
+/** Dig the PRF `first` result out of a react-native-passkey result, tolerant of its shape. */
+function digPrfFirst(result) {
+  const ext = result?.clientExtensionResults ?? result?.response?.clientExtensionResults;
+  return toBytes(ext?.prf?.results?.first);
+}
+
+/**
+ * Register a passkey with PRF ENABLED (hmac-secret), but do NOT evaluate the salt here.
+ * iOS enables PRF at registration yet returns the secret only at ASSERTION, and passing salt
+ * inputs at registration is the least-supported path (a likely source of a generic native
+ * failure). We evaluate the salt in getPrfViaAssertion() instead — the PRF output is deterministic
+ * per (credential, salt), so the derived seed is identical whichever call evaluates it.
+ */
+async function registerPasskey(userName) {
+  const Passkey = getPasskey();
+  const result = await Passkey.create({
+    challenge: toB64Url(randomBytes(32)),
+    rp: { id: PASSKEY_RP_ID, name: PASSKEY_RP_NAME },
+    user: { id: toB64Url(randomBytes(16)), name: userName, displayName: userName },
+    pubKeyCredParams: [{ type: 'public-key', alg: -7 }], // ES256 / P-256 — the only curve passkeys do
+    authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
+    extensions: { prf: {} }, // enable PRF / check support; evaluate at assertion
+  });
+  return result?.id ?? result?.rawId; // credentialId
+}
+
+/** Assert with the passkey to obtain the PRF secret (many platforms only return PRF on get()). */
+async function getPrfViaAssertion(credentialId) {
+  const Passkey = getPasskey();
+  const result = await Passkey.get({
+    challenge: toB64Url(randomBytes(32)),
+    rpId: PASSKEY_RP_ID,
+    userVerification: 'preferred',
+    allowCredentials: credentialId ? [{ type: 'public-key', id: credentialId }] : undefined,
+    // iOS wants binary PRF inputs as a Uint8Array (it arrives as a Dictionary and is decoded
+    // byte-by-byte); a base64url string throws DecodingError.typeMismatch. Pass the raw bytes.
+    extensions: { prf: { eval: { first: PRF_SALT } } },
+  });
+  return digPrfFirst(result);
+}
+
+/** DEV-only deterministic 32-byte secret so the flow works before real passkey infra exists. */
+function mockPrf(userName) {
+  // eslint-disable-next-line global-require
+  const bitcore = require('bitcore-lib');
+  return new Uint8Array(
+    bitcore.crypto.Hash.sha256(Buffer.concat([Buffer.from(PRF_SALT), Buffer.from(userName || 'hathor')]))
+  );
+}
+
+/** 32-byte PRF secret -> { words } (a 24-word BIP39 phrase). Same secret => same wallet. */
+function wordsFromPrf(prf32) {
+  if (!prf32 || prf32.length !== 32) {
+    throw new Error(
+      'Could not obtain a 32-byte PRF secret from the passkey. PRF may be unsupported on this '
+        + 'device (needs iOS 18+, or Android with Google Password Manager passkeys).'
+    );
+  }
+  // 32 bytes of entropy -> exactly 24 BIP39 words. bitcore-mnemonic treats a Buffer as ENTROPY.
+  return { words: new Mnemonic(Buffer.from(prf32)).phrase };
+}
+
+/**
+ * CREATE a brand-new passkey and derive a fresh wallet seed from its PRF secret.
+ * Use for first-time onboarding — this mints a NEW passkey (and thus a NEW wallet) every call.
+ *
+ * @param {string} userName label shown by the OS passkey UI
+ * @returns {Promise<{ words: string }>}
+ */
+export async function createWalletWordsFromPasskey(userName = 'Hathor Wallet') {
+  if (PASSKEY_USE_MOCK) return wordsFromPrf(mockPrf(userName));
+  const credentialId = await registerPasskey(userName); // enables PRF on the new passkey
+  return wordsFromPrf(await getPrfViaAssertion(credentialId)); // Face ID again to evaluate PRF
+}
+
+/**
+ * SIGN IN with an EXISTING passkey and re-derive the SAME wallet seed from its PRF secret.
+ *
+ * Uses a DISCOVERABLE assertion (no allowCredentials), so iOS/Android lists the user's passkeys
+ * for this domain to choose from. Because platform passkeys (and their PRF output) sync via iCloud
+ * Keychain / Google Password Manager, this returns the identical seed after a wallet reset, an app
+ * reinstall, or on a different device signed into the same account — that's the recovery story.
+ *
+ * @returns {Promise<{ words: string }>}
+ */
+export async function signInWalletWordsFromPasskey() {
+  if (PASSKEY_USE_MOCK) return wordsFromPrf(mockPrf('Hathor Wallet'));
+  return wordsFromPrf(await getPrfViaAssertion()); // no allowCredentials -> discoverable
+}

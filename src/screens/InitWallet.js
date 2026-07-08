@@ -26,6 +26,7 @@ import { t } from 'ttag';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import TextFmt from '../components/TextFmt';
+import PasskeyOnboardingButton from '../components/PasskeyOnboardingButton';
 
 import baseStyle from '../styles/init';
 import { Link, str2jsx } from '../utils';
@@ -123,6 +124,8 @@ class InitialScreen extends React.Component {
             {t`To import a wallet, you will need to provide your seed words.`}
           </Text>
           <View style={this.style.buttonView}>
+            {/* Experimental: renders only when the passkey-onboarding feature toggle is on. */}
+            <PasskeyOnboardingButton navigation={this.props.navigation} />
             <NewHathorButton
               onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
               title={t`Import Wallet`}

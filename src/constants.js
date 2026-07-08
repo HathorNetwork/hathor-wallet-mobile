@@ -197,6 +197,7 @@ export const SAFE_BIOMETRY_MODE_FEATURE_TOGGLE = 'safe-biometry-mode.rollout'
 export const TOKEN_SWAP_FEATURE_TOGGLE = 'token-swap.rollout';
 export const FBT_FEATURE_TOGGLE = 'fee-based-tokens.rollout';
 export const SINGLE_ADDRESS_FEATURE_TOGGLE = 'single-address-mobile.rollout';
+export const PASSKEY_ONBOARDING_FEATURE_TOGGLE = 'passkey-onboarding.rollout';
 
 /**
  * Default feature toggle values.
@@ -216,7 +217,35 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [TOKEN_SWAP_FEATURE_TOGGLE]: false,
   [FBT_FEATURE_TOGGLE]: false,
   [SINGLE_ADDRESS_FEATURE_TOGGLE]: false,
+  [PASSKEY_ONBOARDING_FEATURE_TOGGLE]: false,
 };
+
+/**
+ * Passkey (PRF) onboarding config — PoC-1 (passkey PRF secret -> BIP39 seed).
+ *
+ * PASSKEY_RP_ID MUST be a domain Hathor controls with the Associated Domains entitlement
+ * (`webcredentials:<PASSKEY_RP_ID>`) and a hosted
+ * https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association — otherwise passkey create/get
+ * fail on device. See docs/PASSKEY_ONBOARDING.md.
+ *
+ * PASSKEY_USE_MOCK bypasses the native passkey with a deterministic dev-only secret so the whole
+ * onboarding flow can be exercised BEFORE that domain infra exists. Keep it false for real
+ * passkeys; flip to true (or __DEV__) only for local flow testing. Never ship funds on a mock seed.
+ */
+export const PASSKEY_RP_ID = 'wallet.hathor.dev';
+export const PASSKEY_RP_NAME = 'Hathor Wallet';
+export const PASSKEY_USE_MOCK = false;
+
+/**
+ * LOCAL TEST OVERRIDE for the "Continue with passkey" button.
+ *
+ * The production gate is the Unleash flag PASSKEY_ONBOARDING_FEATURE_TOGGLE. But Unleash only
+ * returns toggles it defines: an undefined flag resolves to false and REPLACES the local default
+ * once toggles load (see mapFeatureToggles in src/sagas/featureToggle.js). So flipping the default
+ * is not enough for local testing. Set this true to force the button on regardless of Unleash.
+ * SET BACK TO false before merging — this bypasses the feature flag entirely.
+ */
+export const PASSKEY_ONBOARDING_LOCAL_ENABLE = false;
 
 // Project id configured in https://walletconnect.com
 export const REOWN_PROJECT_ID = '8264fff563181da658ce64ee80e80458';
