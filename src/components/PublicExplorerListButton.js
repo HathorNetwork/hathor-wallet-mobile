@@ -7,17 +7,17 @@
 
 import React from 'react';
 import { t } from 'ttag';
-import { Image, Linking } from 'react-native';
+import { Linking } from 'react-native';
 import { useSelector } from 'react-redux';
-import icShareActive from '../assets/icons/icShareActive.png';
 import { ListButton } from './HathorList';
+import { OpenInNewIcon } from './Icons/OpenInNew.icon';
 import { COLORS } from '../styles/themes';
 import { combineURLs } from '../utils';
 
 const DEFAULT_TITLE = t`Public Explorer`;
 
 export function PublicExplorerListButton({ txId, title }) {
-  const explorerIcon = <Image source={icShareActive} width={24} height={24} />;
+  const explorerIcon = <OpenInNewIcon size={24} color={COLORS.black} />;
   const baseExplorerUrl = useSelector((state) => state.networkSettings.explorerUrl);
   const txUrl = `transaction/${txId}`;
   // XXX: maybe we should have this on the constants or utils to check the network
