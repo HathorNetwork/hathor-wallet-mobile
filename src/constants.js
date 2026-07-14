@@ -160,6 +160,11 @@ export const AMOUNT_FORMAT_DEFAULT = AMOUNT_FORMAT.EXPANDED;
 // so a fresh wallet returns to the default (Expanded).
 export const AMOUNT_FORMAT_KEY = 'wallet:amount_format';
 
+// Maximum number of decimal places the amount input accepts, regardless of the
+// selected token's precision. The value handed downstream is still scaled to the
+// token's own decimal_places, so extra digits are truncated when building the tx.
+export const MAX_DECIMAL_PLACES = 18;
+
 /**
  * this is the message key for localization of new transaction when show amount is enabled
  */

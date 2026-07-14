@@ -20,7 +20,7 @@ import { t, ngettext, msgid } from 'ttag';
 import { get } from 'lodash';
 
 import { IS_MULTI_TOKEN } from '../constants';
-import { renderValue, isTokenNFT } from '../utils';
+import { renderValue, isTokenNFT, computeAmountFontFit } from '../utils';
 import NewHathorButton from '../components/NewHathorButton';
 import AmountTextInput from '../components/AmountTextInput';
 import InputLabel from '../components/InputLabel';
@@ -46,6 +46,7 @@ const SendAmountInput = () => {
   const [amountValue, setAmountValue] = useState(null);
   const [token, setToken] = useState(selectedToken);
   const [error, setError] = useState(null);
+  const [amountAreaWidth, setAmountAreaWidth] = useState(0);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -129,6 +130,23 @@ const SendAmountInput = () => {
 
   const tokenNameUpperCase = token.name.toUpperCase();
 
+  // Left ghost spacer (80, see renderGhostElement) + token box (90, see
+  // TokenBox styles.wrapper). The measured amount-area width is layout-
+  // independent (full content width in both row and column modes), so the fit
+  // decision never feeds back on itself.
+  const TOKEN_BOX_ROW_RESERVED = 170;
+  const placeholderString = isNFT() ? '0' : `0.${'0'.repeat(decimalPlaces)}`;
+  const displayedAmount = amount || placeholderString;
+  const inlineWidth = amountAreaWidth > 0 ? amountAreaWidth - TOKEN_BOX_ROW_RESERVED : 0;
+  // Size against the width beside the token box (inlineWidth) so the amount
+  // shrinks to fit there first, then wraps. Sizing by inlineWidth rather than the
+  // full amount-area width keeps the font continuous across the row->column
+  // switch (no size jump) — see computeAmountFontFit.
+  const { fontSize: amountFontSize, wraps: isStacked } = computeAmountFontFit(
+    displayedAmount.length,
+    inlineWidth,
+  );
+
   return (
     <View style={{ flex: 1 }}>
       <Pressable style={{ flex: 1 }} onPress={() => Keyboard.dismiss()}>
@@ -140,11 +158,19 @@ const SendAmountInput = () => {
         <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getStatusBarHeight()}>
           <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
             <View>
-              <View style={{
-                flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 40,
-              }}
+              {/* A single View whose flexDirection switches row->column keeps the
+                  AmountTextInput mounted across the threshold, avoiding the
+                  focus/keyboard flicker a remount would cause mid-typing. */}
+              <View
+                onLayout={(e) => setAmountAreaWidth(e.nativeEvent.layout.width)}
+                style={{
+                  flexDirection: isStacked ? 'column' : 'row',
+                  alignItems: 'center',
+                  justifyContent: isStacked ? 'flex-start' : 'space-between',
+                  marginTop: 40,
+                }}
               >
-                {renderGhostElement()}
+                {!isStacked && renderGhostElement()}
                 <AmountTextInput
                   ref={inputRef}
                   autoFocus
@@ -152,13 +178,21 @@ const SendAmountInput = () => {
                   value={amount}
                   allowOnlyInteger={isNFT()}
                   decimalPlaces={decimalPlaces}
-                  style={{ flex: 1 }} // we need this so the placeholder doesn't break in android
-                // devices after erasing the text
-                // https://github.com/facebook/react-native/issues/30666
+                  fontSize={amountFontSize}
+                  singleLine={!isStacked}
+                  // flex:1 (row) also keeps the android placeholder from breaking
+                  // after erasing text: https://github.com/facebook/react-native/issues/30666
+                  style={isStacked ? { alignSelf: 'stretch' } : { flex: 1 }}
                 />
                 {IS_MULTI_TOKEN
-                  ? <TokenBox onPress={onTokenBoxPress} label={token.symbol} />
-                  : renderGhostElement()}
+                  ? (
+                    <TokenBox
+                      onPress={onTokenBoxPress}
+                      label={token.symbol}
+                      style={isStacked ? { marginTop: 8 } : undefined}
+                    />
+                  )
+                  : (!isStacked && renderGhostElement())}
               </View>
               <InputLabel style={{ textAlign: 'center', marginTop: 8 }}>
                 {getAvailableString()}

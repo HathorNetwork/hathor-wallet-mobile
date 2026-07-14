@@ -16,6 +16,7 @@ import { t } from 'ttag';
 
 import { TokenVersion } from '@hathor/wallet-lib';
 import { getShortContent, getShortHash, getTokenLabel, renderValue } from '../utils';
+import AmountDisplay from './AmountDisplay';
 import { ListItem } from './HathorList';
 import SlideIndicatorBar from './SlideIndicatorBar';
 import CopyClipboard from './CopyClipboard';
@@ -147,7 +148,6 @@ class BalanceView extends Component {
       paddingRight: 54,
     },
     balance: {
-      fontSize: 32,
       fontWeight: 'bold',
     },
     text1: {
@@ -163,14 +163,9 @@ class BalanceView extends Component {
     const balanceStr = renderValue(tx.balance, isNFT, amountFormat);
     return (
       <View style={this.style.view}>
-        <Text
-          style={this.style.balance}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-          numberOfLines={1}
-        >
+        <AmountDisplay style={this.style.balance}>
           {`${balanceStr} ${this.props.token.symbol}`}
-        </Text>
+        </AmountDisplay>
         <Text style={this.style.text1}>{t`Amount`}</Text>
       </View>
     );

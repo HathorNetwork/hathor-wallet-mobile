@@ -474,6 +474,61 @@ export const renderValue = (amount, isInteger, amountFormat = AMOUNT_FORMAT.EXPA
   return formatted;
 };
 
+// Amount display sizing. Amounts can get long: the maximum integer part is
+// 9223372036854775808 (19 digits) plus up to 18 decimals and a dot => ~38 chars,
+// so the ladder below (computeAmountFontFit) shrinks the font before it wraps.
+export const AMOUNT_FONT_BASE_SIZE = 32;
+export const AMOUNT_FONT_MIN_SIZE = 20;
+export const AMOUNT_MAX_LINES = 3;
+
+// Average glyph width as a fraction of fontSize for the bold amount font. We
+// estimate width as `length * fontSize * ratio` rather than measuring rendered
+// text: a prior measuring implementation (hidden <Text> re-rendering on every
+// keystroke) caused a Folly F14Set assertion crash on iOS 26.1 + Fabric.
+// Biased to over-estimate the bold digit width: under-shooting would let the
+// real text wrap unexpectedly and mis-align the inline single line.
+const AMOUNT_GLYPH_RATIO = 0.68;
+
+/**
+ * Shrink-first-then-wrap sizing ladder for the amount display.
+ *
+ * Given the displayed length and the width available on a single line, it:
+ *   1. keeps the base size while the text fits on one line;
+ *   2. shrinks the font (base -> floor) to keep the text on one line as it grows;
+ *   3. once even the floor size can't fit the text on one line, pins the font at
+ *      the floor and reports `wraps: true` so the caller lets it flow across up
+ *      to AMOUNT_MAX_LINES lines (and, on the Send screen, drops the token box
+ *      below the amount).
+ *
+ * Because the font is already at the floor when `wraps` flips to true, callers
+ * that switch layout at that point (Send) see no font-size jump at the switch.
+ *
+ * @param {number} textLength Length of the displayed amount (value or placeholder)
+ * @param {number} availableWidth Single-line width available for the amount, in px
+ * @param {number} [baseFontSize] Starting (largest) font size; defaults to the amount base
+ * @param {number} [minFontSize] Floor font size below which it wraps instead of shrinking
+ * @return {{ fontSize: number, wraps: boolean }}
+ */
+export const computeAmountFontFit = (
+  textLength,
+  availableWidth,
+  baseFontSize = AMOUNT_FONT_BASE_SIZE,
+  minFontSize = AMOUNT_FONT_MIN_SIZE,
+) => {
+  if (!availableWidth || availableWidth <= 0 || !textLength) {
+    return { fontSize: baseFontSize, wraps: false };
+  }
+  // Font size at which the whole text fits on exactly one line.
+  const oneLineFontSize = availableWidth / (textLength * AMOUNT_GLYPH_RATIO);
+  if (oneLineFontSize >= baseFontSize) {
+    return { fontSize: baseFontSize, wraps: false };
+  }
+  if (oneLineFontSize >= minFontSize) {
+    return { fontSize: Math.floor(oneLineFontSize), wraps: false };
+  }
+  return { fontSize: minFontSize, wraps: true };
+};
+
 /**
  * Format a BigInt amount as a decimal string without thousand separators.
  * Useful for input fields where thousand separators are not allowed.
