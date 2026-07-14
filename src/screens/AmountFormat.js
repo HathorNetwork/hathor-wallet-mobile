@@ -21,6 +21,7 @@ import {
   AMOUNT_FORMAT,
   AMOUNT_FORMAT_DEFAULT,
   AMOUNT_FORMAT_KEY,
+  DEFAULT_TOKEN,
 } from '../constants';
 import { setAmountFormat } from '../actions';
 import { compressAmountString } from '../utils';
@@ -37,6 +38,9 @@ const PREVIEW_SAMPLE = '0.0000005195';
 export default function AmountFormat({ navigation }) {
   const dispatch = useDispatch();
   const currentFormat = useSelector((state) => state.amountFormat ?? AMOUNT_FORMAT_DEFAULT);
+  const nativeTokenSymbol = useSelector(
+    (state) => state.serverInfo?.native_token?.symbol ?? DEFAULT_TOKEN.symbol
+  );
   const [selectedFormat, setSelectedFormat] = useState(currentFormat);
 
   const isSaveDisabled = selectedFormat === currentFormat;
@@ -118,7 +122,7 @@ export default function AmountFormat({ navigation }) {
         <Text style={styles.previewHeader}>{t`PREVIEW`}</Text>
         <View style={styles.previewPanel}>
           <Text style={styles.previewLabel}>{t`Full amount`}</Text>
-          <Text style={styles.previewValue}>{`${previewValue} HTR`}</Text>
+          <Text style={styles.previewValue}>{`${previewValue} ${nativeTokenSymbol}`}</Text>
         </View>
       </View>
 
