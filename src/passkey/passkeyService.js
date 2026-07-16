@@ -65,6 +65,48 @@ function getPasskey() {
   }
 }
 
+/**
+ * True when a passkey ceremony failed because the USER dismissed the OS sheet (both platforms
+ * report the stable code 'UserCancelled'), as opposed to a real failure.
+ */
+export function isPasskeyCancel(e) {
+  return e?.error === 'UserCancelled' || /user\s*cancel/i.test(String(e?.message ?? ''));
+}
+
+/**
+ * user.id encoding: utf8(label) + 0x00 + 8 random bytes (≤64 bytes total, per WebAuthn).
+ * The label part lets sign-in recover the wallet name from response.userHandle; the random
+ * suffix keeps user.id UNIQUE per credential — authenticators REPLACE an existing passkey
+ * when rp + user.id repeat, so two wallets with the same name must never share an id.
+ */
+function encodeUserId(label) {
+  const labelBytes = Buffer.from(String(label).slice(0, 40), 'utf8');
+  return toB64Url(Buffer.concat([labelBytes, Buffer.from([0]), Buffer.from(randomBytes(8))]));
+}
+
+/**
+ * Reject strings that are not a human-typed label: decode artifacts (U+FFFD replacement
+ * chars) and control characters mean the bytes were never text — e.g. passkeys registered
+ * before labels were encoded in user.id carry 16 random bytes there. Returns null for those.
+ */
+export function sanitizePasskeyLabel(label) {
+  if (!label || typeof label !== 'string') return null;
+  const trimmed = label.trim();
+  // eslint-disable-next-line no-control-regex
+  if (!trimmed || /[\uFFFD\u0000-\u001F]/.test(trimmed)) return null;
+  return trimmed;
+}
+
+/** Best-effort inverse of encodeUserId: label from a userHandle, or null. */
+function decodeUserIdLabel(userHandle) {
+  const bytes = toBytes(userHandle);
+  if (!bytes || !bytes.length) return null;
+  const buf = Buffer.from(bytes);
+  const sep = buf.indexOf(0);
+  const label = (sep >= 0 ? buf.subarray(0, sep) : buf).toString('utf8');
+  return sanitizePasskeyLabel(label);
+}
+
 /** True if this device/build can produce a passkey PRF secret. */
 export async function isPasskeySupported() {
   if (PASSKEY_USE_MOCK) return true;
@@ -109,7 +151,7 @@ async function registerPasskey(userName) {
   const result = await Passkey.create({
     challenge: toB64Url(randomBytes(32)),
     rp: { id: PASSKEY_RP_ID, name: PASSKEY_RP_NAME },
-    user: { id: toB64Url(randomBytes(16)), name: userName, displayName: userName },
+    user: { id: encodeUserId(userName), name: userName, displayName: userName },
     pubKeyCredParams: [{ type: 'public-key', alg: -7 }], // ES256 / P-256 — the only curve passkeys do
     authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
     extensions: { prf: {} }, // enable PRF / check support; evaluate at assertion
@@ -117,7 +159,11 @@ async function registerPasskey(userName) {
   return result?.id ?? result?.rawId; // credentialId
 }
 
-/** Assert with the passkey to obtain the PRF secret (many platforms only return PRF on get()). */
+/**
+ * Assert with the passkey to obtain the PRF secret (many platforms only return PRF on get()).
+ * Also surfaces the userHandle (= user.id) when the platform returns it, so callers can
+ * recover the wallet label encoded at registration. userHandle is optional on both platforms.
+ */
 async function getPrfViaAssertion(credentialId) {
   const Passkey = getPasskey();
   const result = await Passkey.get({
@@ -129,7 +175,11 @@ async function getPrfViaAssertion(credentialId) {
     // byte-by-byte); a base64url string throws DecodingError.typeMismatch. Pass the raw bytes.
     extensions: { prf: { eval: { first: PRF_SALT } } },
   });
-  return digPrfFirst(result);
+  return {
+    prf: digPrfFirst(result),
+    userHandle: result?.response?.userHandle ?? result?.userHandle,
+    credentialId: result?.id ?? result?.rawId ?? null,
+  };
 }
 
 /** DEV-only deterministic 32-byte secret so the flow works before real passkey infra exists. */
@@ -158,12 +208,15 @@ function wordsFromPrf(prf32) {
  * Use for first-time onboarding — this mints a NEW passkey (and thus a NEW wallet) every call.
  *
  * @param {string} userName label shown by the OS passkey UI
- * @returns {Promise<{ words: string }>}
+ * @returns {Promise<{ words: string, label: string, credentialId: string|null }>}
  */
 export async function createWalletWordsFromPasskey(userName = 'Hathor Wallet') {
-  if (PASSKEY_USE_MOCK) return wordsFromPrf(mockPrf(userName));
+  if (PASSKEY_USE_MOCK) {
+    return { ...wordsFromPrf(mockPrf(userName)), label: userName, credentialId: null };
+  }
   const credentialId = await registerPasskey(userName); // enables PRF on the new passkey
-  return wordsFromPrf(await getPrfViaAssertion(credentialId)); // Face ID again to evaluate PRF
+  const { prf } = await getPrfViaAssertion(credentialId); // Face ID again to evaluate PRF
+  return { ...wordsFromPrf(prf), label: userName, credentialId: credentialId ?? null };
 }
 
 /**
@@ -174,9 +227,29 @@ export async function createWalletWordsFromPasskey(userName = 'Hathor Wallet') {
  * Keychain / Google Password Manager, this returns the identical seed after a wallet reset, an app
  * reinstall, or on a different device signed into the same account — that's the recovery story.
  *
- * @returns {Promise<{ words: string }>}
+ * The label is recovered from the assertion's userHandle when the platform returns it
+ * (encoded at registration by encodeUserId); null when unavailable.
+ *
+ * When the wallet already knows its credential (walletMeta.credentialId), pass it as
+ * `options.credentialId`: the OS then skips the passkey picker and prompts biometrics for
+ * that credential directly, making the wrong-passkey path impossible in normal use.
+ *
+ * @param {{ credentialId?: string }} [options]
+ * @returns {Promise<{ words: string, label: string|null, credentialId: string|null }>}
  */
-export async function signInWalletWordsFromPasskey() {
-  if (PASSKEY_USE_MOCK) return wordsFromPrf(mockPrf('Hathor Wallet'));
-  return wordsFromPrf(await getPrfViaAssertion()); // no allowCredentials -> discoverable
+export async function signInWalletWordsFromPasskey(options = {}) {
+  if (PASSKEY_USE_MOCK) {
+    return {
+      ...wordsFromPrf(mockPrf('Hathor Wallet')),
+      label: 'Hathor Wallet',
+      credentialId: null,
+    };
+  }
+  // Without options.credentialId this is a DISCOVERABLE assertion (OS lists all passkeys).
+  const { prf, userHandle, credentialId } = await getPrfViaAssertion(options.credentialId);
+  return {
+    ...wordsFromPrf(prf),
+    label: decodeUserIdLabel(userHandle),
+    credentialId,
+  };
 }

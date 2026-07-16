@@ -10,7 +10,7 @@ import {
   Alert, Keyboard, Platform, StyleSheet, Text, TextInput, View,
 } from 'react-native';
 import { t } from 'ttag';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { get } from 'lodash';
 import NewHathorButton from './NewHathorButton';
 import HathorModal from './HathorModal';
@@ -20,6 +20,10 @@ import {
   createWalletWordsFromPasskey,
   signInWalletWordsFromPasskey,
 } from '../passkey/passkeyService';
+import { derivePasskeyXpub } from '../passkey/passkeySigner';
+import { startWalletRequested, unlockScreen } from '../actions';
+import { STORE } from '../store';
+import NavigationService from '../NavigationService';
 
 /**
  * Experimental passkey onboarding (PoC-1: passkey PRF -> seed).
@@ -32,10 +36,13 @@ import {
  *                                then mint a NEW passkey + NEW wallet. The name becomes the
  *                                passkey displayName shown by the OS sign-in picker.
  *
- * Gated by the PASSKEY_ONBOARDING_FEATURE_TOGGLE flag (renders nothing when off). Both derive the
- * seed words and navigate to the EXISTING ChoosePinScreen with `{ words }`.
+ * Gated by the PASSKEY_ONBOARDING_FEATURE_TOGGLE flag (renders nothing when off). Both actions
+ * derive the seed words EPHEMERALLY, persist only the account xpub + passkey label (never the
+ * words — passkey wallets are PIN-less and secret-less), and start the wallet directly. Every
+ * later operation that needs a private key runs a fresh passkey ceremony instead of a PIN.
  */
-const PasskeyOnboardingButton = ({ navigation }) => {
+const PasskeyOnboardingButton = () => {
+  const dispatch = useDispatch();
   const featureToggles = useSelector((state) => state.featureToggles);
   // Local override wins for testing; otherwise the real Unleash flag gates it.
   const enabled = PASSKEY_ONBOARDING_LOCAL_ENABLE
@@ -70,9 +77,20 @@ const PasskeyOnboardingButton = ({ navigation }) => {
   const run = async (deriveWords) => {
     setBusy(true);
     try {
-      const { words } = await deriveWords();
+      const { words, label, credentialId } = await deriveWords();
+      // The words exist only in this scope: derive the account xpub, persist it with the
+      // wallet metadata, and start the wallet read-only. No PIN, no stored secret.
+      const xpub = derivePasskeyXpub(words);
+      await STORE.initPasskeyStorage(xpub, {
+        passkeyLabel: label || 'Passkey wallet',
+        credentialId: credentialId ?? null,
+      });
       setModalVisible(false);
-      navigation.navigate('ChoosePinScreen', { words });
+      // Same sequence ChoosePinScreen uses: unlock before entering the main stack,
+      // then request the wallet start (the saga re-reads the persisted walletMeta).
+      dispatch(unlockScreen());
+      dispatch(startWalletRequested({ walletType: 'passkey' }));
+      NavigationService.resetToMain();
     } catch (e) {
       // react-native-passkey throws a PasskeyError with a `.error` code — surface it so a
       // generic "unknown error" becomes actionable (e.g. BadConfiguration = domain not verified).

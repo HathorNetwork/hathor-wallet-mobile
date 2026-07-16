@@ -29,6 +29,7 @@ import {
   selectTokenSwapContractId,
 } from '../utils/tokenSwap';
 import { renderValue } from '../utils';
+import { STORE } from '../store';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
@@ -213,6 +214,12 @@ const TokenSwapReview = () => {
   };
 
   const onSwapButtonPress = () => {
+    if (STORE.isPasskeyWallet()) {
+      // Passkey wallets have no PIN: authorization is the passkey ceremony, fired by the
+      // external signer when the lib requests signatures. The pin is a forwarded placeholder.
+      executeSend('1');
+      return;
+    }
     const pinParams = {
       cb: executeSend,
       canCancel: true,

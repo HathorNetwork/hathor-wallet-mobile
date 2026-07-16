@@ -50,6 +50,7 @@ import {
 import ChoosePinScreen from './screens/ChoosePinScreen';
 import BackupWords from './screens/BackupWords';
 import PinScreen from './screens/PinScreen';
+import PasskeyLockScreen from './screens/PasskeyLockScreen';
 import ResetWallet from './screens/ResetWallet';
 import LoadHistoryScreen from './screens/LoadHistoryScreen';
 import LoadWalletErrorScreen from './screens/LoadWalletErrorScreen';
@@ -750,6 +751,9 @@ class _AppStackWrapper extends React.Component {
          */
         if (this.props.isResetOnScreenLocked) {
           screen = <ResetWallet navigation={this.props.navigation} />;
+        } else if (STORE.isPasskeyWallet()) {
+          // Passkey wallets have no PIN: unlocking is a passkey ceremony instead.
+          screen = <PasskeyLockScreen />;
         } else {
           screen = <PinScreen isLockScreen navigation={this.props.navigation} />;
         }
