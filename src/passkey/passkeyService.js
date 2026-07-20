@@ -17,14 +17,14 @@
  *
  * Native layer: react-native-passkey (>= 3.3, PRF on iOS 18+ / Android Credential Manager).
  *
- * IMPORTANT — on-device prerequisites (see docs/PASSKEY_ONBOARDING.md):
+ * IMPORTANT — on-device prerequisites:
  *   - iOS: Associated Domains entitlement `webcredentials:<PASSKEY_RP_ID>` + a hosted
  *     https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association. Without it, create/get fail.
  *   - PASSKEY_USE_MOCK bypasses the native passkey with a deterministic dev secret so the whole
  *     onboarding flow is testable BEFORE that infra exists. DEV ONLY — never ship funds on it.
  */
 
-import Mnemonic from 'bitcore-mnemonic';
+import { walletUtils } from '@hathor/wallet-lib';
 import {
   PASSKEY_RP_ID,
   PASSKEY_RP_NAME,
@@ -185,10 +185,12 @@ async function getPrfViaAssertion(credentialId) {
 /** DEV-only deterministic 32-byte secret so the flow works before real passkey infra exists. */
 function mockPrf(userName) {
   // eslint-disable-next-line global-require
-  const bitcore = require('bitcore-lib');
-  return new Uint8Array(
-    bitcore.crypto.Hash.sha256(Buffer.concat([Buffer.from(PRF_SALT), Buffer.from(userName || 'hathor')]))
-  );
+  const crypto = require('crypto'); // Node core, shimmed in RN via rn-nodeify
+  const digest = crypto
+    .createHash('sha256')
+    .update(Buffer.concat([Buffer.from(PRF_SALT), Buffer.from(userName || 'hathor')]))
+    .digest();
+  return new Uint8Array(digest);
 }
 
 /** 32-byte PRF secret -> { words } (a 24-word BIP39 phrase). Same secret => same wallet. */
@@ -199,8 +201,10 @@ function wordsFromPrf(prf32) {
         + 'device (needs iOS 18+, or Android with Google Password Manager passkeys).'
     );
   }
-  // 32 bytes of entropy -> exactly 24 BIP39 words. bitcore-mnemonic treats a Buffer as ENTROPY.
-  return { words: new Mnemonic(Buffer.from(prf32)).phrase };
+  // 32 bytes of entropy -> exactly 24 BIP39 words. wallet-lib's generateWalletWords passes the
+  // Buffer straight to bitcore-mnemonic as ENTROPY, so this is deterministic and matches the
+  // seed handling used everywhere else in the wallet.
+  return { words: walletUtils.generateWalletWords(Buffer.from(prf32)) };
 }
 
 /**

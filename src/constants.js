@@ -226,7 +226,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
  * PASSKEY_RP_ID MUST be a domain Hathor controls with the Associated Domains entitlement
  * (`webcredentials:<PASSKEY_RP_ID>`) and a hosted
  * https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association — otherwise passkey create/get
- * fail on device. See docs/PASSKEY_ONBOARDING.md.
+ * fail on device.
  *
  * PASSKEY_USE_MOCK bypasses the native passkey with a deterministic dev-only secret so the whole
  * onboarding flow can be exercised BEFORE that domain infra exists. Keep it false for real
@@ -235,17 +235,6 @@ export const FEATURE_TOGGLE_DEFAULTS = {
 export const PASSKEY_RP_ID = 'wallet.hathor.dev';
 export const PASSKEY_RP_NAME = 'Hathor Wallet';
 export const PASSKEY_USE_MOCK = false;
-
-/**
- * LOCAL TEST OVERRIDE for the "Continue with passkey" button.
- *
- * The production gate is the Unleash flag PASSKEY_ONBOARDING_FEATURE_TOGGLE. But Unleash only
- * returns toggles it defines: an undefined flag resolves to false and REPLACES the local default
- * once toggles load (see mapFeatureToggles in src/sagas/featureToggle.js). So flipping the default
- * is not enough for local testing. Set this true to force the button on regardless of Unleash.
- * SET BACK TO false before merging — this bypasses the feature flag entirely.
- */
-export const PASSKEY_ONBOARDING_LOCAL_ENABLE = false;
 
 // Project id configured in https://walletconnect.com
 export const REOWN_PROJECT_ID = '8264fff563181da658ce64ee80e80458';

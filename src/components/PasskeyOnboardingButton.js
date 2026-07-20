@@ -15,7 +15,7 @@ import { get } from 'lodash';
 import NewHathorButton from './NewHathorButton';
 import HathorModal from './HathorModal';
 import { COLORS } from '../styles/themes';
-import { PASSKEY_ONBOARDING_FEATURE_TOGGLE, PASSKEY_ONBOARDING_LOCAL_ENABLE } from '../constants';
+import { PASSKEY_ONBOARDING_FEATURE_TOGGLE } from '../constants';
 import {
   createWalletWordsFromPasskey,
   signInWalletWordsFromPasskey,
@@ -44,9 +44,8 @@ import NavigationService from '../NavigationService';
 const PasskeyOnboardingButton = () => {
   const dispatch = useDispatch();
   const featureToggles = useSelector((state) => state.featureToggles);
-  // Local override wins for testing; otherwise the real Unleash flag gates it.
-  const enabled = PASSKEY_ONBOARDING_LOCAL_ENABLE
-    || get(featureToggles, PASSKEY_ONBOARDING_FEATURE_TOGGLE, false);
+  // Gated by the Unleash feature toggle (off by default).
+  const enabled = get(featureToggles, PASSKEY_ONBOARDING_FEATURE_TOGGLE, false);
   const [busy, setBusy] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   // 'actions' -> Sign in / Create choice; 'name' -> wallet-name input before creating.
@@ -116,7 +115,7 @@ const PasskeyOnboardingButton = () => {
       <NewHathorButton
         onPress={openModal}
         title={t`Passkey`}
-        style={{ marginBottom: 16 }}
+        secondary
       />
       {modalVisible && (
         <HathorModal onDismiss={onDismiss} viewStyle={{ paddingBottom: 24 + kbHeight }}>

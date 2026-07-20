@@ -124,18 +124,19 @@ class InitialScreen extends React.Component {
             {t`To import a wallet, you will need to provide your seed words.`}
           </Text>
           <View style={this.style.buttonView}>
-            {/* Experimental: renders only when the passkey-onboarding feature toggle is on. */}
-            <PasskeyOnboardingButton navigation={this.props.navigation} />
+            <NewHathorButton
+              onPress={() => this.props.navigation.navigate('NewWordsScreen')}
+              title={t`New Wallet`}
+              style={{ marginBottom: 16 }}
+            />
             <NewHathorButton
               onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
               title={t`Import Wallet`}
               style={{ marginBottom: 16 }}
               secondary
             />
-            <NewHathorButton
-              onPress={() => this.props.navigation.navigate('NewWordsScreen')}
-              title={t`New Wallet`}
-            />
+            {/* Experimental: renders only when the passkey-onboarding feature toggle is on. */}
+            <PasskeyOnboardingButton />
           </View>
         </View>
       </View>
