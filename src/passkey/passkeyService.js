@@ -6,32 +6,33 @@
  */
 
 /**
- * Passkey (PRF) onboarding service — PoC-1.
+ * Passkey (PRF) onboarding service.
  *
  * A WebAuthn passkey's PRF output is a 32-byte secret that is DETERMINISTIC for a given
  * credential + salt, never leaves the secure element, and is synced/backed-up by the platform
  * (iCloud Keychain / Google Password Manager). We use it as the BIP39 entropy for an otherwise
  * completely ordinary Hathor HD wallet: the user does Face ID, no 24 words are ever shown, and
- * "backup" becomes the passkey's own platform sync. Everything BELOW this file is unchanged —
- * the derived words feed the existing ChoosePinScreen -> STORE.initStorage -> startWallet pipeline.
+ * "backup" becomes the passkey's own platform sync. Only the account xpub is persisted (never the
+ * words or any private key); every signing operation re-runs the passkey ceremony to derive keys
+ * in memory and immediately discards them (see passkeySigner.js).
  *
- * Native layer: react-native-passkey (>= 3.3, PRF on iOS 18+ / Android Credential Manager).
+ * Native layer: react-native-passkey (PRF on iOS 18+ / Android Credential Manager).
  *
  * IMPORTANT — on-device prerequisites:
  *   - iOS: Associated Domains entitlement `webcredentials:<PASSKEY_RP_ID>` + a hosted
  *     https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association. Without it, create/get fail.
- *   - PASSKEY_USE_MOCK bypasses the native passkey with a deterministic dev secret so the whole
- *     onboarding flow is testable BEFORE that infra exists. DEV ONLY — never ship funds on it.
  */
 
 import { walletUtils } from '@hathor/wallet-lib';
 import {
   PASSKEY_RP_ID,
   PASSKEY_RP_NAME,
-  PASSKEY_USE_MOCK,
 } from '../constants';
 
-const PRF_SALT_STRING = 'hathor-passkey-poc/prf/v1';
+// PRF salt: a STABLE, PERMANENT input to the passkey PRF evaluation and therefore part of the
+// seed-derivation input. Changing this value changes the derived seed of EVERY passkey wallet, so
+// it must never be altered once the feature ships to users.
+const PRF_SALT_STRING = 'hathor-passkey/prf/v1';
 // Buffer is globally polyfilled in RN (see shim.js); avoid TextEncoder for reliability.
 const PRF_SALT = new Uint8Array(Buffer.from(PRF_SALT_STRING, 'utf8'));
 
@@ -45,6 +46,10 @@ const fromB64Url = (s) => new Uint8Array(
   Buffer.from(String(s).replace(/-/g, '+').replace(/_/g, '/'), 'base64')
 );
 
+// Random bytes for the NON-SECRET ceremony inputs only: the WebAuthn challenge (a per-ceremony
+// nonce) and the random suffix of user.id (keeps credential ids unique). The wallet's actual
+// entropy is the PRF output, which the authenticator computes inside its secure element and is
+// never generated here.
 const randomBytes = (n) => {
   const b = new Uint8Array(n);
   // react-native-get-random-values makes global.crypto.getRandomValues available.
@@ -109,7 +114,6 @@ function decodeUserIdLabel(userHandle) {
 
 /** True if this device/build can produce a passkey PRF secret. */
 export async function isPasskeySupported() {
-  if (PASSKEY_USE_MOCK) return true;
   try {
     const Passkey = getPasskey();
     const r = Passkey.isSupported();
@@ -182,17 +186,6 @@ async function getPrfViaAssertion(credentialId) {
   };
 }
 
-/** DEV-only deterministic 32-byte secret so the flow works before real passkey infra exists. */
-function mockPrf(userName) {
-  // eslint-disable-next-line global-require
-  const crypto = require('crypto'); // Node core, shimmed in RN via rn-nodeify
-  const digest = crypto
-    .createHash('sha256')
-    .update(Buffer.concat([Buffer.from(PRF_SALT), Buffer.from(userName || 'hathor')]))
-    .digest();
-  return new Uint8Array(digest);
-}
-
 /** 32-byte PRF secret -> { words } (a 24-word BIP39 phrase). Same secret => same wallet. */
 function wordsFromPrf(prf32) {
   if (!prf32 || prf32.length !== 32) {
@@ -215,9 +208,6 @@ function wordsFromPrf(prf32) {
  * @returns {Promise<{ words: string, label: string, credentialId: string|null }>}
  */
 export async function createWalletWordsFromPasskey(userName = 'Hathor Wallet') {
-  if (PASSKEY_USE_MOCK) {
-    return { ...wordsFromPrf(mockPrf(userName)), label: userName, credentialId: null };
-  }
   const credentialId = await registerPasskey(userName); // enables PRF on the new passkey
   const { prf } = await getPrfViaAssertion(credentialId); // Face ID again to evaluate PRF
   return { ...wordsFromPrf(prf), label: userName, credentialId: credentialId ?? null };
@@ -242,13 +232,6 @@ export async function createWalletWordsFromPasskey(userName = 'Hathor Wallet') {
  * @returns {Promise<{ words: string, label: string|null, credentialId: string|null }>}
  */
 export async function signInWalletWordsFromPasskey(options = {}) {
-  if (PASSKEY_USE_MOCK) {
-    return {
-      ...wordsFromPrf(mockPrf('Hathor Wallet')),
-      label: 'Hathor Wallet',
-      credentialId: null,
-    };
-  }
   // Without options.credentialId this is a DISCOVERABLE assertion (OS lists all passkeys).
   const { prf, userHandle, credentialId } = await getPrfViaAssertion(options.credentialId);
   return {

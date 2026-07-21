@@ -221,20 +221,15 @@ export const FEATURE_TOGGLE_DEFAULTS = {
 };
 
 /**
- * Passkey (PRF) onboarding config — PoC-1 (passkey PRF secret -> BIP39 seed).
+ * Passkey (PRF) onboarding config (passkey PRF secret -> BIP39 seed).
  *
  * PASSKEY_RP_ID MUST be a domain Hathor controls with the Associated Domains entitlement
  * (`webcredentials:<PASSKEY_RP_ID>`) and a hosted
  * https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association — otherwise passkey create/get
  * fail on device.
- *
- * PASSKEY_USE_MOCK bypasses the native passkey with a deterministic dev-only secret so the whole
- * onboarding flow can be exercised BEFORE that domain infra exists. Keep it false for real
- * passkeys; flip to true (or __DEV__) only for local flow testing. Never ship funds on a mock seed.
  */
 export const PASSKEY_RP_ID = 'wallet.hathor.dev';
 export const PASSKEY_RP_NAME = 'Hathor Wallet';
-export const PASSKEY_USE_MOCK = false;
 
 // Project id configured in https://walletconnect.com
 export const REOWN_PROJECT_ID = '8264fff563181da658ce64ee80e80458';

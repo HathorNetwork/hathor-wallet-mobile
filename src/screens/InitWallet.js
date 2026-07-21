@@ -135,7 +135,7 @@ class InitialScreen extends React.Component {
               style={{ marginBottom: 16 }}
               secondary
             />
-            {/* Experimental: renders only when the passkey-onboarding feature toggle is on. */}
+            {/* Renders only when the passkey-onboarding feature toggle is on. */}
             <PasskeyOnboardingButton />
           </View>
         </View>

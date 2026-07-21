@@ -6,7 +6,7 @@
  */
 
 /**
- * External transaction signer for passkey (PIN-less, xpub-only) wallets — PoC-1.
+ * External transaction signer for passkey (PIN-less, xpub-only) wallets.
  *
  * These wallets are started read-only from the account xpub; no seed or private key is ever
  * persisted. When wallet-lib needs signatures (storage.getTxSignatures), the callback built by

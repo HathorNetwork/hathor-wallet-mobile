@@ -26,7 +26,7 @@ import { STORE } from '../store';
 import NavigationService from '../NavigationService';
 
 /**
- * Experimental passkey onboarding (PoC-1: passkey PRF -> seed).
+ * Passkey onboarding (passkey PRF -> seed).
  *
  * Renders a single "Passkey" button on the initial screen; tapping it opens a bottom-sheet with the
  * two real actions, so the initial screen stays uncluttered:
