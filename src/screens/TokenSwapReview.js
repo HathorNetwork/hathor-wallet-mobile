@@ -216,8 +216,9 @@ const TokenSwapReview = () => {
   const onSwapButtonPress = () => {
     if (STORE.isPasskeyWallet()) {
       // Passkey wallets have no PIN: authorization is the passkey ceremony, fired by the
-      // external signer when the lib requests signatures. The pin is a forwarded placeholder.
-      executeSend('1');
+      // external signer when the lib requests signatures. No PIN is passed — signTx is
+      // PIN-optional when an external tx-signing method is registered.
+      executeSend();
       return;
     }
     const pinParams = {

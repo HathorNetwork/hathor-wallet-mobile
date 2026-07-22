@@ -1096,14 +1096,15 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         break;
       case TriggerTypes.PinConfirmationPrompt: {
         // Passkey wallets have no PIN: consent is the passkey ceremony (Face ID / fingerprint)
-        // fired by the external signer when the lib requests signatures. The placeholder pin
-        // is only forwarded to that signer, which ignores it.
+        // fired by the external signer when the lib requests signatures. We resolve with no PIN
+        // — the lib's signing entry points are PIN-optional when an external tx-signing method
+        // is registered.
         if (STORE.isPasskeyWallet()) {
           resolve({
             type: TriggerResponseTypes.PinRequestResponse,
             data: {
               accepted: true,
-              pinCode: '1',
+              pinCode: '',
             }
           });
           break;

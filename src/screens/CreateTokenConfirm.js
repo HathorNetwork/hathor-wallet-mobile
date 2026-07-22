@@ -164,8 +164,9 @@ const CreateTokenConfirm = () => {
     setIsSending(true);
     if (STORE.isPasskeyWallet()) {
       // Passkey wallets have no PIN: authorization is the passkey ceremony, fired by the
-      // external signer when the lib requests signatures. The pin is a forwarded placeholder.
-      executeCreate('1');
+      // external signer when the lib requests signatures. No PIN is passed — create-token is
+      // PIN-optional when an external tx-signing method is registered.
+      executeCreate();
       return;
     }
     const pinParams = {
