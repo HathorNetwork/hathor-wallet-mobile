@@ -11,9 +11,10 @@
  * These wallets are started read-only from the account xpub; no seed or private key is ever
  * persisted. When wallet-lib needs signatures (storage.getTxSignatures), the callback built by
  * makePasskeyTxSigner() runs the WebAuthn PRF ceremony, re-derives the BIP39 seed in memory,
- * verifies it belongs to THIS wallet (derived xpub === stored xpub), signs every input the same
- * way the lib's own getSignatureForTx does, and discards all key material before returning.
- * Register it with wallet.setExternalTxSigningMethod() BEFORE wallet.start().
+ * verifies it belongs to THIS wallet (derived xpub === stored xpub), then delegates the actual
+ * signing to wallet-lib's transactionUtils.signTxInputs (supplying the ceremony-derived chain
+ * xprivs), and discards all key material before returning. Register it with
+ * wallet.setExternalTxSigningMethod() BEFORE wallet.start().
  */
 
 import { t } from 'ttag';
@@ -99,7 +100,6 @@ export function makePasskeyTxSigner() {
     signingInFlight = true;
     signingCancelled = false;
     let root = null;
-    let changeKey = null;
     try {
       const meta = STORE.getWalletMeta();
       let words;
@@ -128,64 +128,25 @@ export function makePasskeyTxSigner() {
         STORE.updateWalletMeta({ credentialId });
       }
 
-      // Same derivation the lib uses internally: the "main key" is the CHANGE-path xpriv
-      // (m/44'/280'/0'/0) and each input key is a single non-hardened child of it.
+      // Derive the account root xpriv once; wallet-lib's signTxInputs derives the per-input
+      // keys from the chain xprivs it requests through the resolver below.
       root = walletUtils.getXPrivKeyFromSeed(words, { networkName: NETWORK_MAINNET });
       words = null;
-      changeKey = root
-        .deriveNonCompliantChild(hathorConstants.P2PKH_ACCT_PATH)
-        .deriveNonCompliantChild(0);
 
-      if (tx.version === hathorConstants.ON_CHAIN_BLUEPRINTS_VERSION) {
-        // No OCB flow exists on mobile; failing clearly beats returning an unsigned header.
-        throw new Error(t`On-chain blueprints are not supported for passkey wallets.`);
-      }
-
-      const dataToSignHash = tx.getDataToSignHash();
-      const inputSignatures = [];
-      let ncCallerSignature = null;
-
-      const spentTxsIter = storage.getSpentTxs(tx.inputs);
-      /* eslint-disable no-await-in-loop */
-      for await (const { tx: spentTx, input, index: inputIndex } of spentTxsIter) {
-        // Skip inputs that are already signed or don't belong to this wallet — mirrors
-        // the lib's getSignatureForTx.
-        if (!input.data) {
-          const spentOut = spentTx.outputs[input.index];
-          const addressInfo = spentOut.decoded.address
-            ? await storage.getAddressInfo(spentOut.decoded.address)
-            : null;
-          if (addressInfo) {
-            const key = changeKey.deriveNonCompliantChild(addressInfo.bip32AddressIndex);
-            inputSignatures.push({
-              inputIndex,
-              addressIndex: addressInfo.bip32AddressIndex,
-              signature: transactionUtils.getSignature(dataToSignHash, key.privateKey),
-              pubkey: key.publicKey.toDER(),
-            });
-          }
-        }
-      }
-      /* eslint-enable no-await-in-loop */
-
-      if (tx.isNanoContract()) {
-        const caller = transactionUtils.getNanoContractCaller(tx);
-        if (caller) {
-          const addressInfo = await storage.getAddressInfo(caller.base58);
-          if (addressInfo) {
-            const key = changeKey.deriveNonCompliantChild(addressInfo.bip32AddressIndex);
-            const signature = transactionUtils.getSignature(dataToSignHash, key.privateKey);
-            ncCallerSignature = transactionUtils.createInputData(signature, key.publicKey.toDER());
-          }
-        }
-      }
-
-      return { inputSignatures, ncCallerSignature };
+      // Delegate the input-signing loop to wallet-lib so input selection, shielded-spend
+      // handling, the nano/OCB caller signature and encoding all live in one place and don't
+      // drift as the lib evolves. The resolver returns the change-path xpriv for each chain
+      // ('legacy' = m/44'/280'/0'/0, 'spend' = the shielded spend chain m/44'/280'/2'/0).
+      return await transactionUtils.signTxInputs(tx, storage, async (chain) => {
+        const acctPath = chain === 'spend'
+          ? hathorConstants.SHIELDED_SPEND_ACCT_PATH
+          : hathorConstants.P2PKH_ACCT_PATH;
+        return root.deriveNonCompliantChild(acctPath).deriveNonCompliantChild(0);
+      });
     } finally {
       // JS cannot zero string memory; dropping every reference as soon as possible is the
       // best available hygiene (same exposure window the lib has during getMainXPrivKey).
       root = null;
-      changeKey = null;
       signingInFlight = false;
     }
   };
