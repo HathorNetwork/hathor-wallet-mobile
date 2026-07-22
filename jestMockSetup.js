@@ -90,7 +90,7 @@ jest.mock('unleash-proxy-client', () => ({
     UPDATE: 'UPDATE',
     IMPRESSION: 'IMPRESSION',
   },
-}));
+}), { virtual: true });
 
 const RNPermissionsModule = {};
 jest.mock('react-native-permissions', () => ({
@@ -101,6 +101,6 @@ jest.mock('react-native-permissions', () => ({
   }
 }));
 
-jest.mock('react-native-modal');
+jest.mock('react-native-modal', () => ({}), { virtual: true });
 
-jest.mock('react-native-animatable');
+jest.mock('react-native-animatable', () => ({}), { virtual: true });

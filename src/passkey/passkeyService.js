@@ -78,6 +78,28 @@ export function isPasskeyCancel(e) {
   return e?.error === 'UserCancelled' || /user\s*cancel/i.test(String(e?.message ?? ''));
 }
 
+// user.id is capped at 64 bytes by WebAuthn; we spend 1 on the 0x00 separator and 8 on the
+// random suffix, leaving 55 for the label.
+const USER_ID_LABEL_MAX_BYTES = 55;
+
+/**
+ * Truncate a string to at most `maxBytes` UTF-8 bytes WITHOUT splitting a multi-byte code point.
+ * Slicing by JS string length (`.slice`) counts UTF-16 units, so a CJK/emoji label can blow past
+ * the byte budget; slicing raw bytes could split a character and yield a U+FFFD on decode, which
+ * decodeUserIdLabel rejects. Iterate by code point (for..of) and stop before the budget overflows.
+ */
+function truncateUtf8(str, maxBytes) {
+  let bytes = 0;
+  let end = 0;
+  for (const ch of str) {
+    const chBytes = Buffer.byteLength(ch, 'utf8');
+    if (bytes + chBytes > maxBytes) break;
+    bytes += chBytes;
+    end += ch.length;
+  }
+  return str.slice(0, end);
+}
+
 /**
  * user.id encoding: utf8(label) + 0x00 + 8 random bytes (≤64 bytes total, per WebAuthn).
  * The label part lets sign-in recover the wallet name from response.userHandle; the random
@@ -85,7 +107,7 @@ export function isPasskeyCancel(e) {
  * when rp + user.id repeat, so two wallets with the same name must never share an id.
  */
 function encodeUserId(label) {
-  const labelBytes = Buffer.from(String(label).slice(0, 40), 'utf8');
+  const labelBytes = Buffer.from(truncateUtf8(String(label), USER_ID_LABEL_MAX_BYTES), 'utf8');
   return toB64Url(Buffer.concat([labelBytes, Buffer.from([0]), Buffer.from(randomBytes(8))]));
 }
 

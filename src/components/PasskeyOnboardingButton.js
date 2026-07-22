@@ -103,7 +103,17 @@ const PasskeyOnboardingButton = () => {
 
   const onCreate = () => {
     const name = walletName.trim() || 'Hathor Wallet';
-    run(() => createWalletWordsFromPasskey(name));
+    // Unlike the seed-phrase flow, a passkey wallet shows no 24 words and no PIN: recovery depends
+    // entirely on the passkey being synced to a password manager (iCloud Keychain / Google Password
+    // Manager). Disclose that this credential is unrecoverable-if-lost before minting it.
+    Alert.alert(
+      t`No seed phrase to back up`,
+      t`This wallet is protected only by your passkey — there is no seed phrase and no PIN. If you lose your passkey and it isn't synced to your password manager (iCloud Keychain or Google Password Manager), your funds cannot be recovered.`,
+      [
+        { text: t`Cancel`, style: 'cancel' },
+        { text: t`Create wallet`, onPress: () => run(() => createWalletWordsFromPasskey(name)) },
+      ],
+    );
   };
 
   const onDismiss = () => {

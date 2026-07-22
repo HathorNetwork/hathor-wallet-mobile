@@ -682,6 +682,10 @@ export function* processRequest(action) {
     // typed error, so we use a consumable flag — same pattern as pinWasCancelled). Retry the
     // request: the dapp consent modal shows again and the user can accept or reject.
     if (consumePasskeySigningCancelled()) {
+      // Cancel the poll fork from this attempt before recursing — the early return below skips the
+      // cleanup at the end of processRequest, so without this the fork leaks (and a new one is
+      // forked per retry). Mirrors the SendNanoContractTxError retry path.
+      yield cancel(pendingPollTask);
       const result = yield* processRequest(action);
       return result; // Recursive call handles waiting
     }

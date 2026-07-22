@@ -193,6 +193,13 @@ export function* startWallet(action) {
   const walletMeta = STORE.getWalletMeta();
   const isPasskeyWallet = walletMeta?.walletType === 'passkey';
 
+  // A passkey wallet boots read-only from this xpub; if it is missing/corrupted, fail fast with a
+  // clear message instead of handing `{ xpub: undefined }` to HathorWallet and surfacing an opaque
+  // wallet-lib error later. (makePasskeyTxSigner guards the same case at sign time.)
+  if (isPasskeyWallet && !walletMeta?.xpub) {
+    throw new Error('Passkey wallet metadata is missing its xpub.');
+  }
+
   // clean memory storage and metadata before starting the wallet.
   // This should be cleaned when stopping the wallet,
   // but the wallet may be closed unexpectedly

@@ -319,7 +319,7 @@ msgstr ""
 msgid "Import tokens"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:169
+#: src/components/PasskeyOnboardingButton.js:179
 #: src/screens/ConfirmImportScreen.js:129
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:80
 #: src/screens/Reown/SuccessFeedbackScreen.js:39
@@ -380,47 +380,47 @@ msgstr "Opretter token"
 msgid "Building the transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:173
+#: src/screens/CreateTokenConfirm.js:174
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Indtast din 6-cifrede pin for at oprette din token"
 
-#: src/screens/CreateTokenConfirm.js:174
+#: src/screens/CreateTokenConfirm.js:175
 msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
-#: src/screens/CreateTokenConfirm.js:176 src/screens/SendConfirmScreen.js:203
-#: src/screens/TokenSwapReview.js:228
+#: src/screens/CreateTokenConfirm.js:177 src/screens/SendConfirmScreen.js:204
+#: src/screens/TokenSwapReview.js:236
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:217
+#: src/screens/CreateTokenConfirm.js:218
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:234
+#: src/screens/CreateTokenConfirm.js:235
 msgid "Amount of ${ name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:248
+#: src/screens/CreateTokenConfirm.js:249
 msgid "Token name"
 msgstr "Token navn"
 
-#: src/screens/CreateTokenConfirm.js:254 src/screens/CreateTokenSymbol.js:71
+#: src/screens/CreateTokenConfirm.js:255 src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr "Token symbol"
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:261
+#: src/screens/CreateTokenConfirm.js:262
 msgid "Deposit"
 msgstr "Indsæt"
 
-#: src/screens/CreateTokenConfirm.js:269
+#: src/screens/CreateTokenConfirm.js:270
 msgid "Network fee"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:278
+#: src/screens/CreateTokenConfirm.js:279
 msgid "Create token"
 msgstr "Opret token"
 
@@ -788,6 +788,7 @@ msgstr "Indtast din pinkode "
 msgid "Unlock Hathor Wallet"
 msgstr "Lås Hathor-wallet op"
 
+#: src/components/PasskeyOnboardingButton.js:113
 #: src/components/Reown/RequestConfirmationModal.js:110
 #: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
@@ -995,11 +996,11 @@ msgid_plural "${ amountAndToken } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:294
+#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:295
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:327
+#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:335
 msgid "No fee"
 msgstr ""
 
@@ -1015,79 +1016,79 @@ msgstr ""
 msgid "Failed to process transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:206
+#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:211
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:201
-#: src/screens/TokenSwapReview.js:226
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:202
+#: src/screens/TokenSwapReview.js:234
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:202
-#: src/screens/TokenSwapReview.js:227
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:203
+#: src/screens/TokenSwapReview.js:235
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
-#: src/screens/SendConfirmScreen.js:242
+#: src/screens/SendConfirmScreen.js:243
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendConfirmScreen.js:265
+#: src/screens/SendConfirmScreen.js:266
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:268
+#: src/screens/SendConfirmScreen.js:269
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:271
+#: src/screens/SendConfirmScreen.js:272
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:273
+#: src/screens/SendConfirmScreen.js:274
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:278
+#: src/screens/SendConfirmScreen.js:279
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:300
+#: src/screens/SendConfirmScreen.js:301
 msgid "Building your transaction"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:318
+#: src/screens/SendConfirmScreen.js:319
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:334
+#: src/screens/SendConfirmScreen.js:335
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:356
+#: src/screens/SendConfirmScreen.js:357
 msgid "**Transaction summary**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:359
+#: src/screens/SendConfirmScreen.js:360
 msgid "**To**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:364
+#: src/screens/SendConfirmScreen.js:365
 msgid "**Network Fee**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:372
+#: src/screens/SendConfirmScreen.js:373
 msgid "**Total**"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:379
+#: src/screens/SendConfirmScreen.js:380
 msgid "Send"
 msgstr "Send"
 
@@ -1174,25 +1175,25 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:238
+#: src/screens/TokenSwapReview.js:246
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:244
+#: src/screens/TokenSwapReview.js:252
 msgid "Building the swap transaction for your review"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:262
+#: src/screens/TokenSwapReview.js:270
 msgid "Your swap was successful"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:323
+#: src/screens/TokenSwapReview.js:331
 msgid "Network Fee"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:335
+#: src/screens/TokenSwapReview.js:343
 msgid "SWAP"
 msgstr ""
 
@@ -1638,21 +1639,21 @@ msgstr "Transaktion"
 msgid "Open"
 msgstr "Åben"
 
-#: src/sagas/wallet.js:925
+#: src/sagas/wallet.js:932
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:939
+#: src/sagas/wallet.js:946
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:949
+#: src/sagas/wallet.js:956
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:965
+#: src/sagas/wallet.js:972
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
@@ -1800,40 +1801,65 @@ msgstr "Ingen internetforbindelse"
 msgid "Passkey unavailable"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:117
+#.  Unlike the seed-phrase flow, a passkey wallet shows no 24 words and no PIN: recovery depends
+#.  entirely on the passkey being synced to a password manager (iCloud Keychain / Google Password
+#.  Manager). Disclose that this credential is unrecoverable-if-lost before minting it.
+#: src/components/PasskeyOnboardingButton.js:110
+msgid "No seed phrase to back up"
+msgstr ""
+
+#.  Unlike the seed-phrase flow, a passkey wallet shows no 24 words and no PIN: recovery depends
+#.  entirely on the passkey being synced to a password manager (iCloud Keychain / Google Password
+#.  Manager). Disclose that this credential is unrecoverable-if-lost before minting it.
+#: src/components/PasskeyOnboardingButton.js:111
+msgid ""
+"This wallet is protected only by your passkey — there is no seed phrase and "
+"no PIN. If you lose your passkey and it isn't synced to your password "
+"manager (iCloud Keychain or Google Password Manager), your funds cannot be "
+"recovered."
+msgstr ""
+
+#.  Unlike the seed-phrase flow, a passkey wallet shows no 24 words and no PIN: recovery depends
+#.  entirely on the passkey being synced to a password manager (iCloud Keychain / Google Password
+#.  Manager). Disclose that this credential is unrecoverable-if-lost before minting it.
+#: src/components/PasskeyOnboardingButton.js:114
+msgid "Create wallet"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:127
 msgid "Passkey"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:124
+#: src/components/PasskeyOnboardingButton.js:134
 msgid "Continue with passkey"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:129
-#: src/components/PasskeyOnboardingButton.js:163
+#: src/components/PasskeyOnboardingButton.js:139
+#: src/components/PasskeyOnboardingButton.js:173
 msgid "Working…"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:129
+#: src/components/PasskeyOnboardingButton.js:139
 msgid "Sign in with passkey"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:135
+#: src/components/PasskeyOnboardingButton.js:145
 msgid "Create passkey wallet"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:142
+#: src/components/PasskeyOnboardingButton.js:152
 msgid "Name your wallet"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:144
+#: src/components/PasskeyOnboardingButton.js:154
 msgid "This name identifies the passkey when you sign in later."
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:151
+#: src/components/PasskeyOnboardingButton.js:161
 msgid "e.g. Savings"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:163
+#: src/components/PasskeyOnboardingButton.js:173
 msgid "Create"
 msgstr ""
 
