@@ -787,20 +787,20 @@ msgstr "Escaneie o QR code do ID do Nano Contract"
 
 #: src/screens/PasskeyLockScreen.js:61
 msgid "Unlock cancelled."
-msgstr ""
+msgstr "Desbloqueamento cancelado."
 
 #: src/screens/PasskeyLockScreen.js:103
 #, javascript-format
-msgid "Unlock with the passkey \"${ passkeyLabel }\""
-msgstr ""
+msgid "Unlock with the passkey \"${ passkeylabel }\""
+msgstr "Desbloquear com passkey \"${ passkeylabel }\""
 
 #: src/screens/PasskeyLockScreen.js:104
 msgid "Unlock with your passkey"
-msgstr ""
+msgstr "Desbloquear com sua passkey"
 
 #: src/screens/PasskeyLockScreen.js:124
 msgid "Unlock"
-msgstr ""
+msgstr "Desbloquear"
 
 #: src/screens/PinScreen.js:272
 msgid "Incorrect PIN Code. Try again."
@@ -1702,23 +1702,23 @@ msgstr ""
 
 #: src/passkey/passkeySigner.js:32
 msgid "Passkey authorization was cancelled. Nothing was sent."
-msgstr ""
+msgstr "Autorização da passkey cancelada. Nada foi enviado."
 
 #: src/passkey/passkeySigner.js:42
 #, javascript-format
 msgid ""
 "This passkey opens a different wallet. Use the passkey named \"${ label }\"."
-msgstr ""
+msgstr "Essa passkey é de uma carteira diferente. Use a passkey \"${ label }\"."
 
 #: src/passkey/passkeySigner.js:43
 msgid ""
 "This passkey opens a different wallet. Use the passkey that created this "
 "wallet."
-msgstr ""
+msgstr "Essa passkey é de uma carteira diferente. Use a passkey que criou essa wallet"
 
 #: src/passkey/passkeySigner.js:51
 msgid "Another passkey authorization is already in progress."
-msgstr ""
+msgstr "Outra autorização de passkey em progresso."
 
 #: src/components/AmountInputAccessory.js:98
 msgid "Max"
@@ -1845,7 +1845,7 @@ msgstr "Sem conexão com a internet"
 
 #: src/components/PasskeyOnboardingButton.js:98
 msgid "Passkey unavailable"
-msgstr ""
+msgstr "Passkey indisponível."
 
 #: src/components/PasskeyOnboardingButton.js:117
 msgid "Passkey"
@@ -1853,36 +1853,36 @@ msgstr ""
 
 #: src/components/PasskeyOnboardingButton.js:124
 msgid "Continue with passkey"
-msgstr ""
+msgstr "Continuar com passkey"
 
 #: src/components/PasskeyOnboardingButton.js:129
 #: src/components/PasskeyOnboardingButton.js:163
 msgid "Working…"
-msgstr ""
+msgstr "Processando..."
 
 #: src/components/PasskeyOnboardingButton.js:129
 msgid "Sign in with passkey"
-msgstr ""
+msgstr "Entrar com passkey"
 
 #: src/components/PasskeyOnboardingButton.js:135
 msgid "Create passkey wallet"
-msgstr ""
+msgstr "Criar uma carteira com passkey"
 
 #: src/components/PasskeyOnboardingButton.js:142
 msgid "Name your wallet"
-msgstr ""
+msgstr "Nome da sua carteira"
 
 #: src/components/PasskeyOnboardingButton.js:144
 msgid "This name identifies the passkey when you sign in later."
-msgstr ""
+msgstr "Esse nome identifica a passkey quando você entrar depois."
 
 #: src/components/PasskeyOnboardingButton.js:151
 msgid "e.g. Savings"
-msgstr ""
+msgstr "e.g. Poupança"
 
 #: src/components/PasskeyOnboardingButton.js:163
 msgid "Create"
-msgstr ""
+msgstr "Criar"
 
 #: src/components/PublicExplorerListButton.js:17
 msgid "Public Explorer"
