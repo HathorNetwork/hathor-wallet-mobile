@@ -179,8 +179,9 @@ describe('makePasskeyTxSigner', () => {
     resolveCeremony({ words: WORDS, credentialId: STORED_CRED });
     await expect(first).resolves.toEqual({ inputSignatures: [], ncCallerSignature: null });
 
-    // The guard is per-completion, not permanent: a fresh call after the first finishes proceeds.
-    const after = await makePasskeyTxSigner()(fakeTx, fakeStorage).catch((e) => e);
+    // The guard (module-level signingInFlight) is per-completion, not permanent: reusing the SAME
+    // signer after the first finishes proceeds — a stuck flag would throw PasskeyBusyError here.
+    const after = await signer(fakeTx, fakeStorage).catch((e) => e);
     expect(after).not.toBeInstanceOf(PasskeyBusyError);
   });
 
