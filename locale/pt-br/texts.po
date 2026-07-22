@@ -791,8 +791,8 @@ msgstr "Desbloqueamento cancelado."
 
 #: src/screens/PasskeyLockScreen.js:103
 #, javascript-format
-msgid "Unlock with the passkey \"${ passkeylabel }\""
-msgstr "Desbloquear com passkey \"${ passkeylabel }\""
+msgid "Unlock with the passkey \"${ passkeyLabel }\""
+msgstr "Desbloquear com passkey \"${ passkeyLabel }\""
 
 #: src/screens/PasskeyLockScreen.js:104
 msgid "Unlock with your passkey"
