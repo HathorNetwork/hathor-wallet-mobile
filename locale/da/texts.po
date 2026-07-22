@@ -319,7 +319,7 @@ msgstr ""
 msgid "Import tokens"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:179
+#: src/components/PasskeyOnboardingButton.js:176
 #: src/screens/ConfirmImportScreen.js:129
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:80
 #: src/screens/Reown/SuccessFeedbackScreen.js:39
@@ -389,7 +389,7 @@ msgid "Authorize token creation"
 msgstr "Autoriser oprettelse af token"
 
 #: src/screens/CreateTokenConfirm.js:177 src/screens/SendConfirmScreen.js:204
-#: src/screens/TokenSwapReview.js:236
+#: src/screens/TokenSwapReview.js:237
 msgid "Building transaction"
 msgstr ""
 
@@ -788,7 +788,6 @@ msgstr "Indtast din pinkode "
 msgid "Unlock Hathor Wallet"
 msgstr "Lås Hathor-wallet op"
 
-#: src/components/PasskeyOnboardingButton.js:113
 #: src/components/Reown/RequestConfirmationModal.js:110
 #: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
@@ -1000,7 +999,7 @@ msgstr[1] ""
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:335
+#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:336
 msgid "No fee"
 msgstr ""
 
@@ -1016,17 +1015,17 @@ msgstr ""
 msgid "Failed to process transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:211
+#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:212
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:202
-#: src/screens/TokenSwapReview.js:234
+#: src/screens/TokenSwapReview.js:235
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:203
-#: src/screens/TokenSwapReview.js:235
+#: src/screens/TokenSwapReview.js:236
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -1175,25 +1174,25 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:246
+#: src/screens/TokenSwapReview.js:247
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:252
+#: src/screens/TokenSwapReview.js:253
 msgid "Building the swap transaction for your review"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:270
+#: src/screens/TokenSwapReview.js:271
 msgid "Your swap was successful"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:331
+#: src/screens/TokenSwapReview.js:332
 msgid "Network Fee"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:343
+#: src/screens/TokenSwapReview.js:344
 msgid "SWAP"
 msgstr ""
 
@@ -1801,65 +1800,47 @@ msgstr "Ingen internetforbindelse"
 msgid "Passkey unavailable"
 msgstr ""
 
-#.  Unlike the seed-phrase flow, a passkey wallet shows no 24 words and no PIN: recovery depends
-#.  entirely on the passkey being synced to a password manager (iCloud Keychain / Google Password
-#.  Manager). Disclose that this credential is unrecoverable-if-lost before minting it.
-#: src/components/PasskeyOnboardingButton.js:110
-msgid "No seed phrase to back up"
-msgstr ""
-
-#.  Unlike the seed-phrase flow, a passkey wallet shows no 24 words and no PIN: recovery depends
-#.  entirely on the passkey being synced to a password manager (iCloud Keychain / Google Password
-#.  Manager). Disclose that this credential is unrecoverable-if-lost before minting it.
-#: src/components/PasskeyOnboardingButton.js:111
-msgid ""
-"This wallet is protected only by your passkey — there is no seed phrase and "
-"no PIN. If you lose your passkey and it isn't synced to your password "
-"manager (iCloud Keychain or Google Password Manager), your funds cannot be "
-"recovered."
-msgstr ""
-
-#.  Unlike the seed-phrase flow, a passkey wallet shows no 24 words and no PIN: recovery depends
-#.  entirely on the passkey being synced to a password manager (iCloud Keychain / Google Password
-#.  Manager). Disclose that this credential is unrecoverable-if-lost before minting it.
-#: src/components/PasskeyOnboardingButton.js:114
-msgid "Create wallet"
-msgstr ""
-
-#: src/components/PasskeyOnboardingButton.js:127
+#: src/components/PasskeyOnboardingButton.js:121
 msgid "Passkey"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:134
+#: src/components/PasskeyOnboardingButton.js:128
 msgid "Continue with passkey"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:139
-#: src/components/PasskeyOnboardingButton.js:173
+#: src/components/PasskeyOnboardingButton.js:133
+#: src/components/PasskeyOnboardingButton.js:170
 msgid "Working…"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:139
+#: src/components/PasskeyOnboardingButton.js:133
 msgid "Sign in with passkey"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:145
+#: src/components/PasskeyOnboardingButton.js:139
 msgid "Create passkey wallet"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:152
+#: src/components/PasskeyOnboardingButton.js:144
+#, javascript-format
+msgid ""
+"Your wallet is protected by this passkey. Keep it backed up by syncing it to "
+"${ passwordManager } so you don't lose access."
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:149
 msgid "Name your wallet"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:154
+#: src/components/PasskeyOnboardingButton.js:151
 msgid "This name identifies the passkey when you sign in later."
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:161
+#: src/components/PasskeyOnboardingButton.js:158
 msgid "e.g. Savings"
 msgstr ""
 
-#: src/components/PasskeyOnboardingButton.js:173
+#: src/components/PasskeyOnboardingButton.js:170
 msgid "Create"
 msgstr ""
 

@@ -103,18 +103,12 @@ const PasskeyOnboardingButton = () => {
 
   const onCreate = () => {
     const name = walletName.trim() || 'Hathor Wallet';
-    // Unlike the seed-phrase flow, a passkey wallet shows no 24 words and no PIN: recovery depends
-    // entirely on the passkey being synced to a password manager (iCloud Keychain / Google Password
-    // Manager). Disclose that this credential is unrecoverable-if-lost before minting it.
-    Alert.alert(
-      t`No seed phrase to back up`,
-      t`This wallet is protected only by your passkey — there is no seed phrase and no PIN. If you lose your passkey and it isn't synced to your password manager (iCloud Keychain or Google Password Manager), your funds cannot be recovered.`,
-      [
-        { text: t`Cancel`, style: 'cancel' },
-        { text: t`Create wallet`, onPress: () => run(() => createWalletWordsFromPasskey(name)) },
-      ],
-    );
+    run(() => createWalletWordsFromPasskey(name));
   };
+
+  // A passkey wallet has no seed phrase and no PIN — its recovery is the OS syncing the passkey to
+  // the user's password manager. Name it per platform so the disclosure below is concrete.
+  const passwordManager = Platform.OS === 'ios' ? 'iCloud Keychain' : 'Google Password Manager';
 
   const onDismiss = () => {
     if (!busy) setModalVisible(false);
@@ -146,6 +140,9 @@ const PasskeyOnboardingButton = () => {
                   secondary
                 />
               </View>
+              <Text style={styles.syncNote}>
+                {t`Your wallet is protected by this passkey. Keep it backed up by syncing it to ${passwordManager} so you don't lose access.`}
+              </Text>
             </>
           ) : (
             <>
@@ -201,6 +198,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 24,
     textAlign: 'center',
+  },
+  syncNote: {
+    fontSize: 13,
+    color: COLORS.midContrastDetail,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+    marginTop: 16,
   },
   buttons: {
     width: '100%',

@@ -332,7 +332,7 @@ msgstr "Você está prestes a adicionar esses tokens à sua carteira:"
 msgid "Import tokens"
 msgstr "Importar tokens"
 
-#: src/components/PasskeyOnboardingButton.js:179
+#: src/components/PasskeyOnboardingButton.js:176
 #: src/screens/ConfirmImportScreen.js:129
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:80
 #: src/screens/Reown/SuccessFeedbackScreen.js:39
@@ -406,7 +406,7 @@ msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
 #: src/screens/CreateTokenConfirm.js:177 src/screens/SendConfirmScreen.js:204
-#: src/screens/TokenSwapReview.js:236
+#: src/screens/TokenSwapReview.js:237
 msgid "Building transaction"
 msgstr "Criando transação"
 
@@ -814,7 +814,6 @@ msgstr "Digite seu PIN "
 msgid "Unlock Hathor Wallet"
 msgstr "Desbloqueie sua Hathor Wallet"
 
-#: src/components/PasskeyOnboardingButton.js:113
 #: src/components/Reown/RequestConfirmationModal.js:110
 #: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
@@ -1029,7 +1028,7 @@ msgstr[1] "${ amountAndToken } disponíveis"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:335
+#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:336
 msgid "No fee"
 msgstr "Sem taxa"
 
@@ -1045,17 +1044,17 @@ msgstr "Saldo insuficiente para completar a transação."
 msgid "Failed to process transaction."
 msgstr "Falha ao processar a transação"
 
-#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:211
+#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:212
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:202
-#: src/screens/TokenSwapReview.js:234
+#: src/screens/TokenSwapReview.js:235
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:203
-#: src/screens/TokenSwapReview.js:235
+#: src/screens/TokenSwapReview.js:236
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -1204,25 +1203,25 @@ msgstr "Ocorreu um erro ao carregar o protocolo de troca de tokens."
 msgid "Loading Token Swap"
 msgstr "Carregando troca de tokens"
 
-#: src/screens/TokenSwapReview.js:246
+#: src/screens/TokenSwapReview.js:247
 msgid "REVIEW TOKEN SWAP"
 msgstr "REVISAR TROCA DE TOKENS"
 
-#: src/screens/TokenSwapReview.js:252
+#: src/screens/TokenSwapReview.js:253
 msgid "Building the swap transaction for your review"
 msgstr "Criando transação de swap para ser revisada"
 
-#: src/screens/TokenSwapReview.js:270
+#: src/screens/TokenSwapReview.js:271
 msgid "Your swap was successful"
 msgstr "Sua troca foi bem-sucedida"
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:331
+#: src/screens/TokenSwapReview.js:332
 msgid "Network Fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/TokenSwapReview.js:343
+#: src/screens/TokenSwapReview.js:344
 msgid "SWAP"
 msgstr "TROCAR"
 
@@ -1850,68 +1849,49 @@ msgstr "Sem conexão com a internet"
 msgid "Passkey unavailable"
 msgstr "Passkey indisponível."
 
-#.  Unlike the seed-phrase flow, a passkey wallet shows no 24 words and no PIN: recovery depends
-#.  entirely on the passkey being synced to a password manager (iCloud Keychain / Google Password
-#.  Manager). Disclose that this credential is unrecoverable-if-lost before minting it.
-#: src/components/PasskeyOnboardingButton.js:110
-msgid "No seed phrase to back up"
-msgstr "Não há nenhum conjunto de palavras para anotar como backup."
-
-#.  Unlike the seed-phrase flow, a passkey wallet shows no 24 words and no PIN: recovery depends
-#.  entirely on the passkey being synced to a password manager (iCloud Keychain / Google Password
-#.  Manager). Disclose that this credential is unrecoverable-if-lost before minting it.
-#: src/components/PasskeyOnboardingButton.js:111
-msgid ""
-"This wallet is protected only by your passkey — there is no seed phrase and "
-"no PIN. If you lose your passkey and it isn't synced to your password "
-"manager (iCloud Keychain or Google Password Manager), your funds cannot be "
-"recovered."
-msgstr ""
-"Essa carteira é protegida apenas pelo seu passkey - não há conjunto de "
-"palavras ou PIN. Se você perder sua passkey e não estiver sincronizada "
-"com sua conta do iCloud ou Google, seus fundos não podem ser recuperados."
-
-#.  Unlike the seed-phrase flow, a passkey wallet shows no 24 words and no PIN: recovery depends
-#.  entirely on the passkey being synced to a password manager (iCloud Keychain / Google Password
-#.  Manager). Disclose that this credential is unrecoverable-if-lost before minting it.
-#: src/components/PasskeyOnboardingButton.js:114
-msgid "Create wallet"
-msgstr "Criar carteira"
-
-#: src/components/PasskeyOnboardingButton.js:127
+#: src/components/PasskeyOnboardingButton.js:121
 msgid "Passkey"
 msgstr "Passkey"
 
-#: src/components/PasskeyOnboardingButton.js:134
+#: src/components/PasskeyOnboardingButton.js:128
 msgid "Continue with passkey"
 msgstr "Continuar com passkey"
 
-#: src/components/PasskeyOnboardingButton.js:139
-#: src/components/PasskeyOnboardingButton.js:173
+#: src/components/PasskeyOnboardingButton.js:133
+#: src/components/PasskeyOnboardingButton.js:170
 msgid "Working…"
 msgstr "Processando..."
 
-#: src/components/PasskeyOnboardingButton.js:139
+#: src/components/PasskeyOnboardingButton.js:133
 msgid "Sign in with passkey"
 msgstr "Entrar com passkey"
 
-#: src/components/PasskeyOnboardingButton.js:145
+#: src/components/PasskeyOnboardingButton.js:139
 msgid "Create passkey wallet"
 msgstr "Criar uma carteira com passkey"
 
-#: src/components/PasskeyOnboardingButton.js:152
+#: src/components/PasskeyOnboardingButton.js:144
+#, javascript-format
+msgid ""
+"Your wallet is protected by this passkey. Keep it backed up by syncing it to "
+"${ passwordManager } so you don't lose access."
+msgstr ""
+"Sua carteira está protegida por esse passkey. Mantenha um backup dele sincronizando "
+"o ${ passwordManager } para não perder acesso."
+
+#: src/components/PasskeyOnboardingButton.js:149
 msgid "Name your wallet"
 msgstr "Nome da sua carteira"
 
-#: src/components/PasskeyOnboardingButton.js:154
+#: src/components/PasskeyOnboardingButton.js:151
 msgid "This name identifies the passkey when you sign in later."
 msgstr "Esse nome identifica a passkey quando você entrar depois."
 
-#: src/components/PasskeyOnboardingButton.js:161
+#: src/components/PasskeyOnboardingButton.js:158
 msgid "e.g. Savings"
 msgstr "e.g. Poupança"
 
-#: src/components/PasskeyOnboardingButton.js:173
+#: src/components/PasskeyOnboardingButton.js:170
 msgid "Create"
 msgstr "Criar"
 
@@ -2919,6 +2899,22 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#~ msgid "No seed phrase to back up"
+#~ msgstr "Não há nenhum conjunto de palavras para anotar como backup."
+
+#~ msgid ""
+#~ "This wallet is protected only by your passkey — there is no seed phrase "
+#~ "and no PIN. If you lose your passkey and it isn't synced to your password "
+#~ "manager (iCloud Keychain or Google Password Manager), your funds cannot "
+#~ "be recovered."
+#~ msgstr ""
+#~ "Essa carteira é protegida apenas pelo seu passkey - não há conjunto de "
+#~ "palavras ou PIN. Se você perder sua passkey e não estiver sincronizada "
+#~ "com sua conta do iCloud ou Google, seus fundos não podem ser recuperados."
+
+#~ msgid "Create wallet"
+#~ msgstr "Criar carteira"
 
 #~ msgid "Calculating network fee..."
 #~ msgstr "Calculando taxa da rede..."
