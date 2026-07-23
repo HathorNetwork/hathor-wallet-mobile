@@ -15,7 +15,7 @@ import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 
 import Spinner from './Spinner';
 import TokenAvatar from './TokenAvatar';
-import { renderHomeValue, isTokenNFT } from '../utils';
+import { renderValue, renderHomeValue, isTokenNFT } from '../utils';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from './HathorFlatList';
@@ -35,9 +35,13 @@ import { HathorFlatList } from './HathorFlatList';
  * @param {unknown} props.header
  * @param {function} props.onItemPress
  * @param {boolean} [props.ignoreLoading]
- * @param {string} [props.amountFormat] AMOUNT_FORMAT to render balances with
- *   (defaults to Expanded when omitted).
- * @param {number} [props.decimalPlaces] Network decimal places for rendering.
+ * @param {boolean} [props.useHomeDisplay] Apply the Home display rules
+ *   (magnitude decimal cap + amount-format preference). Off elsewhere, so
+ *   token-list reuse (swap, change-token) keeps regular precision.
+ * @param {string} [props.amountFormat] AMOUNT_FORMAT for the Home display
+ *   (defaults to Expanded; ignored unless useHomeDisplay).
+ * @param {number} [props.decimalPlaces] Network decimal places for the Home
+ *   display (ignored unless useHomeDisplay).
  */
 const TokenSelect = (props) => {
   const tokens = Object.values(props.tokens);
@@ -45,6 +49,9 @@ const TokenSelect = (props) => {
     const balance = get(props.tokensBalance, `${item.uid}.data.available`, 0);
     const tokenState = get(props.tokensBalance, `${item.uid}.status`, props.ignoreLoading ? 'ready' : 'loading');
     const isNFT = isTokenNFT(item.uid, props.tokenMetadata);
+    const balanceLabel = props.useHomeDisplay
+      ? renderHomeValue(balance, isNFT, props.amountFormat, props.decimalPlaces)
+      : renderValue(balance, isNFT);
 
     return (
       <TouchableHighlight
@@ -65,7 +72,7 @@ const TokenSelect = (props) => {
           <View style={styles.itemRightWrapper}>
             {tokenState === TOKEN_DOWNLOAD_STATUS.READY && (
               <Text style={styles.balanceText}>
-                {renderHomeValue(balance, isNFT, props.amountFormat, props.decimalPlaces)}
+                {balanceLabel}
               </Text>
             )}
             {tokenState === TOKEN_DOWNLOAD_STATUS.FAILED && (

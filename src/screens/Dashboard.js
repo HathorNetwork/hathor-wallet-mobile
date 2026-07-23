@@ -162,6 +162,7 @@ export const Dashboard = () => {
             tokens={tokens}
             tokensBalance={tokensBalance}
             tokenMetadata={tokensMetadata}
+            useHomeDisplay
             amountFormat={amountFormat}
             decimalPlaces={decimalPlaces}
           />
