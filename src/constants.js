@@ -156,8 +156,7 @@ export const AMOUNT_FORMAT = {
 
 export const AMOUNT_FORMAT_DEFAULT = AMOUNT_FORMAT.EXPANDED;
 
-// The 'wallet:' prefix means STORE.clearItems(true) sweeps it on resetWallet,
-// so a fresh wallet returns to the default (Expanded).
+// 'wallet:' prefix: STORE.clearItems(true) sweeps it on resetWallet, so it resets to Expanded.
 export const AMOUNT_FORMAT_KEY = 'wallet:amount_format';
 
 /**

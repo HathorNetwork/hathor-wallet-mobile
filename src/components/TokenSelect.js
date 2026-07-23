@@ -15,7 +15,7 @@ import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 
 import Spinner from './Spinner';
 import TokenAvatar from './TokenAvatar';
-import { renderValue, isTokenNFT } from '../utils';
+import { renderHomeValue, isTokenNFT } from '../utils';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { COLORS } from '../styles/themes';
 import { HathorFlatList } from './HathorFlatList';
@@ -35,12 +35,16 @@ import { HathorFlatList } from './HathorFlatList';
  * @param {unknown} props.header
  * @param {function} props.onItemPress
  * @param {boolean} [props.ignoreLoading]
+ * @param {string} [props.amountFormat] AMOUNT_FORMAT to render balances with
+ *   (defaults to Expanded when omitted).
+ * @param {number} [props.decimalPlaces] Network decimal places for rendering.
  */
 const TokenSelect = (props) => {
   const tokens = Object.values(props.tokens);
   const renderItem = ({ item }) => {
     const balance = get(props.tokensBalance, `${item.uid}.data.available`, 0);
     const tokenState = get(props.tokensBalance, `${item.uid}.status`, props.ignoreLoading ? 'ready' : 'loading');
+    const isNFT = isTokenNFT(item.uid, props.tokenMetadata);
 
     return (
       <TouchableHighlight
@@ -61,7 +65,7 @@ const TokenSelect = (props) => {
           <View style={styles.itemRightWrapper}>
             {tokenState === TOKEN_DOWNLOAD_STATUS.READY && (
               <Text style={styles.balanceText}>
-                {renderValue(balance, isTokenNFT(item.uid, props.tokenMetadata))}
+                {renderHomeValue(balance, isNFT, props.amountFormat, props.decimalPlaces)}
               </Text>
             )}
             {tokenState === TOKEN_DOWNLOAD_STATUS.FAILED && (

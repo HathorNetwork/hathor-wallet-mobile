@@ -27,7 +27,9 @@ import SimpleButton from '../components/SimpleButton';
 import TxDetailsModal from '../components/TxDetailsModal';
 import OfflineBar from '../components/OfflineBar';
 import { HathorList } from '../components/HathorList';
-import { Strong, str2jsx, renderValue, isTokenNFT } from '../utils';
+import {
+  Strong, str2jsx, renderValue, isTokenNFT, getDisplayAmountFormat, renderHomeValue,
+} from '../utils';
 import chevronUp from '../assets/icons/chevron-up.png';
 import chevronDown from '../assets/icons/chevron-down.png';
 import { IS_MULTI_TOKEN } from '../constants';
@@ -54,7 +56,8 @@ const mapStateToProps = (state) => ({
   isOnline: state.isOnline,
   wallet: state.wallet,
   tokenMetadata: state.tokenMetadata,
-  amountFormat: state.amountFormat,
+  amountFormat: getDisplayAmountFormat(state),
+  decimalPlaces: state.serverInfo?.decimal_places,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -239,6 +242,7 @@ class MainScreen extends React.Component {
           token={this.props.selectedToken}
           isNFT={this.isNFT()}
           amountFormat={this.props.amountFormat}
+          decimalPlaces={this.props.decimalPlaces}
         />
         {renderTxHistory()}
         <OfflineBar />
@@ -539,15 +543,17 @@ class BalanceView extends React.Component {
   }
 
   renderExpanded() {
-    const availableStr = renderValue(
+    const availableStr = renderHomeValue(
       this.props.balance.available,
       this.props.isNFT,
-      this.props.amountFormat
+      this.props.amountFormat,
+      this.props.decimalPlaces
     );
-    const lockedStr = renderValue(
+    const lockedStr = renderHomeValue(
       this.props.balance.locked,
       this.props.isNFT,
-      this.props.amountFormat
+      this.props.amountFormat,
+      this.props.decimalPlaces
     );
     const { token } = this.props;
     const { style } = this;
@@ -577,10 +583,11 @@ class BalanceView extends React.Component {
   }
 
   renderSimple() {
-    const availableStr = renderValue(
+    const availableStr = renderHomeValue(
       this.props.balance.available,
       this.props.isNFT,
-      this.props.amountFormat
+      this.props.amountFormat,
+      this.props.decimalPlaces
     );
     const { token } = this.props;
     const { style } = this;
