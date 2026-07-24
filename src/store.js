@@ -267,7 +267,9 @@ class AsyncStorageStore {
     // JSONBigInt round-trips bigint values that the native JSON cannot.
     // Required for the wallet-lib 3.x token shape, which can include
     // bigint balance fields under registered tokens.
-    AsyncStorage.setItem(key, bigIntUtils.JSONBigInt.stringify(value));
+    // Return the promise so callers that need durability (e.g. initPasskeyStorage, whose
+    // walletMeta.xpub is the wallet's ONLY persisted identity) can await the flush.
+    return AsyncStorage.setItem(key, bigIntUtils.JSONBigInt.stringify(value));
   }
 
   /**
@@ -358,7 +360,10 @@ class AsyncStorageStore {
     const accessData = walletUtils.generateAccessDataFromXpub(xpub);
     const storage = this.getStorage();
     await storage.saveAccessData(accessData);
-    this.setItem(WALLET_META_KEY, {
+    // Await the meta write: for a passkey wallet this record's xpub is the only persisted identity
+    // (no seed, no PIN), so an app-kill in the flush window would lose it (recoverable only via a
+    // fresh discoverable sign-in).
+    await this.setItem(WALLET_META_KEY, {
       walletType: 'passkey',
       xpub,
       createdAt: Date.now(),

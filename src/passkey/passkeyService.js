@@ -28,6 +28,9 @@ import {
   PASSKEY_RP_ID,
   PASSKEY_RP_NAME,
 } from '../constants';
+import { logger } from '../logger';
+
+const log = logger('passkey');
 
 // PRF salt: a STABLE, PERMANENT input to the passkey PRF evaluation and therefore part of the
 // seed-derivation input. Changing this value changes the derived seed of EVERY passkey wallet, so
@@ -60,22 +63,36 @@ const randomBytes = (n) => {
 // react-native-passkey is a NATIVE dependency. Lazy-require it so the JS bundle still builds for
 // anyone who hasn't run `yarn && pod install` yet; the clear error only fires if passkey is used.
 function getPasskey() {
+  let mod;
   try {
     // eslint-disable-next-line global-require, import/no-unresolved
-    return require('react-native-passkey').Passkey;
+    mod = require('react-native-passkey');
   } catch (e) {
+    // Keep the original error as the cause: a module that IS installed but throws during native
+    // init would otherwise be misreported as "not installed" with its real stack lost.
     throw new Error(
-      'react-native-passkey is not installed. Run `yarn && cd ios && pod install`.'
+      'react-native-passkey is not installed. Run `yarn && cd ios && pod install`.',
+      { cause: e }
     );
   }
+  // require() can succeed while the export is missing/renamed; assert it so the failure surfaces
+  // here with a clear message instead of as a TypeError at the first Passkey.* call site.
+  if (!mod?.Passkey) {
+    throw new Error('react-native-passkey loaded but exposes no `Passkey` export (version mismatch?).');
+  }
+  return mod.Passkey;
 }
 
 /**
- * True when a passkey ceremony failed because the USER dismissed the OS sheet (both platforms
- * report the stable code 'UserCancelled'), as opposed to a real failure.
+ * True when a passkey ceremony failed because the USER dismissed the OS sheet. react-native-passkey
+ * normalizes a cancel to the stable code `error: 'UserCancelled'` on both platforms (its
+ * handleNativeError maps the native code; anything unmapped becomes 'Native error'), so match that
+ * structured code —
+ * NOT a substring on the translatable message, which would false-positive on any error whose text
+ * happens to contain "user cancel".
  */
 export function isPasskeyCancel(e) {
-  return e?.error === 'UserCancelled' || /user\s*cancel/i.test(String(e?.message ?? ''));
+  return e?.error === 'UserCancelled';
 }
 
 // user.id is capped at 64 bytes by WebAuthn; we spend 1 on the 0x00 separator and 8 on the
@@ -141,6 +158,9 @@ export async function isPasskeySupported() {
     const r = Passkey.isSupported();
     return typeof r?.then === 'function' ? await r : !!r;
   } catch (e) {
+    // This gate decides whether the feature is offered at all, so a broken pod/native link would
+    // otherwise be indistinguishable from a genuinely-unsupported device. Log before swallowing.
+    log.error('isPasskeySupported() failed; treating passkeys as unsupported', e);
     return false;
   }
 }
@@ -162,7 +182,16 @@ function toBytes(v) {
 /** Dig the PRF `first` result out of a react-native-passkey result, tolerant of its shape. */
 function digPrfFirst(result) {
   const ext = result?.clientExtensionResults ?? result?.response?.clientExtensionResults;
-  return toBytes(ext?.prf?.results?.first);
+  const raw = ext?.prf?.results?.first;
+  const bytes = toBytes(raw);
+  // A PRF result that IS present but that toBytes can't decode is a parsing regression (a
+  // react-native-passkey shape change), NOT an unsupported device — surface it distinctly so
+  // wordsFromPrf's "needs iOS 18+" message doesn't misattribute it to the OS version.
+  if (raw != null && !bytes) {
+    const shape = typeof raw === 'object' ? `object keys=[${Object.keys(raw).join(',')}]` : typeof raw;
+    throw new Error(`Received a PRF result but could not decode it (unexpected shape: ${shape}).`);
+  }
+  return bytes;
 }
 
 /**
