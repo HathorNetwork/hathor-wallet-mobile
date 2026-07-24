@@ -154,10 +154,15 @@ export function makePasskeyTxSigner() {
         // drift as the lib evolves. The resolver returns the change-path xpriv for each chain
         // ('legacy' = m/44'/280'/0'/0, 'spend' = the shielded spend chain m/44'/280'/2'/0).
         return await transactionUtils.signTxInputs(tx, storage, async (chain) => {
-          const acctPath = chain === 'spend'
-            ? hathorConstants.SHIELDED_SPEND_ACCT_PATH
-            : hathorConstants.P2PKH_ACCT_PATH;
-          return root.deriveNonCompliantChild(acctPath).deriveNonCompliantChild(0);
+          // Shielded (spend) keys derive COMPLIANTLY (the lib derives the shielded chain with
+          // deriveChild); legacy P2PKH keys stay non-compliant. Using the wrong one produces a
+          // key that won't match the address the lib generated, so the signature fails on-chain.
+          if (chain === 'spend') {
+            const spendAcct = root.deriveChild(hathorConstants.SHIELDED_SPEND_ACCT_PATH);
+            return spendAcct.deriveChild(0);
+          }
+          const legacyAcct = root.deriveNonCompliantChild(hathorConstants.P2PKH_ACCT_PATH);
+          return legacyAcct.deriveNonCompliantChild(0);
         });
       } finally {
         // JS cannot zero string memory; dropping every reference as soon as possible is the
