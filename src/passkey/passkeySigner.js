@@ -20,11 +20,14 @@
 import { constants as hathorConstants, transactionUtils, walletUtils } from '@hathor/wallet-lib';
 import { NETWORK_MAINNET } from '../constants';
 import { STORE } from '../store';
+import { logger } from '../logger';
 import {
   signInWalletWordsFromPasskey,
   isPasskeyCancel,
   sanitizePasskeyLabel,
 } from './passkeyService';
+
+const log = logger('passkey-signer');
 
 export class PasskeyCancelledError extends Error {
   constructor() {
@@ -139,9 +142,11 @@ export function makePasskeyTxSigner() {
         }
 
         // Wallets signed in before credentialId was captured (or on another device) learn it
-        // here, so the next ceremony can skip the picker too.
+        // here, so the next ceremony can skip the picker too. Best-effort: this is only an
+        // optimization, so fire-and-forget and log (never block or fail signing) if the write
+        // rejects — awaiting the returned promise avoids an unhandled rejection.
         if (credentialId && credentialId !== meta.credentialId) {
-          STORE.updateWalletMeta({ credentialId });
+          STORE.updateWalletMeta({ credentialId }).catch((e) => log.error('credentialId backfill failed', e));
         }
 
         // Derive the account root xpriv once; wallet-lib's signTxInputs derives the per-input
@@ -197,8 +202,9 @@ export function verifyPasskeyForUnlock() {
       if (!meta?.xpub || derivePasskeyXpub(words) !== meta.xpub) {
         throw new PasskeyXpubMismatchError(meta?.passkeyLabel);
       }
+      // Best-effort backfill (see makePasskeyTxSigner): fire-and-forget, log on failure.
       if (credentialId && credentialId !== meta.credentialId) {
-        STORE.updateWalletMeta({ credentialId });
+        STORE.updateWalletMeta({ credentialId }).catch((e) => log.error('credentialId backfill failed', e));
       }
     } finally {
       words = null;

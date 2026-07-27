@@ -14,7 +14,9 @@ jest.mock('../../src/constants', () => ({ NETWORK_MAINNET: 'mainnet' }));
 jest.mock('../../src/store', () => ({
   STORE: {
     getWalletMeta: jest.fn(),
-    updateWalletMeta: jest.fn(),
+    // Returns a promise: the signer treats the credentialId backfill as fire-and-forget and
+    // attaches a .catch(), so the mock must be thenable or that call would throw.
+    updateWalletMeta: jest.fn(() => Promise.resolve()),
   },
 }));
 
@@ -75,9 +77,14 @@ const makeMeta = (overrides = {}) => ({
   ...overrides,
 });
 
-// A fake account-root xpriv whose derivation chain never actually runs in these tests
-// (signTxInputs is mocked and does not invoke the resolver), but is shaped correctly just in case.
+// A fake account-root xpriv shaped like the real one: BOTH derivation methods are stubbed so the
+// resolver's 'spend' branch (deriveChild = compliant) and 'legacy' branch (deriveNonCompliantChild)
+// can each run without throwing. The default happy-path tests mock signTxInputs and never invoke
+// the resolver; the dedicated resolver test below builds its own asserting root.
 const makeRoot = () => ({
+  deriveChild: jest.fn(() => ({
+    deriveChild: jest.fn(() => ({})),
+  })),
   deriveNonCompliantChild: jest.fn(() => ({
     deriveNonCompliantChild: jest.fn(() => ({})),
   })),
@@ -198,6 +205,45 @@ describe('makePasskeyTxSigner', () => {
     expect(transactionUtils.signTxInputs.mock.calls[0][1]).toBe(fakeStorage);
     expect(result).toEqual({ inputSignatures: [], ncCallerSignature: null });
   });
+
+  test('the resolver derives the spend chain COMPLIANTLY and the legacy chain NON-compliantly', async () => {
+    // signTxInputs is delegated to, but the per-chain key derivation lives in the resolver it gets
+    // as its 3rd arg -- the deriveChild/deriveNonCompliantChild logic that was previously buggy.
+    // The real signTxInputs invokes that resolver DURING signing (while the in-memory root is still
+    // alive, before the finally nulls it), so drive it the same way via mockImplementation.
+    const SPEND_LEAF = { chain: 'spend-leaf' };
+    const LEGACY_LEAF = { chain: 'legacy-leaf' };
+    const spendAcct = { deriveChild: jest.fn(() => SPEND_LEAF) };
+    const legacyAcct = { deriveNonCompliantChild: jest.fn(() => LEGACY_LEAF) };
+    const root = {
+      deriveChild: jest.fn(() => spendAcct),
+      deriveNonCompliantChild: jest.fn(() => legacyAcct),
+    };
+    walletUtils.getXPrivKeyFromSeed.mockReturnValue(root);
+
+    const derived = {};
+    transactionUtils.signTxInputs.mockImplementation(async (_tx, _storage, resolver) => {
+      derived.spend = await resolver('spend');
+      derived.legacy = await resolver('legacy');
+      return { inputSignatures: [], ncCallerSignature: null };
+    });
+
+    const signer = makePasskeyTxSigner();
+    await signer(fakeTx, fakeStorage);
+
+    // 'spend' (shielded) uses the COMPLIANT path: deriveChild(SHIELDED path) then deriveChild(0).
+    // Called exactly once => the shielded branch never touched the legacy (non-compliant) path.
+    expect(derived.spend).toBe(SPEND_LEAF);
+    expect(root.deriveChild).toHaveBeenCalledTimes(1);
+    expect(root.deriveChild).toHaveBeenCalledWith("m/44'/280'/2'");
+    expect(spendAcct.deriveChild).toHaveBeenCalledWith(0);
+
+    // 'legacy' (P2PKH) uses the NON-COMPLIANT path: deriveNonCompliantChild(P2PKH path) then (0).
+    expect(derived.legacy).toBe(LEGACY_LEAF);
+    expect(root.deriveNonCompliantChild).toHaveBeenCalledTimes(1);
+    expect(root.deriveNonCompliantChild).toHaveBeenCalledWith("m/44'/280'/0'");
+    expect(legacyAcct.deriveNonCompliantChild).toHaveBeenCalledWith(0);
+  });
 });
 
 describe('verifyPasskeyForUnlock', () => {
@@ -221,5 +267,22 @@ describe('verifyPasskeyForUnlock', () => {
     const err = await verifyPasskeyForUnlock().catch((e) => e);
 
     expect(err).toBeInstanceOf(PasskeyCancelledError);
+  });
+
+  test('backfills a newly-learned credentialId (mirrors the signer backfill)', async () => {
+    // The unlock ceremony returns a credentialId not yet stored; it should be persisted so the
+    // next ceremony can skip the OS passkey picker.
+    signInWalletWordsFromPasskey.mockResolvedValue({ words: WORDS, credentialId: 'new-cred' });
+
+    await expect(verifyPasskeyForUnlock()).resolves.toBeUndefined();
+
+    expect(STORE.updateWalletMeta).toHaveBeenCalledWith({ credentialId: 'new-cred' });
+  });
+
+  test('does not rewrite an unchanged credentialId', async () => {
+    // Ceremony returns the SAME credentialId already stored -> no metadata write.
+    await expect(verifyPasskeyForUnlock()).resolves.toBeUndefined();
+
+    expect(STORE.updateWalletMeta).not.toHaveBeenCalled();
   });
 });

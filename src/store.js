@@ -386,13 +386,16 @@ class AsyncStorageStore {
 
   /**
    * Merge a patch into the wallet metadata (e.g. backfill credentialId after a ceremony).
-   * No-op when no metadata exists.
+   * No-op when no metadata exists. Returns the underlying setItem promise so callers can await
+   * durability or attach a .catch() — without it, a rejected AsyncStorage write here would be an
+   * unhandled rejection.
+   *
+   * @returns {Promise<void>}
    */
   updateWalletMeta(patch) {
     const meta = this.getWalletMeta();
-    if (meta) {
-      this.setItem(WALLET_META_KEY, { ...meta, ...patch });
-    }
+    if (!meta) return Promise.resolve();
+    return this.setItem(WALLET_META_KEY, { ...meta, ...patch });
   }
 
   /**
