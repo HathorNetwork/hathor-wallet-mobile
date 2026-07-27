@@ -29,6 +29,7 @@ export default function TokenSwapTokenList(direction) {
     const tokenMetadata = useSelector((state) => state.tokenMetadata);
     const tokensBalance = useSelector((state) => state.tokensBalance);
     const allowedTokens = useSelector(selectTokenSwapAllowedTokens);
+    const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
 
     const onItemPress = (item) => {
       if (direction === 'input') {
@@ -51,6 +52,7 @@ export default function TokenSwapTokenList(direction) {
         tokens={allowedTokens}
         tokensBalance={tokensBalance}
         tokenMetadata={tokenMetadata}
+        decimalPlaces={decimalPlaces}
       />
     );
   };

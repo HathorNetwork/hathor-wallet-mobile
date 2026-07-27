@@ -66,6 +66,7 @@ const SendConfirmScreen = () => {
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
 
   const navigation = useNavigation();
   const params = useParams();
@@ -73,7 +74,7 @@ const SendConfirmScreen = () => {
   // Parse and store navigation params
   const { amount, address, token } = params;
   const isNFT = isTokenNFT(token.uid, tokenMetadata);
-  const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
+  const amountAndToken = `${renderValue(amount, isNFT, decimalPlaces)} ${token.symbol}`;
 
   const [phase, setPhase] = useState(PHASE.BUILDING);
   const [sendTx, setSendTx] = useState(null);
@@ -231,7 +232,7 @@ const SendConfirmScreen = () => {
     const balance = tokensBalance[token.uid].data;
     const available = balance ? balance.available : 0;
     const availableCount = Number(available);
-    const availablePretty = renderValue(available, isNFT);
+    const availablePretty = renderValue(available, isNFT, decimalPlaces);
     return ngettext(msgid`${availablePretty} available`, `${availablePretty} available`, availableCount);
   };
 
@@ -273,7 +274,7 @@ const SendConfirmScreen = () => {
     if (networkFee > 0n) {
       return (
         <Text>
-          {renderValue(networkFee, false)} {nativeSymbol}
+          {renderValue(networkFee, false, decimalPlaces)} {nativeSymbol}
         </Text>
       );
     }
@@ -358,7 +359,7 @@ const SendConfirmScreen = () => {
                 </View>
                 <View style={styles.summaryItem}>
                   <TextFmt>{t`**Total**`}</TextFmt>
-                  <Text>{`${amountAndToken}${networkFee ? ` + ${renderValue(networkFee, false)} ${nativeSymbol}` : ''}`}</Text>
+                  <Text>{`${amountAndToken}${networkFee ? ` + ${renderValue(networkFee, false, decimalPlaces)} ${nativeSymbol}` : ''}`}</Text>
                 </View>
               </View>
             </View>

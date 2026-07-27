@@ -167,9 +167,9 @@ const TokenSwap = () => {
   useEffect(() => {
     setShowQuote(!!quote);
     if (quote) {
-      setInputTokenAmountStr(renderValue(quote.amount_in));
+      setInputTokenAmountStr(renderValue(quote.amount_in, false, decimalPlaces));
       setInputTokenAmount(quote.amount_in);
-      setOutputTokenAmountStr(renderValue(quote.amount_out));
+      setOutputTokenAmountStr(renderValue(quote.amount_out, false, decimalPlaces));
       setOutputTokenAmount(quote.amount_out);
     }
   }, [quote]);
@@ -329,7 +329,7 @@ const TokenSwap = () => {
       return '';
     }
     const available = getAvailableAmount(token, tokensBalance);
-    const amount = `${renderValue(available, false)}`;
+    const amount = `${renderValue(available, false, decimalPlaces)}`;
     return t`Balance: ${amount}`;
   };
 
@@ -423,7 +423,7 @@ const TokenSwap = () => {
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Conversion rate</Text>
                     <Text style={styles.quoteValue}>
-                      {renderConversionRate(quote, inputToken, outputToken)}
+                      {renderConversionRate(quote, inputToken, outputToken, decimalPlaces)}
                     </Text>
                   </View>
                   <View style={styles.quoteRow}>
@@ -437,13 +437,13 @@ const TokenSwap = () => {
                   { quote.direction === 'input' && (
                     <View style={styles.quoteRow}>
                       <Text style={styles.quoteHeader}>Minimum received</Text>
-                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('input', quote.amount_out, outputToken, TOKEN_SWAP_SLIPPAGE)}</Text>
+                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('input', quote.amount_out, outputToken, TOKEN_SWAP_SLIPPAGE, decimalPlaces)}</Text>
                     </View>
                   )}
                   { quote.direction === 'output' && (
                     <View style={styles.quoteRow}>
                       <Text style={styles.quoteHeader}>Maximum to deposit</Text>
-                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, inputToken, TOKEN_SWAP_SLIPPAGE)}</Text>
+                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, inputToken, TOKEN_SWAP_SLIPPAGE, decimalPlaces)}</Text>
                     </View>
                   )}
                 </View>

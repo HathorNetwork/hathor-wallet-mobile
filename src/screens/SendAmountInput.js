@@ -119,7 +119,7 @@ const SendAmountInput = () => {
       locked: 0n,
     });
     const { available } = balance;
-    const amountAndToken = `${renderValue(available, isNFT())} ${token.symbol}`;
+    const amountAndToken = `${renderValue(available, isNFT(), decimalPlaces)} ${token.symbol}`;
     const availableCount = Number(available);
     return ngettext(msgid`${amountAndToken} available`, `${amountAndToken} available`, availableCount);
   };
