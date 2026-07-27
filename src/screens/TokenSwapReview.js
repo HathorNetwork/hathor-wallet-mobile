@@ -29,7 +29,7 @@ import {
   selectTokenSwapContractId,
 } from '../utils/tokenSwap';
 import { renderValue } from '../utils';
-import { STORE } from '../store';
+import { authorizeTransaction } from '../passkey/authorizeTransaction';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
@@ -220,23 +220,22 @@ const TokenSwapReview = () => {
   };
 
   const onSwapButtonPress = () => {
-    if (STORE.isPasskeyWallet()) {
-      // Passkey wallets have no PIN: authorization is the passkey ceremony, fired by the
-      // external signer when the lib requests signatures. No PIN is passed — signTx is
-      // PIN-optional when an external tx-signing method is registered.
-      // Disable the button before the inline ceremony starts (executeSend is async).
-      setIsSending(true);
-      executeSend();
-      return;
-    }
-    const pinParams = {
-      cb: executeSend,
-      canCancel: true,
-      screenText: t`Enter your 6-digit pin to authorize operation`,
-      biometryText: t`Authorize operation`,
-      biometryLoadingText: t`Building transaction`,
-    };
-    navigation.navigate('PinScreen', pinParams);
+    authorizeTransaction({
+      // Passkey-only path: disable the button before the inline ceremony starts (executeSend is
+      // async). The PIN path doesn't set this here — the PinScreen navigation covers the button.
+      execute: () => {
+        setIsSending(true);
+        executeSend();
+      },
+      navigation,
+      pinParams: {
+        cb: executeSend,
+        canCancel: true,
+        screenText: t`Enter your 6-digit pin to authorize operation`,
+        biometryText: t`Authorize operation`,
+        biometryLoadingText: t`Building transaction`,
+      },
+    });
   };
 
   return (
