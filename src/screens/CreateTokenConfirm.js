@@ -23,7 +23,7 @@ import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackM
 import TextFmt from '../components/TextFmt';
 import { updateSelectedToken } from '../actions';
 import { registerToken } from '../utils/tokens';
-import { STORE } from '../store';
+import { authorizeTransaction } from '../passkey/authorizeTransaction';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { getCreateTokenTitle } from '../utils';
@@ -162,21 +162,17 @@ const CreateTokenConfirm = () => {
     // Disable the button before opening the PinScreen so it can't be tapped
     // again while we return from it and build the feedback modal.
     setIsSending(true);
-    if (STORE.isPasskeyWallet()) {
-      // Passkey wallets have no PIN: authorization is the passkey ceremony, fired by the
-      // external signer when the lib requests signatures. No PIN is passed — create-token is
-      // PIN-optional when an external tx-signing method is registered.
-      executeCreate();
-      return;
-    }
-    const pinParams = {
-      cb: executeCreate,
-      screenText: t`Enter your 6-digit pin to create your token`,
-      biometryText: t`Authorize token creation`,
-      canCancel: true,
-      biometryLoadingText: t`Building transaction`,
-    };
-    navigation.navigate('PinScreen', pinParams);
+    authorizeTransaction({
+      execute: executeCreate,
+      navigation,
+      pinParams: {
+        cb: executeCreate,
+        screenText: t`Enter your 6-digit pin to create your token`,
+        biometryText: t`Authorize token creation`,
+        canCancel: true,
+        biometryLoadingText: t`Building transaction`,
+      },
+    });
   };
 
   /**

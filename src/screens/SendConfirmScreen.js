@@ -27,7 +27,7 @@ import { COLORS } from '../styles/themes';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { CheckIcon } from '../components/Icons/Check.icon';
 import { TOKEN_DEPOSIT_URL, TOKEN_FEES_URL } from '../constants';
-import { STORE } from '../store';
+import { authorizeTransaction } from '../passkey/authorizeTransaction';
 import errorIcon from '../assets/images/icErrorBig.png';
 
 const PHASE = Object.freeze({
@@ -189,21 +189,17 @@ const SendConfirmScreen = () => {
     // Disable the button before opening the PinScreen so it can't be tapped
     // again while we return from it and build the feedback modal.
     setIsSending(true);
-    if (STORE.isPasskeyWallet()) {
-      // Passkey wallets have no PIN: authorization is the passkey ceremony, fired by the
-      // external signer when the lib requests signatures. No PIN is passed — signTx is
-      // PIN-optional when an external tx-signing method is registered.
-      executeSend();
-      return;
-    }
-    const pinParams = {
-      cb: executeSend,
-      canCancel: true,
-      screenText: t`Enter your 6-digit pin to authorize operation`,
-      biometryText: t`Authorize operation`,
-      biometryLoadingText: t`Building transaction`,
-    };
-    navigation.navigate('PinScreen', pinParams);
+    authorizeTransaction({
+      execute: executeSend,
+      navigation,
+      pinParams: {
+        cb: executeSend,
+        canCancel: true,
+        screenText: t`Enter your 6-digit pin to authorize operation`,
+        biometryText: t`Authorize operation`,
+        biometryLoadingText: t`Building transaction`,
+      },
+    });
   };
 
   /**
