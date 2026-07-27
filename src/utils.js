@@ -437,13 +437,22 @@ export const compressAmountString = (formatted) => {
  *
  * @param {bigint} amount The token amount as BigInt
  * @param {boolean} isNFT Whether the token is an NFT (rendered as an integer)
+ * @param {number} [decimalPlaces] Network decimal places (serverInfo.decimal_places).
+ *   Callers with store access should always pass it: the lib default it falls back
+ *   to is 2, which under-renders every network that uses more precision (and, with
+ *   only two fractional digits, makes the Compressed format a no-op).
  * @param {string} [amountFormat] AMOUNT_FORMAT.EXPANDED (default) or COMPRESSED
  * @return {string} Formatted value for display
  */
-export const renderValue = (amount, isNFT, amountFormat = AMOUNT_FORMAT.EXPANDED) => {
+export const renderValue = (
+  amount,
+  isNFT,
+  decimalPlaces,
+  amountFormat = AMOUNT_FORMAT.EXPANDED,
+) => {
   const formatted = isNFT
     ? hathorLib.numberUtils.prettyValue(amount, 0)
-    : hathorLib.numberUtils.prettyValue(amount);
+    : hathorLib.numberUtils.prettyValue(amount, decimalPlaces);
 
   if (amountFormat === AMOUNT_FORMAT.COMPRESSED) {
     return compressAmountString(formatted);
@@ -498,16 +507,16 @@ export const capDecimalsByMagnitude = (formatted) => {
  *
  * @param {bigint} amount The token amount as BigInt
  * @param {boolean} isNFT Whether the token is an NFT (rendered as an integer)
- * @param {string} [amountFormat] AMOUNT_FORMAT.EXPANDED (default) or COMPRESSED
  * @param {number} [decimalPlaces] Network decimal places (serverInfo.decimal_places);
  *   falls back to the lib default when unset
+ * @param {string} [amountFormat] AMOUNT_FORMAT.EXPANDED (default) or COMPRESSED
  * @return {string}
  */
 export const renderHomeValue = (
   amount,
   isNFT,
-  amountFormat = AMOUNT_FORMAT.EXPANDED,
   decimalPlaces,
+  amountFormat = AMOUNT_FORMAT.EXPANDED,
 ) => {
   const formatted = isNFT
     ? hathorLib.numberUtils.prettyValue(amount, 0)

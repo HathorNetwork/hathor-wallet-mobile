@@ -40,8 +40,8 @@ import { HathorFlatList } from './HathorFlatList';
  *   token-list reuse (swap, change-token) keeps regular precision.
  * @param {string} [props.amountFormat] AMOUNT_FORMAT for the Home display
  *   (defaults to Expanded; ignored unless useHomeDisplay).
- * @param {number} [props.decimalPlaces] Network decimal places for the Home
- *   display (ignored unless useHomeDisplay).
+ * @param {number} [props.decimalPlaces] Network decimal places (serverInfo.decimal_places),
+ *   used by both display modes.
  */
 const TokenSelect = (props) => {
   const tokens = Object.values(props.tokens);
@@ -50,8 +50,8 @@ const TokenSelect = (props) => {
     const tokenState = get(props.tokensBalance, `${item.uid}.status`, props.ignoreLoading ? 'ready' : 'loading');
     const isNFT = isTokenNFT(item.uid, props.tokenMetadata);
     const balanceLabel = props.useHomeDisplay
-      ? renderHomeValue(balance, isNFT, props.amountFormat, props.decimalPlaces)
-      : renderValue(balance, isNFT);
+      ? renderHomeValue(balance, isNFT, props.decimalPlaces, props.amountFormat)
+      : renderValue(balance, isNFT, props.decimalPlaces);
 
     return (
       <TouchableHighlight

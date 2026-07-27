@@ -65,34 +65,50 @@ describe('capDecimalsByMagnitude', () => {
 });
 
 describe('renderValue with amount format', () => {
+  it('renders with the network decimal places it is given', () => {
+    // 12 base units at 8 decimals => 0.00000012
+    expect(renderValue(12n, false, 8)).toBe('0.00000012');
+  });
+
+  it('falls back to the lib default decimals when unset', () => {
+    // 1234 base units at default 2 decimals => 12.34
+    expect(renderValue(1234n, false)).toBe('12.34');
+  });
+
   it('defaults to expanded (unchanged behavior)', () => {
-    expect(renderValue(1234n, false)).toBe(renderValue(1234n, false, AMOUNT_FORMAT.EXPANDED));
+    expect(renderValue(1234n, false, 8)).toBe(renderValue(1234n, false, 8, AMOUNT_FORMAT.EXPANDED));
   });
 
   it('routes COMPRESSED output through compressAmountString', () => {
     const amount = 500000n;
-    expect(renderValue(amount, false, AMOUNT_FORMAT.COMPRESSED))
-      .toBe(compressAmountString(renderValue(amount, false, AMOUNT_FORMAT.EXPANDED)));
+    expect(renderValue(amount, false, 8, AMOUNT_FORMAT.COMPRESSED))
+      .toBe(compressAmountString(renderValue(amount, false, 8, AMOUNT_FORMAT.EXPANDED)));
+  });
+
+  it('compresses sub-1 amounts once the network precision allows it', () => {
+    // 5195 base units at 8 decimals => 0.00005195 => 0.0₄5195. At the lib
+    // default of 2 decimals there is no zero run long enough to compress.
+    expect(renderValue(5195n, false, 8, AMOUNT_FORMAT.COMPRESSED)).toBe('0.0₄5195');
   });
 
   it('is a no-op for NFT amounts (no fractional part)', () => {
-    expect(renderValue(12345n, true, AMOUNT_FORMAT.COMPRESSED)).toBe('12,345');
+    expect(renderValue(12345n, true, 8, AMOUNT_FORMAT.COMPRESSED)).toBe('12,345');
   });
 });
 
 describe('renderHomeValue (magnitude rule + network decimals)', () => {
   it('renders small amounts with up to 8 decimals from the network decimal places', () => {
     // 12 base units at 8 decimals => 0.00000012 (< 1 => 8 dp)
-    expect(renderHomeValue(12n, false, AMOUNT_FORMAT.EXPANDED, 8)).toBe('0.00000012');
+    expect(renderHomeValue(12n, false, 8, AMOUNT_FORMAT.EXPANDED)).toBe('0.00000012');
   });
 
   it('caps large amounts to 2 decimals by magnitude', () => {
     // 10000012345678 at 8 decimals => 100,000.12345678 (>= 10000 => 2 dp)
-    expect(renderHomeValue(10000012345678n, false, AMOUNT_FORMAT.EXPANDED, 8)).toBe('100,000.12');
+    expect(renderHomeValue(10000012345678n, false, 8, AMOUNT_FORMAT.EXPANDED)).toBe('100,000.12');
   });
 
   it('applies Compressed notation after the magnitude cap', () => {
-    expect(renderHomeValue(12n, false, AMOUNT_FORMAT.COMPRESSED, 8)).toBe('0.0₆12');
+    expect(renderHomeValue(12n, false, 8, AMOUNT_FORMAT.COMPRESSED)).toBe('0.0₆12');
   });
 
   it('falls back to the lib default decimals when unset', () => {

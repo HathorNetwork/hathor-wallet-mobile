@@ -106,7 +106,13 @@ class TxDetailsModal extends Component {
         swipeThreshold={100}
       >
         <SlideIndicatorBar />
-        <BalanceView tx={tx} token={token} isNFT={isNFT} amountFormat={this.props.amountFormat} />
+        <BalanceView
+          tx={tx}
+          token={token}
+          isNFT={isNFT}
+          amountFormat={this.props.amountFormat}
+          decimalPlaces={this.props.decimalPlaces}
+        />
         <ScrollView>
           <View>
             <ListItem title={t`Token`} text={fullTokenStr} />
@@ -159,8 +165,8 @@ class BalanceView extends Component {
   });
 
   render() {
-    const { tx, isNFT, amountFormat } = this.props;
-    const balanceStr = renderValue(tx.balance, isNFT, amountFormat);
+    const { tx, isNFT, amountFormat, decimalPlaces } = this.props;
+    const balanceStr = renderValue(tx.balance, isNFT, decimalPlaces, amountFormat);
     return (
       <View style={this.style.view}>
         <Text

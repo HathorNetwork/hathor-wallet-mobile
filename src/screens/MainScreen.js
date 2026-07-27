@@ -119,6 +119,7 @@ class MainScreen extends React.Component {
         onRequestClose={this.closeTxDetails}
         isNFT={this.isNFT()}
         amountFormat={this.props.amountFormat}
+        decimalPlaces={this.props.decimalPlaces}
       />
     );
     this.setState({ modal: txDetailsModal });
@@ -203,6 +204,7 @@ class MainScreen extends React.Component {
             updateTokenHistory={this.props.updateTokenHistory}
             isNFT={this.isNFT()}
             amountFormat={this.props.amountFormat}
+            decimalPlaces={this.props.decimalPlaces}
           />
         );
       }
@@ -269,6 +271,7 @@ class TxHistoryView extends React.Component {
         onTxPress={this.props.onTxPress}
         isNFT={this.props.isNFT}
         amountFormat={this.props.amountFormat}
+        decimalPlaces={this.props.decimalPlaces}
       />
     );
   }
@@ -336,6 +339,7 @@ class TxListItem extends React.Component {
     },
     middleView: {
       flex: 1,
+      maxWidth: '45%',
     },
     icon: {
       marginLeft: 16,
@@ -349,6 +353,9 @@ class TxListItem extends React.Component {
     balance: {
       fontSize: 16,
       marginRight: 16,
+      maxWidth: '45%',
+      marginLeft: 'auto',
+      textAlign: 'right',
     },
     description: {
       fontSize: 14,
@@ -478,7 +485,12 @@ class TxListItem extends React.Component {
     const style = this.getStyle(item);
     const image = this.getImage(item);
 
-    const balanceStr = renderValue(item.balance, this.props.isNFT, this.props.amountFormat);
+    const balanceStr = renderValue(
+      item.balance,
+      this.props.isNFT,
+      this.props.decimalPlaces,
+      this.props.amountFormat
+    );
     const description = item.getDescription(this.props.token);
     const { timestamp } = this.state;
     return (
@@ -493,7 +505,7 @@ class TxListItem extends React.Component {
             <Text style={style.secondaryText}>{timestamp}</Text>
             <Text style={[style.secondaryText, style.bold]}>{item.getVersionInfo()}</Text>
           </View>
-          <Text style={style.balance} numberOfLines={1}>{balanceStr}</Text>
+          <Text style={style.balance}>{balanceStr}</Text>
         </View>
       </TouchableHighlight>
     );
@@ -546,14 +558,14 @@ class BalanceView extends React.Component {
     const availableStr = renderHomeValue(
       this.props.balance.available,
       this.props.isNFT,
-      this.props.amountFormat,
-      this.props.decimalPlaces
+      this.props.decimalPlaces,
+      this.props.amountFormat
     );
     const lockedStr = renderHomeValue(
       this.props.balance.locked,
       this.props.isNFT,
-      this.props.amountFormat,
-      this.props.decimalPlaces
+      this.props.decimalPlaces,
+      this.props.amountFormat
     );
     const { token } = this.props;
     const { style } = this;
@@ -586,8 +598,8 @@ class BalanceView extends React.Component {
     const availableStr = renderHomeValue(
       this.props.balance.available,
       this.props.isNFT,
-      this.props.amountFormat,
-      this.props.decimalPlaces
+      this.props.decimalPlaces,
+      this.props.amountFormat
     );
     const { token } = this.props;
     const { style } = this;
