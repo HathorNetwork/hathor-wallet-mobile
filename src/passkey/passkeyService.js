@@ -60,8 +60,9 @@ const randomBytes = (n) => {
   return b;
 };
 
-// react-native-passkey is a NATIVE dependency. Lazy-require it so the JS bundle still builds for
-// anyone who hasn't run `yarn && pod install` yet; the clear error only fires if passkey is used.
+// react-native-passkey is a NATIVE dependency. Require it lazily (not a top-level import) so
+// loading this module at app startup doesn't touch the native side; a missing/unlinked install
+// then surfaces as the clear, actionable error below only when a passkey flow is actually used.
 function getPasskey() {
   let mod;
   try {

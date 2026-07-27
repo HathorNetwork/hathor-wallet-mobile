@@ -64,34 +64,6 @@ jest.mock('@sentry/react-native');
 
 jest.mock('react-native-version-number');
 
-jest.mock('unleash-proxy-client', () => ({
-  UnleashClient: jest.fn(() => ({
-    getAllToggles: () => ({}),
-    isEnabled: () => false,
-    getVariant: () => ({}),
-    updateContext: () => {},
-    getContext: () => ({
-      appName: 'hathor-wallet-mobile',
-      environment: 'test',
-      userId: 'test-user',
-      sessionId: 'test-session',
-      remoteAddress: undefined,
-      properties: {},
-    }),
-    setContextField: () => {},
-    start: () => {},
-    stop: () => {},
-    on: () => {},
-  })),
-  EVENTS: {
-    INIT: 'INIT',
-    ERROR: 'ERROR',
-    READY: 'READY',
-    UPDATE: 'UPDATE',
-    IMPRESSION: 'IMPRESSION',
-  },
-}), { virtual: true });
-
 const RNPermissionsModule = {};
 jest.mock('react-native-permissions', () => ({
   default: {
@@ -100,7 +72,3 @@ jest.mock('react-native-permissions', () => ({
     })
   }
 }));
-
-jest.mock('react-native-modal', () => ({}), { virtual: true });
-
-jest.mock('react-native-animatable', () => ({}), { virtual: true });
