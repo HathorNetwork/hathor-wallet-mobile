@@ -124,6 +124,8 @@ import {
   reownReject,
 } from '../actions';
 import { checkForFeatureFlag, getNetworkSettings, retryHandler, showPinScreenForResult } from './helpers';
+import { STORE } from '../store';
+import { consumePasskeySigningCancelled } from '../passkey/passkeySigner';
 import { logger } from '../logger';
 
 const log = logger('reown');
@@ -599,6 +601,30 @@ export function* processRequest(action) {
     chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
 
+  // Message/oracle signing calls wallet.signMessageWithAddress, which needs the stored
+  // private key and bypasses the external signer — impossible for xpub-only passkey
+  // wallets. Reject cleanly instead of crashing inside the rpc-handler.
+  const passkeyUnsupportedMethods = [
+    AVAILABLE_METHODS.HATHOR_SIGN_MESSAGE,
+    AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA,
+  ];
+  if (STORE.isPasskeyWallet() && passkeyUnsupportedMethods.includes(params.request.method)) {
+    log.debug(`Rejecting ${params.request.method}: not supported for passkey wallets.`);
+    yield call(() => walletKit.respondSessionRequest({
+      topic: payload.topic,
+      response: {
+        id: payload.id,
+        jsonrpc: '2.0',
+        error: {
+          code: ERROR_CODES.USER_REJECTED_METHOD,
+          message: 'This operation is not yet supported for passkey wallets.',
+        },
+      },
+    }));
+    yield cancel(pendingPollTask);
+    return false;
+  }
+
   // Track whether this flow shows a success screen that will dispatch the ready signal
   let successScreenWillSignal = false;
 
@@ -651,6 +677,18 @@ export function* processRequest(action) {
     }));
   } catch (e) {
     log.error('Error in processRequest:', e);
+
+    // A cancelled passkey ceremony is "not now", not an error (the rpc-handler re-wraps our
+    // typed error, so we use a consumable flag — same pattern as pinWasCancelled). Retry the
+    // request: the dapp consent modal shows again and the user can accept or reject.
+    if (consumePasskeySigningCancelled()) {
+      // Cancel the poll fork from this attempt before recursing — the early return below skips the
+      // cleanup at the end of processRequest, so without this the fork leaks (and a new one is
+      // forked per retry). Mirrors the SendNanoContractTxError retry path.
+      yield cancel(pendingPollTask);
+      const result = yield* processRequest(action);
+      return result; // Recursive call handles waiting
+    }
 
     let shouldAnswer = true;
     switch (e.constructor) {
@@ -1061,6 +1099,21 @@ const promptHandler = (dispatch) => (request, requestMetadata) =>
         resolve();
         break;
       case TriggerTypes.PinConfirmationPrompt: {
+        // Passkey wallets have no PIN: consent is the passkey ceremony (Face ID / fingerprint)
+        // fired by the external signer when the lib requests signatures. We resolve with no PIN
+        // — the lib's signing entry points are PIN-optional when an external tx-signing method
+        // is registered.
+        if (STORE.isPasskeyWallet()) {
+          resolve({
+            type: TriggerResponseTypes.PinRequestResponse,
+            data: {
+              accepted: true,
+              pinCode: '',
+            }
+          });
+          break;
+        }
+
         const pinCode = await showPinScreenForResult(dispatch, true);
 
         if (pinCode === null) {

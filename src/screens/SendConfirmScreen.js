@@ -27,6 +27,7 @@ import { COLORS } from '../styles/themes';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { CheckIcon } from '../components/Icons/Check.icon';
 import { TOKEN_DEPOSIT_URL, TOKEN_FEES_URL } from '../constants';
+import { STORE } from '../store';
 import errorIcon from '../assets/images/icErrorBig.png';
 
 const PHASE = Object.freeze({
@@ -188,6 +189,13 @@ const SendConfirmScreen = () => {
     // Disable the button before opening the PinScreen so it can't be tapped
     // again while we return from it and build the feedback modal.
     setIsSending(true);
+    if (STORE.isPasskeyWallet()) {
+      // Passkey wallets have no PIN: authorization is the passkey ceremony, fired by the
+      // external signer when the lib requests signatures. No PIN is passed — signTx is
+      // PIN-optional when an external tx-signing method is registered.
+      executeSend();
+      return;
+    }
     const pinParams = {
       cb: executeSend,
       canCancel: true,
@@ -310,7 +318,12 @@ const SendConfirmScreen = () => {
           promise={modal.promise}
           successText={<TextFmt>{t`Your transfer of **${amountAndToken}** has been confirmed`}</TextFmt>}
           onDismissSuccess={exitScreen}
-          onDismissError={() => setModal(null)}
+          onDismissError={() => {
+            setModal(null);
+            // Re-enable Send: the passkey flow never leaves this screen, so the
+            // focus listener that resets it after PinScreen won't fire.
+            setIsSending(false);
+          }}
           hide={isShowingPinScreen}
         />
       )}

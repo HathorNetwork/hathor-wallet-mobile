@@ -377,6 +377,16 @@ export function* setAvailablePushNotification(action) {
  * load the wallet service, otherwise it will use the wallet already loaded in the redux store.
  */
 export function* loadWallet() {
+  // Passkey (xpub-only) wallets have no PIN and no stored seed words, which this flow
+  // requires. Push notifications are already gated off for them at startWallet; this guard
+  // only protects against unexpected entry paths.
+  if (STORE.isPasskeyWallet()) {
+    yield put(pushLoadWalletFailed({
+      error: new Error('Push notifications are not supported for passkey wallets.'),
+    }));
+    return;
+  }
+
   // This is a work-around so we can dispatch actions from inside callbacks.
   let dispatch;
   yield put((_dispatch) => {

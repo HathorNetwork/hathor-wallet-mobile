@@ -17,6 +17,7 @@
  * wallet.setExternalTxSigningMethod() BEFORE wallet.start().
  */
 
+import { t } from 'ttag';
 import { constants as hathorConstants, transactionUtils, walletUtils } from '@hathor/wallet-lib';
 import { NETWORK_MAINNET } from '../constants';
 import { STORE } from '../store';
@@ -31,7 +32,7 @@ const log = logger('passkey-signer');
 
 export class PasskeyCancelledError extends Error {
   constructor() {
-    super(`Passkey authorization was cancelled. Nothing was sent.`);
+    super(t`Passkey authorization was cancelled. Nothing was sent.`);
     this.name = 'PasskeyCancelledError';
   }
 }
@@ -41,8 +42,8 @@ export class PasskeyXpubMismatchError extends Error {
     // Labels persisted from old-format credentials may be decode garbage; never show those.
     const label = sanitizePasskeyLabel(storedLabel);
     super(label
-      ? `This passkey opens a different wallet. Use the passkey named "${label}".`
-      : `This passkey opens a different wallet. Use the passkey that created this wallet.`);
+      ? t`This passkey opens a different wallet. Use the passkey named "${label}".`
+      : t`This passkey opens a different wallet. Use the passkey that created this wallet.`);
     this.name = 'PasskeyXpubMismatchError';
     this.storedLabel = label;
   }
@@ -50,7 +51,7 @@ export class PasskeyXpubMismatchError extends Error {
 
 export class PasskeyBusyError extends Error {
   constructor() {
-    super(`Another passkey authorization is already in progress.`);
+    super(t`Another passkey authorization is already in progress.`);
     this.name = 'PasskeyBusyError';
   }
 }

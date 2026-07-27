@@ -29,6 +29,7 @@ import {
   selectTokenSwapContractId,
 } from '../utils/tokenSwap';
 import { renderValue } from '../utils';
+import { STORE } from '../store';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import OfflineBar from '../components/OfflineBar';
@@ -68,6 +69,10 @@ const TokenSwapReview = () => {
   const [buildError, setBuildError] = useState(null);
   const [sendTx, setSendTx] = useState(null);
   const [modal, setModal] = useState(null);
+  // Disables the SWAP button from the moment it is tapped. On the passkey path executeSend runs
+  // the signing ceremony inline (no PinScreen to cover the button), so without this a second tap
+  // during the multi-second ceremony would fire a concurrent signTx.
+  const [isSending, setIsSending] = useState(false);
 
   const registrationPromiseRef = useRef(null);
   const sentSuccessfullyRef = useRef(false);
@@ -164,6 +169,7 @@ const TokenSwapReview = () => {
       await registrationPromiseRef.current;
     }
     setModal(null);
+    setIsSending(false);
     dispatch(tokenSwapResetSwapData());
     NavigationService.resetToMain();
   };
@@ -183,6 +189,7 @@ const TokenSwapReview = () => {
   // listener releases reserved UTXOs along the way.
   const exitOnError = () => {
     setModal(null);
+    setIsSending(false);
     refreshQuote();
     navigation.goBack();
   };
@@ -213,6 +220,15 @@ const TokenSwapReview = () => {
   };
 
   const onSwapButtonPress = () => {
+    if (STORE.isPasskeyWallet()) {
+      // Passkey wallets have no PIN: authorization is the passkey ceremony, fired by the
+      // external signer when the lib requests signatures. No PIN is passed — signTx is
+      // PIN-optional when an external tx-signing method is registered.
+      // Disable the button before the inline ceremony starts (executeSend is async).
+      setIsSending(true);
+      executeSend();
+      return;
+    }
     const pinParams = {
       cb: executeSend,
       canCancel: true,
@@ -327,7 +343,7 @@ const TokenSwapReview = () => {
               <NewHathorButton
                 title={t`SWAP`}
                 onPress={onSwapButtonPress}
-                disabled={modal !== null}
+                disabled={modal !== null || isSending}
               />
             </View>
           </View>
