@@ -1716,7 +1716,7 @@ msgid ""
 "This passkey opens a different wallet. Use the passkey that created this "
 "wallet."
 msgstr ""
-"Essa passkey é de uma carteira diferente. Use a passkey que criou essa wallet"
+"Essa passkey é de uma carteira diferente. Use a passkey que criou essa carteira"
 
 #: src/passkey/passkeySigner.js:51
 msgid "Another passkey authorization is already in progress."

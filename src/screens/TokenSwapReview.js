@@ -40,9 +40,11 @@ import NavigationService from '../NavigationService';
 import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
 import {
+  onExceptionCaptured,
   tokenSwapFetchSwapQuote,
   tokenSwapResetSwapData,
 } from '../actions';
+import { PasskeyCancelledError, PasskeyBusyError } from '../passkey/passkeySigner';
 import { registerToken, updateTokensMetadata } from '../utils/tokens';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 import Spinner from '../components/Spinner';
@@ -214,20 +216,33 @@ const TokenSwapReview = () => {
         promise,
       });
     } catch (err) {
+      // A cancelled or busy passkey ceremony is NOT a failure: keep the reviewed swap intact and
+      // let the user retry. Do NOT release the reserved UTXOs, refetch the quote, or navigate away.
+      if (err instanceof PasskeyCancelledError || err instanceof PasskeyBusyError) {
+        setIsSending(false);
+        return;
+      }
+      // A real failure — e.g. PasskeyXpubMismatchError, whose message names the passkey to use.
+      // Report it and SHOW it (reusing the error FeedbackModal below) instead of a silent goBack;
+      // dismissing it navigates back, releasing the reserved UTXOs via the beforeRemove listener.
       console.error(err);
-      exitOnError();
+      dispatch(onExceptionCaptured(err, false));
+      setBuildError({ message: err?.message || t`Could not complete the swap. Please try again.` });
+      setPhase(PHASE.ERROR);
+      setIsSending(false);
     }
   };
 
   const onSwapButtonPress = () => {
     authorizeTransaction({
-      // Passkey-only path: disable the button before the inline ceremony starts (executeSend is
-      // async). The PIN path doesn't set this here — the PinScreen navigation covers the button.
-      execute: () => {
+      navigation,
+      // The passkey path differs from the PIN path here, so onPasskey is explicit: disable the
+      // button before the inline (async) ceremony starts. The PIN path doesn't set this — the
+      // PinScreen navigation covers the button.
+      onPasskey: () => {
         setIsSending(true);
         executeSend();
       },
-      navigation,
       pinParams: {
         cb: executeSend,
         canCancel: true,

@@ -19,11 +19,15 @@ import { PASSKEY_ONBOARDING_FEATURE_TOGGLE } from '../constants';
 import {
   createWalletWordsFromPasskey,
   signInWalletWordsFromPasskey,
+  isPasskeyCancel,
 } from '../passkey/passkeyService';
 import { derivePasskeyXpub } from '../passkey/passkeySigner';
 import { startWalletRequested, unlockScreen } from '../actions';
 import { STORE } from '../store';
 import NavigationService from '../NavigationService';
+import { logger } from '../logger';
+
+const log = logger('passkey');
 
 /**
  * Passkey onboarding (passkey PRF -> seed).
@@ -75,40 +79,45 @@ const PasskeyOnboardingButton = () => {
 
   const run = async (deriveWords) => {
     setBusy(true);
+    // Keep ONLY the passkey ceremony + storage inside the try. Everything after the wallet is
+    // persisted (navigation/dispatch) must not be reported as "Passkey unavailable" — the wallet
+    // WAS created, and a nav failure there is a different problem.
     try {
       const { words, label, credentialId } = await deriveWords();
       // The words exist only in this scope: derive the account xpub, persist it with the
       // wallet metadata, and start the wallet read-only. No PIN, no stored secret.
       const xpub = derivePasskeyXpub(words);
       await STORE.initPasskeyStorage(xpub, {
-        passkeyLabel: label || 'Passkey wallet',
+        passkeyLabel: label || t`Passkey wallet`,
         credentialId: credentialId ?? null,
       });
-      setModalVisible(false);
-      // Same sequence ChoosePinScreen uses: unlock before entering the main stack,
-      // then request the wallet start (the saga re-reads the persisted walletMeta).
-      dispatch(unlockScreen());
-      dispatch(startWalletRequested({ walletType: 'passkey' }));
-      NavigationService.resetToMain();
     } catch (e) {
+      // Dismissing the OS passkey sheet is a cancel, not a failure — stay silent and let the user
+      // retry (the modal stays open). Only real failures raise the alert.
+      if (isPasskeyCancel(e)) {
+        return;
+      }
       // react-native-passkey throws a PasskeyError with a `.error` code — surface it so a
       // generic "unknown error" becomes actionable (e.g. BadConfiguration = domain not verified).
-      console.warn('[passkey] failed:', e?.error, e?.message, e);
+      log.error('passkey onboarding failed', e);
       const code = e?.error ? `[${e.error}] ` : '';
       Alert.alert(t`Passkey unavailable`, `${code}${e?.message ?? String(e)}`);
+      return;
     } finally {
       setBusy(false);
     }
+    setModalVisible(false);
+    // Same sequence ChoosePinScreen uses: unlock before entering the main stack, then request the
+    // wallet start. The saga derives isPasskeyWallet from the persisted walletMeta, so no payload.
+    dispatch(unlockScreen());
+    dispatch(startWalletRequested());
+    NavigationService.resetToMain();
   };
 
   const onCreate = () => {
-    const name = walletName.trim() || 'Hathor Wallet';
+    const name = walletName.trim() || t`Hathor Wallet`;
     run(() => createWalletWordsFromPasskey(name));
   };
-
-  // A passkey wallet has no seed phrase and no PIN — its recovery is the OS syncing the passkey to
-  // the user's password manager. Name it per platform so the disclosure below is concrete.
-  const passwordManager = Platform.OS === 'ios' ? 'iCloud Keychain' : 'Google Password Manager';
 
   const onDismiss = () => {
     if (!busy) setModalVisible(false);
@@ -140,8 +149,11 @@ const PasskeyOnboardingButton = () => {
                   secondary
                 />
               </View>
+              {/* We can't reliably detect WHICH manager stores the passkey — the credential is
+                  discoverable and users may route passkeys to iCloud Keychain, Google Password
+                  Manager, 1Password, a hardware key, etc. — so keep the disclosure generic. */}
               <Text style={styles.syncNote}>
-                {t`Your wallet is protected by this passkey. Keep it backed up by syncing it to ${passwordManager} so you don't lose access.`}
+                {t`Your wallet is protected by this passkey. Keep it backed up in your password manager so you don't lose access.`}
               </Text>
             </>
           ) : (

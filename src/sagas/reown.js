@@ -558,6 +558,12 @@ export function* processRequest(action) {
   const { payload } = action;
   const { params } = payload;
 
+  // Clear any stale passkey-cancel flag left by an EARLIER in-app ceremony (a cancel on the
+  // Send/Create/Swap screens sets this module-global flag, which is consumed only in the catch
+  // below). Without this reset, the next dapp request that fails for an UNRELATED reason would read
+  // that stale `true` and spuriously retry instead of reporting the error (consume = read+reset).
+  consumePasskeySigningCancelled();
+
   const reownClient = yield call(getReownClient);
   if (!reownClient) {
     log.debug('Tried to get reown client in processRequest but it is undefined.');
@@ -601,9 +607,10 @@ export function* processRequest(action) {
     chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
   };
 
-  // Message/oracle signing calls wallet.signMessageWithAddress, which needs the stored
-  // private key and bypasses the external signer — impossible for xpub-only passkey
-  // wallets. Reject cleanly instead of crashing inside the rpc-handler.
+  // These two methods each need the stored private key at one of our addresses, which bypasses the
+  // external tx signer: htr_signWithAddress signs via wallet.signMessageWithAddress, and
+  // htr_signOracleData signs via nanoUtils.getOracleInputData. Neither is possible for an xpub-only
+  // passkey wallet, so reject cleanly instead of crashing inside the rpc-handler.
   const passkeyUnsupportedMethods = [
     AVAILABLE_METHODS.HATHOR_SIGN_MESSAGE,
     AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA,
@@ -616,8 +623,11 @@ export function* processRequest(action) {
         id: payload.id,
         jsonrpc: '2.0',
         error: {
-          code: ERROR_CODES.USER_REJECTED_METHOD,
-          message: 'This operation is not yet supported for passkey wallets.',
+          // The wallet structurally cannot service this method — it's not a user rejection. 3001
+          // (UNAUTHORIZED_METHODS) lets the dapp disable the action rather than offer a retry that
+          // can never succeed, unlike USER_REJECTED_METHOD (5002).
+          code: ERROR_CODES.UNAUTHORIZED_METHODS,
+          message: 'This operation is not supported for passkey wallets.',
         },
       },
     }));
@@ -682,6 +692,16 @@ export function* processRequest(action) {
     // typed error, so we use a consumable flag — same pattern as pinWasCancelled). Retry the
     // request: the dapp consent modal shows again and the user can accept or reject.
     if (consumePasskeySigningCancelled()) {
+      // The rpc-handler dispatches a *StatusLoading BEFORE the passkey ceremony runs, and this
+      // branch returns before the switch below that would otherwise reset it. Without clearing it,
+      // the retry's fresh consent modal renders on top of a full-screen "Sending transaction"
+      // spinner the user can't dismiss. Reset the per-method status to READY (NOT *StatusFailure,
+      // which pops an "Error / Try again" modal, contradicting the retry). Dispatching all four
+      // is safe — only the in-flight one is non-idle — and mirrors the timeout cleanup above.
+      yield put(setNewNanoContractStatusReady());
+      yield put(setCreateTokenStatusReady());
+      yield put(setSendTxStatusReady());
+      yield put(setCreateNanoContractCreateTokenTxStatusReady());
       // Cancel the poll fork from this attempt before recursing — the early return below skips the
       // cleanup at the end of processRequest, so without this the fork leaks (and a new one is
       // forked per retry). Mirrors the SendNanoContractTxError retry path.

@@ -163,8 +163,8 @@ const CreateTokenConfirm = () => {
     // again while we return from it and build the feedback modal.
     setIsSending(true);
     authorizeTransaction({
-      execute: executeCreate,
       navigation,
+      // onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
       pinParams: {
         cb: executeCreate,
         screenText: t`Enter your 6-digit pin to create your token`,

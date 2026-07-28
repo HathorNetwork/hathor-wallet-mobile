@@ -381,6 +381,10 @@ export function* loadWallet() {
   // requires. Push notifications are already gated off for them at startWallet; this guard
   // only protects against unexpected entry paths.
   if (STORE.isPasskeyWallet()) {
+    // Defense-in-depth: this should never fire (push is already gated off for passkey wallets at
+    // startWallet). The PUSH_WALLET_LOAD_FAILED consumer only reads it as a signal and discards the
+    // error, so log here too, otherwise hitting this unexpected path leaves no trace of why.
+    log.error('loadWallet reached for a passkey wallet — push is unsupported (unexpected entry path).');
     yield put(pushLoadWalletFailed({
       error: new Error('Push notifications are not supported for passkey wallets.'),
     }));
