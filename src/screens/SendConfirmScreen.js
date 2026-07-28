@@ -190,8 +190,8 @@ const SendConfirmScreen = () => {
     // again while we return from it and build the feedback modal.
     setIsSending(true);
     authorizeTransaction({
-      execute: executeSend,
       navigation,
+      // onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
       pinParams: {
         cb: executeSend,
         canCancel: true,

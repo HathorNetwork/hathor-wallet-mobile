@@ -195,9 +195,15 @@ export function* startWallet(action) {
 
   // A passkey wallet boots read-only from this xpub; if it is missing/corrupted, fail fast with a
   // clear message instead of handing `{ xpub: undefined }` to HathorWallet and surfacing an opaque
-  // wallet-lib error later. (makePasskeyTxSigner guards the same case at sign time.)
+  // wallet-lib error later. (makePasskeyTxSigner guards the same case at sign time via
+  // PasskeyMetadataMissingError.) The xpub is this wallet's ONLY persisted identity, so a missing
+  // one is storage corruption, not a network error — report it to Sentry explicitly, since this
+  // throw otherwise lands in the global saga errorHandler which never captures and only renders the
+  // generic "error connecting to the server" screen.
   if (isPasskeyWallet && !walletMeta?.xpub) {
-    throw new Error('Passkey wallet metadata is missing its xpub.');
+    const xpubError = new Error('Passkey wallet metadata is missing its xpub.');
+    yield put(onExceptionCaptured(xpubError, false));
+    throw xpubError;
   }
 
   // clean memory storage and metadata before starting the wallet.
@@ -310,8 +316,10 @@ export function* startWallet(action) {
     };
     wallet = new HathorWallet(walletConfig);
     if (isPasskeyWallet) {
-      // Must happen BEFORE start(): flips isSignedExternally so the read-only guards allow
-      // sending, with signatures produced by the passkey ceremony instead of a stored key.
+      // Register the external signer before the first send/sign: it flips isSignedExternally so the
+      // read-only guards allow sending, with signatures produced by the passkey ceremony instead of
+      // a stored key. wallet-lib re-checks isReadonly() per operation, so ordering relative to
+      // start() is not enforced — we do it here, before start(), as a safe convention.
       wallet.setExternalTxSigningMethod(makePasskeyTxSigner());
     }
   }

@@ -23,6 +23,8 @@ import {
   View,
 } from 'react-native';
 import { t } from 'ttag';
+import { useSelector } from 'react-redux';
+import { get } from 'lodash';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import TextFmt from '../components/TextFmt';
@@ -31,7 +33,7 @@ import PasskeyOnboardingButton from '../components/PasskeyOnboardingButton';
 import baseStyle from '../styles/init';
 import { Link, str2jsx } from '../utils';
 
-import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '../constants';
+import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL, PASSKEY_ONBOARDING_FEATURE_TOGGLE } from '../constants';
 import { COLORS } from '../styles/themes';
 import { SKIP_SEED_CONFIRMATION } from '../config';
 
@@ -105,6 +107,50 @@ class WelcomeScreen extends React.Component {
   }
 }
 
+/**
+ * Onboarding buttons on the initial screen. The New Wallet / Import Wallet order is gated on the
+ * passkey feature toggle: only when it is ON do we lead with the primary "New Wallet" (and append
+ * the passkey button). With the flag OFF, the original order — Import first (secondary), New Wallet
+ * last (primary) — is preserved, so the default affordance is unchanged outside the rollout.
+ */
+const OnboardingButtons = ({ navigation, buttonViewStyle }) => {
+  const featureToggles = useSelector((state) => state.featureToggles);
+  const passkeyEnabled = get(featureToggles, PASSKEY_ONBOARDING_FEATURE_TOGGLE, false);
+
+  const newWalletButton = (marginBottom) => (
+    <NewHathorButton
+      onPress={() => navigation.navigate('NewWordsScreen')}
+      title={t`New Wallet`}
+      style={marginBottom ? { marginBottom: 16 } : undefined}
+    />
+  );
+  const importWalletButton = (
+    <NewHathorButton
+      onPress={() => navigation.navigate('LoadWordsScreen')}
+      title={t`Import Wallet`}
+      style={{ marginBottom: 16 }}
+      secondary
+    />
+  );
+
+  if (!passkeyEnabled) {
+    // Original order: Import first (secondary), New Wallet last (primary, no bottom margin).
+    return (
+      <View style={buttonViewStyle}>
+        {importWalletButton}
+        {newWalletButton(false)}
+      </View>
+    );
+  }
+  return (
+    <View style={buttonViewStyle}>
+      {newWalletButton(true)}
+      {importWalletButton}
+      <PasskeyOnboardingButton />
+    </View>
+  );
+};
+
 class InitialScreen extends React.Component {
   style = ({ ...baseStyle });
 
@@ -123,21 +169,10 @@ class InitialScreen extends React.Component {
           <Text style={this.style.text}>
             {t`To import a wallet, you will need to provide your seed words.`}
           </Text>
-          <View style={this.style.buttonView}>
-            <NewHathorButton
-              onPress={() => this.props.navigation.navigate('NewWordsScreen')}
-              title={t`New Wallet`}
-              style={{ marginBottom: 16 }}
-            />
-            <NewHathorButton
-              onPress={() => this.props.navigation.navigate('LoadWordsScreen')}
-              title={t`Import Wallet`}
-              style={{ marginBottom: 16 }}
-              secondary
-            />
-            {/* Renders only when the passkey-onboarding feature toggle is on. */}
-            <PasskeyOnboardingButton />
-          </View>
+          <OnboardingButtons
+            navigation={this.props.navigation}
+            buttonViewStyle={this.style.buttonView}
+          />
         </View>
       </View>
     );

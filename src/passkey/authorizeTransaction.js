@@ -14,21 +14,23 @@ import { STORE } from '../store';
  *
  * Passkey wallets have no PIN: authorization IS the passkey ceremony, fired by the external signer
  * when the lib requests signatures. No PIN is passed — signing is PIN-optional once an external
- * tx-signing method is registered — so `execute` is called directly. Every other wallet collects
- * the PIN through the PinScreen, which invokes `pinParams.cb` (typically the same `execute`) with
- * the entered PIN.
+ * tx-signing method is registered — so the passkey action runs directly. Other wallets collect the
+ * PIN through the PinScreen, which invokes `pinParams.cb` with the entered PIN.
+ *
+ * The passkey action defaults to `pinParams.cb` — the common case, where both paths run the same
+ * function — so a caller only passes `onPasskey` when it must differ (e.g. wrapping it to flip a
+ * sending flag only on the inline passkey path). This keeps the two from silently diverging.
  *
  * @param {object} args
- * @param {() => void} args.execute - The passkey-path action, run directly (no PIN) for passkey
- *   wallets. NOT called for PIN wallets — those authorize through pinParams.cb instead. It is
- *   often the same function as pinParams.cb, but need not be (a caller may wrap it).
  * @param {{ navigate: Function }} args.navigation - Navigation used to open the PinScreen.
  * @param {object} args.pinParams - Params forwarded to the PinScreen (cb, screenText, ...); cb is
  *   invoked with the entered PIN. Ignored for passkey wallets.
+ * @param {() => void} [args.onPasskey] - The passkey-path action, run directly (no PIN) for passkey
+ *   wallets. Defaults to `pinParams.cb`; pass it only when the passkey path must differ.
  */
-export function authorizeTransaction({ execute, navigation, pinParams }) {
+export function authorizeTransaction({ navigation, pinParams, onPasskey = pinParams.cb }) {
   if (STORE.isPasskeyWallet()) {
-    execute();
+    onPasskey();
     return;
   }
   navigation.navigate('PinScreen', pinParams);

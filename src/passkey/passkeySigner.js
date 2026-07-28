@@ -13,8 +13,10 @@
  * makePasskeyTxSigner() runs the WebAuthn PRF ceremony, re-derives the BIP39 seed in memory,
  * verifies it belongs to THIS wallet (derived xpub === stored xpub), then delegates the actual
  * signing to wallet-lib's transactionUtils.signTxInputs (supplying the ceremony-derived chain
- * xprivs), and discards all key material before returning. Register it with
- * wallet.setExternalTxSigningMethod() BEFORE wallet.start().
+ * xprivs), and discards all key material before returning. Register it via
+ * wallet.setExternalTxSigningMethod() before the first send/sign; wallet-lib re-checks isReadonly()
+ * per operation, so ordering relative to wallet.start() is not enforced (we do it before start()
+ * as a safe convention).
  */
 
 import { t } from 'ttag';
@@ -53,6 +55,17 @@ export class PasskeyBusyError extends Error {
   constructor() {
     super(t`Another passkey authorization is already in progress.`);
     this.name = 'PasskeyBusyError';
+  }
+}
+
+// Distinct from PasskeyXpubMismatchError: a MISSING stored xpub means the wallet metadata is
+// corrupted or was never fully written (the xpub is the wallet's only persisted identity), NOT that
+// the user presented the wrong passkey. The two need different guidance — reset here vs "use the
+// other passkey" there — and this case should be reported as corruption, not shown as a mismatch.
+export class PasskeyMetadataMissingError extends Error {
+  constructor() {
+    super(t`Passkey wallet data is missing or corrupted. Reset the wallet and sign in again with your passkey.`);
+    this.name = 'PasskeyMetadataMissingError';
   }
 }
 
@@ -138,7 +151,10 @@ export function makePasskeyTxSigner() {
           throw e;
         }
 
-        if (!meta?.xpub || derivePasskeyXpub(words) !== meta.xpub) {
+        if (!meta?.xpub) {
+          throw new PasskeyMetadataMissingError();
+        }
+        if (derivePasskeyXpub(words) !== meta.xpub) {
           throw new PasskeyXpubMismatchError(meta?.passkeyLabel);
         }
 
@@ -200,7 +216,10 @@ export function verifyPasskeyForUnlock() {
       throw e;
     }
     try {
-      if (!meta?.xpub || derivePasskeyXpub(words) !== meta.xpub) {
+      if (!meta?.xpub) {
+        throw new PasskeyMetadataMissingError();
+      }
+      if (derivePasskeyXpub(words) !== meta.xpub) {
         throw new PasskeyXpubMismatchError(meta?.passkeyLabel);
       }
       // Best-effort backfill (see makePasskeyTxSigner): fire-and-forget, log on failure.

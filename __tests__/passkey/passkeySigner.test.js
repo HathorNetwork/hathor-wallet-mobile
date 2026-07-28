@@ -58,6 +58,7 @@ import {
   consumePasskeySigningCancelled,
   PasskeyCancelledError,
   PasskeyXpubMismatchError,
+  PasskeyMetadataMissingError,
   PasskeyBusyError,
 } from '../../src/passkey/passkeySigner';
 /* eslint-enable import/first, import/order */
@@ -121,13 +122,16 @@ describe('makePasskeyTxSigner', () => {
     expect(err.storedLabel).toBe(STORED_LABEL);
   });
 
-  test('throws PasskeyXpubMismatchError when no xpub is stored at all', async () => {
+  test('throws PasskeyMetadataMissingError (not mismatch) when no xpub is stored at all', async () => {
+    // A missing stored xpub is corrupted/incomplete metadata, NOT a wrong passkey — it must be
+    // diagnosed distinctly (reset, not "use the other passkey").
     STORE.getWalletMeta.mockReturnValue(makeMeta({ xpub: undefined }));
 
     const signer = makePasskeyTxSigner();
     const err = await signer(fakeTx, fakeStorage).catch((e) => e);
 
-    expect(err).toBeInstanceOf(PasskeyXpubMismatchError);
+    expect(err).toBeInstanceOf(PasskeyMetadataMissingError);
+    expect(err).not.toBeInstanceOf(PasskeyXpubMismatchError);
     expect(transactionUtils.signTxInputs).not.toHaveBeenCalled();
   });
 

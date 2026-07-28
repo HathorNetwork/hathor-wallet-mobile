@@ -15,6 +15,7 @@ import NewHathorButton from '../components/NewHathorButton';
 import Logo from '../components/Logo';
 import Spinner from '../components/Spinner';
 import {
+  onExceptionCaptured,
   resetOnLockScreen,
   startWalletRequested,
   unlockScreen,
@@ -24,6 +25,9 @@ import { STORE } from '../store';
 import baseStyle from '../styles/init';
 import { PasskeyCancelledError, verifyPasskeyForUnlock } from '../passkey/passkeySigner';
 import { sanitizePasskeyLabel } from '../passkey/passkeyService';
+import { logger } from '../logger';
+
+const log = logger('passkey');
 
 /**
  * Lock screen for passkey (PIN-less, xpub-only) wallets — the counterpart of PinScreen's
@@ -36,8 +40,11 @@ const PasskeyLockScreen = () => {
   const wallet = useSelector((state) => state.wallet);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState(null);
-  // Ceremony must fire exactly once on mount even if the component re-renders (the OS shows
-  // a single credential sheet; a duplicate call would fail or stack sheets).
+  // Synchronous idempotency guard: the mount effect must fire the ceremony at most once even if it
+  // is invoked more than once in the same tick (e.g. a Fast Refresh remount). setVerifying is
+  // async,
+  // so the `verifying` check alone can't cover a same-tick double-fire; the OS shows a single
+  // credential sheet and a duplicate call would fail or stack sheets.
   const startedRef = useRef(false);
 
   // Labels persisted from old-format credentials may be decode garbage; never show those.
@@ -52,13 +59,24 @@ const PasskeyLockScreen = () => {
     try {
       await verifyPasskeyForUnlock();
       if (!wallet) {
-        // App boot (or wallet stopped): start the xpub-only wallet. The saga re-reads the
-        // persisted walletMeta; no secret travels through redux.
-        dispatch(startWalletRequested({ walletType: 'passkey' }));
+        // App boot (or wallet stopped): start the xpub-only wallet. The saga derives
+        // isPasskeyWallet from the persisted walletMeta; no secret (and no payload flag) via redux.
+        dispatch(startWalletRequested());
       }
       dispatch(unlockScreen());
     } catch (e) {
-      setError(e instanceof PasskeyCancelledError ? t`Unlock cancelled.` : e.message);
+      if (e instanceof PasskeyCancelledError) {
+        setError(t`Unlock cancelled.`);
+      } else {
+        // A non-cancel failure on the only entry point for these wallets: log + report to Sentry
+        // (fatal=false — the user can always retry or reset, this isn't a crash), and ALWAYS show
+        // text, since a non-Error rejection or empty native message would otherwise
+        // leave the error banner blank on an Unlock button that looks like it did nothing.
+        log.error('passkey unlock failed', e);
+        dispatch(onExceptionCaptured(e, false));
+        const code = e?.error ? `[${e.error}] ` : '';
+        setError(`${code}${e?.message || t`Could not verify your passkey. Please try again.`}`);
+      }
       setVerifying(false);
     }
   };
