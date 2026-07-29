@@ -486,6 +486,8 @@ export const capDecimalsByMagnitude = (formatted) => {
 
   let maxDecimals;
   if (integerDigits === '0') {
+    // Assumes network precision <= 8: on a network with decimal_places > 8, a
+    // balance below 1e-8 truncates to all-zeros and renders as 0.
     maxDecimals = 8;
   } else if (integerDigits.length <= 3) {
     maxDecimals = 4;
