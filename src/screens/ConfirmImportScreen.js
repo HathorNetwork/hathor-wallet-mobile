@@ -12,7 +12,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { t } from 'ttag';
-import { numberUtils, constants } from '@hathor/wallet-lib';
+import { numberUtils } from '@hathor/wallet-lib';
 import HathorHeader from '../components/HathorHeader';
 import NewHathorButton from '../components/NewHathorButton';
 import ImportTokensModal from '../components/ImportTokensModal';
@@ -37,6 +37,7 @@ const ConfirmImportScreen = () => {
   const { tokens } = useParams();
   const importStatus = useSelector((state) => state.tokenImport.importStatus);
   const tokensBalance = useSelector((state) => state.tokensBalance);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
 
   const [showModal, setShowModal] = useState(false);
 
@@ -71,7 +72,7 @@ const ConfirmImportScreen = () => {
       return `— ${token.symbol}`;
     }
     const available = entry.data?.available ?? 0n;
-    return `${numberUtils.prettyValue(available, constants.DECIMAL_PLACES)} ${token.symbol}`;
+    return `${numberUtils.prettyValue(available, decimalPlaces)} ${token.symbol}`;
   };
 
   const renderTokenItem = ({ item, index }) => (

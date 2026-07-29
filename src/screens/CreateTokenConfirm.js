@@ -224,7 +224,7 @@ const CreateTokenConfirm = () => {
             <AmountTextInput
               editable={false}
               decimalPlaces={decimalPlaces}
-              value={hathorLib.numberUtils.prettyValue(amount)}
+              value={hathorLib.numberUtils.prettyValue(amount, decimalPlaces)}
               // Stretch to the parent's width so the auto-shrink logic measures a
               // fixed column width. The parent is `alignItems: 'center'`, so without
               // this the input sizes to its content and the font-scaling feedback loop
@@ -248,7 +248,7 @@ const CreateTokenConfirm = () => {
             <SimpleInput
               label={t`Deposit`}
               editable={false}
-              value={`${hathorLib.numberUtils.prettyValue(deposit)} ${nativeSymbol}`}
+              value={`${hathorLib.numberUtils.prettyValue(deposit, decimalPlaces)} ${nativeSymbol}`}
               containerStyle={{ marginTop: 32 }}
             />
           )}
@@ -256,7 +256,7 @@ const CreateTokenConfirm = () => {
             <SimpleInput
               label={t`Network fee`}
               editable={false}
-              value={`${hathorLib.numberUtils.prettyValue(networkFee)} ${nativeSymbol}`}
+              value={`${hathorLib.numberUtils.prettyValue(networkFee, decimalPlaces)} ${nativeSymbol}`}
               containerStyle={{ marginTop: 32 }}
             />
           )}

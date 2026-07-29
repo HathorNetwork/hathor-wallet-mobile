@@ -49,7 +49,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr ""
 
 #: src/models.js:107
-#: src/utils.js:665
+#: src/utils.js:752
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr ""
@@ -58,11 +58,11 @@ msgstr ""
 msgid "Invalid address"
 msgstr ""
 
-#: src/utils.js:650
+#: src/utils.js:737
 msgid "CREATE DEPOSIT TOKEN"
 msgstr ""
 
-#: src/utils.js:652
+#: src/utils.js:739
 msgid "CREATE FEE TOKEN"
 msgstr ""
 
@@ -70,7 +70,7 @@ msgstr ""
 #: src/screens/CreateTokenConfirm.js:87
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94
-#: src/utils.js:654
+#: src/utils.js:741
 msgid "CREATE TOKEN"
 msgstr ""
 
@@ -211,6 +211,7 @@ msgid ""
 msgstr ""
 
 #: src/screens/AddressMode.js:261
+#: src/screens/AmountFormat.js:145
 msgid "SAVE PREFERENCES"
 msgstr ""
 
@@ -218,6 +219,46 @@ msgstr ""
 msgid ""
 "Changing\n"
 "address mode..."
+msgstr ""
+
+#: src/screens/AmountFormat.js:83
+msgid "Default"
+msgstr ""
+
+#: src/screens/AmountFormat.js:96
+msgid "AMOUNT FORMAT"
+msgstr ""
+
+#: src/screens/AmountFormat.js:102
+msgid ""
+"Choose how amounts are displayed across your wallet. You can change your "
+"default anytime."
+msgstr ""
+
+#: src/screens/AmountFormat.js:108
+msgid "Expanded"
+msgstr ""
+
+#: src/screens/AmountFormat.js:109
+msgid "Standard notation. Leading zeros are written out in full (ex: 0.0000005195)."
+msgstr ""
+
+#: src/screens/AmountFormat.js:115
+msgid "Compressed"
+msgstr ""
+
+#: src/screens/AmountFormat.js:116
+msgid ""
+"Compresses leading zeros into a subscript count for shorter, easier-to-read "
+"small values (ex: 0.0₆5195)."
+msgstr ""
+
+#: src/screens/AmountFormat.js:121
+msgid "PREVIEW"
+msgstr ""
+
+#: src/screens/AmountFormat.js:123
+msgid "Full amount"
 msgstr ""
 
 #: src/screens/BackupWords.js:184
@@ -701,7 +742,7 @@ msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28
 #: src/screens/PinScreen.js:318
-#: src/screens/Settings.js:177
+#: src/screens/Settings.js:181
 msgid "Reset wallet"
 msgstr ""
 
@@ -709,32 +750,32 @@ msgstr ""
 msgid "Connect to mainnet"
 msgstr ""
 
-#: src/screens/MainScreen.js:136
+#: src/screens/MainScreen.js:138
 msgid "No transactions"
 msgstr ""
 
-#: src/screens/MainScreen.js:139
+#: src/screens/MainScreen.js:141
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 
-#: src/screens/MainScreen.js:156
+#: src/screens/MainScreen.js:158
 msgid "Loading transactions"
 msgstr ""
 
-#: src/screens/MainScreen.js:165
+#: src/screens/MainScreen.js:167
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:168
+#: src/screens/MainScreen.js:170
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:551
-#: src/screens/MainScreen.js:580
+#: src/screens/MainScreen.js:564
+#: src/screens/MainScreen.js:597
 msgid "Available Balance"
 msgstr ""
 
-#: src/screens/MainScreen.js:560
+#: src/screens/MainScreen.js:573
 msgid "Locked"
 msgstr ""
 
@@ -1125,15 +1166,19 @@ msgstr ""
 msgid "Address Mode"
 msgstr ""
 
-#: src/screens/Settings.js:185
+#: src/screens/Settings.js:177
+msgid "Amount format"
+msgstr ""
+
+#: src/screens/Settings.js:189
 msgid "About"
 msgstr ""
 
-#: src/screens/Settings.js:193
+#: src/screens/Settings.js:197
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/Settings.js:206
+#: src/screens/Settings.js:210
 msgid "Connected to"
 msgstr ""
 
@@ -1633,20 +1678,20 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: src/sagas/wallet.js:908
+#: src/sagas/wallet.js:917
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
-#: src/sagas/wallet.js:922
+#: src/sagas/wallet.js:931
 #.  This will show the message in the feedback content at SelectAddressModal
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:932
+#: src/sagas/wallet.js:941
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
-#: src/sagas/wallet.js:948
+#: src/sagas/wallet.js:957
 #.  This will show the message in the feedback content
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""

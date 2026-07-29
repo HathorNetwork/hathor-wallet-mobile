@@ -16,7 +16,7 @@ import { Linking, Platform, Text } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import moment from 'moment';
 import baseStyle from './styles/init';
-import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE, TOKEN_SWAP_FEATURE_TOGGLE, FBT_FEATURE_TOGGLE } from './constants';
+import { KEYCHAIN_USER, NETWORK_MAINNET, NANO_CONTRACT_FEATURE_TOGGLE, SAFE_BIOMETRY_MODE_FEATURE_TOGGLE, TOKEN_SWAP_FEATURE_TOGGLE, FBT_FEATURE_TOGGLE, AMOUNT_FORMAT, AMOUNT_FORMAT_DEFAULT, AMOUNT_FORMAT_FEATURE_TOGGLE } from './constants';
 import { STORE, IS_BIOMETRY_ENABLED_KEY, IS_OLD_BIOMETRY_ENABLED_KEY, SUPPORTED_BIOMETRY_KEY, SAFE_BIOMETRY_FEATURE_FLAG_KEY, FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY } from './store';
 import { TxHistory } from './models';
 import { COLORS, STYLE } from './styles/themes';
@@ -372,20 +372,189 @@ export const getLightBackground = (alpha) => {
   return `${COLORS.primary}${hex}`;
 };
 
+const SUBSCRIPT_DIGITS = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
+
+// Shortest zero run worth compressing.
+const COMPRESS_MIN_ZERO_RUN = 3;
+
 /**
- * Render value in a formatted way for display
+ * Render a non-negative integer as a Unicode subscript string (e.g. 12 -> "₁₂").
  *
- * @param {bigint} amount The token amount as BigInt
- * @param {boolean} isInteger Whether the token is an NFT or regular token
- * @return {string} Formatted value for display
+ * @param {number} n
+ * @return {string}
  */
-export const renderValue = (amount, isInteger) => {
-  if (isInteger) {
-    return hathorLib.numberUtils.prettyValue(amount, 0);
+const toSubscript = (n) => String(n)
+  .split('')
+  .map((digit) => SUBSCRIPT_DIGITS[Number(digit)])
+  .join('');
+
+/**
+ * Collapse the leading run of fractional zeros into subscript notation,
+ * e.g. "0.0000005195" -> "0.0₆5195". Only that leading run is compressed; every
+ * later digit is kept verbatim, including trailing zeros ("0.0000005000" ->
+ * "0.0₆5000"), so the significant digits match the Expanded form. Returns the
+ * input unchanged when nothing qualifies: value >= 1, integer, zero, or a run
+ * shorter than COMPRESS_MIN_ZERO_RUN.
+ *
+ * @param {string} formatted Amount string from prettyValue
+ * @return {string}
+ */
+export const compressAmountString = (formatted) => {
+  const isNegative = formatted.startsWith('-');
+  const unsigned = isNegative ? formatted.slice(1) : formatted;
+
+  const dotIndex = unsigned.indexOf('.');
+  if (dotIndex === -1) {
+    return formatted;
   }
 
-  return hathorLib.numberUtils.prettyValue(amount);
+  const integerPart = unsigned.slice(0, dotIndex);
+  const decimalPart = unsigned.slice(dotIndex + 1);
+
+  // Only sub-1 values have a leading-zero run worth compressing.
+  if (integerPart.replace(/,/g, '') !== '0') {
+    return formatted;
+  }
+
+  // Count the leading zero run only (trailing zeros are intentionally preserved).
+  let leadingZeros = 0;
+  while (leadingZeros < decimalPart.length && decimalPart[leadingZeros] === '0') {
+    leadingZeros += 1;
+  }
+
+  // Nothing significant after the run (value is zero) or the run is too short.
+  const significant = decimalPart.slice(leadingZeros);
+  if (significant === '' || leadingZeros < COMPRESS_MIN_ZERO_RUN) {
+    return formatted;
+  }
+
+  const sign = isNegative ? '-' : '';
+  return `${sign}0.0${toSubscript(leadingZeros)}${significant}`;
 };
+
+/**
+ * Render value in a formatted way for display.
+ *
+ * @param {bigint} amount The token amount as BigInt
+ * @param {boolean} isNFT Whether the token is an NFT (rendered as an integer)
+ * @param {number} [decimalPlaces] Network decimal places (serverInfo.decimal_places).
+ *   Callers with store access should always pass it: the lib default it falls back
+ *   to is 2, which under-renders every network that uses more precision (and, with
+ *   only two fractional digits, makes the Compressed format a no-op).
+ * @param {string} [amountFormat] AMOUNT_FORMAT.EXPANDED (default) or COMPRESSED
+ * @return {string} Formatted value for display
+ */
+export const renderValue = (
+  amount,
+  isNFT,
+  decimalPlaces,
+  amountFormat = AMOUNT_FORMAT.EXPANDED,
+) => {
+  const formatted = isNFT
+    ? hathorLib.numberUtils.prettyValue(amount, 0)
+    : hathorLib.numberUtils.prettyValue(amount, decimalPlaces);
+
+  if (amountFormat === AMOUNT_FORMAT.COMPRESSED) {
+    return compressAmountString(formatted);
+  }
+
+  return formatted;
+};
+
+/**
+ * Home display precision rule: cap the shown fractional digits by the value's
+ * integer magnitude — < 1 -> 8, 1-999 -> 4, 1000-9999 -> 3, >= 10000 -> 2.
+ * Excess digits are truncated (not rounded, to never overstate a balance);
+ * shorter fractions are left as-is (no padding). Operates on prettyValue's output
+ * string, so it composes with compressAmountString.
+ *
+ * @param {string} formatted Amount string from prettyValue
+ * @return {string}
+ */
+export const capDecimalsByMagnitude = (formatted) => {
+  const isNegative = formatted.startsWith('-');
+  const unsigned = isNegative ? formatted.slice(1) : formatted;
+
+  const dotIndex = unsigned.indexOf('.');
+  if (dotIndex === -1) {
+    return formatted;
+  }
+
+  const integerPart = unsigned.slice(0, dotIndex);
+  const decimalPart = unsigned.slice(dotIndex + 1);
+  const integerDigits = integerPart.replace(/,/g, '');
+
+  let maxDecimals;
+  if (integerDigits === '0') {
+    // Assumes network precision <= 8: on a network with decimal_places > 8, a
+    // balance below 1e-8 truncates to all-zeros and renders as 0.
+    maxDecimals = 8;
+  } else if (integerDigits.length <= 3) {
+    maxDecimals = 4;
+  } else if (integerDigits.length === 4) {
+    maxDecimals = 3;
+  } else {
+    maxDecimals = 2;
+  }
+
+  const capped = decimalPart.slice(0, maxDecimals);
+  const sign = isNegative ? '-' : '';
+  return capped === '' ? `${sign}${integerPart}` : `${sign}${integerPart}.${capped}`;
+};
+
+/**
+ * Home value display: format the amount via prettyValue using the network's
+ * decimal places, cap the shown decimals by magnitude, then apply the Compressed
+ * subscript notation when selected.
+ *
+ * @param {bigint} amount The token amount as BigInt
+ * @param {boolean} isNFT Whether the token is an NFT (rendered as an integer)
+ * @param {number} [decimalPlaces] Network decimal places (serverInfo.decimal_places);
+ *   falls back to the lib default when unset
+ * @param {string} [amountFormat] AMOUNT_FORMAT.EXPANDED (default) or COMPRESSED
+ * @return {string}
+ */
+export const renderHomeValue = (
+  amount,
+  isNFT,
+  decimalPlaces,
+  amountFormat = AMOUNT_FORMAT.EXPANDED,
+) => {
+  const formatted = isNFT
+    ? hathorLib.numberUtils.prettyValue(amount, 0)
+    : hathorLib.numberUtils.prettyValue(amount, decimalPlaces);
+  const capped = capDecimalsByMagnitude(formatted);
+  return amountFormat === AMOUNT_FORMAT.COMPRESSED ? compressAmountString(capped) : capped;
+};
+
+/**
+ * Coerce a persisted amount-format value to a known enum member, defaulting for
+ * anything unrecognized (e.g. a corrupted storage read). Guards the hydration
+ * path, where the value comes from untrusted storage rather than the picker.
+ *
+ * @param {unknown} value
+ * @return {string} A valid AMOUNT_FORMAT value
+ */
+export const normalizeAmountFormat = (value) => (
+  Object.values(AMOUNT_FORMAT).includes(value) ? value : AMOUNT_FORMAT_DEFAULT
+);
+
+/**
+ * Amount format to render with, gated by the feature flag.
+ *
+ * `state.amountFormat` is the user's stored preference; this returns it only
+ * while the flag is on, else forces Expanded. That stops a remote flag rollback
+ * from stranding the wallet in Compressed with the Settings entry hidden (no
+ * in-app way back). Display sites should read this, not state.amountFormat.
+ *
+ * @param {Object} state Redux store state
+ * @return {string} AMOUNT_FORMAT.EXPANDED or AMOUNT_FORMAT.COMPRESSED
+ */
+export const getDisplayAmountFormat = (state) => (
+  state.featureToggles[AMOUNT_FORMAT_FEATURE_TOGGLE]
+    ? (state.amountFormat ?? AMOUNT_FORMAT_DEFAULT)
+    : AMOUNT_FORMAT.EXPANDED
+);
 
 /**
  * Format a BigInt amount as a decimal string without thousand separators.
