@@ -74,7 +74,7 @@ msgstr ""
 msgid "CREATE FEE TOKEN"
 msgstr ""
 
-#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:87
+#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:88
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:654
 msgid "CREATE TOKEN"
@@ -143,11 +143,11 @@ msgstr "О НАС"
 msgid "This app is developed by Hathor Labs and is distributed for free."
 msgstr "Это приложение разработано Hathor Labs и распространяется бесплатно."
 
-#: src/screens/About.js:99 src/screens/InitWallet.js:65
+#: src/screens/About.js:99 src/screens/InitWallet.js:68
 msgid "This wallet is connected to the **mainnet**."
 msgstr "Этот кошелек подключен к **mainnet**."
 
-#: src/screens/About.js:102 src/screens/InitWallet.js:68
+#: src/screens/About.js:102 src/screens/InitWallet.js:71
 msgid ""
 "A mobile wallet is not the safest place to store your tokens.\n"
 "So, we advise you to keep only a small amount of tokens here, such as pocket "
@@ -158,8 +158,8 @@ msgstr ""
 
 #: src/screens/About.js:107
 msgid ""
-"For further information, check out the |link1:Terms of Service| and |"
-"link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
+"For further information, check out the |link1:Terms of Service| and |link2:"
+"Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
 #: src/screens/AddressMode.js:122
@@ -320,6 +320,7 @@ msgstr ""
 msgid "Import tokens"
 msgstr ""
 
+#: src/components/PasskeyOnboardingButton.js:188
 #: src/screens/ConfirmImportScreen.js:129
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:80
 #: src/screens/Reown/SuccessFeedbackScreen.js:39
@@ -354,73 +355,76 @@ msgid "Amount of ${ name } (${ symbol })"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:211 src/screens/CreateTokenName.js:67
-#: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:229
-#: src/screens/InitWallet.js:382 src/screens/SendAddressInput.js:66
+#: src/screens/CreateTokenSymbol.js:86 src/screens/InitWallet.js:268
+#: src/screens/InitWallet.js:421 src/screens/SendAddressInput.js:66
 #: src/screens/SendAmountInput.js:169
 msgid "Next"
 msgstr "Далее"
 
-#: src/screens/CreateTokenConfirm.js:31
+#: src/screens/CreateTokenConfirm.js:32
 msgid ""
 "You chose to create a **Deposit-Based Token**, which requires a 1% HTR "
 "deposit."
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:33
+#: src/screens/CreateTokenConfirm.js:34
 msgid ""
 "You chose to create a **Fee-Based Token**, so a small fee will be applied to "
 "each future transaction of this token."
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:145
+#: src/screens/CreateTokenConfirm.js:146
 msgid "Creating token"
 msgstr "Создать токен"
 
-#: src/screens/CreateTokenConfirm.js:151
+#: src/screens/CreateTokenConfirm.js:152
 msgid "Building the transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:166
+#.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
+#: src/screens/CreateTokenConfirm.js:170
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Введите 6-значный PIN-код для создания токена"
 
-#: src/screens/CreateTokenConfirm.js:167
+#.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
+#: src/screens/CreateTokenConfirm.js:171
 msgid "Authorize token creation"
 msgstr "Авторизовать создание токена"
 
-#: src/screens/CreateTokenConfirm.js:169 src/screens/SendConfirmScreen.js:196
-#: src/screens/TokenSwapReview.js:221
+#.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
+#: src/screens/CreateTokenConfirm.js:173 src/screens/SendConfirmScreen.js:200
+#: src/screens/TokenSwapReview.js:251
 msgid "Building transaction"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:210
+#: src/screens/CreateTokenConfirm.js:214
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:222
+#: src/screens/CreateTokenConfirm.js:231
 msgid "Amount of ${ name }"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:236
+#: src/screens/CreateTokenConfirm.js:245
 msgid "Token name"
 msgstr "Имя токена"
 
-#: src/screens/CreateTokenConfirm.js:242 src/screens/CreateTokenSymbol.js:71
+#: src/screens/CreateTokenConfirm.js:251 src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr "Символ токена"
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:249
+#: src/screens/CreateTokenConfirm.js:258
 msgid "Deposit"
 msgstr "Депозит"
 
-#: src/screens/CreateTokenConfirm.js:257
+#: src/screens/CreateTokenConfirm.js:266
 msgid "Network fee"
 msgstr ""
 
-#: src/screens/CreateTokenConfirm.js:266
+#: src/screens/CreateTokenConfirm.js:275
 msgid "Create token"
 msgstr "Создать токен"
 
@@ -593,37 +597,45 @@ msgstr ""
 msgid "Continue"
 msgstr ""
 
-#: src/screens/InitWallet.js:62
+#: src/screens/InitWallet.js:65
 msgid "Welcome to Hathor Wallet!"
 msgstr "Добро пожаловать в Hathor Wallet!"
 
-#: src/screens/InitWallet.js:73
+#: src/screens/InitWallet.js:76
 msgid ""
-"For further information, check out our website |link:https://"
-"hathor.network/|."
+"For further information, check out our website |link:https://hathor."
+"network/|."
 msgstr ""
 "Для получения дополнительной информации, посетите наш веб-сайт |link:https://"
 "hathor.network/|."
 
-#: src/screens/InitWallet.js:86
+#: src/screens/InitWallet.js:89
 msgid ""
 "I agree with the |link1:Terms of Service| and |link2:Privacy Policy| and "
 "understand the risks of using a mobile wallet"
 msgstr ""
 
-#: src/screens/InitWallet.js:98
+#: src/screens/InitWallet.js:101
 msgid "Start"
 msgstr "Начать"
 
-#: src/screens/InitWallet.js:115
+#: src/screens/InitWallet.js:123
+msgid "New Wallet"
+msgstr "Новый Кошелек"
+
+#: src/screens/InitWallet.js:130
+msgid "Import Wallet"
+msgstr "Импортировать Кошелек"
+
+#: src/screens/InitWallet.js:162
 msgid "To start,"
 msgstr "Начать,"
 
-#: src/screens/InitWallet.js:117
+#: src/screens/InitWallet.js:164
 msgid "You need to **initialize your wallet**."
 msgstr "Вам нужно **инициализировать свой кошелек**."
 
-#: src/screens/InitWallet.js:120
+#: src/screens/InitWallet.js:167
 msgid ""
 "You can either **start a new wallet** or **import a wallet** that already "
 "exists."
@@ -631,23 +643,15 @@ msgstr ""
 "Вы можете **создать новый кошелек**, либо **импортировать кошелек**, который "
 "уже существует."
 
-#: src/screens/InitWallet.js:123
+#: src/screens/InitWallet.js:170
 msgid "To import a wallet, you will need to provide your seed words."
 msgstr "Чтобы импортировать кошелек, необходимо ввести seed-фразу."
 
-#: src/screens/InitWallet.js:128
-msgid "Import Wallet"
-msgstr "Импортировать Кошелек"
-
-#: src/screens/InitWallet.js:134
-msgid "New Wallet"
-msgstr "Новый Кошелек"
-
-#: src/screens/InitWallet.js:220
+#: src/screens/InitWallet.js:259
 msgid "Your wallet has been created!"
 msgstr "Ваш кошелек создан!"
 
-#: src/screens/InitWallet.js:222
+#: src/screens/InitWallet.js:261
 msgid ""
 "You must **do a backup** and save the words below **in the same order they "
 "appear**."
@@ -655,11 +659,11 @@ msgstr ""
 "Вы должны **сделать резервную копию** и сохранить слова ниже **в том же "
 "порядке, в котором они появились**."
 
-#: src/screens/InitWallet.js:343
+#: src/screens/InitWallet.js:382
 msgid "To import a wallet,"
 msgstr "Чтобы импортировать кошелек,"
 
-#: src/screens/InitWallet.js:345
+#: src/screens/InitWallet.js:384
 #, javascript-format
 msgid ""
 "You need to **write down the ${ this.numberOfWords } seed words** of your "
@@ -667,11 +671,11 @@ msgid ""
 msgstr ""
 "Вам нужно **записать ${ this.numberOfWords } seed-фразу** вашего кошелька."
 
-#: src/screens/InitWallet.js:348
+#: src/screens/InitWallet.js:387
 msgid "Words"
 msgstr "Слова"
 
-#: src/screens/InitWallet.js:353
+#: src/screens/InitWallet.js:392
 msgid "Enter your seed words separated by space"
 msgstr "Введите seed-фразу"
 
@@ -704,8 +708,8 @@ msgstr "**${ loadedData.addresses } адресов** найдено"
 msgid "There's been an error connecting to the server."
 msgstr ""
 
-#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PinScreen.js:318
-#: src/screens/Settings.js:177
+#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:157
+#: src/screens/PinScreen.js:318 src/screens/Settings.js:177
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
 
@@ -758,6 +762,27 @@ msgstr ""
 
 #: src/screens/NanoContractRegisterQrCodeScreen.js:62
 msgid "Scan the nano contract ID QR code"
+msgstr ""
+
+#: src/screens/PasskeyLockScreen.js:69
+msgid "Unlock cancelled."
+msgstr ""
+
+#: src/screens/PasskeyLockScreen.js:78
+msgid "Could not verify your passkey. Please try again."
+msgstr ""
+
+#: src/screens/PasskeyLockScreen.js:121
+#, javascript-format
+msgid "Unlock with the passkey \"${ passkeyLabel }\""
+msgstr ""
+
+#: src/screens/PasskeyLockScreen.js:122
+msgid "Unlock with your passkey"
+msgstr ""
+
+#: src/screens/PasskeyLockScreen.js:142
+msgid "Unlock"
 msgstr ""
 
 #: src/screens/PinScreen.js:272
@@ -947,15 +972,15 @@ msgstr "Биометрия не поддерживается"
 msgid "Use ${ this.supportedBiometry }"
 msgstr "Использовать ${ this.supportedBiometry }"
 
-#: src/screens/Security.js:191
+#: src/screens/Security.js:195
 msgid "SECURITY"
 msgstr "БЕЗОПАСНОСТЬ"
 
-#: src/screens/Security.js:213
+#: src/screens/Security.js:221
 msgid "Change PIN"
 msgstr "Изменить PIN-код"
 
-#: src/screens/Security.js:218
+#: src/screens/Security.js:226
 msgid "Lock wallet"
 msgstr "Заблокировать кошелек"
 
@@ -979,41 +1004,43 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:287
+#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:291
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:42 src/screens/TokenSwapReview.js:320
+#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:350
 msgid "No fee"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:54
+#: src/screens/SendConfirmScreen.js:55
 msgid "Insufficient HTR to cover the network fee."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:57
+#: src/screens/SendConfirmScreen.js:58
 msgid "Insufficient balance to send this transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:59
+#: src/screens/SendConfirmScreen.js:60
 msgid "Failed to process transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:178 src/screens/TokenSwapReview.js:205
+#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:214
 msgid "Your transfer is being processed"
 msgstr "Ваш перевод обрабатывается"
 
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:194
-#: src/screens/TokenSwapReview.js:219
+#.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:198
+#: src/screens/TokenSwapReview.js:249
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:195
-#: src/screens/TokenSwapReview.js:220
+#.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:199
+#: src/screens/TokenSwapReview.js:250
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
-#: src/screens/SendConfirmScreen.js:235
+#: src/screens/SendConfirmScreen.js:239
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
@@ -1021,58 +1048,58 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/screens/SendConfirmScreen.js:258
+#: src/screens/SendConfirmScreen.js:262
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:261
+#: src/screens/SendConfirmScreen.js:265
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:264
+#: src/screens/SendConfirmScreen.js:268
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:266
+#: src/screens/SendConfirmScreen.js:270
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:271
+#: src/screens/SendConfirmScreen.js:275
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:293
+#: src/screens/SendConfirmScreen.js:297
 msgid "Building your transaction"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:311
+#: src/screens/SendConfirmScreen.js:315
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Ваш перевод **${ amountAndToken }** был подтвержден"
 
-#: src/screens/SendConfirmScreen.js:322
+#: src/screens/SendConfirmScreen.js:331
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:344
+#: src/screens/SendConfirmScreen.js:353
 msgid "**Transaction summary**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:347
+#: src/screens/SendConfirmScreen.js:356
 msgid "**To**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:352
+#: src/screens/SendConfirmScreen.js:361
 msgid "**Network Fee**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:360
+#: src/screens/SendConfirmScreen.js:369
 msgid "**Total**"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:367
+#: src/screens/SendConfirmScreen.js:376
 msgid "Send"
 msgstr "Отправить"
 
@@ -1159,25 +1186,29 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:231
+#: src/screens/TokenSwapReview.js:230
+msgid "Could not complete the swap. Please try again."
+msgstr ""
+
+#: src/screens/TokenSwapReview.js:261
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:237
+#: src/screens/TokenSwapReview.js:267
 msgid "Building the swap transaction for your review"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:255
+#: src/screens/TokenSwapReview.js:285
 msgid "Your swap was successful"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:316
+#: src/screens/TokenSwapReview.js:346
 msgid "Network Fee"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:328
+#: src/screens/TokenSwapReview.js:358
 msgid "SWAP"
 msgstr ""
 
@@ -1625,22 +1656,48 @@ msgstr ""
 msgid "Open"
 msgstr "Открыть"
 
-#: src/sagas/wallet.js:908
+#: src/sagas/wallet.js:940
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:922
+#: src/sagas/wallet.js:954
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:932
+#: src/sagas/wallet.js:964
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:948
+#: src/sagas/wallet.js:980
 msgid "There was an error while loading first wallet address. Try again."
+msgstr ""
+
+#: src/passkey/passkeySigner.js:37
+msgid "Passkey authorization was cancelled. Nothing was sent."
+msgstr ""
+
+#: src/passkey/passkeySigner.js:47
+#, javascript-format
+msgid ""
+"This passkey opens a different wallet. Use the passkey named \"${ label }\"."
+msgstr ""
+
+#: src/passkey/passkeySigner.js:48
+msgid ""
+"This passkey opens a different wallet. Use the passkey that created this "
+"wallet."
+msgstr ""
+
+#: src/passkey/passkeySigner.js:56
+msgid "Another passkey authorization is already in progress."
+msgstr ""
+
+#: src/passkey/passkeySigner.js:67
+msgid ""
+"Passkey wallet data is missing or corrupted. Reset the wallet and sign in "
+"again with your passkey."
 msgstr ""
 
 #: src/components/AmountInputAccessory.js:98
@@ -1748,6 +1805,61 @@ msgstr ""
 #: src/components/OfflineBar.js:53
 msgid "No internet connection"
 msgstr "Нет соединения с интернетом"
+
+#: src/components/PasskeyOnboardingButton.js:91
+msgid "Passkey wallet"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:104
+msgid "Passkey unavailable"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:118
+msgid "Hathor Wallet"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:130
+msgid "Passkey"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:137
+msgid "Continue with passkey"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:142
+#: src/components/PasskeyOnboardingButton.js:182
+msgid "Working…"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:142
+msgid "Sign in with passkey"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:148
+msgid "Create passkey wallet"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:156
+msgid ""
+"Your wallet is protected by this passkey. Keep it backed up in your password "
+"manager so you don't lose access."
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:161
+msgid "Name your wallet"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:163
+msgid "This name identifies the passkey when you sign in later."
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:170
+msgid "e.g. Savings"
+msgstr ""
+
+#: src/components/PasskeyOnboardingButton.js:182
+msgid "Create"
+msgstr ""
 
 #: src/components/PublicExplorerListButton.js:17
 msgid "Public Explorer"

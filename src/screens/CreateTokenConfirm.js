@@ -23,6 +23,7 @@ import SendTransactionFeedbackModal from '../components/SendTransactionFeedbackM
 import TextFmt from '../components/TextFmt';
 import { updateSelectedToken } from '../actions';
 import { registerToken } from '../utils/tokens';
+import { authorizeTransaction } from '../passkey/authorizeTransaction';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { useNavigation, useParams } from '../hooks/navigation';
 import { getCreateTokenTitle } from '../utils';
@@ -161,14 +162,17 @@ const CreateTokenConfirm = () => {
     // Disable the button before opening the PinScreen so it can't be tapped
     // again while we return from it and build the feedback modal.
     setIsSending(true);
-    const pinParams = {
-      cb: executeCreate,
-      screenText: t`Enter your 6-digit pin to create your token`,
-      biometryText: t`Authorize token creation`,
-      canCancel: true,
-      biometryLoadingText: t`Building transaction`,
-    };
-    navigation.navigate('PinScreen', pinParams);
+    authorizeTransaction({
+      navigation,
+      // onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
+      pinParams: {
+        cb: executeCreate,
+        screenText: t`Enter your 6-digit pin to create your token`,
+        biometryText: t`Authorize token creation`,
+        canCancel: true,
+        biometryLoadingText: t`Building transaction`,
+      },
+    });
   };
 
   /**
@@ -210,7 +214,12 @@ const CreateTokenConfirm = () => {
           successText={<TextFmt>{t`**${name}** created successfully`}</TextFmt>}
           onTxSuccess={onTxSuccess}
           onDismissSuccess={exitScreen}
-          onDismissError={() => setSendTransactionModal(null)}
+          onDismissError={() => {
+            setSendTransactionModal(null);
+            // Re-enable Create: the passkey flow never leaves this screen, so the
+            // focus listener that resets it after PinScreen won't fire.
+            setIsSending(false);
+          }}
           hide={isShowingPinScreen}
         />
       )}
