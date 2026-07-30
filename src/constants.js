@@ -147,6 +147,19 @@ const ADDRESS_MODE_KEY_PREFIX = 'wallet:address_mode:';
 export const addressModeKey = (network) => `${ADDRESS_MODE_KEY_PREFIX}${network}`;
 
 /**
+ * Amount display format (wallet-wide, network-independent).
+ */
+export const AMOUNT_FORMAT = {
+  EXPANDED: 'expanded',
+  COMPRESSED: 'compressed',
+};
+
+export const AMOUNT_FORMAT_DEFAULT = AMOUNT_FORMAT.EXPANDED;
+
+// 'wallet:' prefix: STORE.clearItems(true) sweeps it on resetWallet, so it resets to Expanded.
+export const AMOUNT_FORMAT_KEY = 'wallet:amount_format';
+
+/**
  * this is the message key for localization of new transaction when show amount is enabled
  */
 export const NEW_TRANSACTION_RECEIVED_DESCRIPTION_SHOW_AMOUNTS_ENABLED = 'new_transaction_received_description_with_tokens';
@@ -198,6 +211,7 @@ export const TOKEN_SWAP_FEATURE_TOGGLE = 'token-swap.rollout';
 export const FBT_FEATURE_TOGGLE = 'fee-based-tokens.rollout';
 export const SINGLE_ADDRESS_FEATURE_TOGGLE = 'single-address-mobile.rollout';
 export const PASSKEY_ONBOARDING_FEATURE_TOGGLE = 'passkey-onboarding.rollout';
+export const AMOUNT_FORMAT_FEATURE_TOGGLE = 'amount-format-mobile.rollout';
 
 /**
  * Default feature toggle values.
@@ -218,6 +232,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   [FBT_FEATURE_TOGGLE]: false,
   [SINGLE_ADDRESS_FEATURE_TOGGLE]: false,
   [PASSKEY_ONBOARDING_FEATURE_TOGGLE]: false,
+  [AMOUNT_FORMAT_FEATURE_TOGGLE]: false,
 };
 
 /**

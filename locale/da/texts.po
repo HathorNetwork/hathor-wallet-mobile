@@ -57,7 +57,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Sidste] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:665
+#: src/models.js:107 src/utils.js:752
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -65,17 +65,17 @@ msgstr "DD MMM YYYY [•] HH:mm"
 msgid "Invalid address"
 msgstr "Ugyldig adresse"
 
-#: src/utils.js:650
+#: src/utils.js:737
 msgid "CREATE DEPOSIT TOKEN"
 msgstr ""
 
-#: src/utils.js:652
+#: src/utils.js:739
 msgid "CREATE FEE TOKEN"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:87
 #: src/screens/CreateTokenDepositNotice.js:42
-#: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:654
+#: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:741
 msgid "CREATE TOKEN"
 msgstr "OPRET TOKEN"
 
@@ -215,7 +215,7 @@ msgid ""
 "wallet are already in use."
 msgstr ""
 
-#: src/screens/AddressMode.js:261
+#: src/screens/AddressMode.js:261 src/screens/AmountFormat.js:145
 msgid "SAVE PREFERENCES"
 msgstr ""
 
@@ -223,6 +223,47 @@ msgstr ""
 msgid ""
 "Changing\n"
 "address mode..."
+msgstr ""
+
+#: src/screens/AmountFormat.js:83
+msgid "Default"
+msgstr ""
+
+#: src/screens/AmountFormat.js:96
+msgid "AMOUNT FORMAT"
+msgstr ""
+
+#: src/screens/AmountFormat.js:102
+msgid ""
+"Choose how amounts are displayed across your wallet. You can change your "
+"default anytime."
+msgstr ""
+
+#: src/screens/AmountFormat.js:108
+msgid "Expanded"
+msgstr ""
+
+#: src/screens/AmountFormat.js:109
+msgid ""
+"Standard notation. Leading zeros are written out in full (ex: 0.0000005195)."
+msgstr ""
+
+#: src/screens/AmountFormat.js:115
+msgid "Compressed"
+msgstr ""
+
+#: src/screens/AmountFormat.js:116
+msgid ""
+"Compresses leading zeros into a subscript count for shorter, easier-to-read "
+"small values (ex: 0.0₆5195)."
+msgstr ""
+
+#: src/screens/AmountFormat.js:121
+msgid "PREVIEW"
+msgstr ""
+
+#: src/screens/AmountFormat.js:123
+msgid "Full amount"
 msgstr ""
 
 #: src/screens/BackupWords.js:184
@@ -704,7 +745,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PinScreen.js:318
-#: src/screens/Settings.js:177
+#: src/screens/Settings.js:181
 msgid "Reset wallet"
 msgstr "Nulstil wallet"
 
@@ -712,31 +753,31 @@ msgstr "Nulstil wallet"
 msgid "Connect to mainnet"
 msgstr ""
 
-#: src/screens/MainScreen.js:136
+#: src/screens/MainScreen.js:138
 msgid "No transactions"
 msgstr "Ingen transaktioner"
 
-#: src/screens/MainScreen.js:139
+#: src/screens/MainScreen.js:141
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr "|share:Del din adresse| med venner og begynd at udveksle tokens"
 
-#: src/screens/MainScreen.js:156
+#: src/screens/MainScreen.js:158
 msgid "Loading transactions"
 msgstr "Indlæser dine transaktioner"
 
-#: src/screens/MainScreen.js:165
+#: src/screens/MainScreen.js:167
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:168
+#: src/screens/MainScreen.js:170
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:551 src/screens/MainScreen.js:580
+#: src/screens/MainScreen.js:564 src/screens/MainScreen.js:597
 msgid "Available Balance"
 msgstr "Tilgængelig saldo"
 
-#: src/screens/MainScreen.js:560
+#: src/screens/MainScreen.js:573
 msgid "Locked"
 msgstr "Låst"
 
@@ -1114,15 +1155,19 @@ msgstr ""
 msgid "Address Mode"
 msgstr ""
 
-#: src/screens/Settings.js:185
+#: src/screens/Settings.js:177
+msgid "Amount format"
+msgstr ""
+
+#: src/screens/Settings.js:189
 msgid "About"
 msgstr "Om"
 
-#: src/screens/Settings.js:193
+#: src/screens/Settings.js:197
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/Settings.js:206
+#: src/screens/Settings.js:210
 msgid "Connected to"
 msgstr "Forbundet til"
 
@@ -1620,21 +1665,21 @@ msgstr "Transaktion"
 msgid "Open"
 msgstr "Åben"
 
-#: src/sagas/wallet.js:908
+#: src/sagas/wallet.js:917
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:922
+#: src/sagas/wallet.js:931
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:932
+#: src/sagas/wallet.js:941
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:948
+#: src/sagas/wallet.js:957
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 

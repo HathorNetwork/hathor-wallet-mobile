@@ -25,7 +25,7 @@ import TokenImportBanner from '../components/TokenImportBanner';
 import { COLORS } from '../styles/themes';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
 import { NanoContractsList } from '../components/NanoContract/NanoContractsList';
-import { isNanoContractsEnabled } from '../utils';
+import { isNanoContractsEnabled, getDisplayAmountFormat } from '../utils';
 import ShowPushNotificationTxDetails from '../components/ShowPushNotificationTxDetails';
 
 /**
@@ -96,6 +96,8 @@ export const Dashboard = () => {
     tokensMetadata,
   } = useSelector(getTokensState);
   const isNanoEnabled = useSelector(isNanoContractsEnabled);
+  const amountFormat = useSelector(getDisplayAmountFormat);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
 
   const [currList, selectList] = useState(listOption.tokens);
   const navigation = useNavigation();
@@ -160,6 +162,9 @@ export const Dashboard = () => {
             tokens={tokens}
             tokensBalance={tokensBalance}
             tokenMetadata={tokensMetadata}
+            useHomeDisplay
+            amountFormat={amountFormat}
+            decimalPlaces={decimalPlaces}
           />
         )
       }

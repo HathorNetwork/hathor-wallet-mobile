@@ -22,6 +22,7 @@ import {
   TOKEN_SWAP_ALLOWED_TOKEN_STATUS,
   TOKEN_SWAP_QUOTE_STATUS,
   TOKEN_IMPORT_MODAL_STATE,
+  AMOUNT_FORMAT_DEFAULT,
 } from '../constants';
 import { types } from '../actions';
 import { TOKEN_DOWNLOAD_STATUS } from '../sagas/tokens';
@@ -270,6 +271,7 @@ const initialState = {
   lastSharedAddress: null,
   lastSharedIndex: null,
   addressMode: null,
+  amountFormat: AMOUNT_FORMAT_DEFAULT,
   reown: {
     client: null,
     modal: {
@@ -694,6 +696,8 @@ export const reducer = (state = initialState, action) => {
       return onSharedAddressUpdate(state, action);
     case types.SET_ADDRESS_MODE:
       return onSetAddressMode(state, action);
+    case types.SET_AMOUNT_FORMAT:
+      return onSetAmountFormat(state, action);
     case types.SET_UNLEASH_CLIENT:
       return onSetUnleashClient(state, action);
     case types.SET_FEATURE_TOGGLES:
@@ -1542,6 +1546,14 @@ const onSharedAddressUpdate = (state, action) => ({
 const onSetAddressMode = (state, action) => ({
   ...state,
   addressMode: action.payload,
+});
+
+/**
+ * @param {'expanded'|'compressed'} action.payload The amount display format
+ */
+const onSetAmountFormat = (state, action) => ({
+  ...state,
+  amountFormat: action.payload,
 });
 
 /**
