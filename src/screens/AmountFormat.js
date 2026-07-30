@@ -11,7 +11,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
 import { RadioGroup } from '../components/Radio';
-import PreferenceSaveButton from '../components/PreferenceSaveButton';
+import NewHathorButton from '../components/NewHathorButton';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import {
@@ -95,8 +95,8 @@ export default function AmountFormat({ navigation }) {
       <View style={styles.bottomSpacer} />
 
       <View style={styles.buttonContainer}>
-        <PreferenceSaveButton
-          title={t`SAVE PREFERENCES`}
+        <NewHathorButton
+          title={t`Save preferences`}
           onPress={onSave}
           disabled={isSaveDisabled}
         />

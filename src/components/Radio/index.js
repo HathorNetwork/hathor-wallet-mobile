@@ -5,6 +5,4 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-export { default as RadioButton } from './RadioButton';
-export { default as RadioOption } from './RadioOption';
 export { default as RadioGroup } from './RadioGroup';

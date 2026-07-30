@@ -15,22 +15,26 @@ import RadioOption from './RadioOption';
  * the caller owns the selected `value` and receives it back via `onChange`.
  *
  * @param {Object} props
- * @param {*} props.value - The currently selected option value.
+ * @param {string|number} props.value - The currently selected option value.
  * @param {Function} props.onChange - Called with an option's `value` on press.
  * @param {Array<{
- *   value: *, title: string, description?: string, hint?: string,
+ *   value: string|number, title: string, description?: string, hint?: string,
  *   badge?: string, disabled?: boolean
  * }>} props.options
  */
 export default function RadioGroup({ value, onChange, options }) {
   return (
-    <View style={styles.card}>
+    <View accessibilityRole='radiogroup' style={styles.card}>
       {options.map((option, index) => (
         <React.Fragment key={String(option.value)}>
           {index > 0 && <View style={styles.divider} />}
           <RadioOption
             selected={value === option.value}
-            onPress={() => onChange(option.value)}
+            onPress={() => {
+              // Deliberately redundant with the touchable's `disabled`: keeps
+              // the guard in JS rather than RN's touch-responder layer.
+              if (!option.disabled) onChange(option.value);
+            }}
             disabled={option.disabled}
             title={option.title}
             badge={option.badge}

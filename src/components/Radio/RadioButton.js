@@ -13,14 +13,15 @@ import { COLORS } from '../../styles/themes';
  * A single radio circle: outer ring plus an inner dot when selected.
  *
  * @param {Object} props
- * @param {boolean} props.selected - Whether this radio is selected.
- * @param {boolean} [props.disabled] - Greyed out; the inner dot is suppressed.
+ * @param {boolean} props.selected - If true, the radio is selected.
+ * @param {boolean} [props.disabled] - If true, the radio is disabled.
  */
 export default function RadioButton({ selected, disabled = false }) {
-  const borderColor = selected && !disabled ? COLORS.primary : COLORS.borderColorDark;
+  const selectedColor = disabled ? COLORS.borderColorDark : COLORS.primary;
+  const borderColor = selected ? selectedColor : COLORS.borderColorDark;
   return (
     <View style={[styles.outer, { borderColor }]}>
-      {selected && !disabled && <View style={styles.inner} />}
+      {selected && <View style={[styles.inner, { backgroundColor: selectedColor }]} />}
     </View>
   );
 }
@@ -38,6 +39,5 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: COLORS.primary,
   },
 });

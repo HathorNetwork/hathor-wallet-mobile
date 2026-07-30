@@ -58,7 +58,7 @@ msgid "[Last] dddd [•] HH:mm"
 msgstr "[Последний] dddd [•] HH:mm"
 
 #.  See https://momentjs.com/docs/#/displaying/calendar-time/
-#: src/models.js:107 src/utils.js:752
+#: src/models.js:107 src/utils.js:834
 msgid "DD MMM YYYY [•] HH:mm"
 msgstr "DD MMM YYYY [•] HH:mm"
 
@@ -66,17 +66,17 @@ msgstr "DD MMM YYYY [•] HH:mm"
 msgid "Invalid address"
 msgstr "Неправильный адрес"
 
-#: src/utils.js:737
+#: src/utils.js:819
 msgid "CREATE DEPOSIT TOKEN"
 msgstr ""
 
-#: src/utils.js:739
+#: src/utils.js:821
 msgid "CREATE FEE TOKEN"
 msgstr ""
 
 #: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:87
 #: src/screens/CreateTokenDepositNotice.js:42
-#: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:741
+#: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:823
 msgid "CREATE TOKEN"
 msgstr "СОЗДАТЬ ТОКЕН"
 
@@ -84,7 +84,7 @@ msgstr "СОЗДАТЬ ТОКЕН"
 #.          * @example
 #.          * You have received 10 T2, 5 T1 and 2 other token on a new transaction.
 #.          
-#: src/workers/pushNotificationHandler.js:92
+#: src/workers/pushNotificationHandler.js:97
 #, javascript-format
 msgid ""
 "You have received ${ firstToken }, ${ secondToken } and ${ otherCount } "
@@ -100,7 +100,7 @@ msgstr[2] ""
 #.          * @example
 #.          * You have received 10 T2 and 5 T1 on a new transaction.
 #.          
-#: src/workers/pushNotificationHandler.js:105
+#: src/workers/pushNotificationHandler.js:110
 #, javascript-format
 msgid ""
 "You have received ${ _firstToken } and ${ _secondToken } on a new "
@@ -111,27 +111,27 @@ msgstr ""
 #.          * @example
 #.          * You have received 10 T2 on a new transaction.
 #.          
-#: src/workers/pushNotificationHandler.js:113
+#: src/workers/pushNotificationHandler.js:118
 msgid "You have received ${ _firstToken2 } on a new transaction."
 msgstr ""
 
-#: src/workers/pushNotificationHandler.js:116
+#: src/workers/pushNotificationHandler.js:121
 msgid "There is a new transaction in your wallet."
 msgstr ""
 
-#: src/workers/pushNotificationHandler.js:118
+#: src/workers/pushNotificationHandler.js:123
 msgid "New transaction received"
 msgstr ""
 
-#: src/utils/tokenSwap.js:447
+#: src/utils/tokenSwap.js:459
 msgid "Insufficient HTR balance to cover the network fee."
 msgstr ""
 
-#: src/utils/tokenSwap.js:450
+#: src/utils/tokenSwap.js:462
 msgid "Insufficient balance to execute the swap."
 msgstr ""
 
-#: src/utils/tokenSwap.js:453
+#: src/utils/tokenSwap.js:465
 msgid "Could not build the swap transaction. Please try again."
 msgstr ""
 
@@ -158,112 +158,112 @@ msgstr ""
 
 #: src/screens/About.js:107
 msgid ""
-"For further information, check out the |link1:Terms of Service| and |"
-"link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
-msgstr ""
-
-#: src/screens/AddressMode.js:122
-msgid "Error"
+"For further information, check out the |link1:Terms of Service| and |link2:"
+"Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
 #: src/screens/AddressMode.js:123
+msgid "Error"
+msgstr ""
+
+#: src/screens/AddressMode.js:124
 msgid "Failed to change address mode. Please try again."
 msgstr ""
 
-#: src/screens/AddressMode.js:184 src/screens/AddressMode.js:197
+#: src/screens/AddressMode.js:137 src/screens/AddressMode.js:150
 msgid "ADDRESS MODE"
 msgstr ""
 
-#: src/screens/AddressMode.js:203
+#: src/screens/AddressMode.js:156
 msgid "You can set your wallet to "
 msgstr ""
 
-#: src/screens/AddressMode.js:205
+#: src/screens/AddressMode.js:158
 msgid "single or multi address mode"
 msgstr ""
 
-#: src/screens/AddressMode.js:210
+#: src/screens/AddressMode.js:163
 msgid "You can switch anytime in the settings."
 msgstr ""
 
-#: src/screens/AddressMode.js:217
+#: src/screens/AddressMode.js:173
 msgid "Single Address"
 msgstr ""
 
-#: src/screens/AddressMode.js:218
+#: src/screens/AddressMode.js:174
 msgid "Your wallet will use only one address (index 0)."
 msgstr ""
 
-#: src/screens/AddressMode.js:219
+#: src/screens/AddressMode.js:175
 msgid "Easier to manage and compatible with all dApps."
 msgstr ""
 
-#: src/screens/AddressMode.js:224
+#: src/screens/AddressMode.js:180
 msgid "Multi Address"
 msgstr ""
 
-#: src/screens/AddressMode.js:225
+#: src/screens/AddressMode.js:181
 msgid "Your wallet will let you generate multiple addresses."
 msgstr ""
 
-#: src/screens/AddressMode.js:226
+#: src/screens/AddressMode.js:182
 msgid "Useful for advanced users."
 msgstr ""
 
-#: src/screens/AddressMode.js:237
+#: src/screens/AddressMode.js:192
 msgid ""
 "You can't switch to single address mode because other addresses in your "
 "wallet are already in use."
 msgstr ""
 
-#: src/screens/AddressMode.js:261 src/screens/AmountFormat.js:145
-msgid "SAVE PREFERENCES"
+#: src/screens/AddressMode.js:202 src/screens/AmountFormat.js:99
+msgid "Save preferences"
 msgstr ""
 
-#: src/screens/AddressMode.js:281
+#: src/screens/AddressMode.js:223
 msgid ""
 "Changing\n"
 "address mode..."
 msgstr ""
 
-#: src/screens/AmountFormat.js:83
-msgid "Default"
-msgstr ""
-
-#: src/screens/AmountFormat.js:96
+#: src/screens/AmountFormat.js:59
 msgid "AMOUNT FORMAT"
 msgstr ""
 
-#: src/screens/AmountFormat.js:102
+#: src/screens/AmountFormat.js:65
 msgid ""
 "Choose how amounts are displayed across your wallet. You can change your "
 "default anytime."
 msgstr ""
 
-#: src/screens/AmountFormat.js:108
+#: src/screens/AmountFormat.js:75
 msgid "Expanded"
 msgstr ""
 
-#: src/screens/AmountFormat.js:109
+#: src/screens/AmountFormat.js:76
 msgid ""
 "Standard notation. Leading zeros are written out in full (ex: 0.0000005195)."
 msgstr ""
 
-#: src/screens/AmountFormat.js:115
+#: src/screens/AmountFormat.js:77
+msgid "Default"
+msgstr ""
+
+#: src/screens/AmountFormat.js:81
 msgid "Compressed"
 msgstr ""
 
-#: src/screens/AmountFormat.js:116
+#: src/screens/AmountFormat.js:82
 msgid ""
 "Compresses leading zeros into a subscript count for shorter, easier-to-read "
 "small values (ex: 0.0₆5195)."
 msgstr ""
 
-#: src/screens/AmountFormat.js:121
+#: src/screens/AmountFormat.js:88
 msgid "PREVIEW"
 msgstr ""
 
-#: src/screens/AmountFormat.js:123
+#: src/screens/AmountFormat.js:90
 msgid "Full amount"
 msgstr ""
 
@@ -344,24 +344,24 @@ msgstr "PIN-коды не совпадают. Попробуйте еще раз
 msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
-#: src/screens/ConfirmImportScreen.js:91 src/screens/ImportTokensScreen.js:199
+#: src/screens/ConfirmImportScreen.js:92 src/screens/ImportTokensScreen.js:200
 msgid "IMPORT TOKENS"
 msgstr ""
 
-#: src/screens/ConfirmImportScreen.js:105
+#: src/screens/ConfirmImportScreen.js:106
 msgid "Confirm Import"
 msgstr ""
 
-#: src/screens/ConfirmImportScreen.js:107
+#: src/screens/ConfirmImportScreen.js:108
 msgid "You are about to add these tokens to your wallet:"
 msgstr ""
 
 #: src/components/TokenImportBanner.js:77
-#: src/screens/ConfirmImportScreen.js:120 src/screens/Settings.js:129
+#: src/screens/ConfirmImportScreen.js:121 src/screens/Settings.js:131
 msgid "Import tokens"
 msgstr ""
 
-#: src/screens/ConfirmImportScreen.js:129
+#: src/screens/ConfirmImportScreen.js:130
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:80
 #: src/screens/Reown/SuccessFeedbackScreen.js:39
 msgid "Back"
@@ -587,50 +587,50 @@ msgid "FEE TOKEN"
 msgstr ""
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
-#: src/screens/Dashboard.js:140 src/screens/Dashboard.js:202
+#: src/screens/Dashboard.js:142 src/screens/Dashboard.js:207
 msgid "Tokens"
 msgstr "ТокенЫ"
 
 #.  Only show the toggle button when Nano Contract is enabled to the wallet
 #: src/components/NanoContract/NanoContractsList.js:75
-#: src/screens/Dashboard.js:141
+#: src/screens/Dashboard.js:143
 msgid "Nano Contracts"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:134
+#: src/screens/ImportTokensScreen.js:135
 msgid "No tokens available to import"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:137
+#: src/screens/ImportTokensScreen.js:138
 msgid "We didn't find any unregistered tokens linked to your wallet."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:140
+#: src/screens/ImportTokensScreen.js:141
 msgid "You can register a new one manually."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:144 src/screens/Settings.js:121
+#: src/screens/ImportTokensScreen.js:145 src/screens/Settings.js:123
 msgid "Register a token"
 msgstr "Зарегистрировать токен"
 
-#: src/screens/ImportTokensScreen.js:166
+#: src/screens/ImportTokensScreen.js:167
 msgid "Select the tokens you want to add to your wallet."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:173
+#: src/screens/ImportTokensScreen.js:174
 msgid "Check before import tokens"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:176
+#: src/screens/ImportTokensScreen.js:177
 msgid ""
 "Adding tokens is your responsibility. Make sure you recognize the source."
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:182
+#: src/screens/ImportTokensScreen.js:183
 msgid "Tokens found"
 msgstr ""
 
-#: src/screens/ImportTokensScreen.js:208
+#: src/screens/ImportTokensScreen.js:209
 msgid "Continue"
 msgstr ""
 
@@ -640,8 +640,8 @@ msgstr "Добро пожаловать в Hathor Wallet!"
 
 #: src/screens/InitWallet.js:73
 msgid ""
-"For further information, check out our website |link:https://"
-"hathor.network/|."
+"For further information, check out our website |link:https://hathor."
+"network/|."
 msgstr ""
 "Для получения дополнительной информации, посетите наш веб-сайт |link:https://"
 "hathor.network/|."
@@ -746,7 +746,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PinScreen.js:318
-#: src/screens/Settings.js:181
+#: src/screens/Settings.js:186
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
 
@@ -754,32 +754,32 @@ msgstr "Сбросить кошелек"
 msgid "Connect to mainnet"
 msgstr ""
 
-#: src/screens/MainScreen.js:138
+#: src/screens/MainScreen.js:142
 msgid "No transactions"
 msgstr "Нет транзакций"
 
-#: src/screens/MainScreen.js:141
+#: src/screens/MainScreen.js:145
 msgid "|share:Share your address| with friends and start exchanging tokens"
 msgstr ""
 "|share:Поделитесь своим адресом| с друзьями и начните обменивать свои токены"
 
-#: src/screens/MainScreen.js:158
+#: src/screens/MainScreen.js:162
 msgid "Loading transactions"
 msgstr "Загрузка ваших транзакций"
 
-#: src/screens/MainScreen.js:167
+#: src/screens/MainScreen.js:171
 msgid "There was an error loading your transaction history"
 msgstr ""
 
-#: src/screens/MainScreen.js:170
+#: src/screens/MainScreen.js:174
 msgid "Please |tryAgain:try again|"
 msgstr ""
 
-#: src/screens/MainScreen.js:564 src/screens/MainScreen.js:597
+#: src/screens/MainScreen.js:582 src/screens/MainScreen.js:616
 msgid "Available Balance"
 msgstr "Доступный Баланс"
 
-#: src/screens/MainScreen.js:573
+#: src/screens/MainScreen.js:591
 msgid "Locked"
 msgstr "Заблокированный"
 
@@ -822,7 +822,7 @@ msgstr "Отмена"
 msgid "Biometry failed or canceled."
 msgstr "Биометрия не удалась или была отменена."
 
-#: src/screens/PushNotification.js:58 src/screens/Settings.js:147
+#: src/screens/PushNotification.js:58 src/screens/Settings.js:149
 msgid "Push Notification"
 msgstr ""
 
@@ -1126,51 +1126,51 @@ msgstr "Неверный QR-код"
 msgid "Scan the QR code"
 msgstr "Сканировать QR-код"
 
-#: src/screens/Settings.js:108
+#: src/screens/Settings.js:110
 msgid "You are connected to"
 msgstr "Вы подключены к"
 
-#: src/screens/Settings.js:117
+#: src/screens/Settings.js:119
 msgid "General Settings"
 msgstr ""
 
-#: src/screens/Settings.js:136
+#: src/screens/Settings.js:138
 msgid "Create a new token"
 msgstr "Создать новый токен"
 
-#: src/screens/Settings.js:141
+#: src/screens/Settings.js:143
 msgid "Security"
 msgstr "Безопасность"
 
-#: src/screens/Settings.js:154
+#: src/screens/Settings.js:156
 msgid "Reown"
 msgstr ""
 
-#: src/screens/Settings.js:161
+#: src/screens/Settings.js:163
 msgid "Advanced Settings"
 msgstr ""
 
-#: src/screens/Settings.js:165
+#: src/screens/Settings.js:167
 msgid "Network Settings"
 msgstr ""
 
-#: src/screens/Settings.js:172
+#: src/screens/Settings.js:174
 msgid "Address Mode"
 msgstr ""
 
-#: src/screens/Settings.js:177
+#: src/screens/Settings.js:181
 msgid "Amount format"
 msgstr ""
 
-#: src/screens/Settings.js:189
+#: src/screens/Settings.js:194
 msgid "About"
 msgstr "О нас"
 
-#: src/screens/Settings.js:197
+#: src/screens/Settings.js:202
 msgid "Unique app identifier"
 msgstr ""
 
-#: src/screens/Settings.js:210
+#: src/screens/Settings.js:215
 msgid "Connected to"
 msgstr "Подключены к"
 
@@ -1565,7 +1565,7 @@ msgstr ""
 #: src/components/NanoContract/NanoContractTransactionHeader.js:85
 #: src/components/NanoContract/NanoContractsListItem.js:57
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:82
-#: src/components/TxDetailsModal.js:129
+#: src/components/TxDetailsModal.js:135
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:202
 msgid "Nano Contract ID"
 msgstr ""
@@ -1670,21 +1670,21 @@ msgstr ""
 msgid "Open"
 msgstr "Открыть"
 
-#: src/sagas/wallet.js:917
+#: src/sagas/wallet.js:916
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:931
+#: src/sagas/wallet.js:930
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:941
+#: src/sagas/wallet.js:940
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:957
+#: src/sagas/wallet.js:956
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
@@ -1798,15 +1798,15 @@ msgstr "Нет соединения с интернетом"
 msgid "Public Explorer"
 msgstr "Public Explorer"
 
-#: src/components/PushTxDetailsModal.js:77 src/components/TxDetailsModal.js:114
+#: src/components/PushTxDetailsModal.js:82 src/components/TxDetailsModal.js:120
 msgid "Date & Time"
 msgstr "Дата и Время"
 
-#: src/components/PushTxDetailsModal.js:78
+#: src/components/PushTxDetailsModal.js:83
 msgid "ID"
 msgstr "ID"
 
-#: src/components/PushTxDetailsModal.js:102
+#: src/components/PushTxDetailsModal.js:107
 msgid "New Transaction"
 msgstr ""
 
@@ -1906,45 +1906,45 @@ msgstr ""
 msgid "Fee Based"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:112
+#: src/components/TxDetailsModal.js:118
 msgid "Token"
 msgstr "Токен"
 
-#: src/components/TxDetailsModal.js:113
+#: src/components/TxDetailsModal.js:119
 msgid "Description"
 msgstr "Описание"
 
-#: src/components/TxDetailsModal.js:115
+#: src/components/TxDetailsModal.js:121
 msgid "Fee Model"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:44
 #: src/components/Reown/SendTransactionRequest.js:300
-#: src/components/TxDetailsModal.js:116
+#: src/components/TxDetailsModal.js:122
 msgid "Transaction ID"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:119
+#: src/components/TxDetailsModal.js:125
 msgid "Nano Contract Status"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractTransactionHeader.js:89
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:115
-#: src/components/TxDetailsModal.js:128
+#: src/components/TxDetailsModal.js:134
 msgid "Blueprint Method"
 msgstr ""
 
-#: src/components/TxDetailsModal.js:130
+#: src/components/TxDetailsModal.js:136
 msgid "Nano Contract Caller"
 msgstr ""
 
 #: src/components/NanoContract/NanoContractDetailsHeader.js:100
-#: src/components/TxDetailsModal.js:131
+#: src/components/TxDetailsModal.js:137
 msgid "Nano Contract"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:103
-#: src/components/TxDetailsModal.js:174
+#: src/components/TxDetailsModal.js:180
 msgid "Amount"
 msgstr "Количество"
 

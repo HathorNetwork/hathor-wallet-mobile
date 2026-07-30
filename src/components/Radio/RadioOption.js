@@ -20,9 +20,9 @@ import RadioButton from './RadioButton';
  * an optional description, and an optional muted italic hint.
  *
  * @param {Object} props
- * @param {boolean} props.selected
+ * @param {boolean} props.selected - If true, the option is selected.
  * @param {Function} props.onPress
- * @param {boolean} [props.disabled] - Non-interactive; the title greys out.
+ * @param {boolean} [props.disabled] - If true, the option is disabled.
  * @param {string} props.title
  * @param {string} [props.badge] - Pill text shown at the right of the title row.
  * @param {string} [props.description]
@@ -37,18 +37,20 @@ export default function RadioOption({
   description,
   hint,
 }) {
-  const titleColor = disabled ? COLORS.midContrastDetail : COLORS.black;
   return (
     <TouchableOpacity
+      accessibilityRole='radio'
+      accessibilityState={{ checked: selected, disabled }}
       activeOpacity={disabled ? 1 : 0.7}
       onPress={onPress}
       disabled={disabled}
       style={styles.option}
     >
       <RadioButton selected={selected} disabled={disabled} />
-      <View style={styles.textWrapper}>
+      {/* Fade the block, not each element, so the text keeps its hierarchy. */}
+      <View style={[styles.textWrapper, disabled && styles.textWrapperDisabled]}>
         <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: titleColor }]}>{title}</Text>
+          <Text style={styles.title}>{title}</Text>
           {badge != null && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{badge}</Text>
@@ -73,6 +75,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 16,
   },
+  textWrapperDisabled: {
+    opacity: 0.5,
+  },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -81,6 +86,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
+    color: COLORS.black,
   },
   badge: {
     backgroundColor: COLORS.lowContrastDetail,
