@@ -11,6 +11,7 @@ import {
   View,
   Text,
 } from 'react-native';
+import { useSelector } from 'react-redux';
 import { t } from 'ttag';
 import { constants } from '@hathor/wallet-lib';
 import { HathorFlatList } from '../HathorFlatList';
@@ -26,6 +27,8 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
     marginRight: 0,
     paddingRight: 16,
+    maxWidth: '50%',
+    flexShrink: 1,
   },
   amountText: {
     fontSize: 16,
@@ -79,7 +82,8 @@ export const TransactionFees = ({ fee }) => {
  * @param {boolean} props.isNft Whether the token is an NFT
  */
 const FeeItem = ({ fee, symbol, isNft }) => {
-  const amountToRender = renderValue(fee, isNft);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
+  const amountToRender = renderValue(fee, isNft, decimalPlaces);
 
   return (
     <View style={[commonStyles.cardSplit, commonStyles.listItem]}>
