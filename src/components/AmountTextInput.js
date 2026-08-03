@@ -7,23 +7,13 @@
 
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
-import { getAmountParsed, getIntegerAmount } from '../utils';
+import { getAmountParsed, getIntegerAmount, computeAmountFontFit, AMOUNT_MAX_LINES } from '../utils';
+import { MAX_DECIMAL_PLACES } from '../constants';
 import { COLORS } from '../styles/themes';
 
-// Auto-shrink lower bound: never scale the font below this fraction of
-// the base size, so very long amounts stay readable even when scaled.
-const MIN_FONT_SCALE = 0.5;
-
-// Average glyph width as a fraction of fontSize for the bold sans-serif
-// AmountTextInput uses. We don't measure rendered text (an earlier
-// implementation that did caused a Folly F14Set assertion crash on
-// iOS 26.1 + Fabric due to the extra hidden <Text> re-rendering on
-// every keystroke), so we estimate width as
-// `length * fontSize * GLYPH_RATIO`. Slightly conservative for digits
-// and slightly generous for `,` / `.` — net effect is the font shrinks
-// a hair sooner than strictly necessary, which is preferable to letting
-// the value clip behind the token selector.
-const GLYPH_RATIO = 0.55;
+// Rendered line height as a fraction of the font size, reserving room for the
+// wrapped lines without clipping the bold glyphs.
+const LINE_HEIGHT_RATIO = 1.2;
 
 /**
  * Text input component specifically for handling token amounts with BigInt validation.
@@ -37,7 +27,9 @@ const GLYPH_RATIO = 0.55;
  *                                                   (no decimals)
  * @param {Object} [props.style] - Additional styles for the TextInput
  * @param {boolean} [props.autoFocus] - Whether the input should be focused on mount
- * @param {number} [props.decimalPlaces] - Number of decimal places to use
+ * @param {number} [props.decimalPlaces] - Number of decimal places for the token's value scale
+ * @param {number} [props.fontSize] - Explicit display font size in px (parent-controlled mode)
+ * @param {boolean} [props.singleLine] - Pin the input to a fixed one-line height (no wrapping)
  * @param {React.Ref} ref - Forwarded ref, exposes the focus() method
  * @returns {React.ReactElement} A formatted amount input component
  */
@@ -46,21 +38,8 @@ const AmountTextInput = forwardRef((props, ref) => {
   const [text, setText] = useState(props.value || '');
   const { decimalPlaces } = props;
 
-  // Auto-shrink-to-fit: amounts can grow long enough to overflow the
-  // input's column (e.g. `957,791,973.79`). We capture the column
-  // width via the TextInput's `onLayout` and scale `fontSize` down
-  // when the estimated text width (length × fontSize × GLYPH_RATIO)
-  // exceeds it. When the user shortens the value, the estimate drops
-  // and the font scales back up to the base size.
-  //
-  // IMPORTANT: `onLayout` measures this TextInput's OWN box, so callers
-  // MUST give it a parent-determined width — `flex: 1` when it shares a
-  // row (e.g. with a TokenBox), or `alignSelf: 'stretch'` / an explicit
-  // width when it sits alone in an `alignItems: 'center'` column. Without
-  // that the input sizes to its content; since `fontSize` (which this
-  // logic controls) also drives the content width, the measurement feeds
-  // back into itself and the font collapses to `minFontSize`, flickering
-  // on the way down.
+  // Self-measure: the input's own column width, captured via onLayout, drives the
+  // font ladder. Unused when the parent passes an explicit fontSize.
   const [containerWidth, setContainerWidth] = useState(0);
 
   // Expose the focus method to parent components
@@ -98,14 +77,18 @@ const AmountTextInput = forwardRef((props, ref) => {
       return;
     }
 
-    let parsedText = newText;
+    // The numeric keyboard shouldn't emit newlines, but a multiline input can
+    // receive them via paste; strip so they never reach the parser.
+    let parsedText = newText.replace(/[\n\r]/g, '');
     let bigIntValue;
     if (props.allowOnlyInteger) {
       // We allow only integers for NFT
       parsedText = parsedText.replace(/[^0-9]/g, '');
     }
 
-    parsedText = getAmountParsed(parsedText, decimalPlaces);
+    // Accept up to MAX_DECIMAL_PLACES typed decimals regardless of the token's
+    // precision; the value below is still scaled to the token's decimalPlaces.
+    parsedText = getAmountParsed(parsedText, MAX_DECIMAL_PLACES);
 
     // There is no NaN in BigInt, it either returns a valid bigint or throws
     // an error.
@@ -135,36 +118,40 @@ const AmountTextInput = forwardRef((props, ref) => {
     placeholder = `0.${zeros}`;
   }
 
-  const { style: customStyle, textAlign, ...restProps } = props;
+  const { style: customStyle, textAlign, fontSize, singleLine, ...restProps } = props;
 
-  // Resolve the base (unscaled) font size from the merged style chain
-  // so callers that override fontSize via `customStyle` still get
-  // correct scaling math.
-  const flatStyle = StyleSheet.flatten([style.input, customStyle]) || {};
-  const baseFontSize = flatStyle.fontSize ?? 32;
-  const minFontSize = Math.max(14, Math.floor(baseFontSize * MIN_FONT_SCALE));
+  const isControlledSize = fontSize != null;
   const displayed = text || placeholder;
-  const estimatedWidth = displayed.length * baseFontSize * GLYPH_RATIO;
-  const scaledFontSize = (containerWidth > 0 && estimatedWidth > containerWidth)
-    ? Math.max(
-      minFontSize,
-      Math.floor(baseFontSize * (containerWidth / estimatedWidth)),
-    )
-    : baseFontSize;
+  const resolvedFontSize = isControlledSize
+    ? fontSize
+    : computeAmountFontFit(displayed.length, containerWidth).fontSize;
+  const lineHeight = Math.round(resolvedFontSize * LINE_HEIGHT_RATIO);
+  const heightStyle = singleLine
+    ? { height: lineHeight }
+    : { maxHeight: lineHeight * AMOUNT_MAX_LINES };
 
   return (
     <TextInput
       ref={inputRef}
-      style={[style.input, customStyle, { fontSize: scaledFontSize }]}
+      style={[
+        style.input,
+        customStyle,
+        { fontSize: resolvedFontSize, lineHeight },
+        heightStyle,
+      ]}
       onChangeText={onChangeText}
       value={text}
+      multiline
+      scrollEnabled={false}
       textAlign={textAlign || 'center'}
-      textAlignVertical='bottom'
+      textAlignVertical='center'
       keyboardAppearance='dark'
       keyboardType='numeric'
       placeholder={placeholder}
       placeholderTextColor={COLORS.midContrastDetail}
-      onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+      onLayout={isControlledSize
+        ? undefined
+        : (e) => setContainerWidth(e.nativeEvent.layout.width)}
       {...restProps}
     />
   );
@@ -172,9 +159,6 @@ const AmountTextInput = forwardRef((props, ref) => {
 
 const style = StyleSheet.create({
   input: {
-    height: 38,
-    lineHeight: 38,
-    fontSize: 32,
     fontWeight: 'bold',
     paddingVertical: 0,
     color: COLORS.textColor,

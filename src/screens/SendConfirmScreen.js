@@ -66,6 +66,7 @@ const SendConfirmScreen = () => {
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const isCameraAvailable = useSelector((state) => state.isCameraAvailable);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
 
   const navigation = useNavigation();
   const params = useParams();
@@ -73,7 +74,7 @@ const SendConfirmScreen = () => {
   // Parse and store navigation params
   const { amount, address, token } = params;
   const isNFT = isTokenNFT(token.uid, tokenMetadata);
-  const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
+  const amountAndToken = `${renderValue(amount, isNFT, decimalPlaces)} ${token.symbol}`;
 
   const [phase, setPhase] = useState(PHASE.BUILDING);
   const [sendTx, setSendTx] = useState(null);
@@ -85,7 +86,8 @@ const SendConfirmScreen = () => {
   // the feedback modal render where the button would otherwise be tappable.
   const [isSending, setIsSending] = useState(false);
 
-  const nativeSymbol = hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
+  const nativeSymbol = useSelector((state) => state.serverInfo?.native_token?.symbol)
+    ?? hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
 
   // Build the transaction on mount (without inputs — let the lib auto-select
   // FBT and HTR UTXOs). This produces the exact fee the user will pay, which
@@ -231,7 +233,7 @@ const SendConfirmScreen = () => {
     const balance = tokensBalance[token.uid].data;
     const available = balance ? balance.available : 0;
     const availableCount = Number(available);
-    const availablePretty = renderValue(available, isNFT);
+    const availablePretty = renderValue(available, isNFT, decimalPlaces);
     return ngettext(msgid`${availablePretty} available`, `${availablePretty} available`, availableCount);
   };
 
@@ -268,12 +270,12 @@ const SendConfirmScreen = () => {
 
   const renderNetworkFeeValue = () => {
     if (networkFee === null) {
-      return <Text style={{ color: COLORS.textColorShadow }}>{t`Loading...`}</Text>;
+      return <Text style={[styles.summaryValue, { color: COLORS.textColorShadow }]}>{t`Loading...`}</Text>;
     }
     if (networkFee > 0n) {
       return (
-        <Text>
-          {renderValue(networkFee, false)} {nativeSymbol}
+        <Text style={styles.summaryValue}>
+          {renderValue(networkFee, false, decimalPlaces)} {nativeSymbol}
         </Text>
       );
     }
@@ -348,7 +350,7 @@ const SendConfirmScreen = () => {
                   <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
                 </View>
                 <View style={styles.summaryItem}>
-                  <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={styles.feeLabel}>
                     <TextFmt>{t`**Network Fee**`}</TextFmt>
                     <TouchableOpacity onPress={handleFeeInfoPress} style={{ marginLeft: 4 }}>
                       <InfoCircleIcon size={16} />
@@ -358,7 +360,12 @@ const SendConfirmScreen = () => {
                 </View>
                 <View style={styles.summaryItem}>
                   <TextFmt>{t`**Total**`}</TextFmt>
-                  <Text>{`${amountAndToken}${networkFee ? ` + ${renderValue(networkFee, false)} ${nativeSymbol}` : ''}`}</Text>
+                  <View style={styles.summaryValueBlock}>
+                    <Text style={styles.summaryValueLine}>{amountAndToken}</Text>
+                    {networkFee ? (
+                      <Text style={styles.summaryValueLine}>{`+ ${renderValue(networkFee, false, decimalPlaces)} ${nativeSymbol}`}</Text>
+                    ) : null}
+                  </View>
                 </View>
               </View>
             </View>
@@ -391,6 +398,24 @@ const styles = StyleSheet.create({
     padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  feeLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  summaryValue: {
+    flex: 1,
+    textAlign: 'right',
+    marginLeft: 8,
+  },
+  summaryValueBlock: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  summaryValueLine: {
+    textAlign: 'right',
   },
   nofee: {
     flexDirection: 'row',
