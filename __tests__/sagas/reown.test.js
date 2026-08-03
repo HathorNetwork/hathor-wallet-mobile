@@ -149,10 +149,8 @@ describe('sagas/reown/rejectSinglePendingRequest', () => {
 
     // call getReownClient
     gen.next();
-    // feed reownClient
-    gen.next(mockReownClient);
-    // call respondSessionRequest (wrapped in lambda, so we check the call effect)
-    const respondCall = gen.next();
+    // feed reownClient → yields call(respondSessionRequest) (wrapped in lambda)
+    const respondCall = gen.next(mockReownClient);
     expect(respondCall.value.type).toBe('CALL');
 
     // After respond, call checkForPendingRequests
@@ -175,7 +173,7 @@ describe('sagas/reown/rejectSinglePendingRequest', () => {
 });
 
 describe('sagas/reown/rejectAllPendingRequests', () => {
-  test('rejects all pending requests, dispatches reownReject, and clears list', () => {
+  test('rejects all pending requests, dispatches reownReject, and resyncs list', () => {
     const pending = [
       makePendingRequest(1, 'topic1'),
       makePendingRequest(2, 'topic1'),
@@ -186,23 +184,25 @@ describe('sagas/reown/rejectAllPendingRequests', () => {
 
     // call getReownClient
     gen.next();
-    // feed reownClient
+    // feed reownClient → yields call(getPendingSessionRequests)
     gen.next(mockReownClient);
-    // call getPendingSessionRequests
+    // feed pending → yields call(respondSessionRequest #1)
     gen.next(pending);
 
-    // Should call respondSessionRequest for each pending request
-    // (3 calls, each wrapped in a lambda)
-    gen.next(); // respond to request 1
-    gen.next(); // respond to request 2
-    gen.next(); // respond to request 3
+    // Two more responds (#2 and #3) — gen.next(pending) already returned #1
+    gen.next();
+    gen.next();
 
     // Should dispatch reownReject to unblock the saga queue
     const rejectResult = gen.next();
     expect(rejectResult.value).toStrictEqual(put(reownReject()));
 
-    // Should dispatch setReownPendingRequests([]) to clear the list
-    const clearResult = gen.next();
+    // Should re-fetch pending list (a request may have arrived during rejection)
+    const refetchResult = gen.next();
+    expect(refetchResult.value.type).toBe('CALL');
+
+    // Feed the re-fetch with [] → yields put(setReownPendingRequests([]))
+    const clearResult = gen.next([]);
     expect(clearResult.value).toStrictEqual(put(setReownPendingRequests([])));
 
     // Assert termination
@@ -223,13 +223,16 @@ describe('sagas/reown/rejectAllPendingRequests', () => {
 
     gen.next();
     gen.next(mockReownClient);
-    gen.next([]); // no pending requests
-
-    // Should still dispatch reownReject and clear
-    const rejectResult = gen.next();
+    // feed [] → for-loop is skipped, yields put(reownReject) directly
+    const rejectResult = gen.next([]);
     expect(rejectResult.value).toStrictEqual(put(reownReject()));
 
-    const clearResult = gen.next();
+    // Re-fetch yields call(getPendingSessionRequests)
+    const refetchResult = gen.next();
+    expect(refetchResult.value.type).toBe('CALL');
+
+    // Feed [] for the re-fetch → yields put(setReownPendingRequests([]))
+    const clearResult = gen.next([]);
     expect(clearResult.value).toStrictEqual(put(setReownPendingRequests([])));
 
     expect(gen.next().done).toBe(true);

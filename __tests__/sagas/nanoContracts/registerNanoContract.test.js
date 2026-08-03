@@ -1,4 +1,5 @@
 import { put } from 'redux-saga/effects';
+import { NanoRequest404Error } from '@hathor/wallet-lib/lib/errors';
 import { jest, test, expect, beforeEach, describe } from '@jest/globals';
 import { registerNanoContract, failureMessage } from '../../../src/sagas/nanoContract';
 import { nanoContractRegisterFailure, nanoContractRegisterRequest, onExceptionCaptured, types } from '../../../src/actions';
@@ -74,7 +75,7 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     expect(gen.next().value).toBeUndefined();
   });
 
-  test('getNanoContractState error', async () => {
+  test('getBlueprintId returns null', async () => {
     // arrange Nano Contract registration inputs
     const { address, ncId } = fixtures;
 
@@ -89,10 +90,9 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     // feed back isAddressMine call
     gen.next(fixtures.wallet.readyAndMine.isAddressMine());
 
-    // assert failure
-    // resume getNanoContractState call and advance generator to failure
-    expect(gen.throw(fixtures.ncSaga.getNanoContractState.errorResponse).value)
-      .toStrictEqual(put(nanoContractRegisterFailure(failureMessage.nanoContractStateFailure)))
+    // feed back getBlueprintId call with null (failure)
+    expect(gen.next(null).value)
+      .toStrictEqual(put(nanoContractRegisterFailure(failureMessage.nanoContractFailure)));
     // assert termination
     expect(gen.next().value).toBeUndefined();
   });
@@ -100,6 +100,8 @@ describe('sagas/nanoContract/registerNanoContract', () => {
   test('register with success', async () => {
     // arrange Nano Contract registration inputs
     const { address, ncId } = fixtures;
+    const mockBlueprintId = '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a';
+    const mockBlueprintInfo = { name: 'Bet', id: mockBlueprintId };
 
     // call effect to register nano contract
     const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
@@ -111,9 +113,14 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     gen.next(false);
     // feed back isAddressMine call
     gen.next(fixtures.wallet.readyAndMine.isAddressMine());
-    // feed back getNanoContractState call
-    gen.next(fixtures.ncSaga.getNanoContractState.successResponse);
-    // feed back registerNanoContract
+    // feed back getBlueprintId call
+    gen.next(mockBlueprintId);
+    // feed back getBlueprintInformation call
+    gen.next(mockBlueprintInfo);
+    // feed back nanoContractBlueprintInfoSuccess put
+    // The next yield is the registerNanoContract call on storage
+    gen.next();
+    // feed back registerNanoContract storage call
     const actionResult = gen.next().value;
 
     // assert success
@@ -123,10 +130,58 @@ describe('sagas/nanoContract/registerNanoContract', () => {
     expect(actionResult.payload.action.payload.entryValue).toEqual(expect.objectContaining({
       address,
       ncId,
-      blueprintId: expect.any(String),
-      blueprintName: expect.any(String),
+      blueprintId: mockBlueprintId,
+      blueprintName: 'Bet',
     }));
-    // assert termination
+    // assert termination — saga should end after the success put. Pinning
+    // this catches a future regression where extra trailing yields leak
+    // (e.g. an inadvertent log/dispatch added below the success path).
+    expect(gen.next().value).toBeUndefined();
+  });
+
+  test('getBlueprintInformation throws NanoRequest404Error', async () => {
+    const { address, ncId } = fixtures;
+    const mockBlueprintId = '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a';
+
+    const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
+    // call select wallet
+    gen.next();
+    // feed back the selector
+    gen.next(fixtures.wallet.readyAndMine);
+    // feed back isNanoContractRegistered = false
+    gen.next(false);
+    // feed back isAddressMine call
+    gen.next(fixtures.wallet.readyAndMine.isAddressMine());
+    // feed back getBlueprintId call → returns valid id, advances to ncApi.getBlueprintInformation
+    gen.next(mockBlueprintId);
+
+    // Throw a 404 at the getBlueprintInformation call site → catch should
+    // dispatch the specific blueprintInfoNotFound failure.
+    const failureResult = gen.throw(new NanoRequest404Error('not found')).value;
+    expect(failureResult).toStrictEqual(
+      put(nanoContractRegisterFailure(failureMessage.blueprintInfoNotFound))
+    );
+    // assert termination — saga returns from inside the catch block
+    expect(gen.next().value).toBeUndefined();
+  });
+
+  test('getBlueprintInformation throws non-404 dispatches generic failure', async () => {
+    const { address, ncId } = fixtures;
+    const mockBlueprintId = '000001342d3c5b858a4d4835baea93fcc683fa615ff5892bd044459621a0340a';
+
+    const gen = registerNanoContract(nanoContractRegisterRequest({ address, ncId }));
+    gen.next();
+    gen.next(fixtures.wallet.readyAndMine);
+    gen.next(false);
+    gen.next(fixtures.wallet.readyAndMine.isAddressMine());
+    gen.next(mockBlueprintId);
+
+    // Plain Error (not NanoRequest404Error) → catch falls through to the
+    // generic blueprintInfoFailure branch.
+    const failureResult = gen.throw(new Error('boom')).value;
+    expect(failureResult).toStrictEqual(
+      put(nanoContractRegisterFailure(failureMessage.blueprintInfoFailure))
+    );
     expect(gen.next().value).toBeUndefined();
   });
 });

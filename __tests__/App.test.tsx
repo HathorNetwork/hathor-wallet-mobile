@@ -10,7 +10,18 @@ import renderer from 'react-test-renderer';
 
 jest.mock('redux-saga', () => () => ({ run: jest.fn() }));
 jest.mock('redux', () => ({
-  createStore: jest.fn(),
+  createStore: jest.fn(() => ({
+    getState: jest.fn(() => ({})),
+    dispatch: jest.fn(),
+    subscribe: jest.fn(),
+    replaceReducer: jest.fn(),
+  })),
+  legacy_createStore: jest.fn(() => ({
+    getState: jest.fn(() => ({})),
+    dispatch: jest.fn(),
+    subscribe: jest.fn(),
+    replaceReducer: jest.fn(),
+  })),
   applyMiddleware: jest.fn(),
 }));
 

@@ -1,10 +1,11 @@
 import { put } from 'redux-saga/effects';
-import { ncApi, addressUtils, transactionUtils } from '@hathor/wallet-lib';
+import { ncApi } from '@hathor/wallet-lib';
 import { jest, test, expect, beforeEach, describe } from '@jest/globals';
 import {
   failureMessage,
   requestHistoryNanoContract,
-  fetchHistory
+  fetchHistory,
+  clearLoadingLocksForTesting,
 } from '../../../src/sagas/nanoContract';
 import {
   nanoContractHistoryFailure,
@@ -20,148 +21,223 @@ jest.mock('@hathor/wallet-lib');
 beforeEach(() => {
   jest.clearAllMocks();
   STORE.clearItems();
+  // Clear the module-level loading locks between tests
+  if (typeof clearLoadingLocksForTesting === 'function') {
+    clearLoadingLocksForTesting();
+  }
 });
 
 describe('sagas/nanoContract/fetchHistory', () => {
   test('success', async () => {
-    // arrange wallet mock
-    const mockedWallet = {
-      getNetworkObject: jest.fn(),
-      isAddressMine: jest.fn(),
-    };
     // arrange ncApi mock
     const mockedNcApi = jest.mocked(ncApi);
     mockedNcApi.getNanoContractHistory
       .mockReturnValue(fixtures.ncApi.getNanoContractHistory.successResponse);
-    // arrange addressUtils mock
-    const mockedAddressUtils = jest.mocked(addressUtils);
-    mockedAddressUtils.getAddressFromPubkey
-      .mockResolvedValue('123');
-    // arrange transactionUtils
-    const mockedTransactionUtils = jest.mocked(transactionUtils);
-    mockedTransactionUtils.getTxBalance
-      .mockResolvedValue({});
 
-    // call fetchHistory
-    const count = 1;
-    const after = null;
-    const result = await fetchHistory(fixtures.ncId, count, after, mockedWallet);
+    // arrange wallet mock — production calls wallet.isAddressMine(address)
+    // through isAddressMine() helper. Returning true exercises the success path.
+    const mockedWallet = {
+      isAddressMine: jest.fn().mockResolvedValue(true),
+    };
 
-    // assert result is defined
+    // call fetchHistory directly with the new request-object signature
+    const req = {
+      wallet: mockedWallet,
+      useWalletService: false,
+      ncId: fixtures.ncId,
+      count: 1,
+      after: null,
+    };
+    const result = await fetchHistory(req);
+
+    // assert result has history
     expect(result.history).toBeDefined();
-    expect(result.next).toBeDefined();
-    // assert next value is a txId from the last element of history
-    expect(result.next).toBe(fixtures.ncSaga.fetchHistory.successResponse.history[0].txId);
-    // assert call count to API
-    expect(mockedNcApi.getNanoContractHistory).toBeCalledTimes(1);
+    expect(result.history).toHaveLength(1);
+
+    // assert tx-shape transform: snake_case API fields → camelCase NcTxHistory
+    const tx = result.history[0];
+    const rawTx = fixtures.ncApi.getNanoContractHistory.successResponse.history[0];
+    expect(tx.txId).toBe(rawTx.hash);
+    expect(tx.ncId).toBe(rawTx.nc_id);
+    expect(tx.ncMethod).toBe(rawTx.nc_method);
+    expect(tx.caller).toBe(rawTx.nc_address);
+    expect(tx.isVoided).toBe(rawTx.is_voided);
+    expect(tx.blueprintId).toBe(rawTx.nc_blueprint_id);
+    expect(tx.firstBlock).toBe(rawTx.first_block);
+    expect(tx.isMine).toBe(true);
+
+    // assert action transform: grant_authority with mint+melt → 'mint, melt'
+    expect(tx.actions).toHaveLength(2);
+    expect(tx.actions[0]).toEqual({
+      type: 'deposit', uid: '00', amount: 100, authority: null,
+    });
+    expect(tx.actions[1]).toEqual({
+      type: 'grant_authority',
+      uid: '00000117b0502e9eef9ccbe987af65f153aa899d6eba88d50a6c89e78644713d',
+      amount: 0,
+      authority: 'mint, melt',
+    });
+
+    // assert call count to API — pins one request maps to one API call
+    expect(mockedNcApi.getNanoContractHistory).toHaveBeenCalledTimes(1);
   });
 
   test('failure', async () => {
-    // arrange ncApi mock
+    // arrange ncApi mock to return success: false
     const mockedNcApi = jest.mocked(ncApi);
     mockedNcApi.getNanoContractHistory
       .mockReturnValue(fixtures.ncApi.getNanoContractHistory.failureResponse);
 
-    // call fetchHistory and assert exception
-    const count = 1;
-    const after = null;
-    await expect(fetchHistory(fixtures.ncId, count, after)).rejects.toThrow('Failed to fetch nano contract history');
+    // call fetchHistory and assert it throws with the documented message
+    const req = {
+      wallet: { isAddressMine: jest.fn() },
+      useWalletService: false,
+      ncId: fixtures.ncId,
+      count: 1,
+      after: null,
+    };
+    await expect(fetchHistory(req)).rejects.toThrow('Failed to fetch nano contract history');
   });
 });
 
 describe('sagas/nanoContract/requestHistoryNanoContract', () => {
-  test('history loading', () => {
-    // arrange Nano Contract registration inputs
+  test('wallet not ready dispatches failure', () => {
     const { ncId } = fixtures;
 
-    // call effect to request history
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
-    // select wallet
+    // The saga starts with lock check (synchronous), then puts nanoContractHistoryLoading
     gen.next();
-    // feed back historyMeta
-    gen.next({ [ncId]: { isLoading: true, after: null } });
+    // feed back the nanoContractHistoryLoading put
+    gen.next();
+    // select wallet — feed back a not-ready wallet
+    const walletNotReady = { isReady: () => false };
+    const result = gen.next(walletNotReady).value;
 
-    // assert termination
-    expect(gen.next().value).toBeUndefined();
+    // Should dispatch failure because wallet is not ready
+    expect(result).toStrictEqual(
+      put(nanoContractHistoryFailure({ ncId, error: failureMessage.walletNotReadyError }))
+    );
   });
 
-  test('history without registered contract', () => {
-    // arrange Nano Contract registration inputs
+  test('unregistered contract dispatches failure', () => {
     const { ncId } = fixtures;
 
-    // call effect to request history
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
-    // select wallet
+    // 1. starts → lock check (sync), lock.add (sync) → yield put(loading)
     gen.next();
-    // feed back historyMeta
-    gen.next({});
-    // feed back wallet
+    // 2. past put(loading) → yield select(wallet)
+    gen.next();
+    // 3. feed wallet → wallet.isReady() = true → yield call(isNanoContractRegistered)
     gen.next(fixtures.wallet.readyAndMine);
+    // 4. feed isRegistered = false → yield put(failure)
+    const result = gen.next(false).value;
 
-    // expect failure
-    // feed back isNanoContractRegistered
-    expect(gen.next(false).value).toStrictEqual(
+    expect(result).toStrictEqual(
       put(nanoContractHistoryFailure({ ncId, error: failureMessage.notRegistered }))
     );
   });
 
-  test('fetch history fails', () => {
-    // arrange Nano Contract registration inputs
+  test('fetchHistory error dispatches failure and captures exception', () => {
     const { ncId } = fixtures;
-    const storage = STORE.getStorage();
-    storage.registerNanoContract(ncId, { ncId });
 
-    // call effect to request history
     const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
-    // select historyMeta
+    // 1. yield put(loading)
     gen.next();
-    // feed back historyMeta
-    gen.next({ [ncId]: { isLoading: false, after: null } });
-    // feed back wallet
+    // 2. yield select(wallet)
+    gen.next();
+    // 3. feed wallet → yield call(isNanoContractRegistered)
     gen.next(fixtures.wallet.readyAndMine);
-    // feed back isNanoContractRegistered
-    const fetchHistoryCall = gen.next(true).value;
-
-    // throws on fetchHistory call
-    const failureCall = gen.throw(new Error('history')).value;
-    const onErrorCall = gen.next().value;
-
-    // assert failure
+    // 4. feed isRegistered=true → yield put(nanoContractHistoryClean) (initial load)
+    gen.next(true);
+    // 5. past clean → yield select(useWalletService)
+    gen.next();
+    // 6. feed useWalletService=false → yield call(fetchHistory, req)
+    const fetchHistoryCall = gen.next(false).value;
+    // pin that the saga calls the actual fetchHistory function reference, not
+    // any function with a matching shape — protects against accidental rename
+    // or replacement during refactors.
     expect(fetchHistoryCall.payload.fn).toBe(fetchHistory);
-    expect(failureCall).toStrictEqual(
+
+    // throw error on fetchHistory call → enters catch block → yield put(failure)
+    const failureResult = gen.throw(new Error('network error')).value;
+    expect(failureResult).toStrictEqual(
       put(nanoContractHistoryFailure({ ncId, error: failureMessage.nanoContractHistoryFailure }))
     );
-    expect(onErrorCall).toStrictEqual(put(onExceptionCaptured(new Error('history'), false)));
+
+    // Next should be onExceptionCaptured.
+    // Note: toStrictEqual compares Error instances structurally (by name +
+    // message) since Jest 24, so two `new Error('network error')` match here
+    // — no need to capture and reuse the original Error reference.
+    const exceptionResult = gen.next().value;
+    expect(exceptionResult).toStrictEqual(
+      put(onExceptionCaptured(new Error('network error'), false))
+    );
   });
 
-  test('history with success', () => {
-    // arrange Nano Contract registration inputs
+  test('successful initial history load', () => {
+    const { ncId } = fixtures;
+    const mockHistory = fixtures.ncSaga.fetchHistory.successResponse.history;
+
+    const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
+    // 1. yield put(loading)
+    gen.next();
+    // 2. yield select(wallet)
+    gen.next();
+    // 3. feed wallet → yield call(isNanoContractRegistered)
+    gen.next(fixtures.wallet.readyAndMine);
+    // 4. feed isRegistered=true → yield put(nanoContractHistoryClean)
+    gen.next(true);
+    // 5. past clean → yield select(useWalletService)
+    gen.next();
+    // 6. feed useWalletService=false → yield call(fetchHistory, req)
+    const fetchHistoryCall = gen.next(false).value;
+    // pin the reference (same rationale as the error test above)
+    expect(fetchHistoryCall.payload.fn).toBe(fetchHistory);
+
+    // 7. feed fetchHistory result → yield put(success)
+    const successResult = gen.next({ history: mockHistory }).value;
+
+    // shape contract: the put payload exposes ncId and history at the
+    // documented locations. toStrictEqual below pins the values; these
+    // toHaveProperty checks pin the *paths*, surfacing breakage if a
+    // future refactor moves keys (e.g. nesting them under .data).
+    expect(successResult.payload).toHaveProperty('action.payload.ncId');
+    expect(successResult.payload).toHaveProperty('action.payload.history');
+    expect(successResult).toStrictEqual(
+      put(nanoContractHistorySuccess({ ncId, history: mockHistory }))
+    );
+
+    // saga should terminate after the success put (the finally block
+    // releases the lock but yields nothing observable to the caller).
+    expect(gen.next().value).toBeUndefined();
+  });
+
+  test('duplicate in-flight request is short-circuited by the lock', () => {
     const { ncId } = fixtures;
 
-    // call effect to request history
-    const gen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
-    // select wallet
-    gen.next();
-    // feed back historyMeta
-    gen.next({});
-    // feed back wallet
-    gen.next(fixtures.wallet.readyAndMine);
-    // feed back isNanoContractRegistered
-    const fetchHistoryCall = gen.next(true).value;
-    // feed back fetchHistory
-    const sucessCall = gen.next(fixtures.ncSaga.fetchHistory.successResponse).value;
+    // Run the first saga past its synchronous lock acquisition. The lock is
+    // taken BEFORE the first yield, so a single .next() leaves the lock held
+    // and pauses the generator at `yield put(nanoContractHistoryLoading)`.
+    const firstGen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
+    try {
+      firstGen.next();
 
-    // assert success
-    const expectedHistory = fixtures.ncSaga.fetchHistory.successResponse.history;
-    expect(fetchHistoryCall.payload.fn).toBe(fetchHistory);
-    expect(sucessCall.payload).toHaveProperty('action.payload.ncId');
-    expect(sucessCall.payload).toHaveProperty('action.payload.history');
-    expect(sucessCall.payload.action.payload.ncId).toStrictEqual(ncId);
-    expect(sucessCall.payload.action.payload.history).toStrictEqual(expectedHistory);
-    expect(sucessCall).toStrictEqual(
-      put(nanoContractHistorySuccess({ ncId, history: expectedHistory, after: null }))
-    );
-    // assert termination
-    expect(gen.next().value).toBeUndefined();
+      // Start a second saga for the SAME ncId + same (initial) request type.
+      // The synchronous lock check at the top of requestHistoryNanoContract
+      // must observe the held lock and `return` immediately — no put(loading),
+      // no select, no anything observable.
+      const secondGen = requestHistoryNanoContract(nanoContractHistoryRequest({ ncId }));
+      const firstYield = secondGen.next();
+
+      // `done: true` with `value: undefined` is a generator that returned
+      // without yielding. That is exactly what the lock short-circuit does.
+      expect(firstYield).toEqual({ value: undefined, done: true });
+    } finally {
+      // Drive the first generator to completion so its `finally` block runs
+      // and releases the module-level lock. Otherwise the lock leaks across
+      // suites within the same jest worker, since beforeEach only clears
+      // BEFORE the next test — anything in between sees stale state.
+      firstGen.return();
+    }
   });
 });
