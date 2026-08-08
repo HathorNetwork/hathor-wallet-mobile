@@ -291,6 +291,32 @@ export const networkSettingsKeyMap = {
 /** Storage key for the cached token icon URLs. */
 export const TOKEN_ICONS_CACHE_KEY = 'tokenIcons:cache';
 
+/**
+ * thoth.id is a naming service running on nano contracts, so a name like
+ * `alice.htr` can be typed wherever an address is expected. Its registries are
+ * only deployed on testnet, so the feature stays off on every other network.
+ */
+export const THOTH_ID_NETWORKS = [NETWORK_TESTNET];
+
+/**
+ * Time a collected `domain suffix -> nano contract` map is trusted before a name
+ * under an unknown domain makes the wallet collect it again. Registries are
+ * created rarely, and collecting the map costs one node request per registry.
+ */
+export const THOTH_ID_DISCOVERY_TTL = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Time a resolved name is reused before asking the node again, so retyping a
+ * name the user already entered does not hit the node repeatedly.
+ */
+export const THOTH_ID_RESOLUTION_TTL = 60 * 1000; // 1 minute
+
+/** Idle time after the last keystroke before a typed name is resolved. */
+export const THOTH_ID_RESOLUTION_DEBOUNCE = 500; // 500ms
+
+/** Storage key for the cached thoth.id `domain suffix -> contract` map. */
+export const THOTH_ID_CONTRACTS_CACHE_KEY = 'thothId:contracts';
+
 export const BASE_STATUS = {
   READY: 'ready',
   FAILED: 'failed',

@@ -64,8 +64,13 @@ jest.mock('@sentry/react-native');
 
 jest.mock('react-native-version-number');
 
-jest.mock('unleash-proxy-client', () => ({
-  UnleashClient: jest.fn(() => ({
+// The app moved from `unleash-proxy-client` to `@hathor/unleash-client`, which
+// exports the client as its default. Mocking the package that is no longer
+// installed made every suite fail to boot on the missing module.
+jest.mock('@hathor/unleash-client', () => ({
+  __esModule: true,
+  ...jest.requireActual('@hathor/unleash-client'),
+  default: jest.fn(() => ({
     getAllToggles: () => ({}),
     isEnabled: () => false,
     getVariant: () => ({}),
@@ -101,6 +106,6 @@ jest.mock('react-native-permissions', () => ({
   }
 }));
 
-jest.mock('react-native-modal');
-
-jest.mock('react-native-animatable');
+// `react-native-modal` and `react-native-animatable` used to be mocked here.
+// Neither is a dependency of the app any more, and mocking a package that is
+// not installed fails the whole run before any test starts.
