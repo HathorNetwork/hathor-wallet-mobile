@@ -331,6 +331,14 @@ class AsyncStorageStore {
    * @param {string} pin - Will be used as pin and password
    */
   async initStorage(seed, pin) {
+    // Clear any passkey metadata left by a prior passkey onboarding that failed AFTER writing its
+    // WALLET_META_KEY (saveAccessData rejected, or the app was killed between the two writes). If
+    // it survived, startWallet would read the stale walletType:'passkey' and boot this seed wallet
+    // read-only from the OLD xpub — ignoring the entered seed and rendering PasskeyLockScreen.
+    // removeItem drops both the persisted key and the in-memory cache, so a seed wallet can never
+    // inherit passkey metadata (same session or after a restart); awaited so it is durable before
+    // this wallet's access data is written.
+    await this.removeItem(WALLET_META_KEY);
     const accessData = walletUtils.generateAccessDataFromSeed(
       seed,
       {
@@ -542,8 +550,10 @@ class AsyncStorageStore {
    * @param {string} key Item to remove.
    */
   removeItem(key) {
-    AsyncStorage.removeItem(key);
     delete this.hathorMemoryStorage[key];
+    // Return the promise so callers that need durability (e.g. initStorage clearing stale passkey
+    // metadata before a seed wallet) can await the removal.
+    return AsyncStorage.removeItem(key);
   }
 
   async preStart() {

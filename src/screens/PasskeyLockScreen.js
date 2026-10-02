@@ -40,11 +40,10 @@ const PasskeyLockScreen = () => {
   const wallet = useSelector((state) => state.wallet);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState(null);
-  // Synchronous idempotency guard: the mount effect must fire the ceremony at most once even if it
-  // is invoked more than once in the same tick (e.g. a Fast Refresh remount). setVerifying is
-  // async,
-  // so the `verifying` check alone can't cover a same-tick double-fire; the OS shows a single
-  // credential sheet and a duplicate call would fail or stack sheets.
+  // Synchronous idempotency guard: fire the ceremony at most once even if the mount effect runs
+  // more than once in the same tick (e.g. a Fast Refresh remount). setVerifying is async, so the
+  // `verifying` check alone can't cover a same-tick double-fire; the OS shows a single credential
+  // sheet and a duplicate call would fail or stack sheets.
   const startedRef = useRef(false);
 
   // Labels persisted from old-format credentials may be decode garbage; never show those.
