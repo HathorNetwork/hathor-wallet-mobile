@@ -27,6 +27,7 @@ import { COLORS } from '../styles/themes';
 import { InfoCircleIcon } from '../components/Icons/InfoCircle';
 import { CheckIcon } from '../components/Icons/Check.icon';
 import { TOKEN_DEPOSIT_URL, TOKEN_FEES_URL } from '../constants';
+import { authorizeTransaction } from '../passkey/authorizeTransaction';
 import errorIcon from '../assets/images/icErrorBig.png';
 
 const PHASE = Object.freeze({
@@ -188,14 +189,17 @@ const SendConfirmScreen = () => {
     // Disable the button before opening the PinScreen so it can't be tapped
     // again while we return from it and build the feedback modal.
     setIsSending(true);
-    const pinParams = {
-      cb: executeSend,
-      canCancel: true,
-      screenText: t`Enter your 6-digit pin to authorize operation`,
-      biometryText: t`Authorize operation`,
-      biometryLoadingText: t`Building transaction`,
-    };
-    navigation.navigate('PinScreen', pinParams);
+    authorizeTransaction({
+      navigation,
+      // onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
+      pinParams: {
+        cb: executeSend,
+        canCancel: true,
+        screenText: t`Enter your 6-digit pin to authorize operation`,
+        biometryText: t`Authorize operation`,
+        biometryLoadingText: t`Building transaction`,
+      },
+    });
   };
 
   /**
@@ -310,7 +314,12 @@ const SendConfirmScreen = () => {
           promise={modal.promise}
           successText={<TextFmt>{t`Your transfer of **${amountAndToken}** has been confirmed`}</TextFmt>}
           onDismissSuccess={exitScreen}
-          onDismissError={() => setModal(null)}
+          onDismissError={() => {
+            setModal(null);
+            // Re-enable Send: the passkey flow never leaves this screen, so the
+            // focus listener that resets it after PinScreen won't fire.
+            setIsSending(false);
+          }}
           hide={isShowingPinScreen}
         />
       )}
