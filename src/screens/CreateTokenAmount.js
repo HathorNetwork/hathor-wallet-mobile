@@ -148,7 +148,7 @@ const CreateTokenAmount = () => {
   const amountStyle = getAmountStyle();
   const amountAvailableText = (
     <Strong style={amountStyle}>
-      {hathorLib.numberUtils.prettyValue(balance.available)} {nativeSymbol}
+      {hathorLib.numberUtils.prettyValue(balance.available, decimalPlaces)} {nativeSymbol}
     </Strong>
   );
 
@@ -163,7 +163,7 @@ const CreateTokenAmount = () => {
     if (tokenVersion === TokenVersion.FEE) {
       return [
         <Text key='fee'>{t`Network fee:`} <Strong style={amountStyle}>
-          {hathorLib.numberUtils.prettyValue(networkFee)} {nativeSymbol}
+          {hathorLib.numberUtils.prettyValue(networkFee, decimalPlaces)} {nativeSymbol}
         </Strong></Text>,
         availableText,
         <Text key='feeInfo'>{t`A small fee will be applied to each future transaction of this token.`}</Text>,
@@ -172,7 +172,7 @@ const CreateTokenAmount = () => {
 
     return [
       <Text key='deposit'>{t`Deposit:`} <Strong style={amountStyle}>
-        {hathorLib.numberUtils.prettyValue(networkFee)} {nativeSymbol}
+        {hathorLib.numberUtils.prettyValue(networkFee, decimalPlaces)} {nativeSymbol}
       </Strong></Text>,
       availableText,
     ];

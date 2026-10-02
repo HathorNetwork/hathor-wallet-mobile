@@ -25,6 +25,7 @@ const mapStateToProps = (state) => ({
   tokens: state.tokens,
   tokensBalance: state.tokensBalance,
   tokenMetadata: state.tokenMetadata,
+  decimalPlaces: state.serverInfo?.decimal_places,
 });
 
 /**
@@ -61,6 +62,7 @@ class ChangeToken extends React.Component {
         tokens={this.props.tokens}
         tokensBalance={this.props.tokensBalance}
         tokenMetadata={this.props.tokenMetadata}
+        decimalPlaces={this.props.decimalPlaces}
       />
     );
   }

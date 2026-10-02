@@ -111,7 +111,8 @@ const ContentWrapper = ({ title, isAuthorityAction: isAuthority }) => {
  */
 const TokenAmount = ({ amount, isNft, type }) => {
   const isReceivingToken = type === NANO_CONTRACT_ACTION.withdrawal;
-  const amountToRender = renderValue(amount, isNft);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
+  const amountToRender = renderValue(amount, isNft, decimalPlaces);
 
   return (
     <View style={styles.amountWrapper}>
