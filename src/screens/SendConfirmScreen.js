@@ -70,8 +70,9 @@ const SendConfirmScreen = () => {
   const navigation = useNavigation();
   const params = useParams();
 
-  // Parse and store navigation params
-  const { amount, address, token } = params;
+  // Parse and store navigation params. `name` is present only when the address
+  // was resolved from a thoth.id name.
+  const { amount, address, name, token } = params;
   const isNFT = isTokenNFT(token.uid, tokenMetadata);
   const amountAndToken = `${renderValue(amount, isNFT)} ${token.symbol}`;
 
@@ -345,7 +346,14 @@ const SendConfirmScreen = () => {
               <View style={styles.summaryContainer}>
                 <View style={styles.summaryItem}>
                   <TextFmt>{t`**To**`}</TextFmt>
-                  <Text>{address.substr(0, 7)}...{address.substr(-7)}</Text>
+                  {/* The name goes above the address it resolved to, so the
+                      user confirms where the tokens are really going */}
+                  <View style={{ alignItems: 'flex-end' }}>
+                    {name ? <Text style={styles.recipientName}>{name}</Text> : null}
+                    <Text style={name ? styles.recipientAddress : undefined}>
+                      {address.substr(0, 7)}...{address.substr(-7)}
+                    </Text>
+                  </View>
                 </View>
                 <View style={styles.summaryItem}>
                   <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
@@ -391,6 +399,13 @@ const styles = StyleSheet.create({
     padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  recipientName: {
+    fontWeight: 'bold',
+  },
+  recipientAddress: {
+    fontSize: 12,
+    color: COLORS.textColorShadow,
   },
   nofee: {
     flexDirection: 'row',

@@ -89,6 +89,7 @@
     "redux-thunk": "2.4.2",
     "stream-browserify": "1.0.0",
     "text-encoding": "0.7.0",
+    "thoth-id-sdk": "3.1.2",
     "ttag": "1.7.24",
     "url": "0.11.1"
   },
