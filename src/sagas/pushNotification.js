@@ -47,6 +47,7 @@ import {
   pushTxDetailsSuccess,
   pushAskRegistrationRefreshQuestion,
   pushDeviceRegistered,
+  pushApiReady,
 } from '../actions';
 import {
   pushNotificationKey,
@@ -60,6 +61,7 @@ import { getNetworkSettings, isUnlockScreen, showPinScreenForResult, isTokenRegi
 import { messageHandler } from '../workers/pushNotificationHandler';
 import { WALLET_STATUS } from './wallet';
 import { logger } from '../logger';
+import { PasskeyCancelledError, withPasskeyWords } from '../passkey/passkeySigner';
 
 const log = logger('push-notification-saga');
 log.haltingTxDetailsLoading = () => log.debug('Halting tx details loading.');
@@ -372,22 +374,56 @@ export function* setAvailablePushNotification(action) {
 }
 
 /**
+ * Build and start a temporary, in-memory wallet-service wallet from seed words. Starting it signs
+ * in with a full auth token and creates the wallet in the wallet-service (`wallet/init`) if it
+ * doesn't exist yet. The caller must stop it when done.
+ *
+ * @param {string} seed 24 seed words
+ * @param {Network} network
+ * @param {string} pin Encrypts the temp wallet's in-memory access data (never persisted)
+ * @returns {Promise<HathorWalletServiceWallet>}
+ */
+export async function startTempWalletServiceWallet(seed, network, pin) {
+  const wallet = new HathorWalletServiceWallet({ seed, network, enableWs: false });
+  await wallet.start({ pinCode: pin, password: pin });
+  return wallet;
+}
+
+/**
  * It is responsible for loading the wallet for every push notification action that requires
  * to interact with the wallet service api. When the user is using the facade wallet, it will
  * load the wallet service, otherwise it will use the wallet already loaded in the redux store.
+ *
+ * Seed wallets on the fullnode facade unlock their words with the PIN; passkey wallets (no PIN,
+ * no stored words) re-derive them with ONE passkey ceremony. Both then build the same temporary
+ * wallet-service wallet. A cancelled passkey ceremony is reported as `{ cancelled: true }`.
  */
 export function* loadWallet() {
-  // Passkey (xpub-only) wallets have no PIN and no stored seed words, which this flow
-  // requires. Push notifications are already gated off for them at startWallet; this guard
-  // only protects against unexpected entry paths.
   if (STORE.isPasskeyWallet()) {
-    // Defense-in-depth: this should never fire (push is already gated off for passkey wallets at
-    // startWallet). The PUSH_WALLET_LOAD_FAILED consumer only reads it as a signal and discards the
-    // error, so log here too, otherwise hitting this unexpected path leaves no trace of why.
-    log.error('loadWallet reached for a passkey wallet — push is unsupported (unexpected entry path).');
-    yield put(pushLoadWalletFailed({
-      error: new Error('Push notifications are not supported for passkey wallets.'),
-    }));
+    // Passkey wallets always run on the fullnode facade, so they always need the temp wallet.
+    // The words exist only for the ceremony + temp-wallet start (both inside the passkey lock).
+    const networkSettings = yield select(getNetworkSettings);
+    config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl);
+    config.setWalletServiceBaseWsUrl(networkSettings.walletServiceWsUrl);
+    const network = new Network(networkSettings.network);
+
+    try {
+      const walletService = yield call(withPasskeyWords, (words) => {
+        // start() needs a pin to encrypt the temp wallet's IN-MEMORY access data. Nothing is
+        // persisted, so a random one-time value is enough.
+        const ephemeralPin = Buffer.from(
+          global.crypto.getRandomValues(new Uint8Array(32)),
+        ).toString('hex');
+        return startTempWalletServiceWallet(words, network, ephemeralPin);
+      });
+      yield put(pushLoadWalletSuccess({ walletService }));
+    } catch (error) {
+      const cancelled = error instanceof PasskeyCancelledError;
+      if (!cancelled) {
+        log.error('Passkey push wallet load failed.', error);
+      }
+      yield put(pushLoadWalletFailed({ error, cancelled }));
+    }
     return;
   }
 
@@ -416,17 +452,9 @@ export function* loadWallet() {
     yield delay(300);
 
     const seed = yield STORE.getWalletWords(pin);
-    walletService = new HathorWalletServiceWallet({
-      seed,
-      network,
-      enableWs: false,
-    });
 
     try {
-      yield call(walletService.start.bind(walletService), {
-        pinCode: pin,
-        password: pin,
-      });
+      walletService = yield call(startTempWalletServiceWallet, seed, network, pin);
     } catch (error) {
       yield put(pushLoadWalletFailed({ error }));
       return;
@@ -497,11 +525,20 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
   ]);
 
   if (loadWalletFail) {
-    yield put(pushRegisterFailed());
+    if (loadWalletFail.payload?.cancelled) {
+      // The user dismissed the passkey sheet: not an error. Back to idle with the switches
+      // unchanged (they only change on PUSH_REGISTER_SUCCESS) and no error modal.
+      yield put(pushApiReady());
+    } else {
+      yield put(pushRegisterFailed());
+    }
     return;
   }
 
   const { walletService } = loadWalletSuccess.payload;
+  // On the fullnode facade loadWallet builds a temporary wallet-service wallet; on the
+  // wallet-service facade it hands back the app's own wallet, which must keep running.
+  const isTempWallet = walletService !== (yield select((state) => state.wallet));
   try {
     const { success } = yield call(pushLib.PushNotification.registerDevice, walletService, {
       pushProvider: Platform.OS,
@@ -528,6 +565,16 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
   } catch (error) {
     log.error('Error registering device in wallet-service.', error);
     yield put(pushRegisterFailed());
+  } finally {
+    if (isTempWallet) {
+      // Drop the temp wallet's in-memory access data (encrypted keys) and connection. Cleanup
+      // must never fail the registration the user already sees as done, so only log on error.
+      try {
+        yield call([walletService, walletService.stop], { cleanStorage: true });
+      } catch (error) {
+        log.error('Error stopping the temporary push wallet.', error);
+      }
+    }
   }
 }
 

@@ -256,9 +256,10 @@ export function* startWallet(action) {
   const uniqueDeviceId = getUniqueId();
   // Passkey wallets always run on the fullnode facade: the wallet-service flow requires
   // PIN-decryptable secrets (auth xpriv, requestPassword) that an xpub-only wallet lacks.
-  // Push notifications are off for the same reason (registration re-derives the seed words).
+  // Push notifications do work for them: registration re-derives the words with one passkey
+  // ceremony (see pushNotification.js loadWallet).
   const useWalletService = isPasskeyWallet ? false : yield call(isWalletServiceEnabled);
-  const usePushNotification = isPasskeyWallet ? false : yield call(isPushNotificationEnabled);
+  const usePushNotification = yield call(isPushNotificationEnabled);
 
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
