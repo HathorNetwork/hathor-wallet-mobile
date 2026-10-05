@@ -45,6 +45,7 @@ import {
   AMOUNT_FORMAT_KEY,
 } from '../constants';
 import { STORE } from '../store';
+import { makePasskeyTxSigner } from '../passkey/passkeySigner';
 import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
@@ -185,10 +186,32 @@ export function* isWalletServiceEnabled() {
 }
 
 export function* startWallet(action) {
+  // Default the payload: passkey start paths (onboarding + unlock) dispatch startWalletRequested()
+  // with no argument and read everything from the persisted walletMeta below, so action.payload is
+  // undefined there — destructuring it directly would throw before startup. PIN callers still pass
+  // { words, pin }.
   const {
     words,
     pin,
-  } = action.payload;
+  } = action.payload ?? {};
+
+  // Passkey (xpub-only) wallets carry no seed and no PIN: the saga re-reads the persisted
+  // metadata instead of trusting action payloads with sensitive data.
+  const walletMeta = STORE.getWalletMeta();
+  const isPasskeyWallet = walletMeta?.walletType === 'passkey';
+
+  // A passkey wallet boots read-only from this xpub; if it is missing/corrupted, fail fast with a
+  // clear message instead of handing `{ xpub: undefined }` to HathorWallet and surfacing an opaque
+  // wallet-lib error later. (makePasskeyTxSigner guards the same case at sign time via
+  // PasskeyMetadataMissingError.) The xpub is this wallet's ONLY persisted identity, so a missing
+  // one is storage corruption, not a network error — report it to Sentry explicitly, since this
+  // throw otherwise lands in the global saga errorHandler which never captures and only renders the
+  // generic "error connecting to the server" screen.
+  if (isPasskeyWallet && !walletMeta?.xpub) {
+    const xpubError = new Error('Passkey wallet metadata is missing its xpub.');
+    yield put(onExceptionCaptured(xpubError, false));
+    throw xpubError;
+  }
 
   // clean memory storage and metadata before starting the wallet.
   // This should be cleaned when stopping the wallet,
@@ -231,8 +254,11 @@ export function* startWallet(action) {
   yield call(monitorFeatureFlags, 0, false);
 
   const uniqueDeviceId = getUniqueId();
-  const useWalletService = yield call(isWalletServiceEnabled);
-  const usePushNotification = yield call(isPushNotificationEnabled);
+  // Passkey wallets always run on the fullnode facade: the wallet-service flow requires
+  // PIN-decryptable secrets (auth xpriv, requestPassword) that an xpub-only wallet lacks.
+  // Push notifications are off for the same reason (registration re-derives the seed words).
+  const useWalletService = isPasskeyWallet ? false : yield call(isWalletServiceEnabled);
+  const usePushNotification = isPasskeyWallet ? false : yield call(isPushNotificationEnabled);
 
   yield put(setUseWalletService(useWalletService));
   yield put(setAvailablePushNotification(usePushNotification));
@@ -285,7 +311,9 @@ export function* startWallet(action) {
     // We will save the access data on the persistent async storage
     // To allow starting the wallet again
     const walletConfig = {
-      seed: words,
+      // Passkey wallets start read-only from the stored xpub; the seed only ever exists
+      // ephemerally inside the passkey signer during a signature ceremony.
+      ...(isPasskeyWallet ? { xpub: walletMeta.xpub } : { seed: words }),
       storage,
       connection,
       beforeReloadCallback: () => {
@@ -299,6 +327,13 @@ export function* startWallet(action) {
         },
     };
     wallet = new HathorWallet(walletConfig);
+    if (isPasskeyWallet) {
+      // Register the external signer before the first send/sign: it flips isSignedExternally so the
+      // read-only guards allow sending, with signatures produced by the passkey ceremony instead of
+      // a stored key. wallet-lib re-checks isReadonly() per operation, so ordering relative to
+      // start() is not enforced — we do it here, before start(), as a safe convention.
+      wallet.setExternalTxSigningMethod(makePasskeyTxSigner());
+    }
   }
 
   // Extra wallet configuration based on customNetwork
@@ -323,10 +358,11 @@ export function* startWallet(action) {
   try {
     // XXX: This comes as undefined when the facade is the wallet-service.
     // We need to update this when we start returning something there.
-    const serverInfo = yield call(wallet.start.bind(wallet), {
-      pinCode: pin,
-      password: pin,
-    });
+    // The xpub-only (passkey) start takes no pinCode/password — there is nothing to decrypt.
+    const serverInfo = yield call(
+      wallet.start.bind(wallet),
+      isPasskeyWallet ? {} : { pinCode: pin, password: pin },
+    );
 
     yield put(setServerInfo(serverInfo));
 

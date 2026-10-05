@@ -29,6 +29,9 @@ export const SAFE_BIOMETRY_FEATURE_FLAG_KEY = 'asyncstorage:featureFlagSafeBiome
 // These are the last known values of the unleash feature toggles
 // These are updated on every call to unleash
 export const FEATURE_TOGGLES_LAST_KNOWN_VALUES_KEY = 'asyncstorage:featureTogglesLastKnownValues';
+// App-level wallet metadata: { walletType, passkeyLabel, xpub, credentialId?, createdAt }.
+// Only present for passkey (xpub-only) wallets; absent means a regular seed+PIN wallet.
+export const WALLET_META_KEY = 'asyncstorage:walletMeta';
 
 export const walletKeys = [
   ACCESS_DATA_KEY,
@@ -36,6 +39,7 @@ export const walletKeys = [
   REGISTERED_NANO_CONTRACTS_KEY,
   NETWORK_TOKENS_KEY,
   NETWORK_NANO_CONTRACTS_KEY,
+  WALLET_META_KEY,
 ];
 
 export const cleanOnWalletReset = [
@@ -263,7 +267,9 @@ class AsyncStorageStore {
     // JSONBigInt round-trips bigint values that the native JSON cannot.
     // Required for the wallet-lib 3.x token shape, which can include
     // bigint balance fields under registered tokens.
-    AsyncStorage.setItem(key, bigIntUtils.JSONBigInt.stringify(value));
+    // Return the promise so callers that need durability (e.g. initPasskeyStorage, whose
+    // walletMeta.xpub is the wallet's ONLY persisted identity) can await the flush.
+    return AsyncStorage.setItem(key, bigIntUtils.JSONBigInt.stringify(value));
   }
 
   /**
@@ -325,6 +331,14 @@ class AsyncStorageStore {
    * @param {string} pin - Will be used as pin and password
    */
   async initStorage(seed, pin) {
+    // Clear any passkey metadata left by a prior passkey onboarding that failed AFTER writing its
+    // WALLET_META_KEY (saveAccessData rejected, or the app was killed between the two writes). If
+    // it survived, startWallet would read the stale walletType:'passkey' and boot this seed wallet
+    // read-only from the OLD xpub — ignoring the entered seed and rendering PasskeyLockScreen.
+    // removeItem drops both the persisted key and the in-memory cache, so a seed wallet can never
+    // inherit passkey metadata (same session or after a restart); awaited so it is durable before
+    // this wallet's access data is written.
+    await this.removeItem(WALLET_META_KEY);
     const accessData = walletUtils.generateAccessDataFromSeed(
       seed,
       {
@@ -340,6 +354,70 @@ class AsyncStorageStore {
     );
     const storage = this.getStorage();
     await storage.saveAccessData(accessData);
+  }
+
+  /**
+   * Generate READ-ONLY accessData from an account-path xpub and persist the passkey
+   * wallet metadata. Used by the passkey (PIN-less) onboarding: no seed, no PIN, no
+   * password — the persisted access data contains no secret at all.
+   *
+   * @param {string} xpub - Account-path xpub (m/44'/280'/0') derived from the passkey PRF seed
+   * @param {{ passkeyLabel: string, credentialId?: string }} meta - Passkey wallet metadata
+   */
+  async initPasskeyStorage(xpub, meta) {
+    const accessData = walletUtils.generateAccessDataFromXpub(xpub);
+    const storage = this.getStorage();
+    // Persist the wallet metadata BEFORE the access data, so this write is crash-atomic in the
+    // right direction. The app gates "is a wallet loaded?" on the access data (walletIsLoaded()),
+    // so if an app-kill interrupts between the two flushes the surviving state is
+    // meta-without-access-data => walletIsLoaded() is false => a clean re-onboarding. The reverse
+    // order would leave access-data-without-meta, stranding this PIN-less wallet on the PinScreen
+    // (walletIsLoaded() true but isPasskeyWallet() false) with no PIN that could ever unlock it.
+    // The meta's xpub is this wallet's ONLY persisted identity (no seed, no PIN), so we await both.
+    await this.setItem(WALLET_META_KEY, {
+      // Spread meta FIRST so walletType/xpub/createdAt set below stay authoritative — a meta that
+      // happened to carry those keys must not override this method's own values.
+      ...meta,
+      walletType: 'passkey',
+      xpub,
+      createdAt: Date.now(),
+    });
+    await storage.saveAccessData(accessData);
+    // A passkey wallet is born on the current storage version — the PIN-based data
+    // migration path (handleDataMigration) must never run for it.
+    this.updateStorageVersion();
+  }
+
+  /**
+   * Get the app-level wallet metadata (only present for passkey wallets).
+   * Synchronous after preStart() has populated the memory cache.
+   *
+   * @returns {{ walletType: string, passkeyLabel: string, xpub: string }|null}
+   */
+  getWalletMeta() {
+    return this.getItem(WALLET_META_KEY);
+  }
+
+  /**
+   * Merge a patch into the wallet metadata (e.g. backfill credentialId after a ceremony).
+   * No-op when no metadata exists. Returns the underlying setItem promise so callers can await
+   * durability or attach a .catch() — without it, a rejected AsyncStorage write here would be an
+   * unhandled rejection.
+   *
+   * @returns {Promise<void>}
+   */
+  updateWalletMeta(patch) {
+    const meta = this.getWalletMeta();
+    if (!meta) return Promise.resolve();
+    return this.setItem(WALLET_META_KEY, { ...meta, ...patch });
+  }
+
+  /**
+   * Whether the loaded wallet is a passkey (xpub-only, PIN-less) wallet.
+   * @returns {boolean}
+   */
+  isPasskeyWallet() {
+    return this.getWalletMeta()?.walletType === 'passkey';
   }
 
   /**
@@ -474,8 +552,10 @@ class AsyncStorageStore {
    * @param {string} key Item to remove.
    */
   removeItem(key) {
-    AsyncStorage.removeItem(key);
     delete this.hathorMemoryStorage[key];
+    // Return the promise so callers that need durability (e.g. initStorage clearing stale passkey
+    // metadata before a seed wallet) can await the removal.
+    return AsyncStorage.removeItem(key);
   }
 
   async preStart() {
