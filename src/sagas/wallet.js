@@ -47,6 +47,11 @@ import {
 import { STORE } from '../store';
 import { makePasskeyTxSigner } from '../passkey/passkeySigner';
 import {
+  facadeSupportsExternalSigner,
+  isWalletServiceRegistered,
+  markWalletServiceRegistered,
+} from '../passkey/walletServiceRegistration';
+import {
   tokenFetchBalanceRequested,
   tokenFetchHistoryRequested,
   walletRefreshSharedAddress,
@@ -185,6 +190,16 @@ export function* isWalletServiceEnabled() {
   return walletServiceEnabled;
 }
 
+/**
+ * `requestPassword` for a passkey wallet on the wallet-service facade. A passkey wallet has no PIN,
+ * so this must never run: with an external signer and an xpub, wallet-lib renews tokens read-only
+ * and signs through the passkey. Reject (and log) instead of showing a PIN screen that can't work.
+ */
+export function passkeyRequestPassword() {
+  log.error('wallet-lib requested a PIN for a passkey wallet; refusing.');
+  return Promise.reject(new Error('A PIN was requested for a passkey wallet.'));
+}
+
 export function* startWallet(action) {
   // Default the payload: passkey start paths (onboarding + unlock) dispatch startWalletRequested()
   // with no argument and read everything from the persisted walletMeta below, so action.payload is
@@ -254,11 +269,17 @@ export function* startWallet(action) {
   yield call(monitorFeatureFlags, 0, false);
 
   const uniqueDeviceId = getUniqueId();
-  // Passkey wallets always run on the fullnode facade: the wallet-service flow requires
-  // PIN-decryptable secrets (auth xpriv, requestPassword) that an xpub-only wallet lacks.
-  // Push notifications do work for them: registration re-derives the words with one passkey
-  // ceremony (see pushNotification.js loadWallet).
-  const useWalletService = isPasskeyWallet ? false : yield call(isWalletServiceEnabled);
+  const walletServiceEnabled = yield call(isWalletServiceEnabled);
+  // Passkey wallets run on the wallet-service facade only when it can serve them: the wallet must
+  // already exist there (registration needs the words once — see walletServiceRegistration.js;
+  // starting an unregistered wallet would poll for a minute and fail) and the bundled wallet-lib
+  // must support an external signer on that facade. Otherwise they stay on the fullnode facade.
+  // Push notifications work on both (see pushNotification.js loadWallet).
+  const useWalletService = isPasskeyWallet
+    ? walletServiceEnabled
+      && isWalletServiceRegistered(networkSettings.walletServiceUrl)
+      && facadeSupportsExternalSigner()
+    : walletServiceEnabled;
   const usePushNotification = yield call(isPushNotificationEnabled);
 
   yield put(setUseWalletService(useWalletService));
@@ -295,13 +316,32 @@ export function* startWallet(action) {
     config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl);
     config.setWalletServiceBaseWsUrl(networkSettings.walletServiceWsUrl);
 
-    wallet = new HathorWalletServiceWallet({
-      requestPassword: () => showPinScreenForResult(dispatch),
-      seed: words,
-      network,
-      storage,
-      singleAddressMode,
-    });
+    if (isPasskeyWallet) {
+      // Xpub-only on the facade: browsing uses read-only tokens. Each send's passkey ceremony also
+      // derives the auth key and mints a full token for that send (onRootKey), so the auth key is
+      // never stored and a send still costs one Face ID.
+      wallet = new HathorWalletServiceWallet({
+        requestPassword: passkeyRequestPassword,
+        xpub: walletMeta.xpub,
+        network,
+        storage,
+        singleAddressMode,
+      });
+      const facadeWallet = wallet;
+      wallet.setExternalTxSigningMethod(makePasskeyTxSigner({
+        onRootKey: (root) => facadeWallet.refreshFullAuthToken(
+          HathorWalletServiceWallet.deriveAuthPrivateKey(root),
+        ),
+      }));
+    } else {
+      wallet = new HathorWalletServiceWallet({
+        requestPassword: () => showPinScreenForResult(dispatch),
+        seed: words,
+        network,
+        storage,
+        singleAddressMode,
+      });
+    }
   } else {
     const connection = new Connection({
       network: networkSettings.network,
@@ -359,11 +399,17 @@ export function* startWallet(action) {
   try {
     // XXX: This comes as undefined when the facade is the wallet-service.
     // We need to update this when we start returning something there.
-    // The xpub-only (passkey) start takes no pinCode/password — there is nothing to decrypt.
-    const serverInfo = yield call(
-      wallet.start.bind(wallet),
-      isPasskeyWallet ? {} : { pinCode: pin, password: pin },
-    );
+    // The xpub-only (passkey) start takes no pinCode/password — there is nothing to decrypt. On the
+    // wallet-service facade it is startReadOnly(): the wallet already exists there (registered).
+    let serverInfo;
+    if (isPasskeyWallet && useWalletService) {
+      serverInfo = yield call([wallet, wallet.startReadOnly]);
+    } else {
+      serverInfo = yield call(
+        wallet.start.bind(wallet),
+        isPasskeyWallet ? {} : { pinCode: pin, password: pin },
+      );
+    }
 
     yield put(setServerInfo(serverInfo));
 
@@ -417,6 +463,12 @@ export function* startWallet(action) {
       // This might be a temporary issue on the wallet-service side, we should
       // store the timestamp of when this flag was set, so we're able to expire it
       yield call(() => AsyncStorage.setItem(IGNORE_WS_TOGGLE_FLAG, `${new Date().getTime()}`));
+
+      if (isPasskeyWallet) {
+        // The wallet-service may no longer know this wallet (e.g. a reset service): forget the
+        // registration so the next unlock ceremony registers it again.
+        yield call(markWalletServiceRegistered, networkSettings.walletServiceUrl, false);
+      }
     }
 
     yield put(startWalletFailed());

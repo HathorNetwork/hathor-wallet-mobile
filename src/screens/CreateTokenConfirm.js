@@ -128,7 +128,9 @@ const CreateTokenConfirm = () => {
    */
   const executeCreate = (pin) => {
     const promise = (async () => {
-      if (useWalletService) {
+      // Re-mint a full token with the PIN. A passkey wallet has no PIN: its signing ceremony mints
+      // the full token itself (see makePasskeyTxSigner onRootKey), so skip this without one.
+      if (useWalletService && pin) {
         await wallet.validateAndRenewAuthToken(pin);
       }
 
