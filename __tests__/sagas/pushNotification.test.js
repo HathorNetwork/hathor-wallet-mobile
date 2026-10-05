@@ -1,4 +1,6 @@
-import { jest, describe, test, expect, beforeEach } from '@jest/globals';
+import {
+  jest, describe, test, expect, beforeEach, afterEach,
+} from '@jest/globals';
 
 // The global automock of this package still loads the real module, which needs the native
 // Firebase app; these sagas only need the named exports to exist.
@@ -43,11 +45,11 @@ jest.mock('../../src/logger', () => {
 import { HathorWalletServiceWallet, PushNotification as pushLib } from '@hathor/wallet-lib';
 import { STORE } from '../../src/store';
 import { logger } from '../../src/logger';
+import { init, loadWallet, registration } from '../../src/sagas/pushNotification';
 import {
-  loadWallet,
-  registration,
+  markWalletServiceRegistered,
   startTempWalletServiceWallet,
-} from '../../src/sagas/pushNotification';
+} from '../../src/passkey/walletServiceRegistration';
 import { startWallet } from '../../src/sagas/wallet';
 import { showPinScreenForResult } from '../../src/sagas/helpers';
 import {
@@ -57,6 +59,7 @@ import {
 } from '../../src/passkey/passkeySigner';
 import {
   pushApiReady,
+  pushAskRegistrationRefreshQuestion,
   pushLoadWalletFailed,
   pushLoadWalletSuccess,
   pushRegisterFailed,
@@ -117,7 +120,13 @@ describe('loadWallet (passkey wallet)', () => {
     expect(pinCode).toMatch(/^[0-9a-f]{64}$/);
     expect(password).toBe(pinCode);
 
-    const done = gen.next(tempWallet);
+    // Starting the temp wallet created the wallet on the wallet-service: the saga records that, so
+    // the app can start this wallet on the wallet-service facade from now on.
+    const markStep = gen.next(tempWallet).value;
+    expect(isCall(markStep, markWalletServiceRegistered)).toBe(true);
+    expect(markStep.payload.args).toEqual([NETWORK_SETTINGS.walletServiceUrl]);
+
+    const done = gen.next();
     expect(isPut(done.value, pushLoadWalletSuccess({ walletService: tempWallet }))).toBe(true);
     expect(gen.next().done).toBe(true);
     // The PIN screen is never involved for a passkey wallet.
@@ -232,24 +241,164 @@ describe('registration', () => {
 });
 
 describe('startWallet (passkey wallet)', () => {
-  test('applies the push flag instead of forcing push off, and keeps the fullnode facade', () => {
-    STORE.getWalletMeta.mockReturnValue({ walletType: 'passkey', xpub: 'xpub-passkey' });
+  const XPUB = 'xpub-passkey';
+  const facadeMethods = ['setExternalTxSigningMethod', 'refreshFullAuthToken', 'startReadOnly'];
+  const callName = (effect) => (effect?.type === 'CALL' ? effect.payload.fn?.name : undefined);
+
+  // Simulate a wallet-lib whose wallet-service facade supports an external signer (3.1.1 doesn't).
+  const setFacadeSupport = (supported) => {
+    facadeMethods.forEach((m) => {
+      if (supported) {
+        HathorWalletServiceWallet.prototype[m] = jest.fn();
+      } else {
+        delete HathorWalletServiceWallet.prototype[m];
+      }
+    });
+  };
+
+  beforeEach(() => {
     STORE.getStorage.mockReturnValue({
       store: { cleanMetadata: jest.fn() },
       cleanStorage: jest.fn(),
     });
+  });
+
+  afterEach(() => {
+    setFacadeSupport(false);
+  });
+
+  // Steps startWallet, answering the wallet-service flag with `wsEnabled`, until `until` matches.
+  const runStartWallet = ({ registrations, wsEnabled, until }) => {
+    STORE.getWalletMeta.mockReturnValue({
+      walletType: 'passkey', xpub: XPUB, walletServiceRegistrations: registrations,
+    });
     const gen = startWallet(startWalletRequested());
-
-    // Step through the setup until the saga asks whether push is enabled.
+    const effects = [];
     let step = gen.next();
-    for (let i = 0; i < 30 && !(step.value?.type === 'CALL'
-      && step.value.payload.fn.name === 'isPushNotificationEnabled'); i += 1) {
-      step = gen.next(step.value?.type === 'SELECT' ? NETWORK_SETTINGS : undefined);
+    for (let i = 0; i < 60 && !step.done && !until(step.value); i += 1) {
+      effects.push(step.value);
+      let answer;
+      if (step.value?.type === 'SELECT') answer = NETWORK_SETTINGS;
+      if (callName(step.value) === 'isWalletServiceEnabled') answer = wsEnabled;
+      if (callName(step.value) === 'isPushNotificationEnabled') answer = true;
+      step = gen.next(answer);
     }
-    expect(step.value.payload.fn.name).toBe('isPushNotificationEnabled');
+    return { gen, step, effects };
+  };
+  const isUseWalletServicePut = (e) => e?.type === 'PUT'
+    && e.payload.action?.type === setUseWalletService(true).type;
 
-    const puts = [gen.next(true).value, gen.next().value];
-    expect(isPut(puts[0], setUseWalletService(false))).toBe(true);
-    expect(isPut(puts[1], setAvailablePushNotification(true))).toBe(true);
+  test('applies the push flag instead of forcing push off', () => {
+    const { gen, effects, step } = runStartWallet({
+      registrations: [], wsEnabled: false, until: isUseWalletServicePut,
+    });
+
+    expect(isPut(step.value, setUseWalletService(false))).toBe(true);
+    expect(effects.some((e) => callName(e) === 'isPushNotificationEnabled')).toBe(true);
+    expect(isPut(gen.next().value, setAvailablePushNotification(true))).toBe(true);
+  });
+
+  test.each([
+    ['the wallet-service flag is off', { wsEnabled: false, registered: true, supported: true }],
+    ['the wallet is not registered there', { wsEnabled: true, registered: false, supported: true }],
+    ['the bundled wallet-lib lacks facade signing', { wsEnabled: true, registered: true, supported: false }],
+  ])('stays on the fullnode facade when %s', (_why, { wsEnabled, registered, supported }) => {
+    setFacadeSupport(supported);
+    const { step } = runStartWallet({
+      registrations: registered ? [NETWORK_SETTINGS.walletServiceUrl] : [],
+      wsEnabled,
+      until: isUseWalletServicePut,
+    });
+
+    expect(isPut(step.value, setUseWalletService(false))).toBe(true);
+  });
+
+  test('runs on the wallet-service facade from the xpub, with the passkey signer, when registered', () => {
+    setFacadeSupport(true);
+    const facadeWallet = {
+      setExternalTxSigningMethod: jest.fn(),
+      startReadOnly: jest.fn(),
+      refreshFullAuthToken: jest.fn(),
+      isReady: jest.fn(() => true),
+    };
+    HathorWalletServiceWallet.mockImplementation(() => facadeWallet);
+
+    const { step, effects } = runStartWallet({
+      registrations: [NETWORK_SETTINGS.walletServiceUrl],
+      wsEnabled: true,
+      until: (e) => e?.type === 'CALL' && e.payload.fn === facadeWallet.startReadOnly,
+    });
+
+    expect(effects.some((e) => isPut(e, setUseWalletService(true)))).toBe(true);
+    // Built from the xpub only — no seed, no PIN screen.
+    const [params] = HathorWalletServiceWallet.mock.calls[0];
+    expect(params).toEqual(expect.objectContaining({ xpub: XPUB }));
+    expect(params.seed).toBeUndefined();
+    expect(params.requestPassword.name).toBe('passkeyRequestPassword');
+    // The passkey signer is registered, and the wallet is started read-only (it's registered).
+    expect(facadeWallet.setExternalTxSigningMethod).toHaveBeenCalledWith(expect.any(Function));
+    expect(step.value.payload.context).toBe(facadeWallet);
+  });
+
+  test('forgets the registration when the facade start fails, so the next unlock re-registers', () => {
+    setFacadeSupport(true);
+    const facadeWallet = {
+      setExternalTxSigningMethod: jest.fn(), startReadOnly: jest.fn(), isReady: jest.fn(),
+    };
+    HathorWalletServiceWallet.mockImplementation(() => facadeWallet);
+    const { gen } = runStartWallet({
+      registrations: [NETWORK_SETTINGS.walletServiceUrl],
+      wsEnabled: true,
+      until: (e) => e?.type === 'CALL' && e.payload.fn === facadeWallet.startReadOnly,
+    });
+
+    let step = gen.throw(new Error('wallet not found'));
+    const isUnmark = (e) => isCall(e, markWalletServiceRegistered);
+    for (let i = 0; i < 10 && !step.done && !isUnmark(step.value); i += 1) {
+      step = gen.next();
+    }
+
+    expect(isCall(step.value, markWalletServiceRegistered)).toBe(true);
+    expect(step.value.payload.args).toEqual([NETWORK_SETTINGS.walletServiceUrl, false]);
+  });
+});
+
+describe('init weekly registration refresh', () => {
+  const runInit = ({ passkey }) => {
+    STORE.isPasskeyWallet.mockReturnValue(passkey);
+    const threeWeeksAgo = Date.now() - 21 * 24 * 60 * 60 * 1000;
+    STORE.getItem.mockImplementation((key) => ({
+      'pushNotification:settings': { enabled: true, showAmountEnabled: false },
+      'pushNotification:enabledAt': threeWeeksAgo,
+      'pushNotification:deviceId': 'device-1',
+    }[key] ?? null));
+    const gen = init();
+    const decisions = [
+      pushAskRegistrationRefreshQuestion().type,
+      types.PUSH_REGISTRATION_REQUESTED,
+    ];
+    let step = gen.next();
+    for (let i = 0; i < 60 && !step.done; i += 1) {
+      if (step.value?.type === 'PUT' && decisions.includes(step.value.payload.action?.type)) {
+        return step.value.payload.action.type;
+      }
+      // available, device registered, channel/category, listener, useWalletService
+      let answer = true;
+      if (callName(step.value) === 'getDeviceId') answer = 'device-1';
+      if (step.value?.type === 'SELECT' && step.value.payload.selector.toString().includes('walletStartState')) {
+        answer = 'READY';
+      }
+      step = gen.next(answer);
+    }
+    return null;
+  };
+  const callName = (effect) => (effect?.type === 'CALL' ? effect.payload.fn?.name : undefined);
+
+  test('a passkey wallet on the wallet-service facade is asked first (no surprise Face ID)', () => {
+    expect(runInit({ passkey: true })).toBe(pushAskRegistrationRefreshQuestion().type);
+  });
+
+  test('a seed wallet on the wallet-service facade still refreshes silently', () => {
+    expect(runInit({ passkey: false })).toBe(types.PUSH_REGISTRATION_REQUESTED);
   });
 });

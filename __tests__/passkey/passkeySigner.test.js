@@ -394,3 +394,40 @@ describe('withPasskeyWords', () => {
     await expect(withPasskeyWords(async () => 'next')).resolves.toBe('next');
   });
 });
+
+describe('Phase 2 hooks', () => {
+  test('makePasskeyTxSigner runs onRootKey with the root inside the ceremony, before signing', async () => {
+    const order = [];
+    const root = makeRoot();
+    walletUtils.getXPrivKeyFromSeed.mockReturnValue(root);
+    transactionUtils.signTxInputs.mockImplementation(async () => {
+      order.push('sign');
+      return { inputSignatures: [], ncCallerSignature: null };
+    });
+    const onRootKey = jest.fn(async () => { order.push('onRootKey'); });
+
+    await makePasskeyTxSigner({ onRootKey })(fakeTx, fakeStorage);
+
+    expect(onRootKey).toHaveBeenCalledWith(root);
+    expect(order).toEqual(['onRootKey', 'sign']);
+    // One ceremony for both the token and the signature.
+    expect(signInWalletWordsFromPasskey).toHaveBeenCalledTimes(1);
+  });
+
+  test('a failing onRootKey aborts the send before signing', async () => {
+    const onRootKey = jest.fn(async () => { throw new Error('token refresh failed'); });
+
+    await expect(makePasskeyTxSigner({ onRootKey })(fakeTx, fakeStorage))
+      .rejects.toThrow('token refresh failed');
+    expect(transactionUtils.signTxInputs).not.toHaveBeenCalled();
+  });
+
+  test('verifyPasskeyForUnlock passes the words to onWords within the unlock ceremony', async () => {
+    const onWords = jest.fn(async () => {});
+
+    await expect(verifyPasskeyForUnlock({ onWords })).resolves.toBeUndefined();
+
+    expect(onWords).toHaveBeenCalledWith(WORDS);
+    expect(signInWalletWordsFromPasskey).toHaveBeenCalledTimes(1);
+  });
+});
