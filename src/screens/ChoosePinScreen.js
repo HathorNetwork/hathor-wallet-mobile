@@ -7,6 +7,7 @@
 
 import React from 'react';
 import {
+  Alert,
   Text,
   View,
   StyleSheet,
@@ -86,6 +87,14 @@ class ChoosePinScreen extends React.Component {
       this.props.unlockScreen();
       this.props.startWalletRequested(this.words, this.state.pin1);
       NavigationService.resetToMain();
+    }).catch((error) => {
+      // initStorage clears stale passkey metadata and persists the access data; if a native write
+      // fails (e.g. device storage full), tell the user instead of silently staying on this screen.
+      console.error(error);
+      Alert.alert(
+        t`Could not create the wallet`,
+        t`Something went wrong while saving your wallet. Please try again.`,
+      );
     });
   }
 

@@ -29,11 +29,12 @@ describe('AsyncStorageStore.initStorage', () => {
     jest
       .spyOn(walletUtils, 'generateAccessDataFromSeed')
       .mockReturnValue({ fake: 'accessData' });
-    const removeItemSpy = jest.spyOn(store, 'removeItem');
+    // initStorage must use the DURABLE variant so the clear is awaited before saveAccessData.
+    const removeItemSpy = jest.spyOn(store, 'removeItemAsync');
 
     await store.initStorage('seed words here', '1234');
 
-    // The stale passkey metadata is gone (removeItem drops both the cache and the persisted key).
+    // The stale passkey metadata is gone (removeItemAsync drops the cache and the persisted key).
     expect(removeItemSpy).toHaveBeenCalledWith(WALLET_META_KEY);
     expect(store.getWalletMeta()).toBeNull();
     expect(store.isPasskeyWallet()).toBe(false);
