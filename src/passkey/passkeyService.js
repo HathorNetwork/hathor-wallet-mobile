@@ -209,7 +209,11 @@ async function registerPasskey(userName) {
     rp: { id: PASSKEY_RP_ID, name: PASSKEY_RP_NAME },
     user: { id: encodeUserId(userName), name: userName, displayName: userName },
     pubKeyCredParams: [{ type: 'public-key', alg: -7 }], // ES256 / P-256 — the only curve passkeys do
-    authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
+    // userVerification MUST be 'required' (here and at assertion): PRF is backed by CTAP2's
+    // hmac-secret, which keeps SEPARATE secrets for UV vs non-UV. 'preferred' lets an authenticator
+    // skip UV and return a different PRF output — i.e. a different seed, xpub and wallet. Requiring
+    // UV keeps the derived wallet deterministic (and this ceremony authorizes spending anyway).
+    authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
     extensions: { prf: {} }, // enable PRF / check support; evaluate at assertion
   });
   return result?.id ?? result?.rawId; // credentialId
@@ -225,7 +229,9 @@ async function getPrfViaAssertion(credentialId) {
   const result = await Passkey.get({
     challenge: toB64Url(randomBytes(32)),
     rpId: PASSKEY_RP_ID,
-    userVerification: 'preferred',
+    // 'required' — must match registration: PRF/hmac-secret returns a different secret without UV,
+    // which would derive a different wallet. See registerPasskey.
+    userVerification: 'required',
     allowCredentials: credentialId ? [{ type: 'public-key', id: credentialId }] : undefined,
     // iOS wants binary PRF inputs as a Uint8Array (it arrives as a Dictionary and is decoded
     // byte-by-byte); a base64url string throws DecodingError.typeMismatch. Pass the raw bytes.

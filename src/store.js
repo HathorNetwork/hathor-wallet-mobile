@@ -375,10 +375,12 @@ class AsyncStorageStore {
     // (walletIsLoaded() true but isPasskeyWallet() false) with no PIN that could ever unlock it.
     // The meta's xpub is this wallet's ONLY persisted identity (no seed, no PIN), so we await both.
     await this.setItem(WALLET_META_KEY, {
+      // Spread meta FIRST so walletType/xpub/createdAt set below stay authoritative — a meta that
+      // happened to carry those keys must not override this method's own values.
+      ...meta,
       walletType: 'passkey',
       xpub,
       createdAt: Date.now(),
-      ...meta,
     });
     await storage.saveAccessData(accessData);
     // A passkey wallet is born on the current storage version — the PIN-based data
