@@ -772,7 +772,9 @@ export function* processRequest(action) {
 
         if (retry) {
           shouldAnswer = false;
-          // Retry the action, exactly as it came:
+          // Retry the action, exactly as it came (cancelling this attempt's poll fork first — see
+          // the SendNanoContractTxError retry above):
+          yield cancel(pendingPollTask);
           const result = yield* processRequest(action);
           return result; // Recursive call handles waiting
         }
@@ -822,7 +824,8 @@ export function* processRequest(action) {
 
         if (retry) {
           shouldAnswer = false;
-          // Retry the action, exactly as it came:
+          // Retry the action, exactly as it came (cancelling this attempt's poll fork first):
+          yield cancel(pendingPollTask);
           const result = yield* processRequest(action);
           return result; // Recursive call handles waiting
         }
@@ -864,7 +867,8 @@ export function* processRequest(action) {
 
         if (retry) {
           shouldAnswer = false;
-          // Retry the action, exactly as it came:
+          // Retry the action, exactly as it came (cancelling this attempt's poll fork first):
+          yield cancel(pendingPollTask);
           const result = yield* processRequest(action);
           return result; // Recursive call handles waiting
         }
@@ -875,7 +879,9 @@ export function* processRequest(action) {
         if (pinWasCancelled) {
           pinWasCancelled = false; // Reset the flag
           shouldAnswer = false;
-          // Retry the request so user can click Accept again
+          // Retry the request so user can click Accept again (cancelling this attempt's poll fork
+          // first, like the other retry branches).
+          yield cancel(pendingPollTask);
           const result = yield* processRequest(action);
           return result; // Recursive call handles waiting
         }
