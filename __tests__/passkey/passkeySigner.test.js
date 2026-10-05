@@ -61,6 +61,7 @@ import {
   PasskeyMetadataMissingError,
   PasskeyBusyError,
   PasskeySigningUnsupportedError,
+  withPasskeyWords,
 } from '../../src/passkey/passkeySigner';
 /* eslint-enable import/first, import/order */
 
@@ -317,5 +318,79 @@ describe('verifyPasskeyForUnlock', () => {
     await expect(verifyPasskeyForUnlock()).resolves.toBeUndefined();
 
     expect(STORE.updateWalletMeta).not.toHaveBeenCalled();
+  });
+});
+
+describe('withPasskeyWords', () => {
+  test('runs fn with the derived words and returns its result', async () => {
+    const fn = jest.fn(async (words) => `used:${words.split(' ').length}`);
+
+    await expect(withPasskeyWords(fn)).resolves.toBe('used:24');
+
+    expect(fn).toHaveBeenCalledWith(WORDS);
+    // The stored credentialId is passed so the OS skips the passkey picker.
+    expect(signInWalletWordsFromPasskey).toHaveBeenCalledWith({ credentialId: STORED_CRED });
+  });
+
+  test('a cancel throws PasskeyCancelledError, calls onCancel and never runs fn', async () => {
+    signInWalletWordsFromPasskey.mockRejectedValue({ error: 'UserCancelled' });
+    isPasskeyCancel.mockReturnValue(true);
+    const fn = jest.fn();
+    const onCancel = jest.fn();
+
+    const err = await withPasskeyWords(fn, { onCancel }).catch((e) => e);
+
+    expect(err).toBeInstanceOf(PasskeyCancelledError);
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  test('a passkey for a different wallet throws PasskeyXpubMismatchError and never runs fn', async () => {
+    walletUtils.getXPubKeyFromSeed.mockReturnValue(OTHER_XPUB);
+    const fn = jest.fn();
+
+    const err = await withPasskeyWords(fn).catch((e) => e);
+
+    expect(err).toBeInstanceOf(PasskeyXpubMismatchError);
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  test('missing stored xpub throws PasskeyMetadataMissingError before any prompt', async () => {
+    STORE.getWalletMeta.mockReturnValue(makeMeta({ xpub: undefined }));
+    const fn = jest.fn();
+
+    const err = await withPasskeyWords(fn).catch((e) => e);
+
+    expect(err).toBeInstanceOf(PasskeyMetadataMissingError);
+    expect(signInWalletWordsFromPasskey).not.toHaveBeenCalled();
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  test('a concurrent call while one is in flight throws PasskeyBusyError', async () => {
+    let finishFirst;
+    signInWalletWordsFromPasskey.mockReturnValueOnce(new Promise((resolve) => {
+      finishFirst = () => resolve({ words: WORDS, credentialId: STORED_CRED });
+    }));
+    const first = withPasskeyWords(async () => 'first');
+
+    await expect(withPasskeyWords(async () => 'second')).rejects.toBeInstanceOf(PasskeyBusyError);
+
+    finishFirst();
+    await expect(first).resolves.toBe('first');
+  });
+
+  test('backfills a newly-learned credentialId', async () => {
+    signInWalletWordsFromPasskey.mockResolvedValue({ words: WORDS, credentialId: 'new-cred' });
+
+    await withPasskeyWords(async () => {});
+
+    expect(STORE.updateWalletMeta).toHaveBeenCalledWith({ credentialId: 'new-cred' });
+  });
+
+  test('releases the lock when fn throws, so the next ceremony can run', async () => {
+    const boom = new Error('fn failed');
+
+    await expect(withPasskeyWords(async () => { throw boom; })).rejects.toBe(boom);
+    await expect(withPasskeyWords(async () => 'next')).resolves.toBe('next');
   });
 });
