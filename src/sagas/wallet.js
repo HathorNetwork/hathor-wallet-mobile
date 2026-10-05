@@ -186,10 +186,14 @@ export function* isWalletServiceEnabled() {
 }
 
 export function* startWallet(action) {
+  // Default the payload: passkey start paths (onboarding + unlock) dispatch startWalletRequested()
+  // with no argument and read everything from the persisted walletMeta below, so action.payload is
+  // undefined there — destructuring it directly would throw before startup. PIN callers still pass
+  // { words, pin }.
   const {
     words,
     pin,
-  } = action.payload;
+  } = action.payload ?? {};
 
   // Passkey (xpub-only) wallets carry no seed and no PIN: the saga re-reads the persisted
   // metadata instead of trusting action payloads with sensitive data.
