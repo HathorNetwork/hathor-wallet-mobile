@@ -6,7 +6,12 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import {
+  BackHandler,
+  Keyboard,
+  Text,
+  View,
+} from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 
@@ -23,7 +28,12 @@ import {
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import baseStyle from '../styles/init';
-import { PasskeyCancelledError, verifyPasskeyForUnlock } from '../passkey/passkeySigner';
+import {
+  PasskeyBusyError,
+  PasskeyCancelledError,
+  PasskeyXpubMismatchError,
+  verifyPasskeyForUnlock,
+} from '../passkey/passkeySigner';
 import { sanitizePasskeyLabel } from '../passkey/passkeyService';
 import { logger } from '../logger';
 
@@ -66,25 +76,41 @@ const PasskeyLockScreen = () => {
     } catch (e) {
       if (e instanceof PasskeyCancelledError) {
         setError(t`Unlock cancelled.`);
+      } else if (e instanceof PasskeyXpubMismatchError || e instanceof PasskeyBusyError) {
+        // Expected, user-correctable outcomes (wrong passkey, a ceremony already open): show them
+        // in the banner only. Reporting them would pop the global "Unexpected error" alert on top
+        // of the banner, and the report payload would carry the wallet label from the message.
+        setError(e.message);
       } else {
-        // A non-cancel failure on the only entry point for these wallets: log + report to Sentry
-        // (fatal=false — the user can always retry or reset, this isn't a crash), and ALWAYS show
-        // text, since a non-Error rejection or empty native message would otherwise
-        // leave the error banner blank on an Unlock button that looks like it did nothing.
+        // An unexpected failure on the only entry point for these wallets (incl. corrupted
+        // metadata): log + report (fatal=false — the user can always retry or reset), and ALWAYS
+        // show text, since a non-Error rejection or empty native message would otherwise leave the
+        // error banner blank on an Unlock button that looks like it did nothing.
         log.error('passkey unlock failed', e);
         dispatch(onExceptionCaptured(e, false));
-        const code = e?.error ? `[${e.error}] ` : '';
+        const nativeCode = e?.code ?? e?.error;
+        const code = nativeCode ? `[${nativeCode}] ` : '';
         setError(`${code}${e?.message || t`Could not verify your passkey. Please try again.`}`);
       }
+    } finally {
+      // Also on success: if the screen is re-locked while this overlay is still mounted (e.g. an
+      // app-state transition racing the unlock), it must offer the Unlock button again rather than
+      // a permanent spinner — the mount effect below never re-runs the ceremony.
       setVerifying(false);
     }
   };
 
   useEffect(() => {
+    // Parity with PinScreen's lock mode: the overlay sits above the still-mounted navigator, so
+    // without this a hardware back press would pop the hidden screen (or exit the app), and a
+    // keyboard open before the lock would stay up over the overlay.
+    Keyboard.dismiss();
+    const backListener = BackHandler.addEventListener('hardwareBackPress', () => true);
     if (!startedRef.current) {
       startedRef.current = true;
       unlock();
     }
+    return () => backListener.remove();
   }, []);
 
   return (

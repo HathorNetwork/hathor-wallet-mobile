@@ -69,6 +69,16 @@ export class PasskeyMetadataMissingError extends Error {
   }
 }
 
+// The bundled wallet-lib can't service an external passkey signer (it predates
+// transactionUtils.signTxInputs). Thrown BEFORE the biometric prompt, so the user isn't asked to
+// authenticate for a signature that can never be produced.
+export class PasskeySigningUnsupportedError extends Error {
+  constructor() {
+    super(t`Sending from a passkey wallet isn't supported in this version of the app yet.`);
+    this.name = 'PasskeySigningUnsupportedError';
+  }
+}
+
 /**
  * The ONE xpub derivation used everywhere (onboarding, unlock verification, signing):
  * account-path xpub (m/44'/280'/0') — exactly what generateAccessDataFromXpub expects,
@@ -134,7 +144,15 @@ export function makePasskeyTxSigner() {
     return withPasskeyLock(async () => {
       let root = null;
       try {
+        if (typeof transactionUtils.signTxInputs !== 'function') {
+          throw new PasskeySigningUnsupportedError();
+        }
         const meta = STORE.getWalletMeta();
+        // Check the stored identity BEFORE the ceremony: without it the result can't be verified,
+        // so prompting for biometrics first would only waste the user's authentication.
+        if (!meta?.xpub) {
+          throw new PasskeyMetadataMissingError();
+        }
         let words;
         let credentialId;
         try {
@@ -151,9 +169,6 @@ export function makePasskeyTxSigner() {
           throw e;
         }
 
-        if (!meta?.xpub) {
-          throw new PasskeyMetadataMissingError();
-        }
         if (derivePasskeyXpub(words) !== meta.xpub) {
           throw new PasskeyXpubMismatchError(meta?.passkeyLabel);
         }
@@ -203,6 +218,10 @@ export function makePasskeyTxSigner() {
 export function verifyPasskeyForUnlock() {
   return withPasskeyLock(async () => {
     const meta = STORE.getWalletMeta();
+    // Checked before the ceremony (see makePasskeyTxSigner): don't prompt without an identity.
+    if (!meta?.xpub) {
+      throw new PasskeyMetadataMissingError();
+    }
     let words = null;
     let credentialId = null;
     try {
@@ -216,9 +235,6 @@ export function verifyPasskeyForUnlock() {
       throw e;
     }
     try {
-      if (!meta?.xpub) {
-        throw new PasskeyMetadataMissingError();
-      }
       if (derivePasskeyXpub(words) !== meta.xpub) {
         throw new PasskeyXpubMismatchError(meta?.passkeyLabel);
       }

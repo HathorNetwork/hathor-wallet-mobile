@@ -60,6 +60,7 @@ import {
   PasskeyXpubMismatchError,
   PasskeyMetadataMissingError,
   PasskeyBusyError,
+  PasskeySigningUnsupportedError,
 } from '../../src/passkey/passkeySigner';
 /* eslint-enable import/first, import/order */
 
@@ -133,6 +134,25 @@ describe('makePasskeyTxSigner', () => {
     expect(err).toBeInstanceOf(PasskeyMetadataMissingError);
     expect(err).not.toBeInstanceOf(PasskeyXpubMismatchError);
     expect(transactionUtils.signTxInputs).not.toHaveBeenCalled();
+    // Checked BEFORE the ceremony: the user is not asked to authenticate for a signature that
+    // could never be verified.
+    expect(signInWalletWordsFromPasskey).not.toHaveBeenCalled();
+  });
+
+  test('throws PasskeySigningUnsupportedError before the ceremony when the lib lacks signTxInputs', async () => {
+    // The pinned wallet-lib predates transactionUtils.signTxInputs; the signer must fail cleanly
+    // (not with a TypeError mid-signing) and without prompting for biometrics.
+    const original = transactionUtils.signTxInputs;
+    transactionUtils.signTxInputs = undefined;
+    try {
+      const signer = makePasskeyTxSigner();
+      const err = await signer(fakeTx, fakeStorage).catch((e) => e);
+
+      expect(err).toBeInstanceOf(PasskeySigningUnsupportedError);
+      expect(signInWalletWordsFromPasskey).not.toHaveBeenCalled();
+    } finally {
+      transactionUtils.signTxInputs = original;
+    }
   });
 
   test('throws PasskeyCancelledError when the ceremony is cancelled', async () => {
@@ -271,6 +291,15 @@ describe('verifyPasskeyForUnlock', () => {
     const err = await verifyPasskeyForUnlock().catch((e) => e);
 
     expect(err).toBeInstanceOf(PasskeyCancelledError);
+  });
+
+  test('throws PasskeyMetadataMissingError without prompting when no xpub is stored', async () => {
+    STORE.getWalletMeta.mockReturnValue(makeMeta({ xpub: undefined }));
+
+    const err = await verifyPasskeyForUnlock().catch((e) => e);
+
+    expect(err).toBeInstanceOf(PasskeyMetadataMissingError);
+    expect(signInWalletWordsFromPasskey).not.toHaveBeenCalled();
   });
 
   test('backfills a newly-learned credentialId (mirrors the signer backfill)', async () => {
