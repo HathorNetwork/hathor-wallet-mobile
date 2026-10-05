@@ -7,6 +7,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -40,11 +41,15 @@ import NavigationService from '../NavigationService';
 import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
 import {
-  onExceptionCaptured,
   tokenSwapFetchSwapQuote,
   tokenSwapResetSwapData,
 } from '../actions';
-import { PasskeyCancelledError, PasskeyBusyError } from '../passkey/passkeySigner';
+import {
+  PasskeyCancelledError,
+  PasskeyBusyError,
+  PasskeyMetadataMissingError,
+  PasskeyXpubMismatchError,
+} from '../passkey/passkeySigner';
 import { registerToken, updateTokensMetadata } from '../utils/tokens';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 import Spinner from '../components/Spinner';
@@ -222,11 +227,19 @@ const TokenSwapReview = () => {
         setIsSending(false);
         return;
       }
-      // A real failure — e.g. PasskeyXpubMismatchError, whose message names the passkey to use.
-      // Report it and SHOW it (reusing the error FeedbackModal below) instead of a silent goBack;
-      // dismissing it navigates back, releasing the reserved UTXOs via the beforeRemove listener.
+      // Wrong passkey / missing passkey metadata are expected, user-correctable outcomes (the
+      // mismatch message names the passkey to use). Keep the reviewed swap and its reserved UTXOs
+      // and let the user retry from this screen, like the cancel branch — do not show the error
+      // sheet, whose dismiss navigates back and discards the swap.
+      if (err instanceof PasskeyXpubMismatchError || err instanceof PasskeyMetadataMissingError) {
+        setIsSending(false);
+        Alert.alert(t`Could not authorize the swap`, err.message);
+        return;
+      }
+      // Any other failure (incl. seed-wallet auth-token / signTx errors): show it in the error
+      // sheet below, without the global "Unexpected error" alert — matching SendConfirmScreen.
+      // Dismissing the sheet navigates back, releasing the reserved UTXOs via beforeRemove.
       console.error(err);
-      dispatch(onExceptionCaptured(err, false));
       setBuildError({ message: err?.message || t`Could not complete the swap. Please try again.` });
       setPhase(PHASE.ERROR);
       setIsSending(false);
