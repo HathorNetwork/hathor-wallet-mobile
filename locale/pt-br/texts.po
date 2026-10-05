@@ -170,55 +170,55 @@ msgstr ""
 "Para mais informações, veja os |link1:Termos de Serviço| e |link2:Política "
 "de Privacidade|, ou visite nosso site |link3:https://hathor.network/|."
 
-#: src/screens/AddressMode.js:122
+#: src/screens/AddressMode.js:123
 msgid "Error"
 msgstr "Erro"
 
-#: src/screens/AddressMode.js:123
+#: src/screens/AddressMode.js:124
 msgid "Failed to change address mode. Please try again."
 msgstr "Falha ao alterar o modo de endereço. Por favor, tente novamente."
 
-#: src/screens/AddressMode.js:184 src/screens/AddressMode.js:197
+#: src/screens/AddressMode.js:137 src/screens/AddressMode.js:150
 msgid "ADDRESS MODE"
 msgstr "MODO DE ENDEREÇO"
 
-#: src/screens/AddressMode.js:203
+#: src/screens/AddressMode.js:156
 msgid "You can set your wallet to "
 msgstr "Você pode configurar sua carteira para "
 
-#: src/screens/AddressMode.js:205
+#: src/screens/AddressMode.js:158
 msgid "single or multi address mode"
 msgstr "modo de endereço único ou múltiplos"
 
-#: src/screens/AddressMode.js:210
+#: src/screens/AddressMode.js:163
 msgid "You can switch anytime in the settings."
 msgstr "Você pode trocar a qualquer momento nas configurações."
 
-#: src/screens/AddressMode.js:217
+#: src/screens/AddressMode.js:173
 msgid "Single Address"
 msgstr "Endereço Único"
 
-#: src/screens/AddressMode.js:218
+#: src/screens/AddressMode.js:174
 msgid "Your wallet will use only one address (index 0)."
 msgstr "Sua carteira usará apenas um endereço (índice 0)."
 
-#: src/screens/AddressMode.js:219
+#: src/screens/AddressMode.js:175
 msgid "Easier to manage and compatible with all dApps."
 msgstr "Mais fácil de gerenciar e compatível com todos os dApps."
 
-#: src/screens/AddressMode.js:224
+#: src/screens/AddressMode.js:180
 msgid "Multi Address"
 msgstr "Múltiplos Endereços"
 
-#: src/screens/AddressMode.js:225
+#: src/screens/AddressMode.js:181
 msgid "Your wallet will let you generate multiple addresses."
 msgstr "Sua carteira permitirá gerar múltiplos endereços."
 
-#: src/screens/AddressMode.js:226
+#: src/screens/AddressMode.js:182
 msgid "Useful for advanced users."
 msgstr "Útil para usuários avançados."
 
-#: src/screens/AddressMode.js:237
+#: src/screens/AddressMode.js:192
 msgid ""
 "You can't switch to single address mode because other addresses in your "
 "wallet are already in use."
@@ -226,11 +226,11 @@ msgstr ""
 "Você não pode mudar para o modo de endereço único porque outros endereços da "
 "sua carteira já estão em uso."
 
-#: src/screens/AddressMode.js:261 src/screens/AmountFormat.js:146
-msgid "SAVE PREFERENCES"
-msgstr "SALVAR PREFERÊNCIAS"
+#: src/screens/AddressMode.js:202 src/screens/AmountFormat.js:99
+msgid "Save preferences"
+msgstr "Salvar preferências"
 
-#: src/screens/AddressMode.js:281
+#: src/screens/AddressMode.js:223
 msgid ""
 "Changing\n"
 "address mode..."
@@ -238,15 +238,11 @@ msgstr ""
 "Alterando\n"
 "modo de endereço..."
 
-#: src/screens/AmountFormat.js:84
-msgid "Default"
-msgstr "Padrão"
-
-#: src/screens/AmountFormat.js:97
+#: src/screens/AmountFormat.js:59
 msgid "AMOUNT FORMAT"
 msgstr "FORMATO DE VALOR"
 
-#: src/screens/AmountFormat.js:103
+#: src/screens/AmountFormat.js:65
 msgid ""
 "Choose how amounts are displayed across your wallet. You can change your "
 "default anytime."
@@ -254,22 +250,26 @@ msgstr ""
 "Escolha como os valores são exibidos em toda a sua carteira. Você pode "
 "alterar seu padrão a qualquer momento."
 
-#: src/screens/AmountFormat.js:109
+#: src/screens/AmountFormat.js:75
 msgid "Expanded"
 msgstr "Expandido"
 
-#: src/screens/AmountFormat.js:110
+#: src/screens/AmountFormat.js:76
 msgid ""
 "Standard notation. Leading zeros are written out in full (ex: 0.0000005195)."
 msgstr ""
 "Notação padrão. Os zeros à esquerda são escritos por extenso (ex: "
 "0.0000005195)."
 
-#: src/screens/AmountFormat.js:116
+#: src/screens/AmountFormat.js:77
+msgid "Default"
+msgstr "Padrão"
+
+#: src/screens/AmountFormat.js:81
 msgid "Compressed"
 msgstr "Comprimido"
 
-#: src/screens/AmountFormat.js:117
+#: src/screens/AmountFormat.js:82
 msgid ""
 "Compresses leading zeros into a subscript count for shorter, easier-to-read "
 "small values (ex: 0.0₆5195)."
@@ -277,11 +277,11 @@ msgstr ""
 "Comprime os zeros à esquerda em uma contagem em subscrito, tornando valores "
 "pequenos mais curtos e fáceis de ler (ex: 0.0₆5195)."
 
-#: src/screens/AmountFormat.js:122
+#: src/screens/AmountFormat.js:88
 msgid "PREVIEW"
 msgstr "PRÉVIA"
 
-#: src/screens/AmountFormat.js:124
+#: src/screens/AmountFormat.js:90
 msgid "Full amount"
 msgstr "Valor completo"
 
@@ -778,7 +778,7 @@ msgstr "**${ loadedData.addresses } endereços** encontrados"
 msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
-#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:157
+#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:156
 #: src/screens/PinScreen.js:318 src/screens/Settings.js:186
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
@@ -835,24 +835,24 @@ msgstr "Registrar Nano Contract"
 msgid "Scan the nano contract ID QR code"
 msgstr "Escaneie o QR code do ID do Nano Contract"
 
-#: src/screens/PasskeyLockScreen.js:69
+#: src/screens/PasskeyLockScreen.js:68
 msgid "Unlock cancelled."
 msgstr "Desbloqueamento cancelado."
 
-#: src/screens/PasskeyLockScreen.js:78
+#: src/screens/PasskeyLockScreen.js:77
 msgid "Could not verify your passkey. Please try again."
 msgstr "Não foi possível verificar sua passkey. Tente novamente."
 
-#: src/screens/PasskeyLockScreen.js:121
+#: src/screens/PasskeyLockScreen.js:120
 #, javascript-format
 msgid "Unlock with the passkey \"${ passkeyLabel }\""
 msgstr "Desbloquear com passkey \"${ passkeyLabel }\""
 
-#: src/screens/PasskeyLockScreen.js:122
+#: src/screens/PasskeyLockScreen.js:121
 msgid "Unlock with your passkey"
 msgstr "Desbloquear com sua passkey"
 
-#: src/screens/PasskeyLockScreen.js:142
+#: src/screens/PasskeyLockScreen.js:141
 msgid "Unlock"
 msgstr "Desbloquear"
 
@@ -2980,21 +2980,8 @@ msgstr "${ tokenSymbol } Conceder Authority"
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
 
-#~ msgid "No seed phrase to back up"
-#~ msgstr "Não há nenhum conjunto de palavras para anotar como backup."
-
-#~ msgid ""
-#~ "This wallet is protected only by your passkey — there is no seed phrase "
-#~ "and no PIN. If you lose your passkey and it isn't synced to your password "
-#~ "manager (iCloud Keychain or Google Password Manager), your funds cannot "
-#~ "be recovered."
-#~ msgstr ""
-#~ "Essa carteira é protegida apenas pelo seu passkey - não há conjunto de "
-#~ "palavras ou PIN. Se você perder sua passkey e não estiver sincronizada "
-#~ "com sua conta do iCloud ou Google, seus fundos não podem ser recuperados."
-
-#~ msgid "Create wallet"
-#~ msgstr "Criar carteira"
+#~ msgid "SAVE PREFERENCES"
+#~ msgstr "SALVAR PREFERÊNCIAS"
 
 #~ msgid "Calculating network fee..."
 #~ msgstr "Calculando taxa da rede..."

@@ -162,108 +162,108 @@ msgid ""
 "link2:Privacy Policy|, or our website |link3:https://hathor.network/|."
 msgstr ""
 
-#: src/screens/AddressMode.js:122
+#: src/screens/AddressMode.js:123
 msgid "Error"
 msgstr ""
 
-#: src/screens/AddressMode.js:123
+#: src/screens/AddressMode.js:124
 msgid "Failed to change address mode. Please try again."
 msgstr ""
 
-#: src/screens/AddressMode.js:184 src/screens/AddressMode.js:197
+#: src/screens/AddressMode.js:137 src/screens/AddressMode.js:150
 msgid "ADDRESS MODE"
 msgstr ""
 
-#: src/screens/AddressMode.js:203
+#: src/screens/AddressMode.js:156
 msgid "You can set your wallet to "
 msgstr ""
 
-#: src/screens/AddressMode.js:205
+#: src/screens/AddressMode.js:158
 msgid "single or multi address mode"
 msgstr ""
 
-#: src/screens/AddressMode.js:210
+#: src/screens/AddressMode.js:163
 msgid "You can switch anytime in the settings."
 msgstr ""
 
-#: src/screens/AddressMode.js:217
+#: src/screens/AddressMode.js:173
 msgid "Single Address"
 msgstr ""
 
-#: src/screens/AddressMode.js:218
+#: src/screens/AddressMode.js:174
 msgid "Your wallet will use only one address (index 0)."
 msgstr ""
 
-#: src/screens/AddressMode.js:219
+#: src/screens/AddressMode.js:175
 msgid "Easier to manage and compatible with all dApps."
 msgstr ""
 
-#: src/screens/AddressMode.js:224
+#: src/screens/AddressMode.js:180
 msgid "Multi Address"
 msgstr ""
 
-#: src/screens/AddressMode.js:225
+#: src/screens/AddressMode.js:181
 msgid "Your wallet will let you generate multiple addresses."
 msgstr ""
 
-#: src/screens/AddressMode.js:226
+#: src/screens/AddressMode.js:182
 msgid "Useful for advanced users."
 msgstr ""
 
-#: src/screens/AddressMode.js:237
+#: src/screens/AddressMode.js:192
 msgid ""
 "You can't switch to single address mode because other addresses in your "
 "wallet are already in use."
 msgstr ""
 
-#: src/screens/AddressMode.js:261 src/screens/AmountFormat.js:146
-msgid "SAVE PREFERENCES"
+#: src/screens/AddressMode.js:202 src/screens/AmountFormat.js:99
+msgid "Save preferences"
 msgstr ""
 
-#: src/screens/AddressMode.js:281
+#: src/screens/AddressMode.js:223
 msgid ""
 "Changing\n"
 "address mode..."
 msgstr ""
 
-#: src/screens/AmountFormat.js:84
-msgid "Default"
-msgstr ""
-
-#: src/screens/AmountFormat.js:97
+#: src/screens/AmountFormat.js:59
 msgid "AMOUNT FORMAT"
 msgstr ""
 
-#: src/screens/AmountFormat.js:103
+#: src/screens/AmountFormat.js:65
 msgid ""
 "Choose how amounts are displayed across your wallet. You can change your "
 "default anytime."
 msgstr ""
 
-#: src/screens/AmountFormat.js:109
+#: src/screens/AmountFormat.js:75
 msgid "Expanded"
 msgstr ""
 
-#: src/screens/AmountFormat.js:110
+#: src/screens/AmountFormat.js:76
 msgid ""
 "Standard notation. Leading zeros are written out in full (ex: 0.0000005195)."
 msgstr ""
 
-#: src/screens/AmountFormat.js:116
+#: src/screens/AmountFormat.js:77
+msgid "Default"
+msgstr ""
+
+#: src/screens/AmountFormat.js:81
 msgid "Compressed"
 msgstr ""
 
-#: src/screens/AmountFormat.js:117
+#: src/screens/AmountFormat.js:82
 msgid ""
 "Compresses leading zeros into a subscript count for shorter, easier-to-read "
 "small values (ex: 0.0₆5195)."
 msgstr ""
 
-#: src/screens/AmountFormat.js:122
+#: src/screens/AmountFormat.js:88
 msgid "PREVIEW"
 msgstr ""
 
-#: src/screens/AmountFormat.js:124
+#: src/screens/AmountFormat.js:90
 msgid "Full amount"
 msgstr ""
 
@@ -749,7 +749,7 @@ msgstr "**${ loadedData.addresses } адресов** найдено"
 msgid "There's been an error connecting to the server."
 msgstr ""
 
-#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:157
+#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:156
 #: src/screens/PinScreen.js:318 src/screens/Settings.js:186
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
@@ -805,24 +805,24 @@ msgstr ""
 msgid "Scan the nano contract ID QR code"
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:69
+#: src/screens/PasskeyLockScreen.js:68
 msgid "Unlock cancelled."
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:78
+#: src/screens/PasskeyLockScreen.js:77
 msgid "Could not verify your passkey. Please try again."
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:121
+#: src/screens/PasskeyLockScreen.js:120
 #, javascript-format
 msgid "Unlock with the passkey \"${ passkeyLabel }\""
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:122
+#: src/screens/PasskeyLockScreen.js:121
 msgid "Unlock with your passkey"
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:142
+#: src/screens/PasskeyLockScreen.js:141
 msgid "Unlock"
 msgstr ""
 

@@ -6,15 +6,12 @@
  */
 
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
+import { RadioGroup } from '../components/Radio';
+import NewHathorButton from '../components/NewHathorButton';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import {
@@ -56,41 +53,6 @@ export default function AmountFormat({ navigation }) {
     ? compressAmountString(PREVIEW_SAMPLE)
     : PREVIEW_SAMPLE;
 
-  const renderRadioIcon = (isSelected) => (
-    <View
-      style={[
-        styles.radioOuter,
-        { borderColor: isSelected ? COLORS.primary : COLORS.borderColorDark },
-      ]}
-    >
-      {isSelected && <View style={styles.radioInner} />}
-    </View>
-  );
-
-  const renderOption = (format, label, description, showDefaultBadge) => {
-    const isSelected = selectedFormat === format;
-    return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => setSelectedFormat(format)}
-        style={styles.option}
-      >
-        {renderRadioIcon(isSelected)}
-        <View style={styles.optionTextWrapper}>
-          <View style={styles.optionTitleRow}>
-            <Text style={styles.optionTitle}>{label}</Text>
-            {showDefaultBadge && (
-              <View style={styles.defaultBadge}>
-                <Text style={styles.defaultBadgeText}>{t`Default`}</Text>
-              </View>
-            )}
-          </View>
-          <Text style={styles.optionDescription}>{description}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
   return (
     <View style={styles.container}>
       <HathorHeader
@@ -103,20 +65,24 @@ export default function AmountFormat({ navigation }) {
           {t`Choose how amounts are displayed across your wallet. You can change your default anytime.`}
         </Text>
 
-        <View style={styles.card}>
-          {renderOption(
-            AMOUNT_FORMAT.EXPANDED,
-            t`Expanded`,
-            t`Standard notation. Leading zeros are written out in full (ex: 0.0000005195).`,
-            true,
-          )}
-          <View style={styles.divider} />
-          {renderOption(
-            AMOUNT_FORMAT.COMPRESSED,
-            t`Compressed`,
-            t`Compresses leading zeros into a subscript count for shorter, easier-to-read small values (ex: 0.0₆5195).`,
-            false,
-          )}
+        <View style={styles.groupWrapper}>
+          <RadioGroup
+            value={selectedFormat}
+            onChange={setSelectedFormat}
+            options={[
+              {
+                value: AMOUNT_FORMAT.EXPANDED,
+                title: t`Expanded`,
+                description: t`Standard notation. Leading zeros are written out in full (ex: 0.0000005195).`,
+                badge: t`Default`,
+              },
+              {
+                value: AMOUNT_FORMAT.COMPRESSED,
+                title: t`Compressed`,
+                description: t`Compresses leading zeros into a subscript count for shorter, easier-to-read small values (ex: 0.0₆5195).`,
+              },
+            ]}
+          />
         </View>
 
         <Text style={styles.previewHeader}>{t`PREVIEW`}</Text>
@@ -129,23 +95,11 @@ export default function AmountFormat({ navigation }) {
       <View style={styles.bottomSpacer} />
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.saveButton,
-            isSaveDisabled ? styles.saveButtonDisabled : styles.saveButtonActive,
-          ]}
+        <NewHathorButton
+          title={t`Save preferences`}
           onPress={onSave}
           disabled={isSaveDisabled}
-        >
-          <Text
-            style={[
-              styles.saveButtonText,
-              isSaveDisabled ? styles.saveButtonTextDisabled : styles.saveButtonTextActive,
-            ]}
-          >
-            {t`SAVE PREFERENCES`}
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
     </View>
   );
@@ -165,52 +119,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: COLORS.black,
   },
-  card: {
+  groupWrapper: {
     marginTop: 24,
-    borderWidth: 1,
-    borderColor: COLORS.borderColor,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  optionTextWrapper: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  optionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  optionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.black,
-  },
-  defaultBadge: {
-    backgroundColor: COLORS.lowContrastDetail,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 2,
-  },
-  defaultBadgeText: {
-    fontSize: 12,
-    color: COLORS.darkContrastDetail,
-  },
-  optionDescription: {
-    marginTop: 4,
-    fontSize: 12,
-    lineHeight: 20,
-    color: COLORS.midContrastDetail,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: COLORS.borderColor,
-    marginVertical: 24,
   },
   previewHeader: {
     marginTop: 24,
@@ -242,41 +152,5 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginHorizontal: 16,
     marginBottom: 32,
-  },
-  saveButton: {
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveButtonDisabled: {
-    backgroundColor: COLORS.borderColorMid,
-  },
-  saveButtonActive: {
-    backgroundColor: COLORS.black,
-  },
-  saveButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  saveButtonTextDisabled: {
-    color: COLORS.darkContrastDetail,
-  },
-  saveButtonTextActive: {
-    color: COLORS.white,
-  },
-  radioOuter: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: COLORS.primary,
   },
 });

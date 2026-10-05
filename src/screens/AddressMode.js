@@ -10,7 +10,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   Modal,
   Alert,
@@ -18,6 +17,8 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import { t } from 'ttag';
 import HathorHeader from '../components/HathorHeader';
+import { RadioGroup } from '../components/Radio';
+import NewHathorButton from '../components/NewHathorButton';
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import { ADDRESS_MODE, addressModeKey } from '../constants';
@@ -98,7 +99,7 @@ export default function AddressMode({ navigation }) {
   const isSaveDisabled = selectedMode === currentMode;
 
   const onSave = useCallback(async () => {
-    if (isSaveDisabled) return;
+    if (isSaveDisabled || saving) return;
 
     setSaving(true);
     try {
@@ -110,7 +111,7 @@ export default function AddressMode({ navigation }) {
 
       // Persist optimistically. The saga's post-start sync (startWallet)
       // overwrites this value after reload with the wallet-lib's
-      // authoritative scan policy — the lib may silently changes
+      // authoritative scan policy — the lib may silently change
       // SINGLE → GAP_LIMIT if it detects tx on addresses past index 0.
       STORE.setItem(addressModeKey(network), selectedMode);
       dispatch(setAddressMode(selectedMode));
@@ -125,57 +126,9 @@ export default function AddressMode({ navigation }) {
     } finally {
       setSaving(false);
     }
-  }, [selectedMode, wallet, dispatch, isSaveDisabled, network]);
+  }, [selectedMode, wallet, dispatch, isSaveDisabled, saving, network]);
 
   const singleDisabled = hasTxOutside;
-
-  const renderRadioIcon = (isSelected, isDisabled) => {
-    const outerColor = isDisabled ? COLORS.borderColorDark : COLORS.primary;
-    return (
-      <View
-        style={[
-          styles.radioOuter,
-          { borderColor: outerColor },
-        ]}
-      >
-        {isSelected && !isDisabled && (
-          <View style={styles.radioInner} />
-        )}
-      </View>
-    );
-  };
-
-  const renderCard = (mode, label, body, hint, isDisabled) => {
-    const isSelected = selectedMode === mode;
-    const labelColor = isDisabled ? COLORS.borderColorDark : COLORS.primary;
-    const bodyColor = isDisabled ? COLORS.midContrastDetail : COLORS.black;
-
-    return (
-      <TouchableOpacity
-        activeOpacity={isDisabled ? 1 : 0.7}
-        onPress={() => {
-          if (!isDisabled) {
-            setSelectedMode(mode);
-          }
-        }}
-        style={styles.card}
-        disabled={isDisabled}
-      >
-        <View style={styles.cardHeader}>
-          {renderRadioIcon(isSelected, isDisabled)}
-          <Text style={[styles.cardLabel, { color: labelColor }]}>
-            {label}
-          </Text>
-        </View>
-        <Text style={[styles.cardBody, { color: bodyColor }]}>
-          {body}
-        </Text>
-        <Text style={styles.cardHint}>
-          {hint}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
 
   if (checking) {
     return (
@@ -198,69 +151,58 @@ export default function AddressMode({ navigation }) {
         onBackPress={() => navigation.goBack()}
       />
 
-      <View style={styles.descriptionContainer}>
-        <Text style={styles.descriptionText}>
+      <View style={styles.content}>
+        <Text style={styles.intro}>
           {t`You can set your wallet to `}
-          <Text style={styles.descriptionBold}>
+          <Text style={styles.introBold}>
             {t`single or multi address mode`}
           </Text>
           .
         </Text>
-        <Text style={styles.descriptionText}>
+        <Text style={styles.intro}>
           {t`You can switch anytime in the settings.`}
         </Text>
-      </View>
 
-      <View style={styles.cardsContainer}>
-        {renderCard(
-          ADDRESS_MODE.SINGLE,
-          t`Single Address`,
-          t`Your wallet will use only one address (index 0).`,
-          t`Easier to manage and compatible with all dApps.`,
-          singleDisabled,
-        )}
-        {renderCard(
-          ADDRESS_MODE.MULTI,
-          t`Multi Address`,
-          t`Your wallet will let you generate multiple addresses.`,
-          t`Useful for advanced users.`,
-          false,
-        )}
-      </View>
-
-      {singleDisabled && (
-        <View style={styles.warningBanner}>
-          <Text style={styles.warningIcon}>
-            ⚠
-          </Text>
-          <Text style={styles.warningText}>
-            {t`You can't switch to single address mode because other addresses in your wallet are already in use.`}
-          </Text>
+        <View style={styles.groupWrapper}>
+          <RadioGroup
+            value={selectedMode}
+            onChange={setSelectedMode}
+            options={[
+              {
+                value: ADDRESS_MODE.SINGLE,
+                title: t`Single Address`,
+                description: t`Your wallet will use only one address (index 0).`,
+                hint: t`Easier to manage and compatible with all dApps.`,
+                disabled: singleDisabled,
+              },
+              {
+                value: ADDRESS_MODE.MULTI,
+                title: t`Multi Address`,
+                description: t`Your wallet will let you generate multiple addresses.`,
+                hint: t`Useful for advanced users.`,
+              },
+            ]}
+          />
         </View>
-      )}
+
+        {singleDisabled && (
+          <View style={styles.warningBanner}>
+            <Text style={styles.warningIcon}>⚠</Text>
+            <Text style={styles.warningText}>
+              {t`You can't switch to single address mode because other addresses in your wallet are already in use.`}
+            </Text>
+          </View>
+        )}
+      </View>
 
       <View style={styles.bottomSpacer} />
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.saveButton,
-            isSaveDisabled ? styles.saveButtonDisabled : styles.saveButtonActive,
-          ]}
+        <NewHathorButton
+          title={t`Save preferences`}
           onPress={onSave}
-          disabled={isSaveDisabled}
-        >
-          <Text
-            style={[
-              styles.saveButtonText,
-              isSaveDisabled
-                ? styles.saveButtonTextDisabled
-                : styles.saveButtonTextActive,
-            ]}
-          >
-            {t`SAVE PREFERENCES`}
-          </Text>
-        </TouchableOpacity>
+          disabled={isSaveDisabled || saving}
+        />
       </View>
 
       <Modal
@@ -297,63 +239,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  descriptionContainer: {
+  content: {
     marginHorizontal: 16,
     marginTop: 16,
   },
-  descriptionText: {
+  intro: {
     fontSize: 14,
     lineHeight: 20,
     color: COLORS.black,
   },
-  descriptionBold: {
+  introBold: {
     fontWeight: 'bold',
   },
-  cardsContainer: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    gap: 16,
-  },
-  card: {
-    backgroundColor: COLORS.lowContrastDetail,
-    minHeight: 122,
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-    borderRadius: 16,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 8,
-  },
-  cardLabel: {
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  cardBody: {
-    fontSize: 12,
-    lineHeight: 20,
-  },
-  cardHint: {
-    fontSize: 12,
-    fontStyle: 'italic',
-    color: COLORS.darkContrastDetail,
-    lineHeight: 20,
-  },
-  radioOuter: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: COLORS.primary,
+  groupWrapper: {
+    marginTop: 24,
   },
   warningBanner: {
     flexDirection: 'row',
@@ -362,7 +261,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    marginHorizontal: 16,
     marginTop: 16,
     gap: 8,
   },
@@ -384,28 +282,6 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginHorizontal: 16,
     marginBottom: 32,
-  },
-  saveButton: {
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveButtonDisabled: {
-    backgroundColor: COLORS.borderColorMid,
-  },
-  saveButtonActive: {
-    backgroundColor: COLORS.black,
-  },
-  saveButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  saveButtonTextDisabled: {
-    color: COLORS.darkContrastDetail,
-  },
-  saveButtonTextActive: {
-    color: COLORS.white,
   },
   overlay: {
     flex: 1,
