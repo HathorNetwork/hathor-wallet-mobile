@@ -75,9 +75,11 @@ describe('persistNetworkSettings wallet stop', () => {
   test('a failed wallet.stop is logged and does not block the network switch', () => {
     const { gen } = runToWalletStop(wallet);
 
-    const cleanStep = gen.throw(new Error('stop failed')).value;
+    const stopError = new Error('stop failed');
+    const cleanStep = gen.throw(stopError).value;
 
-    expect(log.error).toHaveBeenCalled();
+    // Every logger in this file shares one mock, so check for the stop's own error.
+    expect(log.error).toHaveBeenCalledWith(expect.any(String), stopError);
     expect(cleanStep.payload.fn).toBe(storage.cleanStorage);
     expect(isPut(gen.next().value, reloadWalletRequested())).toBe(true);
   });
