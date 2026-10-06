@@ -9,6 +9,9 @@ import CryptoJS from 'crypto-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MemoryStore, Storage, bigIntUtils, cryptoUtils, walletUtils } from '@hathor/wallet-lib';
 import { NETWORK_MAINNET } from './constants';
+import { logger } from './logger';
+
+const log = logger('store');
 
 export const ACCESS_DATA_KEY = 'asyncstorage:access';
 export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
@@ -269,7 +272,8 @@ class AsyncStorageStore {
    * Callers that need durability use setItemAsync.
    */
   setItem(key, value) {
-    this.setItemAsync(key, value);
+    // Nobody awaits this write, so log a failure instead of leaving an unhandled rejection.
+    this.setItemAsync(key, value).catch((err) => log.error(`Failed to persist ${key}.`, err));
   }
 
   /**
@@ -569,7 +573,8 @@ class AsyncStorageStore {
    * @param {string} key Item to remove.
    */
   removeItem(key) {
-    this.removeItemAsync(key);
+    // Nobody awaits this delete, so log a failure instead of leaving an unhandled rejection.
+    this.removeItemAsync(key).catch((err) => log.error(`Failed to remove ${key}.`, err));
   }
 
   /**

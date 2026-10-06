@@ -7,7 +7,6 @@
 
 import React from 'react';
 import {
-  Alert,
   Text,
   View,
   StyleSheet,
@@ -18,7 +17,7 @@ import { t } from 'ttag';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
-import { startWalletRequested, unlockScreen } from '../actions';
+import { onExceptionCaptured, startWalletRequested, unlockScreen } from '../actions';
 import { PIN_SIZE } from '../constants';
 import { COLORS } from '../styles/themes';
 
@@ -32,6 +31,7 @@ const mapDispatchToProps = (dispatch) => ({
     words,
     pin
   })),
+  onExceptionCaptured: (error) => dispatch(onExceptionCaptured(error, false)),
 });
 
 class ChoosePinScreen extends React.Component {
@@ -89,12 +89,9 @@ class ChoosePinScreen extends React.Component {
       NavigationService.resetToMain();
     }).catch((error) => {
       // initStorage clears stale passkey metadata and persists the access data; if a native write
-      // fails (e.g. device storage full), tell the user instead of silently staying on this screen.
+      // fails (e.g. device storage full), report it instead of silently staying on this screen.
       console.error(error);
-      Alert.alert(
-        t`Could not create the wallet`,
-        t`Something went wrong while saving your wallet. Please try again.`,
-      );
+      this.props.onExceptionCaptured(error);
     });
   }
 

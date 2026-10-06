@@ -46,3 +46,27 @@ describe('AsyncStorageStore.initStorage', () => {
     );
   });
 });
+
+describe('AsyncStorageStore fire-and-forget writes', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  // Saga callers `yield STORE.setItem(...)` without waiting for the native write, so a failed
+  // write must be logged, not left as an unhandled rejection.
+  test.each([
+    ['setItem', 'setItemAsync', (store) => store.setItem('some-key', { a: 1 })],
+    ['removeItem', 'removeItemAsync', (store) => store.removeItem('some-key')],
+  ])('%s logs a failed native write instead of rejecting', async (_name, asyncMethod, call) => {
+    const store = new AsyncStorageStore();
+    const failure = new Error('disk full');
+    jest.spyOn(store, asyncMethod).mockRejectedValue(failure);
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(call(store)).toBeUndefined();
+    // Let the rejection reach the handler.
+    await new Promise((resolve) => { setImmediate(resolve); });
+
+    expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('some-key'), failure);
+  });
+});
