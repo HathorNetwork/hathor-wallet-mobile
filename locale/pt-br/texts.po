@@ -338,19 +338,11 @@ msgstr "Novo PIN salvo"
 msgid "CHANGE PIN"
 msgstr "MUDAR PIN"
 
-#: src/screens/ChoosePinScreen.js:95
-msgid "Could not create the wallet"
-msgstr "Erro ao criar carteira"
-
-#: src/screens/ChoosePinScreen.js:96
-msgid "Something went wrong while saving your wallet. Please try again."
-msgstr "Algo deu errado ao salvar sua carteira. Por favor, tente novamente."
-
-#: src/screens/ChoosePinScreen.js:149
+#: src/screens/ChoosePinScreen.js:146
 msgid "Enter your new PIN code"
 msgstr "Digite seu novo PIN"
 
-#: src/screens/ChoosePinScreen.js:161
+#: src/screens/ChoosePinScreen.js:158
 msgid "Enter your new PIN code again"
 msgstr "Digite seu novo PIN novamente"
 
@@ -362,11 +354,11 @@ msgstr "Criar um novo PIN,"
 msgid "To confirm the PIN,"
 msgstr "Para confirmar o PIN,"
 
-#: src/screens/ChoosePinScreen.js:175
+#: src/screens/ChoosePinScreen.js:172
 msgid "PIN codes don't match. Try again."
 msgstr "Os PINs estão diferentes. Tente novamente."
 
-#: src/screens/ChoosePinScreen.js:198
+#: src/screens/ChoosePinScreen.js:195
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
@@ -464,7 +456,7 @@ msgstr "Autorizar criação de token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 #: src/screens/CreateTokenConfirm.js:182 src/screens/SendConfirmScreen.js:200
-#: src/screens/TokenSwapReview.js:264
+#: src/screens/TokenSwapReview.js:262
 msgid "Building transaction"
 msgstr "Criando transação"
 
@@ -1090,7 +1082,7 @@ msgstr[1] "${ amountAndToken } disponíveis"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:363
+#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:361
 msgid "No fee"
 msgstr "Sem taxa"
 
@@ -1106,19 +1098,19 @@ msgstr "Saldo insuficiente para completar a transação."
 msgid "Failed to process transaction."
 msgstr "Falha ao processar a transação"
 
-#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:219
+#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:218
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:198
-#: src/screens/TokenSwapReview.js:262
+#: src/screens/TokenSwapReview.js:260
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:199
-#: src/screens/TokenSwapReview.js:263
+#: src/screens/TokenSwapReview.js:261
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -1271,33 +1263,25 @@ msgstr "Ocorreu um erro ao carregar o protocolo de troca de tokens."
 msgid "Loading Token Swap"
 msgstr "Carregando troca de tokens"
 
-#: src/screens/TokenSwapReview.js:236
-msgid "Could not authorize the swap"
-msgstr "Erro ao autorizar troca"
-
-#: src/screens/TokenSwapReview.js:243
-msgid "Could not complete the swap. Please try again."
-msgstr "Não foi possível completar a troca. Tente novamente."
-
-#: src/screens/TokenSwapReview.js:274
+#: src/screens/TokenSwapReview.js:272
 msgid "REVIEW TOKEN SWAP"
 msgstr "REVISAR TROCA DE TOKENS"
 
-#: src/screens/TokenSwapReview.js:280
+#: src/screens/TokenSwapReview.js:278
 msgid "Building the swap transaction for your review"
 msgstr "Criando transação de swap para ser revisada"
 
-#: src/screens/TokenSwapReview.js:298
+#: src/screens/TokenSwapReview.js:296
 msgid "Your swap was successful"
 msgstr "Sua troca foi bem-sucedida"
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:359
+#: src/screens/TokenSwapReview.js:357
 msgid "Network Fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/TokenSwapReview.js:371
+#: src/screens/TokenSwapReview.js:369
 msgid "SWAP"
 msgstr "TROCAR"
 
@@ -3013,6 +2997,18 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#~ msgid "Could not create the wallet"
+#~ msgstr "Erro ao criar carteira"
+
+#~ msgid "Something went wrong while saving your wallet. Please try again."
+#~ msgstr "Algo deu errado ao salvar sua carteira. Por favor, tente novamente."
+
+#~ msgid "Could not authorize the swap"
+#~ msgstr "Erro ao autorizar troca"
+
+#~ msgid "Could not complete the swap. Please try again."
+#~ msgstr "Não foi possível completar a troca. Tente novamente."
 
 #~ msgid "Passkey wallet"
 #~ msgstr "Carteira passkey"

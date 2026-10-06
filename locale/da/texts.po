@@ -319,19 +319,11 @@ msgstr "Ny PIN gemt"
 msgid "CHANGE PIN"
 msgstr "SKIFT PIN"
 
-#: src/screens/ChoosePinScreen.js:95
-msgid "Could not create the wallet"
-msgstr ""
-
-#: src/screens/ChoosePinScreen.js:96
-msgid "Something went wrong while saving your wallet. Please try again."
-msgstr ""
-
-#: src/screens/ChoosePinScreen.js:149
+#: src/screens/ChoosePinScreen.js:146
 msgid "Enter your new PIN code"
 msgstr "Indtast din nye PIN-kode"
 
-#: src/screens/ChoosePinScreen.js:161
+#: src/screens/ChoosePinScreen.js:158
 msgid "Enter your new PIN code again"
 msgstr "Indtast din nye PIN-kode igen"
 
@@ -343,11 +335,11 @@ msgstr "Opret en ny PIN-kode,"
 msgid "To confirm the PIN,"
 msgstr "For at bekræfte pinkoden,"
 
-#: src/screens/ChoosePinScreen.js:175
+#: src/screens/ChoosePinScreen.js:172
 msgid "PIN codes don't match. Try again."
 msgstr "PIN-koder stemmer ikke overens. Prøv igen."
 
-#: src/screens/ChoosePinScreen.js:198
+#: src/screens/ChoosePinScreen.js:195
 msgid "Start the Wallet"
 msgstr "Start Wallet"
 
@@ -441,7 +433,7 @@ msgstr "Autoriser oprettelse af token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 #: src/screens/CreateTokenConfirm.js:182 src/screens/SendConfirmScreen.js:200
-#: src/screens/TokenSwapReview.js:264
+#: src/screens/TokenSwapReview.js:262
 msgid "Building transaction"
 msgstr ""
 
@@ -1055,7 +1047,7 @@ msgstr[1] ""
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "SEND ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:363
+#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:361
 msgid "No fee"
 msgstr ""
 
@@ -1071,19 +1063,19 @@ msgstr ""
 msgid "Failed to process transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:219
+#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:218
 msgid "Your transfer is being processed"
 msgstr "Din overførsel behandles"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:198
-#: src/screens/TokenSwapReview.js:262
+#: src/screens/TokenSwapReview.js:260
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Indtast din 6-cifrede pin for at godkende overførslen"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:199
-#: src/screens/TokenSwapReview.js:263
+#: src/screens/TokenSwapReview.js:261
 msgid "Authorize operation"
 msgstr "Autoriserer overførslen"
 
@@ -1236,33 +1228,25 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:236
-msgid "Could not authorize the swap"
-msgstr ""
-
-#: src/screens/TokenSwapReview.js:243
-msgid "Could not complete the swap. Please try again."
-msgstr ""
-
-#: src/screens/TokenSwapReview.js:274
+#: src/screens/TokenSwapReview.js:272
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:280
+#: src/screens/TokenSwapReview.js:278
 msgid "Building the swap transaction for your review"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:298
+#: src/screens/TokenSwapReview.js:296
 msgid "Your swap was successful"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:359
+#: src/screens/TokenSwapReview.js:357
 msgid "Network Fee"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:371
+#: src/screens/TokenSwapReview.js:369
 msgid "SWAP"
 msgstr ""
 
