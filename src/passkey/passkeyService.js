@@ -115,7 +115,9 @@ export class PasskeyNativeError extends Error {
 /**
  * Run a react-native-passkey call, converting its plain-object rejections into PasskeyNativeError.
  * A user cancel is re-thrown untouched (callers detect it with isPasskeyCancel), and real Error
- * instances (e.g. the native module failing to link) pass through with their own stack.
+ * instances pass through with their own stack. The library turns most failures, including an
+ * unlinked native module, into its own plain `UnknownError` object, so those arrive here as a
+ * PasskeyNativeError("An unknown error occurred").
  */
 async function callPasskey(fn) {
   try {
@@ -284,11 +286,15 @@ async function registerPasskey(userName) {
     authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
     extensions: { prf: {} }, // enable PRF / check support; evaluate at assertion
   }));
-  // The platform reports at creation whether PRF was enabled on the new credential. If it wasn't,
-  // the passkey can never produce a seed — stop now with a clear message, instead of after a second
-  // biometric prompt (and before the user retries and mints another dead credential).
+  // The platform can report at creation whether PRF was enabled on the new credential. If it says
+  // it wasn't, the passkey can never produce a seed — stop now with a clear message, instead of
+  // after a second biometric prompt. Only an explicit `false` stops here: react-native-passkey
+  // passes the provider's response through as-is, and a provider that leaves the field out (not
+  // yet confirmed on Android's Google Password Manager) must not fail every creation. If PRF really
+  // is missing, the assertion below returns no PRF output and wordsFromPrf fails with the same
+  // message.
   const ext = result?.clientExtensionResults ?? result?.response?.clientExtensionResults;
-  if (ext?.prf?.enabled !== true) {
+  if (ext?.prf?.enabled === false) {
     throw new Error(prfUnsupportedMessage());
   }
   return result?.id ?? result?.rawId; // credentialId
