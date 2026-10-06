@@ -587,361 +587,370 @@ export function* processRequest(action) {
   // Poll pending requests in the background so the overlay banner
   // updates as more requests arrive while this one is being displayed
   const pendingPollTask = yield fork(pollPendingRequests);
-
-  const wallet = yield select((state) => state.wallet);
-
-  const activeSessions = yield call(() => walletKit.getActiveSessions());
-  const requestSession = activeSessions[payload.topic];
-
-  if (!requestSession) {
-    log.error('Could not identify the request session, ignoring request.');
-    yield cancel(pendingPollTask);
-    return false;
-  }
-
-  const data = {
-    icon: get(requestSession.peer, 'metadata.icons[0]', null),
-    proposer: get(requestSession.peer, 'metadata.name', ''),
-    url: get(requestSession.peer, 'metadata.url', ''),
-    description: get(requestSession.peer, 'metadata.description', ''),
-    chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
-  };
-
-  // These two methods each need the stored private key at one of our addresses, which bypasses the
-  // external tx signer: htr_signWithAddress signs via wallet.signMessageWithAddress, and
-  // htr_signOracleData signs via nanoUtils.getOracleInputData. Neither is possible for an xpub-only
-  // passkey wallet, so reject cleanly instead of crashing inside the rpc-handler.
-  const passkeyUnsupportedMethods = [
-    AVAILABLE_METHODS.HATHOR_SIGN_MESSAGE,
-    AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA,
-  ];
-  if (STORE.isPasskeyWallet() && passkeyUnsupportedMethods.includes(params.request.method)) {
-    log.debug(`Rejecting ${params.request.method}: not supported for passkey wallets.`);
-    yield call(() => walletKit.respondSessionRequest({
-      topic: payload.topic,
-      response: {
-        id: payload.id,
-        jsonrpc: '2.0',
-        error: {
-          // The wallet structurally cannot service this method — it's not a user rejection. 3001
-          // (UNAUTHORIZED_METHODS) lets the dapp disable the action rather than offer a retry that
-          // can never succeed, unlike USER_REJECTED_METHOD (5002).
-          code: ERROR_CODES.UNAUTHORIZED_METHODS,
-          message: 'This operation is not supported for passkey wallets.',
-        },
-      },
-    }));
-    yield cancel(pendingPollTask);
-    return false;
-  }
-
-  // Track whether this flow shows a success screen that will dispatch the ready signal
-  let successScreenWillSignal = false;
-
+  // Every exit below — the normal return, an early return, a retry or a thrown error — cancels
+  // this attempt's poll fork in the finally, so a new exit path can't leak it (a leaked fork stays
+  // attached to the called task and hangs the request queue). The retry branches still cancel it
+  // explicitly before recursing, so two polls never overlap during a retry; cancelling an
+  // already-cancelled task in the finally is a no-op.
   try {
-    let dispatch;
-    yield put((_dispatch) => {
-      dispatch = _dispatch;
-    });
+    const wallet = yield select((state) => state.wallet);
 
-    const response = yield call(
-      handleRpcRequest,
-      params.request,
-      wallet,
-      data,
-      promptHandler(dispatch),
-    );
+    const activeSessions = yield call(() => walletKit.getActiveSessions());
+    const requestSession = activeSessions[payload.topic];
 
-    switch (response.type) {
-      case RpcResponseTypes.SendNanoContractTxResponse:
-        yield put(setNewNanoContractStatusSuccess());
-        successScreenWillSignal = true;
-        break;
-      case RpcResponseTypes.CreateTokenResponse:
-        yield put(setCreateTokenStatusSuccessful());
-        successScreenWillSignal = true;
-        break;
-      case RpcResponseTypes.SendTransactionResponse:
-        yield put(setSendTxStatusSuccess());
-        successScreenWillSignal = true;
-        // The modal state will be updated by the SendTransactionLoadingFinishedTrigger
-        break;
-      case RpcResponseTypes.CreateNanoContractCreateTokenTxResponse:
-        yield put(setCreateNanoContractCreateTokenTxStatusSuccess());
-        successScreenWillSignal = true;
-        break;
-      default:
-        // Read-only operations (getBalance, getAddress, signMessage, etc.)
-        // don't show success screens - saga will signal at the end
-        log.debug('Unknown response type:', response.type);
-        break;
+    if (!requestSession) {
+      log.error('Could not identify the request session, ignoring request.');
+      return false;
     }
 
-    yield call(() => walletKit.respondSessionRequest({
-      topic: payload.topic,
-      response: {
-        id: payload.id,
-        jsonrpc: '2.0',
-        result: response,
+    const data = {
+      icon: get(requestSession.peer, 'metadata.icons[0]', null),
+      proposer: get(requestSession.peer, 'metadata.name', ''),
+      url: get(requestSession.peer, 'metadata.url', ''),
+      description: get(requestSession.peer, 'metadata.description', ''),
+      chain: get(requestSession.namespaces, 'hathor.chains[0]', ''),
+    };
+
+    // These two methods each need the stored private key at one of our addresses, which bypasses
+    // the external tx signer: htr_signWithAddress signs via wallet.signMessageWithAddress, and
+    // htr_signOracleData signs via nanoUtils.getOracleInputData. Neither is possible for an
+    // xpub-only passkey wallet, so reject cleanly instead of crashing inside the rpc-handler.
+    const passkeyUnsupportedMethods = [
+      AVAILABLE_METHODS.HATHOR_SIGN_MESSAGE,
+      AVAILABLE_METHODS.HATHOR_SIGN_ORACLE_DATA,
+    ];
+    if (STORE.isPasskeyWallet() && passkeyUnsupportedMethods.includes(params.request.method)) {
+      log.debug(`Rejecting ${params.request.method}: not supported for passkey wallets.`);
+      yield call(() => walletKit.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          error: {
+            // The wallet structurally cannot service this method — it's not a user rejection.
+            // 3001 (UNAUTHORIZED_METHODS) lets the dapp disable the action rather than offer a
+            // retry that can never succeed, unlike USER_REJECTED_METHOD (5002).
+            code: ERROR_CODES.UNAUTHORIZED_METHODS,
+            message: 'This operation is not supported for passkey wallets.',
+          },
+        },
+      }));
+      return false;
+    }
+
+    // Track whether this flow shows a success screen that will dispatch the ready signal
+    let successScreenWillSignal = false;
+
+    try {
+      let dispatch;
+      yield put((_dispatch) => {
+        dispatch = _dispatch;
+      });
+
+      const response = yield call(
+        handleRpcRequest,
+        params.request,
+        wallet,
+        data,
+        promptHandler(dispatch),
+      );
+
+      switch (response.type) {
+        case RpcResponseTypes.SendNanoContractTxResponse:
+          yield put(setNewNanoContractStatusSuccess());
+          successScreenWillSignal = true;
+          break;
+        case RpcResponseTypes.CreateTokenResponse:
+          yield put(setCreateTokenStatusSuccessful());
+          successScreenWillSignal = true;
+          break;
+        case RpcResponseTypes.SendTransactionResponse:
+          yield put(setSendTxStatusSuccess());
+          successScreenWillSignal = true;
+          // The modal state will be updated by the SendTransactionLoadingFinishedTrigger
+          break;
+        case RpcResponseTypes.CreateNanoContractCreateTokenTxResponse:
+          yield put(setCreateNanoContractCreateTokenTxStatusSuccess());
+          successScreenWillSignal = true;
+          break;
+        default:
+          // Read-only operations (getBalance, getAddress, signMessage, etc.)
+          // don't show success screens - saga will signal at the end
+          log.debug('Unknown response type:', response.type);
+          break;
       }
-    }));
-  } catch (e) {
-    log.error('Error in processRequest:', e);
 
-    // A cancelled passkey ceremony is "not now", not an error (the rpc-handler re-wraps our
-    // typed error, so we use a consumable flag — same pattern as pinWasCancelled). Retry the
-    // request: the dapp consent modal shows again and the user can accept or reject.
-    if (consumePasskeySigningCancelled()) {
-      // The rpc-handler dispatches a *StatusLoading BEFORE the passkey ceremony runs, and this
-      // branch returns before the switch below that would otherwise reset it. Without clearing it,
-      // the retry's fresh consent modal renders on top of a full-screen "Sending transaction"
-      // spinner the user can't dismiss. Reset the per-method status to READY (NOT *StatusFailure,
-      // which pops an "Error / Try again" modal, contradicting the retry). Dispatching all four
-      // is safe — only the in-flight one is non-idle — and mirrors the timeout cleanup above.
-      yield put(setNewNanoContractStatusReady());
-      yield put(setCreateTokenStatusReady());
-      yield put(setSendTxStatusReady());
-      yield put(setCreateNanoContractCreateTokenTxStatusReady());
-      // Cancel the poll fork from this attempt before recursing — the early return below skips the
-      // cleanup at the end of processRequest, so without this the fork leaks (and a new one is
-      // forked per retry). Mirrors the SendNanoContractTxError retry path.
-      yield cancel(pendingPollTask);
-      const result = yield* processRequest(action);
-      return result; // Recursive call handles waiting
-    }
-
-    let shouldAnswer = true;
-    switch (e.constructor) {
-      case SendNanoContractTxError: {
-        const errorDetails = extractErrorDetails(e);
-        yield put(setReownError(errorDetails));
-        yield put(setNewNanoContractStatusFailure());
-
-        const dontRetryErrors = [
-          'Invalid blueprint ID',
-          'Error getting blueprint id with',
-        ];
-
-        let shouldDisplayRetry = true;
-        for (let i = 0; i < dontRetryErrors.length; i += 1) {
-          if (e.message.indexOf(dontRetryErrors[i]) > -1) {
-            shouldDisplayRetry = false;
-            break;
-          }
+      yield call(() => walletKit.respondSessionRequest({
+        topic: payload.topic,
+        response: {
+          id: payload.id,
+          jsonrpc: '2.0',
+          result: response,
         }
+      }));
+    } catch (e) {
+      log.error('Error in processRequest:', e);
 
-        if (shouldDisplayRetry) {
-          // Show retry modal
+      // A cancelled passkey ceremony is "not now", not an error (the rpc-handler re-wraps our
+      // typed error, so we use a consumable flag — same pattern as pinWasCancelled). Retry the
+      // request: the dapp consent modal shows again and the user can accept or reject.
+      if (consumePasskeySigningCancelled()) {
+        // The rpc-handler dispatches a *StatusLoading BEFORE the passkey ceremony runs, and this
+        // branch returns before the switch below that would otherwise reset it. Without clearing
+        // it, the retry's fresh consent modal renders on top of a full-screen "Sending
+        // transaction" spinner the user can't dismiss. Reset the per-method status to READY (NOT
+        // *StatusFailure, which pops an "Error / Try again" modal, contradicting the retry).
+        // Dispatching all four is safe — only the in-flight one is non-idle — and mirrors the
+        // timeout cleanup above.
+        yield put(setNewNanoContractStatusReady());
+        yield put(setCreateTokenStatusReady());
+        yield put(setSendTxStatusReady());
+        yield put(setCreateNanoContractCreateTokenTxStatusReady());
+        // Cancel this attempt's poll fork before recursing, so it doesn't keep polling alongside
+        // the retry's own fork (the finally below only runs once the retry returns).
+        yield cancel(pendingPollTask);
+        const result = yield* processRequest(action);
+        return result; // Recursive call handles waiting
+      }
+
+      let shouldAnswer = true;
+      switch (e.constructor) {
+        case SendNanoContractTxError: {
+          const errorDetails = extractErrorDetails(e);
+          yield put(setReownError(errorDetails));
+          yield put(setNewNanoContractStatusFailure());
+
+          const dontRetryErrors = [
+            'Invalid blueprint ID',
+            'Error getting blueprint id with',
+          ];
+
+          let shouldDisplayRetry = true;
+          for (let i = 0; i < dontRetryErrors.length; i += 1) {
+            if (e.message.indexOf(dontRetryErrors[i]) > -1) {
+              shouldDisplayRetry = false;
+              break;
+            }
+          }
+
+          if (shouldDisplayRetry) {
+            // Show retry modal
+            const retry = yield call(
+              retryHandler,
+              types.REOWN_NEW_NANOCONTRACT_RETRY,
+              types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
+            );
+
+            if (retry) {
+              shouldAnswer = false;
+              // Retry the action, exactly as it came:
+              yield cancel(pendingPollTask);
+              const result = yield* processRequest(action);
+              return result; // Recursive call handles waiting
+            }
+          } else {
+            // Error is not retryable, show error modal
+            yield put(setReownModal({
+              show: true,
+              type: ReownModalTypes.REQUEST_ERROR,
+              data: {
+                operationType: 'newNanoContractTransaction',
+                errorMessage: e.message,
+              },
+            }));
+          }
+        } break;
+        case CreateTokenError: {
+          // CreateTokenRequest screen handles its own error display via FeedbackModal
+          const errorDetails = extractErrorDetails(e);
+          yield put(setReownError(errorDetails));
+          yield put(setCreateTokenStatusFailed());
+
+          // User might try again, wait for it.
           const retry = yield call(
             retryHandler,
-            types.REOWN_NEW_NANOCONTRACT_RETRY,
-            types.REOWN_NEW_NANOCONTRACT_RETRY_DISMISS,
+            types.REOWN_CREATE_TOKEN_RETRY,
+            types.REOWN_CREATE_TOKEN_RETRY_DISMISS,
           );
 
           if (retry) {
             shouldAnswer = false;
-            // Retry the action, exactly as it came:
+            // Retry the action, exactly as it came (cancelling this attempt's poll fork first — see
+            // the SendNanoContractTxError retry above):
             yield cancel(pendingPollTask);
             const result = yield* processRequest(action);
             return result; // Recursive call handles waiting
           }
-        } else {
-          // Error is not retryable, show error modal
+        } break;
+        case PrepareSendTransactionError:
+          shouldAnswer = false;
+
+          yield call(() => walletKit.respondSessionRequest({
+            topic: payload.topic,
+            response: {
+              id: payload.id,
+              jsonrpc: '2.0',
+              error: {
+                code: ERROR_CODES.INVALID_PAYLOAD,
+                message: 'Transaction failed validation',
+              },
+            },
+          })); break;
+        case InvalidParamsError: {
+          shouldAnswer = false;
+          const errorMessage = e.message;
+
+          yield call(() => walletKit.respondSessionRequest({
+            topic: payload.topic,
+            response: {
+              id: payload.id,
+              jsonrpc: '2.0',
+              error: {
+                code: ERROR_CODES.INVALID_PAYLOAD,
+                message: errorMessage,
+              },
+            },
+          }));
+        } break;
+        case SendTransactionError: {
+          // SendTransactionRequest screen handles its own error display via FeedbackModal
+          const errorDetails = extractErrorDetails(e);
+          yield put(setReownError(errorDetails));
+          yield put(setSendTxStatusFailure());
+
+          // User might try again, wait for it.
+          const retry = yield call(
+            retryHandler,
+            types.REOWN_SEND_TX_RETRY,
+            types.REOWN_SEND_TX_RETRY_DISMISS,
+          );
+
+          if (retry) {
+            shouldAnswer = false;
+            // Retry the action, exactly as it came (cancelling this attempt's poll fork first):
+            yield cancel(pendingPollTask);
+            const result = yield* processRequest(action);
+            return result; // Recursive call handles waiting
+          }
+        } break;
+        case InsufficientFundsError: {
+          const errorDetails = extractErrorDetails(e);
+          yield put(setReownError(errorDetails));
+          yield put(setSendTxStatusFailure());
+          // Show the insufficient funds modal
+          yield put(setReownModal({
+            show: true,
+            type: ReownModalTypes.INSUFFICIENT_FUNDS
+          }));
+          yield call(() => walletKit.respondSessionRequest({
+            topic: payload.topic,
+            response: {
+              id: payload.id,
+              jsonrpc: '2.0',
+              error: {
+                code: ERROR_CODES.INVALID_PAYLOAD,
+                message: 'Insufficient funds for transaction',
+              },
+            },
+          }));
+          shouldAnswer = false;
+        } break;
+        case CreateNanoContractCreateTokenTxError: {
+          // CreateNanoContractCreateTokenTxRequest screen handles its own error display
+          const errorDetails = extractErrorDetails(e);
+          yield put(setReownError(errorDetails));
+          yield put(setCreateNanoContractCreateTokenTxStatusFailure());
+
+          // User might try again, wait for it.
+          const retry = yield call(
+            retryHandler,
+            types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY,
+            types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS,
+          );
+
+          if (retry) {
+            shouldAnswer = false;
+            // Retry the action, exactly as it came (cancelling this attempt's poll fork first):
+            yield cancel(pendingPollTask);
+            const result = yield* processRequest(action);
+            return result; // Recursive call handles waiting
+          }
+        } break;
+        case PromptRejectedError:
+          // Check if this was a PIN cancellation (user can retry)
+          // vs a modal rejection (user intentionally rejected)
+          if (pinWasCancelled) {
+            pinWasCancelled = false; // Reset the flag
+            shouldAnswer = false;
+            // Retry the request so user can click Accept again (cancelling this attempt's poll fork
+            // first, like the other retry branches).
+            yield cancel(pendingPollTask);
+            const result = yield* processRequest(action);
+            return result; // Recursive call handles waiting
+          }
+          // Otherwise, user intentionally rejected a prompt, don't show error modal
+          // The RPC request will still be rejected below via shouldAnswer
+          break;
+        default: {
+          // Handle generic errors (e.g., from getBalance, signMessage, etc.)
+          const errorDetails = extractErrorDetails(e);
+          const errorMessage = e.message || 'An error occurred processing the request';
+
+          // Store error details for "See why" button
+          yield put(setReownError(errorDetails));
+
+          // Show error modal
           yield put(setReownModal({
             show: true,
             type: ReownModalTypes.REQUEST_ERROR,
             data: {
-              operationType: 'newNanoContractTransaction',
-              errorMessage: e.message,
+              errorMessage,
             },
           }));
-        }
-      } break;
-      case CreateTokenError: {
-        // CreateTokenRequest screen handles its own error display via FeedbackModal
-        const errorDetails = extractErrorDetails(e);
-        yield put(setReownError(errorDetails));
-        yield put(setCreateTokenStatusFailed());
 
-        // User might try again, wait for it.
-        const retry = yield call(
-          retryHandler,
-          types.REOWN_CREATE_TOKEN_RETRY,
-          types.REOWN_CREATE_TOKEN_RETRY_DISMISS,
-        );
+          // Reject the RPC request
+          yield call(() => walletKit.respondSessionRequest({
+            topic: payload.topic,
+            response: {
+              id: payload.id,
+              jsonrpc: '2.0',
+              error: {
+                code: ERROR_CODES.INTERNAL_ERROR,
+                message: errorMessage,
+              },
+            },
+          }));
 
-        if (retry) {
           shouldAnswer = false;
-          // Retry the action, exactly as it came:
-          const result = yield* processRequest(action);
-          return result; // Recursive call handles waiting
+        } break;
+      }
+
+      if (shouldAnswer) {
+        try {
+          yield call(() => walletKit.respondSessionRequest({
+            topic: payload.topic,
+            response: {
+              id: payload.id,
+              jsonrpc: '2.0',
+              error: {
+                code: ERROR_CODES.USER_REJECTED_METHOD,
+                message: 'Rejected by the user',
+              },
+            },
+          }));
+        } catch (error) {
+          log.error('[processRequest] Error rejecting response on sessionRequest', error);
         }
-      } break;
-      case PrepareSendTransactionError:
-        shouldAnswer = false;
-
-        yield call(() => walletKit.respondSessionRequest({
-          topic: payload.topic,
-          response: {
-            id: payload.id,
-            jsonrpc: '2.0',
-            error: {
-              code: ERROR_CODES.INVALID_PAYLOAD,
-              message: 'Transaction failed validation',
-            },
-          },
-        })); break;
-      case InvalidParamsError: {
-        shouldAnswer = false;
-        const errorMessage = e.message;
-
-        yield call(() => walletKit.respondSessionRequest({
-          topic: payload.topic,
-          response: {
-            id: payload.id,
-            jsonrpc: '2.0',
-            error: {
-              code: ERROR_CODES.INVALID_PAYLOAD,
-              message: errorMessage,
-            },
-          },
-        }));
-      } break;
-      case SendTransactionError: {
-        // SendTransactionRequest screen handles its own error display via FeedbackModal
-        const errorDetails = extractErrorDetails(e);
-        yield put(setReownError(errorDetails));
-        yield put(setSendTxStatusFailure());
-
-        // User might try again, wait for it.
-        const retry = yield call(
-          retryHandler,
-          types.REOWN_SEND_TX_RETRY,
-          types.REOWN_SEND_TX_RETRY_DISMISS,
-        );
-
-        if (retry) {
-          shouldAnswer = false;
-          // Retry the action, exactly as it came:
-          const result = yield* processRequest(action);
-          return result; // Recursive call handles waiting
-        }
-      } break;
-      case InsufficientFundsError: {
-        const errorDetails = extractErrorDetails(e);
-        yield put(setReownError(errorDetails));
-        yield put(setSendTxStatusFailure());
-        // Show the insufficient funds modal
-        yield put(setReownModal({
-          show: true,
-          type: ReownModalTypes.INSUFFICIENT_FUNDS
-        }));
-        yield call(() => walletKit.respondSessionRequest({
-          topic: payload.topic,
-          response: {
-            id: payload.id,
-            jsonrpc: '2.0',
-            error: {
-              code: ERROR_CODES.INVALID_PAYLOAD,
-              message: 'Insufficient funds for transaction',
-            },
-          },
-        }));
-        shouldAnswer = false;
-      } break;
-      case CreateNanoContractCreateTokenTxError: {
-        // CreateNanoContractCreateTokenTxRequest screen handles its own error display
-        const errorDetails = extractErrorDetails(e);
-        yield put(setReownError(errorDetails));
-        yield put(setCreateNanoContractCreateTokenTxStatusFailure());
-
-        // User might try again, wait for it.
-        const retry = yield call(
-          retryHandler,
-          types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY,
-          types.REOWN_CREATE_NANO_CONTRACT_CREATE_TOKEN_TX_RETRY_DISMISS,
-        );
-
-        if (retry) {
-          shouldAnswer = false;
-          // Retry the action, exactly as it came:
-          const result = yield* processRequest(action);
-          return result; // Recursive call handles waiting
-        }
-      } break;
-      case PromptRejectedError:
-        // Check if this was a PIN cancellation (user can retry)
-        // vs a modal rejection (user intentionally rejected)
-        if (pinWasCancelled) {
-          pinWasCancelled = false; // Reset the flag
-          shouldAnswer = false;
-          // Retry the request so user can click Accept again
-          const result = yield* processRequest(action);
-          return result; // Recursive call handles waiting
-        }
-        // Otherwise, user intentionally rejected a prompt, don't show error modal
-        // The RPC request will still be rejected below via shouldAnswer
-        break;
-      default: {
-        // Handle generic errors (e.g., from getBalance, signMessage, etc.)
-        const errorDetails = extractErrorDetails(e);
-        const errorMessage = e.message || 'An error occurred processing the request';
-
-        // Store error details for "See why" button
-        yield put(setReownError(errorDetails));
-
-        // Show error modal
-        yield put(setReownModal({
-          show: true,
-          type: ReownModalTypes.REQUEST_ERROR,
-          data: {
-            errorMessage,
-          },
-        }));
-
-        // Reject the RPC request
-        yield call(() => walletKit.respondSessionRequest({
-          topic: payload.topic,
-          response: {
-            id: payload.id,
-            jsonrpc: '2.0',
-            error: {
-              code: ERROR_CODES.INTERNAL_ERROR,
-              message: errorMessage,
-            },
-          },
-        }));
-
-        shouldAnswer = false;
-      } break;
-    }
-
-    if (shouldAnswer) {
-      try {
-        yield call(() => walletKit.respondSessionRequest({
-          topic: payload.topic,
-          response: {
-            id: payload.id,
-            jsonrpc: '2.0',
-            error: {
-              code: ERROR_CODES.USER_REJECTED_METHOD,
-              message: 'Rejected by the user',
-            },
-          },
-        }));
-      } catch (error) {
-        log.error('[processRequest] Error rejecting response on sessionRequest', error);
       }
     }
+
+    // Return whether a success screen is shown
+    // (caller should wait for user to navigate away)
+    // For rejections, errors, and read-only ops, return false
+    return successScreenWillSignal;
+  } finally {
+    yield cancel(pendingPollTask);
   }
-
-  // Stop polling for pending requests
-  yield cancel(pendingPollTask);
-
-  // Return whether a success screen is shown
-  // (caller should wait for user to navigate away)
-  // For rejections, errors, and read-only ops, return false
-  return successScreenWillSignal;
 }
 
 /**
