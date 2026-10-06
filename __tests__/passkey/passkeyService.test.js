@@ -10,6 +10,7 @@ const mockPasskey = {
 jest.mock('react-native-passkey', () => ({ Passkey: mockPasskey }));
 
 /* eslint-disable import/first */
+import { Platform } from 'react-native';
 import {
   assertUserVerified,
   createWalletWordsFromPasskey,
@@ -139,18 +140,42 @@ describe('signInWalletWordsFromPasskey', () => {
 });
 
 describe('createWalletWordsFromPasskey', () => {
-  const createFn = () => (mockPasskey.createPlatformKey.mock.calls.length
-    ? mockPasskey.createPlatformKey
-    : mockPasskey.create);
-
   test('aborts before the second prompt when the new credential has PRF disabled', async () => {
     const created = { id: 'cred-new', clientExtensionResults: { prf: { enabled: false } } };
     mockPasskey.create.mockResolvedValue(created);
     mockPasskey.createPlatformKey.mockResolvedValue(created);
 
     await expect(createWalletWordsFromPasskey('Savings')).rejects.toThrow(/can't create a passkey wallet/);
-    expect(createFn()).toHaveBeenCalledTimes(1);
+    expect(mockPasskey.createPlatformKey).toHaveBeenCalledTimes(1);
     expect(mockPasskey.get).not.toHaveBeenCalled();
+  });
+
+  test('forces a platform passkey on iOS (a security key carries no PRF)', async () => {
+    const created = { id: 'cred-new', clientExtensionResults: { prf: { enabled: true } } };
+    mockPasskey.createPlatformKey.mockResolvedValue(created);
+    mockPasskey.get.mockResolvedValue(assertion({ id: 'cred-new' }));
+
+    await createWalletWordsFromPasskey('Savings');
+
+    expect(Platform.OS).toBe('ios');
+    expect(mockPasskey.createPlatformKey).toHaveBeenCalledTimes(1);
+    expect(mockPasskey.create).not.toHaveBeenCalled();
+  });
+
+  test('uses the regular create call on Android', async () => {
+    const created = { id: 'cred-new', clientExtensionResults: { prf: { enabled: true } } };
+    mockPasskey.create.mockResolvedValue(created);
+    mockPasskey.get.mockResolvedValue(assertion({ id: 'cred-new' }));
+    const originalOS = Platform.OS;
+    Platform.OS = 'android';
+    try {
+      await createWalletWordsFromPasskey('Savings');
+    } finally {
+      Platform.OS = originalOS;
+    }
+
+    expect(mockPasskey.create).toHaveBeenCalledTimes(1);
+    expect(mockPasskey.createPlatformKey).not.toHaveBeenCalled();
   });
 
   test('creates the credential, then derives the wallet from a verified assertion', async () => {
