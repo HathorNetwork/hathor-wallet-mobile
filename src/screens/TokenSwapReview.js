@@ -45,9 +45,9 @@ import {
   tokenSwapResetSwapData,
 } from '../actions';
 import {
+  isExpectedPasskeyError,
   PasskeyCancelledError,
   PasskeyBusyError,
-  PasskeyXpubMismatchError,
 } from '../passkey/passkeySigner';
 import { registerToken, updateTokensMetadata } from '../utils/tokens';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
@@ -201,7 +201,7 @@ const TokenSwapReview = () => {
   };
 
   // Dismisses the error sheet and goes back. A build error has no sendTx (the lib released its
-  // UTXOs in its own catch); after a wrong passkey, beforeRemove releases the reserved UTXOs.
+  // UTXOs in its own catch); after a passkey error, beforeRemove releases the reserved UTXOs.
   const dismissBuildError = () => {
     refreshQuote();
     navigation.goBack();
@@ -226,10 +226,11 @@ const TokenSwapReview = () => {
         setIsSending(false);
         return;
       }
-      // A wrong passkey is a user mistake, not a bug: show its message (it names the passkey to
-      // use) in the error sheet instead of reporting it. Dismissing the sheet navigates back,
-      // releasing the reserved UTXOs via beforeRemove.
-      if (err instanceof PasskeyXpubMismatchError) {
+      // An expected passkey outcome (wrong passkey, a build that can't sign from a passkey yet, a
+      // deleted or unsynced passkey...) is not a bug: show its message in the error sheet instead
+      // of reporting it. Dismissing the sheet navigates back, releasing the reserved UTXOs via
+      // beforeRemove.
+      if (isExpectedPasskeyError(err)) {
         setBuildError({ message: err.message });
         setPhase(PHASE.ERROR);
         setIsSending(false);

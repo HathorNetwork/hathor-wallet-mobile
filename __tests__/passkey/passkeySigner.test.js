@@ -41,6 +41,12 @@ jest.mock('@hathor/wallet-lib', () => ({
 jest.mock('../../src/passkey/passkeyService', () => ({
   signInWalletWordsFromPasskey: jest.fn(),
   isPasskeyCancel: jest.fn(),
+  PasskeyNativeError: class PasskeyNativeError extends Error {
+    constructor(nativeError) {
+      super(nativeError?.message);
+      this.code = nativeError?.error ?? null;
+    }
+  },
   sanitizePasskeyLabel: jest.fn((label) => {
     if (!label || typeof label !== 'string') return null;
     const trimmed = label.trim();
@@ -51,8 +57,13 @@ jest.mock('../../src/passkey/passkeyService', () => ({
 /* eslint-disable import/first, import/order */
 import { walletUtils, transactionUtils } from '@hathor/wallet-lib';
 import { STORE } from '../../src/store';
-import { signInWalletWordsFromPasskey, isPasskeyCancel } from '../../src/passkey/passkeyService';
 import {
+  signInWalletWordsFromPasskey,
+  isPasskeyCancel,
+  PasskeyNativeError,
+} from '../../src/passkey/passkeyService';
+import {
+  isExpectedPasskeyError,
   makePasskeyTxSigner,
   verifyPasskeyForUnlock,
   consumePasskeySigningCancelled,
@@ -392,5 +403,30 @@ describe('withPasskeyWords', () => {
 
     await expect(withPasskeyWords(async () => { throw boom; })).rejects.toBe(boom);
     await expect(withPasskeyWords(async () => 'next')).resolves.toBe('next');
+  });
+});
+
+describe('isExpectedPasskeyError', () => {
+  // Expected, user-correctable outcomes: screens show them and don't report them.
+  test.each([
+    ['a wrong passkey', new PasskeyXpubMismatchError('Savings')],
+    ['a ceremony already open', new PasskeyBusyError()],
+    ['a build that cannot sign from a passkey', new PasskeySigningUnsupportedError()],
+    ['a deleted or unsynced passkey', new PasskeyNativeError({ error: 'NoCredentials', message: 'x' })],
+    ['a timed-out ceremony', new PasskeyNativeError({ error: 'TimedOut', message: 'x' })],
+    ['an interrupted ceremony', new PasskeyNativeError({ error: 'Interrupted', message: 'x' })],
+  ])('%s is expected', (_case, error) => {
+    expect(isExpectedPasskeyError(error)).toBe(true);
+  });
+
+  // Anything else is unexpected and gets reported.
+  test.each([
+    ['corrupted wallet metadata', new PasskeyMetadataMissingError()],
+    ['an unknown native error', new PasskeyNativeError({ error: 'Unknown error', message: 'x' })],
+    ['a bad app configuration', new PasskeyNativeError({ error: 'BadConfiguration', message: 'x' })],
+    ['a plain Error', new Error('boom')],
+    ['a non-Error value', { error: 'NoCredentials' }],
+  ])('%s is not expected', (_case, error) => {
+    expect(isExpectedPasskeyError(error)).toBe(false);
   });
 });

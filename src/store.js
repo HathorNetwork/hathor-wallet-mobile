@@ -266,10 +266,9 @@ class AsyncStorageStore {
   }
 
   /**
-   * Fire-and-forget write. Existing saga callers `yield STORE.setItem(...)`; this has always
-   * returned undefined, so that yield is a no-op. Returning the AsyncStorage promise would make
-   * those sagas block on the native flush and turn a rejected write into a thrown saga error.
-   * Callers that need durability use setItemAsync.
+   * Fire-and-forget write. Returns undefined, so a saga's `yield STORE.setItem(...)` neither blocks
+   * on the native flush nor throws when the write fails. Callers that need durability use
+   * setItemAsync.
    */
   setItem(key, value) {
     // Nobody awaits this write, so log a failure instead of leaving an unhandled rejection.
@@ -419,7 +418,7 @@ class AsyncStorageStore {
 
   /**
    * Merge a patch into the wallet metadata (e.g. backfill credentialId after a ceremony).
-   * No-op when no metadata exists. Returns the underlying setItem promise so callers can await
+   * No-op when no metadata exists. Returns the setItemAsync promise so callers can await
    * durability or attach a .catch() — without it, a rejected AsyncStorage write here would be an
    * unhandled rejection.
    *
