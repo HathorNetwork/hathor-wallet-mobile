@@ -306,7 +306,19 @@ export function* persistNetworkSettings(action) {
   // We might not have a wallet object because this method can be called to connect
   // to mainnet after a network loading error (before the wallet object is created)
   if (wallet) {
-    wallet.stop({ cleanStorage: true, cleanAddresses: true, cleanTokens: true });
+    // Wait for the stop to finish before cleaning storage and reloading: it clears the old
+    // wallet's storage and connection asynchronously, and left running it would overlap with
+    // the cleanup below and the new wallet's start. A failed stop must not block the network
+    // switch, so log it and carry on.
+    try {
+      yield call([wallet, wallet.stop], {
+        cleanStorage: true,
+        cleanAddresses: true,
+        cleanTokens: true,
+      });
+    } catch (err) {
+      log.error('Error while stopping the wallet to change network settings.', err);
+    }
   }
 
   // Clean transaction history, addresses and registered tokens from local storage as well
