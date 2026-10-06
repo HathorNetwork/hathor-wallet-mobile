@@ -88,8 +88,10 @@ class ChoosePinScreen extends React.Component {
       this.props.startWalletRequested(this.words, this.state.pin1);
       NavigationService.resetToMain();
     }).catch((error) => {
-      // initStorage clears stale passkey metadata and persists the access data; if a native write
-      // fails (e.g. device storage full), report it instead of silently staying on this screen.
+      // initStorage rejects if clearing stale passkey metadata fails (e.g. device storage full) or
+      // the access data can't be generated; report it instead of silently staying on this screen.
+      // Persisting the access data itself is fire-and-forget (HybridStore.saveAccessData), so a
+      // failed write there is only logged and doesn't reach this catch.
       console.error(error);
       this.props.onExceptionCaptured(error);
     });
