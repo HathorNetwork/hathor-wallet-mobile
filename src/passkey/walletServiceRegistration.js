@@ -21,7 +21,12 @@
  */
 
 import { get } from 'lodash';
-import { HathorWalletServiceWallet, Network, config } from '@hathor/wallet-lib';
+import {
+  HathorWalletServiceWallet,
+  Network,
+  config,
+  errors as hathorErrors,
+} from '@hathor/wallet-lib';
 import { STORE } from '../store';
 import { WALLET_SERVICE_FEATURE_TOGGLE } from '../constants';
 import { logger } from '../logger';
@@ -79,6 +84,31 @@ export function passkeyFullTokenHook(wallet) {
   return (root) => wallet.refreshFullAuthToken(
     HathorWalletServiceWallet.deriveAuthPrivateKey(root),
   );
+}
+
+/**
+ * Whether a failure to start the passkey wallet on the wallet-service facade means the service no
+ * longer knows (or won't serve) the wallet, so its registration should be forgotten and redone at
+ * the next unlock. Only the service saying so counts:
+ * - startReadOnly's "startup timed out": the service kept answering that the wallet isn't ready
+ *   (a WalletRequestError whose cause carries the last response as `source`);
+ * - a 4xx answer (a WalletRequestError whose cause carries the HTTP `status`).
+ * Network failures, timeouts, 5xx answers and anything else are transient: keep the registration
+ * (the IGNORE_WS_TOGGLE_FLAG fallback already handles them), so a short outage doesn't cost a new
+ * registration at the next unlock.
+ *
+ * @param {unknown} error What the facade start threw
+ * @returns {boolean}
+ */
+export function startFailureMeansUnregistered(error) {
+  if (!(error instanceof hathorErrors.WalletRequestError)) {
+    return false;
+  }
+  const cause = error.cause ?? {};
+  if (typeof cause.status === 'number') {
+    return cause.status >= 400 && cause.status < 500;
+  }
+  return cause.source instanceof hathorErrors.WalletRequestError;
 }
 
 /** Whether the wallet-service at `walletServiceUrl` already knows this passkey wallet. */
