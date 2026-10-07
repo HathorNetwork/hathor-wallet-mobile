@@ -957,9 +957,12 @@ export const pushRegisterSuccess = (data) => ({
 
 /**
  * Register push notification device failed
+ * @param {string} [message] Shown instead of the generic failure text, when retrying later
+ *   wouldn't help (e.g. a wrong or deleted passkey)
  */
-export const pushRegisterFailed = () => ({
+export const pushRegisterFailed = (message) => ({
   type: types.PUSH_REGISTER_FAILED,
+  payload: { message: message ?? null },
 });
 
 export const walletRefreshSharedAddress = () => ({
