@@ -39,8 +39,15 @@ jest.mock('@hathor/wallet-lib', () => ({
 // sanitizePasskeyLabel mirrors the real behaviour just enough for the label assertions to be
 // meaningful (used by PasskeyXpubMismatchError to compute the label it carries).
 jest.mock('../../src/passkey/passkeyService', () => ({
+  EXPECTED_NATIVE_CODES: ['NoCredentials', 'TimedOut', 'Interrupted'],
   signInWalletWordsFromPasskey: jest.fn(),
   isPasskeyCancel: jest.fn(),
+  PasskeyNativeError: class PasskeyNativeError extends Error {
+    constructor(nativeError) {
+      super(nativeError?.message);
+      this.code = nativeError?.error ?? null;
+    }
+  },
   sanitizePasskeyLabel: jest.fn((label) => {
     if (!label || typeof label !== 'string') return null;
     const trimmed = label.trim();
@@ -51,8 +58,13 @@ jest.mock('../../src/passkey/passkeyService', () => ({
 /* eslint-disable import/first, import/order */
 import { walletUtils, transactionUtils } from '@hathor/wallet-lib';
 import { STORE } from '../../src/store';
-import { signInWalletWordsFromPasskey, isPasskeyCancel } from '../../src/passkey/passkeyService';
 import {
+  signInWalletWordsFromPasskey,
+  isPasskeyCancel,
+  PasskeyNativeError,
+} from '../../src/passkey/passkeyService';
+import {
+  isExpectedPasskeyError,
   makePasskeyTxSigner,
   verifyPasskeyForUnlock,
   consumePasskeySigningCancelled,
@@ -288,10 +300,14 @@ describe('verifyPasskeyForUnlock', () => {
   test('throws PasskeyCancelledError when the ceremony is cancelled', async () => {
     signInWalletWordsFromPasskey.mockRejectedValue({ error: 'UserCancelled' });
     isPasskeyCancel.mockReturnValue(true);
+    consumePasskeySigningCancelled(); // start from a clean flag
 
     const err = await verifyPasskeyForUnlock().catch((e) => e);
 
     expect(err).toBeInstanceOf(PasskeyCancelledError);
+    // Only a SIGNING cancel sets the flag; otherwise a cancelled unlock would make the next failed
+    // Reown request read as a user cancel.
+    expect(consumePasskeySigningCancelled()).toBe(false);
   });
 
   test('throws PasskeyMetadataMissingError without prompting when no xpub is stored', async () => {
@@ -337,12 +353,16 @@ describe('withPasskeyWords', () => {
     isPasskeyCancel.mockReturnValue(true);
     const fn = jest.fn();
     const onCancel = jest.fn();
+    consumePasskeySigningCancelled(); // start from a clean flag
 
     const err = await withPasskeyWords(fn, { onCancel }).catch((e) => e);
 
     expect(err).toBeInstanceOf(PasskeyCancelledError);
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(fn).not.toHaveBeenCalled();
+    // The helper leaves the signing-cancel flag alone (only the signer's onCancel sets it), so a
+    // cancelled push or unlock sheet can't make the next failed Reown request read as a cancel.
+    expect(consumePasskeySigningCancelled()).toBe(false);
   });
 
   test('a passkey for a different wallet throws PasskeyXpubMismatchError and never runs fn', async () => {
@@ -429,5 +449,30 @@ describe('Phase 2 hooks', () => {
 
     expect(onWords).toHaveBeenCalledWith(WORDS);
     expect(signInWalletWordsFromPasskey).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('isExpectedPasskeyError', () => {
+  // Expected, user-correctable outcomes: screens show them and don't report them.
+  test.each([
+    ['a wrong passkey', new PasskeyXpubMismatchError('Savings')],
+    ['a ceremony already open', new PasskeyBusyError()],
+    ['a build that cannot sign from a passkey', new PasskeySigningUnsupportedError()],
+    ['a deleted or unsynced passkey', new PasskeyNativeError({ error: 'NoCredentials', message: 'x' })],
+    ['a timed-out ceremony', new PasskeyNativeError({ error: 'TimedOut', message: 'x' })],
+    ['an interrupted ceremony', new PasskeyNativeError({ error: 'Interrupted', message: 'x' })],
+  ])('%s is expected', (_case, error) => {
+    expect(isExpectedPasskeyError(error)).toBe(true);
+  });
+
+  // Anything else is unexpected and gets reported.
+  test.each([
+    ['corrupted wallet metadata', new PasskeyMetadataMissingError()],
+    ['an unknown native error', new PasskeyNativeError({ error: 'Unknown error', message: 'x' })],
+    ['a bad app configuration', new PasskeyNativeError({ error: 'BadConfiguration', message: 'x' })],
+    ['a plain Error', new Error('boom')],
+    ['a non-Error value', { error: 'NoCredentials' }],
+  ])('%s is not expected', (_case, error) => {
+    expect(isExpectedPasskeyError(error)).toBe(false);
   });
 });

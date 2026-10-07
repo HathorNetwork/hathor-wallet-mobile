@@ -1,6 +1,21 @@
 import { jest, describe, test, expect, afterEach } from '@jest/globals';
 import { walletUtils } from '@hathor/wallet-lib';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AsyncStorageStore, { WALLET_META_KEY } from '../src/store';
+
+// A promise the test settles by hand, to check what a caller does while a native write is pending.
+const deferred = () => {
+  let resolve;
+  let reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+};
+
+// Lets pending promise callbacks run.
+const flush = () => new Promise((resolve) => { setImmediate(resolve); });
 
 describe('AsyncStorageStore.initStorage', () => {
   afterEach(() => {
@@ -44,5 +59,123 @@ describe('AsyncStorageStore.initStorage', () => {
     expect(removeItemSpy.mock.invocationCallOrder[0]).toBeLessThan(
       saveAccessData.mock.invocationCallOrder[0],
     );
+  });
+});
+
+describe('AsyncStorageStore fire-and-forget writes', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  // Saga callers `yield STORE.setItem(...)` without waiting for the native write, so a failed
+  // write must be logged, not left as an unhandled rejection.
+  test.each([
+    ['setItem', 'setItemAsync', (store) => store.setItem('some-key', { a: 1 })],
+    ['removeItem', 'removeItemAsync', (store) => store.removeItem('some-key')],
+  ])('%s logs a failed native write instead of rejecting', async (_name, asyncMethod, call) => {
+    const store = new AsyncStorageStore();
+    const failure = new Error('disk full');
+    jest.spyOn(store, asyncMethod).mockRejectedValue(failure);
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(call(store)).toBeUndefined();
+    // Let the rejection reach the handler.
+    await new Promise((resolve) => { setImmediate(resolve); });
+
+    expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('some-key'), failure);
+  });
+});
+
+// These writes must be durable before the caller moves on, so each one waits for the native
+// write: the tests hold AsyncStorage's promise open and check that nothing else happens until it
+// settles, and that a failed write rejects instead of being swallowed.
+describe('AsyncStorageStore durable writes', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const stubAccessData = (store) => {
+    const saveAccessData = jest.fn().mockResolvedValue(undefined);
+    jest.spyOn(store, 'getStorage').mockReturnValue({ saveAccessData });
+    jest.spyOn(walletUtils, 'generateAccessDataFromSeed').mockReturnValue({ fake: 'accessData' });
+    jest.spyOn(walletUtils, 'generateAccessDataFromXpub').mockReturnValue({ fake: 'accessData' });
+    return saveAccessData;
+  };
+
+  test('initStorage writes the access data only after the stale metadata is cleared', async () => {
+    const store = new AsyncStorageStore();
+    const saveAccessData = stubAccessData(store);
+    const removal = deferred();
+    jest.spyOn(AsyncStorage, 'removeItem').mockReturnValueOnce(removal.promise);
+
+    const init = store.initStorage('seed words here', '1234');
+    await flush();
+    expect(saveAccessData).not.toHaveBeenCalled();
+
+    removal.resolve();
+    await init;
+    expect(saveAccessData).toHaveBeenCalledTimes(1);
+  });
+
+  test('initStorage rejects when clearing the stale metadata fails', async () => {
+    const store = new AsyncStorageStore();
+    const saveAccessData = stubAccessData(store);
+    const failure = new Error('disk full');
+    jest.spyOn(AsyncStorage, 'removeItem').mockRejectedValueOnce(failure);
+
+    await expect(store.initStorage('seed words here', '1234')).rejects.toBe(failure);
+    expect(saveAccessData).not.toHaveBeenCalled();
+  });
+
+  test('initPasskeyStorage writes the access data only after the wallet metadata', async () => {
+    const store = new AsyncStorageStore();
+    const saveAccessData = stubAccessData(store);
+    const metaWrite = deferred();
+    jest.spyOn(AsyncStorage, 'setItem').mockReturnValueOnce(metaWrite.promise);
+
+    const init = store.initPasskeyStorage('xpub-of-the-passkey-wallet', { passkeyLabel: 'Savings' });
+    await flush();
+    expect(saveAccessData).not.toHaveBeenCalled();
+
+    metaWrite.resolve();
+    await init;
+    expect(saveAccessData).toHaveBeenCalledTimes(1);
+    expect(store.getWalletMeta()).toMatchObject({ walletType: 'passkey', xpub: 'xpub-of-the-passkey-wallet' });
+  });
+
+  test('initPasskeyStorage rejects when the wallet metadata write fails', async () => {
+    const store = new AsyncStorageStore();
+    const saveAccessData = stubAccessData(store);
+    const failure = new Error('disk full');
+    jest.spyOn(AsyncStorage, 'setItem').mockRejectedValueOnce(failure);
+
+    await expect(store.initPasskeyStorage('xpub-of-the-passkey-wallet', {})).rejects.toBe(failure);
+    expect(saveAccessData).not.toHaveBeenCalled();
+  });
+
+  test('updateWalletMeta resolves only once the metadata is written', async () => {
+    const store = new AsyncStorageStore();
+    store.hathorMemoryStorage[WALLET_META_KEY] = { walletType: 'passkey', xpub: 'xpub' };
+    const write = deferred();
+    jest.spyOn(AsyncStorage, 'setItem').mockReturnValueOnce(write.promise);
+
+    let done = false;
+    const update = store.updateWalletMeta({ credentialId: 'cred-1' }).then(() => { done = true; });
+    await flush();
+    expect(done).toBe(false);
+
+    write.resolve();
+    await update;
+    expect(done).toBe(true);
+    expect(store.getWalletMeta()).toMatchObject({ credentialId: 'cred-1' });
+  });
+
+  test('updateWalletMeta rejects when the metadata write fails', async () => {
+    const store = new AsyncStorageStore();
+    store.hathorMemoryStorage[WALLET_META_KEY] = { walletType: 'passkey', xpub: 'xpub' };
+    const failure = new Error('disk full');
+    jest.spyOn(AsyncStorage, 'setItem').mockRejectedValueOnce(failure);
+
+    await expect(store.updateWalletMeta({ credentialId: 'cred-1' })).rejects.toBe(failure);
   });
 });

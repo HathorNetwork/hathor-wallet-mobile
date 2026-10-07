@@ -42,7 +42,11 @@ jest.mock('../../src/logger', () => {
 });
 
 /* eslint-disable import/first */
-import { HathorWalletServiceWallet, PushNotification as pushLib } from '@hathor/wallet-lib';
+import {
+  config,
+  HathorWalletServiceWallet,
+  PushNotification as pushLib,
+} from '@hathor/wallet-lib';
 import { STORE } from '../../src/store';
 import { logger } from '../../src/logger';
 import { init, loadWallet, registration } from '../../src/sagas/pushNotification';
@@ -54,10 +58,12 @@ import { startWallet } from '../../src/sagas/wallet';
 import { showPinScreenForResult } from '../../src/sagas/helpers';
 import {
   PasskeyCancelledError,
+  PasskeyMetadataMissingError,
   PasskeyXpubMismatchError,
   withPasskeyWords,
 } from '../../src/passkey/passkeySigner';
 import {
+  onExceptionCaptured,
   pushApiReady,
   pushAskRegistrationRefreshQuestion,
   pushLoadWalletFailed,
@@ -102,27 +108,41 @@ describe('loadWallet (passkey wallet)', () => {
     return { gen, effects, ceremony: step.value };
   };
 
-  test('runs ONE passkey ceremony and starts a temp wallet-service wallet with the words', async () => {
+  // A temp wallet as the ceremony callback builds it (start is stubbed per test).
+  const makeTempWallet = () => ({ start: jest.fn(), clearSensitiveData: jest.fn() });
+
+  test('runs ONE passkey ceremony, then starts the temp wallet outside the passkey lock', () => {
+    const setUrl = jest.spyOn(config, 'setWalletServiceBaseUrl');
+    const setWsUrl = jest.spyOn(config, 'setWalletServiceBaseWsUrl');
     const { gen, effects, ceremony } = runToCeremony();
     expect(isCall(ceremony, withPasskeyWords)).toBe(true);
+    // The temp wallet talks to the configured network's wallet-service.
+    expect(setUrl).toHaveBeenCalledWith(NETWORK_SETTINGS.walletServiceUrl);
+    expect(setWsUrl).toHaveBeenCalledWith(NETWORK_SETTINGS.walletServiceWsUrl);
 
-    // Run the callback the saga hands to the ceremony, as withPasskeyWords would.
-    const tempWallet = { start: jest.fn(async () => {}) };
+    // Inside the ceremony the callback only BUILDS the wallet from the words, on the right
+    // network; it doesn't start it.
+    const tempWallet = makeTempWallet();
     HathorWalletServiceWallet.mockImplementation(() => tempWallet);
-    const startFn = ceremony.payload.args[0];
-    await expect(startFn(WORDS)).resolves.toBe(tempWallet);
+    expect(ceremony.payload.args[0](WORDS)).toBe(tempWallet);
+    const [walletOptions] = HathorWalletServiceWallet.mock.calls[0];
+    expect(walletOptions).toMatchObject({ seed: WORDS, enableWs: false });
+    expect(walletOptions.network.name).toBe(NETWORK_SETTINGS.network);
+    expect(tempWallet.start).not.toHaveBeenCalled();
 
-    expect(HathorWalletServiceWallet).toHaveBeenCalledWith(
-      expect.objectContaining({ seed: WORDS, enableWs: false }),
-    );
-    // start() gets a random, non-empty one-time pin (nothing is persisted).
-    const [{ pinCode, password }] = tempWallet.start.mock.calls[0];
+    // start() is a separate effect, after withPasskeyWords returned (and released its lock), with
+    // a random, non-empty one-time pin (nothing is persisted).
+    const startStep = gen.next(tempWallet).value;
+    expect(startStep.type).toBe('CALL');
+    expect(startStep.payload.fn).toBe(tempWallet.start);
+    expect(startStep.payload.context).toBe(tempWallet);
+    const [{ pinCode, password }] = startStep.payload.args;
     expect(pinCode).toMatch(/^[0-9a-f]{64}$/);
     expect(password).toBe(pinCode);
 
     // Starting the temp wallet created the wallet on the wallet-service: the saga records that, so
     // the app can start this wallet on the wallet-service facade from now on.
-    const markStep = gen.next(tempWallet).value;
+    const markStep = gen.next().value; // after start()
     expect(isCall(markStep, markWalletServiceRegistered)).toBe(true);
     expect(markStep.payload.args).toEqual([NETWORK_SETTINGS.walletServiceUrl]);
 
@@ -139,19 +159,47 @@ describe('loadWallet (passkey wallet)', () => {
 
     const step = gen.throw(error);
 
-    expect(step.value.type).toBe('PUT');
-    expect(step.value.payload.action).toEqual(pushLoadWalletFailed({ error, cancelled: true }));
+    expect(step.value.payload.action).toEqual(
+      pushLoadWalletFailed({ error, cancelled: true, reported: false }),
+    );
     expect(log.error).not.toHaveBeenCalled();
   });
 
-  test('a wrong passkey reports { cancelled: false } and logs the failure', () => {
+  test('an expected passkey error (wrong passkey) is passed on to be shown, not reported', () => {
     const { gen } = runToCeremony();
     const error = new PasskeyXpubMismatchError('Savings');
 
     const step = gen.throw(error);
 
-    expect(step.value.payload.action).toEqual(pushLoadWalletFailed({ error, cancelled: false }));
-    expect(log.error).toHaveBeenCalled();
+    expect(step.value.payload.action).toEqual(
+      pushLoadWalletFailed({ error, cancelled: false, reported: false }),
+    );
+    expect(log.error).not.toHaveBeenCalled();
+  });
+
+  test('an unexpected failure is logged and reported through the global error handler', () => {
+    const { gen } = runToCeremony();
+    const error = new PasskeyMetadataMissingError();
+
+    const reportStep = gen.throw(error);
+
+    expect(log.error).toHaveBeenCalledWith(expect.any(String), error);
+    expect(isPut(reportStep.value, onExceptionCaptured(error, false))).toBe(true);
+    expect(gen.next().value.payload.action).toEqual(
+      pushLoadWalletFailed({ error, cancelled: false, reported: true }),
+    );
+  });
+
+  test('a failed start drops the seed and is reported', () => {
+    const { gen } = runToCeremony();
+    const tempWallet = makeTempWallet();
+    gen.next(tempWallet); // call(start)
+    const error = new Error('wallet-service unavailable');
+
+    const reportStep = gen.throw(error);
+
+    expect(tempWallet.clearSensitiveData).toHaveBeenCalledTimes(1);
+    expect(isPut(reportStep.value, onExceptionCaptured(error, false))).toBe(true);
   });
 });
 
@@ -199,7 +247,27 @@ describe('registration', () => {
     expect(isPut(step.value, pushApiReady())).toBe(true);
   });
 
-  test('a failed (not cancelled) wallet load still reports the registration failure', () => {
+  test('a reported wallet load failure returns to idle, without the push error on top', () => {
+    const error = new Error('boom');
+    const { step } = runToRace([
+      undefined,
+      pushLoadWalletFailed({ error, cancelled: false, reported: true }),
+    ]);
+
+    expect(isPut(step.value, pushApiReady())).toBe(true);
+  });
+
+  test('an expected passkey error shows its own message instead of "try again later"', () => {
+    const error = new PasskeyXpubMismatchError('Savings');
+    const { step } = runToRace([
+      undefined,
+      pushLoadWalletFailed({ error, cancelled: false, reported: false }),
+    ]);
+
+    expect(isPut(step.value, pushRegisterFailed(error.message))).toBe(true);
+  });
+
+  test('any other failed wallet load still reports the generic registration failure', () => {
     const { step } = runToRace([undefined, pushLoadWalletFailed({ cancelled: false })]);
 
     expect(isPut(step.value, pushRegisterFailed())).toBe(true);
@@ -228,6 +296,20 @@ describe('registration', () => {
 
     expect(isPut(gen.throw(new Error('api down')).value, pushRegisterFailed())).toBe(true);
     expect(gen.next().value.payload.fn).toBe(tempWallet.stop);
+  });
+
+  test('a failing stop is only logged and never fails the registration', () => {
+    const tempWallet = { stop: jest.fn() };
+    const { gen } = runToRace(loaded(tempWallet));
+    gen.next({ app: 'wallet' }); // registerDevice call
+    gen.next({ success: true }); // put(pushRegisterSuccess)
+    gen.next(); // call(stop)
+    const stopError = new Error('stop failed');
+
+    const end = gen.throw(stopError);
+
+    expect(log.error).toHaveBeenCalledWith(expect.any(String), stopError);
+    expect(end.done).toBe(true);
   });
 
   test('never stops the app wallet on the wallet-service facade', () => {

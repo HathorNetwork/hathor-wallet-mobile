@@ -29,9 +29,8 @@ import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import baseStyle from '../styles/init';
 import {
-  PasskeyBusyError,
+  isExpectedPasskeyError,
   PasskeyCancelledError,
-  PasskeyXpubMismatchError,
   verifyPasskeyForUnlock,
 } from '../passkey/passkeySigner';
 import { sanitizePasskeyLabel } from '../passkey/passkeyService';
@@ -90,10 +89,11 @@ const PasskeyLockScreen = () => {
     } catch (e) {
       if (e instanceof PasskeyCancelledError) {
         setError(t`Unlock cancelled.`);
-      } else if (e instanceof PasskeyXpubMismatchError || e instanceof PasskeyBusyError) {
-        // Expected, user-correctable outcomes (wrong passkey, a ceremony already open): show them
-        // in the banner only. Reporting them would pop the global "Unexpected error" alert on top
-        // of the banner, and the report payload would carry the wallet label from the message.
+      } else if (isExpectedPasskeyError(e)) {
+        // Expected, user-correctable outcomes (wrong passkey, a ceremony already open, a deleted or
+        // unsynced passkey...): show them in the banner only. Reporting them would pop the global
+        // "Unexpected error" alert on top of the banner, and the report payload would carry the
+        // wallet label from the mismatch message.
         setError(e.message);
       } else {
         // An unexpected failure on the only entry point for these wallets (incl. corrupted

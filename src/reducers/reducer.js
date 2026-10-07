@@ -209,6 +209,11 @@ const initialState = {
      */
     apiStatus: PUSH_API_STATUS.READY,
     /**
+     * apiErrorMessage {string|null} shown instead of the generic failure text when the last
+     * request failed for a reason retrying won't fix (e.g. a wrong or deleted passkey)
+     */
+    apiErrorMessage: null,
+    /**
      * enabled {boolean} if user has enabled push notification
      */
     enabled: false,
@@ -677,7 +682,7 @@ export const reducer = (state = initialState, action) => {
     case types.PUSH_REGISTER_SUCCESS:
       return onPushRegisterSuccess(state, action);
     case types.PUSH_REGISTER_FAILED:
-      return onPushApiFailed(state);
+      return onPushApiFailed(state, action);
     case types.PUSH_TX_DETAILS_SUCCESS:
       return onTxDetailsSuccess(state, action);
     case types.PUSH_CLEAN_TX_DETAILS:
@@ -1391,6 +1396,7 @@ export const onPushApiReady = (state) => ({
   pushNotification: {
     ...state.pushNotification,
     apiStatus: PUSH_API_STATUS.READY,
+    apiErrorMessage: null,
   },
 });
 
@@ -1425,11 +1431,12 @@ export const onPushUpdateSuccess = (state, { payload: { enabled, showAmountEnabl
   },
 });
 
-export const onPushApiFailed = (state) => ({
+export const onPushApiFailed = (state, action) => ({
   ...state,
   pushNotification: {
     ...state.pushNotification,
     apiStatus: PUSH_API_STATUS.FAILED,
+    apiErrorMessage: action?.payload?.message ?? null,
   },
 });
 

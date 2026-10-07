@@ -1,4 +1,5 @@
 import {
+  HathorWalletServiceWallet,
   PushNotification as pushLib,
   Network,
   config,
@@ -60,7 +61,11 @@ import { getNetworkSettings, isUnlockScreen, showPinScreenForResult, isTokenRegi
 import { messageHandler } from '../workers/pushNotificationHandler';
 import { WALLET_STATUS } from './wallet';
 import { logger } from '../logger';
-import { PasskeyCancelledError, withPasskeyWords } from '../passkey/passkeySigner';
+import {
+  isExpectedPasskeyError,
+  PasskeyCancelledError,
+  withPasskeyWords,
+} from '../passkey/passkeySigner';
 import {
   makeEphemeralPin,
   markWalletServiceRegistered,
@@ -392,29 +397,51 @@ export function* loadWallet() {
   if (STORE.isPasskeyWallet()) {
     // Passkey wallets always need the temp wallet: on the fullnode facade there is no
     // wallet-service wallet at all, and on the wallet-service facade the app's wallet only holds a
-    // read-only token (the auth key is never stored), which the push endpoints reject. The words
-    // exist only for the ceremony + temp-wallet start (both inside the passkey lock).
+    // read-only token (the auth key is never stored), which the push endpoints reject.
     const networkSettings = yield select(getNetworkSettings);
     config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl);
     config.setWalletServiceBaseWsUrl(networkSettings.walletServiceWsUrl);
     const network = new Network(networkSettings.network);
 
     try {
-      const walletService = yield call(withPasskeyWords, (words) => (
-        // start() needs a pin to encrypt the temp wallet's IN-MEMORY access data. Nothing is
-        // persisted, so a random one-time value is enough.
-        startTempWalletServiceWallet(words, network, makeEphemeralPin())
-      ));
+      // Only the ceremony runs inside the passkey lock: the temp wallet is built from the words
+      // there and started after the lock is released. start() talks to the wallet-service and, on
+      // a first registration, polls until the wallet is ready (up to about a minute); holding the
+      // lock through it would make the lock screen and Reown signing fail with PasskeyBusyError.
+      // The words don't live any longer this way: the wallet keeps the seed until start() clears
+      // it.
+      const tempWallet = yield call(
+        withPasskeyWords,
+        (words) => new HathorWalletServiceWallet({ seed: words, network, enableWs: false }),
+      );
+      // start() needs a pin to encrypt the temp wallet's IN-MEMORY access data. Nothing is
+      // persisted, so a random one-time value is enough.
+      const ephemeralPin = makeEphemeralPin();
+      try {
+        yield call([tempWallet, tempWallet.start], {
+          pinCode: ephemeralPin,
+          password: ephemeralPin,
+        });
+      } catch (startError) {
+        // Drop the seed now instead of waiting for the wallet to be garbage-collected.
+        tempWallet.clearSensitiveData();
+        throw startError;
+      }
       // Starting the temp wallet created this wallet on the wallet-service (wallet/init), so the
       // app can start it on the wallet-service facade from now on.
       yield call(markWalletServiceRegistered, networkSettings.walletServiceUrl);
-      yield put(pushLoadWalletSuccess({ walletService }));
+      yield put(pushLoadWalletSuccess({ walletService: tempWallet }));
     } catch (error) {
       const cancelled = error instanceof PasskeyCancelledError;
-      if (!cancelled) {
+      // Expected outcomes (wrong or deleted passkey, a ceremony already open...) are shown to the
+      // user by the caller. Anything else (corrupted wallet metadata, a wallet-service failure, an
+      // unknown native code) is reported, like PasskeyLockScreen does.
+      const reported = !cancelled && !isExpectedPasskeyError(error);
+      if (reported) {
         log.error('Passkey push wallet load failed.', error);
+        yield put(onExceptionCaptured(error, false));
       }
-      yield put(pushLoadWalletFailed({ error, cancelled }));
+      yield put(pushLoadWalletFailed({ error, cancelled, reported }));
     }
     return;
   }
@@ -517,10 +544,16 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
   ]);
 
   if (loadWalletFail) {
-    if (loadWalletFail.payload?.cancelled) {
-      // The user dismissed the passkey sheet: not an error. Back to idle with the switches
-      // unchanged (they only change on PUSH_REGISTER_SUCCESS) and no error modal.
+    const { error, cancelled, reported } = loadWalletFail.payload ?? {};
+    if (cancelled || reported) {
+      // A dismissed passkey sheet is not an error, and a reported failure already shows the
+      // global error alert: back to idle with the switches unchanged (they only change on
+      // PUSH_REGISTER_SUCCESS) and no push error modal on top.
       yield put(pushApiReady());
+    } else if (isExpectedPasskeyError(error)) {
+      // Wrong or deleted passkey, a ceremony already open...: "try again later" wouldn't help, so
+      // show what happened.
+      yield put(pushRegisterFailed(error.message));
     } else {
       yield put(pushRegisterFailed());
     }
@@ -559,8 +592,9 @@ export function* registration({ payload: { enabled, showAmountEnabled, deviceId 
     yield put(pushRegisterFailed());
   } finally {
     if (isTempWallet) {
-      // Drop the temp wallet's in-memory access data (encrypted keys) and connection. Cleanup
-      // must never fail the registration the user already sees as done, so only log on error.
+      // Close the temp wallet's connection and clear its in-memory history, utxos and tokens.
+      // Its encrypted access data stays until the object is garbage-collected. Cleanup must never
+      // fail the registration the user already sees as done, so only log on error.
       try {
         yield call([walletService, walletService.stop], { cleanStorage: true });
       } catch (error) {

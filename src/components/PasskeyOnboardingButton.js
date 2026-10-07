@@ -64,10 +64,10 @@ const PasskeyOnboardingButton = () => {
   // iOS: the sheet is a pure View (no native Modal), so grow its bottom padding to keep the name
   // input above the keyboard. Android pans the window instead (windowSoftInputMode="adjustPan").
   const [kbHeight, setKbHeight] = useState(0);
-  // Whether this device can actually produce a passkey PRF secret (iOS 18+, Android API 28+, and a
-  // linked native module). Checked only once the flag is on, so app start never touches the native
-  // passkey module for users outside the rollout. Unsupported devices never see the button, instead
-  // of minting a PRF-less passkey and only then failing.
+  // Whether this device's OS version can produce a passkey PRF secret (iOS 18+, Android API 28+).
+  // Checked only once the flag is on, so app start never touches the passkey module for users
+  // outside the rollout. Devices on older versions never see the button, instead of minting a
+  // PRF-less passkey and only then failing.
   const [supported, setSupported] = useState(false);
 
   useEffect(() => {

@@ -7,7 +7,6 @@
 
 import React from 'react';
 import {
-  Alert,
   Text,
   View,
   StyleSheet,
@@ -18,7 +17,7 @@ import { t } from 'ttag';
 import NewHathorButton from '../components/NewHathorButton';
 import HathorHeader from '../components/HathorHeader';
 import PinInput from '../components/PinInput';
-import { startWalletRequested, unlockScreen } from '../actions';
+import { onExceptionCaptured, startWalletRequested, unlockScreen } from '../actions';
 import { PIN_SIZE } from '../constants';
 import { COLORS } from '../styles/themes';
 
@@ -32,6 +31,7 @@ const mapDispatchToProps = (dispatch) => ({
     words,
     pin
   })),
+  onExceptionCaptured: (error) => dispatch(onExceptionCaptured(error, false)),
 });
 
 class ChoosePinScreen extends React.Component {
@@ -88,13 +88,12 @@ class ChoosePinScreen extends React.Component {
       this.props.startWalletRequested(this.words, this.state.pin1);
       NavigationService.resetToMain();
     }).catch((error) => {
-      // initStorage clears stale passkey metadata and persists the access data; if a native write
-      // fails (e.g. device storage full), tell the user instead of silently staying on this screen.
+      // initStorage rejects if clearing stale passkey metadata fails (e.g. device storage full) or
+      // the access data can't be generated; report it instead of silently staying on this screen.
+      // Persisting the access data itself is fire-and-forget (HybridStore.saveAccessData), so a
+      // failed write there is only logged and doesn't reach this catch.
       console.error(error);
-      Alert.alert(
-        t`Could not create the wallet`,
-        t`Something went wrong while saving your wallet. Please try again.`,
-      );
+      this.props.onExceptionCaptured(error);
     });
   }
 

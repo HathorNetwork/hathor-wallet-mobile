@@ -9,6 +9,9 @@ import CryptoJS from 'crypto-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MemoryStore, Storage, bigIntUtils, cryptoUtils, walletUtils } from '@hathor/wallet-lib';
 import { NETWORK_MAINNET } from './constants';
+import { logger } from './logger';
+
+const log = logger('store');
 
 export const ACCESS_DATA_KEY = 'asyncstorage:access';
 export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
@@ -263,13 +266,13 @@ class AsyncStorageStore {
   }
 
   /**
-   * Fire-and-forget write. Existing saga callers `yield STORE.setItem(...)`; this has always
-   * returned undefined, so that yield is a no-op. Returning the AsyncStorage promise would make
-   * those sagas block on the native flush and turn a rejected write into a thrown saga error.
-   * Callers that need durability use setItemAsync.
+   * Fire-and-forget write. Returns undefined, so a saga's `yield STORE.setItem(...)` neither blocks
+   * on the native flush nor throws when the write fails. Callers that need durability use
+   * setItemAsync.
    */
   setItem(key, value) {
-    this.setItemAsync(key, value);
+    // Nobody awaits this write, so log a failure instead of leaving an unhandled rejection.
+    this.setItemAsync(key, value).catch((err) => log.error(`Failed to persist ${key}.`, err));
   }
 
   /**
@@ -415,7 +418,7 @@ class AsyncStorageStore {
 
   /**
    * Merge a patch into the wallet metadata (e.g. backfill credentialId after a ceremony).
-   * No-op when no metadata exists. Returns the underlying setItem promise so callers can await
+   * No-op when no metadata exists. Returns the setItemAsync promise so callers can await
    * durability or attach a .catch() — without it, a rejected AsyncStorage write here would be an
    * unhandled rejection.
    *
@@ -569,7 +572,8 @@ class AsyncStorageStore {
    * @param {string} key Item to remove.
    */
   removeItem(key) {
-    this.removeItemAsync(key);
+    // Nobody awaits this delete, so log a failure instead of leaving an unhandled rejection.
+    this.removeItemAsync(key).catch((err) => log.error(`Failed to remove ${key}.`, err));
   }
 
   /**

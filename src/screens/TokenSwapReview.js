@@ -7,7 +7,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -41,14 +40,14 @@ import NavigationService from '../NavigationService';
 import { ArrowDownIcon } from '../components/Icons/ArrowDown.icon';
 import TextFmt from '../components/TextFmt';
 import {
+  onExceptionCaptured,
   tokenSwapFetchSwapQuote,
   tokenSwapResetSwapData,
 } from '../actions';
 import {
+  isExpectedPasskeyError,
   PasskeyCancelledError,
   PasskeyBusyError,
-  PasskeyMetadataMissingError,
-  PasskeyXpubMismatchError,
 } from '../passkey/passkeySigner';
 import { registerToken, updateTokensMetadata } from '../utils/tokens';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
@@ -201,8 +200,8 @@ const TokenSwapReview = () => {
     navigation.goBack();
   };
 
-  // Build error: the lib already released UTXOs in its own catch, so there
-  // is no sendTx to release here — just go back.
+  // Dismisses the error sheet and goes back. A build error has no sendTx (the lib released its
+  // UTXOs in its own catch); after a passkey error, beforeRemove releases the reserved UTXOs.
   const dismissBuildError = () => {
     refreshQuote();
     navigation.goBack();
@@ -229,22 +228,22 @@ const TokenSwapReview = () => {
         setIsSending(false);
         return;
       }
-      // Wrong passkey / missing passkey metadata are expected, user-correctable outcomes (the
-      // mismatch message names the passkey to use). Keep the reviewed swap and its reserved UTXOs
-      // and let the user retry from this screen, like the cancel branch — do not show the error
-      // sheet, whose dismiss navigates back and discards the swap.
-      if (err instanceof PasskeyXpubMismatchError || err instanceof PasskeyMetadataMissingError) {
+      // An expected passkey outcome (wrong passkey, a build that can't sign from a passkey yet, a
+      // deleted or unsynced passkey...) is not a bug: show its message in the error sheet instead
+      // of reporting it. Dismissing the sheet navigates back, releasing the reserved UTXOs via
+      // beforeRemove.
+      if (isExpectedPasskeyError(err)) {
+        setBuildError({ message: err.message });
+        setPhase(PHASE.ERROR);
         setIsSending(false);
-        Alert.alert(t`Could not authorize the swap`, err.message);
         return;
       }
-      // Any other failure (incl. seed-wallet auth-token / signTx errors): show it in the error
-      // sheet below, without the global "Unexpected error" alert — matching SendConfirmScreen.
-      // Dismissing the sheet navigates back, releasing the reserved UTXOs via beforeRemove.
+      // Any other failure (incl. PasskeyMetadataMissingError, i.e. corrupted storage, and
+      // seed-wallet auth-token / signTx errors) is unexpected: report it through the global error
+      // handler and go back, releasing the reserved UTXOs via beforeRemove.
       console.error(err);
-      setBuildError({ message: err?.message || t`Could not complete the swap. Please try again.` });
-      setPhase(PHASE.ERROR);
-      setIsSending(false);
+      dispatch(onExceptionCaptured(err, false));
+      exitOnError();
     }
   };
 

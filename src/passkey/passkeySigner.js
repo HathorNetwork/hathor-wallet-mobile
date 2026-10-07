@@ -25,8 +25,10 @@ import { NETWORK_MAINNET } from '../constants';
 import { STORE } from '../store';
 import { logger } from '../logger';
 import {
+  EXPECTED_NATIVE_CODES,
   signInWalletWordsFromPasskey,
   isPasskeyCancel,
+  PasskeyNativeError,
   sanitizePasskeyLabel,
 } from './passkeyService';
 
@@ -77,6 +79,27 @@ export class PasskeySigningUnsupportedError extends Error {
     super(t`Sending from a passkey wallet isn't supported in this version of the app yet.`);
     this.name = 'PasskeySigningUnsupportedError';
   }
+}
+
+/**
+ * Whether a passkey error is an expected, user-correctable outcome rather than a bug: the wrong
+ * passkey, a ceremony already open, an app build that can't sign from a passkey yet, or a known
+ * device/account condition. Screens show these to the user and don't report them; anything else
+ * (e.g. PasskeyMetadataMissingError, i.e. corrupted storage) is unexpected and gets reported.
+ * Cancellation is separate: callers handle it before this check.
+ *
+ * @param {unknown} e
+ * @returns {boolean}
+ */
+export function isExpectedPasskeyError(e) {
+  if (
+    e instanceof PasskeyXpubMismatchError
+    || e instanceof PasskeyBusyError
+    || e instanceof PasskeySigningUnsupportedError
+  ) {
+    return true;
+  }
+  return e instanceof PasskeyNativeError && EXPECTED_NATIVE_CODES.includes(e.code);
 }
 
 /**
