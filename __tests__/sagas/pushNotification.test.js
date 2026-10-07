@@ -478,8 +478,8 @@ describe('startWallet (passkey wallet)', () => {
   });
 
   test('on a wallet-lib without setExternalPrivateKeyMethod, starts without a provider', () => {
-    // wallet-lib 3.1.1: no provider setter, and its storage has no hasPrivateKeyMethod.
-    const fullnodeWallet = { setExternalTxSigningMethod: jest.fn(), storage: {} };
+    // wallet-lib 3.1.1: no setExternalPrivateKeyMethod / hasExternalPrivateKeyMethod.
+    const fullnodeWallet = { setExternalTxSigningMethod: jest.fn() };
 
     HathorWallet.mockImplementation(() => fullnodeWallet);
 

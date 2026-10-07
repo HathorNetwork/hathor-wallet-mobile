@@ -32,6 +32,8 @@ jest.mock('@hathor/wallet-lib', () => ({
   walletUtils: {
     getXPubKeyFromSeed: jest.fn(),
     getXPrivKeyFromSeed: jest.fn(),
+    // Same derivation as wallet-lib: root -> m/44'/280'/<account>, non-compliant.
+    deriveXpriv: jest.fn((xpriv, account) => xpriv.deriveNonCompliantChild(`m/44'/280'/${account}`)),
   },
 }));
 
@@ -566,6 +568,7 @@ describe('passkey private key for message and oracle signing', () => {
     const words = lib.walletUtils.generateWalletWords();
     signInWalletWordsFromPasskey.mockResolvedValue({ words, credentialId: STORED_CRED });
     walletUtils.getXPrivKeyFromSeed.mockImplementation(lib.walletUtils.getXPrivKeyFromSeed);
+    walletUtils.deriveXpriv.mockImplementation(lib.walletUtils.deriveXpriv);
 
     await authorizePasskeyPrivateKey();
     const key = await makePasskeyPrivateKeyProvider()(7);
@@ -616,8 +619,9 @@ describe('passkey private key for message and oracle signing', () => {
 
   test('canSignWithPasskeyPrivateKey needs a registered provider', () => {
     expect(canSignWithPasskeyPrivateKey(undefined)).toBe(false);
-    expect(canSignWithPasskeyPrivateKey({ storage: {} })).toBe(false); // wallet-lib 3.1.1
-    const withProvider = (registered) => ({ storage: { hasPrivateKeyMethod: () => registered } });
+    // A wallet-lib without external private-key provider support (e.g. 3.1.1).
+    expect(canSignWithPasskeyPrivateKey({})).toBe(false);
+    const withProvider = (registered) => ({ hasExternalPrivateKeyMethod: () => registered });
     expect(canSignWithPasskeyPrivateKey(withProvider(false))).toBe(false);
     expect(canSignWithPasskeyPrivateKey(withProvider(true))).toBe(true);
   });

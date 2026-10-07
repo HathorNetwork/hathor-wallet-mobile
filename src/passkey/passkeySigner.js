@@ -117,6 +117,18 @@ export function derivePasskeyXpub(words) {
   });
 }
 
+/**
+ * The legacy P2PKH change-level key (m/44'/280'/0'/0) from the account root xpriv, derived
+ * non-compliantly like wallet-lib derives the wallet's legacy addresses. Its children are the
+ * address keys.
+ *
+ * @param {Object} root Account root HDPrivateKey (walletUtils.getXPrivKeyFromSeed)
+ * @returns {Object} HDPrivateKey
+ */
+function legacyChangeKey(root) {
+  return walletUtils.deriveXpriv(root, "0'").deriveNonCompliantChild(0);
+}
+
 // Module-level single-flight guard: the OS shows one credential sheet at a time; a second
 // concurrent ceremony (double-tap through a path without a screen-level guard) must fail fast.
 let signingInFlight = false;
@@ -249,8 +261,7 @@ export function makePasskeyTxSigner({ onRootKey } = {}) {
             const spendAcct = root.deriveChild(hathorConstants.SHIELDED_SPEND_ACCT_PATH);
             return spendAcct.deriveChild(0);
           }
-          const legacyAcct = root.deriveNonCompliantChild(hathorConstants.P2PKH_ACCT_PATH);
-          return legacyAcct.deriveNonCompliantChild(0);
+          return legacyChangeKey(root);
         });
       }, { onCancel: () => { signingCancelled = true; } });
     } finally {
@@ -288,10 +299,7 @@ export async function authorizePasskeyPrivateKey({ onRootKey } = {}) {
     if (onRootKey) {
       await onRootKey(root);
     }
-    // m/44'/280'/0'/0, derived non-compliantly like the wallet's legacy P2PKH addresses.
-    authorizedChangeKey = root
-      .deriveNonCompliantChild(hathorConstants.P2PKH_ACCT_PATH)
-      .deriveNonCompliantChild(0);
+    authorizedChangeKey = legacyChangeKey(root);
   }, { onCancel: () => { signingCancelled = true; } });
 }
 
@@ -323,10 +331,11 @@ export async function passkeyConsentForRequest({ needsPrivateKey, onRootKey }) {
 
 /**
  * Whether `wallet` can sign messages and oracle data for a passkey wallet: the passkey private-key
- * provider is registered, which needs a wallet-lib with setExternalPrivateKeyMethod.
+ * provider is registered. A wallet-lib without external private-key provider support has no
+ * hasExternalPrivateKeyMethod, so this is false there.
  */
 export function canSignWithPasskeyPrivateKey(wallet) {
-  return wallet?.storage?.hasPrivateKeyMethod?.() === true;
+  return wallet?.hasExternalPrivateKeyMethod?.() === true;
 }
 
 /** Drop an authorization that wasn't used (e.g. the request failed before signing). */
