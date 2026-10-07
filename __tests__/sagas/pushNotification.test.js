@@ -19,6 +19,8 @@ jest.mock('@react-native-firebase/messaging', () => ({
 
 jest.mock('@hathor/wallet-lib', () => ({
   ...jest.requireActual('@hathor/wallet-lib'),
+  Connection: jest.fn(),
+  HathorWallet: jest.fn(),
   HathorWalletServiceWallet: jest.fn(),
 }));
 
@@ -44,6 +46,7 @@ jest.mock('../../src/logger', () => {
 /* eslint-disable import/first */
 import {
   config,
+  HathorWallet,
   HathorWalletServiceWallet,
   PushNotification as pushLib,
 } from '@hathor/wallet-lib';
@@ -56,6 +59,7 @@ import {
 } from '../../src/passkey/walletServiceRegistration';
 import { startWallet } from '../../src/sagas/wallet';
 import { showPinScreenForResult } from '../../src/sagas/helpers';
+import * as passkeySigner from '../../src/passkey/passkeySigner';
 import {
   PasskeyCancelledError,
   PasskeyMetadataMissingError,
@@ -71,6 +75,7 @@ import {
   pushRegisterFailed,
   setAvailablePushNotification,
   setUseWalletService,
+  setWallet,
   startWalletRequested,
   types,
 } from '../../src/actions';
@@ -347,6 +352,8 @@ describe('startWallet (passkey wallet)', () => {
 
   afterEach(() => {
     setFacadeSupport(false);
+    jest.restoreAllMocks();
+    delete HathorWalletServiceWallet.deriveAuthPrivateKey;
   });
 
   // Steps startWallet, answering the wallet-service flag with `wsEnabled`, until `until` matches.
@@ -420,6 +427,70 @@ describe('startWallet (passkey wallet)', () => {
     // The passkey signer is registered, and the wallet is started read-only (it's registered).
     expect(facadeWallet.setExternalTxSigningMethod).toHaveBeenCalledWith(expect.any(Function));
     expect(step.value.payload.context).toBe(facadeWallet);
+  });
+
+  test('on the wallet-service facade, registers the private-key provider too', async () => {
+    setFacadeSupport(true);
+    const signerSpy = jest.spyOn(passkeySigner, 'makePasskeyTxSigner');
+    const facadeWallet = {
+      setExternalTxSigningMethod: jest.fn(),
+      setExternalPrivateKeyMethod: jest.fn(),
+      startReadOnly: jest.fn(),
+      refreshFullAuthToken: jest.fn(),
+      isReady: jest.fn(() => true),
+    };
+    HathorWalletServiceWallet.mockImplementation(() => facadeWallet);
+
+    runStartWallet({
+      registrations: [NETWORK_SETTINGS.walletServiceUrl],
+      wsEnabled: true,
+      until: (e) => e?.type === 'CALL' && e.payload.fn === facadeWallet.startReadOnly,
+    });
+
+    // Message and oracle signing get their key from the passkey provider.
+    expect(facadeWallet.setExternalPrivateKeyMethod).toHaveBeenCalledWith(expect.any(Function));
+    expect(facadeWallet.setExternalTxSigningMethod).toHaveBeenCalledWith(expect.any(Function));
+
+    // The send signer's ceremony mints the full token from the auth key of its root.
+    const [{ onRootKey }] = signerSpy.mock.calls[0];
+    HathorWalletServiceWallet.deriveAuthPrivateKey = jest.fn(() => 'auth-key');
+    await onRootKey('root-key');
+    expect(HathorWalletServiceWallet.deriveAuthPrivateKey).toHaveBeenCalledWith('root-key');
+    expect(facadeWallet.refreshFullAuthToken).toHaveBeenCalledWith('auth-key');
+  });
+
+  test('on the fullnode facade, registers both the tx signer and the private-key provider', () => {
+    const fullnodeWallet = {
+      setExternalTxSigningMethod: jest.fn(),
+      setExternalPrivateKeyMethod: jest.fn(),
+    };
+    HathorWallet.mockImplementation(() => fullnodeWallet);
+
+    runStartWallet({
+      registrations: [],
+      wsEnabled: false,
+      until: (e) => e?.type === 'PUT' && e.payload.action?.type === setWallet().type,
+    });
+
+    expect(HathorWallet).toHaveBeenCalledWith(expect.objectContaining({ xpub: XPUB }));
+    expect(fullnodeWallet.setExternalTxSigningMethod).toHaveBeenCalledWith(expect.any(Function));
+    expect(fullnodeWallet.setExternalPrivateKeyMethod).toHaveBeenCalledWith(expect.any(Function));
+  });
+
+  test('on a wallet-lib without setExternalPrivateKeyMethod, starts without a provider', () => {
+    // wallet-lib 3.1.1: no provider setter, and its storage has no hasPrivateKeyMethod.
+    const fullnodeWallet = { setExternalTxSigningMethod: jest.fn(), storage: {} };
+
+    HathorWallet.mockImplementation(() => fullnodeWallet);
+
+    expect(() => runStartWallet({
+      registrations: [],
+      wsEnabled: false,
+      until: (e) => e?.type === 'PUT' && e.payload.action?.type === setWallet().type,
+    })).not.toThrow();
+    expect(fullnodeWallet.setExternalTxSigningMethod).toHaveBeenCalled();
+    // So the Reown saga keeps rejecting message and oracle signing for it.
+    expect(passkeySigner.canSignWithPasskeyPrivateKey(fullnodeWallet)).toBe(false);
   });
 
   test('forgets the registration when the facade start fails, so the next unlock re-registers', () => {
