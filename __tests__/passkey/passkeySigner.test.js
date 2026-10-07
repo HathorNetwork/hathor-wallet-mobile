@@ -299,10 +299,14 @@ describe('verifyPasskeyForUnlock', () => {
   test('throws PasskeyCancelledError when the ceremony is cancelled', async () => {
     signInWalletWordsFromPasskey.mockRejectedValue({ error: 'UserCancelled' });
     isPasskeyCancel.mockReturnValue(true);
+    consumePasskeySigningCancelled(); // start from a clean flag
 
     const err = await verifyPasskeyForUnlock().catch((e) => e);
 
     expect(err).toBeInstanceOf(PasskeyCancelledError);
+    // Only a SIGNING cancel sets the flag; otherwise a cancelled unlock would make the next failed
+    // Reown request read as a user cancel.
+    expect(consumePasskeySigningCancelled()).toBe(false);
   });
 
   test('throws PasskeyMetadataMissingError without prompting when no xpub is stored', async () => {
@@ -348,12 +352,16 @@ describe('withPasskeyWords', () => {
     isPasskeyCancel.mockReturnValue(true);
     const fn = jest.fn();
     const onCancel = jest.fn();
+    consumePasskeySigningCancelled(); // start from a clean flag
 
     const err = await withPasskeyWords(fn, { onCancel }).catch((e) => e);
 
     expect(err).toBeInstanceOf(PasskeyCancelledError);
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(fn).not.toHaveBeenCalled();
+    // The helper leaves the signing-cancel flag alone (only the signer's onCancel sets it), so a
+    // cancelled push or unlock sheet can't make the next failed Reown request read as a cancel.
+    expect(consumePasskeySigningCancelled()).toBe(false);
   });
 
   test('a passkey for a different wallet throws PasskeyXpubMismatchError and never runs fn', async () => {
