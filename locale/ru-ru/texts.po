@@ -320,11 +320,11 @@ msgstr "Новый PIN-код сохранен"
 msgid "CHANGE PIN"
 msgstr "ИЗМЕНИТЬ PIN-код"
 
-#: src/screens/ChoosePinScreen.js:146
+#: src/screens/ChoosePinScreen.js:148
 msgid "Enter your new PIN code"
 msgstr "Введите новый PIN-код"
 
-#: src/screens/ChoosePinScreen.js:158
+#: src/screens/ChoosePinScreen.js:160
 msgid "Enter your new PIN code again"
 msgstr "Введите новый PIN-код еще раз"
 
@@ -336,11 +336,11 @@ msgstr "Создать новый PIN-код,"
 msgid "To confirm the PIN,"
 msgstr "Для подтверждения PIN-кода,"
 
-#: src/screens/ChoosePinScreen.js:172
+#: src/screens/ChoosePinScreen.js:174
 msgid "PIN codes don't match. Try again."
 msgstr "PIN-коды не совпадают. Попробуйте еще раз."
 
-#: src/screens/ChoosePinScreen.js:195
+#: src/screens/ChoosePinScreen.js:197
 msgid "Start the Wallet"
 msgstr "Запустить кошелек"
 
@@ -434,7 +434,7 @@ msgstr "Авторизовать создание токена"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 #: src/screens/CreateTokenConfirm.js:182 src/screens/SendConfirmScreen.js:200
-#: src/screens/TokenSwapReview.js:262
+#: src/screens/TokenSwapReview.js:263
 msgid "Building transaction"
 msgstr ""
 
@@ -805,7 +805,7 @@ msgstr ""
 msgid "Scan the nano contract ID QR code"
 msgstr ""
 
-#: src/screens/PasskeyLockScreen.js:78
+#: src/screens/PasskeyLockScreen.js:77
 msgid "Unlock cancelled."
 msgstr ""
 
@@ -1049,7 +1049,7 @@ msgstr[2] ""
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ОТПРАВИТЬ ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:361
+#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:362
 msgid "No fee"
 msgstr ""
 
@@ -1071,13 +1071,13 @@ msgstr "Ваш перевод обрабатывается"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:198
-#: src/screens/TokenSwapReview.js:260
+#: src/screens/TokenSwapReview.js:261
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Введите 6-значный PIN-код для авторизации операции"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:199
-#: src/screens/TokenSwapReview.js:261
+#: src/screens/TokenSwapReview.js:262
 msgid "Authorize operation"
 msgstr "Авторизовать операцию"
 
@@ -1231,25 +1231,25 @@ msgstr ""
 msgid "Loading Token Swap"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:272
+#: src/screens/TokenSwapReview.js:273
 msgid "REVIEW TOKEN SWAP"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:278
+#: src/screens/TokenSwapReview.js:279
 msgid "Building the swap transaction for your review"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:296
+#: src/screens/TokenSwapReview.js:297
 msgid "Your swap was successful"
 msgstr ""
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:357
+#: src/screens/TokenSwapReview.js:358
 msgid "Network Fee"
 msgstr ""
 
-#: src/screens/TokenSwapReview.js:369
+#: src/screens/TokenSwapReview.js:370
 msgid "SWAP"
 msgstr ""
 
@@ -1715,49 +1715,63 @@ msgstr ""
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
-#: src/passkey/passkeyService.js:109
+#: src/passkey/passkeyService.js:106
+msgid ""
+"This passkey isn't available on this device. Make sure it's synced to this "
+"device, or use the device where you created it."
+msgstr ""
+
+#: src/passkey/passkeyService.js:107
+msgid "The passkey request timed out. Please try again."
+msgstr ""
+
+#: src/passkey/passkeyService.js:108
+msgid "The passkey request was interrupted. Please try again."
+msgstr ""
+
+#: src/passkey/passkeyService.js:127
 msgid "The passkey operation failed. Please try again."
 msgstr ""
 
-#: src/passkey/passkeyService.js:129
+#: src/passkey/passkeyService.js:150
 msgid ""
 "This device can't create a passkey wallet. Passkey wallets need iOS 18 or "
 "later, or Android with Google Password Manager passkeys."
 msgstr ""
 
-#: src/passkey/passkeyService.js:149
+#: src/passkey/passkeyService.js:170
 msgid ""
 "The passkey did not verify your identity. Use a passkey protected by Face "
 "ID, fingerprint or your device PIN."
 msgstr ""
 
-#: src/passkey/passkeySigner.js:37
+#: src/passkey/passkeySigner.js:39
 msgid "Passkey authorization was cancelled. Nothing was sent."
 msgstr ""
 
-#: src/passkey/passkeySigner.js:47
+#: src/passkey/passkeySigner.js:49
 #, javascript-format
 msgid ""
 "This passkey opens a different wallet. Use the passkey named \"${ label }\"."
 msgstr ""
 
-#: src/passkey/passkeySigner.js:48
+#: src/passkey/passkeySigner.js:50
 msgid ""
 "This passkey opens a different wallet. Use the passkey that created this "
 "wallet."
 msgstr ""
 
-#: src/passkey/passkeySigner.js:56
+#: src/passkey/passkeySigner.js:58
 msgid "Another passkey authorization is already in progress."
 msgstr ""
 
-#: src/passkey/passkeySigner.js:67
+#: src/passkey/passkeySigner.js:69
 msgid ""
 "Passkey wallet data is missing or corrupted. Reset the wallet and sign in "
 "again with your passkey."
 msgstr ""
 
-#: src/passkey/passkeySigner.js:77
+#: src/passkey/passkeySigner.js:79
 msgid ""
 "Sending from a passkey wallet isn't supported in this version of the app yet."
 msgstr ""
