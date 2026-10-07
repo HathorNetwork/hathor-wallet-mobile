@@ -425,7 +425,11 @@ export function* loadWallet() {
       } catch (startError) {
         // Drop the seed now instead of waiting for the wallet to be garbage-collected.
         tempWallet.clearSensitiveData();
-        throw startError;
+        // A wallet-service timeout or outage is not a bug: like for seed wallets, the caller shows
+        // the generic "try again later" failure, and it isn't reported.
+        log.error('Passkey push temp wallet failed to start.', startError);
+        yield put(pushLoadWalletFailed({ error: startError, cancelled: false, reported: false }));
+        return;
       }
       // Starting the temp wallet created this wallet on the wallet-service (wallet/init), so the
       // app can start it on the wallet-service facade from now on.
@@ -433,8 +437,8 @@ export function* loadWallet() {
       yield put(pushLoadWalletSuccess({ walletService: tempWallet }));
     } catch (error) {
       const cancelled = error instanceof PasskeyCancelledError;
-      // Expected outcomes (wrong or deleted passkey, a ceremony already open...) are shown to the
-      // user by the caller. Anything else (corrupted wallet metadata, a wallet-service failure, an
+      // Ceremony failures. Expected outcomes (wrong or deleted passkey, a ceremony already
+      // open...) are shown to the user by the caller. Anything else (corrupted wallet metadata, an
       // unknown native code) is reported, like PasskeyLockScreen does.
       const reported = !cancelled && !isExpectedPasskeyError(error);
       if (reported) {

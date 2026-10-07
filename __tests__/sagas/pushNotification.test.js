@@ -190,16 +190,22 @@ describe('loadWallet (passkey wallet)', () => {
     );
   });
 
-  test('a failed start drops the seed and is reported', () => {
+  // A wallet-service timeout or outage isn't a bug: like for seed wallets, the user gets the
+  // generic "try again later" failure (registration's fallback), and nothing is reported.
+  test('a failed start drops the seed and fails without a report', () => {
     const { gen } = runToCeremony();
     const tempWallet = makeTempWallet();
     gen.next(tempWallet); // call(start)
-    const error = new Error('wallet-service unavailable');
+    const error = new Error('timeout of 10000ms exceeded');
 
-    const reportStep = gen.throw(error);
+    const failStep = gen.throw(error);
 
     expect(tempWallet.clearSensitiveData).toHaveBeenCalledTimes(1);
-    expect(isPut(reportStep.value, onExceptionCaptured(error, false))).toBe(true);
+    expect(failStep.value.payload.action).toEqual(
+      pushLoadWalletFailed({ error, cancelled: false, reported: false }),
+    );
+    expect(gen.next().done).toBe(true);
+    expect(log.error).toHaveBeenCalledWith(expect.any(String), error);
   });
 });
 
