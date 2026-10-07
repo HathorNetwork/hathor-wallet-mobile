@@ -442,13 +442,19 @@ describe('Phase 2 hooks', () => {
     expect(transactionUtils.signTxInputs).not.toHaveBeenCalled();
   });
 
-  test('verifyPasskeyForUnlock passes the words to onWords within the unlock ceremony', async () => {
-    const onWords = jest.fn(async () => {});
+  test('verifyPasskeyForUnlock passes the words to onWords and resolves with its result', async () => {
+    const prepared = { tempWallet: {}, walletServiceUrl: 'https://ws.example/' };
+    const onWords = jest.fn(() => prepared);
 
-    await expect(verifyPasskeyForUnlock({ onWords })).resolves.toBeUndefined();
+    // The result comes back so slow follow-up work can run after the passkey lock is released.
+    await expect(verifyPasskeyForUnlock({ onWords })).resolves.toBe(prepared);
 
     expect(onWords).toHaveBeenCalledWith(WORDS);
     expect(signInWalletWordsFromPasskey).toHaveBeenCalledTimes(1);
+  });
+
+  test('verifyPasskeyForUnlock resolves with undefined without onWords', async () => {
+    await expect(verifyPasskeyForUnlock()).resolves.toBeUndefined();
   });
 });
 

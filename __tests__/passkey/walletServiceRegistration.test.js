@@ -24,15 +24,32 @@ jest.mock('../../src/logger', () => {
 /* eslint-disable import/first */
 import { HathorWalletServiceWallet, config } from '@hathor/wallet-lib';
 import { STORE } from '../../src/store';
+import { logger } from '../../src/logger';
 import { WALLET_SERVICE_FEATURE_TOGGLE } from '../../src/constants';
 import {
+  completeWalletServiceRegistration,
   facadeSupportsExternalSigner,
+  finishWalletServiceRegistration,
   isWalletServiceRegistered,
   markWalletServiceRegistered,
+  prepareWalletServiceRegistration,
   registerOnWalletService,
   shouldRegisterOnWalletService,
+  walletServiceRegistrationForUnlock,
 } from '../../src/passkey/walletServiceRegistration';
 /* eslint-enable import/first */
+
+const log = logger();
+
+// Lets pending promise callbacks run.
+const flush = () => new Promise((resolve) => { setImmediate(resolve); });
+
+// A temp wallet-service wallet; `order` records the calls that matter, in sequence.
+const makeTempWallet = (order = []) => ({
+  start: jest.fn(async () => { order.push('start'); }),
+  stop: jest.fn(async () => { order.push('stop'); }),
+  clearSensitiveData: jest.fn(),
+});
 
 const WORDS = new Array(24).fill('abandon').join(' ');
 const URL = 'https://ws.example/';
@@ -133,11 +150,109 @@ describe('registerOnWalletService', () => {
     expect(tempWallet.stop).toHaveBeenCalledWith({ cleanStorage: true });
   });
 
-  test('a failed wallet/init records nothing and propagates', async () => {
-    const tempWallet = { start: jest.fn(async () => { throw new Error('ws down'); }), stop: jest.fn() };
+  test('a failed wallet/init records nothing, drops the seed and propagates', async () => {
+    const tempWallet = makeTempWallet();
+    tempWallet.start.mockRejectedValue(new Error('ws down'));
     HathorWalletServiceWallet.mockImplementation(() => tempWallet);
 
     await expect(registerOnWalletService(WORDS, NETWORK_SETTINGS)).rejects.toThrow('ws down');
     expect(STORE.updateWalletMeta).not.toHaveBeenCalled();
+    expect(tempWallet.clearSensitiveData).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('prepareWalletServiceRegistration', () => {
+  test('builds the temp wallet on the configured network and wallet-service, without starting it', () => {
+    const tempWallet = makeTempWallet();
+    HathorWalletServiceWallet.mockImplementation(() => tempWallet);
+    const setUrl = jest.spyOn(config, 'setWalletServiceBaseUrl');
+    const setWsUrl = jest.spyOn(config, 'setWalletServiceBaseWsUrl');
+
+    const registration = prepareWalletServiceRegistration(WORDS, NETWORK_SETTINGS);
+
+    expect(registration).toEqual({ tempWallet, walletServiceUrl: URL });
+    const [options] = HathorWalletServiceWallet.mock.calls[0];
+    expect(options).toMatchObject({ seed: WORDS, enableWs: false });
+    expect(options.network.name).toBe(NETWORK_SETTINGS.network);
+    expect(setUrl).toHaveBeenCalledWith(URL);
+    expect(setWsUrl).toHaveBeenCalledWith(NETWORK_SETTINGS.walletServiceWsUrl);
+    // Starting talks to the wallet-service; it happens later, outside the passkey ceremony.
+    expect(tempWallet.start).not.toHaveBeenCalled();
+  });
+});
+
+describe('completeWalletServiceRegistration', () => {
+  test('starts the temp wallet with a one-time pin, records the registration, then stops it', async () => {
+    const order = [];
+    const tempWallet = makeTempWallet(order);
+    STORE.updateWalletMeta.mockImplementation(async () => { order.push('record'); });
+
+    await completeWalletServiceRegistration({ tempWallet, walletServiceUrl: URL });
+
+    expect(order).toEqual(['start', 'record', 'stop']);
+    const [{ pinCode, password }] = tempWallet.start.mock.calls[0];
+    expect(pinCode).toMatch(/^[0-9a-f]{64}$/);
+    expect(password).toBe(pinCode);
+    expect(STORE.updateWalletMeta).toHaveBeenCalledWith({ walletServiceRegistrations: [URL] });
+    expect(tempWallet.stop).toHaveBeenCalledWith({ cleanStorage: true });
+  });
+});
+
+describe('registration at unlock', () => {
+  const flagOn = { [WALLET_SERVICE_FEATURE_TOGGLE]: true };
+
+  test('has no hook when the wallet should not register', () => {
+    expect(walletServiceRegistrationForUnlock(flagOn, NETWORK_SETTINGS)).toBeUndefined();
+  });
+
+  test('the hook only prepares the registration inside the ceremony', () => {
+    setFacadeSupport(true);
+    const tempWallet = makeTempWallet();
+    HathorWalletServiceWallet.mockImplementation(() => tempWallet);
+
+    const onWords = walletServiceRegistrationForUnlock(flagOn, NETWORK_SETTINGS);
+    const registration = onWords(WORDS);
+
+    expect(registration).toEqual({ tempWallet, walletServiceUrl: URL });
+    expect(tempWallet.start).not.toHaveBeenCalled();
+  });
+
+  test('a failure to prepare is logged and never blocks the unlock', () => {
+    setFacadeSupport(true);
+    const failure = new Error('bad network settings');
+    HathorWalletServiceWallet.mockImplementation(() => { throw failure; });
+
+    const onWords = walletServiceRegistrationForUnlock(flagOn, NETWORK_SETTINGS);
+
+    expect(onWords(WORDS)).toBeNull();
+    expect(log.error).toHaveBeenCalledWith(expect.any(String), failure);
+  });
+
+  test('finishing runs in the background: it returns at once and completes later', async () => {
+    const order = [];
+    const tempWallet = makeTempWallet(order);
+
+    expect(finishWalletServiceRegistration({ tempWallet, walletServiceUrl: URL })).toBeUndefined();
+    await flush();
+
+    expect(order).toEqual(['start', 'stop']);
+    expect(STORE.updateWalletMeta).toHaveBeenCalledWith({ walletServiceRegistrations: [URL] });
+  });
+
+  test('a failed background registration is logged, never thrown', async () => {
+    const tempWallet = makeTempWallet();
+    const failure = new Error('ws down');
+    tempWallet.start.mockRejectedValue(failure);
+
+    finishWalletServiceRegistration({ tempWallet, walletServiceUrl: URL });
+    await flush();
+
+    expect(log.error).toHaveBeenCalledWith(expect.any(String), failure);
+    expect(STORE.updateWalletMeta).not.toHaveBeenCalled();
+  });
+
+  test('finishing nothing is a no-op', () => {
+    expect(() => finishWalletServiceRegistration(null)).not.toThrow();
+    expect(() => finishWalletServiceRegistration(undefined)).not.toThrow();
   });
 });
