@@ -97,24 +97,99 @@ export function shouldRegisterOnWalletService(featureToggles, networkSettings) {
 }
 
 /**
- * Create the passkey wallet on the wallet-service (`wallet/init`) from the ceremony's words, then
- * record it. Must run while the words are in memory (inside a passkey ceremony or onboarding).
+ * First half of a registration: build the temporary wallet-service wallet from the words, without
+ * starting it. Building only needs the words, so it can run inside a passkey ceremony; starting it
+ * talks to the wallet-service and can poll for up to a minute on a first registration, so it runs
+ * after the ceremony (completeWalletServiceRegistration) and never holds the passkey lock. The
+ * words don't live any longer this way: the wallet keeps the seed until start() clears it.
+ *
+ * @param {string} words 24 seed words derived from the passkey
+ * @param {Object} networkSettings `state.networkSettings`
+ * @returns {{ tempWallet: HathorWalletServiceWallet, walletServiceUrl: string }}
+ */
+export function prepareWalletServiceRegistration(words, networkSettings) {
+  config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl);
+  config.setWalletServiceBaseWsUrl(networkSettings.walletServiceWsUrl);
+  const tempWallet = new HathorWalletServiceWallet({
+    seed: words,
+    network: new Network(networkSettings.network),
+    enableWs: false,
+  });
+  return { tempWallet, walletServiceUrl: networkSettings.walletServiceUrl };
+}
+
+/**
+ * Second half of a registration: start the prepared temp wallet, which creates the passkey wallet
+ * on the wallet-service (`wallet/init`), record it, and stop the temp wallet.
+ *
+ * @param {{ tempWallet: HathorWalletServiceWallet, walletServiceUrl: string }} registration
+ */
+export async function completeWalletServiceRegistration({ tempWallet, walletServiceUrl }) {
+  const pin = makeEphemeralPin();
+  try {
+    await tempWallet.start({ pinCode: pin, password: pin });
+  } catch (e) {
+    // Drop the seed now instead of waiting for the wallet to be garbage-collected.
+    tempWallet.clearSensitiveData();
+    throw e;
+  }
+  try {
+    await markWalletServiceRegistered(walletServiceUrl);
+  } finally {
+    // Close the temp wallet's connection and clear its in-memory history, utxos and tokens. Its
+    // encrypted access data stays until the object is garbage-collected.
+    await tempWallet.stop({ cleanStorage: true });
+  }
+}
+
+/**
+ * Create the passkey wallet on the wallet-service (`wallet/init`) from the words, then record it.
+ * For onboarding, which holds the words outside any passkey ceremony and waits for the result so
+ * the new wallet can start on the wallet-service facade right away.
  *
  * @param {string} words 24 seed words derived from the passkey
  * @param {Object} networkSettings `state.networkSettings`
  */
 export async function registerOnWalletService(words, networkSettings) {
-  config.setWalletServiceBaseUrl(networkSettings.walletServiceUrl);
-  config.setWalletServiceBaseWsUrl(networkSettings.walletServiceWsUrl);
-  const tempWallet = await startTempWalletServiceWallet(
-    words,
-    new Network(networkSettings.network),
-    makeEphemeralPin(),
+  return completeWalletServiceRegistration(
+    prepareWalletServiceRegistration(words, networkSettings),
   );
-  try {
-    await markWalletServiceRegistered(networkSettings.walletServiceUrl);
-  } finally {
-    // Drop the temp wallet's in-memory access data (encrypted keys) and connection.
-    await tempWallet.stop({ cleanStorage: true });
+}
+
+/**
+ * The unlock ceremony's `onWords` hook when this wallet should register on the wallet-service, or
+ * undefined. It only prepares the registration (see prepareWalletServiceRegistration) and never
+ * throws: a failed registration must never block unlocking.
+ *
+ * @param {Object} featureToggles `state.featureToggles`
+ * @param {Object} networkSettings `state.networkSettings`
+ * @returns {((words: string) => Object|null)|undefined}
+ */
+export function walletServiceRegistrationForUnlock(featureToggles, networkSettings) {
+  if (!shouldRegisterOnWalletService(featureToggles, networkSettings)) {
+    return undefined;
   }
+  return (words) => {
+    try {
+      return prepareWalletServiceRegistration(words, networkSettings);
+    } catch (e) {
+      log.error('Passkey wallet-service registration failed at unlock', e);
+      return null;
+    }
+  };
+}
+
+/**
+ * Finish a registration prepared during the unlock ceremony, in the background: the unlock never
+ * waits for the wallet-service. The wallet runs on the wallet-service facade from its next start.
+ * Failures are only logged; the next unlock retries.
+ *
+ * @param {Object|null|undefined} registration What the unlock ceremony's hook returned
+ */
+export function finishWalletServiceRegistration(registration) {
+  if (!registration) {
+    return;
+  }
+  completeWalletServiceRegistration(registration)
+    .catch((e) => log.error('Passkey wallet-service registration failed at unlock', e));
 }

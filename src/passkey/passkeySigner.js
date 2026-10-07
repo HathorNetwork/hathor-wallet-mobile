@@ -264,14 +264,12 @@ export function makePasskeyTxSigner({ onRootKey } = {}) {
 /**
  * Verify-only ceremony for the lock screen: asserts the passkey, checks it opens the loaded
  * wallet, and discards the derived material. Runs under the same single-flight guard as signing.
- * Resolves on success; throws PasskeyCancelledError / PasskeyXpubMismatchError / PasskeyBusyError.
+ * Resolves on success, with what `onWords` returned (if given); throws PasskeyCancelledError /
+ * PasskeyXpubMismatchError / PasskeyBusyError.
  */
 export function verifyPasskeyForUnlock({ onWords } = {}) {
-  // `onWords` lets the unlock ceremony do work that needs the words (registering the wallet on the
-  // wallet-service) without a second Face ID prompt.
-  return withPasskeyWords(async (words) => {
-    if (onWords) {
-      await onWords(words);
-    }
-  });
+  // `onWords` lets the unlock ceremony do work that needs the words (preparing the wallet-service
+  // registration) without a second Face ID prompt. It runs inside the passkey lock, so it must be
+  // quick; its result is returned so slow follow-up work can run after the lock is released.
+  return withPasskeyWords(async (words) => (onWords ? onWords(words) : undefined));
 }

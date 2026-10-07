@@ -35,8 +35,8 @@ import {
 } from '../passkey/passkeySigner';
 import { sanitizePasskeyLabel } from '../passkey/passkeyService';
 import {
-  registerOnWalletService,
-  shouldRegisterOnWalletService,
+  finishWalletServiceRegistration,
+  walletServiceRegistrationForUnlock,
 } from '../passkey/walletServiceRegistration';
 import { logger } from '../logger';
 
@@ -72,14 +72,16 @@ const PasskeyLockScreen = () => {
     setError(null);
     try {
       // If the wallet-service flag is on and this wallet isn't registered there yet (wallets
-      // created before that, a failed onboarding registration, a reinstall), register it inside
-      // the unlock ceremony while the words are in memory — no extra Face ID. The next wallet start
-      // then runs on the wallet-service facade. A failure never blocks unlocking.
-      const onWords = shouldRegisterOnWalletService(featureToggles, networkSettings)
-        ? (words) => registerOnWalletService(words, networkSettings)
-          .catch((e) => log.error('Passkey wallet-service registration failed at unlock', e))
-        : undefined;
-      await verifyPasskeyForUnlock({ onWords });
+      // created before that, a failed onboarding registration, a reinstall), prepare the
+      // registration inside the unlock ceremony while the words are in memory — no extra Face ID.
+      // It's finished in the background after the ceremony: creating the wallet on the
+      // wallet-service can take up to a minute, and neither the passkey lock nor the unlock waits
+      // for it. The wallet runs on the wallet-service facade from its next start. A failure never
+      // blocks unlocking.
+      const registration = await verifyPasskeyForUnlock({
+        onWords: walletServiceRegistrationForUnlock(featureToggles, networkSettings),
+      });
+      finishWalletServiceRegistration(registration);
       if (!wallet) {
         // App boot (or wallet stopped): start the xpub-only wallet. The saga derives
         // isPasskeyWallet from the persisted walletMeta; no secret (and no payload flag) via redux.
