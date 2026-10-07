@@ -98,17 +98,36 @@ export function isPasskeyCancel(e) {
   return e?.error === 'UserCancelled';
 }
 
+// Translated messages for the react-native-passkey codes caused by the user's device or account
+// rather than a bug (the passkey was deleted or isn't synced to this device, or the ceremony timed
+// out or was interrupted). Screens show these to the user instead of the library's English text.
+// Functions, so the text is translated in the locale active when the error is shown.
+const EXPECTED_NATIVE_ERROR_MESSAGES = {
+  NoCredentials: () => t`This passkey isn't available on this device. Make sure it's synced to this device, or use the device where you created it.`,
+  TimedOut: () => t`The passkey request timed out. Please try again.`,
+  Interrupted: () => t`The passkey request was interrupted. Please try again.`,
+};
+
+/** The native codes that are expected, user-correctable outcomes (see isExpectedPasskeyError). */
+export const EXPECTED_NATIVE_CODES = Object.keys(EXPECTED_NATIVE_ERROR_MESSAGES);
+
 /**
  * A non-cancel failure from the native passkey layer. react-native-passkey rejects with plain
  * `{ error, message }` objects, not Error instances; wallet-lib re-throws them unchanged and
  * hathor-rpc-handler then reports anything that isn't an Error as "An unknown error occurred".
- * Wrapping keeps the native code and message (e.g. NoCredentials when the passkey was deleted).
+ * Wrapping keeps the native code (e.g. NoCredentials when the passkey was deleted). Expected codes
+ * get a translated message; the library's own message is kept in `nativeMessage` for logs.
  */
 export class PasskeyNativeError extends Error {
   constructor(nativeError) {
-    super(nativeError?.message || t`The passkey operation failed. Please try again.`);
+    const code = nativeError?.error ?? null;
+    const translated = EXPECTED_NATIVE_CODES.includes(code)
+      ? EXPECTED_NATIVE_ERROR_MESSAGES[code]()
+      : null;
+    super(translated || nativeError?.message || t`The passkey operation failed. Please try again.`);
     this.name = 'PasskeyNativeError';
-    this.code = nativeError?.error ?? null;
+    this.code = code;
+    this.nativeMessage = nativeError?.message ?? null;
   }
 }
 

@@ -25,6 +25,7 @@ import { NETWORK_MAINNET } from '../constants';
 import { STORE } from '../store';
 import { logger } from '../logger';
 import {
+  EXPECTED_NATIVE_CODES,
   signInWalletWordsFromPasskey,
   isPasskeyCancel,
   PasskeyNativeError,
@@ -79,10 +80,6 @@ export class PasskeySigningUnsupportedError extends Error {
     this.name = 'PasskeySigningUnsupportedError';
   }
 }
-
-// react-native-passkey codes caused by the user's device or account rather than a bug: the passkey
-// was deleted or isn't synced to this device, or the ceremony timed out or was interrupted.
-const EXPECTED_NATIVE_CODES = ['NoCredentials', 'TimedOut', 'Interrupted'];
 
 /**
  * Whether a passkey error is an expected, user-correctable outcome rather than a bug: the wrong

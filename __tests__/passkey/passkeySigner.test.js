@@ -39,6 +39,7 @@ jest.mock('@hathor/wallet-lib', () => ({
 // sanitizePasskeyLabel mirrors the real behaviour just enough for the label assertions to be
 // meaningful (used by PasskeyXpubMismatchError to compute the label it carries).
 jest.mock('../../src/passkey/passkeyService', () => ({
+  EXPECTED_NATIVE_CODES: ['NoCredentials', 'TimedOut', 'Interrupted'],
   signInWalletWordsFromPasskey: jest.fn(),
   isPasskeyCancel: jest.fn(),
   PasskeyNativeError: class PasskeyNativeError extends Error {

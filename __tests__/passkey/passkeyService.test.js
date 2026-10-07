@@ -15,6 +15,7 @@ import {
   assertUserVerified,
   createWalletWordsFromPasskey,
   decodeUserIdLabel,
+  EXPECTED_NATIVE_CODES,
   isPasskeySupported,
   PasskeyNativeError,
   signInWalletWordsFromPasskey,
@@ -133,14 +134,40 @@ describe('signInWalletWordsFromPasskey', () => {
   });
 
   test('wraps a plain-object native rejection in PasskeyNativeError, keeping code and message', async () => {
-    mockPasskey.get.mockRejectedValue({ error: 'NoCredentials', message: 'No passkey found.' });
+    mockPasskey.get.mockRejectedValue({ error: 'RequestFailed', message: 'The request failed.' });
 
     const err = await signInWalletWordsFromPasskey().catch((e) => e);
 
     expect(err).toBeInstanceOf(PasskeyNativeError);
     expect(err).toBeInstanceOf(Error);
-    expect(err.code).toBe('NoCredentials');
-    expect(err.message).toBe('No passkey found.');
+    expect(err.code).toBe('RequestFailed');
+    expect(err.message).toBe('The request failed.');
+    expect(err.nativeMessage).toBe('The request failed.');
+  });
+
+  // Expected codes reach the user (swap sheet, lock banner), so they get a translated message
+  // instead of the library's English text, which is kept in nativeMessage.
+  test.each([
+    ['NoCredentials', /isn't available on this device/],
+    ['TimedOut', /timed out/],
+    ['Interrupted', /was interrupted/],
+  ])('gives the expected %s code a translated message', async (code, message) => {
+    const native = { error: code, message: 'Library message.' };
+    mockPasskey.get.mockRejectedValue(native);
+
+    const err = await signInWalletWordsFromPasskey().catch((e) => e);
+
+    expect(err).toBeInstanceOf(PasskeyNativeError);
+    expect(err.code).toBe(code);
+    expect(err.message).toMatch(message);
+    expect(err.nativeMessage).toBe('Library message.');
+  });
+
+  test('does not treat inherited object keys as expected codes', () => {
+    const err = new PasskeyNativeError({ error: 'toString', message: 'Library message.' });
+
+    expect(err.message).toBe('Library message.');
+    expect(EXPECTED_NATIVE_CODES).not.toContain('toString');
   });
 
   test('re-throws a user cancel untouched so callers can detect it', async () => {
