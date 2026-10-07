@@ -378,8 +378,8 @@ export function* startWallet(action) {
   if (isPasskeyWallet && typeof wallet.setExternalPrivateKeyMethod === 'function') {
     // Message and oracle-data signing get the address key from the passkey too: the Reown flow
     // authorizes each signature with one ceremony (authorizePasskeyPrivateKey) and this provider
-    // hands that key to wallet-lib. Both facades support it from the wallet-lib release with
-    // #1134 / #1179; on an older lib the Reown saga keeps rejecting those requests.
+    // hands that key to wallet-lib. On a wallet-lib without external private-key provider support
+    // this is skipped, and the Reown saga keeps rejecting those requests.
     wallet.setExternalPrivateKeyMethod(makePasskeyPrivateKeyProvider());
   }
 

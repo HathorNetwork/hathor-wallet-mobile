@@ -625,9 +625,9 @@ export function* processRequest(action) {
   };
 
   // These two methods sign with the private key of one of our addresses, which a passkey wallet
-  // only has through the passkey private-key provider. A wallet-lib without that provider (older
-  // than the release with #1134 / #1179) can't service them, so reject cleanly instead of failing
-  // inside the rpc-handler.
+  // only has through the passkey private-key provider. A wallet-lib without external private-key
+  // provider support can't service them, so reject cleanly instead of failing inside the
+  // rpc-handler.
   if (
     STORE.isPasskeyWallet()
     && PASSKEY_PRIVATE_KEY_METHODS.includes(params.request.method)
