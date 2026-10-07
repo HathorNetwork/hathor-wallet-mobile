@@ -63,6 +63,24 @@ export function facadeSupportsExternalSigner() {
     && typeof proto.startReadOnly === 'function';
 }
 
+/**
+ * The `onRootKey` hook for a passkey ceremony on `wallet`: on the wallet-service facade it derives
+ * the auth key from the ceremony's root key and mints a full auth token, so the operation that
+ * follows can call full-token endpoints and the auth key is never stored. Undefined for wallets
+ * that don't use auth tokens (the fullnode facade).
+ *
+ * @param {Object} wallet The app's wallet
+ * @returns {((root: Object) => Promise<void>)|undefined}
+ */
+export function passkeyFullTokenHook(wallet) {
+  if (typeof wallet?.refreshFullAuthToken !== 'function') {
+    return undefined;
+  }
+  return (root) => wallet.refreshFullAuthToken(
+    HathorWalletServiceWallet.deriveAuthPrivateKey(root),
+  );
+}
+
 /** Whether the wallet-service at `walletServiceUrl` already knows this passkey wallet. */
 export function isWalletServiceRegistered(walletServiceUrl) {
   const registrations = STORE.getWalletMeta()?.walletServiceRegistrations ?? [];
