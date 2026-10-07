@@ -22,7 +22,7 @@ jest.mock('../../src/logger', () => {
 });
 
 /* eslint-disable import/first */
-import { HathorWalletServiceWallet, config } from '@hathor/wallet-lib';
+import { HathorWalletServiceWallet, config, errors as hathorErrors } from '@hathor/wallet-lib';
 import { STORE } from '../../src/store';
 import { logger } from '../../src/logger';
 import { WALLET_SERVICE_FEATURE_TOGGLE } from '../../src/constants';
@@ -35,6 +35,7 @@ import {
   prepareWalletServiceRegistration,
   registerOnWalletService,
   shouldRegisterOnWalletService,
+  startFailureMeansUnregistered,
   walletServiceRegistrationForUnlock,
 } from '../../src/passkey/walletServiceRegistration';
 /* eslint-enable import/first */
@@ -254,5 +255,29 @@ describe('registration at unlock', () => {
   test('finishing nothing is a no-op', () => {
     expect(() => finishWalletServiceRegistration(null)).not.toThrow();
     expect(() => finishWalletServiceRegistration(undefined)).not.toThrow();
+  });
+});
+
+describe('startFailureMeansUnregistered', () => {
+  const requestError = (cause) => new hathorErrors.WalletRequestError('request failed', { cause });
+  const timeoutError = Object.assign(new Error('timeout of 10000ms exceeded'), {
+    code: 'ECONNABORTED',
+  });
+
+  test.each([
+    ['the read-only startup timed out', requestError({ source: requestError({ status: 400 }) })],
+    ['a 404 answer', requestError({ status: 404 })],
+    ['a 403 answer', requestError({ status: 403 })],
+  ])('is true when %s', (_case, error) => {
+    expect(startFailureMeansUnregistered(error)).toBe(true);
+  });
+
+  test.each([
+    ['a network failure', new Error('Network Error')],
+    ['a request timeout', timeoutError],
+    ['a 5xx answer', requestError({ status: 503 })],
+    ['a request error without a cause', requestError(null)],
+  ])('is false for %s', (_case, error) => {
+    expect(startFailureMeansUnregistered(error)).toBe(false);
   });
 });

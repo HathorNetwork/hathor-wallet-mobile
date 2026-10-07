@@ -44,6 +44,7 @@ jest.mock('../../src/logger', () => {
 /* eslint-disable import/first */
 import {
   config,
+  errors as hathorErrors,
   HathorWalletServiceWallet,
   PushNotification as pushLib,
 } from '@hathor/wallet-lib';
@@ -428,7 +429,8 @@ describe('startWallet (passkey wallet)', () => {
     expect(step.value.payload.context).toBe(facadeWallet);
   });
 
-  test('forgets the registration when the facade start fails, so the next unlock re-registers', () => {
+  // Steps a facade start that throws `error`, and returns whether the registration was forgotten.
+  const forgetsRegistrationOn = (error) => {
     setFacadeSupport(true);
     const facadeWallet = {
       setExternalTxSigningMethod: jest.fn(), startReadOnly: jest.fn(), isReady: jest.fn(),
@@ -440,14 +442,29 @@ describe('startWallet (passkey wallet)', () => {
       until: (e) => e?.type === 'CALL' && e.payload.fn === facadeWallet.startReadOnly,
     });
 
-    let step = gen.throw(new Error('wallet not found'));
-    const isUnmark = (e) => isCall(e, markWalletServiceRegistered);
-    for (let i = 0; i < 10 && !step.done && !isUnmark(step.value); i += 1) {
+    let step = gen.throw(error);
+    for (let i = 0; i < 10 && !step.done; i += 1) {
+      if (isCall(step.value, markWalletServiceRegistered)) {
+        expect(step.value.payload.args).toEqual([NETWORK_SETTINGS.walletServiceUrl, false]);
+        return true;
+      }
       step = gen.next();
     }
+    return false;
+  };
 
-    expect(isCall(step.value, markWalletServiceRegistered)).toBe(true);
-    expect(step.value.payload.args).toEqual([NETWORK_SETTINGS.walletServiceUrl, false]);
+  test('forgets the registration when the service no longer knows the wallet', () => {
+    // startReadOnly's timeout: the service kept answering that the wallet isn't ready.
+    const timedOut = new hathorErrors.WalletRequestError('Read-only wallet startup timed out.', {
+      cause: { source: new hathorErrors.WalletRequestError('creating', { cause: { status: 400 } }) },
+    });
+    expect(forgetsRegistrationOn(timedOut)).toBe(true);
+  });
+
+  // A transient outage keeps the registration: re-registering at the next unlock would cost a full
+  // temp-wallet wallet/init for a wallet the service still has.
+  test('keeps the registration on a transient failure', () => {
+    expect(forgetsRegistrationOn(new Error('Network Error'))).toBe(false);
   });
 });
 

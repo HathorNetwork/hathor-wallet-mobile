@@ -50,6 +50,7 @@ import {
   facadeSupportsExternalSigner,
   isWalletServiceRegistered,
   markWalletServiceRegistered,
+  startFailureMeansUnregistered,
 } from '../passkey/walletServiceRegistration';
 import {
   tokenFetchBalanceRequested,
@@ -464,9 +465,10 @@ export function* startWallet(action) {
       // store the timestamp of when this flag was set, so we're able to expire it
       yield call(() => AsyncStorage.setItem(IGNORE_WS_TOGGLE_FLAG, `${new Date().getTime()}`));
 
-      if (isPasskeyWallet) {
-        // The wallet-service may no longer know this wallet (e.g. a reset service): forget the
-        // registration so the next unlock ceremony registers it again.
+      if (isPasskeyWallet && startFailureMeansUnregistered(e)) {
+        // The wallet-service no longer knows this wallet (e.g. a reset service): forget the
+        // registration so the next unlock ceremony registers it again. A transient failure keeps
+        // it: the fallback flag above already covers that.
         yield call(markWalletServiceRegistered, networkSettings.walletServiceUrl, false);
       }
     }
