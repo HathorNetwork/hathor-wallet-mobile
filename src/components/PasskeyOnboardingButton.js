@@ -31,6 +31,7 @@ import { startWalletRequested, unlockScreen } from '../actions';
 import { STORE } from '../store';
 import NavigationService from '../NavigationService';
 import { logger } from '../logger';
+import { getNetworkSettings } from '../sagas/helpers';
 
 const log = logger('passkey');
 
@@ -53,7 +54,7 @@ const log = logger('passkey');
 const PasskeyOnboardingButton = () => {
   const dispatch = useDispatch();
   const featureToggles = useSelector((state) => state.featureToggles);
-  const networkSettings = useSelector((state) => state.networkSettings);
+  const networkSettings = useSelector(getNetworkSettings);
   // Gated by the Unleash feature toggle (off by default).
   const enabled = get(featureToggles, PASSKEY_ONBOARDING_FEATURE_TOGGLE, false);
   const [busy, setBusy] = useState(false);
