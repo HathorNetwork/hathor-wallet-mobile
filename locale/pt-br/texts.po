@@ -459,7 +459,7 @@ msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:184 src/screens/SendConfirmScreen.js:202
+#: src/screens/CreateTokenConfirm.js:184 src/screens/SendConfirmScreen.js:210
 #: src/screens/TokenSwapReview.js:265
 msgid "Building transaction"
 msgstr "Criando transação"
@@ -1082,7 +1082,7 @@ msgid_plural "${ amountAndToken } available"
 msgstr[0] "${ amountAndToken } disponível"
 msgstr[1] "${ amountAndToken } disponíveis"
 
-#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:293
+#: src/screens/SendAmountInput.js:137 src/screens/SendConfirmScreen.js:301
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
@@ -1090,93 +1090,101 @@ msgstr "ENVIAR ${ tokenNameUpperCase }"
 msgid "No fee"
 msgstr "Sem taxa"
 
-#: src/screens/SendConfirmScreen.js:55
+#: src/screens/SendConfirmScreen.js:60
 msgid "Insufficient HTR to cover the network fee."
 msgstr "Saldo insuficiente de HTR para cobrir a taxa da rede."
 
-#: src/screens/SendConfirmScreen.js:58
+#: src/screens/SendConfirmScreen.js:63
 msgid "Insufficient balance to send this transaction."
 msgstr "Saldo insuficiente para completar a transação."
 
-#: src/screens/SendConfirmScreen.js:60
+#: src/screens/SendConfirmScreen.js:66
+msgid ""
+"This amount needs more inputs than a transaction can hold. Try sending a "
+"smaller amount."
+msgstr ""
+"Este valor precisa de mais entradas do que uma transação comporta. Tente "
+"enviar um valor menor."
+
+#: src/screens/SendConfirmScreen.js:68
 msgid "Failed to process transaction."
 msgstr "Falha ao processar a transação"
 
-#: src/screens/SendConfirmScreen.js:181 src/screens/TokenSwapReview.js:220
+#: src/screens/SendConfirmScreen.js:189 src/screens/TokenSwapReview.js:220
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:200
+#: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:208
 #: src/screens/TokenSwapReview.js:263
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
-#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:201
+#: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:209
 #: src/screens/TokenSwapReview.js:264
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
-#: src/screens/SendConfirmScreen.js:241
+#: src/screens/SendConfirmScreen.js:249
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] "Você tem ${ availablePretty } disponível"
 msgstr[1] "Você tem ${ availablePretty } disponíveis"
 
-#: src/screens/SendConfirmScreen.js:264
+#: src/screens/SendConfirmScreen.js:272
 msgid "Loading fee information..."
 msgstr "Carregando informações da taxa..."
 
-#: src/screens/SendConfirmScreen.js:267
+#: src/screens/SendConfirmScreen.js:275
 msgid "This is the native token, no network fees are charged."
 msgstr "Token nativo, nenhuma taxa aplicada."
 
-#: src/screens/SendConfirmScreen.js:270
+#: src/screens/SendConfirmScreen.js:278
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr "Este token é de Depósito, nenhuma taxa de rede será cobrada."
 
-#: src/screens/SendConfirmScreen.js:272
+#: src/screens/SendConfirmScreen.js:280
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr "Esta taxa é fixa e obrigatória para cada transação deste token."
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:277
+#: src/screens/SendConfirmScreen.js:285
 msgid "Loading..."
 msgstr "Carregando..."
 
-#: src/screens/SendConfirmScreen.js:299
+#: src/screens/SendConfirmScreen.js:307
 msgid "Building your transaction"
 msgstr "Criando sua transação"
 
-#: src/screens/SendConfirmScreen.js:317
+#: src/screens/SendConfirmScreen.js:325
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr "Sua transferência de **${ amountAndToken }** foi confirmada"
 
-#: src/screens/SendConfirmScreen.js:333
+#: src/screens/SendConfirmScreen.js:341
 msgid "Read more."
 msgstr "Ler mais."
 
-#: src/screens/SendConfirmScreen.js:355
+#: src/screens/SendConfirmScreen.js:363
 msgid "**Transaction summary**"
 msgstr "**Resumo da transação**"
 
-#: src/screens/SendConfirmScreen.js:358
+#: src/screens/SendConfirmScreen.js:366
 msgid "**To**"
 msgstr "**Para**"
 
-#: src/screens/SendConfirmScreen.js:363
+#: src/screens/SendConfirmScreen.js:371
 msgid "**Network Fee**"
 msgstr "**Taxa de Rede**"
 
-#: src/screens/SendConfirmScreen.js:371
+#: src/screens/SendConfirmScreen.js:379
 msgid "**Total**"
 msgstr "**Total**"
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:378
+#: src/screens/SendConfirmScreen.js:386
 msgid "Send"
 msgstr "Enviar"
 

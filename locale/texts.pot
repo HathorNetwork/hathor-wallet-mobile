@@ -437,7 +437,7 @@ msgid "Authorize token creation"
 msgstr ""
 
 #: src/screens/CreateTokenConfirm.js:184
-#: src/screens/SendConfirmScreen.js:202
+#: src/screens/SendConfirmScreen.js:210
 #: src/screens/TokenSwapReview.js:265
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
 msgid "Building transaction"
@@ -1054,7 +1054,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: src/screens/SendAmountInput.js:137
-#: src/screens/SendConfirmScreen.js:293
+#: src/screens/SendConfirmScreen.js:301
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr ""
 
@@ -1063,96 +1063,102 @@ msgstr ""
 msgid "No fee"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:55
+#: src/screens/SendConfirmScreen.js:60
 msgid "Insufficient HTR to cover the network fee."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:58
+#: src/screens/SendConfirmScreen.js:63
 msgid "Insufficient balance to send this transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:60
+#: src/screens/SendConfirmScreen.js:66
+msgid ""
+"This amount needs more inputs than a transaction can hold. Try sending a "
+"smaller amount."
+msgstr ""
+
+#: src/screens/SendConfirmScreen.js:68
 msgid "Failed to process transaction."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:181
+#: src/screens/SendConfirmScreen.js:189
 #: src/screens/TokenSwapReview.js:220
 msgid "Your transfer is being processed"
 msgstr ""
 
 #: src/sagas/helpers.js:147
-#: src/screens/SendConfirmScreen.js:200
+#: src/screens/SendConfirmScreen.js:208
 #: src/screens/TokenSwapReview.js:263
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr ""
 
 #: src/sagas/helpers.js:148
-#: src/screens/SendConfirmScreen.js:201
+#: src/screens/SendConfirmScreen.js:209
 #: src/screens/TokenSwapReview.js:264
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 msgid "Authorize operation"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:241
+#: src/screens/SendConfirmScreen.js:249
 #, javascript-format
 msgid "${ availablePretty } available"
 msgid_plural "${ availablePretty } available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/screens/SendConfirmScreen.js:264
+#: src/screens/SendConfirmScreen.js:272
 msgid "Loading fee information..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:267
+#: src/screens/SendConfirmScreen.js:275
 msgid "This is the native token, no network fees are charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:270
+#: src/screens/SendConfirmScreen.js:278
 msgid "This token is Deposit Based, no network fee will be charged."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:272
+#: src/screens/SendConfirmScreen.js:280
 msgid "This fee is fixed and required for every transfer of this token."
 msgstr ""
 
 #: src/components/Reown/NanoContract/NanoContractExecInfo.js:108
-#: src/screens/SendConfirmScreen.js:277
+#: src/screens/SendConfirmScreen.js:285
 msgid "Loading..."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:299
+#: src/screens/SendConfirmScreen.js:307
 msgid "Building your transaction"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:317
+#: src/screens/SendConfirmScreen.js:325
 #, javascript-format
 msgid "Your transfer of **${ amountAndToken }** has been confirmed"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:333
+#: src/screens/SendConfirmScreen.js:341
 msgid "Read more."
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:355
+#: src/screens/SendConfirmScreen.js:363
 msgid "**Transaction summary**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:358
+#: src/screens/SendConfirmScreen.js:366
 msgid "**To**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:363
+#: src/screens/SendConfirmScreen.js:371
 msgid "**Network Fee**"
 msgstr ""
 
-#: src/screens/SendConfirmScreen.js:371
+#: src/screens/SendConfirmScreen.js:379
 msgid "**Total**"
 msgstr ""
 
 #: src/screens/NetworkSettings/CustomNetworkSettingsScreen.js:295
-#: src/screens/SendConfirmScreen.js:378
+#: src/screens/SendConfirmScreen.js:386
 msgid "Send"
 msgstr ""
 
