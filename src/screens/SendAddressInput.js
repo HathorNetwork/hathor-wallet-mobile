@@ -17,6 +17,7 @@ import SimpleInput from '../components/SimpleInput';
 import HathorHeader from '../components/HathorHeader';
 import { getKeyboardAvoidingViewTopDistance, validateAddress } from '../utils';
 import OfflineBar from '../components/OfflineBar';
+import NavigationService from '../NavigationService';
 
 export const SendAddressInput = () => {
   const route = useRoute();
@@ -51,7 +52,7 @@ export const SendAddressInput = () => {
       <HathorHeader
         withBorder
         title={t`SEND`}
-        onBackPress={() => navigation.goBack()}
+        onBackPress={() => NavigationService.resetToMain()}
       />
       <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }} keyboardVerticalOffset={getKeyboardAvoidingViewTopDistance()}>
         <View style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
