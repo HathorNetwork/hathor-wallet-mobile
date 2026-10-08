@@ -167,9 +167,9 @@ const TokenSwap = () => {
   useEffect(() => {
     setShowQuote(!!quote);
     if (quote) {
-      setInputTokenAmountStr(renderValue(quote.amount_in));
+      setInputTokenAmountStr(renderValue(quote.amount_in, false, decimalPlaces));
       setInputTokenAmount(quote.amount_in);
-      setOutputTokenAmountStr(renderValue(quote.amount_out));
+      setOutputTokenAmountStr(renderValue(quote.amount_out, false, decimalPlaces));
       setOutputTokenAmount(quote.amount_out);
     }
   }, [quote]);
@@ -329,7 +329,7 @@ const TokenSwap = () => {
       return '';
     }
     const available = getAvailableAmount(token, tokensBalance);
-    const amount = `${renderValue(available, false)}`;
+    const amount = `${renderValue(available, false, decimalPlaces)}`;
     return t`Balance: ${amount}`;
   };
 
@@ -362,18 +362,18 @@ const TokenSwap = () => {
             <View>
               <View style={styles.card}>
                 <View style={styles.tokenCard}>
-                  <AmountTextInput
-                    onAmountUpdate={onInputAmountChange}
-                    onEndEditing={onInputAmountEndEditing}
-                    onFocus={() => onFocus('input')}
-                    value={inputTokenAmountStr}
-                    allowOnlyInteger={false}
-                    decimalPlaces={decimalPlaces}
-                    style={swapDirection === 'output' ? styles.amountInputTextFaded : styles.amountInputText}
-                    editable={editing !== 'output'}
-                    textAlign='left'
-                  />
-                  <View>
+                  <View style={styles.amountRow}>
+                    <AmountTextInput
+                      onAmountUpdate={onInputAmountChange}
+                      onEndEditing={onInputAmountEndEditing}
+                      onFocus={() => onFocus('input')}
+                      value={inputTokenAmountStr}
+                      allowOnlyInteger={false}
+                      decimalPlaces={decimalPlaces}
+                      style={swapDirection === 'output' ? styles.amountInputTextFaded : styles.amountInputText}
+                      editable={editing !== 'output'}
+                      textAlign='left'
+                    />
                     <View style={styles.tokenSelectorWrapper}>
                       { inputToken ? (
                         <TokenBox onPress={onInputTokenBoxPress} label={inputToken.symbol} />
@@ -381,10 +381,10 @@ const TokenSwap = () => {
                         <TokenBox label='' />
                       )}
                     </View>
-                    <InputLabel style={styles.amountAvailable}>
-                      {getAvailableString(inputToken)}
-                    </InputLabel>
                   </View>
+                  <InputLabel style={styles.amountAvailable}>
+                    {getAvailableString(inputToken)}
+                  </InputLabel>
                 </View>
               </View>
 
@@ -392,18 +392,18 @@ const TokenSwap = () => {
 
               <View style={styles.card}>
                 <View style={styles.tokenCard}>
-                  <AmountTextInput
-                    onAmountUpdate={onOutputAmountChange}
-                    onEndEditing={onOutputAmountEndEditing}
-                    onFocus={() => onFocus('output')}
-                    value={outputTokenAmountStr}
-                    allowOnlyInteger={false}
-                    decimalPlaces={decimalPlaces}
-                    style={swapDirection === 'input' ? styles.amountInputTextFaded : styles.amountInputText}
-                    editable={editing !== 'input'}
-                    textAlign='left'
-                  />
-                  <View>
+                  <View style={styles.amountRow}>
+                    <AmountTextInput
+                      onAmountUpdate={onOutputAmountChange}
+                      onEndEditing={onOutputAmountEndEditing}
+                      onFocus={() => onFocus('output')}
+                      value={outputTokenAmountStr}
+                      allowOnlyInteger={false}
+                      decimalPlaces={decimalPlaces}
+                      style={swapDirection === 'input' ? styles.amountInputTextFaded : styles.amountInputText}
+                      editable={editing !== 'input'}
+                      textAlign='left'
+                    />
                     <View style={styles.tokenSelectorWrapper}>
                       { outputToken ? (
                         <TokenBox onPress={onOutputTokenBoxPress} label={outputToken.symbol} />
@@ -411,10 +411,10 @@ const TokenSwap = () => {
                         <TokenBox label='' />
                       )}
                     </View>
-                    <InputLabel style={styles.amountAvailable}>
-                      {getAvailableString(outputToken)}
-                    </InputLabel>
                   </View>
+                  <InputLabel style={styles.amountAvailable}>
+                    {getAvailableString(outputToken)}
+                  </InputLabel>
                 </View>
               </View>
 
@@ -423,7 +423,7 @@ const TokenSwap = () => {
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Conversion rate</Text>
                     <Text style={styles.quoteValue}>
-                      {renderConversionRate(quote, inputToken, outputToken)}
+                      {renderConversionRate(quote, inputToken, outputToken, decimalPlaces)}
                     </Text>
                   </View>
                   <View style={styles.quoteRow}>
@@ -437,13 +437,13 @@ const TokenSwap = () => {
                   { quote.direction === 'input' && (
                     <View style={styles.quoteRow}>
                       <Text style={styles.quoteHeader}>Minimum received</Text>
-                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('input', quote.amount_out, outputToken, TOKEN_SWAP_SLIPPAGE)}</Text>
+                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('input', quote.amount_out, outputToken, TOKEN_SWAP_SLIPPAGE, decimalPlaces)}</Text>
                     </View>
                   )}
                   { quote.direction === 'output' && (
                     <View style={styles.quoteRow}>
                       <Text style={styles.quoteHeader}>Maximum to deposit</Text>
-                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, inputToken, TOKEN_SWAP_SLIPPAGE)}</Text>
+                      <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, inputToken, TOKEN_SWAP_SLIPPAGE, decimalPlaces)}</Text>
                     </View>
                   )}
                 </View>
@@ -518,23 +518,25 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     marginRight: 10,
   },
-  amountAvailable: {
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  amountInputText: { // https://github.com/facebook/react-native/issues/30666
-    flex: 1,
-    marginBottom: 30,
-  },
-  amountInputTextFaded: {
-    flex: 1,
-    marginBottom: 30,
-    color: COLORS.lightShadow,
-  },
-  tokenCard: {
+  amountRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  amountAvailable: {
+    marginTop: 8,
+    marginBottom: 4,
+    textAlign: 'right',
+  },
+  amountInputText: { // https://github.com/facebook/react-native/issues/30666
+    flex: 1,
+  },
+  amountInputTextFaded: {
+    flex: 1,
+    color: COLORS.lightShadow,
+  },
+  tokenCard: {
+    flexDirection: 'column',
     marginTop: 30,
     paddingVertical: 8,
     paddingLeft: 24,
@@ -559,6 +561,7 @@ const styles = StyleSheet.create({
   quoteRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
     paddingVertical: 8,
   },
   quoteHeader: {

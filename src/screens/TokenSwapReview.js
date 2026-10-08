@@ -68,6 +68,9 @@ const TokenSwapReview = () => {
   const useWalletService = useSelector((state) => state.useWalletService);
   const isShowingPinScreen = useSelector((state) => state.isShowingPinScreen);
   const contractId = useSelector(selectTokenSwapContractId);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
+  const nativeSymbol = useSelector((state) => state.serverInfo?.native_token?.symbol)
+    ?? hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol;
 
   const { quote, tokenIn, tokenOut } = useParams();
 
@@ -312,7 +315,7 @@ const TokenSwapReview = () => {
                 <View style={styles.tokenContainer}>
                   <Text style={styles.tokenHeader}>Swapping</Text>
                   <Text style={styles.tokenValue}>
-                    {renderAmountAndSymbol(quote.amount_in, tokenIn)}
+                    {renderAmountAndSymbol(quote.amount_in, tokenIn, decimalPlaces)}
                   </Text>
                 </View>
                 <View style={styles.iconContainer}>
@@ -321,7 +324,7 @@ const TokenSwapReview = () => {
                 <View style={styles.tokenContainer}>
                   <Text style={styles.tokenHeader}>To</Text>
                   <Text style={styles.tokenValue}>
-                    {renderAmountAndSymbol(quote.amount_out, tokenOut)}
+                    {renderAmountAndSymbol(quote.amount_out, tokenOut, decimalPlaces)}
                   </Text>
                 </View>
               </View>
@@ -333,7 +336,7 @@ const TokenSwapReview = () => {
                 <View style={styles.quoteRow}>
                   <Text style={styles.quoteHeader}>Conversion rate</Text>
                   <Text style={styles.quoteValue}>
-                    {renderConversionRate(quote, tokenIn, tokenOut)}
+                    {renderConversionRate(quote, tokenIn, tokenOut, decimalPlaces)}
                   </Text>
                 </View>
                 <View style={styles.quoteRow}>
@@ -347,20 +350,20 @@ const TokenSwapReview = () => {
                 { quote.direction === 'input' && (
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Minimum received</Text>
-                    <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('input', quote.amount_out, tokenOut, TOKEN_SWAP_SLIPPAGE)}</Text>
+                    <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('input', quote.amount_out, tokenOut, TOKEN_SWAP_SLIPPAGE, decimalPlaces)}</Text>
                   </View>
                 )}
                 { quote.direction === 'output' && (
                   <View style={styles.quoteRow}>
                     <Text style={styles.quoteHeader}>Maximum to deposit</Text>
-                    <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, tokenIn, TOKEN_SWAP_SLIPPAGE)}</Text>
+                    <Text style={styles.quoteValue}>{renderAmountAndSymbolWithSlippage('output', quote.amount_in, tokenIn, TOKEN_SWAP_SLIPPAGE, decimalPlaces)}</Text>
                   </View>
                 )}
                 <View style={styles.quoteRow}>
                   <Text style={styles.quoteHeader}>{t`Network Fee`}</Text>
                   <Text style={styles.quoteValue}>
                     {networkFee != null && networkFee > 0n
-                      ? `${renderValue(networkFee, false)} ${hathorLib.constants.DEFAULT_NATIVE_TOKEN_CONFIG.symbol}`
+                      ? `${renderValue(networkFee, false, decimalPlaces)} ${nativeSymbol}`
                       : t`No fee`}
                   </Text>
                 </View>
@@ -435,14 +438,19 @@ const styles = StyleSheet.create({
   quoteRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
     paddingVertical: 8,
     paddingHorizontal: 4,
   },
   quoteHeader: {
     fontWeight: '500',
+    flexShrink: 0,
   },
   quoteValue: {
     fontWeight: '300',
+    flex: 1,
+    textAlign: 'right',
+    marginLeft: 8,
   },
 });
 

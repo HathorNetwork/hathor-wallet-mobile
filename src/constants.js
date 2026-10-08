@@ -159,6 +159,10 @@ export const AMOUNT_FORMAT_DEFAULT = AMOUNT_FORMAT.EXPANDED;
 // 'wallet:' prefix: STORE.clearItems(true) sweeps it on resetWallet, so it resets to Expanded.
 export const AMOUNT_FORMAT_KEY = 'wallet:amount_format';
 
+// Max decimal places the amount input accepts, independent of the token's own
+// precision — the value is still scaled to the token's decimal_places downstream.
+export const MAX_DECIMAL_PLACES = 8;
+
 /**
  * this is the message key for localization of new transaction when show amount is enabled
  */
