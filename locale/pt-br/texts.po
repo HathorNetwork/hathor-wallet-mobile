@@ -2098,7 +2098,7 @@ msgid "New tokens"
 msgstr "Novos tokens"
 
 #: src/components/Reown/ReownPendingOverlay.js:364
-#: src/components/Reown/RequestErrorModal.js:56
+#: src/components/Reown/RequestErrorModal.js:54
 #: src/components/TokenImportBanner.js:63
 msgid "Dismiss"
 msgstr "Fechar"
@@ -2607,7 +2607,7 @@ msgstr ""
 msgid "Review details"
 msgstr "Revisar detalhes"
 
-#: src/components/Reown/RequestErrorModal.js:30
+#: src/components/Reown/RequestErrorModal.js:34
 msgid "An error occurred while processing the request."
 msgstr "Ocorreu um erro ao processar a solicitação."
 
