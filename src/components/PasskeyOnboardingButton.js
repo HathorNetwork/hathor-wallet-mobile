@@ -20,12 +20,18 @@ import {
   createWalletWordsFromPasskey,
   signInWalletWordsFromPasskey,
   isPasskeyCancel,
+  isPasskeySupported,
 } from '../passkey/passkeyService';
 import { derivePasskeyXpub } from '../passkey/passkeySigner';
+import {
+  registerOnWalletService,
+  shouldRegisterOnWalletService,
+} from '../passkey/walletServiceRegistration';
 import { startWalletRequested, unlockScreen } from '../actions';
 import { STORE } from '../store';
 import NavigationService from '../NavigationService';
 import { logger } from '../logger';
+import { getNetworkSettings } from '../sagas/helpers';
 
 const log = logger('passkey');
 
@@ -48,6 +54,7 @@ const log = logger('passkey');
 const PasskeyOnboardingButton = () => {
   const dispatch = useDispatch();
   const featureToggles = useSelector((state) => state.featureToggles);
+  const networkSettings = useSelector(getNetworkSettings);
   // Gated by the Unleash feature toggle (off by default).
   const enabled = get(featureToggles, PASSKEY_ONBOARDING_FEATURE_TOGGLE, false);
   const [busy, setBusy] = useState(false);
@@ -58,6 +65,22 @@ const PasskeyOnboardingButton = () => {
   // iOS: the sheet is a pure View (no native Modal), so grow its bottom padding to keep the name
   // input above the keyboard. Android pans the window instead (windowSoftInputMode="adjustPan").
   const [kbHeight, setKbHeight] = useState(0);
+  // Whether this device's OS version can produce a passkey PRF secret (iOS 18+, Android API 28+).
+  // Checked only once the flag is on, so app start never touches the passkey module for users
+  // outside the rollout. Devices on older versions never see the button, instead of minting a
+  // PRF-less passkey and only then failing.
+  const [supported, setSupported] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) return undefined;
+    let active = true;
+    isPasskeySupported().then((ok) => {
+      if (active) setSupported(ok);
+    });
+    return () => {
+      active = false;
+    };
+  }, [enabled]);
 
   useEffect(() => {
     if (Platform.OS !== 'ios') return undefined;
@@ -69,7 +92,7 @@ const PasskeyOnboardingButton = () => {
     };
   }, []);
 
-  if (!enabled) return null;
+  if (!enabled || !supported) return null;
 
   const openModal = () => {
     setStep('actions');
@@ -88,9 +111,21 @@ const PasskeyOnboardingButton = () => {
       // wallet metadata, and start the wallet read-only. No PIN, no stored secret.
       const xpub = derivePasskeyXpub(words);
       await STORE.initPasskeyStorage(xpub, {
-        passkeyLabel: label || t`Passkey wallet`,
+        // null when the platform didn't return a label: persisting a placeholder would present it
+        // as the passkey's real name, making the generic "Unlock with your passkey" unreachable.
+        passkeyLabel: label || null,
         credentialId: credentialId ?? null,
       });
+      // With the wallet-service flag on, also create the wallet on the wallet-service now, while
+      // the words are in scope (no extra prompt), so it can start on that facade. Never blocks
+      // onboarding: on failure the wallet starts on the fullnode facade; the next unlock retries.
+      if (shouldRegisterOnWalletService(featureToggles, networkSettings)) {
+        try {
+          await registerOnWalletService(words, networkSettings);
+        } catch (registrationError) {
+          log.error('Passkey wallet-service registration failed at onboarding', registrationError);
+        }
+      }
     } catch (e) {
       // Dismissing the OS passkey sheet is a cancel, not a failure — stay silent and let the user
       // retry (the modal stays open). Only real failures raise the alert.
@@ -100,7 +135,8 @@ const PasskeyOnboardingButton = () => {
       // react-native-passkey throws a PasskeyError with a `.error` code — surface it so a
       // generic "unknown error" becomes actionable (e.g. BadConfiguration = domain not verified).
       log.error('passkey onboarding failed', e);
-      const code = e?.error ? `[${e.error}] ` : '';
+      const nativeCode = e?.code ?? e?.error;
+      const code = nativeCode ? `[${nativeCode}] ` : '';
       Alert.alert(t`Passkey unavailable`, `${code}${e?.message ?? String(e)}`);
       return;
     } finally {
@@ -119,9 +155,10 @@ const PasskeyOnboardingButton = () => {
     run(() => createWalletWordsFromPasskey(name));
   };
 
-  const onDismiss = () => {
-    if (!busy) setModalVisible(false);
-  };
+  // BackdropModal animates the sheet OUT before calling onDismiss, so ignoring the call while busy
+  // would leave an invisible sheet mounted over the screen. Passing no onDismiss while busy makes a
+  // backdrop tap / swipe a true no-op instead (BackdropModal returns early without animating).
+  const onDismiss = busy ? undefined : () => setModalVisible(false);
 
   return (
     <>

@@ -725,6 +725,11 @@ class _AppStackWrapper extends React.Component {
         // this means app was in background for more than LOCK_TIMEOUT seconds,
         // so display lock screen
         this.props.lockScreen();
+        // Start a fresh timer for the lock screen itself. On Android the passkey unlock ceremony
+        // opens the Credential Manager as another activity, so the app goes background -> active
+        // DURING the unlock; with the stale timestamp kept here that return would re-lock the
+        // screen right after (or before) a successful passkey unlock.
+        this.backgroundTime = null;
       } else {
         this.backgroundTime = null;
       }

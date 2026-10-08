@@ -6,7 +6,12 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import {
+  BackHandler,
+  Keyboard,
+  Text,
+  View,
+} from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { t } from 'ttag';
 
@@ -23,9 +28,18 @@ import {
 import { COLORS } from '../styles/themes';
 import { STORE } from '../store';
 import baseStyle from '../styles/init';
-import { PasskeyCancelledError, verifyPasskeyForUnlock } from '../passkey/passkeySigner';
+import {
+  isExpectedPasskeyError,
+  PasskeyCancelledError,
+  verifyPasskeyForUnlock,
+} from '../passkey/passkeySigner';
 import { sanitizePasskeyLabel } from '../passkey/passkeyService';
+import {
+  finishWalletServiceRegistration,
+  walletServiceRegistrationForUnlock,
+} from '../passkey/walletServiceRegistration';
 import { logger } from '../logger';
+import { getNetworkSettings } from '../sagas/helpers';
 
 const log = logger('passkey');
 
@@ -38,6 +52,8 @@ const log = logger('passkey');
 const PasskeyLockScreen = () => {
   const dispatch = useDispatch();
   const wallet = useSelector((state) => state.wallet);
+  const featureToggles = useSelector((state) => state.featureToggles);
+  const networkSettings = useSelector(getNetworkSettings);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState(null);
   // Synchronous idempotency guard: fire the ceremony at most once even if the mount effect runs
@@ -56,7 +72,17 @@ const PasskeyLockScreen = () => {
     setVerifying(true);
     setError(null);
     try {
-      await verifyPasskeyForUnlock();
+      // If the wallet-service flag is on and this wallet isn't registered there yet (wallets
+      // created before that, a failed onboarding registration, a reinstall), prepare the
+      // registration inside the unlock ceremony while the words are in memory — no extra Face ID.
+      // It's finished in the background after the ceremony: creating the wallet on the
+      // wallet-service can take up to a minute, and neither the passkey lock nor the unlock waits
+      // for it. The wallet runs on the wallet-service facade from its next start. A failure never
+      // blocks unlocking.
+      const registration = await verifyPasskeyForUnlock({
+        onWords: walletServiceRegistrationForUnlock(featureToggles, networkSettings),
+      });
+      finishWalletServiceRegistration(registration);
       if (!wallet) {
         // App boot (or wallet stopped): start the xpub-only wallet. The saga derives
         // isPasskeyWallet from the persisted walletMeta; no secret (and no payload flag) via redux.
@@ -66,25 +92,42 @@ const PasskeyLockScreen = () => {
     } catch (e) {
       if (e instanceof PasskeyCancelledError) {
         setError(t`Unlock cancelled.`);
+      } else if (isExpectedPasskeyError(e)) {
+        // Expected, user-correctable outcomes (wrong passkey, a ceremony already open, a deleted or
+        // unsynced passkey...): show them in the banner only. Reporting them would pop the global
+        // "Unexpected error" alert on top of the banner, and the report payload would carry the
+        // wallet label from the mismatch message.
+        setError(e.message);
       } else {
-        // A non-cancel failure on the only entry point for these wallets: log + report to Sentry
-        // (fatal=false — the user can always retry or reset, this isn't a crash), and ALWAYS show
-        // text, since a non-Error rejection or empty native message would otherwise
-        // leave the error banner blank on an Unlock button that looks like it did nothing.
+        // An unexpected failure on the only entry point for these wallets (incl. corrupted
+        // metadata): log + report (fatal=false — the user can always retry or reset), and ALWAYS
+        // show text, since a non-Error rejection or empty native message would otherwise leave the
+        // error banner blank on an Unlock button that looks like it did nothing.
         log.error('passkey unlock failed', e);
         dispatch(onExceptionCaptured(e, false));
-        const code = e?.error ? `[${e.error}] ` : '';
+        const nativeCode = e?.code ?? e?.error;
+        const code = nativeCode ? `[${nativeCode}] ` : '';
         setError(`${code}${e?.message || t`Could not verify your passkey. Please try again.`}`);
       }
+    } finally {
+      // Also on success: if the screen is re-locked while this overlay is still mounted (e.g. an
+      // app-state transition racing the unlock), it must offer the Unlock button again rather than
+      // a permanent spinner — the mount effect below never re-runs the ceremony.
       setVerifying(false);
     }
   };
 
   useEffect(() => {
+    // Parity with PinScreen's lock mode: the overlay sits above the still-mounted navigator, so
+    // without this a hardware back press would pop the hidden screen (or exit the app), and a
+    // keyboard open before the lock would stay up over the overlay.
+    Keyboard.dismiss();
+    const backListener = BackHandler.addEventListener('hardwareBackPress', () => true);
     if (!startedRef.current) {
       startedRef.current = true;
       unlock();
     }
+    return () => backListener.remove();
   }, []);
 
   return (

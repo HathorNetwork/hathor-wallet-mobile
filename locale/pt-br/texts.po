@@ -73,7 +73,7 @@ msgstr "CRIAR TOKEN DE DEPÓSITO"
 msgid "CREATE FEE TOKEN"
 msgstr "CRIAR TOKEN DE TAXA"
 
-#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:88
+#: src/screens/CreateTokenAmount.js:36 src/screens/CreateTokenConfirm.js:90
 #: src/screens/CreateTokenDepositNotice.js:42
 #: src/screens/CreateTokenTypeNotice.js:94 src/utils.js:823
 msgid "CREATE TOKEN"
@@ -338,27 +338,27 @@ msgstr "Novo PIN salvo"
 msgid "CHANGE PIN"
 msgstr "MUDAR PIN"
 
-#: src/screens/ChoosePinScreen.js:140
+#: src/screens/ChoosePinScreen.js:148
 msgid "Enter your new PIN code"
 msgstr "Digite seu novo PIN"
 
-#: src/screens/ChoosePinScreen.js:152
+#: src/screens/ChoosePinScreen.js:160
 msgid "Enter your new PIN code again"
 msgstr "Digite seu novo PIN novamente"
 
-#: src/screens/ChoosePinScreen.js:74
+#: src/screens/ChoosePinScreen.js:75
 msgid "Create a new PIN code,"
 msgstr "Criar um novo PIN,"
 
-#: src/screens/ChoosePinScreen.js:77
+#: src/screens/ChoosePinScreen.js:78
 msgid "To confirm the PIN,"
 msgstr "Para confirmar o PIN,"
 
-#: src/screens/ChoosePinScreen.js:166
+#: src/screens/ChoosePinScreen.js:174
 msgid "PIN codes don't match. Try again."
 msgstr "Os PINs estão diferentes. Tente novamente."
 
-#: src/screens/ChoosePinScreen.js:189
+#: src/screens/ChoosePinScreen.js:197
 msgid "Start the Wallet"
 msgstr "Iniciar a Wallet"
 
@@ -379,7 +379,7 @@ msgstr "Você está prestes a adicionar esses tokens à sua carteira:"
 msgid "Import tokens"
 msgstr "Importar tokens"
 
-#: src/components/PasskeyOnboardingButton.js:188
+#: src/components/PasskeyOnboardingButton.js:209
 #: src/screens/ConfirmImportScreen.js:130
 #: src/screens/Reown/RegisterTokenAfterSuccess.js:80
 #: src/screens/Reown/SuccessFeedbackScreen.js:39
@@ -436,58 +436,58 @@ msgstr ""
 "Você escolheu criar um **Token com Taxa**, então uma pequena taxa será "
 "aplicada a cada transação futura deste token."
 
-#: src/screens/CreateTokenConfirm.js:146
+#: src/screens/CreateTokenConfirm.js:155
 msgid "Creating token"
 msgstr "Criando um token"
 
-#: src/screens/CreateTokenConfirm.js:152
+#: src/screens/CreateTokenConfirm.js:161
 msgid "Building the transaction"
 msgstr "Criando a transação"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:170
+#: src/screens/CreateTokenConfirm.js:179
 msgid "Enter your 6-digit pin to create your token"
 msgstr "Digite seu PIN de 6 dígitos para criar o seu token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:171
+#: src/screens/CreateTokenConfirm.js:180
 msgid "Authorize token creation"
 msgstr "Autorizar criação de token"
 
 #.  onPasskey defaults to pinParams.cb (executeCreate) — both paths run the same function here.
-#: src/screens/CreateTokenConfirm.js:173 src/screens/SendConfirmScreen.js:200
-#: src/screens/TokenSwapReview.js:251
+#: src/screens/CreateTokenConfirm.js:182 src/screens/SendConfirmScreen.js:200
+#: src/screens/TokenSwapReview.js:263
 msgid "Building transaction"
 msgstr "Criando transação"
 
-#: src/screens/CreateTokenConfirm.js:214
+#: src/screens/CreateTokenConfirm.js:223
 #, javascript-format
 msgid "**${ name }** created successfully"
 msgstr "**${ name }** criado com sucesso"
 
-#: src/screens/CreateTokenConfirm.js:231
+#: src/screens/CreateTokenConfirm.js:240
 msgid "Amount of ${ name }"
 msgstr "Quantidade de ${ name }"
 
-#: src/screens/CreateTokenConfirm.js:245
+#: src/screens/CreateTokenConfirm.js:254
 msgid "Token name"
 msgstr "Nome do token"
 
-#: src/screens/CreateTokenConfirm.js:251 src/screens/CreateTokenSymbol.js:71
+#: src/screens/CreateTokenConfirm.js:260 src/screens/CreateTokenSymbol.js:71
 msgid "Token symbol"
 msgstr "Símbolo do token"
 
 #: src/components/Reown/CreateTokenRequest.js:87
 #: src/components/Reown/CreateTokenRequest.js:129
-#: src/screens/CreateTokenConfirm.js:258
+#: src/screens/CreateTokenConfirm.js:267
 msgid "Deposit"
 msgstr "Depósito"
 
-#: src/screens/CreateTokenConfirm.js:266
+#: src/screens/CreateTokenConfirm.js:275
 msgid "Network fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/CreateTokenConfirm.js:275
+#: src/screens/CreateTokenConfirm.js:284
 msgid "Create token"
 msgstr "Criar um token"
 
@@ -778,7 +778,7 @@ msgstr "**${ loadedData.addresses } endereços** encontrados"
 msgid "There's been an error connecting to the server."
 msgstr "Ocorreu um erro ao conectar com o servidor."
 
-#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:156
+#: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:182
 #: src/screens/PinScreen.js:318 src/screens/Settings.js:186
 msgid "Reset wallet"
 msgstr "Resetar Wallet"
@@ -835,24 +835,24 @@ msgstr "Registrar Nano Contract"
 msgid "Scan the nano contract ID QR code"
 msgstr "Escaneie o QR code do ID do Nano Contract"
 
-#: src/screens/PasskeyLockScreen.js:68
+#: src/screens/PasskeyLockScreen.js:77
 msgid "Unlock cancelled."
 msgstr "Desbloqueamento cancelado."
 
-#: src/screens/PasskeyLockScreen.js:77
+#: src/screens/PasskeyLockScreen.js:93
 msgid "Could not verify your passkey. Please try again."
 msgstr "Não foi possível verificar sua passkey. Tente novamente."
 
-#: src/screens/PasskeyLockScreen.js:120
+#: src/screens/PasskeyLockScreen.js:146
 #, javascript-format
 msgid "Unlock with the passkey \"${ passkeyLabel }\""
 msgstr "Desbloquear com passkey \"${ passkeyLabel }\""
 
-#: src/screens/PasskeyLockScreen.js:121
+#: src/screens/PasskeyLockScreen.js:147
 msgid "Unlock with your passkey"
 msgstr "Desbloquear com sua passkey"
 
-#: src/screens/PasskeyLockScreen.js:141
+#: src/screens/PasskeyLockScreen.js:167
 msgid "Unlock"
 msgstr "Desbloquear"
 
@@ -1082,7 +1082,7 @@ msgstr[1] "${ amountAndToken } disponíveis"
 msgid "SEND ${ tokenNameUpperCase }"
 msgstr "ENVIAR ${ tokenNameUpperCase }"
 
-#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:350
+#: src/screens/SendConfirmScreen.js:43 src/screens/TokenSwapReview.js:362
 msgid "No fee"
 msgstr "Sem taxa"
 
@@ -1098,19 +1098,19 @@ msgstr "Saldo insuficiente para completar a transação."
 msgid "Failed to process transaction."
 msgstr "Falha ao processar a transação"
 
-#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:214
+#: src/screens/SendConfirmScreen.js:179 src/screens/TokenSwapReview.js:218
 msgid "Your transfer is being processed"
 msgstr "Sua transferência está sendo processada"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 #: src/sagas/helpers.js:147 src/screens/SendConfirmScreen.js:198
-#: src/screens/TokenSwapReview.js:249
+#: src/screens/TokenSwapReview.js:261
 msgid "Enter your 6-digit pin to authorize operation"
 msgstr "Digite seu PIN de 6 dígitos para autorizar a operação"
 
 #.  onPasskey defaults to pinParams.cb (executeSend) — both paths run the same function here.
 #: src/sagas/helpers.js:148 src/screens/SendConfirmScreen.js:199
-#: src/screens/TokenSwapReview.js:250
+#: src/screens/TokenSwapReview.js:262
 msgid "Authorize operation"
 msgstr "Autorizar operação"
 
@@ -1263,29 +1263,25 @@ msgstr "Ocorreu um erro ao carregar o protocolo de troca de tokens."
 msgid "Loading Token Swap"
 msgstr "Carregando troca de tokens"
 
-#: src/screens/TokenSwapReview.js:230
-msgid "Could not complete the swap. Please try again."
-msgstr "Não foi possível completar a troca. Tente novamente."
-
-#: src/screens/TokenSwapReview.js:261
+#: src/screens/TokenSwapReview.js:273
 msgid "REVIEW TOKEN SWAP"
 msgstr "REVISAR TROCA DE TOKENS"
 
-#: src/screens/TokenSwapReview.js:267
+#: src/screens/TokenSwapReview.js:279
 msgid "Building the swap transaction for your review"
 msgstr "Criando transação de swap para ser revisada"
 
-#: src/screens/TokenSwapReview.js:285
+#: src/screens/TokenSwapReview.js:297
 msgid "Your swap was successful"
 msgstr "Sua troca foi bem-sucedida"
 
 #: src/components/Reown/CreateTokenRequest.js:130
 #: src/components/Reown/TransactionFees.js:55
-#: src/screens/TokenSwapReview.js:346
+#: src/screens/TokenSwapReview.js:358
 msgid "Network Fee"
 msgstr "Taxa de Rede"
 
-#: src/screens/TokenSwapReview.js:358
+#: src/screens/TokenSwapReview.js:370
 msgid "SWAP"
 msgstr "TROCAR"
 
@@ -1745,37 +1741,75 @@ msgstr "Transação"
 msgid "Open"
 msgstr "Abrir"
 
-#: src/sagas/wallet.js:948
+#: src/sagas/wallet.js:952
 msgid "Wallet is not ready to load addresses."
 msgstr "A wallet não está pronta para carregar os endereços."
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:962
+#: src/sagas/wallet.js:966
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr "Ocorreu um erro ao carregar os endereços da wallet. Tente novamente."
 
-#: src/sagas/wallet.js:972
+#: src/sagas/wallet.js:976
 msgid "Wallet is not ready to load the first address."
 msgstr "A wallet não está pronta para carregar o primeiro endereço."
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:988
+#: src/sagas/wallet.js:992
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 "Ocorreu um erro ao carregar o primeiro endereço da wallet. Tente novamente."
 
-#: src/passkey/passkeySigner.js:37
+#: src/passkey/passkeyService.js:106
+msgid ""
+"This passkey isn't available on this device. Make sure it's synced to this "
+"device, or use the device where you created it."
+msgstr ""
+"Essa passkey não está disponível nesse aparelho. Confirme que está "
+"sincronizada com esse aparelho, ou use o dispositivo onde você criou ela."
+
+#: src/passkey/passkeyService.js:107
+msgid "The passkey request timed out. Please try again."
+msgstr ""
+"Tempo excedido ao tentar solicitar a passkey. Por favor, tente novamente."
+
+#: src/passkey/passkeyService.js:108
+msgid "The passkey request was interrupted. Please try again."
+msgstr "A solicitação de passkey foi interrompida. Por favor, tente novamente."
+
+#: src/passkey/passkeyService.js:127
+msgid "The passkey operation failed. Please try again."
+msgstr "Falha na operação da passkey. Por favor tente novamente."
+
+#: src/passkey/passkeyService.js:150
+msgid ""
+"This device can't create a passkey wallet. Passkey wallets need iOS 18 or "
+"later, or Android with Google Password Manager passkeys."
+msgstr ""
+"Esse dispositivo não pode criar uma carteira com passkey. Carteiras com "
+"passkey precisam de iOS 18 ou superior, Android com passkeys Google Password "
+"Manager."
+
+#: src/passkey/passkeyService.js:170
+msgid ""
+"The passkey did not verify your identity. Use a passkey protected by Face "
+"ID, fingerprint or your device PIN."
+msgstr ""
+"A passkey não verificou sua identidade. Use uma passkey protegida por Face "
+"ID, digital ou o PIN do seu aparelho."
+
+#: src/passkey/passkeySigner.js:39
 msgid "Passkey authorization was cancelled. Nothing was sent."
 msgstr "Autorização da passkey cancelada. Nada foi enviado."
 
-#: src/passkey/passkeySigner.js:47
+#: src/passkey/passkeySigner.js:49
 #, javascript-format
 msgid ""
 "This passkey opens a different wallet. Use the passkey named \"${ label }\"."
 msgstr ""
 "Essa passkey é de uma carteira diferente. Use a passkey \"${ label }\"."
 
-#: src/passkey/passkeySigner.js:48
+#: src/passkey/passkeySigner.js:50
 msgid ""
 "This passkey opens a different wallet. Use the passkey that created this "
 "wallet."
@@ -1783,17 +1817,22 @@ msgstr ""
 "Essa passkey é de uma carteira diferente. Use a passkey que criou essa "
 "carteira"
 
-#: src/passkey/passkeySigner.js:56
+#: src/passkey/passkeySigner.js:58
 msgid "Another passkey authorization is already in progress."
 msgstr "Outra autorização de passkey em progresso."
 
-#: src/passkey/passkeySigner.js:67
+#: src/passkey/passkeySigner.js:69
 msgid ""
 "Passkey wallet data is missing or corrupted. Reset the wallet and sign in "
 "again with your passkey."
 msgstr ""
 "Os dados da passkey da carteira estão ausentes ou corrompidos. Redefina a "
 "carteira e entre novamente com sua passkey."
+
+#: src/passkey/passkeySigner.js:79
+msgid ""
+"Sending from a passkey wallet isn't supported in this version of the app yet."
+msgstr "Enviar de uma carteira com passkey ainda não é suportado nessa versão."
 
 #: src/components/AmountInputAccessory.js:98
 msgid "Max"
@@ -1918,40 +1957,36 @@ msgstr "Adicionar tokens falhou"
 msgid "No internet connection"
 msgstr "Sem conexão com a internet"
 
-#: src/components/PasskeyOnboardingButton.js:91
-msgid "Passkey wallet"
-msgstr "Carteira passkey"
-
-#: src/components/PasskeyOnboardingButton.js:104
+#: src/components/PasskeyOnboardingButton.js:124
 msgid "Passkey unavailable"
 msgstr "Passkey indisponível."
 
-#: src/components/PasskeyOnboardingButton.js:118
+#: src/components/PasskeyOnboardingButton.js:138
 msgid "Hathor Wallet"
 msgstr "Hathor Wallet"
 
-#: src/components/PasskeyOnboardingButton.js:130
+#: src/components/PasskeyOnboardingButton.js:151
 msgid "Passkey"
 msgstr "Passkey"
 
-#: src/components/PasskeyOnboardingButton.js:137
+#: src/components/PasskeyOnboardingButton.js:158
 msgid "Continue with passkey"
 msgstr "Continuar com passkey"
 
-#: src/components/PasskeyOnboardingButton.js:142
-#: src/components/PasskeyOnboardingButton.js:182
+#: src/components/PasskeyOnboardingButton.js:163
+#: src/components/PasskeyOnboardingButton.js:203
 msgid "Working…"
 msgstr "Processando..."
 
-#: src/components/PasskeyOnboardingButton.js:142
+#: src/components/PasskeyOnboardingButton.js:163
 msgid "Sign in with passkey"
 msgstr "Entrar com passkey"
 
-#: src/components/PasskeyOnboardingButton.js:148
+#: src/components/PasskeyOnboardingButton.js:169
 msgid "Create passkey wallet"
 msgstr "Criar uma carteira com passkey"
 
-#: src/components/PasskeyOnboardingButton.js:156
+#: src/components/PasskeyOnboardingButton.js:177
 msgid ""
 "Your wallet is protected by this passkey. Keep it backed up in your password "
 "manager so you don't lose access."
@@ -1959,19 +1994,19 @@ msgstr ""
 "Sua carteira está protegida por essa passkey. Mantenha um backup no seu "
 "gerenciador de senhas para não perder o acesso."
 
-#: src/components/PasskeyOnboardingButton.js:161
+#: src/components/PasskeyOnboardingButton.js:182
 msgid "Name your wallet"
 msgstr "Nome da sua carteira"
 
-#: src/components/PasskeyOnboardingButton.js:163
+#: src/components/PasskeyOnboardingButton.js:184
 msgid "This name identifies the passkey when you sign in later."
 msgstr "Esse nome identifica a passkey quando você entrar depois."
 
-#: src/components/PasskeyOnboardingButton.js:170
+#: src/components/PasskeyOnboardingButton.js:191
 msgid "e.g. Savings"
 msgstr "e.g. Poupança"
 
-#: src/components/PasskeyOnboardingButton.js:182
+#: src/components/PasskeyOnboardingButton.js:203
 msgid "Create"
 msgstr "Criar"
 
@@ -2004,7 +2039,7 @@ msgstr "Novo endereço"
 msgid "Share"
 msgstr "Compartilhar"
 
-#: src/components/SendTransactionFeedbackModal.js:214
+#: src/components/SendTransactionFeedbackModal.js:215
 msgid "Propagating transaction to the network."
 msgstr "Propagando a transação para a rede."
 
@@ -2979,6 +3014,21 @@ msgstr "${ tokenSymbol } Conceder Authority"
 #: src/components/NanoContract/common/NanoContractActionUtils.js:26
 msgid "${ tokenSymbol } Acquire Authority"
 msgstr "${ tokenSymbol } Obter Authority"
+
+#~ msgid "Could not create the wallet"
+#~ msgstr "Erro ao criar carteira"
+
+#~ msgid "Something went wrong while saving your wallet. Please try again."
+#~ msgstr "Algo deu errado ao salvar sua carteira. Por favor, tente novamente."
+
+#~ msgid "Could not authorize the swap"
+#~ msgstr "Erro ao autorizar troca"
+
+#~ msgid "Could not complete the swap. Please try again."
+#~ msgstr "Não foi possível completar a troca. Tente novamente."
+
+#~ msgid "Passkey wallet"
+#~ msgstr "Carteira passkey"
 
 #~ msgid "SAVE PREFERENCES"
 #~ msgstr "SALVAR PREFERÊNCIAS"

@@ -23,6 +23,8 @@
  *     https://<PASSKEY_RP_ID>/.well-known/apple-app-site-association. Without it, create/get fail.
  */
 
+import { Platform } from 'react-native';
+import { t } from 'ttag';
 import { walletUtils } from '@hathor/wallet-lib';
 import {
   PASSKEY_RP_ID,
@@ -72,7 +74,7 @@ function getPasskey() {
     // Keep the original error as the cause: a module that IS installed but throws during native
     // init would otherwise be misreported as "not installed" with its real stack lost.
     throw new Error(
-      'react-native-passkey is not installed. Run `yarn && cd ios && pod install`.',
+      'react-native-passkey is not installed. Run `npm install && cd ios && pod install`.',
       { cause: e }
     );
   }
@@ -94,6 +96,79 @@ function getPasskey() {
  */
 export function isPasskeyCancel(e) {
   return e?.error === 'UserCancelled';
+}
+
+// Translated messages for the react-native-passkey codes caused by the user's device or account
+// rather than a bug (the passkey was deleted or isn't synced to this device, or the ceremony timed
+// out or was interrupted). Screens show these to the user instead of the library's English text.
+// Functions, so the text is translated in the locale active when the error is shown.
+const EXPECTED_NATIVE_ERROR_MESSAGES = {
+  NoCredentials: () => t`This passkey isn't available on this device. Make sure it's synced to this device, or use the device where you created it.`,
+  TimedOut: () => t`The passkey request timed out. Please try again.`,
+  Interrupted: () => t`The passkey request was interrupted. Please try again.`,
+};
+
+/** The native codes that are expected, user-correctable outcomes (see isExpectedPasskeyError). */
+export const EXPECTED_NATIVE_CODES = Object.keys(EXPECTED_NATIVE_ERROR_MESSAGES);
+
+/**
+ * A non-cancel failure from the native passkey layer. react-native-passkey rejects with plain
+ * `{ error, message }` objects, not Error instances; wallet-lib re-throws them unchanged and
+ * hathor-rpc-handler then reports anything that isn't an Error as "An unknown error occurred".
+ * Wrapping keeps the native code (e.g. NoCredentials when the passkey was deleted). Expected codes
+ * get a translated message; the library's own message is kept in `nativeMessage` for logs.
+ */
+export class PasskeyNativeError extends Error {
+  constructor(nativeError) {
+    const code = nativeError?.error ?? null;
+    const translated = EXPECTED_NATIVE_CODES.includes(code)
+      ? EXPECTED_NATIVE_ERROR_MESSAGES[code]()
+      : null;
+    super(translated || nativeError?.message || t`The passkey operation failed. Please try again.`);
+    this.name = 'PasskeyNativeError';
+    this.code = code;
+    this.nativeMessage = nativeError?.message ?? null;
+  }
+}
+
+/**
+ * Run a react-native-passkey call, converting its plain-object rejections into PasskeyNativeError.
+ * A user cancel is re-thrown untouched (callers detect it with isPasskeyCancel), and real Error
+ * instances pass through with their own stack. The library turns most failures, including an
+ * unlinked native module, into its own plain `UnknownError` object, so those arrive here as a
+ * PasskeyNativeError("An unknown error occurred").
+ */
+async function callPasskey(fn) {
+  try {
+    return await fn();
+  } catch (e) {
+    if (isPasskeyCancel(e) || e instanceof Error) throw e;
+    throw new PasskeyNativeError(e);
+  }
+}
+
+const prfUnsupportedMessage = () => t`This device can't create a passkey wallet. Passkey wallets need iOS 18 or later, or Android with Google Password Manager passkeys.`;
+
+// WebAuthn authenticatorData layout: rpIdHash (32 bytes) | flags (1 byte) | signCount (4) | ...
+const AUTH_DATA_FLAGS_OFFSET = 32;
+// Flags bit 2: UV (user verified).
+const AUTH_DATA_FLAG_UV = 0x04;
+
+/**
+ * Defence in depth for `userVerification: 'required'`: PRF is backed by CTAP2 hmac-secret, which
+ * keeps SEPARATE secrets with and without user verification, so a no-UV assertion would derive a
+ * different seed. Reject it before the PRF output is used, instead of trusting the platform to
+ * honour the 'required' request.
+ */
+export function assertUserVerified(authenticatorData) {
+  const bytes = toBytes(authenticatorData);
+  if (!bytes || bytes.length <= AUTH_DATA_FLAGS_OFFSET) {
+    throw new Error('Could not read the passkey authenticator data to confirm user verification.');
+  }
+  // eslint-disable-next-line no-bitwise
+  if ((bytes[AUTH_DATA_FLAGS_OFFSET] & AUTH_DATA_FLAG_UV) === 0) {
+    throw new Error(t`The passkey did not verify your identity. Use a passkey protected by Face ID, fingerprint or your device PIN.`);
+  }
 }
 
 // user.id is capped at 64 bytes by WebAuthn; we spend 1 on the 0x00 separator and 8 on the
@@ -143,17 +218,26 @@ export function sanitizePasskeyLabel(label) {
 }
 
 /** Best-effort inverse of encodeUserId: label from a userHandle, or null. */
-function decodeUserIdLabel(userHandle) {
+export function decodeUserIdLabel(userHandle) {
   const bytes = toBytes(userHandle);
   if (!bytes || !bytes.length) return null;
-  const buf = Buffer.from(bytes);
-  const sep = buf.indexOf(0);
-  const label = (sep >= 0 ? buf.subarray(0, sep) : buf).toString('utf8');
+  const sep = bytes.indexOf(0);
+  // Copy into a real Buffer BEFORE decoding. The app's global Buffer is the buffer@4.9.2 polyfill
+  // (shim.js), whose subarray() returns a plain Uint8Array — and Uint8Array#toString ignores the
+  // 'utf8' argument and joins the byte values with commas ("Savings" -> "83,97,118,..."). Jest runs
+  // on Node's native Buffer, where subarray does return a Buffer, so only the device showed this.
+  const label = Buffer.from(sep >= 0 ? bytes.subarray(0, sep) : bytes).toString('utf8');
   return sanitizePasskeyLabel(label);
 }
 
-/** True if this device/build can produce a passkey PRF secret. */
+/**
+ * True if this device/build can produce a passkey PRF secret. Passkey.isSupported() alone is true
+ * from iOS 15 / Android API 28, but the whole feature depends on PRF: react-native-passkey only
+ * attaches the PRF extension on iOS 18+, so an older iPhone would mint a useless PRF-less passkey.
+ */
 export async function isPasskeySupported() {
+  if (Platform.OS === 'ios' && parseInt(String(Platform.Version), 10) < 18) return false;
+  if (Platform.OS === 'android' && Number(Platform.Version) < 28) return false;
   try {
     const Passkey = getPasskey();
     const r = Passkey.isSupported();
@@ -204,7 +288,12 @@ function digPrfFirst(result) {
  */
 async function registerPasskey(userName) {
   const Passkey = getPasskey();
-  const result = await Passkey.create({
+  // On iOS force a PLATFORM passkey: the security-key request carries no PRF extension at all, so
+  // a credential minted that way could never yield a seed.
+  const create = Platform.OS === 'ios'
+    ? (req) => Passkey.createPlatformKey(req)
+    : (req) => Passkey.create(req);
+  const result = await callPasskey(() => create({
     challenge: toB64Url(randomBytes(32)),
     rp: { id: PASSKEY_RP_ID, name: PASSKEY_RP_NAME },
     user: { id: encodeUserId(userName), name: userName, displayName: userName },
@@ -215,7 +304,18 @@ async function registerPasskey(userName) {
     // UV keeps the derived wallet deterministic (and this ceremony authorizes spending anyway).
     authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
     extensions: { prf: {} }, // enable PRF / check support; evaluate at assertion
-  });
+  }));
+  // The platform can report at creation whether PRF was enabled on the new credential. If it says
+  // it wasn't, the passkey can never produce a seed — stop now with a clear message, instead of
+  // after a second biometric prompt. Only an explicit `false` stops here: react-native-passkey
+  // passes the provider's response through as-is, and a provider that leaves the field out (not
+  // yet confirmed on Android's Google Password Manager) must not fail every creation. If PRF really
+  // is missing, the assertion below returns no PRF output and wordsFromPrf fails with the same
+  // message.
+  const ext = result?.clientExtensionResults ?? result?.response?.clientExtensionResults;
+  if (ext?.prf?.enabled === false) {
+    throw new Error(prfUnsupportedMessage());
+  }
   return result?.id ?? result?.rawId; // credentialId
 }
 
@@ -226,7 +326,7 @@ async function registerPasskey(userName) {
  */
 async function getPrfViaAssertion(credentialId) {
   const Passkey = getPasskey();
-  const result = await Passkey.get({
+  const result = await callPasskey(() => Passkey.get({
     challenge: toB64Url(randomBytes(32)),
     rpId: PASSKEY_RP_ID,
     // 'required' — must match registration: PRF/hmac-secret returns a different secret without UV,
@@ -236,7 +336,8 @@ async function getPrfViaAssertion(credentialId) {
     // iOS wants binary PRF inputs as a Uint8Array (it arrives as a Dictionary and is decoded
     // byte-by-byte); a base64url string throws DecodingError.typeMismatch. Pass the raw bytes.
     extensions: { prf: { eval: { first: PRF_SALT } } },
-  });
+  }));
+  assertUserVerified(result?.response?.authenticatorData);
   return {
     prf: digPrfFirst(result),
     userHandle: result?.response?.userHandle ?? result?.userHandle,
@@ -247,10 +348,7 @@ async function getPrfViaAssertion(credentialId) {
 /** 32-byte PRF secret -> { words } (a 24-word BIP39 phrase). Same secret => same wallet. */
 function wordsFromPrf(prf32) {
   if (!prf32 || prf32.length !== 32) {
-    throw new Error(
-      'Could not obtain a 32-byte PRF secret from the passkey. PRF may be unsupported on this '
-        + 'device (needs iOS 18+, or Android with Google Password Manager passkeys).'
-    );
+    throw new Error(prfUnsupportedMessage());
   }
   // 32 bytes of entropy -> exactly 24 BIP39 words. wallet-lib's generateWalletWords passes the
   // Buffer straight to bitcore-mnemonic as ENTROPY, so this is deterministic and matches the

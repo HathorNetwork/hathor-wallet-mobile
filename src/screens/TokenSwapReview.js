@@ -44,7 +44,11 @@ import {
   tokenSwapFetchSwapQuote,
   tokenSwapResetSwapData,
 } from '../actions';
-import { PasskeyCancelledError, PasskeyBusyError } from '../passkey/passkeySigner';
+import {
+  isExpectedPasskeyError,
+  PasskeyCancelledError,
+  PasskeyBusyError,
+} from '../passkey/passkeySigner';
 import { registerToken, updateTokensMetadata } from '../utils/tokens';
 import { TOKEN_SWAP_SLIPPAGE } from '../constants';
 import Spinner from '../components/Spinner';
@@ -196,8 +200,8 @@ const TokenSwapReview = () => {
     navigation.goBack();
   };
 
-  // Build error: the lib already released UTXOs in its own catch, so there
-  // is no sendTx to release here — just go back.
+  // Dismisses the error sheet and goes back. A build error has no sendTx (the lib released its
+  // UTXOs in its own catch); after a passkey error, beforeRemove releases the reserved UTXOs.
   const dismissBuildError = () => {
     refreshQuote();
     navigation.goBack();
@@ -205,7 +209,9 @@ const TokenSwapReview = () => {
 
   const executeSend = async (pin) => {
     try {
-      if (useWalletService) {
+      // Re-mint a full token with the PIN. A passkey wallet has no PIN: its signing ceremony mints
+      // the full token itself (see makePasskeyTxSigner onRootKey), so skip this without one.
+      if (useWalletService && pin) {
         await wallet.validateAndRenewAuthToken(pin);
       }
       await wallet.signTx(sendTx.transaction, { pinCode: pin });
@@ -222,14 +228,22 @@ const TokenSwapReview = () => {
         setIsSending(false);
         return;
       }
-      // A real failure — e.g. PasskeyXpubMismatchError, whose message names the passkey to use.
-      // Report it and SHOW it (reusing the error FeedbackModal below) instead of a silent goBack;
-      // dismissing it navigates back, releasing the reserved UTXOs via the beforeRemove listener.
+      // An expected passkey outcome (wrong passkey, a build that can't sign from a passkey yet, a
+      // deleted or unsynced passkey...) is not a bug: show its message in the error sheet instead
+      // of reporting it. Dismissing the sheet navigates back, releasing the reserved UTXOs via
+      // beforeRemove.
+      if (isExpectedPasskeyError(err)) {
+        setBuildError({ message: err.message });
+        setPhase(PHASE.ERROR);
+        setIsSending(false);
+        return;
+      }
+      // Any other failure (incl. PasskeyMetadataMissingError, i.e. corrupted storage, and
+      // seed-wallet auth-token / signTx errors) is unexpected: report it through the global error
+      // handler and go back, releasing the reserved UTXOs via beforeRemove.
       console.error(err);
       dispatch(onExceptionCaptured(err, false));
-      setBuildError({ message: err?.message || t`Could not complete the swap. Please try again.` });
-      setPhase(PHASE.ERROR);
-      setIsSending(false);
+      exitOnError();
     }
   };
 

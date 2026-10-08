@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
 } from 'react-native';
@@ -85,6 +85,8 @@ const CreateTokenConfirm = () => {
   // is interactive again, closing the window between the PinScreen dismissal and
   // the feedback modal render where the button would otherwise be tappable.
   const [isSending, setIsSending] = useState(false);
+  // Address the token is minted to; kept across retries (see executeCreate).
+  const tokenAddressRef = useRef(null);
   const [title, setTitle] = useState(t`CREATE TOKEN`);
   const [deposit, setDeposit] = useState(null);
   const [networkFee, setNetworkFee] = useState(null);
@@ -126,11 +128,20 @@ const CreateTokenConfirm = () => {
    */
   const executeCreate = (pin) => {
     const promise = (async () => {
-      if (useWalletService) {
+      // Re-mint a full token with the PIN. A passkey wallet has no PIN: its signing ceremony mints
+      // the full token itself (see makePasskeyTxSigner onRootKey), so skip this without one.
+      if (useWalletService && pin) {
         await wallet.validateAndRenewAuthToken(pin);
       }
 
-      const { address } = await wallet.getCurrentAddress({ markAsUsed: true });
+      // Reuse the address across retries: on the passkey path signing (and so a cancelled
+      // ceremony) happens inside prepareCreateNewToken, AFTER the address was marked as used, so
+      // fetching a fresh one per attempt would burn an address on every cancel.
+      if (!tokenAddressRef.current) {
+        const current = await wallet.getCurrentAddress({ markAsUsed: true });
+        tokenAddressRef.current = current.address;
+      }
+      const address = tokenAddressRef.current;
       const tx = await wallet.prepareCreateNewToken(
         name,
         symbol,

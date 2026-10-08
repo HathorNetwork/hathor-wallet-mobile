@@ -9,6 +9,9 @@ import CryptoJS from 'crypto-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MemoryStore, Storage, bigIntUtils, cryptoUtils, walletUtils } from '@hathor/wallet-lib';
 import { NETWORK_MAINNET } from './constants';
+import { logger } from './logger';
+
+const log = logger('store');
 
 export const ACCESS_DATA_KEY = 'asyncstorage:access';
 export const REGISTERED_TOKENS_KEY = 'asyncstorage:registeredTokens';
@@ -262,13 +265,25 @@ class AsyncStorageStore {
     return ret;
   }
 
+  /**
+   * Fire-and-forget write. Returns undefined, so a saga's `yield STORE.setItem(...)` neither blocks
+   * on the native flush nor throws when the write fails. Callers that need durability use
+   * setItemAsync.
+   */
   setItem(key, value) {
+    // Nobody awaits this write, so log a failure instead of leaving an unhandled rejection.
+    this.setItemAsync(key, value).catch((err) => log.error(`Failed to persist ${key}.`, err));
+  }
+
+  /**
+   * Durable variant of setItem: returns the AsyncStorage flush promise so the caller can await it
+   * (e.g. initPasskeyStorage, whose walletMeta.xpub is the wallet's ONLY persisted identity).
+   */
+  setItemAsync(key, value) {
     this.hathorMemoryStorage[key] = value;
     // JSONBigInt round-trips bigint values that the native JSON cannot.
     // Required for the wallet-lib 3.x token shape, which can include
     // bigint balance fields under registered tokens.
-    // Return the promise so callers that need durability (e.g. initPasskeyStorage, whose
-    // walletMeta.xpub is the wallet's ONLY persisted identity) can await the flush.
     return AsyncStorage.setItem(key, bigIntUtils.JSONBigInt.stringify(value));
   }
 
@@ -335,10 +350,10 @@ class AsyncStorageStore {
     // WALLET_META_KEY (saveAccessData rejected, or the app was killed between the two writes). If
     // it survived, startWallet would read the stale walletType:'passkey' and boot this seed wallet
     // read-only from the OLD xpub — ignoring the entered seed and rendering PasskeyLockScreen.
-    // removeItem drops both the persisted key and the in-memory cache, so a seed wallet can never
-    // inherit passkey metadata (same session or after a restart); awaited so it is durable before
-    // this wallet's access data is written.
-    await this.removeItem(WALLET_META_KEY);
+    // removeItemAsync drops both the persisted key and the in-memory cache, so a seed wallet can
+    // never inherit passkey metadata (same session or after a restart); awaited so it is durable
+    // before this wallet's access data is written.
+    await this.removeItemAsync(WALLET_META_KEY);
     const accessData = walletUtils.generateAccessDataFromSeed(
       seed,
       {
@@ -373,8 +388,11 @@ class AsyncStorageStore {
     // meta-without-access-data => walletIsLoaded() is false => a clean re-onboarding. The reverse
     // order would leave access-data-without-meta, stranding this PIN-less wallet on the PinScreen
     // (walletIsLoaded() true but isPasskeyWallet() false) with no PIN that could ever unlock it.
-    // The meta's xpub is this wallet's ONLY persisted identity (no seed, no PIN), so we await both.
-    await this.setItem(WALLET_META_KEY, {
+    // The meta's xpub is this wallet's ONLY persisted identity (no seed, no PIN), so its write is
+    // awaited (durable). saveAccessData's AsyncStorage flush is fire-and-forget inside
+    // HybridStore.saveAccessData, which is the safe side of the ordering above: a lost access-data
+    // flush leaves meta-without-access-data, i.e. a clean re-onboarding.
+    await this.setItemAsync(WALLET_META_KEY, {
       // Spread meta FIRST so walletType/xpub/createdAt set below stay authoritative — a meta that
       // happened to carry those keys must not override this method's own values.
       ...meta,
@@ -400,7 +418,7 @@ class AsyncStorageStore {
 
   /**
    * Merge a patch into the wallet metadata (e.g. backfill credentialId after a ceremony).
-   * No-op when no metadata exists. Returns the underlying setItem promise so callers can await
+   * No-op when no metadata exists. Returns the setItemAsync promise so callers can await
    * durability or attach a .catch() — without it, a rejected AsyncStorage write here would be an
    * unhandled rejection.
    *
@@ -409,7 +427,7 @@ class AsyncStorageStore {
   updateWalletMeta(patch) {
     const meta = this.getWalletMeta();
     if (!meta) return Promise.resolve();
-    return this.setItem(WALLET_META_KEY, { ...meta, ...patch });
+    return this.setItemAsync(WALLET_META_KEY, { ...meta, ...patch });
   }
 
   /**
@@ -548,13 +566,23 @@ class AsyncStorageStore {
   }
 
   /**
-   * Remove a key from AsyncStorage and from memory.
+   * Remove a key from AsyncStorage and from memory. Fire-and-forget, like setItem: saga callers
+   * `yield STORE.removeItem(...)` must not block on or throw from the native delete. Callers that
+   * need durability use removeItemAsync.
    * @param {string} key Item to remove.
    */
   removeItem(key) {
+    // Nobody awaits this delete, so log a failure instead of leaving an unhandled rejection.
+    this.removeItemAsync(key).catch((err) => log.error(`Failed to remove ${key}.`, err));
+  }
+
+  /**
+   * Durable variant of removeItem: returns the AsyncStorage promise so the caller can await the
+   * removal (e.g. initStorage clearing stale passkey metadata before a seed wallet).
+   * @param {string} key Item to remove.
+   */
+  removeItemAsync(key) {
     delete this.hathorMemoryStorage[key];
-    // Return the promise so callers that need durability (e.g. initStorage clearing stale passkey
-    // metadata before a seed wallet) can await the removal.
     return AsyncStorage.removeItem(key);
   }
 

@@ -39,8 +39,15 @@ jest.mock('@hathor/wallet-lib', () => ({
 // sanitizePasskeyLabel mirrors the real behaviour just enough for the label assertions to be
 // meaningful (used by PasskeyXpubMismatchError to compute the label it carries).
 jest.mock('../../src/passkey/passkeyService', () => ({
+  EXPECTED_NATIVE_CODES: ['NoCredentials', 'TimedOut', 'Interrupted'],
   signInWalletWordsFromPasskey: jest.fn(),
   isPasskeyCancel: jest.fn(),
+  PasskeyNativeError: class PasskeyNativeError extends Error {
+    constructor(nativeError) {
+      super(nativeError?.message);
+      this.code = nativeError?.error ?? null;
+    }
+  },
   sanitizePasskeyLabel: jest.fn((label) => {
     if (!label || typeof label !== 'string') return null;
     const trimmed = label.trim();
@@ -51,8 +58,13 @@ jest.mock('../../src/passkey/passkeyService', () => ({
 /* eslint-disable import/first, import/order */
 import { walletUtils, transactionUtils } from '@hathor/wallet-lib';
 import { STORE } from '../../src/store';
-import { signInWalletWordsFromPasskey, isPasskeyCancel } from '../../src/passkey/passkeyService';
 import {
+  signInWalletWordsFromPasskey,
+  isPasskeyCancel,
+  PasskeyNativeError,
+} from '../../src/passkey/passkeyService';
+import {
+  isExpectedPasskeyError,
   makePasskeyTxSigner,
   verifyPasskeyForUnlock,
   consumePasskeySigningCancelled,
@@ -60,6 +72,8 @@ import {
   PasskeyXpubMismatchError,
   PasskeyMetadataMissingError,
   PasskeyBusyError,
+  PasskeySigningUnsupportedError,
+  withPasskeyWords,
 } from '../../src/passkey/passkeySigner';
 /* eslint-enable import/first, import/order */
 
@@ -133,6 +147,25 @@ describe('makePasskeyTxSigner', () => {
     expect(err).toBeInstanceOf(PasskeyMetadataMissingError);
     expect(err).not.toBeInstanceOf(PasskeyXpubMismatchError);
     expect(transactionUtils.signTxInputs).not.toHaveBeenCalled();
+    // Checked BEFORE the ceremony: the user is not asked to authenticate for a signature that
+    // could never be verified.
+    expect(signInWalletWordsFromPasskey).not.toHaveBeenCalled();
+  });
+
+  test('throws PasskeySigningUnsupportedError before the ceremony when the lib lacks signTxInputs', async () => {
+    // The pinned wallet-lib predates transactionUtils.signTxInputs; the signer must fail cleanly
+    // (not with a TypeError mid-signing) and without prompting for biometrics.
+    const original = transactionUtils.signTxInputs;
+    transactionUtils.signTxInputs = undefined;
+    try {
+      const signer = makePasskeyTxSigner();
+      const err = await signer(fakeTx, fakeStorage).catch((e) => e);
+
+      expect(err).toBeInstanceOf(PasskeySigningUnsupportedError);
+      expect(signInWalletWordsFromPasskey).not.toHaveBeenCalled();
+    } finally {
+      transactionUtils.signTxInputs = original;
+    }
   });
 
   test('throws PasskeyCancelledError when the ceremony is cancelled', async () => {
@@ -267,10 +300,23 @@ describe('verifyPasskeyForUnlock', () => {
   test('throws PasskeyCancelledError when the ceremony is cancelled', async () => {
     signInWalletWordsFromPasskey.mockRejectedValue({ error: 'UserCancelled' });
     isPasskeyCancel.mockReturnValue(true);
+    consumePasskeySigningCancelled(); // start from a clean flag
 
     const err = await verifyPasskeyForUnlock().catch((e) => e);
 
     expect(err).toBeInstanceOf(PasskeyCancelledError);
+    // Only a SIGNING cancel sets the flag; otherwise a cancelled unlock would make the next failed
+    // Reown request read as a user cancel.
+    expect(consumePasskeySigningCancelled()).toBe(false);
+  });
+
+  test('throws PasskeyMetadataMissingError without prompting when no xpub is stored', async () => {
+    STORE.getWalletMeta.mockReturnValue(makeMeta({ xpub: undefined }));
+
+    const err = await verifyPasskeyForUnlock().catch((e) => e);
+
+    expect(err).toBeInstanceOf(PasskeyMetadataMissingError);
+    expect(signInWalletWordsFromPasskey).not.toHaveBeenCalled();
   });
 
   test('backfills a newly-learned credentialId (mirrors the signer backfill)', async () => {
@@ -288,5 +334,151 @@ describe('verifyPasskeyForUnlock', () => {
     await expect(verifyPasskeyForUnlock()).resolves.toBeUndefined();
 
     expect(STORE.updateWalletMeta).not.toHaveBeenCalled();
+  });
+});
+
+describe('withPasskeyWords', () => {
+  test('runs fn with the derived words and returns its result', async () => {
+    const fn = jest.fn(async (words) => `used:${words.split(' ').length}`);
+
+    await expect(withPasskeyWords(fn)).resolves.toBe('used:24');
+
+    expect(fn).toHaveBeenCalledWith(WORDS);
+    // The stored credentialId is passed so the OS skips the passkey picker.
+    expect(signInWalletWordsFromPasskey).toHaveBeenCalledWith({ credentialId: STORED_CRED });
+  });
+
+  test('a cancel throws PasskeyCancelledError, calls onCancel and never runs fn', async () => {
+    signInWalletWordsFromPasskey.mockRejectedValue({ error: 'UserCancelled' });
+    isPasskeyCancel.mockReturnValue(true);
+    const fn = jest.fn();
+    const onCancel = jest.fn();
+    consumePasskeySigningCancelled(); // start from a clean flag
+
+    const err = await withPasskeyWords(fn, { onCancel }).catch((e) => e);
+
+    expect(err).toBeInstanceOf(PasskeyCancelledError);
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(fn).not.toHaveBeenCalled();
+    // The helper leaves the signing-cancel flag alone (only the signer's onCancel sets it), so a
+    // cancelled push or unlock sheet can't make the next failed Reown request read as a cancel.
+    expect(consumePasskeySigningCancelled()).toBe(false);
+  });
+
+  test('a passkey for a different wallet throws PasskeyXpubMismatchError and never runs fn', async () => {
+    walletUtils.getXPubKeyFromSeed.mockReturnValue(OTHER_XPUB);
+    const fn = jest.fn();
+
+    const err = await withPasskeyWords(fn).catch((e) => e);
+
+    expect(err).toBeInstanceOf(PasskeyXpubMismatchError);
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  test('missing stored xpub throws PasskeyMetadataMissingError before any prompt', async () => {
+    STORE.getWalletMeta.mockReturnValue(makeMeta({ xpub: undefined }));
+    const fn = jest.fn();
+
+    const err = await withPasskeyWords(fn).catch((e) => e);
+
+    expect(err).toBeInstanceOf(PasskeyMetadataMissingError);
+    expect(signInWalletWordsFromPasskey).not.toHaveBeenCalled();
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  test('a concurrent call while one is in flight throws PasskeyBusyError', async () => {
+    let finishFirst;
+    signInWalletWordsFromPasskey.mockReturnValueOnce(new Promise((resolve) => {
+      finishFirst = () => resolve({ words: WORDS, credentialId: STORED_CRED });
+    }));
+    const first = withPasskeyWords(async () => 'first');
+
+    await expect(withPasskeyWords(async () => 'second')).rejects.toBeInstanceOf(PasskeyBusyError);
+
+    finishFirst();
+    await expect(first).resolves.toBe('first');
+  });
+
+  test('backfills a newly-learned credentialId', async () => {
+    signInWalletWordsFromPasskey.mockResolvedValue({ words: WORDS, credentialId: 'new-cred' });
+
+    await withPasskeyWords(async () => {});
+
+    expect(STORE.updateWalletMeta).toHaveBeenCalledWith({ credentialId: 'new-cred' });
+  });
+
+  test('releases the lock when fn throws, so the next ceremony can run', async () => {
+    const boom = new Error('fn failed');
+
+    await expect(withPasskeyWords(async () => { throw boom; })).rejects.toBe(boom);
+    await expect(withPasskeyWords(async () => 'next')).resolves.toBe('next');
+  });
+});
+
+describe('Phase 2 hooks', () => {
+  test('makePasskeyTxSigner runs onRootKey with the root inside the ceremony, before signing', async () => {
+    const order = [];
+    const root = makeRoot();
+    walletUtils.getXPrivKeyFromSeed.mockReturnValue(root);
+    transactionUtils.signTxInputs.mockImplementation(async () => {
+      order.push('sign');
+      return { inputSignatures: [], ncCallerSignature: null };
+    });
+    const onRootKey = jest.fn(async () => { order.push('onRootKey'); });
+
+    await makePasskeyTxSigner({ onRootKey })(fakeTx, fakeStorage);
+
+    expect(onRootKey).toHaveBeenCalledWith(root);
+    expect(order).toEqual(['onRootKey', 'sign']);
+    // One ceremony for both the token and the signature.
+    expect(signInWalletWordsFromPasskey).toHaveBeenCalledTimes(1);
+  });
+
+  test('a failing onRootKey aborts the send before signing', async () => {
+    const onRootKey = jest.fn(async () => { throw new Error('token refresh failed'); });
+
+    await expect(makePasskeyTxSigner({ onRootKey })(fakeTx, fakeStorage))
+      .rejects.toThrow('token refresh failed');
+    expect(transactionUtils.signTxInputs).not.toHaveBeenCalled();
+  });
+
+  test('verifyPasskeyForUnlock passes the words to onWords and resolves with its result', async () => {
+    const prepared = { tempWallet: {}, walletServiceUrl: 'https://ws.example/' };
+    const onWords = jest.fn(() => prepared);
+
+    // The result comes back so slow follow-up work can run after the passkey lock is released.
+    await expect(verifyPasskeyForUnlock({ onWords })).resolves.toBe(prepared);
+
+    expect(onWords).toHaveBeenCalledWith(WORDS);
+    expect(signInWalletWordsFromPasskey).toHaveBeenCalledTimes(1);
+  });
+
+  test('verifyPasskeyForUnlock resolves with undefined without onWords', async () => {
+    await expect(verifyPasskeyForUnlock()).resolves.toBeUndefined();
+  });
+});
+
+describe('isExpectedPasskeyError', () => {
+  // Expected, user-correctable outcomes: screens show them and don't report them.
+  test.each([
+    ['a wrong passkey', new PasskeyXpubMismatchError('Savings')],
+    ['a ceremony already open', new PasskeyBusyError()],
+    ['a build that cannot sign from a passkey', new PasskeySigningUnsupportedError()],
+    ['a deleted or unsynced passkey', new PasskeyNativeError({ error: 'NoCredentials', message: 'x' })],
+    ['a timed-out ceremony', new PasskeyNativeError({ error: 'TimedOut', message: 'x' })],
+    ['an interrupted ceremony', new PasskeyNativeError({ error: 'Interrupted', message: 'x' })],
+  ])('%s is expected', (_case, error) => {
+    expect(isExpectedPasskeyError(error)).toBe(true);
+  });
+
+  // Anything else is unexpected and gets reported.
+  test.each([
+    ['corrupted wallet metadata', new PasskeyMetadataMissingError()],
+    ['an unknown native error', new PasskeyNativeError({ error: 'Unknown error', message: 'x' })],
+    ['a bad app configuration', new PasskeyNativeError({ error: 'BadConfiguration', message: 'x' })],
+    ['a plain Error', new Error('boom')],
+    ['a non-Error value', { error: 'NoCredentials' }],
+  ])('%s is not expected', (_case, error) => {
+    expect(isExpectedPasskeyError(error)).toBe(false);
   });
 });
