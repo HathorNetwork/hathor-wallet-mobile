@@ -86,6 +86,7 @@ import {
   setAddressMode,
   tokenImportFetchRequested,
   setAmountFormat,
+  startWalletRequested,
 } from '../actions';
 import { fetchTokenData } from './tokens';
 import {
@@ -523,17 +524,37 @@ export function* startWallet(action) {
   // So, if a new START_WALLET_REQUESTED action is dispatched or a RELOAD_WALLET_REQUESTED
   // is dispatched, we need to cleanup all attached forks (that will cause the event
   // listeners to be cleaned).
-  const { reload } = yield race({
-    start: take([
-      types.START_WALLET_REQUESTED,
-      types.RESET_WALLET,
-    ]),
-    reload: take(types.RELOAD_WALLET_REQUESTED),
-  });
+  yield call(waitForWalletRestart, action);
+}
 
-  if (reload) {
-    // Yield the same action again to reload the wallet
-    yield put(action);
+/**
+ * Waits for the request that ends the running wallet: a new start, a wallet reset or a reload.
+ * A reload dispatches the start action again, with the PIN of the last WALLET_PIN_CHANGED: a PIN
+ * change or a safe-biometry switch re-encrypts the access data, and start() decrypts it with the
+ * PIN it is given.
+ *
+ * @param {Object} action The START_WALLET_REQUESTED action that started the running wallet
+ */
+export function* waitForWalletRestart(action) {
+  let startAction = action;
+  while (true) {
+    const { reload, pinChange } = yield race({
+      start: take([
+        types.START_WALLET_REQUESTED,
+        types.RESET_WALLET,
+      ]),
+      reload: take(types.RELOAD_WALLET_REQUESTED),
+      pinChange: take(types.WALLET_PIN_CHANGED),
+    });
+
+    if (!pinChange) {
+      if (reload) {
+        // Yield the start action again to reload the wallet
+        yield put(startAction);
+      }
+      return;
+    }
+    startAction = startWalletRequested({ ...startAction.payload, pin: pinChange.payload });
   }
 }
 

@@ -25,7 +25,7 @@ import {
   setKeychainPin,
 } from '../utils';
 import { HathorList, ListItem, ListMenu } from '../components/HathorList';
-import { lockScreen, onExceptionCaptured } from '../actions';
+import { lockScreen, onExceptionCaptured, walletPinChanged } from '../actions';
 import { COLORS } from '../styles/themes';
 import { SAFE_BIOMETRY_FEATURE_FLAG_KEY, STORE } from '../store';
 
@@ -36,6 +36,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   lockScreen: () => dispatch(lockScreen()),
   onExceptionCaptured: (error, isFatal) => dispatch(onExceptionCaptured(error, isFatal)),
+  walletPinChanged: (pin) => dispatch(walletPinChanged(pin)),
 });
 
 export class Security extends React.Component {
@@ -103,6 +104,8 @@ export class Security extends React.Component {
     ).then((success) => {
       if (success) {
         STORE.enableSafeBiometry(pin, password);
+        // A reload of the wallet must start it with the password, which now decrypts it.
+        this.props.walletPinChanged(password);
         this.setState({ biometryEnabled: true });
       } else {
         // Should never get here because we've done all the validations before
@@ -124,6 +127,8 @@ export class Security extends React.Component {
       pin,
     ).then((success) => {
       if (success) {
+        // A reload of the wallet must start it with the PIN, which now decrypts it.
+        this.props.walletPinChanged(pin);
         this.setState({ biometryEnabled: false });
       } else {
         // Should never get here because we've done all the validations before

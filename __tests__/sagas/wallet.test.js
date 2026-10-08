@@ -1,6 +1,12 @@
 import { jest, describe, test, expect, afterEach } from '@jest/globals';
-import { startWallet } from '../../src/sagas/wallet';
-import { startWalletRequested } from '../../src/actions';
+import { runSaga, stdChannel } from 'redux-saga';
+import { startWallet, waitForWalletRestart } from '../../src/sagas/wallet';
+import {
+  reloadWalletRequested,
+  resetWallet,
+  startWalletRequested,
+  walletPinChanged,
+} from '../../src/actions';
 import { STORE } from '../../src/store';
 
 describe('startWallet saga', () => {
@@ -38,5 +44,48 @@ describe('startWallet saga', () => {
       step = gen.next();
     }).not.toThrow();
     expect(step.done).toBe(false);
+  });
+});
+
+describe('waitForWalletRestart', () => {
+  const startAction = startWalletRequested({ words: 'seed words', pin: '111111' });
+
+  // Runs the saga for a wallet started with startAction, then dispatches `actions` to it in order.
+  async function run(actions) {
+    const channel = stdChannel();
+    const dispatched = [];
+    const task = runSaga(
+      { channel, dispatch: (action) => dispatched.push(action) },
+      waitForWalletRestart,
+      startAction,
+    );
+    actions.forEach((action) => channel.put(action));
+    await task.toPromise();
+    return dispatched;
+  }
+
+  test('starts the wallet again with the same action on a reload', async () => {
+    expect(await run([reloadWalletRequested()])).toEqual([startAction]);
+  });
+
+  // ChangePin and the safe-biometry switch re-encrypt the access data of the running wallet, and
+  // start() decrypts it with the PIN it is given.
+  test('starts the wallet again with the PIN of the last PIN change on a reload', async () => {
+    const dispatched = await run([
+      walletPinChanged('222222'),
+      walletPinChanged('random-password'),
+      reloadWalletRequested(),
+    ]);
+    expect(dispatched).toEqual([
+      startWalletRequested({ words: 'seed words', pin: 'random-password' }),
+    ]);
+  });
+
+  test('ends without starting the wallet on a new start request or a wallet reset', async () => {
+    expect(await run([
+      walletPinChanged('222222'),
+      startWalletRequested({ words: 'other words', pin: '333333' }),
+    ])).toEqual([]);
+    expect(await run([resetWallet()])).toEqual([]);
   });
 });

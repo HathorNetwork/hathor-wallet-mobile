@@ -25,6 +25,7 @@ import {
   startWalletRequested,
   resetOnLockScreen,
   onExceptionCaptured,
+  walletPinChanged,
 } from '../actions';
 import { PIN_SIZE } from '../constants';
 import { COLORS } from '../styles/themes';
@@ -54,9 +55,10 @@ const mapDispatchToProps = (dispatch) => ({
   onStartWalletLock: () => dispatch(onStartWalletLock()),
   startWalletRequested: (payload) => dispatch(startWalletRequested(payload)),
   onExceptionCaptured: (error, isFatal) => dispatch(onExceptionCaptured(error, isFatal)),
+  walletPinChanged: (pin) => dispatch(walletPinChanged(pin)),
 });
 
-class PinScreen extends React.Component {
+export class PinScreen extends React.Component {
   static defaultProps = { isLockScreen: false };
 
   constructor(props) {
@@ -158,6 +160,10 @@ class PinScreen extends React.Component {
 
           const words = await STORE.getWalletWords(actualPin);
           this.props.startWalletRequested({ words, pin: actualPin });
+        } else if (actualPin !== pin) {
+          // The biometry migration re-encrypted the running wallet's access data, so a reload of
+          // the wallet must start it with the new password or PIN.
+          this.props.walletPinChanged(actualPin);
         }
         this.props.unlockScreen();
       } catch (e) {

@@ -291,36 +291,36 @@ msgstr ""
 msgid "Please double check the words you saved and start the process again."
 msgstr ""
 
-#: src/screens/ChangePin.js:113
+#: src/screens/ChangePin.js:118
 msgid "Incorrect PIN code."
 msgstr "Неверный PIN-код."
 
-#: src/screens/ChangePin.js:149
+#: src/screens/ChangePin.js:154
 msgid "PIN codes don't match."
 msgstr "PIN-коды не совпадают."
 
 #.  Should never get here because we've done all the validations before
-#: src/screens/ChangePin.js:178
+#: src/screens/ChangePin.js:186
 msgid "Error while changing PIN"
 msgstr "Ошибка при смене PIN-кода"
 
-#: src/screens/ChangePin.js:185
+#: src/screens/ChangePin.js:193
 msgid "Please enter your **current PIN**"
 msgstr "Пожалуйста, введите ваш **текущий PIN-код**"
 
-#: src/screens/ChangePin.js:198
+#: src/screens/ChangePin.js:206
 msgid "Please enter your **new PIN**"
 msgstr "Пожалуйста, введите ваш новый **PIN-код**"
 
-#: src/screens/ChangePin.js:211
+#: src/screens/ChangePin.js:219
 msgid "Please enter your **new PIN** again"
 msgstr "Пожалуйста, введите ваш **новый PIN-код** снова"
 
-#: src/screens/ChangePin.js:226
+#: src/screens/ChangePin.js:234
 msgid "New PIN recorded"
 msgstr "Новый PIN-код сохранен"
 
-#: src/screens/ChangePin.js:236
+#: src/screens/ChangePin.js:244
 msgid "CHANGE PIN"
 msgstr "ИЗМЕНИТЬ PIN-код"
 
@@ -731,7 +731,7 @@ msgstr "Введите seed-фразу"
 #: src/components/Reown/SendTransactionRequest.js:550
 #: src/screens/LoadHistoryScreen.js:51 src/screens/LoadWalletErrorScreen.js:27
 #: src/screens/NanoContract/NanoContractRegisterScreen.js:176
-#: src/screens/PinScreen.js:283 src/screens/TokenSwapLoadingScreen.js:90
+#: src/screens/PinScreen.js:289 src/screens/TokenSwapLoadingScreen.js:90
 msgid "Try again"
 msgstr ""
 
@@ -754,7 +754,7 @@ msgid "There's been an error connecting to the server."
 msgstr ""
 
 #: src/screens/LoadWalletErrorScreen.js:28 src/screens/PasskeyLockScreen.js:199
-#: src/screens/PinScreen.js:318 src/screens/Settings.js:186
+#: src/screens/PinScreen.js:324 src/screens/Settings.js:186
 msgid "Reset wallet"
 msgstr "Сбросить кошелек"
 
@@ -830,24 +830,24 @@ msgstr ""
 msgid "Unlock"
 msgstr ""
 
-#: src/screens/PinScreen.js:272
+#: src/screens/PinScreen.js:278
 msgid "Incorrect PIN Code. Try again."
 msgstr "Неверный PIN-код. Попробуйте еще раз."
 
-#: src/screens/PinScreen.js:76
+#: src/screens/PinScreen.js:78
 msgid "Enter your PIN Code "
 msgstr "Введите свой PIN-код "
 
-#: src/screens/PinScreen.js:77
+#: src/screens/PinScreen.js:79
 msgid "Unlock Hathor Wallet"
 msgstr "Разблокировать Hathor Wallet"
 
 #: src/components/Reown/RequestConfirmationModal.js:110
-#: src/screens/PinScreen.js:309 src/screens/Reown/ReownList.js:176
+#: src/screens/PinScreen.js:315 src/screens/Reown/ReownList.js:176
 msgid "Cancel"
 msgstr "Отмена"
 
-#: src/screens/PinScreen.js:349 src/screens/PinScreen.js:353
+#: src/screens/PinScreen.js:355 src/screens/PinScreen.js:359
 msgid "Biometry failed or canceled."
 msgstr "Биометрия не удалась или была отменена."
 
@@ -996,36 +996,36 @@ msgstr ""
 msgid "Reset Wallet"
 msgstr "Сбросить Кошелек"
 
-#: src/screens/Security.js:145
+#: src/screens/Security.js:150
 msgid "Disable biometry"
 msgstr "Отключить биометрию"
 
-#: src/screens/Security.js:146
+#: src/screens/Security.js:151
 msgid "Disabling biometry"
 msgstr "Отключение биометрии"
 
-#: src/screens/Security.js:158 src/screens/Security.js:170
+#: src/screens/Security.js:163 src/screens/Security.js:175
 msgid "Enter your 6-digit pin to enable biometry"
 msgstr "Введите 6-значный PIN-код, чтобы включить биометрию"
 
-#: src/screens/Security.js:183
+#: src/screens/Security.js:188
 msgid "No biometry supported"
 msgstr "Биометрия не поддерживается"
 
-#: src/screens/Security.js:183
+#: src/screens/Security.js:188
 #, javascript-format
 msgid "Use ${ this.supportedBiometry }"
 msgstr "Использовать ${ this.supportedBiometry }"
 
-#: src/screens/Security.js:195
+#: src/screens/Security.js:200
 msgid "SECURITY"
 msgstr "БЕЗОПАСНОСТЬ"
 
-#: src/screens/Security.js:221
+#: src/screens/Security.js:226
 msgid "Change PIN"
 msgstr "Изменить PIN-код"
 
-#: src/screens/Security.js:226
+#: src/screens/Security.js:231
 msgid "Lock wallet"
 msgstr "Заблокировать кошелек"
 
@@ -1701,21 +1701,21 @@ msgstr ""
 msgid "Open"
 msgstr "Открыть"
 
-#: src/sagas/wallet.js:1007
+#: src/sagas/wallet.js:1028
 msgid "Wallet is not ready to load addresses."
 msgstr ""
 
 #.  This will show the message in the feedback content at SelectAddressModal
-#: src/sagas/wallet.js:1021
+#: src/sagas/wallet.js:1042
 msgid "There was an error while loading wallet addresses. Try again."
 msgstr ""
 
-#: src/sagas/wallet.js:1031
+#: src/sagas/wallet.js:1052
 msgid "Wallet is not ready to load the first address."
 msgstr ""
 
 #.  This will show the message in the feedback content
-#: src/sagas/wallet.js:1047
+#: src/sagas/wallet.js:1068
 msgid "There was an error while loading first wallet address. Try again."
 msgstr ""
 
