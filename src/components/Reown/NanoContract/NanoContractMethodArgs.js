@@ -108,6 +108,8 @@ export const NanoContractMethodArgs = ({ blueprintId, method, ncArgs }) => {
  * @param {Object} props.tokens A map of registered tokens
  */
 const ArgValueRenderer = ({ type, value, network, tokens }) => {
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
+
   // Handle SignedData types with custom component
   if (type && type.startsWith('SignedData')) {
     return <SignedDataDisplay value={value} />;
@@ -117,7 +119,7 @@ const ArgValueRenderer = ({ type, value, network, tokens }) => {
   let displayValue = value;
 
   if (type === 'Amount') {
-    displayValue = renderValue(value);
+    displayValue = renderValue(value, false, decimalPlaces);
   } else if (type === 'Timestamp') {
     displayValue = getTimestampFormat(value);
   } else if (type === 'TxOutputScript') {

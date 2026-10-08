@@ -89,48 +89,52 @@ function renderVersionFormatter(version) {
   return versionMap[version] || t`Unknown`;
 }
 
-export const CreateTokenRequestData = ({ data }) => (
-  <View style={[commonStyles.card, commonStyles.cardSplit]}>
-    <View style={[{
-      flexDirection: 'column',
-      alignSelf: 'stretch',
-      gap: 8,
-      flex: 1
-    }]}
-    >
-      {condRenderData(data.name, t`Name`, false)}
-      {condRenderData(data.symbol, t`Symbol`, true)}
-      {condRenderData(data.amount, t`Amount`, true, numberUtils.prettyValue)}
-      {condRenderData(data.version ?? TokenVersion.DEPOSIT, t`Type`, true, renderVersionFormatter)}
-      {condRenderData(data.address, t`Address to send newly minted ${data.symbol}`, true)}
-      {condRenderData(data.changeAddress, t`Address to send change ${DEFAULT_TOKEN.symbol}`, true)}
-      {condRenderData(data.createMint, t`Create mint authority?`, true, renderBooleanFormatter)}
-      {condRenderData(data.createMelt, t`Create melt authority?`, true, renderBooleanFormatter)}
-      {condRenderData(data.mintAuthorityAddress, t`Address to send the mint authority`, true)}
-      {condRenderData(data.meltAuthorityAddress, t`Address to send the melt authority`, true)}
-      {data.mintAuthorityAddress != null
-        && condRenderData(
-          data.allowExternalMintAuthorityAddress,
-          t`Allow external mint authority addresses?`,
-          true,
-          renderBooleanFormatter,
-        )}
-      {data.meltAuthorityAddress != null
-        && condRenderData(
-          data.allowExternalMeltAuthorityAddress,
-          t`Allow external melt authority addresses?`,
-          true,
-          renderBooleanFormatter,
-        )}
-      {condRenderData(data.contractPaysTokenDeposit, t`Contract pays token deposit?`, true, renderBooleanFormatter)}
-      {condRenderData(data.contractPaysFees, t`Contract pays fees?`, true, renderBooleanFormatter)}
-      {condRenderData(data.data, t`Token data`, true, (tokenData) => tokenData.join('\n'))}
-      {/* in this case we want to render only if data.deposit is not null and not 0 */}
-      {data.deposit && condRenderData(data.deposit, t`Deposit`, true, (value) => renderAmountAndSymbol(value, DEFAULT_TOKEN))}
-      {condRenderData(true, t`Network Fee`, true, () => (data.fee ? renderAmountAndSymbol(data.fee, DEFAULT_TOKEN) : '-'))}
+export const CreateTokenRequestData = ({ data }) => {
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
+
+  return (
+    <View style={[commonStyles.card, commonStyles.cardSplit]}>
+      <View style={[{
+        flexDirection: 'column',
+        alignSelf: 'stretch',
+        gap: 8,
+        flex: 1
+      }]}
+      >
+        {condRenderData(data.name, t`Name`, false)}
+        {condRenderData(data.symbol, t`Symbol`, true)}
+        {condRenderData(data.amount, t`Amount`, true, (value) => numberUtils.prettyValue(value, decimalPlaces))}
+        {condRenderData(data.version ?? TokenVersion.DEPOSIT, t`Type`, true, renderVersionFormatter)}
+        {condRenderData(data.address, t`Address to send newly minted ${data.symbol}`, true)}
+        {condRenderData(data.changeAddress, t`Address to send change ${DEFAULT_TOKEN.symbol}`, true)}
+        {condRenderData(data.createMint, t`Create mint authority?`, true, renderBooleanFormatter)}
+        {condRenderData(data.createMelt, t`Create melt authority?`, true, renderBooleanFormatter)}
+        {condRenderData(data.mintAuthorityAddress, t`Address to send the mint authority`, true)}
+        {condRenderData(data.meltAuthorityAddress, t`Address to send the melt authority`, true)}
+        {data.mintAuthorityAddress != null
+          && condRenderData(
+            data.allowExternalMintAuthorityAddress,
+            t`Allow external mint authority addresses?`,
+            true,
+            renderBooleanFormatter,
+          )}
+        {data.meltAuthorityAddress != null
+          && condRenderData(
+            data.allowExternalMeltAuthorityAddress,
+            t`Allow external melt authority addresses?`,
+            true,
+            renderBooleanFormatter,
+          )}
+        {condRenderData(data.contractPaysTokenDeposit, t`Contract pays token deposit?`, true, renderBooleanFormatter)}
+        {condRenderData(data.contractPaysFees, t`Contract pays fees?`, true, renderBooleanFormatter)}
+        {condRenderData(data.data, t`Token data`, true, (tokenData) => tokenData.join('\n'))}
+        {/* in this case we want to render only if data.deposit is not null and not 0 */}
+        {data.deposit && condRenderData(data.deposit, t`Deposit`, true, (value) => renderAmountAndSymbol(value, DEFAULT_TOKEN, decimalPlaces))}
+        {condRenderData(true, t`Network Fee`, true, () => (data.fee ? renderAmountAndSymbol(data.fee, DEFAULT_TOKEN, decimalPlaces) : '-'))}
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 export const CreateTokenRequest = ({ createTokenRequest }) => {
   const { dapp, data } = createTokenRequest;

@@ -30,6 +30,7 @@ import { renderValue, isTokenNFT } from '../../utils';
 export const GetUtxosRequestData = ({ data }) => {
   const tokenMetadata = useSelector((state) => state.tokenMetadata);
   const tokens = useSelector((state) => state.tokens);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
 
   // data contains utxoDetails from wallet.getUtxos() plus filterParams from request
   const {
@@ -119,7 +120,7 @@ export const GetUtxosRequestData = ({ data }) => {
             <View style={styles.filterRow}>
               <Text style={styles.filterLabel}>{t`Amount smaller than:`}</Text>
               <Text style={styles.filterValue}>
-                {renderValue(params.amountSmallerThan, isNFT)}
+                {renderValue(params.amountSmallerThan, isNFT, decimalPlaces)}
               </Text>
             </View>
           )}
@@ -127,7 +128,7 @@ export const GetUtxosRequestData = ({ data }) => {
             <View style={styles.filterRow}>
               <Text style={styles.filterLabel}>{t`Amount bigger than:`}</Text>
               <Text style={styles.filterValue}>
-                {renderValue(params.amountBiggerThan, isNFT)}
+                {renderValue(params.amountBiggerThan, isNFT, decimalPlaces)}
               </Text>
             </View>
           )}
@@ -135,7 +136,7 @@ export const GetUtxosRequestData = ({ data }) => {
             <View style={styles.filterRow}>
               <Text style={styles.filterLabel}>{t`Maximum amount:`}</Text>
               <Text style={styles.filterValue}>
-                {renderValue(params.maximumAmount, isNFT)}
+                {renderValue(params.maximumAmount, isNFT, decimalPlaces)}
               </Text>
             </View>
           )}
@@ -160,7 +161,7 @@ export const GetUtxosRequestData = ({ data }) => {
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>{t`Total amount:`}</Text>
           <Text style={styles.summaryValue}>
-            {renderValue(totalAmount, isNFT)} {displaySymbol}
+            {renderValue(totalAmount, isNFT, decimalPlaces)} {displaySymbol}
           </Text>
         </View>
       </View>
@@ -281,7 +282,7 @@ const styles = StyleSheet.create({
   filterRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 8,
   },
   filterLabel: {
@@ -292,6 +293,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.textColor,
+    flexShrink: 1,
+    marginLeft: 8,
+    textAlign: 'right',
   },
   filterValueAddress: {
     fontSize: 12,
@@ -314,7 +318,7 @@ const styles = StyleSheet.create({
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 8,
   },
   summaryLabel: {
@@ -325,6 +329,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.textColor,
+    flexShrink: 1,
+    marginLeft: 8,
+    textAlign: 'right',
   },
   privacyNotice: {
     backgroundColor: COLORS.cardBackground,

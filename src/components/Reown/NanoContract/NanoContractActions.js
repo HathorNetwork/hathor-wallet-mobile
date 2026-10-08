@@ -23,6 +23,7 @@ import { isTokenNFT, renderValue } from '../../../utils';
 import { AlertUI, COLORS } from '../../../styles/themes';
 import { WarnTextValue } from '../../WarnTextValue';
 import { CircleError } from '../../Icons/CircleError.icon';
+import { DEFAULT_ICON_SIZE } from '../../Icons/constants';
 import {
   getActionTitle,
   isAuthorityAction,
@@ -143,6 +144,8 @@ const ActionItem = ({ action, title, isNft, tokens, isTokenRegistered, showToken
     value: [commonStyles.text, commonStyles.field],
     addressSection: {
       marginTop: 8,
+      marginLeft: DEFAULT_ICON_SIZE + 16,
+      paddingRight: 16,
     },
     contentWrapper: {
       flex: 1,
@@ -154,88 +157,91 @@ const ActionItem = ({ action, title, isNft, tokens, isTokenRegistered, showToken
   const titleParts = isAuthority ? splitAuthorityTitle(title) : null;
 
   return (
-    <View style={[commonStyles.cardSplit, commonStyles.listItem]}>
-      <NanoContractActionIcon type={action.type} />
-      <View style={[commonStyles.cardSplitContent, styles.contentWrapper]}>
-        {isAuthority && titleParts ? (
-          <View style={styles.authorityRow}>
-            <Text style={styles.authorityTitle}>{titleParts[0]}</Text>
-            <Text style={styles.authorityType}>{titleParts[1]}</Text>
-          </View>
-        ) : (
-          <View style={styles.actionRow}>
-            <Text style={styles.action}>{title}</Text>
-            {!isRegistered && tokenSymbol && (
-              <TouchableOpacity onPress={() => showTokenInfo(action.token)}>
-                <FontAwesomeIcon
-                  icon={faCircleInfo}
-                  size={16}
-                  color={COLORS.textColor}
-                />
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-
-        {/* WITHDRAWAL: Show only address (address to send the amount and create the output) */}
-        {action.type === NanoContractActionType.WITHDRAWAL
-          && action.address && (
-            <View style={styles.addressSection}>
-              <Text style={styles.valueLabel}>{t`Address to send amount:`}</Text>
-              <Text style={styles.value}>{action.address}</Text>
+    <View style={[{display: 'flex', flexDirection: 'column'}, commonStyles.listItem]}>
+      <View style={[commonStyles.cardSplit]}>
+        <NanoContractActionIcon type={action.type} />
+        <View style={[commonStyles.cardSplitContent, styles.contentWrapper]}>
+          {isAuthority && titleParts ? (
+            <View style={styles.authorityRow}>
+              <Text style={styles.authorityTitle}>{titleParts[0]}</Text>
+              <Text style={styles.authorityType}>{titleParts[1]}</Text>
             </View>
-        )}
+          ) : (
+            <View style={styles.actionRow}>
+              <Text style={styles.action}>{title}</Text>
+              {!isRegistered && tokenSymbol && (
+                <TouchableOpacity onPress={() => showTokenInfo(action.token)}>
+                  <FontAwesomeIcon
+                    icon={faCircleInfo}
+                    size={16}
+                    color={COLORS.textColor}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
 
-        {/* DEPOSIT: Show address (to filter UTXOs) and changeAddress (change address) */}
-        {action.type === NanoContractActionType.DEPOSIT && (
-          <View style={[(action.address || action.changeAddress) && styles.addressSection]}>
-            {action.address && (
-              <View style={{ marginBottom: 8 }}>
-                <Text style={styles.valueLabel}>{t`Address to filter UTXOs:`}</Text>
-                <Text style={styles.value}>{action.address}</Text>
-              </View>
-            )}
-            {action.changeAddress && (
-              <View>
-                <Text style={styles.valueLabel}>{t`Change address:`}</Text>
-                <Text style={styles.value}>{action.changeAddress}</Text>
-              </View>
-            )}
-          </View>
-        )}
+        </View>
 
-        {/* GRANT_AUTHORITY: Show address (filter UTXOs) and authorityAddress (send authority) */}
-        {action.type === NanoContractActionType.GRANT_AUTHORITY && (
-          <View style={[(action.address || action.authorityAddress) && styles.addressSection]}>
-            {action.address && (
-              <View style={{ marginBottom: 8 }}>
-                <Text style={styles.valueLabel}>{t`Address to filter UTXOs:`}</Text>
-                <Text style={styles.value}>{action.address}</Text>
-              </View>
-            )}
-            {action.authorityAddress && (
-              <View>
-                <Text style={styles.valueLabel}>{t`Address to send new authority:`}</Text>
-                <Text style={styles.value}>{action.authorityAddress}</Text>
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* ACQUIRE_AUTHORITY: Show only address (send the authority and create the output) */}
-        {action.type === NanoContractActionType.ACQUIRE_AUTHORITY && action.address && (
-          <View style={styles.addressSection}>
-            <Text style={styles.valueLabel}>{t`Address to send authority:`}</Text>
-            <Text style={styles.value}>{action.address}</Text>
-          </View>
+        {/* Show amount for deposit/withdrawal actions */}
+        {action.type !== NanoContractActionType.GRANT_AUTHORITY
+          && action.type !== NanoContractActionType.ACQUIRE_AUTHORITY
+          && action.amount != null && action.amount !== undefined && (
+            <Amount amount={action.amount} isNft={isNft} />
         )}
       </View>
 
-      {/* Show amount for deposit/withdrawal actions */}
-      {action.type !== NanoContractActionType.GRANT_AUTHORITY
-        && action.type !== NanoContractActionType.ACQUIRE_AUTHORITY
-        && action.amount != null && action.amount !== undefined && (
-          <Amount amount={action.amount} isNft={isNft} />
+      {/* WITHDRAWAL: Show only address (address to send the amount and create the output) */}
+      {action.type === NanoContractActionType.WITHDRAWAL
+        && action.address && (
+          <View style={styles.addressSection}>
+            <Text style={styles.valueLabel}>{t`Address to send amount:`}</Text>
+            <Text style={styles.value}>{action.address}</Text>
+          </View>
+      )}
+
+      {/* DEPOSIT: Show address (to filter UTXOs) and changeAddress (change address) */}
+      {action.type === NanoContractActionType.DEPOSIT && (
+        <View style={[(action.address || action.changeAddress) && styles.addressSection]}>
+          {action.address && (
+            <View style={{ marginBottom: 8 }}>
+              <Text style={styles.valueLabel}>{t`Address to filter UTXOs:`}</Text>
+              <Text style={styles.value}>{action.address}</Text>
+            </View>
+          )}
+          {action.changeAddress && (
+            <View>
+              <Text style={styles.valueLabel}>{t`Change address:`}</Text>
+              <Text style={styles.value}>{action.changeAddress}</Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* GRANT_AUTHORITY: Show address (filter UTXOs) and authorityAddress (send authority) */}
+      {action.type === NanoContractActionType.GRANT_AUTHORITY && (
+        <View style={[(action.address || action.authorityAddress) && styles.addressSection]}>
+          {action.address && (
+            <View style={{ marginBottom: 8 }}>
+              <Text style={styles.valueLabel}>{t`Address to filter UTXOs:`}</Text>
+              <Text style={styles.value}>{action.address}</Text>
+            </View>
+          )}
+          {action.authorityAddress && (
+            <View>
+              <Text style={styles.valueLabel}>{t`Address to send new authority:`}</Text>
+              <Text style={styles.value}>{action.authorityAddress}</Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* ACQUIRE_AUTHORITY: Show only address (send the authority and create the output) */}
+      {action.type === NanoContractActionType.ACQUIRE_AUTHORITY && action.address && (
+        <View style={styles.addressSection}>
+          <Text style={styles.valueLabel}>{t`Address to send authority:`}</Text>
+          <Text style={styles.value}>{action.address}</Text>
+        </View>
       )}
     </View>
   )
@@ -249,13 +255,16 @@ const ActionItem = ({ action, title, isNft, tokens, isTokenRegistered, showToken
  * @param {boolean} props.isNft
  */
 const Amount = ({ amount, isNft }) => {
-  const amountToRender = renderValue(amount, isNft);
+  const decimalPlaces = useSelector((state) => state.serverInfo?.decimal_places);
+  const amountToRender = renderValue(amount, isNft, decimalPlaces);
 
   const styles = StyleSheet.create({
     wrapper: {
       marginLeft: 'auto',
       marginRight: 0,
       paddingRight: 16,
+      maxWidth: '50%',
+      flexShrink: 1,
     },
     amount: {
       fontSize: 16,
